@@ -95,6 +95,30 @@ FROM
   authenticated;
 
 --------------------------------------------------------------------------------
+-- Send Email Hook: called by Supabase Auth in place of sending a mail, for every mail the service would send (a one-time code, a recovery, a change of address, an invitation). It sends none and returns an empty object, which the service reads as success.
+--
+-- It reads nothing of the event, which holds an address and a token, writes nothing and logs nothing. Every mail of the application is sent by the account-access Edge Function, behind its own checks, throttle and texts. The hook stops the service's mail and nothing else: what the service answers to a request is unchanged.
+--
+-- config.toml `[auth.hook.send_email]` names it; `yarn assert:auth-signup-closed` requires that table. 07-rpc-security.test.sql asserts it executable by supabase_auth_admin and by no API role.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.send_email_hook (event jsonb) RETURNS jsonb LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT '{}'::jsonb;
+$$;
+
+GRANT
+EXECUTE ON FUNCTION public.send_email_hook TO supabase_auth_admin;
+
+REVOKE
+EXECUTE ON FUNCTION public.send_email_hook
+FROM
+  PUBLIC,
+  anon,
+  authenticated,
+  service_role;
+
+--------------------------------------------------------------------------------
 -- grant_role_permissions: the role x permission matrix, encoded once
 --
 -- This is the only function body that holds the matrix, so its permission literals can be found in one place and compared against the rights table without executing a permission check. user_can asks it for the verb and computes only reach.
@@ -217,7 +241,8 @@ SET
       'entity.read_answers',
       'entity.invite_children',
       'nomination.edit',
-      'nomination.read'
+      'nomination.read',
+      'nomination.create_parent'
     ]::public.grant_permission[]
 
     -- Candidate, FactionEditor and AllianceEditor share one row, nomination.create_parent included. Their nomination rights hold only while the project is unlocked, but the lock is row state, so the nomination policies check it and the matrix does not. Which row a holder of nomination.create_parent may create is likewise the parent policy's question: it pairs the row's type with the caller's, and no row's type admits an alliance's editor.
@@ -399,8 +424,6 @@ SET
           FROM public.candidates e
           WHERE e.id = n.candidate_id
             AND e.confirmed
-            AND e.terms_of_use_accepted IS NOT NULL
-            AND e.terms_of_use_accepted < now()
             AND public.project_open_for_voters (e.project_id)
             AND private.entity_has_confirmed_nomination ('candidate'::public.entity_type, e.id, e.project_id)
         )
@@ -464,12 +487,7 @@ CREATE OR REPLACE FUNCTION public.user_can (
 SET
   search_path = '' AS $$
 DECLARE
-  grants_claim jsonb;
-  grant_entry jsonb;
-  g_scope text;
-  g_role text;
-  g_target_type text;
-  g_target_id uuid;
+  g record;
   g_permissions public.grant_permission[];
   v_project_id uuid;
   v_account_id uuid;
@@ -482,84 +500,60 @@ BEGIN
   -- An entity is named by its type and id together, so an entity-scope question without a type denies.
   IF p_scope = 'entity' AND p_target_type IS NULL THEN RETURN false; END IF;
 
-  grants_claim := (SELECT auth.jwt() -> 'grants');
-  -- NULL covers the anon session and a token without the claim; a non-array covers a malformed claim. Both deny rather than raise.
-  IF grants_claim IS NULL OR jsonb_typeof(grants_claim) <> 'array' THEN RETURN false; END IF;
-
-  FOR grant_entry IN SELECT * FROM jsonb_array_elements(grants_claim)
+  -- The caller's own rows. A NULL caller id matches no row, so the loop does not run and the answer is false.
+  FOR g IN
+    SELECT gr.scope, gr.role, gr.target_type, gr.target_id
+    FROM public.grants gr
+    WHERE gr.user_id = (SELECT auth.uid())
   LOOP
-    g_scope := grant_entry ->> 'scope';
-    g_role := grant_entry ->> 'role';
-    g_target_type := grant_entry ->> 'target_type';
-
-    -- Skip anything outside the declared vocabularies rather than casting it.
-    CONTINUE WHEN g_scope IS NULL OR g_scope NOT IN ('global', 'account', 'project', 'entity');
-    CONTINUE WHEN g_role IS NULL OR g_role NOT IN ('admin', 'editor');
-    CONTINUE WHEN g_target_type IS NOT NULL
-      AND g_target_type NOT IN ('candidate', 'organization', 'faction', 'alliance');
-
-    g_target_id := NULL;
-    IF grant_entry ->> 'target_id' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
-      g_target_id := (grant_entry ->> 'target_id')::uuid;
-    END IF;
-
-    -- 300-auth-tables.sql's two CHECK constraints, restated over the claim: a global grant has no target, every other scope has one, and the entity discriminator is present exactly when the scope is entity.
-    CONTINUE WHEN g_target_id IS NULL AND g_scope <> 'global';
-    CONTINUE WHEN g_target_id IS NOT NULL AND g_scope = 'global';
-    CONTINUE WHEN (g_target_type IS NOT NULL) <> (g_scope = 'entity');
-
     -- Half 1: the verb. This is the only place user_can consults the matrix.
-    g_permissions := public.grant_role_permissions(
-      g_scope::public.grant_scope_type,
-      g_role::public.grant_role_type,
-      g_target_type::public.entity_type
-    );
+    g_permissions := public.grant_role_permissions(g.scope, g.role, g.target_type);
     CONTINUE WHEN g_permissions IS NULL OR NOT (p_permission = ANY (g_permissions));
 
     -- Half 2: reach. Downward-or-equal from the grant's own target, plus the two named branches below. Every hop denies when it finds no row; no branch treats a NULL comparison result as a match.
-    IF g_scope = 'global' THEN
+    IF g.scope = 'global' THEN
       -- Reaches everything that exists. The existence check is deliberate: an entity that resolves to no project is not an object any grant reaches, and a global grant must not be the one branch that says otherwise because its lookup was skipped.
       CONTINUE WHEN p_scope = 'entity' AND private.entity_project_id(p_target_type, p_target_id) IS NULL;
       RETURN true;
     END IF;
 
-    IF g_scope = 'account' THEN
-      IF p_scope = 'account' AND p_target_id = g_target_id THEN RETURN true; END IF;
+    IF g.scope = 'account' THEN
+      IF p_scope = 'account' AND p_target_id = g.target_id THEN RETURN true; END IF;
       IF p_scope = 'project' THEN
         SELECT account_id INTO v_account_id FROM public.projects WHERE id = p_target_id;
-        IF v_account_id IS NOT NULL AND v_account_id = g_target_id THEN RETURN true; END IF;
+        IF v_account_id IS NOT NULL AND v_account_id = g.target_id THEN RETURN true; END IF;
       END IF;
       IF p_scope = 'entity' THEN
         v_project_id := private.entity_project_id(p_target_type, p_target_id);
         IF v_project_id IS NOT NULL THEN
           SELECT account_id INTO v_account_id FROM public.projects WHERE id = v_project_id;
-          IF v_account_id IS NOT NULL AND v_account_id = g_target_id THEN RETURN true; END IF;
+          IF v_account_id IS NOT NULL AND v_account_id = g.target_id THEN RETURN true; END IF;
         END IF;
       END IF;
       CONTINUE;
     END IF;
 
-    IF g_scope = 'project' THEN
-      IF p_scope = 'project' AND p_target_id = g_target_id THEN RETURN true; END IF;
+    IF g.scope = 'project' THEN
+      IF p_scope = 'project' AND p_target_id = g.target_id THEN RETURN true; END IF;
       IF p_scope = 'entity' THEN
         v_project_id := private.entity_project_id(p_target_type, p_target_id);
-        IF v_project_id IS NOT NULL AND v_project_id = g_target_id THEN RETURN true; END IF;
+        IF v_project_id IS NOT NULL AND v_project_id = g.target_id THEN RETURN true; END IF;
       END IF;
       CONTINUE;
     END IF;
 
-    -- g_scope = 'entity'. Reach is equality with the granted entity, type and id both, which is what an `own` matrix cell means, plus the named branches below.
-    IF p_scope = 'entity' AND g_target_type = p_target_type::text AND p_target_id = g_target_id THEN RETURN true; END IF;
+    -- g.scope = 'entity'. Reach is equality with the granted entity, type and id both, which is what an `own` matrix cell means, plus the named branches below.
+    IF p_scope = 'entity' AND g.target_type = p_target_type AND p_target_id = g.target_id THEN RETURN true; END IF;
 
     -- NAMED BRANCH 1, the project-read branch: an entity grantee may read the structure of its entity's project. The permission is a literal so the hop cannot widen to another verb; a general upward-reach rule would also answer yes to entity.edit_answers at account scope.
     IF p_scope = 'project' AND p_permission = 'project.read_structure' THEN
-      v_project_id := private.entity_project_id(g_target_type::public.entity_type, g_target_id);
+      v_project_id := private.entity_project_id(g.target_type, g.target_id);
       IF v_project_id IS NOT NULL AND v_project_id = p_target_id THEN RETURN true; END IF;
     END IF;
 
     -- NAMED BRANCH 2, the child-nominee branch: an entity grantee may read the nominations of an entity nominated under one of its own entity's nominations, but not that entity's answers. Like branch 1, the permission is a literal so the hop cannot widen to another verb.
     IF p_scope = 'entity' AND p_permission = 'nomination.read'
-       AND private.is_child_nominee(g_target_type::public.entity_type, g_target_id, p_target_type, p_target_id) THEN
+       AND private.is_child_nominee(g.target_type, g.target_id, p_target_type, p_target_id) THEN
       RETURN true;
     END IF;
 
@@ -588,18 +582,17 @@ SET
   search_path = '' AS $$
   SELECT EXISTS (
     SELECT 1
-    FROM jsonb_array_elements(
-      CASE WHEN jsonb_typeof((SELECT auth.jwt() -> 'grants')) = 'array'
-           THEN (SELECT auth.jwt() -> 'grants')
-           ELSE '[]'::jsonb END
-    ) AS g
-    WHERE ((g ->> 'scope') = 'global' AND (g ->> 'role') = 'admin')
-       OR ((g ->> 'scope') = 'account' AND (g ->> 'target_id') = p_account_id::text)
-       OR ((g ->> 'scope') = 'project' AND EXISTS (
-             SELECT 1
-             FROM public.projects p
-             WHERE p.id::text = (g ->> 'target_id')
-               AND p.account_id = p_account_id))
+    FROM public.grants g
+    WHERE g.user_id = (SELECT auth.uid())
+      AND (
+        (g.scope = 'global' AND g.role = 'admin')
+        OR (g.scope = 'account' AND g.target_id = p_account_id)
+        OR (g.scope = 'project' AND EXISTS (
+              SELECT 1
+              FROM public.projects p
+              WHERE p.id = g.target_id
+                AND p.account_id = p_account_id))
+      )
   );
 $$;
 
@@ -618,7 +611,43 @@ CREATE OR REPLACE FUNCTION private.project_nominations_locked (p_project_id uuid
 SET
   search_path = '' AS $$
   SELECT COALESCE(
-    (SELECT p.lock_nominations FROM public.projects p WHERE p.id = p_project_id),
+    (
+      SELECT COALESCE(
+        (SELECT s.settings #> '{access,nominationsLocked}' = 'true'::jsonb
+           FROM public.app_settings s
+          WHERE s.project_id = p.id),
+        false
+      )
+      FROM public.projects p
+      WHERE p.id = p_project_id
+    ),
+    true
+  );
+$$;
+
+--------------------------------------------------------------------------------
+-- project_answers_locked: are this project's answers locked?
+--
+-- The lock is the app setting `access.answersLocked`, stored in the project's row of public.app_settings. While it holds, an entity's own editor writes nothing of the entity: it is a conjunct of the entity self-update policies of the four entity tables and of the four entity-scope nomination policies, `upsert_answers` and `set_entity_nominations` refuse an entity's editor with SQLSTATE 42501, and `storage_path_can` (400-storage.sql) refuses an entity-scope write, reading the same key itself. The project-scope policies do not read it, so a project editor and a project admin still write while answers are locked.
+--
+-- It reads as project_nominations_locked does. A missing project reads as locked, so a missing project never unlocks anything; a project with no settings row, or a row that does not hold the key, reads as unlocked. Only the JSON boolean true locks: the value is compared as jsonb, so the string "true", a number and a JSON null are unlocked.
+--
+-- SECURITY DEFINER because public.projects and public.app_settings both have row-level security enabled, and an inline read would also ask whether the caller can see the project and its settings row.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.project_answers_locked (p_project_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    (
+      SELECT COALESCE(
+        (SELECT s.settings #> '{access,answersLocked}' = 'true'::jsonb
+           FROM public.app_settings s
+          WHERE s.project_id = p.id),
+        false
+      )
+      FROM public.projects p
+      WHERE p.id = p_project_id
+    ),
     true
   );
 $$;
@@ -655,12 +684,50 @@ SET
       )
       AND n.election_id = p_election_id
       AND n.constituency_id = p_constituency_id
-      AND n.election_round IS NOT DISTINCT FROM p_election_round
+      AND COALESCE(n.election_round, 1) = COALESCE(p_election_round, 1)
   );
 $$;
 
 --------------------------------------------------------------------------------
--- caller_nominated_in_contest: does the caller hold a named permission on an entity nominated at this contest?
+-- nomination_id_in_contest: which nomination does this entity hold at this contest?
+--
+-- Answers the id of the entity's nomination at this election, constituency and round, by the match of `nomination_exists_in_contest`: the entity type against the generated entity_type column, the entity id against the four foreign keys, and a round that is not stored as round 1. A writer that points a child's nomination at its parent's asks it for the parent's id.
+--
+-- SECURITY DEFINER because the caller may be unable to read the row. A parent's nomination the caller has just created through `entity_insert_parent_nominations` nominates an entity the caller holds no `nomination.read` on, so neither `INSERT ... RETURNING` nor a `SELECT` of the caller's own gives its id.
+--
+-- Returns NULL when the entity holds no nomination at the contest.
+--
+-- An entity can hold several nominations at one contest, because the uniqueness key includes the parent: an organization may stand there on its own and under an alliance, or under two alliances. The answer is then the nomination with no parent first, then the oldest by created_at, then the lowest id. 23-nominations-write.test.sql pins each step of that order.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.nomination_id_in_contest (
+  p_entity_type public.entity_type,
+  p_entity_id uuid,
+  p_election_id uuid,
+  p_constituency_id uuid,
+  p_election_round integer
+) RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT n.id
+  FROM public.nominations n
+  WHERE n.entity_type = p_entity_type
+    AND (
+      n.candidate_id = p_entity_id
+      OR n.organization_id = p_entity_id
+      OR n.faction_id = p_entity_id
+      OR n.alliance_id = p_entity_id
+    )
+    AND n.election_id = p_election_id
+    AND n.constituency_id = p_constituency_id
+    AND COALESCE(n.election_round, 1) = COALESCE(p_election_round, 1)
+  ORDER BY (n.parent_nomination_id IS NOT NULL), n.created_at, n.id
+  LIMIT 1;
+$$;
+
+--------------------------------------------------------------------------------
+-- caller_nominated_in_contest: does the caller hold a named permission on an entity of one of the named types that is nominated at this contest?
+--
+-- Asks whether there is a nomination at this contest whose entity is of one of p_caller_types and on which the caller holds p_permission. A round that is not stored is round 1, as in `nomination_exists_in_contest`. The permission's answer comes from `user_can`, so no cell of the matrix is written down a second time. The entity is named by the nomination's generated entity_type and its one set foreign key.
 --
 -- p_caller_types is what pairs a row with the caller that may create it. `entity_insert_parent_nominations` passes the types of entity that stand under the row being inserted, so holding the permission on an entity of another type nominated at the contest does not answer yes. A NULL or empty array answers false.
 --
@@ -672,7 +739,8 @@ CREATE OR REPLACE FUNCTION private.caller_nominated_in_contest (
   p_election_id uuid,
   p_constituency_id uuid,
   p_election_round integer,
-  p_permission public.grant_permission
+  p_permission public.grant_permission,
+  p_caller_types public.entity_type[]
 ) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
 SET
   search_path = '' AS $$
@@ -681,7 +749,8 @@ SET
     FROM public.nominations n
     WHERE n.election_id = p_election_id
       AND n.constituency_id = p_constituency_id
-      AND n.election_round IS NOT DISTINCT FROM p_election_round
+      AND COALESCE(n.election_round, 1) = COALESCE(p_election_round, 1)
+      AND n.entity_type = ANY (p_caller_types)
       AND public.user_can(
             'entity',
             COALESCE(n.candidate_id, n.organization_id, n.faction_id, n.alliance_id),
@@ -706,7 +775,7 @@ SET
   SELECT count(*)::integer
   FROM public.nominations n
   WHERE n.created_by IS NOT DISTINCT FROM (SELECT auth.uid())
-    AND n.organization_id IS NOT NULL
+    AND (n.organization_id IS NOT NULL OR n.alliance_id IS NOT NULL)
     AND NOT n.confirmed;
 $$;
 
@@ -752,3 +821,253 @@ FROM
   anon,
   authenticated,
   service_role;
+
+--------------------------------------------------------------------------------
+-- user_password_set: does this account hold a password?
+--
+-- True when the user's `encrypted_password` in auth.users is neither null nor the empty string, false otherwise and for an id that names no user.
+--
+-- It reads true for accounts whose owner never chose a password: the auth service stores the hash of a generated password for an account created by a service-side `createUser`, for a new account created by a `magiclink` link, and when an `invite` token is verified. True therefore means that the account holds some password, not that its owner chose one; a caller that needs the second has to record it itself.
+--
+-- It takes the id of any account, so no API role may execute it: published to one, it would say whether somebody else's account has a password. Only definer functions call it, as their owner and for `auth.uid()`: private.caller_password_set below and claim_invitations in 506-invitation-rpcs.sql. It is defined after the grant on the `private` schema above, which therefore does not reach it, and the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function.
+--
+-- SECURITY DEFINER because no API role can read auth.users.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.user_password_set (p_user_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    (SELECT NULLIF(u.encrypted_password, '') IS NOT NULL FROM auth.users u WHERE u.id = p_user_id),
+    false
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.user_password_set (uuid)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- caller_password_set: does the caller's own account hold a password?
+--
+-- Answers private.user_password_set for `auth.uid()`. It takes no argument, so it answers for nobody else: there is nothing a caller could pass to point it at another account. get_user_entities in 503-entity-rpcs.sql calls it for its `password_set` key.
+--
+-- It returns null for a caller that is not signed in: with no account to read there is no fact, and null is neither "set" nor "not set".
+--
+-- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_user_entities runs with its caller's rights, so the role that may call it must be able to call this one.
+--
+-- SECURITY DEFINER because it reads auth.users, which no API role can.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.caller_password_set () RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT CASE
+    WHEN (SELECT auth.uid()) IS NOT NULL THEN private.user_password_set((SELECT auth.uid()))
+  END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.caller_password_set ()
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.caller_password_set () TO authenticated;
+
+--------------------------------------------------------------------------------
+-- caller_pending_email_taken: is the address the caller's account is changing to already another account's?
+--
+-- True when the caller's row of auth.users, the row `auth.uid()` names, holds a non-empty pending address (`email_change`) and another row's address equals it, both compared trimmed and lower-cased. False otherwise, for a caller with no pending address, and where no caller is signed in. get_user_entities in 503-entity-rpcs.sql calls it for its `pending_email_taken` key.
+--
+-- It answers for the caller alone. It takes no argument and reads one pending address, the caller's own, so each answer is about the one address the caller's account is changing to and never about an address the caller merely names: to ask about another address, a caller has to make it its own pending address first, which the application does only through the address-confirmation request that public.address_confirmation_request limits per account.
+--
+-- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_user_entities runs with its caller's rights, so the role that may call it must be able to call this one.
+--
+-- SECURITY DEFINER because it reads auth.users, which no API role can.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.caller_pending_email_taken () RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    (
+      SELECT EXISTS (
+        SELECT 1
+        FROM auth.users other
+        WHERE other.id <> me.id
+          AND lower(btrim(other.email)) = lower(btrim(me.email_change))
+      )
+      FROM auth.users me
+      WHERE me.id = (SELECT auth.uid())
+        AND NULLIF(btrim(me.email_change), '') IS NOT NULL
+    ),
+    false
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.caller_pending_email_taken ()
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.caller_pending_email_taken () TO authenticated;
+
+--------------------------------------------------------------------------------
+-- registration_mode_allowed_in: may entities of this type register with this mode, under these stored settings?
+--
+-- The registration-mode rule, as a function of the stored settings alone. It reads `contestantApp.entityTypes` and `contestantApp.registrationModes` of p_settings and no table:
+-- - the entity type must be `candidate` or `organization` and the mode one of `identity_provider`, `email` and `code`;
+-- - the type must be served: listed in the stored list of entity types when that list is an array naming at least one of the two types, and otherwise `candidate` alone is served;
+-- - the stored matrix must be an object, the type's row in it an array, and the array must hold the mode.
+-- Everything else is false: settings that are null or store nothing, a matrix or a row of another JSON type, a row for a type that is not served, and a null argument.
+--
+-- `isRegistrationModeAllowed` in @openvaa/app-shared is the same rule for the screens. 45-registration-mode-matrix.test.sql holds one table of rows that this function is asserted against, and a unit test asserts the TypeScript accessor against the same rows.
+--
+-- Only private.registration_mode_allowed below calls it, as its owner, so no API role holds EXECUTE: the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function, and the grant on the `private` schema above does not reach a function defined after it.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.registration_mode_allowed_in (p_settings jsonb, p_entity_type text, p_mode text) RETURNS boolean LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    p_entity_type IN ('candidate', 'organization')
+    AND p_mode IN ('identity_provider', 'email', 'code')
+    AND CASE
+      WHEN jsonb_typeof(c.entity_types) = 'array' AND (c.entity_types ? 'candidate' OR c.entity_types ? 'organization')
+        THEN c.entity_types ? p_entity_type
+      ELSE p_entity_type = 'candidate'
+    END
+    AND jsonb_typeof(c.modes) = 'object'
+    AND jsonb_typeof(c.modes -> p_entity_type) = 'array'
+    AND (c.modes -> p_entity_type) ? p_mode,
+    false
+  )
+  FROM (
+    SELECT
+      p_settings #> '{contestantApp,entityTypes}' AS entity_types,
+      p_settings #> '{contestantApp,registrationModes}' AS modes
+  ) c;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.registration_mode_allowed_in (jsonb, text, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- registration_mode_allowed: does this project allow this registration mode for this entity type?
+--
+-- Answers private.registration_mode_allowed_in for the settings of p_project_id's row in public.app_settings, and false when the project has no row. private.invitation_mode_allowed in 506-invitation-rpcs.sql calls it for an invitation's project, target type and mode.
+--
+-- No API role holds EXECUTE: it answers for any project, a closed one included, and only definer functions call it, as their owner.
+--
+-- SECURITY DEFINER because it reads app_settings of a project the caller may not read.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.registration_mode_allowed (
+  p_project_id uuid,
+  p_entity_type text,
+  p_mode text
+) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    (
+      SELECT private.registration_mode_allowed_in(s.settings, p_entity_type, p_mode)
+      FROM public.app_settings s
+      WHERE s.project_id = p_project_id
+    ),
+    false
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.registration_mode_allowed (uuid, text, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- grant_reaches_project: does one grant reach a project?
+--
+-- The reach rule, stated once for the questions that ask which of a user's grants count in a project: private.email_holds_grant_in_project in 506-invitation-rpcs.sql, which decides whether a mail may go to an address, and get_user_project_grants below, which the frontend's app-entry gates read.
+--
+-- True for a project-scope grant on p_project_id, an entity-scope grant on one of its entities, any global-scope grant, and an account-scope grant on the account p_project_id belongs to, whatever the grant's role. An account grant on another account and a grant on another project or on one of its entities answer false.
+--
+-- It runs as its caller. Both callers are definer functions, so no API role holds EXECUTE: the grant on the `private` schema above does not reach a function defined after it, and the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.grant_reaches_project (
+  p_scope public.grant_scope_type,
+  p_target_type public.entity_type,
+  p_target_id uuid,
+  p_project_id uuid
+) RETURNS boolean LANGUAGE sql STABLE
+SET
+  search_path = '' AS $$
+  SELECT
+    (p_scope = 'project' AND p_target_id = p_project_id)
+    OR (p_scope = 'entity' AND private.entity_project_id(p_target_type, p_target_id) = p_project_id)
+    OR p_scope = 'global'
+    OR (
+      p_scope = 'account'
+      AND EXISTS (
+        SELECT 1
+        FROM public.projects p
+        WHERE p.id = p_project_id
+          AND p.account_id = p_target_id
+      )
+    );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.grant_reaches_project (
+  public.grant_scope_type,
+  public.entity_type,
+  uuid,
+  uuid
+)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- get_user_project_grants: which of the caller's grants count in a project?
+--
+-- Returns the caller's own rows of public.grants that reach p_project_id by private.grant_reaches_project, as one jsonb array whose entries have the keys and the order of custom_access_token_hook's `grants` claim: `scope`, `target_type`, `target_id` and `role`. An empty array for a caller with no such grant, for a caller that is not signed in and for a null project.
+--
+-- The frontend's app-entry gates read it to decide which app a signed-in user is shown in this project. The token's claim cannot answer that: it lists every grant of the user, and it does not say which account a project belongs to or which project an entity is in. It reads the table, keyed on (SELECT auth.uid()), as user_can does, so a grant counts from the moment it is written and a deleted grant at once. It decides no authority: row-level security still decides what the caller may read or write.
+--
+-- SECURITY DEFINER because public.grants is revoked from every API role and the reach hops read public.projects and the entity tables, which the caller's own row-level security would filter. `authenticated` alone holds EXECUTE: it answers only about the caller's own rows, and anon has none.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_user_project_grants (p_project_id uuid) RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(jsonb_agg(
+    jsonb_build_object(
+      'scope', g.scope::text,
+      'target_type', g.target_type::text,
+      'target_id', g.target_id,
+      'role', g.role::text
+    )
+    ORDER BY g.scope, g.target_type, g.target_id, g.role
+  ), '[]'::jsonb)
+  FROM public.grants g
+  WHERE g.user_id = (SELECT auth.uid())
+    AND p_project_id IS NOT NULL
+    AND private.grant_reaches_project(g.scope, g.target_type, g.target_id, p_project_id);
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.get_user_project_grants (uuid)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION public.get_user_project_grants (uuid) TO authenticated;

@@ -76,7 +76,7 @@ INSERT INTO
 VALUES
   (
     '00000000-0000-0000-0000-000000000001',
-    '{}'::jsonb
+    '{"contestantApp": {"questions": {"hideHero": false, "hideVideo": false}, "entityTypes": ["candidate"], "registrationModes": {"candidate": ["email", "code"], "organization": []}}}'::jsonb
   )
 ON CONFLICT (project_id) DO NOTHING;
 

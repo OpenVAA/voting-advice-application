@@ -76,7 +76,8 @@ CREATE TYPE public.storage_verb AS ENUM('read', 'write');
 CREATE TYPE public.nomination_shape AS ENUM(
   'organization_only',
   'candidate_only',
-  'organization_list'
+  'organization_list',
+  'organization_list_and_independents'
 );
 -- API role settings
 --
@@ -372,7 +373,58 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- validate_nomination: enforce hierarchy and election/constituency consistency
+-- nomination_shape_rule: the election type x entity type matrix, encoded once
+--
+-- Answers, for one election type and one entity type, one of three words:
+--   'admitted'        - the entity type may be nominated, with or without a parent nomination.
+--   'parent_required' - it may be nominated, and when the transaction ends its nomination must have a parent nomination or carry `requestedParentOrganization` in its custom data.
+--   'refused'         - it may not be nominated in an election of that type.
+--
+-- The CASE below is the table: one line per cell, one block per election type, the entity types in the same order in each. A faction stands wherever a candidate may have a parent, and an alliance wherever an organization may stand.
+--
+-- A NULL argument answers NULL, and so would a pair the CASE does not name. Every caller treats NULL as a refusal, so a type added to either enum admits nothing until it is given a cell here.
+--
+-- This is the only statement of the matrix in SQL. `validate_nomination` and `validate_nomination_parent_required` ask it, and a function that writes nominations and needs the answer asks it too, never a copy.
+--
+-- Reads no table, so it is IMMUTABLE and not SECURITY DEFINER. search_path is pinned anyway, because the enum types it names are resolved at call time. It lives in `public` because this file is applied before the `private` schema exists.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.nomination_shape_rule (
+  p_shape public.nomination_shape,
+  p_entity_type public.entity_type
+) RETURNS text LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT CASE
+    WHEN (p_shape, p_entity_type) = ('organization_list', 'candidate') THEN 'parent_required'
+    WHEN (p_shape, p_entity_type) = ('organization_list', 'organization') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list', 'faction') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list', 'alliance') THEN 'admitted'
+
+    WHEN (p_shape, p_entity_type) = ('organization_list_and_independents', 'candidate') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list_and_independents', 'organization') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list_and_independents', 'faction') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list_and_independents', 'alliance') THEN 'admitted'
+
+    WHEN (p_shape, p_entity_type) = ('candidate_only', 'candidate') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('candidate_only', 'organization') THEN 'refused'
+    WHEN (p_shape, p_entity_type) = ('candidate_only', 'faction') THEN 'refused'
+    WHEN (p_shape, p_entity_type) = ('candidate_only', 'alliance') THEN 'refused'
+
+    WHEN (p_shape, p_entity_type) = ('organization_only', 'candidate') THEN 'refused'
+    WHEN (p_shape, p_entity_type) = ('organization_only', 'organization') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_only', 'faction') THEN 'refused'
+    WHEN (p_shape, p_entity_type) = ('organization_only', 'alliance') THEN 'admitted'
+  END;
+$$;
+
+--------------------------------------------------------------------------------
+-- validate_nomination: enforce the election-type rule, hierarchy and election/constituency consistency
+--
+-- Election-type rule:
+--   The row's entity type must be one its election's type admits, as `nomination_shape_rule` answers. A refusal is `Nomination shape refused: ...` with SQLSTATE 23514.
+--   It binds every writer, on INSERT and on UPDATE: an entity's own editor, an admin, the service role and the owner of the tables alike. The function reads no role.
+--   It is asked when a nomination is written. Nothing re-checks the nominations an election holds when its type is changed, so a later write of a row the new type refuses is refused.
+--   Whether a candidate that needs a parent has one is not asked here: `validate_nomination_parent_required` asks it when the transaction ends.
 --
 -- Hierarchy rules:
 --   alliance    -> no parent allowed
@@ -400,6 +452,8 @@ DECLARE
   p_parent_organization_id uuid;
   p_child_type public.entity_type;
   p_faction_organization_id uuid;
+  p_election_type public.nomination_shape;
+  p_shape_rule text;
 BEGIN
   -- Derive entity_type from the FK columns
   p_child_type := CASE
@@ -420,6 +474,25 @@ BEGIN
     SELECT 1 FROM public.constituencies c WHERE c.id = NEW.constituency_id AND c.project_id = NEW.project_id
   ) THEN
     RAISE EXCEPTION 'Nomination constituency % does not belong to the nomination''s project %', NEW.constituency_id, NEW.project_id
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  -- The election-type rule: the matrix is asked with the entity type derived above, because the generated `entity_type` column is NULL in a BEFORE trigger. Only 'admitted' and 'parent_required' let the row through, so an answer of NULL is a refusal. Checked for every writer, as the tenancy rule above is, and before the return below, which would otherwise let every row without a parent pass unasked.
+  SELECT e.election_type INTO p_election_type
+  FROM public.elections e
+  WHERE e.id = NEW.election_id;
+
+  p_shape_rule := public.nomination_shape_rule(p_election_type, p_child_type);
+
+  IF p_shape_rule IS NULL OR p_shape_rule NOT IN ('admitted', 'parent_required') THEN
+    RAISE EXCEPTION 'Nomination shape refused: % cannot be nominated in an election of type % (election %)',
+      CASE
+        WHEN p_child_type IS NULL THEN 'a row that names no entity'
+        WHEN p_child_type IN ('organization', 'alliance') THEN 'an ' || p_child_type::text
+        ELSE 'a ' || p_child_type::text
+      END,
+      p_election_type,
+      NEW.election_id
       USING ERRCODE = 'check_violation';
   END IF;
 
@@ -502,6 +575,56 @@ END;
 $$ LANGUAGE plpgsql;
 
 --------------------------------------------------------------------------------
+-- validate_nomination_parent_required: a candidate that needs a parent has one when the transaction ends
+--
+-- The function of the constraint trigger `nominations_parent_required` (104-nominations.sql). Where `nomination_shape_rule` answers 'parent_required' for a candidate, the candidate's nomination must have a parent nomination or carry `requestedParentOrganization` in its custom data. A refusal is `Nomination parent required: ...` with SQLSTATE 23514.
+--
+-- It runs at the end of the transaction and not at the statement, so a writer may insert the candidate's row, then its party's row, then point the first at the second: only a row that is still without a parent when the transaction ends is refused.
+--
+-- It reads the row again by its id and never judges the row the queued event carries. The event carries the row as that statement wrote it, so judging it would refuse the three-statement order above. A row that is gone by then is not judged at all.
+--
+-- A function that must report the refusal inside its own call forces the constraint and puts it back before it returns: `SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;` and then `SET CONSTRAINTS public.nominations_parent_required DEFERRED;`. While the constraint is immediate, a candidate's row without a parent is refused at its own statement, so the second statement is not optional.
+--
+-- SECURITY DEFINER with an empty search_path, as `validate_nomination` is: the re-read must find the row whatever row-level security the writer carries. The rule binds every writer, and the function reads no role.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.validate_nomination_parent_required () RETURNS TRIGGER SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_candidate_id uuid;
+  v_parent_nomination_id uuid;
+  v_custom_data jsonb;
+  v_election_id uuid;
+  v_election_type public.nomination_shape;
+BEGIN
+  -- Scalar variables, not a row of the table's type: this file is applied before the table exists, and a declaration is resolved when the function is created.
+  SELECT n.candidate_id, n.parent_nomination_id, n.custom_data, n.election_id
+  INTO v_candidate_id, v_parent_nomination_id, v_custom_data, v_election_id
+  FROM public.nominations n
+  WHERE n.id = NEW.id;
+
+  IF NOT FOUND
+     OR v_candidate_id IS NULL
+     OR v_parent_nomination_id IS NOT NULL
+     OR (v_custom_data IS NOT NULL AND v_custom_data ? 'requestedParentOrganization') THEN
+    RETURN NULL;
+  END IF;
+
+  SELECT e.election_type INTO v_election_type
+  FROM public.elections e
+  WHERE e.id = v_election_id;
+
+  IF public.nomination_shape_rule(v_election_type, 'candidate') = 'parent_required' THEN
+    RAISE EXCEPTION 'Nomination parent required: candidate nomination % in election % has neither a parent nomination nor a requested parent organization',
+      NEW.id, v_election_id
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+--------------------------------------------------------------------------------
 -- enforce_nomination_confirmation: the confirmation transition
 --
 -- Editing a nomination turns its confirmation off. The system sets the flag, so this is a trigger rather than a policy: a policy can refuse a row but cannot rewrite one. Three rules, in order:
@@ -548,10 +671,10 @@ BEGIN
   IF TG_OP = 'INSERT'
      AND current_user = 'authenticated'
      AND NOT NEW.confirmed
-     AND NEW.organization_id IS NOT NULL
+     AND (NEW.organization_id IS NOT NULL OR NEW.alliance_id IS NOT NULL)
      AND NOT public.user_can('project', NEW.project_id, 'project.edit_nominations')
      AND private.caller_unconfirmed_originated_count() >= 10 THEN
-    RAISE EXCEPTION 'A caller may originate at most 10 unconfirmed parent organization nominations; this caller already holds %. An administrator must confirm or reject some before more can be created.',
+    RAISE EXCEPTION 'A caller may originate at most 10 unconfirmed parent nominations; this caller already holds %. An administrator must confirm or reject some before more can be created.',
       private.caller_unconfirmed_originated_count();
   END IF;
 
@@ -582,17 +705,46 @@ $$;
 -- SECURITY INVOKER: a SECURITY DEFINER body reports the owner as current_user, and the role test would never match.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_nomination_entity_columns () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
+DECLARE
+  v_symbol_written boolean;
+  v_symbol_refused boolean := false;
 BEGIN
   IF current_user <> 'authenticated'
      OR public.user_can('project', NEW.project_id, 'project.edit_nominations') THEN
     RETURN NEW;
   END IF;
 
-  IF TG_OP = 'INSERT' AND num_nonnulls(
-       NEW.name, NEW.short_name, NEW.info, NEW.color, NEW.image,
-       NEW.sort_order, NEW.subtype, NEW.election_symbol, NEW.external_id
-     ) > 0 THEN
-    RAISE EXCEPTION 'Only a holder of project.edit_nominations may set a nomination''s name, short_name, info, color, image, sort_order, subtype, election_symbol or external_id'
+  IF TG_OP = 'INSERT' THEN
+    v_symbol_written := NEW.election_symbol IS NOT NULL;
+  ELSE
+    v_symbol_written := NEW.election_symbol IS DISTINCT FROM OLD.election_symbol;
+  END IF;
+
+  IF v_symbol_written THEN
+    v_symbol_refused := NOT COALESCE(
+      public.user_can(
+        'entity',
+        COALESCE(NEW.candidate_id, NEW.organization_id, NEW.faction_id, NEW.alliance_id),
+        'nomination.edit',
+        CASE
+          WHEN NEW.candidate_id IS NOT NULL THEN 'candidate'::public.entity_type
+          WHEN NEW.organization_id IS NOT NULL THEN 'organization'::public.entity_type
+          WHEN NEW.faction_id IS NOT NULL THEN 'faction'::public.entity_type
+          WHEN NEW.alliance_id IS NOT NULL THEN 'alliance'::public.entity_type
+        END
+      ),
+      false
+    );
+  END IF;
+
+  IF TG_OP = 'INSERT' AND (
+       num_nonnulls(
+         NEW.name, NEW.short_name, NEW.info, NEW.color, NEW.image,
+         NEW.sort_order, NEW.subtype, NEW.external_id
+       ) > 0
+       OR v_symbol_refused
+     ) THEN
+    RAISE EXCEPTION 'Only a holder of project.edit_nominations may set a nomination''s name, short_name, info, color, image, sort_order, subtype or external_id, or the election_symbol of a nomination that is not the caller''s own'
       USING ERRCODE = 'insufficient_privilege';
   END IF;
 
@@ -604,14 +756,14 @@ BEGIN
        OR NEW.image IS DISTINCT FROM OLD.image
        OR NEW.sort_order IS DISTINCT FROM OLD.sort_order
        OR NEW.subtype IS DISTINCT FROM OLD.subtype
-       OR NEW.election_symbol IS DISTINCT FROM OLD.election_symbol
        OR NEW.external_id IS DISTINCT FROM OLD.external_id
        OR NEW.candidate_id IS DISTINCT FROM OLD.candidate_id
        OR NEW.organization_id IS DISTINCT FROM OLD.organization_id
        OR NEW.faction_id IS DISTINCT FROM OLD.faction_id
        OR NEW.alliance_id IS DISTINCT FROM OLD.alliance_id
+       OR v_symbol_refused
      ) THEN
-    RAISE EXCEPTION 'Only a holder of project.edit_nominations may change a nomination''s presentation columns, external_id or entity'
+    RAISE EXCEPTION 'Only a holder of project.edit_nominations may change a nomination''s presentation columns, external_id or entity, or the election_symbol of a nomination that is not the caller''s own'
       USING ERRCODE = 'insufficient_privilege';
   END IF;
 
@@ -679,6 +831,100 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+--------------------------------------------------------------------------------
+-- validate_entity_type_list: the shape of the entity type filter of a question and of a question category
+--
+-- `entity_type` on `questions` and `question_categories` is a filter list: null or an empty array addresses every entity type, and any other value addresses the types it names. The data model compares a member with an entity type by equality, so a member that names no entity type matches nothing, and the row disappears for every contestant and from every voter list that asks by type. A constraint could refuse such a value as widely; a trigger can also say which member was wrong.
+--
+-- Accepted: SQL null, an empty JSON array, and a JSON array whose every member is a string naming a value of the `entity_type` enum. Refused: every other JSON type, a JSON null included, a member that is not a string, and a string that names no enum value. The members are compared with the enum itself, so the accepted set follows 000-enums.sql.
+--
+-- The rule binds every writer: it reads no role and no grant, so an API write, a service-role write and bulk_import meet the same refusal. 40-entity-type-list.test.sql asserts each refused value beside an accepted one, per table and per verb.
+--
+-- Each refusal starts with a stable prefix and names the table, the row and what was found. A member is quoted as JSON and cut at 64 characters, because a member may be an object of any size.
+--
+-- SECURITY INVOKER with an empty search_path: the body reads only NEW and the enum, which it names with its schema.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.validate_entity_type_list () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_member jsonb;
+BEGIN
+  IF NEW.entity_type IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF jsonb_typeof(NEW.entity_type) <> 'array' THEN
+    RAISE EXCEPTION 'Invalid entity type list: column %.%.entity_type on row % must be null or a JSON array of entity types, got a JSON %',
+      TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, jsonb_typeof(NEW.entity_type);
+  END IF;
+
+  FOR v_member IN SELECT value FROM jsonb_array_elements(NEW.entity_type)
+  LOOP
+    IF jsonb_typeof(v_member) <> 'string'
+       OR NOT ((v_member #>> '{}') = ANY (enum_range(NULL::public.entity_type)::text[])) THEN
+      RAISE EXCEPTION 'Invalid entity type list: column %.%.entity_type on row % holds the member %, which is not one of the entity types %',
+        TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, left(v_member::text, 64), enum_range(NULL::public.entity_type);
+    END IF;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$;
+
+--------------------------------------------------------------------------------
+-- validate_entity_color: the shape of the stored colour of an organization, a candidate, a faction and an alliance
+--
+-- `color` is in the UPDATE grant of all four entity tables, so an entity's own editor writes it through the API, and the frontend interpolates the stored `normal` and `dark` into an inline `style` attribute on pages a voter opens. A value that is not a colour is therefore CSS of the editor's choosing in another user's browser. This function holds the stored value to one shape where every writer is bound: an API write, a service-role write and bulk_import alike.
+--
+-- Accepted: SQL null, and a JSON object whose only members are `normal` and `dark`, each absent, a JSON null, or a string that is `#` followed by exactly three or exactly six hexadecimal digits and nothing else. Refused: every other JSON type in place of the object, a JSON null included; a member under any other key; and a member that is not such a string, which covers colour names, functional notation, numbers, the empty string and a hex colour followed by anything at all.
+--
+-- The pattern is anchored at both ends, and in a PostgreSQL regular expression `$` matches only at the very end of the string, so a line break after the digits is refused as any other trailing character is. It is narrower than the frontend's parser, which also reads a colour without `#` and `rgb(r, g, b)`: every colour a shipped seed stores is of the accepted form, and a string of that form holds a colour and no other CSS.
+--
+-- The rule reads no role and no grant. 41-entity-color.test.sql asserts each refused value beside an accepted one.
+--
+-- Each refusal starts with a stable prefix and names the table, the row, the member and what was found. What was found is quoted as JSON and cut at 32 characters, and a key at 32, because the value is the writer's and may be of any length.
+--
+-- SECURITY INVOKER with an empty search_path: the body reads only NEW.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.validate_entity_color () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_key text;
+  v_member jsonb;
+BEGIN
+  IF NEW.color IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF jsonb_typeof(NEW.color) <> 'object' THEN
+    RAISE EXCEPTION 'Invalid entity color: column %.%.color on row % must be null or a JSON object holding normal and dark, got a JSON %',
+      TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, jsonb_typeof(NEW.color);
+  END IF;
+
+  FOR v_key, v_member IN SELECT key, value FROM jsonb_each(NEW.color)
+  LOOP
+    IF v_key NOT IN ('normal', 'dark') THEN
+      RAISE EXCEPTION 'Invalid entity color: column %.%.color on row % holds the member %, and a color holds only normal and dark',
+        TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, left(v_key, 32);
+    END IF;
+
+    IF jsonb_typeof(v_member) = 'null' THEN
+      CONTINUE;
+    END IF;
+
+    IF jsonb_typeof(v_member) <> 'string'
+       OR (v_member #>> '{}') !~ '^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$' THEN
+      RAISE EXCEPTION 'Invalid entity color: column %.%.color on row % holds % as its member %, which must be null or # followed by three or six hexadecimal digits',
+        TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, left(v_member::text, 32), v_key;
+    END IF;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$;
 -- Multi-tenant foundation: accounts and projects
 --
 -- All content tables reference projects via project_id FK with ON DELETE CASCADE.
@@ -703,8 +949,6 @@ CREATE TABLE public.projects (
   default_locale text NOT NULL DEFAULT 'en',
   -- Whether voters can read the project: an anonymous reader sees a row only when this is true, its nomination is confirmed and every entity that nomination links is confirmed. Defaults to false so a new project is not public. seed.sql sets it to true on the local stack's project, and SupabaseAdminClient.ensureProject on the project it ensures. A deployment's project row, this column included, is written by the bootstrap script `infra/scripts/bootstrap.sql`.
   open_for_voters boolean NOT NULL DEFAULT false,
-  -- When true, entity users cannot insert or update their own nominations; the admin nomination policies ignore it.
-  lock_nominations boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -738,8 +982,8 @@ CREATE TABLE public.elections (
   election_date date,
   -- The first day of voting.
   election_start_date date,
-  -- Which of the three nomination flows the election runs: whether a candidate picks a party, whether a party nominates a list, and whether the free-text branch is reachable. A separate axis from `subtype`.
-  election_type public.nomination_shape NOT NULL DEFAULT 'organization_list',
+  -- Which of the four nomination flows the election runs: whether a candidate picks a party, whether a party nominates a list, and whether the free-text branch is reachable. An election that states none takes the list flow in which a candidate may also stand without a party. A separate axis from `subtype`.
+  election_type public.nomination_shape NOT NULL DEFAULT 'organization_list_and_independents',
   -- Whether the election can have more than one round.
   multiple_rounds boolean DEFAULT false,
   -- The round in progress, counted from 1.
@@ -859,11 +1103,17 @@ CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.organizations FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
 
--- Gates the confirmation flag and freezes the name of a confirmed entity; the function is declared in 011-validation-functions.sql. The `UPDATE OF` list makes the trigger fire only when a statement sets one of these columns, and the argument names the protected name column.
+-- Refuses a colour that is not null or an object of hex colours under `normal` and `dark`, for every writer; the function is declared in 011-validation-functions.sql.
+CREATE TRIGGER validate_entity_color
+BEFORE INSERT OR UPDATE OF color ON public.organizations FOR EACH ROW
+EXECUTE FUNCTION public.validate_entity_color ();
+
+-- Gates the confirmation flag and freezes the name and the short name of a confirmed entity; the function is declared in 011-validation-functions.sql. The `UPDATE OF` list makes the trigger fire only when a statement sets one of these columns, and the arguments name the two protected columns. A protected column is in both lists: one that is an argument only is never checked, because the trigger does not fire for it.
 CREATE TRIGGER enforce_entity_immutability
 BEFORE UPDATE OF name,
+short_name,
 confirmed ON public.organizations FOR EACH ROW
-EXECUTE FUNCTION public.enforce_entity_immutability ('name');
+EXECUTE FUNCTION public.enforce_entity_immutability ('name', 'short_name');
 
 CREATE TABLE public.candidates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -886,8 +1136,6 @@ CREATE TABLE public.candidates (
   custom_data jsonb,
   -- Whether the identity has been vouched for: an entity is public only when this is true and it has a confirmed nomination. The identity-callback Edge Function (`candidateRecord.ts`) sets it after a strong identity check. Only a holder of `entity.confirm` on the row may change it, in either direction; the enforce_entity_immutability trigger enforces this, because the column is inside the authenticated UPDATE grant in 303-column-grants.sql.
   confirmed boolean NOT NULL DEFAULT false,
-  -- When the candidate accepted the terms of use; null until then. An anonymous reader sees the candidate only once this is set and not in the future.
-  terms_of_use_accepted timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   -- `StoredAnswers` from @openvaa/app-shared: `{ "<question id>": { value, info? } }`, validated per changed key by validate_answers_jsonb (105-answers.sql).
@@ -900,12 +1148,18 @@ CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.candidates FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
 
--- Gates the confirmation flag and freezes the names of a confirmed candidate; the function is declared in 011-validation-functions.sql. The `UPDATE OF` list makes the trigger fire only when a statement sets one of these columns, so `upsert_answers`, which sets only the answers column, never enters it. The arguments name the two protected name columns.
+-- Refuses a colour that is not null or an object of hex colours under `normal` and `dark`, for every writer; the function is declared in 011-validation-functions.sql.
+CREATE TRIGGER validate_entity_color
+BEFORE INSERT OR UPDATE OF color ON public.candidates FOR EACH ROW
+EXECUTE FUNCTION public.validate_entity_color ();
+
+-- Gates the confirmation flag and freezes the names and the short name of a confirmed candidate; the function is declared in 011-validation-functions.sql. The `UPDATE OF` list makes the trigger fire only when a statement sets one of these columns, so `upsert_answers`, which sets only the answers column, never enters it. The arguments name the three protected columns. A protected column is in both lists: one that is an argument only is never checked, because the trigger does not fire for it.
 CREATE TRIGGER enforce_entity_immutability
 BEFORE UPDATE OF first_name,
 last_name,
+short_name,
 confirmed ON public.candidates FOR EACH ROW
-EXECUTE FUNCTION public.enforce_entity_immutability ('first_name', 'last_name');
+EXECUTE FUNCTION public.enforce_entity_immutability ('first_name', 'last_name', 'short_name');
 
 CREATE TABLE public.factions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -940,11 +1194,17 @@ CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.factions FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
 
--- Gates the confirmation flag and freezes the name of a confirmed entity; the function is declared in 011-validation-functions.sql. The `UPDATE OF` list makes the trigger fire only when a statement sets one of these columns, and the argument names the protected name column.
+-- Refuses a colour that is not null or an object of hex colours under `normal` and `dark`, for every writer; the function is declared in 011-validation-functions.sql.
+CREATE TRIGGER validate_entity_color
+BEFORE INSERT OR UPDATE OF color ON public.factions FOR EACH ROW
+EXECUTE FUNCTION public.validate_entity_color ();
+
+-- Gates the confirmation flag and freezes the name and the short name of a confirmed entity; the function is declared in 011-validation-functions.sql. The `UPDATE OF` list makes the trigger fire only when a statement sets one of these columns, and the arguments name the two protected columns. A protected column is in both lists: one that is an argument only is never checked, because the trigger does not fire for it.
 CREATE TRIGGER enforce_entity_immutability
 BEFORE UPDATE OF name,
+short_name,
 confirmed ON public.factions FOR EACH ROW
-EXECUTE FUNCTION public.enforce_entity_immutability ('name');
+EXECUTE FUNCTION public.enforce_entity_immutability ('name', 'short_name');
 
 CREATE TABLE public.alliances (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -977,11 +1237,17 @@ CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.alliances FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
 
--- Gates the confirmation flag and freezes the name of a confirmed entity; the function is declared in 011-validation-functions.sql. The `UPDATE OF` list makes the trigger fire only when a statement sets one of these columns, and the argument names the protected name column.
+-- Refuses a colour that is not null or an object of hex colours under `normal` and `dark`, for every writer; the function is declared in 011-validation-functions.sql.
+CREATE TRIGGER validate_entity_color
+BEFORE INSERT OR UPDATE OF color ON public.alliances FOR EACH ROW
+EXECUTE FUNCTION public.validate_entity_color ();
+
+-- Gates the confirmation flag and freezes the name and the short name of a confirmed entity; the function is declared in 011-validation-functions.sql. The `UPDATE OF` list makes the trigger fire only when a statement sets one of these columns, and the arguments name the two protected columns. A protected column is in both lists: one that is an argument only is never checked, because the trigger does not fire for it.
 CREATE TRIGGER enforce_entity_immutability
 BEFORE UPDATE OF name,
+short_name,
 confirmed ON public.alliances FOR EACH ROW
-EXECUTE FUNCTION public.enforce_entity_immutability ('name');
+EXECUTE FUNCTION public.enforce_entity_immutability ('name', 'short_name');
 -- Question categories and questions
 --
 -- Includes two validation triggers: choice-type questions must have a valid choices array, and the entity type filter of a question and of a category must be null or an array of entity types.
@@ -1023,6 +1289,11 @@ CREATE TABLE public.question_categories (
 CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.question_categories FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
+
+-- Refuses an entity type filter that is not null or a JSON array of entity types, for every writer; the function is declared in 011-validation-functions.sql.
+CREATE TRIGGER validate_entity_type_list
+BEFORE INSERT OR UPDATE OF entity_type ON public.question_categories FOR EACH ROW
+EXECUTE FUNCTION public.validate_entity_type_list ();
 
 CREATE TABLE public.questions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1071,6 +1342,11 @@ CREATE TABLE public.questions (
 CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.questions FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
+
+-- Refuses an entity type filter that is not null or a JSON array of entity types, for every writer; the function is declared in 011-validation-functions.sql.
+CREATE TRIGGER validate_entity_type_list
+BEFORE INSERT OR UPDATE OF entity_type ON public.questions FOR EACH ROW
+EXECUTE FUNCTION public.validate_entity_type_list ();
 
 --------------------------------------------------------------------------------
 -- validate_question_choices: enforce valid choices for choice-type questions
@@ -1233,6 +1509,15 @@ EXECUTE FUNCTION public.enforce_nomination_entity_columns ();
 CREATE TRIGGER enforce_nomination_confirmation_before_insert_or_update
 BEFORE INSERT OR UPDATE ON public.nominations FOR EACH ROW
 EXECUTE FUNCTION public.enforce_nomination_confirmation ();
+
+-- Holds a candidate's nomination to having a parent nomination or naming a requested party, where the election's type requires one. Deferred to the end of the transaction, so that a writer may insert the candidate's row first and attach its party's row in a later statement.
+CREATE CONSTRAINT TRIGGER nominations_parent_required
+AFTER INSERT OR UPDATE ON public.nominations
+DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (
+  NEW.candidate_id IS NOT NULL
+  AND NEW.parent_nomination_id IS NULL
+)
+EXECUTE FUNCTION public.validate_nomination_parent_required ();
 -- JSONB answer validation, cascade and type-change protection
 --
 -- Answers are stored as a JSONB column shaped Record<QuestionId, {value: ..., info?: ...}> on public.candidates and public.organizations.
@@ -1406,6 +1691,37 @@ CREATE TABLE public.app_settings (
 CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.app_settings FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
+
+--------------------------------------------------------------------------------
+-- contestant_app_public_config: what may any visitor know about a project's Contestant app?
+--
+-- The entry screens of the Contestant app need five stored values before anyone has signed in: whether the app is accessible, whether answers are locked, which entity types it serves, which registration modes each type allows, and whether usage events are tracked, so that the sign-in screen follows the stored tracking setting rather than the shipped default. A project is normally closed for voters while its contestants register, and a caller who can read no settings row of a closed project (anon, or a signed-in caller holding no grant there) gets those five values from this function. SECURITY DEFINER is what lets it read past the row-level security of public.app_settings.
+--
+-- Returns one object with exactly five values, placed at their storage paths: `access.contestantApp`, `access.answersLocked`, `contestantApp.entityTypes`, `contestantApp.registrationModes` and `analytics.trackEvents`. Each is returned as stored, unvalidated, and null where unset; the caller validates them. It never returns the row, and no other member of `settings` is reachable through it.
+--
+-- It is no existence oracle: a project with no settings row, a project that declares none of the five values and an id that names no project all answer the same all-null object.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.contestant_app_public_config (p_project_id uuid) RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT jsonb_build_object(
+    'access', jsonb_build_object(
+      'contestantApp', v.settings #> '{access,contestantApp}',
+      'answersLocked', v.settings #> '{access,answersLocked}'
+    ),
+    'analytics', jsonb_build_object('trackEvents', v.settings #> '{analytics,trackEvents}'),
+    'contestantApp', jsonb_build_object(
+      'entityTypes', v.settings #> '{contestantApp,entityTypes}',
+      'registrationModes', v.settings #> '{contestantApp,registrationModes}'
+    )
+  )
+  FROM (SELECT (SELECT s.settings FROM public.app_settings s WHERE s.project_id = p_project_id) AS settings) v;
+$$;
+
+-- The frontend adapter calls this function over PostgREST, as anon and as authenticated, when the caller can read no settings row of a closed project, so the grant is declared here rather than inherited from default privileges. 38-contestant-app-public-config.test.sql asserts both rights.
+GRANT
+EXECUTE ON FUNCTION public.contestant_app_public_config (uuid) TO anon,
+authenticated;
 -- Feedback table: anonymous voter feedback submissions
 --
 -- At least one of rating or description must be present (CHECK constraint).
@@ -1916,6 +2232,30 @@ FROM
   authenticated;
 
 --------------------------------------------------------------------------------
+-- Send Email Hook: called by Supabase Auth in place of sending a mail, for every mail the service would send (a one-time code, a recovery, a change of address, an invitation). It sends none and returns an empty object, which the service reads as success.
+--
+-- It reads nothing of the event, which holds an address and a token, writes nothing and logs nothing. Every mail of the application is sent by the account-access Edge Function, behind its own checks, throttle and texts. The hook stops the service's mail and nothing else: what the service answers to a request is unchanged.
+--
+-- config.toml `[auth.hook.send_email]` names it; `yarn assert:auth-signup-closed` requires that table. 07-rpc-security.test.sql asserts it executable by supabase_auth_admin and by no API role.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.send_email_hook (event jsonb) RETURNS jsonb LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT '{}'::jsonb;
+$$;
+
+GRANT
+EXECUTE ON FUNCTION public.send_email_hook TO supabase_auth_admin;
+
+REVOKE
+EXECUTE ON FUNCTION public.send_email_hook
+FROM
+  PUBLIC,
+  anon,
+  authenticated,
+  service_role;
+
+--------------------------------------------------------------------------------
 -- grant_role_permissions: the role x permission matrix, encoded once
 --
 -- This is the only function body that holds the matrix, so its permission literals can be found in one place and compared against the rights table without executing a permission check. user_can asks it for the verb and computes only reach.
@@ -2038,7 +2378,8 @@ SET
       'entity.read_answers',
       'entity.invite_children',
       'nomination.edit',
-      'nomination.read'
+      'nomination.read',
+      'nomination.create_parent'
     ]::public.grant_permission[]
 
     -- Candidate, FactionEditor and AllianceEditor share one row, nomination.create_parent included. Their nomination rights hold only while the project is unlocked, but the lock is row state, so the nomination policies check it and the matrix does not. Which row a holder of nomination.create_parent may create is likewise the parent policy's question: it pairs the row's type with the caller's, and no row's type admits an alliance's editor.
@@ -2220,8 +2561,6 @@ SET
           FROM public.candidates e
           WHERE e.id = n.candidate_id
             AND e.confirmed
-            AND e.terms_of_use_accepted IS NOT NULL
-            AND e.terms_of_use_accepted < now()
             AND public.project_open_for_voters (e.project_id)
             AND private.entity_has_confirmed_nomination ('candidate'::public.entity_type, e.id, e.project_id)
         )
@@ -2439,7 +2778,16 @@ CREATE OR REPLACE FUNCTION private.project_nominations_locked (p_project_id uuid
 SET
   search_path = '' AS $$
   SELECT COALESCE(
-    (SELECT p.lock_nominations FROM public.projects p WHERE p.id = p_project_id),
+    (
+      SELECT COALESCE(
+        (SELECT s.settings #> '{access,nominationsLocked}' = 'true'::jsonb
+           FROM public.app_settings s
+          WHERE s.project_id = p.id),
+        false
+      )
+      FROM public.projects p
+      WHERE p.id = p_project_id
+    ),
     true
   );
 $$;
@@ -2481,7 +2829,45 @@ SET
 $$;
 
 --------------------------------------------------------------------------------
--- caller_nominated_in_contest: does the caller hold a named permission on an entity nominated at this contest?
+-- nomination_id_in_contest: which nomination does this entity hold at this contest?
+--
+-- Answers the id of the entity's nomination at this election, constituency and round, by the match of `nomination_exists_in_contest`: the entity type against the generated entity_type column and the entity id against the four foreign keys. A writer that points a child's nomination at its parent's asks it for the parent's id.
+--
+-- SECURITY DEFINER because the caller may be unable to read the row. A parent's nomination the caller has just created through `entity_insert_parent_nominations` nominates an entity the caller holds no `nomination.read` on, so neither `INSERT ... RETURNING` nor a `SELECT` of the caller's own gives its id.
+--
+-- Returns NULL when the entity holds no nomination at the contest.
+--
+-- An entity can hold several nominations at one contest, because the uniqueness key includes the parent: an organization may stand there on its own and under an alliance, or under two alliances. The answer is then the nomination with no parent first, then the oldest by created_at, then the lowest id. 23-nominations-write.test.sql pins each step of that order.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.nomination_id_in_contest (
+  p_entity_type public.entity_type,
+  p_entity_id uuid,
+  p_election_id uuid,
+  p_constituency_id uuid,
+  p_election_round integer
+) RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT n.id
+  FROM public.nominations n
+  WHERE n.entity_type = p_entity_type
+    AND (
+      n.candidate_id = p_entity_id
+      OR n.organization_id = p_entity_id
+      OR n.faction_id = p_entity_id
+      OR n.alliance_id = p_entity_id
+    )
+    AND n.election_id = p_election_id
+    AND n.constituency_id = p_constituency_id
+    AND n.election_round IS NOT DISTINCT FROM p_election_round
+  ORDER BY (n.parent_nomination_id IS NOT NULL), n.created_at, n.id
+  LIMIT 1;
+$$;
+
+--------------------------------------------------------------------------------
+-- caller_nominated_in_contest: does the caller hold a named permission on an entity of one of the named types that is nominated at this contest?
+--
+-- Asks whether there is a nomination at this contest whose entity is of one of p_caller_types and on which the caller holds p_permission. The permission's answer comes from `user_can`, so no cell of the matrix is written down a second time. The entity is named by the nomination's generated entity_type and its one set foreign key.
 --
 -- p_caller_types is what pairs a row with the caller that may create it. `entity_insert_parent_nominations` passes the types of entity that stand under the row being inserted, so holding the permission on an entity of another type nominated at the contest does not answer yes. A NULL or empty array answers false.
 --
@@ -2493,7 +2879,8 @@ CREATE OR REPLACE FUNCTION private.caller_nominated_in_contest (
   p_election_id uuid,
   p_constituency_id uuid,
   p_election_round integer,
-  p_permission public.grant_permission
+  p_permission public.grant_permission,
+  p_caller_types public.entity_type[]
 ) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
 SET
   search_path = '' AS $$
@@ -2503,6 +2890,7 @@ SET
     WHERE n.election_id = p_election_id
       AND n.constituency_id = p_constituency_id
       AND n.election_round IS NOT DISTINCT FROM p_election_round
+      AND n.entity_type = ANY (p_caller_types)
       AND public.user_can(
             'entity',
             COALESCE(n.candidate_id, n.organization_id, n.faction_id, n.alliance_id),
@@ -2527,7 +2915,7 @@ SET
   SELECT count(*)::integer
   FROM public.nominations n
   WHERE n.created_by IS NOT DISTINCT FROM (SELECT auth.uid())
-    AND n.organization_id IS NOT NULL
+    AND (n.organization_id IS NOT NULL OR n.alliance_id IS NOT NULL)
     AND NOT n.confirmed;
 $$;
 
@@ -2580,6 +2968,138 @@ FROM
 -- True when the user's `encrypted_password` in auth.users is neither null nor the empty string, false otherwise and for an id that names no user.
 --
 -- It reads true for accounts whose owner never chose a password: the auth service stores the hash of a generated password for an account created by a service-side `createUser`, for a new account created by a `magiclink` link, and when an `invite` token is verified. True therefore means that the account holds some password, not that its owner chose one; a caller that needs the second has to record it itself.
+--
+-- It takes the id of any account, so no API role may execute it: published to one, it would say whether somebody else's account has a password. Only definer functions call it, as their owner and for `auth.uid()`: private.caller_password_set below and claim_invitations in 506-invitation-rpcs.sql. It is defined after the grant on the `private` schema above, which therefore does not reach it, and the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function.
+--
+-- SECURITY DEFINER because no API role can read auth.users.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.user_password_set (p_user_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    (SELECT NULLIF(u.encrypted_password, '') IS NOT NULL FROM auth.users u WHERE u.id = p_user_id),
+    false
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.user_password_set (uuid)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- caller_password_set: does the caller's own account hold a password?
+--
+-- Answers private.user_password_set for `auth.uid()`. It takes no argument, so it answers for nobody else: there is nothing a caller could pass to point it at another account. get_user_entities in 503-entity-rpcs.sql calls it for its `password_set` key.
+--
+-- It returns null for a caller that is not signed in: with no account to read there is no fact, and null is neither "set" nor "not set".
+--
+-- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_user_entities runs with its caller's rights, so the role that may call it must be able to call this one.
+--
+-- SECURITY DEFINER because it reads auth.users, which no API role can.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.caller_password_set () RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT CASE
+    WHEN (SELECT auth.uid()) IS NOT NULL THEN private.user_password_set((SELECT auth.uid()))
+  END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.caller_password_set ()
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.caller_password_set () TO authenticated;
+
+--------------------------------------------------------------------------------
+-- registration_mode_allowed_in: may entities of this type register with this mode, under these stored settings?
+--
+-- The registration-mode rule, as a function of the stored settings alone. It reads `contestantApp.entityTypes` and `contestantApp.registrationModes` of p_settings and no table:
+-- - the entity type must be `candidate` or `organization` and the mode one of `identity_provider`, `email` and `code`;
+-- - the type must be served: listed in the stored list of entity types when that list is an array naming at least one of the two types, and otherwise `candidate` alone is served;
+-- - the stored matrix must be an object, the type's row in it an array, and the array must hold the mode.
+-- Everything else is false: settings that are null or store nothing, a matrix or a row of another JSON type, a row for a type that is not served, and a null argument.
+--
+-- `isRegistrationModeAllowed` in @openvaa/app-shared is the same rule for the screens. 45-registration-mode-matrix.test.sql holds one table of rows that this function is asserted against, and a unit test asserts the TypeScript accessor against the same rows.
+--
+-- Only private.registration_mode_allowed below calls it, as its owner, so no API role holds EXECUTE: the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function, and the grant on the `private` schema above does not reach a function defined after it.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.registration_mode_allowed_in (p_settings jsonb, p_entity_type text, p_mode text) RETURNS boolean LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    p_entity_type IN ('candidate', 'organization')
+    AND p_mode IN ('identity_provider', 'email', 'code')
+    AND CASE
+      WHEN jsonb_typeof(c.entity_types) = 'array' AND (c.entity_types ? 'candidate' OR c.entity_types ? 'organization')
+        THEN c.entity_types ? p_entity_type
+      ELSE p_entity_type = 'candidate'
+    END
+    AND jsonb_typeof(c.modes) = 'object'
+    AND jsonb_typeof(c.modes -> p_entity_type) = 'array'
+    AND (c.modes -> p_entity_type) ? p_mode,
+    false
+  )
+  FROM (
+    SELECT
+      p_settings #> '{contestantApp,entityTypes}' AS entity_types,
+      p_settings #> '{contestantApp,registrationModes}' AS modes
+  ) c;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.registration_mode_allowed_in (jsonb, text, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- registration_mode_allowed: does this project allow this registration mode for this entity type?
+--
+-- Answers private.registration_mode_allowed_in for the settings of p_project_id's row in public.app_settings, and false when the project has no row. private.invitation_mode_allowed in 506-invitation-rpcs.sql calls it for an invitation's project, target type and mode.
+--
+-- No API role holds EXECUTE: it answers for any project, a closed one included, and only definer functions call it, as their owner.
+--
+-- SECURITY DEFINER because it reads app_settings of a project the caller may not read.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.registration_mode_allowed (
+  p_project_id uuid,
+  p_entity_type text,
+  p_mode text
+) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    (
+      SELECT private.registration_mode_allowed_in(s.settings, p_entity_type, p_mode)
+      FROM public.app_settings s
+      WHERE s.project_id = p_project_id
+    ),
+    false
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.registration_mode_allowed (uuid, text, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+-- Row Level Security: per-operation access policies for every public table.
+--
+-- Helper functions, defined in 301-auth-functions.sql:
+-- - user_can(scope, target_id, permission, target_type): whether the caller may apply this permission to this object. At entity scope the object is named by its entity type and id together, so every entity-scope call passes the type; at every other scope the type is omitted. Every authority decision in this file delegates to it.
+-- - project_open_for_voters(project_id): whether the project is open to voters.
+-- - private.entity_has_confirmed_nomination(entity_type, id, project_id): whether the entity has a confirmed nomination in the project.
+--
+-- An entity row is publicly visible when project_open_for_voters, the row's `confirmed` flag and entity_has_confirmed_nomination all hold. Each entity SELECT policy assembles that conjunction inline from the helpers.
 --
 -- Policy rules:
 -- - SELECT = USING only.
@@ -3169,8 +3689,6 @@ SELECT
       SELECT
         private.entity_has_confirmed_nomination ('candidate'::public.entity_type, id, project_id)
     )
-    AND terms_of_use_accepted IS NOT NULL
-    AND terms_of_use_accepted < now()
   );
 
 -- Disjunct order is deliberate and changes cost, never the answer: project authority first so an admin exits on the first call, then the public assembly, token for token the `anon_select_candidates` qual, so a publicly visible row never pays the entity user_can call, then entity authority. 29-authenticated-disjunct-order.test.sql fails on any other order.
@@ -3191,8 +3709,6 @@ SELECT
         SELECT
           private.entity_has_confirmed_nomination ('candidate'::public.entity_type, id, project_id)
       )
-      AND terms_of_use_accepted IS NOT NULL
-      AND terms_of_use_accepted < now()
     )
     OR (
       SELECT
@@ -3750,13 +4266,16 @@ WITH
 CREATE POLICY "entity_insert_parent_nominations" ON public.nominations FOR INSERT TO authenticated
 WITH
   CHECK (
-    organization_id IS NOT NULL
+    (
+      organization_id IS NOT NULL
+      OR alliance_id IS NOT NULL
+    )
     AND NOT confirmed
     AND NOT (
       SELECT
         private.nomination_exists_in_contest (
-          'organization'::public.entity_type,
-          organization_id,
+          entity_type,
+          COALESCE(organization_id, alliance_id),
           election_id,
           constituency_id,
           election_round
@@ -3772,7 +4291,11 @@ WITH
           election_id,
           constituency_id,
           election_round,
-          'nomination.create_parent'
+          'nomination.create_parent',
+          CASE
+            WHEN alliance_id IS NOT NULL THEN ARRAY['organization']::public.entity_type[]
+            ELSE ARRAY['candidate', 'faction']::public.entity_type[]
+          END
         )
     )
     AND (
@@ -3882,6 +4405,34 @@ CREATE POLICY "admin_delete_nominations" ON public.nominations FOR DELETE TO aut
   (
     SELECT
       user_can ('project', project_id, 'project.edit_nominations')
+  )
+);
+
+-- Entity delete of its own nomination, confirmed or not: the `USING` clause of `entity_update_nominations`.
+-- - `nomination.edit` on the row's entity, with the four entity foreign keys coalesced and the row's generated `entity_type` naming the type. A row the caller created for another entity is not the caller's own: the placeholder parent that `entity_insert_parent_nominations` admits nominates an organization the caller holds no permission on, and who created a row is not asked.
+-- - The project's nominations are not locked, read through `private.project_nominations_locked` as the entity insert and update policies read it.
+--
+-- The foreign key on `parent_nomination_id` is ON DELETE NO ACTION, so it refuses the delete while a nomination is listed under the row, whoever asks.
+--
+-- 23-nominations-write.test.sql asserts each conjunct in both directions.
+CREATE POLICY "entity_delete_nominations" ON public.nominations FOR DELETE TO authenticated USING (
+  (
+    SELECT
+      user_can (
+        'entity',
+        COALESCE(
+          candidate_id,
+          organization_id,
+          faction_id,
+          alliance_id
+        ),
+        'nomination.edit',
+        entity_type
+      )
+  )
+  AND NOT (
+    SELECT
+      private.project_nominations_locked (project_id)
   )
 );
 
@@ -4102,7 +4653,6 @@ UPDATE (
   first_name,
   last_name,
   answers,
-  terms_of_use_accepted,
   confirmed
 ) ON public.candidates TO authenticated;
 
@@ -4301,13 +4851,8 @@ FROM
   authenticated;
 
 GRANT
-UPDATE (
-  name,
-  default_locale,
-  open_for_voters,
-  lock_nominations
-) ON public.projects TO authenticated;
--- Storage RLS policies, cleanup triggers, and helper functions
+UPDATE (name, default_locale, open_for_voters) ON public.projects TO authenticated;
+-- Terms-of-use acceptances: `public.terms_of_use_acceptances`, its index, its RLS, its two policies and its privileges.
 --
 -- A row says that one user has accepted the terms of use of one project. The row's presence is the acceptance: the table holds no boolean and no version. Acceptance belongs to a user and a project and to no entity, so an acceptance for one project is not an acceptance for another.
 --
@@ -4317,9 +4862,16 @@ UPDATE (
 --------------------------------------------------------------------------------
 -- terms_of_use_acceptances table
 --------------------------------------------------------------------------------
-CREATE EXTENSION IF NOT EXISTS pg_net
-WITH
-  SCHEMA extensions;
+-- The database supplies who and when. `user_id` defaults to the caller and `accepted_at` to the server clock, and an API caller holds INSERT on `project_id` alone (see the grants below), so it can state neither. Deleting the user or the project deletes the row.
+CREATE TABLE public.terms_of_use_acceptances (
+  user_id uuid NOT NULL DEFAULT auth.uid () REFERENCES auth.users (id) ON DELETE CASCADE,
+  project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
+  accepted_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, project_id)
+);
+
+-- The lookup by project, who has accepted here, which the primary key cannot serve because it leads with user_id. No index on user_id alone: the primary key leads with it, which covers that foreign key for lint-schema.mjs's unindexed-foreign-key advisor.
+CREATE INDEX idx_terms_of_use_acceptances_project_id ON public.terms_of_use_acceptances (project_id);
 
 --------------------------------------------------------------------------------
 -- RLS on terms_of_use_acceptances
@@ -4327,6 +4879,501 @@ WITH
 -- Two policies, both for `authenticated`, and no UPDATE or DELETE policy: a user records their own acceptance and reads it back, and has no path to change or withdraw it. `anon` reaches nothing. A service-role caller bypasses row-level security and keeps its table privileges, so it can read and remove rows.
 --
 -- Both policies ask who the caller is and nothing else. Acceptance is a statement a user makes about themself, so no grant decides it. The INSERT policy checks who and not which project: a user can record an acceptance for any existing project, including one they hold no grant in. That unlocks nothing: no policy and no function reads this table, and every protected read and write is decided by the grant model alone.
+--------------------------------------------------------------------------------
+ALTER TABLE public.terms_of_use_acceptances ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "authenticated_select_terms_of_use_acceptances" ON public.terms_of_use_acceptances FOR
+SELECT
+  TO authenticated USING (
+    user_id = (
+      SELECT
+        auth.uid ()
+    )
+  );
+
+CREATE POLICY "authenticated_insert_terms_of_use_acceptances" ON public.terms_of_use_acceptances FOR INSERT TO authenticated
+WITH
+  CHECK (
+    user_id = (
+      SELECT
+        auth.uid ()
+    )
+  );
+
+--------------------------------------------------------------------------------
+-- Privileges on terms_of_use_acceptances
+--
+-- Approach: REVOKE every table-level privilege, then GRANT SELECT on the table and INSERT on `project_id` only.
+-- (A new table in the public schema is granted ALL to anon and authenticated by default, and a column-level grant restricts nothing while the table-level privilege exists.)
+--
+-- An insert that states `user_id` or `accepted_at` is refused for lack of privilege on that column, before any policy is consulted. `authenticated` holds no UPDATE and no DELETE, and `anon` holds nothing. An upsert must be the DO NOTHING form: the DO UPDATE form needs the UPDATE privilege.
+--------------------------------------------------------------------------------
+REVOKE ALL ON TABLE public.terms_of_use_acceptances
+FROM
+  anon,
+  authenticated,
+  public;
+
+GRANT
+SELECT
+  ON TABLE public.terms_of_use_acceptances TO authenticated;
+
+GRANT INSERT (project_id) ON TABLE public.terms_of_use_acceptances TO authenticated;
+-- Invitations: `public.invitations`, the code functions, the insert trigger, the table's privileges, its three policies and the cleanup triggers.
+--
+-- A row promises one grant to whoever proves control of its email address or presents its code. The promise is stated in the four columns of `public.grants`, so fulfilling it is one insert of those four values and nothing is derived. A row belongs to one project and is bound to exactly one of a normalised email address and the hash of a server-generated code.
+--
+-- Depends on:
+-- - 000-enums.sql (grant_scope_type, grant_role_type, entity_type)
+-- - 100-tenancy.sql (projects)
+-- - 102-entities.sql (the four entity tables the cleanup triggers sit on)
+-- - 301-auth-functions.sql (grant_role_permissions, user_can, private.entity_project_id)
+-- - auth.users and auth.uid() (Supabase Auth)
+--------------------------------------------------------------------------------
+-- The invitation code: normalise, hash, generate
+--
+-- A code is twelve symbols of Crockford's base-32 alphabet, shown as `XXXX-XXXX-XXXX`: 60 bits. The alphabet has no `I`, `L`, `O` or `U`, and reading folds the look-alikes onto the digits it keeps, so a code copied from paper matches however it was typed.
+--
+-- Only the hash is stored. The three functions use the core `sha256` and `gen_random_uuid` and need no extension.
+--------------------------------------------------------------------------------
+-- Upper-cases, drops every character that is not a digit or a letter, then reads `O` as `0` and `I` and `L` as `1`. The hash, and so every comparison of a code, goes through this one function.
+CREATE OR REPLACE FUNCTION private.normalise_invitation_code (p_code text) RETURNS text LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT translate(regexp_replace(upper(coalesce(p_code, '')), '[^0-9A-Z]', '', 'g'), 'OIL', '011');
+$$;
+
+-- The lower-case hex `sha256` of the normalised code's UTF-8 bytes: 64 characters, the only form of a code the table holds.
+CREATE OR REPLACE FUNCTION private.invitation_code_hash (p_code text) RETURNS text LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT encode(sha256(convert_to(private.normalise_invitation_code(p_code), 'UTF8')), 'hex');
+$$;
+
+-- Each symbol is chosen by the low five bits of one byte of a random uuid. 256 is a multiple of 32, so the mask is unbiased. The bytes at offsets 6 and 8 carry the uuid's version and variant bits and are not used; the twelve offsets below are fully random.
+CREATE OR REPLACE FUNCTION private.generate_invitation_code () RETURNS text LANGUAGE plpgsql VOLATILE
+SET
+  search_path = '' AS $$
+DECLARE
+  v_alphabet constant text := '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  v_offsets constant integer[] := ARRAY[0, 1, 2, 3, 4, 5, 9, 10, 11, 12, 13, 14];
+  v_bytes bytea := uuid_send(gen_random_uuid());
+  v_offset integer;
+  v_code text := '';
+BEGIN
+  FOREACH v_offset IN ARRAY v_offsets LOOP
+    v_code := v_code || substr(v_alphabet, (get_byte(v_bytes, v_offset) & 31) + 1, 1);
+  END LOOP;
+  RETURN substr(v_code, 1, 4) || '-' || substr(v_code, 5, 4) || '-' || substr(v_code, 9, 4);
+END;
+$$;
+
+-- The insert trigger below is SECURITY INVOKER and calls these functions as the inserting role, so `authenticated` and `service_role` need EXECUTE. PostgREST cannot reach them, because `private` is not an exposed schema.
+REVOKE
+EXECUTE ON FUNCTION private.normalise_invitation_code (text),
+private.invitation_code_hash (text),
+private.generate_invitation_code ()
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.normalise_invitation_code (text),
+private.invitation_code_hash (text),
+private.generate_invitation_code () TO authenticated,
+service_role;
+
+--------------------------------------------------------------------------------
+-- project_account_id: resolve a project to its account
+--
+-- Returns the account_id of the project, or NULL when no such project exists. NULL is a denial at its call sites, never a match.
+--
+-- SECURITY DEFINER because public.projects has row-level security enabled, and an inline read in a policy would also ask whether the caller can see the project. search_path is pinned as on every definer function here. `authenticated` keeps EXECUTE because the invitation policies, which evaluate as that role, call it.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.project_account_id (p_project_id uuid) RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT p.account_id FROM public.projects p WHERE p.id = p_project_id;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.project_account_id (uuid)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.project_account_id (uuid) TO authenticated;
+
+--------------------------------------------------------------------------------
+-- invitations table
+--------------------------------------------------------------------------------
+-- An invitation is claimed when `claimed_at` is set, never when `claimed_by` is: both user columns go to null with their user, so deleting the claimant cannot reopen a claimed row.
+CREATE TABLE public.invitations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
+  -- The promised grant, in the four columns of public.grants and with their types.
+  scope public.grant_scope_type NOT NULL,
+  target_type public.entity_type,
+  -- No foreign key, as on public.grants: the target is a project or a row of one of the four entity tables. cleanup_invitations_on_delete removes an invitation when its entity is deleted, and a project-scope row goes with its project through project_id.
+  target_id uuid,
+  role public.grant_role_type NOT NULL,
+  -- The invited address, trimmed and lower-cased by the insert trigger. Null on a code row.
+  email text,
+  -- The hash of the row's code, set by the insert trigger. Null on an email row. No API role can select or insert it.
+  code_hash text,
+  -- On a code row, the address whose control must be proven before the code's promise is fulfilled, and when it was bound.
+  pending_email text,
+  pending_email_at timestamptz,
+  -- Null means the invitation does not expire.
+  expires_at timestamptz,
+  created_by uuid DEFAULT auth.uid () REFERENCES auth.users (id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  claimed_by uuid REFERENCES auth.users (id) ON DELETE SET NULL,
+  claimed_at timestamptz,
+  -- The two shape rules of public.grants, under this table's names.
+  CONSTRAINT invitations_entity_scope_target_type_check CHECK ((target_type IS NOT NULL) = (scope = 'entity')),
+  CONSTRAINT invitations_target_id_scope_check CHECK ((target_id IS NULL) = (scope = 'global')),
+  -- An invitation belongs to a project, and no project owns an account or the instance. A CHECK and not a policy, so it binds the service role too.
+  CONSTRAINT invitations_scope_check CHECK (scope IN ('project', 'entity')),
+  -- A project-scope promise names its own project.
+  CONSTRAINT invitations_project_target_check CHECK (
+    scope <> 'project'
+    OR target_id = project_id
+  ),
+  -- A promise of a grant that confers nothing, such as an entity-scope admin, is refused for every role. Evaluated when the row is written.
+  CONSTRAINT invitations_role_confers_check CHECK (
+    cardinality(
+      public.grant_role_permissions (scope, role, target_type)
+    ) > 0
+  ),
+  -- Exactly one of an address and a code.
+  CONSTRAINT invitations_binding_check CHECK (num_nonnulls (email, code_hash) = 1),
+  CONSTRAINT invitations_email_normalised_check CHECK (
+    email = lower(btrim(email))
+    AND email <> ''
+  ),
+  CONSTRAINT invitations_code_hash_format_check CHECK (code_hash ~ '^[0-9a-f]{64}$'),
+  -- A pending address exists only on a code row, in the same normal form as `email`.
+  CONSTRAINT invitations_pending_email_check CHECK (
+    pending_email IS NULL
+    OR (
+      code_hash IS NOT NULL
+      AND pending_email = lower(btrim(pending_email))
+      AND pending_email <> ''
+    )
+  ),
+  CONSTRAINT invitations_claimed_by_needs_claimed_at_check CHECK (
+    claimed_by IS NULL
+    OR claimed_at IS NOT NULL
+  )
+);
+
+-- One address is promised one target once, whatever the role and whether or not the first promise has been claimed. NULLS NOT DISTINCT because target_type is null on a project-scope row, where a plain unique index would admit the duplicate.
+CREATE UNIQUE INDEX invitations_email_target_key ON public.invitations (project_id, email, scope, target_type, target_id) NULLS NOT DISTINCT
+WHERE
+  email IS NOT NULL;
+
+-- A code is looked up without a target, so within a project it names one row.
+CREATE UNIQUE INDEX invitations_code_hash_key ON public.invitations (project_id, code_hash)
+WHERE
+  code_hash IS NOT NULL;
+
+CREATE INDEX idx_invitations_project_id ON public.invitations (project_id);
+
+-- The lookup by target, which cleanup_invitations_on_delete uses.
+CREATE INDEX idx_invitations_scope_target ON public.invitations (scope, target_type, target_id);
+
+CREATE INDEX idx_invitations_created_by ON public.invitations (created_by);
+
+CREATE INDEX idx_invitations_claimed_by ON public.invitations (claimed_by);
+
+CREATE INDEX idx_invitations_pending_email ON public.invitations (project_id, pending_email)
+WHERE
+  pending_email IS NOT NULL;
+
+--------------------------------------------------------------------------------
+-- prepare_invitation: the server-side columns of a new row
+--
+-- Stores the address trimmed and lower-cased, an empty one as null. A row that arrives with neither an address nor a code hash gets a generated code: its hash goes into `code_hash`, and the code itself into the transaction-local setting `openvaa.generated_invitation_code`, which create_invitations reads back. Every other insert sets that setting to the empty string, so it never holds the code of an earlier row.
+--
+-- The function never reads a code from the caller. An API caller holds no INSERT privilege on `code_hash` (see the privileges below), and a trigger may set a column its caller cannot, so the only code hash such a caller can cause is one generated here. A direct insert through the API ends its transaction with the request, so it has no later statement in which to read the setting: its code is known to nobody.
+--
+-- SECURITY INVOKER: it reads no table, and it needs nothing its caller lacks.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.prepare_invitation () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_code text;
+BEGIN
+  NEW.email := NULLIF(lower(btrim(NEW.email)), '');
+  IF NEW.email IS NULL AND NEW.code_hash IS NULL THEN
+    v_code := private.generate_invitation_code();
+    NEW.code_hash := private.invitation_code_hash(v_code);
+    PERFORM set_config('openvaa.generated_invitation_code', v_code, true);
+  ELSE
+    PERFORM set_config('openvaa.generated_invitation_code', '', true);
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER prepare_invitation
+BEFORE INSERT ON public.invitations FOR EACH ROW
+EXECUTE FUNCTION public.prepare_invitation ();
+
+--------------------------------------------------------------------------------
+-- Privileges on invitations
+--
+-- Approach: REVOKE every table-level privilege, then GRANT column by column.
+-- (A new table in the public schema is granted ALL to anon and authenticated by default, and a column-level grant restricts nothing while the table-level privilege exists.)
+--
+-- `authenticated` may select every column except `code_hash`, `pending_email` and `pending_email_at`, so `SELECT *` is refused and a query names its columns. It may insert the promise, the address and the expiry and nothing else: an insert that names `code_hash`, `pending_email`, `created_by`, `claimed_by` or `claimed_at` is refused for lack of privilege before any policy is consulted. It may delete. It holds no UPDATE: a row's promise, address and code cannot be changed after the insert, and an invitation is changed by deleting an unclaimed one and creating another. `anon` holds nothing.
+--------------------------------------------------------------------------------
+ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE public.invitations
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+GRANT
+SELECT
+  (
+    id,
+    project_id,
+    scope,
+    target_type,
+    target_id,
+    role,
+    email,
+    expires_at,
+    created_by,
+    created_at,
+    claimed_by,
+    claimed_at
+  ) ON TABLE public.invitations TO authenticated;
+
+GRANT INSERT (
+  project_id,
+  scope,
+  target_type,
+  target_id,
+  role,
+  email,
+  expires_at
+) ON TABLE public.invitations TO authenticated;
+
+GRANT DELETE ON TABLE public.invitations TO authenticated;
+
+--------------------------------------------------------------------------------
+-- RLS on invitations: who may promise which grant
+--
+-- The expression of these three policies is the authority map. A promise of an entity editor's grant needs `project.edit_entities` on the row's project and an entity of that project; a promise of a project editor's grant needs `project.manage_editors` on the project; a promise of a project admin's grant needs `account.manage_admins` on the project's account. Any other shape matches no arm and is refused. A caller therefore cannot promise the level they hold themselves: a project editor cannot promise a project editor's or a project admin's grant, and a project admin cannot promise a project admin's.
+--
+-- The map is written inline, in one policy per command, because the schema linter (lint-schema.mjs, check 9001) and the enforcement census (25-matrix-conformance.test.sql) read the permission literals out of the policy text. A helper that held the map would hide them from both.
+--
+-- The map is the INSERT policy's WITH CHECK, so a direct insert into the table meets the same refusals as create_invitations. Reading asks the same map with `project.read_entities` in the entity arm: a caller reads the promises they could make, entity editors and `anon` read none, and the table holds invitees' addresses. Deleting asks the insert map of an unclaimed row; a claimed row is kept. There is no UPDATE policy.
+--
+-- The service role bypasses these policies. The three CHECK constraints on scope, project target and conferred permissions are what bind it.
+--------------------------------------------------------------------------------
+CREATE POLICY "admin_select_invitations" ON public.invitations FOR
+SELECT
+  TO authenticated USING (
+    (
+      scope = 'entity'
+      AND role = 'editor'
+      AND (
+        SELECT
+          private.entity_project_id (target_type, target_id)
+      ) = project_id
+      AND (
+        SELECT
+          user_can ('project', project_id, 'project.read_entities')
+      )
+    )
+    OR (
+      scope = 'project'
+      AND role = 'editor'
+      AND target_id = project_id
+      AND (
+        SELECT
+          user_can ('project', project_id, 'project.manage_editors')
+      )
+    )
+    OR (
+      scope = 'project'
+      AND role = 'admin'
+      AND target_id = project_id
+      AND (
+        SELECT
+          user_can (
+            'account',
+            private.project_account_id (project_id),
+            'account.manage_admins'
+          )
+      )
+    )
+  );
+
+CREATE POLICY "admin_insert_invitations" ON public.invitations FOR INSERT TO authenticated
+WITH
+  CHECK (
+    (
+      scope = 'entity'
+      AND role = 'editor'
+      AND (
+        SELECT
+          private.entity_project_id (target_type, target_id)
+      ) = project_id
+      AND (
+        SELECT
+          user_can ('project', project_id, 'project.edit_entities')
+      )
+    )
+    OR (
+      scope = 'project'
+      AND role = 'editor'
+      AND target_id = project_id
+      AND (
+        SELECT
+          user_can ('project', project_id, 'project.manage_editors')
+      )
+    )
+    OR (
+      scope = 'project'
+      AND role = 'admin'
+      AND target_id = project_id
+      AND (
+        SELECT
+          user_can (
+            'account',
+            private.project_account_id (project_id),
+            'account.manage_admins'
+          )
+      )
+    )
+  );
+
+CREATE POLICY "admin_delete_invitations" ON public.invitations FOR DELETE TO authenticated USING (
+  claimed_at IS NULL
+  AND (
+    (
+      scope = 'entity'
+      AND role = 'editor'
+      AND (
+        SELECT
+          private.entity_project_id (target_type, target_id)
+      ) = project_id
+      AND (
+        SELECT
+          user_can ('project', project_id, 'project.edit_entities')
+      )
+    )
+    OR (
+      scope = 'project'
+      AND role = 'editor'
+      AND target_id = project_id
+      AND (
+        SELECT
+          user_can ('project', project_id, 'project.manage_editors')
+      )
+    )
+    OR (
+      scope = 'project'
+      AND role = 'admin'
+      AND target_id = project_id
+      AND (
+        SELECT
+          user_can (
+            'account',
+            private.project_account_id (project_id),
+            'account.manage_admins'
+          )
+      )
+    )
+  )
+);
+
+--------------------------------------------------------------------------------
+-- cleanup_invitations_on_delete: an invitation does not outlive its entity
+--
+-- `target_id` has no foreign key. Without these triggers an invitation would survive its entity and attach to a row that reused the id, for instance through an import. These AFTER DELETE triggers delete the invitations naming the deleted row, claimed ones included, on the four entity tables. The trigger argument carries the entity type, so one function serves all four tables and names none of them.
+--
+-- SECURITY DEFINER because the deleting caller may not hold the authority the invitation's DELETE policy asks, and that policy keeps claimed rows. search_path is pinned as on every definer function here. A project delete removes the project's invitations through the foreign key on `project_id`.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.cleanup_invitations_on_delete () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+BEGIN
+  DELETE FROM public.invitations i
+  WHERE i.scope = 'entity'
+    AND i.target_type = TG_ARGV[0]::public.entity_type
+    AND i.target_id = OLD.id;
+  RETURN OLD;
+END;
+$$;
+
+CREATE TRIGGER cleanup_invitations_on_delete
+AFTER DELETE ON public.candidates FOR EACH ROW
+EXECUTE FUNCTION public.cleanup_invitations_on_delete ('candidate');
+
+CREATE TRIGGER cleanup_invitations_on_delete
+AFTER DELETE ON public.organizations FOR EACH ROW
+EXECUTE FUNCTION public.cleanup_invitations_on_delete ('organization');
+
+CREATE TRIGGER cleanup_invitations_on_delete
+AFTER DELETE ON public.factions FOR EACH ROW
+EXECUTE FUNCTION public.cleanup_invitations_on_delete ('faction');
+
+CREATE TRIGGER cleanup_invitations_on_delete
+AFTER DELETE ON public.alliances FOR EACH ROW
+EXECUTE FUNCTION public.cleanup_invitations_on_delete ('alliance');
+
+-- Neither trigger function is an RPC. A trigger fires whatever EXECUTE its function carries, so nothing is lost by revoking it from the API roles.
+REVOKE
+EXECUTE ON FUNCTION public.prepare_invitation (),
+public.cleanup_invitations_on_delete ()
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+-- Storage RLS policies, cleanup triggers, and helper functions
+--
+-- Depends on:
+-- - 000-enums.sql (grant_scope_type, grant_permission, storage_verb)
+-- - 101-elections.sql (elections, constituency_groups, constituencies)
+-- - 102-entities.sql (candidates, organizations, factions, alliances)
+-- - 103-questions.sql (question_categories, questions)
+-- - 104-nominations.sql (nominations)
+-- - 301-auth-functions.sql (user_can, and the visibility helpers project_open_for_voters, entity_has_confirmed_nomination and nomination_entities_confirmed)
+--
+-- Provides:
+-- - the pg_net extension, for async HTTP from triggers
+-- - storage_config - the Storage API URL and service-role key the cleanup triggers use
+-- - the storage.buckets row public-assets - the public bucket
+-- - the storage.buckets row private-assets - the private bucket
+-- - storage_path_can() - may this caller do this verb to this path; the storage layer's authority decision, delegated to user_can
+-- - storage_path_is_public() - whether the object at a path is anon-readable; the tables' visibility rule, asked of a path
+-- - delete_storage_object() - delete one whitelisted object via the Storage API (pg_net)
+-- - referenced_storage_paths() - the object paths a row still references
+-- - cleanup_entity_storage_files() - AFTER DELETE trigger for entity tables
+-- - cleanup_old_image_file() - BEFORE UPDATE trigger for image columns
+-- - cleanup_old_answer_files() - BEFORE UPDATE trigger for photos stored in answers
+-- - RLS policies on storage.objects for the public-assets and private-assets buckets
+--------------------------------------------------------------------------------
+-- pg_net extension (async HTTP from triggers)
+--------------------------------------------------------------------------------
+CREATE EXTENSION IF NOT EXISTS pg_net
+WITH
+  SCHEMA extensions;
+
+--------------------------------------------------------------------------------
+-- storage_config: configuration table for storage cleanup triggers
+--
+-- One row per setting: `key` names it, `supabase_url` or `service_role_key`, and `value` holds it. The pg_net cleanup triggers read both to call the Storage API. seed.sql writes the local stack's two rows. A deployment's are written by the bootstrap script `infra/scripts/bootstrap.sql`, with the project's own Supabase URL and service-role key.
 --------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.storage_config (key text PRIMARY KEY, value text NOT NULL);
 
@@ -4344,24 +5391,38 @@ SELECT
   ON TABLE public.storage_config TO service_role;
 
 --------------------------------------------------------------------------------
+-- Storage buckets: public-assets and private-assets
+--
+-- The two buckets the policies and cleanup triggers below name. A hosted project gets its buckets from this statement alone. The local CLI also writes both, from the `[storage.buckets.*]` blocks of config.toml, whenever it starts the storage service, so the values here must equal the ones declared there: `public` is true for public-assets only, and the limit on one object is 524288000 bytes (500 MiB) in both.
+--
+-- A row that already exists is left as it is.
+--------------------------------------------------------------------------------
+INSERT INTO
+  storage.buckets (id, name, public, file_size_limit)
+VALUES
+  ('public-assets', 'public-assets', true, 524288000),
+  (
+    'private-assets',
+    'private-assets',
+    false,
+    524288000
+  )
+ON CONFLICT (id) DO NOTHING;
+
+--------------------------------------------------------------------------------
 -- storage_path_can: may this caller do this verb to this path, at this scope?
 --
 -- The storage layer's whole authority decision, delegated to `user_can` (301-auth-functions.sql) with the path's scope and id, and at entity scope with the entity type the type segment names. Fourteen of the fifteen policies on storage.objects call it and carry no predicate of their own; the anon read routes through storage_path_is_public instead, for the reason stated there.
 --
--- A row promises one grant to whoever proves control of its email address or presents its code. The promise is stated in the four columns of `public.grants`, so fulfilling it is one insert of those four values and nothing is derived. A row belongs to one project and is bound to exactly one of a normalised email address and the hash of a server-generated code.
+-- The mapping describes the storage layout. For each of the eleven values the type segment can take (the ten tables carrying `cleanup_entity_storage_files`, whose path prefix is TG_TABLE_NAME, plus `project` for the project-level path), it names the permission that table's own policies ask, and `user_can` answers it. The role x permission matrix lives only in `grant_role_permissions`. An unrecognised segment denies.
 --
--- Depends on:
--- - 000-enums.sql (grant_scope_type, grant_role_type, entity_type)
--- - 100-tenancy.sql (projects)
--- - 102-entities.sql (the four entity tables the cleanup triggers sit on)
--- - 301-auth-functions.sql (grant_role_permissions, user_can, private.entity_project_id)
--- - auth.users and auth.uid() (Supabase Auth)
---------------------------------------------------------------------------------
--- The invitation code: normalise, hash, generate
+-- The verb is an argument the body branches on, so read and write are separate questions. 20-storage-authority.test.sql asserts two read-but-not-write cases: an entity grantee reads another entity's publicly visible asset but may not write it, and a holder of `project.read_structure` without `project.edit_structure` reads an election's asset but may not write it.
 --
--- A code is twelve symbols of Crockford's base-32 alphabet, shown as `XXXX-XXXX-XXXX`: 60 bits. The alphabet has no `I`, `L`, `O` or `U`, and reading folds the look-alikes onto the digits it keeps, so a code copied from paper matches however it was typed.
+-- Every segment is caller-controlled text, because the caller chooses `storage.objects.name`. So the id arguments are `text` and are cast only inside this function, whose exception arm denies. A policy casting segment [3] to uuid would raise on the project-level path, whose segment [3] is not a uuid, and abort the caller's whole statement instead of hiding one row.
 --
--- Only the hash is stored. The three functions use the core `sha256` and `gen_random_uuid` and need no extension.
+-- The row must exist in the table the type segment names, and its own project must be the project the path claims. Without the lookup, a path could claim one entity type while carrying another type's id, and a project-scope caller could write into a path that names their project but carries another project's entity id.
+--
+-- SECURITY DEFINER with an empty search_path, so the type/id lookup reads the table itself rather than the rows the caller's row-level security admits; the authority answer still comes from `user_can` and the caller's own claim. `%I` quotes a table name the CASE has already restricted to ten literals, so the dynamic name is not caller-controlled.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.storage_path_can (
   p_scope public.grant_scope_type,
@@ -4456,13 +5517,17 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- prepare_invitation: the server-side columns of a new row
+-- storage_path_is_public: is the object at this path readable by the anonymous caller?
 --
--- Stores the address trimmed and lower-cased, an empty one as null. A row that arrives with neither an address nor a code hash gets a generated code: its hash goes into `code_hash`, and the code itself into the transaction-local setting `openvaa.generated_invitation_code`, which create_invitations reads back. Every other insert sets that setting to the empty string, so it never holds the code of an earlier row.
+-- The public visibility rule, asked of a path instead of a row. Each branch restates, over path segments, the anon SELECT policy of the table its segment names, composed from 301-auth-functions.sql's helpers `project_open_for_voters`, `entity_has_confirmed_nomination` and `nomination_entities_confirmed`. It adds no rule of its own, so storage gives the same answer as the tables.
 --
--- The function never reads a code from the caller. An API caller holds no INSERT privilege on `code_hash` (see the privileges below), and a trigger may set a column its caller cannot, so the only code hash such a caller can cause is one generated here. A direct insert through the API ends its transaction with the request, so it has no later statement in which to read the setting: its code is known to nobody.
+-- Not `user_can`: it denies a caller whose JWT carries no `grants` key, which is every anon caller, so an anon policy built on it would deny everything and the public application would render blank. The anon policy therefore asks about visibility, and the other fourteen ask about authority.
 --
--- SECURITY INVOKER: it reads no table, and it needs nothing its caller lacks.
+-- The project-level path is anon-readable only while the project is open for voters, like every other path. 20-storage-authority.test.sql asserts both directions.
+--
+-- An anon list request pays for this function on every object it reads. That cost is accepted because `public-assets` is a public bucket: Storage serves its downloads (`/object/public/...`, which the voter app uses, and `/object/authenticated/...`) without evaluating `storage.objects` RLS, only an anon `list` consults it, and no application code lists `public-assets` as anon. If the bucket is made private, every download becomes a policy evaluation, and the cost must be measured before that change ships.
+--
+-- The same hardening, and the same deny on a missing row or a raised error, as storage_path_can.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.storage_path_is_public (p_project text, p_type text, p_id text) RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET
@@ -4506,15 +5571,9 @@ BEGIN
     RETURN COALESCE(v_row_visible, false);
   END IF;
 
-  -- The four entity tables: the entity's own confirmation flag, the terms-of-use guards where the table has them, and a confirming nomination in this project.
+  -- The four entity tables: the entity's own confirmation flag and a confirming nomination in this project.
   IF p_type IN ('candidates', 'organizations', 'factions', 'alliances') THEN
-    EXECUTE format(
-      'SELECT e.confirmed %s FROM public.%I e WHERE e.id = $1 AND e.project_id = $2',
-      CASE WHEN p_type = 'candidates'
-        THEN 'AND e.terms_of_use_accepted IS NOT NULL AND e.terms_of_use_accepted < now()'
-        ELSE '' END,
-      p_type
-    )
+    EXECUTE format('SELECT e.confirmed FROM public.%I e WHERE e.id = $1 AND e.project_id = $2', p_type)
     INTO v_row_visible
     USING v_entity_id, v_project_id;
 
@@ -4541,14 +5600,28 @@ EXCEPTION
 END;
 $$;
 
---------------------------------------------------------------------------------
--- RLS on invitations: who may promise which grant
+-- =====================================================================
+-- Storage RLS policies on storage.objects
 --
--- The expression of these three policies is the authority map. A promise of an entity editor's grant needs `project.edit_entities` on the row's project and an entity of that project; a promise of a project editor's grant needs `project.manage_editors` on the project; a promise of a project admin's grant needs `account.manage_admins` on the project's account. Any other shape matches no arm and is refused. A caller therefore cannot promise the level they hold themselves: a project editor cannot promise a project editor's or a project admin's grant, and a project admin cannot promise a project admin's.
+-- Path format: {project_id}/{entity_type}/{entity_id}/filename.ext
+-- - (storage.foldername(storage.objects.name))[1] = project_id
+-- - (storage.foldername(storage.objects.name))[2] = entity_type
+-- - (storage.foldername(storage.objects.name))[3] = entity_id
 --
--- The map is written inline, in one policy per command, because the schema linter (lint-schema.mjs, check 9001) and the enforcement census (25-matrix-conformance.test.sql) read the permission literals out of the policy text. A helper that held the map would hide them from both.
+-- IMPORTANT: Always use storage.objects.name (not bare 'name') to avoid ambiguity with entity tables that have a jsonb 'name' column.
 --
--- The map is the INSERT policy's WITH CHECK, so a direct insert into the table meets the same refusals as create_invitations. Reading asks the same map with `project.read_entities` in the entity arm: a caller reads the promises they could make, entity editors and `anon` read none, and the table holds invitees' addresses. Deleting asks the insert map of an unclaimed row; a claimed row is kept. There is no UPDATE policy.
+-- Every policy below is a bucket comparison plus helper calls and nothing else: none re-derives a rule `user_can` answers, names an entity type, compares an identity column or reads a publication flag.
+--
+-- Two questions, two functions. `storage_path_can` answers authority (may this caller do this verb to this path) and delegates to `user_can`; `storage_path_is_public` answers visibility (is this path's object public at all). The fourteen authenticated policies ask the first and the anon policy asks the second, because `user_can` denies every anon caller. The authenticated read of the public bucket also asks the second, since either answer admits that read.
+--
+-- Each write verb has an entity-scope and a project-scope policy per bucket, and PostgreSQL ORs them. The scope literal is the only difference within a pair: with the bucket literal replaced, a verb's expressions reduce to one string per scope, which 20-storage-authority.test.sql asserts from `pg_policies`.
+--
+-- The `(SELECT fn (...))` wrapping is this codebase's convention for helper calls in policies, as on the content-table policies.
+-- =====================================================================
+-- =====================================================================
+-- public-assets bucket: SELECT policies
+-- =====================================================================
+-- Anon: the public visibility rule, asked of a path.
 --
 -- Not `user_can`: an anon session carries no `grants` claim, so an authority-based allow decision here would deny everything (see storage_path_is_public).
 CREATE POLICY "anon_select_public_assets" ON storage.objects FOR
@@ -4883,21 +5956,19 @@ CREATE POLICY "project_delete_private_assets" ON storage.objects FOR DELETE TO a
 -- Storage file deletion helper (via pg_net async HTTP)
 -- =====================================================================
 --------------------------------------------------------------------------------
--- get_nominations RPC: returns nominations with entity data in a single round trip
+-- delete_storage_object: delete one object via the Storage API
 --
 -- One object per call, through the single-object route: `DELETE <storage_config.supabase_url>/storage/v1/object/<bucket>/<path>`, sent by pg_net with only `Authorization: Bearer <service_role_key>`. The bulk route accepts only a DELETE with a JSON body, which pg_net's `http_delete` cannot send. Storage never expands a folder prefix, so a caller that means a folder enumerates its objects and calls this once per object.
 --
--- An entity grantee reads a related entity's basic data through is_child_nominee, but not its answers unless they are public. Row-level security cannot express that, because a SELECT policy that admits a row returns every column of it, so the entity SELECT policies carry no `nomination.read` disjunct (302-rls.sql) and the parent's reach is granted here instead.
+-- The path is untrusted and goes into a URL sent with the service-role key: a stored image path is written by the entity's own editor, and pg_net (libcurl) resolves `..` segments before sending and keeps a query string, so an unchecked path could reach any Storage route, or with enough `..` any Kong route, as a service-role request. So before any URL is built, the bucket must be `public-assets` or `private-assets` and the path must match the upload convention exactly: `<uuid>/<table>/<uuid>/<uuid>.<ext>`, every uuid canonical lowercase, `<table>` one of the ten tables that carry the cleanup triggers, and `<ext>` one of `jpg jpeg png webp gif avif` (the `ALLOWED_IMAGE_EXTENSIONS` set in `supabaseDataWriter.ts`). Anything else, including a folder prefix, a dev-seed name that is not a uuid, an uppercase uuid or a trailing slash, raises a WARNING and sends nothing. A legitimate object under another name is therefore never deleted: that leak is recoverable, where a forged delete is not.
 --
--- The gate is ONE `user_can ('entity', p_entity_id, 'nomination.read', p_entity_type)` call, so the matrix is asked rather than re-derived: the child-nominee hop is user_can's named branch 2, and every project-scope role holding nomination.read passes through the ordinary reach rules.
+-- Not callable by any API role. EXECUTE is revoked from PUBLIC, anon and authenticated below; otherwise the default privileges would publish it as `/rest/v1/rpc/delete_storage_object` and let any caller delete any object with the service-role key. Only the SECURITY DEFINER cleanup triggers call it, and they run as the owner.
 --
--- The entity is named by its type and id together, because the four entity tables have independent primary keys and one uuid can name two entities in two projects. The type selects the one table probed, and the gate asks about that same entity.
+-- Object names are random UUIDs (`supabaseDataWriter.#uploadCandidateFile`), and cleanup deletes the object a row stops referencing. A file that was public stays reachable by its URL after its entity is unpublished, because unpublishing cannot recall copies already taken; that is accepted.
 --
--- The projection is an ALLOW-LIST, not `to_jsonb(row) - <deny-list>`: a column added to an entity table later is withheld until someone decides it is basic data. Withheld today: answers, custom_data, external_id and the two timestamps.
+-- The triggers act on row changes as they happen. No sweep removes objects orphaned without a triggering change.
 --
--- Returns NULL -- never raises -- when the caller lacks the permission, when the type is NULL, or when the named table holds no row with that id, so the answer does not distinguish "does not exist" from "not yours".
---
--- SECURITY DEFINER because the whole point is to return a row the caller's own SELECT policy refuses; search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only: anon carries no grants claim, so user_can would deny it on every call anyway.
+-- Degrades to a WARNING and no request when `storage_config` lacks `supabase_url` or `service_role_key`, and when pg_net raises.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.delete_storage_object (p_bucket text, p_file_path text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER
 SET
@@ -4972,20 +6043,21 @@ FROM
   anon,
   authenticated;
 
+-- =====================================================================
+-- Entity deletion cleanup trigger
+-- =====================================================================
 --------------------------------------------------------------------------------
--- get_user_entities: every entity the caller edits in ONE project, as ONE object
+-- cleanup_entity_storage_files: AFTER DELETE trigger
 --
--- Returns one jsonb object whose `entities` array holds one entry per candidate and per organization of p_project_id the caller holds an `(entity, <type>, <id>, editor)` grant on, read from public.grants through private.caller_entity_ids. Each entry carries what a card shows: `entity_type`, `id`, the names of its type (`first_name` and `last_name` for a candidate, `name` for an organization), `short_name`, `image`, `color` and `confirmed`. Candidates come first, then organizations, each by id.
+-- When an entity row is deleted, deletes every object in its own folder `<OLD.project_id>/<TG_TABLE_NAME>/<OLD.id>/` in both `public-assets` and `private-assets`, one single-object DELETE per object via `delete_storage_object` (pg_net, sent only after the deleting transaction commits).
 --
--- The answer is one object, not a set of rows, so a caller with no entity still gets one row, whose `entities` is an empty array. The top level holds facts about the caller; every fact about an entity sits inside `entities`.
+-- The folder is enumerated because Storage deletes exact object names only and never expands a prefix: the trigger reads the folder's object names from `storage.objects` and calls `delete_storage_object` once per name.
 --
--- `password_set` is a fact about the caller: whether the caller's own account holds a password, as private.caller_password_set answers it for `auth.uid()`. It is there whether or not the caller edits anything, and it never says anything about another account, because nothing passed to this function reaches it.
+-- `starts_with`, not LIKE. `_` is a LIKE wildcard and two of the ten tables carry it (`constituency_groups`, `question_categories`), so `name LIKE prefix || '%'` would also match a lookalike folder such as `<project>/constituencyXgroups/<id>/`. `starts_with` compares the prefix literally.
 --
--- Only candidates and organizations are listed: factions and alliances have no arm. Project, account and global admins and holders of an entity-scope `admin` grant are listed with nothing, because only the editor grant makes an entity the caller's.
+-- Every name still passes the whitelist. Each enumerated name goes through `delete_storage_object`'s bucket and upload-convention check, so a stray name in the folder (a `notes.txt`, a dev-seed name that is not a uuid) is left in place with a WARNING: a leak, never a destroy. The enumeration never leaves the deleted row's own folder, and no second URL-building path exists.
 --
--- p_project_id is REQUIRED and carries no DEFAULT, because one identity may hold editor grants in several projects and only the project names which of them are asked for.
---
--- SECURITY INVOKER: the grant lookup and the password fact are the two definer calls on the path, each answering for `auth.uid()` alone, and which rows come back is still decided by the caller's own row-level security. An entity is therefore listed exactly when get_entity_user_data returns it.
+-- One `storage.objects` scan per deleted row, so a bulk delete of many entities scans once per row.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.cleanup_entity_storage_files () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET
@@ -5055,18 +6127,17 @@ CREATE TRIGGER cleanup_storage_on_delete
 AFTER DELETE ON public.questions FOR EACH ROW
 EXECUTE FUNCTION public.cleanup_entity_storage_files ();
 
+-- =====================================================================
+-- Image column update cleanup trigger
+-- =====================================================================
 --------------------------------------------------------------------------------
--- get_entity_user_data: the editable row of ONE entity the caller edits, or no row
+-- cleanup_old_image_file: BEFORE UPDATE trigger
 --
--- Returns the row of the candidate or organization named by p_entity_type and p_entity_id when it lies in p_project_id and the caller holds an `(entity, <type>, <id>, editor)` grant on it, read from public.grants through private.caller_entity_ids. The entity is named by its type and id together, because the entity tables have independent primary keys and one uuid can name a candidate and an organization at once.
+-- When an entity's `image` changes, deletes the old `path` and `pathDark` objects the NEW row does not use. It acts only when the image column changed.
 --
--- Returns no row -- never raises -- for an entity that is not the caller's, a type that does not match the id, an entity of another project and an id that does not exist, so the answer does not distinguish "does not exist" from "not yours". A faction or an alliance has no arm and returns no row.
+-- Own folder only. An old path is deleted only when it starts with the row's own folder `<OLD.project_id>/<TG_TABLE_NAME>/<OLD.id>/`. A stored path is written by the entity's editor, so without this a candidate could point its image at another candidate's, another table's or another project's public photo and then replace it, and the trigger would delete the victim's file with the service-role key. `delete_storage_object` then checks the exact upload convention on top.
 --
--- One column list serves both types: `name` is NULL for a candidate, and `first_name` and `last_name` are NULL for an organization.
---
--- No parameter carries a DEFAULT: the project, the type and the id are each stated by the caller.
---
--- SECURITY INVOKER: the grant lookup is the one definer call on the path, and the row comes back only when the caller's own row-level security admits it too. The condition is `id IN (the caller's entity ids)` on the entity table itself, so a row that row-level security hides is not returned.
+-- Never a path the NEW row still references. The NEW row's references come from `referenced_storage_paths (to_jsonb (NEW))`: its `image.path`, `image.pathDark` and every answer value's `path` and `pathDark`. So swapping `path` and `pathDark`, changing only `alt`, or moving the photo into an answer deletes nothing. It reads `to_jsonb (NEW)` rather than `NEW.answers` because this trigger is attached to ten tables and only two of them carry `answers`.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.cleanup_old_image_file () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET
@@ -5143,20 +6214,19 @@ CREATE TRIGGER cleanup_image_on_update
 BEFORE UPDATE ON public.questions FOR EACH ROW
 EXECUTE FUNCTION public.cleanup_old_image_file ();
 
+-- =====================================================================
+-- Answer photo cleanup trigger
+-- =====================================================================
 --------------------------------------------------------------------------------
--- get_entity_nominations: the nominations of ONE entity the caller edits, each with the parent it stands under
+-- cleanup_old_answer_files: BEFORE UPDATE trigger on candidates and organizations
 --
--- Returns a jsonb array holding one object per nomination of the candidate or organization named by p_entity_type and p_entity_id in p_project_id, confirmed or not, ordered by sort_order with nulls last and then by id. An entity with no nomination gets an empty array.
+-- When a row's `answers` change, deletes every old answer photo the NEW row does not reference: each `value.path` and `value.pathDark` of an OLD answer whose `value` is an object. That covers a replaced photo, a removed answer key and the key `cascade_question_delete_to_jsonb_answers` strips when a question is deleted.
 --
--- The gate is the caller's own `(entity, <type>, <id>, editor)` grant, read from public.grants through private.caller_entity_ids. That is the lookup get_entity_user_data uses, so the two agree on whose entity it is. `user_can` is not asked: it answers yes for project, account and global admins, and through the child-nominee hop for the editor of a parent organization, who would then learn which other parties its candidate stands for. Only candidates and organizations are served: a faction or an alliance is refused even to its own editor.
+-- Detected by value shape, never by a `questions` join. An answer holds a photo when its `value` is a JSON object (the StoredImage shape `validate_image` accepts); no other answer type stores an object there. Asking `questions.type = 'image'` instead would miss the cascade case: the strip is an UPDATE run by an AFTER DELETE trigger on `questions`, so the question row is already gone when this trigger sees the change.
 --
--- The entity is named by its type and id together, because the entity tables have independent primary keys and one uuid can name a candidate and an organization at once. The type selects the one foreign key matched, so the nominations of the other entity carrying that id are not returned. No parameter carries a DEFAULT: the project, the type and the id are each stated by the caller.
+-- The same two limits as `cleanup_old_image_file`. An old path is deleted only when it starts with the row's own folder `<OLD.project_id>/<TG_TABLE_NAME>/<OLD.id>/`, so an answer pointed at another entity's or project's photo can never get it deleted, and only when `referenced_storage_paths (to_jsonb (NEW))` does not return it, so a photo moved into `image` or into another answer stays. `delete_storage_object` then checks the bucket and the exact upload convention on top.
 --
--- The projection is an ALLOW-LIST built key by key, not `to_jsonb(row) - <deny-list>`: `id`, `election_id`, `election_name`, `constituency_id`, `constituency_name`, `election_round`, `election_symbol`, `confirmed`, `custom_data` and `parent`. The two names are the localized `name` columns as stored. `parent` is a JSON null when the nomination has none, and otherwise an object of exactly `entity_type`, `entity_id`, `name` and `short_name` of the entity the parent nomination nominates. Withheld: `created_by`, every other column of the parent entity and every column of the parent's nomination.
---
--- Returns NULL -- never raises -- when a parameter is NULL, when the type is not served, and when the caller holds no editor grant on the named entity in the named project, which covers another user's entity, an entity of another project and an id that does not exist. The answer therefore does not distinguish "does not exist" from "not yours", and NULL is a different answer from the empty array. The condition refuses on anything other than a positive match, so a NULL comparison refuses too.
---
--- SECURITY DEFINER because a parent is returned where the caller's own SELECT policies refuse both its nomination and its entity row: an unconfirmed parent, and any parent in a project that is not open for voters. search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only.
+-- BEFORE UPDATE is safe because no BEFORE UPDATE trigger on either table assigns `NEW.answers` or `NEW.image` (`enforce_entity_immutability`, `enforce_external_id_immutability`, `update_updated_at`, `validate_answers_jsonb` and `cleanup_old_image_file` only read or raise), so the NEW row seen here is the row that is written; if the statement later fails, its enqueued request is rolled back with it.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.cleanup_old_answer_files () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
 SET
@@ -5195,12 +6265,12 @@ CREATE TRIGGER cleanup_answer_files_on_update
 BEFORE UPDATE ON public.organizations FOR EACH ROW
 EXECUTE FUNCTION public.cleanup_old_answer_files ();
 
---------------------------------------------------------------------------------
--- get_nomination_parent_options: the entities ONE entity the caller edits may name as its parent
+-- Note: the cleanup triggers need supabase_url and service_role_key in storage_config. seed.sql writes the local stack's values, and the bootstrap script `infra/scripts/bootstrap.sql` writes a deployment's.
+-- External ID uniqueness and immutability
 --
--- Returns a jsonb array holding one object per entity the candidate or organization named by p_entity_type and p_entity_id may stand under in p_project_id: for a candidate every confirmed organization of the project, for an organization every alliance of the project, confirmed or not. The array is ordered by sort_order with nulls last and then by id. A project that holds no such entity gets an empty array.
+-- The nullable external_id column is declared in the CREATE TABLE body of each content table that carries one. This file enforces it: a unique index on (project_id, external_id) per table, so uniqueness is scoped per project, and a trigger that refuses to change external_id once it is set.
 --
--- The gate is the one get_entity_nominations asks: the caller's own `(entity, <type>, <id>, editor)` grant, read from public.grants through private.caller_entity_ids, which keeps only entities that lie in p_project_id. The project whose entities are listed is therefore always one in which the caller edits the named entity: p_project_id selects among the caller's own grants and cannot point the read at another project. `user_can` is not asked, so a project admin and the editor of a parent organization are refused; they read the entity tables through their own policies. Only candidates and organizations are served: a faction stands under the organization it belongs to and an alliance under nothing.
+-- bulk_import matches existing rows by external_id when it upserts.
 --
 -- Depends on:
 -- - 101-elections.sql (elections, constituency_groups, constituencies)
@@ -5258,11 +6328,10 @@ WHERE
 --------------------------------------------------------------------------------
 -- Immutability trigger: prevent changing external_id once set
 --
--- The projection is an ALLOW-LIST built key by key, not `to_jsonb(row) - <deny-list>`: `id`, `entity_type`, `name`, `short_name`, `color`, `image` and `nominated`. `name`, `short_name`, `color` and `image` are the columns as stored, a JSON null where the column is NULL. `nominated` is a JSON array of `{election_id, constituency_id}` objects: those of the asked contests at which the option holds a nomination at the election's current_round, each once, in the order asked. A contest whose election is not one of p_project_id is never among them. Withheld: answers, custom_data, info, external_id, confirmed, subtype, sort_order, project_id, the two timestamps and every column of the option's nominations.
---
--- Returns NULL -- never raises -- when one of the first three parameters is NULL, when the type is not served, when the caller holds no editor grant on the named entity in the named project, and when p_contests is NULL, is not a JSON array, or holds a member that is not an object whose `election_id` and `constituency_id` are strings that read as uuids. NULL is a refusal and a different answer from the empty array, which says that the project lists nothing the entity may name. Each condition refuses on anything other than a positive match, so a NULL comparison refuses too.
---
--- SECURITY DEFINER because an entity's editor cannot read the project's organizations and alliances through its own SELECT policies -- none of them in a project that is not open for voters, and nowhere one that has no confirmed nomination -- and a policy that admitted those rows would return every column of them. search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only.
+-- - NULL -> value: allowed (first assignment)
+-- - value -> same value: allowed (no-op)
+-- - value -> different value: blocked (raises an exception)
+-- - value -> NULL: blocked (raises an exception)
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_external_id_immutability () RETURNS TRIGGER AS $$
 BEGIN
@@ -5330,13 +6399,14 @@ EXECUTE FUNCTION public.enforce_external_id_immutability ();
 -- - 500-external-id.sql (the (project_id, external_id) unique indexes)
 -- - 302-rls.sql (admin RLS policies via user_can)
 --------------------------------------------------------------------------------
--- upsert_answers: atomic answer write for a single entity
+-- resolve_external_ref: resolve an external_id reference to a UUID
 --
--- The entity is named by its type and id together, because the entity tables have independent primary keys and one UUID can name a candidate and an organization at once. The type selects the one table written: 'candidate' writes public.candidates and 'organization' writes public.organizations, the only two tables carrying an answers column. Any other type, and a NULL type, raises before any table is written.
+-- Input formats:
+--   {"external_id": "some-id"} -> looks up UUID in target table
+--   "uuid-string"              -> casts and returns directly
+--   null                       -> returns null
 --
--- p_overwrite = true replaces the stored answers with p_answers; otherwise p_answers is merged over them. Either way, keys whose value is JSON null are dropped.
---
--- SECURITY INVOKER: the UPDATE is gated by the named table's RLS policies, so a caller can update only the answers of an entity those policies let them edit. An id that matches no row the caller may update raises the not-found exception.
+-- Raises exception if external_id not found in target table.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.resolve_external_ref (
   p_ref jsonb,
@@ -5382,11 +6452,13 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- nomination_list_checked: is this a nominations array a writer may take
+-- _bulk_upsert_record: internal helper for upserting a single record
 --
--- Raises SQLSTATE 22023 with `<p_prefix>: <p_label> must be a JSON array` for anything that is not a JSON array, an SQL NULL included, and with `<p_prefix>: <p_label> holds more than 1000 nominations` for an array of more than 1000 members. It reads no member, so a writer asks it before it checks any object: the bound limits the work one call can ask of the checks and the writes that follow. Every writer of a nominations array asks it, so the bound is stated here and nowhere else.
+-- Builds dynamic SQL to INSERT ON CONFLICT (project_id, external_id) DO UPDATE.
+-- Handles relationship field resolution using resolve_external_ref().
+-- Returns true if the row was inserted (created), false if updated.
 --
--- The writers are SECURITY INVOKER and call it as their caller, so `authenticated` and `service_role` hold EXECUTE.
+-- Relationship mapping defines which JSON keys map to FK columns and which target tables they reference.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public._bulk_upsert_record (
   p_table_name text,
@@ -5452,8 +6524,9 @@ BEGIN
   -- Build column-value pairs from the item JSON
   FOR item_key, item_value IN SELECT * FROM jsonb_each(p_item)
   LOOP
-    -- Skip project_id (already added) and managed columns
-    IF item_key = ANY(skip_columns) THEN
+    -- Skip project_id (already added) and managed columns. `entity_type` is a generated column on `nominations`, where it is skipped, and a filter list on `question_categories` and `questions`, where it is carried and validate_entity_type_list() checks it. `DENIED_BY_TABLE` in packages/dev-seed/src/template/permittedKeys.ts mirrors this condition, and a parity test in that package reads `skip_columns` from this file, so the two change together.
+    IF item_key = ANY(skip_columns)
+       AND NOT (item_key = 'entity_type' AND p_table_name IN ('question_categories', 'questions')) THEN
       CONTINUE;
     END IF;
 
@@ -5515,17 +6588,20 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- parent_nomination_resolved: a named parent's nomination at ONE contest, found or created
+-- bulk_import: import collection-keyed JSON data with transactional guarantee
 --
--- Answers `nomination_id`, the nomination the organization or alliance named by p_parent_type and p_parent_entity_id holds at the election, constituency and round given, as `private.nomination_id_in_contest` finds it, and `created`, whether this call inserted it. Where the parent holds none, the call inserts the parent's row -- the project, the parent, the election, the constituency and the round, and nothing else, so it is unconfirmed and carries no symbol, parent or custom data -- and asks for it again; the caller may be unable to read the new row, so its id is asked for and not returned by the insert. `nomination_id` is null when that second lookup still finds nothing, and for a parent type other than organization and alliance, which has no such row; the writer then raises its own refusal.
+-- Input format: an object keyed by collection name, each value an array of items. For example:
+-- - "elections": [{"external_id": "election-2024", "name": {...}, ...}]
+-- - "factions": [{"external_id": "fac-001", "organization": {"external_id": "org-sdp"}, ...}]
+-- - "nominations": [{"external_id": "nom-001", "candidate": {"external_id": "cand-001"}, ...}]
 --
--- A parent that is no entity of p_project_id, an id that names no entity included, is refused first with SQLSTATE 22023 and `<p_prefix>: <p_label> names a parent that is no entity of the nomination's project`, before anything is read or written.
+-- Each item MUST include:
+--   - "external_id": unique identifier within the project
+--   - "project_id": UUID of the target project (for RLS enforcement)
 --
--- SECURITY INVOKER: the insert runs as the caller, so the insert policies of public.nominations decide who may create a party's or an alliance's row, and an entity's editor meets the cap on the unconfirmed parent nominations it originates.
+-- Relationship fields (e.g., "organization", "election") are expressed as {"external_id": "..."} objects and resolved to UUIDs internally.
 --
--- Two calls that create the same parent's nomination at the same moment are decided by the uniqueness key `nominations_entity_parent_contest_key`: the second call's insert is refused, its writer's whole call with it, and the call succeeds when it is made again.
---
--- The writers are SECURITY INVOKER and call it as their caller, so `authenticated` and `service_role` hold EXECUTE.
+-- Returns: {"elections": {"created": N, "updated": M}, ...}
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.bulk_import (p_data jsonb) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
@@ -5597,47 +6673,20 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- set_entity_nominations: write the whole set of nominations of ONE entity the caller edits, in one transaction
+-- bulk_delete: delete records by prefix, UUID list, or external_id list
 --
--- p_nominations states every nomination the candidate or organization named by p_entity_type and p_entity_id is to hold among the rows this function may write. The call inserts the nominations the set adds, updates the ones whose values differ, creates the nomination of a named party or alliance that has none at the contest, and deletes the ones the set leaves out. It is one statement of the caller's transaction, so either all of it is stored or none of it is.
+-- Input format: {"project_id": "uuid", "collections": {...}}, where "collections" maps each collection name to one deletion spec. For example:
+-- - "elections": {"prefix": "import-2024-"}
+-- - "candidates": {"ids": ["uuid-1", "uuid-2"]}
+-- - "nominations": {"external_ids": ["nom-1", "nom-2"]}
 --
--- SECURITY INVOKER: every statement runs as the caller, so the policies of public.nominations, its column grants and its triggers stay the only gate, and a direct write of the same rows meets the same refusals. The body holds one authority question, asked through `user_can` before anything is read: a caller that does not hold `nomination.edit` on the entity is refused with SQLSTATE 42501. search_path is pinned and every name in the body is schema-qualified.
+-- Deletion modes per collection:
+--   - prefix: DELETE WHERE external_id LIKE prefix || '%'
+--   - ids: DELETE WHERE id = ANY(ids::uuid[])
+--   - external_ids: DELETE WHERE external_id = ANY(external_ids::text[])
 --
--- p_nominations is a JSON array of objects, and an empty array is a valid set. The keys of one object:
---   id              - a uuid: the object describes that nomination of the entity. Absent: it describes a new one.
---   election_id     - a uuid, required. With `id` it must be the stored row's.
---   constituency_id - a uuid, required. With `id`, a value other than the stored one moves the nomination.
---   election_symbol - a string or null. It is trimmed; a blank one is stored as NULL, and one longer than 50 characters is refused.
---   parent          - an object with a `kind`: `none` (no parent and no requested name), `entity` with `entity_type` and `entity_id` (stand under that organization's or alliance's nomination at the contest), `other` with `name` (store the name of a parent that is not in the system and link nothing) or `keep` (leave the row's parent and requested name as they are; only with an `id`, and not on a move).
--- Any other key is not read. A candidate names an organization and an organization an alliance. The name of `other` is trimmed, must not be blank and may hold at most 100 characters. Trimming removes leading and trailing white space of any kind, lengths are counted in characters, and a submitted value is compared with a stored one by exact equality after the trim.
---
--- A malformed argument or object is refused with SQLSTATE 22023 and a message that begins `set_entity_nominations: ` and, for an object, names it as `p_nominations[<index>]`, counted from zero. The whole argument is validated before anything is written. The array is checked by `private.nomination_list_checked` and the shape of each object by `private.nomination_object_checked`, which state those rules for every writer of nominations; the checks that read rows follow each object's shape check.
---
--- An array of more than 1000 nominations is refused before any object is read. A parent that is no entity of the entity's project, or an id that names no entity, is refused with SQLSTATE 22023 when the parent is resolved, so nothing the call wrote before it is stored.
---
--- The reach: the function writes only the nominations of the entity that the caller can read, whose election_round is their election's current_round, in an election for whose type `nomination_shape_rule` admits the entity's type. A nomination in reach that the set does not name is deleted. Every other nomination of the entity is neither updated nor deleted, and an `id` that names one is refused. A new nomination is written at its election's current_round, read here: the argument carries no round.
---
--- Several nominations of one election are accepted only where each names a stored row by `id`: an object without an `id` must be the only object of its election.
---
--- The order of the statements:
---   1. Delete the nominations in reach that the set does not name, and the stored row of every move. A changed constituency is a delete and an insert, never an update of the row's contest, so the foreign key on `parent_nomination_id` refuses to move, as it refuses to delete, a nomination that has nominations listed under it (SQLSTATE 23503). The new row of a move carries the symbol and the parent the object states and nothing else of the old row.
---   2. Update each kept nomination whose symbol, parent or requested name differs from what is stored, naming only the columns that differ, and the confirmation wherever the custom data is written. A nomination whose values did not change is not written, so it keeps its confirmation and its updated_at; `enforce_nomination_confirmation` turns the confirmation of every row an entity's editor does write off.
---   3. Insert each new nomination with no parent, and then link it.
--- For `entity`, the parent's nomination at the contest is asked of `private.parent_nomination_resolved`, which runs as the caller and reads the row through `private.nomination_id_in_contest`, because the caller's own policies do not let it read that row. Where there is none, the parent's nomination is inserted, unconfirmed and carrying nothing but its contest, and asked for again. The caller's own row comes first because `entity_insert_parent_nominations` admits a parent's row only to a caller that already holds a nomination at that contest. Two callers that create the same parent's nomination at once are not reconciled: the second call is refused whole on the uniqueness key and succeeds when it is made again.
---
--- The requested name lives in `custom_data.requestedParentOrganization`. The custom data is written by merging: `other` sets the key, `entity` and `none` remove it, and every other key is kept.
---
--- A nomination that carries a requested name cannot be confirmed, and `enforce_nomination_confirmation` judges that rule on the row as the statement writes it, before it turns an edited row's confirmation off. So every UPDATE that writes the custom data states the confirmation too: off where the custom data it writes carries a requested name, and as stored otherwise. A confirmed nomination can then be given a requested name, and is confirmed no longer.
---
--- Row-level security refuses an UPDATE and a DELETE without an error, by hiding the row: under the nominations lock such a statement affects no row. So the function reads how many rows each UPDATE and DELETE affected and raises SQLSTATE 42501 on a shortfall, and a caller is never answered that a locked or vanished row was saved. The rows in reach are read with no locking clause, because under the lock the update policy hides them from a locking read.
---
--- Where an election's type requires a candidate's nomination to have a parent or a requested name, `nominations_parent_required` judges it when the transaction ends. The function forces that constraint as its last statement and sets it back to deferred, so the refusal (SQLSTATE 23514) is raised inside the call, and no later statement of the transaction meets the constraint immediate.
---
--- Returns `{"inserted", "updated", "deleted", "unchanged", "parents_created"}`, each a count of nominations. A move counts once under `deleted` and once under `inserted`; a nomination that is inserted and then linked counts once, under `inserted`; `parents_created` counts the nominations created for a party or an alliance.
---
--- A move leaves behind the nomination that an earlier call created for the parent at the old contest: it is not the caller's row, and the caller may not delete it.
---
--- 43-set-entity-nominations.test.sql asserts each rule above.
+-- Processes in reverse dependency order to avoid FK violations.
+-- Returns: {"elections": {"deleted": N}, ...}
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.bulk_delete (p_data jsonb) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
@@ -5738,11 +6787,9 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- localized_has_text: does a localized string say anything
+-- Grant execute to authenticated role
 --
--- True when the value is a JSON object with at least one member whose text is not blank. NULL, a non-object and an object of blank or null members are all false.
---
--- create_invitations is SECURITY INVOKER and calls it as its caller, so `authenticated` and `service_role` hold EXECUTE.
+-- The functions are SECURITY INVOKER, so EXECUTE alone permits no write: every insert, update and delete still passes the table's RLS policies, which admit only callers user_can grants the table's write permission on the target project.
 --------------------------------------------------------------------------------
 GRANT
 EXECUTE ON FUNCTION public.bulk_import (jsonb) TO authenticated;
@@ -5763,37 +6810,15 @@ EXECUTE ON FUNCTION public.resolve_external_ref (jsonb, text, uuid) TO authentic
 -- - 300-auth-tables.sql (grants)
 -- - 301-auth-functions.sql (private.entity_project_id)
 --------------------------------------------------------------------------------
--- create_invitations RPC: seed a batch of invitations in one project, stating whether each invited entity is confirmed and which nominations it holds
+-- resolve_email_variables: resolve template variables for a set of users
 --
--- p_project_id, p_invitations and p_confirm_entity are REQUIRED and none carries a DEFAULT: every row of the batch belongs to p_project_id, and a NULL p_confirm_entity is refused. p_invitations is a JSON array of items `{ scope?, role?, target_type?, target_id?, external_id?, email?, expires_at?, nominations? }`. `scope` defaults to `entity` and `role` to `editor`. An entity-scope item names its entity by `target_type` and exactly one of `target_id` and `external_id`; a project-scope item promises a role on p_project_id itself. An item with an `email` is bound to that address, and one without gets a generated code.
+-- For each user_id, looks up their entity context in the grant map and resolves template variable paths like "candidate.first_name", "organization.name", "nomination.constituency.name", "nomination.election.name".
 --
--- The plaintext of a generated code exists only in this function's return value: the table holds its hash, which no API role can read, so a code that is lost is replaced by deleting the unclaimed invitation and seeding another. The code is read from the transaction-local setting the insert trigger writes, and the setting is cleared straight after.
+-- Returns a row per user with their email, preferred_locale, and a flat JSONB object of resolved variables.
 --
--- SECURITY INVOKER: each row is inserted as the caller, so the INSERT policy of public.invitations decides who may promise which grant, exactly as it does for a direct insert, and this body holds no authority rule of its own. An `external_id` is resolved under the caller's row-level security, inside p_project_id only. The nominations are written as the caller too, so the policies, the column grants and the triggers of public.nominations decide every statement. A service-role caller bypasses the policies and is bound by the tables' CHECK constraints and triggers.
+-- p_project_id is required and carries no DEFAULT: every entity lookup below is qualified by it, so a caller that omits it gets an undefined_function error rather than another project's names rendered into an email.
 --
--- p_confirm_entity says whether the call confirms the entities it invites. `true` confirms each named entity of the batch, in the same transaction and as the caller, so enforce_entity_immutability asks `entity.confirm`. A candidate has a name when its first and last name are both non-blank; the other three types when their localized `name` has text. An entity without a name stays unconfirmed. `false` confirms no one. No call unconfirms an entity, no item key overrides the call's value, a project-scope promise confirms nothing, and deleting the invitation later leaves the entity confirmed.
---
--- NOMINATIONS. An entity-scope item for a candidate or an organization may carry `nominations`, a JSON array of nomination objects of the invited entity. The array is checked by `private.nomination_list_checked`, so it holds at most 1000 objects, and the shape of each object by `private.nomination_object_checked`, as set_entity_nominations checks its own. The keys of one object:
---   id              - a uuid: the object describes that nomination of the invited entity. Absent: it describes a new one.
---   election_id     - a uuid, required: an election of p_project_id the caller can read. With `id` it must be the stored row's.
---   constituency_id - a uuid, required. With `id` it must be the stored row's: an invitation moves no nomination.
---   election_round  - an integer, optional. A new nomination without one is written at its election's current_round. With `id`, a stated round must be the stored row's.
---   election_symbol - a string or null. It is trimmed; a blank one is stored as NULL, and one longer than 50 characters is refused.
---   parent          - `{"kind":"none"}`, `{"kind":"entity","entity_type","entity_id"}`, `{"kind":"other","name"}` or `{"kind":"keep"}`, as set_entity_nominations takes them; `keep` only with an `id`. A candidate names an organization and an organization an alliance.
---   confirmed       - true or false, required on every object.
---   custom_data     - a JSON object, optional, written over the stored custom data key by key. It may not carry `requestedParentOrganization`, which only a parent of kind `other` sets.
---   name, short_name, info, color, image - a JSON object or null; sort_order - an integer or null; subtype, external_id - a string or null. Each optional.
--- On an object with an `id`, a column the object does not state keeps its stored value. Any other key is not read.
---
--- An object creates or updates a nomination; an invitation never deletes one. For a parent of kind `entity`, the parent's nomination at the contest is asked of `private.parent_nomination_resolved`, which refuses a parent of another project and creates the parent's bare, unconfirmed row where it holds none. A new nomination is then inserted with its parent set and without `confirmed`, which the INSERT column grant leaves out, so it starts unconfirmed, and an object that states it confirmed is confirmed by an UPDATE of the new row. An object with an `id` whose values all equal the stored row's is not written; otherwise one UPDATE writes every column at its target, the stated confirmation included. The custom data is the stated object written over the stored one, then `other` sets the requested name, `entity` and `none` remove it, and `keep` leaves it.
---
--- Every UPDATE reads back the confirmation it wrote. Row-level security refuses an UPDATE without an error, and enforce_nomination_confirmation turns off the confirmation of a row that a caller without `nomination.confirm` edits; so an UPDATE that affects no row, a parent's nomination that cannot be found after it was created, and a confirmation read back other than the one stated each raise SQLSTATE 42501 with `<label> could not be written as stated`. A caller without `nomination.confirm` that states a new nomination confirmed meets enforce_nomination_confirmation's own refusal.
---
--- Where an election's type requires a candidate's nomination to have a parent or a requested name, `nominations_parent_required` judges it when the transaction ends. A call that wrote a nomination forces that constraint after its last item and sets it back to deferred, so the refusal (SQLSTATE 23514) is raised inside the call. A call that wrote none leaves the rows an earlier statement of the caller's transaction left pending to the end of the transaction.
---
--- Each item is checked before anything of it is written, its nominations whole, and is then written in this order: the invitation, the entity's confirmation, the nominations. The function creates no entity and no user and sends nothing. The whole batch is the caller's one transaction: a refused item, a duplicate or an unknown `external_id` raises, and no row of the batch is written. A malformed batch, item or object raises SQLSTATE 22023 naming the item's index, and an object's as `p_invitations[<i>].nominations[<j>]`, and never an address. Refused besides the shapes: `nominations` on a project-scope item or on an item for a faction or an alliance; the nominations of one entity on two items of the batch; nominations for an invited entity that is no entity of p_project_id the caller can read; an `id` that another object of the array names or that names no nomination of the invited entity; an election, a constituency or a round other than the named nomination's.
---
--- Returns a JSON array with one object per item, in order: `id`, `scope`, `target_type`, `target_id`, `role`, `email`, `expires_at`, `code` (the generated code as `XXXX-XXXX-XXXX`, or null on an email item) and `entity_confirmed`, the invited entity's confirmation after the item as the caller reads it (null on a project-scope item and for an entity the caller cannot read). An item that states `nominations` also answers `nominations`: `{"inserted", "updated", "unchanged", "parents_created"}`, each a count of nominations, `parents_created` counting the rows created for a party or an alliance.
+-- SECURITY DEFINER: it reads auth.users, which regular authenticated users cannot read.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.resolve_email_variables (
   p_project_id uuid,
@@ -5957,27 +6982,22 @@ GRANT
 EXECUTE ON FUNCTION public.resolve_email_variables (uuid, uuid[], text, text) TO service_role;
 -- Entity RPC functions
 --
--- The registration-mode condition, stated once for the three functions that read an open invitation: invitation_code_status, invitation_link_request and claim_invitations. Each treats a row this function refuses as absent.
---
--- WHICH ROWS ARE JUDGED. An entity-scope row whose target is a candidate or an organization: the registration-mode matrix has a row for those two types and for no other. Such a row is allowed when private.registration_mode_allowed says so for the row's project, its target type and its mode.
---
--- WHICH ARE NOT. A project-scope promise has no entity type, and the matrix has no row for a faction or an alliance: each is always allowed.
---
--- A ROW'S MODE is read from which of its two bindings is set: `code` for a row that holds a code hash, `email` for a row bound to an address.
---
--- The callers ask it of open rows only, so a claimed row is never judged: a registration that is finished stays as it is whatever the matrix says later. create_invitations does not ask it, so an invitation can be seeded while its mode is off and is honoured once the mode is on.
---
--- It runs as its caller. The three callers are definer functions, so no API role holds EXECUTE.
+-- Functions:
+-- - get_nominations() - return nominations with entity data
+-- - get_entity_basic_data() - basic-data projection of an entity the caller holds nomination.read on
+-- - get_user_entities() - every candidate and organization the caller holds an editor grant on in one project, as one object that also says whether the caller's account has a password
+-- - get_entity_user_data() - the editable row of one entity the caller holds an editor grant on, or no row
+-- - get_entity_nominations() - the nominations of one entity the caller holds an editor grant on, each with its parent resolved, or NULL
+-- - get_nomination_parent_options() - the entities one entity the caller holds an editor grant on may name as its parent, or NULL
+-- - upsert_answers() - atomic answer write for a single entity
+-- - private.nomination_list_checked() - whether an argument is a nominations array a writer may take: an array of at most 1000 members
+-- - private.nomination_object_checked() - the shape of one nomination object, refused or answered with its normalised values
+-- - private.parent_nomination_resolved() - a named parent's nomination at a contest, found or created bare, as the caller
+-- - set_entity_nominations() - write the whole set of nominations of one entity the caller holds nomination.edit on, in one transaction
 --------------------------------------------------------------------------------
 -- get_nominations RPC: returns nominations with entity data in a single round trip
 --
--- The grant-holder test, stated once for the two functions that decide whether a mail may go to an address: invitation_link_request and recovery_link_request.
---
--- True when a user whose address equals p_email and is confirmed holds a project-scope grant on p_project_id or an entity-scope grant on one of its entities. Holding a global or an account grant alone is not holding a grant in the project.
---
--- The stored address is trimmed and lower-cased before it is compared. p_email is compared as given, so the callers pass it trimmed and lower-cased.
---
--- It runs as its caller. The two callers are definer functions, so no API role holds EXECUTE.
+-- p_project_id is REQUIRED and carries no DEFAULT. Every other filter defaults to NULL, meaning no filter, so a defaulted project would let a caller that omits the argument read every project's nominations. It comes first because PostgreSQL forbids a parameter without a default from following one that has a default.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_nominations (
   p_project_id uuid,
@@ -6051,8 +7071,6 @@ CREATE OR REPLACE FUNCTION public.get_nominations (
     -- nominations.election_round is a scalar integer, so this is an equality rather than the array containment that get_questions uses against the JSONB election_rounds on questions and question categories.
     AND (p_election_round IS NULL OR n.election_round = p_election_round)
     -- SECURITY INVOKER means the LEFT JOINs run with the caller's permissions, so RLS-hidden entity rows return NULL on the entity-side columns. Drop rows where every entity-side join resolved to NULL. With the join predicates above, this filter also drops a nomination whose entity belongs to another project.
-    --
-    -- This filter is defence in depth. `anon_select_nominations` already requires every entity a nomination links to be confirmed, but the terms-of-use clause of `anon_select_candidates` is a candidates-policy term that no nominations predicate restates, so a nomination whose candidate that clause hides is dropped only here.
     AND COALESCE(c.id, o.id, f.id, a.id) IS NOT NULL
   ORDER BY n.sort_order NULLS LAST, n.id;
 $$;
@@ -6062,33 +7080,19 @@ EXECUTE ON FUNCTION public.get_nominations (uuid, uuid, uuid, boolean, integer) 
 authenticated;
 
 --------------------------------------------------------------------------------
--- invitation_code_status: is this code valid, used or unknown
+-- get_entity_basic_data: an entity's BASIC data for a caller holding nomination.read on it
 --
--- Answers one of three words about the row of p_project_id whose code hash equals the hash of the code as typed:
--- - `used` when the row is claimed, which is `claimed_at IS NOT NULL` and so stays true after the claimant is deleted;
--- - `unknown` when the row is unclaimed and expired, when it is open but its registration mode is switched off (private.invitation_mode_allowed), and when the project holds no such row, which includes the code of another project;
--- - `valid` otherwise.
+-- An entity grantee reads a related entity's basic data through is_child_nominee, but not its answers unless they are public. Row-level security cannot express that, because a SELECT policy that admits a row returns every column of it, so the entity SELECT policies carry no `nomination.read` disjunct (302-rls.sql) and the parent's reach is granted here instead.
 --
--- A switched-off mode has no answer of its own: the status and the body are those of a code that names nothing. The mode is asked only of a row that is open and unexpired, so such a row costs one read of its project's settings row that a code naming nothing does not.
+-- The gate is ONE `user_can ('entity', p_entity_id, 'nomination.read', p_entity_type)` call, so the matrix is asked rather than re-derived: the child-nominee hop is user_can's named branch 2, and every project-scope role holding nomination.read passes through the ordinary reach rules.
 --
 -- The entity is named by its type and id together, because the four entity tables have independent primary keys and one uuid can name two entities in two projects. The type selects the one table probed, and the gate asks about that same entity.
 --
--- Returns the address a sign-in mail may be sent to, or null for "do nothing". The caller sends exactly one mail to a non-null answer, or gives the answer back through invitation_link_release.
+-- The projection is an ALLOW-LIST, not `to_jsonb(row) - <deny-list>`: a column added to an entity table later is withheld until someone decides it is basic data. Withheld today: answers, custom_data, external_id and the two timestamps.
 --
--- With a code (p_code is not null) the code alone decides:
--- - It names an open row and p_email is not blank: the address is the candidate, unless the row's pending address was bound less than 60 seconds ago.
--- - It names a claimed row whose claimant still exists: the candidate is the claimant's own address, whatever p_email holds, read through invitation_code_claimant_email and so counted against that code's look-up budget.
--- - It names nothing, an expired row, an open row whose registration mode is switched off (private.invitation_mode_allowed), or a claimed row whose claimant is gone: null.
+-- Returns NULL -- never raises -- when the caller lacks the permission, when the type is NULL, or when the named table holds no row with that id, so the answer does not distinguish "does not exist" from "not yours".
 --
--- Without a code, p_email is the candidate when the project holds an open invitation for it whose registration mode is allowed, or when a user with that confirmed address holds a grant in the project (private.email_holds_grant_in_project): a project-scope grant on the project or an entity-scope grant on one of its entities. Holding a global or an account grant alone does not make an address eligible.
---
--- A candidate then takes its address slot, one per address per project per 60 seconds, and the answer is null when the slot is taken. recovery_link_request takes the same slot, so a recovery mail and a sign-in mail to one address are limited together. Only after that is the address bound to an open code row as its pending address. A null answer has therefore changed no invitation row, and no slot is taken for an address no mail would go to.
---
--- A switched-off mode is answered as an unknown code or an uninvited address is: null, before a slot is asked for and before anything is written. It changes nothing for a claimed code, whose claimant is still answered, or for a user who holds a grant in the project.
---
--- Eligibility follows the rows as they are: whether an invitation's creator still holds the authority to promise it is not asked.
---
--- SECURITY DEFINER because it reads auth.users and `code_hash` and writes the pending address, none of which an API role can.
+-- SECURITY DEFINER because the whole point is to return a row the caller's own SELECT policy refuses; search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only: anon carries no grants claim, so user_can would deny it on every call anyway.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_entity_basic_data (
   p_entity_type public.entity_type,
@@ -6149,23 +7153,82 @@ GRANT
 EXECUTE ON FUNCTION public.get_entity_basic_data (public.entity_type, uuid) TO authenticated;
 
 --------------------------------------------------------------------------------
--- recovery_link_request: which mail, if any, a recovery request for an address earns
+-- get_user_entities: every entity the caller edits in ONE project, as ONE object
 --
--- Returns `{"email": <the address, trimmed and lower-cased>, "mail": <one of two words>}`, or null for "do nothing". The caller sends exactly one mail of the named kind to a non-null answer, or gives the answer back through invitation_link_release.
+-- Returns one jsonb object whose `entities` array holds one entry per candidate and per organization of p_project_id the caller holds an `(entity, <type>, <id>, editor)` grant on, read from public.grants through private.caller_entity_ids. Each entry carries what a card shows: `entity_type`, `id`, the names of its type (`first_name` and `last_name` for a candidate, `name` for an organization), `short_name`, `image`, `color` and `confirmed`. Candidates come first, then organizations, each by id.
 --
--- - `recovery` when a user with that confirmed address holds a grant in p_project_id (private.email_holds_grant_in_project). Whether the user has a password is not asked: opening a recovery link stores none, and the page it leads to sets one.
--- - `sign-in` when no such user exists and the project holds an open, unexpired invitation for the address whose registration mode is allowed (private.invitation_mode_allowed). Such an address has no password to recover, so it is sent the mail a sign-in request would have earned it.
--- - null for everything else: an address the project knows nothing of, the holder of a global or an account grant alone, an unconfirmed address, an expired or a claimed invitation, a null project and a blank address.
+-- The answer is one object, not a set of rows, so a caller with no entity still gets one row, whose `entities` is an empty array. The top level holds facts about the caller; every fact about an entity sits inside `entities`.
 --
--- A non-null candidate then takes its address slot, one per address per project per 60 seconds, and the answer is null when the slot is taken. The slot is the one invitation_link_request takes, under the same key: a later link of either kind stops an unopened earlier one of either kind, so the two requests are limited together. No slot is taken for an address no mail would go to.
+-- `password_set` is a fact about the caller: whether the caller's own account holds a password, as private.caller_password_set answers it for `auth.uid()`. It is there whether or not the caller edits anything, and it never says anything about another account, because nothing passed to this function reaches it.
 --
--- It creates no account, changes no invitation row and binds no address: the slot is all it writes. It takes a project and an address and nothing else, and it returns no user id, grant, name or reason. Which of the three outcomes an address got is known only to whoever can execute it, which is the service role alone.
+-- Only candidates and organizations are listed: factions and alliances have no arm. Project, account and global admins and holders of an entity-scope `admin` grant are listed with nothing, because only the editor grant makes an entity the caller's.
 --
--- SECURITY DEFINER because it reads auth.users and the grants of accounts that are not the caller's.
+-- p_project_id is REQUIRED and carries no DEFAULT, because one identity may hold editor grants in several projects and only the project names which of them are asked for.
+--
+-- SECURITY INVOKER: the grant lookup and the password fact are the two definer calls on the path, each answering for `auth.uid()` alone, and which rows come back is still decided by the caller's own row-level security. An entity is therefore listed exactly when get_entity_user_data returns it.
 --------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
+CREATE OR REPLACE FUNCTION public.get_user_entities (p_project_id uuid) RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+  SELECT jsonb_build_object(
+    'entities',
+    COALESCE(
+      (
+        SELECT jsonb_agg(e.entity ORDER BY e.type_order, e.id)
+        FROM (
+          SELECT 1 AS type_order, c.id,
+                 jsonb_build_object(
+                   'entity_type', 'candidate', 'id', c.id,
+                   'first_name', c.first_name, 'last_name', c.last_name,
+                   'short_name', c.short_name, 'image', c.image, 'color', c.color,
+                   'confirmed', c.confirmed) AS entity
+          FROM public.candidates c
+          WHERE c.project_id = p_project_id
+            AND c.id IN (SELECT private.caller_entity_ids (p_project_id, 'candidate'))
+          UNION ALL
+          SELECT 2 AS type_order, o.id,
+                 jsonb_build_object(
+                   'entity_type', 'organization', 'id', o.id,
+                   'name', o.name,
+                   'short_name', o.short_name, 'image', o.image, 'color', o.color,
+                   'confirmed', o.confirmed) AS entity
+          FROM public.organizations o
+          WHERE o.project_id = p_project_id
+            AND o.id IN (SELECT private.caller_entity_ids (p_project_id, 'organization'))
+        ) e
+      ),
+      '[]'::jsonb
+    ),
+    'password_set', private.caller_password_set()
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.get_user_entities (uuid)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION public.get_user_entities (uuid) TO authenticated;
+
+--------------------------------------------------------------------------------
+-- get_entity_user_data: the editable row of ONE entity the caller edits, or no row
+--
+-- Returns the row of the candidate or organization named by p_entity_type and p_entity_id when it lies in p_project_id and the caller holds an `(entity, <type>, <id>, editor)` grant on it, read from public.grants through private.caller_entity_ids. The entity is named by its type and id together, because the entity tables have independent primary keys and one uuid can name a candidate and an organization at once.
+--
+-- Returns no row -- never raises -- for an entity that is not the caller's, a type that does not match the id, an entity of another project and an id that does not exist, so the answer does not distinguish "does not exist" from "not yours". A faction or an alliance has no arm and returns no row.
+--
+-- One column list serves both types: `name` is NULL for a candidate, and `first_name` and `last_name` are NULL for an organization.
+--
+-- No parameter carries a DEFAULT: the project, the type and the id are each stated by the caller.
+--
+-- SECURITY INVOKER: the grant lookup is the one definer call on the path, and the row comes back only when the caller's own row-level security admits it too. The condition is `id IN (the caller's entity ids)` on the entity table itself, so a row that row-level security hides is not returned.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_entity_user_data (
   p_project_id uuid,
-  p_entity_type public.entity_type DEFAULT 'candidate'
+  p_entity_type public.entity_type,
+  p_entity_id uuid
 ) RETURNS TABLE (
   id uuid,
   project_id uuid,
@@ -6178,54 +7241,227 @@ CREATE OR REPLACE FUNCTION public.get_candidate_user_data (
   subtype text,
   custom_data jsonb,
   answers jsonb,
-  terms_of_use_accepted timestamptz,
   first_name text,
   last_name text
-) LANGUAGE plpgsql STABLE SECURITY INVOKER
+) LANGUAGE sql STABLE SECURITY INVOKER
 SET
   search_path = '' AS $$
-DECLARE
-  v_entity_ids uuid[];
-BEGIN
-  v_entity_ids := ARRAY (SELECT private.caller_entity_ids (p_project_id, p_entity_type));
-  IF cardinality(v_entity_ids) > 1 THEN
-    RAISE EXCEPTION 'the caller holds an editor grant on more than one % in this project', p_entity_type
-      USING ERRCODE = 'P0001', HINT = 'ERR_ENTITY_IDENTITY_AMBIGUOUS';
-  END IF;
-
-  -- The RETURNS TABLE names are OUT variables in plpgsql, so every column is alias-qualified.
-  RETURN QUERY
   SELECT c.id, c.project_id, NULL::jsonb, c.short_name, c.info,
          c.color, c.image, c.sort_order, c.subtype,
-         c.custom_data, c.answers, c.terms_of_use_accepted,
+         c.custom_data, c.answers,
          c.first_name, c.last_name
   FROM public.candidates c
-  WHERE c.id = ANY (v_entity_ids)
+  WHERE p_entity_type = 'candidate'
+    AND c.id = p_entity_id
     AND c.project_id = p_project_id
-    AND p_entity_type = 'candidate'
+    AND c.id IN (SELECT private.caller_entity_ids (p_project_id, 'candidate'))
   UNION ALL
   SELECT o.id, o.project_id, o.name, o.short_name, o.info,
          o.color, o.image, o.sort_order, o.subtype,
-         o.custom_data, o.answers, NULL::timestamptz,
+         o.custom_data, o.answers,
          NULL::text, NULL::text
   FROM public.organizations o
-  WHERE o.id = ANY (v_entity_ids)
+  WHERE p_entity_type = 'organization'
+    AND o.id = p_entity_id
     AND o.project_id = p_project_id
-    AND p_entity_type = 'organization';
+    AND o.id IN (SELECT private.caller_entity_ids (p_project_id, 'organization'));
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.get_entity_user_data (uuid, public.entity_type, uuid)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION public.get_entity_user_data (uuid, public.entity_type, uuid) TO authenticated;
+
+--------------------------------------------------------------------------------
+-- get_entity_nominations: the nominations of ONE entity the caller edits, each with the parent it stands under
+--
+-- Returns a jsonb array holding one object per nomination of the candidate or organization named by p_entity_type and p_entity_id in p_project_id, confirmed or not, ordered by sort_order with nulls last and then by id. An entity with no nomination gets an empty array.
+--
+-- The gate is the caller's own `(entity, <type>, <id>, editor)` grant, read from public.grants through private.caller_entity_ids. That is the lookup get_entity_user_data uses, so the two agree on whose entity it is. `user_can` is not asked: it answers yes for project, account and global admins, and through the child-nominee hop for the editor of a parent organization, who would then learn which other parties its candidate stands for. Only candidates and organizations are served: a faction or an alliance is refused even to its own editor.
+--
+-- The entity is named by its type and id together, because the entity tables have independent primary keys and one uuid can name a candidate and an organization at once. The type selects the one foreign key matched, so the nominations of the other entity carrying that id are not returned. No parameter carries a DEFAULT: the project, the type and the id are each stated by the caller.
+--
+-- The projection is an ALLOW-LIST built key by key, not `to_jsonb(row) - <deny-list>`: `id`, `election_id`, `election_name`, `constituency_id`, `constituency_name`, `election_round`, `election_symbol`, `confirmed`, `custom_data` and `parent`. The two names are the localized `name` columns as stored. `parent` is a JSON null when the nomination has none, and otherwise an object of exactly `entity_type`, `entity_id`, `name` and `short_name` of the entity the parent nomination nominates. Withheld: `created_by`, every other column of the parent entity and every column of the parent's nomination.
+--
+-- Returns NULL -- never raises -- when a parameter is NULL, when the type is not served, and when the caller holds no editor grant on the named entity in the named project, which covers another user's entity, an entity of another project and an id that does not exist. The answer therefore does not distinguish "does not exist" from "not yours", and NULL is a different answer from the empty array. The condition refuses on anything other than a positive match, so a NULL comparison refuses too.
+--
+-- SECURITY DEFINER because a parent is returned where the caller's own SELECT policies refuse both its nomination and its entity row: an unconfirmed parent, and any parent in a project that is not open for voters. search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_entity_nominations (
+  p_project_id uuid,
+  p_entity_type public.entity_type,
+  p_entity_id uuid
+) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+BEGIN
+  IF p_project_id IS NULL OR p_entity_type IS NULL OR p_entity_id IS NULL
+     OR (
+       p_entity_type IN ('candidate', 'organization')
+       AND p_entity_id IN (SELECT private.caller_entity_ids(p_project_id, p_entity_type))
+     ) IS NOT TRUE THEN
+    RETURN NULL;
+  END IF;
+
+  RETURN COALESCE(
+    (
+      SELECT jsonb_agg(
+        jsonb_build_object(
+          'id', n.id,
+          'election_id', n.election_id, 'election_name', e.name,
+          'constituency_id', n.constituency_id, 'constituency_name', c.name,
+          'election_round', n.election_round, 'election_symbol', n.election_symbol,
+          'confirmed', n.confirmed, 'custom_data', n.custom_data,
+          'parent', CASE WHEN p.id IS NULL THEN NULL ELSE jsonb_build_object(
+            'entity_type', p.entity_type,
+            'entity_id', COALESCE(p.organization_id, p.faction_id, p.alliance_id),
+            'name', COALESCE(po.name, pf.name, pa.name),
+            'short_name', COALESCE(po.short_name, pf.short_name, pa.short_name)) END)
+        ORDER BY n.sort_order NULLS LAST, n.id)
+      FROM public.nominations n
+      JOIN public.elections e ON e.id = n.election_id
+      JOIN public.constituencies c ON c.id = n.constituency_id
+      LEFT JOIN public.nominations p ON p.id = n.parent_nomination_id
+      LEFT JOIN public.organizations po ON po.id = p.organization_id
+      LEFT JOIN public.factions pf ON pf.id = p.faction_id
+      LEFT JOIN public.alliances pa ON pa.id = p.alliance_id
+      WHERE n.project_id = p_project_id
+        AND (
+          (p_entity_type = 'candidate' AND n.candidate_id = p_entity_id)
+          OR (p_entity_type = 'organization' AND n.organization_id = p_entity_id)
+        )
+    ),
+    '[]'::jsonb
+  );
 END;
 $$;
 
+REVOKE
+EXECUTE ON FUNCTION public.get_entity_nominations (uuid, public.entity_type, uuid)
+FROM
+  PUBLIC,
+  anon;
+
 GRANT
-EXECUTE ON FUNCTION public.get_candidate_user_data (uuid, public.entity_type) TO authenticated;
+EXECUTE ON FUNCTION public.get_entity_nominations (uuid, public.entity_type, uuid) TO authenticated;
 
 --------------------------------------------------------------------------------
--- invitation_code_claimant_email: the address of the user who claimed a code
+-- get_nomination_parent_options: the entities ONE entity the caller edits may name as its parent
 --
--- Returns the claimant's address for a claimed code row of p_project_id whose claimant still exists, and null otherwise. The address is what a password sign-in by code is attempted against, so each answer is counted against the code: ten per fifteen minutes, and null beyond that, which is the answer an unknown code gets. A code that names no claimed row, or one whose claimant is gone, is not counted and writes no throttle key.
+-- Returns a jsonb array holding one object per entity the candidate or organization named by p_entity_type and p_entity_id may stand under in p_project_id: for a candidate every confirmed organization of the project, for an organization every alliance of the project, confirmed or not. The array is ordered by sort_order with nulls last and then by id. A project that holds no such entity gets an empty array.
 --
--- The limit is keyed on the code row. A caller that guesses passwords for one code meets it whatever address or header it sends.
+-- The gate is the one get_entity_nominations asks: the caller's own `(entity, <type>, <id>, editor)` grant, read from public.grants through private.caller_entity_ids, which keeps only entities that lie in p_project_id. The project whose entities are listed is therefore always one in which the caller edits the named entity: p_project_id selects among the caller's own grants and cannot point the read at another project. `user_can` is not asked, so a project admin and the editor of a parent organization are refused; they read the entity tables through their own policies. Only candidates and organizations are served: a faction stands under the organization it belongs to and an alliance under nothing.
 --
--- SECURITY DEFINER because it reads auth.users and `code_hash`. It returns a user's address to whoever can execute it, which is the service role alone.
+-- No parameter carries a DEFAULT: the project, the type, the id and the contests are each stated by the caller. p_contests is a JSON array of objects, each naming an `election_id` and a `constituency_id`; any other key of such an object is not read. An empty array is admitted.
+--
+-- The projection is an ALLOW-LIST built key by key, not `to_jsonb(row) - <deny-list>`: `id`, `entity_type`, `name`, `short_name`, `color`, `image` and `nominated`. `name`, `short_name`, `color` and `image` are the columns as stored, a JSON null where the column is NULL. `nominated` is a JSON array of `{election_id, constituency_id}` objects: those of the asked contests at which the option holds a nomination at the election's current_round, each once, in the order asked. A contest whose election is not one of p_project_id is never among them. Withheld: answers, custom_data, info, external_id, confirmed, subtype, sort_order, project_id, the two timestamps and every column of the option's nominations.
+--
+-- Returns NULL -- never raises -- when one of the first three parameters is NULL, when the type is not served, when the caller holds no editor grant on the named entity in the named project, and when p_contests is NULL, is not a JSON array, or holds a member that is not an object whose `election_id` and `constituency_id` are strings that read as uuids. NULL is a refusal and a different answer from the empty array, which says that the project lists nothing the entity may name. Each condition refuses on anything other than a positive match, so a NULL comparison refuses too.
+--
+-- SECURITY DEFINER because an entity's editor cannot read the project's organizations and alliances through its own SELECT policies -- none of them in a project that is not open for voters, and nowhere one that has no confirmed nomination -- and a policy that admitted those rows would return every column of them. search_path is pinned as on every definer function in this schema. EXECUTE is authenticated only.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_nomination_parent_options (
+  p_project_id uuid,
+  p_entity_type public.entity_type,
+  p_entity_id uuid,
+  p_contests jsonb
+) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+BEGIN
+  IF p_project_id IS NULL OR p_entity_type IS NULL OR p_entity_id IS NULL
+     OR (
+       p_entity_type IN ('candidate', 'organization')
+       AND p_entity_id IN (SELECT private.caller_entity_ids(p_project_id, p_entity_type))
+     ) IS NOT TRUE THEN
+    RETURN NULL;
+  END IF;
+
+  IF jsonb_typeof(p_contests) IS DISTINCT FROM 'array' THEN
+    RETURN NULL;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM jsonb_array_elements(p_contests) AS m (contest)
+    WHERE (
+      jsonb_typeof(m.contest) = 'object'
+      AND jsonb_typeof(m.contest -> 'election_id') = 'string'
+      AND jsonb_typeof(m.contest -> 'constituency_id') = 'string'
+      AND pg_input_is_valid(m.contest ->> 'election_id', 'uuid')
+      AND pg_input_is_valid(m.contest ->> 'constituency_id', 'uuid')
+    ) IS NOT TRUE
+  ) THEN
+    RETURN NULL;
+  END IF;
+
+  RETURN COALESCE(
+    (
+      WITH asked AS (
+        SELECT k.election_id, k.constituency_id, e.current_round, min(k.ord) AS ord
+        FROM (
+          SELECT (m.contest ->> 'election_id')::uuid AS election_id,
+                 (m.contest ->> 'constituency_id')::uuid AS constituency_id,
+                 m.ord
+          FROM jsonb_array_elements(p_contests) WITH ORDINALITY AS m (contest, ord)
+        ) k
+        JOIN public.elections e ON e.id = k.election_id AND e.project_id = p_project_id
+        GROUP BY k.election_id, k.constituency_id, e.current_round
+      ),
+      listed AS (
+        SELECT 'organization'::public.entity_type AS entity_type,
+               o.id, o.name, o.short_name, o.color, o.image, o.sort_order
+        FROM public.organizations o
+        WHERE p_entity_type = 'candidate' AND o.project_id = p_project_id AND o.confirmed
+        UNION ALL
+        SELECT 'alliance'::public.entity_type AS entity_type,
+               a.id, a.name, a.short_name, a.color, a.image, a.sort_order
+        FROM public.alliances a
+        WHERE p_entity_type = 'organization' AND a.project_id = p_project_id
+      )
+      SELECT jsonb_agg(
+        jsonb_build_object(
+          'id', l.id, 'entity_type', l.entity_type,
+          'name', l.name, 'short_name', l.short_name, 'color', l.color, 'image', l.image,
+          'nominated', COALESCE(
+            (
+              SELECT jsonb_agg(
+                jsonb_build_object('election_id', k.election_id, 'constituency_id', k.constituency_id)
+                ORDER BY k.ord)
+              FROM asked k
+              WHERE private.nomination_exists_in_contest(
+                l.entity_type, l.id, k.election_id, k.constituency_id, k.current_round)
+            ),
+            '[]'::jsonb))
+        ORDER BY l.sort_order NULLS LAST, l.id)
+      FROM listed l
+    ),
+    '[]'::jsonb
+  );
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.get_nomination_parent_options (uuid, public.entity_type, uuid, jsonb)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION public.get_nomination_parent_options (uuid, public.entity_type, uuid, jsonb) TO authenticated;
+
+--------------------------------------------------------------------------------
+-- upsert_answers: atomic answer write for a single entity
+--
+-- The entity is named by its type and id together, because the entity tables have independent primary keys and one UUID can name a candidate and an organization at once. The type selects the one table written: 'candidate' writes public.candidates and 'organization' writes public.organizations, the only two tables carrying an answers column. Any other type, and a NULL type, raises before any table is written.
+--
+-- p_overwrite = true replaces the stored answers with p_answers; otherwise p_answers is merged over them. Either way, keys whose value is JSON null are dropped.
+--
+-- SECURITY INVOKER: the UPDATE is gated by the named table's RLS policies, so a caller can update only the answers of an entity those policies let them edit. An id that matches no row the caller may update raises the not-found exception.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.upsert_answers (
   p_entity_type public.entity_type,
@@ -6275,18 +7511,650 @@ $$;
 
 GRANT
 EXECUTE ON FUNCTION public.upsert_answers (public.entity_type, uuid, jsonb, boolean) TO authenticated;
+
+--------------------------------------------------------------------------------
+-- nomination_list_checked: is this a nominations array a writer may take
+--
+-- Raises SQLSTATE 22023 with `<p_prefix>: <p_label> must be a JSON array` for anything that is not a JSON array, an SQL NULL included, and with `<p_prefix>: <p_label> holds more than 1000 nominations` for an array of more than 1000 members. It reads no member, so a writer asks it before it checks any object: the bound limits the work one call can ask of the checks and the writes that follow. Every writer of a nominations array asks it, so the bound is stated here and nowhere else.
+--
+-- The writers are SECURITY INVOKER and call it as their caller, so `authenticated` and `service_role` hold EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.nomination_list_checked (p_list jsonb, p_prefix text, p_label text) RETURNS void LANGUAGE plpgsql IMMUTABLE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  c_max_nominations constant integer := 1000;
+BEGIN
+  IF jsonb_typeof(p_list) IS DISTINCT FROM 'array' THEN
+    RAISE EXCEPTION '%: % must be a JSON array', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF jsonb_array_length(p_list) > c_max_nominations THEN
+    RAISE EXCEPTION '%: % holds more than % nominations', p_prefix, p_label, c_max_nominations
+      USING ERRCODE = '22023';
+  END IF;
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.nomination_list_checked (jsonb, text, text)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.nomination_list_checked (jsonb, text, text) TO authenticated,
+service_role;
+
+--------------------------------------------------------------------------------
+-- nomination_object_checked: the shape of ONE nomination object
+--
+-- Checks the keys of one object of a nominations array, in this order, and raises SQLSTATE 22023 with a message that begins `<p_prefix>: <p_label> ` at the first fault: the object itself, `election_id` and `constituency_id` (each a string that reads as a uuid), `id` (absent, or a string that reads as a uuid; a JSON null is refused), `election_symbol` (a string or null, at most 50 characters after the trim), and `parent`, an object whose `kind` is `none`, `entity`, `other` or `keep`. For `entity` the parent's `entity_type` must be p_parent_type and its `entity_id` a uuid; for `other` the `name` must be a string that is not blank and holds at most 100 characters after the trim. Any other key is not read. p_parent_type is named in the message that refuses another type.
+--
+-- Trimming removes leading and trailing white space of any kind, the Unicode white-space characters and the byte order mark, and lengths are counted in characters. The white-space class, the trim and the two caps are stated here and nowhere else.
+--
+-- It checks the shape alone. Whatever depends on the rows -- whether an `id` names a nomination the writer may write, whether the election can be read, whether `keep` is allowed -- is the writer's to check after it.
+--
+-- Answers `{"id", "election_id", "constituency_id", "symbol", "kind", "parent_entity_id", "name"}`: `id` null when the object names none, `symbol` trimmed with a blank one as null, `parent_entity_id` only for `entity` and `name`, trimmed, only for `other`; every other value is null.
+--
+-- STABLE because `pg_input_is_valid` is. The writers are SECURITY INVOKER and call it as their caller, so `authenticated` and `service_role` hold EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.nomination_object_checked (
+  p_object jsonb,
+  p_parent_type public.entity_type,
+  p_prefix text,
+  p_label text
+) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  -- White space of any kind: the Unicode white-space characters and the byte order mark.
+  c_blank constant text := '[\u0009-\u000d\u0020\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]';
+  c_trim constant text := '^' || c_blank || '+|' || c_blank || '+$';
+  v_symbol text;
+  v_parent jsonb;
+  v_kind text;
+  v_parent_entity_id uuid;
+  v_name text;
+BEGIN
+  IF jsonb_typeof(p_object) IS DISTINCT FROM 'object' THEN
+    RAISE EXCEPTION '%: % must be a JSON object', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF jsonb_typeof(p_object -> 'election_id') IS DISTINCT FROM 'string'
+     OR NOT pg_input_is_valid(p_object ->> 'election_id', 'uuid') THEN
+    RAISE EXCEPTION '%: % needs an election_id that is a uuid', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF jsonb_typeof(p_object -> 'constituency_id') IS DISTINCT FROM 'string'
+     OR NOT pg_input_is_valid(p_object ->> 'constituency_id', 'uuid') THEN
+    RAISE EXCEPTION '%: % needs a constituency_id that is a uuid', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF p_object ? 'id' THEN
+    IF jsonb_typeof(p_object -> 'id') <> 'string'
+       OR NOT pg_input_is_valid(p_object ->> 'id', 'uuid') THEN
+      RAISE EXCEPTION '%: % has an id that is not a uuid', p_prefix, p_label
+        USING ERRCODE = '22023';
+    END IF;
+  END IF;
+
+  IF jsonb_typeof(p_object -> 'election_symbol') NOT IN ('string', 'null') THEN
+    RAISE EXCEPTION '%: % has an election_symbol that is neither a string nor null', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+  v_symbol := NULLIF(regexp_replace(p_object ->> 'election_symbol', c_trim, '', 'g'), '');
+  IF char_length(v_symbol) > 50 THEN
+    RAISE EXCEPTION '%: % has an election_symbol longer than 50 characters', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+
+  v_parent := p_object -> 'parent';
+  IF jsonb_typeof(v_parent) IS DISTINCT FROM 'object' THEN
+    RAISE EXCEPTION '%: % needs a parent that is a JSON object', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+  IF jsonb_typeof(v_parent -> 'kind') IS DISTINCT FROM 'string'
+     OR (v_parent ->> 'kind') NOT IN ('none', 'entity', 'other', 'keep') THEN
+    RAISE EXCEPTION '%: % has a parent whose kind is not none, entity, other or keep', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+  v_kind := v_parent ->> 'kind';
+
+  IF v_kind = 'entity' THEN
+    IF jsonb_typeof(v_parent -> 'entity_type') IS DISTINCT FROM 'string'
+       OR (v_parent ->> 'entity_type') IS DISTINCT FROM p_parent_type::text THEN
+      RAISE EXCEPTION '%: % names a parent whose entity_type is not %', p_prefix, p_label, p_parent_type
+        USING ERRCODE = '22023';
+    END IF;
+    IF jsonb_typeof(v_parent -> 'entity_id') IS DISTINCT FROM 'string'
+       OR NOT pg_input_is_valid(v_parent ->> 'entity_id', 'uuid') THEN
+      RAISE EXCEPTION '%: % names a parent whose entity_id is not a uuid', p_prefix, p_label
+        USING ERRCODE = '22023';
+    END IF;
+    v_parent_entity_id := (v_parent ->> 'entity_id')::uuid;
+  ELSIF v_kind = 'other' THEN
+    IF jsonb_typeof(v_parent -> 'name') IS DISTINCT FROM 'string' THEN
+      RAISE EXCEPTION '%: % names a parent whose name is not a string', p_prefix, p_label
+        USING ERRCODE = '22023';
+    END IF;
+    v_name := regexp_replace(v_parent ->> 'name', c_trim, '', 'g');
+    IF v_name = '' THEN
+      RAISE EXCEPTION '%: % names a parent whose name is blank', p_prefix, p_label
+        USING ERRCODE = '22023';
+    END IF;
+    IF char_length(v_name) > 100 THEN
+      RAISE EXCEPTION '%: % names a parent whose name is longer than 100 characters', p_prefix, p_label
+        USING ERRCODE = '22023';
+    END IF;
+  END IF;
+
+  RETURN jsonb_build_object(
+    'id', (p_object ->> 'id')::uuid,
+    'election_id', (p_object ->> 'election_id')::uuid,
+    'constituency_id', (p_object ->> 'constituency_id')::uuid,
+    'symbol', v_symbol,
+    'kind', v_kind,
+    'parent_entity_id', v_parent_entity_id,
+    'name', v_name);
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.nomination_object_checked (jsonb, public.entity_type, text, text)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.nomination_object_checked (jsonb, public.entity_type, text, text) TO authenticated,
+service_role;
+
+--------------------------------------------------------------------------------
+-- parent_nomination_resolved: a named parent's nomination at ONE contest, found or created
+--
+-- Answers `nomination_id`, the nomination the organization or alliance named by p_parent_type and p_parent_entity_id holds at the election, constituency and round given, as `private.nomination_id_in_contest` finds it, and `created`, whether this call inserted it. Where the parent holds none, the call inserts the parent's row -- the project, the parent, the election, the constituency and the round, and nothing else, so it is unconfirmed and carries no symbol, parent or custom data -- and asks for it again; the caller may be unable to read the new row, so its id is asked for and not returned by the insert. `nomination_id` is null when that second lookup still finds nothing, and for a parent type other than organization and alliance, which has no such row; the writer then raises its own refusal.
+--
+-- A parent that is no entity of p_project_id, an id that names no entity included, is refused first with SQLSTATE 22023 and `<p_prefix>: <p_label> names a parent that is no entity of the nomination's project`, before anything is read or written.
+--
+-- SECURITY INVOKER: the insert runs as the caller, so the insert policies of public.nominations decide who may create a party's or an alliance's row, and an entity's editor meets the cap on the unconfirmed parent nominations it originates.
+--
+-- Two calls that create the same parent's nomination at the same moment are decided by the uniqueness key `nominations_entity_parent_contest_key`: the second call's insert is refused, its writer's whole call with it, and the call succeeds when it is made again.
+--
+-- The writers are SECURITY INVOKER and call it as their caller, so `authenticated` and `service_role` hold EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.parent_nomination_resolved (
+  p_project_id uuid,
+  p_parent_type public.entity_type,
+  p_parent_entity_id uuid,
+  p_election_id uuid,
+  p_constituency_id uuid,
+  p_election_round integer,
+  p_prefix text,
+  p_label text,
+  OUT nomination_id uuid,
+  OUT created boolean
+) LANGUAGE plpgsql VOLATILE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+BEGIN
+  IF private.entity_project_id(p_parent_type, p_parent_entity_id) IS DISTINCT FROM p_project_id THEN
+    RAISE EXCEPTION '%: % names a parent that is no entity of the nomination''s project', p_prefix, p_label
+      USING ERRCODE = '22023';
+  END IF;
+
+  created := false;
+  nomination_id := private.nomination_id_in_contest(
+    p_parent_type, p_parent_entity_id, p_election_id, p_constituency_id, p_election_round);
+
+  IF nomination_id IS NULL THEN
+    IF p_parent_type = 'organization' THEN
+      INSERT INTO public.nominations (project_id, organization_id, election_id, constituency_id, election_round)
+      VALUES (p_project_id, p_parent_entity_id, p_election_id, p_constituency_id, p_election_round);
+      created := true;
+    ELSIF p_parent_type = 'alliance' THEN
+      INSERT INTO public.nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES (p_project_id, p_parent_entity_id, p_election_id, p_constituency_id, p_election_round);
+      created := true;
+    END IF;
+
+    IF created THEN
+      nomination_id := private.nomination_id_in_contest(
+        p_parent_type, p_parent_entity_id, p_election_id, p_constituency_id, p_election_round);
+    END IF;
+  END IF;
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.parent_nomination_resolved (
+  uuid,
+  public.entity_type,
+  uuid,
+  uuid,
+  uuid,
+  integer,
+  text,
+  text
+)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.parent_nomination_resolved (
+  uuid,
+  public.entity_type,
+  uuid,
+  uuid,
+  uuid,
+  integer,
+  text,
+  text
+) TO authenticated,
+service_role;
+
+--------------------------------------------------------------------------------
+-- set_entity_nominations: write the whole set of nominations of ONE entity the caller edits, in one transaction
+--
+-- p_nominations states every nomination the candidate or organization named by p_entity_type and p_entity_id is to hold among the rows this function may write. The call inserts the nominations the set adds, updates the ones whose values differ, creates the nomination of a named party or alliance that has none at the contest, and deletes the ones the set leaves out. It is one statement of the caller's transaction, so either all of it is stored or none of it is.
+--
+-- SECURITY INVOKER: every statement runs as the caller, so the policies of public.nominations, its column grants and its triggers stay the only gate, and a direct write of the same rows meets the same refusals. The body holds one authority question, asked through `user_can` before anything is read: a caller that does not hold `nomination.edit` on the entity is refused with SQLSTATE 42501. search_path is pinned and every name in the body is schema-qualified.
+--
+-- p_nominations is a JSON array of objects, and an empty array is a valid set. The keys of one object:
+--   id              - a uuid: the object describes that nomination of the entity. Absent: it describes a new one.
+--   election_id     - a uuid, required. With `id` it must be the stored row's.
+--   constituency_id - a uuid, required. With `id`, a value other than the stored one moves the nomination.
+--   election_symbol - a string or null. It is trimmed; a blank one is stored as NULL, and one longer than 50 characters is refused.
+--   parent          - an object with a `kind`: `none` (no parent and no requested name), `entity` with `entity_type` and `entity_id` (stand under that organization's or alliance's nomination at the contest), `other` with `name` (store the name of a parent that is not in the system and link nothing) or `keep` (leave the row's parent and requested name as they are; only with an `id`, and not on a move).
+-- Any other key is not read. A candidate names an organization and an organization an alliance. The name of `other` is trimmed, must not be blank and may hold at most 100 characters. Trimming removes leading and trailing white space of any kind, lengths are counted in characters, and a submitted value is compared with a stored one by exact equality after the trim.
+--
+-- A malformed argument or object is refused with SQLSTATE 22023 and a message that begins `set_entity_nominations: ` and, for an object, names it as `p_nominations[<index>]`, counted from zero. The whole argument is validated before anything is written. The array is checked by `private.nomination_list_checked` and the shape of each object by `private.nomination_object_checked`, which state those rules for every writer of nominations; the checks that read rows follow each object's shape check.
+--
+-- An array of more than 1000 nominations is refused before any object is read. A parent that is no entity of the entity's project, or an id that names no entity, is refused with SQLSTATE 22023 when the parent is resolved, so nothing the call wrote before it is stored.
+--
+-- The reach: the function writes only the nominations of the entity that the caller can read, whose election_round is their election's current_round, in an election for whose type `nomination_shape_rule` admits the entity's type. A nomination in reach that the set does not name is deleted. Every other nomination of the entity is neither updated nor deleted, and an `id` that names one is refused. A new nomination is written at its election's current_round, read here: the argument carries no round.
+--
+-- Several nominations of one election are accepted only where each names a stored row by `id`: an object without an `id` must be the only object of its election.
+--
+-- The order of the statements:
+--   1. Delete the nominations in reach that the set does not name, and the stored row of every move. A changed constituency is a delete and an insert, never an update of the row's contest, so the foreign key on `parent_nomination_id` refuses to move, as it refuses to delete, a nomination that has nominations listed under it (SQLSTATE 23503). The new row of a move carries the symbol and the parent the object states and nothing else of the old row.
+--   2. Update each kept nomination whose symbol, parent or requested name differs from what is stored, naming only the columns that differ, and the confirmation wherever the custom data is written. A nomination whose values did not change is not written, so it keeps its confirmation and its updated_at; `enforce_nomination_confirmation` turns the confirmation of every row an entity's editor does write off.
+--   3. Insert each new nomination with no parent, and then link it.
+-- For `entity`, the parent's nomination at the contest is asked of `private.parent_nomination_resolved`, which runs as the caller and reads the row through `private.nomination_id_in_contest`, because the caller's own policies do not let it read that row. Where there is none, the parent's nomination is inserted, unconfirmed and carrying nothing but its contest, and asked for again. The caller's own row comes first because `entity_insert_parent_nominations` admits a parent's row only to a caller that already holds a nomination at that contest. Two callers that create the same parent's nomination at once are not reconciled: the second call is refused whole on the uniqueness key and succeeds when it is made again.
+--
+-- The requested name lives in `custom_data.requestedParentOrganization`. The custom data is written by merging: `other` sets the key, `entity` and `none` remove it, and every other key is kept.
+--
+-- A nomination that carries a requested name cannot be confirmed, and `enforce_nomination_confirmation` judges that rule on the row as the statement writes it, before it turns an edited row's confirmation off. So every UPDATE that writes the custom data states the confirmation too: off where the custom data it writes carries a requested name, and as stored otherwise. A confirmed nomination can then be given a requested name, and is confirmed no longer.
+--
+-- Row-level security refuses an UPDATE and a DELETE without an error, by hiding the row: under the nominations lock such a statement affects no row. So the function reads how many rows each UPDATE and DELETE affected and raises SQLSTATE 42501 on a shortfall, and a caller is never answered that a locked or vanished row was saved. The rows in reach are read with no locking clause, because under the lock the update policy hides them from a locking read.
+--
+-- Where an election's type requires a candidate's nomination to have a parent or a requested name, `nominations_parent_required` judges it when the transaction ends. The function forces that constraint as its last statement and sets it back to deferred, so the refusal (SQLSTATE 23514) is raised inside the call, and no later statement of the transaction meets the constraint immediate.
+--
+-- Returns `{"inserted", "updated", "deleted", "unchanged", "parents_created"}`, each a count of nominations. A move counts once under `deleted` and once under `inserted`; a nomination that is inserted and then linked counts once, under `inserted`; `parents_created` counts the nominations created for a party or an alliance.
+--
+-- A move leaves behind the nomination that an earlier call created for the parent at the old contest: it is not the caller's row, and the caller may not delete it.
+--
+-- 43-set-entity-nominations.test.sql asserts each rule above.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.set_entity_nominations (
+  p_entity_type public.entity_type,
+  p_entity_id uuid,
+  p_nominations jsonb
+) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  c_requested constant text := 'requestedParentOrganization';
+  c_unwritten constant text := 'set_entity_nominations: a nomination could not be written; nominations are locked or the rows are no longer the caller''s';
+  v_project_id uuid;
+  v_parent_type public.entity_type;
+  v_reach jsonb;
+  v_plan jsonb := '[]'::jsonb;
+  v_item jsonb;
+  v_ordinality bigint;
+  v_index bigint;
+  v_checked jsonb;
+  v_stored jsonb;
+  v_id uuid;
+  v_election_id uuid;
+  v_constituency_id uuid;
+  v_round integer;
+  v_symbol text;
+  v_kind text;
+  v_parent_entity_id uuid;
+  v_name text;
+  v_is_new boolean;
+  v_named_ids uuid[] := ARRAY[]::uuid[];
+  v_kept_ids uuid[] := ARRAY[]::uuid[];
+  v_delete_ids uuid[];
+  v_rows bigint;
+  v_row_id uuid;
+  v_stored_symbol text;
+  v_stored_parent uuid;
+  v_stored_custom jsonb;
+  v_target_parent uuid;
+  v_target_custom jsonb;
+  v_symbol_differs boolean;
+  v_parent_differs boolean;
+  v_custom_differs boolean;
+  v_parent_created boolean;
+  v_inserted integer := 0;
+  v_updated integer := 0;
+  v_deleted integer := 0;
+  v_unchanged integer := 0;
+  v_parents_created integer := 0;
+BEGIN
+  IF p_entity_type IS NULL OR p_entity_id IS NULL OR p_nominations IS NULL THEN
+    RAISE EXCEPTION 'set_entity_nominations: p_entity_type, p_entity_id and p_nominations must each be stated'
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF p_entity_type NOT IN ('candidate', 'organization') THEN
+    RAISE EXCEPTION 'set_entity_nominations: p_entity_type must be candidate or organization'
+      USING ERRCODE = '22023';
+  END IF;
+
+  v_project_id := private.entity_project_id(p_entity_type, p_entity_id);
+
+  IF v_project_id IS NULL
+     OR NOT COALESCE(public.user_can('entity', p_entity_id, 'nomination.edit', p_entity_type), false) THEN
+    RAISE EXCEPTION 'set_entity_nominations: the caller does not hold nomination.edit on the named entity'
+      USING ERRCODE = '42501';
+  END IF;
+
+  PERFORM private.nomination_list_checked(p_nominations, 'set_entity_nominations', 'p_nominations');
+
+  -- A candidate stands under an organization and an organization under an alliance.
+  v_parent_type := CASE p_entity_type
+    WHEN 'candidate' THEN 'organization'::public.entity_type
+    ELSE 'alliance'::public.entity_type
+  END;
+
+  -- The reach, keyed by nomination id, read as the caller and with no locking clause.
+  SELECT COALESCE(
+    jsonb_object_agg(
+      n.id::text,
+      jsonb_build_object(
+        'election_id', n.election_id,
+        'constituency_id', n.constituency_id,
+        'election_symbol', n.election_symbol,
+        'parent_nomination_id', n.parent_nomination_id,
+        'custom_data', n.custom_data)),
+    '{}'::jsonb)
+  INTO v_reach
+  FROM public.nominations n
+  JOIN public.elections e ON e.id = n.election_id
+  WHERE (
+      (p_entity_type = 'candidate' AND n.candidate_id = p_entity_id)
+      OR (p_entity_type = 'organization' AND n.organization_id = p_entity_id)
+    )
+    AND n.election_round IS NOT DISTINCT FROM e.current_round
+    AND public.nomination_shape_rule(e.election_type, p_entity_type) IN ('admitted', 'parent_required');
+
+  -- Validate every object before anything is written, and note what each one asks for.
+  FOR v_item, v_ordinality IN
+    SELECT t.item, t.ordinality
+    FROM jsonb_array_elements(p_nominations) WITH ORDINALITY AS t (item, ordinality)
+  LOOP
+    v_index := v_ordinality - 1;
+
+    -- The shape of the object, then the checks that read rows.
+    v_checked := private.nomination_object_checked(
+      v_item, v_parent_type, 'set_entity_nominations', format('p_nominations[%s]', v_index));
+    v_id := (v_checked ->> 'id')::uuid;
+    v_election_id := (v_checked ->> 'election_id')::uuid;
+    v_constituency_id := (v_checked ->> 'constituency_id')::uuid;
+    v_symbol := v_checked ->> 'symbol';
+    v_kind := v_checked ->> 'kind';
+    v_parent_entity_id := (v_checked ->> 'parent_entity_id')::uuid;
+    v_name := v_checked ->> 'name';
+
+    v_stored := NULL;
+    v_is_new := true;
+    IF v_id IS NOT NULL THEN
+      IF v_id = ANY (v_named_ids) THEN
+        RAISE EXCEPTION 'set_entity_nominations: p_nominations[%] names an id that another object of the set names', v_index
+          USING ERRCODE = '22023';
+      END IF;
+      v_named_ids := v_named_ids || v_id;
+
+      v_stored := v_reach -> v_id::text;
+      IF v_stored IS NULL THEN
+        RAISE EXCEPTION 'set_entity_nominations: p_nominations[%] names an id that is no nomination of the entity this function may write', v_index
+          USING ERRCODE = '22023';
+      END IF;
+
+      IF (v_stored ->> 'election_id')::uuid <> v_election_id THEN
+        RAISE EXCEPTION 'set_entity_nominations: p_nominations[%] names an election_id other than its nomination''s', v_index
+          USING ERRCODE = '22023';
+      END IF;
+
+      -- A changed constituency is a move: the stored row is deleted and a new one inserted.
+      v_is_new := (v_stored ->> 'constituency_id')::uuid <> v_constituency_id;
+      IF NOT v_is_new THEN
+        v_kept_ids := v_kept_ids || v_id;
+      END IF;
+    END IF;
+
+    SELECT e.current_round INTO v_round
+    FROM public.elections e
+    WHERE e.id = v_election_id;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'set_entity_nominations: p_nominations[%] names an election_id that is no election the caller can read', v_index
+        USING ERRCODE = '22023';
+    END IF;
+
+    IF v_kind = 'keep' AND v_is_new THEN
+      RAISE EXCEPTION 'set_entity_nominations: p_nominations[%] keeps a parent, which only an object that names an id and does not change its constituency may', v_index
+        USING ERRCODE = '22023';
+    END IF;
+
+    v_plan := v_plan || jsonb_build_object(
+      'index', v_index,
+      'id', v_id,
+      'new', v_is_new,
+      'election_id', v_election_id,
+      'constituency_id', v_constituency_id,
+      'round', v_round,
+      'symbol', v_symbol,
+      'kind', v_kind,
+      'parent_entity_id', v_parent_entity_id,
+      'name', v_name);
+  END LOOP;
+
+  -- An object without an id must be the only object of its election.
+  SELECT min((a.item ->> 'index')::bigint) INTO v_index
+  FROM jsonb_array_elements(v_plan) AS a (item)
+  WHERE a.item ->> 'id' IS NULL
+    AND EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements(v_plan) AS b (item)
+      WHERE b.item ->> 'election_id' = a.item ->> 'election_id'
+        AND (
+          (b.item ->> 'index')::bigint < (a.item ->> 'index')::bigint
+          OR ((b.item ->> 'index')::bigint > (a.item ->> 'index')::bigint AND b.item ->> 'id' IS NOT NULL)
+        )
+    );
+  IF v_index IS NOT NULL THEN
+    RAISE EXCEPTION 'set_entity_nominations: p_nominations[%] is a new nomination in an election for which the set holds another object', v_index
+      USING ERRCODE = '22023';
+  END IF;
+
+  -- 1. The rows in reach that the set does not keep: the ones it leaves out and the stored row of every move.
+  SELECT COALESCE(array_agg(k.id), ARRAY[]::uuid[]) INTO v_delete_ids
+  FROM (SELECT r.key::uuid AS id FROM jsonb_object_keys(v_reach) AS r (key)) k
+  WHERE k.id <> ALL (v_kept_ids);
+
+  IF cardinality(v_delete_ids) > 0 THEN
+    DELETE FROM public.nominations n
+    WHERE n.id = ANY (v_delete_ids);
+    GET DIAGNOSTICS v_rows = ROW_COUNT;
+    IF v_rows <> cardinality(v_delete_ids) THEN
+      RAISE EXCEPTION USING MESSAGE = c_unwritten, ERRCODE = '42501';
+    END IF;
+    v_deleted := cardinality(v_delete_ids);
+  END IF;
+
+  -- 2 and 3. The kept rows first, then the new ones, each in the order of the set.
+  FOR v_item IN
+    SELECT t.item
+    FROM jsonb_array_elements(v_plan) AS t (item)
+    ORDER BY (t.item ->> 'new')::boolean, (t.item ->> 'index')::bigint
+  LOOP
+    v_is_new := (v_item ->> 'new')::boolean;
+    v_election_id := (v_item ->> 'election_id')::uuid;
+    v_constituency_id := (v_item ->> 'constituency_id')::uuid;
+    v_round := (v_item ->> 'round')::integer;
+    v_symbol := v_item ->> 'symbol';
+    v_kind := v_item ->> 'kind';
+    v_parent_entity_id := (v_item ->> 'parent_entity_id')::uuid;
+    v_name := v_item ->> 'name';
+
+    IF v_is_new THEN
+      -- The caller's own row, with no parent. Its id is the caller's to read.
+      v_stored_symbol := v_symbol;
+      v_stored_parent := NULL;
+      v_stored_custom := CASE WHEN v_kind = 'other' THEN jsonb_build_object(c_requested, v_name) END;
+
+      INSERT INTO public.nominations (
+        project_id, candidate_id, organization_id,
+        election_id, constituency_id, election_round, election_symbol, custom_data
+      )
+      VALUES (
+        v_project_id,
+        CASE WHEN p_entity_type = 'candidate' THEN p_entity_id END,
+        CASE WHEN p_entity_type = 'organization' THEN p_entity_id END,
+        v_election_id, v_constituency_id, v_round, v_stored_symbol, v_stored_custom
+      )
+      RETURNING id INTO v_row_id;
+      v_inserted := v_inserted + 1;
+    ELSE
+      v_row_id := (v_item ->> 'id')::uuid;
+      v_stored := v_reach -> v_row_id::text;
+      v_stored_symbol := v_stored ->> 'election_symbol';
+      v_stored_parent := (v_stored ->> 'parent_nomination_id')::uuid;
+      v_stored_custom := NULLIF(v_stored -> 'custom_data', 'null'::jsonb);
+    END IF;
+
+    -- What the row is to hold: `keep` leaves the parent and the custom data, `other` sets the requested name, and `entity` and `none` remove it. Every other key of the custom data is kept.
+    IF v_kind = 'keep' THEN
+      v_target_parent := v_stored_parent;
+      v_target_custom := v_stored_custom;
+    ELSIF v_kind = 'other' THEN
+      v_target_parent := NULL;
+      v_target_custom := CASE WHEN jsonb_typeof(v_stored_custom) = 'object' THEN v_stored_custom ELSE '{}'::jsonb END
+        || jsonb_build_object(c_requested, v_name);
+    ELSE
+      v_target_parent := NULL;
+      v_target_custom := CASE WHEN jsonb_typeof(v_stored_custom) = 'object' THEN v_stored_custom - c_requested ELSE v_stored_custom END;
+
+      IF v_kind = 'entity' THEN
+        -- The parent's nomination at the contest, created where it holds none.
+        SELECT r.nomination_id, r.created
+        INTO v_target_parent, v_parent_created
+        FROM private.parent_nomination_resolved(
+          v_project_id, v_parent_type, v_parent_entity_id, v_election_id, v_constituency_id, v_round,
+          'set_entity_nominations', format('p_nominations[%s]', v_item ->> 'index')) AS r;
+
+        IF v_parent_created THEN
+          v_parents_created := v_parents_created + 1;
+        END IF;
+        IF v_target_parent IS NULL THEN
+          RAISE EXCEPTION USING MESSAGE = c_unwritten, ERRCODE = '42501';
+        END IF;
+      END IF;
+    END IF;
+
+    v_symbol_differs := v_symbol IS DISTINCT FROM v_stored_symbol;
+    v_parent_differs := v_target_parent IS DISTINCT FROM v_stored_parent;
+    v_custom_differs := v_target_custom IS DISTINCT FROM v_stored_custom;
+
+    IF NOT (v_symbol_differs OR v_parent_differs OR v_custom_differs) THEN
+      IF NOT v_is_new THEN
+        v_unchanged := v_unchanged + 1;
+      END IF;
+      CONTINUE;
+    END IF;
+
+    -- One statement, naming only the columns that differ, and the confirmation wherever the custom data is written.
+    IF v_symbol_differs AND v_parent_differs AND v_custom_differs THEN
+      UPDATE public.nominations
+      SET election_symbol = v_symbol, parent_nomination_id = v_target_parent, custom_data = v_target_custom,
+          confirmed = confirmed AND NOT COALESCE(v_target_custom ? c_requested, false)
+      WHERE id = v_row_id;
+    ELSIF v_symbol_differs AND v_parent_differs THEN
+      UPDATE public.nominations
+      SET election_symbol = v_symbol, parent_nomination_id = v_target_parent
+      WHERE id = v_row_id;
+    ELSIF v_symbol_differs AND v_custom_differs THEN
+      UPDATE public.nominations
+      SET election_symbol = v_symbol, custom_data = v_target_custom,
+          confirmed = confirmed AND NOT COALESCE(v_target_custom ? c_requested, false)
+      WHERE id = v_row_id;
+    ELSIF v_parent_differs AND v_custom_differs THEN
+      UPDATE public.nominations
+      SET parent_nomination_id = v_target_parent, custom_data = v_target_custom,
+          confirmed = confirmed AND NOT COALESCE(v_target_custom ? c_requested, false)
+      WHERE id = v_row_id;
+    ELSIF v_symbol_differs THEN
+      UPDATE public.nominations
+      SET election_symbol = v_symbol
+      WHERE id = v_row_id;
+    ELSIF v_parent_differs THEN
+      UPDATE public.nominations
+      SET parent_nomination_id = v_target_parent
+      WHERE id = v_row_id;
+    ELSE
+      UPDATE public.nominations
+      SET custom_data = v_target_custom,
+          confirmed = confirmed AND NOT COALESCE(v_target_custom ? c_requested, false)
+      WHERE id = v_row_id;
+    END IF;
+
+    -- A row that row-level security hides is not an error and not a target: zero rows.
+    IF NOT FOUND THEN
+      RAISE EXCEPTION USING MESSAGE = c_unwritten, ERRCODE = '42501';
+    END IF;
+
+    IF NOT v_is_new THEN
+      v_updated := v_updated + 1;
+    END IF;
+  END LOOP;
+
+  -- Raise the end-of-transaction parent rule inside this call, and leave the constraint deferred.
+  SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;
+  SET CONSTRAINTS public.nominations_parent_required DEFERRED;
+
+  RETURN jsonb_build_object(
+    'inserted', v_inserted,
+    'updated', v_updated,
+    'deleted', v_deleted,
+    'unchanged', v_unchanged,
+    'parents_created', v_parents_created);
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.set_entity_nominations (public.entity_type, uuid, jsonb)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION public.set_entity_nominations (public.entity_type, uuid, jsonb) TO authenticated;
 -- Admin RPC functions
 --
 -- Functions:
 -- - merge_question_custom_data() - shallow JSONB merge on questions.custom_data
 --------------------------------------------------------------------------------
--- invitation_link_witness: has the background work of one link request ended
+-- merge_question_custom_data: shallow JSONB merge on questions.custom_data
 --
--- A link request is answered before its work is done, and the answer is the same whether or not a mail goes out. The witness is how the service role learns, for one request it chose to watch, that the work has ended and whether a mail was handed over: it opens a record, passes the id along with the request, and reads the record afterwards.
---
--- An anonymous caller can neither create nor read a record. Opening is the service role's, and completing is an UPDATE of a record that exists and is still open, never an insert, so an id that was not opened writes nothing.
---
--- Row-level security is enabled with no policy and every API role's privileges are revoked: only the two SECURITY DEFINER functions below read or write the table.
+-- SECURITY INVOKER: the admin_update_questions RLS policy limits the UPDATE to callers for whom user_can answers true for project.edit_questions on the row's project. A row the policy hides matches nothing, so the function raises the same error as for an unknown id.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.merge_question_custom_data (p_question_id uuid, p_patch jsonb) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
@@ -6312,29 +8180,17 @@ EXECUTE ON FUNCTION public.merge_question_custom_data (uuid, jsonb) TO authentic
 -- Functions:
 -- - get_questions() - return question categories and their questions in one round trip
 --------------------------------------------------------------------------------
--- claim_invitations RPC: turn the caller's open invitations into grants
+-- get_questions RPC: returns question categories and questions in a single round trip
 --
--- WHAT IT TRUSTS. One thing: the caller's own confirmed address, read from the caller's row of auth.users, which is the row `auth.uid()` names. A user whose `email_confirmed_at` is null, or whose address is blank, claims nothing.
+-- The return is a single jsonb value of the shape { "categories": [...], "questions": [...] }. It is jsonb rather than a table because the two result sets have different shapes, and because a jsonb return adds no column nullability for the generated types to misstate; the adapter validates the payload with zod.
 --
--- WHAT IT IGNORES. It takes no address, no user id and no invitation id, so it cannot be pointed at another person's invitation, and it never reads the token's `email` claim, which can be older than the row. p_project_id only chooses which of the caller's own invitations are looked at.
+-- p_project_id is REQUIRED and carries no DEFAULT, so a caller that omits it gets an undefined_function error rather than every project's questions.
 --
--- WHAT IT CANNOT KNOW. The database sees that an address is confirmed and not how it came to be. This function therefore depends on the auth service refusing public sign-up and requiring confirmation by mail: where a visitor can create an account for an address without opening a mail sent to it, that visitor can claim the address's invitations. Nothing here guards against that configuration.
+-- Filter semantics, on the three OPTIONAL axes and for both tables: NULL or empty means "applies to all", never "applies to none". A row is included when the parameter is NULL, when the row's column is NULL, when the column is an empty array, or when the column contains the parameter. Categories and questions are filtered independently, so a question narrower than its category is excluded on its own terms.
 --
--- WHAT IT MATCHES. The rows of p_project_id that are unclaimed and unexpired and whose `email` is the caller's address, plus the code rows whose pending address is. A code row with no pending address, or with another one, is claimed by nobody. A row whose registration mode is switched off (private.invitation_mode_allowed) is not matched either: it is neither claimed nor skipped, and it stays open.
+-- Note that question_categories.election_rounds and questions.election_rounds are JSONB arrays, unlike the scalar nominations.election_round that get_nominations filters; the two predicates are not interchangeable.
 --
--- WHAT IT WRITES. One row of public.grants per claimed invitation, copying the invitation's four columns, and on the invitation `claimed_by`, `claimed_at` and a cleared pending address. It confirms no entity and creates nothing else. Whether the invitation's creator still holds the authority to promise the grant is not asked: a row that exists is honoured, and a promise is withdrawn by deleting its row.
---
--- EACH ROW BY ITSELF. Rows are taken in the order they were created, and each is claimed or skipped on its own:
--- - an entity-scope row whose target is no longer an entity of the row's project is skipped with the reason `target_not_in_project` and stays open (no foreign key holds the target, so it is asked again here);
--- - a unique violation on `grants_user_scope_target_role_key` means the caller already holds exactly this grant: the row is marked claimed and no second grant is written;
--- - a unique violation on `idx_grants_one_candidate_editor` means another user edits that candidate: the row is skipped with the reason `candidate_has_editor` and stays open;
--- - any other violation is raised and undoes the call.
---
--- Returns `{"claimed": [...], "skipped": [...], "password_set": <boolean>}`. Each element holds `scope`, `target_type`, `target_id` and `role`, and a skipped one also `reason`. `password_set` is private.user_password_set for the caller and is present whatever was claimed. No address, code or invitation id is returned. A second call claims nothing.
---
--- A grant reaches a token only when one is issued, so a caller refreshes its session after a claim that returned a non-empty `claimed` and before it reads anything the grant opens.
---
--- SECURITY DEFINER because it reads auth.users, writes public.grants and updates public.invitations, none of which the caller can. It answers for `auth.uid()`, which neither `anon` nor the service role has, so `authenticated` alone holds EXECUTE.
+-- SECURITY INVOKER: the reads run with the caller's permissions, so the question_categories and questions RLS policies gate the caller rather than the function owner.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_questions (
   p_project_id uuid,
@@ -6392,6 +8248,1246 @@ $$;
 GRANT
 EXECUTE ON FUNCTION public.get_questions (uuid, uuid, uuid, integer) TO anon,
 authenticated;
+-- Invitation RPC functions
+--
+-- Functions:
+-- - create_invitations() - seed a batch of invitations in one project, stating whether each invited entity is confirmed and which nominations it holds, and return each generated code once
+-- - private.invitation_mode_allowed() - whether the project allows the registration mode of an open invitation
+-- - private.email_holds_grant_in_project() - whether a user with a confirmed address holds a grant in a project
+-- - invitation_code_status() - whether a code is valid, used or unknown
+-- - invitation_link_request() - the address a sign-in mail may go to, or null
+-- - invitation_link_release() - give back what a link request took when no mail went out
+-- - recovery_link_request() - which mail a recovery request for an address earns, or null
+-- - invitation_code_claimant_email() - the claimant's address of a used code, under an attempt limit
+-- - invitation_link_witness_open(), invitation_link_witness() - whether the background work of one link request has ended
+-- - claim_invitations() - turn the caller's open invitations into grants
+--
+-- The six `invitation_*` functions and recovery_link_request are the service role's: an Edge Function calls them with values an anonymous visitor typed, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
+--
+-- Depends on:
+-- - 102-entities.sql (the four entity tables)
+-- - 104-nominations.sql (public.nominations, its triggers and the constraint trigger nominations_parent_required)
+-- - 300-auth-tables.sql (public.grants)
+-- - 301-auth-functions.sql (private.entity_project_id, private.user_password_set, private.registration_mode_allowed)
+-- - 305-invitations.sql (public.invitations, its insert trigger, its policies and private.invitation_code_hash)
+-- - 503-entity-rpcs.sql (private.nomination_list_checked, private.nomination_object_checked, private.parent_nomination_resolved)
+-- - auth.users (Supabase Auth)
+--------------------------------------------------------------------------------
+-- localized_has_text: does a localized string say anything
+--
+-- True when the value is a JSON object with at least one member whose text is not blank. NULL, a non-object and an object of blank or null members are all false.
+--
+-- create_invitations is SECURITY INVOKER and calls it as its caller, so `authenticated` and `service_role` hold EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.localized_has_text (p_val jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT CASE
+    WHEN jsonb_typeof(p_val) = 'object' THEN
+      EXISTS (SELECT 1 FROM jsonb_each_text(p_val) AS t WHERE btrim(t.value) <> '')
+    ELSE false
+  END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.localized_has_text (jsonb)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.localized_has_text (jsonb) TO authenticated,
+service_role;
+
+--------------------------------------------------------------------------------
+-- create_invitations RPC: seed a batch of invitations in one project, stating whether each invited entity is confirmed and which nominations it holds
+--
+-- p_project_id, p_invitations and p_confirm_entity are REQUIRED and none carries a DEFAULT: every row of the batch belongs to p_project_id, and a NULL p_confirm_entity is refused. p_invitations is a JSON array of items `{ scope?, role?, target_type?, target_id?, external_id?, email?, expires_at?, nominations? }`. `scope` defaults to `entity` and `role` to `editor`. An entity-scope item names its entity by `target_type` and exactly one of `target_id` and `external_id`; a project-scope item promises a role on p_project_id itself. An item with an `email` is bound to that address, and one without gets a generated code.
+--
+-- The plaintext of a generated code exists only in this function's return value: the table holds its hash, which no API role can read, so a code that is lost is replaced by deleting the unclaimed invitation and seeding another. The code is read from the transaction-local setting the insert trigger writes, and the setting is cleared straight after.
+--
+-- SECURITY INVOKER: each row is inserted as the caller, so the INSERT policy of public.invitations decides who may promise which grant, exactly as it does for a direct insert, and this body holds no authority rule of its own. An `external_id` is resolved under the caller's row-level security, inside p_project_id only. The nominations are written as the caller too, so the policies, the column grants and the triggers of public.nominations decide every statement. A service-role caller bypasses the policies and is bound by the tables' CHECK constraints and triggers.
+--
+-- p_confirm_entity says whether the call confirms the entities it invites. `true` confirms each named entity of the batch, in the same transaction and as the caller, so enforce_entity_immutability asks `entity.confirm`. A candidate has a name when its first and last name are both non-blank; the other three types when their localized `name` has text. An entity without a name stays unconfirmed. `false` confirms no one. No call unconfirms an entity, no item key overrides the call's value, a project-scope promise confirms nothing, and deleting the invitation later leaves the entity confirmed.
+--
+-- NOMINATIONS. An entity-scope item for a candidate or an organization may carry `nominations`, a JSON array of nomination objects of the invited entity. The array is checked by `private.nomination_list_checked`, so it holds at most 1000 objects, and the shape of each object by `private.nomination_object_checked`, as set_entity_nominations checks its own. The keys of one object:
+--   id              - a uuid: the object describes that nomination of the invited entity. Absent: it describes a new one.
+--   election_id     - a uuid, required: an election of p_project_id the caller can read. With `id` it must be the stored row's.
+--   constituency_id - a uuid, required. With `id` it must be the stored row's: an invitation moves no nomination.
+--   election_round  - an integer, optional. A new nomination without one is written at its election's current_round. With `id`, a stated round must be the stored row's.
+--   election_symbol - a string or null. It is trimmed; a blank one is stored as NULL, and one longer than 50 characters is refused.
+--   parent          - `{"kind":"none"}`, `{"kind":"entity","entity_type","entity_id"}`, `{"kind":"other","name"}` or `{"kind":"keep"}`, as set_entity_nominations takes them; `keep` only with an `id`. A candidate names an organization and an organization an alliance.
+--   confirmed       - true or false, required on every object.
+--   custom_data     - a JSON object, optional, written over the stored custom data key by key. It may not carry `requestedParentOrganization`, which only a parent of kind `other` sets.
+--   name, short_name, info, color, image - a JSON object or null; sort_order - an integer or null; subtype, external_id - a string or null. Each optional.
+-- On an object with an `id`, a column the object does not state keeps its stored value. Any other key is not read.
+--
+-- An object creates or updates a nomination; an invitation never deletes one. For a parent of kind `entity`, the parent's nomination at the contest is asked of `private.parent_nomination_resolved`, which refuses a parent of another project and creates the parent's bare, unconfirmed row where it holds none. A new nomination is then inserted with its parent set and without `confirmed`, which the INSERT column grant leaves out, so it starts unconfirmed, and an object that states it confirmed is confirmed by an UPDATE of the new row. An object with an `id` whose values all equal the stored row's is not written; otherwise one UPDATE writes every column at its target, the stated confirmation included. The custom data is the stated object written over the stored one, then `other` sets the requested name, `entity` and `none` remove it, and `keep` leaves it.
+--
+-- Every UPDATE reads back the confirmation it wrote. Row-level security refuses an UPDATE without an error, and enforce_nomination_confirmation turns off the confirmation of a row that a caller without `nomination.confirm` edits; so an UPDATE that affects no row, a parent's nomination that cannot be found after it was created, and a confirmation read back other than the one stated each raise SQLSTATE 42501 with `<label> could not be written as stated`. A caller without `nomination.confirm` that states a new nomination confirmed meets enforce_nomination_confirmation's own refusal.
+--
+-- Where an election's type requires a candidate's nomination to have a parent or a requested name, `nominations_parent_required` judges it when the transaction ends. A call that wrote a nomination forces that constraint after its last item and sets it back to deferred, so the refusal (SQLSTATE 23514) is raised inside the call. A call that wrote none leaves the rows an earlier statement of the caller's transaction left pending to the end of the transaction.
+--
+-- Each item is checked before anything of it is written, its nominations whole, and is then written in this order: the invitation, the entity's confirmation, the nominations. The function creates no entity and no user and sends nothing. The whole batch is the caller's one transaction: a refused item, a duplicate or an unknown `external_id` raises, and no row of the batch is written. A malformed batch, item or object raises SQLSTATE 22023 naming the item's index, and an object's as `p_invitations[<i>].nominations[<j>]`, and never an address. Refused besides the shapes: `nominations` on a project-scope item or on an item for a faction or an alliance; the nominations of one entity on two items of the batch; nominations for an invited entity that is no entity of p_project_id the caller can read; an `id` that another object of the array names or that names no nomination of the invited entity; an election, a constituency or a round other than the named nomination's.
+--
+-- Returns a JSON array with one object per item, in order: `id`, `scope`, `target_type`, `target_id`, `role`, `email`, `expires_at`, `code` (the generated code as `XXXX-XXXX-XXXX`, or null on an email item) and `entity_confirmed`, the invited entity's confirmation after the item as the caller reads it (null on a project-scope item and for an entity the caller cannot read). An item that states `nominations` also answers `nominations`: `{"inserted", "updated", "unchanged", "parents_created"}`, each a count of nominations, `parents_created` counting the rows created for a party or an alliance.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.create_invitations (
+  p_project_id uuid,
+  p_invitations jsonb,
+  p_confirm_entity boolean
+) RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  c_requested constant text := 'requestedParentOrganization';
+  v_item jsonb;
+  v_ordinality bigint;
+  v_index bigint;
+  v_scope public.grant_scope_type;
+  v_role public.grant_role_type;
+  v_target_type public.entity_type;
+  v_target_id uuid;
+  v_external_id text;
+  v_email text;
+  v_expires_at timestamptz;
+  v_id uuid;
+  v_code text;
+  v_entity_confirmed boolean;
+  v_out jsonb := '[]'::jsonb;
+  -- The nominations of one item.
+  v_has_nominations boolean;
+  v_entity_key text;
+  v_entity_keys text[] := ARRAY[]::text[];
+  v_parent_type public.entity_type;
+  v_object jsonb;
+  v_object_ordinality bigint;
+  v_label text;
+  v_checked jsonb;
+  v_nomination_id uuid;
+  v_named_ids uuid[];
+  v_round integer;
+  v_stored jsonb;
+  v_columns jsonb;
+  v_column text;
+  v_column_type text;
+  v_value jsonb;
+  v_item_plan jsonb;
+  v_entry jsonb;
+  v_is_new boolean;
+  v_kind text;
+  v_target_parent uuid;
+  v_parent_created boolean;
+  v_target_custom jsonb;
+  v_target jsonb;
+  v_row_id uuid;
+  v_row_confirmed boolean;
+  v_inserted integer;
+  v_updated integer;
+  v_unchanged integer;
+  v_parents_created integer;
+  v_wrote_nomination boolean := false;
+BEGIN
+  IF p_confirm_entity IS NULL THEN
+    RAISE EXCEPTION 'create_invitations: p_confirm_entity must be true or false'
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF p_invitations IS NULL OR jsonb_typeof(p_invitations) <> 'array' THEN
+    RAISE EXCEPTION 'create_invitations: p_invitations must be a JSON array'
+      USING ERRCODE = '22023';
+  END IF;
+
+  FOR v_item, v_ordinality IN
+    SELECT t.item, t.ordinality
+    FROM jsonb_array_elements(p_invitations) WITH ORDINALITY AS t (item, ordinality)
+  LOOP
+    v_index := v_ordinality - 1;
+
+    IF jsonb_typeof(v_item) <> 'object' THEN
+      RAISE EXCEPTION 'create_invitations: p_invitations[%] must be a JSON object', v_index
+        USING ERRCODE = '22023';
+    END IF;
+
+    v_scope := COALESCE(v_item ->> 'scope', 'entity')::public.grant_scope_type;
+    v_role := COALESCE(v_item ->> 'role', 'editor')::public.grant_role_type;
+    v_target_type := (v_item ->> 'target_type')::public.entity_type;
+    v_target_id := (v_item ->> 'target_id')::uuid;
+    v_external_id := v_item ->> 'external_id';
+    v_email := NULLIF(lower(btrim(v_item ->> 'email')), '');
+    v_expires_at := (v_item ->> 'expires_at')::timestamptz;
+
+    IF v_scope = 'entity' THEN
+      IF v_target_type IS NULL THEN
+        RAISE EXCEPTION 'create_invitations: p_invitations[%] is an entity-scope item and needs a target_type', v_index
+          USING ERRCODE = '22023';
+      END IF;
+      IF num_nonnulls(v_target_id, v_external_id) <> 1 THEN
+        RAISE EXCEPTION 'create_invitations: p_invitations[%] must name its entity by exactly one of target_id and external_id', v_index
+          USING ERRCODE = '22023';
+      END IF;
+      IF v_external_id IS NOT NULL THEN
+        -- Read as the caller, inside the named project only: an entity of another project, or one the caller cannot see, is not found.
+        CASE v_target_type
+          WHEN 'candidate' THEN
+            SELECT e.id INTO v_target_id FROM public.candidates e WHERE e.project_id = p_project_id AND e.external_id = v_external_id;
+          WHEN 'organization' THEN
+            SELECT e.id INTO v_target_id FROM public.organizations e WHERE e.project_id = p_project_id AND e.external_id = v_external_id;
+          WHEN 'faction' THEN
+            SELECT e.id INTO v_target_id FROM public.factions e WHERE e.project_id = p_project_id AND e.external_id = v_external_id;
+          WHEN 'alliance' THEN
+            SELECT e.id INTO v_target_id FROM public.alliances e WHERE e.project_id = p_project_id AND e.external_id = v_external_id;
+        END CASE;
+        IF v_target_id IS NULL THEN
+          RAISE EXCEPTION 'create_invitations: p_invitations[%] names no % with that external_id in the project', v_index, v_target_type
+            USING ERRCODE = '22023';
+        END IF;
+      END IF;
+    ELSE
+      IF v_external_id IS NOT NULL THEN
+        RAISE EXCEPTION 'create_invitations: p_invitations[%] names an external_id, which only an entity-scope item may', v_index
+          USING ERRCODE = '22023';
+      END IF;
+      IF v_scope = 'project' THEN
+        v_target_id := COALESCE(v_target_id, p_project_id);
+      END IF;
+    END IF;
+
+    -- The item's nominations, checked whole before anything of the item is written. Each object's checked values are kept in the item plan.
+    v_has_nominations := v_item ? 'nominations';
+    v_item_plan := '[]'::jsonb;
+    IF v_has_nominations THEN
+      IF v_scope <> 'entity' THEN
+        RAISE EXCEPTION 'create_invitations: p_invitations[%] states nominations, which only an entity-scope item may', v_index
+          USING ERRCODE = '22023';
+      END IF;
+      IF v_target_type NOT IN ('candidate', 'organization') THEN
+        RAISE EXCEPTION 'create_invitations: p_invitations[%] states nominations for % %, which only a candidate or an organization may hold',
+          v_index, (CASE v_target_type WHEN 'alliance' THEN 'an' ELSE 'a' END), v_target_type
+          USING ERRCODE = '22023';
+      END IF;
+
+      PERFORM private.nomination_list_checked(
+        v_item -> 'nominations', 'create_invitations', format('p_invitations[%s].nominations', v_index));
+
+      v_entity_key := v_target_type::text || ':' || v_target_id::text;
+      IF v_entity_key = ANY (v_entity_keys) THEN
+        RAISE EXCEPTION 'create_invitations: p_invitations[%] states nominations for an entity an earlier item of the batch states them for', v_index
+          USING ERRCODE = '22023';
+      END IF;
+      v_entity_keys := v_entity_keys || v_entity_key;
+
+      -- Read as the caller, before the invitation's policy has judged the caller: an entity the caller cannot read is no entity of the project, so the refusal says nothing about rows the caller cannot see.
+      CASE v_target_type
+        WHEN 'candidate' THEN
+          PERFORM 1 FROM public.candidates e WHERE e.id = v_target_id AND e.project_id = p_project_id;
+        ELSE
+          PERFORM 1 FROM public.organizations e WHERE e.id = v_target_id AND e.project_id = p_project_id;
+      END CASE;
+      IF NOT FOUND THEN
+        RAISE EXCEPTION 'create_invitations: p_invitations[%] states nominations for an entity that is no entity of the project', v_index
+          USING ERRCODE = '22023';
+      END IF;
+
+      -- A candidate stands under an organization and an organization under an alliance.
+      v_parent_type := CASE v_target_type
+        WHEN 'candidate' THEN 'organization'::public.entity_type
+        ELSE 'alliance'::public.entity_type
+      END;
+      v_named_ids := ARRAY[]::uuid[];
+
+      FOR v_object, v_object_ordinality IN
+        SELECT t.item, t.ordinality
+        FROM jsonb_array_elements(v_item -> 'nominations') WITH ORDINALITY AS t (item, ordinality)
+      LOOP
+        v_label := format('p_invitations[%s].nominations[%s]', v_index, v_object_ordinality - 1);
+
+        -- The shape of the object, then the keys only an invitation reads, then the checks that read rows.
+        v_checked := private.nomination_object_checked(v_object, v_parent_type, 'create_invitations', v_label);
+        v_nomination_id := (v_checked ->> 'id')::uuid;
+
+        IF jsonb_typeof(v_object -> 'confirmed') IS DISTINCT FROM 'boolean' THEN
+          RAISE EXCEPTION 'create_invitations: % needs confirmed, which is true or false', v_label
+            USING ERRCODE = '22023';
+        END IF;
+
+        IF v_object ? 'election_round'
+           AND (jsonb_typeof(v_object -> 'election_round') <> 'number'
+             OR NOT pg_input_is_valid(v_object ->> 'election_round', 'integer')) THEN
+          RAISE EXCEPTION 'create_invitations: % has an election_round that is not an integer', v_label
+            USING ERRCODE = '22023';
+        END IF;
+
+        SELECT e.current_round INTO v_round
+        FROM public.elections e
+        WHERE e.id = (v_checked ->> 'election_id')::uuid
+          AND e.project_id = p_project_id;
+        IF NOT FOUND THEN
+          RAISE EXCEPTION 'create_invitations: % names an election_id that is no election of the project the caller can read', v_label
+            USING ERRCODE = '22023';
+        END IF;
+        IF v_object ? 'election_round' THEN
+          v_round := (v_object ->> 'election_round')::integer;
+        END IF;
+
+        -- The stated columns, each by its JSON type; the symbol as the shape check trimmed it.
+        v_columns := CASE
+          WHEN v_object ? 'election_symbol' THEN jsonb_build_object('election_symbol', v_checked ->> 'symbol')
+          ELSE '{}'::jsonb
+        END;
+        FOR v_column, v_column_type IN
+          SELECT c.column_name, c.json_type
+          FROM (
+            VALUES
+              (1, 'name', 'a JSON object'),
+              (2, 'short_name', 'a JSON object'),
+              (3, 'info', 'a JSON object'),
+              (4, 'color', 'a JSON object'),
+              (5, 'image', 'a JSON object'),
+              (6, 'sort_order', 'an integer'),
+              (7, 'subtype', 'a string'),
+              (8, 'external_id', 'a string')
+          ) AS c (ordinal, column_name, json_type)
+          ORDER BY c.ordinal
+        LOOP
+          IF v_object ? v_column THEN
+            v_value := v_object -> v_column;
+            IF jsonb_typeof(v_value) <> 'null' AND NOT (CASE v_column_type
+                WHEN 'a JSON object' THEN jsonb_typeof(v_value) = 'object'
+                WHEN 'an integer' THEN jsonb_typeof(v_value) = 'number' AND pg_input_is_valid(v_value #>> '{}', 'integer')
+                ELSE jsonb_typeof(v_value) = 'string'
+              END) THEN
+              RAISE EXCEPTION 'create_invitations: % has a % that is neither % nor null', v_label, v_column, v_column_type
+                USING ERRCODE = '22023';
+            END IF;
+            v_columns := v_columns || jsonb_build_object(v_column, v_value);
+          END IF;
+        END LOOP;
+
+        IF v_object ? 'custom_data' THEN
+          IF jsonb_typeof(v_object -> 'custom_data') <> 'object' THEN
+            RAISE EXCEPTION 'create_invitations: % has a custom_data that is not a JSON object', v_label
+              USING ERRCODE = '22023';
+          END IF;
+          IF (v_object -> 'custom_data') ? c_requested THEN
+            RAISE EXCEPTION 'create_invitations: % states requestedParentOrganization in custom_data, which only a parent of kind other sets', v_label
+              USING ERRCODE = '22023';
+          END IF;
+        END IF;
+
+        v_stored := NULL;
+        IF v_nomination_id IS NOT NULL THEN
+          IF v_nomination_id = ANY (v_named_ids) THEN
+            RAISE EXCEPTION 'create_invitations: % names an id that another object of the array names', v_label
+              USING ERRCODE = '22023';
+          END IF;
+          v_named_ids := v_named_ids || v_nomination_id;
+
+          -- The stored row, read as the caller: a nomination of the invited entity in p_project_id.
+          SELECT jsonb_build_object(
+              'election_id', n.election_id,
+              'constituency_id', n.constituency_id,
+              'election_round', n.election_round,
+              'election_symbol', n.election_symbol,
+              'parent_nomination_id', n.parent_nomination_id,
+              'custom_data', n.custom_data,
+              'confirmed', n.confirmed,
+              'name', n.name,
+              'short_name', n.short_name,
+              'info', n.info,
+              'color', n.color,
+              'image', n.image,
+              'sort_order', n.sort_order,
+              'subtype', n.subtype,
+              'external_id', n.external_id)
+          INTO v_stored
+          FROM public.nominations n
+          WHERE n.id = v_nomination_id
+            AND n.project_id = p_project_id
+            AND CASE v_target_type
+              WHEN 'candidate' THEN n.candidate_id = v_target_id
+              ELSE n.organization_id = v_target_id
+            END;
+          IF v_stored IS NULL THEN
+            RAISE EXCEPTION 'create_invitations: % names an id that is no nomination of the invited entity', v_label
+              USING ERRCODE = '22023';
+          END IF;
+
+          IF (v_stored ->> 'election_id')::uuid <> (v_checked ->> 'election_id')::uuid THEN
+            RAISE EXCEPTION 'create_invitations: % names an election_id other than its nomination''s', v_label
+              USING ERRCODE = '22023';
+          END IF;
+          IF (v_stored ->> 'constituency_id')::uuid <> (v_checked ->> 'constituency_id')::uuid THEN
+            RAISE EXCEPTION 'create_invitations: % names a constituency_id other than its nomination''s; an invitation moves no nomination', v_label
+              USING ERRCODE = '22023';
+          END IF;
+          IF v_object ? 'election_round'
+             AND (v_stored ->> 'election_round')::integer IS DISTINCT FROM v_round THEN
+            RAISE EXCEPTION 'create_invitations: % names an election_round other than its nomination''s', v_label
+              USING ERRCODE = '22023';
+          END IF;
+          v_round := (v_stored ->> 'election_round')::integer;
+        ELSIF v_checked ->> 'kind' = 'keep' THEN
+          RAISE EXCEPTION 'create_invitations: % keeps a parent, which only an object that names an id may', v_label
+            USING ERRCODE = '22023';
+        END IF;
+
+        v_item_plan := v_item_plan || jsonb_build_array(jsonb_build_object(
+          'label', v_label,
+          'id', v_nomination_id,
+          'election_id', v_checked -> 'election_id',
+          'constituency_id', v_checked -> 'constituency_id',
+          'round', v_round,
+          'kind', v_checked -> 'kind',
+          'parent_entity_id', v_checked -> 'parent_entity_id',
+          'name', v_checked -> 'name',
+          'confirmed', v_object -> 'confirmed',
+          'custom_data', v_object -> 'custom_data',
+          'columns', v_columns,
+          'stored', v_stored));
+      END LOOP;
+    END IF;
+
+    INSERT INTO public.invitations (project_id, scope, target_type, target_id, role, email, expires_at)
+    VALUES (p_project_id, v_scope, v_target_type, v_target_id, v_role, v_email, v_expires_at)
+    RETURNING id INTO v_id;
+
+    v_code := NULLIF(current_setting('openvaa.generated_invitation_code', true), '');
+    PERFORM set_config('openvaa.generated_invitation_code', '', true);
+
+    IF p_confirm_entity AND v_scope = 'entity' THEN
+      CASE v_target_type
+        WHEN 'candidate' THEN
+          UPDATE public.candidates e SET confirmed = true
+          WHERE e.id = v_target_id AND e.project_id = p_project_id AND NOT e.confirmed
+            AND btrim(e.first_name) <> '' AND btrim(e.last_name) <> '';
+        WHEN 'organization' THEN
+          UPDATE public.organizations e SET confirmed = true
+          WHERE e.id = v_target_id AND e.project_id = p_project_id AND NOT e.confirmed
+            AND private.localized_has_text(e.name);
+        WHEN 'faction' THEN
+          UPDATE public.factions e SET confirmed = true
+          WHERE e.id = v_target_id AND e.project_id = p_project_id AND NOT e.confirmed
+            AND private.localized_has_text(e.name);
+        WHEN 'alliance' THEN
+          UPDATE public.alliances e SET confirmed = true
+          WHERE e.id = v_target_id AND e.project_id = p_project_id AND NOT e.confirmed
+            AND private.localized_has_text(e.name);
+      END CASE;
+    END IF;
+
+    -- The item's nominations, in the order of its array.
+    v_inserted := 0;
+    v_updated := 0;
+    v_unchanged := 0;
+    v_parents_created := 0;
+    FOR v_entry IN
+      SELECT t.entry
+      FROM jsonb_array_elements(v_item_plan) WITH ORDINALITY AS t (entry, ordinality)
+      ORDER BY t.ordinality
+    LOOP
+      v_label := v_entry ->> 'label';
+      v_stored := v_entry -> 'stored';
+      v_is_new := jsonb_typeof(v_stored) IS DISTINCT FROM 'object';
+      v_kind := v_entry ->> 'kind';
+      v_round := (v_entry ->> 'round')::integer;
+
+      -- The parent: `keep` leaves the stored one, `entity` asks for the parent's nomination at the contest, created where it holds none, and `none` and `other` link nothing.
+      v_target_parent := NULL;
+      IF v_kind = 'keep' THEN
+        v_target_parent := (v_stored ->> 'parent_nomination_id')::uuid;
+      ELSIF v_kind = 'entity' THEN
+        SELECT r.nomination_id, r.created
+        INTO v_target_parent, v_parent_created
+        FROM private.parent_nomination_resolved(
+          p_project_id, v_parent_type, (v_entry ->> 'parent_entity_id')::uuid,
+          (v_entry ->> 'election_id')::uuid, (v_entry ->> 'constituency_id')::uuid, v_round,
+          'create_invitations', v_label) AS r;
+
+        IF v_parent_created THEN
+          v_parents_created := v_parents_created + 1;
+          v_wrote_nomination := true;
+        END IF;
+        IF v_target_parent IS NULL THEN
+          RAISE EXCEPTION 'create_invitations: % could not be written as stated', v_label
+            USING ERRCODE = '42501';
+        END IF;
+      END IF;
+
+      -- The custom data: the stated keys over the stored ones, then the parent's kind.
+      v_target_custom := NULLIF(v_stored -> 'custom_data', 'null'::jsonb);
+      IF jsonb_typeof(v_entry -> 'custom_data') = 'object' THEN
+        v_target_custom := CASE WHEN jsonb_typeof(v_target_custom) = 'object' THEN v_target_custom ELSE '{}'::jsonb END
+          || (v_entry -> 'custom_data');
+      END IF;
+      IF v_kind = 'other' THEN
+        v_target_custom := CASE WHEN jsonb_typeof(v_target_custom) = 'object' THEN v_target_custom ELSE '{}'::jsonb END
+          || jsonb_build_object(c_requested, v_entry ->> 'name');
+      ELSIF v_kind IN ('entity', 'none') AND jsonb_typeof(v_target_custom) = 'object' THEN
+        v_target_custom := v_target_custom - c_requested;
+      END IF;
+
+      -- What the row is to hold: each column stated, or as stored when not stated.
+      v_target := CASE WHEN v_is_new THEN '{}'::jsonb ELSE v_stored END
+        || jsonb_build_object(
+          'parent_nomination_id', v_target_parent,
+          'custom_data', v_target_custom,
+          'confirmed', v_entry -> 'confirmed')
+        || (v_entry -> 'columns');
+
+      IF v_is_new THEN
+        INSERT INTO public.nominations (
+          project_id, candidate_id, organization_id,
+          election_id, constituency_id, election_round, parent_nomination_id, election_symbol, custom_data,
+          name, short_name, info, color, image, sort_order, subtype, external_id
+        )
+        VALUES (
+          p_project_id,
+          CASE WHEN v_target_type = 'candidate' THEN v_target_id END,
+          CASE WHEN v_target_type = 'organization' THEN v_target_id END,
+          (v_entry ->> 'election_id')::uuid, (v_entry ->> 'constituency_id')::uuid, v_round,
+          v_target_parent, v_target ->> 'election_symbol', v_target_custom,
+          NULLIF(v_target -> 'name', 'null'::jsonb), NULLIF(v_target -> 'short_name', 'null'::jsonb),
+          NULLIF(v_target -> 'info', 'null'::jsonb), NULLIF(v_target -> 'color', 'null'::jsonb),
+          NULLIF(v_target -> 'image', 'null'::jsonb), (v_target ->> 'sort_order')::integer,
+          v_target ->> 'subtype', v_target ->> 'external_id'
+        )
+        RETURNING id INTO v_row_id;
+        v_inserted := v_inserted + 1;
+        v_wrote_nomination := true;
+
+        -- A new row starts unconfirmed; a stated confirmation is a write of its own.
+        IF (v_target ->> 'confirmed')::boolean THEN
+          UPDATE public.nominations n
+          SET confirmed = true
+          WHERE n.id = v_row_id
+          RETURNING n.confirmed INTO v_row_confirmed;
+          IF NOT FOUND OR v_row_confirmed IS DISTINCT FROM true THEN
+            RAISE EXCEPTION 'create_invitations: % could not be written as stated', v_label
+              USING ERRCODE = '42501';
+          END IF;
+        END IF;
+      ELSIF v_target IS NOT DISTINCT FROM v_stored THEN
+        v_unchanged := v_unchanged + 1;
+      ELSE
+        v_row_id := (v_entry ->> 'id')::uuid;
+        UPDATE public.nominations n
+        SET election_symbol = v_target ->> 'election_symbol',
+            parent_nomination_id = v_target_parent,
+            custom_data = v_target_custom,
+            confirmed = (v_target ->> 'confirmed')::boolean,
+            name = NULLIF(v_target -> 'name', 'null'::jsonb),
+            short_name = NULLIF(v_target -> 'short_name', 'null'::jsonb),
+            info = NULLIF(v_target -> 'info', 'null'::jsonb),
+            color = NULLIF(v_target -> 'color', 'null'::jsonb),
+            image = NULLIF(v_target -> 'image', 'null'::jsonb),
+            sort_order = (v_target ->> 'sort_order')::integer,
+            subtype = v_target ->> 'subtype',
+            external_id = v_target ->> 'external_id'
+        WHERE n.id = v_row_id
+        RETURNING n.confirmed INTO v_row_confirmed;
+        -- Row-level security hides a row without an error, and a caller without nomination.confirm has its edit unconfirmed: either is a statement not written as stated.
+        IF NOT FOUND OR v_row_confirmed IS DISTINCT FROM (v_target ->> 'confirmed')::boolean THEN
+          RAISE EXCEPTION 'create_invitations: % could not be written as stated', v_label
+            USING ERRCODE = '42501';
+        END IF;
+        v_updated := v_updated + 1;
+        v_wrote_nomination := true;
+      END IF;
+    END LOOP;
+
+    -- The invited entity's confirmation after the item, as the caller reads it.
+    v_entity_confirmed := NULL;
+    IF v_scope = 'entity' THEN
+      CASE v_target_type
+        WHEN 'candidate' THEN
+          SELECT e.confirmed INTO v_entity_confirmed FROM public.candidates e WHERE e.id = v_target_id AND e.project_id = p_project_id;
+        WHEN 'organization' THEN
+          SELECT e.confirmed INTO v_entity_confirmed FROM public.organizations e WHERE e.id = v_target_id AND e.project_id = p_project_id;
+        WHEN 'faction' THEN
+          SELECT e.confirmed INTO v_entity_confirmed FROM public.factions e WHERE e.id = v_target_id AND e.project_id = p_project_id;
+        WHEN 'alliance' THEN
+          SELECT e.confirmed INTO v_entity_confirmed FROM public.alliances e WHERE e.id = v_target_id AND e.project_id = p_project_id;
+      END CASE;
+    END IF;
+
+    v_out := v_out || jsonb_build_array(
+      jsonb_build_object(
+        'id', v_id,
+        'scope', v_scope,
+        'target_type', v_target_type,
+        'target_id', v_target_id,
+        'role', v_role,
+        'email', v_email,
+        'expires_at', v_expires_at,
+        'code', v_code,
+        'entity_confirmed', v_entity_confirmed
+      ) || CASE
+        WHEN v_has_nominations THEN jsonb_build_object(
+          'nominations', jsonb_build_object(
+            'inserted', v_inserted,
+            'updated', v_updated,
+            'unchanged', v_unchanged,
+            'parents_created', v_parents_created))
+        ELSE '{}'::jsonb
+      END
+    );
+  END LOOP;
+
+  -- Raise the end-of-transaction parent rule inside this call when it wrote a nomination, and leave the constraint deferred.
+  IF v_wrote_nomination THEN
+    SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;
+    SET CONSTRAINTS public.nominations_parent_required DEFERRED;
+  END IF;
+
+  RETURN v_out;
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.create_invitations (uuid, jsonb, boolean)
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION public.create_invitations (uuid, jsonb, boolean) TO authenticated,
+service_role;
+
+--------------------------------------------------------------------------------
+-- invitation_throttle: the windowed counters of the invitation helpers
+--
+-- One row per key, in one of two forms:
+-- - `link:<project id>:<sha256 hex of the address>` counts the sign-in and recovery mails to one address in one project.
+-- - `code:<project id>:<code hash>` counts claimant look-ups of one used code.
+--
+-- No key holds an address in clear. A `link:` key is taken only for an address a mail would go to and a `code:` key only for a code that names a claimed row, so a caller cannot fill the table with keys of its own making, and no key is derived from a request header.
+--
+-- Only the SECURITY DEFINER functions of this file read or write it: row-level security is enabled with no policy and every API role's privileges are revoked.
+--------------------------------------------------------------------------------
+CREATE TABLE private.invitation_throttle (
+  key text PRIMARY KEY,
+  -- Takes in the current window.
+  count integer NOT NULL DEFAULT 1,
+  -- When the current window began; invitation_throttle_take starts a new one once it has ended.
+  window_start timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE private.invitation_throttle ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE private.invitation_throttle
+FROM
+  PUBLIC,
+  anon,
+  authenticated,
+  service_role;
+
+--------------------------------------------------------------------------------
+-- invitation_throttle_take: count one take against a key
+--
+-- Returns true when the key, counting this take, is within p_max takes in its current window of p_window. A first take creates the key; a take after the window has ended starts a new window at 1. A refused take is counted and does not move the window. The advisory lock serialises concurrent takes of one key until the transaction ends.
+--
+-- Only the SECURITY DEFINER functions of this file call it, as their owner, so no API role holds EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.invitation_throttle_take (p_key text, p_max integer, p_window interval) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_count integer;
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtext('invitation_throttle:' || p_key));
+
+  INSERT INTO private.invitation_throttle AS t (key, count, window_start)
+  VALUES (p_key, 1, now())
+  ON CONFLICT (key) DO UPDATE
+    SET count = CASE WHEN t.window_start + p_window <= now() THEN 1 ELSE t.count + 1 END,
+        window_start = CASE WHEN t.window_start + p_window <= now() THEN now() ELSE t.window_start END
+  RETURNING t.count INTO v_count;
+
+  RETURN v_count <= p_max;
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.invitation_throttle_take (text, integer, interval)
+FROM
+  PUBLIC,
+  anon,
+  authenticated,
+  service_role;
+
+--------------------------------------------------------------------------------
+-- cleanup_invitation_throttle_on_delete: a deleted invitation leaves no throttle key
+--
+-- Deletes the `link:` keys of the row's address and of its pending address and the `code:` key of its code. An invitation that is deleted and seeded again is therefore not answered with the wait its predecessor left behind.
+--
+-- SECURITY DEFINER because the deleting caller holds nothing on the throttle table. search_path is pinned as on every definer function here.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.cleanup_invitation_throttle_on_delete () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+BEGIN
+  -- A null address or code hash makes its key null, which matches no row.
+  DELETE FROM private.invitation_throttle t
+  WHERE t.key IN (
+    'link:' || OLD.project_id::text || ':' || encode(sha256(convert_to(OLD.email, 'UTF8')), 'hex'),
+    'link:' || OLD.project_id::text || ':' || encode(sha256(convert_to(OLD.pending_email, 'UTF8')), 'hex'),
+    'code:' || OLD.project_id::text || ':' || OLD.code_hash
+  );
+  RETURN OLD;
+END;
+$$;
+
+CREATE TRIGGER cleanup_invitation_throttle
+AFTER DELETE ON public.invitations FOR EACH ROW
+EXECUTE FUNCTION public.cleanup_invitation_throttle_on_delete ();
+
+-- Not an RPC. A trigger fires whatever EXECUTE its function carries, so nothing is lost by revoking it from the API roles.
+REVOKE
+EXECUTE ON FUNCTION public.cleanup_invitation_throttle_on_delete ()
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- invitation_mode_allowed: does the project allow the registration mode of this invitation?
+--
+-- The registration-mode condition, stated once for the three functions that read an open invitation: invitation_code_status, invitation_link_request and claim_invitations. Each treats a row this function refuses as absent.
+--
+-- WHICH ROWS ARE JUDGED. An entity-scope row whose target is a candidate or an organization: the registration-mode matrix has a row for those two types and for no other. Such a row is allowed when private.registration_mode_allowed says so for the row's project, its target type and its mode.
+--
+-- WHICH ARE NOT. A project-scope promise has no entity type, and the matrix has no row for a faction or an alliance: each is always allowed.
+--
+-- A ROW'S MODE is read from which of its two bindings is set: `code` for a row that holds a code hash, `email` for a row bound to an address.
+--
+-- The callers ask it of open rows only, so a claimed row is never judged: a registration that is finished stays as it is whatever the matrix says later. create_invitations does not ask it, so an invitation can be seeded while its mode is off and is honoured once the mode is on.
+--
+-- It runs as its caller. The three callers are definer functions, so no API role holds EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.invitation_mode_allowed (p_invitation public.invitations) RETURNS boolean LANGUAGE sql STABLE
+SET
+  search_path = '' AS $$
+  SELECT CASE
+    WHEN (p_invitation).scope <> 'entity' THEN true
+    WHEN (p_invitation).target_type NOT IN ('candidate', 'organization') THEN true
+    ELSE private.registration_mode_allowed(
+      (p_invitation).project_id,
+      (p_invitation).target_type::text,
+      CASE WHEN (p_invitation).code_hash IS NOT NULL THEN 'code' ELSE 'email' END
+    )
+  END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.invitation_mode_allowed (public.invitations)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- email_holds_grant_in_project: does a user with this confirmed address hold a grant in the project?
+--
+-- The grant-holder test, stated once for the two functions that decide whether a mail may go to an address: invitation_link_request and recovery_link_request.
+--
+-- True when a user whose address equals p_email and is confirmed holds a project-scope grant on p_project_id or an entity-scope grant on one of its entities. Holding a global or an account grant alone is not holding a grant in the project.
+--
+-- The stored address is trimmed and lower-cased before it is compared. p_email is compared as given, so the callers pass it trimmed and lower-cased.
+--
+-- It runs as its caller. The two callers are definer functions, so no API role holds EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.email_holds_grant_in_project (p_project_id uuid, p_email text) RETURNS boolean LANGUAGE sql STABLE
+SET
+  search_path = '' AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM auth.users u
+    WHERE lower(btrim(u.email)) = p_email
+      AND u.email_confirmed_at IS NOT NULL
+      AND EXISTS (
+        SELECT 1
+        FROM public.grants g
+        WHERE g.user_id = u.id
+          AND (
+            (g.scope = 'project' AND g.target_id = p_project_id)
+            OR (g.scope = 'entity' AND private.entity_project_id(g.target_type, g.target_id) = p_project_id)
+          )
+      )
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.email_holds_grant_in_project (uuid, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+--------------------------------------------------------------------------------
+-- invitation_code_status: is this code valid, used or unknown
+--
+-- Answers one of three words about the row of p_project_id whose code hash equals the hash of the code as typed:
+-- - `used` when the row is claimed, which is `claimed_at IS NOT NULL` and so stays true after the claimant is deleted;
+-- - `unknown` when the row is unclaimed and expired, when it is open but its registration mode is switched off (private.invitation_mode_allowed), and when the project holds no such row, which includes the code of another project;
+-- - `valid` otherwise.
+--
+-- A switched-off mode has no answer of its own: the status and the body are those of a code that names nothing. The mode is asked only of a row that is open and unexpired, so such a row costs one read of its project's settings row that a code naming nothing does not.
+--
+-- It returns nothing else about the row, and it counts nothing: an unknown code is defended by its 60 bits.
+--
+-- SECURITY DEFINER because no API role can read `code_hash`.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.invitation_code_status (p_project_id uuid, p_code text) RETURNS text LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    (
+      SELECT CASE
+        WHEN i.claimed_at IS NOT NULL THEN 'used'
+        WHEN i.expires_at IS NOT NULL AND i.expires_at <= now() THEN 'unknown'
+        WHEN NOT private.invitation_mode_allowed(i) THEN 'unknown'
+        ELSE 'valid'
+      END
+      FROM public.invitations i
+      WHERE i.project_id = p_project_id
+        AND i.code_hash = private.invitation_code_hash(p_code)
+    ),
+    'unknown'
+  );
+$$;
+
+--------------------------------------------------------------------------------
+-- invitation_link_request: may a sign-in mail go out, and to which address
+--
+-- Returns the address a sign-in mail may be sent to, or null for "do nothing". The caller sends exactly one mail to a non-null answer, or gives the answer back through invitation_link_release.
+--
+-- With a code (p_code is not null) the code alone decides:
+-- - It names an open row and p_email is not blank: the address is the candidate, unless the row's pending address was bound less than 60 seconds ago.
+-- - It names a claimed row whose claimant still exists: the candidate is the claimant's own address, whatever p_email holds, read through invitation_code_claimant_email and so counted against that code's look-up budget.
+-- - It names nothing, an expired row, an open row whose registration mode is switched off (private.invitation_mode_allowed), or a claimed row whose claimant is gone: null.
+--
+-- Without a code, p_email is the candidate when the project holds an open invitation for it whose registration mode is allowed, or when a user with that confirmed address holds a grant in the project (private.email_holds_grant_in_project): a project-scope grant on the project or an entity-scope grant on one of its entities. Holding a global or an account grant alone does not make an address eligible.
+--
+-- A candidate then takes its address slot, one per address per project per 60 seconds, and the answer is null when the slot is taken. recovery_link_request takes the same slot, so a recovery mail and a sign-in mail to one address are limited together. Only after that is the address bound to an open code row as its pending address. A null answer has therefore changed no invitation row, and no slot is taken for an address no mail would go to.
+--
+-- A switched-off mode is answered as an unknown code or an uninvited address is: null, before a slot is asked for and before anything is written. It changes nothing for a claimed code, whose claimant is still answered, or for a user who holds a grant in the project.
+--
+-- Eligibility follows the rows as they are: whether an invitation's creator still holds the authority to promise it is not asked.
+--
+-- SECURITY DEFINER because it reads auth.users and `code_hash` and writes the pending address, none of which an API role can.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.invitation_link_request (
+  p_project_id uuid,
+  p_email text DEFAULT NULL,
+  p_code text DEFAULT NULL
+) RETURNS text LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_email text := NULLIF(lower(btrim(p_email)), '');
+  v_row public.invitations%ROWTYPE;
+  v_bind boolean := false;
+  v_candidate text;
+BEGIN
+  IF p_project_id IS NULL THEN
+    RETURN NULL;
+  END IF;
+
+  IF p_code IS NOT NULL THEN
+    SELECT i.* INTO v_row
+    FROM public.invitations i
+    WHERE i.project_id = p_project_id
+      AND i.code_hash = private.invitation_code_hash(p_code)
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+      RETURN NULL;
+    ELSIF v_row.claimed_at IS NOT NULL THEN
+      v_candidate := public.invitation_code_claimant_email(p_project_id, p_code);
+    ELSIF v_row.expires_at IS NOT NULL AND v_row.expires_at <= now() THEN
+      RETURN NULL;
+    ELSIF NOT private.invitation_mode_allowed(v_row) THEN
+      RETURN NULL;
+    ELSIF v_email IS NULL THEN
+      RETURN NULL;
+    ELSIF v_row.pending_email_at IS NOT NULL AND v_row.pending_email_at + interval '60 seconds' > now() THEN
+      RETURN NULL;
+    ELSE
+      v_candidate := v_email;
+      v_bind := true;
+    END IF;
+  ELSIF v_email IS NOT NULL AND (
+    EXISTS (
+      SELECT 1
+      FROM public.invitations i
+      WHERE i.project_id = p_project_id
+        AND i.email = v_email
+        AND i.claimed_at IS NULL
+        AND (i.expires_at IS NULL OR i.expires_at > now())
+        AND private.invitation_mode_allowed(i)
+    )
+    OR private.email_holds_grant_in_project(p_project_id, v_email)
+  ) THEN
+    v_candidate := v_email;
+  END IF;
+
+  IF v_candidate IS NULL THEN
+    RETURN NULL;
+  END IF;
+
+  IF NOT private.invitation_throttle_take(
+    'link:' || p_project_id::text || ':' || encode(sha256(convert_to(lower(btrim(v_candidate)), 'UTF8')), 'hex'),
+    1,
+    interval '60 seconds'
+  ) THEN
+    RETURN NULL;
+  END IF;
+
+  IF v_bind THEN
+    UPDATE public.invitations i
+    SET pending_email = v_candidate, pending_email_at = now()
+    WHERE i.id = v_row.id;
+  END IF;
+
+  RETURN v_candidate;
+END;
+$$;
+
+--------------------------------------------------------------------------------
+-- invitation_link_release: give back what a link request took
+--
+-- For a sign-in or a recovery request that was answered with an address to which no mail was then handed over. It deletes the address's slot in the project and, when p_code names an open row whose pending address is that address, clears the row's `pending_email_at`, so the same address, and the same binding of the same code, can be asked again at once.
+--
+-- It changes no claimed row and no other column, and it does nothing for an address that holds no slot. A look-up counted against a used code is not given back.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.invitation_link_release (
+  p_project_id uuid,
+  p_email text,
+  p_code text DEFAULT NULL
+) RETURNS void LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_email text := NULLIF(lower(btrim(p_email)), '');
+BEGIN
+  IF p_project_id IS NULL OR v_email IS NULL THEN
+    RETURN;
+  END IF;
+
+  DELETE FROM private.invitation_throttle t
+  WHERE t.key = 'link:' || p_project_id::text || ':' || encode(sha256(convert_to(v_email, 'UTF8')), 'hex');
+
+  IF p_code IS NOT NULL THEN
+    UPDATE public.invitations i
+    SET pending_email_at = NULL
+    WHERE i.project_id = p_project_id
+      AND i.code_hash = private.invitation_code_hash(p_code)
+      AND i.claimed_at IS NULL
+      AND (i.expires_at IS NULL OR i.expires_at > now())
+      AND i.pending_email = v_email;
+  END IF;
+END;
+$$;
+
+--------------------------------------------------------------------------------
+-- recovery_link_request: which mail, if any, a recovery request for an address earns
+--
+-- Returns `{"email": <the address, trimmed and lower-cased>, "mail": <one of two words>}`, or null for "do nothing". The caller sends exactly one mail of the named kind to a non-null answer, or gives the answer back through invitation_link_release.
+--
+-- - `recovery` when a user with that confirmed address holds a grant in p_project_id (private.email_holds_grant_in_project). Whether the user has a password is not asked: opening a recovery link stores none, and the page it leads to sets one.
+-- - `sign-in` when no such user exists and the project holds an open, unexpired invitation for the address whose registration mode is allowed (private.invitation_mode_allowed). Such an address has no password to recover, so it is sent the mail a sign-in request would have earned it.
+-- - null for everything else: an address the project knows nothing of, the holder of a global or an account grant alone, an unconfirmed address, an expired or a claimed invitation, a null project and a blank address.
+--
+-- A non-null candidate then takes its address slot, one per address per project per 60 seconds, and the answer is null when the slot is taken. The slot is the one invitation_link_request takes, under the same key: a later link of either kind stops an unopened earlier one of either kind, so the two requests are limited together. No slot is taken for an address no mail would go to.
+--
+-- It creates no account, changes no invitation row and binds no address: the slot is all it writes. It takes a project and an address and nothing else, and it returns no user id, grant, name or reason. Which of the three outcomes an address got is known only to whoever can execute it, which is the service role alone.
+--
+-- SECURITY DEFINER because it reads auth.users and the grants of accounts that are not the caller's.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.recovery_link_request (p_project_id uuid, p_email text) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_email text := NULLIF(lower(btrim(p_email)), '');
+  v_mail text;
+BEGIN
+  IF p_project_id IS NULL OR v_email IS NULL THEN
+    RETURN NULL;
+  END IF;
+
+  IF private.email_holds_grant_in_project(p_project_id, v_email) THEN
+    v_mail := 'recovery';
+  ELSIF EXISTS (
+    SELECT 1
+    FROM public.invitations i
+    WHERE i.project_id = p_project_id
+      AND i.email = v_email
+      AND i.claimed_at IS NULL
+      AND (i.expires_at IS NULL OR i.expires_at > now())
+      AND private.invitation_mode_allowed(i)
+  ) THEN
+    v_mail := 'sign-in';
+  ELSE
+    RETURN NULL;
+  END IF;
+
+  IF NOT private.invitation_throttle_take(
+    'link:' || p_project_id::text || ':' || encode(sha256(convert_to(v_email, 'UTF8')), 'hex'),
+    1,
+    interval '60 seconds'
+  ) THEN
+    RETURN NULL;
+  END IF;
+
+  RETURN jsonb_build_object('email', v_email, 'mail', v_mail);
+END;
+$$;
+
+--------------------------------------------------------------------------------
+-- invitation_code_claimant_email: the address of the user who claimed a code
+--
+-- Returns the claimant's address for a claimed code row of p_project_id whose claimant still exists, and null otherwise. The address is what a password sign-in by code is attempted against, so each answer is counted against the code: ten per fifteen minutes, and null beyond that, which is the answer an unknown code gets. A code that names no claimed row, or one whose claimant is gone, is not counted and writes no throttle key.
+--
+-- The limit is keyed on the code row. A caller that guesses passwords for one code meets it whatever address or header it sends.
+--
+-- SECURITY DEFINER because it reads auth.users and `code_hash`. It returns a user's address to whoever can execute it, which is the service role alone.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.invitation_code_claimant_email (p_project_id uuid, p_code text) RETURNS text LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_hash text := private.invitation_code_hash(p_code);
+  v_email text;
+BEGIN
+  SELECT u.email INTO v_email
+  FROM public.invitations i
+  JOIN auth.users u ON u.id = i.claimed_by
+  WHERE i.project_id = p_project_id
+    AND i.code_hash = v_hash
+    AND i.claimed_at IS NOT NULL
+    AND NULLIF(btrim(u.email), '') IS NOT NULL;
+
+  IF v_email IS NULL THEN
+    RETURN NULL;
+  END IF;
+
+  IF NOT private.invitation_throttle_take('code:' || p_project_id::text || ':' || v_hash, 10, interval '15 minutes') THEN
+    RETURN NULL;
+  END IF;
+
+  RETURN v_email;
+END;
+$$;
+
+--------------------------------------------------------------------------------
+-- invitation_link_witness: has the background work of one link request ended
+--
+-- A link request is answered before its work is done, and the answer is the same whether or not a mail goes out. The witness is how the service role learns, for one request it chose to watch, that the work has ended and whether a mail was handed over: it opens a record, passes the id along with the request, and reads the record afterwards.
+--
+-- An anonymous caller can neither create nor read a record. Opening is the service role's, and completing is an UPDATE of a record that exists and is still open, never an insert, so an id that was not opened writes nothing.
+--
+-- Row-level security is enabled with no policy and every API role's privileges are revoked: only the two SECURITY DEFINER functions below read or write the table.
+--------------------------------------------------------------------------------
+CREATE TABLE private.invitation_link_witness (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  opened_at timestamptz NOT NULL DEFAULT now(),
+  -- Null while the work the record watches has not ended.
+  completed_at timestamptz,
+  -- `sent` when a mail was handed over, `not-sent` when the work ended without one.
+  outcome text,
+  CONSTRAINT invitation_link_witness_outcome_check CHECK (
+    outcome IS NULL
+    OR outcome IN ('sent', 'not-sent')
+  )
+);
+
+ALTER TABLE private.invitation_link_witness ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE private.invitation_link_witness
+FROM
+  PUBLIC,
+  anon,
+  authenticated,
+  service_role;
+
+-- Opens a record and returns its id. Records opened more than a day ago are deleted first, so the table does not grow without bound.
+CREATE OR REPLACE FUNCTION public.invitation_link_witness_open () RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_id uuid;
+BEGIN
+  DELETE FROM private.invitation_link_witness w
+  WHERE w.opened_at < now() - interval '1 day';
+
+  INSERT INTO private.invitation_link_witness DEFAULT VALUES
+  RETURNING id INTO v_id;
+
+  RETURN v_id;
+END;
+$$;
+
+-- With an outcome, which must be `sent` or `not-sent` (anything else raises 22023), completes the record of that id if it exists and is still open; a completed record keeps its first outcome. In every case returns the record's outcome: null when no such record exists or it is still open.
+CREATE OR REPLACE FUNCTION public.invitation_link_witness (p_id uuid, p_outcome text DEFAULT NULL) RETURNS text LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+BEGIN
+  IF p_outcome IS NOT NULL THEN
+    IF p_outcome NOT IN ('sent', 'not-sent') THEN
+      RAISE EXCEPTION 'invitation_link_witness: p_outcome must be sent or not-sent'
+        USING ERRCODE = '22023';
+    END IF;
+
+    UPDATE private.invitation_link_witness w
+    SET completed_at = now(), outcome = p_outcome
+    WHERE w.id = p_id
+      AND w.completed_at IS NULL;
+  END IF;
+
+  RETURN (SELECT w.outcome FROM private.invitation_link_witness w WHERE w.id = p_id);
+END;
+$$;
+
+-- service_role only. Each of the seven is SECURITY DEFINER and checks nothing about its caller: published to an API role, the code check would be a code oracle, the link request and the recovery request account and invitation oracles that also write, and the claimant look-up would hand out a user's address. Supabase's default privileges grant EXECUTE on every new public function to anon and authenticated, so the REVOKE names them as well as PUBLIC.
+REVOKE
+EXECUTE ON FUNCTION public.invitation_code_status (uuid, text),
+public.invitation_link_request (uuid, text, text),
+public.invitation_link_release (uuid, text, text),
+public.invitation_code_claimant_email (uuid, text),
+public.invitation_link_witness_open (),
+public.invitation_link_witness (uuid, text),
+public.recovery_link_request (uuid, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.invitation_code_status (uuid, text),
+public.invitation_link_request (uuid, text, text),
+public.invitation_link_release (uuid, text, text),
+public.invitation_code_claimant_email (uuid, text),
+public.invitation_link_witness_open (),
+public.invitation_link_witness (uuid, text),
+public.recovery_link_request (uuid, text) TO service_role;
+
+--------------------------------------------------------------------------------
+-- claim_invitations RPC: turn the caller's open invitations into grants
+--
+-- WHAT IT TRUSTS. One thing: the caller's own confirmed address, read from the caller's row of auth.users, which is the row `auth.uid()` names. A user whose `email_confirmed_at` is null, or whose address is blank, claims nothing.
+--
+-- WHAT IT IGNORES. It takes no address, no user id and no invitation id, so it cannot be pointed at another person's invitation, and it never reads the token's `email` claim, which can be older than the row. p_project_id only chooses which of the caller's own invitations are looked at.
+--
+-- WHAT IT CANNOT KNOW. The database sees that an address is confirmed and not how it came to be. This function therefore depends on the auth service refusing public sign-up and requiring confirmation by mail: where a visitor can create an account for an address without opening a mail sent to it, that visitor can claim the address's invitations. Nothing here guards against that configuration.
+--
+-- WHAT IT MATCHES. The rows of p_project_id that are unclaimed and unexpired and whose `email` is the caller's address, plus the code rows whose pending address is. A code row with no pending address, or with another one, is claimed by nobody. A row whose registration mode is switched off (private.invitation_mode_allowed) is not matched either: it is neither claimed nor skipped, and it stays open.
+--
+-- WHAT IT WRITES. One row of public.grants per claimed invitation, copying the invitation's four columns, and on the invitation `claimed_by`, `claimed_at` and a cleared pending address. It confirms no entity and creates nothing else. Whether the invitation's creator still holds the authority to promise the grant is not asked: a row that exists is honoured, and a promise is withdrawn by deleting its row.
+--
+-- EACH ROW BY ITSELF. Rows are taken in the order they were created, and each is claimed or skipped on its own:
+-- - an entity-scope row whose target is no longer an entity of the row's project is skipped with the reason `target_not_in_project` and stays open (no foreign key holds the target, so it is asked again here);
+-- - a unique violation on `grants_user_scope_target_role_key` means the caller already holds exactly this grant: the row is marked claimed and no second grant is written;
+-- - a unique violation on `idx_grants_one_candidate_editor` means another user edits that candidate: the row is skipped with the reason `candidate_has_editor` and stays open;
+-- - any other violation is raised and undoes the call.
+--
+-- Returns `{"claimed": [...], "skipped": [...], "password_set": <boolean>}`. Each element holds `scope`, `target_type`, `target_id` and `role`, and a skipped one also `reason`. `password_set` is private.user_password_set for the caller and is present whatever was claimed. No address, code or invitation id is returned. A second call claims nothing.
+--
+-- A grant reaches a token only when one is issued, so a caller refreshes its session after a claim that returned a non-empty `claimed` and before it reads anything the grant opens.
+--
+-- SECURITY DEFINER because it reads auth.users, writes public.grants and updates public.invitations, none of which the caller can. It answers for `auth.uid()`, which neither `anon` nor the service role has, so `authenticated` alone holds EXECUTE.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.claim_invitations (p_project_id uuid) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_uid uuid := (SELECT auth.uid());
+  v_password_set boolean := false;
+  v_email text;
+  v_row public.invitations%ROWTYPE;
+  v_spec jsonb;
+  v_constraint text;
+  v_skip_reason text;
+  v_claimed jsonb := '[]'::jsonb;
+  v_skipped jsonb := '[]'::jsonb;
+BEGIN
+  IF v_uid IS NOT NULL THEN
+    v_password_set := private.user_password_set(v_uid);
+
+    SELECT lower(btrim(u.email)) INTO v_email
+    FROM auth.users u
+    WHERE u.id = v_uid
+      AND u.email_confirmed_at IS NOT NULL
+      AND NULLIF(btrim(u.email), '') IS NOT NULL;
+  END IF;
+
+  IF v_email IS NULL OR p_project_id IS NULL THEN
+    RETURN jsonb_build_object('claimed', v_claimed, 'skipped', v_skipped, 'password_set', v_password_set);
+  END IF;
+
+  FOR v_row IN
+    SELECT i.*
+    FROM public.invitations i
+    WHERE i.project_id = p_project_id
+      AND i.claimed_at IS NULL
+      AND (i.expires_at IS NULL OR i.expires_at > now())
+      AND (i.email = v_email OR (i.code_hash IS NOT NULL AND i.pending_email = v_email))
+      AND private.invitation_mode_allowed(i)
+    ORDER BY i.created_at, i.id
+    FOR UPDATE
+  LOOP
+    v_spec := jsonb_build_object(
+      'scope', v_row.scope,
+      'target_type', v_row.target_type,
+      'target_id', v_row.target_id,
+      'role', v_row.role
+    );
+    v_skip_reason := NULL;
+
+    IF v_row.scope = 'entity'
+       AND private.entity_project_id(v_row.target_type, v_row.target_id) IS DISTINCT FROM v_row.project_id THEN
+      v_skip_reason := 'target_not_in_project';
+    ELSE
+      BEGIN
+        INSERT INTO public.grants (user_id, scope, target_type, target_id, role)
+        VALUES (v_uid, v_row.scope, v_row.target_type, v_row.target_id, v_row.role);
+      EXCEPTION
+        WHEN unique_violation THEN
+          GET STACKED DIAGNOSTICS v_constraint = CONSTRAINT_NAME;
+          IF v_constraint = 'grants_user_scope_target_role_key' THEN
+            -- The caller already holds exactly this grant: the promise is fulfilled.
+            NULL;
+          ELSIF v_constraint = 'idx_grants_one_candidate_editor' THEN
+            v_skip_reason := 'candidate_has_editor';
+          ELSE
+            RAISE;
+          END IF;
+      END;
+    END IF;
+
+    IF v_skip_reason IS NOT NULL THEN
+      v_skipped := v_skipped || jsonb_build_array(v_spec || jsonb_build_object('reason', v_skip_reason));
+    ELSE
+      UPDATE public.invitations i
+      SET claimed_by = v_uid, claimed_at = now(), pending_email = NULL, pending_email_at = NULL
+      WHERE i.id = v_row.id;
+      v_claimed := v_claimed || jsonb_build_array(v_spec);
+    END IF;
+  END LOOP;
+
+  RETURN jsonb_build_object('claimed', v_claimed, 'skipped', v_skipped, 'password_set', v_password_set);
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.claim_invitations (uuid)
+FROM
+  PUBLIC,
+  anon,
+  service_role;
+
+GRANT
+EXECUTE ON FUNCTION public.claim_invitations (uuid) TO authenticated;
 -- Test helpers: generic JSONB deep-merge RPC for test infrastructure
 --
 -- jsonb_recursive_merge: recursively merges two JSONB objects. When both sides are objects, keys are merged recursively. Otherwise, the patch value wins.

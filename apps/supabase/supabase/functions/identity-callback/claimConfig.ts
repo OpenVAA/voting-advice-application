@@ -8,6 +8,8 @@
  * THE NAMES ARE SMART-CASED. A provider may send a name all in capitals; {@link extractIdentityClaims} answers such a name name-cased, each word upper-case first, and any other name as it was sent (`nameCase.ts`). The match value is never changed.
  */
 
+import { smartNameCase } from './nameCase.ts';
+
 /**
  * Provider configuration interface.
  * Maps provider-specific claim names to a common interface.
@@ -19,8 +21,6 @@ export interface ProviderClaimConfig {
   firstNameProp: string;
   /** Which claim maps to last name */
   lastNameProp: string;
-  /** Additional claims to extract and store in app_metadata */
-  extractClaims: Array<string>;
 }
 
 /** The `IDENTITY_PROVIDER_TYPE` keywords this function accepts. */
@@ -42,14 +42,12 @@ export const PROVIDER_CONFIGS = {
   'signicat-ftn': {
     identityMatchProp: 'sub',
     firstNameProp: 'given_name',
-    lastNameProp: 'family_name',
-    extractClaims: ['birthdate']
+    lastNameProp: 'family_name'
   },
   'idura-ftn': {
     identityMatchProp: 'sub',
     firstNameProp: 'given_name',
-    lastNameProp: 'family_name',
-    extractClaims: ['birthdate', 'hetu']
+    lastNameProp: 'family_name'
   }
 } satisfies Record<ProviderKeyword, ProviderClaimConfig>;
 
@@ -83,7 +81,6 @@ export function extractIdentityClaims(
   matchValue: string;
   firstName: string;
   lastName: string;
-  extraClaims: Record<string, unknown>;
 } {
   const firstName = payload[config.firstNameProp] as string | undefined;
   const lastName = payload[config.lastNameProp] as string | undefined;
@@ -98,12 +95,5 @@ export function extractIdentityClaims(
     );
   }
 
-  const extraClaims: Record<string, unknown> = {};
-  for (const claimName of config.extractClaims) {
-    if (payload[claimName] !== undefined) {
-      extraClaims[claimName] = payload[claimName];
-    }
-  }
-
-  return { matchValue, firstName, lastName, extraClaims };
+  return { matchValue, firstName: smartNameCase(firstName), lastName: smartNameCase(lastName) };
 }

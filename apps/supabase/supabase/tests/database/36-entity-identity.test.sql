@@ -17,7 +17,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (20);
+  plan (86);
 
 SELECT
   create_test_data ();
@@ -165,6 +165,45 @@ VALUES
     '{}'::jsonb,
     now(),
     now()
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036b1',
+    '00000000-0000-0000-0000-000000000000',
+    'identity_p1@test.com',
+    '',
+    'authenticated',
+    'authenticated',
+    now(),
+    '{}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036b2',
+    '00000000-0000-0000-0000-000000000000',
+    'identity_p2@test.com',
+    NULL,
+    'authenticated',
+    'authenticated',
+    now(),
+    '{}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036b3',
+    '00000000-0000-0000-0000-000000000000',
+    'identity_p3@test.com',
+    '$2a$10$abcdefghijklmnopqrstuuabcdefghijklmnopqrstuvwxyz0123456',
+    'authenticated',
+    'authenticated',
+    now(),
+    '{}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
   );
 
 -- C1, C2 and C3 in project A, C4 in project B. None is confirmed or nominated, so none is publicly visible and each is readable only through the caller's own authority.
@@ -184,6 +223,12 @@ VALUES
     'Two'
   ),
   (
+    '36363636-3636-3636-3636-0000000000c3',
+    test_id ('project_a'),
+    'Una',
+    'Three'
+  ),
+  (
     '36363636-3636-3636-3636-0000000000c4',
     test_id ('project_b'),
     'Una',
@@ -198,6 +243,11 @@ VALUES
     '36363636-3636-3636-3636-0000000000a2',
     test_id ('project_a'),
     '{"en":"Org A2"}'::jsonb
+  ),
+  (
+    '36363636-3636-3636-3636-0000000000c1',
+    test_id ('project_b'),
+    '{"en":"Org B sharing an id"}'::jsonb
   );
 
 INSERT INTO
@@ -215,6 +265,34 @@ VALUES
     'entity',
     'candidate',
     '36363636-3636-3636-3636-0000000000c4',
+    'editor'
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036a1',
+    'entity',
+    'candidate',
+    '36363636-3636-3636-3636-0000000000c2',
+    'editor'
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036a1',
+    'entity',
+    'organization',
+    '36363636-3636-3636-3636-0000000000a2',
+    'editor'
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036a1',
+    'entity',
+    'candidate',
+    '36363636-3636-3636-3636-0000000000c3',
+    'admin'
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036a1',
+    'entity',
+    'faction',
+    test_id ('faction_a'),
     'editor'
   ),
   (
@@ -249,18 +327,35 @@ VALUES
 SELECT
   test_seed_identity_grants ('admin_a');
 
--- Returns the HINT of the error a statement raises, or NULL when it raises nothing.
-CREATE FUNCTION pg_temp.hint_of (p_sql text) RETURNS text LANGUAGE plpgsql AS $$
-DECLARE
-  v_hint text;
-BEGIN
-  EXECUTE p_sql;
-  RETURN NULL;
-EXCEPTION
-  WHEN OTHERS THEN
-    GET STACKED DIAGNOSTICS v_hint = PG_EXCEPTION_HINT;
-    RETURN v_hint;
-END;
+-- The entities public.get_user_entities lists for the caller in one project, as `type:id` pairs in the order listed.
+CREATE FUNCTION pg_temp.listed (p_project_id uuid) RETURNS text LANGUAGE sql AS $$
+  SELECT COALESCE(string_agg(format('%s:%s', e.entry ->> 'entity_type', e.entry ->> 'id'), ',' ORDER BY e.ord), '')
+  FROM jsonb_array_elements(public.get_user_entities(p_project_id) -> 'entities') WITH ORDINALITY AS e (entry, ord);
+$$;
+
+-- How many rows public.get_entity_user_data returns to the caller for one entity.
+CREATE FUNCTION pg_temp.read_count (
+  p_project_id uuid,
+  p_entity_type public.entity_type,
+  p_entity_id uuid
+) RETURNS bigint LANGUAGE sql AS $$
+  SELECT count(*) FROM public.get_entity_user_data(p_project_id, p_entity_type, p_entity_id);
+$$;
+
+-- The sorted keys of the first listed entry of one type.
+CREATE FUNCTION pg_temp.entry_keys (p_project_id uuid, p_entity_type text) RETURNS text[] LANGUAGE sql AS $$
+  SELECT ARRAY(
+    SELECT jsonb_object_keys(e.entry) ORDER BY 1
+  )
+  FROM jsonb_array_elements(public.get_user_entities(p_project_id) -> 'entities') WITH ORDINALITY AS e (entry, ord)
+  WHERE e.entry ->> 'entity_type' = p_entity_type
+  ORDER BY e.ord
+  LIMIT 1;
+$$;
+
+-- The sorted top-level keys of what public.get_user_entities answers the caller.
+CREATE FUNCTION pg_temp.answer_keys (p_project_id uuid) RETURNS text[] LANGUAGE sql AS $$
+  SELECT ARRAY(SELECT jsonb_object_keys(public.get_user_entities(p_project_id)) ORDER BY 1);
 $$;
 
 -- =====================================================================
@@ -270,7 +365,7 @@ $$;
 SELECT
   set_test_user (
     'authenticated',
-    'cccccccc-cccc-cccc-cccc-0000000036a1',
+    'cccccccc-cccc-cccc-cccc-0000000036a5',
     '[]'::jsonb
   );
 
@@ -278,24 +373,37 @@ SELECT
   is (
     (
       SELECT
-        string_agg(id::text, ',')
+        count(*)
       FROM
-        public.get_candidate_user_data (test_id ('project_a'))
+        public.get_user_entities (test_id ('project_a'))
     ),
-    '36363636-3636-3636-3636-0000000000c1',
-    'one candidate-editor grant in project A resolves to exactly that candidate'
+    1::bigint,
+    'a caller with no grant gets exactly one row from the list'
   );
 
 SELECT
   is (
-    (
-      SELECT
-        string_agg(id::text, ',')
-      FROM
-        public.get_candidate_user_data (test_id ('project_b'))
+    jsonb_typeof(public.get_user_entities (test_id ('project_a'))),
+    'object',
+    'that row is one jsonb object'
+  );
+
+SELECT
+  is (
+    jsonb_typeof(
+      public.get_user_entities (test_id ('project_a')) -> 'entities'
     ),
-    '36363636-3636-3636-3636-0000000000c4',
-    'asked for project B, the same caller resolves to its project B candidate'
+    'array',
+    'its entities member is a jsonb array'
+  );
+
+SELECT
+  is (
+    jsonb_array_length(
+      public.get_user_entities (test_id ('project_a')) -> 'entities'
+    ),
+    0,
+    'and that array is empty'
   );
 
 SELECT
@@ -305,20 +413,30 @@ SELECT
 SELECT
   set_test_user (
     'authenticated',
-    test_user_id ('admin_a'),
+    'cccccccc-cccc-cccc-cccc-0000000036a3',
     '[]'::jsonb
   );
 
 SELECT
   is (
-    (
-      SELECT
-        count(*)
-      FROM
-        public.get_candidate_user_data (test_id ('project_a'))
-    ),
-    0::bigint,
-    'a project admin resolves to no candidate'
+    pg_temp.listed (test_id ('project_a')),
+    'organization:' || test_id ('org_a')::text,
+    'one editor grant gives one entry'
+  );
+
+SELECT
+  is (
+    pg_temp.entry_keys (test_id ('project_a'), 'organization'),
+    ARRAY[
+      'color',
+      'confirmed',
+      'entity_type',
+      'id',
+      'image',
+      'name',
+      'short_name'
+    ],
+    'an organization entry carries exactly the card keys of an organization'
   );
 
 SELECT
@@ -328,8 +446,17 @@ SELECT
 SELECT
   set_test_user (
     'authenticated',
-    'cccccccc-cccc-cccc-cccc-0000000036a2',
+    'cccccccc-cccc-cccc-cccc-0000000036a1',
     '[]'::jsonb
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT public.get_user_entities(%L)$$,
+      test_id ('project_a')
+    ),
+    'two candidate-editor grants in one project raise nothing'
   );
 
 SELECT
@@ -338,10 +465,305 @@ SELECT
       SELECT
         count(*)
       FROM
-        public.get_candidate_user_data (test_id ('project_a'))
+        jsonb_array_elements(
+          public.get_user_entities (test_id ('project_a')) -> 'entities'
+        ) AS e (entry)
+      WHERE
+        e.entry ->> 'entity_type' = 'candidate'
+    ),
+    2::bigint,
+    'two candidate-editor grants in one project give two candidate entries'
+  );
+
+SELECT
+  is (
+    pg_temp.listed (test_id ('project_a')),
+    'candidate:36363636-3636-3636-3636-0000000000c1,candidate:36363636-3636-3636-3636-0000000000c2,organization:36363636-3636-3636-3636-0000000000a2',
+    'candidates and an organization are listed together, candidates first and each type by id'
+  );
+
+SELECT
+  is (
+    pg_temp.entry_keys (test_id ('project_a'), 'candidate'),
+    ARRAY[
+      'color',
+      'confirmed',
+      'entity_type',
+      'first_name',
+      'id',
+      'image',
+      'last_name',
+      'short_name'
+    ],
+    'a candidate entry carries exactly the card keys of a candidate'
+  );
+
+SELECT
+  is (
+    position(
+      '36363636-3636-3636-3636-0000000000c4' IN pg_temp.listed (test_id ('project_a'))
+    ),
+    0,
+    'the candidate the caller edits in project B is absent from the list of project A'
+  );
+
+SELECT
+  is (
+    pg_temp.listed (test_id ('project_b')),
+    'candidate:36363636-3636-3636-3636-0000000000c4',
+    'and it is the list of project B'
+  );
+
+SELECT
+  is (
+    position(
+      '36363636-3636-3636-3636-0000000000c3' IN pg_temp.listed (test_id ('project_a'))
+    ),
+    0,
+    'the candidate of an admin-role entity grant is not listed'
+  );
+
+SELECT
+  ok (
+    position(
+      test_id ('faction_a')::text IN pg_temp.listed (test_id ('project_a'))
+    ) = 0
+    AND position(
+      'faction' IN pg_temp.listed (test_id ('project_a'))
+    ) = 0,
+    'the faction of a faction-editor grant is not listed'
+  );
+
+-- =====================================================================
+-- The one-entity read
+-- =====================================================================
+-- Still U1. Every refusal is asserted twice: the call raises nothing, and it returns no row.
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(first_name || ' ' || last_name, '|')
+      FROM
+        public.get_entity_user_data (
+          test_id ('project_a'),
+          'candidate',
+          '36363636-3636-3636-3636-0000000000c1'
+        )
+    ),
+    'Una One',
+    'the caller''s own candidate is one row carrying its person names'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        jsonb_agg(name)
+      FROM
+        public.get_entity_user_data (
+          test_id ('project_a'),
+          'organization',
+          '36363636-3636-3636-3636-0000000000a2'
+        )
+    ),
+    '[{"en":"Org A2"}]'::jsonb,
+    'the caller''s own organization is one row carrying its name'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_b'),
+      'candidate',
+      '36363636-3636-3636-3636-0000000000c4'
+    ),
+    1::bigint,
+    'asked under project B, the same caller reads its project B candidate'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'candidate', %L)$$,
+      test_id ('project_a'),
+      test_id ('candidate_a')
+    ),
+    'reading a candidate the caller holds no grant on raises nothing'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'candidate',
+      test_id ('candidate_a')
     ),
     0::bigint,
-    'an admin-role entity grant on a candidate resolves to no candidate'
+    'a candidate the caller holds no grant on returns no row, publicly visible though it is'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'candidate', '36363636-3636-3636-3636-0000000000c3')$$,
+      test_id ('project_a')
+    ),
+    'reading the candidate of an admin-role entity grant raises nothing'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'candidate',
+      '36363636-3636-3636-3636-0000000000c3'
+    ),
+    0::bigint,
+    'the candidate of an admin-role entity grant returns no row'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'organization', '36363636-3636-3636-3636-0000000000c1')$$,
+      test_id ('project_a')
+    ),
+    'a type that does not match the id raises nothing'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'organization',
+      '36363636-3636-3636-3636-0000000000c1'
+    ),
+    0::bigint,
+    'the caller''s candidate id asked as an organization returns no row'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'organization', '36363636-3636-3636-3636-0000000000c1')$$,
+      test_id ('project_b')
+    ),
+    'reading the organization that shares the id of a candidate the caller edits raises nothing'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_b'),
+      'organization',
+      '36363636-3636-3636-3636-0000000000c1'
+    ),
+    0::bigint,
+    'an editor grant on a candidate does not read the organization of another project that shares its id'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'candidate', '36363636-3636-3636-3636-0000000000c4')$$,
+      test_id ('project_a')
+    ),
+    'reading another project''s candidate under this project raises nothing'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'candidate',
+      '36363636-3636-3636-3636-0000000000c4'
+    ),
+    0::bigint,
+    'the candidate the caller edits in project B, asked under project A, returns no row'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'candidate', '36363636-3636-3636-3636-00000000dead')$$,
+      test_id ('project_a')
+    ),
+    'reading an id that does not exist raises nothing'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'candidate',
+      '36363636-3636-3636-3636-00000000dead'
+    ),
+    0::bigint,
+    'an id that does not exist returns no row'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'faction', %L)$$,
+      test_id ('project_a'),
+      test_id ('faction_a')
+    ),
+    'reading a faction the caller edits raises nothing'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'faction',
+      test_id ('faction_a')
+    ),
+    0::bigint,
+    'a faction the caller edits returns no row: the read serves candidates and organizations only'
+  );
+
+-- Agreement. The three entries of project A are established above, so the comparison is not between two zeros.
+SELECT
+  is (
+    (
+      SELECT
+        count(*)
+      FROM
+        jsonb_array_elements(
+          public.get_user_entities (test_id ('project_a')) -> 'entities'
+        ) AS e (entry)
+      WHERE
+        pg_temp.read_count (
+          test_id ('project_a'),
+          (e.entry ->> 'entity_type')::public.entity_type,
+          (e.entry ->> 'id')::uuid
+        ) = 1
+    ),
+    jsonb_array_length(
+      public.get_user_entities (test_id ('project_a')) -> 'entities'
+    )::bigint,
+    'every listed entity is one the one-entity read returns exactly one row for'
+  );
+
+SELECT
+  reset_role ();
+
+-- =====================================================================
+-- Callers that hold authority without being an entity
+-- =====================================================================
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('admin_a'),
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    pg_temp.listed (test_id ('project_a')),
+    '',
+    'a project admin is listed with nothing'
   );
 
 SELECT
@@ -350,38 +772,15 @@ SELECT
 SELECT
   set_test_user (
     'authenticated',
-    'cccccccc-cccc-cccc-cccc-0000000036a3',
+    'cccccccc-cccc-cccc-cccc-0000000036a2',
     '[]'::jsonb
   );
 
 SELECT
   is (
-    (
-      SELECT
-        string_agg(id::text, ',')
-      FROM
-        public.get_candidate_user_data (test_id ('project_a'), 'organization')
-    ),
-    test_id ('org_a')::text,
-    'an organization-editor grant resolves to that organization in the organization arm'
-  );
-
-SELECT
-  reset_role ();
-
-SELECT
-  set_test_user ('anon');
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)
-      FROM
-        public.get_candidate_user_data (test_id ('project_a'))
-    ),
-    0::bigint,
-    'anon resolves to no candidate'
+    pg_temp.listed (test_id ('project_a')),
+    '',
+    'the holder of an admin-role entity grant alone is listed with nothing'
   );
 
 SELECT
@@ -395,23 +794,23 @@ SELECT
   );
 
 SELECT
-  throws_ok (
-    format(
-      $$SELECT * FROM public.get_candidate_user_data(%L, 'organization')$$,
-      test_id ('project_a')
-    ),
-    'P0001',
-    'the caller holds an editor grant on more than one organization in this project',
-    'two organization-editor grants in one project raise'
+  is (
+    pg_temp.listed (test_id ('project_a')),
+    'organization:36363636-3636-3636-3636-0000000000a2,organization:' || test_id ('org_a')::text,
+    'two organization-editor grants in one project list both organizations'
   );
 
 SELECT
   reset_role ();
 
+-- =====================================================================
+-- A token older than a grant, and a token that outlives one
+-- =====================================================================
+-- The helper and row-level security both read the grant table, never the token's grants claim, so a grant counts from the moment it is written and stops counting the moment it is deleted, whatever the token carries. The token is built while U5 holds no grant; the editor grant on C3 is written afterwards and the token is not rebuilt.
 SELECT
   set_test_user (
     'authenticated',
-    'cccccccc-cccc-cccc-cccc-0000000036a1',
+    'cccccccc-cccc-cccc-cccc-0000000036a5',
     '[]'::jsonb
   );
 
@@ -422,10 +821,10 @@ INSERT INTO
   grants (user_id, scope, target_type, target_id, role)
 VALUES
   (
-    'cccccccc-cccc-cccc-cccc-0000000036a1',
+    'cccccccc-cccc-cccc-cccc-0000000036a5',
     'entity',
     'candidate',
-    '36363636-3636-3636-3636-0000000000c2',
+    '36363636-3636-3636-3636-0000000000c3',
     'editor'
   );
 
@@ -433,31 +832,516 @@ SELECT
   set_config('role', 'authenticated', true);
 
 SELECT
-  throws_ok (
+  is (
+    pg_temp.listed (test_id ('project_a')),
+    'candidate:36363636-3636-3636-3636-0000000000c3',
+    'RVK: an editor grant written after the token was issued is listed at once'
+  );
+
+SELECT
+  lives_ok (
     format(
-      $$SELECT * FROM public.get_candidate_user_data(%L)$$,
+      $$SELECT * FROM public.get_entity_user_data(%L, 'candidate', '36363636-3636-3636-3636-0000000000c3')$$,
       test_id ('project_a')
     ),
-    'P0001',
-    'the caller holds an editor grant on more than one candidate in this project',
-    'a second candidate-editor grant in the table raises even though the token predates it'
+    'reading the entity of a grant the token predates raises nothing'
   );
 
 SELECT
   is (
-    pg_temp.hint_of (
-      format(
-        $$SELECT * FROM public.get_candidate_user_data(%L)$$,
-        test_id ('project_a')
-      )
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'candidate',
+      '36363636-3636-3636-3636-0000000000c3'
     ),
-    'ERR_ENTITY_IDENTITY_AMBIGUOUS',
-    'the ambiguity error carries the hint ERR_ENTITY_IDENTITY_AMBIGUOUS'
+    1::bigint,
+    'RVK: and that entity is read at once, although the token predates the grant'
   );
 
 SELECT
   reset_role ();
 
+-- The token is rebuilt, so that it carries the grant, before the grant is deleted below.
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036a5',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    pg_temp.listed (test_id ('project_a')),
+    'candidate:36363636-3636-3636-3636-0000000000c3',
+    'once the token is rebuilt the same grant is listed'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'candidate',
+      '36363636-3636-3636-3636-0000000000c3'
+    ),
+    1::bigint,
+    'and its entity is readable'
+  );
+
+SELECT
+  reset_role ();
+
+-- The other direction: the grant is deleted while the token built above still carries it, and the same token reads and writes next.
+DELETE FROM grants
+WHERE
+  user_id = 'cccccccc-cccc-cccc-cccc-0000000036a5'
+  AND target_id = '36363636-3636-3636-3636-0000000000c3'
+  AND role = 'editor';
+
+SELECT
+  set_config('role', 'authenticated', true);
+
+SELECT
+  is (
+    pg_temp.listed (test_id ('project_a')),
+    '',
+    'a grant removed from the table is not listed although the token still carries it'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'candidate', '36363636-3636-3636-3636-0000000000c3')$$,
+      test_id ('project_a')
+    ),
+    'reading the entity of a removed grant raises nothing'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'candidate',
+      '36363636-3636-3636-3636-0000000000c3'
+    ),
+    0::bigint,
+    'and that entity returns no row although the token still carries the grant'
+  );
+
+-- A direct read of the row and a write of it, with the token that still carries the grant: row-level security asks the table, so both are refused at once.
+SELECT
+  is (
+    (
+      SELECT
+        count(*)
+      FROM
+        public.candidates
+      WHERE
+        id = '36363636-3636-3636-3636-0000000000c3'
+    ),
+    0::bigint,
+    'RVK: the token that outlives the grant reads no row of the candidate directly'
+  );
+
+SELECT
+  throws_ok (
+    $$SELECT public.upsert_answers('candidate', '36363636-3636-3636-3636-0000000000c3', '{}'::jsonb)$$,
+    'P0001',
+    'Entity not found or access denied: 36363636-3636-3636-3636-0000000000c3',
+    'RVK: and writing the candidate with the same token is refused'
+  );
+
+SELECT
+  reset_role ();
+
+-- A publicly visible entity whose grant the token predates: it is listed and read, as every authenticated caller reads its row, and its editor writes it at once, because the write's row-level security asks the table as well. candidate_a is confirmed, nominated and in the open project, and nobody edits it here.
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036a5',
+    '[]'::jsonb
+  );
+
+SELECT
+  reset_role ();
+
+INSERT INTO
+  grants (user_id, scope, target_type, target_id, role)
+VALUES
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036a5',
+    'entity',
+    'candidate',
+    test_id ('candidate_a'),
+    'editor'
+  );
+
+SELECT
+  set_config('role', 'authenticated', true);
+
+SELECT
+  is (
+    pg_temp.listed (test_id ('project_a')),
+    'candidate:' || test_id ('candidate_a')::text,
+    'an editor grant the token predates is listed at once when its candidate is publicly visible'
+  );
+
+SELECT
+  is (
+    pg_temp.read_count (
+      test_id ('project_a'),
+      'candidate',
+      test_id ('candidate_a')
+    ),
+    1::bigint,
+    'and that candidate is readable, so the list and the read still agree'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$SELECT public.upsert_answers('candidate', %L, '{}'::jsonb)$$,
+      test_id ('candidate_a')
+    ),
+    'RVK: and writing it with the token that predates the grant lives'
+  );
+
+SELECT
+  reset_role ();
+
+DELETE FROM grants
+WHERE
+  user_id = 'cccccccc-cccc-cccc-cccc-0000000036a5'
+  AND target_id = test_id ('candidate_a');
+
+-- =====================================================================
+-- The caller's password fact
+-- =====================================================================
+-- U3 edits org_a and holds a hash.
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036a3',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    pg_temp.answer_keys (test_id ('project_a')),
+    ARRAY['entities', 'password_set', 'pending_email_taken'],
+    'PWD: the answer of a caller that edits an entity has exactly the top-level keys entities, password_set and pending_email_taken'
+  );
+
+SELECT
+  reset_role ();
+
+-- P3 holds a hash, P1 an empty string and P2 a null. Each is read as that account, one after the other, and P3 once more at the end.
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b3',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    'true'::jsonb,
+    'PWD: password_set is true for a caller whose encrypted_password holds a hash'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b1',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    'false'::jsonb,
+    'PWD: password_set is false for a caller whose encrypted_password is the empty string'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b2',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    'false'::jsonb,
+    'PWD: password_set is false for a caller whose encrypted_password is null'
+  );
+
+-- Still P2, which edits nothing.
+SELECT
+  is (
+    pg_temp.answer_keys (test_id ('project_a')),
+    ARRAY['entities', 'password_set', 'pending_email_taken'],
+    'PWD: the answer of a caller that edits none has exactly the same three top-level keys'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)
+      FROM
+        public.get_user_entities (test_id ('project_a'))
+    ),
+    1::bigint,
+    'PWD: a caller with no entity still gets exactly one row'
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')),
+    '{"entities": [], "password_set": false, "pending_email_taken": false}'::jsonb,
+    'PWD: and that row is one object holding an empty entities array and the caller''s password_set and pending_email_taken'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b3',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    'true'::jsonb,
+    'PWD: accounts read one after the other each get their own password_set, so the account with a hash reads true again after two that read false'
+  );
+
+SELECT
+  reset_role ();
+
+-- No caller at all: the anon impersonation clears the claims, and the role is then put back to postgres, which may execute the function.
+SELECT
+  set_test_user ('anon');
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    'null'::jsonb,
+    'PWD: password_set is a JSON null, neither true nor false, where no caller is signed in'
+  );
+
+-- =====================================================================
+-- The caller's pending address
+-- =====================================================================
+-- `pending_email_taken` says whether the address the caller's own account is changing to (auth.users.email_change) is already another account's address, compared trimmed and lower-cased. U3 edits org_a; P1, P2 and P3 edit nothing, and their addresses are identity_p1@test.com, identity_p2@test.com and identity_p3@test.com. Pending addresses are set by the fixture role.
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036a3',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) ? 'pending_email_taken',
+    true,
+    'PET: the answer of a caller that edits an entity carries pending_email_taken'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b2',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) ? 'pending_email_taken',
+    true,
+    'PET: and so does the answer of a caller that edits nothing'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b3',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    'false'::jsonb,
+    'PET: pending_email_taken is false for a caller with no pending address'
+  );
+
+SELECT
+  reset_role ();
+
+UPDATE auth.users
+SET
+  email_change = '  IDENTITY_P3@Test.Com '
+WHERE
+  id = 'cccccccc-cccc-cccc-cccc-0000000036b1';
+
+UPDATE auth.users
+SET
+  email_change = 'pet.nobody@test.example'
+WHERE
+  id = 'cccccccc-cccc-cccc-cccc-0000000036b2';
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b1',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    'true'::jsonb,
+    'PET: pending_email_taken is true when the caller''s pending address, in another case and with spaces around it, is another account''s address'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b2',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    'false'::jsonb,
+    'PET: pending_email_taken is false when the caller''s pending address is no account''s address'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b3',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    'false'::jsonb,
+    'PET: pending_email_taken is false for a caller whose own address is another caller''s pending address: it speaks of the caller''s own pending address only'
+  );
+
+SELECT
+  reset_role ();
+
+UPDATE auth.users
+SET
+  email_change = ' Identity_P2@test.com'
+WHERE
+  id = 'cccccccc-cccc-cccc-cccc-0000000036b2';
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b2',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    'false'::jsonb,
+    'PET: pending_email_taken is false when the caller''s pending address is its own address: only another account''s counts'
+  );
+
+SELECT
+  reset_role ();
+
+-- No caller at all, as in the password section.
+SELECT
+  set_test_user ('anon');
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    'false'::jsonb,
+    'PET: pending_email_taken is false where no caller is signed in'
+  );
+
+UPDATE auth.users
+SET
+  email_change = ''
+WHERE
+  id IN (
+    'cccccccc-cccc-cccc-cccc-0000000036b1',
+    'cccccccc-cccc-cccc-cccc-0000000036b2'
+  );
+
+-- =====================================================================
+-- anon
+-- =====================================================================
+SELECT
+  set_test_user ('anon');
+
+SELECT
+  throws_ok (
+    format(
+      $$SELECT public.get_user_entities(%L)$$,
+      test_id ('project_a')
+    ),
+    '42501',
+    NULL,
+    'anon is refused get_user_entities by privilege'
+  );
+
+SELECT
+  throws_ok (
+    format(
+      $$SELECT * FROM public.get_entity_user_data(%L, 'candidate', '36363636-3636-3636-3636-0000000000c1')$$,
+      test_id ('project_a')
+    ),
+    '42501',
+    NULL,
+    'anon is refused get_entity_user_data by privilege'
+  );
+
+SELECT
+  reset_role ();
+
+-- =====================================================================
+-- Catalog
+-- =====================================================================
 SELECT
   is (
     (
@@ -504,14 +1388,31 @@ SELECT
           JOIN pg_namespace n ON n.oid = p.pronamespace
         WHERE
           n.nspname = 'public'
-          AND p.proname = 'get_candidate_user_data'
+          AND p.proname = 'get_user_entities'
       ),
       false
     ),
-    'get_candidate_user_data runs with the caller''s rights'
+    'get_user_entities runs with the caller''s rights'
   );
 
--- Agreement. The three entries of project A are established above, so the comparison is not between two zeros.
+SELECT
+  ok (
+    COALESCE(
+      (
+        SELECT
+          NOT p.prosecdef
+        FROM
+          pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE
+          n.nspname = 'public'
+          AND p.proname = 'get_entity_user_data'
+      ),
+      false
+    ),
+    'get_entity_user_data runs with the caller''s rights'
+  );
+
 SELECT
   ok (
     EXISTS (
@@ -528,6 +1429,164 @@ SELECT
         AND a.privilege_type = 'EXECUTE'
     ),
     'authenticated holds the private schema''s stated EXECUTE grant on private.caller_entity_ids'
+  );
+
+-- The password fact. Each assertion reads pg_proc, so a function that is absent answers NULL and fails its comparison.
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          p.pronargs::text,
+          ','
+          ORDER BY
+            p.oid
+        )
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'private'
+        AND p.proname = 'caller_password_set'
+    ),
+    '0',
+    'PWD: private.caller_password_set has one signature and takes no argument, so it can name no account but the caller''s'
+  );
+
+SELECT
+  ok (
+    COALESCE(
+      (
+        SELECT
+          p.prosecdef
+          AND p.proconfig::text = '{"search_path=\"\""}'
+        FROM
+          pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE
+          n.nspname = 'private'
+          AND p.proname = 'caller_password_set'
+      ),
+      false
+    ),
+    'PWD: private.caller_password_set is SECURITY DEFINER with an empty search_path and no other setting'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          r.rolname || ' ' || has_function_privilege(r.rolname, p.oid, 'EXECUTE')::text,
+          ', '
+          ORDER BY
+            r.rolname
+        )
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        CROSS JOIN (
+          VALUES
+            ('anon'),
+            ('authenticated'),
+            ('service_role')
+        ) AS r (rolname)
+      WHERE
+        n.nspname = 'private'
+        AND p.proname = 'caller_password_set'
+    ),
+    'anon false, authenticated true, service_role false',
+    'PWD: private.caller_password_set is executable by authenticated and by neither anon nor service_role'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          pg_get_function_identity_arguments(p.oid) || ' -> ' || p.prorettype::regtype::text || ' ' || p.provolatile::text || ' ' || p.prosecdef::text || ' ' || p.proconfig::text,
+          ', '
+        )
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'private'
+        AND p.proname = 'caller_pending_email_taken'
+    ),
+    ' -> boolean s true {"search_path=\"\""}',
+    'PET: private.caller_pending_email_taken has one signature, takes no argument, answers boolean and is STABLE and SECURITY DEFINER with an empty search_path'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          r.rolname || ' ' || has_function_privilege(r.rolname, p.oid, 'EXECUTE')::text,
+          ', '
+          ORDER BY
+            r.rolname
+        )
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        CROSS JOIN (
+          VALUES
+            ('anon'),
+            ('authenticated'),
+            ('service_role')
+        ) AS r (rolname)
+      WHERE
+        n.nspname = 'private'
+        AND p.proname = 'caller_pending_email_taken'
+    ),
+    'anon false, authenticated true, service_role false',
+    'PET: private.caller_pending_email_taken is executable by authenticated and by neither anon nor service_role'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          r.rolname || ' ' || has_function_privilege(r.rolname, p.oid, 'EXECUTE')::text,
+          ', '
+          ORDER BY
+            r.rolname
+        )
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        CROSS JOIN (
+          VALUES
+            ('anon'),
+            ('authenticated'),
+            ('service_role')
+        ) AS r (rolname)
+      WHERE
+        n.nspname = 'private'
+        AND p.proname = 'user_password_set'
+        AND p.proargtypes::text = 'uuid'::regtype::oid::text
+    ),
+    'anon false, authenticated false, service_role false',
+    'PWD: private.user_password_set (uuid), which takes an account''s id, is executable by none of anon, authenticated and service_role'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'public'
+        AND p.proname IN ('caller_password_set', 'user_password_set')
+    ),
+    0::bigint,
+    'PWD: neither caller_password_set nor user_password_set is a public function, so PostgREST publishes neither'
   );
 
 -- =====================================================================

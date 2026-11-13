@@ -24,11 +24,20 @@ const REQUIRE_ENV_GUARDED = [
   'IDENTITY_PROVIDER_TYPE',
   'IDENTITY_PROVIDER_DECRYPTION_JWKS',
   'IDENTITY_PROVIDER_JWKS_URI',
-  'PUBLIC_PROJECT_ID',
-  'SITE_URL'
+  'IDENTITY_CALLBACK_SERVER_SECRET'
 ] as const;
 
 const CLAIM_BINDING_GUARDED = ['IDENTITY_PROVIDER_CLIENT_ID', 'IDENTITY_PROVIDER_ISSUER'] as const;
+
+/** The two variables the platform sets. */
+const PLATFORM_SET = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'] as const;
+
+/** The name of every `Deno.env.get('<name>')` read in the source. */
+function readNames(): Array<string> {
+  return Array.from(
+    new Set(Array.from(INDEX_SOURCE.matchAll(/Deno\.env\.get\('([A-Z_]+)'\)/g)).map((m) => m[1]))
+  ).sort();
+}
 
 describe('identity-callback env read sites', () => {
   it.each(REQUIRE_ENV_GUARDED)('reads %s through requireEnv', (name) => {
@@ -49,6 +58,23 @@ describe('identity-callback env read sites', () => {
     expect(INDEX_SOURCE).toContain('requireVerifyClaimBinding(');
   });
 
+  it("reads the identity provider's variables, the server's secret and the platform's two, and nothing else", () => {
+    expect(readNames()).toEqual([...REQUIRE_ENV_GUARDED, ...CLAIM_BINDING_GUARDED, ...PLATFORM_SET].sort());
+  });
+
+  it('reads no site origin', () => {
+    expect(INDEX_SOURCE).not.toContain("'SITE_URL'");
+  });
+
+  it('reads no project from its environment: the project is the one the request names', () => {
+    expect(INDEX_SOURCE).not.toContain('PUBLIC_PROJECT_ID');
+    expect(INDEX_SOURCE).toContain('const projectId = request.projectId;');
+  });
+
+  it("reads the server's secret once, through requireEnv", () => {
+    expect(INDEX_SOURCE.split("requireEnv('IDENTITY_CALLBACK_SERVER_SECRET'").length - 1).toBe(1);
+  });
+
   /**
    * Non-vacuity control. The two assertions above are `toContain` / `not.toContain` over a file read at import time; if the read silently produced an empty string they would both pass for every name and this suite would be a clean bill over nothing. Pin the source as non-empty and as actually being the module under test.
    */
@@ -64,6 +90,6 @@ describe('identity-callback env read sites', () => {
     for (const name of REQUIRE_ENV_GUARDED) {
       expect(INDEX_SOURCE).toContain(name);
     }
-    expect(INDEX_SOURCE).toContain('five ERR_ENV_UNCONFIGURED throws');
+    expect(INDEX_SOURCE).toContain('four ERR_ENV_UNCONFIGURED throws');
   });
 });

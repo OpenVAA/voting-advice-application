@@ -193,8 +193,6 @@ DROP;
 INSERT INTO
   m17_unenforced_ratified
 VALUES
-  ('account.manage_admins'),
-  ('project.manage_editors'),
   ('entity.invite_children'),
   ('entity.edit_immutable'),
   ('entity.confirm'),
@@ -238,7 +236,9 @@ SELECT
 -- Nine positions plus the unmapped shape, measured through each identity's real session claim:
 --   - 1 RootAdmin, 2 AccountAdmin, 3 ProjectAdmin, 4 ProjectEditor, 5 Candidate, 6 OrganizationEditor, 7 FactionEditor, 8 AllianceEditor, 9 an authenticated caller holding no grant, X the unmapped shape.
 -- Matrix cells that hold only on the caller's own entity are read as TRUE for the identity whose grant names the probe target and FALSE for the others; the no-grant element is always false.
-CREATE TEMP TABLE m17_grid (member text, ident text, val boolean) ON
+--
+-- Each row of the grid records the target it was probed at, because `nomination.create_parent` is probed at two: at the alliance, where the alliance's editor holds its own cell, and at organization A, where the organization's editor holds its own. One probe target shows one own cell, so the organization's cell is measured by the second probe alone.
+CREATE TEMP TABLE m17_grid (member text, probe text, ident text, val boolean) ON
 COMMIT
 DROP;
 
@@ -280,7 +280,8 @@ DECLARE
     ARRAY['nomination.edit', 'entity', 'alliance_a', 'alliance'],
     ARRAY['nomination.read', 'entity', 'alliance_a', 'alliance'],
     ARRAY['nomination.confirm', 'entity', 'candidate_a', 'candidate'],
-    ARRAY['nomination.create_parent', 'entity', 'alliance_a', 'alliance']];
+    ARRAY['nomination.create_parent', 'entity', 'alliance_a', 'alliance'],
+    ARRAY['nomination.create_parent', 'entity', 'org_a', 'organization']];
   i int; j int;
 BEGIN
   FOR i IN 1..array_length(idents, 1) LOOP
@@ -295,7 +296,7 @@ BEGIN
         v_scope, v_target, v_member, NULLIF(ops[j][4], '')
       ) INTO v_res;
       PERFORM set_config('role', 'postgres', true);
-      INSERT INTO m17_grid VALUES (v_member, idents[i][1], v_res);
+      INSERT INTO m17_grid VALUES (v_member, ops[j][3], idents[i][1], v_res);
       PERFORM set_config('role', 'authenticated', true);
     END LOOP;
   END LOOP;
@@ -803,9 +804,34 @@ SELECT
         m17_grid
       WHERE
         member = 'nomination.create_parent'
+        AND probe = 'alliance_a'
     ),
     'TTTTfffTff',
     'matrix row nomination.create_parent'
+  );
+
+-- The same member at organization A, identity by identity: the root, account and project admins and the project editor hold it on every entity of the project (T, T, T, T); the candidate's editor holds it on its own candidate and not on the organization (f); the organization's editor holds it on its own organization (T); the faction's editor and the alliance's editor hold it on their own entities alone (f, f); the caller with no grant and the unmapped shape hold nothing (f, f).
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          CASE
+            WHEN val THEN 'T'
+            ELSE 'f'
+          END,
+          ''
+          ORDER BY
+            ident
+        )
+      FROM
+        m17_grid
+      WHERE
+        member = 'nomination.create_parent'
+        AND probe = 'org_a'
+    ),
+    'TTTTfTffff',
+    'matrix row nomination.create_parent, probed at the organization editor''s own organization'
   );
 
 -- The unmapped grant shape, read across the whole grid at once: an entity-scope grant carrying the admin role opens NOTHING, for any of the 23 members.
@@ -1019,18 +1045,13 @@ SELECT
   qual AS raw,
   regexp_replace(
     regexp_replace(
-      regexp_replace(
-        regexp_replace(qual, '\s+', ' ', 'g'),
-        '''(candidate|organization|faction|alliance)''::entity_type',
-        '''ETYPE''::entity_type',
-        'g'
-      ),
-      '\m(candidates|organizations|factions|alliances)\M',
-      'ENT',
+      regexp_replace(qual, '\s+', ' ', 'g'),
+      '''(candidate|organization|faction|alliance)''::entity_type',
+      '''ETYPE''::entity_type',
       'g'
     ),
-    ' AND \(terms_of_use_accepted IS NOT NULL\) AND \(terms_of_use_accepted < now\(\)\)',
-    '',
+    '\m(candidates|organizations|factions|alliances)\M',
+    'ENT',
     'g'
   ) AS norm
 FROM
@@ -1140,22 +1161,6 @@ SELECT
     ),
     8,
     'eight-assembly guard, ABSOLUTE: all eight assemblies call entity_has_confirmed_nomination'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)::integer
-      FROM
-        m17_assembly
-      WHERE
-        tablename = 'candidates'
-        AND raw LIKE '%terms_of_use_accepted IS NOT NULL%'
-        AND raw LIKE '%terms_of_use_accepted < now()%'
-    ),
-    2,
-    'eight-assembly guard, ABSOLUTE: both candidates assemblies carry the two terms-of-use terms'
   );
 
 SELECT
