@@ -1,0 +1,13 @@
+ATTEMPT=20261019T191643Z.e97a38ccfd5d
+WINDOW_ATTEMPT=20261019T191004Z.e97a38ccfd5d
+E2E_HEAD=e97a38ccfd5dedb8eed213a71b15ac15ff968056
+COMMAND=PLAYWRIGHT_UNLOAD_FORM=direct-no-keepalive PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-23-control-20261019T191004Z.e97a38ccfd5d --project analytics-default-standalone
+RUN_DIR=tests/e2e-runs/182-23-control-20261019T191004Z.e97a38ccfd5d
+WRAPPER_EXIT=0
+SCHEMA_PROBE=t
+    Evidence checks: wrapper status 0 equals the run directory's exit 0; no VOID-host-suspend.txt; head e97a38ccfd5dedb8eed213a71b15ac15ff968056 equals E2E_HEAD, the green run's commit; worktree-status.txt lists no tracked change; provenance.txt holds db-reset: yes; the probe printed t.
+    e2e-evidence.mjs: tests/e2e-runs/182-23-control-20261019T191004Z.e97a38ccfd5d -- total 10, passed 10, failed 0, flaky 0, skipped 0, didNotRun 0
+CONTROL_KEEPALIVE_TEST=passed
+KEEPALIVE_NECESSITY=not observed
+    The send made with keepalive off as the page was left was still captured and answered 204, so this run does not show that the flag is necessary; the limit of the kept test is that it shows capture and arrival, not that the flag was necessary.
+    PLAYWRIGHT_UNLOAD_FORM=direct-no-keepalive was exported in the wrapper's own shell, as the green run's prefixes were; the report does not echo the form.

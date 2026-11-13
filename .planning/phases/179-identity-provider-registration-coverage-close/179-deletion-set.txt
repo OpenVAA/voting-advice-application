@@ -1,0 +1,8 @@
+apps/frontend/src/routes/contestant/preregister/
+apps/frontend/src/routes/api/contestant/preregister/
+apps/frontend/src/routes/api/oidc/token/
+apps/frontend/src/lib/api/utils/auth/__tests__/token-endpoint.test.ts
+apps/frontend/src/lib/contestant/utils/preregistrationError.ts
+apps/frontend/src/lib/contestant/components/preregisteredNotification/
+apps/frontend/messages/*/contestantApp.preregister.json
+tests/tests/fixtures/contestant/contestantPreregisterPage.fixture.ts

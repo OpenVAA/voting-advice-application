@@ -1,0 +1,1 @@
+No external API integration: the phase changes the request contract of the repository's own `account-access` Edge Function (one closed `app` field and the `next` it writes), one PostgreSQL helper, and SvelteKit routes, loads and components of the two in-repo apps; it adds no external service, SDK or third-party endpoint.

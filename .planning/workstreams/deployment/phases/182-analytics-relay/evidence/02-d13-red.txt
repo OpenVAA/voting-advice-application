@@ -1,0 +1,121 @@
+ATTEMPT=20261019T094350Z.876100781
+RED_BASE_HEAD=876100781401ea19bf0ff6b01168ceb95c1f22f8
+RED_TREE_ONLY_OWN_FILES=yes
+TREE_STATUS_OUTPUT (git status --porcelain --untracked-files=no):
+     M apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql
+PGTAP_RED_EXIT=1
+COMMAND (whole tests/database directory, unchanged function, edited 38 copied into the instance):
+    node_modules/.bin/supabase test db --workdir "$ISO_WORKDIR"   # ISO_WORKDIR from isolated-instance.sh env --name p182
+OUTPUT (from the file 38 line to the end):
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/38-contestant-app-public-config.test.sql .. 
+    # Failed test 9: "anon reads the stored analytics.trackEvents of the closed project B, a stored true as true"
+    #         have: NULL
+    #         want: true
+    # Failed test 10: "the answer has exactly the top-level keys access, analytics and contestantApp, so no unrelated root is reachable"
+    #         have: {access,contestantApp}
+    #         want: {access,analytics,contestantApp}
+    # Failed test 13: "the analytics member has exactly the key trackEvents, so the stored platform member is not reachable"
+    #         have: NULL
+    #         want: {trackEvents}
+    # Failed test 15: "anon reads the five values of the open project A, and they are A's own and not B's"
+    #         have: {"access": {"answersLocked": null, "contestantApp": true}, "contestantApp": {"entityTypes": ["candidate"], "registrationModes": {"candidate": ["email"]}}}
+    #         want: {"access": {"answersLocked": null, "contestantApp": true}, "analytics": {"trackEvents": false}, "contestantApp": {"entityTypes": ["candidate"], "registrationModes": {"candidate": ["email"]}}}
+    # Failed test 17: "a signed-in caller with no grants gets, for the closed project B, the answer anon gets"
+    #         have: {"access": {"answersLocked": true, "contestantApp": false}, "contestantApp": {"entityTypes": ["organization", "candidate", "candidate"], "registrationModes": {"candidate": ["code", "email", "code"], "organization": []}}}
+    #         want: {"access": {"answersLocked": true, "contestantApp": false}, "analytics": {"trackEvents": true}, "contestantApp": {"entityTypes": ["organization", "candidate", "candidate"], "registrationModes": {"candidate": ["code", "email", "code"], "organization": []}}}
+    # Failed test 18: "a project that declares none of the five values answers the all-null object"
+    #         have: {"access": {"answersLocked": null, "contestantApp": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    #         want: {"access": {"answersLocked": null, "contestantApp": null}, "analytics": {"trackEvents": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    # Failed test 19: "a project with no settings row answers the same all-null object"
+    #         have: {"access": {"answersLocked": null, "contestantApp": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    #         want: {"access": {"answersLocked": null, "contestantApp": null}, "analytics": {"trackEvents": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    # Failed test 20: "an id that names no project answers the same all-null object as a project with no settings row"
+    #         have: {"access": {"answersLocked": null, "contestantApp": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    #         want: {"access": {"answersLocked": null, "contestantApp": null}, "analytics": {"trackEvents": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    # Looks like you failed 8 tests of 20
+    Failed 8/20 subtests 
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/39-invitations.test.sql:21: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/39-invitations.test.sql ................... ok
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/40-entity-type-list.test.sql:26: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/40-entity-type-list.test.sql .............. ok
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/41-entity-color.test.sql:27: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/41-entity-color.test.sql .................. ok
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/42-entity-nominations.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/42-entity-nominations.test.sql ............ ok
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/43-set-entity-nominations.test.sql:42: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/43-set-entity-nominations.test.sql ........ ok
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/44-nomination-parent-options.test.sql:19: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/44-nomination-parent-options.test.sql ..... ok
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/45-registration-mode-matrix.test.sql:17: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/45-registration-mode-matrix.test.sql ...... ok
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/46-nomination-write-helpers.test.sql:26: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/46-nomination-write-helpers.test.sql ...... ok
+    psql:/var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/47-invitation-nominations.test.sql:36: NOTICE:  table "__tcache__" does not exist, skipping
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/47-invitation-nominations.test.sql ........ ok
+    
+    Test Summary Report
+    -------------------
+    /var/folders/3p/10hbv0415234v3x5ctp50l4m0000gn/T/openvaa-isolated/p182/supabase/tests/database/38-contestant-app-public-config.test.sql (Wstat: 0 Tests: 20 Failed: 8)
+      Failed tests:  9-10, 13, 15, 17-20
+    Files=47, Tests=2605,  6 wallclock secs ( 0.14 usr  0.08 sys +  0.30 cusr  0.19 csys =  0.71 CPU)
+    Result: FAIL
+    error running container: exit 1
+RAW TAP of file 38 alone, same unchanged function, for the per-assertion lines. pgTAP was created in schema extensions for this run and dropped after it, as the CLI does (a first try without it failed with: function plan(integer) does not exist):
+    psql -X -c "CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions"; psql -X -q -t -A -f apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql; psql -X -c "DROP EXTENSION IF EXISTS pgtap"
+    psql:apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql:15: NOTICE:  table "__tcache__" does not exist, skipping
+    1..20
+    
+    8
+    ok 1 - anon can EXECUTE contestant_app_public_config
+    ok 2 - authenticated can EXECUTE contestant_app_public_config
+    ok 3 - contestant_app_public_config is SECURITY DEFINER
+    ok 4 - contestant_app_public_config runs with an empty search_path and no other setting
+    
+    ok 5 - anon reads the stored access.contestantApp of the closed project B
+    ok 6 - anon reads the served entity types of the closed project B exactly as stored, repeat and order included
+    ok 7 - anon reads the registration matrix of the closed project B exactly as stored, repeat and order included
+    ok 8 - LOCK: anon reads the stored access.answersLocked of the closed project B, a stored true as true
+    not ok 9 - anon reads the stored analytics.trackEvents of the closed project B, a stored true as true
+    # Failed test 9: "anon reads the stored analytics.trackEvents of the closed project B, a stored true as true"
+    #         have: NULL
+    #         want: true
+    not ok 10 - the answer has exactly the top-level keys access, analytics and contestantApp, so no unrelated root is reachable
+    # Failed test 10: "the answer has exactly the top-level keys access, analytics and contestantApp, so no unrelated root is reachable"
+    #         have: {access,contestantApp}
+    #         want: {access,analytics,contestantApp}
+    ok 11 - LOCK: the access member has exactly the keys answersLocked and contestantApp, so no other stored gate is reachable
+    ok 12 - the contestantApp member has exactly the keys entityTypes and registrationModes, so the stored questions member is not reachable
+    not ok 13 - the analytics member has exactly the key trackEvents, so the stored platform member is not reachable
+    # Failed test 13: "the analytics member has exactly the key trackEvents, so the stored platform member is not reachable"
+    #         have: NULL
+    #         want: {trackEvents}
+    ok 14 - anon still reads no app_settings row of the closed project B while the function answers for it
+    not ok 15 - anon reads the five values of the open project A, and they are A's own and not B's
+    # Failed test 15: "anon reads the five values of the open project A, and they are A's own and not B's"
+    #         have: {"access": {"answersLocked": null, "contestantApp": true}, "contestantApp": {"entityTypes": ["candidate"], "registrationModes": {"candidate": ["email"]}}}
+    #         want: {"access": {"answersLocked": null, "contestantApp": true}, "analytics": {"trackEvents": false}, "contestantApp": {"entityTypes": ["candidate"], "registrationModes": {"candidate": ["email"]}}}
+    ok 16 - LOCK: a project that stores no access.answersLocked is answered a JSON null there, as for the other four values
+    
+    
+    not ok 17 - a signed-in caller with no grants gets, for the closed project B, the answer anon gets
+    # Failed test 17: "a signed-in caller with no grants gets, for the closed project B, the answer anon gets"
+    #         have: {"access": {"answersLocked": true, "contestantApp": false}, "contestantApp": {"entityTypes": ["organization", "candidate", "candidate"], "registrationModes": {"candidate": ["code", "email", "code"], "organization": []}}}
+    #         want: {"access": {"answersLocked": true, "contestantApp": false}, "analytics": {"trackEvents": true}, "contestantApp": {"entityTypes": ["organization", "candidate", "candidate"], "registrationModes": {"candidate": ["code", "email", "code"], "organization": []}}}
+    
+    
+    not ok 18 - a project that declares none of the five values answers the all-null object
+    # Failed test 18: "a project that declares none of the five values answers the all-null object"
+    #         have: {"access": {"answersLocked": null, "contestantApp": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    #         want: {"access": {"answersLocked": null, "contestantApp": null}, "analytics": {"trackEvents": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    
+    
+    not ok 19 - a project with no settings row answers the same all-null object
+    # Failed test 19: "a project with no settings row answers the same all-null object"
+    #         have: {"access": {"answersLocked": null, "contestantApp": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    #         want: {"access": {"answersLocked": null, "contestantApp": null}, "analytics": {"trackEvents": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    not ok 20 - an id that names no project answers the same all-null object as a project with no settings row
+    # Failed test 20: "an id that names no project answers the same all-null object as a project with no settings row"
+    #         have: {"access": {"answersLocked": null, "contestantApp": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    #         want: {"access": {"answersLocked": null, "contestantApp": null}, "analytics": {"trackEvents": null}, "contestantApp": {"entityTypes": null, "registrationModes": null}}
+    
+    # Looks like you failed 8 tests of 20

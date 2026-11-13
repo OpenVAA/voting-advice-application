@@ -1,0 +1,1085 @@
+{
+  "about": "The strings plan 179.1-80 writes, as its checkpoint (Task 1) presents them, each at its recommended answer: every string of the eight adminApp.* catalogue files other than adminApp.login, in fr and lb, which the answer C5 = b at the checkpoint of plan 179.1-70 brought into the round. en is the unchanged source each translation was made from; fr and lb are machine translations. Where the operator’s answer edits a string, plan 80 replaces that value here, word for word, before anything is written, and commits this file alone. 179.1-approved-strings.mjs reads this file together with 179.1-70-approved-strings.json and compares the catalogues with both, per locale and key.",
+  "entries": [
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "title"],
+      "values": {
+        "en": "Argument Condensation",
+        "fr": "Synthèse des arguments",
+        "lb": "Zesummefaassung vun Argumenter"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "description"],
+      "values": {
+        "en": "Condense and manage arguments for election questions.",
+        "fr": "Synthétisez et gérez les arguments relatifs aux questions de l’élection.",
+        "lb": "Fasst d’Argumenter zu de Wahlfroen zesummen a verwalt se."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "jobs", "noActiveJobs"],
+      "values": {
+        "en": "No active jobs",
+        "fr": "Aucune tâche active",
+        "lb": "Keng aktiv Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "jobs", "startProcess"],
+      "values": {
+        "en": "Start an argument condensation process to see real-time monitoring",
+        "fr": "Lancez une synthèse des arguments pour en suivre le déroulement en temps réel",
+        "lb": "Start eng Zesummefaassung vun Argumenter, fir de Verlaf an Echtzäit ze verfollegen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "allQuestions"],
+      "values": {
+        "en": "Generate arguments for all opinion questions",
+        "fr": "Générer des arguments pour toutes les affirmations",
+        "lb": "Argumenter fir all Aussoe generéieren"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "button"],
+      "values": {
+        "en": "Generate Arguments",
+        "fr": "Générer les arguments",
+        "lb": "Argumenter generéieren"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "buttonLoading"],
+      "values": {
+        "en": "Generating...",
+        "fr": "Génération…",
+        "lb": "Gëtt generéiert…"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "error"],
+      "values": {
+        "en": "An error occurred while generating arguments",
+        "fr": "Une erreur s’est produite lors de la génération des arguments",
+        "lb": "Beim Generéiere vun den Argumenter ass e Feeler opgetrueden"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "mayTakeTime"],
+      "values": {
+        "en": "This process may take several minutes",
+        "fr": "Cette opération peut prendre plusieurs minutes",
+        "lb": "Dëse Prozess kann e puer Minutten daueren"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "noElectionsAvailable"],
+      "values": {
+        "en": "No elections are currently available. Please check your data configuration.",
+        "fr": "Aucune élection n’est disponible pour le moment. Veuillez vérifier la configuration de vos données.",
+        "lb": "Momentan si keng Wahlen disponibel. Iwwerpréift wgl. d’Konfiguratioun vun Ären Donnéeën."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "noElectionSelected"],
+      "values": {
+        "en": "Please select an election first",
+        "fr": "Veuillez d’abord sélectionner une élection",
+        "lb": "Wielt wgl. als éischt eng Wahl aus"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "noQuestionsForElection"],
+      "values": {
+        "en": "No opinion questions found for the selected election.",
+        "fr": "Aucune affirmation n’a été trouvée pour l’élection sélectionnée.",
+        "lb": "Fir déi ausgewielte Wahl goufe keng Aussoe fonnt."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "noQuestionSelected"],
+      "values": {
+        "en": "Please select at least one question",
+        "fr": "Veuillez sélectionner au moins une question",
+        "lb": "Wielt wgl. op d’mannst eng Fro aus"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "selectElection"],
+      "values": {
+        "en": "Select Election",
+        "fr": "Sélectionner une élection",
+        "lb": "Wahl auswielen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "selectElectionPlaceholder"],
+      "values": {
+        "en": "Choose an election...",
+        "fr": "Choisissez une élection…",
+        "lb": "Wielt eng Wahl aus…"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "selectedQuestions"],
+      "values": {
+        "en": "Generate arguments for selected questions only",
+        "fr": "Générer des arguments uniquement pour les questions sélectionnées",
+        "lb": "Argumenter nëmme fir déi ausgewielte Froe generéieren"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "questionType"],
+      "values": {
+        "en": "Question Selection",
+        "fr": "Sélection des questions",
+        "lb": "Auswiel vun de Froen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "selectAll"],
+      "values": {
+        "en": "Select all",
+        "fr": "Tout sélectionner",
+        "lb": "All auswielen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "unselectAll"],
+      "values": {
+        "en": "Unselect all",
+        "fr": "Tout désélectionner",
+        "lb": "All deselektéieren"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.argumentCondensation.json",
+      "path": ["adminApp.argumentCondensation", "generate", "errorLoadingQuestions"],
+      "values": {
+        "en": "Error loading questions: {error}",
+        "fr": "Erreur lors du chargement des questions : {error}",
+        "lb": "Feeler beim Luede vun de Froen: {error}"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.common.json",
+      "path": ["adminApp.common", "home"],
+      "values": {
+        "en": "Home",
+        "fr": "Accueil",
+        "lb": "Start"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.common.json",
+      "path": ["adminApp.common", "description"],
+      "values": {
+        "en": "Use the tools below to manage the voting advice application.",
+        "fr": "Utilisez les outils ci-dessous pour gérer la boussole électorale.",
+        "lb": "Benotzt d’Tools hei drënner, fir de Wal-Kompass ze verwalten."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.common.json",
+      "path": ["adminApp.common", "notAccessible", "content"],
+      "values": {
+        "en": "The Admin App has currently been configured to be unavailable.",
+        "fr": "L’application d’administration est actuellement configurée comme indisponible.",
+        "lb": "D’Administratiouns-Applikatioun ass momentan esou konfiguréiert, datt se net verfügbar ass."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.common.json",
+      "path": ["adminApp.common", "notAccessible", "title"],
+      "values": {
+        "en": "Sorry, the Admin App is not available",
+        "fr": "Désolé, l’application d’administration n’est pas disponible",
+        "lb": "Entschëllegt, d’Administratiouns-Applikatioun ass net verfügbar"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.error.json",
+      "path": ["adminApp.error", "unauthorized"],
+      "values": {
+        "en": "You are not authorized to access this area",
+        "fr": "Vous n’êtes pas autorisé·e à accéder à cet espace",
+        "lb": "Dir sidd net berechtegt, op dëse Beräich zouzegräifen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.error.json",
+      "path": ["adminApp.error", "unauthorizedDescription"],
+      "values": {
+        "en": "Your account has been authenticated, but you don't have the required admin privileges.",
+        "fr": "Votre compte a bien été authentifié, mais vous ne disposez pas des droits d’administration requis.",
+        "lb": "Äre Kont gouf authentifizéiert, mee Dir hutt net déi néideg Administrateursrechter."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.error.json",
+      "path": ["adminApp.error", "unauthorizedContact"],
+      "values": {
+        "en": "This section is reserved for system administrators only. If you believe you should have access, please contact the system administrator.",
+        "fr": "Cette section est réservée aux administrateurs système. Si vous pensez devoir y avoir accès, veuillez contacter l’administrateur système.",
+        "lb": "Dëse Beräich ass nëmme fir Systemadministrateuren. Wann Dir mengt, datt Dir Zougang sollt hunn, kontaktéiert wgl. de Systemadministrateur."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "title"],
+      "values": {
+        "en": "Factor Analysis",
+        "fr": "Analyse factorielle",
+        "lb": "Faktoranalys"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "description"],
+      "values": {
+        "en": "Analyze and manage factors for the election questions.",
+        "fr": "Analysez et gérez les facteurs des questions de l’élection.",
+        "lb": "Analyséiert a verwalt d’Faktore vun de Wahlfroen."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "title"],
+      "values": {
+        "en": "Compute factors",
+        "fr": "Calculer les facteurs",
+        "lb": "Faktore berechnen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "description"],
+      "values": {
+        "en": "Compute the latent factors from the answers given by candidates and parties.",
+        "fr": "Calculez les facteurs latents à partir des réponses des candidat·es et des partis.",
+        "lb": "Berechent déi latent Faktoren aus den Äntwerte vun de Kandidat*innen an de Parteien."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "selectElections"],
+      "values": {
+        "en": "Select the elections for which to compute the factors.",
+        "fr": "Sélectionnez les élections pour lesquelles calculer les facteurs.",
+        "lb": "Wielt d’Wahlen, fir déi d’Faktore berechent solle ginn."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "button"],
+      "values": {
+        "en": "Compute factors",
+        "fr": "Calculer les facteurs",
+        "lb": "Faktore berechnen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "buttonLoading"],
+      "values": {
+        "en": "Computing factors...",
+        "fr": "Calcul des facteurs…",
+        "lb": "Faktore gi berechent…"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "mayTakeTime"],
+      "values": {
+        "en": "This may take some time.",
+        "fr": "Cela peut prendre un certain temps.",
+        "lb": "Dat kann eng Zäit daueren."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "noElections"],
+      "values": {
+        "en": "No elections available",
+        "fr": "Aucune élection disponible",
+        "lb": "Keng Wahlen disponibel"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "candidates"],
+      "values": {
+        "en": "candidates",
+        "fr": "candidat·es",
+        "lb": "Kandidat*innen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "parties", "some"],
+      "values": {
+        "en": "and {count} parties",
+        "fr": "et {count} partis",
+        "lb": "an {count} Parteien"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "parties", "none"],
+      "values": {
+        "en": "and no parties",
+        "fr": "et aucun parti",
+        "lb": "a keng Parteien"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "haveAnswered"],
+      "values": {
+        "en": "have answered",
+        "fr": "ont répondu",
+        "lb": "hu geäntwert"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.factorAnalysis.json",
+      "path": ["adminApp.factorAnalysis", "compute", "error"],
+      "values": {
+        "en": "Failed to compute factors",
+        "fr": "Échec du calcul des facteurs",
+        "lb": "D’Faktore konnten net berechent ginn"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "title"],
+      "values": {
+        "en": "Admin Control Panel",
+        "fr": "Panneau de contrôle d’administration",
+        "lb": "Kontrollpanel fir d’Administratioun"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "emergencyCleanup"],
+      "values": {
+        "en": "Emergency cleanup",
+        "fr": "Nettoyage d’urgence",
+        "lb": "Noutfall-Opraumen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "features", "ArgumentCondensation", "title"],
+      "values": {
+        "en": "Argument Condensation",
+        "fr": "Synthèse des arguments",
+        "lb": "Zesummefaassung vun Argumenter"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "features", "QuestionInfoGeneration", "title"],
+      "values": {
+        "en": "Question Info Generation",
+        "fr": "Génération d’informations sur les questions",
+        "lb": "Generéierung vun Informatiounen iwwer d’Froen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "confirmAbortAll"],
+      "values": {
+        "en": "Are you sure you want to abort ALL running jobs?",
+        "fr": "Êtes-vous sûr·e de vouloir interrompre TOUTES les tâches en cours ?",
+        "lb": "Sidd Dir sécher, datt Dir ALL lafend Aufgabe wëllt ofbriechen?"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "authRequired"],
+      "values": {
+        "en": "Authentication required",
+        "fr": "Authentification requise",
+        "lb": "Authentifizéierung erfuerderlech"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "abortAllFailed"],
+      "values": {
+        "en": "Emergency cleanup failed. Check console for details.",
+        "fr": "Échec du nettoyage d’urgence. Consultez la console pour plus de détails.",
+        "lb": "D’Noutfall-Opraumen ass feelgeschloen. Kuckt an der Konsol no fir Detailer."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "systemHealth"],
+      "values": {
+        "en": "System Health",
+        "fr": "État du système",
+        "lb": "Systemzoustand"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "activeJobs"],
+      "values": {
+        "en": "Active Jobs",
+        "fr": "Tâches actives",
+        "lb": "Aktiv Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "successfulJobs"],
+      "values": {
+        "en": "Successful Jobs",
+        "fr": "Tâches réussies",
+        "lb": "Erfollegräich Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "failedJobs"],
+      "values": {
+        "en": "Failed Jobs",
+        "fr": "Tâches échouées",
+        "lb": "Feelgeschloen Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "abortedJobs"],
+      "values": {
+        "en": "Aborted Jobs",
+        "fr": "Tâches interrompues",
+        "lb": "Ofgebrach Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "abortingInfo"],
+      "values": {
+        "en": "Abort requested. Waiting for the pipeline to stop and clean up safely.",
+        "fr": "Interruption demandée. En attente de l’arrêt du traitement et de son nettoyage en toute sécurité.",
+        "lb": "Ofbroch ugefrot. Et gëtt gewaart, bis de Prozess gestoppt ass a sécher opgeraumt huet."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "abortJob"],
+      "values": {
+        "en": "Abort Job",
+        "fr": "Interrompre la tâche",
+        "lb": "Aufgab ofbriechen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "pastJobs"],
+      "values": {
+        "en": "Past Jobs",
+        "fr": "Tâches passées",
+        "lb": "Vergaangen Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "hidePastJobs"],
+      "values": {
+        "en": "Hide past jobs",
+        "fr": "Masquer les tâches passées",
+        "lb": "Vergaangen Aufgabe verstoppen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "showPastJobs"],
+      "values": {
+        "en": "Show past jobs",
+        "fr": "Afficher les tâches passées",
+        "lb": "Vergaangen Aufgabe weisen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "pastJobsDescription"],
+      "values": {
+        "en": "Past Jobs",
+        "fr": "Tâches passées",
+        "lb": "Vergaangen Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "noActiveJobs"],
+      "values": {
+        "en": "No active jobs",
+        "fr": "Aucune tâche active",
+        "lb": "Keng aktiv Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "noPastJobs"],
+      "values": {
+        "en": "No past jobs",
+        "fr": "Aucune tâche passée",
+        "lb": "Keng vergaangen Aufgaben"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "started"],
+      "values": {
+        "en": "Started",
+        "fr": "Début",
+        "lb": "Ufank"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "messages"],
+      "values": {
+        "en": "Messages",
+        "fr": "Messages",
+        "lb": "Messagen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "notAvailable"],
+      "values": {
+        "en": "N/A",
+        "fr": "N/D",
+        "lb": "n. v."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "confirmAbortJob"],
+      "values": {
+        "en": "Are you sure you want to abort this {feature} job?",
+        "fr": "Êtes-vous sûr·e de vouloir interrompre cette tâche ({feature}) ?",
+        "lb": "Sidd Dir sécher, datt Dir dës Aufgab ({feature}) wëllt ofbriechen?"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "abortJobFailed"],
+      "values": {
+        "en": "Failed to abort job. Check console for details.",
+        "fr": "Échec de l’interruption de la tâche. Consultez la console pour plus de détails.",
+        "lb": "D’Aufgab konnt net ofgebrach ginn. Kuckt an der Konsol no fir Detailer."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "alreadyRunning"],
+      "values": {
+        "en": "A job is already running. Please wait for it to finish.",
+        "fr": "Une tâche est déjà en cours. Veuillez attendre qu’elle se termine.",
+        "lb": "Et leeft schonn eng Aufgab. Waart wgl., bis se fäerdeg ass."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "progress"],
+      "values": {
+        "en": "Progress",
+        "fr": "Progression",
+        "lb": "Fortschrëtt"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "warningsAndErrors"],
+      "values": {
+        "en": "Warnings & Errors",
+        "fr": "Avertissements et erreurs",
+        "lb": "Warnungen a Feeler"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "noWarningsOrErrors"],
+      "values": {
+        "en": "No warnings or errors",
+        "fr": "Aucun avertissement ni erreur",
+        "lb": "Keng Warnungen oder Feeler"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "infoMessages"],
+      "values": {
+        "en": "Info Messages",
+        "fr": "Messages d’information",
+        "lb": "Informatiounsmessagen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "noInfoMessages"],
+      "values": {
+        "en": "No info messages",
+        "fr": "Aucun message d’information",
+        "lb": "Keng Informatiounsmessagen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "author"],
+      "values": {
+        "en": "Author",
+        "fr": "Auteur·rice",
+        "lb": "Auteur"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "duration"],
+      "values": {
+        "en": "Duration",
+        "fr": "Durée",
+        "lb": "Dauer"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "aborting"],
+      "values": {
+        "en": "Aborting…",
+        "fr": "Interruption…",
+        "lb": "Gëtt ofgebrach…"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "hideMessages"],
+      "values": {
+        "en": "Hide messages",
+        "fr": "Masquer les messages",
+        "lb": "Messagen verstoppen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "showMessages"],
+      "values": {
+        "en": "Show messages",
+        "fr": "Afficher les messages",
+        "lb": "Messagen weisen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.jobs.json",
+      "path": ["adminApp.jobs", "id"],
+      "values": {
+        "en": "ID",
+        "fr": "ID",
+        "lb": "ID"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.languageFeatures.json",
+      "path": ["adminApp.languageFeatures", "targetLanguage", "label"],
+      "values": {
+        "en": "Target Language",
+        "fr": "Langue cible",
+        "lb": "Zilsprooch"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.languageFeatures.json",
+      "path": ["adminApp.languageFeatures", "targetLanguage", "help"],
+      "values": {
+        "en": "The language in which to generate content. Questions will be processed and results will be stored in this language.",
+        "fr": "La langue dans laquelle le contenu est généré. Les questions seront traitées et les résultats enregistrés dans cette langue.",
+        "lb": "D’Sprooch, an där den Inhalt generéiert gëtt. D’Froe ginn an dëser Sprooch veraarbecht an d’Resultater an dëser Sprooch gespäichert."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.notSupported.json",
+      "path": ["adminApp.notSupported", "title"],
+      "values": {
+        "en": "Admin App Not Supported",
+        "fr": "Application d’administration non prise en charge",
+        "lb": "Administratiouns-Applikatioun net ënnerstëtzt"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.notSupported.json",
+      "path": ["adminApp.notSupported", "content"],
+      "values": {
+        "en": "The admin app is not supported with the current data adapter.",
+        "fr": "L’application d’administration n’est pas prise en charge avec l’adaptateur de données actuel.",
+        "lb": "D’Administratiouns-Applikatioun gëtt mam aktuellen Donnéeën-Adapter net ënnerstëtzt."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.notSupported.json",
+      "path": ["adminApp.notSupported", "heroEmoji"],
+      "values": {
+        "en": "🔧",
+        "fr": "🔧",
+        "lb": "🔧"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "title"],
+      "values": {
+        "en": "Question Info",
+        "fr": "Informations sur les questions",
+        "lb": "Informatiounen iwwer d’Froen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "description"],
+      "values": {
+        "en": "Generate contextual information for VAA questions including term definitions and informational sections to help voters better understand the questions.",
+        "fr": "Générez des informations de contexte pour les questions de la boussole électorale, notamment des définitions de termes et des sections d’information, afin d’aider les électeur·rice·s à mieux comprendre les questions.",
+        "lb": "Generéiert Kontextinformatiounen zu de Froe vum Wal-Kompass, dorënner Begrëffsdefinitiounen an Informatiounssektiounen, fir de Wieler*innen ze hëllefen, d’Froe besser ze verstoen."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "selectElection"],
+      "values": {
+        "en": "Select Election",
+        "fr": "Sélectionner une élection",
+        "lb": "Wahl auswielen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "selectQuestions"],
+      "values": {
+        "en": "Select Questions",
+        "fr": "Sélectionner les questions",
+        "lb": "Froen auswielen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "noQuestions"],
+      "values": {
+        "en": "No opinion questions found for this election",
+        "fr": "Aucune affirmation trouvée pour cette élection",
+        "lb": "Fir dës Wahl goufe keng Aussoe fonnt"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "generate", "button"],
+      "values": {
+        "en": "Generate Question Info",
+        "fr": "Générer les informations sur les questions",
+        "lb": "Informatiounen iwwer d’Froe generéieren"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "generate", "buttonLoading"],
+      "values": {
+        "en": "Generating...",
+        "fr": "Génération…",
+        "lb": "Gëtt generéiert…"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "generate", "allQuestions"],
+      "values": {
+        "en": "All opinion questions",
+        "fr": "Toutes les affirmations",
+        "lb": "All d’Aussoen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "generate", "selectedQuestions"],
+      "values": {
+        "en": "Selected questions",
+        "fr": "Questions sélectionnées",
+        "lb": "Ausgewielte Froen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "options", "heading"],
+      "values": {
+        "en": "Generation Options",
+        "fr": "Options de génération",
+        "lb": "Optioune fir d’Generéierung"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "options", "whatToGenerate"],
+      "values": {
+        "en": "What to generate:",
+        "fr": "Éléments à générer :",
+        "lb": "Wat soll generéiert ginn:"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "options", "terms"],
+      "values": {
+        "en": "Term Definitions",
+        "fr": "Définitions de termes",
+        "lb": "Begrëffsdefinitiounen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "options", "infoSections"],
+      "values": {
+        "en": "Info Sections",
+        "fr": "Sections d’information",
+        "lb": "Informatiounssektiounen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "sectionTopics", "label"],
+      "values": {
+        "en": "Section Topics (optional)",
+        "fr": "Thèmes des sections (facultatif)",
+        "lb": "Theme vun de Sektiounen (optional)"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "sectionTopics", "help"],
+      "values": {
+        "en": "Comma-separated list of topics for info sections. Leave empty to use defaults.",
+        "fr": "Liste de thèmes pour les sections d’information, séparés par des virgules. Laissez vide pour utiliser les thèmes par défaut.",
+        "lb": "Lëscht vun Theme fir d’Informatiounssektiounen, mat Komma getrennt. Loosst d’Feld eidel, fir d’Standardthemen ze benotzen."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "sectionTopics", "placeholder"],
+      "values": {
+        "en": "Background, Current situation, Key stakeholders",
+        "fr": "Contexte, Situation actuelle, Principales parties prenantes",
+        "lb": "Hannergrond, Aktuell Situatioun, Wichteg Akteuren"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "customInstructions", "label"],
+      "values": {
+        "en": "Custom Instructions (optional)",
+        "fr": "Instructions personnalisées (facultatif)",
+        "lb": "Eegen Instruktiounen (optional)"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "customInstructions", "help"],
+      "values": {
+        "en": "Additional guidance for the LLM about how to generate the content.",
+        "fr": "Indications supplémentaires pour le LLM sur la manière de générer le contenu.",
+        "lb": "Zousätzlech Uweisunge fir de LLM, wéi den Inhalt generéiert soll ginn."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "customInstructions", "placeholder"],
+      "values": {
+        "en": "Focus on local governance and municipal policy aspects",
+        "fr": "Mettre l’accent sur la gouvernance locale et les aspects de politique municipale",
+        "lb": "De Fokus op d’lokal Gouvernance an op Aspekter vun der Gemengepolitik leeën"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "questionContext", "label"],
+      "values": {
+        "en": "Question Context (optional)",
+        "fr": "Contexte des questions (facultatif)",
+        "lb": "Kontext vun de Froen (optional)"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "questionContext", "help"],
+      "values": {
+        "en": "Context about the election or topic area to help the LLM generate more relevant content.",
+        "fr": "Contexte sur l’élection ou le domaine thématique, pour aider le LLM à générer un contenu plus pertinent.",
+        "lb": "Kontext iwwer d’Wahl oder d’Themegebitt, fir dem LLM ze hëllefen, méi relevanten Inhalt ze generéieren."
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "questionContext", "placeholder"],
+      "values": {
+        "en": "Finnish municipal elections 2025",
+        "fr": "Élections municipales finlandaises 2025",
+        "lb": "Finnesch Gemengewahlen 2025"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "validation", "noElection"],
+      "values": {
+        "en": "Please select an election",
+        "fr": "Veuillez sélectionner une élection",
+        "lb": "Wielt wgl. eng Wahl aus"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "validation", "noQuestions"],
+      "values": {
+        "en": "Please select at least one question",
+        "fr": "Veuillez sélectionner au moins une question",
+        "lb": "Wielt wgl. op d’mannst eng Fro aus"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "adminApp.questionInfo.json",
+      "path": ["adminApp.questionInfo", "validation", "noOperations"],
+      "values": {
+        "en": "Please select at least one generation option",
+        "fr": "Veuillez sélectionner au moins une option de génération",
+        "lb": "Wielt wgl. op d’mannst eng Optioun fir d’Generéierung aus"
+      }
+    }
+  ]
+}

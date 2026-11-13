@@ -1,0 +1,16 @@
+ATTEMPT=20261019T213512Z.0e343a40d599
+WINDOW_ATTEMPT=20261019T212846Z.0e343a40d599
+E2E_HEAD=0e343a40d5993e9a273e7ab04f828fbed791205c
+COMMAND=PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-24-default-20261019T212846Z.0e343a40d599 --project analytics-default-standalone
+RUN_DIR=tests/e2e-runs/182-24-default-20261019T212846Z.0e343a40d599
+WRAPPER_EXIT=0
+PASSED=22
+FAILED=0
+FLAKY=0
+SKIPPED=0
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+SCHEMA_PROBE=t
+E2E_HEAD_AFTER=0e343a40d5993e9a273e7ab04f828fbed791205c
+    e2e-evidence.mjs: tests/e2e-runs/182-24-default-20261019T212846Z.0e343a40d599 -- total 22, passed 22, failed 0, flaky 0, skipped 0, didNotRun 0
+    VERDICT OK: 22 tests -- passed 22, failed 0, flaky 0, skipped 0, did not run 0

@@ -51,7 +51,7 @@
   // internally tracks the underlying $state. No svelte/store, no $appSettings.
   const adminEmail = $derived(appSettingsCtx.current.admin?.email);
   const fontName = $derived(appSettingsCtx.current.font?.name);
-  const analyticsPlatform = $derived(appSettingsCtx.current.analytics?.platform?.name);
+  const analyticsTrackEvents = $derived(appSettingsCtx.current.analytics?.trackEvents);
   const electionsDisallowSelection = $derived(
     appSettingsCtx.current.elections?.disallowSelection ?? false
   );
@@ -309,7 +309,7 @@
         <tr><td class="pr-4 text-gray-500">admin.email (template direct):</td><td>{appSettingsCtx.current.admin?.email ?? '∅'}</td></tr>
         <tr><td class="pr-4 text-gray-500">admin.email ($derived alias):</td><td>{adminEmail ?? '∅'}</td></tr>
         <tr><td class="pr-4 text-gray-500">font.name:</td><td>{fontName ?? '∅'}</td></tr>
-        <tr><td class="pr-4 text-gray-500">analytics.platform.name:</td><td>{analyticsPlatform ?? '∅'}</td></tr>
+        <tr><td class="pr-4 text-gray-500">analytics.trackEvents:</td><td>{analyticsTrackEvents ?? '∅'}</td></tr>
         <tr><td class="pr-4 text-gray-500">elections.disallowSelection:</td><td>{electionsDisallowSelection}</td></tr>
         <tr><td class="pr-4 text-gray-500">header.showFeedback:</td><td>{headerShowFeedback}</td></tr>
         <tr><td class="pr-4 text-gray-500">colors.light.primary:</td><td>{appSettingsCtx.current.colors?.light?.primary ?? '∅'}</td></tr>
@@ -438,7 +438,7 @@
   <section class="border rounded p-4 space-y-2">
     <h2 class="text-lg font-bold">Spike 005 — `candidateAnswerRuneStore`</h2>
     <p class="text-gray-600 text-xs">
-      Scoped rewrite of `candidateUserDataStore` — only the edited-answer
+      Scoped rewrite of `contestantUserDataState` — only the edited-answer
       persistence layer that currently uses `localStorageWritable + fromStore`.
       Saved-state ($state) merged with edited-overrides
       (`runeLocalStorage`) in a `$derived.by` composite. Mirrors production
