@@ -83,7 +83,7 @@ describe('the four measured zod-issue shapes (zod 4.3.6 — pins the A2 closure 
     expect(outcome.issues).toEqual([{ path: 'access', keys: ['bogusNested'] }]);
   });
 
-  // Shape 3. `code: 'invalid_type'`, `path: ['access','candidateApp']` — no `keys` member at all.
+  // Shape 3. `code: 'invalid_type'`, `path: ['access','contestantApp']` — no `keys` member at all.
   it('drops the containing member when a nested member has the wrong type', () => {
     const outcome = parseWithPartialPreserve<Probe>(
       ProbeSchema,

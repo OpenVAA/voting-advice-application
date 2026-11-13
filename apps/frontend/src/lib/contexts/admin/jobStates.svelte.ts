@@ -13,7 +13,7 @@ import type { JobStates } from './jobStates.type';
  *
  * `startPolling` / `stopPolling` are ARROW-FUNCTION FIELDS so they survive `const { startPolling } = instance` detach (they capture `this`) — both are returned to and called by consumers (`WithPolling.svelte`). `#fetchAndUpdateJobs` is a PRIVATE arrow field (read only by `startPolling`; not on the `JobStates` surface).
  *
- * Self-contained; no `$effect` → constructible outside any effect context, unlike the orchestrator providers (adminContext / candidateContext). It polls its own URLs and takes no constructor deps.
+ * Self-contained; no `$effect` → constructible outside any effect context, unlike the orchestrator providers (adminContext / contestantContext). It polls its own URLs and takes no constructor deps.
  *
  * Field-init order: `#pastJobs` is declared BEFORE `#pastJobsByFeature` because the latter reads the former.
  *

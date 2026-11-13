@@ -12,6 +12,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ### Properties
 
 - `entity`: A possibly ranked entity, e.g. candidate or a party.
+- `excludeTabs`: Tabs to leave out of the configured contents, e.g. `['children']` where the nomination graph is not loaded. When nothing is left, the `info` and `opinions` tabs are shown. Default: `[]`
 - Any valid attributes of an `<article>` element.
 
 ### Tracking events

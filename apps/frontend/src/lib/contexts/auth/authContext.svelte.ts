@@ -15,14 +15,16 @@ const CONTEXT_KEY = Symbol();
  * `isAuthenticated` is backed by a private `#isAuthenticated = $derived(...)`
  * field reading `page.data.session`, exposed as an OWN-ENUMERABLE accessor assigned in the constructor (the canonical spread-safety shape from `dataContext`'s constructor-assigned own-property handles). Read as `instance.isAuthenticated` it is fully reactive (the getter re-invokes the `$derived` inside the tracking scope).
  *
- * NB. A bare public `$derived` class field would NOT survive the `{ ...authContext }` spread in candidateContext: Svelte 5 compiles `$state`/ `$derived` class fields to PRIVATE backing fields + PROTOTYPE accessors, which are NOT own-enumerable and are therefore dropped by object spread (verified headlessly). An own-enumerable accessor IS copied by the spread — as a snapshot, which is the documented spread-of-context trap. For the consumer to see the member at all, `isAuthenticated` MUST remain own-enumerable. Hence the constructor-assigned accessor rather than a bare `$derived` field.
+ * NB. A bare public `$derived` class field would NOT survive the `{ ...authContext }` spread in contestantContext: Svelte 5 compiles `$state`/ `$derived` class fields to PRIVATE backing fields + PROTOTYPE accessors, which are NOT own-enumerable and are therefore dropped by object spread (verified headlessly). An own-enumerable accessor IS copied by the spread — as a snapshot, which is the documented spread-of-context trap. For the consumer to see the member at all, `isAuthenticated` MUST remain own-enumerable. Hence the constructor-assigned accessor rather than a bare `$derived` field.
  *
- * The four DataWriter wrappers (`logout` / `requestForgotPasswordEmail` / `resetPassword` / `setPassword`) are ARROW-FUNCTION FIELDS (they survive detach: candidateContext does `const { logout: _logout } = authContext`) so they capture `this`. Each body builds its own writer with `prepareDataWriter()` for the one call it makes; authorisation is carried by the Supabase session cookie.
+ * The two DataWriter wrappers (`logout` / `setPassword`) are ARROW-FUNCTION FIELDS (they survive detach: contestantContext does `const { logout: _logout } = authContext`) so they capture `this`. Each body builds its own writer with `prepareDataWriter()` for the one call it makes; authorisation is carried by the Supabase session cookie.
+ *
+ * `logout` is the Log out of both apps, and before its sign-out request it withdraws every count of the logout modal the browser holds, whoever wrote it, so that a count a closed tab left cannot end a session signed in after this Log out. Then, still before the request, it announces its `start` to the browser's other tabs, and once the sign-out has settled, worked or failed, its `end`; those tabs name another tab as the cause of the sign-out they follow only after hearing them. A Log out whose request fails has still posted both, and a tab that hears them and meets no sign-out within the window after the `end` does nothing with them.
  *
  * There is NO init/post-mount effect: the `page.data.session` read is synchronous via `$derived`.
  */
 export class AuthContextProvider implements AuthContext {
-  // Private $derived backing field; exposed as an OWN-ENUMERABLE accessor (assigned in the constructor) so it survives the candidateContext spread.
+  // Private $derived backing field; exposed as an OWN-ENUMERABLE accessor (assigned in the constructor) so it survives the contestantContext spread.
   #isAuthenticated = $derived(!!page.data.session);
 
   // Own-enumerable `isAuthenticated` accessor (spread-safe). Declared here so the type is `readonly boolean`; the actual getter is installed in the constructor.

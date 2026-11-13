@@ -61,11 +61,13 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
   /**
    * Fetch application settings from the `app_settings` table.
    *
-   * The row is read with `maybeSingle`, so zero rows is a value rather than an error. A readable row is parsed and returned. Zero rows asks `project_open_for_voters` for this provider's project: `false` returns the shipped `access` defaults with `voterApp: false`, which `(voters)/+layout.svelte` renders as MaintenancePage, and `true` returns `{}`. An RPC error or a non-boolean answer throws. The RPC decides rather than the missing row because nothing creates a settings row for a project, so an open project may have none.
+   * The row is read with `maybeSingle`, so zero rows is a value rather than an error. A readable row is parsed and returned. Zero rows asks `project_open_for_voters` for this provider's project: `true` returns `{}`, and `false` returns the closed-project answer described below, whose `voterApp: false` `(voters)/+layout.svelte` renders as MaintenancePage. An RPC error or a non-boolean answer throws. The RPC decides rather than the missing row because nothing creates a settings row for a project, so an open project may have none.
    *
    * Preview is decided by RLS, not by a role check. `authenticated_select_app_settings` returns the row to any grant holder of the project, so a signed-in admin or candidate gets the real voter app; anon, or a signed-in user with no grant, reads zero rows and gets the maintenance page.
    *
-   * Limitation: while a project is closed, anon cannot read `app_settings`, so the stored `access.candidateApp` and `access.underMaintenance` are not honoured on the anon candidate and admin login pages. The shipped defaults apply there.
+   * A closed project, for a caller who can read no settings row of it (anon, or a signed-in user with no grant there): the answer is the `access`, `analytics` and `contestantApp` roots, each built over the shipped defaults. Five stored values are honoured, read through `contestant_app_public_config` and validated by `StoredSettingsSchema` like a readable row: `access.contestantApp`, the answers lock in `access.answersLocked`, the served entity types in `contestantApp.entityTypes`, the registration matrix in `contestantApp.registrationModes` and the tracking switch in `analytics.trackEvents`, which keeps its shipped default from `dynamicSettings.analytics` when nothing valid is stored. One invalid value in either list leaves the whole `contestantApp` root at the shipped defaults, is reported once with its path, and does not touch `access`. An RPC error or an answer that is not an object throws.
+   *
+   * Limitation: nothing else that is stored is honoured for that caller. `access.underMaintenance`, `contestantApp.questions` and every other stored setting stay at their shipped defaults on the sign-in pages of a closed project.
    *
    * The `settings` column is validated with `parseWithPartialPreserve`, so the members the schema accepts survive a malformed sibling, and a value with nothing to preserve answers `{}`. The parse outcome stays inside this method: the voter loaders (for example `(voters)/elections/+page.ts`) merge the result with no status guard, so an outcome object would put `status` and `issues` into the settings.
    *
@@ -175,7 +177,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
 
   /**
    * Fetch elections with their constituency group join data.
-   * Maps DB columns to ElectionData properties (date, round, subtype).
+   * Maps DB columns to ElectionData properties (date, round, nominationShape, subtype).
    */
   protected async _getElectionData(options?: GetElectionsOptions): Promise<DPDataType['elections']> {
     const data = await fetchAllRows(
@@ -516,7 +518,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
-    // The `get_questions` RPC accepts a single uuid per election and constituency, so arrays from the caller fan out into one call per (election, constituency) pair and the payloads are merged. Arrays do reach this read: `candidate/(protected)/+layout.server.ts` derives `electionId` from the candidate's own nominations, which span two elections for a candidate nominated in both, and `(voters)/(located)/+layout.ts` threads the URL's multi-valued `electionId` through. Reading only the first id would drop the other election's scoped questions.
+    // The `get_questions` RPC accepts a single uuid per election and constituency, so arrays from the caller fan out into one call per (election, constituency) pair and the payloads are merged. Arrays do reach this read: `contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/+layout.server.ts` derives `electionId` from the candidate's own nominations, which span two elections for a candidate nominated in both, and `(voters)/(located)/+layout.ts` threads the URL's multi-valued `electionId` through. Reading only the first id would drop the other election's scoped questions.
     const electionIds = convertFilterValue(options?.electionId);
     const constituencyIds = convertFilterValue(options?.constituencyId);
     // The election round is a scalar rather than a `FilterValue`, so it adds no level to the fan-out and is passed through unchanged.

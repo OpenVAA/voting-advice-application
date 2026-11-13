@@ -1,7 +1,7 @@
 import type { EntityType } from '@openvaa/data';
 
 /**
- * The interface for an analytics event.
+ * A name a call site may track: every name of the event vocabulary except the pageview, which the tracking service builds itself.
  */
 export interface TrackingEvent<
   TData extends Record<string, JSONData | undefined> = Record<string, JSONData | undefined>

@@ -3,10 +3,9 @@ import type { DynamicSettings, StaticSettings } from '@openvaa/app-shared';
 /**
  * A simple utility for merging settings.
  *
- * NB! Settings are overwritten by root key unless the key is nullish.
- * TODO: Handle merging so that empty objects do not overwrite defaults
+ * `target` is never mutated and nothing is cloned: every merged level is a new object, and the subtrees `additional` does not touch are shared with `target` by reference. `target` may be a reactive proxy.
  * @param target - The static settings or complete `AppSettings`
- * @param additional - The dynamic or complete settings to add
+ * @param additional - The dynamic or complete settings to add, which may be a deep partial of them
  * @returns Complete `AppSettings`
  */
 export function mergeAppSettings(

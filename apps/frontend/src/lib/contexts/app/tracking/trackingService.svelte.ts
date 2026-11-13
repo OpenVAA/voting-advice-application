@@ -9,21 +9,26 @@ import type { TrackingEvent } from './trackingEvent.type';
 import type { TrackingHandler, TrackingService } from './trackingService.type';
 
 /**
- * Pure-rune tracking-service producer as a Svelte 5 CLASS.
- * Reads its `appSettings` / `userPreferences` inputs via `.current` getters and exposes its outputs as rune handles — no store bridge over the inputs nor the outputs.
+ * Pure-rune tracking-service producer as a Svelte 5 CLASS: a rune shell over the pure tracking modules.
+ * Reads its `appSettings` / `userPreferences` / `projection` inputs via `.current` getters and exposes its outputs as rune handles — no store bridge over the inputs nor the outputs.
  *
- * ONE TYPE, ONE IMPLEMENTATION: this class implements `TrackingService` (`trackingService.type.ts`) directly. The second, rune-shaped type layer this file used to declare — it subtracted three members from `TrackingService` only to re-declare the same three as rune handles — is gone: it existed only while the `appContext` seam converted those members to stores, and the two handle shapes have since converged.
+ * What it does:
+ *   - The view tracker (`viewTracker.ts`) holds the current view and hands out its pageview once.
+ *   - The event buffer holds the events started with `startEvent` and `track` until the next flush.
+ *   - `submitAllEvents` is the flush: it applies the gates (`gates.ts`), builds one body with `buildBatch` (`batchBuilder.ts`) and hands it to `sendBatch` (`relayTransport.ts`), one keepalive request to the same-origin relay. Events the gates do not allow are discarded, never kept for a later flush.
+ *   - The visit id comes from `getVisitId()` (`visitId.ts`), a module variable. Nothing is written to or read from a browser store.
  *
- * The producer surface is deliberately WIDER than the consumer-facing `TrackingService`: `sessionId` and `shouldTrack` are own members here (a class may declare more than the type it implements) but are declared on neither `TrackingService` nor any context, and `appContext` forwards them to nobody. Their only reads are producer-to-producer — `track()` below stamps `vaaSessionId` onto every event, and `appContext.svelte.ts` passes `sessionId` into `surveyLink(...)`.
+ * ONE TYPE, ONE IMPLEMENTATION: this class implements `TrackingService` (`trackingService.type.ts`) directly.
+ *
+ * The producer surface is deliberately WIDER than the consumer-facing `TrackingService`: `gate` and `surveySessionId` are own members here (a class may declare more than the type it implements). `appContext` forwards `gate` under the name `analyticsGate`, and reads `surveySessionId` producer to producer to build the survey link, forwarding it to nobody.
  *
  * SPREAD-SAFETY (this is the most spread-sensitive producer in the app layer): the members `appContext` forwards from this producer are carried on through the three downstream `{ ...appContext }` spreads. Svelte 5 compiles bare `$state`/`$derived` CLASS fields to PRIVATE backing fields + PROTOTYPE accessors, which are NOT own-enumerable and are DROPPED by `{ ...instance }` spread. To stay byte-identical at the consumer across that spread, every spread-consumed member MUST be an OWN-ENUMERABLE instance field:
- *   - `sendTrackingEvent` / `shouldTrack` are OBJECT-LITERAL `{ current, set? }` handle objects assigned to instance fields (the handle VALUE is copied by spread). Their getters close over `this` via a `const self = this` capture in the constructor so they read the private `$state`/`$derived` backing.
- *   - `sessionId` is the own-enumerable `{ current }` handle returned by `sessionStorageState(...)`, held directly as a field initializer.
- *   - `startPageview`/`startEvent`/`track`/`submitAllEvents`/`resetAllEvents` are ARROW-FUNCTION FIELDS so they survive detach after the spread + consumer destructure (`tracking.startEvent` is called at appContext:249).
+ *   - `gate` / `surveySessionId` are OBJECT-LITERAL `{ current }` handle objects assigned to instance fields (the handle VALUE is copied by spread). Their getters close over `this` via a `const self = this` capture in the constructor so they read the private `$derived` backing.
+ *   - `startPageview`/`startEvent`/`track`/`submitAllEvents`/`resetAllEvents`/`setPageVisible` are ARROW-FUNCTION FIELDS so they survive detach after the spread + consumer destructure.
  *
- * `#pageviewEvent` / `#unsubmittedEvents` are PRIVATE NON-REACTIVE bookkeeping fields (never read in a tracking scope) — NOT `$state`.
+ * `#views` / `#events` are PRIVATE NON-REACTIVE bookkeeping fields (never read in a tracking scope) — NOT `$state`. They are separate, so clearing the events never loses the current view's pageview.
  *
- * There is NO `$effect`: `shouldTrack` is a synchronous `$derived`.
+ * There is NO `$effect`: the gate input is a synchronous `$derived`.
  */
 export class TrackingServiceImpl implements TrackingService {
   ////////////////////////////////////////////////////////////////////
@@ -165,9 +170,9 @@ export class TrackingServiceImpl implements TrackingService {
 }
 
 /**
- * Factory wrapper preserving the original `trackingService({...})` call signature. Returns the class instance itself — its forwarded members are own-enumerable, so `appContext`'s member forward and the downstream `{ ...appContext }` spreads carry them intact.
+ * Factory wrapper preserving the `trackingService({...})` call signature. Returns the class instance itself — its forwarded members are own-enumerable, so `appContext`'s member forward and the downstream `{ ...appContext }` spreads carry them intact.
  *
- * The return type is the IMPLEMENTATION type, not the narrower consumer-facing `TrackingService`: `appContext` holds this producer privately (`#tracking`) and reads `sessionId` off it to build the survey link, and this module's own test asserts the producer's exact own-key surface. Consumers never see this type — they see whatever `appContext` chooses to forward.
+ * The return type is the IMPLEMENTATION type, not the narrower consumer-facing `TrackingService`: `appContext` holds this producer privately (`#tracking`), forwards its `gate` and reads its `surveySessionId` to build the survey link, and this module's own test asserts the producer's exact own-key surface. Consumers never see this type — they see whatever `appContext` chooses to forward.
  */
 export function trackingService({
   appSettings,

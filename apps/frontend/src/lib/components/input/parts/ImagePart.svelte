@@ -1,5 +1,7 @@
 <!--
-@component The image file input `Input` renders for its `image` kind: a hidden file input, a button that opens the file dialog, and a preview of the current image.
+@component The image file input `Input` renders for its `image` kind: a hidden file input, a button that opens the file dialog, a preview of the current image, and before that button any control the caller gives.
+
+The button is the control a user operates, so it names `describedBy` in its `aria-describedby`, as the file input does. The file input is marked `aria-invalid` while `invalid`.
 
 Internal to the `input` package — not exported from its barrel. See `./README.md`.
 

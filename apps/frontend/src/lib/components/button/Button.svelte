@@ -16,6 +16,8 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 ### Properties
 
 - `text`: The required text of the button. If `variant` is `icon`, the text will be used as the `aria-label` and `title` for the button. You can override both by providing them as attributes, e.g. `aria-label="Another text"`.
+- `suffix`: Plain text shown after `text`, in normal weight and the secondary colour, e.g. how long until the button can be pressed. It is part of the button's name. Not shown for the `icon` and `floating-icon` variants.
+- `suffixProps`: Attributes of the element that holds `suffix`, e.g. an `id` that describes the button and a `data-testid`.
 - `icon`: The name of the icon to use in the button or `null` if no icon should be used. Default: `'next'` if `variant='main'`, otherwise `null`
 - `color`: The color of the button or text. Default: `'primary'`
 - `disabled`: Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
@@ -41,6 +43,8 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
 text="Continue"/>
 <Button onclick={skip} icon="skip" iconPos="top" color="secondary"
 text="Skip this question"/>
+<Button onclick={resend} aria-disabled="true"
+text="Send again" suffix="(in 12s)"/>
 <Button onclick={addToList} variant="icon" icon="addToList"
 text="Add to list">
  {#snippet badge()}<InfoBadge text="5" />{/snippet}

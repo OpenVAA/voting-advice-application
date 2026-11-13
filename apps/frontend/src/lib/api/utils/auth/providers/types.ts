@@ -33,7 +33,7 @@ export type CallbackBinding = 'state' | 'pkce';
  * Configuration for identity claim extraction from the id_token.
  *
  * Each provider specifies which JWT claims map to which application concepts.
- * This allows the system to use different claims for user identity matching and metadata extraction depending on the active provider.
+ * This allows the system to use different claims for user identity matching and claim extraction depending on the active provider.
  */
 export interface AuthConfig {
   /**
@@ -44,9 +44,9 @@ export interface AuthConfig {
   identityMatchProp: string;
 
   /**
-   * Additional claims to extract from the id_token and store in user metadata.
+   * Additional claims to extract from the id_token.
    *
-   * These claims are saved alongside the identity match value in the user's `app_metadata` for later use (e.g., identity verification, audit trail).
+   * They are returned to the caller in `extractedClaims` and stored nowhere: nothing writes them to an account's metadata, which rides in every access token.
    */
   extractClaims: Array<string>;
 
@@ -112,7 +112,7 @@ export interface AuthorizeResult {
   /**
    * Replay protection nonce (Idura only).
    *
-   * For Idura: included in the JAR and verified against the id_token `nonce` claim after token exchange. Signicat does not use server-side nonce.
+   * For Idura: included in the JAR and stored in a cookie, which the callback clears. The id_token's `nonce` claim is not compared with it. Signicat uses no nonce.
    */
   nonce?: string;
 }

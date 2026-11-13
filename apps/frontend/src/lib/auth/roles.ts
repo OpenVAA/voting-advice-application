@@ -5,7 +5,7 @@ import type { EntityType } from '@openvaa/data';
  *
  * A pure set-membership test over `(scope, role)` pairs: it performs no I/O and mutates neither argument. An empty claims list is `false`, so the gate denies by default. A shape that names a `target_type` also requires the claim's entity type to match it; a shape without one matches any.
  *
- * Matching on the pair rather than the role alone is what separates the populations: an entity-scope `admin` grant holds no permissions and must open nothing, and a project-scope `editor` belongs in the Admin App, not the Candidate App.
+ * Matching on the pair rather than the role alone is what separates the populations: an entity-scope `admin` grant holds no permissions and must open nothing, and a project-scope `editor` belongs in the Admin App, not the Contestant App.
  * @param claims - The grant claims read out of an access token.
  * @param allowed - The shapes that open the entry point being gated.
  * @returns `true` when at least one claimed grant matches an allowed shape.
@@ -24,7 +24,7 @@ export function hasAnyGrant(claims: ReadonlyArray<GrantClaim>, allowed: Readonly
 /**
  * Read the grant claims out of an access token's payload.
  *
- * Fails closed: a token that is not a JWT, a payload that does not decode or is not JSON, and a missing or non-array `grants` key all yield the empty list, which fails every gate. Entries that are not objects carrying both a `scope` string and a `role` string are dropped. The payload is unvalidated JSON, and the return type is an assertion about its shape, not a check of its values.
+ * Fails closed: a token that is not a string or not a JWT, a payload that does not decode or is not JSON, and a missing or non-array `grants` key all yield the empty list, which fails every gate. Entries that are not objects carrying both a `scope` string and a `role` string are dropped. The payload is unvalidated JSON, and the return type is an assertion about its shape, not a check of its values.
  *
  * The decode does not verify the signature. That is safe only because the token comes from a session `safeGetSession` has already verified, and every query is re-checked server side. Do not call this on a token taken straight off a request.
  * @param accessToken - The access token whose claims to read.
@@ -51,9 +51,11 @@ export const ADMIN_GRANTS = [
 ] as const satisfies ReadonlyArray<GrantShape>;
 
 /**
- * The grant shapes that open the Candidate App.
+ * The grant shapes that open the Contestant App.
  *
- * An app-entry gate like `ADMIN_GRANTS`; the database's policies are authoritative. Only the candidate entity editor is admitted. Organization, faction and alliance editors hold the same `(entity, editor)` pair with a different `target_type`, and the Candidate App cannot load their user data.
+ * An app-entry gate like `ADMIN_GRANTS`, not the authorisation boundary: the database's policies are authoritative, and they decide which entity a signed-in user may read or write.
+ *
+ * The editor of a candidate or of an organization is admitted. Faction and alliance editors hold the same `(entity, editor)` pair with a different `target_type` and are not admitted, because the app serves neither type. Whether this project serves the editor's type is decided after sign-in, where the user's entities are listed.
  */
 export const CANDIDATE_GRANTS = [
   { scope: 'entity', role: 'editor', target_type: 'candidate' }
@@ -62,7 +64,7 @@ export const CANDIDATE_GRANTS = [
 /**
  * One grant assignment, as it appears in an access token's `grants` claim.
  *
- * The keys are columns of the database's `grants` table. The gates match `scope`, `role` and `target_type`; `target_id` is answered server side.
+ * The keys are columns of the database's `grants` table. The gates match `scope`, `role` and `target_type`; which project a grant reaches is answered by the database, through the data writer's `getProjectGrants`.
  */
 export type GrantClaim = {
   scope: GrantScope;

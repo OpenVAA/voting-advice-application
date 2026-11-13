@@ -26,8 +26,8 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 
 ### Tracking events
 
-- `feedback_sent`: Feedback is successfully sent. Contains `rating` and `description` properties.
-- `feedback_error`: There was an error sending the feedback. Contains `rating` and `description` properties.
+- `feedback_sent`: Feedback is successfully sent. Contains the `rating` property only.
+- `feedback_error`: There was an error sending the feedback. Contains the `rating` property only.
 
 ### Usage
 
