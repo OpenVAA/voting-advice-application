@@ -1,0 +1,20 @@
+ATTEMPT=20261020T072853Z.80e421ea1bd6
+GATE_HEAD=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+GATE_TREE_CLEAN_BEFORE=yes
+LINT_CHECK_EXIT=0
+FORMAT_CHECK_EXIT=0
+TURBO_CACHE_DIR=tmp/182-evidence/rc-free-gates.turbo-cache.20261020T072853Z
+SWITCH_OFF_LIST_EQUAL=yes
+    playwright --list --project analytics-consent-free (PLAYWRIGHT_ANALYTICS_STANDALONE=1) for PLAYWRIGHT_RED_CONTROL_SKIP_MODE_CHECK unset, 0, true and 1: the same 7 tests, line for line after the first line (a dotenv tip that varies per call); every status 0
+    Listing tests:
+      [data-setup-analytics-standalone] › setup/perm/perm-analytics-tracking.setup.ts:14:1 › import perm-analytics-tracking dataset
+      [data-teardown-analytics-standalone] › setup/perm/perm-analytics-tracking.teardown.ts:24:1 › delete perm-analytics-tracking dataset
+      [analytics-consent-free] › specs/voter/voter-tracking-consent-free.spec.ts:274:3 › voter-tracking-consent-free › the server is in consent-free mode
+      [analytics-consent-free] › specs/voter/voter-tracking-consent-free.spec.ts:287:3 › voter-tracking-consent-free › no prompt is shown
+      [analytics-consent-free] › specs/voter/voter-tracking-consent-free.spec.ts:292:3 › voter-tracking-consent-free › an answer cannot be linked
+      [analytics-consent-free] › specs/voter/voter-tracking-consent-free.spec.ts:317:3 › voter-tracking-consent-free › the privacy page describes the mode
+      [analytics-consent-free] › specs/voter/voter-tracking-consent-free.spec.ts:337:3 › voter-tracking-consent-free › the device holds only allow-listed state
+    Total: 7 tests in 3 files
+    with the switch off (only "1" turns it on): the describe mode is serial, expectConsentFreeMode runs the precondition assertion, and closeConsentPromptInRedControl returns at once; the one change that applies with the switch off is the text of the two messages (the send check now fails with SEND_MESSAGE, and MODE_MESSAGE no longer names the relay path), as the coordinator asked
+GATE_HEAD_AFTER=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+GATE_TREE_CLEAN_AFTER=yes

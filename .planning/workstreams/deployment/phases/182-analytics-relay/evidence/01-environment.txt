@@ -1,0 +1,16 @@
+ATTEMPT=20261018T200753Z.f2a963ae7
+GATE_HEAD=f2a963ae7ba2301aeed6716560969149033b6f51
+GATE_TREE_CLEAN_BEFORE=yes
+INSTALL_EXIT=0
+BUILD_EXIT=0
+GATE_HEAD_AFTER=f2a963ae7ba2301aeed6716560969149033b6f51
+GATE_TREE_CLEAN_AFTER=yes
+
+date: 2026-10-18T20:09:25Z
+node --version: v24.21.0
+yarn --version: 4.18.1
+ENV_FILE=present
+    (the root env file is listed by ls -A at the repository root; its content was not read)
+install: yarn install --immutable; yarn.lock unchanged (git diff --quiet -- yarn.lock exit 0)
+build: yarn build (turbo run build) with a TURBO_CACHE_DIR private to this attempt
+turbo summary: Tasks:    14 successful, 14 total

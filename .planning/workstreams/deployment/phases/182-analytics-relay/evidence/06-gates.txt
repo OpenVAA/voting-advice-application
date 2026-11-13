@@ -1,0 +1,17 @@
+ATTEMPT=20261019T105643Z.e314be826
+GATE_HEAD=e314be8261b4cdf6d8f956a153073f5af1fd419d
+GATE_TREE_CLEAN_BEFORE=yes
+TYPECHECK_EXIT=0
+GATE_HEAD_AFTER=e314be8261b4cdf6d8f956a153073f5af1fd419d
+GATE_TREE_CLEAN_AFTER=yes
+
+Command:
+    yarn workspace @openvaa/frontend typecheck
+Output (tail):
+    (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+      - import "./paraglide.options" without a file extension (vite.config.ts:6:35). Add the file extension
+      - import "./vite.projectIdEnv" without a file extension (vite.config.ts:7:37). Add the file extension
+      - import "./vite.restartOnRootEnv" without a file extension (vite.config.ts:8:34). Add the file extension
+    Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+    1792407414657 START "/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/apps/frontend"
+    1792407414666 COMPLETED 3026 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS

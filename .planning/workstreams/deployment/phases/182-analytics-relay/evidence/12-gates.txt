@@ -1,0 +1,15 @@
+Plan 182-12 gates, 2026-10-19, tree at e6ca031e7 (start sha 336c1957c)
+Node: ~/.nvm/versions/node/v24.21.0; TURBO_CACHE_DIR=tmp/turbo-182-12; no stack, no dev server, no E2E.
+
+Task 1 verify (eight keys present, non-empty, in en fi sv da)            exit 0
+English consent-wording check (/not (required|needed|necessary)/i)        exit 0
+Provider-keyed keys still present; cookies text no longer
+  contains "not by the application"; usageData names three apps          exit 0
+Added lines matched against umami|posthog|plausible|google|matomo|
+  mixpanel|amplitude|segment                                              no match
+yarn assert:i18n-catalog-namespaces                                       exit 0 (746 keys, 0 violations)
+Key-set parity of the seven privacy.json against en                       exit 0
+yarn prettier --check (seven catalogues + translationKey.ts)              exit 0
+yarn workspace @openvaa/frontend test:unit src/lib/i18n                   exit 0 (3 files, 432 tests)
+yarn workspace @openvaa/frontend paraglide:compile                        exit 0 (no tracked file changed)
+Commit-scope check (git log -F --grep='(182-12):')                        exit 0 (2 commits, 7 privacy.json, no other catalogue path)

@@ -1,0 +1,58 @@
+{
+  "contract": "1.0.0",
+  "flavor": "core",
+  "milestone": "v2.17 — Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay",
+  "phases": [
+    {
+      "number": "181",
+      "name": "Deployability and Migration Model",
+      "status": "complete"
+    },
+    {
+      "number": "182",
+      "name": "Analytics Relay",
+      "status": "complete"
+    },
+    {
+      "number": "183",
+      "name": "Terraform Foundation and Supabase as Code",
+      "status": "in_progress"
+    },
+    {
+      "number": "184",
+      "name": "Hosted Supabase Measurement and Conformance Probe",
+      "status": "pending"
+    },
+    {
+      "number": "185",
+      "name": "AWS Frontend Stack, First Apply by Hand",
+      "status": "pending"
+    },
+    {
+      "number": "186",
+      "name": "Deployed Smoke Entry",
+      "status": "pending"
+    },
+    {
+      "number": "187",
+      "name": "Deploy Pipeline",
+      "status": "pending"
+    },
+    {
+      "number": "188",
+      "name": "Relay on the Deployed Stack, and the Per-Caller Limit",
+      "status": "pending"
+    },
+    {
+      "number": "189",
+      "name": "Documentation and Closure",
+      "status": "pending"
+    }
+  ],
+  "next": {
+    "command": "/gsd-progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 4 of 10 · 20% · executing"
+  },
+  "updated_at": "2026-10-21T08:18:29.394Z"
+}

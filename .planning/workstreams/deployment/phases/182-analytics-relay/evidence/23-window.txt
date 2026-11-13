@@ -1,0 +1,23 @@
+ATTEMPT=20261019T191004Z.e97a38ccfd5d
+PREP_HEAD=e97a38ccfd5dedb8eed213a71b15ac15ff968056
+PREP_TREE_CLEAN=yes
+LOCAL_BUILD_EXIT=0
+LOCAL_UNIT_EXIT=0
+LOCAL_LINT_EXIT=0
+LOCAL_GATES_HEAD=e97a38ccfd5dedb8eed213a71b15ac15ff968056
+PLAYWRIGHT_INSTALL_EXIT=0
+ENV_FILE=present
+    (presence taken from a directory listing of the worktree root; the secret-read hook refuses a test -f on the file)
+PORT_FREE=yes
+SHARED_STACK_RUNNING=yes
+CHECKPOINT_PRESENTED attempt=20261019T191004Z.e97a38ccfd5d head=e97a38ccfd5dedb8eed213a71b15ac15ff968056
+    I'll keep the stack free, so just continue w the rest of the steps at will
+    (standing authorisation given 2026-10-19 for the remaining phase-182 stack windows, relayed by the orchestrator for attempt 20261019T191004Z.e97a38ccfd5d)
+OPERATOR_CONFIRMED_STACK_FREE=yes attempt=20261019T191004Z.e97a38ccfd5d head=e97a38ccfd5dedb8eed213a71b15ac15ff968056
+TASK3_STARTED=2026-10-19T19:13:29Z
+DB_STOP_AT_START_EXIT=0
+DB_STOP_AT_END_EXIT=0
+GREEN_RUN=green (wrapper 0, verdict 0) in the direct form; control direct-no-keepalive passed (keepalive necessity not observed)
+STACK_STOPPED_AT_END=yes
+SHARED_DB_RESET_BY_THIS_SESSION=yes
+The v2.16 session must run `yarn db:reset` from its own worktree before it uses the local stack again.

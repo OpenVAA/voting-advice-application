@@ -1,0 +1,27 @@
+ATTEMPT=20261019T212846Z.0e343a40d599
+PREP_HEAD=0e343a40d5993e9a273e7ab04f828fbed791205c
+PREP_TREE_CLEAN=yes
+    Gates of plan 182-22 do not describe PREP_HEAD: git diff --quiet e4d535df3 PREP_HEAD -- . ':!.planning' exits 1 (the debug commits b410026b0, 3029d15e3, e06816d05, 0e343a40d changed code), so the four gates are run again here.
+LOCAL_BUILD_EXIT=0
+LOCAL_LINT_EXIT=0
+LOCAL_UNIT_EXIT=0
+LOCAL_FORMAT_EXIT=0
+LOCAL_GATES_SOURCE=rerun
+LOCAL_GATES_HEAD=0e343a40d5993e9a273e7ab04f828fbed791205c
+    The four gates ran one at a time in the background, each status read from its file, with TURBO_CACHE_DIR=tmp/turbo-182-24b; the shared stack was started with yarn db:start (no reset) before them, because the root test:unit needs it. Second tree sample clean, HEAD unchanged.
+SHARED_STACK_RUNNING=yes
+ENV_FILE=unknown
+    The direct presence check was refused by the secret-read hook ("Secret read guard: Bash would read ..."). It was not worked around: no name listing or other detection was used, and the file was not read. The earlier attempt's ENV_FILE=present came from a root name listing, a method now forbidden.
+PORT_FREE=yes
+CHECKPOINT_PRESENTED attempt=20261019T212846Z.0e343a40d599 head=0e343a40d5993e9a273e7ab04f828fbed791205c
+    I'll keep the stack free, so just continue w the rest of the steps at will
+    (standing authorisation given 2026-10-19 for the remaining phase-182 stack windows, relayed by the orchestrator for attempt 20261019T212846Z.0e343a40d599)
+OPERATOR_CONFIRMED_STACK_FREE=yes attempt=20261019T212846Z.0e343a40d599 head=0e343a40d5993e9a273e7ab04f828fbed791205c
+TASK3_STARTED=2026-10-19T21:32:57Z
+DB_STOP_AT_START_EXIT=0
+DB_STOP_AT_END_EXIT=0
+WINDOW_RESULT=green: 24-pageview (wrapper 0, verdict 0, 3 passed); 24-default (wrapper 0, verdict 0, 22 passed); 24-free (wrapper 0, verdict 0, 7 passed); every run once, on 0e343a40d5993e9a273e7ab04f828fbed791205c, database reset by the wrapper, schema probe t
+    The secret-read hook refused the direct .env check (ENV_FILE=unknown above), so Task 1's verify fails on its ENV_FILE clause alone; every other clause of it exits 0. The runs did not need the file's analytics values: each passed them as a prefix.
+STACK_STOPPED_AT_END=yes
+SHARED_DB_RESET_BY_THIS_SESSION=yes
+The v2.16 session must run `yarn db:reset` from its own worktree before it uses the local stack again.

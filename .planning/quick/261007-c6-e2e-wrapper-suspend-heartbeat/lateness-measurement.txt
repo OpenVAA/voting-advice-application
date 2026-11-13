@@ -1,0 +1,47 @@
+Raw output of the two loaded legs behind the threshold in tests/scripts/e2e-run.sh (SUSPEND_THRESHOLD_MS).
+Each is: HEARTBEAT_SELF_TEST_AWAKE_S=90 HEARTBEAT_SELF_TEST_BUSY_LOOPS=<n> tests/scripts/e2e-run.sh --self-test, under caffeinate -dimsu,
+with the load averages (1 / 5 / 15 min, 14 cores) sampled every 15 s beside it. Times are UTC, 2026-10-07.
+
+===== 14 busy loops (one per core)
+label=load14 awake_s=90 busy_loops=14 started=2026-10-07T08:37:01Z
+Now drawing from 'AC Power'
+load 08:37:01 6,36 5,66 5,93
+self-test: interval 2 s, threshold 3000 ms; loaded leg 90 s with 14 busy loop(s)
+load 08:37:16 14,74 7,52 6,58
+load 08:37:31 18,82 8,78 7,05
+load 08:37:46 19,60 9,45 7,32
+load 08:38:01 26,48 11,51 8,09
+load 08:38:16 26,64 12,31 8,44
+self-test: wake-up lateness under load, ms beyond the interval: 43 beat(s), min 22, median 53, p95 101, p99 144, max 144
+self-test: pass  awake under load for 90 s: no marker, no signal, 43 beat(s), largest lateness 144 ms
+load 08:38:31 25,30 12,72 8,65
+self-test: pass  held with SIGSTOP for 2 s, below the threshold: no marker, no signal, largest lateness 1012 ms
+load 08:38:46 20,36 12,24 8,55
+self-test: pass  held with SIGSTOP for 6 s, above the threshold: marker written with gap_ms=4995, one signal, the loop ended itself
+self-test: pass  stopped by its owner mid-interval: the loop and its sleep (pid 41384) are gone, no marker, no signal
+load 08:39:01 16,95 11,89 8,49
+self-test: pass  held for 6 s, then stopped by its owner before the next beat: marker written with gap_ms=4999, one signal
+e2e-run.sh: heartbeat self-test passed: 5 case(s).
+self_test_exit=0 ended=2026-10-07T08:39:02Z
+
+===== 84 busy loops (six per core)
+label=load84 awake_s=90 busy_loops=84 started=2026-10-07T08:39:07Z
+Now drawing from 'AC Power'
+load 08:39:07 14,80 11,59 8,42
+self-test: interval 2 s, threshold 3000 ms; loaded leg 90 s with 84 busy loop(s)
+load 08:39:22 40,91 17,51 10,59
+load 08:39:37 62,21 23,38 12,80
+load 08:39:52 80,09 29,21 15,07
+load 08:40:07 96,58 35,34 17,50
+load 08:40:22 110,50 41,44 19,99
+load 08:40:37 119,94 46,94 22,33
+self-test: wake-up lateness under load, ms beyond the interval: 44 beat(s), min 18, median 28, p95 48, p99 107, max 107
+self-test: pass  awake under load for 90 s: no marker, no signal, 44 beat(s), largest lateness 107 ms
+self-test: pass  held with SIGSTOP for 2 s, below the threshold: no marker, no signal, largest lateness 1021 ms
+load 08:40:52 94,47 44,89 22,03
+self-test: pass  held with SIGSTOP for 6 s, above the threshold: marker written with gap_ms=5005, one signal, the loop ended itself
+self-test: pass  stopped by its owner mid-interval: the loop and its sleep (pid 43004) are gone, no marker, no signal
+load 08:41:07 74,62 42,92 21,72
+self-test: pass  held for 6 s, then stopped by its owner before the next beat: marker written with gap_ms=5006, one signal
+e2e-run.sh: heartbeat self-test passed: 5 case(s).
+self_test_exit=0 ended=2026-10-07T08:41:08Z

@@ -1,7 +1,7 @@
 {
   "contract": "1.0.0",
   "flavor": "core",
-  "milestone": "v2.15 — Trustworthy Foundations — Guards, Seed Data & CI Coverage",
+  "milestone": "v2.16 — Contestant App — Registration Modes & Multi-Entity Editing",
   "phases": [
     {
       "number": "137",
@@ -167,12 +167,87 @@
       "number": "169",
       "name": "Dependency Bump to Latest Safe Versions",
       "status": "complete"
+    },
+    {
+      "number": "170",
+      "name": "Contestant App Rename — Symbols & Routes",
+      "status": "complete"
+    },
+    {
+      "number": "171",
+      "name": "Project Settings — Served Entity Types & Registration-Mode Matrix",
+      "status": "complete"
+    },
+    {
+      "number": "172",
+      "name": "Terms of Use per User and Project",
+      "status": "complete"
+    },
+    {
+      "number": "173",
+      "name": "Multi-Entity Grants & Entity Selection",
+      "status": "complete"
+    },
+    {
+      "number": "174",
+      "name": "Invitations — Grants Defined in Advance",
+      "status": "complete"
+    },
+    {
+      "number": "174.1",
+      "name": "Terms-of-Use Gate — Phone Width & Focus (INSERTED)",
+      "status": "complete"
+    },
+    {
+      "number": "175",
+      "name": "Organization Editing — Profile, Questions & Preview",
+      "status": "complete"
+    },
+    {
+      "number": "176",
+      "name": "Contestant Home, Task State & Nominations View",
+      "status": "complete"
+    },
+    {
+      "number": "177",
+      "name": "Define Nominations",
+      "status": "complete"
+    },
+    {
+      "number": "177.1",
+      "name": "Invitations — Entity Confirmation & Nominations Defined in Advance (INSERTED)",
+      "status": "in_progress"
+    },
+    {
+      "number": "178",
+      "name": "Sign-in, Email & Code Registration",
+      "status": "in_progress"
+    },
+    {
+      "number": "179",
+      "name": "Identity-Provider Registration & Coverage Close",
+      "status": "in_progress"
+    },
+    {
+      "number": "179.1",
+      "name": "Review Fixes — Access, Database Rules & Contestant App Behaviour (INSERTED)",
+      "status": "complete"
+    },
+    {
+      "number": "179.2",
+      "name": "Admin App Account Flows — Landing, Set Password & Recovery (INSERTED)",
+      "status": "complete"
+    },
+    {
+      "number": "180",
+      "name": "Edge Functions — Typecheck & Shared Modules",
+      "status": "complete"
     }
   ],
   "next": {
-    "command": "/gsd:progress",
-    "label": "Show progress",
-    "reason": "Unsure of state — showing progress"
+    "command": "/gsd-progress --next",
+    "label": "Advance to the next step",
+    "reason": "Phase 15 of 15 · 67% · executing"
   },
-  "updated_at": "2026-10-04T09:15:28.991Z"
+  "updated_at": "2026-11-13T17:00:00.000Z"
 }

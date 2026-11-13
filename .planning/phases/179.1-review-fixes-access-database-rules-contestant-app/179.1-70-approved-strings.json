@@ -1,0 +1,46 @@
+{
+  "about": "The strings plans 70 to 79 write, as the checkpoint of plan 179.1-70 (Task 1) presents them: C1 and C4, each at its recommended answer. Where the operator's answer edits a string, plan 70 replaces that value here, word for word, before anything is written, and commits this file alone. Every plan that writes or reads one of these keys compares the catalogues with this file, per locale and key.",
+  "entries": [
+    {
+      "item": "C1",
+      "file": "common.json",
+      "path": ["common", "loggedOutAutomatically"],
+      "values": {
+        "en": "You have been logged out automatically, because a logout you started was not cancelled in time.",
+        "fi": "Sinut kirjattiin automaattisesti ulos, koska aloittamaasi uloskirjautumista ei peruttu ajoissa.",
+        "sv": "Du har loggats ut automatiskt, eftersom en utloggning som du påbörjade inte avbröts i tid.",
+        "da": "Du er blevet logget ud automatisk, fordi en udlogning, du startede, ikke blev annulleret i tide.",
+        "et": "Sind logiti automaatselt välja, sest sinu alustatud väljalogimist ei tühistatud õigel ajal.",
+        "fr": "Vous avez été déconnecté·e automatiquement, car une déconnexion que vous aviez lancée n’a pas été annulée à temps.",
+        "lb": "Dir gouft automatesch ausgeloggt, well en Ausloggen, deen Dir ugefaangen hutt, net rechtzäiteg ofgebrach gouf."
+      }
+    },
+    {
+      "item": "C1",
+      "file": "common.json",
+      "path": ["common", "loggedOutElsewhere"],
+      "values": {
+        "en": "You have been logged out in another tab or window.",
+        "fi": "Sinut kirjattiin ulos toisessa välilehdessä tai ikkunassa.",
+        "sv": "Du har loggats ut i en annan flik eller ett annat fönster.",
+        "da": "Du er blevet logget ud i en anden fane eller et andet vindue.",
+        "et": "Sind logiti välja teisel vahekaardil või teises aknas.",
+        "fr": "Vous avez été déconnecté·e dans un autre onglet ou une autre fenêtre.",
+        "lb": "Dir gouft an engem aneren Tab oder an enger anerer Fënster ausgeloggt."
+      }
+    },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "title"], "values": { "fr": "Connexion à l’administration", "lb": "Umeldung fir d’Administratioun" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "appTitle"], "values": { "fr": "Boussole électorale", "lb": "Wal-Kompass" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "appSubtitle"], "values": { "fr": "Administration", "lb": "Administratioun" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "instructions"], "values": { "fr": "Saisissez vos identifiants de connexion.", "lb": "Gitt Är Umeldungsdaten an." } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "email"], "values": { "fr": "E-mail", "lb": "E-Mail" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "password"], "values": { "fr": "Mot de passe", "lb": "Passwuert" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "button"], "values": { "fr": "Se connecter", "lb": "Umellen" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "forgotPassword"], "values": { "fr": "Mot de passe oublié ?", "lb": "Passwuert vergiess?" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "errors", "invalidCredentials"], "values": { "fr": "E-mail ou mot de passe non valide", "lb": "Ongëlteg E-Mail oder Passwuert" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "errors", "genericError"], "values": { "fr": "Une erreur s’est produite lors de la connexion. Veuillez réessayer.", "lb": "Beim Umellen ass e Feeler opgetrueden. Probéiert wgl. nach eng Kéier." } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "errors", "unauthorized"], "values": { "fr": "Vous devez disposer des droits d’administration pour accéder à cet espace", "lb": "Dir braucht Administrateursrechter fir op dëse Beräich zouzegräifen" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "errors", "sessionExpired"], "values": { "fr": "Votre session a expiré, veuillez vous reconnecter", "lb": "Är Sessioun ass ofgelaf, mellt Iech wgl. nach eng Kéier un" } },
+    { "item": "C4", "file": "adminApp.login.json", "path": ["adminApp.login", "errors", "unknown"], "values": { "fr": "Une erreur inconnue s’est produite", "lb": "En onbekannte Feeler ass opgetrueden" } }
+  ]
+}

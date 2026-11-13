@@ -1,0 +1,39 @@
+ATTEMPT=20261019T191348Z.e97a38ccfd5d
+WINDOW_ATTEMPT=20261019T191004Z.e97a38ccfd5d
+E2E_HEAD=e97a38ccfd5dedb8eed213a71b15ac15ff968056
+UNLOAD_ENV=direct
+COMMAND=PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-23-direct-20261019T191004Z.e97a38ccfd5d --project analytics-default-standalone
+RUN_DIR=tests/e2e-runs/182-23-direct-20261019T191004Z.e97a38ccfd5d
+WRAPPER_EXIT=0
+PASSED=10
+FAILED=0
+FLAKY=0
+SKIPPED=0
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+SCHEMA_PROBE=t
+E2E_HEAD_AFTER=e97a38ccfd5dedb8eed213a71b15ac15ff968056
+UNLOAD_FORM=direct form
+    Green: wrapper status 0 and verdict status 0 (VERDICT OK: 10 tests -- passed 10, failed 0, flaky 0, skipped 0, did not run 0), on a database the wrapper reset from this worktree (provenance.txt: db-reset yes), schema probe t.
+    Tests that passed:
+    data-setup-analytics-standalone › import perm-analytics-tracking dataset
+    data-teardown-analytics-standalone › delete perm-analytics-tracking dataset
+    analytics-default-standalone › analytics privacy across the voter, Contestant and Admin apps › every request went to the app or to Supabase, and every script was same-origin
+    analytics-default-standalone › analytics privacy across the voter, Contestant and Admin apps › the device holds only allow-listed state after the journey
+    analytics-default-standalone › the relay at page leave › a keepalive POST to the relay made as the page is left is captured and answered
+    analytics-default-standalone › voter-prefs-tracking (EFLOW-08) › the relay is active
+    analytics-default-standalone › voter-prefs-tracking (EFLOW-08) › before consent only pageviews are sent, with no id
+    analytics-default-standalone › voter-prefs-tracking (EFLOW-08) › after consent the events are sent with the visit id, and nothing buffered before the grant is sent
+    analytics-default-standalone › voter-prefs-tracking (EFLOW-08) › the visit id lives for one document
+    analytics-default-standalone › voter-prefs-tracking (EFLOW-08) › user-preferences round-trip: consent + feedback + survey survive a reload
+    Red run of plan 182-11 (evidence/11-red-unchanged.txt): the origin test ("every request went to the app or to Supabase, and every script was same-origin") and the device-store test ("the device holds only allow-listed state after the journey") failed there; both passed here.
+    The keepalive test passed in its direct form, so the route form was not run.
+LOG_PAGEVIEW_VOTER=yes
+    [frontend] {"level":30,"severityText":"INFO","time":1792437336362,"msg":"pageview","attributes":{"routeId":"/(voters)","locale":"en","duration":400,"params":{},"openvaa.app":"voter"}}
+LOG_PAGEVIEW_CONTESTANT=yes
+    [frontend] {"level":30,"severityText":"INFO","time":1792437340213,"msg":"pageview","attributes":{"routeId":"/contestant/login","locale":"en","duration":500,"params":{},"openvaa.app":"contestant"}}
+LOG_PAGEVIEW_ADMIN=yes
+    [frontend] {"level":30,"severityText":"INFO","time":1792437342727,"msg":"pageview","attributes":{"routeId":"/admin/login","locale":"en","duration":500,"params":{},"openvaa.app":"admin"}}
+    devserver.log holds 21 pageview lines: 18 voter, 2 contestant (login and privacy), 1 admin (login).
+LOG_PAGEVIEW_WITH_SESSION_ID=0
+LOG_VAA_SESSION_ID=0

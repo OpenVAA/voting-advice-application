@@ -1,0 +1,41 @@
+Check account-access/index.ts
+Check identity-callback/index.ts
+Check invite-candidate/index.ts
+Check send-email/index.ts
+TS2589 [ERROR]: Type instantiation is excessively deep and possibly infinite.
+    const existingCandidate = await findExistingCandidate(supabaseAdmin, { projectId, authUserId: userId });
+                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    at apps/supabase/supabase/functions/identity-callback/index.ts:299:37
+
+TS2345 [ERROR]: Argument of type 'SupabaseClient<any, "public", "public", any, any>' is not assignable to parameter of type 'CandidateCreateClient'.
+  The types returned by 'from(...).insert(...).select(...).single()' are incompatible between these types.
+    Type 'PostgrestBuilder<any, GenericStringError, false>' is missing the following properties from type 'Promise<{ data: { id: string; } | null; error: { message: string; } | null; }>': catch, finally, [Symbol.toStringTag]
+      const candidate = await createCandidate(supabaseAdmin, {
+                                              ~~~~~~~~~~~~~
+    at apps/supabase/supabase/functions/identity-callback/index.ts:307:47
+
+TS2345 [ERROR]: Argument of type 'SupabaseClient<any, "public", "public", any, any>' is not assignable to parameter of type 'GrantWriteClient'.
+  The types returned by 'from(...).insert(...)' are incompatible between these types.
+    Type 'PostgrestFilterBuilder<any, any, any, null, any, unknown, "POST", false>' is missing the following properties from type 'Promise<{ error: { message: string; code?: string | undefined; } | null; }>': catch, finally, [Symbol.toStringTag]
+      await writeEntityGrant(supabaseAdmin, {
+                             ~~~~~~~~~~~~~
+    at apps/supabase/supabase/functions/identity-callback/index.ts:320:30
+
+TS2345 [ERROR]: Argument of type 'SupabaseClient<any, "public", "public", any, any>' is not assignable to parameter of type 'GrantWriteClient'.
+  The types returned by 'from(...).insert(...)' are incompatible between these types.
+    Type 'PostgrestFilterBuilder<any, any, any, null, any, unknown, "POST", false>' is missing the following properties from type 'Promise<{ error: { message: string; code?: string | undefined; } | null; }>': catch, finally, [Symbol.toStringTag]
+      await writeEntityGrant(supabaseAdmin, {
+                             ~~~~~~~~~~~~~
+    at apps/supabase/supabase/functions/invite-candidate/index.ts:152:30
+
+TS2345 [ERROR]: Argument of type 'SupabaseClient<any, "public", "public", any, any>' is not assignable to parameter of type 'SupabaseClient<unknown, { PostgrestVersion: string; }, never, never, { PostgrestVersion: string; }>'.
+  Types of property 'rest' are incompatible.
+    Type 'PostgrestClient<any, any, "public", any>' is not assignable to type 'PostgrestClient<unknown, { PostgrestVersion: string; }, never, never>'.
+      Type '"public"' is not assignable to type 'never'.
+      await rollbackInvite(supabaseAdmin, { candidateId: candidate.id, userId: inviteData.user.id });
+                           ~~~~~~~~~~~~~
+    at apps/supabase/supabase/functions/invite-candidate/index.ts:158:28
+
+Found 5 errors.
+
+error: Type checking failed.

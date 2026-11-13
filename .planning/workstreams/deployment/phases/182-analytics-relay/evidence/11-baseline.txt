@@ -1,0 +1,16 @@
+ATTEMPT=20261019T160159Z.95449c502a1b
+WINDOW_ATTEMPT=20261019T130438Z.95449c502a1b
+E2E_HEAD=95449c502a1b3875bc3a1f51a7005b3da6b66bdb
+COMMAND=ANALYTICS_PROVIDER=log bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-11-baseline-20261019T130438Z.95449c502a1b
+RUN_DIR=tests/e2e-runs/182-11-baseline-20261019T130438Z.95449c502a1b
+WRAPPER_EXIT=0
+PASSED=530
+FAILED=0
+FLAKY=0
+SKIPPED=0
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+SKIPPED_LIST=tmp/182-evidence/11-base.20261019T160159Z.95449c502a1b.skipped.txt
+SCHEMA_PROBE=t
+E2E_HEAD_AFTER=95449c502a1b3875bc3a1f51a7005b3da6b66bdb
+    The verdict printed no declared-skip line: the whole default suite has no declared skip on this commit, so the skipped baseline is an empty file.

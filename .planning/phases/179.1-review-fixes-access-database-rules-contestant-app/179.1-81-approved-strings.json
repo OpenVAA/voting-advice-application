@@ -1,0 +1,54 @@
+{
+  "about": "The strings plan 179.1-81 writes, as its checkpoint (Task 1) presents them, each at its recommended answer: the fr and lb values that are the English of the base locale, which the per-value comparison of the untranslated-catalogue guard finds (the operator's ruling A4 at the WR16I UAT, test 4). en is the unchanged source each translation was made from; fr and lb are machine translations, flagged for a native reader. questions.arguments.title is written in lb alone: the fr value, Arguments, is the French word, and goes on the guard's allowlist. Where the operator's answer edits a string, plan 81 replaces that value here, word for word, before anything is written, and commits this file alone. 179.1-approved-strings.mjs reads this file together with every other 179.1-<n>-approved-strings.json beside it and compares the catalogues with all of them, per locale and key.",
+  "entries": [
+    {
+      "item": "A4",
+      "file": "components.json",
+      "path": ["components", "select", "placeholder"],
+      "values": {
+        "en": "Select an option below",
+        "fr": "Sélectionnez une option ci-dessous",
+        "lb": "Wielt hei ënnen eng Optioun aus"
+      }
+    },
+    {
+      "item": "A4",
+      "file": "questions.json",
+      "path": ["questions", "arguments", "con"],
+      "values": {
+        "en": "Against",
+        "fr": "Contre",
+        "lb": "Dogéint"
+      }
+    },
+    {
+      "item": "A4",
+      "file": "questions.json",
+      "path": ["questions", "arguments", "pro"],
+      "values": {
+        "en": "For",
+        "fr": "Pour",
+        "lb": "Dofir"
+      }
+    },
+    {
+      "item": "A4",
+      "file": "questions.json",
+      "path": ["questions", "arguments", "proCategory"],
+      "values": {
+        "en": "For {option}",
+        "fr": "Pour {option}",
+        "lb": "Dofir: {option}"
+      }
+    },
+    {
+      "item": "A4",
+      "file": "questions.json",
+      "path": ["questions", "arguments", "title"],
+      "values": {
+        "en": "Arguments",
+        "lb": "Argumenter"
+      }
+    }
+  ]
+}
