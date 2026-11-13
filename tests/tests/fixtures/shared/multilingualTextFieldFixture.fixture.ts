@@ -7,13 +7,14 @@
  *  - `Input.svelte:392-450` — per-locale field rendering (one input/textarea per non-default locale when `isTranslationsVisible` is true).
  *  - `Input.svelte:646-660` — translation-options toggle Button (gated on `multilingual && locales.length > 1`).
  *
- * The toggle Button carries `data-testid="multilingual-toggle"`. The fixture scopes every assertion under a caller-supplied parent Locator (e.g., the `candidate-profile-info-item` wrapper from candidateProfilePage, or the `candidate-questions-comment` wrapper from candidateQuestionPage's open-answer block).
+ * The toggle Button carries `data-testid="multilingual-toggle"`. The fixture scopes every assertion under a caller-supplied parent Locator (e.g., the `contestant-profile-info-item` wrapper from contestantProfilePage, or the `contestant-questions-comment` wrapper from contestantQuestionPage's open-answer block).
  *
  * Surface:
  *  - expectTranslationOptions(scope, visible)  — toggle Button visible OR absent inside the scope.
  *  - openTranslations(scope)                    — click toggle to expand; assert per-locale field appears.
  *  - setLocaleValue(scope, locale, value)       — fill per-locale field by accessible name (locale's native display name) + blur.
  *  - closeTranslations(scope)                   — click toggle to collapse.
+ *  - localeField(scope, locale)                 — the per-locale field itself, for a caller that asserts on its value or state.
  *  - expectLocaleHidden(scope, locale)          — assert per-locale field is not in the DOM.
  *
  * **Rigidity contract**:

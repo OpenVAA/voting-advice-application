@@ -4,6 +4,8 @@
  *
  * Runtime-set mechanism: the template OMITS elections.startFromConstituencyGroup; this spec's beforeAll resolves the CG-2 UUID via SupabaseAdminClient + client.updateAppSettings.
  *
+ * The contestant side: after the voter tests, one describe runs under the stored session of the editor of one seeded candidate and takes its `test` and its state steps from `fixtures/contestant/perm-startfromcg.ts`. It names the same group in the setting for its own tests and puts back what the setting held, and it begins by deleting that candidate's nominations with the service role, so that the nomination editor is open to the candidate: nothing writes the seeded nomination again, and nothing after this file reads the dataset. Its test bodies hold fixture steps alone. A test that changes an election's type puts the seeded type back in a `finally`, and the step after such a change is a full page load. When its tests have run, any nomination the application wrote for the candidate is removed, because a later setup deletes this dataset's rows by prefix before this dataset's own teardown runs.
+ *
  * Rigidity contract: every assertion is HARD.
  */
 

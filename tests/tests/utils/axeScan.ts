@@ -5,7 +5,7 @@
  *
  * ## Why it is a module rather than a second copy
  *
- * Both halves of the application are scanned — the voter routes from `a11y-smoke.spec.ts`, the candidate `(protected)` routes from `candidate-a11y.spec.ts`. Criterion 6 requires the two to be `identical in strictness`. Holding the tag set, the per-rule trio, the global zero gate, the animation settle, the dark-theme guard and the shared scan body in ONE module makes that a property of the code: there is no second copy that could drift. A difference between the two halves can therefore only ever be a difference in their route tables, never in how hard they are scanned.
+ * Both halves of the application are scanned — the voter routes from `a11y-smoke.spec.ts`, the candidate `(protected)` routes from `contestant-a11y.spec.ts`. Criterion 6 requires the two to be `identical in strictness`. Holding the tag set, the per-rule trio, the global zero gate, the animation settle, the dark-theme guard and the shared scan body in ONE module makes that a property of the code: there is no second copy that could drift. A difference between the two halves can therefore only ever be a difference in their route tables, never in how hard they are scanned.
  *
  * ## What deliberately did NOT move
  *
@@ -77,7 +77,7 @@ export interface AxeRouteBase {
 /**
  * A scan entry the runner navigates to itself — `routeId` is required because nothing else supplies the URL.
  *
- * It does NOT mean "unauthenticated". Browser state comes from the PROJECT the spec runs under, not from this discriminant: `a11y-smoke` runs its raw entries with an empty storage state, while `candidate-a11y-scan` runs its raw entries with the stored candidate session. The distinction this field draws is only "the runner navigates" versus "a fixture hands the page over".
+ * It does NOT mean "unauthenticated". Browser state comes from the PROJECT the spec runs under, not from this discriminant: `a11y-smoke` runs its raw entries with an empty storage state, while `contestant-a11y-scan` runs its raw entries with the stored candidate session. The distinction this field draws is only "the runner navigates" versus "a fixture hands the page over".
  */
 export interface RawAxeRoute extends AxeRouteBase {
   fixture: 'raw';
@@ -112,7 +112,7 @@ export async function assertAxeGates(
   expect(results.violations.filter((v) => v.id === 'list')).toHaveLength(0);
   expect(results.violations.filter((v) => v.id === 'button-name')).toHaveLength(0);
 
-  // Global zero gate — 0 violations across all 28 scanned surfaces (14 voter + 14 candidate, each route in both themes; it was 7 routes / 14 surfaces before the family was extended to the candidate `(protected)` routes).
+  // Global zero gate — 0 violations on every surface a spec scans through this function, in both themes.
   // Catches new rule-IDs that the per-rule trio doesn't name (e.g., heading-order from a latent h4-hoist outline gap).
   //
   // This function is the ONLY place either half's violations are gated, and it takes no per-surface parameter that could relax it — which is what makes criterion 6's "identical in strictness" a property of the code rather than of two tables agreeing.
@@ -142,6 +142,13 @@ export async function assertAxeGates(
  *
  * Structure prevents the staleness; this helper stops it silently coming back.
  * A freshly created `.text-neutral` node always resolves the CURRENT token, so comparing it against the persistent chrome detects a stale-light document without hard-coding a single hex value or naming a theme. Validated against both mechanisms above: it FAILS on the flip (`rgb(204,204,204)` vs `rgb(51,51,51)`) and PASSES on the born-dark context.
+ *
+ * ## A page with no layout chrome
+ *
+ * A page that renders under the root layout alone, such as the confirm page a mailed link opens, has no header and so no menu toggle to compare. Only persistent chrome can be stranded light, so for such a page, named by `layoutChrome: false`, the guard asserts the dark preference and that the page indeed renders no menu toggle, and compares nothing. A page that is given `false` and does render the toggle fails here, so the option cannot be used to skip the comparison on a page that has chrome.
+ *
+ * @param page - The page the scan is about to read.
+ * @param options.layoutChrome - Whether the page renders the layout's header; `true` when absent.
  */
 export async function assertDarkThemeApplied(page: Page): Promise<void> {
   await expect
@@ -179,7 +186,7 @@ export async function assertAxeScan(page: Page, route: AxeRoute, testInfo: TestI
   // Gate the scan on the entrance fade/animation finishing — otherwise axe composites text colour through in-flight opacity and reports phantom color-contrast failures (see awaitAnimationsSettled).
   await awaitAnimationsSettled(page);
 
-  // Suite-wide raw-i18n-key gate (sweep finding F2). `t()` returns the raw dotted key path on a catalog miss (i18n/wrapper.ts:40), so a broken catalog renders `questions.multiChoice.selectExact` as literal user-visible text — a state that SATISFIES 21 of the suite's own text matchers (`/Yes/i` passes against `common.answer.yes`). Checking it here, against a key set derived from the catalog at runtime, covers all 598 keys and every future one on every scanned surface — 28 of them, the voter 14 and the candidate 14 — instead of patching 21 individual regexes. The page is already navigated, content-anchored and animation-settled at this point, so the marginal cost is one DOM read.
+  // Suite-wide raw-i18n-key gate. `t()` returns the raw dotted key path on a catalog miss (i18n/wrapper.ts:40), so a broken catalog renders `questions.multiChoice.selectExact` as literal user-visible text — a state that SATISFIES 21 of the suite's own text matchers (`/Yes/i` passes against `common.answer.yes`). Checking it here, against a key set derived from the catalog at runtime, covers every key of the catalog and every future one on every scanned surface instead of patching 21 individual regexes. The page is already navigated, content-anchored and animation-settled at this point, so the marginal cost is one DOM read.
   //
   // The DOM read happens BEFORE the axe scan deliberately: an untranslated catalog changes the accessible names axe is about to read, so the raw-key verdict must be taken against the same DOM axe sees, not after it.
   const rawKeys = await collectRawI18nKeyFindings(page, label);

@@ -1,11 +1,11 @@
 /**
- * perm-closed-project data-setup project — the TERMINAL node's setup (162.1 D-21).
+ * perm-closed-project data-setup project — the TERMINAL node's setup.
  *
  * Invokes setupFromTemplate('perm-closed-project'). Prefix: 'e2e-perm-closed-project-'.
  *
  * The template's `openForVoters: false` makes the writer's last pass set `open_for_voters = false` on the E2E project, i.e. on the one project the dev server serves. That is why this setup's project runs after every leaf of the suite (see `CLOSED_PROJECT_DEPENDENCIES` in `tests/playwright.config.ts`): no other spec is running while the project is closed. Reopening is the job of the spec's `afterAll`, this node's teardown and the next run's global setup.
  *
- * It also provisions a real auth user for the seeded candidate (`forceRegister`, the perm-answers-locked pattern) so the spec can log in through the candidate form on the closed project (162.1 D-16). `terms_of_use_accepted` is set to a fixed past timestamp AFTER `forceRegister`, because `unregisterCandidate` clears it; with it set, the login lands on the candidate home rather than on the terms-of-use form.
+ * It also provisions a real auth user for the seeded candidate (`forceRegister`, the perm-answers-locked pattern) so the spec can log in through the candidate form on the closed project. `forceRegister` records the user's acceptance of the terms of use, so the login lands on the candidate home rather than on the terms-of-use form.
  */
 
 import { test as setup } from '@playwright/test';

@@ -20,7 +20,7 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
  * 2. **Reload** — a real browser reload, which produces a NEW server-rendered request. This is the half that matters most and the only reason the walk is written this way: a warm client-side navigation re-runs the universal load IN THE BROWSER, where the session is present regardless, so a navigation-only spec would pass while the defect it guards was live.
  * 3. **The hook gate, on its discriminating arm** — an AUTHENTICATED request for the admin login page must answer 303 to the admin home. The unauthenticated 307 is NOT a proof of anything: the admin protected layout has always emitted that identical bounce to that identical target, so hook and layout are indistinguishable on that arm. This one is not: with the admin row removed from `APP_GATES` the login page answers 200 and stays put.
  * 4. **The endpoint** — an authenticated call to a jobs endpoint through this context's own cookies. Its refusal statuses are two different facts and the failure message says which one arrived: 401 means no session reached the endpoint, 403 means the identity was not an admin.
- * 5. **The rendered payload** — this application's four browser-script-inaccessible cookies are seeded into the jar with recognisable values, and none of those values may appear in what the server renders. The session-cookie name that DOES appear is the positive control, in the same expectation, because an empty payload would satisfy the four absences trivially.
+ * 5. **The rendered payload** — this application's browser-script-inaccessible cookies are seeded into the jar with recognisable values, and none of those values may appear in what the server renders. The session-cookie name that DOES appear is the positive control, in the same expectation, because an empty payload would satisfy the absences trivially.
  * 6. **The job-write round trip** — a failure-path form submission that reaches a real `admin_jobs` insert under the admin's own credentials, WITHOUT reaching a language-model provider.
  *
  * ## Why status codes are never asserted alone
@@ -36,9 +36,9 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 const UNRESOLVABLE_QUESTION_ID = '00000000-0000-4000-8000-00000000dead';
 
 /**
- * The four cookies this application sets `httpOnly`, spelled here rather than imported.
+ * The cookies this application sets `httpOnly`, spelled here rather than imported.
  *
- * `apps/frontend/src/lib/cookies/index.ts` is the single declaration, but it reaches for a `$lib` alias that this workspace's loader does not resolve. The copy is not unguarded: the unit spec `apps/frontend/src/routes/admin/(protected)/layout.server.test.ts` pins that map to EXACTLY these four names, so a fifth registered cookie reddens there rather than slipping past here unnoticed.
+ * `apps/frontend/src/lib/cookies/index.ts` is the single declaration of the names, but it does not say which of them are `httpOnly`. The copy is not unguarded: the unit spec `apps/frontend/src/routes/admin/(protected)/layout.server.test.ts` pins that map's names, so a newly registered cookie reddens there rather than slipping past here unnoticed.
  */
 const HTTP_ONLY_COOKIE_NAMES = ['id_token', 'oidc_state', 'oidc_nonce', 'oidc_code_verifier'] as const;
 
@@ -103,7 +103,7 @@ test.describe('admin-access (D10-C11 / D10-C08 / D10-C12)', () => {
     // 3. THE HOOK GATE, ON THE ARM THAT DISCRIMINATES.
     //
     // An authenticated caller asking for the admin LOGIN page must be bounced to the admin home.
-    // `admin/login/+page.server.ts` declares an action and no load, so the login page itself cannot produce this answer — only `appGateHandle`'s `whenAuthenticatedOnLogin` descriptor can. With the admin row deleted from `APP_GATES` this is a 200 on the login page instead.
+    // The load of `admin/login/+page.server.ts` returns no data, so the login page itself cannot produce this answer — only `appGateHandle`'s `whenAuthenticatedOnLogin` descriptor can. With the admin row deleted from `APP_GATES` this is a 200 on the login page instead.
     //
     // `maxRedirects: 0` is what makes the observation the FIRST response rather than wherever the chain settles; the request context is the page's own, so it carries this context's cookies.
     // ---------------------------------------------------------------------
@@ -132,7 +132,7 @@ test.describe('admin-access (D10-C11 / D10-C08 / D10-C12)', () => {
     // ---------------------------------------------------------------------
     // 5. THE RENDERED PAYLOAD — the observation half of the serialisation obligation.
     //
-    // Seed the jar with the four browser-script-inaccessible cookie names carrying values nothing else in this run could produce, then read what the server rendered. Everything a server load returns is serialised into the document and is readable by client JavaScript, so any of these four values appearing there would defeat the `httpOnly` flag outright.
+    // Seed the jar with the browser-script-inaccessible cookie names carrying values nothing else in this run could produce, then read what the server rendered. Everything a server load returns is serialised into the document and is readable by client JavaScript, so any of these values appearing there would defeat the `httpOnly` flag outright.
     // ---------------------------------------------------------------------
     const nonce = `leak-canary-${Date.now()}`;
     await context.addCookies(
@@ -150,7 +150,7 @@ test.describe('admin-access (D10-C11 / D10-C08 / D10-C12)', () => {
     await expect(page).not.toHaveURL(loginAddress);
     const rendered = await page.content();
 
-    // ONE expectation, four absences and one presence. Without the presence half, a payload carrying nothing whatsoever would satisfy `leaked: []` trivially.
+    // ONE expectation, one absence per name and one presence. Without the presence half, a payload carrying nothing whatsoever would satisfy `leaked: []` trivially.
     expect({
       leaked: HTTP_ONLY_COOKIE_NAMES.filter((name) => rendered.includes(`${name}-${nonce}`)),
       sentinelPresent: rendered.includes(sessionCookieName as string)

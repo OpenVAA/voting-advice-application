@@ -18,24 +18,30 @@
  *   - `public bulkImport(data)`
  *   - `public bulkDelete(collections)`
  *   - `public importAnswers(data)`
- *   - `public linkJoinTables(data)`
+ *   - `public linkJoinTables(data)` — the JSONB scoping columns of question categories and questions; the constituency join tables are written by `bulkImport`
  *   - `public ensureProject(projectId?)` — idempotent project + `app_settings` bootstrap
  *   - `public updateAppSettings(partialSettings)` — see usage-policy note above
  *
  * Added by this subclass:
- *   - Auth helpers (private): `safeListUsers`
+ *   - Auth helpers: `listAllUsers` and `findAuthUser` (private), `insertTermsOfUseAcceptance` (protected)
  *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`, `countRowsByPrefix`
  *   - Identity lookups through candidate-editor grants: `candidateIdsForUser`, `userIdForCandidate`
- *   - Auth actions: `setPassword`, `forceRegister`, `forceRegisterAdmin`, `unregisterCandidate`, `sendEmail`, `sendForgotPassword`, `deleteAllTestUsers`
+ *   - Entity grants: `grantEntity`, `revokeEntityGrant`, `entityGrantCountForUser`
+ *   - Account and global grants: `grantAccount`, `grantGlobal`, and the account a project belongs to, `accountIdOfProject`
+ *   - Auth actions: `setPassword`, `acceptTermsOfUse`, `forceRegister`, `forceRegisterUser`, `forceRegisterAdmin`, `unregisterCandidate`, `deleteAllTestUsers`
+ *   - Invitations: `inviteByEmail` (seed one and ask the `account-access` function for a link), `invitationNomination` (a nomination an invitation states, resolved from external ids), `removeInvitations`, `releaseLinkSlot`, and the completion witness of a link request, `openLinkWitness` and `awaitLinkWitness`. Seeding itself is the inherited `createInvitations`
+ *   - Reads of the auth users by prefix or address: `hasAuthUser`, `grantRowsForUser`, `countUsersByEmailPrefix`, `removeUsersByEmailPrefix`. Every read of the auth users in this file, these and the lookups behind the auth actions, pages through all of them and fails when the listing fails
  *
  * Existing call sites `new SupabaseAdminClient()` or `new SupabaseAdminClient(url, key, projectId)` keep the same signature — the constructor below only substitutes a different project default.
  *
  * @example
  * ```ts
  * const client = new SupabaseAdminClient();
- * await client.bulkImport({ elections: [...], candidates: [...] });   // inherited
+ * // inherited; an election's `constituency_groups` and a group's `constituencies` are link keys, and `bulk_import` writes the join tables from them
+ * await client.bulkImport({ elections: [{ external_id: 'el-1', constituency_groups: [{ external_id: 'cg-1' }] }], constituency_groups: [...] });
  * await client.importAnswers({ candidates: [{ answersByExternalId: {...} }] });
- * await client.linkJoinTables({ elections: [...], constituency_groups: [...] });
+ * // writes only the JSONB scoping columns of question categories and questions
+ * await client.linkJoinTables({ questions: [{ external_id: 'qu-1', _elections: { externalId: ['el-1'] } }] });
  * await client.bulkDelete({ elections: { prefix: 'test-' } });
  * await client.forceRegister('cand-1', 'cand-1@example.com', 'pw');    // subclass
  * ```
@@ -128,8 +134,12 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Safely list all auth users, working around the GoTrue NULL column bug.
-   * If listUsers fails, returns an empty array instead of throwing.
+   * List every auth user, page by page, and fail when a page cannot be read.
+   *
+   * The one read of the auth users in this file. A listing that stopped at the first page, or that answered a failure with an empty list, would let "no such user" pass for a user who exists: a negative assertion would pass and a cleanup would remove nobody and report success.
+   *
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if any page fails.
    */
   private async safeListUsers(): Promise<Array<{ id: string; email?: string; [key: string]: unknown }>> {
     const {
@@ -374,7 +384,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * @param email - Email address of the user
    * @param password - New password to set
-   * @throws Error if user not found or update fails
+   * @throws Error if the users cannot be listed, if the user is not found or if the update fails
    */
   async setPassword(email: string, password: string): Promise<void> {
     const users = await this.safeListUsers();
@@ -387,12 +397,13 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Force-register a candidate: create the auth user and write the candidate-editor grant that links it to the candidate record.
+   * Record that a user accepts the terms of use of this client's project.
    *
-   * @param candidateExternalId - External ID of the candidate to register
-   * @param email - Email address for the new auth user
-   * @param password - Password for the new auth user
-   * @throws Error if any step fails
+   * The table holds one row per user and project. The write ignores a row that already exists, so recording the same acceptance again leaves that row as it is and raises nothing. The service role has no caller identity for the column default to read, so the user is stated explicitly.
+   *
+   * @param userId - The auth user the acceptance is recorded for.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if the write fails.
    */
   async forceRegister(candidateExternalId: string, email: string, password: string): Promise<void> {
     // 1. Create auth user with confirmed email
@@ -404,7 +415,6 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     if (createError) throw new Error(`forceRegister: createUser failed: ${createError.message}`);
     const user = createData.user;
 
-    // Wrap the steps after the account exists in try/catch with a compensating `auth.admin.deleteUser` rollback on partial failure. Without it, a failure in step 2 or 3 leaves orphan auth users that surface as "User already exists" errors on subsequent test runs, requiring manual cleanup.
     try {
       // 2. Look up candidate ID by external_id
       const { data: candidate, error: cError } = await this.client
@@ -447,7 +457,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * The shape is `TEST_ADMIN_GRANT` — a member of the application's own `ADMIN_GRANTS`, checked at compile time by that constant's declaration, not a pair picked here. The target is `TEST_PROJECT_ID`, because the RLS predicate guarding `admin_jobs` is `user_can('project', X, …)` and a project grant reaches only its own project. An admin scoped anywhere else logs in fine and then fails the job insert for a reason that has nothing to do with what a test is measuring.
    *
-   * Removal is `unregisterCandidate(email)`, which is misnamed for this use but correct for it: an admin holds no candidate-editor grant, so its terms-of-use reset finds no candidate and resets nothing, and its remaining two steps delete the grant rows by `user_id` and the auth user itself.
+   * Removal is `unregisterCandidate(email)`, which is misnamed for this use but correct for it: it deletes the grant rows by `user_id` and the auth user itself, and reads or writes no candidate row.
    *
    * @param email - Email address for the new admin auth user.
    * @param password - Password for the new admin auth user.
@@ -492,6 +502,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * @param email - The auth user's email (for bank-auth: the identity-derived
    *   placeholder `${sub}@bank-auth.placeholder`).
+   * @throws Error if the users cannot be listed; `undefined` always means that every user was read and none holds the address.
    */
   async getAuthUserByEmail(email: string): Promise<
     | {
@@ -527,7 +538,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * Call it BEFORE `unregisterCandidate`: the grant it reads the candidate through is deleted with the auth user. Idempotent — a no-op when no user or candidate matches.
    *
    * @param placeholderEmail - The `${sub}@bank-auth.placeholder` address the bank-auth auth user was created with.
-   * @throws Error if the lookup or a delete fails.
+   * @throws Error if the users cannot be listed, or if the lookup or a delete fails.
    */
   async deleteBankAuthCandidateBySub(placeholderEmail: string): Promise<void> {
     const users = await this.safeListUsers();
@@ -576,12 +587,14 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Unregister a candidate: reset terms of use on the candidates the user's editor grant names, then delete the user's grants and the auth user.
+   * Unregister a candidate: delete the user's invitations in this client's project, the user's grants and the auth user.
    *
-   * If the user doesn't exist (already unregistered), this is a no-op. The candidate rows themselves are left in place.
+   * If the user doesn't exist (already unregistered), only the invitations addressed to the email are deleted. The candidate rows themselves are left in place. The user's terms-of-use acceptances go with the auth user, by the cascade on `terms_of_use_acceptances.user_id`.
+   *
+   * A failed listing of the users throws before anything is deleted: "no such user" is concluded only from a complete read, so a call that returns has removed the user if one held the address.
    *
    * @param email - Email address of the candidate to unregister
-   * @throws Error if a lookup, the reset or a delete fails.
+   * @throws Error if the users cannot be listed, or if deleting the invitations, the grants or the auth user fails.
    */
   async unregisterCandidate(email: string): Promise<void> {
     // 1. Find auth user by email
@@ -606,7 +619,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     const { error: grantError } = await this.client.from('grants').delete().eq('user_id', user.id);
     if (grantError) throw new Error(`unregisterCandidate: delete grants failed: ${grantError.message}`);
 
-    // 5. Delete auth user
+    // 3. Delete auth user
     const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
     if (deleteError) throw new Error(`unregisterCandidate: deleteUser failed: ${deleteError.message}`);
   }
@@ -711,9 +724,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Delete all test auth users (emails containing 'openvaa.org' or 'test').
    *
-   * Used during teardown to clean up auth state. For each user, reads the candidates its editor grant names and resets their terms of use, then deletes the user's grants and the auth user, in the order `unregisterCandidate` uses and for the same reason.
+   * Used during teardown to clean up auth state. For each user, deletes the user's invitations in this client's project, the user's grants and the auth user, in the order `unregisterCandidate` uses and for the same reason.
    *
-   * @throws Error listing every per-user step that failed, after all users have been processed.
+   * @throws Error if the users cannot be listed, before anything is deleted; or an error listing every per-user step that failed, after all users have been processed.
    */
   async deleteAllTestUsers(): Promise<void> {
     const users = await this.safeListUsers();
