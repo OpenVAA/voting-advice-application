@@ -18,12 +18,42 @@
  */
 
 import { expect } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
+import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
 
 /** Org-matching disclosure mode (mirrors `matching.organizationMatching`). */
 export type OrgMatchingMode = 'none' | 'answersOnly' | 'impute';
+
+/** The key of the sentence the disclosure block shows, which a message with no variant for its method answers with. */
+const ORG_MATCHING_KEY = 'about.organizationMatching.content';
+
+/** The variants of the English party-matching sentence, keyed by their selector, read from the message source rather than copied. */
+const ORG_MATCHING_VARIANTS = (
+  JSON.parse(fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/about.json'), 'utf8')) as {
+    about: { organizationMatching: { content: Array<{ match: Record<string, string> }> } };
+  }
+).about.organizationMatching.content[0].match;
+
+/**
+ * The English sentence a method reaches, reduced to the text a browser shows: the variant whose selector value is the method, otherwise the catch-all.
+ */
+function orgMatchingSentence(mode: OrgMatchingMode): string | undefined {
+  const html = ORG_MATCHING_VARIANTS[`partyMatchingMethod=${mode}`] ?? ORG_MATCHING_VARIANTS['partyMatchingMethod=*'];
+  return html
+    ?.replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 export function createAboutPage(page: Page) {
   /**
@@ -54,9 +84,13 @@ export function createAboutPage(page: Page) {
       const disclosure = page.getByTestId(testIds.voter.about.organizationMatching);
       if (mode === 'none') {
         await expect(disclosure).toBeHidden();
-      } else {
-        await expect(disclosure).toBeVisible();
+        return;
       }
+      await expect(disclosure).toBeVisible();
+      await expect(disclosure).not.toContainText(ORG_MATCHING_KEY);
+      const sentence = orgMatchingSentence(mode);
+      expect(sentence, `the English catalogue has a party-matching sentence for ${mode}`).toBeDefined();
+      await expect(disclosure).toContainText(sentence!);
     }
   };
 }

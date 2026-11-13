@@ -12,7 +12,7 @@
 import { test as teardown } from '@playwright/test';
 import { runTeardownAsserted } from './assertTeardown';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { TEST_CANDIDATE_EMAIL } from '../../utils/testCredentials';
+import { TEST_CANDIDATE_EMAIL, TEST_TERMS_PENDING_CANDIDATE_EMAIL } from '../../utils/testCredentials';
 
 const PREFIX = 'test-e2e-base-';
 
@@ -20,5 +20,6 @@ teardown('delete base dataset', async () => {
   const client = new SupabaseAdminClient();
   // Each call deletes one auth user; the user's grants and terms-of-use acceptance go with them. Neither call reads or writes a candidate row, so their order relative to the row wipe does not matter.
   await client.unregisterCandidate(TEST_CANDIDATE_EMAIL);
+  await client.unregisterCandidate(TEST_TERMS_PENDING_CANDIDATE_EMAIL);
   await runTeardownAsserted(PREFIX, client);
 });

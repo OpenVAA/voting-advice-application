@@ -10,8 +10,15 @@
  */
 
 import { test as setup } from '@playwright/test';
+import { removeRunScopedIdentity } from '../../utils/runScopedIdentity';
+import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { L10N_POSITIVE_CANDIDATE_ADDRESS_PREFIX, L10N_POSITIVE_CANDIDATE_EMAIL } from '../../utils/testCredentials';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
 setup('import perm-localisation-positive dataset', async () => {
+  await removeRunScopedIdentity(new SupabaseAdminClient(), {
+    addressPrefix: L10N_POSITIVE_CANDIDATE_ADDRESS_PREFIX,
+    address: L10N_POSITIVE_CANDIDATE_EMAIL
+  });
   await setupFromTemplate('perm-localisation-positive', { extraTeardownPrefix: ['test-', 'e2e-perm-'] });
 });

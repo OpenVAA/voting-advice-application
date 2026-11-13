@@ -15,15 +15,17 @@ test.describe('perm-per-app-notifications', () => {
     const voterDialog = page.getByRole('dialog').filter({ hasText: '[notif-voter]' });
     await expect(voterDialog).toBeVisible();
     await expect(voterDialog).toContainText('[notif-voter]');
-    await expect(voterDialog).not.toContainText('[notif-cand]');
+    await expect(voterDialog).not.toContainText('[notif-contestant]');
+    await expect(page.getByRole('dialog').filter({ hasText: '[notif-contestant]' })).toHaveCount(0);
   });
 
   test('candidate route shows candidate notification only', async ({ page }) => {
     // reason: candidate-route navigation — out of voter-fixture scope; no voter goToPage applies.
-    await page.goto('/en/candidate');
-    const candidateDialog = page.getByRole('dialog').filter({ hasText: '[notif-cand]' });
+    await page.goto('/en/contestant');
+    const candidateDialog = page.getByRole('dialog').filter({ hasText: '[notif-contestant]' });
     await expect(candidateDialog).toBeVisible();
-    await expect(candidateDialog).toContainText('[notif-cand]');
+    await expect(candidateDialog).toContainText('[notif-contestant]');
     await expect(candidateDialog).not.toContainText('[notif-voter]');
+    await expect(page.getByRole('dialog').filter({ hasText: '[notif-voter]' })).toHaveCount(0);
   });
 });

@@ -32,6 +32,7 @@
 import { expect, test } from '../../fixtures/voter/views';
 import { answerAndAdvanceToResults, walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
+import { awaitAnimationsSettled } from '../../utils/axeScan';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 import type { ViewTransitionLogFixture } from '../../fixtures/voter/viewTransitionLog.fixture';
@@ -104,6 +105,8 @@ test.describe('voter-results-redraw — scroll survival and node identity', () =
     // NO ELECTION-CHANGE CASE HERE, AND THAT IS A DECISION RATHER THAN AN OMISSION. An election change keeps the default scroll-to-top on purpose: switching election replaces the entire list with different content, and landing mid-list in a list the voter has never seen is disorienting. Adding a fourth case to "complete" the matrix would turn a deliberate behaviour into a failure.
 
     await test.step('entity OPEN keeps the scroll offset, and the results list node survives', async () => {
+      // The landing ends with an election selection, and the layout keeps moving after it: the de-selected option and the "select an election first" placeholder slide out above the list, so every card shifts upward until those transitions end. A click on a target that is still moving is retried, and each retry scrolls the target with a different alignment before clicking — a scroll the baseline below would never have seen. Starting from a settled layout means the click needs no retry.
+      await awaitAnimationsSettled(page);
       await scrollDown(page);
 
       // A MID-LIST card, chosen by a caller-supplied indexer so the seed's card names stay out of this lookup. It is far enough down that the explicit scroll-into-view below is doing real work rather than resolving to a no-op — and deliberately NOT the last card, which sits at the document's MAXIMUM scroll offset. At maximum scroll any shrink of the document clamps `scrollY` under the test's feet, and the list container carries `content-visibility: auto`, whose contents the browser is entitled to skip once a modal dialog makes the rest of the document inert, so from a last-card start the offset clamps (e.g. 1464 → 1187). That clamp is a property of the browser's layout under a modal, not of the application's `noScroll` handling, so it is not asserted here; the mid-list start is what keeps this case measuring the thing it names.

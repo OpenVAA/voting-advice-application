@@ -20,6 +20,7 @@
  *
  * **Security.** It listens on `127.0.0.1` alone. It signs with the committed test key pair (`tests/tests/utils/testKeys.ts`) and no other key; no deployment trusts that pair.
  */
+import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import https from 'node:https';
 import { dirname, join } from 'node:path';
@@ -34,6 +35,43 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /** Fixed loopback host the issuer binds to — never a public interface. */
 const BIND_HOST = '127.0.0.1';
 
+/** The issuer every token this server mints carries, and the one the test environment of the application and of `identity-callback` expects. */
+export const MOCK_ISSUER = 'https://127.0.0.1:9443';
+
+/** The audience every token this server mints carries: the client id of the test environment. */
+export const MOCK_AUDIENCE = 'test-client-id';
+
+/** The name of the cookie that selects a test's identity and outcome. */
+export const MOCK_SCENARIO_COOKIE = 'mock_oidc_scenario';
+
+/** The name of the cookie the authorize endpoint sets to the `ui_locales` of the request object it received, URI-encoded. */
+export const MOCK_UI_LOCALES_COOKIE = 'mock_oidc_ui_locales';
+
+/** The value of {@link MOCK_UI_LOCALES_COOKIE} for a request object that carries no `ui_locales`. */
+export const NO_UI_LOCALES = 'none';
+
+/** How the provider answers a selected authorization. */
+export type MockOutcome = 'success' | 'cancel' | 'provider-error' | 'token-error';
+
+/** Who the provider says the user is, and how it answers. */
+export interface MockScenario {
+  sub: string;
+  givenName: string;
+  familyName: string;
+  outcome: MockOutcome;
+}
+
+const MOCK_OUTCOMES: ReadonlyArray<MockOutcome> = Object.freeze(['success', 'cancel', 'provider-error', 'token-error']);
+
+/** The longest value a scenario field may hold. */
+const MAX_FIELD_LENGTH = 128;
+
+/** The longest selector cookie value that is decoded at all. */
+const MAX_SELECTOR_LENGTH = 1024;
+
+/** The code that mints the fixed identity, answered to an authorization without a selector. */
+const FIXED_CODE = 'test-code';
+
 /**
  * The fixed identity: the claims the token endpoint mints for {@link FIXED_CODE}. `sub` is the persistent pseudonym an Idura identity is matched on.
  */
@@ -46,6 +84,74 @@ export const IDURA_CLAIMS: Record<string, string> = {
   country: 'FI',
   identityscheme: 'fitupas'
 };
+
+/**
+ * Encode a scenario as the value of {@link MOCK_SCENARIO_COOKIE}: base64url of its JSON.
+ *
+ * @param scenario - The identity and the outcome.
+ * @returns A cookie value with no character that needs escaping.
+ */
+export function encodeMockScenario(scenario: MockScenario): string {
+  const { sub, givenName, familyName, outcome } = scenario;
+  return Buffer.from(JSON.stringify({ sub, givenName, familyName, outcome }), 'utf8').toString('base64url');
+}
+
+/** Whether a value is a non-empty string no longer than {@link MAX_FIELD_LENGTH}. */
+function isBoundedString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= MAX_FIELD_LENGTH;
+}
+
+/**
+ * Decode a {@link MOCK_SCENARIO_COOKIE} value.
+ *
+ * @param value - The cookie's value as received.
+ * @returns The scenario, or null when the value is not base64url JSON of an object whose four fields are bounded strings with a known outcome.
+ */
+export function decodeMockScenario(value: string): MockScenario | null {
+  if (value.length === 0 || value.length > MAX_SELECTOR_LENGTH || !/^[A-Za-z0-9_-]+$/.test(value)) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
+  } catch {
+    return null;
+  }
+  if (typeof parsed !== 'object' || parsed === null) return null;
+  const { sub, givenName, familyName, outcome } = parsed as Record<string, unknown>;
+  if (!isBoundedString(sub) || !isBoundedString(givenName) || !isBoundedString(familyName)) return null;
+  if (!MOCK_OUTCOMES.includes(outcome as MockOutcome)) return null;
+  return { sub, givenName, familyName, outcome: outcome as MockOutcome };
+}
+
+/**
+ * The claims the token endpoint mints for a scenario: those of {@link IDURA_CLAIMS} with the scenario's subject and names.
+ *
+ * @param scenario - The selected identity.
+ * @returns A claim set of the same keys as {@link IDURA_CLAIMS}.
+ */
+export function mockIdentityClaims(
+  scenario: Pick<MockScenario, 'sub' | 'givenName' | 'familyName'>
+): Record<string, string> {
+  return {
+    ...IDURA_CLAIMS,
+    sub: scenario.sub,
+    given_name: scenario.givenName,
+    family_name: scenario.familyName
+  };
+}
+
+/** The selector a request carries in its own `Cookie` header, or null. */
+function selectorOf(req: IncomingMessage): MockScenario | null {
+  const header = req.headers.cookie;
+  if (!header) return null;
+  for (const part of header.split(';')) {
+    const separator = part.indexOf('=');
+    if (separator < 0) continue;
+    if (part.slice(0, separator).trim() === MOCK_SCENARIO_COOKIE) {
+      return decodeMockScenario(part.slice(separator + 1).trim());
+    }
+  }
+  return null;
+}
 
 /** Options for {@link createMockOidcIssuer}. */
 export interface MockOidcIssuerOptions {
@@ -68,28 +174,35 @@ export interface MockOidcIssuerHandle {
   readonly url: string;
 }
 
-/**
- * Read the inner-JWT iss/aud the token endpoint must align to (Pitfall 4). Read lazily per token request so the values reflect the SvelteKit-server env this issuer was launched alongside. Throws loudly if absent — a silent default would produce a mysterious `invalid_token` callback redirect.
- */
-function tokenIssAud(): { issuer: string; audience: string } {
-  const issuer = process.env.IDENTITY_PROVIDER_ISSUER;
-  const audience = process.env.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
-  if (!issuer || !audience) {
-    throw new Error(
-      'mockOidcIssuer: IDENTITY_PROVIDER_ISSUER and PUBLIC_IDENTITY_PROVIDER_CLIENT_ID must be set ' +
-        'so the synthetic id_token iss/aud match the server verify (Pitfall 4).'
-    );
-  }
-  return { issuer, audience };
-}
-
-/** Read the full request body (used for the token endpoint). */
+/** Read the full request body. */
 async function readBody(req: IncomingMessage): Promise<string> {
   const chunks: Array<Buffer> = [];
   for await (const chunk of req) {
     chunks.push(chunk as Buffer);
   }
   return Buffer.concat(chunks).toString('utf8');
+}
+
+/** A redirect target: the URI with the given parameters appended as its query. */
+function redirectTo(redirectUri: string, parameters: Array<[string, string]>): string {
+  return `${redirectUri}?${parameters.map(([name, value]) => `${name}=${encodeURIComponent(value)}`).join('&')}`;
+}
+
+/**
+ * The `Set-Cookie` value that reports the `ui_locales` of a request object: the claim URI-encoded, or {@link NO_UI_LOCALES} when it is absent, not a string, empty or longer than {@link MAX_FIELD_LENGTH}.
+ *
+ * @param uiLocales - The request object's `ui_locales` claim.
+ * @returns The header value, for this server's origin alone.
+ */
+export function uiLocalesCookie(uiLocales: unknown): string {
+  const value = isBoundedString(uiLocales) ? encodeURIComponent(uiLocales) : NO_UI_LOCALES;
+  return `${MOCK_UI_LOCALES_COOKIE}=${value}; Path=/; Secure; HttpOnly; SameSite=Lax`;
+}
+
+/** Answer with a JSON body. */
+function sendJson(res: ServerResponse, status: number, body: unknown): void {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(body));
 }
 
 /**
@@ -104,6 +217,9 @@ export function createMockOidcIssuer(opts: MockOidcIssuerOptions): MockOidcIssue
   const tlsCert = readFileSync(certPath);
   const tlsKey = readFileSync(keyPath);
 
+  /** Codes issued for a selector, each removed on its first exchange. */
+  const issuedCodes = new Map<string, { claims: Record<string, string>; outcome: MockOutcome }>();
+
   const server = https.createServer({ cert: tlsCert, key: tlsKey }, (req, res) => {
     void handle(req, res);
   });
@@ -116,50 +232,83 @@ export function createMockOidcIssuer(opts: MockOidcIssuerOptions): MockOidcIssue
       if (u.pathname === '/oauth2/authorize') {
         const jarParam = u.searchParams.get('request');
         if (!jarParam) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'missing request (JAR) param' }));
+          sendJson(res, 400, { error: 'missing request (JAR) param' });
           return;
         }
         const jar = jose.decodeJwt(jarParam);
         const redirectUri = String(jar.redirect_uri ?? '');
         const state = String(jar.state ?? '');
         if (!redirectUri) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'JAR missing redirect_uri' }));
+          sendJson(res, 400, { error: 'JAR missing redirect_uri' });
           return;
         }
-        const location = `${redirectUri}?code=test-code&state=${encodeURIComponent(state)}`;
-        res.writeHead(302, { Location: location });
+
+        const scenario = selectorOf(req);
+        let location: string;
+        if (!scenario) {
+          location = redirectTo(redirectUri, [
+            ['code', FIXED_CODE],
+            ['state', state]
+          ]);
+        } else if (scenario.outcome === 'cancel' || scenario.outcome === 'provider-error') {
+          location = redirectTo(redirectUri, [
+            ['error', scenario.outcome === 'cancel' ? 'access_denied' : 'server_error'],
+            ['state', state]
+          ]);
+        } else {
+          const code = randomBytes(24).toString('base64url');
+          issuedCodes.set(code, { claims: mockIdentityClaims(scenario), outcome: scenario.outcome });
+          location = redirectTo(redirectUri, [
+            ['code', code],
+            ['state', state]
+          ]);
+        }
+        res.writeHead(302, { Location: location, 'Set-Cookie': uiLocalesCookie(jar.ui_locales) });
         res.end();
         return;
       }
 
       if (u.pathname === '/oauth2/token' && req.method === 'POST') {
-        await readBody(req); // drain the body; client_assertion accepted without validation
+        const code = new URLSearchParams(await readBody(req)).get('code') ?? '';
+        let claims: Record<string, string>;
+        if (code === FIXED_CODE) {
+          claims = IDURA_CLAIMS;
+        } else {
+          const issued = issuedCodes.get(code);
+          issuedCodes.delete(code);
+          if (!issued || issued.outcome !== 'success') {
+            sendJson(res, 400, { error: 'invalid_grant' });
+            return;
+          }
+          claims = issued.claims;
+        }
         const { sigPriv, encPubJwk } = await getTestKeys();
-        const idToken = await buildTestIdToken(IDURA_CLAIMS, sigPriv, encPubJwk, tokenIssAud());
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ id_token: idToken, token_type: 'Bearer', expires_in: 300 }));
+        const idToken = await buildTestIdToken(claims, sigPriv, encPubJwk, {
+          issuer: MOCK_ISSUER,
+          audience: MOCK_AUDIENCE
+        });
+        sendJson(res, 200, { id_token: idToken, token_type: 'Bearer', expires_in: 300 });
         return;
       }
 
       if (req.method === 'GET' && u.pathname.endsWith('/jwks')) {
         const { sigPubJwk } = await getTestKeys();
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ keys: [sigPubJwk] }));
+        sendJson(res, 200, { keys: [sigPubJwk] });
         return;
       }
 
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'not found', path: u.pathname }));
+      sendJson(res, 404, { error: 'not found', path: u.pathname });
     } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'mock issuer error', detail: String(err) }));
+      sendJson(res, 500, { error: 'mock issuer error', detail: String(err) });
     }
   }
 
   return {
-    url: `https://${BIND_HOST}:${opts.port}`,
+    get url(): string {
+      const address = server.address();
+      if (address && typeof address === 'object') return `https://${address.address}:${address.port}`;
+      return `https://${BIND_HOST}:${opts.port}`;
+    },
     start(): Promise<void> {
       return new Promise<void>((resolve, reject) => {
         server.once('error', reject);

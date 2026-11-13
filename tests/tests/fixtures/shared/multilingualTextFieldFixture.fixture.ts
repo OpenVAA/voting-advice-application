@@ -86,6 +86,13 @@ export function createMultilingualTextField(_page: Page) {
     },
 
     /**
+     * The per-locale field for `locale` inside `scope`, found by its accessible name as `setLocaleValue` finds it. The field exists only while it is rendered: the displayed locale's always, another locale's while the translations are open or the input requires that locale.
+     */
+    localeField(scope: Locator, locale: string): Locator {
+      return scope.getByRole('textbox', { name: localeLabelRegex(locale) });
+    },
+
+    /**
      * Click the toggle to collapse the per-locale fields.
      */
     async closeTranslations(scope: Locator): Promise<void> {
