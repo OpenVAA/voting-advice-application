@@ -8,6 +8,10 @@
  *
  * It is deliberately a SEPARATE, after-the-fact step rather than a block inside `e2e-run.sh`: it can be re-run against any historical run directory without re-running the suite, and a bug here can never change a run's outcome.
  *
+ * A VOID RUN IS NOT A RED RUN. When the host is suspended during a run, `e2e-run.sh` ends it with exit 8 and leaves `VOID-host-suspend.txt` in the run directory. Such a run usually still has a `results.json`, full of interrupted and never-started tests, and its counts are not a verdict about the tree. The marker is therefore carried into both artifacts (`void` in `summary.json`, a `void:` line in `provenance.txt`) and into the console line, so that no reader of the counts can take them for one.
+ *
+ * STATUS 9 IS NOT A GREEN RUN. `e2e-run.sh` prepares the identity provider's test environment before the dev server starts and restores the shared stack at its end. When either fails it exits 9 whatever Playwright reported, and records its own status in `wrapper-exit`, the preparation in `idp-env.txt` and the restore in `restore.txt`. The status and the last line of each record are carried into both artifacts (`wrapperExit` and `identityProvider` in `summary.json`, `wrapper-exit:`, `idp-prepare:` and `restore:` lines in `provenance.txt`) and a status 9 into the console line, so that no reader of the counts can take such a run for a green one.
+ *
  * DID-NOT-RUN IS NOT A SKIP. Playwright reports both as `status: "skipped"`. The discriminator is `results.length`: a test the runner never executed -- because a project it depends on failed -- carries an EMPTY results array and no annotation, while a declaratively skipped test carries a `skip`/`fixme` annotation or a recorded skipped result. Under this project's cardinal E2E rule a did-not-run test counts as a FAILURE, so the ambiguous case (empty results, no annotation) is classified as `didNotRun`, never as `skipped`.
  */
 

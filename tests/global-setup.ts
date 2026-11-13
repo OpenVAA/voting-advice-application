@@ -13,7 +13,7 @@ import type { FullConfig } from '@playwright/test';
  *
  * There is no bypass here by design: no environment variable skips the gate and there is no CI early return. `FRONTEND_PORT` is the legitimate escape hatch — it points the suite at the operator's OWN server on another port, which the gate then verifies rather than trusts.
  *
- * Ordering note: when `PLAYWRIGHT_BANK_AUTH` is set, the `webServer` entry (the mock OIDC issuer) starts BEFORE this hook. So a failing preflight in such a run has already spawned that issuer — Playwright tears it down cleanly, no orphan process, no operator action. Expected, not a leak.
+ * Ordering note: the `webServer` entry (the mock OIDC issuer) starts BEFORE this hook in every run. So a failing preflight has already spawned that issuer — Playwright tears it down cleanly, no orphan process, no operator action. Expected, not a leak.
  */
 /**
  * The attribute the served application publishes its configured project id on, and the placeholder `app.html` declares it with.

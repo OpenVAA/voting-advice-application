@@ -1,7 +1,7 @@
 /**
  * perm-disable-allow-open data-setup project.
  *
- * Mints a per-perm Playwright storage state via real `forceRegister` + real UI login through the candidate-app login form (synthetic tokens fail server-side JWT validation). Consumed by the candidate-side describe block in perm-disable-allow-open.spec.ts. The voter-side describe block does not use storage state.
+ * Mints a per-perm Playwright storage state via real `forceRegister` + a real sign-in on the contestant app's sign-in screen (synthetic tokens fail server-side JWT validation). Consumed by the candidate-side describe block in perm-disable-allow-open.spec.ts. The voter-side describe block does not use storage state.
  *
  * Prefix: 'e2e-perm-no-allowopen-'.
  */
