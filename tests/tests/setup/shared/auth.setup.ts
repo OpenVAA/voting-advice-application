@@ -48,7 +48,7 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
  * The `unregisterCandidate` call ahead of `forceRegister` makes re-runs idempotent: a prior run's auth user would otherwise collide as "User already exists". It is safe with respect to `terms_of_use_accepted` because `data-setup-base` has just deleted and re-inserted the base dataset: deleting the candidate row removed every grant naming it, so the stale auth user's editor grant names no candidate, nothing is reset, and only the user's remaining grants and the orphan auth.users record are removed.
  */
 setup('register + authenticate as base candidate', async ({ page }) => {
-  // Candidate app data loading can be slow; increase timeout
+  // Contestant app data loading can be slow; increase timeout
   setup.setTimeout(TIMEOUTS.testMax);
 
   // Ensure the auth directory exists. `recursive: true` is idempotent: it does NOT throw if the directory already exists (Node fs docs), so no existence check is needed, which also keeps the setup body free of the conditional playwright/no-conditional-in-test forbids.

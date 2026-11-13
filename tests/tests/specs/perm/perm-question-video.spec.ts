@@ -9,7 +9,7 @@
  *       q-cat 3 intro → no video; q5 → video
  *     The question video is rendered by the standalone `Video` component (NOT the hero <figure>); its root carries `class:hidden={!hasContent}`, so the reader asserts VISIBILITY-not-churn (toBeVisible/toBeHidden, never attach/detach — see video.fixture.ts:62-72).
  *
- *  2. CANDIDATE hideVideo slice (authenticated via the storage state minted in setup). With `candidateApp.questions.hideVideo=false` (template default) the q1 question video shows in the candidate editor; re-seeding `hideVideo=true` (perm-singleton re-seed via updateAppSettings) suppresses it for the candidate app — while voters still see it (the voter slice runs under the default hideVideo=false posture).
+ *  2. CANDIDATE hideVideo slice (authenticated via the storage state minted in setup). With `contestantApp.questions.hideVideo=false` (template default) the q1 question video shows in the candidate editor; re-seeding `hideVideo=true` (perm-singleton re-seed via updateAppSettings) suppresses it for the contestant app — while voters still see it (the voter slice runs under the default hideVideo=false posture).
  *
  * ## Navigation note (reactive churn).
  * The questions-intro start and the category-intro start <a> re-render reactively from `voterCtx.selectedQuestionBlocks` (a post-hydration `$state`), so a plain `.click()` detaches mid-click. The category-intro <a> is followed via `dispatchEvent('click')` (churn-robust client-side nav — NOT page.goto, which is a cold/direct entry racing the dataRoot #version-bridge repopulation). The in-question `question-next` button is stable once the question paints.

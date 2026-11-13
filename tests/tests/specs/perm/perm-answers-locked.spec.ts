@@ -1,13 +1,15 @@
 /**
  * answersLocked read-only behaviour across three surfaces:
- *   Surface 1 (UNAUTHENTICATED): /en/candidate login page renders the read-only login info via the login-answers-locked-info testid.
- *   Surface 2 (AUTHENTICATED): /en/candidate/profile renders the candidate-answers-locked-warning Warning + every visible <input>/<textarea>/<select> is disabled.
- *   Surface 3 (AUTHENTICATED): /en/candidate/questions/[questionId] renders the same warning + the question-choices radios are
+ *   Surface 1 (UNAUTHENTICATED): the login screen says that answers are locked and offers sign-in alone, the sign-in screen it leads to says the same, and the registration page and the two screens a registration code leads to each end on that login screen.
+ *   Surface 2 (AUTHENTICATED): /en/contestant/profile renders the contestant-answers-locked-warning note + every visible <input>/<textarea>/<select> is disabled.
+ *   Surface 3 (AUTHENTICATED): /en/contestant/questions/[questionId] renders the same note + the question-choices radios are
  *     disabled (OpinionQuestionInput display-mode → mode !== 'answer').
+ *   The note (AUTHENTICATED): the home, the profile, the questions list and a question page each render the note with the answers-locked reason and exactly one Contact support button.
+ *   A refused save (AUTHENTICATED): a question page opened while answers can be edited, whose answer is saved after answers were locked, says that answers are locked and not that the save failed. The test turns the lock off to open the page and leaves it on, as the dataset sets it.
  *
  * Rigidity contract: every assertion is HARD — no soft assertions, no try/catch around assertion calls, no `.catch` fallbacks on assertion-bearing locators.
  *
- * Selector discipline: testid-driven only. No `t('...')` locale-text matching.
+ * Selector discipline: testid-driven only. No `t('...')` locale-text matching. The login and the sign-in screen are asserted through their page object.
  */
 
 import { expect, test } from '@playwright/test';

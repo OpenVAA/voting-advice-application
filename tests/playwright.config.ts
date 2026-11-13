@@ -113,7 +113,7 @@ for (const [rel, budget] of Object.entries(SOFT_ASSERTION_BUDGETS)) {
  *
  * The guard scans every `*.teardown.ts` file's `const PREFIX = '...'` declaration and throws at config-load time if any two are equal OR one is a string-prefix of another, because a `LIKE '<prefix>%'` scan of the shorter prefix also matches the longer one's rows. A shared prefix is otherwise invisible: the two counts race rather than failing on a fixed value. A comment asking future authors to pick a distinct prefix would be the same non-guard this file's other two checks exist to remove.
  *
- * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no `runTeardownAsserted(` call (e.g. `candidate-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s docblock). A file that DOES call `runTeardownAsserted(` but whose `const PREFIX` this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check fails the same way the orphan-probe guard above prevents).
+ * Deliberately excludes files with no `const PREFIX = '...'` declaration AND no `runTeardownAsserted(` call (e.g. `contestant-journey.teardown.ts`, which performs no prefix-scoped delete — see `assertTeardown.ts`'s docblock). A file that DOES call `runTeardownAsserted(` but whose `const PREFIX` this guard fails to parse is a completeness failure, not a legitimate exclusion — see the `unparsed` check below (an enumeration guard with no completeness check fails the same way the orphan-probe guard above prevents).
  *
  * ENUMERATION SCOPE. Scans all of `TESTS_DIR`, not `TESTS_DIR/setup`, even though all 28 `*.teardown.ts` files live under `setup/` today. The teardown projects' `testMatch` patterns are unanchored regexes (e.g. `/base\.teardown\.ts/`) evaluated against the inherited `testDir` — which is `TESTS_DIR` — so a `*.teardown.ts` added anywhere under it would be PICKED UP AND RUN by Playwright. Scoping the scan to `setup/` would leave exactly that file invisible to the uniqueness check: the same enumeration drift the orphan-probe guard above prevents. Matching the scan to the runner's own scope keeps the two from drifting apart, which a convention ("put teardowns in setup/") would not.
  */
@@ -186,7 +186,7 @@ const BASE_PROJECTS: Array<Project> = [
   // === Shared base auth setup (DEFAULT-ON) ===
   //
   // The specialized projects below depend on `data-setup-base` for their seed.
-  // performance / a11y-smoke / candidate-a11y-scan run by default (opt-OUT via PLAYWRIGHT_NO_*); visual-regression (PLAYWRIGHT_VISUAL) and bank-auth (PLAYWRIGHT_BANK_AUTH) are opt-IN and are excluded from the default run -- see the OPT-IN list in the docblock above and the gate expressions on each project below. `auth-setup` (candidate storageState) also depends on `data-setup-base`, and is declared UNCONDITIONALLY, so the default `yarn test:e2e` DOES run the candidate-login storageState step.
+  // performance / a11y-smoke / contestant-a11y-scan run by default (opt-OUT via PLAYWRIGHT_NO_*); visual-regression (PLAYWRIGHT_VISUAL) is opt-IN and is excluded from the default run -- see the OPT-IN list in the docblock above and the gate expressions on each project below. The identity-provider projects (`bank-auth`, and `contestant-identity-provider` with its setup and teardown) are declared unconditionally and run by default; `tests/scripts/e2e-run.sh` prepares their environment. `auth-setup` (candidate storageState) also depends on `data-setup-base`, and is declared UNCONDITIONALLY, so the default `yarn test:e2e` DOES run the candidate-login storageState step.
   //
   // SOURCE OF TRUTH: the `...(process.env.X ? [...] : [])` gate expression on each project below decides whether it runs, not any prose in this file.
   // If a comment and a gate disagree, the gate is right and the comment is a bug.
@@ -196,13 +196,13 @@ const BASE_PROJECTS: Array<Project> = [
   // visual-regression stays opt-in for a snapshot-portability reason, NOT a blocker: its PNG baselines are Linux/x86_64 captures and only reproduce on the CI runner image (re-baseline procedure in the visual spec's docblock).
   // The CI job that runs it is blocking.
   //
-  // TWO projects consume the candidate storageState: `visual-regression` (opt-in) and `candidate-a11y-scan` (default-on). The second is why `auth-setup` is not gated behind PLAYWRIGHT_VISUAL. `performance`, `a11y-smoke` and `bank-auth` still depend on `data-setup-base` directly, not on auth-setup.
+  // THREE projects consume the candidate storageState: `visual-regression` (opt-in), and `contestant-a11y-scan` and `contestant-entry-phone` (default-on). The default-on readers are why `auth-setup` is not gated behind PLAYWRIGHT_VISUAL. `performance`, `a11y-smoke` and `bank-auth` still depend on `data-setup-base` directly, not on auth-setup.
   //
-  // WHY THIS WIRING AND NOT THE TWO THIS FILE ALREADY WARNS ABOUT. Reaching the candidate `(protected)` routes forces a dependency-graph change, and the comment at the `data-setup-bank-auth-journey` project below shows how easily this graph is reasoned about wrongly. So the choice is MEASURED: six candidate wirings were scored against an instrument transcribed from Playwright's own phase assignment and validated at 0 mismatches over 89 projects against a real run. The two rejected shapes:
+  // WHY THIS WIRING AND NOT THE TWO THIS FILE ALREADY WARNS ABOUT. Reaching the candidate `(protected)` routes forces a dependency-graph change, and the comment at the `data-setup-identity-provider` project below shows how easily this graph is reasoned about wrongly. So the choice is MEASURED: six candidate wirings were scored against an instrument transcribed from Playwright's own phase assignment and validated at 0 mismatches over 89 projects against a real run. The two rejected shapes:
   //   · adding `auth-setup` to `a11y-smoke.dependencies` would make the 16 voter a11y tests depend on a candidate login and cost `a11y-smoke` its 1-setup isolation; · appending the scan to the tail of the perm serial chain would enter as the 55th scheduling phase, after 25 `test-` pre-clears, with the last `app_settings` REPLACE being a perm setup rather than `data-setup-base`.
-  // The wiring below puts the scan in the third scheduling phase alongside `candidate-journey` alone — measured, not predicted: 0 mismatches over 91 scheduled projects.
+  // The wiring below puts the scan in the third scheduling phase alongside `contestant-journey` alone — measured, not predicted: 0 mismatches over 91 scheduled projects.
   //
-  // Auth setup - logs in as candidate, saves storageState (depends on the merged base dataset being seeded). Declared UNCONDITIONALLY: the default-on `candidate-a11y-scan` project below consumes the stored session.
+  // Auth setup - registers two users on the base dataset, logs each in and saves one storageState file per user (depends on the merged base dataset being seeded): the base candidate's user at `STORAGE_STATE`, and a user who has not accepted the terms of use at `TERMS_PENDING_STORAGE_STATE` (declared in `tests/utils/testCredentials.ts`). Declared UNCONDITIONALLY: the default-on `contestant-a11y-scan` project below consumes both stored sessions, `contestant-entry-phone`, which no variable gates, reads the base candidate's session for the password-reset page, and `contestant-terms-gate-phone`, which no variable gates either, is a second reader of the session of the user who has not accepted.
   {
     name: 'auth-setup',
     // ANCHORED, and it has to be. `testMatch` is an unanchored regex tested against the whole path, so an unanchored `/auth\.setup\.ts/` also matches `setup/admin/admin-auth.setup.ts` — MEASURED, not hypothesised: `--list` then collects the admin setup under BOTH this project and `data-setup-admin-auth`, which would write the admin stored session twice, from two projects, at two different points in the schedule (once here, before the perm chain, and once at the chain's tail). Two projects writing one session file is the race this config's own comments warn about, and it has no symptom until it produces a confident wrong answer. The `[\\/]` prefix is what makes `-auth.setup.ts` stop matching while `shared/auth.setup.ts` still does.
@@ -212,7 +212,7 @@ const BASE_PROJECTS: Array<Project> = [
 
   // === Specialized Projects ===
   //
-  // performance / a11y-smoke run BY DEFAULT in `yarn test:e2e`; opt OUT of either with the matching PLAYWRIGHT_NO_* env: `PLAYWRIGHT_NO_PERF=1 yarn test:e2e`, `PLAYWRIGHT_NO_A11Y=1 yarn test:e2e`. visual-regression and bank-auth stay OPT-IN (see the notes above): `PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression`, `PLAYWRIGHT_BANK_AUTH=1 npx playwright test -c tests/playwright.config.ts --project=bank-auth`.
+  // performance / a11y-smoke run BY DEFAULT in `yarn test:e2e`; opt OUT of either with the matching PLAYWRIGHT_NO_* env: `PLAYWRIGHT_NO_PERF=1 yarn test:e2e`, `PLAYWRIGHT_NO_A11Y=1 yarn test:e2e`. visual-regression stays OPT-IN (see the notes above): `PLAYWRIGHT_VISUAL=1 npx playwright test -c tests/playwright.config.ts --project=visual-regression`.
 
   // Visual regression: screenshot comparison for key pages (OPT-IN — see the snapshot-portability note above; the CI job itself is blocking).
   ...(process.env.PLAYWRIGHT_VISUAL
@@ -242,7 +242,7 @@ const BASE_PROJECTS: Array<Project> = [
 
   // Accessibility smoke: WCAG 2.1 AA scan via @axe-core/playwright (default-on; disable with PLAYWRIGHT_NO_A11Y).
   //
-  // The a11y scan family is TWO projects over ONE shared scan core (`tests/tests/utils/axeScan.ts`), split because they need different browser state: `a11y-smoke` runs the public voter routes unauthenticated, while `candidate-a11y-scan` runs the candidate `(protected)` routes with the stored candidate session. A Playwright project selects by directory and filename, so each carries an EXPLICIT `testMatch`.
+  // The a11y scan family is TWO projects over ONE shared scan core (`tests/tests/utils/axeScan.ts`), split because they need different browser state: `a11y-smoke` runs the public voter routes unauthenticated, while `contestant-a11y-scan` runs the candidate `(protected)` routes with the stored candidate session. One `describe` of its spec swaps in the other session `auth-setup` stores, that of a user who has not accepted the terms of use, to scan the terms-of-use view; the project's own `storageState` stays `STORAGE_STATE`. Two more `describe`s swap in the two sessions `data-setup-entity-selection` stores, that of a user who edits several entities and that of a user who edits none, to scan the profile selection screen, the menu's switch item and the "nothing to edit" view; the dependency on that setup exists for those two files alone, and the scans only read them. A Playwright project selects by directory and filename, so each carries an EXPLICIT `testMatch`.
   //
   // The explicit `testMatch` on `a11y-smoke` is not bookkeeping. It declares `testDir: './tests/specs/a11y'` and would otherwise collect the sibling candidate spec and run it WITHOUT the stored session — every candidate route would 307 to the login form, and the scan would report a clean zero about a login page. That is the one direction in which this wiring can be silently wrong AND green.
   ...(process.env.PLAYWRIGHT_NO_A11Y
@@ -278,13 +278,15 @@ const BASE_PROJECTS: Array<Project> = [
       ]
     : []),
 
-  // Bank-auth full-browser journey — the mock-OIDC-issuer round-trip: /candidate/preregister → mock IdP 302 → server exchange+decrypt → authenticated → election/constituency → email+ToU → preregister() → registration-key → set password → logged-in.
+  // The identity-provider specs: the provider's flow walked in a browser against the mock issuer, each test with an identity of its own, from the registration screen through the provider and the callback to the view the account lands on.
   //
-  // OPT-IN (PLAYWRIGHT_BANK_AUTH). It JOINS THE TAIL OF THE PERM SERIAL CHAIN (see `dependencies` below), by explicit operator decision: standing alone would buy a fast isolated gate at the cost of `app_settings` singleton safety, and the singleton wins. An isolated `--project=bank-auth-journey` run therefore pulls the whole chain transitively and takes full-suite time rather than seconds — accepted, because there is no requirement that this journey be runnable quickly in isolation.
+  // DEFAULT-ON. The setup JOINS THE TAIL OF THE PERM SERIAL CHAIN (see `dependencies` below): it seeds its own dataset, under the `e2e-bankauth-idp-` prefix, whose settings REPLACE the stored row whole, and states the candidates' registration row as the identity provider, email and code. `voter-prefs-tracking` is the chain's last leaf, so that REPLACE cannot overlap any other project's. Ordering edges express ORDER, not MUTUAL EXCLUSION, and the `app_settings` JSONB singleton needs the latter — which in this config is spelled "be in the serial chain". The two cheaper-looking alternatives are both measured unsound:
+  //   · `['data-setup-base']` puts this project in the SAME phase as `voter-journey` / `performance` /
+  //     `a11y-smoke` (identical dependency set → identical phase, see
+  //     playwright/lib/runner/tasks.js createPhasesTask), so the REPLACE lands mid-spec in a full run.
+  //   · `['voter-journey', 'contestant-journey']` merely RELOCATES the race: it lands this project in the same phase as `data-setup-perm-1e1cg1co`, the perm chain HEAD, which does the same REPLACE. Do not "fix" it that way.
   //
-  // `submitElection()` / `submitConstituency()` in `candidatePreregisterPage.fixture.ts` select by LABEL, not by position, so a foreign dataset in the DB fails the walk loudly instead of being silently preregistered into. Proven by trace — `check` fires on the `[EL1]` option.
-  //
-  // The setup/teardown FILES these entries point at, and the journey SPEC matched by the `bank-auth-journey` project, all live in this tree.
+  // An isolated `--project=contestant-identity-provider` run therefore pulls the whole chain transitively and takes full-suite time rather than seconds. `data-setup-base` is ordered before this project transitively, so `base.setup`'s sweep of an orphaned `e2e-bankauth-` dataset from an aborted prior run still runs first.
   //
   // The mock OIDC issuer is spawned via the `webServer` entry below (also PLAYWRIGHT_BANK_AUTH-gated). It binds 127.0.0.1-only and serves over HTTPS with a committed self-signed localhost cert — never reachable in the default suite.
   ...(process.env.PLAYWRIGHT_BANK_AUTH
@@ -367,7 +369,7 @@ const BASE_PROJECTS: Array<Project> = [
 
   // cold-entry-dataroot — LEAF. Read-only cold/direct-URL entry regression for the dataRoot #version-bridge alias-indirection staleness. Reads the base dataset read-only (no teardown of its own). `testMatch` is scoped to the cold-entry spec; `voter-journey`'s `testMatch` (/voter-journey\.spec\.ts/) excludes this file, so neither project picks up the other's specs.
   //
-  // The spec is split across TWO projects on the `@cand-session` tag. Its voter cases must run UNAUTHENTICATED — that is what makes them a public-route cold entry — while the candidate case cannot reach `/candidate/questions` at all without a stored session. One project cannot be both, and a `test.use({ storageState })` inside the spec would have to spell the session path a third time, which `STORAGE_STATE`'s own declaration comment above rules out. This is the same split, for the same reason, that the a11y family already makes between `a11y-smoke` and `candidate-a11y-scan`. `grep`/`grepInvert` are complementary over the one tag, so every test in the file belongs to exactly one project and none can be silently orphaned.
+  // The spec is split across TWO projects on the `@contestant-session` tag. Its voter cases must run UNAUTHENTICATED — that is what makes them a public-route cold entry — while the candidate case cannot reach `/contestant/questions` at all without a stored session. One project cannot be both, and a `test.use({ storageState })` inside the spec would have to spell the session path a third time, which `STORAGE_STATE`'s own declaration comment above rules out. This is the same split, for the same reason, that the a11y family already makes between `a11y-smoke` and `contestant-a11y-scan`. `grep`/`grepInvert` are complementary over the one tag, so every test in the file belongs to exactly one project and none can be silently orphaned.
   {
     name: 'cold-entry-dataroot',
     testDir: './tests/specs/voter',
@@ -467,21 +469,39 @@ const BASE_PROJECTS: Array<Project> = [
   // === voter permutations chains ===
   //
   //   - perm specs live under tests/tests/specs/perm/; the voter-app project's testDir is `./tests/specs/voter`, so perm specs are categorically outside its discovery surface.
-  //   - perm-* setups chain SEQUENTIALLY within the perm-* family to prevent app_settings singleton clobbering. The FIRST perm setup (data-setup-perm-1e1cg1co) depends on the journey LEAF specs [voter-journey, candidate-journey] so the whole perm family runs strictly AFTER base + both journeys complete. This is the perm→journey direction, so opt-in `--project` runs never pull the perm family.
+  //   - perm-* setups chain SEQUENTIALLY within the perm-* family to prevent app_settings singleton clobbering. The FIRST perm setup (data-setup-perm-1e1cg1co) depends on the journey LEAF specs [voter-journey, contestant-journey] so the whole perm family runs strictly AFTER base + both journeys complete. This is the perm→journey direction, so opt-in `--project` runs never pull the perm family.
   //   - Each chain teardowns ITS OWN test-perm-<short>- prefix.
   //
   // Sequential chain across the family:
   //   data-setup-perm-1e1cg1co (FIRST — after journey leaves) → data-setup-perm-2e-shared → data-setup-perm-2e-asymmetric → data-setup-perm-startfromcg → data-setup-perm-disjoint-1co → data-setup-perm-disable-election-1co → data-setup-perm-disable-election-2co → data-setup-perm-not-located-2e2cg
 
-  // Variant 1: perm-1e1cg1co (1 test) — FIRST in the perm family, serialized AFTER the journey leaves (voter-journey + candidate-journey).
+  // Variant 1: perm-1e1cg1co (1 test) — FIRST in the perm family, serialized AFTER the journey leaves (voter-journey + contestant-journey).
   //
   // Depends on the journey LEAF specs so the entire perm family runs strictly AFTER base + both journeys have completed. base + perm share the `app_settings` JSONB singleton AND have mutually-destructive preclears (this setup's `extraTeardownPrefix: 'test-'` deletes base `test-e2e-base-%` rows; base setup's `e2e-perm-` preclear deletes perm rows), so without this serialization edge they would interleave and leak elections across datasets. The perm→journey direction (NOT base→perm) keeps opt-in `--project` runs (visual/perf/a11y/bank-auth) pulling only `data-setup-base` (+ auth-setup), never the perm family — base still seeds standalone.
   //
   // `eperm07-term-trigger` is in the anchor too. Several other base leaves sit OUTSIDE it and are fine there because they do not hard-assert settings-dependent UI; this one does, twice — the category-intro page it walks through exists only while `questions.categoryIntros.show` is true, and `voterQuestionsPage.clickStart()` only while `questionsIntro.show` is. A perm setup clobbering the `app_settings` singleton mid-walk would therefore surface inside this suite's permanent regression guard for the shared navigation settle, where it would read as a settle regression rather than as `app_settings` contamination.
   //
-  // `candidate-a11y-scan` is in the anchor too. It scans authenticated candidate surfaces against the `app_settings` singleton as `data-setup-base` left it, so it must finish before the first perm setup REPLACEs that singleton. Without the edge it would still precede the perm family — but only INCIDENTALLY, because the anchor happens to name `candidate-journey`, which happens to share the scan's phase. Naming the scan directly means a later edit that moves `candidate-journey` cannot silently move the perm family ahead of it.
+  // `voter-pageview-only` is in the anchor too. It asserts that only pageviews are sent and that no consent prompt is shown, both of which hold only while the settings row leaves `analytics.trackEvents` off, as `data-setup-base` stores it; a perm setup REPLACEs that row, and the analytics-tracking one turns the setting on. The spec must therefore finish before the first perm setup starts.
+  //
+  // `contestant-a11y-scan` is in the anchor too. It scans authenticated candidate surfaces against the `app_settings` singleton as `data-setup-base` left it, so it must finish before the first perm setup REPLACEs that singleton. Without the edge it would still precede the perm family — but only INCIDENTALLY, because the anchor happens to name `contestant-journey`, which happens to share the scan's phase. Naming the scan directly means a later edit that moves `contestant-journey` cannot silently move the perm family ahead of it.
   //
   // The entry is conditional on the same `PLAYWRIGHT_NO_A11Y` opt-out that declares the project: Playwright rejects a dependency on a project that was never declared, so an unconditional entry would make `PLAYWRIGHT_NO_A11Y=1` fail at config load. That interaction is resolved here with the file's own existing opt-out convention rather than a new mechanism.
+  //
+  // `contestant-entity-selection` is in the anchor too. It asserts UI that depends on the served entity types: the base dataset serves candidates and organizations, so its user is listed three entities, in two groups, and reaches an organization's home, while every perm setup REPLACEs the settings row, all but one of them with a row that serves candidates alone, and the head's `test-` pre-clear deletes the rows the user edits. The spec must therefore finish before the first perm setup starts.
+  //
+  // `contestant-terms-gate-phone` is in the anchor too. The view it opens is served only while the Contestant App is on and the row its user edits exists: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes that row. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-email-registration` is in the anchor too. Its walk needs the candidate the base dataset reserves for it, a settings row that serves candidates and lets them register by email, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the candidate. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-code-registration` is in the anchor too. Its tests need the organization the base dataset reserves for it, a settings row that serves organizations and lets them register with a code, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the organization. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-password-recovery` is in the anchor too. Its tests need the candidate the base dataset reserves for it, a settings row that serves candidates and honours an email invitation for one, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the candidate. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-entry-phone` is in the anchor too. Its screens need the two candidates the base dataset reserves for the entry scans, a settings row that serves candidates, lists the email and the code mode for them and leaves answers unlocked, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the candidates. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `contestant-entry-scan` is in the anchor too. Its scans need the two candidates the base dataset reserves for them, a settings row that serves candidates, lists the email and the code mode for them and leaves answers unlocked, and the Contestant App on: every perm setup REPLACEs the settings row, and the head's `test-` pre-clear deletes the candidates. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
+  //
+  // `admin-account-flows` is in the anchor too. Its walk reads `access.adminApp` and the rest of the settings row `data-setup-base` stores, and every perm setup REPLACEs that row. The spec must therefore finish before the first perm setup starts. Its own dependencies place it in a phase that ends before then; naming it here states the order instead of leaving it to follow from another project's edges.
   {
     name: 'data-setup-perm-1e1cg1co',
     testMatch: /perm-1e1cg1co\.setup\.ts/,
@@ -554,7 +574,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-2e-asymmetric']
   },
 
-  // Variant 4: perm-startfromcg (2 tests) — sequential after perm-2e-asymmetric
+  // Variant 4: perm-startfromcg — a voter's walk and a contestant's nomination editor under "start from the constituency"; its setup stores one contestant session. Sequential after perm-2e-asymmetric
   {
     name: 'data-setup-perm-startfromcg',
     testMatch: /perm-startfromcg\.setup\.ts/,
@@ -669,11 +689,11 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-not-located-2e2cg']
   },
 
-  // === candidate-journey chain ===
+  // === contestant-journey chain ===
   //
-  // candidate-journey setup does not re-seed (see tests/tests/setup/candidate/candidate-journey.setup.ts): it consumes the base data already seeded by `data-setup-base` and runs as a PARALLEL LEAF alongside voter-journey, so neither cascade-skips the other on spec failure. Their teardowns are independent: base.teardown owns the 'test-' row prefix; candidate-journey.teardown owns only the auth.users row created by the spec's registration step.
+  // contestant-journey setup does not re-seed (see tests/tests/setup/contestant/contestant-journey.setup.ts): it consumes the base data already seeded by `data-setup-base` and runs as a PARALLEL LEAF alongside voter-journey, so neither cascade-skips the other on spec failure. Their teardowns are independent: base.teardown owns the 'test-' row prefix; contestant-journey.teardown owns only the auth.users rows created by the spec's registration step.
   //
-  // The setup still guarantees a clean auth.users row for UNREGISTERED_CANDIDATE_EMAIL via idempotent `unregisterCandidate`, so the registration-via-email step lands deterministically.
+  // The setup still guarantees that no auth user holds an address under UNREGISTERED_CANDIDATE_ADDRESS_PREFIX, this run's or an interrupted earlier run's, via idempotent `removeRunScopedIdentity`, so the registration-via-email step lands deterministically.
   //
   // Spec project sets `storageState: { cookies: [], origins: [] }` to start UNAUTHENTICATED — required for the registration-via-email flow.
   {
@@ -702,11 +722,11 @@ const BASE_PROJECTS: Array<Project> = [
 
   // === settings-permutation chains ===
   //
-  // Chained sequentially among themselves (perm-access-disable → perm-per-app-notifications) per the perm-* family precedent. The single perm-access-disable node covers the voter-app, candidate-app and maintenance modes, re-seeding the app_settings singleton per access mode in-spec.
+  // Chained sequentially among themselves (perm-access-disable → perm-per-app-notifications) per the perm-* family precedent. The single perm-access-disable node covers the voter-app, contestant-app and maintenance modes, re-seeding the app_settings singleton per access mode in-spec.
   //
   // Parallel-safety: each perm template uses a distinct externalIdPrefix ('e2e-perm-access-disable-', 'e2e-perm-notif-'), and each setup passes `extraTeardownPrefix: ['test-', 'e2e-perm-']` to pre-clear any residual rows from prior chains still mid-teardown.
 
-  // perm-access-disable (3 tests: voterApp / candidateApp / underMaintenance) — anchored on perm-not-located-2e2cg so the whole perm family is one linear sequence running strictly after the journeys. Single linear ordering eliminates all cross-chain coexistence on the shared single DB + app_settings singleton.
+  // perm-access-disable (3 tests: voterApp / contestantApp / underMaintenance) — anchored on perm-not-located-2e2cg so the whole perm family is one linear sequence running strictly after the journeys. Single linear ordering eliminates all cross-chain coexistence on the shared single DB + app_settings singleton.
   {
     name: 'data-setup-perm-access-disable',
     testMatch: /perm-access-disable\.setup\.ts/,
@@ -812,6 +832,7 @@ const BASE_PROJECTS: Array<Project> = [
   //     → perm-hide-election-tags → perm-hide-category-tags
   //     → perm-disable-allow-open → perm-question-video
   //     → perm-interactive-info → perm-org-matching
+  //     → perm-organization-editing → perm-no-nomination → perm-contestant-nominations
   //     → voter-prefs-tracking (the tail; admin-access follows it)
   // ===================================================================
 
@@ -1092,6 +1113,7 @@ const BASE_PROJECTS: Array<Project> = [
     // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
     retries: 0
   },
+  // voter-prefs-tracking — the default consent mode's analytics specs on the tracking dataset: the tracking spec (`voter-prefs-tracking.spec.ts`: the voter app's usage events and the stored preferences) and the privacy journey (`analytics-privacy.spec.ts`: requests and device state across the voter, Contestant and Admin apps, the pageviews of all three, the sends made as a page is left, and that the interface does not wait for the relay), the Global Privacy Control spec (`analytics-gpc.spec.ts`: no prompt, no send and nothing stored under the signal, with a control without it), and the Contestant App's terms-tracking spec (`contestant/contestant-terms-tracking.spec.ts`: the opt-out box of the terms-of-use view, its accessibility, the choice an acceptance stores and what is sent after it, and the consent control of the Contestant privacy page). The name is kept, because other projects depend on it by name. `testDir` is the specs root, because the files live in two directories, and `testMatch` names each file with its directory. The files run one test at a time each (`fullyParallel: false`). The settings row is only read; the terms-tracking spec writes nothing but its own two auth users, their grants and terms-of-use acceptances on the dataset's two member candidates, which no other file of the project reads.
   {
     name: 'voter-prefs-tracking',
     testDir: './tests/specs/voter',
@@ -1104,7 +1126,7 @@ const BASE_PROJECTS: Array<Project> = [
   // =========================================================================
   // ADMIN APP.
   //
-  // WHY IT JOINS THE TAIL OF THE PERM SERIAL CHAIN. `data-setup-admin-auth` takes the SAME dependency edge `data-setup-bank-auth-journey` takes — `['voter-prefs-tracking']`, the chain's last project — for the same reason recorded there by explicit operator decision: standing alone buys a fast isolated gate at the cost of `app_settings` singleton safety, and the singleton wins. The concrete hazard for THIS spec is `perm-access-disable`, which re-seeds the singleton per sub-test through `access.underMaintenance: true` — under which `routes/admin/+layout.svelte` renders `MaintenancePage` instead of the admin shell and every assertion below would be about a maintenance page. The accepted cost is that an isolated `--project=admin-access` run pulls the whole chain and takes full-suite time rather than seconds. The measurement behind this is in the planning record (see phase 158).
+  // WHY IT JOINS THE TAIL OF THE PERM SERIAL CHAIN. `data-setup-admin-auth` takes the SAME dependency edge `data-setup-identity-provider` takes — `['voter-prefs-tracking']`, the chain's last project — for the same reason: the `app_settings` row is a singleton that several projects replace, and only the serial chain keeps two of them from overlapping, so a fast isolated gate standing alone would not be safe. The concrete hazard for THIS spec is `perm-access-disable`, which re-seeds the singleton per sub-test through `access.underMaintenance: true` — under which `routes/admin/+layout.svelte` renders `MaintenancePage` instead of the admin shell and every assertion below would be about a maintenance page. The accepted cost is that an isolated `--project=admin-access` run pulls the whole chain and takes full-suite time rather than seconds. The measurement behind this is in the planning record (see phase 158).
   //
   // THE EXPLICIT `testMatch` IS NOT BOOKKEEPING — it is the same invariant spelled out on `a11y-smoke` above. `admin-access` declares `testDir: './tests/specs/admin'` and would otherwise collect any sibling spec added to that directory later and run it under the ADMIN storageState; and, symmetrically, a project without the stored session would run the admin spec unauthenticated, every admin route would 307 to the login form, and the run would report a confident clean nothing about a login page. That is the one direction in which this wiring can be silently wrong AND green.
   // =========================================================================
@@ -1142,7 +1164,7 @@ const CLOSED_PROJECT_EXCLUDED_LEAVES: Record<string, string> = {
 /**
  * The terminal closed-project node's dependency list: every leaf of `BASE_PROJECTS`, DERIVED here rather than typed by hand.
  *
- * A leaf is a project that no other project names in `dependencies` and that is not some project's `teardown`. Conditional projects (`PLAYWRIGHT_NO_PERF`, `PLAYWRIGHT_NO_A11Y`, `PLAYWRIGHT_VISUAL`, `PLAYWRIGHT_BANK_AUTH`) are in `BASE_PROJECTS` only when their env gate declared them, so the derived list never names an undeclared project, which Playwright rejects at config load.
+ * A leaf is a project that no other project names in `dependencies` and that is not some project's `teardown`. Conditional projects (`PLAYWRIGHT_NO_PERF`, `PLAYWRIGHT_NO_A11Y`, `PLAYWRIGHT_VISUAL`) are in `BASE_PROJECTS` only when their env gate declared them, so the derived list never names an undeclared project, which Playwright rejects at config load.
  */
 const closedProjectTeardownNames = new Set(BASE_PROJECTS.map((p) => p.teardown).filter((n): n is string => !!n));
 const closedProjectDependedOnNames = new Set(BASE_PROJECTS.flatMap((p) => p.dependencies ?? []));
@@ -1208,13 +1230,25 @@ const CLOSED_PROJECT_TRIO: Array<Project> = [
  * The suite is:
  *
  *   - journey chains: data-setup-base -> voter-journey
- *     + data-setup-base -> data-setup-candidate-journey -> candidate-journey
- *   - perm-* family: a single sequential chain that runs strictly AFTER the journey leaves — its first setup (data-setup-perm-1e1cg1co) depends on [voter-journey, candidate-journey], and every later perm setup chains off the previous perm spec. Each perm setup clobbers the app_settings JSONB singleton, so the family runs serially AND must not interleave with the base/journey chains on the shared single DB. The perm→journey dependency direction keeps opt-in --project runs pulling only base, never the perm family.
- *   - specialized projects that run BY DEFAULT and are opt-OUT via env: performance (disable with PLAYWRIGHT_NO_PERF) and the two-project a11y scan family, a11y-smoke + candidate-a11y-scan (both disabled together with PLAYWRIGHT_NO_A11Y). performance and a11y-smoke depend on `data-setup-base` (e2e/base dataset); candidate-a11y-scan additionally depends on `auth-setup`, because it scans candidate `(protected)` routes.
+ *     + data-setup-base -> data-setup-contestant-journey -> contestant-journey
+ *     + data-setup-base -> data-setup-entity-selection -> contestant-entity-selection (which also waits for auth-setup)
+ *   - perm-* family: a single sequential chain that runs strictly AFTER the journey leaves — its first setup (data-setup-perm-1e1cg1co) depends on [voter-journey, contestant-journey, contestant-entity-selection] among others, and every later perm setup chains off the previous perm spec. Each perm setup clobbers the app_settings JSONB singleton, so the family runs serially AND must not interleave with the base/journey chains on the shared single DB. The perm→journey dependency direction keeps opt-in --project runs pulling only base, never the perm family. Two links also register three users each and store a session for each user, which no other project reads. perm-organization-editing (after perm-org-matching) edits a confirmed organization, an unconfirmed organization and an unconfirmed candidate under its sessions. perm-no-nomination (after perm-organization-editing) edits a candidate and an organization with no nomination and a candidate with one under its own. A third link registers four users: perm-contestant-nominations (after perm-no-nomination, before the analytics setup) defines, changes and removes the nominations of a candidate and of a party under its sessions.
+ *   - specialized projects that run BY DEFAULT and are opt-OUT via env: performance (disable with PLAYWRIGHT_NO_PERF) and the two-project a11y scan family, a11y-smoke + contestant-a11y-scan (both disabled together with PLAYWRIGHT_NO_A11Y). performance and a11y-smoke depend on `data-setup-base` (e2e/base dataset); contestant-a11y-scan additionally depends on `auth-setup`, because it scans candidate `(protected)` routes, and on `data-setup-entity-selection`, because three of its entries read the two sessions that setup stores.
  *   - OPT-IN projects (excluded from the default run): · visual-regression (PLAYWRIGHT_VISUAL) — opt-in because its PNG baselines are Linux/x86_64 captures that only reproduce on the CI runner image, not because it is broken: it is a BLOCKING job in .github/workflows/main.yaml.
- *       · bank-auth (PLAYWRIGHT_BANK_AUTH) — the spec throws at module load without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY and needs the identity-callback Edge Function served.
+ *       · data-setup-analytics-standalone, data-teardown-analytics-standalone, analytics-default-standalone (PLAYWRIGHT_ANALYTICS_STANDALONE) — a short stand-alone form of the tail of the perm chain, for runs that must be repeated quickly and for runs in another consent mode; the config refuses them in a run that does not name its projects.
+ *       · analytics-consent-free (PLAYWRIGHT_ANALYTICS_STANDALONE) — the consent-free spec, run alone with the dev server in consent-free mode, which the wrapper starts from the same environment: `PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<new run name> --project analytics-consent-free`. The wrapper resets the database first, as it does by default.
+ *   - the identity-provider projects, in the default run: bank-auth (depending on `data-setup-base`) calls `identity-callback` directly; data-setup-identity-provider -> contestant-identity-provider (with data-teardown-identity-provider) walks the browser through the mock OIDC issuer the `webServer` entry spawns, at the tail of the perm chain. `tests/scripts/e2e-run.sh` serves `identity-callback` with the identity provider's test environment, gives the dev server the same environment and restores the shared stack afterwards; a server started without that environment fails these specs.
+ *   - auth-service-contract: an API-only project in the default run, with no dependency and no stored session. It observes the running auth service refuse to create a user for an unauthenticated caller.
+ *   - invitation-contract: an API-only project in the default run, depending on `data-setup-base` and with no stored session. It observes the server contract of invitations on the two rows the base dataset reserves for it.
+ *   - invitation-landing: a browser project in the default run, depending on `data-setup-base` and with no stored session. It shows where a claimed project-scope invitation lands its user, creates and removes its own users, and writes on no row of the dataset.
+ *   - contestant-email-registration: a browser project in the default run, depending on `data-setup-base` and with no stored session. It follows an invited candidate from the sign-in screen through a mailed link, the set-password view and the terms of use to the candidate's home, writes on the one candidate the base dataset reserves for it, removes what it wrote, and finishes before the first perm setup starts.
+ *   - contestant-code-registration: a browser project in the default run, depending on `data-setup-base` and with no stored session. It follows an organization invited with a registration code from the registration screen through a mailed link, the set-password view and the terms of use to the organization's home, and shows what the same screens do with a used code and with a code that names nothing. It writes on the one organization the base dataset reserves for it, removes what it wrote, and finishes before the first perm setup starts.
+ *   - contestant-password-recovery: a browser project in the default run, depending on `data-setup-base` and with no stored session. It follows a user who has forgotten their password from the forgot-password page through a mailed recovery link, opened in a browser context that never asked for it, and the password-reset page to the home of the candidate they edit, and shows what the forgot-password page does with an address nobody holds and with an invited address that has no account. It writes on the one candidate the base dataset reserves for it, removes what it wrote, and finishes before the first perm setup starts.
+ *   - admin-account-flows: a browser project in the default run, depending on `data-setup-base` and with no stored session. It follows an invited admin with no password from the mailed sign-in link through the Admin App's set-password view to the Admin home, follows the links the Admin App asks for from its login page, scans its entry screens in both themes, creates and removes its own users, writes on no row of the dataset, and finishes before the first perm setup starts.
+ *   - contestant-entry-scan: a browser project in the default run, depending on `data-setup-base` and with no stored session. It scans eighteen states of the entry screens a visitor with no session meets, each in both themes, and asserts the menu such a visitor is offered. It seeds an open and a used code on the two candidates the base dataset reserves for it, removes what it wrote, and finishes before the first perm setup starts.
+ *   - contestant-terms-gate-phone: a browser project in the default run, depending on `data-setup-base` and `auth-setup`. It holds the terms-of-use view to two phone widths under the stored session of the user who has not accepted, which it only reads, and finishes before the first perm setup starts.
  *
- * `auth-setup` runs IN THE DEFAULT RUN (the second scheduling phase, measured 5.0 s), because the default-on `candidate-a11y-scan` project consumes the candidate session it stores. The wiring's derivation is recorded at the `candidate-a11y-scan` project below.
+ * `auth-setup` runs IN THE DEFAULT RUN (the second scheduling phase, measured 5.0 s), because the default-on `contestant-a11y-scan` project consumes the two sessions it stores. The wiring's derivation is recorded at the `contestant-a11y-scan` project below.
  *
  * See https://playwright.dev/docs/test-global-setup-teardown
  */
@@ -1257,7 +1291,7 @@ export default defineConfig({
    * playwright-core's screenshot comparator (`comparators.js`) computes `maxDiffPixels2 = width × height × maxDiffPixelRatio` and then takes `Math.min(maxDiffPixels, maxDiffPixels2)`, so adding an absolute cap is monotonically strictness-INCREASING — it can never loosen a baseline — and `min(cap, 0.01 × area)` is bounded by `cap` however tall a fullPage capture grows. That bound is the point: under the ratio alone, a page that grows longer silently buys itself more tolerance (1280×3684 → a 47,155 px budget), enough for ~19,500 px of visible damage to pass at 41 % of budget (0.41 % of the image).
    * Derivation of the 200: `cap = max(observed per-baseline run-to-run noise) × 10`, floored at 200, rounded up, and required to stay strictly < 5,000 so it stays ~4× below that ~19,500 px regression. Read the arithmetic honestly: the measured noise was 0 px in all 40 cells (4 baselines × 10 in-container runs at zero tolerance), so `0 × 10 = 0` and THE FLOOR — a constant fixed in advance, not a quantity these runs produced — set this value. What the measurements contribute is the licence to take the floor: a noise floor of exactly 0 gives any positive cap complete headroom, and 200 sits ~83× below the ~16,650 px the same injected regression measures in this suite today.
    * Where the ratio would bind: only on a capture whose `0.01 × area` falls below the cap, i.e.
-   * under ~20,000 px² of area (~140×140). The smallest baseline here, candidate-preview-mobile at 390×924, has a 3,603.6 px ratio budget — still 18× above the cap — so the ratio is DORMANT on all four baselines today and is kept only as a floor for hypothetical very small captures.
+   * under ~20,000 px² of area (~140×140). The smallest baseline here, contestant-preview-mobile at 390×924, has a 3,603.6 px ratio budget — still 18× above the cap — so the ratio is DORMANT on all four baselines today and is kept only as a floor for hypothetical very small captures.
    * `threshold` is pixelmatch's per-pixel colour tolerance, not part of the budget. */
   expect: {
     toHaveScreenshot: {
