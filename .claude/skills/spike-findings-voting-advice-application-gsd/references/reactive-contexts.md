@@ -109,8 +109,8 @@ it has the same `$effect`-only merge shape and the same SSR gap.
 + {appSettings.current.publisher.name}
 
 - import { get } from 'svelte/store';
-- const platform = get(appSettings).analytics?.platform;
-+ const platform = $derived(appSettings.current.analytics?.platform);
+- const trackEvents = get(appSettings).analytics?.trackEvents;
++ const trackEvents = $derived(appSettings.current.analytics?.trackEvents);
 ```
 
 ### Pattern 2 — Mutation-in-place singleton (DataRoot)
@@ -250,7 +250,7 @@ template-auto-subscribe rewrite pass.
 ### Context destructuring rule (CLAUDE.md)
 
 These migrated contexts inherit the same constraint as
-`candidateContext.svelte.ts`. **Reactive accessors must be read via property
+`contestantContext.svelte.ts`. **Reactive accessors must be read via property
 access at the call site**, not destructured into local vars:
 
 ```ts
@@ -276,7 +276,7 @@ See CLAUDE.md "Context Destructuring Rule (Svelte 5)" for the full explanation.
    invokes the getter ONCE at init and binds the captured value. Subsequent
    reads of the local don't re-invoke the getter, so they don't propagate
    dependency invalidation. (Same trap as the production
-   `candidateContext` issue documented in CLAUDE.md.)
+   `contestantContext` issue documented in CLAUDE.md.)
 
 2. **Don't read `instance` from a `$derived` or `$effect` that's supposed to
    track DataRoot updates.** `instance` is intentionally non-reactive. Use

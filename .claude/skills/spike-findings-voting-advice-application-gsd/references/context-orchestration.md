@@ -1,8 +1,8 @@
-# Context Orchestration (voterContext + candidateContext factories)
+# Context Orchestration (voterContext + contestantContext factories)
 
 How to compose `appSettings` (see [[reactive-contexts]] Pattern 1) +
 `dataRoot` (Pattern 2) + answer stores (see [[persistent-rune-stores]]) into
-a rune-native `voterContext` / `candidateContext` factory that mirrors the
+a rune-native `voterContext` / `contestantContext` factory that mirrors the
 production shape — with the **destructure trap** documented in CLAUDE.md
 remaining the only consumer-side caveat. Also captures HMR DX behavior
 (Spike 011) of the orchestrated cascade.
@@ -21,7 +21,7 @@ remaining the only consumer-side caveat. Also captures HMR DX behavior
   `matchStore.value`. Single answer-button click must re-render the matches.
 - **No `svelte/store` imports** in the orchestrator — drops every `fromStore`
   / `Writable<T>` / `toStore()` site from production's
-  `voterContext.svelte.ts` (474 lines) and `candidateContext.svelte.ts`.
+  `voterContext.svelte.ts` (474 lines) and `contestantContext.svelte.ts`.
 - **Producer `$effect`s must use `untrack()` for write-after-read on shared
   `$state`** — same invariant as [[reactive-contexts]] DataRoot producer and
   [[layout-overlay-registry]] overlay registry.
@@ -123,7 +123,7 @@ const { opinionQuestions, matchesCount } = ctx;
 ### Migration delta from production
 
 For each of the 18+ getters in `voterContext.svelte.ts` and 30+ in
-`candidateContext.svelte.ts`, the migration is:
+`contestantContext.svelte.ts`, the migration is:
 
 - Drop `import { fromStore } from 'svelte/store'`.
 - `const appSettingsState = fromStore(appSettings)` → replace with
@@ -219,7 +219,7 @@ Implications:
   proxy is a spike-scope simplification, not the production filter.
 
 - **Production `voterContext` has 18+ reactive accessors;
-  `candidateContext` has 30+.** The migration for each is mechanical (drop
+  `contestantContext` has 30+.** The migration for each is mechanical (drop
   `fromStore`, expose as getter). The accessor list lives in CLAUDE.md
   "Context Destructuring Rule" and is the same list [[consumer-migration-codemod]]
   uses to audit destructure traps.

@@ -46,3 +46,7 @@ it up.**
 Whichever option is taken, remove `public.nominations.created_by` from the census exemption list in
 `36-entity-identity.test.sql` in the same change, so the census then permits no auth user id column at all,
 and observe the census green on the closed tree.
+
+## Update 2026-10-11 — entity users now originate many more rows, so more user ids are readable through the column (Phase 177 close)
+
+Before Phase 177 an entity's user wrote a nomination row only through the placeholder-parent policy. With the nomination editor an entity's editor inserts the entity's **own** nominations (`set_entity_nominations`, under `entity_insert_nominations`) and the parent's row where one is missing, and every such row carries `created_by` = that user. Once an administrator confirms a nomination in a project that is open for voters, the row is readable by `anon` with the column. The exposure this todo describes therefore grows from the few placeholder rows to, in a deployment whose entities define their own nominations, most nomination rows: one auth user id per editor, linkable across that editor's rows. Nothing in Phase 177 changed the column, its grant or the census in `36-entity-identity.test.sql`, which still permits exactly this one column. Read from the schema and the policies; not measured on a seeded project.

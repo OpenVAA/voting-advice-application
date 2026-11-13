@@ -47,3 +47,13 @@ of `@supabase/supabase-js` or `jose` can move between two boots without any repo
 - Held pin: `.planning/todos/pending/2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md`.
 - Dependabot reconciliation (also records this blind spot): `2026-09-03-dependabot-alert-list-is-stale-against-main.md`.
 - Deno functions do not consume the generated types either: `2026-09-03-deno-edge-functions-do-not-consume-supabase-types.md`.
+
+## Phase 180 note (2026-11-13)
+
+Measured on `feat/entity-signup-multi-grant` after phase 180. `apps/supabase/supabase/functions/deno.json` now
+exists, scoped to the functions tree, with no import map (`imports` key absent) and `"lock": false`. So the
+`npm:` imports stay inline in the `index.ts` files, pinned there, and no Deno lockfile exists for `yarn audit:deps`
+to read; transitive npm dependencies of those imports still float at boot. What the audit does see now is the
+checker itself: `deno` 2.9.6 is an npm devDependency of `@openvaa/supabase` (with its `@deno/<platform>` binaries),
+so it is in `yarn.lock`. The blind spot this todo describes is unchanged; option 2 above (a `deno.lock`) was not
+taken (the phase's decisions keep `"lock": false`).
