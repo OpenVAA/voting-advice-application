@@ -12,6 +12,8 @@
  *
  * Not implied = Set or not set as long as not implied.
  * If `startFromConstituencyGroup` is set and both ids can be implied, the Election selector route will redirect to Questions, but we leave the decision to that route.
+ *
+ * The rows are decided by `constituenciesStepOutcome` of `$lib/routes`, the shared module for the order of the selection; this load maps its outcome to the Voter App's routes.
  */
 
 import { staticSettings } from '@openvaa/app-shared';

@@ -7,9 +7,9 @@ This directory contains the SvelteKit route structure for the OpenVAA frontend a
 Locale handling is managed by Paraglide JS via the reroute hook in `src/hooks.ts`. Locale prefixes are added/stripped transparently.
 
 - Voters app routes are in `(voters)/`, with those requiring a selected election and constituency under `(voters)/(located)/`
-- Candidate app routes are in `candidate/`, and the ones requiring a signed-in candidate under `candidate/(protected)/`
+- Contestant app routes are in `contestant/`, and the ones requiring a signed-in user under `contestant/(protected)/`, where the pages of one entity are under `contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/`
 - Admin app routes are in `admin/`, and the ones requiring the `admin` role under `admin/(protected)/`
-- Server endpoints are in `api/` — `api/admin/jobs/**` (job control, each guarded on the `admin` role), `api/auth/**`, `api/oidc/**` (the bank-authentication provider exchange), plus `api/candidate/preregister`, `api/data/[collection]` and `api/feedback`
+- Server endpoints are in `api/` — `api/admin/jobs/**` (job control, each guarded on the `admin` role), `api/auth/**`, `api/oidc/**` (the identity provider's authorize endpoint and its callback, which registers or finds the account), `api/contestant/identity-provider` (the save, resend and acknowledge of the identity provider's gate), plus `api/data/[collection]`, `api/feedback`, `api/health`, `api/diagnostics` and `api/usage`
 
 The only non-route file left directly in this directory is `+error.svelte`. The app
 shell components that used to sit here now live outside the router's namespace, at
@@ -32,7 +32,7 @@ tree, and the candidate auth handler in `src/hooks.server.ts`.
 
 So, when you add a route under a `(protected)` directory, also add a `ROUTE` entry addressing it, or
 the unit suite goes red naming the directory. When you remove one, remove its `ROUTE` entry too. And
-decide route membership from `event.route.id` through `isCandidateRoute` / `isProtectedRoute`, never
+decide route membership from `event.route.id` through `isContestantRoute` / `isProtectedRoute`, never
 from a substring or suffix test on `url.pathname` — a pathname carries the deployment's base path,
 the locale prefix and resolved parameter values, so a substring test misfires under a path prefix
 containing the word. Testing a served URL prefix with `startsWith`, as the handler's API skip does,

@@ -10,8 +10,6 @@ Displays a warning if the selected constituency does not have nominations in all
 
 - `header.showHelp`: Whether the help button is shown in the header.
 - `header.showFeedback`: Whether the feedback button is shown in the header.
-- `analytics.platform`: Affects whether the analytics service is loaded.
-- `analytics.trackEvents`: Affects whether the data consent popup is shown.
 -->
 
 <script lang="ts">

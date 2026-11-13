@@ -33,7 +33,7 @@ export async function load({ data, fetch }) {
 
   // Await all remaining data in parallel
   const [appSettingsData, electionData, constituencyData] = await Promise.all([
-    // Named explicitly, like its two siblings. `_getAppSettings` localizes the candidate-app and voter-app notification `title` and `content`, so a call with no locale rendered those banners against an empty key on every route: `getLocalized` finds no `''` entry, falls back to `'en'`, and — for a column carrying no `en` entry — returns whichever key comes first in the object. CLAUDE.md requires every user-facing string to follow the selected language.
+    // Named explicitly, like its two siblings. `_getAppSettings` localizes the contestant-app and voter-app notification `title` and `content`, so a call with no locale rendered those banners against an empty key on every route: `getLocalized` finds no `''` entry, falls back to `'en'`, and — for a column carrying no `en` entry — returns whichever key comes first in the object. CLAUDE.md requires every user-facing string to follow the selected language.
     dataProvider.getAppSettings({ locale: lang }).catch((e) => e),
     dataProvider.getElectionData({ locale: lang }).catch((e) => e),
     dataProvider.getConstituencyData({ locale: lang }).catch((e) => e)

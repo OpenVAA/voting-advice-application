@@ -9,7 +9,7 @@
  *
  * The reason is written out HERE, in full, rather than referenced: a reader arriving at this file must find it without following a link. The root layout, `routes/+layout.server.ts`, follows the same rule and returns no session at all.
  *
- * `{ userId, expiresAt }` is therefore the whole vocabulary. Adding a member to it — the access token, the refresh token, the user record — is not a widening of a payload, it is a re-disclosure of a credential. `routes/admin/layout.server.test.ts` drives BOTH this load and the Candidate App's — they are byte-identical up to their application name, and a spec pinning only one would let the other drift into a second idiom for one problem — enumerates the returned key set and fails such a member BY NAME, and `scripts/assert-no-session-in-loads.mjs` fails the lint chain if any server load returns the verified-session binding itself.
+ * `{ userId, expiresAt }` is therefore the whole vocabulary. Adding a member to it — the access token, the refresh token, the user record — is not a widening of a payload, it is a re-disclosure of a credential. `routes/admin/layout.server.test.ts` drives BOTH this load and the Contestant App's — they are byte-identical up to their application name, and a spec pinning only one would let the other drift into a second idiom for one problem — enumerates the returned key set and fails such a member BY NAME, and `scripts/assert-no-session-in-loads.mjs` fails the lint chain if any server load returns the verified-session binding itself.
  *
  * ## Why the identifier comes from the VERIFIED user
  *

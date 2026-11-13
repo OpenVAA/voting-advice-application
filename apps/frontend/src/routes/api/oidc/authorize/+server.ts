@@ -1,9 +1,15 @@
 /**
- * Server-side OIDC authorization endpoint.
+ * Server-side OIDC authorization endpoint: starts the identity provider's flow for the entity type the user registers as.
  *
- * Constructs the authorization URL using the active identity provider and returns it to the client. For Idura, this builds a signed JAR (JWT Authorization Request) server-side so that signing keys never reach the browser. For Signicat, this constructs a PKCE authorize URL.
+ * The body is `{ entityType?: string }`; every other key is ignored.
  *
- * If the provider returns `state` and `nonce` values (Idura), they are stored in httpOnly cookies for CSRF and replay protection on callback.
+ * 1. The application settings are read anonymously at request time. A read that fails answers 503 `{ error: 'unavailable' }`.
+ * 2. The type is checked against the registration matrix before anyone is sent to the provider, through `identityProviderEntityType` over `identityProviderEntityTypes`, the function the registration screen reads the types it offers from. A named type must be in that list; an absent one is taken only when the list holds exactly one. Anything else, and every type while answers are locked, answers 403 `{ error: 'mode_not_allowed' }`.
+ * 3. The redirect the provider is given is this endpoint's own origin and the callback's path. For a provider bound by PKCE (Signicat), the verifier and its challenge are generated here and the verifier is kept in an httpOnly cookie, so the browser sends no challenge. Idura's signed request (JAR) is built here too, so its signing keys never reach the browser.
+ * 4. The provider is asked to show its screens in the request's locale, `locals.currentLocale`, as `ui_locales`. The registration screen posts under its own locale's prefix, so that locale is the one the page was shown in.
+ * 5. The provider's `state` and `nonce`, when it returns them (Idura), and the chosen type are set as httpOnly cookies with the flow's attributes, and the answer is `{ authorizeUrl }`.
+ *
+ * The type cookie returns with the provider's redirect and is bound to the flow only by the cookie jar and its lifetime. It selects which type the callback asks for and never authorises: every reader checks the matrix again, and the `identity-callback` function's check is the authority.
  */
 
 import { error, isHttpError, json } from '@sveltejs/kit';

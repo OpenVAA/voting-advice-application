@@ -6,8 +6,15 @@ Displays information about the privacy policy of the app as well as the possible
 
 ### Settings
 
-- `analytics.platform`: Affects the information displayed.
-- `analytics.trackEvents`: Affects the information displayed and whether the `DataConsent` component is shown.
+- `analytics.trackEvents`: Affects whether the `DataConsent` component is shown.
+
+### Analytics
+
+Read from `ctx.analyticsGate.current`:
+
+- `projection.active`: Whether the analytics section is shown.
+- `projection.consentMode`: Which description is shown, `privacy.analytics.content.gated` or `privacy.analytics.content.free`. The page-view count and the Global Privacy Control rule are always shown with it.
+- The `DataConsent` component is shown only when the visitor has a choice to make: the relay is usable (`relayUsable`, so not under Global Privacy Control), `trackEvents` is on and the consent mode is `gated`.
 -->
 
 <script lang="ts">

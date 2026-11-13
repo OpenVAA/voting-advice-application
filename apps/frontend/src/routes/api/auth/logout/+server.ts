@@ -2,7 +2,15 @@ import { json } from '@sveltejs/kit';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 /**
- * An API route for logging out candidates.
+ * Server-side logout endpoint for Supabase auth.
+ *
+ * Calls `signOut` on the server Supabase client so that httpOnly session cookies are cleared via the `setAll` callback in `createSupabaseServerClient`. Client-side `signOut` alone cannot remove httpOnly cookies.
+ *
+ * The scope is deliberately local: this clears the session on this device only and leaves the user's other sessions alone.
+ *
+ * Before the sign-out, `withdrawLogoutCount` expires every count of the logout modal the request carries, so that no count a closed tab left can end a session this browser signs in later; a sign-out that then fails is answered as below.
+ *
+ * A failed sign-out is answered with status 502 and a failure. The auth client may or may not have removed the session by then: it has when the auth service's answer is what failed, and has not when the session could not be read to begin with. So a caller must not take the user for signed out.
  *
  * @returns A json `Response` with a `DataApiActionResult`.
  */

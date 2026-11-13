@@ -13,7 +13,7 @@
 ### Settings
 
 - `access.voterApp`: Whether to show the Voter App.
-- `analytics.trackEvents`: Affects whether the data consent popup is shown.
+- `analytics.trackEvents`: Affects whether the data consent popup is shown, through `shouldShowVoterPrompt` with the analytics projection, the Global Privacy Control signal and the stored consent choice (`ctx.analyticsGate.current`).
 - `header.showHelp`: Whether the help button is shown in the header.
 - `header.showFeedback`: Whether the feedback button is shown in the header.
 - `notifications.voterApp`: The possible notification popup to show.

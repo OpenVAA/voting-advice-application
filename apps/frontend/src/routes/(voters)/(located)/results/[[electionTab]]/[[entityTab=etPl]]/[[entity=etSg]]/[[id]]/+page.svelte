@@ -124,7 +124,7 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
   // Track events
   ////////////////////////////////////////////////////////////////////
 
-  // Drawer-view tracking — fires on drawer open transitions (covers both matched and unmatched entity pools through the `results_ranked_*` / `results_browse_*` event pair).
+  // Drawer-view tracking — fires on drawer open transitions (covers both matched and unmatched entity pools through the `results_ranked_entity` / `results_browse_entity` event pair).
   $effect(() => {
     if (!drawerVisible || !drawerEntity) return;
     const entityType = page.params.entity as EntityType;

@@ -1,21 +1,21 @@
 /**
- * The two admin feature subtrees' own cookie-array server loaders (phase 158, `OB-1`, D10 criteria 8 and 11).
+ * The two admin feature subtrees' own cookie-array server loaders (see phase 158).
  *
  * ## What these loads are for
  *
- * `routes/admin/(protected)/argument-condensation/+layout.ts` and its `question-info` sibling used to take their Supabase client from `await parent()`. `parent()` does not resolve until the ROOT load has finished, and the root load makes four Supabase round-trips, so both feature loads were SERIALISED behind them. Giving each subtree its own `+layout.server.ts` — this spec's subject — lets each universal load build its client from data it has SYNCHRONOUSLY, with no `parent()` await for the client, which is what restores the parallelism. The operator ruled that shape (option `a+`) on 2026-09-01; `routes/(voters)/(located)/+layout.server.ts` is the in-tree analog it was copied from.
+ * `routes/admin/(protected)/argument-condensation/+layout.ts` and its `question-info` sibling build their Supabase client from data they have SYNCHRONOUSLY, with no `parent()` await for the client. `parent()` does not resolve until the ROOT load has finished, and the root load makes four Supabase round-trips, so a client taken from it would SERIALISE both feature loads behind them. Each subtree's own `+layout.server.ts` — this spec's subject — is what supplies that data. `routes/(voters)/(located)/+layout.server.ts` is the in-tree analog of the shape.
  *
  * ## Why this spec exists, and what it would catch
  *
- * Everything a server load returns is serialised into the hydration payload in the HTML body. `cookies.getAll()` yields the request's WHOLE jar, which includes every cookie this application sets `httpOnly: true` — the bank-authentication `id_token`, the two OIDC replay/CSRF guards, and the PKCE companion. Serialising any of those defeats the flag outright. The filter is therefore a data-protection boundary, and this spec is what makes it a checked one.
+ * Everything a server load returns is serialised into the hydration payload in the HTML body. `cookies.getAll()` yields the request's WHOLE jar, which includes every cookie this application sets `httpOnly: true` — the two OIDC replay/CSRF guards, the PKCE companion, the identity provider's entity-type cookie and its arrival marker. Serialising any of those defeats the flag outright. The filter is therefore a data-protection boundary, and this spec is what makes it a checked one.
  *
- * ⚠ AN ABSENCE-ONLY ASSERTION PASSES TRIVIALLY AGAINST AN EMPTY ARRAY, and an empty array is exactly what a broken filter produces — a spelled prefix literal that stopped matching would empty it, `createServerClient` would find no session, and the server-rendered pass would silently go anonymous with no throw, no log and no failing test. Every case below therefore carries its POSITIVE CONTROL inside the same `expect`: the absences and the forwarded array are compared as one object, so a load that returned `[]` fails on the presence half. That vacuity was MEASURED here rather than reasoned about — see the summary's negative control, where stub loads returning `{ supabaseCookies: [] }` passed every absence and failed every presence.
+ * ⚠ AN ABSENCE-ONLY ASSERTION PASSES TRIVIALLY AGAINST AN EMPTY ARRAY, and an empty array is exactly what a broken filter produces — a spelled prefix literal that stopped matching would empty it, `createServerClient` would find no session, and the server-rendered pass would silently go anonymous with no throw, no log and no failing test. Every case below therefore carries its POSITIVE CONTROL inside the same `expect`: the absences and the forwarded array are compared as one object, so a load that returned `[]` fails on the presence half. A stub load returning `{ supabaseCookies: [] }` passes every absence and fails every presence.
  *
  * ## ⚠ Why the prefix is INJECTED rather than read from the real constant
  *
- * MEASURED under this workspace's vitest configuration on 2026-09-02: `SUPABASE_COOKIE_PREFIX` resolves to the three-character `'sb-'` FALLBACK, because `$env/dynamic/public` supplies no `PUBLIC_SUPABASE_URL` in a unit run and `resolveSupabaseCookiePrefix` degrades rather than throwing (it is evaluated at module scope, and a throw there would take the SSR process down at server start). Against that fallback the decoy below — a name that begins with the vendor prefix but is NOT the storage key — genuinely matches, so a spec written against the ambient constant would pass in production and fail here, i.e. it would be environment-dependent. This project treats an intermittently-failing test as a defect, not as a flake to annotate.
+ * Under this workspace's vitest configuration `SUPABASE_COOKIE_PREFIX` resolves to the three-character `'sb-'` FALLBACK, because `$env/dynamic/public` supplies no `PUBLIC_SUPABASE_URL` in a unit run and `resolveSupabaseCookiePrefix` degrades rather than throwing (it is evaluated at module scope, and a throw there would take the SSR process down at server start). Against that fallback the decoy below — a name that begins with the vendor prefix but is NOT the storage key — genuinely matches, so a spec written against the ambient constant would pass in production and fail here, i.e. it would be environment-dependent. This project treats an intermittently-failing test as a defect, not as a flake to annotate.
  *
- * Mocking the module the loads import the constant FROM removes the environment from the question and makes a strictly STRONGER claim: the decoy case now fails unless the load actually reads `SUPABASE_COOKIE_PREFIX` at request time. A load that spelled `'sb-'` as a literal would ignore the injected storage key, forward the decoy, and be caught here — which is the fail-open shape `OB-1` names and the shape the comment-filtered grep in the plan's verify block covers from the other side.
+ * Mocking the module the loads import the constant FROM removes the environment from the question and makes a strictly STRONGER claim: the decoy case now fails unless the load actually reads `SUPABASE_COOKIE_PREFIX` at request time. A load that spelled `'sb-'` as a literal would ignore the injected storage key, forward the decoy, and be caught here: that is the fail-open shape this spec exists for.
  *
  * ## Both loads, from one file
  *
@@ -43,7 +43,7 @@ type FakeEvent = { cookies: { getAll: () => Array<RequestCookie> } };
 type LoadFn = (event: FakeEvent) => Promise<{ supabaseCookies: Array<{ name: string; value: string }> }>;
 
 /**
- * Every cookie name this application CHOOSES, taken from the one registry that declares them rather than spelled here. A fifth registered cookie fails the set assertion below instead of silently escaping the fixture jar.
+ * Every cookie name this application CHOOSES, taken from the one registry that declares them rather than spelled here. A newly registered cookie fails the set assertion below instead of silently escaping the fixture jar.
  */
 const APPLICATION_COOKIE_NAMES = Object.values(COOKIE);
 
@@ -52,7 +52,7 @@ function secretValueFor(name: string): string {
   return `HTTPONLY-SECRET-${name}-MUST-NOT-CROSS`;
 }
 
-/** The four `httpOnly` cookies as they would arrive in a real admin request's jar. */
+/** The application's `httpOnly` cookies as they would arrive in a real admin request's jar. */
 const httpOnlyJarEntries: Array<RequestCookie> = APPLICATION_COOKIE_NAMES.map((name) => ({
   name,
   value: secretValueFor(name),
@@ -107,7 +107,7 @@ describe('the registry this spec derives its forbidden set from', () => {
   });
 
   it('names no cookie any reachable value of the prefix could admit', () => {
-    // `resolveSupabaseCookiePrefix` returns `sb-${…}-auth-token` or, on an unparseable URL, the `'sb-'` fallback. Every value it can produce starts with `sb-`, so no registered application cookie is reachable by the filter under ANY environment — which is why the four absences below are environment-independent even though the decoy case is not.
+    // `resolveSupabaseCookiePrefix` returns `sb-${…}-auth-token` or, on an unparseable URL, the `'sb-'` fallback. Every value it can produce starts with `sb-`, so no registered application cookie is reachable by the filter under ANY environment — which is why the absences below are environment-independent even though the decoy case is not.
     expect(APPLICATION_COOKIE_NAMES.filter((name) => name.startsWith('sb-'))).toEqual([]);
   });
 });

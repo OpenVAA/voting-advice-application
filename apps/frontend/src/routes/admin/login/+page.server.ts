@@ -2,6 +2,12 @@
  * # Admin App login server action
  *
  * A thin wrapper over the shared password-login helper, which owns the sign-in, the session read-back, the claims decode and the grant-shape gate. What stays here is what differs between the two login entry points: the grant-shape set, the redirect target and the log label. The helper is handed THIS request's own auth surface rather than making a client of its own, which is what puts the session cookies on THIS form-action response; a nested API route's `Set-Cookie` headers do not propagate back to the browser, and the redirect to the protected admin home page does not work without them.
+ *
+ * The context also carries the claim of the user's invitations, issued on the same request's client. The helper claims after the sign-in and refreshes the session when a grant was written. It carries the read of the user's grants that reach this project too, so the gate admits an admin grant on this project, on its account or at global scope, and refuses an admin of another project only.
+ *
+ * Once the helper has admitted the session, and before the redirect, the action withdraws every count of the logout modal the request carries, so that no count a closed tab left can end the session it has signed in. A refusal keeps the count: a refused sign-in leaves a session the request already held as it was, and the request hook ends that session at the browser's next request once the count has run out.
+ *
+ * The load brings a client-side navigation to this page to the request hook, and answers why the visitor was sent here when the hook has just ended the session at the end of a logout count.
  */
 
 import { fail, redirect } from '@sveltejs/kit';
