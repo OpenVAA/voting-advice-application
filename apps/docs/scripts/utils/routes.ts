@@ -4,6 +4,7 @@
 import * as fs from 'fs/promises';
 import { glob } from 'glob';
 import * as path from 'path';
+import { normalizeRoutePath } from './links';
 import { COPY_TARGETS } from '../docs-scripts.config';
 
 export interface RouteInfo {
@@ -38,7 +39,7 @@ export async function discoverRoutes(routesDir: string): Promise<Array<RouteInfo
   for (const file of pageFiles) {
     const dir = path.dirname(file);
     // Remove route groups (segments wrapped in parentheses) from the route path E.g., "(content)/about" becomes "/about"
-    const route = dir === '.' ? '/' : normalizeRoute(dir);
+    const route = dir === '.' ? '/' : normalizeRoutePath(dir);
     const fullPath = path.join(routesDir, dir);
 
     // Try to extract title from +page.md
@@ -60,16 +61,6 @@ export async function discoverRoutes(routesDir: string): Promise<Array<RouteInfo
   }
 
   return routes.sort((a, b) => a.route.localeCompare(b.route));
-}
-
-/**
- * Normalize route path by removing layout groups (segments in parentheses) In SvelteKit, folders wrapped in parentheses like (group) don't contribute to the URL E.g., "(content)/about/features" becomes "/about/features"
- */
-function normalizeRoute(dirPath: string): string {
-  const segments = dirPath.split('/').filter(Boolean);
-  // Filter out segments that start and end with parentheses
-  const filteredSegments = segments.filter((segment) => !(segment.startsWith('(') && segment.endsWith(')')));
-  return filteredSegments.length > 0 ? `/${filteredSegments.join('/')}` : '/';
 }
 
 /**
