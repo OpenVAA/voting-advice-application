@@ -45,7 +45,7 @@ A non-exhaustive list of the application features.
 - Using a custom Admin UI (to be added in [`0.2 Akita`](/about/roadmap))
 - Support for a local version with static data (partial: the server-side adapter exists, but the app does not currently read from it; see [Data API and adapters](/developers-guide/frontend/data-api-and-adapters#the-server-side-local-adapter))
   - Data provided as flat json files
-  - Does not support the Candidate App
+  - Does not support the Contestant App
 
 ### Elections and Constituencies
 
@@ -108,7 +108,7 @@ A non-exhaustive list of the application features.
 - Optional real-time display of top results while answering statements (not yet available in the application)
 - Optional statement weighting with configurable weights (supported by the matching algorithm; the application does not yet offer it to voters)
 
-### Candidate application
+### Contestant application
 
 - Full application for candidates with which they can enter their data and opinions
 - Support for multi-lingual input
@@ -118,5 +118,6 @@ A non-exhaustive list of the application features.
 
 - Built-in feedback form
 - Configurable user survey prompt for research purposes
-- Support for Umami analytics with or without detailed events
-  - User consent is asked if detailed events are tracked
+- Optional usage analytics through the application's own endpoint, with the provider chosen by server configuration (a structured server log or PostHog); the browser loads no third-party analytics script
+  - A page-view count without identifiers, and optionally detailed usage events
+  - Consent to detailed events is asked by default; a deployment can be configured to collect without asking, and whether that is permitted is for the deployer to determine

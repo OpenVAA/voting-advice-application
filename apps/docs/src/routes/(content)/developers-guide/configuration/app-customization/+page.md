@@ -3,9 +3,9 @@
 App customization is the publisher's own content, as opposed to settings that change how the app works:
 
 - the publisher's name and logo
-- the front-page poster images of the voter app and the Candidate app
+- the front-page poster images of the voter app and the Contestant app
 - translation overrides
-- the frequently asked questions shown in the Candidate app
+- the frequently asked questions shown in the Contestant app
 
 ## Where it is stored
 
@@ -14,9 +14,9 @@ Each project's customization is one JSON value in the `customization` column of 
 The stored shape is `StoredCustomizationSchema` in [`storedCustomization.schema.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/data/schemas/storedCustomization.schema.ts):
 
 - `publisherName`: a localized string, an object keyed by locale.
-- `publisherLogo`, `poster`, `candPoster`: images, stored as paths in the `public-assets` storage bucket.
+- `publisherLogo`, `poster`, `contestantPoster`: images, stored as paths in the `public-assets` storage bucket.
 - `translationOverrides`: an object from translation key to localized string.
-- `candidateAppFAQ`: a list of `{ question, answer }` entries, each a localized string.
+- `contestantAppFAQ`: a list of `{ question, answer }` entries, each a localized string.
 
 ## How the app reads it
 

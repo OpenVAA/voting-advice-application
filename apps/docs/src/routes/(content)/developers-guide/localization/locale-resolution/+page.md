@@ -31,7 +31,7 @@ After that, code reads the locale with `getLocale()` from `$lib/paraglide/runtim
 appCtx.getRoute.current({ locale: 'fi' });
 ```
 
-For an in-app path that is not a route key, use `localizeAppPath` from `$lib/routes`. See [Routing](/developers-guide/frontend/routing).
+Build in-app links from route keys with `buildRoute` or `getRoute`. See [Routing](/developers-guide/frontend/routing).
 
 ## Switching the locale
 

@@ -16,10 +16,10 @@ It creates:
 - the default account and the default project, id `00000000-0000-0000-0000-000000000001`, open for voters, with an empty app settings row (this is the project `PUBLIC_PROJECT_ID` names in `.env.example`; see [Backend overview](/developers-guide/backend/intro#project-scoping));
 - two test users with the password `password123`, and the grants that give them their authority:
 
-  | Email                    | Grant                                                               | Use                             |
-  | ------------------------ | ------------------------------------------------------------------- | ------------------------------- |
-  | `admin@openvaa.test`     | project `admin` on the default project                              | signing in to the Admin App     |
-  | `candidate@openvaa.test` | entity `editor` on the seeded, confirmed candidate "Test Candidate" | signing in to the Candidate App |
+  | Email                    | Grant                                                               | Use                              |
+  | ------------------------ | ------------------------------------------------------------------- | -------------------------------- |
+  | `admin@openvaa.test`     | project `admin` on the default project                              | signing in to the Admin App      |
+  | `candidate@openvaa.test` | entity `editor` on the seeded, confirmed candidate "Test Candidate" | signing in to the Contestant App |
 
 - local settings: the Storage API address and the local stack's demo service-role key for the storage cleanup triggers (the same for every local Supabase stack), and `behind_cloudflare = true` in `private.deployment_settings`, so that the E2E suite can give each feedback request its own rate-limit bucket.
 
@@ -61,11 +61,13 @@ The built-in templates are the keys of `BUILT_IN_TEMPLATES` in [`packages/dev-se
 
 - **`default`**: a demo election for people working on the app: constituencies, organizations, candidates with portraits, and questions with answers clustered by organization, translated into every supported locale. Its records' `external_id`s start with `seed_`.
 - **`e2e/base`**: the dataset the Playwright specs depend on, in one locale.
-- **`perm-*`** and **`show-feedback-survey`**: small datasets for individual E2E specs, each covering one permutation of the app settings or of the election and constituency layout (for example `perm-1e1cg1co`, `perm-disable-voter-app` and `perm-closed-project`).
+- **`perm-*`** and **`show-feedback-survey`**: small datasets for individual E2E specs, each covering one permutation of the app settings or of the election and constituency layout (for example `perm-1e1cg1co`, `perm-access-disable` and `perm-closed-project`).
 
 ### Custom templates
 
 Pass a path to `--template` to use a template of your own. The package README explains how to write one: [Authoring custom templates](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/dev-seed/README.md#authoring-custom-templates).
+
+A template's app settings are checked against `StoredSettingsSchema`, the schema the application reads them with (see [App settings](/developers-guide/configuration/app-settings)), before they are written. A setting the schema refuses, such as a misspelt key or a registration mode that does not exist, stops the command with an error naming the template and the path of the setting, and no settings row is written.
 
 ### Teardown
 
