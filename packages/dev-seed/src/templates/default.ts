@@ -205,7 +205,7 @@ export const defaultTemplate: Template = {
             hideIfMissingAnswers: { candidate: false }
           },
           // Surface the Alliance entity tab in voter results.
-          // The frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts) shallow-merges by root key, so a value written here REPLACES the whole `results` object from the TS defaults — we MUST mirror the full default shape (cardContents for every entity type listed in `sections`, the popup delays) and only diff `sections` to add 'alliance'. Mirrors the `results` block of `packages/app-shared/src/settings/dynamicSettings.ts`.
+          // `sections` is a list, and the frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts) replaces a list whole, so it names every section and not only 'alliance'. The other members restate the `results` block of `packages/app-shared/src/settings/dynamicSettings.ts` so that the stored row is complete on its own: the voter route loaders merge it over the static settings only, with no shipped dynamic defaults beneath it.
           results: {
             cardContents: {
               candidate: ['submatches'],

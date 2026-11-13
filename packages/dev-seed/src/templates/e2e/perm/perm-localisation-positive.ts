@@ -9,7 +9,7 @@
  *   - q3 (singleChoiceOrdinal + allow_open=true)  — open-answer comment is the multilingual surface
  *   - q4 (singleChoiceOrdinal + allow_open=true + disableMultilingual)
  *
- * The candidate has terms_of_use_accepted set + ENGLISH-ONLY seeded answers to all 4 questions. Finnish answers are AUTHORED BY THE SPEC at runtime via the multilingualTextField fixture's setLocaleValue('fi', ...) calls.
+ * The candidate has ENGLISH-ONLY seeded answers to all 4 questions. Finnish answers are AUTHORED BY THE SPEC at runtime via the multilingualTextField fixture's setLocaleValue('fi', ...) calls.
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-l10n-pos-'` (distinct from every other perm template).
  *
@@ -17,7 +17,7 @@
  *
  * q2 + q4 carry `customData.disableMultilingual = true` as a per-question opt-out: even with locales.length > 1, the multilingual toggle is suppressed on those two questions (QuestionInput.svelte).
  *
- * q3 + q4 require `allow_open: true` because the multilingual surface on the opinion editor is the OPEN-ANSWER COMMENT textarea (`<Input type="textarea-multilingual">` in `routes/candidate/(protected)/questions/[questionId]/+page.svelte`).
+ * q3 + q4 require `allow_open: true` because the multilingual surface on the opinion editor is the OPEN-ANSWER COMMENT textarea (`<Input type="textarea-multilingual">` in `routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/questions/[questionId]/+page.svelte`).
  * Without `allow_open=true` the comment block does not render and the assertions on q3/q4 would target a missing element.
  *
  * The L10N spec depends on:
@@ -116,7 +116,7 @@ export const permLocalizationPositiveTemplate: Template = {
     ]
   },
 
-  // 1 candidate (`ca-1-1a`) with ToU accepted and ENGLISH-ONLY answers to all 4 questions. Finnish answers are AUTHORED at runtime by the spec via multilingualTextField.setLocaleValue('fi', '[fi-answer-qN]') — NOT seeded here. The candidate has NO auth.users row — the spec drives Inbucket registration to obtain an auth identity. The seeded English answers persist to `candidate.answers` via importAnswers and are the baseline for the "English visible" assertions.
+  // 1 candidate (`ca-1-1a`) with ENGLISH-ONLY answers to all 4 questions. Finnish answers are AUTHORED at runtime by the spec via multilingualTextField.setLocaleValue('fi', '[fi-answer-qN]') — NOT seeded here. The candidate has NO auth.users row — the spec drives Inbucket registration to obtain an auth identity. The seeded English answers persist to `candidate.answers` via importAnswers and are the baseline for the "English visible" assertions.
   candidates: {
     count: 0,
     fixed: [

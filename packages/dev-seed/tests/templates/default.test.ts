@@ -4,8 +4,6 @@
  *   - questionsOverride: type mix (18 ordinal + 5 categorical + 1 boolean + 1 number + 1 MC)
  *   - defaultTemplate shape: counts, flags, frontmatter constants
  *   - End-to-end pipeline integration: runPipeline(defaultTemplate, defaultOverrides)
- *   - The anon-RLS precondition (Tests 28/29): every emitted candidate row carries `terms_of_use_accepted`, at the same literal `e2e/base` uses.
- *     This is the fast early-warning tier beside the live anon-client guard in tests/integration/default-template.integration.test.ts — cheap enough to run with no database, so a regression surfaces before the integration job.
  *
  * Pure I/O: no Supabase imports, no `createClient`, no `.rpc`.
  */

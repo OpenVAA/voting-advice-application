@@ -127,7 +127,7 @@ when the canonical base dataset moved under `src/templates/e2e/`, and
 ### `perm-*` and `show-feedback-survey`
 
 Minimal-data settings- and topology-permutation fixtures consumed by the
-Playwright suite — 29 of the 31 built-ins. Each carries its own distinct
+Playwright suite — every built-in other than `default` and `e2e/base`. Each carries its own distinct
 `externalIdPrefix` so per-perm setup and teardown never share a prefix and
 cannot race each other in a parallel run. They are E2E fixtures rather than a
 demo dataset: seed one only when you are reproducing the spec that owns it. The
@@ -146,6 +146,13 @@ against it is caused by the closure, not by the access flag.
 > project (`00000000-0000-0000-0000-000000000001`), the one a local `yarn dev`
 > serves. `yarn db:seed:teardown --prefix e2e-perm-closed-project-` deletes its
 > rows and reopens the project (`open_for_voters = true`).
+
+**`perm-contestant-nominations`** (prefix `e2e-perm-contestant-nominations-`) is the
+dataset on which an entity's editor defines, changes and removes the entity's
+nominations: three elections of three types (`organization_list`,
+`organization_list_and_independents` and `candidate_only`), a candidate and a
+party with no nomination row, a candidate and a party with nominations, and the
+parties and alliances a nomination can stand under.
 
 ## Authoring Custom Templates
 
@@ -172,7 +179,7 @@ const template: Template = {
         external_id: 'election_2026',
         name: { en: 'My Demo Election' },
         election_date: '2026-11-01',
-        election_type: 'organization_list'
+        election_type: 'organization_list_and_independents'
       }
     ]
   },
@@ -291,6 +298,64 @@ in your IDE to see field-level docs. Key top-level fields:
   `organizations`, `alliances`, `factions`, `candidates`, `question_categories`,
   `questions`, `nominations`, `app_settings`, `feedback`.
 
+#### The election type and the nominations it admits
+
+An `elections` row may state `election_type`, one of `organization_list`,
+`organization_list_and_independents`, `candidate_only` and `organization_only`.
+The column's default in the database is
+`organization_list_and_independents`, which is also what the generator writes
+for a synthetic election (`count`) and what the minimal-template helper states.
+
+The type decides which nominations the election admits, and the database
+refuses any other row, the seed writer's included: the import fails with
+`Nomination shape refused: …`.
+
+| `election_type`                      | Admits                                                        |
+| ------------------------------------ | ------------------------------------------------------------- |
+| `organization_list_and_independents` | every entity type; a candidate with or without a parent       |
+| `organization_list`                  | every entity type; a candidate only under a parent nomination |
+| `candidate_only`                     | candidates alone                                              |
+| `organization_only`                  | organizations and alliances                                   |
+
+So a template states an election type its own rows are admitted by: a template
+that seeds an organization's nomination does not state `candidate_only` for that
+election, and one that states `organization_list` gives each candidate's
+nomination a parent, or `requestedParentOrganization` in its `custom_data`.
+[`tests/nominationShapeCensus.builtins.test.ts`](./tests/nominationShapeCensus.builtins.test.ts)
+runs every built-in template through the pipeline and fails, naming the template
+and the row, on a nomination its election's type refuses. A custom template is
+not covered by it and meets the refusal at its import.
+
+#### Scoping a question by entity type
+
+A `questions` or `question_categories` row may state `entity_type`: the list of
+entity types whose entities answer it.
+
+```ts
+questions: {
+  count: 0,
+  fixed: [
+    {
+      external_id: 'q-party-line',
+      type: 'text',
+      name: { en: 'What is the party line on this?' },
+      category: { external_id: 'seed_cat-opinion' },
+      entity_type: ['organization']
+    }
+  ]
+}
+```
+
+- The value is always a list, also for one type. Its members are the database's
+  entity types: `candidate`, `organization`, `faction`, `alliance`.
+- An absent key, `null` and an empty list all address every entity type.
+- The row types refuse a bare string (`entity_type: 'organization'`) at compile
+  time, and the database refuses any member that is not an entity type, naming
+  the table, the row and the member.
+- On a `nominations` row the key is **denied**: the column is generated there
+  from the entity the nomination names, so the seed stops before any write and
+  names the key, the collection and the row.
+
 ## Environment
 
 Requires:
@@ -389,7 +454,7 @@ variable pointing at a hosted instance. Point it back at the local stack
 with `--allow-remote`, or with `DEV_SEED_ALLOW_REMOTE=1` set for that command.
 
 **`Unknown template: 'foo'. Built-in templates: default, e2e/base, perm-1e1cg1co, ...`**
-Either use a known built-in name — the message lists all 30 — or pass a
+Either use a known built-in name — the message lists them all — or pass a
 filesystem path starting with `./`, `/`, or `../` (or a path ending in
 `.ts` / `.js` / `.json`). Note `e2e/base`: a bare `e2e` is the retired name and
 lands here.

@@ -11,7 +11,7 @@
  *
  * `questions.categoryIntros.show = true` (overriding the MINIMAL base default of `false`) so the 3-category intro walk is visible to the voter slice.
  *
- * Candidates fully answer the 5 opinion questions so the candidate-app questions overview (which the candidate `hideVideo` slice drives) is populated.
+ * Candidates fully answer the 5 opinion questions so the contestant-app questions overview (which the candidate `hideVideo` slice drives) is populated.
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-qvid-'`. Row external_ids bare; nested refs prefixed. Its own namespaced dataset; does NOT touch `e2e/base`.
  */
