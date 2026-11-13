@@ -4,6 +4,7 @@
 - Inits AdminContext
 - Sets top bar settings
 - Renders the `Layout` component for the Admin App
+- Shows the message that a sign-out could not be confirmed, while the context holds a failed one, and withdraws it on an entry route or when the session reads as gone
 -->
 
 <script lang="ts">

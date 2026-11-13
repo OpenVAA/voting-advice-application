@@ -2,15 +2,16 @@
 
 # App main layout
 
-- Defines the outer layout for the voter and candidate apps, including the header and main content area.
+- Defines the outer layout for the voter and contestant apps, including the header and main content area.
 - Provides the data used by both apps to the `dataRoot`, which are loaded by `+layout.ts`, and handles other global definitions.
 - Handles opening popups.
-- Loads the analytics service.
+- Starts a page view on every navigation, and flushes analytics on navigation, on the tab becoming hidden and on page hide.
+- Settles the logout modal's count when a document loads or comes back from the back-forward cache, and after every navigation: on the value the server writes once it has signed the browser out, the Contestant App's drafts and both cookies of the count are removed; a fresh document of the tab that held the modal also removes a count still running, which a page of another tab and a restored page still counting leave.
+- Sends analytics only to the application's own relay; it mounts no third-party script.
 
 ### Settings
 
 - `access.underMaintenance`: If `true`, the app will display a maintenance page instead of any content.
-- `analytics.platform`: Affects whether the analytics service is loaded.
 -->
 
 <script lang="ts">
@@ -163,7 +164,8 @@
     });
   });
   onDestroy(() => submitAllEvents());
-  // One hook records the analytics pageview and then resets focus.
+  // One hook starts the analytics view and then resets focus.
+  // The view's route id and parameters are read from `page`, which SvelteKit has already set to the new page when it calls this hook, and not from the navigation's `to`. On the enter navigation, which a document's hydration makes, SvelteKit (2.70.3) reports `to.route.id` as `null` and no `to.params`, so a view started from `to` would leave the first page of every document uncounted, and the events buffered on it would be dropped at its first flush.
   // The focus reset waits for a target that renders after the first frame (the voter question heading does, on a slow host) and is cancelled by the next navigation, so a stale wait never moves focus on a newer page. See `focusNavigationTarget`.
   let cancelPendingFocus: (() => void) | undefined;
   afterNavigate(({ from, to }) => {
@@ -174,7 +176,7 @@
   });
   onDestroy(() => cancelPendingFocus?.());
 
-  // Submit any possible event data if the window is closed or refreshed
+  // The page lifecycle's flush points, registered only while a provider is configured. The tab becoming hidden pauses the view's visible time and flushes; page hide flushes when no hidden event came first; a page restored from the back/forward cache starts a new view.
   $effect(() => {
     if (!appSettings.analytics?.platform) return;
     function handler() {
