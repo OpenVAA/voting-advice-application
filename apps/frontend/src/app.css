@@ -397,25 +397,6 @@
 
   /* Override DaisyUI components here */
 
-  /* Reset font sizes to base */
-  .btn,
-  .input,
-  .textarea,
-  .select {
-    @apply text-md;
-  }
-
-  /**
-   * To prevent iOS Safari auto-zoom
-   */
-  @supports (-webkit-touch-callout: none) {
-    .input,
-    .textarea,
-    .select {
-      @apply text-[max(16px,_0.9375rem)];
-    }
-  }
-
   /* Style buttons */
   .btn {
     @apply px-10 font-normal;
@@ -455,12 +436,35 @@
   /* Define custom named styles here */
 
   /**
+   * A minimum width of the small container, or of the whole width where that is narrower: a block of short items is kept from shrinking to their width, and still never forces the page wider than its viewport.
+   */
+  .soft-min-w-sm {
+    min-width: min(100%, var(--container-sm));
+  }
+
+  /**
    * Make an element full width with a page's main content canceling out paddings.
    * Be sure to update this if the main content padding changes.
    * TODO: Create dedicated Tailwind spacing terms for content padding.
    */
   .edgetoedge-x {
     @apply -ml-safelgl -mr-safelgr pl-safelgl pr-safelgr match-w-xl:mx-0 match-w-xl:w-full match-w-xl:rounded-sm w-screen;
+  }
+
+  /**
+   * Buttons and form controls set their text at the body's size. daisyUI 5 sizes `.btn`, `.input`, `.textarea` and `.select` in its nested `@layer utilities { @layer daisyui.l1.l2.l3 }`, and its size variants (`.btn-sm`, `.input-sm`, `.select-sm`) lower that size further, so a rule in `@layer components` never wins; this un-sublayered rule in the same `utilities` layer wins by cascade order. `:where()` gives it no specificity, so a text size utility named on the element still wins.
+   */
+  :where(.btn, .input, .textarea, .select) {
+    @apply text-md;
+  }
+
+  /**
+   * iOS Safari zooms the page when a field whose text is smaller than 16px takes focus, so on iOS the form controls' text is at least 16px.
+   */
+  @supports (-webkit-touch-callout: none) {
+    :where(.input, .textarea, .select) {
+      @apply text-[max(16px,_0.9375rem)];
+    }
   }
 
   /**
@@ -472,5 +476,6 @@
    */
   .label {
     color: inherit;
+    white-space: normal;
   }
 }

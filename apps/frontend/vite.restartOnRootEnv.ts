@@ -1,6 +1,9 @@
 import { resolve } from 'node:path';
 import type { Plugin } from 'vite';
 
+/** How long the plugin waits after the last event on the file before it restarts, so the events of one save give one restart. */
+export const RESTART_DEBOUNCE_MS = 200;
+
 /**
  * A dev-server plugin that restarts Vite when the repo-root `.env` is changed, created or deleted.
  *
@@ -17,11 +20,15 @@ export function restartOnRootEnv(repoRoot: string): Plugin {
     apply: 'serve',
     configureServer(server) {
       server.watcher.add(envFile);
+      let pending: ReturnType<typeof setTimeout> | undefined;
       function restartIfRootEnv(file: string): void {
-        if (resolve(file) === envFile) void server.restart();
+        if (resolve(file) !== envFile) return;
+        clearTimeout(pending);
+        pending = setTimeout(() => void server.restart(), RESTART_DEBOUNCE_MS);
       }
       server.watcher.on('change', restartIfRootEnv);
       server.watcher.on('add', restartIfRootEnv);
+      server.watcher.on('unlink', restartIfRootEnv);
     }
   };
 }
