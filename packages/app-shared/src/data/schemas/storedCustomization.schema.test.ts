@@ -1,7 +1,7 @@
 /**
  * `StoredCustomizationSchema` — the stored shape of the `app_settings.customization` JSONB column.
  *
- * Covers the `{}` case both the column default and the provider's `PGRST116` branch produce, the four measured stored-vs-application divergences, and one unknown-key rejection per nesting level: top level, inside an image, and inside a `candidateAppFAQ` entry.
+ * Covers the `{}` case both the column default and the provider's `PGRST116` branch produce, the four measured stored-vs-application divergences, and one unknown-key rejection per nesting level: top level, inside an image, and inside a `contestantAppFAQ` entry.
  */
 
 import { describe, expect, it } from 'vitest';
