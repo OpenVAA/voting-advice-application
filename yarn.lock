@@ -551,6 +551,48 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@deno/darwin-arm64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@deno/darwin-arm64@npm:2.9.6"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@deno/darwin-x64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@deno/darwin-x64@npm:2.9.6"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@deno/linux-arm64-glibc@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@deno/linux-arm64-glibc@npm:2.9.6"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@deno/linux-x64-glibc@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@deno/linux-x64-glibc@npm:2.9.6"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@deno/win32-arm64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@deno/win32-arm64@npm:2.9.6"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@deno/win32-x64@npm:2.9.6":
+  version: 2.9.6
+  resolution: "@deno/win32-x64@npm:2.9.6"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
 "@ecies/ciphers@npm:^0.2.6":
   version: 0.2.6
   resolution: "@ecies/ciphers@npm:0.2.6"
@@ -1415,6 +1457,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@openvaa/app-shared@workspace:packages/app-shared"
   dependencies:
+    "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     tsup: "catalog:"
@@ -1439,6 +1482,7 @@ __metadata:
     typescript: "catalog:"
     vite: "catalog:"
     vitest: "catalog:"
+    zod: "catalog:"
   languageName: unknown
   linkType: soft
 
@@ -1517,7 +1561,6 @@ __metadata:
     "@vitest/browser-playwright": "catalog:"
     daisyui: "catalog:"
     eslint: "catalog:"
-    eslint-config-prettier: "catalog:"
     eslint-plugin-svelte: "catalog:"
     glob: "npm:^13.0.6"
     mdsvex: "npm:^0.12.6"
@@ -1637,6 +1680,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@openvaa/question-info@workspace:packages/question-info"
   dependencies:
+    "@openvaa/app-shared": "workspace:^"
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/llm": "workspace:^"
@@ -1683,6 +1727,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@openvaa/supabase@workspace:apps/supabase"
   dependencies:
+    deno: "npm:2.9.6"
     jose: "npm:^6.2.1"
     supabase: "catalog:"
     vite: "catalog:"
@@ -3979,6 +4024,35 @@ __metadata:
   version: 4.3.1
   resolution: "deepmerge@npm:4.3.1"
   checksum: 10c0/e53481aaf1aa2c4082b5342be6b6d8ad9dfe387bc92ce197a66dea08bd4265904a087e75e464f14d1347cf2ac8afe1e4c16b266e0561cc5df29382d3c5f80044
+  languageName: node
+  linkType: hard
+
+"deno@npm:2.9.6":
+  version: 2.9.6
+  resolution: "deno@npm:2.9.6"
+  dependencies:
+    "@deno/darwin-arm64": "npm:2.9.6"
+    "@deno/darwin-x64": "npm:2.9.6"
+    "@deno/linux-arm64-glibc": "npm:2.9.6"
+    "@deno/linux-x64-glibc": "npm:2.9.6"
+    "@deno/win32-arm64": "npm:2.9.6"
+    "@deno/win32-x64": "npm:2.9.6"
+  dependenciesMeta:
+    "@deno/darwin-arm64":
+      optional: true
+    "@deno/darwin-x64":
+      optional: true
+    "@deno/linux-arm64-glibc":
+      optional: true
+    "@deno/linux-x64-glibc":
+      optional: true
+    "@deno/win32-arm64":
+      optional: true
+    "@deno/win32-x64":
+      optional: true
+  bin:
+    deno: bin.cjs
+  checksum: 10c0/24e36cebc01d88646ba971ff61a28a3df70c37cd1134c9f97316dc7ce0df1650c5fb554310b1f992301aa08cce39e11db5314d723433605416131533002c3064
   languageName: node
   linkType: hard
 
@@ -6904,8 +6978,6 @@ __metadata:
     vitest: "catalog:"
   dependenciesMeta:
     esbuild:
-      built: true
-    supabase:
       built: true
     unrs-resolver:
       built: true
