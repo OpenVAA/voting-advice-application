@@ -24,10 +24,14 @@ const config = {
     },
     alias: {
       $types: path.resolve('./src/lib/types'),
-      $candidate: path.resolve('./src/lib/candidate'),
+      $contestant: path.resolve('./src/lib/contestant'),
       $layouts: path.resolve('./src/lib/layouts')
     },
     version: {
+      // The build id. `BUILD_SHA` names the commit the build is made from, and the name reaches the client as `/_app/version.json` and as the `version` export of `$app/environment`.
+      //
+      // The `|| undefined` is load-bearing. An unset Docker build argument arrives as an empty string, and kit accepts an empty string as a name, where `undefined` makes it fall back to a time-based one. Every build would then share one version, and the client's version poll would never see a new deployment.
+      name: process.env.BUILD_SHA || undefined,
       pollInterval: 5 * 60 * 1000
     }
   },
