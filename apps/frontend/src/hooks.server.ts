@@ -73,7 +73,7 @@ const paraglideHandle: Handle = ({ event, resolve }) =>
 /**
  * Application session-gate handler.
  *
- * Redirects a signed-in caller away from a gated application's login page, and a caller with no session away from its `(protected)` routes. The gated applications, the Candidate App and the Admin App, are the rows of `APP_GATES` in `$lib/routes`; this handler loops over that table and names no application itself.
+ * Redirects a signed-in caller away from a gated application's entry routes, the screens a visitor signs in or registers through, and a caller with no session away from its `(protected)` routes. The gated applications, the Contestant App and the Admin App, are the rows of `APP_GATES` in `$lib/routes`; this handler loops over that table and names no application itself.
  *
  * - The session is read only after a row has matched, so public voter pages make no session round trip.
  * - This is a session gate, not a role gate. Whether the signed-in user may act in the application is decided by that application's protected layout and form actions.

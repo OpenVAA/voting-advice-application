@@ -34,7 +34,7 @@ If you see stale module errors after a fresh clone or after a long-running dev s
 
 - `$lib` → `apps/frontend/src/lib`
 - `$types` → `apps/frontend/src/lib/types`
-- `$candidate` → `apps/frontend/src/lib/candidate`
+- `$contestant` → `apps/frontend/src/lib/contestant`
 - `$layouts` → `apps/frontend/src/lib/layouts`
 
 ## Build
