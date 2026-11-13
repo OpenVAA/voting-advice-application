@@ -24,7 +24,7 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   mode="display"
   answer={answers.answers[question.id]}
   otherAnswer={candidate.getAnswer(question)}
-  otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
+  otherLabel={t('contestantApp.common.candidateAnswerLabel')} />
 ```
 -->
 

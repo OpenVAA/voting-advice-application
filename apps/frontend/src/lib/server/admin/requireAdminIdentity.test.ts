@@ -16,7 +16,7 @@ import type { GrantShape } from '$lib/auth/roles';
  *
  * ## Why the fixtures name no role
  *
- * The token claims below are built from `ADMIN_GRANTS` and `CANDIDATE_GRANTS` in `$lib/auth/roles`, the single declaration of those grant shapes, rather than from grant-shape literals. A transcribed literal would keep passing after a rename in the schema the declaration follows.
+ * The token claims below are built from `ADMIN_GRANTS` and `CONTESTANT_GRANTS` in `$lib/auth/roles`, the single declaration of those grant shapes, rather than from grant-shape literals. A transcribed literal would keep passing after a rename in the schema the declaration follows.
  *
  * ## Why `safeGetSession` is transcribed rather than imported
  *

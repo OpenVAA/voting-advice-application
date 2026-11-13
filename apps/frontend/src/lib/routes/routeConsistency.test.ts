@@ -17,13 +17,14 @@ import { isProtectedRoute, PROTECTED_GROUP, ROUTE } from './route';
  *
  * The pattern being defined once was the construction half of that requirement. This file is the proof half: it imports the module AND walks the filesystem AND reads the hook as text, which is why it is a vitest spec and not one of the `scripts/assert-*.mjs` guards. `route.ts` imports only a constant from a dependency-free module, so it loads under the jsdom harness with no framework stub.
  *
- * ## The five checks
+ * ## The six checks
  *
  * - **C1.** Every addressable page directory inside a protected group has at least one `ROUTE` entry that addresses it or something below it. Catches: a new protected route is added and never registered, so the hook still gates it (the predicate is structural) but `buildRoute` cannot address it.
  * - **C2.** Every `ROUTE` value carrying the group segment names a directory that exists on disk. Catches: a `ROUTE` entry that rots after its route is deleted or renamed. Two entries fail this today and are carried in an explicit register below, which is itself asserted so it cannot rot in turn.
  * - **C3.** `isProtectedRoute` answers true for every route id the walk derives and false for a sample of unprotected ids. Catches: the predicate degenerating into a constant, which would make C1 and C2 pass while gating nothing.
  * - **C4.** The application session-gate handler's body does not read `pathname` at all. Catches: the reopening of the subpath-unsafe defect class, where serving the app under a path prefix, or a route parameter whose value happens to contain the word, makes the handler misfire.
  * - **C5.** Every gated application subtree the walk finds has a row in `APP_GATES`, every row claims exactly one such subtree, and the admin row's error-message value is the one the admin protected layout redirects with. Catches: a new application shipping with an auth gate in its route tree and no gate row, which is the shape the Admin App itself had before the table existed — protected in name, ungated by the hook.
+ * - **C6.** Every entry route listed in `APP_GATES` has a `+page.server.ts` that exports a load. Catches: an entry route added without one. A client-side navigation to a page with no server load sends no request, so the gate never sees it and a live session can stand on that entry route. A production client reads this from the build's metadata, while a dev server treats any `+page.server` as having a load, so a dev-server suite cannot meet the case. This check reads each file's text rather than importing its module, because those modules' imports reach server code, and because it has to hold for a route whose file is not yet written.
  *
  * ## What counts as a gated application subtree, and why the voter surface is not one
  *
@@ -35,11 +36,11 @@ import { isProtectedRoute, PROTECTED_GROUP, ROUTE } from './route';
  *
  * ## Correctness invariants, each one a distinct way this file could hand back a false pass
  *
- * 1. **The walk must find something.** An empty protected set makes C1 and C3 vacuous, so the count is asserted to be at least two before either check runs. Two is the measured truth: one group under the candidate app, one under the admin app.
+ * 1. **The walk must find something.** An empty protected set makes C1 and C3 vacuous, so the count is asserted to be at least two before either check runs. Two is the measured truth: one group under the contestant app, one under the admin app.
  * 2. **C4's scan is scoped to the handler body.** The body is extracted by brace matching from the handler's declared identifier.
  * 3. **C4's scan must be proved to have reached real source.** The extracted body is asserted to contain both the `isApiRoute` call and the `isProtectedRoute` call, so a body that came back empty, or that came back from the wrong region of the file, fails loudly instead of passing by finding nothing.
  * 4. **Nothing here anchors to a line or column number.** Every assertion binds to an identifier, a path or a message substring. The anchors into `hooks.server.ts` have drifted repeatedly under unrelated edits; identifiers do not drift.
- * 5. **Prefix comparisons are segment-safe.** A bare `startsWith` would let `/candidate/settings` satisfy a directory called `/candidate/set`. Every prefix test below either matches the whole string or requires a separator immediately after the prefix.
+ * 5. **Prefix comparisons are segment-safe.** A bare `startsWith` would let `/contestant/settings` satisfy a directory called `/contestant/set`. Every prefix test below either matches the whole string or requires a separator immediately after the prefix.
  * 6. **The literal-masking pass used by C4 is deliberately simple and does not model regular-expression literals.** It is safe here only because invariant 3 turns any mis-mask into a loud failure rather than a silent empty scan.
  * 7. **C5's subtree set must be derived, and must be non-empty.** It comes from the same walk C1 and C3 use, so a broken walk fails the shared non-vacuity check rather than making C5 pass by finding no subtrees to check. The non-vacuity assertion for it JOINS the existing block below rather than opening a second one.
  *
@@ -105,7 +106,7 @@ function collectDirectories(absoluteDirectory: string): Array<string> {
  * The SvelteKit route id a directory in the route tree corresponds to.
  *
  * @param absoluteDirectory - An absolute path inside the route tree.
- * @returns The route id, group segments included, e.g. `/candidate/(protected)/profile`.
+ * @returns The route id, group segments included, e.g. `/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/profile`.
  */
 function toRouteId(absoluteDirectory: string): string {
   return `/${path.relative(ROUTE_TREE_ROOT, absoluteDirectory).split(path.sep).join('/')}`;
@@ -114,7 +115,7 @@ function toRouteId(absoluteDirectory: string): string {
 /**
  * The served URL path of a route id, i.e. the id with its route-group segments removed.
  *
- * The normalisation is needed because `ROUTE` addresses the same page in two different shapes. A group-root page is addressed without its group (`/candidate` for `/candidate/(protected)`) while a page below it is addressed with it (`/candidate/(protected)/profile`). Comparing raw ids would report the two group roots as unaddressable, which is false.
+ * The normalisation is needed because `ROUTE` addresses the same page in two different shapes. A group-root page is addressed without its group (`/contestant` for `/contestant/(protected)`) while a page below it is addressed with it (`/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/profile`). Comparing raw ids would report the two group roots as unaddressable, which is false.
  *
  * @param routeId - A SvelteKit route id.
  * @returns The path the route is served at, always beginning with a separator.

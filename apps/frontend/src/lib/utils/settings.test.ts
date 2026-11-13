@@ -7,7 +7,7 @@ import type { DynamicSettings, StaticSettings } from '@openvaa/app-shared';
  *
  * The historical bug: `mergeAppSettings` returned `Object.assign(target, nonNull)`, mutating the shared `staticSettings` module reference and polluting every other context that read it. The fix makes the merge a pure spread `{ ...target, ...nonNull }`. These tests pin that purity.
  *
- * NB: the real `StaticSettings`/`DynamicSettings` are deep objects; the merge is a shallow root-key merge that drops nullish values. We exercise that contract with small representative objects cast to the public types — the behaviour under test (root-key spread + nullish filter + no `target` mutation) is shape-agnostic.
+ * The cases use small representative objects cast to the public types where the shape does not matter, and the shipped `staticSettings` and `dynamicSettings` where a shipped default is the thing asserted.
  */
 describe('mergeAppSettings', () => {
   it('returns a new object equal to { ...target, ...nonNull(additional) }', () => {
@@ -30,9 +30,7 @@ describe('mergeAppSettings', () => {
 
     const result = mergeAppSettings(target, additional);
 
-    // target must be structurally unchanged after the call.
     expect(target).toEqual(targetSnapshot);
-    // and the returned object must be a different reference than target.
     expect(result).not.toBe(target);
   });
 

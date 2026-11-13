@@ -3,7 +3,13 @@
  *
  * Tests the GET handler the identity provider redirects back to. Each provider declares the browser-bound proof its callback requires (`callbackBinding`), and the handler must refuse to exchange a code that arrives without that proof: otherwise an attacker could hand their own authorization code to a victim and sign the victim in as the attacker (login CSRF).
  *
- * The real providers and the real `getActiveProvider` factory drive the route; only their network-facing methods are spied.
+ * Every failure lands on the identity provider's error screen with one code of the closed set, and no value the provider sent reaches the address: its cancel is `cancelled`, any other value `provider_error`.
+ *
+ * After the token is verified the route registers the user: it checks the entity type the flow was started for against the registration matrix again, invokes `identity-callback` with the token, the project and the type and with the server's secret in the credential header, establishes the session from the token the function answers with, leaves the arrival marker and sends the browser to the Contestant App's root. The ID token is never set in a cookie. Every failure of that part is one closed code, and no message the function or the auth service sent reaches the address or a log line.
+ *
+ * Right after it has established the session, the route withdraws every count of the logout modal the request carries, so no count a closed tab left can end that session. A callback that fails before then leaves the count in place.
+ *
+ * The real providers and the real `getActiveProvider` factory drive the route; only their network-facing methods are spied. The data provider the route reads the settings and the project through is replaced, and so is the request's Supabase client.
  *
  * @vitest-environment node
  */
@@ -62,7 +68,7 @@ const INVALID_STATE = `${PREREGISTER}?error=invalid_state`;
  * Build a minimal `RequestEvent` for the GET handler.
  *
  * @param query - The callback query string, without the leading `?`.
- * @param initialCookies - Cookies present on the incoming request.
+ * @param initialCookies - Cookies present on the incoming request, in its `Cookie` header and in its cookies alike.
  */
 function createEvent(query: string, initialCookies: Record<string, string> = {}) {
   const store = new Map(Object.entries(initialCookies));
