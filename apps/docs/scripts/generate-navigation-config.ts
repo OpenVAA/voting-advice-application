@@ -62,7 +62,10 @@ async function main() {
 }
 
 /**
- * Load the current navigation config
+ * Load the current navigation config by importing it, so whatever TypeScript the file holds is read as the compiler reads it.
+ * @param configFile - The config module to read.
+ * @returns The config's `navigation`, or an empty navigation when the file does not exist.
+ * @throws If the file exists but cannot be imported, or exports no `navigation` array, rather than letting the generator overwrite it from the discovered routes alone.
  */
 async function loadCurrentConfig(): Promise<Navigation> {
   try {

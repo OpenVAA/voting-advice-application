@@ -16,7 +16,7 @@ Below, the dynamic App Settings are explained in detail. For more information ab
 
 Every project starts with the default values set in the [dynamicSettings.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.ts) file. A project's own values are stored in the `settings` column of its row in the `app_settings` database table and replace the defaults. There is no settings editor in the Admin App yet, so the values are changed in the database, for example in Supabase Studio or with a data import; your developer can do this for you.
 
-A stored setting replaces the whole top-level group it belongs to. For example, to change only `results.showFeedbackPopup`, store the complete `results` group with its other values too, or they will be lost.
+A stored setting replaces only the default it names. For example, to change `results.showFeedbackPopup`, store that one value: the other values of the `results` group keep their defaults. Two things follow from this. A setting that is a list, such as `results.sections`, is replaced as a whole, so store the complete list. And leaving a setting out never switches a feature off, because the default then applies: store the value that disables it.
 
 The settings and their types are documented in [dynamicSettings.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/dynamicSettings.type.ts). They control the following features.
 
@@ -60,7 +60,7 @@ Settings related to app header styling.
 
 - `dark`: Background colors for the header in dark mode.
   - `bgColor`: Default background color of the header. Default: the theme's `base-300` colour.
-  - `overImgBgColor`: Background color of the header when it's over an image. Default: `transparent`.
+  - `overImgBgColor`: Background color of the header's top bar on a page that sets a header image. The image is drawn below the top bar, in the header. Default: `transparent`.
 - `light`: Background colors for the header in light mode, with the same two settings and defaults.
 - `imgSize`: The size of the background image in the header. E.g. `cover`, `contain`, or specific sizes like `100% 50%`. Default: `cover`.
 - `imgPosition`: The positioning of the background image in the header. E.g. `center`, `top`, `bottom`, `left`, `right`, or specific positions like `50% 25%`. Default: `center`.
@@ -69,8 +69,9 @@ Settings related to app header styling.
 
 Settings controlling which entities are shown in the app.
 
-- `hideIfMissingAnswers`: Settings controlling whether entities with missing answers should be shown. This is currently only supported for candidates.
-  - `candidate`: Whether to hide candidates with missing answers in the app. Default: `true`.
+- `hideIfMissingAnswers`: Settings controlling whether entities with missing answers should be shown, set separately for candidates and for parties.
+  - `candidate`: Whether to hide candidates who have not answered every statement posed to candidates. Default: `true`.
+  - `organization`: Whether to hide parties that have not answered every statement posed to parties. Default: `false`.
 - `showAllNominations`: Whether to show the `/nominations` route on which all nominations in the app are shown. Default: `true`.
 
 ### `matching`
@@ -117,8 +118,8 @@ Settings related to the results view.
     - Question answer
   - `alliance`: The additional contents of alliance cards, with the same values as for parties; `children` lists the alliance's member parties. Default: `children`.
 - `sections`: Which entity types to show in the results view: any of `candidate`, `organization` and `alliance`. There must be at least one. Default: candidates and parties.
-- `showFeedbackPopup`: If defined, a feedback popup will be shown on the next page load, when the user has reached the results section and the number of seconds given by this value has passed. The popup will not be shown if the user has already given some feedback. Default: `180`.
-- `showSurveyPopup`: The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if `survey.showIn` includes `resultsPopup` and if the user has not already opened the survey. Default: `500`.
+- `showFeedbackPopup`: The delay in seconds after which a feedback popup will be shown on the next page load, when the user has reached the results section. The popup will not be shown if the user has already given some feedback. Set it to `0` to disable the popup; if it is left out, the default applies. Default: `180`.
+- `showSurveyPopup`: The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if `survey.showIn` includes `resultsPopup` and if the user has not already opened the survey. Set it to `0` to disable the popup; if it is left out, the default applies. Default: `500`.
 
 ### `elections`
 
@@ -132,33 +133,46 @@ Settings related to election and constituency selection in VAAs with multiple el
 
 Settings related to access to the applications.
 
-- `candidateApp`: If `true`, the Candidate App can be accessed. Default: `true`.
+- `contestantApp`: If `true`, the Candidate App can be accessed. Default: `true`.
 - `voterApp`: If `true`, the Voter App can be accessed. Default: `true`.
 - `adminApp`: If `true`, the Admin App can be accessed. Default: `true`.
 - `underMaintenance`: If `true`, an under maintenance error page will be shown when attempting to access any part of the app. Default: `false`.
-- `answersLocked`: If `true`, candidates can no longer edit their answers. Default: `false`.
+- `answersLocked`: If `true`, candidates and parties can no longer edit their answers. Default: `false`.
+- `nominationsLocked`: If `true`, candidates and parties can no longer add or change their own nominations. Administrators and project editors still can. Default: `false`.
 
 ### `notifications`
 
 Settings related to important notifications shown to users. Neither notification is set by default.
 
-- `candidateApp`: The notification shown to users of the Candidate App. Defined by the properties:
+- `contestantApp`: The notification shown to users of the Candidate App. Defined by the properties:
   - `show`: If `true`, the notification will be shown the next time the user loads the app.
   - `title`: The title of the notification, in each language.
   - `content`: The content of the notification, in each language.
   - `icon`: The name of the icon to display in the notification. Default: `important`.
 - `voterApp`: The notification shown to users of the Voter App, with the same properties.
 
-### `candidateApp`
+### `contestantApp`
 
 Settings related to the Candidate App.
 
 - `questions`: Settings related to the question view in the Candidate App.
   - `hideVideo`: Whether to hide possible video content for questions in the Candidate App. Default: `false`.
   - `hideHero`: Whether to hide possible hero content for questions in the Candidate App. Default: `false`.
+- `entityTypes`: Whom the app serves: `candidate`, `organization` (parties) or both. There must be at least one. Default: `candidate` only.
+- `registrationModes`: The ways of registering that are allowed, set separately for `candidate` and for `organization`. Each of the two is a list of any of the modes below. Default: both lists are empty, so nothing is allowed.
+  - `identity_provider`: The person identifies with a bank identity and an account is created for them. With it allowed for candidates, a candidate is created; with it allowed for parties, a party is created, whose name the person then enters. Where both are allowed, the registration page asks which to register. The person then gives the email address they will sign in with and confirms it by a link sent to it.
+  - `email`: Registration with the email address an invitation was sent for: the person asks for a sign-in link to it.
+  - `code`: Registration with a registration code the person has been given.
 
-### `preRegistration`
+The app names itself after `entityTypes`: "Candidate app" when it serves candidates, "Party app" when it serves parties and "Candidate and party app" when it serves both. To give it a name of your own, override the three texts `dynamic.contestantAppName.candidate`, `dynamic.contestantAppName.organization` and `dynamic.contestantAppName.candidateAndOrganization` with [App customization](/developers-guide/configuration/app-customization); the app shows the one that matches the setting. A text stored under the former single name `dynamic.contestantAppName` is ignored.
 
-Settings related to Candidate App pre-registration with bank authentication.
+What the login page offers follows `registrationModes`:
 
-- `enabled`: Whether candidates can pre-register by identifying with their bank identity. If enabled, the identity provider must also be configured; see [Bank authentication (OIDC)](/developers-guide/candidate-app/bank-authentication). Not set by default, which means disabled.
+- With nothing declared, the app is the "Candidate app" with sign-in only: the login page offers to sign in and no way to register.
+- An invitation for a candidate or a party created by an administrator works only under a mode allowed here for its entity type: an invitation sent to an email address needs `email`, and one with a registration code needs `code`. With nothing declared, such invitations cannot be used until a mode is allowed. Invitations of project editors and administrators do not depend on this setting.
+- While answers are locked (`access.answersLocked`), no way to register is offered, whatever is set here.
+- A mode is offered when it is allowed for a type that `entityTypes` lists. Modes listed for a type the app does not serve have no effect.
+- `identity_provider` also needs the identity provider's environment variables to be set on the server, both for the app and for the `identity-callback` function; see [Bank authentication (OIDC)](/developers-guide/contestant-app/bank-authentication) for their names. The setting alone decides what the login page shows: without that configuration the page still offers registration with the identity provider, and it fails when the visitor starts identification.
+- "Register" leads to a registration page that lists the allowed modes, and only those, to choose from.
+- The sign-in page also offers to email a sign-in link when `email` or `identity_provider` is allowed for a served type, for a person who has no password yet.
+- Each list is stored as a whole, as explained above: name every mode you want to allow for a type.
