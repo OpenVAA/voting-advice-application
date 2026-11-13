@@ -7,3 +7,6 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# The component pages generate:component-docs writes before move-generated places them (gitignored)
+/scripts/.temp/
