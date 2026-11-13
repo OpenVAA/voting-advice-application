@@ -7,16 +7,18 @@
  */
 
 import { test as teardown } from '@playwright/test';
+import { removeRunScopedIdentity } from '../../utils/runScopedIdentity';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { L10N_POSITIVE_CANDIDATE_ADDRESS_PREFIX, L10N_POSITIVE_CANDIDATE_EMAIL } from '../../utils/testCredentials';
 import { runTeardownAsserted } from '../shared/assertTeardown';
 
 const PREFIX = 'e2e-perm-l10n-pos-';
-// Kept in sync with RECIPIENT_EMAIL in perm-localisation-positive.spec.ts.
-// Re-declared rather than imported: importing the spec module would register its `test.describe` block inside this teardown project.
-const RECIPIENT_EMAIL = 'candidate-l10n-pos-aa@test.openvaa.local';
 
 teardown('delete perm-localisation-positive dataset', async () => {
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(RECIPIENT_EMAIL);
+  await removeRunScopedIdentity(client, {
+    addressPrefix: L10N_POSITIVE_CANDIDATE_ADDRESS_PREFIX,
+    address: L10N_POSITIVE_CANDIDATE_EMAIL
+  });
   await runTeardownAsserted(PREFIX, client);
 });

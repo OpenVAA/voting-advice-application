@@ -19,7 +19,8 @@ export {
   expectClientNavigation,
   expectLandedOn,
   readNavigationLandmarkText,
-  settleAfterClientNavigation
+  settleAfterClientNavigation,
+  waitForNavigationFocusReset
 } from './navigation';
 export { iterateSelectOptions } from './select';
 export { settleNetworkIdle } from './settle';

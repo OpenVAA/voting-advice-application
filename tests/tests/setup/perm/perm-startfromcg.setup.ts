@@ -13,8 +13,38 @@
  */
 
 import { test as setup } from '@playwright/test';
+import { TIMEOUTS } from '../../helpers';
+import {
+  CANDIDATE_EDITOR_EMAIL,
+  CANDIDATE_GRANT,
+  CANDIDATE_STORAGE_STATE,
+  START_FROM_CG_PASSWORD
+} from '../../utils/permStartFromCgData';
+import { testIds } from '../../utils/testIds';
+import { registerAndStoreSession } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
-setup('import perm-startfromcg dataset', async () => {
-  await setupFromTemplate('perm-startfromcg', { extraTeardownPrefix: ['test-', 'e2e-perm-'] });
-});
+setup(
+  'import perm-startfromcg dataset + store a session for the editor of one candidate',
+  async ({ browser, baseURL }) => {
+    // A sign-in through the login form follows the seed; the Contestant App's first load can be slow.
+    setup.setTimeout(TIMEOUTS.testMax);
+
+    await setupFromTemplate('perm-startfromcg', { extraTeardownPrefix: ['test-', 'e2e-perm-'] });
+
+    // The session is stored once the candidate's home has rendered its status message: with one entity to edit the user is sent straight to it.
+    const context = await browser.newContext({ baseURL });
+    try {
+      await registerAndStoreSession(await context.newPage(), {
+        entityGrants: [CANDIDATE_GRANT],
+        email: CANDIDATE_EDITOR_EMAIL,
+        password: START_FROM_CG_PASSWORD,
+        storageStatePath: CANDIDATE_STORAGE_STATE,
+        acceptTermsOfUse: true,
+        settledTestId: testIds.contestant.home.statusMessage
+      });
+    } finally {
+      await context.close();
+    }
+  }
+);

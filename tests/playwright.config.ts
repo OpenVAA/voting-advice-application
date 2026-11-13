@@ -5,6 +5,9 @@ import fs from 'fs';
 import path from 'path';
 import { TIMEOUTS } from './tests/helpers/timeouts';
 import { ADMIN_STORAGE_STATE } from './tests/utils/adminCredentials';
+import { MULTI_ENTITY_STORAGE_STATE, TERMS_PENDING_STORAGE_STATE } from './tests/utils/testCredentials';
+// The runner loads this configuration before it starts a worker, so the run tag this import writes to the environment is the one every worker inherits.
+import './tests/utils/runAddressTag';
 import { TESTS_DIR } from './tests/utils/testsDir';
 
 dotenv.config();
@@ -161,8 +164,8 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
           `The two data-teardown projects are not guaranteed to be ordered relative to each other, so ` +
           `their runTeardownAsserted before/after row counts can race nondeterministically. ` +
           `Give one of them its own dedicated prefix — and, if it reuses a shared dev-seed ` +
-          `template, its own dedicated template registration too (see ` +
-          `packages/dev-seed/src/templates/e2e/perm/perm-bankauth-notloc.ts for the pattern).`
+          `template, its own dedicated template registration too, built from the shared shape by a ` +
+          `factory over the prefix (see packages/dev-seed/src/templates/e2e/perm/notLocated2e2cgShape.ts).`
       );
     }
     if (a.prefix.startsWith(b.prefix) || b.prefix.startsWith(a.prefix)) {
@@ -256,27 +259,28 @@ const BASE_PROJECTS: Array<Project> = [
           dependencies: ['data-setup-base']
         },
         {
-          name: 'candidate-a11y-scan',
+          name: 'contestant-a11y-scan',
           testDir: './tests/specs/a11y',
-          testMatch: /candidate-a11y\.spec\.ts/,
+          testMatch: /contestant-a11y\.spec\.ts/,
           use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
-          dependencies: ['data-setup-base', 'auth-setup']
+          dependencies: [
+            'data-setup-base',
+            'auth-setup',
+            'data-setup-entity-selection',
+            'data-setup-passwordless-session'
+          ]
         }
       ]),
 
-  // Bank auth (Idura/Signicat): identity-callback Edge Function integration.
-  // OPT-IN (PLAYWRIGHT_BANK_AUTH) — NOT default-on: the spec throws at module load without SUPABASE_SERVICE_ROLE_KEY/ANON_KEY, and 3 of its tests have no precondition skip and require the identity-callback Edge Function to be served (`supabase functions serve --no-verify-jwt`). Promoting it to default-on needs an infra-probe gate on all tests + non-throwing key handling first.
-  ...(process.env.PLAYWRIGHT_BANK_AUTH
-    ? [
-        {
-          name: 'bank-auth',
-          testDir: './tests/specs/candidate',
-          testMatch: /candidate-bank-auth\.spec\.ts/,
-          use: { ...devices['Desktop Chrome'] },
-          dependencies: ['data-setup-base']
-        }
-      ]
-    : []),
+  // Bank auth (Idura): the identity-callback Edge Function, called directly.
+  // DEFAULT-ON. Its tests need `identity-callback` served with the identity provider's test environment, which `tests/scripts/e2e-run.sh` serves for every run; against a stack without that environment they fail on their own assertions.
+  {
+    name: 'bank-auth',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-bank-auth\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
 
   // The identity-provider specs: the provider's flow walked in a browser against the mock issuer, each test with an identity of its own, from the registration screen through the provider and the callback to the view the account lands on.
   //
@@ -288,44 +292,31 @@ const BASE_PROJECTS: Array<Project> = [
   //
   // An isolated `--project=contestant-identity-provider` run therefore pulls the whole chain transitively and takes full-suite time rather than seconds. `data-setup-base` is ordered before this project transitively, so `base.setup`'s sweep of an orphaned `e2e-bankauth-` dataset from an aborted prior run still runs first.
   //
-  // The mock OIDC issuer is spawned via the `webServer` entry below (also PLAYWRIGHT_BANK_AUTH-gated). It binds 127.0.0.1-only and serves over HTTPS with a committed self-signed localhost cert — never reachable in the default suite.
-  ...(process.env.PLAYWRIGHT_BANK_AUTH
-    ? [
-        {
-          name: 'data-setup-bank-auth-journey',
-          testMatch: /bank-auth-journey\.setup\.ts/,
-          teardown: 'data-teardown-bank-auth-journey',
-          // APPEND TO THE TAIL OF THE PERM SERIAL CHAIN.
-          //
-          // `voter-prefs-tracking` is the chain's last leaf, so this setup's authoritative `app_settings` REPLACE cannot overlap any other project's. Ordering edges express ORDER, not MUTUAL EXCLUSION, and the `app_settings` JSONB singleton needs the latter — which in this config is spelled "be in the serial chain". The two cheaper-looking alternatives are both measured unsound:
-          //   · `['data-setup-base']` puts this project in the SAME phase as `voter-journey` / `performance` /
-          //     `a11y-smoke` (identical dependency set → identical phase, see
-          //     playwright/lib/runner/tasks.js createPhasesTask), so the REPLACE lands mid-spec under `PLAYWRIGHT_BANK_AUTH=1 yarn test:e2e`.
-          //   · `['voter-journey', 'candidate-journey']` merely RELOCATES the race: it lands this project in the same phase as `data-setup-perm-1e1cg1co`, the perm chain HEAD, which does the same REPLACE. Do not "fix" it that way.
-          //
-          // `data-setup-base` is still ordered before this project transitively (chain head → `voter-journey` → `data-setup-base`), so `base.setup`'s `extraTeardownPrefix` sweep of an orphaned `e2e-bankauth-` dataset from an aborted prior run still runs first.
-          dependencies: ['voter-prefs-tracking']
-        },
-        {
-          name: 'data-teardown-bank-auth-journey',
-          testMatch: /bank-auth-journey\.teardown\.ts/,
-          // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
-          retries: 0
-        },
-        {
-          name: 'bank-auth-journey',
-          testDir: './tests/specs/candidate',
-          testMatch: /candidate-bank-auth-journey\.spec\.ts/,
-          // `ignoreHTTPSErrors: true` is REQUIRED on the BROWSER context: the journey's OIDC authorize leg navigates the browser to the mock issuer at `https://127.0.0.1:9443/oauth2/authorize`, served with a committed self-signed localhost cert. Without this, Chrome rejects the cert and the navigation fails silently — the issuer's 302 back to `/api/oidc/callback` never reaches the browser, so the authenticated `preregister-continue` state never renders. (The matching `ignoreHTTPSErrors` on the `webServer` readiness probe below only covers Playwright's own JWKS health check, not the browser context.) TEST-ONLY, opt-in `PLAYWRIGHT_BANK_AUTH` run.
-          use: {
-            ...devices['Desktop Chrome'],
-            storageState: { cookies: [], origins: [] },
-            ignoreHTTPSErrors: true
-          },
-          dependencies: ['data-setup-bank-auth-journey']
-        }
-      ]
-    : []),
+  // The teardown removes the dataset, the entities the application made for the users the specs made, and those users. The spec's browser context ignores HTTPS errors: its authorize leg navigates the browser to the mock issuer at `https://127.0.0.1:9443/oauth2/authorize`, served with a committed self-signed localhost cert, and Chrome would otherwise reject the cert and never follow the issuer's redirect back to `/api/oidc/callback`. TEST-ONLY: the browser context of this project alone. The mock OIDC issuer is spawned in every run via the `webServer` entry below; the dev server trusts its cert through `NODE_EXTRA_CA_CERTS`, which `tests/scripts/e2e-run.sh` sets.
+  {
+    name: 'data-setup-identity-provider',
+    testMatch: /identity-provider\.setup\.ts/,
+    teardown: 'data-teardown-identity-provider',
+    // APPEND TO THE TAIL OF THE PERM SERIAL CHAIN.
+    dependencies: ['voter-prefs-tracking']
+  },
+  {
+    name: 'data-teardown-identity-provider',
+    testMatch: /identity-provider\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix and passes, so a retry would mask the partial delete the assertion exists to catch.
+    retries: 0
+  },
+  {
+    name: 'contestant-identity-provider',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-identity-provider\.spec\.ts/,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] },
+      ignoreHTTPSErrors: true
+    },
+    dependencies: ['data-setup-identity-provider']
+  },
 
   // === base / voter-journey chain ===
   //
@@ -367,6 +358,15 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-base']
   },
 
+  // voter-pageview-only — LEAF. With `analytics.trackEvents` off, the voter app sends the pageview and nothing else, and shows no consent prompt. Reads the base dataset read-only, whose stored settings leave `trackEvents` at its shipped default, off (no teardown of its own). The settings row is what the spec asserts against, so the project is named in the dependencies of `data-setup-perm-1e1cg1co`, and no perm setup replaces the row while it runs. Needs the server to run with `ANALYTICS_PROVIDER=log`. `testMatch` is scoped to its one spec; sibling voter-* projects' exact testMatch excludes it.
+  {
+    name: 'voter-pageview-only',
+    testDir: './tests/specs/voter',
+    testMatch: /voter-pageview-only\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-base']
+  },
+
   // cold-entry-dataroot — LEAF. Read-only cold/direct-URL entry regression for the dataRoot #version-bridge alias-indirection staleness. Reads the base dataset read-only (no teardown of its own). `testMatch` is scoped to the cold-entry spec; `voter-journey`'s `testMatch` (/voter-journey\.spec\.ts/) excludes this file, so neither project picks up the other's specs.
   //
   // The spec is split across TWO projects on the `@contestant-session` tag. Its voter cases must run UNAUTHENTICATED — that is what makes them a public-route cold entry — while the candidate case cannot reach `/contestant/questions` at all without a stored session. One project cannot be both, and a `test.use({ storageState })` inside the spec would have to spell the session path a third time, which `STORAGE_STATE`'s own declaration comment above rules out. This is the same split, for the same reason, that the a11y family already makes between `a11y-smoke` and `contestant-a11y-scan`. `grep`/`grepInvert` are complementary over the one tag, so every test in the file belongs to exactly one project and none can be silently orphaned.
@@ -374,15 +374,15 @@ const BASE_PROJECTS: Array<Project> = [
     name: 'cold-entry-dataroot',
     testDir: './tests/specs/voter',
     testMatch: /cold-entry-dataroot\.spec\.ts/,
-    grepInvert: /@cand-session/,
+    grepInvert: /@contestant-session/,
     use: { ...devices['Desktop Chrome'] },
     dependencies: ['data-setup-base']
   },
   {
-    name: 'cold-entry-dataroot-candidate',
+    name: 'cold-entry-dataroot-contestant',
     testDir: './tests/specs/voter',
     testMatch: /cold-entry-dataroot\.spec\.ts/,
-    grep: /@cand-session/,
+    grep: /@contestant-session/,
     use: { ...devices['Desktop Chrome'], storageState: STORAGE_STATE },
     dependencies: ['data-setup-base', 'auth-setup']
   },
@@ -466,6 +466,136 @@ const BASE_PROJECTS: Array<Project> = [
     fullyParallel: false
   },
 
+  // auth-service-contract — LEAF. It talks to the auth service only: the two requests by which an unauthenticated caller could bring a user into existence, each of which the service must refuse, and the admin API to confirm that neither created one. It opens no page, reads no seeded row and stores no session (API-only, hence no `use` block), so it has no data-setup dependency and no teardown project. It stands alone because what it observes is the running service's configuration, which no dataset changes and which the service reads only when the stack starts.
+  {
+    name: 'auth-service-contract',
+    testDir: './tests/specs/auth',
+    testMatch: /public-signup-closed\.spec\.ts/
+  },
+
+  // invitation-contract — LEAF. The server contract of invitations, observed on the running stack with no screen: what the `account-access` Edge Function answers, the mail it sends, the session a mailed token verifies to, and what `claim_invitations` grants and refuses. It opens no page and stores no session (API-only, hence no `use` block). It writes only on the two rows the base dataset reserves for it and on users it creates, and it removes every invitation and user it created, so it has no teardown project. It depends on `data-setup-base` for those two rows and on nothing else: that dependency set places it in the scheduling phase of the other base leaves, which ends before the first setup that clears the base dataset starts. One serial walk, hence `fullyParallel: false`.
+  {
+    name: 'invitation-contract',
+    testDir: './tests/specs/contestant',
+    testMatch: /invitation-contract\.spec\.ts/,
+    fullyParallel: false,
+    dependencies: ['data-setup-base']
+  },
+
+  // invitation-landing — LEAF. Where a claimed invitation lands its user in the browser: a mailed sign-in link, opened on the confirm page and confirmed with Continue, into the Contestant App, and the Admin App's login for an invited project admin. It creates and removes its own users, under an address prefix of its own, and writes project-scope grants for them only, through the application's own claim: it seeds no invitation on an entity and writes on no row of the dataset, so it has no teardown project and changes nothing a voter reads. Every test signs in from scratch, hence the empty stored session. It depends on `data-setup-base` for the suite's project and its settings, which places it in the scheduling phase of the other base leaves. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey` and `invitation-contract`, each of which matches its own file alone. One serial walk, hence `fullyParallel: false`.
+  {
+    name: 'invitation-landing',
+    testDir: './tests/specs/contestant',
+    testMatch: /invitation-landing\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // contestant-email-registration — LEAF. An invited candidate with no account, followed to the candidate's home twice, once from the sign-in screen and once from the registration screen's email option: the link asked for, the screen that says an email was sent, the mailed link opened on the confirm page and confirmed with Continue, the set-password view the protected layout shows a user with no password in place of every page, the terms of use, and the home. Beside the two walks: the oracle of the link request and of the sign-in, the link for a user without a password, to the forgot-password page, the count and "Send again", a request repeated inside the count, a reload of the "email sent" screen, what the registration screen does not send, and the login screen's entries and notice. It writes one invitation on the candidate the base dataset reserves for registration tests, the user the mailed link creates and the grant that user's claim writes, every address under a prefix of its own. Its own hooks remove all of it and make the candidate unconfirmed again, before the walk, after it and whether or not it passed, and assert that nothing is left, so it has no teardown project; the candidate has no nomination, so nothing it writes is read by a voter. The user signs in from scratch, hence the empty stored session. It depends on `data-setup-base` for the reserved candidate and for the project's settings, which serve candidates and let them register by email. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey` and the two invitation projects, each of which matches its own file alone. Its tests share the reserved candidate and run in order, hence `fullyParallel: false`. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-email-registration',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-email-registration\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // contestant-code-registration — LEAF. An organization invited with a registration code, followed from the registration screen to the organization's home: the code checked there, the screen that asks for the address to register it with, the screen that says an email was sent, the mailed link opened on the confirm page and confirmed with Continue, the set-password view, the terms of use, and the home. Then the same screens for a code that is already used — the password sign-in it leads to, and that screen's link for a user without a password, which leads to the forgot-password page with its field empty and sends nothing — and for a code that names nothing. It writes code invitations on the organization the base dataset reserves for registration tests, the users its link requests and mailed links create and the grants their claims write, every address under a prefix of its own. Its own hooks remove all of it and make the organization unconfirmed again, before the first test, after each and whether or not it passed, and assert that nothing is left, so it has no teardown project; the organization has no nomination, so nothing it writes is read by a voter. It shares no row and no address prefix with `contestant-email-registration`, which writes on the reserved candidate, so the two run side by side. Every visitor starts signed out, hence the empty stored session. It depends on `data-setup-base` for the reserved organization and for the project's settings, which serve organizations and let them register with a code. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey`, `contestant-email-registration` and the two invitation projects, each of which matches its own file alone. Its journeys run in order in one worker, hence `fullyParallel: false`; its scans are a group of their own, which may run beside them in another worker, and invent their addresses under a prefix of their own. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-code-registration',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-code-registration\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // contestant-password-recovery — LEAF. A user who has forgotten their password, followed from the sign-in screen to the home of the candidate they edit: the forgot-password page, the screen that says an email was sent, the mailed recovery link, opened on the confirm page and confirmed with Continue, in a browser context that never asked for it, the password-reset page, and the home; then a sign-in that the old password is refused and the new one admitted. Beside it: the same screen for an address nobody holds, which is mailed nothing; an invited address with no account, which is mailed the sign-in link and asked to choose a password; and the password-reset page opened with no session, which ends on the login screen. It writes users made with a password as the editor of the candidate the base dataset reserves for password-recovery tests, one invitation on that candidate with the user its mailed link creates and the grant that user's claim writes, every address under a prefix of its own. Its own hooks remove all of it and make the candidate unconfirmed again, before the first test, after each and whether or not it passed, and assert that nothing is left, so it has no teardown project; the candidate has no nomination, so nothing it writes is read by a voter. It shares no row and no address prefix with `contestant-email-registration` or `contestant-code-registration`, so the three run side by side. Every visitor starts signed out, hence the empty stored session. It depends on `data-setup-base` for the reserved candidate and for the project's settings, which serve candidates and let them register by email. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey`, the two registration projects and the two invitation projects, each of which matches its own file alone. Its journeys run in order in one worker, hence `fullyParallel: false`; its scans are a group of their own, which may run beside them in another worker, and invent their addresses under a prefix of their own. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-password-recovery',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-password-recovery\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // admin-account-flows — LEAF. An invited admin followed through the Admin App's own account screens: an admin with no account asks for a sign-in link, opens it, is shown the Admin App's set-password view in place of the Admin home, chooses a password there and reaches the Admin home; a recovery request made for the Admin App, and one made from its login page's "I have not set a password yet", mail a link that lands in the Admin App. It also scans the Admin App's entry screens in the light and the dark theme. It creates and removes its own users, under an address prefix of its own, and writes project-scope invitations and the grants their claims write for them only: it writes on no row of the dataset, so it has no teardown project and changes nothing a voter reads. Its own hooks remove what it wrote before the first test, after each and whether or not it passed, and assert that nothing is left. Every visitor starts signed out, hence the empty stored session. It depends on `data-setup-base` for the suite's project and its settings. `testMatch` names the one spec file: the project shares its `testDir` with `admin-access`, which matches its own file alone and runs under the admin's stored session. Its journeys run in order in one worker, hence `fullyParallel: false`; its scans are a group of their own, which may run beside them in another worker, and invent their addresses under a prefix of their own. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'admin-account-flows',
+    testDir: './tests/specs/admin',
+    testMatch: /admin-account-flows\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // contestant-entry-scan — LEAF. The accessibility scans of the Contestant App's entry screens that a visitor with no session meets: eighteen states of the login screen, the sign-in screen, the registration screen, the two screens a registration code leads to, the screen that says an email was sent, the forgot-password page, the identity provider's error screen in its three classes and the confirm page a mailed sign-in link opens, each scanned in the light theme and in a browser context created dark through the shared scan core; beside them, one test of the menu such a visitor is offered. They are a spec and a project of their own because `contestant-a11y-scan` runs under a stored session and its declarer refuses the login routes. Its own hooks seed one open and one used code invitation, on the two candidates the base dataset reserves for these scans, through the invitation flow's steps; before the first test and after the last they remove every user under the spec's address prefix with their grants and invitations, and every invitation on both candidates, make both unconfirmed again and assert that nothing is left, so it has no teardown project. The codes are held in memory and written to no file, which is also why the spec has no setup project of its own. Neither candidate has a nomination, so nothing it writes is read by a voter. It shares no row and no address prefix with the registration and recovery projects, so they run side by side. Every visitor starts signed out, hence the empty stored session. It depends on `data-setup-base` for the two candidates and for the project's settings, which serve candidates and let them register by email or with a code. `testMatch` names the one spec file: the project shares its `testDir` with the other projects of the directory, each of which matches its own file alone. Its tests run in order in one worker, so that the hooks seed once, hence `fullyParallel: false`. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-entry-scan',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-entry-scan\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['data-setup-base']
+  },
+
+  // data-setup-passwordless-session — the stored session of a user whose account has no password, at `PASSWORDLESS_STORAGE_STATE` (declared in `tests/utils/testCredentials.ts`). The account is made through the application's own pipeline and never with a password: a project-scope invitation is seeded for the address, a sign-in link is asked for through the `account-access` function and the mailed link is opened as received, so the session meets the set-password view at every protected URL. The promise names no entity, so no dataset row is written on. Two projects read the session, `contestant-a11y-scan` and `contestant-entry-phone`, and both treat it as read-only: no reader saves a password under it or signs it out. It depends on `data-setup-base` for the project and its settings row, which keep the Contestant App on, and `data-teardown-passwordless-session` removes the user and the invitation once both readers are done.
+  {
+    name: 'data-setup-passwordless-session',
+    testMatch: /passwordless-session\.setup\.ts/,
+    teardown: 'data-teardown-passwordless-session',
+    dependencies: ['data-setup-base']
+  },
+  {
+    name: 'data-teardown-passwordless-session',
+    testMatch: /passwordless-session\.teardown\.ts/,
+    // reason: the teardown performs no runTeardownAsserted accounting, so there is nothing for a retry to mask; set to 0 for consistency with every other data-teardown-* project.
+    retries: 0
+  },
+
+  // contestant-terms-gate-phone — LEAF. The terms-of-use view at two phone widths: the document does not overflow sideways, the view's checkbox lies wholly inside the viewport, it can be ticked, and ticking it enables Continue. It reads the stored session of the user who has not accepted the terms of use and never accepts for them: that file is also what the axe scans of the same view load, so the spec presses nothing but the checkbox, signs nobody out and writes nothing, and it has no teardown project. The phone descriptor is set in the spec, one `describe` per width, because there are two widths and a project carries one viewport. `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey`, `contestant-entity-selection` and the two invitation projects, each of which matches its own file alone. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-terms-gate-phone',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-terms-gate-phone\.spec\.ts/,
+    use: { ...devices['Desktop Chrome'], storageState: TERMS_PENDING_STORAGE_STATE },
+    dependencies: ['data-setup-base', 'auth-setup']
+  },
+
+  // contestant-entry-phone — LEAF. The screens of the entry flow at two phone widths, 320 and 390 pixels, in English: the login screen, the sign-in screen, the registration screen with the email and with the code option open, the two screens a registration code leads to, the "email sent" screen with the longest address, the forgot-password page, the identity provider's error screen in its no-retry class, the set-password view and the password-reset page, each asserted to be no wider than its viewport; and two checks of the layout those screens share with the Admin App's login page: at 390 pixels, in French, the email and password labels of the sign-in screen and of the Admin App's login page each on one line, and at 320 pixels the illustration the header paints on the Admin App's login page clear of the header's logo. It runs after `contestant-entry-scan` because it uses that spec's two reserved candidates and its address prefix: that spec's last hook removes everything under them, and this one's own hooks then seed one open and one used code on them and remove everything again, so the two never hold the rows at once. The set-password view is read under the stored session of `data-setup-passwordless-session` and the password-reset page under the base candidate's session of `auth-setup`; neither is changed. The phone descriptor is set in the spec, one `describe` per width and session, because a project carries one viewport. Its tests run in order in one worker, so that the hooks seed once, hence `fullyParallel: false`. It is named in the dependencies of `data-setup-perm-1e1cg1co`; the reason is given there.
+  {
+    name: 'contestant-entry-phone',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-entry-phone\.spec\.ts/,
+    fullyParallel: false,
+    use: {
+      ...devices['Desktop Chrome'],
+      storageState: { cookies: [], origins: [] }
+    },
+    dependencies: ['contestant-entry-scan', 'data-setup-passwordless-session', 'auth-setup']
+  },
+
   // === voter permutations chains ===
   //
   //   - perm specs live under tests/tests/specs/perm/; the voter-app project's testDir is `./tests/specs/voter`, so perm specs are categorically outside its discovery surface.
@@ -508,9 +638,18 @@ const BASE_PROJECTS: Array<Project> = [
     teardown: 'data-teardown-perm-1e1cg1co',
     dependencies: [
       'voter-journey',
-      'candidate-journey',
+      'contestant-journey',
+      'contestant-entity-selection',
+      'contestant-terms-gate-phone',
+      'contestant-email-registration',
+      'contestant-code-registration',
+      'contestant-password-recovery',
+      'contestant-entry-scan',
+      'contestant-entry-phone',
+      'admin-account-flows',
       'eperm07-term-trigger',
-      ...(process.env.PLAYWRIGHT_NO_A11Y ? [] : ['candidate-a11y-scan'])
+      'voter-pageview-only',
+      ...(process.env.PLAYWRIGHT_NO_A11Y ? [] : ['contestant-a11y-scan'])
     ]
   },
   {
@@ -697,27 +836,57 @@ const BASE_PROJECTS: Array<Project> = [
   //
   // Spec project sets `storageState: { cookies: [], origins: [] }` to start UNAUTHENTICATED — required for the registration-via-email flow.
   {
-    name: 'data-setup-candidate-journey',
-    testMatch: /candidate-journey\.setup\.ts/,
-    teardown: 'data-teardown-candidate-journey',
+    name: 'data-setup-contestant-journey',
+    testMatch: /contestant-journey\.setup\.ts/,
+    teardown: 'data-teardown-contestant-journey',
     dependencies: ['data-setup-base']
   },
   {
-    name: 'data-teardown-candidate-journey',
-    testMatch: /candidate-journey\.teardown\.ts/,
-    // reason: candidate-journey.teardown.ts performs no prefix delete (it only calls unregisterCandidate), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
+    name: 'data-teardown-contestant-journey',
+    testMatch: /contestant-journey\.teardown\.ts/,
+    // reason: contestant-journey.teardown.ts performs no prefix delete (it only calls unregisterCandidate), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
     retries: 0
   },
   {
-    name: 'candidate-journey',
-    testDir: './tests/specs/candidate',
-    testMatch: /candidate-journey\.spec\.ts/,
+    name: 'contestant-journey',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-journey\.spec\.ts/,
     fullyParallel: false, // single-test serial journey
     use: {
       ...devices['Desktop Chrome'],
       storageState: { cookies: [], origins: [] }
     },
-    dependencies: ['data-setup-candidate-journey']
+    dependencies: ['data-setup-contestant-journey']
+  },
+
+  // === contestant-entity-selection chain ===
+  //
+  // The entity-selection setup does not seed (see tests/tests/setup/contestant/entity-selection.setup.ts): it consumes the base data already seeded by `data-setup-base`, registers three users on three unconfirmed rows of it that no other identity edits, and stores two sessions. One edits two candidates and an organization (`MULTI_ENTITY_STORAGE_STATE`); the other has nothing to edit (`NO_ENTITY_STORAGE_STATE`). Its teardown owns only those three auth users; base.teardown owns the 'test-' row prefix.
+  //
+  // Both stored sessions are READ-ONLY for the run: no spec signs either out. The one spec case that signs out signs a third user in through the login form first.
+  //
+  // The spec project also depends on `auth-setup`, because one of its cases reads the base candidate's stored session to show that a user with a single entity never sees the selection screen. Its `testMatch` names the one spec file: the project shares its `testDir` with `contestant-journey` and the bank-auth projects, each of which matches its own file alone.
+  //
+  // The spec saves an answer of one of its own candidates and of nothing else. That row is unconfirmed, so no voter query reads it.
+  {
+    name: 'data-setup-entity-selection',
+    testMatch: /entity-selection\.setup\.ts/,
+    teardown: 'data-teardown-entity-selection',
+    dependencies: ['data-setup-base']
+  },
+  {
+    name: 'data-teardown-entity-selection',
+    testMatch: /entity-selection\.teardown\.ts/,
+    // reason: entity-selection.teardown.ts performs no prefix delete (it only calls unregisterCandidate), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
+    retries: 0
+  },
+  {
+    name: 'contestant-entity-selection',
+    testDir: './tests/specs/contestant',
+    testMatch: /contestant-entity-selection\.spec\.ts/,
+    fullyParallel: false, // the cases share one user's rows and one stored session
+    use: { ...devices['Desktop Chrome'], storageState: MULTI_ENTITY_STORAGE_STATE },
+    dependencies: ['data-setup-entity-selection', 'auth-setup']
   },
 
   // === settings-permutation chains ===
@@ -1100,12 +1269,78 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-org-matching']
   },
 
-  // perm-analytics-tracking. Voter analytics-tracking emission matrix: the analytics overlay (analytics.platform.name='umami', trackEvents=true) is a singleton-clobbering app_settings node, so the tracking-payload spec (voter-prefs-tracking) is hosted HERE under its own armed singleton rather than as a base leaf. Setup depends on the previous perm SPEC (perm-org-matching, the verified tail) to preserve the strict serial chain over the shared app_settings singleton. Unauthenticated voter slice → no minted storage state. Sequential after perm-org-matching.
+  // perm-organization-editing. An organization's editor and a candidate's editor on their own entity's pages, and an anonymous voter on what those pages publish. One of the two perm datasets whose settings serve both entity types. Its setup seeds a confirmed organization, an unconfirmed organization and an unconfirmed candidate and stores one session for each one's editor; the spec selects a session per describe, so the project carries no `storageState` of its own. The three sessions are this dataset's own and no other project reads them. Sequential after perm-org-matching.
+  {
+    name: 'data-setup-perm-organization-editing',
+    testMatch: /perm-organization-editing\.setup\.ts/,
+    teardown: 'data-teardown-perm-organization-editing',
+    dependencies: ['perm-org-matching']
+  },
+  {
+    name: 'data-teardown-perm-organization-editing',
+    testMatch: /perm-organization-editing\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-organization-editing',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-organization-editing\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-organization-editing']
+  },
+
+  // perm-no-nomination. The editor of a candidate and of an organization on their own entity's pages, with and without a nomination. Its settings serve both entity types. Its setup seeds a candidate and an organization with no nomination row and a candidate with one, and stores one session for each one's editor; the spec selects a session per describe, so the project carries no `storageState` of its own. The three sessions are this dataset's own and no other project reads them. Sequential after perm-organization-editing.
+  {
+    name: 'data-setup-perm-no-nomination',
+    testMatch: /perm-no-nomination\.setup\.ts/,
+    teardown: 'data-teardown-perm-no-nomination',
+    dependencies: ['perm-organization-editing']
+  },
+  {
+    name: 'data-teardown-perm-no-nomination',
+    testMatch: /perm-no-nomination\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-no-nomination',
+    testDir: './tests/specs/perm',
+    testMatch: /perm-no-nomination\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-no-nomination']
+  },
+
+  // perm-contestant-nominations. The editor of a candidate and of a party on the entity's nominations. Its settings serve both entity types. Its setup seeds three elections of three types, a candidate and a party with no nomination row, a candidate and a party with nominations and the parties and alliances a nomination can stand under, and stores one session for each of its four editors; the spec selects a session per describe, so the project carries no `storageState` of its own. The four sessions are this dataset's own and no other project reads them. Sequential after perm-no-nomination.
+  {
+    name: 'data-setup-perm-contestant-nominations',
+    testMatch: /perm-contestant-nominations\.setup\.ts/,
+    teardown: 'data-teardown-perm-contestant-nominations',
+    dependencies: ['perm-no-nomination']
+  },
+  {
+    name: 'data-teardown-perm-contestant-nominations',
+    testMatch: /perm-contestant-nominations\.teardown\.ts/,
+    // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+    retries: 0
+  },
+  {
+    name: 'perm-contestant-nominations',
+    testDir: './tests/specs/perm',
+    testMatch: /contestant-nominations\.spec\.ts/,
+    fullyParallel: false,
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['data-setup-perm-contestant-nominations']
+  },
+
+  // perm-analytics-tracking. The dataset turns analytics.trackEvents on in the shared app_settings row, so the specs of the `voter-prefs-tracking` project, which read usage events in the default consent mode, must not run while another project writes that row; they are hosted HERE in the perm serial chain rather than as base leaves. Setup depends on the previous perm SPEC (perm-contestant-nominations) to preserve the strict serial chain over the shared app_settings singleton. The setup mints no storage state: the terms-tracking spec registers its two users and stores their sessions itself, and the teardown unregisters them. Sequential after perm-contestant-nominations.
   {
     name: 'data-setup-perm-analytics-tracking',
     testMatch: /perm-analytics-tracking\.setup\.ts/,
     teardown: 'data-teardown-perm-analytics-tracking',
-    dependencies: ['perm-org-matching']
+    dependencies: ['perm-contestant-nominations']
   },
   {
     name: 'data-teardown-perm-analytics-tracking',
@@ -1116,8 +1351,9 @@ const BASE_PROJECTS: Array<Project> = [
   // voter-prefs-tracking — the default consent mode's analytics specs on the tracking dataset: the tracking spec (`voter-prefs-tracking.spec.ts`: the voter app's usage events and the stored preferences) and the privacy journey (`analytics-privacy.spec.ts`: requests and device state across the voter, Contestant and Admin apps, the pageviews of all three, the sends made as a page is left, and that the interface does not wait for the relay), the Global Privacy Control spec (`analytics-gpc.spec.ts`: no prompt, no send and nothing stored under the signal, with a control without it), and the Contestant App's terms-tracking spec (`contestant/contestant-terms-tracking.spec.ts`: the opt-out box of the terms-of-use view, its accessibility, the choice an acceptance stores and what is sent after it, and the consent control of the Contestant privacy page). The name is kept, because other projects depend on it by name. `testDir` is the specs root, because the files live in two directories, and `testMatch` names each file with its directory. The files run one test at a time each (`fullyParallel: false`). The settings row is only read; the terms-tracking spec writes nothing but its own two auth users, their grants and terms-of-use acceptances on the dataset's two member candidates, which no other file of the project reads.
   {
     name: 'voter-prefs-tracking',
-    testDir: './tests/specs/voter',
-    testMatch: /voter-prefs-tracking\.spec\.ts/,
+    testDir: './tests/specs',
+    testMatch:
+      /[\\/](voter[\\/](voter-prefs-tracking|analytics-privacy|analytics-gpc)|contestant[\\/]contestant-terms-tracking)\.spec\.ts$/,
     fullyParallel: false,
     use: { ...devices['Desktop Chrome'] },
     dependencies: ['data-setup-perm-analytics-tracking']
@@ -1225,6 +1461,80 @@ const CLOSED_PROJECT_TRIO: Array<Project> = [
 ];
 
 /**
+ * The `--project` values of the runner's command line, in both the `--project a b` and the `--project=a` forms.
+ */
+function projectArguments(argv: ReadonlyArray<string>): Array<string> {
+  const values: Array<string> = [];
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg.startsWith('--project=')) {
+      values.push(arg.slice('--project='.length));
+    } else if (arg === '--project') {
+      while (i + 1 < argv.length && !argv[i + 1].startsWith('-')) values.push(argv[++i]);
+    }
+  }
+  return values;
+}
+
+/**
+ * STANDALONE-ANALYTICS GUARD.
+ *
+ * The standalone analytics projects below seed a template whose setup REPLACES the `app_settings` singleton, outside the perm serial chain that otherwise keeps every such replace from overlapping another spec. They are safe only when nothing else runs: a single-project run. So when `PLAYWRIGHT_ANALYTICS_STANDALONE` is set, the command line must name its projects, and none of them by a wildcard; otherwise the run stops here, before any spec, by name.
+ *
+ * Playwright loads this file again in every worker process, whose command line is not the runner's, so the guard applies in the runner only: a worker has `TEST_WORKER_INDEX` set.
+ */
+if (process.env.PLAYWRIGHT_ANALYTICS_STANDALONE && process.env.TEST_WORKER_INDEX === undefined) {
+  const projects = projectArguments(process.argv);
+  if (projects.length === 0 || projects.some((name) => name.includes('*'))) {
+    throw new Error(
+      'PLAYWRIGHT_ANALYTICS_STANDALONE is set, but the command line does not name its projects ' +
+        `(--project: [${projects.join(', ')}]). The standalone analytics projects replace the app_settings ` +
+        'row outside the perm serial chain and may run only as a single-project run, e.g. ' +
+        '`--project analytics-default-standalone`. Unset the variable for a full-suite run.'
+    );
+  }
+}
+
+// Standalone analytics — OPT-IN (PLAYWRIGHT_ANALYTICS_STANDALONE), and refused without `--project` by the guard above.
+//
+// A short stand-alone form of the tail of the perm chain: the same dataset and the same four spec files the `voter-prefs-tracking` project runs (the tracking spec, the analytics privacy journey, the Global Privacy Control spec and the Contestant terms-tracking spec), behind a setup that depends on nothing. The project `analytics-consent-free` runs the consent-free spec behind the same setup. A single-project run therefore seeds one dataset and runs its spec files instead of pulling the whole perm chain, which is what makes it usable for a run repeated until it is understood, and for a run with the dev server in another consent mode.
+//
+// The setup and teardown projects point at the perm pair's own files, so the dataset, its prefix and its teardown accounting are the perm project's. They are kept out of `BASE_PROJECTS`, so the terminal closed-project node never waits for them.
+const ANALYTICS_STANDALONE_PROJECTS: Array<Project> = process.env.PLAYWRIGHT_ANALYTICS_STANDALONE
+  ? [
+      {
+        name: 'data-setup-analytics-standalone',
+        testMatch: /perm-analytics-tracking\.setup\.ts/,
+        teardown: 'data-teardown-analytics-standalone'
+      },
+      {
+        name: 'data-teardown-analytics-standalone',
+        testMatch: /perm-analytics-tracking\.teardown\.ts/,
+        // reason: the accounting assertion in runTeardownAsserted is state-mutating — a retry always observes an already-cleared prefix (0/0/0) and passes, so CI's retries: 3 would mask exactly the partial-delete class the assertion exists to catch, while local retries: 0 would still red on the same defect.
+        retries: 0
+      },
+      {
+        name: 'analytics-default-standalone',
+        testDir: './tests/specs',
+        testMatch:
+          /[\\/](voter[\\/](analytics-privacy|voter-prefs-tracking|analytics-gpc)|contestant[\\/]contestant-terms-tracking)\.spec\.ts$/,
+        fullyParallel: false,
+        use: { ...devices['Desktop Chrome'] },
+        dependencies: ['data-setup-analytics-standalone']
+      },
+      // analytics-consent-free — the consent-free spec, on the same dataset and setup. It needs the dev server in consent-free mode, which no other project of any run expects, so it is collected here only and never by the default run. Its first test checks the mode on the privacy page and fails by name without the prefix in the opt-in list of the docblock below.
+      {
+        name: 'analytics-consent-free',
+        testDir: './tests/specs/voter',
+        testMatch: /voter-tracking-consent-free\.spec\.ts$/,
+        fullyParallel: false,
+        use: { ...devices['Desktop Chrome'] },
+        dependencies: ['data-setup-analytics-standalone']
+      }
+    ]
+  : [];
+
+/**
  * Playwright configuration with project dependencies pattern.
  *
  * The suite is:
@@ -1316,19 +1626,19 @@ export default defineConfig({
     baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
   },
 
-  projects: [...BASE_PROJECTS, ...CLOSED_PROJECT_TRIO],
+  projects: [...BASE_PROJECTS, ...CLOSED_PROJECT_TRIO, ...ANALYTICS_STANDALONE_PROJECTS],
 
-  // Mock OIDC issuer for the bank-auth-journey. PLAYWRIGHT_BANK_AUTH-gated so it NEVER spawns in the default suite. Playwright manages its lifecycle (start → wait-for-port → teardown). The readiness probe hits the issuer's HTTPS JWKS endpoint; `ignoreHTTPSErrors: true` is required because the issuer's cert is self-signed (CN=127.0.0.1). The issuer is self-contained (needs no app env), so spawning it from the Playwright worker is clean — the SvelteKit frontend server's IdP-pointing env is a SEPARATE operator responsibility (documented in IDURA-TEST-RUNBOOK.md). `reuseExistingServer` outside CI lets a hand-started issuer be reused during local iteration.
-  ...(process.env.PLAYWRIGHT_BANK_AUTH
-    ? {
-        webServer: {
-          // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The Playwright `webServer.command` is resolved relative to the config file's directory (`tests/`), so a bare `tests/tests/support/...` relative path would double into `tests/tests/tests/...` and fail to resolve (ERR_MODULE_NOT_FOUND). The absolute entry path makes the spawn cwd-independent.
-          command: `npx tsx ${path.join(TESTS_DIR, 'support/mockOidcIssuerEntry.ts')}`,
-          url: 'https://127.0.0.1:9443/.well-known/openid-configuration/jwks',
-          ignoreHTTPSErrors: true,
-          reuseExistingServer: !process.env.CI,
-          timeout: 30_000
-        }
+  // Mock OIDC issuer for the identity-provider projects, spawned in every run. Playwright manages its lifecycle (start → wait-for-port → teardown). The readiness probe hits the issuer's HTTPS JWKS endpoint; `ignoreHTTPSErrors: true` is required because the issuer's cert is self-signed (CN=127.0.0.1). The issuer is self-contained (needs no app env), so spawning it from the Playwright worker is clean — the dev server's environment that points at it is prepared by `tests/scripts/e2e-run.sh`. `reuseExistingServer` outside CI lets a hand-started issuer be reused during local iteration.
+  //
+  // `tests/scripts/visual-container.sh` sets VC_RUN_DIR. The visual project reads nothing from the issuer, and the tree that container mounts holds the host's esbuild, which cannot start `tsx` on the container's platform.
+  webServer: process.env.VC_RUN_DIR
+    ? []
+    : {
+        // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The Playwright `webServer.command` is resolved relative to the config file's directory (`tests/`), so a bare `tests/tests/support/...` relative path would double into `tests/tests/tests/...` and fail to resolve (ERR_MODULE_NOT_FOUND). The absolute entry path makes the spawn cwd-independent.
+        command: `npx tsx ${path.join(TESTS_DIR, 'support/mockOidcIssuerEntry.ts')}`,
+        url: 'https://127.0.0.1:9443/.well-known/openid-configuration/jwks',
+        ignoreHTTPSErrors: true,
+        reuseExistingServer: !process.env.CI,
+        timeout: 30_000
       }
-    : {})
 });

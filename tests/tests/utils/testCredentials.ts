@@ -1,3 +1,8 @@
+import path from 'path';
+import { PASSWORDLESS_SESSION_ADDRESS_PREFIX } from './invitationConstants';
+import { RUN_ADDRESS_TAG, runScopedAddress } from './runAddressTag';
+import { TESTS_DIR } from './testsDir';
+
 /**
  * Shared credentials for the E2E identities registered on the base dataset.
  *
@@ -51,3 +56,127 @@ export const TEST_CANDIDATE_EMAIL = `${TEST_CANDIDATE_EXTERNAL_ID}@test.openvaa.
 
 /** tests/-only password constant used by forceRegister + UI login flows. */
 export const TEST_CANDIDATE_PASSWORD = 'Password1!';
+
+/**
+ * external_id of the base-dataset candidate edited by the user who has not accepted the terms of use.
+ * Must exist in `packages/dev-seed/src/templates/e2e/base.ts`.
+ *
+ * Why this candidate: it is neither CA-AA-1, whose one editor grant the base session's user holds, nor the candidate the contestant journey registers through the email flow. It is seeded unconfirmed, so voters do not see it whether or not it has an editor.
+ */
+export const TEST_TERMS_PENDING_CANDIDATE_EXTERNAL_ID = 'test-e2e-base-ca-aa-hidden';
+
+/** Email minted for the user who has not accepted the terms of use (perm-* naming convention). */
+export const TEST_TERMS_PENDING_CANDIDATE_EMAIL = `${TEST_TERMS_PENDING_CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
+
+/**
+ * Where the session of the user who has not accepted the terms of use is stored.
+ *
+ * Declared here, once, and imported by the setup that writes the file (`auth.setup.ts`) and by its two readers, so none of them can name a different file: the spec that scans the view (`contestant-a11y.spec.ts`), and the Playwright configuration, which names it as the stored session of the `contestant-terms-gate-phone` project. Read-only for the run: nothing accepts the terms under this session and nothing signs it out.
+ *
+ * Distinct from the base candidate's `../playwright/.auth/user.json` on purpose: a shared file would let whichever setup test ran last decide which user every reader of the file is.
+ */
+export const TERMS_PENDING_STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user-terms-pending.json');
+
+/**
+ * external_id of the first base-dataset candidate the multi-entity identity edits. Its displayed name sorts before the second's.
+ * Must exist in `packages/dev-seed/src/templates/e2e/base.ts`, unconfirmed and with no other editor.
+ */
+export const TEST_SELECTION_CANDIDATE_A_EXTERNAL_ID = 'test-e2e-base-ca-sel-a';
+
+/**
+ * external_id of the second base-dataset candidate the multi-entity identity edits.
+ * Must exist in `packages/dev-seed/src/templates/e2e/base.ts`, unconfirmed and with no other editor.
+ */
+export const TEST_SELECTION_CANDIDATE_B_EXTERNAL_ID = 'test-e2e-base-ca-sel-b';
+
+/**
+ * external_id of the base-dataset organization all three entity-selection identities are registered on.
+ * Must exist in `packages/dev-seed/src/templates/e2e/base.ts`, unconfirmed.
+ */
+export const TEST_SELECTION_ORGANIZATION_EXTERNAL_ID = 'test-e2e-base-or-sel';
+
+/** Email of the user who edits two candidates and one organization. */
+export const TEST_MULTI_ENTITY_EMAIL = 'entity-selection-multi@test.openvaa.local';
+
+/** Email of the user whose only grant is removed after sign-in, and who therefore has nothing to edit. */
+export const TEST_NO_ENTITY_EMAIL = 'entity-selection-none@test.openvaa.local';
+
+/** Email of the user a spec signs in through the login form and then signs out. No session is stored for it. */
+export const TEST_LOGOUT_ENTITY_EMAIL = 'entity-selection-logout@test.openvaa.local';
+
+/**
+ * Where the session of the user who edits several entities is stored.
+ *
+ * Declared here, once, for the setup that writes the file (`entity-selection.setup.ts`), the Playwright project that loads it and the specs that read it, so none of them can name a different file. Read-only for the run: nothing signs this session out.
+ */
+export const MULTI_ENTITY_STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user-multi-entity.json');
+
+/**
+ * Where the session of the user who has nothing to edit is stored.
+ *
+ * Declared here, once, for the setup that writes the file (`entity-selection.setup.ts`) and the specs that read it. Read-only for the run: nothing signs this session out.
+ */
+export const NO_ENTITY_STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user-no-entity.json');
+
+/**
+ * external_id of the first member candidate of the `perm-analytics-tracking` dataset, edited by the user who accepts the terms of use without opting out of usage data.
+ * Must exist in `packages/dev-seed/src/templates/e2e/perm/perm-analytics-tracking.ts`, with the dataset's prefix.
+ */
+export const ANALYTICS_TERMS_GRANTING_EXTERNAL_ID = 'e2e-perm-analytics-ca-1-1a';
+
+/** Email of the user who accepts the terms of use without opting out (perm-* naming convention). */
+export const ANALYTICS_TERMS_GRANTING_EMAIL = `${ANALYTICS_TERMS_GRANTING_EXTERNAL_ID}@test.openvaa.local`;
+
+/**
+ * Where the session of the user who accepts without opting out is stored. The terms-tracking spec writes it while the user has not yet accepted, so every context opened from it starts signed in; the acceptance itself is held on the server.
+ */
+export const ANALYTICS_TERMS_GRANTING_STORAGE_STATE = path.join(
+  TESTS_DIR,
+  '../playwright/.auth/analytics-terms-granting.json'
+);
+
+/**
+ * external_id of the second member candidate of the `perm-analytics-tracking` dataset, edited by the user who accepts the terms of use with the opt-out ticked.
+ * Must exist in `packages/dev-seed/src/templates/e2e/perm/perm-analytics-tracking.ts`, with the dataset's prefix.
+ */
+export const ANALYTICS_TERMS_REFUSING_EXTERNAL_ID = 'e2e-perm-analytics-ca-2-1a';
+
+/** Email of the user who accepts the terms of use with the opt-out ticked (perm-* naming convention). */
+export const ANALYTICS_TERMS_REFUSING_EMAIL = `${ANALYTICS_TERMS_REFUSING_EXTERNAL_ID}@test.openvaa.local`;
+
+/** Where the session of the user who accepts with the opt-out ticked is stored. The terms-tracking spec writes it while the user has not yet accepted. */
+export const ANALYTICS_TERMS_REFUSING_STORAGE_STATE = path.join(
+  TESTS_DIR,
+  '../playwright/.auth/analytics-terms-refusing.json'
+);
+
+/** The longest local part an email address can have, in characters. */
+const LOCAL_PART_MAX_LENGTH = 64;
+
+/**
+ * Email of the user whose account has no password.
+ *
+ * Lower-case, under the address prefix reserved for this identity, and with a local part of exactly {@link LOCAL_PART_MAX_LENGTH} characters: the prefix, the run tag, then one fixed letter up to the length. Neither the tag nor the filler has a hyphen or a dot, so nothing after the prefix offers a line break.
+ */
+export const TEST_PASSWORDLESS_EMAIL = runScopedAddress(
+  PASSWORDLESS_SESSION_ADDRESS_PREFIX,
+  RUN_ADDRESS_TAG,
+  LOCAL_PART_MAX_LENGTH
+);
+
+/** The stable beginning of {@link L10N_POSITIVE_CANDIDATE_EMAIL}, the same in every run: the run tag follows it. The walk's setup and teardown remove every user under it. */
+export const L10N_POSITIVE_CANDIDATE_ADDRESS_PREFIX = 'candidate-l10n-pos-aa-';
+
+/**
+ * Email of the candidate the positive localisation walk invites and registers through the mailed sign-in link.
+ *
+ * Lower-case, on the test domain, its local part {@link L10N_POSITIVE_CANDIDATE_ADDRESS_PREFIX} followed by the run tag.
+ */
+export const L10N_POSITIVE_CANDIDATE_EMAIL = runScopedAddress(L10N_POSITIVE_CANDIDATE_ADDRESS_PREFIX, RUN_ADDRESS_TAG);
+
+/**
+ * Where the session of the user who has no password is stored.
+ *
+ * Declared here, once, so that whatever writes the file and whatever reads it name the same file. Read-only for a run: a reader that set a password under this session, or signed it out, would change what every other reader of the file meets.
+ */
+export const PASSWORDLESS_STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/user-passwordless.json');

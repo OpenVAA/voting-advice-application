@@ -23,13 +23,4 @@ setup('import perm-closed-project dataset', async () => {
   const client = new SupabaseAdminClient();
   await client.unregisterCandidate(CANDIDATE_EMAIL);
   await client.forceRegister(CANDIDATE_EXTERNAL_ID, CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
-
-  const found = await client.findData('candidates', { external_id: { $eq: CANDIDATE_EXTERNAL_ID } });
-  const rows = found.type === 'success' ? (found.data ?? []) : [];
-  if (rows.length !== 1) {
-    throw new Error(`perm-closed-project setup: expected exactly one candidate '${CANDIDATE_EXTERNAL_ID}'.`);
-  }
-  await client.update('candidates', String(rows[0].id), {
-    terms_of_use_accepted: '2025-01-01T00:00:00.000Z'
-  });
 });

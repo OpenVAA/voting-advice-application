@@ -150,12 +150,23 @@ export async function assertAxeGates(
  * @param page - The page the scan is about to read.
  * @param options.layoutChrome - Whether the page renders the layout's header; `true` when absent.
  */
-export async function assertDarkThemeApplied(page: Page): Promise<void> {
+export async function assertDarkThemeApplied(
+  page: Page,
+  { layoutChrome = true }: { layoutChrome?: boolean } = {}
+): Promise<void> {
   await expect
     .poll(() => page.evaluate(() => window.matchMedia('(prefers-color-scheme: dark)').matches), {
       timeout: TIMEOUTS.page
     })
     .toBe(true);
+
+  if (!layoutChrome) {
+    await expect(
+      page.getByTestId(testIds.shared.navigation.menuToggle),
+      'a page scanned as having no layout chrome renders the menu toggle'
+    ).toHaveCount(0);
+    return;
+  }
 
   const { liveTokenColor, chromeColor } = await page.evaluate((menuToggleTestId) => {
     // A node created NOW cannot be stale, so its colour is the live token.
