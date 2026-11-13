@@ -49,6 +49,25 @@ SELECT
   ON TABLE public.storage_config TO service_role;
 
 --------------------------------------------------------------------------------
+-- Storage buckets: public-assets and private-assets
+--
+-- The two buckets the policies and cleanup triggers below name. A hosted project gets its buckets from this statement alone. The local CLI also writes both, from the `[storage.buckets.*]` blocks of config.toml, whenever it starts the storage service, so the values here must equal the ones declared there: `public` is true for public-assets only, and the limit on one object is 524288000 bytes (500 MiB) in both.
+--
+-- A row that already exists is left as it is.
+--------------------------------------------------------------------------------
+INSERT INTO
+  storage.buckets (id, name, public, file_size_limit)
+VALUES
+  ('public-assets', 'public-assets', true, 524288000),
+  (
+    'private-assets',
+    'private-assets',
+    false,
+    524288000
+  )
+ON CONFLICT (id) DO NOTHING;
+
+--------------------------------------------------------------------------------
 -- storage_path_can: may this caller do this verb to this path, at this scope?
 --
 -- The storage layer's whole authority decision, delegated to `user_can` (301-auth-functions.sql) with the path's scope and id, and at entity scope with the entity type the type segment names. Fourteen of the fifteen policies on storage.objects call it and carry no predicate of their own; the anon read routes through storage_path_is_public instead, for the reason stated there.
@@ -147,6 +166,16 @@ BEGIN
   END IF;
 
   IF p_scope = 'entity' THEN
+    -- The answers lock: an entity-scope write is refused while the project's answers are locked. The setting is read here rather than through `private.project_answers_locked`, so no second definer call is nested in this one.
+    IF p_verb = 'write' AND EXISTS (
+      SELECT 1
+      FROM public.app_settings s
+      WHERE s.project_id = v_project_id
+        AND s.settings #> '{access,answersLocked}' = 'true'::jsonb
+    ) THEN
+      RETURN false;
+    END IF;
+
     RETURN public.user_can('entity', v_entity_id, v_permission, v_entity_type);
   END IF;
 
@@ -214,13 +243,7 @@ BEGIN
 
   -- The four entity tables: the entity's own confirmation flag and a confirming nomination in this project.
   IF p_type IN ('candidates', 'organizations', 'factions', 'alliances') THEN
-    EXECUTE format(
-      'SELECT e.confirmed %s FROM public.%I e WHERE e.id = $1 AND e.project_id = $2',
-      CASE WHEN p_type = 'candidates'
-        THEN 'AND e.terms_of_use_accepted IS NOT NULL AND e.terms_of_use_accepted < now()'
-        ELSE '' END,
-      p_type
-    )
+    EXECUTE format('SELECT e.confirmed FROM public.%I e WHERE e.id = $1 AND e.project_id = $2', p_type)
     INTO v_row_visible
     USING v_entity_id, v_project_id;
 

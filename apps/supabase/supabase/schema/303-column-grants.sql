@@ -44,7 +44,6 @@ UPDATE (
   first_name,
   last_name,
   answers,
-  terms_of_use_accepted,
   confirmed
 ) ON public.candidates TO authenticated;
 
@@ -243,9 +242,4 @@ FROM
   authenticated;
 
 GRANT
-UPDATE (
-  name,
-  default_locale,
-  open_for_voters,
-  lock_nominations
-) ON public.projects TO authenticated;
+UPDATE (name, default_locale, open_for_voters) ON public.projects TO authenticated;

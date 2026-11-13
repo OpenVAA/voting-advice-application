@@ -40,6 +40,11 @@ CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.question_categories FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
 
+-- Refuses an entity type filter that is not null or a JSON array of entity types, for every writer; the function is declared in 011-validation-functions.sql.
+CREATE TRIGGER validate_entity_type_list
+BEFORE INSERT OR UPDATE OF entity_type ON public.question_categories FOR EACH ROW
+EXECUTE FUNCTION public.validate_entity_type_list ();
+
 CREATE TABLE public.questions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id uuid NOT NULL REFERENCES public.projects (id) ON DELETE CASCADE,
@@ -87,6 +92,11 @@ CREATE TABLE public.questions (
 CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON public.questions FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at ();
+
+-- Refuses an entity type filter that is not null or a JSON array of entity types, for every writer; the function is declared in 011-validation-functions.sql.
+CREATE TRIGGER validate_entity_type_list
+BEFORE INSERT OR UPDATE OF entity_type ON public.questions FOR EACH ROW
+EXECUTE FUNCTION public.validate_entity_type_list ();
 
 --------------------------------------------------------------------------------
 -- validate_question_choices: enforce valid choices for choice-type questions

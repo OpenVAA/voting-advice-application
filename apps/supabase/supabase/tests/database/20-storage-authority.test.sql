@@ -18,7 +18,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (46);
+  plan (47);
 
 SELECT
   create_test_data ();
@@ -124,7 +124,7 @@ SELECT
   is (
     tracer_affected_rows (
       format(
-        $$UPDATE public.candidates SET short_name = '{"en":"Tracer"}'::jsonb WHERE id = '%s'$$,
+        $$UPDATE public.candidates SET info = '{"en":"Tracer"}'::jsonb WHERE id = '%s'$$,
         test_id ('candidate_a')::text
       )
     ),
@@ -487,43 +487,6 @@ SELECT
     0,
     'anon: an asset of a confirmed entity with NO confirming nomination is NOT readable -- the nomination conjunct, flipped alone'
   );
-
--- 19. DENY, terms-of-use conjunct flipped alone. This is the conjunct that ONLY `candidates` carries, and the one a composition of the three visibility helpers alone would silently drop: the candidate ROW would stay hidden from anon while its PHOTO stayed fetchable -- storage disagreeing with tables, in the one direction a passing read test cannot report. `anon_select_candidates` carries both guards and so does storage_path_is_public's candidate branch.
-SELECT
-  reset_role ();
-
-UPDATE candidates
-SET
-  terms_of_use_accepted = NULL
-WHERE
-  id = test_id ('candidate_a');
-
-SELECT
-  set_test_user ('anon');
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)
-      FROM
-        storage.objects
-      WHERE
-        bucket_id = 'public-assets'
-        AND name LIKE '%/candidates/' || test_id ('candidate_a')::text || '/photo.jpg'
-    )::integer,
-    0,
-    'anon: an asset of an otherwise visible candidate whose terms of use are not accepted is NOT readable -- the terms-of-use conjunct, flipped alone'
-  );
-
-SELECT
-  reset_role ();
-
-UPDATE candidates
-SET
-  terms_of_use_accepted = now() - interval '1 day'
-WHERE
-  id = test_id ('candidate_a');
 
 -- =====================================================================
 -- 19-22: the private bucket, and anon writes
@@ -1305,6 +1268,45 @@ SELECT
     ],
     ARRAY[1::bigint, 3::bigint, 6::bigint, 0::bigint],
     'structural: storage_path_can references its verb argument and resolves 3 read permissions and 6 write permissions with an EMPTY intersection -- the verb changes which question is asked'
+  );
+
+SELECT
+  reset_role ();
+
+-- =====================================================================
+-- 46-47: the cross-type refusal in the other direction
+--
+-- Test 6 refuses a candidate grantee the folder of an organization of its own project. This is its mirror: an organization grantee is refused the folder of a candidate of its own project. The allowed write comes first, in the same session, so the refusal is of that folder and not of this caller's writes at large.
+-- =====================================================================
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+-- 46. ALLOW. The organization grantee's own folder.
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO storage.objects (id, bucket_id, name) VALUES (gen_random_uuid(), 'public-assets', '%s/organizations/%s/t46.png')$$,
+      test_id ('project_a')::text,
+      test_id ('org_a')::text
+    ),
+    'storage: an organization grantee still INSERTs under its own entity folder at the end of this file'
+  );
+
+-- 47. DENY. A candidate folder of the same project.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO storage.objects (id, bucket_id, name) VALUES (gen_random_uuid(), 'public-assets', '%s/candidates/%s/t47.jpg')$$,
+      test_id ('project_a')::text,
+      test_id ('candidate_a')::text
+    ),
+    '42501',
+    NULL,
+    'storage: an organization grantee is DENIED a write into a candidate folder of the same project -- because candidate_a is not this caller''s entity'
   );
 
 SELECT

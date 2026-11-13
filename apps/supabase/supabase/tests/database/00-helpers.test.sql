@@ -519,10 +519,10 @@ BEGIN
   -- candidate_b is unconfirmed and its project is closed to voters, so it is invisible twice over.
   --
   -- The candidates carry NO organization column: the candidate-to-organization association is stated once, on the parent_nomination_id edge below. candidate_a reaches org_a through nomination_cand_a -> nomination_org_a; candidate_a2 reaches nothing, because it is a member with no nomination at all, and that asymmetry is what 21-entity-organization.test.sql's email-variable pair discriminates on.
-  INSERT INTO candidates (id, project_id, first_name, last_name, terms_of_use_accepted, confirmed) VALUES
-    (test_id('candidate_a'),  test_id('project_a'), 'Alice', 'Alpha',   now() - interval '1 day', true),
-    (test_id('candidate_b'),  test_id('project_b'), 'Bob',   'Bravo',   NULL,                     false),
-    (test_id('candidate_a2'), test_id('project_a'), 'Carol', 'Charlie', now() - interval '1 day', true);
+  INSERT INTO candidates (id, project_id, first_name, last_name, confirmed) VALUES
+    (test_id('candidate_a'),  test_id('project_a'), 'Alice', 'Alpha',    true),
+    (test_id('candidate_b'),  test_id('project_b'), 'Bob',   'Bravo',   false),
+    (test_id('candidate_a2'), test_id('project_a'), 'Carol', 'Charlie',  true);
 
   -- ===== Factions ===== organization_id is NOT NULL, so each faction is given the organization of its own project: faction_a to org_a, faction_b to org_b. No table constraint forbids a faction whose organization sits in the other project, which is why the pairing is stated here rather than left to chance; validate_nomination reads it.
   INSERT INTO factions (id, project_id, organization_id, name, confirmed) VALUES

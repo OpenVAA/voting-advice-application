@@ -23,7 +23,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (33);
+  plan (31);
 
 SELECT
   create_test_data ();
@@ -65,20 +65,6 @@ SELECT
   is (
     (
       SELECT
-        lock_nominations
-      FROM
-        public.projects
-      WHERE
-        name = 'flag-probe bare'
-    ),
-    false,
-    'A project created naming no flag does NOT lock nominations'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
         open_for_voters
       FROM
         public.projects
@@ -113,16 +99,18 @@ SELECT
   is (
     (
       SELECT
-        is_nullable
+        count(*) FILTER (
+          WHERE
+            column_name LIKE '%nomination%'
+        ) || '/' || bool_or(column_name = 'open_for_voters')
       FROM
         information_schema.columns
       WHERE
         table_schema = 'public'
         AND table_name = 'projects'
-        AND column_name = 'lock_nominations'
     ),
-    'NO',
-    'The lock flag is NOT NULL -- existence, type and default are the whole of what is claimed for it'
+    '0/true',
+    'No column of projects names nominations: the nominations lock is the app setting access.nominationsLocked and has no column beside it'
   );
 
 -- =====================================================================
@@ -155,21 +143,6 @@ SELECT
     ),
     false,
     'Fixture project B is NOT open for voters -- the hidden half of the control group'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)
-      FROM
-        public.projects
-      WHERE
-        id IN (test_id ('project_a'), test_id ('project_b'))
-        AND lock_nominations
-    ),
-    0::bigint,
-    'Neither fixture project locks nominations -- the flag is seeded nowhere because it ships inert'
   );
 
 -- =====================================================================
@@ -309,23 +282,6 @@ SELECT
     ),
     4::bigint,
     'All four entity tables carry the confirmation column as a non-nullable boolean defaulting false'
-  );
-
--- The inert flag's remaining claims -- type and default. Nothing else is asserted for it anywhere, and nothing should be until 162-12 wires it.
-SELECT
-  is (
-    (
-      SELECT
-        data_type || '|' || coalesce(column_default, 'NONE')
-      FROM
-        information_schema.columns
-      WHERE
-        table_schema = 'public'
-        AND table_name = 'projects'
-        AND column_name = 'lock_nominations'
-    ),
-    'boolean|false',
-    'The lock flag is a boolean defaulting false -- the whole of what is claimed for an inert column'
   );
 
 -- =====================================================================
@@ -642,9 +598,27 @@ SELECT
     ARRAY[
       'candidate_only',
       'organization_list',
+      'organization_list_and_independents',
       'organization_only'
     ]::text[],
-    'The nomination-shape enum has exactly the three ratified members and no fourth'
+    'The nomination-shape enum has exactly the four ratified members and no fifth'
+  );
+
+-- The default is read without its cast, whose schema qualification follows the search path.
+SELECT
+  is (
+    (
+      SELECT
+        split_part(column_default, '::', 1)
+      FROM
+        information_schema.columns
+      WHERE
+        table_schema = 'public'
+        AND table_name = 'elections'
+        AND column_name = 'election_type'
+    ),
+    $$'organization_list_and_independents'$$,
+    'An election that states no type takes organization_list_and_independents, the column default'
   );
 
 -- The three retired values Task 1 DERIVED from the tree -- not the two the canonical documents name. The third lives only in an adapter test fixture, and a rejection grid written against two literals would have left it representable.

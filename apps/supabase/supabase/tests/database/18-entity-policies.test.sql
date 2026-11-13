@@ -17,7 +17,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (60);
+  plan (70);
 
 SELECT
   create_test_data ();
@@ -1308,11 +1308,7 @@ SELECT
           SELECT
             replace(
               replace(
-                replace(
-                  COALESCE(qual, '-') || '~' || COALESCE(with_check, '-'),
-                  ' AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now())',
-                  ''
-                ),
+                COALESCE(qual, '-') || '~' || COALESCE(with_check, '-'),
                 tablename || '.',
                 'TBL.'
               ),
@@ -1334,7 +1330,7 @@ SELECT
         ) f
     ),
     1,
-    'SELECT family: the four entity tables'' SELECT predicates are ONE expression modulo the table name, the table''s own entity-type literal and the two terms-of-use conjuncts candidates alone carries'
+    'SELECT family: the four entity tables'' SELECT predicates are ONE expression modulo the table name and the table''s own entity-type literal'
   );
 
 -- The SELECT-family normaliser replaces only the table's own type, so a foreign type literal would already split it into two expressions. This assertion names the property on all eight entity SELECT policies, anon ones included: each passes its own type, and none passes another table's.
@@ -1373,30 +1369,6 @@ SELECT
     ),
     '8/8/0',
     'all EIGHT entity SELECT policies pass their own table''s entity type, and none passes another table''s'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*) FILTER (
-          WHERE
-            COALESCE(qual, '') LIKE '% AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now())%'
-        )::text || '/' || count(*)::text
-      FROM
-        pg_policies
-      WHERE
-        schemaname = 'public'
-        AND tablename IN (
-          'organizations',
-          'candidates',
-          'factions',
-          'alliances'
-        )
-        AND cmd = 'SELECT'
-    ),
-    '2/8',
-    'the term the SELECT-family normaliser strips is carried by exactly TWO of the EIGHT entity SELECT policies -- both of them candidates'' -- so the strip removes something real, the population it strips from is the whole eight, and no other entity table has acquired a terms-of-use conjunct'
   );
 
 SELECT
@@ -1559,6 +1531,171 @@ SELECT
     ),
     'NONE / examined>=15:true',
     'every SECURITY DEFINER function in schemas public and private pins its search_path, over a population floored at fifteen -- the floor is asserted too, so a clean NONE cannot come from a query that reached no functions'
+  );
+
+-- =====================================================================
+-- Section 11: the image column, across entity types (60-70)
+-- =====================================================================
+-- An image write names the table of the entity's type, so the UPDATE policy of that table is the only thing between an editor of one entity and the image of another. Asked here in the three pairings one project allows: a candidate editor against an organization, a candidate editor against another candidate, and an organization editor against a candidate.
+--
+-- Every target row is one the caller CAN SEE: the shared fixture's project-A entities are confirmed and nominated. The SELECT policy therefore admits the row and the UPDATE predicate alone refuses it, as in section 6b.
+--
+-- Each session opens with its own allowed write, so a zero below is a refusal of that row and not an instrument that writes nothing.
+CREATE OR REPLACE FUNCTION entity_image_update_rowcount (p_table text, p_id uuid, p_path text) RETURNS integer LANGUAGE plpgsql SECURITY INVOKER AS $$
+DECLARE
+  n integer;
+BEGIN
+  EXECUTE format('UPDATE public.%I SET image = jsonb_build_object(''path'', $1) WHERE id = $2', p_table) USING p_path, p_id;
+  GET DIAGNOSTICS n = ROW_COUNT;
+  RETURN n;
+END;
+$$;
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  is (
+    entity_image_update_rowcount (
+      'candidates',
+      test_id ('candidate_a'),
+      'tracer/candidate-own.jpg'
+    ),
+    1,
+    'a candidate editor may write the image of its own candidate row'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$UPDATE public.organizations SET image = '{"path":"tracer/denied-by-candidate.jpg"}'::jsonb WHERE id = %L$$,
+      test_id ('org_a')
+    ),
+    'a candidate editor''s image write on an organization of its own project raises nothing'
+  );
+
+SELECT
+  is (
+    entity_image_update_rowcount (
+      'organizations',
+      test_id ('org_a'),
+      'tracer/denied-by-candidate.jpg'
+    ),
+    0,
+    'a candidate editor''s image write on an organization of its own project affects no row'
+  );
+
+SELECT
+  is (
+    entity_image_update_rowcount (
+      'candidates',
+      test_id ('candidate_a2'),
+      'tracer/denied-by-candidate.jpg'
+    ),
+    0,
+    'a candidate editor''s image write on another candidate of its own project affects no row'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  ok (
+    (
+      SELECT
+        image IS DISTINCT FROM '{"path":"tracer/denied-by-candidate.jpg"}'::jsonb
+      FROM
+        organizations
+      WHERE
+        id = test_id ('org_a')
+    ),
+    'that organization''s image is unchanged after the candidate editor''s denied write'
+  );
+
+SELECT
+  ok (
+    (
+      SELECT
+        image IS DISTINCT FROM '{"path":"tracer/denied-by-candidate.jpg"}'::jsonb
+      FROM
+        candidates
+      WHERE
+        id = test_id ('candidate_a2')
+    ),
+    'that other candidate''s image is unchanged after the candidate editor''s denied write'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+SELECT
+  is (
+    entity_image_update_rowcount (
+      'organizations',
+      test_id ('org_a'),
+      'tracer/organization-own.jpg'
+    ),
+    1,
+    'an organization editor may write the image of its own organization row'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$UPDATE public.candidates SET image = '{"path":"tracer/denied-by-organization.jpg"}'::jsonb WHERE id = %L$$,
+      test_id ('candidate_a')
+    ),
+    'an organization editor''s image write on a candidate of its own project raises nothing'
+  );
+
+SELECT
+  is (
+    entity_image_update_rowcount (
+      'candidates',
+      test_id ('candidate_a'),
+      'tracer/denied-by-organization.jpg'
+    ),
+    0,
+    'an organization editor''s image write on a candidate of its own project affects no row'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        image
+      FROM
+        candidates
+      WHERE
+        id = test_id ('candidate_a')
+    ),
+    '{"path":"tracer/candidate-own.jpg"}'::jsonb,
+    'that candidate''s image is still its own editor''s write after the organization editor''s denied write'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        image
+      FROM
+        organizations
+      WHERE
+        id = test_id ('org_a')
+    ),
+    '{"path":"tracer/organization-own.jpg"}'::jsonb,
+    'the organization''s image is its own editor''s write, so both allowed writes landed'
   );
 
 SELECT

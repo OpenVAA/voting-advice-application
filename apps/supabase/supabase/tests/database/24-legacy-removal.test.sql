@@ -26,7 +26,7 @@ DROP TABLE IF EXISTS __tcache__;
 DROP TABLE IF EXISTS retired_grid;
 
 SELECT
-  plan (23);
+  plan (24);
 
 SELECT
   create_test_data ();
@@ -352,7 +352,7 @@ CREATE TEMP TABLE retired_grid (
   ident text NOT NULL,
   tbl text NOT NULL,
   digest_retired text,
-  digest_noauth text
+  digest_table text
 );
 
 DO $$
@@ -376,8 +376,11 @@ BEGIN
     ) v (ord, nm, uid)
     ORDER BY v.ord
   LOOP
-    -- Pass 1: a token of the RETIRED shape. Its payload is the identity's real authority, spelled under the retired key, which is the strongest form of the question: not "does an empty retired token confer nothing" but "does a retired token carrying this identity's whole authority confer nothing".
-    PERFORM set_test_retired_claim(i.uid, test_user_grants(i.nm));
+    -- Pass 1: a token of the RETIRED shape whose payload is a global admin entry, for every identity: authority the table grants none of them but super_admin, so reading the retired key would show.
+    PERFORM set_test_retired_claim(
+      i.uid,
+      '[{"scope": "global", "target_type": null, "target_id": null, "role": "admin"}]'::jsonb
+    );
     SELECT array_agg(d.tbl ORDER BY d.tbl), array_agg(d.digest ORDER BY d.tbl)
       INTO v_tbls, v_digs
       FROM test_rls_digest() d;
@@ -387,17 +390,12 @@ BEGIN
 
     -- Pass 2: the SAME identity under a token whose grants claim is projected from its rows of the table, same sub.
     PERFORM set_test_user('authenticated', i.uid, '[]'::jsonb);
-    PERFORM set_config(
-      'request.jwt.claims',
-      jsonb_set(current_setting('request.jwt.claims')::jsonb, '{grants}', '[]'::jsonb)::text,
-      true
-    );
     SELECT array_agg(d.tbl ORDER BY d.tbl), array_agg(d.digest ORDER BY d.tbl)
       INTO v_tbls, v_digs
       FROM test_rls_digest() d;
     PERFORM reset_role();
     UPDATE retired_grid g
-    SET digest_noauth = u.g
+    SET digest_table = u.g
     FROM unnest(v_tbls, v_digs) AS u (t, g)
     WHERE g.ident = i.nm AND g.tbl = u.t;
   END LOOP;
@@ -421,9 +419,9 @@ SELECT
 SELECT
   is_empty (
     $q$
-    SELECT ident, tbl FROM retired_grid WHERE digest_retired IS DISTINCT FROM digest_noauth
+    SELECT ident, tbl FROM retired_grid WHERE digest_retired IS DISTINCT FROM digest_table
     $q$,
-    'a token of the retired claim shape shows every identity exactly the rows a caller with no authority claim sees: it confers nothing'
+    'RVK: a token of the retired claim shape shows every identity exactly the rows its grants in the table admit: the retired entry adds nothing beyond the table'
   );
 
 -- Non-vacuity. Two columns of empty digests agree perfectly and measure nothing; the anon-readable rows of the open project are what make at least one cell non-empty.
@@ -435,12 +433,31 @@ SELECT
       FROM
         retired_grid
       WHERE
-        digest_noauth <> ''
-        AND digest_noauth <> 'DENIED'
+        digest_table <> ''
+        AND digest_table <> 'DENIED'
     ),
     '>',
     0::bigint,
-    'and at least one table is non-empty for the no-authority caller, so the comparison above is not two columns of nothing'
+    'and at least one table is non-empty under the table-projected token, so the comparison above is not two columns of nothing'
+  );
+
+-- Discrimination. The retired payload grants global admin; if a real global admin grant showed no more than no grant at all, a path that read the retired key would leave every digest as it is and the equality above could not fail.
+SELECT
+  cmp_ok (
+    (
+      SELECT
+        count(*)
+      FROM
+        retired_grid a
+        JOIN retired_grid n ON n.tbl = a.tbl
+      WHERE
+        a.ident = 'super_admin'
+        AND n.ident = 'no_grant'
+        AND a.digest_table IS DISTINCT FROM n.digest_table
+    ),
+    '>',
+    0::bigint,
+    'and a global admin grant shows more than no grant on at least one table, so the retired token''s global admin entry would widen a view that read it'
   );
 
 SELECT
