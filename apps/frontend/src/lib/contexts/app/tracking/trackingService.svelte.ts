@@ -1,12 +1,16 @@
-import { log } from '@openvaa/app-shared';
 import { browser } from '$app/environment';
-import { getUUID } from '$lib/utils/components';
-import { purgeNullish } from '../../../utils/purgeNullish';
-import { sessionStorageState } from '../../utils/persistedState.svelte';
-import type { ReactiveHandle, WritableHandle } from '../../utils/reactiveHandle.type';
+import { buildBatch } from './batchBuilder';
+import { isGlobalPrivacyControlSet, mayFillSessionId, maySendEvents, maySendPageview } from './gates';
+import { sendBatch } from './relayTransport';
+import { createViewTracker } from './viewTracker';
+import { getVisitId } from './visitId';
+import type { AnalyticsProjection } from '$lib/analytics/modes';
+import type { ReactiveHandle } from '../../utils/reactiveHandle.type';
 import type { UserPreferences } from '../userPreferences.type';
-import type { TrackingEvent } from './trackingEvent.type';
-import type { TrackingHandler, TrackingService } from './trackingService.type';
+import type { BufferedEvent } from './batchBuilder';
+import type { GateInput } from './gates';
+import type { TrackingEvent, TrackingEventName } from './trackingEvent.type';
+import type { TrackingDataArgument, TrackingService } from './trackingService.type';
 
 /**
  * Pure-rune tracking-service producer as a Svelte 5 CLASS: a rune shell over the pure tracking modules.
@@ -37,75 +41,72 @@ export class TrackingServiceImpl implements TrackingService {
 
   readonly #appSettings: ReactiveHandle<AppSettings>;
   readonly #userPreferences: ReactiveHandle<UserPreferences>;
+  readonly #projection: ReactiveHandle<AnalyticsProjection>;
+  readonly #locale: () => string;
+
+  /** Whether the browser sends the Global Privacy Control signal, read once at construction. */
+  readonly #globalPrivacyControl: boolean;
 
   ////////////////////////////////////////////////////////////////////
   // Internal state variables (private, NON-reactive bookkeeping)
   ////////////////////////////////////////////////////////////////////
 
-  /**
-   * Contains the current pageview event, which will be automatically submitted containing any other submitted events when the user leaves the page or hides or closes the window.
-   */
-  #pageviewEvent:
-    | {
-        href: string;
-        from?: string;
-        start?: number;
-      }
-    | undefined = undefined;
+  /** The monotonic clock of the view tracker and of the buffered events' ages. */
+  readonly #now = (): number => performance.now();
 
-  /**
-   * Contains any unsubmitted compound events. These will be automatically submitted when the user leaves the app.
-   */
-  #unsubmittedEvents: Array<TrackingEvent> = [];
+  /** The current view and the single send of its pageview. */
+  readonly #views = createViewTracker({ now: this.#now });
+
+  /** The events waiting for the next flush. */
+  #events: Array<BufferedEvent> = [];
 
   ////////////////////////////////////////////////////////////////////
   // Reactive state
   ////////////////////////////////////////////////////////////////////
 
-  // Persistent session id, read as a rune handle (`.current`) so this producer stays store-free. PRODUCER-ONLY: it is not declared on `TrackingService` and `appContext` does not forward it — `track()` stamps it onto every event and `appContext.svelte.ts` passes this very handle into `surveyLink(...)`. The storage key is load-bearing: renaming it would orphan every browser's stored id.
-  readonly sessionId = sessionStorageState('appContext-sessionId', getUUID());
+  // Private $derived backing for the gate input. Declared here for type narrowing; the `$derived` is INSTALLED in the constructor (field-init order: class-field initializers run BEFORE the constructor body, so this `$derived` cannot reference the constructor-assigned inputs at the declaration site).
+  #gateValue!: GateInput;
 
-  // Private $state backing for the settable send handler.
-  #sendTrackingEventValue = $state<TrackingHandler | null | undefined>(undefined);
-
-  // Private $derived backing for the consent/browser/trackEvents gate. Declared here for type narrowing; the `$derived` is INSTALLED in the constructor (field-init order: class-field initializers run BEFORE the constructor body, so this `$derived` cannot reference the constructor-assigned `#appSettings` / `#userPreferences` at the declaration site).
-  #shouldTrackValue!: boolean;
-
-  // Own-enumerable handle-object fields (spread-safe). The actual getters/setters are installed in the constructor so they can close over `this` to reach the private `$state`/`$derived` backing fields.
-  readonly sendTrackingEvent!: WritableHandle<TrackingHandler | null | undefined>;
-  readonly shouldTrack!: ReactiveHandle<boolean>;
+  // Own-enumerable handle-object fields (spread-safe). The actual getters are installed in the constructor so they can close over `this` to reach the private `$derived` backing field.
+  readonly gate!: ReactiveHandle<GateInput>;
+  readonly surveySessionId!: ReactiveHandle<string | undefined>;
 
   constructor({
     appSettings,
-    userPreferences
+    userPreferences,
+    projection,
+    locale
   }: {
     appSettings: ReactiveHandle<AppSettings>;
     userPreferences: ReactiveHandle<UserPreferences>;
+    projection: ReactiveHandle<AnalyticsProjection>;
+    locale: () => string;
   }) {
     this.#appSettings = appSettings;
     this.#userPreferences = userPreferences;
+    this.#projection = projection;
+    this.#locale = locale;
+    this.#globalPrivacyControl = browser ? isGlobalPrivacyControlSet(navigator) : false;
 
-    // Install the consent/browser/trackEvents gate as a `$derived` AFTER the input handles are assigned (field-init order). No `$effect`.
-    this.#shouldTrackValue = $derived(
-      browser &&
-        this.#appSettings.current.analytics.trackEvents &&
-        this.#userPreferences.current.dataCollection?.consent === 'granted'
-    );
+    // Install the gate input as a `$derived` AFTER the input handles are assigned (field-init order). No `$effect`.
+    this.#gateValue = $derived({
+      projection: this.#projection.current,
+      globalPrivacyControl: this.#globalPrivacyControl,
+      trackEvents: this.#appSettings.current.analytics.trackEvents,
+      consent: this.#userPreferences.current.dataCollection?.consent
+    });
 
-    // Capture `this` so the handle-object getters/setters reach the private backing fields. The handle objects are OWN-ENUMERABLE field VALUES, so the `{ ...instance }` spread copies them intact.
-    // eslint-disable-next-line @typescript-eslint/no-this-alias -- handle-object `get current()`/`set()` methods have their own `this`; `self` captures the instance to reach the private backings (the spread-safe class pattern).
+    // Capture `this` so the handle-object getters reach the private backing field. The handle objects are OWN-ENUMERABLE field VALUES, so the `{ ...instance }` spread copies them intact.
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- handle-object `get current()` methods have their own `this`; `self` captures the instance to reach the private backing (the spread-safe class pattern).
     const self = this;
-    this.sendTrackingEvent = {
+    this.gate = {
       get current() {
-        return self.#sendTrackingEventValue;
-      },
-      set(v) {
-        self.#sendTrackingEventValue = v;
+        return self.#gateValue;
       }
     };
-    this.shouldTrack = {
+    this.surveySessionId = {
       get current() {
-        return self.#shouldTrackValue;
+        return mayFillSessionId(self.#gateValue) ? getVisitId() : undefined;
       }
     };
   }
@@ -114,58 +115,49 @@ export class TrackingServiceImpl implements TrackingService {
   // Tracking functions (arrow fields — survive detach after spread)
   ////////////////////////////////////////////////////////////////////
 
-  startPageview = (href: string, from?: string | null) => {
-    if (this.#pageviewEvent) log.debug('Pageview already started');
-    this.#pageviewEvent = {
-      href,
-      from: from ?? undefined,
-      start: Date.now()
-    };
+  startPageview = (routeId: string | null, params: Readonly<Record<string, string | undefined>> | null) => {
+    const visible = typeof document === 'undefined' || document.visibilityState === 'visible';
+    this.#views.start({ routeId, locale: this.#locale(), params }, visible);
   };
 
-  startEvent = (name: TrackingEvent['name'], data: TrackingEvent['data'] = {}) => {
-    const event = { name, data };
-    this.#unsubmittedEvents.push(event);
+  startEvent = <TName extends TrackingEventName>(
+    name: TName,
+    ...[data]: TrackingDataArgument<TName>
+  ): TrackingEvent => {
+    const event: TrackingEvent = { name, data: data ?? {} };
+    this.#events.push({ name, attributes: event.data, at: this.#now() });
     return event;
   };
 
-  submitAllEvents = () => {
-    if (this.#shouldTrackValue && (this.#pageviewEvent || this.#unsubmittedEvents.length)) {
-      const events: Record<string, TrackingEvent['data']> = {};
-      // This shouldn't happen
-      if (!this.#pageviewEvent) {
-        log.debug(`No pageviewEvent is available for events: ${JSON.stringify(this.#unsubmittedEvents)}`);
-        this.#pageviewEvent = { href: 'UNKNOWN' };
-      }
-      // Prefix a number to all subevent names
-      for (let i = 0; i < this.#unsubmittedEvents.length; i++) {
-        // We limit the max events to 50 (umami's limit) minus the ones we're adding by default
-        if (i >= 50 - 5) {
-          log.debug(`Too many unsubmitted events: ${this.#unsubmittedEvents.length}`);
-          break;
-        }
-        const { name, data } = this.#unsubmittedEvents[i];
-        events[`${i < 10 ? '0' : ''}${i}__${name}`] = data;
-      }
-      const { href, from, start } = this.#pageviewEvent;
-      const duration = start ? Date.now() - start : undefined;
-      this.track('pageview', { href, from, start, duration, ...events });
-    }
-    this.resetAllEvents();
+  track = <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>): void => {
+    this.startEvent(name, ...data);
   };
 
-  track = (name: TrackingEvent['name'], data: TrackingEvent['data'] = {}) => {
-    if (!this.#shouldTrackValue) return;
-    const send = this.#sendTrackingEventValue;
-    if (!send) return;
-    const dataToSend = purgeNullish({ vaaSessionId: this.sessionId.current, ...data });
-    log.debug('Tracking event dispatched', { name, data: dataToSend });
-    send({ name, data: dataToSend });
+  setPageVisible = (visible: boolean) => {
+    this.#views.setVisible(visible);
+  };
+
+  submitAllEvents = () => {
+    const view = this.#views.currentView();
+    const buffered = this.#events;
+    this.#events = [];
+    if (!view) return;
+    const input = this.#gateValue;
+    const pageview = maySendPageview(input) ? this.#views.takePageview() : undefined;
+    const sendEvents = maySendEvents(input);
+    const body = buildBatch({
+      view,
+      pageview,
+      events: sendEvents ? buffered : [],
+      visitId: sendEvents && input.projection.visitIdMode === 'memory' ? getVisitId() : undefined,
+      projection: input.projection,
+      now: this.#now()
+    });
+    if (body !== undefined) sendBatch(body);
   };
 
   resetAllEvents = () => {
-    this.#pageviewEvent = undefined;
-    this.#unsubmittedEvents = [];
+    this.#events = [];
   };
 }
 
@@ -176,10 +168,14 @@ export class TrackingServiceImpl implements TrackingService {
  */
 export function trackingService({
   appSettings,
-  userPreferences
+  userPreferences,
+  projection,
+  locale
 }: {
   appSettings: ReactiveHandle<AppSettings>;
   userPreferences: ReactiveHandle<UserPreferences>;
+  projection: ReactiveHandle<AnalyticsProjection>;
+  locale: () => string;
 }): TrackingServiceImpl {
-  return new TrackingServiceImpl({ appSettings, userPreferences });
+  return new TrackingServiceImpl({ appSettings, userPreferences, projection, locale });
 }

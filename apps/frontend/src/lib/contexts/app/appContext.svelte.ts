@@ -3,10 +3,12 @@ import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { browser } from '$app/environment';
 import { page } from '$app/state';
+import { INACTIVE_PROJECTION } from '$lib/analytics/modes';
 import { createFeedbackWriter } from '$lib/api/feedbackWriter';
 import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
 import { SurveyPopup } from '$lib/dynamic-components/survey/popup';
-import { mergeAppSettings, mergeInitialAppSettings } from '$lib/utils/settings';
+import { getLocale } from '$lib/paraglide/runtime';
+import { mergeInitialAppSettings } from '$lib/utils/settings';
 import { createGetRoute } from './getRoute.svelte';
 import { popupState } from './popup';
 import { surveyLink } from './survey.svelte';
@@ -16,6 +18,7 @@ import { getDataContext } from '../data';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { localStorageState } from '../utils/persistedState.svelte';
 import type { DynamicSettings } from '@openvaa/app-shared';
+import type { AnalyticsProjection } from '$lib/analytics/modes';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { FeedbackData } from '$lib/api/base/feedbackWriter.type';
 import type { AppContext, AppType } from './appContext.type';
@@ -130,13 +133,14 @@ export class AppContextProvider implements AppContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
 
-  // Forwarded tracking members — a SELECTIVE forward of six of the producer's eight own-enumerable members (a `{ current, set }` handle object + five arrow fields, all copied by reference; see the forwarding block for the two that are deliberately withheld). The producer's own exact eight-member surface stays locked by a dedicated case in `tracking/trackingService.svelte.test.ts`.
-  readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
+  // Forwarded tracking members — a SELECTIVE forward of seven of the producer's eight own-enumerable members (six arrow fields and the `{ current }` gate handle, renamed `analyticsGate`, all copied by reference; see the forwarding block for the one that is deliberately withheld). The producer's own exact eight-member surface stays locked by a dedicated case in `tracking/trackingService.svelte.test.ts`.
   readonly startPageview!: AppContext['startPageview'];
   readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
   readonly submitAllEvents!: AppContext['submitAllEvents'];
   readonly resetAllEvents!: AppContext['resetAllEvents'];
+  readonly setPageVisible!: AppContext['setPageVisible'];
+  readonly analyticsGate!: AppContext['analyticsGate'];
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias -- the own-enumerable reactive handle getters below use `get current ` / defineProperty getters with their own `this`; `self` captures the instance so they reach the private `$state` backings (the spread-safe class pattern documented at the top of this file).
@@ -226,11 +230,19 @@ export class AppContextProvider implements AppContext {
         return self.#appSettingsValue;
       }
     };
+    // What the server tells the browser about analytics, from the root layout's data. The getter re-reads `page.data` so the tracking producer's gate stays reactive; with no `analytics` member nothing is kept, so the inactive projection stands in.
+    const projectionHandle = {
+      get current(): AnalyticsProjection {
+        return (page.data?.analytics as AnalyticsProjection | undefined) ?? INACTIVE_PROJECTION;
+      }
+    };
     this.#tracking = trackingService({
       appSettings: appSettingsHandle,
-      userPreferences: this.#userPreferences
+      userPreferences: this.#userPreferences,
+      projection: projectionHandle,
+      locale: getLocale
     });
-    this.#survey = surveyLink({ appSettings: appSettingsHandle, sessionId: this.#tracking.sessionId });
+    this.#survey = surveyLink({ appSettings: appSettingsHandle, sessionId: this.#tracking.surveySessionId });
     this.surveyLink = this.#survey;
 
     ////////////////////////////////////////////////////////////////////
@@ -258,12 +270,13 @@ export class AppContextProvider implements AppContext {
     //
     // Why a selective forward rather than hiding it on the producer: it must REMAIN on the producer (the read above), and making it private or non-enumerable would break that read plus the producer's own exact-`Object.keys` lock in `tracking/trackingService.svelte.test.ts`. That lock pins the producer's eight-member surface; because the forward below is an explicit list, a new public member on the producer does not reach this context implicitly — it has to be added here on purpose.
     Object.assign(this, {
-      sendTrackingEvent: this.#tracking.sendTrackingEvent,
       startPageview: this.#tracking.startPageview,
       startEvent: this.#tracking.startEvent,
       track: this.#tracking.track,
       submitAllEvents: this.#tracking.submitAllEvents,
-      resetAllEvents: this.#tracking.resetAllEvents
+      resetAllEvents: this.#tracking.resetAllEvents,
+      setPageVisible: this.#tracking.setPageVisible,
+      analyticsGate: this.#tracking.gate
     });
 
     ////////////////////////////////////////////////////////////////////
@@ -278,7 +291,7 @@ export class AppContextProvider implements AppContext {
       if (data === this.#prevAppSettingsData) return;
       this.#prevAppSettingsData = data;
       if (!data || data instanceof Error) return;
-      this.#appSettingsValue = mergeAppSettings(this.#appSettingsValue, data);
+      this.#appSettingsValue = mergeInitialAppSettings(staticSettings, dynamicSettings, data);
     });
 
     // Same reference-equality guard as appSettingsData above.
@@ -344,6 +357,8 @@ export class AppContextProvider implements AppContext {
       ...d,
       dataCollection: { consent, date: new Date().toISOString() }
     }));
+    // Every change of the choice empties the event buffer, so no event buffered before the change is sent under the new choice. The current view's pageview is kept.
+    this.#tracking.resetAllEvents();
     if (consent === 'granted') {
       this.#tracking.startEvent('dataConsent_granted');
     }

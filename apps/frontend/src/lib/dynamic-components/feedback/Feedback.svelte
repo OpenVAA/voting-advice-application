@@ -106,15 +106,15 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     // Set the user preference so that we won't ask for feedback again.
     setFeedbackStatus('received');
     status = 'sending';
-    sendFeedback({ rating, description }).then((res) => {
+    sendFeedback({ description, rating }).then((res) => {
       if (res?.type !== 'success') {
-        startEvent('feedback_error', { rating, description });
+        startEvent('feedback_error', { rating });
         status = 'error';
         onError?.();
         return;
       }
       clearErrorTimeout();
-      startEvent('feedback_sent', { rating, description });
+      startEvent('feedback_sent', { rating });
       status = 'sent';
       onSent?.();
     });

@@ -242,12 +242,13 @@ export class VoterContextProvider implements VoterContext {
   readonly translate!: AppContext['translate'];
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
-  readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
   readonly startPageview!: AppContext['startPageview'];
   readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
   readonly submitAllEvents!: AppContext['submitAllEvents'];
   readonly resetAllEvents!: AppContext['resetAllEvents'];
+  readonly setPageVisible!: AppContext['setPageVisible'];
+  readonly analyticsGate!: AppContext['analyticsGate'];
   readonly sendFeedback!: AppContext['sendFeedback'];
   readonly setDataConsent!: AppContext['setDataConsent'];
   readonly setFeedbackStatus!: AppContext['setFeedbackStatus'];

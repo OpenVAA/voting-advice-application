@@ -6,7 +6,7 @@ import type { TranslationKey } from '$types';
  * The code arrives on the address bar, so it is any text at all. Only a code the map holds as its own member has a message: a name every object inherits, such as `constructor`, has none.
  */
 export function getErrorTranslationKey(error: LoginError | null): TranslationKey | undefined {
-  if (error == null || !(error in LOGIN_ERROR)) return undefined;
+  if (error == null || !Object.hasOwn(LOGIN_ERROR, error)) return undefined;
   return LOGIN_ERROR[error];
 }
 
@@ -19,7 +19,10 @@ export function getErrorTranslationKey(error: LoginError | null): TranslationKey
  */
 const LOGIN_ERROR: Record<LoginError, TranslationKey> = {
   loginFailed: 'error.loginFailed',
-  userNotAuthorized: 'error.403'
+  userNotAuthorized: 'error.403',
+  loggedOutAutomatically: 'common.loggedOutAutomatically',
+  loggedOutElsewhere: 'common.loggedOutElsewhere',
+  authError: 'adminApp.login.errors.linkFailed'
 } as const;
 
 /**
@@ -31,4 +34,5 @@ const LOGIN_ERROR: Record<LoginError, TranslationKey> = {
  * - `loggedOutElsewhere`: the user logged out in another tab or window.
  * - `authError`: a mailed link the Admin App asked for could not be used.
  */
-export type LoginError = 'loginFailed' | 'userNotAuthorized';
+export type LoginError =
+  'loginFailed' | 'userNotAuthorized' | 'loggedOutAutomatically' | 'loggedOutElsewhere' | 'authError';

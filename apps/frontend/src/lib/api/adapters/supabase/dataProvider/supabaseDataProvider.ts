@@ -45,6 +45,42 @@ import type {
 } from './supabaseDataProvider.type';
 
 /**
+ * Whether a value read from a `jsonb` answer is an object with members, as opposed to a list, a scalar or `null`.
+ * @param value - The value to narrow.
+ * @returns `true` for a non-null, non-list object.
+ */
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Place the five values `contestant_app_public_config` answers at their storage paths, as a value for `StoredSettingsSchema` to validate.
+ *
+ * Only `access.contestantApp`, `access.answersLocked`, `contestantApp.entityTypes`, `contestantApp.registrationModes` and `analytics.trackEvents` are copied, whatever else the answer carries. A `null` member is left out: the function answers `null` where nothing is stored, and the schema's members are optional, not nullable.
+ * @param answer - The function's answer, narrowed to an object.
+ * @returns The unvalidated stored settings, holding at most those five members.
+ */
+function storedPublicConfig(answer: Record<string, unknown>): Record<string, unknown> {
+  const access = isJsonObject(answer.access) ? answer.access : {};
+  const contestantApp = isJsonObject(answer.contestantApp) ? answer.contestantApp : {};
+  const analytics = isJsonObject(answer.analytics) ? answer.analytics : {};
+
+  const gates: Record<string, unknown> = {};
+  if (access.contestantApp != null) gates.contestantApp = access.contestantApp;
+  if (access.answersLocked != null) gates.answersLocked = access.answersLocked;
+
+  const lists: Record<string, unknown> = {};
+  if (contestantApp.entityTypes != null) lists.entityTypes = contestantApp.entityTypes;
+  if (contestantApp.registrationModes != null) lists.registrationModes = contestantApp.registrationModes;
+
+  const settings: Record<string, unknown> = {};
+  if (Object.keys(gates).length > 0) settings.access = gates;
+  if (Object.keys(lists).length > 0) settings.contestantApp = lists;
+  if (analytics.trackEvents != null) settings.analytics = { trackEvents: analytics.trackEvents };
+  return settings;
+}
+
+/**
  * Supabase implementation of the DataProvider.
  * Implements read methods that query Supabase PostgREST and transform the raw database rows into the domain types expected by DataRoot.
  */
@@ -85,9 +121,36 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       if (rpcError) throw new Error(`getAppSettings: ${rpcError.message}`);
       if (open === true) return {};
       if (open === false) {
-        // The whole `access` object, because the app context's `mergeAppSettings` replaces settings by root key: a bare `{ voterApp: false }` would drop `candidateApp` and close the candidate app too.
-        // reason: `Partial<DynamicSettings>` is a shallow partial, so a partial `access` object does not satisfy it, although the value is merged over the shipped defaults.
-        return { access: { ...dynamicSettings.access, voterApp: false } } as DPDataType['appSettings'];
+        const { data: publicConfig, error: configError } = await this.supabase.rpc('contestant_app_public_config', {
+          p_project_id: this.projectId
+        });
+        if (configError) throw new Error(`getAppSettings: ${configError.message}`);
+        if (!isJsonObject(publicConfig)) {
+          throw new Error('getAppSettings: contestant_app_public_config returned a non-object');
+        }
+
+        // The same parse a readable row gets, so repeats collapse, the lists take their canonical order and an invalid value is rejected and reported in one place.
+        const closedOutcome = parseWithPartialPreserve<StoredSettings>(
+          StoredSettingsSchema,
+          storedPublicConfig(publicConfig),
+          { column: 'app_settings.settings' },
+          SETTINGS_PARSE_FAILURE_MESSAGE
+        );
+        const declared: StoredSettings = closedOutcome.value ?? {};
+        const shipped = dynamicSettings.contestantApp;
+
+        return {
+          // The whole `access` object over the shipped defaults, so that every other gate is stated in this answer itself. The voter route loaders merge it over the static settings only, with no shipped dynamic defaults beneath it. `voterApp: false` comes last, so nothing declared can open the voter app.
+          access: { ...dynamicSettings.access, ...declared.access, voterApp: false },
+          // The whole root over the shipped default for the same reason as `access`: the tracking switch is the only member the function answers.
+          analytics: { ...dynamicSettings.analytics, ...declared.analytics },
+          // The whole root for the same reason as `access`. `questions` is the shipped one: the stored one is not read for this caller.
+          contestantApp: {
+            ...shipped,
+            entityTypes: declared.contestantApp?.entityTypes ?? shipped.entityTypes,
+            registrationModes: { ...shipped.registrationModes, ...declared.contestantApp?.registrationModes }
+          }
+        };
       }
       throw new Error('getAppSettings: project_open_for_voters returned a non-boolean');
     }
@@ -108,7 +171,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     // `notifications` is optional in the schema, so this guard is still needed after the parse.
     if (settings.notifications && typeof settings.notifications === 'object') {
       const notifications: Record<string, unknown> = { ...stored.notifications };
-      for (const key of ['candidateApp', 'voterApp'] as const) {
+      for (const key of ['contestantApp', 'voterApp'] as const) {
         const notif = stored.notifications?.[key];
         if (notif && typeof notif === 'object') {
           notifications[key] = {
@@ -151,7 +214,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     // Convert image storage paths to URLs. The images are already validated members of the parsed value, so `parseStoredImage` receives its declared type with no cast.
     result.publisherLogo = parseStoredImage(stored.publisherLogo, supabaseUrl);
     result.poster = parseStoredImage(stored.poster, supabaseUrl);
-    result.candPoster = parseStoredImage(stored.candPoster, supabaseUrl);
+    result.contestantPoster = parseStoredImage(stored.contestantPoster, supabaseUrl);
 
     // Localize translation overrides (each value is a LocalizedString)
     if (stored.translationOverrides) {
@@ -165,8 +228,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     }
 
     // Localize FAQ entries
-    if (stored.candidateAppFAQ) {
-      result.candidateAppFAQ = stored.candidateAppFAQ.map((faq) => ({
+    if (stored.contestantAppFAQ) {
+      result.contestantAppFAQ = stored.contestantAppFAQ.map((faq) => ({
         question: getLocalized(faq.question, locale, this.defaultLocale) ?? '',
         answer: getLocalized(faq.answer, locale, this.defaultLocale) ?? ''
       }));
@@ -203,6 +266,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...obj,
         date: row.election_date ? String(row.election_date) : undefined,
         round: row.current_round ?? undefined,
+        nominationShape: row.election_type,
         // `subtype` is read from the `subtype` column only. `election_type` holds the nomination shape, which is a separate axis.
         subtype: row.subtype ?? undefined,
         image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'elections.image', id: row.id })),

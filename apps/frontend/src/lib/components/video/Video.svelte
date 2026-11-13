@@ -260,7 +260,7 @@ If not provided, the `video` element will be hidden until these properties are p
         return;
       }
       status = 'error';
-      addToEvent({ shouldPlayError: true });
+      addToEvent({ error: true });
     }, ERROR_CHECK_INTERVAL);
   }
 
@@ -329,7 +329,7 @@ If not provided, the `video` element will be hidden until these properties are p
   /**
    * The event data for the current video
    */
-  let event: TrackingEvent<VideoTrackingEventData> | undefined = undefined;
+  let event: TrackingEvent<'video'> | undefined = undefined;
 
   /**
    * Start a new video event if none exists
@@ -352,11 +352,16 @@ If not provided, the `video` element will be hidden until these properties are p
    */
   function endVideoEvent(): void {
     if (!event) return;
+    // Before the metadata loads, the element reports a `NaN` duration. The vocabulary accepts only finite numbers, so the duration and the end point are then left out.
+    const knownDuration = Number.isFinite(duration) ? duration : undefined;
+    let endAt: VideoTrackingEventData['endAt'];
+    if (atEnd) endAt = 'end';
+    else if (knownDuration !== undefined) endAt = knownDuration !== 0 ? currentTime / knownDuration : 0;
     event.data = {
       ...event.data,
-      src: video?.currentSrc,
-      duration,
-      endAt: atEnd ? 'end' : duration !== 0 ? currentTime / duration : 0,
+      src: stripQueryAndFragment(video?.currentSrc),
+      duration: knownDuration,
+      endAt,
       endMuted: muted,
       endWithTranscript: transcriptVisible,
       endWithCaptions: showCaptions
@@ -632,6 +637,13 @@ If not provided, the `video` element will be hidden until these properties are p
       if (cues[i].startTime > timepoint) return i - 1;
     }
     return cues.length - 1;
+  }
+
+  /**
+   * The media URL as tracked: everything from the first `?` or `#` on is removed.
+   */
+  function stripQueryAndFragment(url: string | undefined): string | undefined {
+    return url?.split(/[?#]/, 1)[0];
   }
 
   /**

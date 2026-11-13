@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { surveyLink } from './survey.svelte';
+import { trackingService } from './tracking';
+import { getVisitId } from './tracking/visitId';
+import type { VisitIdMode } from '$lib/analytics/modes';
+import type { UserPreferences } from './userPreferences.type';
 
 /**
  * Minimal rune-shaped handle used to feed the pure-rune `surveyLink` producer its inputs. The producer reads its `ReactiveHandle` inputs via their `current` getter directly (no `fromStore`), so the tests construct `{ current }` handles.
@@ -54,5 +58,35 @@ describe('surveyLink (pure-rune producer)', () => {
       expect(link.current).toBeUndefined();
     });
     cleanup();
+  });
+  describe("fed by the tracking producer's surveySessionId", () => {
+    /** The survey link built the way `appContext` builds it, for a deployment in `visitIdMode` with a granted consent. */
+    function linkFor(visitIdMode: VisitIdMode): string | undefined {
+      const appSettings = handle({
+        analytics: { trackEvents: true },
+        survey: { linkTemplate: 'https://survey.example/?s={sessionId}' }
+      } as unknown as AppSettings);
+      const tracking = trackingService({
+        appSettings,
+        userPreferences: handle({ dataCollection: { consent: 'granted', date: '2026-10-19' } } as UserPreferences),
+        projection: handle({ active: true, consentMode: 'gated' as const, visitIdMode }),
+        locale: () => 'en'
+      });
+      return surveyLink({ appSettings, sessionId: tracking.surveySessionId }).current;
+    }
+
+    it('holds the visit id in visit-id mode memory', () => {
+      const cleanup = $effect.root(() => {
+        expect(linkFor('memory')).toBe(`https://survey.example/?s=${getVisitId()}`);
+      });
+      cleanup();
+    });
+
+    it('holds an empty value in visit-id mode none', () => {
+      const cleanup = $effect.root(() => {
+        expect(linkFor('none')).toBe('https://survey.example/?s=');
+      });
+      cleanup();
+    });
   });
 });

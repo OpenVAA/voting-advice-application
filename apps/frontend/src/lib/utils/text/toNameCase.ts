@@ -6,8 +6,8 @@
  * @param locale - Optional locale for case conversion.
  */
 export function toNameCase(text: string, locale?: string): string {
-  return text.replace(
-    /(\b[^\s-]+)/g,
-    (t) => `${t[0].toLocaleUpperCase(locale)}${t.slice(1).toLocaleLowerCase(locale)}`
-  );
+  return text.replace(/[^\s-]+/gu, (word) => {
+    const [first = '', ...rest] = Array.from(word);
+    return `${first.toLocaleUpperCase(locale)}${rest.join('').toLocaleLowerCase(locale)}`;
+  });
 }

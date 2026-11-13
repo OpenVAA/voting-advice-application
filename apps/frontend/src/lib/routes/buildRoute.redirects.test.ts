@@ -33,35 +33,35 @@ function readRedirectTo(url: string): string | null {
 
 describe('buildRoute — the redirect targets emitted by the candidate auth handler', () => {
   it('builds the candidate home target as an exact string', () => {
-    expect(buildRoute({ route: 'CandAppHome', locale: 'en' })).toBe('/candidate');
+    expect(buildRoute({ route: 'ContestantAppHome', locale: 'en' })).toBe('/contestant');
   });
 
   it('builds the login target on the same path and carries the redirect target under the same query key', () => {
-    const url = buildRoute({ route: 'CandAppLogin', locale: 'en', redirectTo: 'candidate/profile' });
+    const url = buildRoute({ route: 'ContestantAppLogin', locale: 'en', redirectTo: 'contestant/profile' });
 
-    expect(url.split('?')[0]).toBe('/candidate/login');
-    expect(readRedirectTo(url)).toBe('candidate/profile');
+    expect(url.split('?')[0]).toBe('/contestant/login');
+    expect(readRedirectTo(url)).toBe('contestant/profile');
   });
 
   it('percent-encodes the separators inside the redirect target', () => {
-    const url = buildRoute({ route: 'CandAppLogin', locale: 'en', redirectTo: 'candidate/profile' });
+    const url = buildRoute({ route: 'ContestantAppLogin', locale: 'en', redirectTo: 'contestant/profile' });
 
-    expect(url).toBe('/candidate/login?redirectTo=candidate%2Fprofile');
+    expect(url).toBe('/contestant/login?redirectTo=contestant%2Fprofile');
   });
 });
 
 describe('redirectTo round trip — a value the validator accepts survives buildRoute', () => {
   const accepted = [
-    'candidate/profile',
-    'candidate/questions/first-question',
-    'candidate/profile?tab=basic',
-    'candidate/settings/'
+    'contestant/profile',
+    'contestant/questions/first-question',
+    'contestant/profile?tab=basic',
+    'contestant/settings/'
   ];
 
   it.each(accepted)('accepts %s before the round trip, and again after it', (value) => {
     expect(safeRedirectTarget(value)).toBe(value);
 
-    const decoded = readRedirectTo(buildRoute({ route: 'CandAppLogin', locale: 'en', redirectTo: value }));
+    const decoded = readRedirectTo(buildRoute({ route: 'ContestantAppLogin', locale: 'en', redirectTo: value }));
 
     expect(decoded).toBe(value);
     expect(safeRedirectTarget(decoded)).toBe(value);
@@ -69,10 +69,10 @@ describe('redirectTo round trip — a value the validator accepts survives build
 
   it('rejects the still-encoded form, which is what makes the decode step load-bearing', () => {
     // The discriminating half. Without this the round-trip cases above could pass vacuously, on a `buildRoute` that never encoded anything.
-    const url = buildRoute({ route: 'CandAppLogin', locale: 'en', redirectTo: 'candidate/profile' });
+    const url = buildRoute({ route: 'ContestantAppLogin', locale: 'en', redirectTo: 'contestant/profile' });
     const stillEncoded = url.slice(url.indexOf('redirectTo=') + 'redirectTo='.length);
 
-    expect(stillEncoded).toBe('candidate%2Fprofile');
+    expect(stillEncoded).toBe('contestant%2Fprofile');
     expect(safeRedirectTarget(stillEncoded)).toBeUndefined();
   });
 });
@@ -83,7 +83,7 @@ describe('redirectTo round trip — a value the validator rejects stays rejected
   it.each(rejected)('rejects %s before the round trip, and still rejects it after', (value) => {
     expect(safeRedirectTarget(value)).toBeUndefined();
 
-    const decoded = readRedirectTo(buildRoute({ route: 'CandAppLogin', locale: 'en', redirectTo: value }));
+    const decoded = readRedirectTo(buildRoute({ route: 'ContestantAppLogin', locale: 'en', redirectTo: value }));
 
     expect(decoded).toBe(value);
     expect(safeRedirectTarget(decoded)).toBeUndefined();

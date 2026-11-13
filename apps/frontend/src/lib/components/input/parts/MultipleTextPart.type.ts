@@ -38,7 +38,7 @@ export type MultipleTextPartProps = {
   /**
    * The ids of the elements that describe the input — the info line and the inline error `Input` renders, and any the caller passed — set as every row field's `aria-describedby`. @default undefined
    */
-  mainInputs: Array<HTMLElement>;
+  describedBy?: string;
   /**
    * Event handler triggered on every edit, add, remove or reorder with the new value: the on-screen rows with empty rows dropped, order preserved and duplicates kept. An array of plain strings, or — when `multilingual` — an array of localized strings carrying only the locales actually written.
    */

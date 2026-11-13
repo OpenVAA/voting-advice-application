@@ -1,10 +1,10 @@
-import { log } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { page } from '$app/state';
+import { announceLogout } from '$lib/auth/logoutAnnouncement';
+import { withdrawAnyCount } from '$lib/auth/logoutDeadline';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
-import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { AuthContext } from './authContext.type';
 
 const CONTEXT_KEY = Symbol();
@@ -47,23 +47,15 @@ export class AuthContextProvider implements AuthContext {
   // Wrappers for DataWriter methods (arrow fields — survive detach) NB. These automatically handle authentication via Supabase sessions.
   ////////////////////////////////////////////////////////////////////
 
-  requestForgotPasswordEmail = async (
-    ...args: Parameters<DataWriter['requestForgotPasswordEmail']>
-  ): ReturnType<DataWriter['requestForgotPasswordEmail']> => {
-    const dw = prepareDataWriter();
-    return dw.requestForgotPasswordEmail(...args);
-  };
-
-  resetPassword = async (...args: Parameters<DataWriter['resetPassword']>): ReturnType<DataWriter['resetPassword']> => {
-    const dw = prepareDataWriter();
-    return dw.resetPassword(...args);
-  };
-
   logout = async (): Promise<void> => {
-    const dw = prepareDataWriter();
-    await dw.logout().catch((e) => {
-      log.error(`Error logging out: ${e?.message ?? '-'}`);
-    });
+    withdrawAnyCount();
+    announceLogout('start');
+    try {
+      const dw = prepareDataWriter();
+      await dw.logout();
+    } finally {
+      announceLogout('end');
+    }
   };
 
   setPassword = async (opts: { password: string }): Promise<DataApiActionResult> => {

@@ -1,12 +1,20 @@
+import { log } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
-import { getContext, hasContext, setContext } from 'svelte';
+import { getContext, hasContext, onMount, setContext } from 'svelte';
+import { goto } from '$app/navigation';
+import { page } from '$app/state';
+import { EntryFlowHolder } from '$lib/auth/entryFlow';
+import { heardLogoutAnnouncement, listenForLogoutAnnouncements } from '$lib/auth/logoutAnnouncement';
+import { leaveByFullLoad } from '$lib/components/preventNavigation/navigationGuards';
 import { jobStates } from './jobStates.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
+import { discardContestantDrafts } from '../contestant/contestantDrafts';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { prepareAdminWriter } from '../utils/prepareAdminWriter';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
 import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
+import type { EntryLinkRequest } from '$lib/auth/entryFlow';
 import type { AppContext } from '../app';
 import type { AdminContext } from './adminContext.type';
 
@@ -62,12 +70,13 @@ export class AdminContextProvider implements AdminContext {
   readonly translate!: AppContext['translate'];
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
-  readonly sendTrackingEvent!: AppContext['sendTrackingEvent'];
   readonly startPageview!: AppContext['startPageview'];
   readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
   readonly submitAllEvents!: AppContext['submitAllEvents'];
   readonly resetAllEvents!: AppContext['resetAllEvents'];
+  readonly setPageVisible!: AppContext['setPageVisible'];
+  readonly analyticsGate!: AppContext['analyticsGate'];
   readonly sendFeedback!: AppContext['sendFeedback'];
   readonly setDataConsent!: AppContext['setDataConsent'];
   readonly setFeedbackStatus!: AppContext['setFeedbackStatus'];
@@ -87,10 +96,29 @@ export class AdminContextProvider implements AdminContext {
     return this.#authContext.isAuthenticated;
   }
 
-  // The four auth functions are plain (non-reactive) fns — forwarding by reference as arrow fields is correct. (No authContext spread/assign exists, so these are never clobbered — see the class JSDoc getter-collision audit.)
-  logout = this.#authContext.logout;
-  requestForgotPasswordEmail = this.#authContext.requestForgotPasswordEmail;
-  resetPassword = this.#authContext.resetPassword;
+  #logoutFailed = $state(false);
+
+  get logoutFailed() {
+    return this.#logoutFailed;
+  }
+
+  clearLogoutFailure = (): void => {
+    this.#logoutFailed = false;
+  };
+
+  logout = async (): Promise<void> => {
+    this.#logoutFailed = false;
+    try {
+      await this.#authContext.logout();
+    } catch (e) {
+      this.#logoutFailed = true;
+      throw e;
+    }
+    this.#entryFlow.clear();
+    discardContestantDrafts();
+  };
+
+  // A plain (non-reactive) fn — forwarding by reference as an arrow field is correct. (No authContext spread/assign exists, so it is never clobbered — see the class JSDoc getter-collision audit.)
   setPassword = this.#authContext.setPassword;
 
   get userData() {
@@ -99,6 +127,32 @@ export class AdminContextProvider implements AdminContext {
   set userData(v) {
     this.#userData = v;
   }
+
+  ////////////////////////////////////////////////////////////////////
+  // The entry flow (arrow fields — survive detach); see the class JSDoc.
+  ////////////////////////////////////////////////////////////////////
+
+  #entryFlow = new EntryFlowHolder((request) => this.#requestLink(request));
+
+  sendEntryLink = (request: EntryLinkRequest): Promise<void> => this.#entryFlow.send(request);
+
+  resendEntryLink = (): Promise<void> => this.#entryFlow.resend();
+
+  clearEntryFlow = (): void => this.#entryFlow.clear();
+
+  // No setter: the flow is written through `sendEntryLink`, `resendEntryLink` and `clearEntryFlow` alone.
+  get entryFlow() {
+    return this.#entryFlow.flow;
+  }
+
+  /**
+   * The writer call of a link request: a recovery link made for the Admin App, for the forgot-password page with an address, and nothing for any other request.
+   */
+  #requestLink = (request: EntryLinkRequest): ReturnType<DataWriter['requestPasswordRecovery']> | undefined => {
+    const { origin, email } = request;
+    if (origin !== 'forgotPassword' || email === undefined) return undefined;
+    return prepareDataWriter().requestPasswordRecovery({ email, locale: this.locale, app: 'admin' });
+  };
 
   ////////////////////////////////////////////////////////////////////
   // Admin functions
@@ -157,7 +211,35 @@ export class AdminContextProvider implements AdminContext {
     //
     // Use inheritContextMembers (NOT Object.assign) so the bare reactive accessors (appSettings / dataRoot / locale) are forwarded as LIVE accessors; Object.assign would snapshot and freeze their reactivity for consumers.
     inheritContextMembers(this, this.#appContext);
+
+    onMount(() =>
+      prepareDataWriter().onSignOut((origin) => {
+        if (origin !== 'elsewhere') return;
+        discardContestantDrafts();
+        this.#leaveAfterSignOutElsewhere();
+      })
+    );
+    onMount(listenForLogoutAnnouncements);
   }
+
+  /**
+   * Go to the login page after a sign-out this document did not start, when the page reads as signed in. The login page is opened with `errorMessage=loggedOutElsewhere`, so it says the user was logged out in another tab or window, only when this document heard another tab announce the `start` of its Log out with no `end` since, within `LOGOUT_IN_FLIGHT_CAP_MS`, or its `end` within `LOGOUT_ANNOUNCEMENT_WINDOW_MS`; otherwise it is opened with no reason. The browser always leaves: a navigation that did not move it, or that rejected, is followed by a full load of the login page.
+   */
+  #leaveAfterSignOutElsewhere = async (): Promise<void> => {
+    if (!this.isAuthenticated) return;
+    const reason = heardLogoutAnnouncement() ? { errorMessage: 'loggedOutElsewhere' as const } : {};
+    const route = this.getRoute.current({ route: 'AdminAppLogin', ...reason });
+    const addressBefore = page.url.href;
+    let moved = false;
+    try {
+      await goto(route, { invalidateAll: true });
+      moved = page.url.href !== addressBefore;
+    } catch (e) {
+      // A rejection can come after the address changed, so the address says nothing here.
+      log.error(`Error navigating after a sign-out in another tab: ${(e as Error)?.message}`);
+    }
+    if (!moved) await leaveByFullLoad(route);
+  };
 }
 
 export function getAdminContext(): AdminContext {
