@@ -24,10 +24,10 @@ Two measured cases prove the disagreement runs in both directions, and both appe
 - `resolve_email_variables.email` — the source column `auth.users.email` **is** nullable, the output
   column is **not**, because the `CONTINUE` at `apps/supabase/supabase/schema/502-email-helpers.sql:59`
   fires before the row is ever emitted.
-- `get_candidate_user_data.first_name` — the source column `candidates.first_name` is `NOT NULL`, the
+- `get_entity_user_data.first_name` — the source column `candidates.first_name` is `NOT NULL`, the
   output column **is** nullable, because of the `NULL::text, NULL::text` pair the organization branch
   selects in `apps/supabase/supabase/schema/503-entity-rpcs.sql` — cited by its content rather than by
-  a line number, which 162-07b moved when it shortened the shape.
+  a line number.
 
 A disposition for a column of a `UNION ALL` function that cites only a `database.ts` Row line is a
 defect. Widen a column in `src/database.overrides.ts` and record its evidence here; never with a cast
@@ -36,13 +36,13 @@ at the consumer.
 <!-- BEGIN DERIVED: node scripts/assert-rpc-return-nullability.mjs --write -->
 
 ```text
-apps/supabase/supabase/schema/502-email-helpers.sql:16  resolve_email_variables  (RETURNS TABLE at :21, 4 columns)
+apps/supabase/supabase/schema/502-email-helpers.sql:22  resolve_email_variables  (RETURNS TABLE at :27, 4 columns)
    1. user_id           uuid
    2. email             text
    3. preferred_locale  text
    4. variables         jsonb
 
-apps/supabase/supabase/schema/503-entity-rpcs.sql:10  get_nominations  (RETURNS TABLE at :16, 31 columns)
+apps/supabase/supabase/schema/503-entity-rpcs.sql:14  get_nominations  (RETURNS TABLE at :20, 31 columns)
    1. id                    uuid
    2. name                  jsonb
    3. short_name            jsonb
@@ -75,21 +75,20 @@ apps/supabase/supabase/schema/503-entity-rpcs.sql:10  get_nominations  (RETURNS 
   30. entity_first_name     text
   31. entity_last_name      text
 
-apps/supabase/supabase/schema/503-entity-rpcs.sql:93  get_candidate_user_data  (RETURNS TABLE at :95, 14 columns)
-   1. id                     uuid
-   2. project_id             uuid
-   3. name                   jsonb
-   4. short_name             jsonb
-   5. info                   jsonb
-   6. color                  jsonb
-   7. image                  jsonb
-   8. sort_order             integer
-   9. subtype                text
-  10. custom_data            jsonb
-  11. answers                jsonb
-  12. terms_of_use_accepted  timestamptz
-  13. first_name             text
-  14. last_name              text
+apps/supabase/supabase/schema/503-entity-rpcs.sql:237  get_entity_user_data  (RETURNS TABLE at :241, 13 columns)
+   1. id           uuid
+   2. project_id   uuid
+   3. name         jsonb
+   4. short_name   jsonb
+   5. info         jsonb
+   6. color        jsonb
+   7. image        jsonb
+   8. sort_order   integer
+   9. subtype      text
+  10. custom_data  jsonb
+  11. answers      jsonb
+  12. first_name   text
+  13. last_name    text
 ```
 
 <!-- END DERIVED -->
@@ -183,40 +182,42 @@ Three of these dispositions are non-obvious and would otherwise be "fixed" by th
 | 30  | `entity_first_name`    | `text`               | `string`     | **Yes**                | **SQL body** — `503-entity-rpcs.sql:70` reads `c.first_name` through the `LEFT JOIN public.candidates c` at `:74`, which does not match on an organization, faction or alliance row. The table Row is `NOT NULL` and would mislead. | **OVERRIDE**                                                                                                                         |
 | 31  | `entity_last_name`     | `text`               | `string`     | **Yes**                | **SQL body** — `503-entity-rpcs.sql:71`, same `LEFT JOIN` at `:74`. The table Row is `NOT NULL` and would mislead.                                                                                                                  | **OVERRIDE**                                                                                                                         |
 
-## 3. `get_candidate_user_data` — 14 columns, 5 overridden, 9 no-change
+## 3. `get_entity_user_data` — 13 columns, 4 overridden, 9 no-change
 
-Declared at `apps/supabase/supabase/schema/503-entity-rpcs.sql:93`; generated `Returns` at
-`src/database.ts:1166-1182`; `candidates` table `Row` at `src/database.ts:222-243`.
+Declared in `apps/supabase/supabase/schema/503-entity-rpcs.sql` as `public.get_entity_user_data
+(p_project_id, p_entity_type, p_entity_id)`; generated `Returns` under `get_entity_user_data` in
+`src/database.ts`; the `candidates` and `organizations` table `Row` types in the same file. Every
+citation in this section is by content, not by line number.
 
-**The decisive body fact.** The function is a `UNION ALL` of a candidate branch
-(`apps/supabase/supabase/schema/503-entity-rpcs.sql:111-117`) and an organization branch
-(`:119-125`), joined at `:118`. The organization branch selects `NULL::timestamptz` at
-`apps/supabase/supabase/schema/503-entity-rpcs.sql:121` and `NULL::text, NULL::text` at
-`apps/supabase/supabase/schema/503-entity-rpcs.sql:122` — positionally `terms_of_use_accepted`,
-`first_name` and `last_name`. Three of the five widened columns are widened by those two lines, and
-the `candidates` table Row would have said the opposite for two of them. A fourth used to be
-`organization_id`, which 162-07b removed from the shape along with the `NULL::uuid` literal that fed
-it; the candidate-to-organization association is now stated once, on the nomination edge.
+**The decisive body fact.** The function is a `UNION ALL` of a candidate branch (`FROM
+public.candidates c WHERE p_entity_type = 'candidate'`) and an organization branch (`FROM
+public.organizations o WHERE p_entity_type = 'organization'`). The organization branch selects
+`NULL::text, NULL::text` — positionally `first_name` and `last_name`. Two of the four widened columns
+are widened by that pair, and the `candidates` table Row would have said the opposite for both. The
+candidate-to-organization association is not part of this shape: it is stated once, on the nomination
+edge.
 
-**Whole-RPC disposition: 5 columns widened, 9 dispositioned "no change needed"** — 7 of those are
+**Whole-RPC disposition: 4 columns widened, 9 dispositioned "no change needed"** — 7 of those are
 `jsonb`/`Json` and already nullable by type, and 2 are scalars both branches select from a real row.
 
-| #   | Column                  | SQL type      | Generated TS | Semantically nullable? | Evidence                                                                                                                                                                                               | Disposition                                                    |
-| --- | ----------------------- | ------------- | ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| 1   | `id`                    | `uuid`        | `string`     | No                     | **SQL body** — both branches select a real primary key (`503-entity-rpcs.sql:117` and `:125`); **Table Row** `src/database.ts:230` `id: string` agrees.                                                | No change needed — a primary key on both branches.             |
-| 2   | `project_id`            | `uuid`        | `string`     | No                     | **SQL body** — both branches select it (`503-entity-rpcs.sql:117` and `:125`); **Table Row** `src/database.ts:236` `project_id: string` agrees.                                                        | No change needed — required on both branches.                  |
-| 3   | `name`                  | `jsonb`       | `Json`       | n/a                    | **SQL body** — the candidate branch selects `NULL::jsonb` at `503-entity-rpcs.sql:117`, so it really is null on that branch; `Json` already includes `null` (`src/database.ts:1`).                     | No change needed — nullable by type, and the body confirms it. |
-| 4   | `short_name`            | `jsonb`       | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                                        | No change needed — nullable by type.                           |
-| 5   | `info`                  | `jsonb`       | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                                        | No change needed — nullable by type.                           |
-| 6   | `color`                 | `jsonb`       | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                                        | No change needed — nullable by type.                           |
-| 7   | `image`                 | `jsonb`       | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                                        | No change needed — nullable by type.                           |
-| 8   | `sort_order`            | `integer`     | `number`     | **Yes**                | **Table Row** — `src/database.ts:239` `sort_order: number \| null`; both branches project it unchanged (`503-entity-rpcs.sql:118`, `:126`).                                                            | **OVERRIDE**                                                   |
-| 9   | `subtype`               | `text`        | `string`     | **Yes**                | **Table Row** — `src/database.ts:240` `subtype: string \| null`; both branches project it unchanged (`503-entity-rpcs.sql:118`, `:126`).                                                               | **OVERRIDE**                                                   |
-| 10  | `custom_data`           | `jsonb`       | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                                        | No change needed — nullable by type.                           |
-| 11  | `answers`               | `jsonb`       | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                                        | No change needed — nullable by type.                           |
-| 12  | `terms_of_use_accepted` | `timestamptz` | `string`     | **Yes**                | **SQL body** — `NULL::timestamptz` on the organization branch at `503-entity-rpcs.sql:127`; the table Row agrees (`src/database.ts:241` `\| null`).                                                    | **OVERRIDE**                                                   |
-| 13  | `first_name`            | `text`        | `string`     | **Yes**                | **SQL body** — `NULL::text` on the organization branch at `503-entity-rpcs.sql:128`. The table Row is misleading here: `src/database.ts:229` declares `first_name: string`, `NOT NULL`. The body wins. | **OVERRIDE** — evidence is the SQL body, not the table.        |
-| 14  | `last_name`             | `text`        | `string`     | **Yes**                | **SQL body** — `NULL::text` on the organization branch at `503-entity-rpcs.sql:128`. Same misleading table Row: `src/database.ts:234` declares `last_name: string`, `NOT NULL`.                        | **OVERRIDE** — evidence is the SQL body, not the table.        |
+`get_user_entities` has no section here: it returns one `jsonb` object, is not a `RETURNS TABLE`
+function, and its generated type is `Json`, which already includes `null`.
+
+| #   | Column        | SQL type  | Generated TS | Semantically nullable? | Evidence                                                                                                                                                                                  | Disposition                                                    |
+| --- | ------------- | --------- | ------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 1   | `id`          | `uuid`    | `string`     | No                     | **SQL body** — both branches select a real primary key (`c.id` and `o.id`); **Table Row** `id: string` on `candidates` and on `organizations` agrees.                                     | No change needed — a primary key on both branches.             |
+| 2   | `project_id`  | `uuid`    | `string`     | No                     | **SQL body** — both branches select it (`c.project_id` and `o.project_id`); **Table Row** `project_id: string` on both tables agrees.                                                     | No change needed — required on both branches.                  |
+| 3   | `name`        | `jsonb`   | `Json`       | n/a                    | **SQL body** — the candidate branch selects `NULL::jsonb` in the third position, so it really is null on that branch; `Json` already includes `null` (`src/database.ts:1`).               | No change needed — nullable by type, and the body confirms it. |
+| 4   | `short_name`  | `jsonb`   | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                           | No change needed — nullable by type.                           |
+| 5   | `info`        | `jsonb`   | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                           | No change needed — nullable by type.                           |
+| 6   | `color`       | `jsonb`   | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                           | No change needed — nullable by type.                           |
+| 7   | `image`       | `jsonb`   | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                           | No change needed — nullable by type.                           |
+| 8   | `sort_order`  | `integer` | `number`     | **Yes**                | **Table Row** — `sort_order: number \| null` on `candidates` and on `organizations`; both branches project it unchanged (`c.sort_order`, `o.sort_order`).                                 | **OVERRIDE**                                                   |
+| 9   | `subtype`     | `text`    | `string`     | **Yes**                | **Table Row** — `subtype: string \| null` on `candidates` and on `organizations`; both branches project it unchanged (`c.subtype`, `o.subtype`).                                          | **OVERRIDE**                                                   |
+| 10  | `custom_data` | `jsonb`   | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                           | No change needed — nullable by type.                           |
+| 11  | `answers`     | `jsonb`   | `Json`       | n/a                    | **Type** — `src/database.ts:1`.                                                                                                                                                           | No change needed — nullable by type.                           |
+| 12  | `first_name`  | `text`    | `string`     | **Yes**                | **SQL body** — `NULL::text` on the organization branch, in the twelfth position. The table Row is misleading here: `candidates` declares `first_name: string`, `NOT NULL`. The body wins. | **OVERRIDE** — evidence is the SQL body, not the table.        |
+| 13  | `last_name`   | `text`    | `string`     | **Yes**                | **SQL body** — `NULL::text` on the organization branch, in the thirteenth position. Same misleading table Row: `candidates` declares `last_name: string`, `NOT NULL`.                     | **OVERRIDE** — evidence is the SQL body, not the table.        |
 
 ## Attribution note — one nearby cast that is not this file's business
 
