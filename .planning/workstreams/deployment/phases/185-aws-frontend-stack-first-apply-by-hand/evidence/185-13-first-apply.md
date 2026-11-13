@@ -114,3 +114,34 @@ HEALTH_X_CACHE=Miss from cloudfront
 The apply came after plan 185-12's image push (2026-11-12T21:06:09Z) and before any observation
 that changes the stack; nothing between the first plan and the health read changed the stack except
 the two applies recorded above.
+
+## The operator's confirmations (Tasks 2 and 3, 10:13 and 10:59)
+
+```
+SUBSCRIPTION_CONFIRMED=yes
+COST_TAGS_ACTIVE=Project,Environment,Root
+COST_TAGS_ALSO_ACTIVE=Election
+OPERATOR_REPLY=received attempt=20261113T101336Z.daff992e1 plan=185-13 task=2
+```
+
+- **The reply.** Attempt `20261113T101336Z.daff992e1` (`attempt.sh new 185-13-2`). The operator
+  answered `answer_subscription_confirmed=yes` and `answer_cost_tags_activated=yes`, received at
+  2026-11-13T10:58Z with the words "Both tasks were done about an hour ago". It was stored with
+  `attempt.sh put 185-13-2` (exit 0), the record line above was appended, and
+  `attempt.sh bound 185-13-2 OPERATOR_REPLY plan=185-13 task=2` exits 0.
+- **When the subscription was confirmed.** About 09:58Z by the operator's words; no precise minute
+  is known. It lies after the apply that created the subscription, which ended at 09:47:12Z, and
+  before the agent's first read, at 10:13Z, which already read it confirmed.
+- **When the tags were activated.** About 09:58Z by the operator's words, but the operator first
+  reported the activation before the plan's first dispatch, around 08:26Z, and Cost Explorer gives
+  each of the four tags `LastUpdatedDate` 2026-11-13T08:23:36Z. The tags were already offered,
+  because the bootstrap and `dns-mail` resources carried them (`LastUsedDate` 2026-11-01). The
+  activation therefore came before this plan's apply, not at it.
+- **The read-back,** run twice: at 10:13Z, before the reply, and at 10:59Z, after it, with the same
+  result. The account check passed both times. `terraform output -raw deployment_alert_topic_arn`
+  exit 0; `aws sns list-subscriptions-by-topic` exit 0: one subscription,
+  `email confirmed` (its ARN is not `PendingConfirmation`; the endpoint was not printed).
+  `aws ce list-cost-allocation-tags --region us-east-1` exit 0: `Project`, `Environment` and `Root`
+  each `UserDefined` and `Active`.
+- **Election.** `Election` is also `UserDefined` and `Active`, activated by the operator on their
+  own initiative together with the three; this plan does not require it.
