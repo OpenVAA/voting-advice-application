@@ -21,6 +21,7 @@
     }
   },
   "dependencies": {
+    "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
     "zod": "catalog:"
   },

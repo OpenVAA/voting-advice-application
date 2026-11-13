@@ -91,6 +91,28 @@ test('Should have correct number of nominations for the second round of election
   }
 });
 
+test('Should default nominationShape to organization_list_and_independents when the data states none', () => {
+  const election = getTestDataRoot().elections![0];
+  expect(election.data.nominationShape).toBeUndefined();
+  expect(election.nominationShape).toBe('organization_list_and_independents');
+  election.data.nominationShape = null;
+  expect(election.nominationShape).toBe('organization_list_and_independents');
+});
+
+test('Should return the nominationShape the data states', () => {
+  const election = getTestDataRoot().elections![0];
+  const shapes = [
+    'organization_only',
+    'candidate_only',
+    'organization_list',
+    'organization_list_and_independents'
+  ] as const;
+  for (const shape of shapes) {
+    election.data.nominationShape = shape;
+    expect(election.nominationShape).toBe(shape);
+  }
+});
+
 describe('getApplicableConstituency', () => {
   const election = root.elections![0];
   const constituencies = election.constituencyGroups[0].constituencies;
