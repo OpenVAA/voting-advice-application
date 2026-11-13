@@ -1,0 +1,8 @@
+{
+  "contestantApp.entitySelection": {
+    "current": "{entityType}: {name}",
+    "ingress": "Du kan redigere mere end én profil. Vælg den, du vil arbejde med nu. Du kan til enhver tid skifte til en anden fra menuen.",
+    "switch": "Skift profil",
+    "title": "Vælg en profil at redigere"
+  }
+}

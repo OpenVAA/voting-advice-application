@@ -1,0 +1,12 @@
+{
+  "contestantApp.preview": {
+    "close": "Fermer l’aperçu",
+    "notFound": "Profil introuvable",
+    "tagLabel": "À côté de ses candidat·es, votre parti apparaît ainsi",
+    "tip": {
+      "candidate": "Ceci est un aperçu préliminaire de la façon dont votre profil apparaîtra aux électeur·rice·s. La version publiée peut différer légèrement. Si vous vous présentez à plusieurs élections, seules les réponses pertinentes pour l’élection qui intéresse l’électeur·rice seront affichées.",
+      "organization": "Ceci est un aperçu préliminaire de la façon dont le profil de votre parti apparaîtra aux électeur·rice·s. La version publiée peut différer légèrement. Si votre parti se présente à plusieurs élections, seules les réponses pertinentes pour l’élection qui intéresse l’électeur·rice seront affichées."
+    },
+    "title": "Aperçu"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "contestantApp.error": {
+    "saveFailed": "Et deet eis leed, et gouf e Problem beim Späichere vun Ären Äntwerten. Probéiert nach eng Kéier a kontaktéiert de Support, wann de Problem bestoe bleift.",
+    "nameLocked": {
+      "candidate": "Ären Numm konnt net gespäichert ginn: en Administrateur huet Äre Profil confirméiert, an den Numm kann hei net méi geännert ginn. Är aner Ännerunge goufe gespäichert. Wann den Numm falsch ass, kontaktéiert wgl. de Support.",
+      "organization": "Den Numm an d’Ofkierzung konnten net gespäichert ginn: en Administrateur huet Är Partei confirméiert, a si kënnen hei net méi geännert ginn. Är aner Ännerunge goufe gespäichert. Wa se falsch sinn, kontaktéiert wgl. de Support."
+    },
+    "readFailed": {
+      "content": "Är Donnéeën konnten net geluede ginn. Dir sidd nach ëmmer ageloggt, also kënnt Dir et nach eng Kéier probéieren. Wann de Problem bestoe bleift, kontaktéiert de Support.",
+      "tryAgain": "Nach eng Kéier probéieren"
+    }
+  }
+}

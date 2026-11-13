@@ -11,8 +11,8 @@
           "selectors": ["partyMatchingMethod"],
           "match": {
             "partyMatchingMethod=answersOnly": "<p>Erakondade tulemused on arvutatud erakondade antud vastuste põhjal.</p> ",
-            "partyMatchingMethod=imputed": "<p>Erakondade tulemused on arvutatud nende antud vastuste põhjal või, kui erakond ei ole küsimustele vastanud, selle kandidaatide valimisringkonna vastuste mediaani või moodi põhjal.</p> ",
-            "partyMatchingMethod=other": "<p>Erakondade tulemused on arvutatud nende antud vastuste põhjal või, kui erakond ei ole küsimustele vastanud, selle kandidaatide valimisringkonna vastuste põhjal.</p> <p>Pange tähele, et erakonna kandidaadid võivad küsimustes oma erakonnaga eriarvamusel olla, seega ei pruugi nii arvutatud seisukoht vastata erakonna seisukohale.</p>"
+            "partyMatchingMethod=impute": "<p>Erakondade tulemused on arvutatud nende antud vastuste põhjal või, kui erakond ei ole küsimustele vastanud, selle kandidaatide valimisringkonna vastuste mediaani või moodi põhjal.</p> ",
+            "partyMatchingMethod=*": "<p>Erakondade tulemused on arvutatud nende antud vastuste põhjal või, kui erakond ei ole küsimustele vastanud, selle kandidaatide valimisringkonna vastuste põhjal.</p> <p>Pane tähele, et erakonna kandidaadid võivad küsimustes oma erakonnaga eriarvamusel olla, seega ei pruugi nii arvutatud seisukoht vastata erakonna seisukohale.</p>"
           }
         }
       ],
