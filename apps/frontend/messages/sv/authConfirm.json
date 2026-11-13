@@ -1,0 +1,13 @@
+{
+  "authConfirm": {
+    "cancel": "Avbryt",
+    "continue": "Fortsätt",
+    "intro": {
+      "email_change": "Tryck på Fortsätt för att bekräfta din e-postadress och logga in.",
+      "magiclink": "Tryck på Fortsätt för att logga in.",
+      "recovery": "Tryck på Fortsätt för att logga in och välja ett nytt lösenord."
+    },
+    "signedIn": "Den här webbläsaren är redan inloggad på ett konto. Om du fortsätter loggas det kontot först ut.",
+    "title": "Fortsätt från din e-post"
+  }
+}

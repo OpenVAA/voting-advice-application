@@ -1,28 +1,28 @@
 {
   "adminApp.argumentCondensation": {
-    "title": "Argument Condensation",
-    "description": "Condense and manage arguments for election questions.",
+    "title": "Synthèse des arguments",
+    "description": "Synthétisez et gérez les arguments relatifs aux questions de l’élection.",
     "jobs": {
-      "noActiveJobs": "No active jobs",
-      "startProcess": "Start an argument condensation process to see real-time monitoring"
+      "noActiveJobs": "Aucune tâche active",
+      "startProcess": "Lancez une synthèse des arguments pour en suivre le déroulement en temps réel"
     },
     "generate": {
-      "allQuestions": "Generate arguments for all opinion questions",
-      "button": "Generate Arguments",
-      "buttonLoading": "Generating...",
-      "error": "An error occurred while generating arguments",
-      "mayTakeTime": "This process may take several minutes",
-      "noElectionsAvailable": "No elections are currently available. Please check your data configuration.",
-      "noElectionSelected": "Please select an election first",
-      "noQuestionsForElection": "No opinion questions found for the selected election.",
-      "noQuestionSelected": "Please select at least one question",
-      "selectElection": "Select Election",
-      "selectElectionPlaceholder": "Choose an election...",
-      "selectedQuestions": "Generate arguments for selected questions only",
-      "questionType": "Question Selection",
-      "selectAll": "Select all",
-      "unselectAll": "Unselect all",
-      "errorLoadingQuestions": "Error loading questions: {error}"
+      "allQuestions": "Générer des arguments pour toutes les affirmations",
+      "button": "Générer les arguments",
+      "buttonLoading": "Génération…",
+      "error": "Une erreur s’est produite lors de la génération des arguments",
+      "mayTakeTime": "Cette opération peut prendre plusieurs minutes",
+      "noElectionsAvailable": "Aucune élection n’est disponible pour le moment. Veuillez vérifier la configuration de vos données.",
+      "noElectionSelected": "Veuillez d’abord sélectionner une élection",
+      "noQuestionsForElection": "Aucune affirmation n’a été trouvée pour l’élection sélectionnée.",
+      "noQuestionSelected": "Veuillez sélectionner au moins une question",
+      "selectElection": "Sélectionner une élection",
+      "selectElectionPlaceholder": "Choisissez une élection…",
+      "selectedQuestions": "Générer des arguments uniquement pour les questions sélectionnées",
+      "questionType": "Sélection des questions",
+      "selectAll": "Tout sélectionner",
+      "unselectAll": "Tout désélectionner",
+      "errorLoadingQuestions": "Erreur lors du chargement des questions : {error}"
     }
   }
 }

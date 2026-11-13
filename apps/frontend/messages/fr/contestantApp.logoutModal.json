@@ -1,0 +1,29 @@
+{
+  "contestantApp.logoutModal": {
+    "continue": "Continuer la saisie",
+    "ingress": "Êtes-vous sûr·e de vouloir vous déconnecter ? Vous serez automatiquement déconnecté·e après {timeLeft} secondes.",
+    "itemsLeft": [
+      {
+        "declarations": ["input infoQuestionsLeft", "input opinionQuestionsLeft"],
+        "selectors": ["infoQuestionsLeft", "opinionQuestionsLeft"],
+        "match": {
+          "infoQuestionsLeft=1, opinionQuestionsLeft=1": "Il reste encore un élément d’informations de base et une opinion à remplir.",
+          "infoQuestionsLeft=1, opinionQuestionsLeft=*": "Il reste encore un élément d’informations de base et {opinionQuestionsLeft} opinions à remplir.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=1": "Il reste encore {infoQuestionsLeft} éléments d’informations de base et une opinion à remplir.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=*": "Il reste encore {infoQuestionsLeft} éléments d’informations de base et {opinionQuestionsLeft} opinions à remplir."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": ["input opinionQuestionsLeft"],
+        "selectors": ["opinionQuestionsLeft"],
+        "match": {
+          "opinionQuestionsLeft=1": "Il reste encore une opinion à remplir.",
+          "opinionQuestionsLeft=*": "Il reste encore {opinionQuestionsLeft} opinions à remplir."
+        }
+      }
+    ],
+    "title": "Certaines de vos données manquent encore"
+  }
+}

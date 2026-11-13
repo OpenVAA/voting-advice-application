@@ -14,9 +14,11 @@
       "addImage": "Tilføj billede",
       "allSelected": "Alle valgt",
       "changeImage": "Skift billede",
+      "colorPicker": "Farvevælger",
       "deleteOption": "Fravælg {option}",
       "error": {
         "fileLoadingError": "Kunne ikke indlæse filen.",
+        "invalidColor": "Farven er ugyldig. Indtast en hex-kode, f.eks. #2546a8.",
         "invalidEmail": "E-mailadressen er ugyldig.",
         "invalidFile": "Filen er ugyldig.",
         "invalidUrl": "URL'en er ugyldig.",
@@ -25,7 +27,9 @@
       "hideTranslations": "Skjul",
       "imageInfo": "Den maksimale billedstørrelse er {maxFilesize} MB. Hav tålmodighed, da billedet kan tage lidt tid at indlæse.",
       "multilingualInfo": "Du kan indtaste dit svar på alle valgtestens sprog, hvis du ønsker det.",
+      "noColor": "Ingen farve",
       "noImage": "Intet billede",
+      "requiredLocaleInfo": "Påkrævet sprog: {language}. De øvrige sprog er valgfrie.",
       "selectAnother": "Vælg en anden",
       "selectFirst": "Vælg først",
       "selectOne": "Vælg",
@@ -42,7 +46,6 @@
       "remove": "Fjern element"
     },
     "passwordInput": {
-      "hidePassword": "Skjul adgangskode",
       "password": "Adgangskode",
       "placeholder": "Adgangskode",
       "showPassword": "Vis adgangskode"
@@ -72,28 +75,6 @@
       "showTranscript": "Vis video som tekst",
       "showVideo": "Vis video",
       "subtitles": "Undertekster",
-      "timeLeft": [
-        {
-          "declarations": [
-            "input minutes",
-            "local minutesPlural = minutes: plural",
-            "input seconds",
-            "local secondsPlural = seconds: plural"
-          ],
-          "selectors": ["minutesPlural", "secondsPlural"],
-          "match": {
-            "minutesPlural=zero secondsPlural=zero": "  tilbage",
-            "minutesPlural=zero secondsPlural=one": " ét sekund tilbage",
-            "minutesPlural=zero secondsPlural=other": " {seconds} sekunder tilbage",
-            "minutesPlural=one secondsPlural=zero": "ét minut  tilbage",
-            "minutesPlural=one secondsPlural=one": "ét minut ét sekund tilbage",
-            "minutesPlural=one secondsPlural=other": "ét minut {seconds} sekunder tilbage",
-            "minutesPlural=other secondsPlural=zero": "{minutes} minutter  tilbage",
-            "minutesPlural=other secondsPlural=one": "{minutes} minutter ét sekund tilbage",
-            "minutesPlural=other secondsPlural=other": "{minutes} minutter {seconds} sekunder tilbage"
-          }
-        }
-      ],
       "transcript": "Tekst",
       "transcriptToggleLabel": "Skift mellem video og tekst",
       "unmute": "Slå lyd til",

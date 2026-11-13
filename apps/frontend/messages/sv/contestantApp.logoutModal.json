@@ -1,0 +1,29 @@
+{
+  "contestantApp.logoutModal": {
+    "continue": "Fortsätt ange uppgifter",
+    "ingress": "Är du säker på att du vill logga ut? Du kommer automatiskt att loggas ut om {timeLeft} sekunder.",
+    "itemsLeft": [
+      {
+        "declarations": ["input infoQuestionsLeft", "input opinionQuestionsLeft"],
+        "selectors": ["infoQuestionsLeft", "opinionQuestionsLeft"],
+        "match": {
+          "infoQuestionsLeft=1, opinionQuestionsLeft=1": "Det återstår fortfarande en uppgift om grundläggande information och en åsikt att fylla i.",
+          "infoQuestionsLeft=1, opinionQuestionsLeft=*": "Det återstår fortfarande en uppgift om grundläggande information och {opinionQuestionsLeft} åsikter att fylla i.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=1": "Det återstår fortfarande {infoQuestionsLeft} uppgifter om grundläggande information och en åsikt att fylla i.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=*": "Det återstår fortfarande {infoQuestionsLeft} uppgifter om grundläggande information och {opinionQuestionsLeft} åsikter att fylla i."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": ["input opinionQuestionsLeft"],
+        "selectors": ["opinionQuestionsLeft"],
+        "match": {
+          "opinionQuestionsLeft=1": "Det återstår fortfarande en åsikt att fylla i.",
+          "opinionQuestionsLeft=*": "Det återstår fortfarande {opinionQuestionsLeft} åsikter att fylla i."
+        }
+      }
+    ],
+    "title": "Vissa av dina uppgifter saknas fortfarande"
+  }
+}
