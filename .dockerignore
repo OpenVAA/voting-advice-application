@@ -1,3 +1,10 @@
 # Avoid uploading node_modules or module builds to the container because we install and build everything there
 **/node_modules
 **/build
+# Never send an environment file to the builder: a working tree holds local secrets in them. The templates stay.
+# The exception must follow the patterns it overrides.
+**/.env
+**/.env.*
+!**/.env.example
+# The infrastructure code is not part of the image, and provider binaries under it would bloat the build context.
+infra
