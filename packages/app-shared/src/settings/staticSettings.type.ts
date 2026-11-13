@@ -93,32 +93,6 @@ export type StaticSettings = {
      */
     readonly isDefault?: boolean;
   }>;
-  /**
-   * Settings related to data collection and other research or analytics use.
-   */
-  readonly analytics: {
-    /**
-     * Which platform, if any, to use for analytics. Remember to also check that the translations under the `privacy` key and the platform used are up to date.
-     */
-    readonly platform?: {
-      /**
-       * The name of the analytics platform.
-       */
-      readonly name: 'umami';
-      /**
-       * The tracking code or similar id for the platform.
-       */
-      readonly code: string;
-      /**
-       * The url for more information about the tracking platform.
-       */
-      readonly infoUrl: string;
-    };
-    /**
-     * Whether to collect anonymous usage data about all UI actions, including answers to statements. This will only have an effect if the analytics platform is defined.
-     */
-    readonly trackEvents: boolean;
-  };
 };
 
 /**
@@ -137,12 +111,12 @@ export type DataAdapterBase = {
 
 export type LocalDataAdapter = DataAdapterBase & {
   readonly type: 'local';
-  readonly supportsCandidateApp: false;
+  readonly supportsContestantApp: false;
   readonly supportsAdminApp: false;
 };
 
 export type SupabaseDataAdapter = DataAdapterBase & {
   readonly type: 'supabase';
-  readonly supportsCandidateApp: true;
+  readonly supportsContestantApp: true;
   readonly supportsAdminApp: true;
 };

@@ -33,12 +33,12 @@ export const StoredCustomizationSchema = z.strictObject({
   publisherLogo: StoredImageSchema.nullable().optional(),
   /** The Voter App frontpage poster, stored as a storage path. */
   poster: StoredImageSchema.nullable().optional(),
-  /** The Candidate App frontpage poster, stored as a storage path. */
-  candPoster: StoredImageSchema.nullable().optional(),
+  /** The Contestant App frontpage poster, stored as a storage path. */
+  contestantPoster: StoredImageSchema.nullable().optional(),
   /** Translation overrides keyed by translation key, each value a locale object. */
   translationOverrides: z.record(z.string(), LocalizedStringSchema).optional(),
-  /** Candidate App FAQ entries, each field a locale object. */
-  candidateAppFAQ: z
+  /** Contestant App FAQ entries, each field a locale object. */
+  contestantAppFAQ: z
     .array(
       z.strictObject({
         question: LocalizedStringSchema,
