@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { REGISTRATION_MODES, SERVED_ENTITY_TYPES } from '../../settings/contestantAppConfig';
 
 /**
  * A localised string as it is stored: an object keyed by locale. Mirrors `LocalizedString` in `../localized.type`.
@@ -30,6 +31,21 @@ const CardContentSchema = z.union([
     format: z.string().optional()
   })
 ]);
+
+/**
+ * The stored form of `contestantApp.entityTypes`: at least one served entity type. The parsed list holds each named type once, in the order of `SERVED_ENTITY_TYPES`, so two lists that name the same types parse to equal values. A value outside the vocabulary fails the parse; it is never dropped from the list.
+ */
+const ServedEntityTypeListSchema = z
+  .array(z.enum(SERVED_ENTITY_TYPES))
+  .min(1)
+  .transform((types) => SERVED_ENTITY_TYPES.filter((type) => types.includes(type)));
+
+/**
+ * The stored form of one row of `contestantApp.registrationModes`: the registration modes allowed for one entity type, possibly none. The parsed row holds each named mode once, in the order of `REGISTRATION_MODES`. A value outside the vocabulary fails the parse; it is never dropped from the row.
+ */
+const RegistrationModeListSchema = z
+  .array(z.enum(REGISTRATION_MODES))
+  .transform((modes) => REGISTRATION_MODES.filter((mode) => modes.includes(mode)));
 
 /**
  * The stored shape of the `app_settings.settings` JSONB column.
@@ -85,7 +101,9 @@ export const StoredSettingsSchema = z.strictObject({
     .optional(),
   entities: z
     .strictObject({
-      hideIfMissingAnswers: z.strictObject({ candidate: z.boolean().optional() }).optional(),
+      hideIfMissingAnswers: z
+        .strictObject({ candidate: z.boolean().optional(), organization: z.boolean().optional() })
+        .optional(),
       showAllNominations: z.boolean().optional()
     })
     .optional(),
@@ -129,25 +147,32 @@ export const StoredSettingsSchema = z.strictObject({
     .optional(),
   access: z
     .strictObject({
-      candidateApp: z.boolean().optional(),
+      contestantApp: z.boolean().optional(),
       voterApp: z.boolean().optional(),
       adminApp: z.boolean().optional(),
       underMaintenance: z.boolean().optional(),
-      answersLocked: z.boolean().optional()
+      answersLocked: z.boolean().optional(),
+      nominationsLocked: z.boolean().optional()
     })
     .optional(),
   notifications: z
     .strictObject({
-      candidateApp: StoredNotificationSchema.nullable().optional(),
+      contestantApp: StoredNotificationSchema.nullable().optional(),
       voterApp: StoredNotificationSchema.nullable().optional()
     })
     .optional(),
-  candidateApp: z
+  contestantApp: z
     .strictObject({
-      questions: z.strictObject({ hideVideo: z.boolean().optional(), hideHero: z.boolean().optional() }).optional()
+      questions: z.strictObject({ hideVideo: z.boolean().optional(), hideHero: z.boolean().optional() }).optional(),
+      entityTypes: ServedEntityTypeListSchema.optional(),
+      registrationModes: z
+        .strictObject({
+          candidate: RegistrationModeListSchema.optional(),
+          organization: RegistrationModeListSchema.optional()
+        })
+        .optional()
     })
     .optional(),
-  preRegistration: z.strictObject({ enabled: z.boolean().optional() }).optional(),
   /**
    * `analytics` is a dynamic setting stored in this column. Its one member, `trackEvents`, says whether usage events other than the identifier-free page-view count are collected; `trackingService.svelte.ts` reads it in its gate and `TermsOfUse.svelte` in its usage-data section. The analytics provider is server configuration and has no member here, so a stored row that names one fails this strict object at the path `analytics`, and the provider's partial-preserve parse drops the whole `analytics` member and keeps the sibling settings.
    *
@@ -155,14 +180,6 @@ export const StoredSettingsSchema = z.strictObject({
    */
   analytics: z
     .strictObject({
-      platform: z
-        .strictObject({
-          name: z.string().optional(),
-          code: z.string().optional(),
-          // Absent whenever an operator arms tracking without authoring a privacy URL, which is an ordinary act: `DataConsent.svelte` and `DataConsentInfoButton.svelte` both read this through `?.`, so the frontend tolerates its absence and this schema must too.
-          infoUrl: z.string().optional()
-        })
-        .optional(),
       trackEvents: z.boolean().optional()
     })
     .optional()

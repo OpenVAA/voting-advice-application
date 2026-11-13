@@ -64,8 +64,8 @@ export type FunctionReturnOverrides = {
       | 'entity_last_name'
     >
   >;
-  get_candidate_user_data: WithReturns<
-    'get_candidate_user_data',
-    Nullable<'get_candidate_user_data', 'first_name' | 'last_name' | 'subtype' | 'sort_order' | 'terms_of_use_accepted'>
+  get_entity_user_data: WithReturns<
+    'get_entity_user_data',
+    Nullable<'get_entity_user_data', 'first_name' | 'last_name' | 'subtype' | 'sort_order'>
   >;
 };

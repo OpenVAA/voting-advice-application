@@ -60,9 +60,6 @@ export const COLUMN_MAP = {
   open_answer: 'openAnswer',
   question_id: 'questionId',
 
-  // Candidate columns
-  terms_of_use_accepted: 'termsOfUseAccepted',
-
   // External ID (used across all content tables)
   external_id: 'externalId'
 } as const;
