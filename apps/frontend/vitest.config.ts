@@ -26,12 +26,16 @@ export default defineConfig({
       // SvelteKit built-in aliases (not available via @sveltejs/vite-plugin-svelte)
       { find: '$lib', replacement: path.resolve(here, 'src/lib') },
       { find: '$types', replacement: path.resolve(here, 'src/lib/types') },
-      { find: '$candidate', replacement: path.resolve(here, 'src/lib/candidate') },
+      { find: '$contestant', replacement: path.resolve(here, 'src/lib/contestant') },
       { find: '$layouts', replacement: path.resolve(here, 'src/lib/layouts') },
       // SvelteKit env modules stub
       {
         find: '$env/dynamic/public',
         replacement: path.resolve(here, 'src/lib/i18n/tests/__mocks__/env-dynamic-public.ts')
+      },
+      {
+        find: '$env/dynamic/private',
+        replacement: path.resolve(here, 'src/lib/i18n/tests/__mocks__/env-dynamic-private.ts')
       },
       {
         find: '$app/environment',
@@ -40,6 +44,10 @@ export default defineConfig({
       {
         find: '$app/paths',
         replacement: path.resolve(here, 'src/lib/i18n/tests/__mocks__/app-paths.ts')
+      },
+      {
+        find: '$app/forms',
+        replacement: path.resolve(here, 'src/lib/i18n/tests/__mocks__/app-forms.ts')
       },
       {
         find: '$app/state',
