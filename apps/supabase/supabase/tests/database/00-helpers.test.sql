@@ -481,7 +481,7 @@ BEGIN
 
   -- ===== Projects ===== `open_for_voters` follows the fixture's A-true / B-false polarity, so every visibility assertion has a two-directional control group.
   --
-  -- `lock_nominations` is deliberately NOT named on either row, so both projects take its default, and 15-visibility-flags.test.sql asserts exactly that.
+  -- Neither project locks nominations: the lock is the app setting `access.nominationsLocked`, and the two `app_settings` rows below hold no `access` member.
   INSERT INTO projects (id, account_id, name, open_for_voters) VALUES
     (test_id('project_a'), test_id('account_a'), 'Project A', true),
     (test_id('project_b'), test_id('account_b'), 'Project B', false);
@@ -516,11 +516,7 @@ BEGIN
     (test_id('org_b'), test_id('project_b'), '{"en":"Org B"}'::jsonb, false);
 
   -- ===== Candidates (no answers to avoid trigger complications) ===== candidate_a + candidate_a2 are confirmed, in the open project, and must stay visible to anon.
-  -- `anon_select_candidates` requires `terms_of_use_accepted IS NOT NULL AND < now()` as well as the confirmation and nomination terms, so both are given a timestamp strictly in the past; otherwise the anon-visible-candidate assertions in 03-anon-read.test fail.
-  --
-  -- It MUST NOT be a bare now(). pgTAP runs each file inside one transaction (the BEGIN/ROLLBACK pattern), and now() is transaction_timestamp(): it is frozen for the whole transaction. A row inserted with ToU = now() is then read back under a policy asking ToU < now(), which is now() < now() = FALSE, so candidate_a would be invisible to anon and the anon-visible-candidate assertions in 03-anon-read.test.sql would fail deterministically. Use clock_timestamp() if a moving clock is ever wanted.
-  --
-  -- candidate_b stays NULL — it is unconfirmed and its project is closed to voters, so it is invisible twice over anyway, AND a NULL ToU value lets 10-schema-migrations.test.sql assert that the candidate_b ToU column is still NULL after a cross-tenant UPDATE attempt by candidate_a.
+  -- candidate_b is unconfirmed and its project is closed to voters, so it is invisible twice over.
   --
   -- The candidates carry NO organization column: the candidate-to-organization association is stated once, on the parent_nomination_id edge below. candidate_a reaches org_a through nomination_cand_a -> nomination_org_a; candidate_a2 reaches nothing, because it is a member with no nomination at all, and that asymmetry is what 21-entity-organization.test.sql's email-variable pair discriminates on.
   INSERT INTO candidates (id, project_id, first_name, last_name, terms_of_use_accepted, confirmed) VALUES

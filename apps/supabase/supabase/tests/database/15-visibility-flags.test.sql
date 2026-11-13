@@ -6,7 +6,7 @@
 --
 -- THE DEFAULTS ARE MEASURED, NEVER READ FROM THE FILE. `col_type_is` and a grep over `100-tenancy.sql` both state what the declaration says. The assertions below insert rows inside this transaction and read the column back, which states what the database did.
 --
--- lock_nominations SHIPS INERT and this file says so rather than implying activity it does not have. Nothing reads it until 162-12 writes the entity-user nomination policies whose `own, unless locked` cells are what it gates; nothing sets it; no behavioural assertion can observe it. Its claims here are existence, type, NOT NULL and default false -- and its default false IS today's behaviour rather than a new permissive setting, because section 3.3 grants admins `nomination.edit` unconditionally. Do not add an assertion here that pretends it is enforced.
+-- THE NOMINATIONS LOCK IS NOT A COLUMN OF `projects`. It is the app setting `access.nominationsLocked`, and 23-nominations-write.test.sql holds its cells: the three entity-user policies in both directions, and which stored values lock. This file holds one assertion about it, in section 2: no column of `projects` names nominations, so the setting has no second source to disagree with.
 --
 -- pgTAP SHIPS ITS OWN has_role(). It is a role-existence assertion returning text, and under this estate's `search_path = public, extensions` it SHADOWS ours, so an unqualified one-argument call fails with `function ok(text, unknown) does not exist` rather than as a clean failed assertion. This file calls no permission predicate, but the rule stands for anything added to it: qualify every call `public.has_role(...)`. 13-shim-parity.test.sql is the reference.
 --
@@ -108,6 +108,7 @@ SELECT
     'The openness flag is NOT NULL, so no row can carry an unknown visibility state'
   );
 
+-- The second term is the floor: it is true only when the query reached the columns of `projects`, so the zero beside it is a measurement and not an empty instrument.
 SELECT
   is (
     (
@@ -622,7 +623,7 @@ SELECT
     'The repurposed column is the nomination-shape enum and is NOT NULL'
   );
 
--- Compared as a sorted array rather than as a count, so a FOURTH member reddens naming itself instead of reddening as an arithmetic surprise.
+-- Compared as a sorted array rather than as a count, so a fifth member reddens naming itself instead of reddening as an arithmetic surprise.
 SELECT
   is (
     (

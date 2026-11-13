@@ -49,7 +49,7 @@ ON CONFLICT (id) DO NOTHING;
 --
 -- Created OPEN FOR VOTERS. The column defaults to the closed direction, which is the safe answer for a project nobody has spoken for; this project is the one a `yarn db:reset` stack serves, and without the value here that stack renders an empty voter application.
 --
--- `lock_nominations` is deliberately absent. It ships inert and takes its default; see the column comment in `schema/100-tenancy.sql`.
+-- Nominations are unlocked: the lock is the app setting `access.nominationsLocked`, and the settings row below does not hold the key.
 INSERT INTO
   projects (
     id,
@@ -69,6 +69,8 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- Default app_settings for the default project
+--
+-- Candidates may register by email or code: the shipped `registrationModes` allows nothing, and without the value here a candidate invitation created on this stack could not be used. A stored `contestantApp` replaces the default one whole, so the other members restate the shipped defaults.
 INSERT INTO
   app_settings (project_id, settings)
 VALUES
@@ -178,7 +180,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Test candidate record, linked to the test candidate user by the editor grant written below
 --
--- Created CONFIRMED. This is the identity every local candidate-app session uses, and the confirmation column defaults to the unconfirmed direction; an unconfirmed candidate is not shown in the voter app.
+-- Created CONFIRMED. This is the identity every local contestant-app session uses, and the confirmation column defaults to the unconfirmed direction; an unconfirmed candidate is not shown in the voter app.
 INSERT INTO
   candidates (id, project_id, first_name, last_name, confirmed)
 VALUES
@@ -205,7 +207,7 @@ VALUES
     '00000000-0000-0000-0000-000000000001',
     'admin'
   ),
-  -- The candidate user, as the editor of its own candidate record; this row is what the candidate app resolves the user's candidate from
+  -- The candidate user, as the editor of its own candidate record; this row is what the contestant app resolves the user's candidate from
   (
     '00000000-0000-0000-0000-000000000011',
     'entity',
