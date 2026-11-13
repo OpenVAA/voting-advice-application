@@ -58,6 +58,8 @@
  * - `fixed: Array<FixedRow<C>>` — HAND-AUTHORED rows merged into the synthetic
  *   output, typed per collection. Use for exact organization names, test-specific candidates, known constituency IDs, etc.
  *
+ * A `questions` or `question_categories` row may state `entity_type`, the list of entity types whose entities answer it, e.g. `entity_type: ['organization']`. It is always a list, and an absent key, null and an empty list all address every type. On a `nominations` row the same key is refused by name: the column is generated there.
+ *
  * Example mixing synthetic + hand-authored:
  *
  * ```ts

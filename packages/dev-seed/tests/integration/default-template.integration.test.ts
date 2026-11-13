@@ -253,10 +253,9 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     expect(ops.linkJoinTables).toBe(1);
 
     // 1a-ii. The link pass's OWN round-trips, newly visible at this boundary.
-    //     `linkJoinTables` is a pure planner (`planLinks`, no I/O) plus three prototype helpers, so calls a monolithic version would make INSIDE itself are counted here by name. They are budgeted rather than allow-listed, because every one of them is a function of the template alone:
-    //       - one `upsertJoinRows` per JOIN plan entry (elections→cgs, cgs→cos);
+    //     `linkJoinTables` is a pure planner (`planLinks`, no I/O) plus two prototype helpers, so calls a monolithic version would make INSIDE itself are counted here by name. They are budgeted rather than allow-listed, because every one of them is a function of the template alone. The constituency join tables cost the link pass nothing: `bulk_import` writes them in Pass 1.
     //       - one `updateJsonbRefs` per JSONB plan entry (one per scoped question_category — the default template scopes all four);
-    //       - one `resolveExternalId` per external_id actually looked up: the two join parents, the single cg reference, one per constituency, and one per category→election reference.
+    //       - one `resolveExternalId` per external_id actually looked up: one per category→election reference.
     //     An N+1 introduced into the link pass now fails HERE, at the pass that owns it, instead of hiding inside a single `linkJoinTables` tick.
     expect(ops.upsertJoinRows).toBe(2);
     expect(ops.updateJsonbRefs).toBe(rows.question_categories.length);
@@ -436,7 +435,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
       byType.set(row.entity_type, (byType.get(row.entity_type) ?? 0) + 1);
     }
 
-    // Measured against a template WITHOUT the `terms_of_use_accepted` clause: through the anon key this RPC returned 50 rows whose entity types were `organization` (40) and `alliance` (10) — with NO `candidate` key in the result set at all — while the identical call as service_role returned 377 rows including `candidate` 327. `get_nominations` drops rows whose entity join is RLS-blocked (`AND COALESCE(c.id, o.id, f.id, a.id) IS NOT NULL`), so the invisibility presents as an ABSENT KEY rather than a zero count — hence the `?? 0` default before a strictly-greater-than-zero comparison, and NOT `>= 0`, which an absent key would satisfy.
+    // `get_nominations` drops rows whose entity join is RLS-blocked (`AND COALESCE(c.id, o.id, f.id, a.id) IS NOT NULL`), so candidates the anon policy hides present as an ABSENT KEY rather than a zero count — hence the `?? 0` default before a strictly-greater-than-zero comparison, and NOT `>= 0`, which an absent key would satisfy.
     expect(byType.get('candidate') ?? 0, 'anon-visible candidate nominations').toBeGreaterThan(0);
     // Organizations are visible to anon today. Asserting them beside the candidates is what makes a red run diagnostic: a failure on candidates alone localises the defect to the `candidates` anon policy, whereas a failure on both would point at the RPC, the seeding or the credential.
     expect(byType.get('organization') ?? 0, 'anon-visible organization nominations').toBeGreaterThan(0);
@@ -455,7 +454,7 @@ const BUDGETED_WRITE_OPS = new Set([
   'bulkImport',
   'importAnswers',
   'linkJoinTables',
-  // The link pass's three I/O helpers. Each carries its own explicit count assertion in 1a-ii above — present here because they are budgeted, not because they are exempt.
+  // The link pass's two I/O helpers. Each carries its own explicit count assertion in 1a-ii above — present here because they are budgeted, not because they are exempt.
   'resolveExternalId',
   'upsertJoinRows',
   'updateJsonbRefs',

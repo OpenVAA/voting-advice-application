@@ -17,7 +17,7 @@
  *
  * `ctx.refs[table]` carries the FULL emitted rows after each step. The public `Ctx` type in `ctx.ts` narrows each ref to `Array<{ external_id: string }>` as a MINIMAL contract — generators that need more (CandidatesGenerator's answer emitter reads `question.type` / `question.choices`) cast up explicitly. The narrower public type keeps consumers untyped-accident-free while the pipeline uses a wider internal view.
  *
- * Post-topo sentinel enrichment pass: after every generator runs, this file attaches `_constituencyGroups` onto elections, `_constituencies` onto constituency_groups, and `_elections` onto question_categories. Sentinel emission is deliberately deferred to this pass so generators themselves stay simple and each sentinel is computed from the FINAL ref graph — not the partial mid-topo state. `bulkImport` strips these `_`-prefixed fields before the RPC; `linkJoinTables` re-reads them from the same dataset in a second pass.
+ * Post-topo sentinel enrichment pass: after every generator runs, this file attaches `_constituencyGroups` onto elections, `_constituencies` onto constituency_groups, and `_elections` onto question_categories. Sentinel emission is deliberately deferred to this pass so generators themselves stay simple and each sentinel is computed from the FINAL ref graph — not the partial mid-topo state. `bulkImport` strips these `_`-prefixed fields as written and sends the first two as the items' `bulk_import` link keys, which `bulk_import` writes before any nomination; `linkJoinTables` re-reads `_elections` from the same dataset in a second pass.
  */
 
 import { buildCtx } from './ctx';
@@ -124,7 +124,7 @@ const GENERATOR_CLASSES: Record<TableName, GeneratorClass> = {
  *   - `_constituencies` on every constituency_group row
  *   - `_elections` on every question_category row
  *
- * `bulkImport` strips these `_`-prefixed fields before the RPC; `linkJoinTables` re-reads them from the same dataset in a second pass.
+ * `bulkImport` strips these `_`-prefixed fields as written and sends the first two as the items' `bulk_import` link keys, which `bulk_import` writes before any nomination; `linkJoinTables` re-reads `_elections` from the same dataset in a second pass.
  */
 export function runPipeline(
   template: Template,
@@ -200,7 +200,7 @@ function assignNominationSortOrder(output: Record<string, Array<Record<string, u
 /**
  * Attach `_`-prefixed sentinel fields to the rows that need them.
  *
- * `bulkImport` strips these before sending to the RPC; `linkJoinTables` re-reads them from the SAME input dataset in a second pass.
+ * `bulkImport` strips these as written and sends the first two as the items' `bulk_import` link keys; `linkJoinTables` re-reads `_elections` from the SAME input dataset in a second pass.
  *
  * Sentinels:
  *   - `election._constituencyGroups = { externalId: [...constituency_group extIds] }`

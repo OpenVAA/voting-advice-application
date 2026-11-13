@@ -1,9 +1,11 @@
 /**
- * `LINK_SENTINELS` — the declarative description of every M:N / JSONB link sentinel that `SupabaseAdminClient.linkJoinTables` resolves.
+ * `LINK_SENTINELS` — the declarative description of every M:N / JSONB link sentinel a seed writes.
+ *
+ * The two `join` rules, an election's constituency groups and a constituency group's constituencies, are sent to `bulk_import` by `SupabaseAdminClient.bulkImport` as link keys of the declaring item ({@link importLinkFor}), so that `bulk_import` writes the join rows before any nomination. The two `jsonb` rules are written by `SupabaseAdminClient.linkJoinTables` after the import.
  *
  * ## What this const is for
  *
- * `linkJoinTables` drives its loops from THIS array, through {@link planLinks} below, rather than from hard-coded resolution blocks. That is what makes the derivation guarantee real: **a `(collection, key)` pair cannot be permitted without also being handled**, because the same loop that permits it is the loop that resolves it. Adding a pair here without teaching the resolver about it is a test failure, not a silent drop.
+ * `linkJoinTables` and `bulkImport` drive their loops from THIS array, through {@link planLinks} and {@link importLinkFor} below, rather than from hard-coded resolution blocks. That is what makes the derivation guarantee real: **a `(collection, key)` pair cannot be permitted without also being handled**, because the same loop that permits it is the loop that resolves it. Adding a pair here without teaching the resolver about it is a test failure, not a silent drop.
  *
  * ## Where the resolution now lives
  *
@@ -19,8 +21,7 @@
  *    rows use `elections.constituency_groups` (41) and `constituency_groups.constituencies` (35) — every hand-authored election and constituency-group row in `e2e/base` and all 28 `perm-*` templates.
  *    They survive today only because `COLLECTION_NON_COLUMNS` strips them before the RPC sees them. Dropping them here moves them outside this const's authority — permitted somewhere no loop resolves.
  *
- * Every literal below was transcribed from the four hand-written resolution blocks `linkJoinTables` used to carry, and re-verified against them immediately before they were deleted: the two join-table names and their `onConflict` strings from the election and constituency-group blocks, the two JSONB column names from the `electionResolve` / `constResolve` helpers (each dispatched for BOTH `question_categories` and `questions`), and the key sets from the two `??`
- * chains. Line numbers are deliberately omitted — they drifted with the very rewrite this const enabled; locate the history by identifier.
+ * The literals below are the two join-table names of the election and constituency-group links, the two JSONB column names the election and constituency resolvers write (each for BOTH `question_categories` and `questions`), and the accepted key sets of each link.
  *
  * Declared `as const satisfies ReadonlyArray<LinkSentinelRule>` so every table and column name stays a narrow literal: a typo becomes a compile error here rather than a PostgREST 404 at seed time.
  */
@@ -38,7 +39,7 @@ export type SentinelPayload =
   { externalId?: Array<string>; external_id?: Array<string> } | Array<{ external_id?: string; externalId?: string }>;
 
 /**
- * The collections a `join`-target rule may declare — the tables `linkJoinTables` resolves a PARENT `external_id` to a UUID for.
+ * The collections a `join`-target rule may declare — the collections whose `bulk_import` items carry a link key.
  *
  * ⚠ This list is not decoration: it is the domain of `LINK_LOOKUP_ERRORS` (`supabaseAdminClient.ts`). Widen `LinkSentinelRule.collections` back to `ReadonlyArray<CollectionKey>` — all twelve — and a rule declaring a collection outside this list compiles clean, then dies at seed time as `TypeError: LINK_LOOKUP_ERRORS[table] is not a function`, MASKING the real lookup failure instead of reporting it with the greppable message the const exists to preserve.
  */
@@ -62,11 +63,11 @@ export type LinkParentCollection = JoinParentCollection | JsonbParentCollection;
 /**
  * Where a resolved sentinel's UUIDs are written.
  *
- * Discriminated on `kind` so the resolver can switch exhaustively: `join` inserts association rows, `jsonb` updates a column on the row itself.
+ * Discriminated on `kind` so the resolver can switch exhaustively: `join` names association rows `bulk_import` writes, `jsonb` a column `linkJoinTables` updates on the row itself.
  */
 export type LinkTarget =
   | {
-      /** Association rows in a dedicated join table. */
+      /** Association rows in a dedicated join table, which `bulk_import` writes from a link key of the declaring row's item. */
       readonly kind: 'join';
       readonly table: 'election_constituency_groups' | 'constituency_group_constituencies';
       /** Column naming the row that declared the sentinel. */
