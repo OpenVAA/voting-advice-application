@@ -6,12 +6,12 @@ The Data API in [`$lib/api`](https://github.com/OpenVAA/voting-advice-applicatio
 
 Four modules at the root of `$lib/api` are the only way in. Each exports a factory:
 
-| Module              | Factory                | Returns                  | Used for                                                                                                                                                  |
-| ------------------- | ---------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dataProvider.ts`   | `createDataProvider`   | `SupabaseDataProvider`   | Reading public data: app settings, app customization, elections, constituencies, nominations, entities and questions                                      |
-| `dataWriter.ts`     | `createDataWriter`     | `SupabaseDataWriter`     | Candidate authentication, registration, pre-registration and passwords; reading and writing the signed-in candidate's data; the Admin App's job endpoints |
-| `adminWriter.ts`    | `createAdminWriter`    | `SupabaseAdminWriter`    | Admin App writes: question updates, job results and email                                                                                                 |
-| `feedbackWriter.ts` | `createFeedbackWriter` | `SupabaseFeedbackWriter` | Feedback from the Voter App and the Candidate App                                                                                                         |
+| Module              | Factory                | Returns                  | Used for                                                                                                                                                      |
+| ------------------- | ---------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dataProvider.ts`   | `createDataProvider`   | `SupabaseDataProvider`   | Reading public data: app settings, app customization, elections, constituencies, nominations, entities and questions                                          |
+| `dataWriter.ts`     | `createDataWriter`     | `SupabaseDataWriter`     | Contestant authentication, registration, address confirmation and passwords; reading and writing the signed-in user's entities; the Admin App's job endpoints |
+| `adminWriter.ts`    | `createAdminWriter`    | `SupabaseAdminWriter`    | Admin App writes: question updates, job results and email                                                                                                     |
+| `feedbackWriter.ts` | `createFeedbackWriter` | `SupabaseFeedbackWriter` | Feedback from the Voter App and the Contestant App                                                                                                            |
 
 Every call returns a new adapter for one request, or one Admin App job. No adapter is shared between requests: an ESLint rule bans constructing an adapter at module scope, and `src/lib/_guards/eslint-adapter-singleton-guard.test.ts` checks that the rule still fires.
 
@@ -52,15 +52,15 @@ Outside `$lib/api` and `$lib/supabase`, code may not read a Supabase client off 
 - **Row-level security.** Every client the frontend builds uses the anon key and, when there is one, the user's session. Row-level security therefore decides what each read and write may touch. The service-role key is never read under `apps/frontend/src`. See [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
 - **Paging.** Large reads are fetched page by page, `staticSettings.dataAdapter.pageSize` rows at a time. The page size must equal PostgREST's `max_rows`.
 - **Localization.** Localized JSONB columns are extracted in the adapter's locale with `getLocalized`, falling back to `defaultLocale`. See [Multi-locale data](/developers-guide/localization/storing-multi-locale-data).
-- **Processing.** `UniversalDataProvider` handles errors and processes the raw data before it reaches the `DataRoot`, for example by checking the contrast of the colors of entities and question categories.
+- **Processing.** `UniversalDataProvider` handles errors and processes the raw data before it reaches the `DataRoot`, for example by checking the contrast of the colors of elections, entities and question categories. The colour of each of these reaches the `DataRoot` as a hex colour or the empty string, never as the stored text.
 
 ## Writing data
 
-- **`SupabaseDataWriter`** extends `UniversalDataWriter`. It uses Supabase Auth through `this.supabase.auth`, with the session kept in cookies. A few methods call the app's own server routes instead of Supabase: `logout`, `preregisterWithIdToken`, the OIDC token methods `exchangeCodeForIdToken` and `clearIdToken`, and the Admin App's job methods (`getActiveJobs`, `getPastJobs`, `startJob`, `getJobProgress`, `abortJob`, `abortAllJobs`). Their URLs are in `UNIVERSAL_API_ROUTES`.
+- **`SupabaseDataWriter`** extends `UniversalDataWriter`. It uses Supabase Auth through `this.supabase.auth`, with the session kept in cookies. A few methods call the app's own server routes instead of Supabase: `logout` and the Admin App's job methods (`getActiveJobs`, `getPastJobs`, `startJob`, `getJobProgress`, `abortJob`, `abortAllJobs`). Their URLs are in `UNIVERSAL_API_ROUTES`.
 - **`SupabaseAdminWriter`** handles the Admin App's own writes: `updateQuestion`, `insertJobResult` and `sendEmail`, and `callerMayOnProject`, which checks the caller's grant. The long-running job features in `$lib/server/admin/features` build it with a job client, so every write runs as the admin who started the job.
 - **`SupabaseFeedbackWriter`** inserts into `public.feedback`, with the project id of the adapter. The `anon_insert_feedback` policy and a rate-limit trigger gate the insert.
 
-In components, the writers are reached through the contexts: `CandidateContext` and `AuthContext` wrap the data writer, `AdminContext` wraps the data and admin writers, and `AppContext.sendFeedback` posts feedback. These wrappers build their writers with the `browser` arm.
+In components, the writers are reached through the contexts: `ContestantContext` and `AuthContext` wrap the data writer, `AdminContext` wraps the data and admin writers, and `AppContext.sendFeedback` posts feedback. These wrappers build their writers with the `browser` arm.
 
 ## `UniversalAdapter`
 
@@ -83,7 +83,7 @@ The `apiRoute` adapters in `$lib/api/adapters/apiRoute`, `ApiRouteDataProvider` 
 2. A layout writes the data into the `DataRoot` of the `DataContext`. The root `+layout.svelte` writes the elections and constituencies through `setDataRoot`, and the `(located)` layout adds the questions, entities and nominations. The `DataRoot`, from [`@openvaa/data`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/data), turns the raw data into data objects.
 3. Components read the objects from `ctx.dataRoot` or from the values that the other contexts derive from it, such as `selectedElections` or `matches`. See [Contexts](/developers-guide/frontend/contexts).
 
-The signed-in candidate's own data is not in the `DataRoot`. It is in the `userData` member of the `CandidateContext`.
+The signed-in candidate's own data is not in the `DataRoot`. It is in the `userData` member of the `ContestantContext`.
 
 ## Folder structure
 
@@ -96,7 +96,7 @@ The signed-in candidate's own data is not in the `DataRoot`. It is in the `userD
 - [`src/lib/server/api/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/server/api)
   - `dataProvider.ts`, `feedbackWriter.ts`: select the server-side adapter.
   - `adapters/local/`: `LocalServerDataProvider`, `LocalServerFeedbackWriter` and their base class.
-- `src/routes/api/`: the server routes, including `data/[collection]`, `feedback`, `auth/logout`, `candidate/preregister`, `oidc/*` and `admin/jobs/*`.
+- `src/routes/api/`: the server routes, including `data/[collection]`, `feedback`, `auth/logout`, `auth/callback`, `contestant/identity-provider`, `oidc/*` and `admin/jobs/*`.
 
 ## Classes
 

@@ -15,7 +15,7 @@ TODO: Consider moving the tracking events away from the component and just addin
 ### Tracking events
 
 - `filters_reset`
-- `filters_active` with `activeFilters` listing the (localized) names of the currently active filters
+- `filters_active` with `count`, the number of currently active filters
 
 ### Usage
 
