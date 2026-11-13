@@ -20,7 +20,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (22);
+  plan (21);
 
 -- Create test fixture data
 SELECT
@@ -77,10 +77,10 @@ SELECT
 SELECT
   lives_ok (
     format(
-      $$UPDATE organizations SET short_name = '{"en":"Updated"}'::jsonb WHERE id = '%s'$$,
+      $$UPDATE organizations SET info = '{"en":"Updated"}'::jsonb WHERE id = '%s'$$,
       test_id ('org_a')
     ),
-    'organization_admin can UPDATE short_name on own organization'
+    'organization_admin can UPDATE info on own organization'
   );
 
 -- Verify the update took effect
@@ -88,7 +88,7 @@ SELECT
   is (
     (
       SELECT
-        short_name ->> 'en'
+        info ->> 'en'
       FROM
         organizations
       WHERE
@@ -337,7 +337,6 @@ SELECT
       SELECT
         r ->> 'first_name' = 'Nora'
         AND NOT (r ? 'answers')
-        AND NOT (r ? 'terms_of_use_accepted')
         AND NOT (r ? 'custom_data')
       FROM
         get_entity_basic_data (
@@ -426,13 +425,9 @@ SELECT
     (
       SELECT
         replace(
-          replace(
-            replace(qual, 'candidates.', 'TBL.'),
-            '''candidate''',
-            'ENT'
-          ),
-          ' AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now())',
-          ''
+          replace(qual, 'candidates.', 'TBL.'),
+          '''candidate''',
+          'ENT'
         )
       FROM
         pg_policies
@@ -440,29 +435,7 @@ SELECT
         tablename = 'candidates'
         AND policyname = 'authenticated_select_candidates'
     ),
-    'the organizations and candidates SELECT policies are ONE expression modulo the table name, the entity-type literal and the two terms-of-use conjuncts candidates alone carries'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)::integer
-      FROM
-        pg_policies
-      WHERE
-        schemaname = 'public'
-        AND tablename IN (
-          'organizations',
-          'candidates',
-          'factions',
-          'alliances'
-        )
-        AND cmd = 'SELECT'
-        AND COALESCE(qual, '') LIKE '% AND (terms_of_use_accepted IS NOT NULL) AND (terms_of_use_accepted < now())%'
-    ),
-    2,
-    'the term the assertion above strips is carried by EXACTLY the two candidates SELECT policies -- so the strip removed something real, and no other entity table acquired a terms-of-use conjunct'
+    'the organizations and candidates SELECT policies are ONE expression modulo the table name and the entity-type literal'
   );
 
 -- =====================================================================

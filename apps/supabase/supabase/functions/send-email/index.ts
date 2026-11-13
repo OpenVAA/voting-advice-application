@@ -1,8 +1,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import nodemailer from 'npm:nodemailer@10.0.11';
+import { requireEnv } from '../_shared/envConfig.ts';
 import { callerMayOnProject } from './callerAuthority.ts';
 import { renderTemplate, renderTemplateHtml } from './templateVars.ts';
-import { requireEnv } from './envConfig.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

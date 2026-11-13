@@ -328,10 +328,10 @@ SELECT
 SELECT
   lives_ok (
     format(
-      $$UPDATE organizations SET short_name = '{"en":"New Short"}'::jsonb WHERE id = '%s'$$,
+      $$UPDATE organizations SET custom_data = '{"note":"New note"}'::jsonb WHERE id = '%s'$$,
       test_id ('org_a')
     ),
-    'Organization admin can update short_name on own organization'
+    'Organization admin can update custom_data on own organization'
   );
 
 SELECT
@@ -406,7 +406,7 @@ SELECT
 SELECT
   lives_ok (
     format(
-      $$UPDATE candidates SET short_name = '{"en":"Trigger Control"}'::jsonb WHERE id = '%s'$$,
+      $$UPDATE candidates SET info = '{"en":"Trigger Control"}'::jsonb WHERE id = '%s'$$,
       test_id ('candidate_a')
     ),
     'Candidate can still update a permitted column while holding no privilege on updated_at'
@@ -449,8 +449,8 @@ SELECT
         AND table_schema = 'public'
         AND table_name = 'candidates'
     ),
-    11,
-    'authenticated holds UPDATE on exactly 11 columns of candidates'
+    10,
+    'authenticated holds UPDATE on exactly 10 columns of candidates'
   );
 
 SELECT
@@ -485,10 +485,10 @@ SELECT
 SELECT
   lives_ok (
     format(
-      $$UPDATE projects SET lock_nominations = true WHERE id = '%s'$$,
+      $$UPDATE projects SET default_locale = 'fi' WHERE id = '%s'$$,
       test_id ('project_a')
     ),
-    'control: a project admin can still update a settings column of its own project'
+    'control: a project admin can still update default_locale, a settings column of its own project'
   );
 
 SELECT

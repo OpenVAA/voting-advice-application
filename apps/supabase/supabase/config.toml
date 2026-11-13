@@ -185,14 +185,14 @@ site_url = "http://127.0.0.1:5173"
 #    list. The browser reaches the dev server on `localhost`, which is why both entries below name it.
 # 2. A single `*` is honoured and does not cross a path separator. `/*/` matches exactly one segment,
 #    so the second entry admits one locale prefix and nothing else. It was measured accepting
-#    `/fi/api/candidate/auth/callback` and rejecting `/fi/en/api/...`, `/api/...`,
-#    `/fi/api/candidate/auth/callback/extra`, `/fi/api/evil` and `/`.
+#    `/fi/auth/confirm` and rejecting `/fi/en/auth/confirm`, `/fi/auth/confirm/extra`,
+#    `/fi/auth/evil` and `/`.
 #
-# The first entry is the base locale, which Paraglide serves unprefixed. The second is every other
-# locale. Do NOT replace either with a trailing wildcard, a prefix wildcard, a bare `**` or a host
-# wildcard: those stop pinning the path suffix or the host and turn a closed redirect boundary into
-# an open one.
-additional_redirect_urls = ["https://127.0.0.1:3000", "http://localhost:5173/api/candidate/auth/callback", "http://localhost:5173/*/api/candidate/auth/callback"]
+# Both entries name the confirm page, `/auth/confirm`, which every mailed link opens. The first entry
+# is the base locale, which Paraglide serves unprefixed. The second is every other locale. Do NOT
+# replace either with a trailing wildcard, a prefix wildcard, a bare `**` or a host wildcard: those
+# stop pinning the path suffix or the host and turn a closed redirect boundary into an open one.
+additional_redirect_urls = ["https://127.0.0.1:3000", "http://localhost:5173/auth/confirm", "http://localhost:5173/*/auth/confirm"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to the local API URL (http://127.0.0.1:<port>/auth/v1).
@@ -204,14 +204,19 @@ enable_refresh_token_rotation = true
 # Allows refresh tokens to be reused after expiry, up to the specified interval in seconds.
 # Requires enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
-# Allow/disallow new user signups to your project.
-enable_signup = true
+# Public sign-up is closed: no unauthenticated caller may create a user. An invitation is claimed by
+# the account whose address is confirmed, so an address must not become an account at the request of
+# whoever types it. Users are created by the service role only. `yarn assert:auth-signup-closed`
+# guards this key and the two keys of `[auth.email]` below.
+enable_signup = false
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
 enable_manual_linking = false
-# Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
-minimum_password_length = 6
+# Passwords shorter than this value will be rejected as weak. It is the length the Contestant App's
+# password rule asks for, so a direct call to the auth service cannot set a password the screens would
+# refuse; the composition rules stay in the client. `yarn assert:auth-signup-closed` guards this key.
+minimum_password_length = 8
 # Passwords that do not meet the following requirements will be rejected as weak. Supported values
 # are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
 password_requirements = ""
@@ -239,19 +244,25 @@ web3 = 30
 # secret = ""
 
 [auth.email]
-# Allow/disallow new user signups via email to your project.
+# Allow/disallow new user signups via email to your project. This key enables the email provider
+# itself, and password sign-in and password recovery depend on it: it stays `true`. Public sign-up
+# is closed by `[auth] enable_signup` above.
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
-# If enabled, users need to confirm their email address before signing in.
-enable_confirmations = false
+# If enabled, users need to confirm their email address before signing in. An address counts as
+# confirmed only after a mailed link is opened, or after the service role vouches for it.
+enable_confirmations = true
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
 secure_password_change = false
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
 max_frequency = "1s"
-# Number of characters used in the email OTP.
-otp_length = 6
+# Number of characters used in the email OTP. Every mailed link also mints such a code for its
+# address, accepted in the link's place, so it is the auth service's maximum, ten digits, to keep it
+# out of reach of guessing; the application uses the code nowhere. `yarn assert:auth-signup-closed`
+# guards it.
+otp_length = 10
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
@@ -306,6 +317,11 @@ max_frequency = "5s"
 [auth.hook.custom_access_token]
 enabled = true
 uri = "pg-functions://postgres/public/custom_access_token_hook"
+
+# This hook takes every mail the auth service would send and sends none: the account-access function sends the application's mails.
+[auth.hook.send_email]
+enabled = true
+uri = "pg-functions://postgres/public/send_email_hook"
 
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
 [auth.sms.twilio]
@@ -396,9 +412,12 @@ allow_dynamic_registration = false
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
-# `per_worker` (default) — enables hot reload during local development.
+# `per_worker` (default) — enables hot reload during local development. A worker serves more than
+# one request, so a function keeps no state between requests at module level.
 # `oneshot` — fallback mode if hot reload causes issues (e.g. in large repos or with symlinks).
-policy = "oneshot"
+# The policy here is `per_worker` because a function may answer before its background work
+# finishes.
+policy = "per_worker"
 # Port to attach the Chrome inspector for debugging edge functions.
 inspector_port = 8083
 # The Deno major version to use.
@@ -406,8 +425,15 @@ deno_version = 2
 
 [edge_runtime.secrets]
 # The entry names an environment variable and carries no value, so nothing secret enters git.
-# identity-callback requires this variable and refuses to run without it.
+# send-email requires this variable and refuses to run without it.
 PUBLIC_PROJECT_ID = "env(PUBLIC_PROJECT_ID)"
+
+[functions.identity-callback]
+# The gateway does not verify a JWT for this function. The function refuses every caller that
+# does not send the frontend server's secret, verifies the identity provider's token itself, and
+# binds its audience and issuer on every verification.
+# `supabase functions deploy` reads this setting, so a deploy needs no flag for it.
+verify_jwt = false
 
 [analytics]
 enabled = true

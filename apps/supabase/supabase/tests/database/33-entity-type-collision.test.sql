@@ -760,21 +760,13 @@ SELECT
 -- =====================================================================
 -- Project A's candidate reusing alliance_a's id. It is confirmed and has no nomination, while alliance_a holds the confirmed nomination_alliance_a. The project filter cannot separate the two, so only the entity_type conjunct of the nomination helpers does.
 INSERT INTO
-  public.candidates (
-    id,
-    project_id,
-    first_name,
-    last_name,
-    terms_of_use_accepted,
-    confirmed
-  )
+  public.candidates (id, project_id, first_name, last_name, confirmed)
 VALUES
   (
     test_id ('alliance_a'),
     test_id ('project_a'),
     'Alliance-id',
     'Candidate',
-    now() - interval '1 day',
     true
   );
 

@@ -15,7 +15,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (59);
+  plan (56);
 
 -- Create test fixture data. Project A is OPEN FOR VOTERS and its rows are confirmed; Project B is neither.
 SELECT
@@ -151,120 +151,6 @@ SELECT
     )::integer,
     0,
     'anon cannot see unconfirmed candidates'
-  );
-
--- =====================================================================
--- terms_of_use_accepted gating. Two ephemeral candidates exercise the NULL and future-now() branches of anon_select_candidates:
---   - candidate_no_terms:     confirmed + nominated, ToU=NULL          → invisible
---   - candidate_future_terms: confirmed + nominated, ToU=now()+1 day   → invisible
--- candidate_a (confirmed + nominated, ToU in the past) covers the past-now() branch → visible. Asserts the terms-of-use conjunct of the public-visibility rule.
--- =====================================================================
-SELECT
-  reset_role ();
-
-INSERT INTO
-  candidates (
-    id,
-    project_id,
-    first_name,
-    last_name,
-    terms_of_use_accepted,
-    confirmed
-  )
-VALUES
-  (
-    'cccccccc-cccc-cccc-cccc-00000000001a'::uuid,
-    test_id ('project_a'),
-    'NoTerms',
-    'Anon',
-    NULL,
-    true
-  ),
-  (
-    'cccccccc-cccc-cccc-cccc-00000000001b'::uuid,
-    test_id ('project_a'),
-    'FutureTerms',
-    'Anon',
-    now() + interval '1 day',
-    true
-  );
-
--- Both controls are `confirmed` and both are given a nomination, so that TERMS OF USE is the conjunct their description strings name. Anon visibility is an all-of rule: a control that also failed another conjunct would stay invisible for that reason too, and an assertion that holds for the wrong reason is how a negative control stops measuring without anyone noticing.
-INSERT INTO
-  nominations (
-    id,
-    project_id,
-    candidate_id,
-    election_id,
-    constituency_id,
-    election_round,
-    confirmed
-  )
-VALUES
-  (
-    'cccccccc-cccc-cccc-cccc-00000000002a'::uuid,
-    test_id ('project_a'),
-    'cccccccc-cccc-cccc-cccc-00000000001a'::uuid,
-    test_id ('election_a'),
-    test_id ('constituency_a'),
-    1,
-    true
-  ),
-  (
-    'cccccccc-cccc-cccc-cccc-00000000002b'::uuid,
-    test_id ('project_a'),
-    'cccccccc-cccc-cccc-cccc-00000000001b'::uuid,
-    test_id ('election_a'),
-    test_id ('constituency_a'),
-    1,
-    false
-  );
-
-SELECT
-  set_test_user ('anon');
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)
-      FROM
-        candidates
-      WHERE
-        first_name = 'NoTerms'
-        AND last_name = 'Anon'
-    )::integer,
-    0,
-    'anon cannot SELECT an otherwise-visible candidate with terms_of_use_accepted = NULL'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)
-      FROM
-        candidates
-      WHERE
-        first_name = 'FutureTerms'
-        AND last_name = 'Anon'
-    )::integer,
-    0,
-    'anon cannot SELECT an otherwise-visible candidate with terms_of_use_accepted in the future'
-  );
-
-SELECT
-  ok (
-    (
-      SELECT
-        count(*)
-      FROM
-        candidates
-      WHERE
-        first_name = 'Alice'
-        AND last_name = 'Alpha'
-    )::integer = 1,
-    'anon CAN SELECT a candidate with terms_of_use_accepted in the past (candidate_a)'
   );
 
 SELECT

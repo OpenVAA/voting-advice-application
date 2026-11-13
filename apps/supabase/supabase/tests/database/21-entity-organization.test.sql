@@ -23,7 +23,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (21);
+  plan (23);
 
 -- =====================================================================
 -- Fixtures: four rows, none of which names the column under test.
@@ -239,10 +239,10 @@ SELECT
         JOIN pg_namespace n ON n.oid = p.pronamespace
       WHERE
         n.nspname = 'public'
-        AND p.proname = 'get_candidate_user_data'
+        AND p.proname = 'get_entity_user_data'
     ),
-    14,
-    'get_candidate_user_data declares 14 output columns'
+    13,
+    'get_entity_user_data declares 13 output columns'
   );
 
 SELECT
@@ -255,9 +255,9 @@ SELECT
         JOIN pg_namespace n ON n.oid = p.pronamespace
       WHERE
         n.nspname = 'public'
-        AND p.proname = 'get_candidate_user_data'
+        AND p.proname = 'get_entity_user_data'
     ),
-    'get_candidate_user_data returns no organization output column'
+    'get_entity_user_data returns no organization output column'
   );
 
 -- MUST-NOT-FIRE COMPANION. `get_nominations` returns the nominations foreign key as `organization_id`; a candidates projection would be aliased `entity_organization_id`. Removing the wrong one would satisfy assertions 10 to 13 above while breaking every nomination the data provider maps.
@@ -420,9 +420,15 @@ SELECT
   is (
     (
       SELECT
-        string_agg(id::text, ',')
+        string_agg(r.id::text, ',')
       FROM
-        get_candidate_user_data (test_id ('project_a'))
+        unnest(
+          ARRAY[
+            test_id ('candidate_a'),
+            '21212121-2121-2121-2121-0000000000b1'::uuid
+          ]
+        ) AS asked (id),
+        LATERAL get_entity_user_data (test_id ('project_a'), 'candidate', asked.id) AS r
     ),
     test_id ('candidate_a')::text,
     'asked for project A, a two-project identity gets exactly its project A row'
@@ -432,9 +438,15 @@ SELECT
   is (
     (
       SELECT
-        string_agg(id::text, ',')
+        string_agg(r.id::text, ',')
       FROM
-        get_candidate_user_data (test_id ('project_b'))
+        unnest(
+          ARRAY[
+            test_id ('candidate_a'),
+            '21212121-2121-2121-2121-0000000000b1'::uuid
+          ]
+        ) AS asked (id),
+        LATERAL get_entity_user_data (test_id ('project_b'), 'candidate', asked.id) AS r
     ),
     '21212121-2121-2121-2121-0000000000b1',
     'asked for project B, the same identity gets exactly its project B row'
@@ -442,10 +454,45 @@ SELECT
 
 SELECT
   throws_ok (
-    $$SELECT count(*) FROM get_candidate_user_data('candidate'::public.entity_type)$$,
+    format(
+      $$SELECT count(*) FROM get_entity_user_data('candidate'::public.entity_type, %L::uuid)$$,
+      test_id ('candidate_a')
+    ),
     '42883',
     NULL,
-    'get_candidate_user_data without a project raises undefined_function, so p_project_id carries no DEFAULT'
+    'get_entity_user_data without a project raises undefined_function, so p_project_id carries no DEFAULT'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        p.pronargdefaults::integer
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'public'
+        AND p.proname = 'get_entity_user_data'
+    ),
+    0,
+    'get_entity_user_data declares no parameter default'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        p.pronargdefaults::integer
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        n.nspname = 'public'
+        AND p.proname = 'get_user_entities'
+    ),
+    0,
+    'get_user_entities declares no parameter default'
   );
 
 SELECT

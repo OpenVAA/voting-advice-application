@@ -76,5 +76,6 @@ CREATE TYPE public.storage_verb AS ENUM('read', 'write');
 CREATE TYPE public.nomination_shape AS ENUM(
   'organization_only',
   'candidate_only',
-  'organization_list'
+  'organization_list',
+  'organization_list_and_independents'
 );
