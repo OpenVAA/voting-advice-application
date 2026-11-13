@@ -22,7 +22,7 @@ export const permHideHeroTemplate: Template = buildMinimal({
     'qu-opin-l5-1': { hero: '🗳️' }
   },
   settingsOverlay: {
-    candidateApp: { questions: { hideHero: true } }
+    contestantApp: { questions: { hideHero: true } }
   }
 });
 

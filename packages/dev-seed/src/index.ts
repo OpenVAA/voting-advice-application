@@ -116,7 +116,18 @@ export type { AnswerEmitter } from './emitters/answers';
 export type { LatentHooks } from './emitters/latent/latentTypes';
 export type { LocaleCode } from './locales';
 export type { TableName } from './pipeline';
-export type { FindDataResult } from './supabaseAdminClient';
+export type {
+  CreateInvitationsOptions,
+  EntityInvitationSeedItem,
+  FindDataResult,
+  InvitationNominationParent,
+  InvitationNominationSeed,
+  InvitationSeedItem,
+  InvitationTargetType,
+  ProjectInvitationSeedItem,
+  SeededInvitation,
+  SeededInvitationNominations
+} from './supabaseAdminClient';
 export type { LinkSentinelRule, LinkTarget, SentinelPayload } from './template/linkSentinels';
 export type {
   AlliancesFixedRow,

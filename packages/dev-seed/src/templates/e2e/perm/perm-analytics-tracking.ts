@@ -34,7 +34,7 @@ export const permAnalyticsTrackingTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Analytics-tracking election' },
         short_name: { en: 'EL1' },
-        election_type: 'organization_list',
+        election_type: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -157,16 +157,8 @@ export const permAnalyticsTrackingTemplate: Template = {
         external_id: 'app-settings',
         settings: {
           ...MINIMAL_BASE_APP_SETTINGS,
-          // analytics overlay: FULL platform object (mirrors staticSettings.type.ts analytics.platform) + trackEvents:true.
-          // `code` is a DUMMY value — never a real key.
-          analytics: {
-            platform: {
-              name: 'umami',
-              code: 'e2e-dummy-code',
-              infoUrl: 'https://example.test/umami'
-            },
-            trackEvents: true
-          }
+          // analytics overlay: usage events on for the tracking spec.
+          analytics: { trackEvents: true }
         }
       }
     ]

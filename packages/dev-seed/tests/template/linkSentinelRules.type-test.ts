@@ -33,9 +33,7 @@ export const illegalJoinRule = {
   target: {
     kind: 'join',
     table: 'election_constituency_groups',
-    parentColumn: 'election_id',
-    childColumn: 'constituency_group_id',
-    onConflict: 'election_id,constituency_group_id'
+    importKey: 'constituency_groups'
   }
 } as const satisfies LinkSentinelRule;
 
@@ -59,9 +57,7 @@ export const legalJoinRule = {
   target: {
     kind: 'join',
     table: 'constituency_group_constituencies',
-    parentColumn: 'constituency_group_id',
-    childColumn: 'constituency_id',
-    onConflict: 'constituency_group_id,constituency_id'
+    importKey: 'constituencies'
   }
 } as const satisfies LinkSentinelRule;
 

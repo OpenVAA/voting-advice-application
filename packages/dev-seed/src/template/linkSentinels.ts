@@ -60,6 +60,9 @@ export type JsonbParentCollection = (typeof JSONB_PARENT_COLLECTIONS)[number];
 /** Every collection that may declare a link sentinel, under either target kind. */
 export type LinkParentCollection = JoinParentCollection | JsonbParentCollection;
 
+/** The link keys `bulk_import` reads: `constituency_groups` on an election item, `constituencies` on a constituency-group item. */
+export type JoinImportKey = 'constituency_groups' | 'constituencies';
+
 /**
  * Where a resolved sentinel's UUIDs are written.
  *
@@ -70,12 +73,8 @@ export type LinkTarget =
       /** Association rows in a dedicated join table, which `bulk_import` writes from a link key of the declaring row's item. */
       readonly kind: 'join';
       readonly table: 'election_constituency_groups' | 'constituency_group_constituencies';
-      /** Column naming the row that declared the sentinel. */
-      readonly parentColumn: string;
-      /** Column naming the referenced row. */
-      readonly childColumn: string;
-      /** `onConflict` string, verbatim, for the idempotent upsert. */
-      readonly onConflict: string;
+      /** The key of the declaring row's `bulk_import` item that carries the references. */
+      readonly importKey: JoinImportKey;
     }
   | {
       /** A JSONB array column updated on the declaring row itself. */
@@ -126,9 +125,7 @@ export const LINK_SENTINELS = [
     target: {
       kind: 'join',
       table: 'election_constituency_groups',
-      parentColumn: 'election_id',
-      childColumn: 'constituency_group_id',
-      onConflict: 'election_id,constituency_group_id'
+      importKey: 'constituency_groups'
     }
   },
   {
@@ -138,9 +135,7 @@ export const LINK_SENTINELS = [
     target: {
       kind: 'join',
       table: 'constituency_group_constituencies',
-      parentColumn: 'constituency_group_id',
-      childColumn: 'constituency_id',
-      onConflict: 'constituency_group_id,constituency_id'
+      importKey: 'constituencies'
     }
   },
   {
@@ -304,7 +299,30 @@ export function planLinks(data: Record<string, Array<Record<string, unknown>>>):
   return plan;
 }
 
-/** Is `collection` a table `linkJoinTables` can resolve a join parent UUID for? */
+/**
+ * The `bulk_import` link key and references a row is sent with, when a `join` rule covers its collection.
+ *
+ * `bulk_import` writes the two constituency join tables itself, before any nomination, from the link key of the declaring item. This reads the row through the same rule and the same key precedence as {@link planLinks}, so the key form a template may write is the key form that is sent. A row that names no link, or an empty list of them, answers `undefined` and is sent without a link key.
+ *
+ * @param collection - Canonical snake_case collection of the row.
+ * @param row - The row as the template wrote it.
+ * @returns The link key with its references by external id, or `undefined`.
+ */
+export function importLinkFor(
+  collection: string,
+  row: Record<string, unknown>
+): { key: JoinImportKey; refs: Array<{ external_id: string }> } | undefined {
+  for (const rule of LINK_SENTINELS as ReadonlyArray<LinkSentinelRule>) {
+    if (rule.target.kind !== 'join') continue;
+    if (!(rule.collections as ReadonlyArray<string>).includes(collection)) continue;
+    const hit = firstDeclaredKey(row, rule.keys);
+    if (!hit || hit.ids.length === 0) return undefined;
+    return { key: rule.target.importKey, refs: hit.ids.map((id) => ({ external_id: id })) };
+  }
+  return undefined;
+}
+
+/** Is `collection` one whose `bulk_import` items carry a link key? */
 function isJoinParentCollection(collection: string): collection is JoinParentCollection {
   return (JOIN_PARENT_COLLECTIONS as ReadonlyArray<string>).includes(collection);
 }

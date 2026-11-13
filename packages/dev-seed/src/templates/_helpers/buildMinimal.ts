@@ -202,7 +202,7 @@ export function buildMinimal(opts: BuildMinimalOptions): Template {
       external_id: `el-${idx}`,
       name: { en: `[EL${idx}] Election ${idx}` },
       short_name: { en: `EL${idx}` },
-      election_type: 'organization_list',
+      election_type: 'organization_list_and_independents',
       election_date: '2026-06-15',
       sort_order: i,
       multiple_rounds: false,
