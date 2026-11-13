@@ -226,9 +226,11 @@ SELECT
   );
 
 -- =====================================================================
--- Section 3: the entity update policy, and the nomination lock's first and only reader
+-- Section 3: the entity update policy, and the nominations lock
 --
--- `projects.lock_nominations` shipped INERT in 162-07 and said so in its own schema comment: nothing read it, nothing set it, and no assertion claimed anything for it beyond type and default. This is its first reader, which means an error in its declaration surfaces here rather than there.
+-- The lock is the app setting `access.nominationsLocked`. `private.project_nominations_locked` reads it from the project's `app_settings` row, and that function is a conjunct of the three policies through which an entity user writes this table. Each of the three carries a pair that differs in the setting alone: the update in this section, the parent insert at G4 and the entity's own insert at OWN. The admin policies do not call the function, and the control below shows it. Section 10 asserts which stored values lock.
+--
+-- Every write of the setting merges one key into the stored object, so whatever else the row holds stays as it is.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -421,7 +423,7 @@ SELECT
 -- ⚠ THIS IS A DELIBERATE HOLE IN `own`. The insert a child nominee needs is NOT on their own nomination -- it is on an ORGANIZATION's, which under section 3.3 is by definition not theirs. Every guard pair below holds the OTHER FOUR GUARDS SATISFIED and flips exactly one, because a pair that flips two measures neither. Each guard is then removed from the policy in turn and the file re-run; a guard whose removal reddens nothing is being satisfied by one of the others and is decorative, which is how a permission surface acquires a hole that every test passes over.
 --
 -- Contests, by round, so each guard has somewhere to stand:
---   round 3  candidate_a holds a nomination        -- guard 5 satisfied, the working contest round 4  candidate_a2 holds none at first      -- guard 5's pair round 5  org_race is nominated UNDER AN ALLIANCE -- guard 3 versus the uniqueness key round 6  the lock pair round 7  candidate_a holds NO nomination       -- guard 5's contest-scope pair
+--   round 3  candidate_a holds a nomination        -- guard 5 satisfied, the working contest round 4  candidate_a2 holds none at first      -- guard 5's pair round 5  org_race is nominated UNDER AN ALLIANCE -- guard 3 versus the uniqueness key round 6  the lock pair on the parent insert round 40 the lock pair on the own insert round 7  candidate_a holds NO nomination       -- guard 5's contest-scope pair round 70 the pairs of caller type and row type round 71 to 79 the rows of the cap boundary of both parent types round 80 the id lookup round 81 organization A holds NO nomination -- guard 5's pair for an alliance's row
 -- =====================================================================
 SELECT
   reset_role ();
@@ -541,7 +543,7 @@ SELECT
     test_user_grants ('candidate_a')
   );
 
--- G1-neg (guard 1): the same caller, same contest, but a CANDIDATE-type row for an entity that is not theirs. `entity_insert_nominations` refuses it because they hold no grant on that candidate, and the parent policy refuses it because guard 1 requires an organization. Nothing else differs.
+-- G1-neg (guard 1): the same caller, same contest, but a CANDIDATE-type row for an entity that is not theirs. `entity_insert_nominations` refuses it because they hold no grant on that candidate, and the parent policy refuses it because guard 1 requires an organization's row or an alliance's. Nothing else differs.
 SELECT
   throws_ok (
     format(
@@ -786,7 +788,11 @@ SELECT
     'ORIG: naming the originator column on insert is REFUSED at privilege level -- the absence from the grant list is what makes the cap a cap rather than a suggestion'
   );
 
--- CAP: nine parent nominations already originated by this caller, so the next sits AT the boundary and the one after it is over. They are inserted LAST rather than with the rest of the fixture, and the ordering is load-bearing: the cap is enforced by a BEFORE INSERT trigger, which runs AHEAD of the row-level check clause, so a caller already at the cap is refused by the cap BEFORE any guard is consulted. Creating these rows earlier would have made every guard assertion above measure the cap instead of its guard -- observed directly, as P0001 where 42501 was wanted.
+-- The pairing: whose row a caller may create through the parent policy. A candidate's editor and a faction's editor create an organization's row, an organization's editor creates an alliance's row, and no other pairing is admitted.
+--
+-- Round 70 is the contest of the pairs. Organization A, candidate_a and faction A are each nominated there, so every caller below holds a nomination at the contest with an entity of its own type, and each refusal differs from the insert beside it in one thing: the type of the row, or whether the row's entity is already nominated there. Faction A stands under organization A's nomination, so the organization's editor also has a child nominee at the contest.
+--
+-- The entities are this file's own and none of them holds a nomination when this block begins: thirteen alliances (`...54NN`), twelve organizations (`...55NN`) and a second faction of organization A (`...5701`). The fixture has no editor of a faction, so one is created here (`...5601`), with its grant row.
 SELECT
   reset_role ();
 
@@ -954,7 +960,7 @@ SELECT
     'D1: the entity user nonetheless INSERTS a child under that parent -- the hardened validator sees what it validates, where an invoker-rights one would have reported the parent missing'
   );
 
--- REQ: the free-text branch (D-12a). Section 11.5's third and fourth branches are BYTE-IDENTICAL in every column; the only thing distinguishing "my party is not in the system yet" from "I am independent" is this key. Confirming such a row publishes as an INDEPENDENT a candidate who asked for a party. The two rows in the pair differ in that key ALONE, so the guard is shown to be the key's presence and not some other property of the row.
+-- G5-neg (an alliance's row): organization A holds no nomination at round 81, so the same caller is refused there.
 SELECT
   reset_role ();
 
@@ -1001,13 +1007,6 @@ SELECT
     'REQ: the same row WITHOUT that key confirms normally -- so the guard is the key presence and not some other property of the row'
   );
 
--- =====================================================================
--- Section 8: the read model, in BOTH directions
---
--- A read test that only checks visibility cannot tell "correctly visible" from "should have been hidden", so every assertion here has its opposite. The three disjuncts are exercised one at a time.
---
--- ⚠ THE PUBLIC DISJUNCT IS THE ONE THAT WOULD FAIL SILENTLY. It replaces `OR published = true`, which is what let a SIGNED-IN reader see a project they hold no grant in. Delete it without replacing it and a logged-in candidate browsing the voter application sees nothing at all -- and no anon-read test covers them, because the anonymous policies apply to a different role.
--- =====================================================================
 SELECT
   reset_role ();
 
@@ -1138,11 +1137,6 @@ SELECT
 SELECT
   reset_role ();
 
--- =====================================================================
--- CR-03: an entity grantee cannot write or move its nomination into ANOTHER project
---
--- 162-REVIEW CR-03 reproduced candidate_a (a project-A entity grantee) inserting a nomination with project_id, election_id and constituency_id all naming project B, and succeeding: `nomination.edit` is asked of the ENTITY, which lives in A, and nothing compared the entity's project, or the election's, with the row's. The positive control first, so the refusals below are the tenancy conjuncts at work and not an insert path that was already closed.
--- =====================================================================
 SELECT
   set_test_user (
     'authenticated',
@@ -1209,7 +1203,6 @@ SELECT
 SELECT
   reset_role ();
 
--- The trigger half binds every writer, not only entity grantees: a cross-project constituency is corrupt data whoever writes it.
 SELECT
   throws_ok (
     format(

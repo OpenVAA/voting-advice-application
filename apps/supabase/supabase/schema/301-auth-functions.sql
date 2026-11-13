@@ -1,9 +1,10 @@
 -- Auth hooks: Custom Access Token Hook and RLS helper functions
 --
--- Depends on: 300-auth-tables.sql (grants table)
+-- Depends on: 300-auth-tables.sql (grants table), 106-app-settings.sql (app_settings table), auth.users (Supabase Auth)
 --
 -- Functions:
 -- - custom_access_token_hook(jsonb) - projects public.grants into the JWT `grants` claim
+-- - send_email_hook(jsonb) - takes every mail the auth service would send and sends none
 -- - grant_role_permissions(grant_scope_type, grant_role_type, entity_type) - the role x permission matrix
 -- - private.entity_project_id(entity_type, uuid) - resolves an entity to its project
 -- - private.election_project_id(uuid) - resolves an election id to its project
@@ -15,10 +16,19 @@
 -- - user_can(grant_scope_type, uuid, grant_permission, entity_type) - may the caller do this verb to this object; the one predicate the RLS policies delegate their authority decision to
 -- - user_has_account_grant(uuid) - whether the caller holds any role on an account or on one of its projects
 -- - private.project_nominations_locked(uuid) - whether a project's nomination editing is locked
+-- - private.project_answers_locked(uuid) - whether a project's answers are locked
 -- - private.nomination_exists_in_contest(entity_type, uuid, uuid, uuid, integer) - whether an entity is already nominated at a contest
--- - private.caller_nominated_in_contest(uuid, uuid, integer, grant_permission) - whether the caller holds a permission on an entity nominated at a contest
--- - private.caller_unconfirmed_originated_count() - how many unconfirmed parent nominations the caller has originated
--- - private.caller_entity_ids(uuid, entity_type) - the entities of one type, in one project, the caller holds an editor grant on
+-- - private.nomination_id_in_contest(entity_type, uuid, uuid, uuid, integer) - the id of an entity's nomination at a contest
+-- - private.caller_nominated_in_contest(uuid, uuid, integer, grant_permission, entity_type[]) - whether the caller holds a permission on an entity of one of the named types nominated at a contest
+-- - private.caller_unconfirmed_originated_count() - how many unconfirmed organization and alliance nominations the caller has originated
+-- - private.caller_entity_ids(uuid, entity_type) - the entities of one type, in one project, the caller holds an editor grant on; called by get_user_entities and get_entity_user_data
+-- - private.user_password_set(uuid) - whether an account holds a password; executable by no API role
+-- - private.caller_password_set() - whether the caller's own account holds a password; called by get_user_entities
+-- - private.caller_pending_email_taken() - whether the address the caller's own account is changing to is another account's; called by get_user_entities
+-- - private.registration_mode_allowed_in(jsonb, text, text) - the registration-mode rule over stored settings; reads no table
+-- - private.registration_mode_allowed(uuid, text, text) - the rule over one project's settings row; executable by no API role
+-- - private.grant_reaches_project(grant_scope_type, entity_type, uuid, uuid) - whether one grant reaches a project; executable by no API role
+-- - get_user_project_grants(uuid) - the caller's own grants that reach a project, for the frontend's app-entry gates
 --
 -- The two public-visibility terms are each defined once here and called directly by the eight entity SELECT policies.
 --------------------------------------------------------------------------------
@@ -28,7 +38,7 @@
 --
 -- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies and SECURITY INVOKER functions, which both run as the caller, can call them. Every call site qualifies the name, so no search_path decides which function runs.
 --
--- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own claim; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
+-- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own rows of public.grants; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); `contestant_app_public_config` in 106-app-settings.sql (the frontend calls it, and it returns five fixed settings values and never a row: whether the Contestant app is accessible, whether answers are locked, the entity types it serves, its registration modes and whether usage events are tracked); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
 --------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS private;
 
@@ -39,9 +49,11 @@ service_role;
 --------------------------------------------------------------------------------
 -- Custom Access Token Hook: called by Supabase Auth on every token refresh/issue, it projects each public.grants row into the JWT's `grants` claim, the only authority claim it emits.
 --
--- The per-entry keys are the column names of public.grants minus id, user_id and created_at. user_can reads exactly these four, and a key-name or key-set mismatch is not an error anywhere: it is an empty permission set, which denies every caller. 14-grants-migration.test.sql asserts the emitted array set-equal to test_grants_claim, in both directions and with equal cardinality.
+-- No row-level-security decision reads the claim: user_can and user_has_account_grant read the caller's rows of public.grants. The claim is read by the frontend's app-entry gates, which decide which app a signed-in user is shown.
 --
--- COALESCE gives a user with no grant rows an empty array rather than NULL or a missing key. user_can treats both alike, but the empty array is the state a grant-less identity should carry.
+-- The per-entry keys are the column names of public.grants minus id, user_id and created_at, which the app-entry gates read. 14-grants-migration.test.sql asserts the emitted array set-equal to test_grants_claim, in both directions and with equal cardinality.
+--
+-- COALESCE gives a user with no grant rows an empty array rather than NULL or a missing key, the state a grant-less identity should carry.
 --
 -- The ORDER BY makes two tokens for one user identical, so they can be diffed. Correctness does not depend on it: jsonb_agg defines no element order, so the test compares the array as a set.
 --------------------------------------------------------------------------------
@@ -198,7 +210,7 @@ SET
       'nomination.create_parent'
     ]::public.grant_permission[]
 
-    -- OrganizationEditor: the entity set minus nomination.create_parent (an organization has no parent to create), plus entity.invite_children, which only this role holds.
+    -- OrganizationEditor: the entity set, plus entity.invite_children, which only this role holds. nomination.create_parent is in it because an organization creates the nomination of the alliance it stands under.
     WHEN (p_scope, p_role, p_target_type) = ('entity', 'editor', 'organization') THEN ARRAY[
       'project.read_structure',
       'entity.edit_answers',
@@ -208,7 +220,7 @@ SET
       'nomination.read'
     ]::public.grant_permission[]
 
-    -- Candidate, FactionEditor and AllianceEditor share one row, nomination.create_parent included. Their nomination rights hold only while the project is unlocked, but the lock is row state, so the nomination policies check it and the matrix does not.
+    -- Candidate, FactionEditor and AllianceEditor share one row, nomination.create_parent included. Their nomination rights hold only while the project is unlocked, but the lock is row state, so the nomination policies check it and the matrix does not. Which row a holder of nomination.create_parent may create is likewise the parent policy's question: it pairs the row's type with the caller's, and no row's type admits an alliance's editor.
     WHEN p_scope = 'entity' AND p_role = 'editor'
       AND p_target_type IN ('candidate', 'faction', 'alliance') THEN ARRAY[
       'project.read_structure',
@@ -368,7 +380,7 @@ $$;
 --
 -- The transitive conjunct of anon_select_nominations, called by nothing else. A nomination links exactly one entity (the CHECK on public.nominations), so the hop is one level deep; a parent nomination naming an unconfirmed organization fails its own policy, because every nomination is judged by the same conjuncts.
 --
--- Anon-readable means the entity policy's own predicate, terms of use included, so both policies give one answer. The terms-of-use rule is therefore written in two places, and the biconditional assertion in 16-anon-visibility.test.sql (no nomination visible to anon whose linked entity is not) fails when the two disagree.
+-- Anon-readable means the entity policy's own predicate, so both policies give one answer. Each arm restates its table's anon SELECT policy, and the biconditional assertion in 16-anon-visibility.test.sql (no nomination visible to anon whose linked entity is not) fails when the two disagree.
 --
 -- Each arm calls project_open_for_voters and entity_has_confirmed_nomination directly rather than through a composing helper, because a SECURITY DEFINER function is never inlined and every added layer is another per-row call. The same assembly repeats in the eight entity SELECT policies, and 25-matrix-conformance.test.sql holds those eight identical.
 --
@@ -435,13 +447,13 @@ $$;
 --
 -- At entity scope the object is the pair p_target_type, p_target_id, and a NULL type denies. The four entity tables have independent primary keys, so one uuid can name a candidate in one project and an organization in another; every entity-scope hop below therefore resolves the id together with its type. At every other scope p_target_type is ignored, and its NULL default lets project- and account-scope callers pass three arguments. 33-entity-type-collision.test.sql asserts a shared id across two tables and two projects.
 --
--- Grants union: the first grant satisfying both halves answers true, no grant can subtract, and the order of entries in the claim does not matter.
+-- Grants union: the first grant satisfying both halves answers true, no grant can subtract, and the order of the rows does not matter.
 --
--- It answers "may this role do this verb to this object", not "is the object in a state that admits the verb". lock_nominations, open_for_voters and the confirmation flags are conjuncts of the policies that call it, not members of the matrix.
+-- It answers "may this role do this verb to this object", not "is the object in a state that admits the verb". The nominations lock, open_for_voters and the confirmation flags are conjuncts of the policies that call it, not members of the matrix.
 --
--- It reads only the caller's JWT `grants` claim, in every branch. Claim fields are compared as text against the enum literals rather than cast: a cast throws on an unexpected value, and an exception inside a policy predicate is a query-time error, whereas an unrecognised entry that is skipped denies by default. A claim of garbage alongside one valid grant answers exactly as the valid grant alone.
+-- It reads the caller's rows of public.grants, keyed on (SELECT auth.uid()), in every branch, and never the token's `grants` claim. So a grant counts from the moment it is written, and a deleted grant is denied at once: the next statement of a session whose token still carries it is refused, for a read and for a write alike. custom_access_token_hook still writes the claim, for the frontend's app-entry gates. A session with no caller id, such as anon, reads no row and is denied. The table's enum columns and its two CHECK constraints hold every row to the declared vocabularies and shapes, so no row needs to be skipped.
 --
--- SECURITY DEFINER because the reach hops read public.projects and the entity tables, which the caller's own row-level security would filter. search_path is empty because a mutable search_path on a SECURITY DEFINER function is a privilege-escalation primitive.
+-- SECURITY DEFINER because public.grants is revoked from every API role, and because the reach hops read public.projects and the entity tables, which the caller's own row-level security would filter. search_path is empty because a mutable search_path on a SECURITY DEFINER function is a privilege-escalation primitive.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.user_can (
   p_scope public.grant_scope_type,
@@ -565,9 +577,9 @@ $$;
 --
 -- The project disjunct lets a project admin read the row of the account its project belongs to. The disclosure is bounded: an `accounts` row is `id, name, created_at, updated_at`, so what widens is the account's name, to someone who already administers one of its projects. 04-admin-crud.test.sql asserts that such a caller sees exactly its own account.
 --
--- SECURITY DEFINER because the project disjunct reads public.projects, which has row-level security enabled; an inline read would also ask whether the caller can see the project. search_path is pinned as on every definer function here.
+-- SECURITY DEFINER because public.grants is revoked from every API role, and because the project disjunct reads public.projects, which has row-level security enabled; an inline read would also ask whether the caller can see the project. search_path is pinned as on every definer function here.
 --
--- Claim fields are compared as text rather than cast, as in user_can: `p.id::text = (g ->> 'target_id')` never casts the claim, so an unexpected value denies instead of raising.
+-- It reads the caller's rows of public.grants, keyed on (SELECT auth.uid()), as user_can does, and never the token's `grants` claim, which custom_access_token_hook still writes for the frontend's app-entry gates. So a deleted grant is denied at once, and a session with no caller id reads no row and is denied.
 --
 -- The global admin is a disjunct here rather than a separate policy term, so the `accounts` SELECT stays a single call.
 --------------------------------------------------------------------------------
@@ -594,11 +606,13 @@ $$;
 --------------------------------------------------------------------------------
 -- project_nominations_locked: is this project's nomination editing locked?
 --
--- The lock is row state rather than a member of the permission matrix, so it is a conjunct of the nomination policies and this function is the hop they call.
+-- The lock is the app setting `access.nominationsLocked`, stored in the project's row of public.app_settings. It is a stored setting rather than a member of the permission matrix, so it is a conjunct of the nomination policies and this function is the hop they call.
 --
--- It returns true (locked) when the project row is not found, so a missing project never unlocks anything. project_open_for_voters denies with false because its sense is the other way round.
+-- It answers at two levels. The outer one returns true (locked) when the project row is not found, so a missing project never unlocks anything; project_open_for_voters denies with false because its sense is the other way round. The inner one returns false (unlocked) when the project has no settings row or the row does not hold the key, which is the shipped default of the setting.
 --
--- SECURITY DEFINER because public.projects has row-level security enabled, and an inline read would also ask whether the caller can see the project.
+-- Only the JSON boolean true locks. The value is compared as jsonb, so the string "true", a number, a JSON null and an `access` member that is not an object are all unlocked; a comparison of the extracted text would read the string as locked.
+--
+-- SECURITY DEFINER because public.projects and public.app_settings both have row-level security enabled, and an inline read would also ask whether the caller can see the project and its settings row.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION private.project_nominations_locked (p_project_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
 SET
@@ -618,7 +632,7 @@ $$;
 --
 -- Takes the entity type as an argument and matches it against the generated entity_type column, and the entity id against the four foreign keys, so a nomination of another type that shares the uuid does not match. Returns false when no row is found, so a missing row never fabricates an occupant; the consuming policy inverts the answer.
 --
--- `election_round` is compared with IS NOT DISTINCT FROM because the column is nullable, and `=` against a NULL round would answer "no occupant" for every such row.
+-- A round that is not stored is round 1, on either side of the comparison, as the application reads it: the column is nullable, and `=` against a NULL round would answer "no occupant" for every such row.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION private.nomination_exists_in_contest (
   p_entity_type public.entity_type,
@@ -648,9 +662,9 @@ $$;
 --------------------------------------------------------------------------------
 -- caller_nominated_in_contest: does the caller hold a named permission on an entity nominated at this contest?
 --
--- Asks whether there is a nomination at this contest whose entity the caller holds p_permission on. The answer comes from `user_can`, so no cell of the matrix is written down a second time. The entity is named by the nomination's generated entity_type and its one set foreign key.
+-- p_caller_types is what pairs a row with the caller that may create it. `entity_insert_parent_nominations` passes the types of entity that stand under the row being inserted, so holding the permission on an entity of another type nominated at the contest does not answer yes. A NULL or empty array answers false.
 --
--- A row-level WITH CHECK sees only the row being inserted, so "the caller is inserting their own nomination in the same transaction" cannot be expressed here. Insertion order makes that moot: a candidate first creates their own nomination with no parent (which `validate_nomination` admits), then the parent, then repoints their nomination at it.
+-- A row-level WITH CHECK sees only the row being inserted, so "the caller is inserting their own nomination in the same transaction" cannot be expressed here. The order of the three statements a child writes makes that moot: its own nomination with no parent, then the parent's nomination, then its own nomination pointed at the parent's. Where the election's type requires the child's nomination to have a parent, `validate_nomination_parent_required` judges the first row when the transaction ends, after the third statement has given it one.
 --
 -- Denies (returns false) when no row is found.
 --------------------------------------------------------------------------------
@@ -678,9 +692,9 @@ SET
 $$;
 
 --------------------------------------------------------------------------------
--- caller_unconfirmed_originated_count: how many unconfirmed parent nominations has this caller originated?
+-- caller_unconfirmed_originated_count: how many unconfirmed organization and alliance nominations has this caller originated?
 --
--- The subject of the cap: rows with `created_by = auth.uid()` that are organization nominations and still unconfirmed, i.e. placeholder parents awaiting an admin. A confirmed row leaves the count, so the cap bounds the queue rather than a lifetime total.
+-- The subject of the cap: rows with `created_by = auth.uid()` that nominate an organization or an alliance and are still unconfirmed. Those are the two kinds of row `entity_insert_parent_nominations` admits. Whose entity a row nominates is not asked, so an unconfirmed nomination the caller inserted for an organization or an alliance it edits counts as a placeholder for another's does. A confirmed row leaves the count, so the cap bounds the queue rather than a lifetime total.
 --
 -- `count(*)` returns 0, never NULL, when nothing matches; a NULL would make the policy's `< cap` comparison NULL and bar every caller.
 --
@@ -699,7 +713,7 @@ $$;
 --------------------------------------------------------------------------------
 -- caller_entity_ids: which entities of this type, in this project, does the caller edit?
 --
--- Returns the target ids of the caller's own `(entity, <type>, <id>, editor)` rows in public.grants whose entity lies in p_project_id. get_candidate_user_data calls it to answer "which entity am I". It reads the table rather than the caller's token, so a grant written after the token was issued already counts.
+-- Returns the target ids of the caller's own `(entity, <type>, <id>, editor)` rows in public.grants whose entity lies in p_project_id. get_user_entities calls it to list the caller's entities and get_entity_user_data to decide whether one entity is the caller's. It reads the table rather than the caller's token, so a grant written after the token was issued already counts.
 --
 -- Only the `editor` role is read and `user_can` is not called: user_can answers yes for project, account and global admins, and an entity-scope `admin` grant confers nothing, so neither names an entity the caller is.
 --

@@ -27,7 +27,7 @@ CREATE TABLE public.nominations (
   sort_order integer,
   -- A free-text label that tells apart objects of the same kind.
   subtype text,
-  -- A free-form JSON object, read by the frontend as `customData`; `requestedParentOrganization` marks a candidate waiting for a party that is not in the system, and blocks confirmation.
+  -- A free-form JSON object, read by the frontend as `customData`; `requestedParentOrganization` holds the name of a parent that is not in the system, a party a candidate asked for or an alliance an organization asked for, and blocks confirmation.
   custom_data jsonb,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),

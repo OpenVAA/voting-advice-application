@@ -2,7 +2,7 @@
  * Edge Function claim configuration and extraction tests.
  *
  * Tests the pure functions of the identity-callback Edge Function.
- * Covers resolveProviderConfig, PROVIDER_CONFIGS for both Signicat and Idura, and extractIdentityClaims behavior across complete, partial and missing-claim payloads.
+ * Covers resolveProviderConfig, PROVIDER_CONFIGS for both Signicat and Idura, and extractIdentityClaims across complete and missing-claim payloads: it answers the match value and the two names, and no other claim of the token.
  *
  * No mocks needed -- claimConfig.ts has no external dependencies.
  */

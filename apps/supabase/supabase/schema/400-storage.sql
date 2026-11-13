@@ -11,6 +11,8 @@
 -- Provides:
 -- - the pg_net extension, for async HTTP from triggers
 -- - storage_config - the Storage API URL and service-role key the cleanup triggers use
+-- - the storage.buckets row public-assets - the public bucket
+-- - the storage.buckets row private-assets - the private bucket
 -- - storage_path_can() - may this caller do this verb to this path; the storage layer's authority decision, delegated to user_can
 -- - storage_path_is_public() - whether the object at a path is anon-readable; the tables' visibility rule, asked of a path
 -- - delete_storage_object() - delete one whitelisted object via the Storage API (pg_net)
@@ -29,7 +31,7 @@ WITH
 --------------------------------------------------------------------------------
 -- storage_config: configuration table for storage cleanup triggers
 --
--- One row per setting: `key` names it, `supabase_url` or `service_role_key`, and `value` holds it. The pg_net cleanup triggers read both to call the Storage API. seed.sql sets local dev defaults; in production, set the project's actual Supabase URL and service role key.
+-- One row per setting: `key` names it, `supabase_url` or `service_role_key`, and `value` holds it. The pg_net cleanup triggers read both to call the Storage API. seed.sql writes the local stack's two rows. A deployment's are written by the bootstrap script `infra/scripts/bootstrap.sql`, with the project's own Supabase URL and service-role key.
 --------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.storage_config (key text PRIMARY KEY, value text NOT NULL);
 
@@ -59,7 +61,9 @@ SELECT
 --
 -- The row must exist in the table the type segment names, and its own project must be the project the path claims. Without the lookup, a path could claim one entity type while carrying another type's id, and a project-scope caller could write into a path that names their project but carries another project's entity id.
 --
--- SECURITY DEFINER with an empty search_path, so the type/id lookup reads the table itself rather than the rows the caller's row-level security admits; the authority answer still comes from `user_can` and the caller's own claim. `%I` quotes a table name the CASE has already restricted to ten literals, so the dynamic name is not caller-controlled.
+-- An entity-scope write is refused while the project's answers are locked (the app setting `access.answersLocked`, read as `private.project_answers_locked` reads it); a project-scope write is not, so a project editor and a project admin still store files while answers are locked. A read is not affected.
+--
+-- SECURITY DEFINER with an empty search_path, so the type/id lookup reads the table itself rather than the rows the caller's row-level security admits; the authority answer still comes from `user_can`, which reads the caller's own rows of public.grants. `%I` quotes a table name the CASE has already restricted to ten literals, so the dynamic name is not caller-controlled.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.storage_path_can (
   p_scope public.grant_scope_type,
@@ -162,8 +166,6 @@ $$;
 --
 -- The project-level path is anon-readable only while the project is open for voters, like every other path. 20-storage-authority.test.sql asserts both directions.
 --
--- The candidate branch carries the terms-of-use guards because `anon_select_candidates` does, and only `candidates` has the column. Without them a candidate's photo would be anon-fetchable while the candidate row stayed hidden.
---
 -- An anon list request pays for this function on every object it reads. That cost is accepted because `public-assets` is a public bucket: Storage serves its downloads (`/object/public/...`, which the voter app uses, and `/object/authenticated/...`) without evaluating `storage.objects` RLS, only an anon `list` consults it, and no application code lists `public-assets` as anon. If the bucket is made private, every download becomes a policy evaluation, and the cost must be measured before that change ships.
 --
 -- The same hardening, and the same deny on a missing row or a raised error, as storage_path_can.
@@ -210,7 +212,7 @@ BEGIN
     RETURN COALESCE(v_row_visible, false);
   END IF;
 
-  -- The four entity tables: the entity's own confirmation flag, the terms-of-use guards where the table has them, and a confirming nomination in this project.
+  -- The four entity tables: the entity's own confirmation flag and a confirming nomination in this project.
   IF p_type IN ('candidates', 'organizations', 'factions', 'alliances') THEN
     EXECUTE format(
       'SELECT e.confirmed %s FROM public.%I e WHERE e.id = $1 AND e.project_id = $2',
@@ -268,7 +270,7 @@ $$;
 -- =====================================================================
 -- Anon: the public visibility rule, asked of a path.
 --
--- Not `user_can`: an anon session carries no `grants` claim, so an authority-based allow decision here would deny everything (see storage_path_is_public).
+-- Not `user_can`: anon has no `auth.uid()`, so `user_can` reads no grant row for it and an authority-based allow decision here would deny everything (see storage_path_is_public).
 CREATE POLICY "anon_select_public_assets" ON storage.objects FOR
 SELECT
   TO anon USING (
@@ -910,4 +912,4 @@ CREATE TRIGGER cleanup_answer_files_on_update
 BEFORE UPDATE ON public.organizations FOR EACH ROW
 EXECUTE FUNCTION public.cleanup_old_answer_files ();
 
--- Note: the cleanup triggers need supabase_url and service_role_key in storage_config. seed.sql sets the local dev values; in production, set the actual values.
+-- Note: the cleanup triggers need supabase_url and service_role_key in storage_config. seed.sql writes the local stack's values, and the bootstrap script `infra/scripts/bootstrap.sql` writes a deployment's.

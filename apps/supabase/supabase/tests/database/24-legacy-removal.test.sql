@@ -306,11 +306,13 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: a token of the retired claim shape still confers nothing (19-21)
+-- Section 7: a token of the retired claim shape adds nothing beyond the grant table (19-22)
 --
--- Tokens of the retired claim shape can still be minted by hand, and a session issued by an older hook carries one until it refreshes. Such a token must add nothing.
+-- Tokens of the retired claim shape can still be minted by hand, and a session issued by an older hook carries one until it refreshes. Row-level security reads the caller's rows of public.grants and no claim, so such a token must show each identity exactly what its rows in the table admit: no more, because the retired entry is not read, and no less, because the absent `grants` claim is not read either.
 --
--- It is an EQUALITY with the view of an authenticated caller carrying an explicitly empty grants array, rather than an assertion about zero rows: several policies admit the rows of an open project to any authenticated caller, so a zero assertion would be false for a reason that has nothing to do with authority. The third assertion is the non-vacuity — two columns of empty digests agree perfectly and measure nothing.
+-- The retired token of every identity carries a global admin entry, an authority no identity but super_admin holds in the table. A row-level-security path that read the retired key, alone or beside the table, would therefore widen the view of every other identity, and of `no_grant` above all, and the equality below would fail.
+--
+-- It is an EQUALITY with the view of the same identity under a token whose `grants` claim is projected from the table, rather than an assertion about a row count: several policies admit the rows of an open project to any authenticated caller, so a count would move for reasons that have nothing to do with authority. The third assertion is the non-vacuity — two columns of empty digests agree perfectly and measure nothing; the fourth shows that the global admin entry names an authority the digest can see, because a real global admin grant shows more than no grant does.
 --
 -- The digest helper is SECURITY INVOKER, which is the single most load-bearing property of this instrument: with owner rights it would read past row-level security, every identity would digest identically, every comparison would pass, and the grid would measure nothing while reporting success.
 -- =====================================================================
@@ -383,7 +385,7 @@ BEGIN
     INSERT INTO retired_grid (ident, tbl, digest_retired)
     SELECT i.nm, u.t, u.g FROM unnest(v_tbls, v_digs) AS u (t, g);
 
-    -- Pass 2: the SAME identity carrying an explicitly empty grants array — no authority at all, same sub.
+    -- Pass 2: the SAME identity under a token whose grants claim is projected from its rows of the table, same sub.
     PERFORM set_test_user('authenticated', i.uid, '[]'::jsonb);
     PERFORM set_config(
       'request.jwt.claims',

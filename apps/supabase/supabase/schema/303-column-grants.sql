@@ -24,10 +24,10 @@
 --
 -- `confirmed` is in the allowed list because a column grant cannot tell a candidate from a project administrator holding `entity.confirm`. Rule 1 of `enforce_entity_immutability()` refuses a change to it, in either direction, by a caller without that permission; 19-entity-immutability.test.sql asserts the refusal.
 --
--- `first_name` and `last_name` are allowed too: an unconfirmed entity must be able to set its name during sign-up, and the freeze once confirmed is the trigger's rule 2.
+-- `first_name`, `last_name` and `short_name` are allowed too: an unconfirmed entity must be able to set its name and its short name during sign-up, and the freeze of all three once confirmed is the trigger's rule 2.
 --
 -- Allowed columns for candidates (self-edit):
---   short_name, info, color, image, subtype, custom_data, first_name, last_name, answers, terms_of_use_accepted, confirmed
+--   short_name, info, color, image, subtype, custom_data, first_name, last_name, answers, confirmed
 REVOKE
 UPDATE ON public.candidates
 FROM
@@ -59,7 +59,7 @@ UPDATE (
 -- - updated_at - audit field, maintained by the set_updated_at trigger
 -- - external_id - the import identity, owned by bulk_import
 --
--- `confirmed` and `name` are allowed and guarded by `enforce_entity_immutability()`, as on `candidates`.
+-- `confirmed`, `name` and `short_name` are allowed and guarded by `enforce_entity_immutability()`, as on `candidates`.
 --
 -- Allowed columns for organization admins (self-edit):
 --   name, short_name, info, color, image, subtype, custom_data, answers, confirmed
@@ -95,7 +95,7 @@ UPDATE (
 -- - created_at - audit field, maintained by the database
 -- - updated_at - audit field, maintained by the set_updated_at trigger
 --
--- `confirmed` and `name` are allowed and guarded by `enforce_entity_immutability()`, as on `candidates`.
+-- `confirmed`, `name` and `short_name` are allowed and guarded by `enforce_entity_immutability()`, as on `candidates`.
 --
 -- The allowed list is the organizations list minus `answers`, which 105-answers.sql adds to candidates and organizations only.
 --
@@ -131,7 +131,7 @@ UPDATE (
 -- - created_at - audit field, maintained by the database
 -- - updated_at - audit field, maintained by the set_updated_at trigger
 --
--- `confirmed` and `name` are allowed and guarded by `enforce_entity_immutability()`, as on `candidates`.
+-- `confirmed`, `name` and `short_name` are allowed and guarded by `enforce_entity_immutability()`, as on `candidates`.
 --
 -- Allowed columns for alliance editors (self-edit):
 --   name, short_name, info, color, image, subtype, custom_data, confirmed
@@ -171,7 +171,7 @@ UPDATE (
 -- - id - primary key, immutable
 -- - created_at, updated_at - audit fields, maintained by the database and the set_updated_at trigger
 --
--- Allowed on INSERT: the ten columns a nominating caller authors (project_id, candidate_id, organization_id, faction_id, alliance_id, election_id, constituency_id, election_round, parent_nomination_id, custom_data) and the nine presentation and bookkeeping columns a project admin writes (name, short_name, info, color, image, sort_order, subtype, election_symbol, external_id). The grant cannot tell the two callers apart, so it admits the union, and `enforce_nomination_entity_columns()` (011-validation-functions.sql) refuses the nine to a caller without `project.edit_nominations`.
+-- Allowed on INSERT: the ten columns a nominating caller authors (project_id, candidate_id, organization_id, faction_id, alliance_id, election_id, constituency_id, election_round, parent_nomination_id, custom_data) and nine presentation and bookkeeping columns: the eight a project admin alone writes (name, short_name, info, color, image, sort_order, subtype, external_id) and `election_symbol`, which the editor of the nomination's own entity writes too. The grant cannot tell the callers apart, so it admits the union, and `enforce_nomination_entity_columns()` (011-validation-functions.sql) refuses the eight to a caller without `project.edit_nominations`, and the symbol to such a caller on a row that is not its own.
 REVOKE INSERT ON public.nominations
 FROM
   authenticated;
@@ -198,7 +198,7 @@ GRANT INSERT (
   external_id
 ) ON public.nominations TO authenticated;
 
--- Allowed on UPDATE: the six columns an editing caller changes (election_id, constituency_id, election_round, parent_nomination_id, custom_data, confirmed), the nine presentation columns and the four entity foreign keys. `enforce_nomination_entity_columns()` holds the last thirteen unchanged for a caller without `project.edit_nominations`.
+-- Allowed on UPDATE: the six columns an editing caller changes (election_id, constituency_id, election_round, parent_nomination_id, custom_data, confirmed), the nine presentation columns and the four entity foreign keys. For a caller without `project.edit_nominations`, `enforce_nomination_entity_columns()` holds the four foreign keys and eight of the nine unchanged, and `election_symbol` unchanged on a row that is not that caller's own.
 --
 -- `created_by` is protected on both verbs: an originator a caller could rewrite would defeat the cap and the admin queue.
 REVOKE
@@ -234,7 +234,7 @@ UPDATE (
 -- =====================================================================
 -- `admin_update_projects` asks `project.edit_project_settings` of the row's `id`, which a rewrite of `account_id` leaves unchanged, so without this pair a project admin could move its project into any account whose id it knew. Re-parenting would need `account.manage_projects` on both the old and the new account, which a single permissive policy cannot ask.
 --
--- Allowed on UPDATE: name, default_locale, open_for_voters, lock_nominations.
+-- Allowed on UPDATE: name, default_locale, open_for_voters.
 -- Protected: id, account_id, created_at, updated_at (the set_updated_at trigger writes updated_at without needing a column privilege).
 -- INSERT is not restricted here: `admin_insert_projects` asks `account.manage_projects` of the new row's `account_id`.
 REVOKE

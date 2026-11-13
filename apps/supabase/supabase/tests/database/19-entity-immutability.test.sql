@@ -8,6 +8,8 @@
 --
 -- Cell 1 alone is satisfied by a rule that simply denies the entity user, and cell 3 alone by a rule that denies nobody. Cell 2 is the only cell that observes the conditionality: an absolute freeze, the trigger body with its OLD-flag guard removed, fails it on every table.
 --
+-- The protected columns are `name` and `short_name` on `organizations`, `factions` and `alliances`, and `first_name`, `last_name` and `short_name` on `candidates`. Every one of them carries the three cells on its table. Cell 1 of `short_name` also asserts that the refusal names that column, because the refusal's prefix says "name" for every protected column.
+--
 -- The fixture gives only one polarity, so this file makes the other one, per table, inside its own transaction. `create_test_data ()` confirms every project A entity, so the middle cell has no unconfirmed row to stand on. Each grid section therefore runs cells 1 and 3 on the confirmed row, then unconfirms that same row as the owner, runs cell 2, and re-confirms. The polarity guard in section 0 asserts the pre-state, because a middle cell run against a row that was confirmed all along would assert cell 1 twice under two names.
 --
 -- The faction and alliance grantees are built here. `create_test_data ()` gives entity grants to a candidate and an organization only, so this file inserts two auth users and two entity-scope grant rows directly and lets `set_test_user` project them into the session claims through `test_grants_claim`.
@@ -190,7 +192,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 1: the grid on candidates -- the only entity table whose protected set has TWO members
+-- Section 1: the grid on candidates -- two personal-name columns and the short name
 -- =====================================================================
 SELECT
   set_test_user (
@@ -1352,7 +1354,7 @@ SELECT
 -- =====================================================================
 -- Section 9: the hot path, on BOTH tables that carry an answers column
 -- =====================================================================
--- `upsert_answers` is the candidate application's hottest write and it names only the answers column. A column-restricted trigger fires only when one of its columns appears in the statement's SET list, decided once per statement from the parse tree, so that write never enters this function. The refusal beside it is what makes the success evidence: a trigger that refused everything would also produce the refusal, and only the PAIR distinguishes the column restriction working from the rule being absent.
+-- `upsert_answers` is the contestant application's hottest write and it names only the answers column. A column-restricted trigger fires only when one of its columns appears in the statement's SET list, decided once per statement from the parse tree, so that write never enters this function. The refusal beside it is what makes the success evidence: a trigger that refused everything would also produce the refusal, and only the PAIR distinguishes the column restriction working from the rule being absent.
 SELECT
   set_test_user (
     'authenticated',
