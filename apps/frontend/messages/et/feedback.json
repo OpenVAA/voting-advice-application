@@ -15,11 +15,11 @@
       "label": "Üldine hinnang rakendusele",
       "valueLabel": [
         {
-          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
-          "selectors": ["ratingPlural"],
+          "declarations": ["input rating", "input ratingMax"],
+          "selectors": ["rating"],
           "match": {
-            "ratingPlural=zero": "Hinnang puudub",
-            "ratingPlural=other": "Hinnang {rating} maksimumist {ratingMax}"
+            "rating=0": "Hinnang puudub",
+            "rating=*": "Hinnang {rating} maksimumist {ratingMax}"
           }
         }
       ]
