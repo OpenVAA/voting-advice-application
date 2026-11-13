@@ -1,0 +1,85 @@
+{
+  "label": "07-before",
+  "head": "1c7eb50154ffddf90ea2412233e5407f989ebee8",
+  "date": "2026-10-26T14:16:02.091Z",
+  "unit": "ms",
+  "runsPerRead": 5,
+  "rows": {
+    "admin": {
+      "candidates": 1328,
+      "nominations": 1377,
+      "storage": 1327
+    },
+    "editor": {
+      "candidates": 1327,
+      "nominations": 1377,
+      "storage": 1327
+    }
+  },
+  "users": {
+    "admin": {
+      "candidates": {
+        "times": [
+          35.523,
+          28.629,
+          29.595,
+          21.932,
+          19.45
+        ],
+        "median": 28.629
+      },
+      "nominations": {
+        "times": [
+          22.086,
+          19.89,
+          21.973,
+          20.454,
+          23.681
+        ],
+        "median": 21.973
+      },
+      "storage": {
+        "times": [
+          213.01,
+          208.223,
+          203.9,
+          210.52,
+          198.465
+        ],
+        "median": 208.223
+      }
+    },
+    "editor": {
+      "candidates": {
+        "times": [
+          144.422,
+          142.723,
+          141.183,
+          137.648,
+          137.541
+        ],
+        "median": 141.183
+      },
+      "nominations": {
+        "times": [
+          218.003,
+          270.556,
+          323.123,
+          226.215,
+          229.058
+        ],
+        "median": 229.058
+      },
+      "storage": {
+        "times": [
+          215.128,
+          212.103,
+          196.46,
+          200.086,
+          202.871
+        ],
+        "median": 202.871
+      }
+    }
+  }
+}

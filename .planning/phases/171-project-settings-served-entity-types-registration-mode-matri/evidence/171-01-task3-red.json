@@ -1,0 +1,35 @@
+{
+  "command": "yarn vitest run --reporter=tap-flat src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts -t \"for a member the previous payload set\" (cwd apps/frontend)",
+  "exitCode": 1,
+  "output": "TAP version 13\n1..5\nok 1 - src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts > AppContextProvider — the settings recompute on a new loader payload > starts from the shipped defaults when the loader has handed over nothing # SKIP\nnot ok 2 - src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts > AppContextProvider — the settings recompute on a new loader payload > reads the shipped default again for a member the previous payload set and the new one omits # time=4.68ms\n    ---\n    error:\n        name: \"AssertionError\"\n        message: \"expected undefined to be true // Object.is equality\"\n    at: \"/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-gsd/apps/frontend/src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts:113:50\"\n    actual: \"undefined\"\n    expected: \"true\"\n    ...\nok 3 - src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts > AppContextProvider — the settings recompute on a new loader payload > reads the shipped default again for a root the previous payload set and the new one omits # SKIP\nok 4 - src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts > AppContextProvider — the settings recompute on a new loader payload > keeps the effective settings object when a navigation hands over the same payload # SKIP\nok 5 - src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts > AppContextProvider — the settings recompute on a new loader payload > keeps the effective settings when the new payload is an Error or is missing # SKIP\n",
+  "targetTest": "src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts > AppContextProvider — the settings recompute on a new loader payload > reads the shipped default again for a member the previous payload set and the new one omits",
+  "targetFile": "apps/frontend/src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts",
+  "expected": "after a payload that sets access.voterApp to false and a second payload that omits it, appSettings.access.voterApp reads the shipped default, true",
+  "actual": "AssertionError: expected undefined to be true — the accumulating re-merge replaced the access root with the second payload, which does not carry voterApp",
+  "semanticAssessment": "The target fails on its planned assertion. In the full RED run (see combinedRun) 15 of 36 cases fail, each on an assertion about the new contract: the six deep-merge cases and the six unsafe-key cases of settings.test.ts, the proxy-target case of settings.svelte.test.ts (on the merged access object, after its structuredClone control passed), and the two recompute cases of the app context. The 21 passing cases either state a property the old merge already had (purity, the nullish root skip, the empty stored value, an Error as the source, the reference guard, the early return on an Error) or belong to the untouched describes of settings.test.ts.",
+  "combinedRun": {
+    "command": "yarn vitest run --reporter=tap-flat src/lib/utils/settings src/lib/contexts/app/appContext.settingsRemerge (cwd apps/frontend)",
+    "exitCode": 1,
+    "tests": 36,
+    "pass": 21,
+    "fail": 15,
+    "note": "Not submitted to the classifier: vitest writes multi-line assertion values into diagnostic blocks, which the TAP adapter rejects as non-TAP data. The target was rerun alone with the same reporter.",
+    "failing": [
+      "not ok 1 - src/lib/utils/settings.svelte.test.ts > mergeAppSettings over a `$state` proxy target > merges without throwing and without unwrapping the list the proxy holds",
+      "not ok 7 - src/lib/utils/settings.test.ts > mergeAppSettings > merges a root member by member: the members additional does not name survive",
+      "not ok 8 - src/lib/utils/settings.test.ts > mergeAppSettings > keeps the shipped `questions` when the stored `contestantApp` root does not carry it",
+      "not ok 9 - src/lib/utils/settings.test.ts > mergeAppSettings > keeps the shipped siblings three levels down when one nested member is stored",
+      "not ok 10 - src/lib/utils/settings.test.ts > mergeAppSettings > replaces a list whole and never unions it",
+      "not ok 12 - src/lib/utils/settings.test.ts > mergeAppSettings > lets a stored object win over a shipped null, without throwing",
+      "not ok 13 - src/lib/utils/settings.test.ts > mergeAppSettings > skips a nested undefined, so it does not erase the value beneath it",
+      "not ok 17 - src/lib/utils/settings.test.ts > mergeAppSettings > skips a source key named __proto__ at the root",
+      "not ok 18 - src/lib/utils/settings.test.ts > mergeAppSettings > skips a source key named constructor at the root",
+      "not ok 19 - src/lib/utils/settings.test.ts > mergeAppSettings > skips a source key named prototype at the root",
+      "not ok 20 - src/lib/utils/settings.test.ts > mergeAppSettings > skips a source key named __proto__ inside a merged root",
+      "not ok 21 - src/lib/utils/settings.test.ts > mergeAppSettings > skips a source key named constructor inside a merged root",
+      "not ok 22 - src/lib/utils/settings.test.ts > mergeAppSettings > skips a source key named prototype inside a merged root",
+      "not ok 33 - src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts > AppContextProvider — the settings recompute on a new loader payload > reads the shipped default again for a member the previous payload set and the new one omits",
+      "not ok 34 - src/lib/contexts/app/appContext.settingsRemerge.svelte.test.ts > AppContextProvider — the settings recompute on a new loader payload > reads the shipped default again for a root the previous payload set and the new one omits"
+    ]
+  }
+}

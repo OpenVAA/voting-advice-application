@@ -1,0 +1,43 @@
+ATTEMPT=20261019T202642Z.689667865
+SWEEP_HEAD=689667865d2d420cefcab0e176d1736f1ccbd185
+STARTUP_CONTACT=already
+SHUTDOWN_FORM=registerShutdownFlush
+DATE=2026-10-19T20:26:42Z
+
+Start-up contact: apps/frontend/src/lib/server/startup/requiredEnv.ts is tracked and its STARTUP_RULES
+already holds analyticsStartupProblems (wired by plan 182-06, e314be826); requiredEnv.test.ts holds the
+case that provider posthog with no key yields ANALYTICS_POSTHOG_KEY. Quoted:
+    22:export const STARTUP_RULES: ReadonlyArray<StartupRule> = [unsetRequiredEnv, analyticsStartupProblems];
+    28: * @param rules - The rules to apply, {@link STARTUP_RULES} by default.
+    31:export function missingRequiredEnv(env: StartupEnv, rules: ReadonlyArray<StartupRule> = STARTUP_RULES): Array<string> {
+    113:  it('reports ANALYTICS_POSTHOG_KEY when the provider is posthog and no key is set, and nothing when the provider is log', () => {
+    114:    expect(missingRequiredEnv({ ...COMPLETE_ENV, ANALYTICS_PROVIDER: 'posthog' })).toEqual(['ANALYTICS_POSTHOG_KEY']);
+
+Shutdown contact: apps/frontend/src/lib/server/startup/shutdown.ts is not tracked (git ls-files prints
+nothing for it), so runtime.ts keeps registerShutdownFlush(queue) from ./queue and was not changed.
+When phase 181's plan 181-14 lands onShutdown(task), runtime.ts must register the queue's flush through
+it and attach no listener of its own.
+
+Files the sweep changed (commit 689667865d2d420cefcab0e176d1736f1ccbd185 and its parent):
+    .claude/skills/spike-findings-voting-advice-application-gsd/references/reactive-contexts.md
+    .claude/skills/spike-findings-voting-advice-application-gsd/sources/001-appsettings-native-rune/appSettingsRuneContext.svelte.ts
+    .claude/skills/spike-findings-voting-advice-application-gsd/sources/004-matchstore-integration/runes-test-page.svelte
+Files Task 1 changed (docs, commit 9187a409e3e56348dd0c7bd92627e0c65ce409ae):
+    apps/docs/src/routes/(content)/about/features/+page.md
+    apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md
+    apps/docs/src/routes/(content)/developers-guide/configuration/intro/+page.md
+    apps/docs/src/routes/(content)/developers-guide/configuration/static-settings/+page.md
+    apps/docs/src/routes/(content)/publishers-guide/preparing/what-data-should-be-collected/+page.md
+
+Matches reported and not edited:
+    apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql: two comments name the
+      stored bait analytics.platform of a deliberate stale-row fixture; they are true, and the file is
+      plan 182-02's [db] test shared with v2.16 (178-04).
+    tests/tests/utils/e2eSpecVerdict.test.ts: NEEDLE = 'appContext-sessionId' is fixture text for the
+      failure message a privacy red control prints (the key named as a violation); plan 182-30's file.
+    tests/tests/utils/privacyAllowlists.test.ts: the key named as a violation (the allowlist unit test).
+
+Sweep results after the commits:
+    git grep -n -i umami -- . ':!.planning' ':!yarn.lock' -> no match (exit 1)
+    git grep -n -F -e appContext-sessionId -e vaaSessionId -e sendTrackingEvent -- apps packages -> no match (exit 1)
+    git grep -n -i umami -- apps/docs -> no match (exit 1)

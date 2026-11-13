@@ -1,0 +1,28 @@
+ATTEMPT=20261019T094520Z.876100781
+GREEN_BASE_HEAD=876100781401ea19bf0ff6b01168ceb95c1f22f8
+TREE_STATUS_OUTPUT (git status --porcelain --untracked-files=no, before the rebuild):
+     M apps/supabase/supabase/migrations/00001_initial_schema.sql
+     M apps/supabase/supabase/schema/106-app-settings.sql
+     M apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql
+REBUILD_ROUTE=reset
+PGTAP_GREEN_EXIT=0
+DB_LINT_EXIT=0
+SCHEMA_LINT_EXIT=0
+PARITY_EXIT=0
+TYPES_ENTRY_DIFFERS=no
+NOTES:
+    reset: node_modules/.bin/supabase db reset --workdir "$ISO_WORKDIR" exited 0 after the regenerated 00001_initial_schema.sql was copied into $ISO_WORKDIR/supabase/migrations/
+    pgTAP: node_modules/.bin/supabase test db --workdir "$ISO_WORKDIR" (whole tests/database directory)
+    db lint: node_modules/.bin/supabase db lint --schema public --fail-on warning --workdir "$ISO_WORKDIR" -> {"results":[],"message":"db lint"}
+    schema lint: DATABASE_URL from the instance's PG* variables, node apps/supabase/scripts/lint-schema.mjs -> Summary: 0 error(s), 3 warning(s) (the three warnings are the pre-existing foreign keys without indexes; status 0)
+    parity: yarn assert:schema-migration-parity -> generated copy is current.
+    types: supabase gen types typescript --local --workdir, formatted with the repository prettier; the contestant_app_public_config entry equals the tracked one:
+              contestant_app_public_config: { Args: { p_project_id: string }; Returns: Json };
+      the only other differences are the pgTAP helper functions the test run leaves in the instance (create_test_data, test_id, set_test_user, ...), which are not part of the schema
+    tree after the runs (git status --porcelain --untracked-files=no), HEAD 876100781401ea19bf0ff6b01168ceb95c1f22f8:
+         M apps/supabase/supabase/migrations/00001_initial_schema.sql
+         M apps/supabase/supabase/schema/106-app-settings.sql
+         M apps/supabase/supabase/tests/database/38-contestant-app-public-config.test.sql
+PGTAP SUMMARY:
+    Files=47, Tests=2605,  6 wallclock secs ( 0.16 usr  0.07 sys +  0.27 cusr  0.18 csys =  0.68 CPU)
+    Result: PASS
