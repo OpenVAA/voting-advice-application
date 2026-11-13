@@ -12,42 +12,59 @@
  * The type cookie returns with the provider's redirect and is bound to the flow only by the cookie jar and its lifetime. It selects which type the callback asks for and never authorises: every reader checks the matrix again, and the `identity-callback` function's check is the authority.
  */
 
+import { log } from '@openvaa/app-shared';
 import { error, isHttpError, json } from '@sveltejs/kit';
+import { createDataProvider, createSupabaseAnonClient } from '$lib/api/dataProvider';
+import { generateChallenge } from '$lib/api/utils/auth/generateChallenge';
 import { getActiveProvider } from '$lib/api/utils/auth/providers';
+import { identityProviderEntityType } from '$lib/contestant/utils/registrationOffer';
 import { COOKIE } from '$lib/cookies';
+import { ROUTE } from '$lib/routes';
+import type { ContestantAppConfigInput } from '@openvaa/app-shared';
 import type { RequestEvent } from '@sveltejs/kit';
 
-export async function POST({ cookies, request }: RequestEvent): Promise<Response> {
-  try {
-    const { redirectUri, codeChallenge } = await request.json();
+/** The attributes of every cookie the flow leaves behind. `lax` lets them return with the provider's top-level redirect. */
+const FLOW_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax',
+  path: '/',
+  maxAge: 600
+} as const;
 
-    if (!redirectUri) {
-      return error(400, { message: 'redirectUri is required' });
+export async function POST({ cookies, fetch, locals, request, url }: RequestEvent): Promise<Response> {
+  try {
+    const body: unknown = await request.json().catch(() => error(400, { message: 'The body must be JSON' }));
+    const named = body && typeof body === 'object' ? (body as Record<string, unknown>).entityType : undefined;
+
+    const dataProvider = createDataProvider({ fetch, client: createSupabaseAnonClient({ fetch }) });
+    let settings: ContestantAppConfigInput;
+    try {
+      settings = (await dataProvider.getAppSettings()) as ContestantAppConfigInput;
+    } catch (e) {
+      log.error(
+        `[oidc/authorize] Error reading app settings: ${(e as Error | undefined)?.message ?? 'No error message'}`,
+        { err: e }
+      );
+      return json({ error: 'unavailable' }, { status: 503 });
     }
+
+    const entityType = identityProviderEntityType(settings, named);
+    if (!entityType) return json({ error: 'mode_not_allowed' }, { status: 403 });
 
     const provider = getActiveProvider();
-    const result = await provider.getAuthorizeUrl({ redirectUri, codeChallenge });
+    const redirectUri = new URL(ROUTE.ContestantAppIdentityProviderCallback, url.origin).href;
 
-    // Store state and nonce in httpOnly cookies for verification on callback.
-    // Idura returns these from JAR construction; Signicat uses client-side PKCE instead.
-    if (result.state) {
-      cookies.set(COOKIE.oidcState, result.state, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax', // 'lax' required for cross-origin IdP redirects
-        path: '/',
-        maxAge: 600 // 10 minutes
-      });
-    }
-    if (result.nonce) {
-      cookies.set(COOKIE.oidcNonce, result.nonce, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 600
-      });
-    }
+    let codeVerifier: string | undefined;
+    let codeChallenge: string | undefined;
+    if (provider.callbackBinding === 'pkce') ({ codeVerifier, codeChallenge } = await generateChallenge(crypto));
+
+    const result = await provider.getAuthorizeUrl({ redirectUri, codeChallenge, locale: locals.currentLocale });
+
+    if (codeVerifier) cookies.set(COOKIE.oidcCodeVerifier, codeVerifier, FLOW_COOKIE_OPTIONS);
+    if (result.state) cookies.set(COOKIE.oidcState, result.state, FLOW_COOKIE_OPTIONS);
+    if (result.nonce) cookies.set(COOKIE.oidcNonce, result.nonce, FLOW_COOKIE_OPTIONS);
+    cookies.set(COOKIE.oidcEntityType, entityType, FLOW_COOKIE_OPTIONS);
 
     return json({ authorizeUrl: result.authorizeUrl });
   } catch (e) {
