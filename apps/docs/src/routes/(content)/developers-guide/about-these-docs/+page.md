@@ -6,7 +6,7 @@ This site is the OpenVAA documentation. Its pages, the scripts that generate som
 
 - The site is a SvelteKit app. Most pages are Markdown files (`+page.md`) under `src/routes/(content)`, compiled by mdsvex. The [mdsvex options](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/docs/mdsvex.config.js) add `rehype-slug`, which gives every heading an `id`, so a link can point at a section with `#anchor`. The landing page and the newsletter page are Svelte components.
 - Every Markdown page uses the layout `src/lib/layouts/MdLayout.svelte`.
-- The build uses `@sveltejs/adapter-static` and writes a single-page app to `build/`, with `404.html` as the fallback for every URL. No page is prerendered, so the build itself checks no links; the link check below does.
+- The build uses `@sveltejs/adapter-static` and writes a single-page app to `build/`, with `404.html` as the fallback for every URL. The build prerenders only the redirect stubs of moved pages (see [Moved pages](#moved-pages)); every other page is rendered in the browser, so the build itself does not check the site's links; the link check below does.
 - The [Deploy Documentation workflow](https://github.com/OpenVAA/voting-advice-application/blob/main/.github/workflows/docs.yml) publishes the site to GitHub Pages. It runs on every push to `main` that changes `apps/docs/**`, and can be started by hand. It installs the dependencies, builds the shared packages, runs `generate:docs`, builds the site and deploys `apps/docs/build`. It does not run on pull requests.
 
 To work on the site, start its dev server:
@@ -57,12 +57,14 @@ When a page moves, its old URL keeps working through a redirect stub: a route di
 ```ts
 import { redirect } from '@sveltejs/kit';
 
+export const prerender = true;
+
 export function load() {
   redirect(308, '/developers-guide/about-these-docs');
 }
 ```
 
-The site is a single-page app, so the redirect runs in the browser. Stubs are not in the navigation, and the site's own pages link to the new URL, never to a stub.
+The `prerender` export makes the build write a page for the old URL that redirects with a script and with a `http-equiv="refresh"` meta tag, so a crawler or a client without JavaScript is redirected too. The host serves static files, so no redirect status code is sent: the old URL serves that page, not a permanent redirect. Stubs are not in the navigation, and the site's own pages link to the new URL, never to a stub.
 
 ## Checks
 
@@ -86,11 +88,11 @@ The site is a single-page app, so the redirect runs in the browser. Stubs are no
 | `svelte-href` | Every literal internal link in an `href` attribute (a value that starts with `/`) in a `.svelte` file, or in HTML inside a `.md` page, resolves.                   |
 | `nav-route`   | Every leaf item of `navigation.config.ts` resolves to a page.                                                                                                      |
 | `anchor`      | Every `#anchor` of an internal link names a heading `id` on the target page.                                                                                       |
-| `stub`        | Every redirect stub redirects with a literal 301 or 308 to a page, not to another stub.                                                                            |
+| `stub`        | Every redirect stub exports `prerender = true` and redirects with a literal 301 or 308 to a page, not to another stub.                                             |
 | `github-path` | Every GitHub source link (`https://github.com/OpenVAA/voting-advice-application/blob/main/<path>`, or `/tree/main/`) names a file or directory tracked by git.     |
 | `inbound`     | Every reference to the site from a tracked file outside `apps/docs` (an `openvaa.org` URL with its anchor, or a repository path under `docs/src/routes`) resolves. |
 
-In `--check` mode a link that lands on a redirect stub is also a finding. Two options narrow the report: `--only <class,…>` reports only the named classes, and `--scope <route>` (repeatable) reports only the findings in the page at that route; a route ending in `/**` includes every page below it. Without `--check`, as `generate:docs` runs it, the script also rewrites relative Markdown links as absolute ones.
+In `--check` mode a link that lands on a redirect stub is also a finding. Two options narrow the report: `--only <class,…>` reports only the named classes, and `--scope <route>` (repeatable) reports only the findings in the page at that route; a route ending in `/**` includes every page below it. Without `--check`, as `generate:docs` runs it, the script also rewrites relative Markdown links as absolute ones, unless `--only` leaves out `md-link`.
 
 ### Research quotes
 

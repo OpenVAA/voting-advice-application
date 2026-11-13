@@ -2,7 +2,7 @@
 
 # The app's single drawer
 
-Mount exactly one in the root layout of each app that offers drawers, below that app's context init — the voter app mounts it in `routes/(voters)/+layout.svelte`; enabling drawers in the candidate app is one more `<DrawerHost />` in `routes/candidate/+layout.svelte`. Hosted content is rendered here, so it resolves the contexts of the app it is mounted in; openers pass no contexts.
+Mount exactly one in the root layout of each app that offers drawers, below that app's context init — the voter app mounts it in `routes/(voters)/+layout.svelte`; enabling drawers in the contestant app is one more `<DrawerHost />` in `routes/contestant/+layout.svelte`. Hosted content is rendered here, so it resolves the contexts of the app it is mounted in; openers pass no contexts.
 
 Shows `drawerHost.current` (see `drawerHostState.svelte.ts`) in ONE persistent `<dialog>`:
 

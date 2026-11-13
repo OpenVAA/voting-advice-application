@@ -4,13 +4,13 @@ Show buttons opting in or out of data collection and possibly information about 
 
 ### Dynamic component
 
-Accesses `AppContext` to set and read `userPreferences`.
+Accesses `AppContext` to set and read `userPreferences`. The description names no analytics provider: its note is `privacy.dataCollection.info`. Whether the component is offered at all is decided by the page that renders it.
 
 ### Properties
 
 - `description`: Whether and how to show the data consent description. Default: `'modal'`
   - `'none'`: Don't show the description.
-  - `'inline'`: Show the consent description above the buttons.
+  - `'inline'`: Show the consent description (`common.privacy.dataCollection.content` and `privacy.dataCollection.info`) and the current consent status above the buttons.
   - `'modal'`: Show a button that opens the description in a modal.
 - Any valid attributes of a `<div>` element.
 

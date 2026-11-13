@@ -11,8 +11,10 @@ const generatedDir = GENERATED_DIR;
 
 /**
  * Transform markdown content to fix links for SvelteKit routing
- * - Convert README.md links to directory links
+ * - Convert README.md links to directory links, keeping a `#hash`
  * - Remove .md extensions from all internal links (SvelteKit will resolve them as directories)
+ *
+ * A link with a scheme is left as it is, and so is everything inside a fenced code block.
  */
 function transformMarkdownLinks(content: string): string {
   // Replace links to README.md with directory links
