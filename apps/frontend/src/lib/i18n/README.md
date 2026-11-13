@@ -65,7 +65,7 @@ Messages use the [inlang message format](https://inlang.com/m/reootnfj/plugin-in
 - `dynamic.json` -- Default values for translations typically customized per deployment. These should be overridden by backend data.
 - `common.json` -- Common terms used throughout the app and sometimes as part of other translations.
 - `components.json` -- Translations used by static components, grouped by component name.
-- One file each for each page and dynamic component. Files for the Candidate App are prefixed like `candidateApp.basicInfo.json`.
+- One file each for each page and dynamic component. Files for the Contestant App are prefixed like `contestantApp.basicInfo.json`.
 - `lang.json` -- Locale display names (e.g., `"en": "English"`, `"fi": "suomi"`).
 
 ### Special characters

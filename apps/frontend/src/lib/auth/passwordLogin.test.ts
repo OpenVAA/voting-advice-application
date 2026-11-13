@@ -12,11 +12,11 @@ import type { GrantClaim, GrantShape } from './roles';
  *
  * The admin and candidate login form actions used to carry byte-identical copies of the sign-in call, the session read-back, the access-token claims decode and the gate, differing only in the predicate, the redirect target and three log messages. Collapsing four duplicated steps onto one helper puts BOTH of the application's authenticated entrances behind a single code path, so a widening mistake in that path widens both at once.
  *
- * The two cross-door cases below are what stands against that. A principal holding only an entity editor grant must still be rejected against the admin set, and a principal holding only admin grants must still be rejected against the candidate set. They are named separately rather than folded into a table because they are the privilege boundary, not a parameterisation of it.
+ * The two cross-door cases below are what stands against that. A principal holding only an entity editor grant must still be rejected against the admin set, and a principal holding only admin grants must still be rejected against the contestant set. They are named separately rather than folded into a table because they are the privilege boundary, not a parameterisation of it.
  *
  * ## Why the gate matches a PAIR
  *
- * The claim carries `(scope, target_type, target_id, role)` and the vocabulary has two roles, so the role alone does not say which door. Two cases below are the ones that make the pair load-bearing: an entity-scope grant whose role is `admin` — a shape the database's CHECK constraints admit, the user-type mapping never produces and the permission matrix gives the empty set — must open NEITHER door; and a project-scope `editor`, who holds seventeen permissions, must open the admin door and not the candidate one.
+ * The claim carries `(scope, target_type, target_id, role)` and the vocabulary has two roles, so the role alone does not say which door. Two cases below are the ones that make the pair load-bearing: an entity-scope grant whose role is `admin` — a shape the database's CHECK constraints admit, the user-type mapping never produces and the permission matrix gives the empty set — must open NEITHER door; and a project-scope `editor`, who holds seventeen permissions, must open the admin door and not the contestant one.
  *
  * The claims fixtures are unsigned by construction. The helper never treats the payload as evidence of anything on its own: the session it reads them from has already been through the verifying `getUser()` round-trip in `safeGetSession`, and every subsequent query is re-checked by the database's row-level policies. What the fixtures exercise is the decode and the shape test, which is all this module owns.
  */
@@ -43,11 +43,13 @@ const PROJECT_EDITOR: GrantClaim = { scope: 'project', target_type: null, target
 /**
  * Build the request-context stub the helper acts through, plus the spies needed to observe it.
  *
- * The context is described structurally rather than imported: the adapter-boundary guard bans naming the auth vendor's own types outside `src/lib/api/adapters/**`, and the helper has no business naming it either. Keeping the stub structural also keeps this spec's module graph to two files.
+ * The context is described structurally rather than imported: the adapter-boundary guard bans naming the auth vendor's own types outside `src/lib/api/adapters/**`, and the helper has no business naming it either. Keeping the stub structural also keeps this spec's module graph inside the helper's own directory.
+ *
+ * The claim finds nothing to claim here. What the helper does with a claim that writes a grant is the admission spec's subject.
  * @param options.signInError - What the backend returns from the sign-in call; `null` for a successful sign-in.
  * @param options.session - What the session read-back yields; `null` for a sign-in that established nothing.
  * @param options.user - What the session read-back yields as the user; `null` for the same.
- * @returns The context plus the two spies the assertions read.
+ * @returns The context plus the spies the assertions read.
  */
 function contextWith({
   signInError = null,
@@ -270,7 +272,7 @@ describe('hasAnyGrant', () => {
     expect(hasAnyGrant([ENTITY_EDITOR], ADMIN_GRANTS)).toBe(false);
     expect(hasAnyGrant([], ADMIN_GRANTS)).toBe(false);
     expect(hasAnyGrant([GLOBAL_ADMIN], ADMIN_GRANTS)).toBe(true);
-    // Neither half alone is enough: the entity-scope admin matches the admin set's role and the candidate set's scope, and is admitted by neither.
+    // Neither half alone is enough: the entity-scope admin matches the admin set's role and the contestant set's scope, and is admitted by neither.
     expect(hasAnyGrant([ENTITY_ADMIN], ADMIN_GRANTS)).toBe(false);
     expect(hasAnyGrant([ENTITY_ADMIN], CANDIDATE_GRANTS)).toBe(false);
   });

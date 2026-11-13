@@ -56,7 +56,7 @@ The same component can also be used to display the answers of the voter and anot
   mode="display"
   selectedId={question.ensureValue(answers.answers[question.id]?.value)}
   otherSelected={candidateAnswer}
-  otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
+  otherLabel={t('contestantApp.common.candidateAnswerLabel')} />
 ```
 -->
 

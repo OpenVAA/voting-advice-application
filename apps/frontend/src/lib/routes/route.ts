@@ -3,7 +3,7 @@ import { API_ROOT } from '../api/base/universalApiRoutes';
 /**
  * The SvelteKit route-group segment marking a route that sits behind an auth gate.
  *
- * This is the single definition of the pattern. `CANDIDATE_PROT` and `ADMIN_PROT` below are built from it, every `(protected)` route id in `ROUTE` is built from those two, and `isProtectedRoute` reads it — so the request hook, the route tree and the route map cannot drift into two agreeing strings.
+ * This is the single definition of the pattern. `CONTESTANT_PROT` and `ADMIN_PROT` below are built from it, every `(protected)` route id in `ROUTE` is built from those two, and `isProtectedRoute` reads it — so the request hook, the route tree and the route map cannot drift into two agreeing strings.
  */
 export const PROTECTED_GROUP = '(protected)';
 
@@ -21,12 +21,12 @@ export const ADMIN = '/admin';
 export const ADMIN_PROT = `${ADMIN}/${PROTECTED_GROUP}`;
 
 /**
- * True when `routeId` names a route inside the Candidate App.
+ * True when `routeId` names a route inside the Contestant App.
  *
- * Takes a SvelteKit ROUTE ID, never a pathname. A route id carries no base path and no locale prefix, and its dynamic segments are placeholders rather than values, so this cannot be tripped by serving the app from a `/candidate/…` subpath, nor by a voter route whose params happen to contain the word (an entity id, a constituency slug).
+ * Takes a SvelteKit ROUTE ID, never a pathname. A route id carries no base path and no locale prefix, and its dynamic segments are placeholders rather than values, so this cannot be tripped by serving the app from a `/contestant/…` subpath, nor by a voter route whose params happen to contain the word (an entity id, a constituency slug).
  *
  * @param routeId - A SvelteKit route id, e.g. `event.route.id`.
- * @returns `true` when the id is the Candidate App root or sits below it.
+ * @returns `true` when the id is the Contestant App root or sits below it.
  */
 export function isCandidateRoute(routeId: string): boolean {
   return routeId === CANDIDATE || routeId.startsWith(`${CANDIDATE}/`);
@@ -35,7 +35,7 @@ export function isCandidateRoute(routeId: string): boolean {
 /**
  * True when `routeId` names an API endpoint rather than a page.
  *
- * Takes a SvelteKit ROUTE ID, never a pathname, for the reasons given on `isCandidateRoute`.
+ * Takes a SvelteKit ROUTE ID, never a pathname, for the reasons given on `isContestantRoute`.
  *
  * @param routeId - A SvelteKit route id, e.g. `event.route.id`.
  * @returns `true` when the id is the API root or sits below it.

@@ -11,7 +11,9 @@ export const outsideLabelClass = 'font-bold text-secondary mx-md mb-8 mt-lg';
 /** The row wrapping a single-line input together with its label and badges. */
 export const inputContainerClass =
   'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
-/** The label rendered inside an input row, in small caps. */
+/**
+ * The label rendered inside an input row, in small caps. A row has to hold a label of any length beside its control, so the label wraps between words, as every `.label` does by the project's rule in `app.css`. The row gives the label the width of its text on one line whenever the control keeps its minimum width beside it (see {@link inputAndIconContainerClass}); only a longer label wraps. A single word is never broken: the label keeps a minimum width, and a one-word label would otherwise lose its last letter to a second line when the control is at its narrowest.
+ */
 export const inputLabelClass = 'label-sm label pointer-events-none min-w-[4rem] mx-md my-2 px-0 text-secondary';
 /** The wrapper holding the input element itself and any trailing badges or buttons. */
 export const inputAndIconContainerClass = 'flex grow justify-end items-center pr-8';
