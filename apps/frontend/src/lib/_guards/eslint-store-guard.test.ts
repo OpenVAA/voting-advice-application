@@ -31,7 +31,7 @@ const eslint = new ESLint();
 // asserted nowhere: the config is the source of truth, and the probes below measure it.
 const SRC = path.resolve(__dirname, '../..');
 
-const GUARDED_DIRS = ['lib/components', 'lib/utils', 'lib/dynamic-components', 'lib/candidate/components'] as const;
+const GUARDED_DIRS = ['lib/components', 'lib/utils', 'lib/dynamic-components', 'lib/contestant/components'] as const;
 
 const STORE_IMPORT = {
   '.ts': "import { writable } from 'svelte/store';\n\nexport const x = writable(0);\n",

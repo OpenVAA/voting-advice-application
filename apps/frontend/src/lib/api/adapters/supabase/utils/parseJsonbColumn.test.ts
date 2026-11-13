@@ -1,6 +1,6 @@
 import { configureLogger } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { parseAnswersColumn, parseImageColumn } from './parseJsonbColumn';
+import { parseAnswersColumn, parseColorColumn, parseImageColumn } from './parseJsonbColumn';
 import type { LogRecord } from '@openvaa/app-shared';
 
 /**
@@ -125,5 +125,37 @@ describe('parseAnswersColumn', () => {
       rejectedKeys: ['bogusAnswerKey'],
       preserved: true
     });
+  });
+});
+
+describe('parseColorColumn', () => {
+  const source = { column: 'organizations.color', id: 'o1' };
+
+  it('yields `ok` for a stored default-theme colour, with its dark-theme one', () => {
+    const result = parseColorColumn({ normal: '#2546a8', dark: '#6b8dd6' }, source);
+
+    expect(result).toEqual({ status: 'ok', value: { normal: '#2546a8', dark: '#6b8dd6' } });
+    expect(records).toHaveLength(0);
+  });
+
+  // The database accepts each of these: none names a colour for the default theme, so none is a colour here, and none is a failure.
+  it.each([
+    ['a dark-theme colour alone', { dark: '#123456' }],
+    ['a null normal colour', { normal: null, dark: '#123456' }],
+    ['an empty object', {}]
+  ])('yields `absent` and emits no record for %s', (_form, stored) => {
+    const result = parseColorColumn(stored, source);
+
+    expect(result.status).toBe('absent');
+    expect(result.value).toBeUndefined();
+    expect(records).toHaveLength(0);
+  });
+
+  it('yields `malformed` with no value for a colour object whose only member is no colour', () => {
+    const result = parseColorColumn({ dark: 'red' }, source);
+
+    expect(result.status).toBe('malformed');
+    expect(result.value).toBeUndefined();
+    expect(records).toHaveLength(1);
   });
 });

@@ -26,6 +26,18 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
    * Whether to show the possible nomination’s election and constituency. @default false
    */
   showElection?: boolean;
+  /**
+   * Whether to render the card header only: avatar, title and subtitle. Featured questions, sub-matches and sub-cards are neither rendered nor looked up, so the card needs no question data. @default false
+   */
+  headerOnly?: boolean;
+  /**
+   * Whether to show the entity’s type, e.g. “candidate” or “party”, in the subtitle. @default false
+   */
+  showType?: boolean;
+  /**
+   * Whether a link action keeps the scroll position. Set to `false` when the action navigates to another page rather than opening an overlay over the list. @default true
+   */
+  keepScroll?: boolean;
 };
 
 /**

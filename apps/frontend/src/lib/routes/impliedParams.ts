@@ -1,5 +1,5 @@
 import type { Id } from '@openvaa/core';
-import type { DataRoot } from '@openvaa/data';
+import type { DataRoot, Election } from '@openvaa/data';
 
 /**
  * Try to imply the `electionIds` in cases when they need not to be selected.
@@ -11,13 +11,16 @@ import type { DataRoot } from '@openvaa/data';
 export function getImpliedElectionIds({
   appSettings,
   dataRoot,
-  selectedConstituencyIds
+  selectedConstituencyIds,
+  elections = dataRoot.elections,
+  honourDisallowSelection = true
 }: {
   appSettings: AppSettings;
   dataRoot: DataRoot;
   selectedConstituencyIds?: Array<Id>;
+  elections?: Array<Election>;
+  honourDisallowSelection?: boolean;
 }): Array<Id> | undefined {
-  let elections = dataRoot.elections;
   // Filter to applicable elections.
   // `getApplicableConstituency` throws when more than one of the passed constituencies match the election's groups, e.g. a municipality and its parent region for an election whose groups include both regions and municipalities. Such an election matches something in the selection, so the throw is treated as "applicable".
   if (selectedConstituencyIds?.length) {
@@ -30,8 +33,9 @@ export function getImpliedElectionIds({
       }
     });
   }
-  // Elections can be implied if there is only one election or if the app settings disallow selection
-  if (elections.length === 1 || appSettings.elections?.disallowSelection) return elections.map((e) => e.id);
+  // Elections can be implied if there is only one election or if the app settings disallow selection and the caller honours that setting
+  if (elections.length === 1 || (honourDisallowSelection && appSettings.elections?.disallowSelection))
+    return elections.map((e) => e.id);
   return undefined;
 }
 

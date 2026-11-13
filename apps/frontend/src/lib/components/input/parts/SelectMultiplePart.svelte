@@ -38,16 +38,31 @@ See `SelectMultiplePart.type.ts`.
     disabled,
     locked,
     showRequired,
+    required,
+    describedBy,
     options,
     selectedOptions,
     unselectedOptions,
-    mainInputs,
     restProps,
     onChange,
     onDeleteOption
   }: SelectMultiplePartProps = $props();
 
   const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Keyboard navigation
+  ////////////////////////////////////////////////////////////////////
+
+  /** The dropdown. Absent when there are no options to offer. */
+  let dropdown: HTMLSelectElement | undefined = $state();
+
+  /**
+   * Move focus to the dropdown. Does nothing when it is not rendered.
+   */
+  export function focus(): void {
+    dropdown?.focus();
+  }
 </script>
 
 <div class="join join-vertical items-stretch {joinGap}">
@@ -57,9 +72,11 @@ See `SelectMultiplePart.type.ts`.
       {#if options?.length}
         <select
           {id}
+          aria-describedby={describedBy}
+          aria-required={required ? 'true' : undefined}
           {disabled}
           {...concatClass(restProps ?? {}, selectClass)}
-          bind:this={mainInputs[0]}
+          bind:this={dropdown}
           onchange={(e) => onChange?.(e)}>
           <option disabled selected
             >{placeholder ||

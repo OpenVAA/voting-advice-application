@@ -2,7 +2,6 @@
  * The interpolation values that may be passed as the `params` argument of `t()` (`$lib/i18n/wrapper`).
  */
 export type TranslationsPayload = Partial<{
-  analyticsLink: string;
   consentDate: Date;
   constituency: string;
   constituencyGroup: string;

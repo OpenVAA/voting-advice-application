@@ -68,8 +68,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 <header
   class={cn(
     'pt-safet relative flex max-h-fit min-h-0 transition-[min-height] duration-250 ease-out',
-    topBarSettings.current.imageSrc &&
-      'min-h-[40vh] items-start bg-(image:--image) bg-(size:--background-size) bg-(position:--background-position) bg-no-repeat ease-in'
+    topBarSettings.current.imageSrc && 'min-h-[40vh] flex-col ease-in'
   )}
   style:view-transition-name="persistent-header"
   style:--image={topBarSettings.current.imageSrc && `url(${topBarSettings.current.imageSrc})`}
@@ -101,4 +100,9 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
     </button>
     <Banner />
   </div>
+  {#if topBarSettings.current.imageSrc}
+    <div
+      class="w-full grow bg-(image:--image) bg-(size:--background-size) bg-(position:--background-position) bg-no-repeat">
+    </div>
+  {/if}
 </header>

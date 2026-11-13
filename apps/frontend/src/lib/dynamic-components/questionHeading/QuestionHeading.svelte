@@ -30,7 +30,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { Term } from '$lib/components/term';
   import { getAppContext } from '$lib/contexts/app';
-  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getContestantContext } from '$lib/contexts/contestant';
   import { getVoterContext } from '$lib/contexts/voter';
   import { concatClass } from '$lib/utils/components';
   import { getElectionsToShow } from '$lib/utils/questions';
@@ -49,9 +49,9 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule".
   // Get the elections source based on app type; reading happens in reactive contexts below
   const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
-  const candidateCtx = appType.current === 'candidate' ? getCandidateContext() : undefined;
+  const contestantCtx = appType.current === 'contestant' ? getContestantContext() : undefined;
   let elections = $derived(
-    voterCtx ? voterCtx.selectedElections : candidateCtx ? candidateCtx.selectedElections : ctx.dataRoot.elections
+    voterCtx ? voterCtx.selectedElections : contestantCtx ? contestantCtx.selectedElections : ctx.dataRoot.elections
   );
 
   let customData = $derived(getCustomData(question));

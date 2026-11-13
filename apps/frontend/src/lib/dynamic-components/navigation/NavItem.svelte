@@ -36,45 +36,103 @@ Accesses `LayoutContext`.
   import { NAV_GROUP_CONTEXT_KEY } from './navGroupContext';
   import type { NavItemProps } from './NavItem.type';
 
-  let { autoCloseNav = true, disabled, href, onclick, icon, text, children, ...restProps }: NavItemProps = $props();
+  let {
+    autoCloseNav = true,
+    disabled,
+    disabledReason,
+    disabledReasonProps,
+    href,
+    onclick,
+    icon,
+    text,
+    children,
+    ...restProps
+  }: NavItemProps = $props();
 
   const { navigation } = getLayoutContext();
 
   // reason: Top-level getContext read — NOT inside an element attribute (Svelte issue #7549). Static structural detection: NavItem's containment in a NavGroup is fixed at component creation.
   const inNavGroup = getContext(NAV_GROUP_CONTEXT_KEY) === true;
 
+  const uid = $props.id();
+  /** The id of the region that shows the reason. */
+  const reasonRegionId = `${uid}-reason`;
+
+  /** Whether the item is closed with a reason it shows when clicked. */
+  const closedWithReason = $derived(!!disabled && !!disabledReason);
+
+  /** Whether the reason is shown. It is collapsed whenever the item becomes, or stops being, closed with a reason, and a click toggles it. */
+  let reasonShown = $derived.by(() => {
+    void closedWithReason;
+    return false;
+  });
+
   const classes = $derived(
     cn(
       'flex items-center gap-md px-10 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200',
       // The width of an icon (24/16 rem) plus the gap between the icon and the text (md = 10/16 rem)
       !icon && 'pl-[2.75rem]',
-      disabled && 'pointer-events-none hover:bg-transparent'
+      disabled && !closedWithReason && 'pointer-events-none hover:bg-transparent'
     )
   );
+
+  /**
+   * Handle a click: an item closed with a reason shows or hides it; any other item calls `onclick` and closes the menu when `autoCloseNav` is set.
+   * @param event - The click.
+   */
+  function handleClick(event: MouseEvent): void {
+    if (closedWithReason) {
+      reasonShown = !reasonShown;
+      return;
+    }
+    if (onclick) onclick(event);
+    if (autoCloseNav && navigation.close) navigation.close();
+  }
 </script>
 
 {#snippet content()}
-  <!--
-    `disabled` is non-standard on `<a>`. On the `<a>` branch we set `aria-disabled="true"` and drop `href` so the link is observably disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On the `<button>` branch we keep native `disabled`.
-  -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <svelte:element
-    this={href == null ? 'button' : 'a'}
-    href={disabled ? undefined : href}
-    onclick={(e: MouseEvent) => {
-      if (onclick) onclick(e);
-      if (autoCloseNav && navigation.close) navigation.close();
-    }}
-    disabled={href == null && disabled ? true : undefined}
-    aria-disabled={href != null && disabled ? 'true' : undefined}
-    data-testid="nav-menu-item"
-    {...concatClass(restProps, classes)}>
-    {#if icon}
-      <Icon name={icon} />
-    {/if}
-    <span class="uc-first">{text}</span>
-    {@render children?.()}
-  </svelte:element>
+  {#if closedWithReason}
+    <!-- Not natively disabled, so that it stays a tab stop and can be clicked: `aria-disabled` announces it as unavailable. -->
+    <button
+      type="button"
+      onclick={handleClick}
+      aria-disabled="true"
+      aria-expanded={reasonShown}
+      aria-controls={reasonRegionId}
+      data-testid="nav-menu-item"
+      {...concatClass(restProps as Record<string, unknown>, classes)}>
+      {#if icon}
+        <Icon name={icon} />
+      {/if}
+      <span class="uc-first">{text}</span>
+      {@render children?.()}
+    </button>
+    <!-- Rendered while the item is closed, so that the reason is announced when it is put in. -->
+    <div id={reasonRegionId} role="status">
+      {#if reasonShown}
+        <p {...concatClass(disabledReasonProps ?? {}, 'small-info py-sm ps-touch pe-md')}>{disabledReason}</p>
+      {/if}
+    </div>
+  {:else}
+    <!--
+      `disabled` is non-standard on `<a>`. On the `<a>` branch we set `aria-disabled="true"` and drop `href` so the link is observably disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On the `<button>` branch we keep native `disabled`.
+    -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <svelte:element
+      this={href == null ? 'button' : 'a'}
+      href={disabled ? undefined : href}
+      onclick={handleClick}
+      disabled={href == null && disabled ? true : undefined}
+      aria-disabled={href != null && disabled ? 'true' : undefined}
+      data-testid="nav-menu-item"
+      {...concatClass(restProps, classes)}>
+      {#if icon}
+        <Icon name={icon} />
+      {/if}
+      <span class="uc-first">{text}</span>
+      {@render children?.()}
+    </svelte:element>
+  {/if}
 {/snippet}
 
 <!-- The wrapping <div role="listitem"> is rendered ONLY when this NavItem is a child of a NavGroup (auto-detected via getContext). Orphan NavItems (e.g., VoterNav/ContestantNav/AdminNav close-buttons) render bare to avoid the axe aria-required-parent violation. -->

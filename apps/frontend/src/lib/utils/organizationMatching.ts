@@ -4,7 +4,11 @@ import type { OrganizationMatchingMethod } from '@openvaa/app-shared';
 /**
  * Every value `matching.organizationMatching` may take.
  */
-const ORGANIZATION_MATCHING_METHODS: ReadonlyArray<OrganizationMatchingMethod> = ['none', 'answersOnly', 'impute'];
+export const ORGANIZATION_MATCHING_METHODS: ReadonlyArray<OrganizationMatchingMethod> = [
+  'none',
+  'answersOnly',
+  'impute'
+];
 
 /**
  * The out-of-vocabulary values already logged, so each is logged once rather than on every recomputation.

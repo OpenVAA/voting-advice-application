@@ -1,4 +1,4 @@
-import { API_ROOT } from '../api/base/universalApiRoutes';
+import { API_ROOT, UNIVERSAL_API_ROUTES } from '../api/base/universalApiRoutes';
 
 /**
  * The SvelteKit route-group segment marking a route that sits behind an auth gate.
@@ -7,10 +7,40 @@ import { API_ROOT } from '../api/base/universalApiRoutes';
  */
 export const PROTECTED_GROUP = '(protected)';
 
-/** Root route id of the Candidate App. */
-export const CANDIDATE = '/candidate';
-/** Route-id prefix of the Candidate App routes that require a signed-in candidate. */
-export const CANDIDATE_PROT = `${CANDIDATE}/${PROTECTED_GROUP}`;
+/** Root route id of the Contestant App. */
+export const CONTESTANT = '/contestant';
+/** Route-id prefix of the Contestant App routes that require a signed-in candidate. */
+export const CONTESTANT_PROT = `${CONTESTANT}/${PROTECTED_GROUP}`;
+/**
+ * Route-id prefix of every entity-level route of the Contestant App: the entity home and the pages below it, which show or edit one entity.
+ *
+ * The two param segments name the selected entity: `entityType`, admitted by the `servedEntityType` matcher, and `entityId`, admitted by the `uuid` matcher. A path whose segments fail either matcher matches no entity route.
+ *
+ * Every entity key of `ROUTE` is built from it, so the place of an entity in a route id is stated once.
+ */
+export const CONTESTANT_ENTITY = `${CONTESTANT_PROT}/[entityType=servedEntityType]/[entityId=uuid]`;
+/**
+ * Route-id prefix of the entity pages that open only while the entity has a nomination: the profile, the questions with each question's page, and the preview.
+ *
+ * The group adds no URL segment. Its server load leads an entity with no nomination to the entity's home, so the rule is stated once for every page below it. The entity's home and its nominations are outside the group.
+ */
+export const CONTESTANT_NOMINATED = `${CONTESTANT_ENTITY}/(nominated)`;
+/**
+ * Route-id prefix of the three steps of the nomination editor of the entity being edited: the election step, the constituency step and the details step.
+ *
+ * The group adds no URL segment, so the steps sit directly below the address of the entity's nominations. Its load decides whether the editor is served at all, so the rule is stated once for every step below it. The group is outside the pages that open only while the entity has a nomination, so an entity with none reaches the editor.
+ */
+export const CONTESTANT_NOMINATION_EDITOR = `${CONTESTANT_ENTITY}/nominations/(edit)`;
+/**
+ * The search param that carries the elections chosen in the nomination editor from one step to the next. It may be repeated.
+ *
+ * It is not a persistent search param: a step passes it on by name, so it is on no link that leaves the editor.
+ */
+export const NOMINATION_ELECTION_PARAM = 'nominationElectionId';
+/**
+ * The search param that carries the constituencies chosen in the nomination editor from one step to the next. It may be repeated, and like the election param it is not persistent.
+ */
+export const NOMINATION_CONSTITUENCY_PARAM = 'nominationConstituencyId';
 /** Root route id of the Voter App. */
 export const VOTER = '/(voters)';
 /** Route-id prefix of the Voter App routes that require a selected election and constituency. */
@@ -28,8 +58,8 @@ export const ADMIN_PROT = `${ADMIN}/${PROTECTED_GROUP}`;
  * @param routeId - A SvelteKit route id, e.g. `event.route.id`.
  * @returns `true` when the id is the Contestant App root or sits below it.
  */
-export function isCandidateRoute(routeId: string): boolean {
-  return routeId === CANDIDATE || routeId.startsWith(`${CANDIDATE}/`);
+export function isContestantRoute(routeId: string): boolean {
+  return routeId === CONTESTANT || routeId.startsWith(`${CONTESTANT}/`);
 }
 
 /**
@@ -89,29 +119,52 @@ export const ROUTE = {
   // This constant and the directory move together or the route 404s.
   Statistics: `${VOTER_LOCATED}/results/statistics`,
 
-  // Candidate App
-  CandAppForgotPassword: `${CANDIDATE}/forgot-password`,
-  CandAppHelp: `${CANDIDATE}/help`,
-  CandAppHome: CANDIDATE,
-  CandAppPreview: `${CANDIDATE_PROT}/preview`,
-  CandAppPrivacy: `${CANDIDATE}/privacy`,
-  CandAppProfile: `${CANDIDATE_PROT}/profile`,
-  CandAppQuestion: `${CANDIDATE_PROT}/questions/[questionId]`,
-  CandAppQuestions: `${CANDIDATE_PROT}/questions`,
-  CandAppPreregister: `${CANDIDATE}/preregister`,
-  CandAppPreregisterIdentityProviderCallback: `${API_ROOT}/oidc/callback`,
-  CandAppPreregisterElection: `${CANDIDATE}/preregister/elections`,
-  CandAppPreregisterConstituency: `${CANDIDATE}/preregister/constituencies`,
-  CandAppPreregisterEmail: `${CANDIDATE}/preregister/email`,
-  CandAppPreregisterStatus: `${CANDIDATE}/preregister/status`,
-  CandAppLogin: `${CANDIDATE}/login`,
-  CandAppRegister: `${CANDIDATE}/register`,
-  CandAppSetPassword: `${CANDIDATE}/register/password`,
-  CandAppResetPassword: `${CANDIDATE}/password-reset`,
-  CandAppSettings: `${CANDIDATE_PROT}/settings`,
-  // The two auth endpoints sit under the generic API prefix rather than under the candidate app, so the admin app can address the same handlers. Their keys keep the candidate naming because their paths do: the token exchange and the cookie clearing are the candidate flow's, and only their location is generic.
-  CandAppAuthCallback: `${API_ROOT}/candidate/auth/callback`,
-  CandAppAuthLogout: `${API_ROOT}/candidate/auth/logout`,
+  // Contestant App
+  ContestantAppForgotPassword: `${CONTESTANT}/forgot-password`,
+  ContestantAppHelp: `${CONTESTANT}/help`,
+  /** The home of the entity being edited. `ContestantAppHome` is the app root, which carries no entity. */
+  ContestantAppEntityHome: CONTESTANT_ENTITY,
+  /** Any entity page asked for without an entity, such as `/contestant/profile`. Its load redirects to the same page under the user's entity, so no link is built from this key. */
+  ContestantAppEntityResolver: `${CONTESTANT_PROT}/[...page=contestantEntityPage]`,
+  ContestantAppHome: CONTESTANT,
+  /** The nominations of the entity being edited. It is outside the pages that open only while the entity has a nomination, so an entity with none reaches it too. */
+  ContestantAppNominations: `${CONTESTANT_ENTITY}/nominations`,
+  /** The constituency step of the nomination editor. */
+  ContestantAppNominationConstituencies: `${CONTESTANT_NOMINATION_EDITOR}/constituencies`,
+  /** The details step of the nomination editor, where the nominations are written. */
+  ContestantAppNominationDetails: `${CONTESTANT_NOMINATION_EDITOR}/details`,
+  /** The election step of the nomination editor, which is also the editor's entry: its load forwards to the step that has something to choose. */
+  ContestantAppNominationElections: `${CONTESTANT_NOMINATION_EDITOR}/elections`,
+  ContestantAppPreview: `${CONTESTANT_NOMINATED}/preview`,
+  ContestantAppPrivacy: `${CONTESTANT}/privacy`,
+  ContestantAppProfile: `${CONTESTANT_NOMINATED}/profile`,
+  ContestantAppQuestion: `${CONTESTANT_NOMINATED}/questions/[questionId]`,
+  ContestantAppQuestions: `${CONTESTANT_NOMINATED}/questions`,
+  /** The identity provider's callback, where the provider sends the browser back after identification. The authorize endpoint gives the provider this path on its own origin. */
+  ContestantAppIdentityProviderCallback: `${API_ROOT}/oidc/callback`,
+  ContestantAppLogin: `${CONTESTANT}/login`,
+  /** The sign-in screen: the email and password form, and the request for a mailed sign-in link. */
+  ContestantAppSignIn: `${CONTESTANT}/login/email`,
+  /** The screen shown after a link was asked for by email. It renders only while the entry flow holds a link request, and leads a visitor who arrives with none to the login screen. */
+  ContestantAppEmailSent: `${CONTESTANT}/email-sent`,
+  /** The registration page, which lists the ways the project lets a visitor register. It is served only where at least one is listed, and leads to the login screen otherwise. */
+  ContestantAppRegister: `${CONTESTANT}/register`,
+  /** The screen that takes an email address for a registration code nobody has claimed. It renders only while the entry flow holds such a code, and leads a visitor who arrives with none to the registration page. */
+  ContestantAppRegisterEmail: `${CONTESTANT}/register/email`,
+  /** The screen that signs in the holder of a registration code somebody has claimed, with that code and a password. It renders only while the entry flow holds such a code, and leads a visitor who arrives with none to the registration page. */
+  ContestantAppRegisterSignIn: `${CONTESTANT}/register/sign-in`,
+  /** The screen an identification failure in the identity provider's flow lands on. It shows one of three classes, chosen by its `error` parameter, and nothing else of it. */
+  ContestantAppIdentityProviderError: `${CONTESTANT}/register/identity-provider/error`,
+  ContestantAppResetPassword: `${CONTESTANT}/password-reset`,
+  /** The signed-in user's own settings page: the account's address and the password. It belongs to the user and not to an entity, so it sits directly below the protected root and is reached by a user with no entity, one or several alike. */
+  ContestantAppSettings: `${CONTESTANT_PROT}/settings`,
+  /** The settings address under an entity. Its load redirects to `ContestantAppSettings`, so an address that names an entity still opens the settings page, and no link is built from this key. */
+  ContestantAppEntitySettings: `${CONTESTANT_ENTITY}/settings`,
+  // The two auth endpoints sit under the generic API prefix because the contestant app and the admin app address the same handlers. Their keys carry no app name for the same reason.
+  AuthCallback: `${API_ROOT}/auth/callback`,
+  /** The confirm page a mailed link opens: it verifies the link only when its form is posted. It belongs to neither app, so it sits outside both and outside the API. */
+  AuthConfirm: '/auth/confirm',
+  AuthLogout: UNIVERSAL_API_ROUTES.logout,
 
   // Admin App
   AdminAppHome: ADMIN,
@@ -120,7 +173,10 @@ export const ROUTE = {
   AdminAppFactorAnalysis: `${ADMIN_PROT}/factor-analysis`,
   AdminAppQuestionInfo: `${ADMIN_PROT}/question-info`,
   AdminAppArgumentCondensation: `${ADMIN_PROT}/argument-condensation`,
-  AdminAppLogin: `${ADMIN}/login`
+  AdminAppLogin: `${ADMIN}/login`,
+  AdminAppForgotPassword: `${ADMIN}/forgot-password`,
+  AdminAppEmailSent: `${ADMIN}/email-sent`,
+  AdminAppResetPassword: `${ADMIN}/password-reset`
 } as const;
 
 /**

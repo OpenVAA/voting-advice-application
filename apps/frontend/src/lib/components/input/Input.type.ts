@@ -1,6 +1,7 @@
 import type { Id } from '@openvaa/core';
 import type { AnyChoice, Image } from '@openvaa/data';
-import type { HTMLAttributes } from 'svelte/elements';
+import type { Snippet } from 'svelte';
+import type { HTMLAttributes, HTMLInputAttributes } from 'svelte/elements';
 
 export type InputProps =
   | ({
@@ -11,6 +12,13 @@ export type InputProps =
     } & InputPropsBase<string>)
   | ({
       type: 'email';
+    } & InputPropsBase<string>)
+  | ({
+      type: 'password';
+      /**
+       * A rule string for browsers that suggest passwords, e.g. `'minlength: 8; required: digit;'`. It reaches the control with the other attributes of the HTML element. It is outside the HTML standard, and some browsers read it. @default undefined
+       */
+      passwordrules?: string;
     } & InputPropsBase<string>)
   | ({
       type: 'text-multilingual';
@@ -32,6 +40,9 @@ export type InputProps =
     } & InputPropsBase<number>)
   | ({
       type: 'date';
+    } & InputPropsBase<string>)
+  | ({
+      type: 'color';
     } & InputPropsBase<string>)
   | ({
       type: 'boolean';
@@ -91,13 +102,45 @@ export type InputPropsBase<TValue, TElement extends string = 'input'> = Omit<
    */
   locked?: boolean;
   /**
-   * If `true`, a badge will be displayed next to the input. @default false
+   * The `autocomplete` token of the control, for an input that collects a value the browser can fill in, such as the user's own name. It reaches the control with the other attributes of the HTML element. @default undefined
+   */
+  autocomplete?: HTMLInputAttributes['autocomplete'];
+  /**
+   * The name the control is submitted under in a form. It reaches the control with the other attributes of the HTML element. @default undefined
+   */
+  name?: HTMLInputAttributes['name'];
+  /**
+   * Whether the browser may correct what is typed into the control, as Safari does. It reaches the control with the other attributes of the HTML element. @default undefined
+   */
+  autocorrect?: HTMLInputAttributes['autocorrect'];
+  /**
+   * If `true`, a badge will be displayed next to the input when its value is empty, and the control of a kind that renders one control is marked `aria-required`. @default false
    */
   required?: boolean;
   /**
-   * Bindable: the value of the input.
+   * The locale whose entry must not be blank, for the multilingual text kinds. On a `required` input, `required` is then judged on that entry instead of on the whole value, that locale's field is shown even while the translations are hidden, and the required language is named in the info line. A locale that is not a supported one is ignored. @default undefined
+   */
+  requiredLocale?: TValue extends LocalizedString ? string : never;
+  /**
+   * Bindable: the value of the input. For the `color` kind, a hex colour; the kind emits lowercase `#rrggbb`, or `undefined` for no colour.
    */
   value?: TValue | null;
+  /**
+   * Bindable: the message shown as the input's inline error. A caller sets it to put the input in error, and the input sets it itself when it refuses an entry, such as an address that is not one. Cleared when the user edits the input.
+   */
+  error?: string;
+  /**
+   * Whether the `url` and `email` kinds judge an entry when it is committed. While `true`, one that is not a URL or an address shows the input's own error and leaves the value as it was, and a usable one is stored without its spaces. Set it to `false` where the caller judges the entry itself, for example when the form is submitted: every entry is then stored as typed. @default true
+   */
+  validate?: boolean;
+  /**
+   * The test id of the inline error. @default 'input-error'
+   */
+  errorTestId?: string;
+  /**
+   * A word naming why the input is in error, written on the inline error as `data-reason`. Nothing is written without one.
+   */
+  errorReason?: string;
   /**
    * Set to `true` if using the component on a dark (`base-300`) background. @default false
    */
@@ -128,6 +171,10 @@ export type InputPropsBase<TValue, TElement extends string = 'input'> = Omit<
    * The maximum file size for `image` inputs. @default 20 * 1024**2 (20MB)
    */
   maxFilesize?: TValue extends Image ? number : never;
+  /**
+   * A control for the `image` kind's row, rendered before the button that opens the file dialog, as that button's sibling. The caller decides when it is shown. @default undefined
+   */
+  imageAction?: TValue extends Image ? Snippet : never;
   /**
    * Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
    */

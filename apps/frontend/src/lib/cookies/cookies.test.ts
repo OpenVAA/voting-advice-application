@@ -39,14 +39,14 @@ describe('COOKIE — the cookie names this application chooses', () => {
   it('names every colliding key when two entries share a name', () => {
     // The positive control. Without it, the assertion above could pass because the detector never detects anything.
     const collided = describeCollisions({
-      idToken: 'id_token',
       oidcState: 'oidc_state',
-      legacyIdToken: 'id_token'
+      oidcNonce: 'oidc_nonce',
+      duplicateState: 'oidc_state'
     });
     expect(collided).toHaveLength(1);
-    expect(collided[0]).toContain('idToken');
-    expect(collided[0]).toContain('legacyIdToken');
-    expect(collided[0]).toContain('id_token');
+    expect(collided[0]).toContain('oidcState');
+    expect(collided[0]).toContain('duplicateState');
+    expect(collided[0]).toContain('oidc_state');
   });
 
   it('is frozen, so a name cannot be added or changed at runtime', () => {
@@ -60,7 +60,16 @@ describe('COOKIE — the cookie names this application chooses', () => {
     expect(Object.keys(COOKIE)).not.toContain('plantedName');
   });
 
-  it('declares exactly the four names the application writes', () => {
-    expect(Object.values(COOKIE).sort()).toEqual(['id_token', 'oidc_code_verifier', 'oidc_nonce', 'oidc_state']);
+  it('declares exactly the names the application writes', () => {
+    expect(Object.values(COOKIE).sort()).toEqual([
+      'identity_provider_arrival',
+      'logout-deadline',
+      'logout-pending',
+      'oidc_code_verifier',
+      'oidc_entity_type',
+      'oidc_nonce',
+      'oidc_state',
+      'registered'
+    ]);
   });
 });

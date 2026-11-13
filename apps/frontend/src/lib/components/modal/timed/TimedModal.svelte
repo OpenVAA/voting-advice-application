@@ -87,8 +87,13 @@ See the `<Modal>` component documentation for more information.
   // Used for progress bar animation. Reading `timerDuration` here is the initial seed for the tweened store; the prop is also re-read inside `startTimeout()` to handle prop changes between mounts.
   // svelte-ignore state_referenced_locally
   let progressBarTimer = $state(tweened(timerDuration, { duration: 0 }));
-  // Timeout for triggering onTimeout()
-  let timer: ReturnType<typeof setTimeout> | undefined;
+  /** How often the count's end is checked, in milliseconds. */
+  const CHECK_INTERVAL_MS = 1000;
+
+  /** The count's end on the wall clock, in milliseconds since the epoch, while the modal is open. */
+  let deadline: number | undefined;
+  /** The check that runs every {@link CHECK_INTERVAL_MS}. */
+  let checkTimer: ReturnType<typeof setInterval> | undefined;
 
   // Update timeLeft to an integer when progressBarTimer updates
   $effect(() => {
@@ -101,7 +106,7 @@ See the `<Modal>` component documentation for more information.
 
   // Clean up if the containing document is left
   onDestroy(() => {
-    if (timer) clearTimeout(timer);
+    stopChecking();
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -120,28 +125,51 @@ See the `<Modal>` component documentation for more information.
 
   /** Start or reset the count and the progress bar */
   function startTimeout() {
-    if (timer) clearTimeout(timer);
-    progressBarTimer = tweened(timerDuration, {
-      duration: (timerDuration ?? DEFAULT_DURATION) * 1000
-    });
+    stopChecking();
+    const durationMs = (timerDuration ?? DEFAULT_DURATION) * 1000;
+    progressBarTimer = tweened(timerDuration, { duration: durationMs });
     timeLeft = timerDuration;
     $progressBarTimer = 0;
-    timer = setTimeout(
-      () => {
-        if (isOpen) {
-          onTimeout?.();
-          modalRef?.closeModal();
-        }
-      },
-      (timerDuration ?? DEFAULT_DURATION) * 1000
-    );
+    deadline = Date.now() + durationMs;
+    checkTimer = setInterval(checkDeadline, CHECK_INTERVAL_MS);
+    document.addEventListener('visibilitychange', checkWhenVisible);
+    document.addEventListener('resume', checkDeadline);
+    window.addEventListener('pageshow', checkDeadline);
+    window.addEventListener('focus', checkDeadline);
   }
 
   /** Stop the count and the progress bar */
   function stopTimeout() {
-    if (timer) clearTimeout(timer);
-    timer = undefined;
+    stopChecking();
     progressBarTimer.set($progressBarTimer, { duration: 0 });
+  }
+
+  /** Forget the count's end, and stop every check of it. */
+  function stopChecking() {
+    deadline = undefined;
+    if (checkTimer) clearInterval(checkTimer);
+    checkTimer = undefined;
+    if (typeof document === 'undefined') return;
+    document.removeEventListener('visibilitychange', checkWhenVisible);
+    document.removeEventListener('resume', checkDeadline);
+    window.removeEventListener('pageshow', checkDeadline);
+    window.removeEventListener('focus', checkDeadline);
+  }
+
+  function checkWhenVisible() {
+    if (document.visibilityState === 'visible') checkDeadline();
+  }
+
+  /** End the count once its time on the wall clock has come. The end is forgotten first, so a later check ends nothing. */
+  async function checkDeadline() {
+    if (deadline === undefined || Date.now() < deadline) return;
+    stopChecking();
+    if (!isOpen) return;
+    try {
+      await onTimeout?.();
+    } finally {
+      if (isOpen) modalRef?.closeModal();
+    }
   }
 </script>
 

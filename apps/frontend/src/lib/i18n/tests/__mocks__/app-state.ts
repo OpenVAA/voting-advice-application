@@ -14,5 +14,15 @@ export const page = {
   form: undefined as unknown
 };
 
-export const navigating = null;
+/**
+ * No navigation is in flight: every member is `null`, as each is in the real module while the app is idle. The object is frozen, because every test file that does not mock `$app/state` shares it and a member one case set would stay set for the cases after it. A test that needs a navigation in flight injects its own object with `vi.mock`, and resets it itself.
+ */
+export const navigating = Object.freeze({
+  from: null as unknown,
+  to: null as unknown,
+  type: null as string | null,
+  willUnload: null as boolean | null,
+  delta: null as number | null,
+  complete: null as Promise<void> | null
+});
 export const updated = { current: false };

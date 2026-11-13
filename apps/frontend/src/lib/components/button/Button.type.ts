@@ -12,6 +12,14 @@ export type ButtonProps = ButtonBaseElementProps & {
    */
   text: string;
   /**
+   * Plain text shown after `text`, in normal weight and the secondary colour, e.g. how long until the button can be pressed. It is part of the button's name. Not shown for the `icon` and `floating-icon` variants.
+   */
+  suffix?: string;
+  /**
+   * Attributes of the element that holds `suffix`, e.g. an `id` that describes the button and a `data-testid`.
+   */
+  suffixProps?: HTMLAttributes<HTMLSpanElement>;
+  /**
    * The name of the icon to use in the button or `null` if no icon should be used. @default 'next' if `variant='main'`, otherwise `null`
    */
   icon?: IconName | null;
@@ -56,6 +64,8 @@ type ButtonBaseElementProps = HTMLAttributes<HTMLElement> & {
   rel?: string | null;
   /** Anchor-specific: download filename. */
   download?: unknown;
+  /** Button-specific: the id of the form the button submits when it stands outside that form. */
+  form?: string | null;
   /** Button-specific: form action URL. */
   formaction?: string | null;
   /** Button-specific: skip form validation. */

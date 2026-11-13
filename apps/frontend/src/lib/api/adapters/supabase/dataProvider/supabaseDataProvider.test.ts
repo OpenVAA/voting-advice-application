@@ -1,5 +1,6 @@
-import { configureLogger } from '@openvaa/app-shared';
-import { ENTITY_TYPE } from '@openvaa/data';
+import { configureLogger, dynamicSettings } from '@openvaa/app-shared';
+import { ENTITY_TYPE, NOMINATION_SHAPE } from '@openvaa/data';
+import { Constants } from '@openvaa/supabase-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SupabaseDataProvider } from './supabaseDataProvider';
 import type { DynamicSettings, LogRecord } from '@openvaa/app-shared';
@@ -193,7 +194,7 @@ async function withCapturedLogs<TResult>(
 // reason: assertions read into nested JSONB shapes that aren't in DynamicSettings's strict typing
 type DynamicSettingsTestNarrow = Partial<DynamicSettings> & {
   notifications?: {
-    candidateApp?: { title?: string; content?: string };
+    contestantApp?: { title?: string; content?: string };
     voterApp?: { title?: string; content?: string };
   };
 };
@@ -247,9 +248,34 @@ describe('SupabaseDataProvider', () => {
   });
 
   describe('getAppSettings', () => {
+    // What `contestant_app_public_config` answers for a project that declares none of its five values, has no settings row or does not exist.
+    const NOTHING_DECLARED = {
+      access: { contestantApp: null, answersLocked: null },
+      analytics: { trackEvents: null },
+      contestantApp: { entityTypes: null, registrationModes: null }
+    };
+
+    /**
+     * Mock a project that is closed for voters and whose settings row the caller cannot read.
+     * @param publicConfig - What `contestant_app_public_config` answers.
+     */
+    function mockClosedProject(publicConfig: unknown): void {
+      mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
+      mockSupabase._mockRpcResponses['project_open_for_voters'] = { data: false, error: null };
+      mockSupabase._mockRpcResponses['contestant_app_public_config'] = { data: publicConfig, error: null };
+    }
+
+    /**
+     * The names of the RPCs the provider has called, in call order.
+     * @returns One name per call.
+     */
+    function rpcNamesCalled(): Array<string> {
+      return mockSupabase.rpc.mock.calls.map(([fnName]) => fnName);
+    }
+
     it('fetches from app_settings table and returns the validated settings JSONB', async () => {
       const mockSettings = {
-        access: { candidateApp: true, voterApp: true, adminApp: false },
+        access: { contestantApp: true, voterApp: true, adminApp: false },
         header: { showFeedback: true, showHelp: true }
       };
       mockSupabase._mockResponses['app_settings'] = {
@@ -266,7 +292,7 @@ describe('SupabaseDataProvider', () => {
     it('localizes notification title and content fields when locale provided', async () => {
       const mockSettings = {
         notifications: {
-          candidateApp: {
+          contestantApp: {
             show: true,
             title: { en: 'English title', fi: 'Finnish title' },
             content: { en: 'English content', fi: 'Finnish content' }
@@ -295,8 +321,8 @@ describe('SupabaseDataProvider', () => {
       const result = await fiProvider.getAppSettings();
 
       const r = result as DynamicSettingsTestNarrow;
-      expect(r.notifications?.candidateApp?.title).toBe('Finnish title');
-      expect(r.notifications?.candidateApp?.content).toBe('Finnish content');
+      expect(r.notifications?.contestantApp?.title).toBe('Finnish title');
+      expect(r.notifications?.contestantApp?.content).toBe('Finnish content');
       expect(r.notifications?.voterApp?.title).toBe('Voter FI');
       expect(r.notifications?.voterApp?.content).toBe('Content FI');
     });
@@ -326,14 +352,13 @@ describe('SupabaseDataProvider', () => {
 
     // REGRESSION (162.1 D-16). Zero `app_settings` rows is what anon reads on a project that is not open for voters. The provider used to map that to `{}`, the voter app then rejected the empty election data in the root layout, and every route including both login pages rendered the global error page. Zero rows now asks the project's own openness, and only that answer decides.
     it('returns the voter app as inaccessible when zero settings rows come back and the project is not open for voters', async () => {
-      mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
-      mockSupabase._mockRpcResponses['project_open_for_voters'] = { data: false, error: null };
+      mockClosedProject(NOTHING_DECLARED);
 
       const result = (await provider.getAppSettings()) as DynamicSettingsTestNarrow;
 
       expect(result.access?.voterApp).toBe(false);
-      // The whole `access` object is carried, because the app context merges settings by root key; the other gates keep their shipped defaults.
-      expect(result.access?.candidateApp).toBe(true);
+      // The whole `access` object is carried over the shipped defaults, so the other gates are stated in the provider's own answer.
+      expect(result.access?.contestantApp).toBe(true);
       expect(mockSupabase.rpc).toHaveBeenCalledWith('project_open_for_voters', {
         p_project_id: '00000000-0000-0000-0000-000000000001'
       });
@@ -346,6 +371,272 @@ describe('SupabaseDataProvider', () => {
       const result = await provider.getAppSettings();
 
       expect(result).toEqual({});
+      expect(rpcNamesCalled()).toEqual(['project_open_for_voters']);
+    });
+
+    describe('a closed project the caller can read no settings row of', () => {
+      it('asks the public configuration function for its own project', async () => {
+        mockClosedProject(NOTHING_DECLARED);
+
+        await provider.getAppSettings();
+
+        expect(mockSupabase.rpc).toHaveBeenCalledTimes(2);
+        expect(rpcNamesCalled()).toEqual(['project_open_for_voters', 'contestant_app_public_config']);
+        expect(mockSupabase.rpc).toHaveBeenCalledWith('contestant_app_public_config', {
+          p_project_id: '00000000-0000-0000-0000-000000000001'
+        });
+      });
+
+      it('answers the shipped access gates with the voter app closed and the shipped contestant app root when the project declares nothing', async () => {
+        mockClosedProject(NOTHING_DECLARED);
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(result).toEqual({
+          access: { ...dynamicSettings.access, voterApp: false },
+          analytics: { trackEvents: false },
+          contestantApp: dynamicSettings.contestantApp
+        });
+        // The shipped values themselves, so a change to the defaults cannot make the comparison above pass on something else.
+        expect(result.access?.contestantApp).toBe(true);
+        expect(result.contestantApp?.entityTypes).toEqual(['candidate']);
+        expect(result.contestantApp?.registrationModes).toEqual({ candidate: [], organization: [] });
+        expect(result.contestantApp?.questions).toEqual({ hideHero: false, hideVideo: false });
+        // A null member is dropped before the parse, so an undeclared project reports nothing.
+        expect(records).toHaveLength(0);
+      });
+
+      it('returns the stored analytics.trackEvents in an analytics root beside the access and contestant app roots', async () => {
+        mockClosedProject({ ...NOTHING_DECLARED, analytics: { trackEvents: true } });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(result).toEqual({
+          access: { ...dynamicSettings.access, voterApp: false },
+          analytics: { trackEvents: true },
+          contestantApp: dynamicSettings.contestantApp
+        });
+        expect(records).toHaveLength(0);
+      });
+
+      it('answers analytics.trackEvents false when the project stores none', async () => {
+        mockClosedProject({ ...NOTHING_DECLARED, analytics: { trackEvents: null } });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(result).toEqual({
+          access: { ...dynamicSettings.access, voterApp: false },
+          analytics: { trackEvents: false },
+          contestantApp: dynamicSettings.contestantApp
+        });
+        expect(records).toHaveLength(0);
+      });
+
+      it('copies no other member of analytics, whatever the answer carries there', async () => {
+        // The database function returns no other member. The provider does not rely on that.
+        mockClosedProject({
+          ...NOTHING_DECLARED,
+          analytics: { trackEvents: true, platform: { name: 'other', code: 'x' } }
+        });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(result).toEqual({
+          access: { ...dynamicSettings.access, voterApp: false },
+          analytics: { trackEvents: true },
+          contestantApp: dynamicSettings.contestantApp
+        });
+        expect(records).toHaveLength(0);
+      });
+
+      it('answers analytics.trackEvents false on a stored value that is not a boolean, and reports the path once', async () => {
+        mockClosedProject({ ...NOTHING_DECLARED, analytics: { trackEvents: 'yes' } });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(result).toEqual({
+          access: { ...dynamicSettings.access, voterApp: false },
+          analytics: { trackEvents: false },
+          contestantApp: dynamicSettings.contestantApp
+        });
+        expect(records).toHaveLength(1);
+        expect(records[0].severityText).toBe('ERROR');
+        expect(records[0].attributes?.issues).toEqual(['analytics.trackEvents']);
+        // The path is reported and the stored value is not.
+        expect(JSON.stringify(records[0])).not.toContain('yes');
+      });
+
+      it('honours the stored gate and returns the stored lists deduplicated, in canonical order, over the shipped rows', async () => {
+        mockClosedProject({
+          access: { contestantApp: false },
+          contestantApp: {
+            entityTypes: ['organization', 'candidate', 'candidate'],
+            registrationModes: { candidate: ['code', 'email', 'code'] }
+          }
+        });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+        expect(result.contestantApp?.entityTypes).toEqual(['candidate', 'organization']);
+        expect(result.contestantApp?.registrationModes).toEqual({ candidate: ['email', 'code'], organization: [] });
+        expect(result.contestantApp?.questions).toEqual(dynamicSettings.contestantApp.questions);
+        expect(records).toHaveLength(0);
+      });
+
+      it('keeps the shipped entity types when only the matrix is declared, and the shipped matrix when only the types are', async () => {
+        mockClosedProject({
+          access: { contestantApp: null },
+          contestantApp: { entityTypes: null, registrationModes: { organization: ['email'] } }
+        });
+        const matrixOnly = await provider.getAppSettings();
+
+        expect(matrixOnly.contestantApp?.entityTypes).toEqual(['candidate']);
+        expect(matrixOnly.contestantApp?.registrationModes).toEqual({ candidate: [], organization: ['email'] });
+
+        mockClosedProject({
+          access: { contestantApp: null },
+          contestantApp: { entityTypes: ['organization'], registrationModes: null }
+        });
+        const typesOnly = await provider.getAppSettings();
+
+        expect(typesOnly.contestantApp?.entityTypes).toEqual(['organization']);
+        expect(typesOnly.contestantApp?.registrationModes).toEqual({ candidate: [], organization: [] });
+      });
+
+      it('places the stored answers lock at its storage path, beside the stored gate', async () => {
+        mockClosedProject({
+          access: { contestantApp: false, answersLocked: true },
+          contestantApp: { entityTypes: null, registrationModes: null }
+        });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(result.access).toEqual({
+          ...dynamicSettings.access,
+          contestantApp: false,
+          answersLocked: true,
+          voterApp: false
+        });
+        expect(records).toHaveLength(0);
+      });
+
+      it('honours the stored answers lock where the gate is not declared, and a stored `false` as it is', async () => {
+        mockClosedProject({
+          access: { contestantApp: null, answersLocked: true },
+          contestantApp: { entityTypes: null, registrationModes: null }
+        });
+        const locked = await provider.getAppSettings();
+
+        expect(locked.access).toEqual({ ...dynamicSettings.access, answersLocked: true, voterApp: false });
+
+        mockClosedProject({
+          access: { contestantApp: null, answersLocked: false },
+          contestantApp: { entityTypes: null, registrationModes: null }
+        });
+        const unlocked = await provider.getAppSettings();
+
+        expect(unlocked.access).toEqual({ ...dynamicSettings.access, answersLocked: false, voterApp: false });
+      });
+
+      it('leaves an answers lock that is null out, so that the shipped one stands', async () => {
+        mockClosedProject({
+          access: { contestantApp: false, answersLocked: null },
+          contestantApp: { entityTypes: null, registrationModes: null }
+        });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        // The shipped value itself, so a change to the defaults cannot make the comparison pass on something else.
+        expect(dynamicSettings.access.answersLocked).toBe(false);
+        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+        expect(records).toHaveLength(0);
+      });
+
+      it('copies nothing but the five values, whatever else the answer carries', async () => {
+        // The database function returns none of the other members. The provider does not rely on that.
+        mockClosedProject({
+          access: { contestantApp: false, voterApp: true, underMaintenance: true, answersLocked: true },
+          contestantApp: { entityTypes: null, registrationModes: null, questions: { hideHero: true } },
+          matching: { organizationMatching: 'impute' }
+        });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(Object.keys(result).sort()).toEqual(['access', 'analytics', 'contestantApp']);
+        expect(result.contestantApp?.questions).toEqual({ hideHero: false, hideVideo: false });
+        expect(result.access).toEqual({
+          ...dynamicSettings.access,
+          contestantApp: false,
+          voterApp: false,
+          underMaintenance: false,
+          answersLocked: true
+        });
+        expect(records).toHaveLength(0);
+      });
+
+      it('falls back to the shipped contestant app root on one bad list value, keeps the stored gate and reports the path once', async () => {
+        mockClosedProject({
+          access: { contestantApp: false },
+          contestantApp: { entityTypes: ['faction'], registrationModes: { candidate: ['email'] } }
+        });
+
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+        expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);
+        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+        expect(records).toHaveLength(1);
+        expect(records[0].severityText).toBe('ERROR');
+        expect(records[0].attributes).toEqual({
+          column: 'app_settings.settings',
+          id: undefined,
+          issues: ['contestantApp.entityTypes.0'],
+          rejectedKeys: [],
+          preserved: true
+        });
+        // The path is reported and the stored value is not.
+        expect(JSON.stringify(records[0])).not.toContain('faction');
+      });
+
+      // The function answers a stored value of a shape this parse refuses as the string "invalid", without its content. The parse must refuse that answer the same way, so the shipped root applies as it would for the stored value.
+      it.each([
+        ['the entity types', { entityTypes: 'invalid', registrationModes: { candidate: ['email'] } }],
+        ['the registration matrix', { entityTypes: ['candidate'], registrationModes: 'invalid' }]
+      ])(
+        'falls back to the shipped contestant app root when the function answers %s as "invalid"',
+        async (_, contestantApp) => {
+          mockClosedProject({ access: { contestantApp: false }, contestantApp });
+
+          const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+          expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);
+          expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+          expect(records).toHaveLength(1);
+        }
+      );
+
+      it('throws a getAppSettings error when the public configuration RPC fails', async () => {
+        mockClosedProject(null);
+        mockSupabase._mockRpcResponses['contestant_app_public_config'] = {
+          data: null,
+          error: { message: 'config-boom' }
+        };
+
+        await expect(provider.getAppSettings()).rejects.toThrow('getAppSettings: config-boom');
+      });
+
+      it.each([
+        ['null', null],
+        ['a list', [NOTHING_DECLARED]],
+        ['a string', 'access'],
+        ['a boolean', true]
+      ])('throws, naming the function, when the public configuration RPC answers %s', async (_label, answer) => {
+        mockClosedProject(answer);
+
+        await expect(provider.getAppSettings()).rejects.toThrow(
+          'getAppSettings: contestant_app_public_config returned a non-object'
+        );
+      });
     });
 
     it('throws a getAppSettings error when zero settings rows come back and the openness RPC fails', async () => {
@@ -362,13 +653,81 @@ describe('SupabaseDataProvider', () => {
       await expect(provider.getAppSettings()).rejects.toThrow('non-boolean');
     });
 
-    it('never asks the openness RPC when the caller can read the settings row (162.1 D-17)', async () => {
+    it('asks neither RPC when the caller can read the settings row', async () => {
       mockSupabase._mockResponses['app_settings'] = { data: { settings: { access: { voterApp: true } } }, error: null };
 
       const result = await provider.getAppSettings();
 
       expect(result).toEqual({ access: { voterApp: true } });
       expect(mockSupabase.rpc).not.toHaveBeenCalled();
+    });
+
+    it('returns a stored nominations lock of a readable row, with nothing reported', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: { settings: { access: { nominationsLocked: true } } },
+        error: null
+      };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+      expect(result).toEqual({ access: { nominationsLocked: true } });
+      expect(records).toHaveLength(0);
+    });
+
+    it('returns a stored organization key of hideIfMissingAnswers of a readable row, with nothing reported', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: { settings: { entities: { hideIfMissingAnswers: { candidate: false, organization: true } } } },
+        error: null
+      };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+      expect(result).toEqual({ entities: { hideIfMissingAnswers: { candidate: false, organization: true } } });
+      expect(records).toHaveLength(0);
+    });
+
+    it('drops the stored contestant app root of a readable row on one bad list value, keeps the access member and reports the path once', async () => {
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          settings: {
+            access: { contestantApp: false },
+            contestantApp: { questions: { hideHero: true }, registrationModes: { candidate: ['sms'] } }
+          }
+        },
+        error: null
+      };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+      // No `contestantApp` root is returned, so the merge leaves the shipped one in place, the stored `questions` beside the bad list included.
+      expect(result).toEqual({ access: { contestantApp: false } });
+      expect(records).toHaveLength(1);
+      expect(records[0].severityText).toBe('ERROR');
+      expect(records[0].attributes?.issues).toEqual(['contestantApp.registrationModes.candidate.0']);
+      expect(JSON.stringify(records[0])).not.toContain('sms');
+    });
+
+    it('drops the whole analytics member of a readable row that still stores a provider object, keeps its sibling and reports once', async () => {
+      // The analytics provider is server configuration, so a stored provider object is an unknown key under `analytics`. No `analytics` member is returned, so the merge leaves the shipped `trackEvents: false` in place, the stored `true` beside the provider object included.
+      mockSupabase._mockResponses['app_settings'] = {
+        data: {
+          settings: {
+            matching: { minimumAnswers: 1 },
+            analytics: { platform: { name: 'x', code: 'y' }, trackEvents: true }
+          }
+        },
+        error: null
+      };
+
+      const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+
+      expect(result).toEqual({ matching: { minimumAnswers: 1 } });
+      expect(result).not.toHaveProperty('analytics');
+      expect(records).toHaveLength(1);
+      expect(records[0].severityText).toBe('ERROR');
+      expect(records[0].attributes?.issues).toEqual(['analytics']);
+      expect(records[0].attributes?.rejectedKeys).toEqual(['platform']);
+      expect(JSON.stringify(records[0])).not.toContain('"y"');
     });
 
     it('throws on Supabase query error', async () => {
@@ -394,9 +753,9 @@ describe('SupabaseDataProvider', () => {
       mockSupabase._mockResponses['app_settings'] = {
         data: {
           settings: {
-            access: { candidateApp: true },
+            access: { contestantApp: true },
             notifications: {
-              candidateApp: { title: { en: 'T' }, content: { en: 'C' }, bogusNestedKey: 1 }
+              contestantApp: { title: { en: 'T' }, content: { en: 'C' }, bogusNestedKey: 1 }
             }
           }
         },
@@ -406,15 +765,15 @@ describe('SupabaseDataProvider', () => {
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
       // This assertion read `toEqual({})` and the case was named for it: one unrecognised nested key discarded every dynamic setting in the column, the availability gates among them (T-157.1-14). The offending top-level ancestor is now dropped by name and the remainder re-parses, so the access member survives its malformed sibling.
-      expect(result).toEqual({ access: { candidateApp: true } });
+      expect(result).toEqual({ access: { contestantApp: true } });
       expect(records).toHaveLength(1);
       expect(records[0].severityText).toBe('ERROR');
-      expect(records[0].attributes?.issues).toEqual(['notifications.candidateApp']);
+      expect(records[0].attributes?.issues).toEqual(['notifications.contestantApp']);
       // The refused KEY NAME is disclosed deliberately — it is the only thing that identifies an unrecognised key, and closing the A2 hole depends on it (decision A2 NOTE, fact 3). What was STORED under and beside it is not: this exhaustive assertion is what proves nothing else rode along, and the notification copy from the offending object is absent from the serialised record (T-157-17).
       expect(records[0].attributes).toEqual({
         column: 'app_settings.settings',
         id: undefined,
-        issues: ['notifications.candidateApp'],
+        issues: ['notifications.contestantApp'],
         rejectedKeys: ['bogusNestedKey'],
         preserved: true
       });
@@ -424,13 +783,13 @@ describe('SupabaseDataProvider', () => {
     it('preserves the access member when an unrecognised top-level key is present', async () => {
       // The A2 hole, driven end to end through the provider rather than against the helper alone: zod reports an unrecognised TOP-LEVEL key at the EMPTY path, so a rejected-member derivation reading `issue.path[0]` names nothing and used to take the whole column down with it. Ledger row 2, cell `2-NEW-E2E`.
       mockSupabase._mockResponses['app_settings'] = {
-        data: { settings: { access: { candidateApp: true }, bogusTopLevelKey: 1 } },
+        data: { settings: { access: { contestantApp: true }, bogusTopLevelKey: 1 } },
         error: null
       };
 
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-      expect(result).toEqual({ access: { candidateApp: true } });
+      expect(result).toEqual({ access: { contestantApp: true } });
       expect(records).toHaveLength(1);
       expect(records[0].severityText).toBe('ERROR');
       // The path is empty precisely because the key is top-level; `rejectedKeys` is the only field that names it.
@@ -463,13 +822,13 @@ describe('SupabaseDataProvider', () => {
       expect(result.publisherName).toBe('Publisher FI');
     });
 
-    it('converts publisherLogo, poster, candPoster storage paths to Image objects with absolute URLs', async () => {
+    it('converts publisherLogo, poster, contestantPoster storage paths to Image objects with absolute URLs', async () => {
       mockSupabase._mockResponses['app_settings'] = {
         data: {
           customization: {
             publisherLogo: { path: 'proj/logo.png' },
             poster: { path: 'proj/poster.jpg', pathDark: 'proj/poster-dark.jpg' },
-            candPoster: { path: 'proj/cand.png' }
+            contestantPoster: { path: 'proj/cand.png' }
           }
         },
         error: null
@@ -484,7 +843,7 @@ describe('SupabaseDataProvider', () => {
       expect(result.poster?.urlDark).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/poster-dark.jpg'
       );
-      expect(result.candPoster?.url).toBe(
+      expect(result.contestantPoster?.url).toBe(
         'http://localhost:54321/storage/v1/object/public/public-assets/proj/cand.png'
       );
     });
@@ -518,11 +877,11 @@ describe('SupabaseDataProvider', () => {
       expect(overrides?.['common.startButton']).toBe('Aloita');
     });
 
-    it('localizes candidateAppFAQ question and answer fields', async () => {
+    it('localizes contestantAppFAQ question and answer fields', async () => {
       mockSupabase._mockResponses['app_settings'] = {
         data: {
           customization: {
-            candidateAppFAQ: [
+            contestantAppFAQ: [
               {
                 question: { en: 'How?', fi: 'Miten?' },
                 answer: { en: 'Like this', fi: 'Nain' }
@@ -543,8 +902,8 @@ describe('SupabaseDataProvider', () => {
 
       const result = await fiProvider.getAppCustomization();
 
-      expect(result.candidateAppFAQ?.[0].question).toBe('Miten?');
-      expect(result.candidateAppFAQ?.[0].answer).toBe('Nain');
+      expect(result.contestantAppFAQ?.[0].question).toBe('Miten?');
+      expect(result.contestantAppFAQ?.[0].answer).toBe('Nain');
     });
 
     it('returns an empty customization without asking the openness RPC when zero rows come back', async () => {
@@ -680,6 +1039,7 @@ describe('SupabaseDataProvider', () => {
       expect(result[0].date).toBe('2024-06-01');
       expect(result[0].round).toBe(2);
       expect(result[0].subtype).toBe('presidential');
+      expect(result[0].nominationShape).toBe('organization_list');
     });
 
     // A row whose nomination-shape column is populated and whose subtype column is empty yields no subtype: the shape reaches `nominationShape` and nothing else.
@@ -709,6 +1069,43 @@ describe('SupabaseDataProvider', () => {
       const result = await provider.getElectionData();
 
       expect(result[0].subtype).toBeUndefined();
+      expect(result[0].nominationShape).toBe('candidate_only');
+    });
+
+    it.each(Constants.public.Enums.nomination_shape)(
+      'maps election_type %s to nominationShape, whatever subtype holds',
+      async (electionType) => {
+        mockSupabase._mockResponses['elections'] = {
+          data: [
+            {
+              id: 'e1',
+              name: { en: 'Election' },
+              short_name: null,
+              info: null,
+              sort_order: 1,
+              election_date: null,
+              election_type: electionType,
+              current_round: 1,
+              multiple_rounds: false,
+              color: null,
+              image: null,
+              custom_data: null,
+              subtype: 'municipal',
+              election_constituency_groups: []
+            }
+          ],
+          error: null
+        };
+
+        const result = await provider.getElectionData();
+
+        expect(result[0].nominationShape).toBe(electionType);
+        expect(result[0].subtype).toBe('municipal');
+      }
+    );
+
+    it('knows the same nomination shapes as the generated database enum nomination_shape', () => {
+      expect(Object.values(NOMINATION_SHAPE).sort()).toEqual([...Constants.public.Enums.nomination_shape].sort());
     });
 
     it('extracts constituencyGroupIds from join table rows as array of UUID strings', async () => {

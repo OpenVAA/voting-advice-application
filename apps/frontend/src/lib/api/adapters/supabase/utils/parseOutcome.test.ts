@@ -24,7 +24,7 @@ const ProbeSchema = z.strictObject({
   publisherName: z.record(z.string(), z.string()).optional(),
   access: z
     .strictObject({
-      candidateApp: z.boolean(),
+      contestantApp: z.boolean(),
       underMaintenance: z.boolean()
     })
     .optional()
@@ -53,7 +53,7 @@ describe('parseWithPartialPreserve — the three statuses', () => {
   });
 
   it('yields `ok` with the validated value for a fully valid stored value, and emits no record', () => {
-    const stored = { publisherName: { en: 'X' }, access: { candidateApp: true, underMaintenance: false } };
+    const stored = { publisherName: { en: 'X' }, access: { contestantApp: true, underMaintenance: false } };
 
     expect(parseWithPartialPreserve<Probe>(ProbeSchema, stored, source)).toEqual({ status: 'ok', value: stored });
     expect(records).toHaveLength(0);
@@ -74,7 +74,7 @@ describe('the four measured zod-issue shapes (zod 4.3.6 — pins the A2 closure 
   it('drops the containing member when an unknown key sits at a nested path', () => {
     const outcome = parseWithPartialPreserve<Probe>(
       ProbeSchema,
-      { publisherName: { en: 'X' }, access: { candidateApp: true, underMaintenance: false, bogusNested: 1 } },
+      { publisherName: { en: 'X' }, access: { contestantApp: true, underMaintenance: false, bogusNested: 1 } },
       source
     );
 
@@ -87,13 +87,13 @@ describe('the four measured zod-issue shapes (zod 4.3.6 — pins the A2 closure 
   it('drops the containing member when a nested member has the wrong type', () => {
     const outcome = parseWithPartialPreserve<Probe>(
       ProbeSchema,
-      { publisherName: { en: 'X' }, access: { candidateApp: 'yes', underMaintenance: false } },
+      { publisherName: { en: 'X' }, access: { contestantApp: 'yes', underMaintenance: false } },
       source
     );
 
     expect(outcome.status).toBe('malformed');
     expect(outcome.value).toEqual({ publisherName: { en: 'X' } });
-    expect(outcome.issues).toEqual([{ path: 'access.candidateApp' }]);
+    expect(outcome.issues).toEqual([{ path: 'access.contestantApp' }]);
   });
 
   // Shape 4. Both at once: zod reports TWO issues, the nested one at `path: ['access']` and the top-level one at `path: []`. `keys` is an ARRAY because zod batches every unrecognised key of one object into one issue, so a `keys[0]` read would leave a second unknown key in place — which is why the closure loops. The record assertion is the "one record per failing parse, not one per issue" rule: two issues, one record.
@@ -104,7 +104,7 @@ describe('the four measured zod-issue shapes (zod 4.3.6 — pins the A2 closure 
         publisherName: { en: 'X' },
         bogusTop: 1,
         alsoBogusTop: 2,
-        access: { candidateApp: true, underMaintenance: false, bogusNested: 1 }
+        access: { contestantApp: true, underMaintenance: false, bogusNested: 1 }
       },
       source
     );

@@ -113,11 +113,8 @@ This component reads `fctx.version` inside its `$derived` so that any filter-rul
   }
 
   function trackActiveFilters(): void {
-    const af = activeFilterGroup?.filters
-      .filter((f) => f.active)
-      .map((f) => f.name)
-      .join(',');
-    if (af) startEvent('filters_active', { activeFilters: af });
+    const count = activeFilterGroup?.filters.filter((f) => f.active).length ?? 0;
+    if (count > 0) startEvent('filters_active', { count });
   }
 </script>
 
