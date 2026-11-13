@@ -11,11 +11,11 @@ export const testIds = {
     login: {
       email: 'login-email',
       submit: 'login-submit',
+      // The message of a refused sign-in. On the sign-in screen it carries data-status, the status the refusal was answered with.
       errorMessage: 'login-errorMessage',
       // testid on the <p> rendering t('candidateApp.login.answersLockedInfo') when answersLocked is true. Used by the perm-answers-locked spec to assert the read-only login surface (surface 1 of 3).
       answersLockedInfo: 'login-answers-locked-info'
     },
-    // single canonical testid on the <Warning> element rendering editingNotAllowed across /candidate, /candidate/profile, /candidate/questions/[questionId].
     common: {
       answersLockedWarning: 'candidate-answers-locked-warning'
     },
@@ -286,7 +286,7 @@ export const testIds = {
     //  - multilingualToggle: on the Input.svelte translation-toggle Button, gates on `multilingual && locales.length > 1`. Absent when `customData.disableMultilingual=true` OR single-locale.
     langSelector: 'lang-selector',
     multilingualToggle: 'multilingual-toggle',
-    // testid on the inline ErrorMessage in Input.svelte. Shared across every input type, so selecting it page-wide is only safe when exactly one Input can be in error at that moment; otherwise chain it inside the owning Input's containerProps testid. Consumed unscoped by the candidate-journey invalidUrl step (single Input in error there) and chained inside `candidate.profile.imageUpload` by the candidateProfilePage fixture's portrait-upload assertion, where sibling Inputs can also carry errors.
+    // testid on the inline ErrorMessage in Input.svelte. Shared across every input type, so selecting it page-wide is only safe when exactly one Input can be in error at that moment; otherwise chain it inside the owning Input's containerProps testid. Consumed unscoped by the contestant-journey invalidUrl step (single Input in error there) and chained inside `contestant.profile.imageUpload` by the contestantProfilePage fixture's portrait-upload assertion, where sibling Inputs can also carry errors.
     inputError: 'input-error',
     // testid on the root <span> of ElectionTag.svelte. Consumed by perm-hide-election-tags spec to assert absence when elections.showElectionTags=false.
     electionTag: 'election-tag',
@@ -299,7 +299,7 @@ export const testIds = {
     },
     // Used in image-type Hero and necessary because the img tag cannot be located by role due to empty alt text
     image: 'image-img',
-    // Generic Video component root <div> testid (Video.svelte). Shared between the voter + candidate apps. The element is class:hidden-not-destroyed (hidden when !hasContent), so expectVideo(true) asserts toBeVisible() and expectVideo(false) asserts not.toBeVisible() — NOT mount/unmount churn.
+    // Generic Video component root <div> testid (Video.svelte). Shared between the voter + contestant apps. The element is class:hidden-not-destroyed (hidden when !hasContent), so expectVideo(true) asserts toBeVisible() and expectVideo(false) asserts not.toBeVisible() — NOT mount/unmount churn.
     video: 'video',
     // Distinct root testids on the results feedback + survey popups (FeedbackPopup / SurveyPopup Alert roots). Distinct so the dismiss-and-reload helper can assert each popup's dismiss-persistence independently.
     feedbackPopup: 'feedback-popup',

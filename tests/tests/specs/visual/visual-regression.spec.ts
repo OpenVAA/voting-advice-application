@@ -11,8 +11,8 @@
  * Fixtures:
  * - Voter-results desktop + mobile use the voter-journey fixture's
  *   `answeredVoterPage` (base dataset; multi-election + multi-constituency walk), then PIN the Regional election — see `selectElectionByName` for why an unpinned /results screenshot can never reproduce.
- * - Candidate-preview desktop + mobile use the `candidatePreviewPage`
- *   function-fixture from the candidate-journey composition root, authenticated as the base candidate CA-AA-1 registered by `auth-setup`.
+ * - Candidate-preview desktop + mobile use the `contestantPreviewPage`
+ *   function-fixture from the contestant-journey composition root, authenticated as the base candidate CA-AA-1 registered by `auth-setup`.
  *
  * ## Re-baselining
  *
@@ -44,7 +44,7 @@ import type { Page } from '@playwright/test';
 /**
  * Block until webfont loading has settled, and assert the app's own font is the one that will be rasterised.
  *
- * `staticSettings.font.url` serves Inter from the app's OWN origin with `display: swap`, so a page paints in the `system-ui` fallback first and re-lays out when Inter arrives. A screenshot taken inside that window captures fallback advance widths — every glyph lands a few pixels off while the box layout is unchanged, which is exactly the diff this produced before the gate existed. The voter cases never showed it only because their walk takes ~20s, long enough for the swap; the candidate-preview cases capture ~4s in and straddled the race.
+ * `staticSettings.font.url` serves Inter from the app's OWN origin with `display: swap`, so a page paints in the `system-ui` fallback first and re-lays out when Inter arrives. A screenshot taken inside that window captures fallback advance widths — every glyph lands a few pixels off while the box layout is unchanged, which is exactly the diff this produced before the gate existed. The voter cases never showed it only because their walk takes ~20s, long enough for the swap; the contestant-preview cases capture ~4s in and straddled the race.
  *
  * What this check actually covers, MEASURED in mcr.microsoft.com/playwright:v1.63.0-noble (the pinned image, Chromium 153) rather than inferred:
  *

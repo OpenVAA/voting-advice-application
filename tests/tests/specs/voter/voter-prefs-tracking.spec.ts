@@ -1,25 +1,26 @@
 /**
  * @file voter-prefs-tracking.spec.ts.
  *
- * Two assertions over the voter app, hosted UNDER the `voter-prefs-tracking` Playwright project (depends on `data-setup-perm-analytics-tracking`):
- *
- *  1. TRACKING emit-vs-suppress at the `window.umami.track` boundary, captured by the verified `trackingIntercept` fixture.
- *  2. USER-PREFERENCES round-trip — every persisted field survives a reload.
+ * The voter app's usage events in the default (consent-gated) mode, and the round trip of the stored user preferences. Hosted under the `voter-prefs-tracking` Playwright project, which depends on `data-setup-perm-analytics-tracking`.
  *
  * ## Why this is a perm-hosted spec (NOT a base leaf)
  *
- * Umami emission requires THREE arming conditions:
- *   1. `appSettings.analytics.platform.name === 'umami'` (full platform OBJECT)
- *   2. `appSettings.analytics.trackEvents === true` — BOTH seeded into the shared `app_settings` singleton by the `perm-analytics-tracking` template. A base-leaf on `data-setup-base` could NOT depend on this singleton-clobbering perm node, so the spec is hosted under the perm project.
- *   3. `userPreferences.dataCollection.consent === 'granted'` — toggled at RUNTIME via the in-app DataConsent control (NOT seeded).
+ * The `perm-analytics-tracking` dataset turns `analytics.trackEvents` on in the shared `app_settings` row. A base leaf on `data-setup-base` could not depend on that row-writing perm node, so the spec is hosted under the perm project. The consent choice is made at run time through the voter app's consent popup; it is not seeded.
  *
- * ## Emission mechanism (VERIFIED from source)
+ * ## How events are observed
  *
- *  - Granting consent calls `setDataConsent('granted')`, which itself fires `startEvent('dataConsent_granted')` (appContext.svelte.ts:445). `startEvent` BUFFERS the event (trackingService.svelte.ts:160-164).
- *  - The buffer is FLUSHED on navigation / unload via `submitAllEvents()` (+layout.svelte onNavigate:162 / onDestroy:173 / visibilitychange:191), which routes the bundle through `track('pageview', { ...NN__dataConsent_granted })` (trackingService.svelte.ts:186) — the single `window.umami.track` boundary.
- *  - `track` early-returns when `shouldTrack` is false (trackingService.svelte.ts:192), so WITHOUT consent NOTHING reaches the stub. That early-return IS the consent-gate regression guard (threat T-121-CON).
+ * The browser sends its events as `POST` requests to the application's own relay path (`RELAY_PATH`), one JSON batch `{ routeId, locale, events }` per flush. `createRelayCapture` listens on the browser context before the first navigation and records every such request body; the spec asserts on the captured batches. Nothing is stubbed: the relay answers as it does for any visitor.
  *
- * So one runtime action — grant consent, then navigate to flush — exercises BOTH the buffered `startEvent` action and the immediate `track` boundary required by the success criteria.
+ * The relay only forwards when the server has an analytics provider configured. The tests below need `ANALYTICS_PROVIDER=log`, as `.env.example` sets it; with provider `none` the browser sends nothing, and the first test fails with a message that says so.
+ *
+ * What the default mode promises, and what the tests assert:
+ *  - Each view sends one pageview, with no id, whether or not the visitor has consented.
+ *  - Every other event is sent only after consent, and each carries the visit id, a UUIDv7 that lives in memory for one document and is stored nowhere.
+ *  - Events buffered before the grant are dropped at the grant; they are never sent.
+ *
+ * ## Flushing
+ *
+ * A batch is sent at the next flush point: a client navigation, the page becoming hidden, or the page being left. `flushTrackingBuffer` reaches the hidden flush point on the same document by overriding `document.visibilityState` and dispatching `visibilitychange`, then restores the real value. Where a test needs a batch to have arrived, it flushes again until the batch is captured, which also covers a first flush made before the page has hydrated.
  *
  * ## Persisted-prefs scope
  *
@@ -27,8 +28,6 @@
  *
  * Rigidity contract (project E2E Hard Rule): every assertion is HARD — no expect.soft, no try/catch around expect(), no .catch fallback. No one-shot `isVisible({timeout})` as a wait.
  */
-
-// prefs round-trip + tracking emit/suppress
 
 import { expect, test } from '@playwright/test';
 import { createTrackingIntercept } from '../../fixtures/shared/trackingIntercept.fixture';
@@ -39,12 +38,7 @@ import type { Page } from '@playwright/test';
 const GRANTED_BUTTON = /agree to share my data/i;
 
 /**
- * Grant data-collection consent via the in-app DataConsent control (NOT seeded).
- *
- * When consent is `indetermined` the voter layout auto-opens the DataConsentPopup (a modal `Alert` dialog) which carries its OWN DataConsent — the canonical consent surface a voter sees. It overlays the inline privacy-page DataConsent, so we drive the dialog's granted button (scoped to `getByRole('dialog')` to avoid the strict-mode clash with the inline copy). Clicking it runs `setDataConsent('granted')` → `startEvent('dataConsent_granted')` and closes the dialog (`onChange` → `closeAlert()`).
- */
-/**
- * Flush the tracking-service event buffer on the SAME window (so the captured `__trackCalls` array survives to be read). The voter layout registers a `visibilitychange` listener (+layout.svelte:188-194) that calls `submitAllEvents()` when the document becomes hidden — which routes any buffered events through `track('pageview', …)` IFF `shouldTrack` is true. We force the hidden state and dispatch the event (no real navigation needed, no modal in the way), then restore visibility.
+ * Flush the tracking buffer on the SAME document. The root layout calls `submitAllEvents()` when the document becomes hidden, so the helper overrides `document.visibilityState` with `'hidden'` and dispatches `visibilitychange`; it then removes the override, so the real value shows through again, and dispatches the event once more, which marks the page visible.
  */
 async function flushTrackingBuffer(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -75,7 +69,7 @@ interface PersistedPrefs {
 }
 
 /**
- * Read the `data` payload of the app's versioned localStorage envelope (`{ version, data }` — persistedState.svelte.ts:182-189). Returns `null` when the key is absent. Reads through `JSON.parse` exactly as the app would.
+ * Read the `data` payload of the app's versioned localStorage envelope (`{ version, data }`, written by persistedState.svelte.ts). Returns `null` when the key is absent. Reads through `JSON.parse` exactly as the app would.
  */
 async function readPersistedPrefs(page: Page): Promise<PersistedPrefs | null> {
   return page.evaluate((key) => {

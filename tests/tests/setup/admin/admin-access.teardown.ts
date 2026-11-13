@@ -10,7 +10,7 @@ import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
  *
  * Two removals, and the second is the one nothing else in the suite can perform:
  *
- * 1. `unregisterCandidate(TEST_ADMIN_EMAIL)` — deletes the `grants` rows by `user_id` and the `auth.users` account. Its terms-of-use reset touches only candidates the account's editor grant names, and an admin holds no such grant, so it resets nothing here. Idempotent: a no-op when no account matches, so it is safe after a partial spec failure.
+ * 1. `unregisterCandidate(TEST_ADMIN_EMAIL)` — deletes the `grants` rows by `user_id` and the `auth.users` account. Idempotent: a no-op when no account matches, so it is safe after a partial spec failure.
  * 2. `deleteAdminJobsByAuthor(TEST_ADMIN_EMAIL)` — the `admin_jobs` rows the spec's failure-path submission wrote. `admin_jobs` is not in `ALLOWED_TEARDOWN_TABLES`, carries no `external_id`, has `election_id ON DELETE SET NULL` rather than a cascade, and cascades from `project_id` only off a `projects` row the seed bootstraps and nothing deletes. Without this line those rows accumulate across every run, forever.
  *
  * ORDER: jobs first, then the account. `admin_jobs.author` is a plain text column with no foreign key to `auth.users`, so the order is not enforced by the schema — it is chosen so that a failure in the account delete still leaves the job rows gone rather than orphaned behind a missing identity.

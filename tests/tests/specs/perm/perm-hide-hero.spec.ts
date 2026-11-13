@@ -1,9 +1,7 @@
 /**
  * Login → Go to opinions → Open 1st question → Expect hero hidden.
  *
- * The candidate navigates through the questions OVERVIEW (not a raw deep link) before opening the first opinion question. This is load-bearing: deep-linking straight to /candidate/questions/[questionId] races the candidate-context data-resolution chain (reactiveDataRoot → userData nominations → selectedElections/selectedConstituencies → opinionQuestions).
- * Until that chain settles, `opinionQuestions.length === 0` and the questions
- * +layout.svelte:57 renders the `error.noQuestions` empty state instead of the question page — so the candidate-questions-hero <figure> never mounts ("element(s) not found"). The layout cannot tell "still loading" from "genuinely empty", which is why the symptom surfaces transiently in other tests. Routing via the overview (which itself gates on opinionQuestions being populated) warms the context first, matching the canonical perm-answers-locked navigation pattern. The per-question URL is also keyed on the INTERNAL question id, not the seed external_id, so a direct goto() with an external_id is impossible regardless of timing.
+ * The candidate navigates through the questions OVERVIEW (not a raw deep link) before opening the first opinion question. The per-question URL is keyed on the INTERNAL question id, not the seed external_id, so a direct goto() with an external_id cannot reach a question; the overview's card is the way to a question by its label, matching the canonical perm-answers-locked navigation pattern.
  *
  * With hideHero=true the figure still mounts but its <Hero> child is gated out by `!hideHero && customData?.hero` ([questionId]/+page.svelte:266), so the figure carries no img/span. An empty <figure> has a zero-height box under Tailwind preflight, so we assert `toBeAttached()` (not `toBeVisible()`) and anchor page-readiness on the answer input.
  *

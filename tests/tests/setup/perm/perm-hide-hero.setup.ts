@@ -1,9 +1,9 @@
 /**
  * perm-hide-hero data-setup project.
  *
- * Invokes setupFromTemplate('perm-hide-hero') then mints a per-perm Playwright storage-state JSON via real `forceRegister` + real UI login through the candidate-app login form (synthetic tokens fail server-side JWT validation).
+ * Invokes setupFromTemplate('perm-hide-hero') then mints a per-perm Playwright storage-state JSON via real `forceRegister` + a real sign-in on the contestant app's sign-in screen (synthetic tokens fail server-side JWT validation).
  *
- * The spec consumes the storage state to navigate to /en/candidate/questions/[questionId] as an authenticated candidate and assert hideHero=true suppresses hero rendering.
+ * The spec consumes the storage state to navigate to /en/contestant/questions/[questionId] as an authenticated candidate and assert hideHero=true suppresses hero rendering.
  *
  * Prefix: 'e2e-perm-hide-hero-'.
  */
