@@ -3,9 +3,10 @@
  * Move generated documentation into the docs site and transform for SvelteKit routing
  */
 import { existsSync } from 'fs';
-import { mkdir, readdir, readFile, rm, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { COPY_TARGETS, GENERATED_DIR } from './docs-scripts.config';
+import { mkdir, readdir, readFile, rename, rm, writeFile } from 'fs/promises';
+import { join, resolve, sep } from 'path';
+import { COPY_TARGETS, DOCS_ROUTES_DIR, GENERATED_DIR } from './docs-scripts.config';
+import { isMainModule } from './utils/cli';
 
 const generatedDir = GENERATED_DIR;
 
@@ -16,21 +17,35 @@ const generatedDir = GENERATED_DIR;
  *
  * A link with a scheme is left as it is, and so is everything inside a fenced code block.
  */
-function transformMarkdownLinks(content: string): string {
-  // Replace links to README.md with directory links
-  content = content.replace(/\[([^\]]+)\]\(([^)]+)\/README\.md\)/g, '[$1]($2)');
-  content = content.replace(/\[([^\]]+)\]\(README\.md\)/g, '[$1](.)');
+export function transformMarkdownLinks(content: string): string {
+  let inFence = false;
+  return content
+    .split('\n')
+    .map((line) => {
+      if (/^\s*(```|~~~)/.test(line)) {
+        inFence = !inFence;
+        return line;
+      }
+      return inFence ? line : transformLinksInLine(line);
+    })
+    .join('\n');
+}
 
-  // Remove .md extension from all relative links (not URLs), including those with hash fragments This transforms foo/bar.md#anchor to foo/bar#anchor
-  content = content.replace(/\[([^\]]+)\]\((?!https?:\/\/)([^)#]+)\.md(#[^)]+)?\)/g, '[$1]($2$3)');
-
-  return content;
+function transformLinksInLine(line: string): string {
+  return line.replace(
+    /\[([^\]]+)\]\((?![a-z][a-z0-9+.-]*:)([^)#]*)\.md(#[^)]*)?\)/gi,
+    (_match, text: string, target: string, hash = '') => {
+      if (target === 'README') return `[${text}](.${hash})`;
+      if (target.endsWith('/README')) return `[${text}](${target.slice(0, -'/README'.length)}${hash})`;
+      return `[${text}](${target}${hash})`;
+    }
+  );
 }
 
 /**
  * Recursively move and transform markdown files
  */
-async function moveAndTransformDir(srcDir: string, destDir: string, rootSrcDir: string): Promise<void> {
+export async function moveAndTransformDir(srcDir: string, destDir: string, rootSrcDir: string): Promise<void> {
   await mkdir(destDir, { recursive: true });
 
   const entries = await readdir(srcDir, { withFileTypes: true });
@@ -72,6 +87,33 @@ async function moveAndTransformDir(srcDir: string, destDir: string, rootSrcDir: 
   }
 }
 
+/**
+ * Replace the destination with the transformed contents of the source, then remove the source.
+ *
+ * The replacement is built in a sibling staging directory and swapped in only once it is complete, so a failure partway leaves the committed destination as it was. The whole destination is replaced, so pages for deleted sources do not survive, and it must lie inside the routes directory.
+ * @param srcPath - The generated directory to move.
+ * @param destPath - The directory under the site's routes that it replaces.
+ * @param routesDir - The directory the destination must lie inside.
+ * @throws If the destination is not inside `routesDir`, or if the transform fails.
+ */
+export async function moveTarget(srcPath: string, destPath: string, routesDir = DOCS_ROUTES_DIR): Promise<void> {
+  const dest = resolve(destPath);
+  if (!dest.startsWith(resolve(routesDir) + sep))
+    throw new Error(`Refusing to replace ${dest}: it is outside ${routesDir}`);
+
+  const staging = `${dest}.staging`;
+  await rm(staging, { recursive: true, force: true });
+  try {
+    await moveAndTransformDir(srcPath, staging, srcPath);
+  } catch (error) {
+    await rm(staging, { recursive: true, force: true });
+    throw error;
+  }
+  await rm(dest, { recursive: true, force: true });
+  await rename(staging, dest);
+  await rm(srcPath, { recursive: true, force: true });
+}
+
 async function moveGenerated(): Promise<void> {
   console.info('Moving and transforming generated documentation...\n');
 
@@ -92,14 +134,8 @@ async function moveGenerated(): Promise<void> {
       continue;
     }
 
-    // Clear the destination so pages for deleted sources do not survive
-    await rm(destPath, { recursive: true, force: true });
-
     console.info(`Moving ${src} → ${dest}...`);
-    await moveAndTransformDir(srcPath, destPath, srcPath);
-
-    // Remove the source directory after moving
-    await rm(srcPath, { recursive: true, force: true });
+    await moveTarget(srcPath, destPath);
     console.info(`✓ ${src} moved and transformed`);
   }
 
@@ -117,7 +153,9 @@ async function moveGenerated(): Promise<void> {
   console.info('\n✓ Generated documentation moved and transformed to docs site');
 }
 
-moveGenerated().catch((error) => {
-  console.error('Error moving generated docs:', error);
-  process.exit(1);
-});
+if (isMainModule(import.meta.url)) {
+  moveGenerated().catch((error) => {
+    console.error('Error moving generated docs:', error);
+    process.exit(1);
+  });
+}
