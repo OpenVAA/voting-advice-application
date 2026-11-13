@@ -93,24 +93,7 @@ const TS_FAMILY = { c: true };
 // JWT claim, it is not an environment read, and "fixing" it would be a regression.
 const ENV_DEFAULT_RE = /Deno\.env\.get\(\s*['"`][^'"`]+['"`]\s*\)\s*(\?\?|\|\|)/g;
 
-// ── Check 2: the duplicated sibling modules ───────────────────────────────
-/**
- * The modules held byte-identical across function directories.
- *
- * A NAMED CONSTANT rather than an auto-detected set of every repeated basename, and the reason
- * is measured rather than stylistic. `index.ts` also appears in all three directories and is of
- * course different in each: it is the function body. `jwtSegment.test.ts` appears in two and is
- * also legitimately different — `send-email/jwtSegment.test.ts` states in its own docstring that
- * it is "deliberately NOT shared with `invite-candidate/jwtSegment.test.ts`", because a copy
- * without its own test is a copy that can rot, and its fixture exercises `project_admin`, the
- * role only that function honours. Auto-detecting every repeated basename would therefore put
- * this guard three violations into the red on the day it shipped, which is the shape this
- * milestone rejected: a guard cannot go live against pre-existing violations, and one tuned
- * until it stops complaining proves nothing.
- */
-const DUPLICATED_MODULES = ['envConfig.ts', 'jwtSegment.ts', 'callerAuthority.ts'];
-
-// ── Check 3: the testability contract ─────────────────────────────────────
+// ── Check 2: the testability contract ─────────────────────────────────────
 /** A remote-origin module specifier. `npm:` and `jsr:` are Deno-only resolvers vitest cannot follow either. */
 const REMOTE_IMPORT_RE = /from\s*['"`](https?:\/\/|npm:|jsr:)/g;
 
@@ -255,35 +238,9 @@ function main() {
           'substitutes a value for missing configuration. A missing variable must fail loudly ' +
           'naming the variable, not be papered over: the same shape addressed invite links at the ' +
           'wrong host and seeded candidates into a default tenant, and reported no error either ' +
-          'time. Replace the default with a throw naming the variable — see `requireEnv` in the ' +
-          '`envConfig.ts` beside this file (REVIEW-EDGE-02).'
+          'time. Replace the default with a throw naming the variable — see `requireEnv` in ' +
+          '`_shared/envConfig.ts` (REVIEW-EDGE-02).'
       );
-    }
-  }
-
-  // --- Check 2: the duplicated sibling modules stay byte-identical ---
-  for (const basename of DUPLICATED_MODULES) {
-    const copies = files.filter((rel) => path.basename(rel) === basename);
-    if (copies.length < 2) {
-      violate(
-        `expected at least two copies of '${basename}' under the functions tree and found ` +
-          `${copies.length}. Either a deployment unit lost its copy of a shared module, or the ` +
-          'module was renamed without updating this guard, which would leave the remaining copies ' +
-          'unheld (REVIEW-EDGE-02).'
-      );
-      continue;
-    }
-    const [canonical, ...rest] = copies;
-    for (const other of rest) {
-      if (sources.get(other) !== sources.get(canonical)) {
-        violate(
-          `'${other}' has drifted from '${canonical}'. These are verbatim copies because Supabase ` +
-            'treats each top-level function directory as its own deployment unit and this repository ' +
-            'has no shared-module directory for Edge Functions. Drift means one function keeps a fix ' +
-            'and another quietly does not. Make the two files identical, or remove the duplication ' +
-            'deliberately and update this guard (REVIEW-EDGE-02).'
-        );
-      }
     }
   }
 
@@ -318,7 +275,7 @@ function main() {
 
   console.log(
     `Edge-function environment-default guard (phase 155: REVIEW-EDGE-02) — files scanned: ` +
-      `${files.length}; checks live: 3 of 3 (env-default; copy-drift; vitest-reachability). ` +
+      `${files.length}; checks live: 2 of 2 (env-default; vitest-reachability). ` +
       `${violations} violation(s).`
   );
 
