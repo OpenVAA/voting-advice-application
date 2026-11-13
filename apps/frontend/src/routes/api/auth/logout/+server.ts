@@ -1,4 +1,7 @@
+import { log } from '@openvaa/app-shared';
 import { json } from '@sveltejs/kit';
+import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
+import type { RequestEvent } from '@sveltejs/kit';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 /**
@@ -14,7 +17,12 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
  *
  * @returns A json `Response` with a `DataApiActionResult`.
  */
-export async function POST({ locals }) {
-  await locals.supabase.auth.signOut();
+export async function POST(event: RequestEvent): Promise<Response> {
+  withdrawLogoutCount(event);
+  const { error } = await event.locals.supabase.auth.signOut({ scope: 'local' });
+  if (error) {
+    log.error(`[auth/logout] sign-out failed: ${error.name}`);
+    return json({ ok: false, type: 'failure' } as DataApiActionResult, { status: 502 });
+  }
   return json({ ok: true, type: 'success' } as DataApiActionResult);
 }

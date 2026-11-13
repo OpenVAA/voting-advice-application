@@ -96,13 +96,17 @@ const LOADS: Array<[string, LoadFn]> = [
 ];
 
 describe('the registry this spec derives its forbidden set from', () => {
-  it('declares exactly the four cookies the fixture jar carries', () => {
-    // If a fifth cookie is registered, this fails and the fixture jar must grow with it, rather than the new cookie escaping the spec unnoticed.
+  it('declares exactly the cookies the fixture jar carries', () => {
+    // If another cookie is registered, this fails and the fixture jar must grow with it, rather than the new cookie escaping the spec unnoticed.
     expect([...APPLICATION_COOKIE_NAMES].sort()).toEqual([
-      'id_token',
+      'identity_provider_arrival',
+      'logout-deadline',
+      'logout-pending',
       'oidc_code_verifier',
+      'oidc_entity_type',
       'oidc_nonce',
-      'oidc_state'
+      'oidc_state',
+      'registered'
     ]);
   });
 
@@ -113,7 +117,7 @@ describe('the registry this spec derives its forbidden set from', () => {
 });
 
 describe.each(LOADS)('%s subtree server load — the payload filter', (_feature, load) => {
-  it('forwards exactly the auth-storage cookie, with the four httpOnly values absent and the sentinel present in one expectation', async () => {
+  it('forwards exactly the auth-storage cookie, with the httpOnly values absent and the sentinel present in one expectation', async () => {
     const { supabaseCookies } = await load(eventWithJar([...httpOnlyJarEntries, SENTINEL, DECOY]));
 
     // ONE expectation, both halves. `leaked: []` alone would pass against `supabaseCookies: []`; `forwarded` is the positive control that makes the empty array fail. `toEqual` is exact on keys, so a forwarded `path` or `httpOnly` also fails here.

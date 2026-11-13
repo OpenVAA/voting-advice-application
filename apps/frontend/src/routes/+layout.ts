@@ -45,6 +45,8 @@ export async function load({ data, fetch }) {
     appCustomizationData,
     appSettingsData,
     electionData,
-    constituencyData
+    constituencyData,
+    // Forwarded for the same reason as the members above; a projection dropped here reads as inactive in every app.
+    analytics: data.analytics
   };
 }

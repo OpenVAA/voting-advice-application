@@ -43,8 +43,15 @@ function localsWith({
   verifiedUser: Record<string, unknown> | null;
   userCan?: { data: unknown; error: unknown };
 }): App.Locals {
-  // Only `auth` and `rpc` are stubbed: that is all the gate reaches, and the adapter-boundary guard bans naming the client's own type outside `src/lib/api/adapters/**`, so the object stays structural and is cast once, at the `App.Locals` boundary below.
+  // The one table read the identity read makes: the caller's terms-of-use acceptance. It answers with no row, the answer for a user who has not accepted, and the gate does not depend on it.
+  const acceptanceRead = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn(async () => ({ data: null, error: null }))
+  };
+  // Only `auth`, `rpc` and that one table read are stubbed: that is all the gate reaches, and the adapter-boundary guard bans naming the client's own type outside `src/lib/api/adapters/**`, so the object stays structural and is cast once, at the `App.Locals` boundary below.
   const supabase = {
+    from: vi.fn(() => acceptanceRead),
     auth: {
       getSession: vi.fn(async () => ({ data: { session }, error: null })),
       getUser: vi.fn(async () =>
@@ -53,8 +60,12 @@ function localsWith({
           : { data: { user: null }, error: { message: 'invalid JWT: unable to parse or verify signature' } }
       )
     },
-    // What the database's `user_can` answers for this caller on the deployment's project (162-REVIEW WR-03). Defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly.
-    rpc: vi.fn(async () => userCan)
+    // The two RPCs the gate reaches, answered by name. `get_user_entities` is the identity read's own call, for the caller's password fact, answered as for a user who has a password. Every other name is the database's `user_can` for this caller on the deployment's project, which defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly.
+    rpc: vi.fn(async (name: string) =>
+      name === 'get_user_entities'
+        ? { data: { entities: [], password_set: true, pending_email_taken: false }, error: null }
+        : userCan
+    )
   };
 
   return {
