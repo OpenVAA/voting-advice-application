@@ -1,0 +1,26 @@
+ATTEMPT=20261019T155849Z.95449c502a1b
+WINDOW_ATTEMPT=20261019T130438Z.95449c502a1b
+E2E_HEAD=95449c502a1b3875bc3a1f51a7005b3da6b66bdb
+COMMAND=PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-11-red-20261019T130438Z.95449c502a1b --project analytics-default-standalone
+RUN_DIR=tests/e2e-runs/182-11-red-20261019T130438Z.95449c502a1b
+WRAPPER_EXIT=1
+PASSED=5
+FAILED=2
+FLAKY=0
+SKIPPED=0
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+SCHEMA_PROBE=t
+E2E_HEAD_AFTER=95449c502a1b3875bc3a1f51a7005b3da6b66bdb
+    Failure messages, copied from the report (results.json) of the run directory, colour codes removed:
+    [analytics-default-standalone › specs/voter/analytics-privacy.spec.ts › analytics privacy across the voter, Contestant and Admin apps › every request went to the app or to Supabase, and every script was same-origin]
+    Error: requests outside the app's and Supabase's origins, or scripts from another origin: script https://cloud.umami.is/script.js: origin https://cloud.umami.is is not allowed
+    [analytics-default-standalone › specs/voter/analytics-privacy.spec.ts › analytics privacy across the voter, Contestant and Admin apps › the device holds only allow-listed state after the journey]
+    Error: the device holds state outside the allowlist: sessionStorage: appContext-sessionId
+    Tests that passed:
+    data-setup-analytics-standalone › setup/perm/perm-analytics-tracking.setup.ts › import perm-analytics-tracking dataset
+    data-teardown-analytics-standalone › setup/perm/perm-analytics-tracking.teardown.ts › delete perm-analytics-tracking dataset
+    analytics-default-standalone › specs/voter/voter-prefs-tracking.spec.ts › voter-prefs-tracking (EFLOW-08) › tracking is SUPPRESSED at the umami boundary without consent
+    analytics-default-standalone › specs/voter/voter-prefs-tracking.spec.ts › voter-prefs-tracking (EFLOW-08) › tracking EMITS at the umami boundary once consent is granted (track + startEvent)
+    analytics-default-standalone › specs/voter/voter-prefs-tracking.spec.ts › voter-prefs-tracking (EFLOW-08) › user-preferences round-trip: consent + feedback + survey survive a reload
+    The device-store failure names no key other than appContext-sessionId, so ALLOWED_DEVICE_STATE is unchanged and no IndexedDB database was reported.

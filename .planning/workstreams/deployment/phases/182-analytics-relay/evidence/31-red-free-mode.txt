@@ -1,0 +1,40 @@
+ATTEMPT=20261020T054359Z.7d35eef7413d
+WINDOW_ATTEMPT=20261020T054254Z.7d35eef7413d
+E2E_HEAD=7d35eef7413d9057676402abc314ca773b6e00d2
+COMMAND=PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-31-red-free-20261020T054254Z.7d35eef7413d --project analytics-default-standalone
+RUN_DIR=tests/e2e-runs/182-31-red-free-20261020T054254Z.7d35eef7413d
+WRAPPER_EXIT=1
+PASSED=6
+FAILED=6
+FLAKY=0
+SKIPPED=10
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+RED_REASON=non-pageview events were sent before consent: answer, results_ranked
+SCHEMA_PROBE=t
+E2E_HEAD_AFTER=7d35eef7413d9057676402abc314ca773b6e00d2
+    e2e-evidence.mjs: tests/e2e-runs/182-31-red-free-20261020T054254Z.7d35eef7413d -- total 22, passed 6, failed 6, flaky 0, skipped 10, didNotRun 0
+    VERDICT OK: 22 tests -- passed 6, failed 6, flaky 0, skipped 10, did not run 0
+    failure message of the named test (from results.json):
+    status=failed retry=0
+    Error: non-pageview events were sent before consent: answer, results_ranked
+    
+    expect(received).toStrictEqual(expected) // deep equality
+    
+    - Expected  - 1
+    + Received  + 4
+    
+    - Array []
+    + Array [
+    +   "answer",
+    +   "results_ranked",
+    + ]
+    
+      283 |     const events = capture.getEvents();
+      284 |     const notPageviews = events.filter((event) => event.name !== 'pageview').map((event) => event.name);
+    > 285 |     expect(notPageviews, `non-pageview events were sent before consent: ${notPageviews.join(', ')}`).toStrictEqual([]);
+          |                                                                                                      ^
+      286 |     const withId = events.filter((event) => event.id !== undefined).map(describeEvent);
+      287 |     expect(withId, `events with an id were sent before consent: ${withId.join(', ')}`).toStrictEqual([]);
+      288 |     const pageviewCount = events.filter((event) => event.name === 'pageview').length;
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tests/tests/specs/voter/voter-prefs-tracking.spec.ts:285:102
