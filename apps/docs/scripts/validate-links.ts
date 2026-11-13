@@ -24,6 +24,7 @@
 import * as fs from 'fs/promises';
 import { glob } from 'glob';
 import * as path from 'path';
+import { isMainModule } from './utils/cli';
 import {
   checkGithubSourceLink,
   collectHeadingIds,
@@ -55,13 +56,16 @@ const SRC_DIR = path.join(ROUTES_DIR, '..');
 const NAVIGATION_CONFIG = path.join(SRC_DIR, 'lib', 'navigation.config.ts');
 const DOCS_ROUTES_PREFIX = 'apps/docs/src/routes/';
 
-interface CliOptions {
+export interface CliOptions {
   check: boolean;
   only: Set<LinkCheckClass>;
   scopes: Array<{ route: string; subtree: boolean }>;
 }
 
-interface ValidationResult {
+/**
+ * The counters and findings of one link check.
+ */
+export interface ValidationResult {
   markdownFiles: number;
   internalLinks: number;
   fixedLinks: number;
@@ -101,7 +105,29 @@ async function main() {
     `Validating docs links (${options.check ? 'check mode, no files are written' : 'default mode, relative links are rewritten'})...\n`
   );
 
-  const result: ValidationResult = {
+  const result = createValidationResult();
+  function wants(...classes: Array<LinkCheckClass>): boolean {
+    return classes.some((c) => options.only.has(c));
+  }
+
+  if (markdownPass(options).runs) await validateMarkdownLinks(options, result);
+  if (wants('svelte-href', 'anchor')) await validateSvelteHrefs(options, result);
+  if (wants('nav-route')) await validateNavigation(result);
+  if (wants('stub', 'anchor')) await validateStubs(result);
+  if (wants('github-path')) await validateGithubSourceLinks(result);
+  if (wants('inbound')) await validateInboundReferences(options, result);
+
+  const reported = result.findings.filter((finding) => isReported(finding, options));
+  printSummary(result, reported, options);
+
+  process.exitCode = reported.length > 0 ? 1 : 0;
+}
+
+/**
+ * A result with every counter at zero and no findings.
+ */
+export function createValidationResult(): ValidationResult {
+  return {
     markdownFiles: 0,
     internalLinks: 0,
     fixedLinks: 0,
@@ -116,29 +142,21 @@ async function main() {
     skippedPatterns: 0,
     findings: []
   };
-  function wants(...classes: Array<LinkCheckClass>): boolean {
-    return classes.some((c) => options.only.has(c));
-  }
+}
 
-  // In default mode the markdown pass always runs, because it also rewrites relative links
-  if (!options.check || wants('md-link', 'anchor')) await validateMarkdownLinks(options, result);
-  if (wants('svelte-href', 'anchor')) await validateSvelteHrefs(options, result);
-  if (wants('nav-route')) await validateNavigation(result);
-  if (wants('stub', 'anchor')) await validateStubs(result);
-  if (wants('github-path')) await validateGithubSourceLinks(result);
-  if (wants('inbound')) await validateInboundReferences(options, result);
-
-  const reported = result.findings.filter((finding) => isReported(finding, options));
-  printSummary(result, reported, options);
-
-  process.exitCode = reported.length > 0 ? 1 : 0;
+/**
+ * Whether the markdown pass runs, and whether it rewrites relative links in place. It rewrites only in default mode and only while `md-link` is among the reported classes, so `--only` with other classes writes nothing.
+ */
+export function markdownPass(options: CliOptions): { runs: boolean; writes: boolean } {
+  const writes = !options.check && options.only.has('md-link');
+  return { runs: writes || options.only.has('md-link') || options.only.has('anchor'), writes };
 }
 
 /**
  * Parse the command line arguments.
  * @throws UsageError on an unknown argument or class
  */
-function parseArgs(args: Array<string>): CliOptions {
+export function parseArgs(args: Array<string>): CliOptions {
   const options: CliOptions = { check: false, only: new Set(LINK_CHECK_CLASSES), scopes: [] };
   for (let i = 0; i < args.length; i++) {
     const [flag, inlineValue] = args[i].startsWith('--') ? splitOnce(args[i], '=') : [args[i], undefined];
@@ -270,7 +288,7 @@ async function validateMarkdownFile(filePath: string, options: CliOptions, resul
     resolvable.push(link);
   }
 
-  if (!options.check) {
+  if (markdownPass(options).writes) {
     let modifiedContent = content;
     let hasChanges = false;
     for (const link of resolvable) {
@@ -349,8 +367,8 @@ function collectLeaves(items: Array<NavigationSection | NavigationItem>, leaves:
 /**
  * Validate every redirect stub under `routesDir` (the site's routes by default): a route directory holding `+page.ts` and no page file. Stub targets are resolved against the site's routes.
  */
-async function validateStubs(result: ValidationResult): Promise<void> {
-  const stubFiles = await glob('**/+page.ts', { cwd: ROUTES_DIR, absolute: true });
+export async function validateStubs(result: ValidationResult, routesDir: string = ROUTES_DIR): Promise<void> {
+  const stubFiles = await glob('**/+page.ts', { cwd: routesDir, absolute: true });
   for (const stubFile of stubFiles.sort()) {
     const dir = path.dirname(stubFile);
     const entries = await fs.readdir(dir);
@@ -499,7 +517,9 @@ function printSummary(result: ValidationResult, reported: Array<BrokenLink>, opt
   console.info(`Total findings: ${reported.length}`);
 }
 
-main().catch((error) => {
-  console.error('Error validating links:', error);
-  process.exit(1);
-});
+if (isMainModule(import.meta.url)) {
+  main().catch((error) => {
+    console.error('Error validating links:', error);
+    process.exit(1);
+  });
+}

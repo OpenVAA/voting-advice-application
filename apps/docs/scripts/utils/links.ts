@@ -212,7 +212,8 @@ const PAGE_KIND_RANK: Record<PageKind, number> = { 'page-md': 4, 'page-svelte': 
  */
 export async function resolvePage(routePath: string, routesDir = ROUTES_DIR): Promise<PageResolution> {
   const segments = splitHash(routePath).path.split('/').filter(Boolean).map(safeDecode);
-  if (segments.some((segment) => segment === '.' || segment === '..')) return { kind: 'none' };
+  // A decoded segment may itself hold a separator, as `..%2f` does, so a segment is refused for any separator as well as for being `.` or `..`
+  if (segments.some((segment) => segment === '.' || segment === '..' || /[\\/]/.test(segment))) return { kind: 'none' };
 
   const candidates: Array<{ path: string; isFile: boolean }> = [];
   await matchRoute(routesDir, segments, 0, candidates);
@@ -234,6 +235,7 @@ export async function resolvePage(routePath: string, routesDir = ROUTES_DIR): Pr
   if (best.kind !== 'none' || segments.length === 0) return best;
 
   const staticFile = path.join(STATIC_DIR, ...segments);
+  if (!staticFile.startsWith(STATIC_DIR + path.sep)) return best;
   try {
     if ((await fs.stat(staticFile)).isFile()) return { kind: 'asset', file: staticFile };
   } catch {
@@ -263,6 +265,10 @@ export function parseStubTarget(source: string): StubTarget {
   const target = singleQuoted ?? doubleQuoted;
   if (!target.startsWith('/') || target.startsWith('//'))
     return { error: `redirect target ${target} is not an internal route` };
+  const prerenderExports = source.match(/^export\s+const\s+prerender\s*=\s*true\s*;?\s*$/gm) ?? [];
+  const prerenderDeclarations = source.match(/^export\s+(?:const|let|var)\s+prerender\b/gm) ?? [];
+  if (prerenderExports.length !== 1 || prerenderDeclarations.length !== 1)
+    return { error: 'expected exactly one `export const prerender = true`, so the build writes a page that redirects' };
   return { target };
 }
 
@@ -297,9 +303,12 @@ export function listTrackedPaths(): TrackedPaths {
   return { files, dirs };
 }
 
-const GITHUB_SOURCE_URL = /^https:\/\/github\.com\/OpenVAA\/voting-advice-application\/(?:blob|tree)\/main(?:\/|$)/;
+const GITHUB_SOURCE_URL =
+  /^https:\/\/github\.com\/OpenVAA\/voting-advice-application\/(?:blob|tree)\/main(?:\/|(?=[?#])|$)/;
 const BARE_GITHUB_SOURCE_URL =
-  /https:\/\/github\.com\/OpenVAA\/voting-advice-application\/(?:blob|tree)\/main(?:\/[^\s)<>"'`\]]*)?/g;
+  /https:\/\/github\.com\/OpenVAA\/voting-advice-application\/(?:blob|tree)\/main(?:[/?#][^\s)<>"'`\]]*)?/g;
+/** Sentence punctuation that ends a bare URL in prose rather than belonging to it. */
+const TRAILING_PUNCTUATION = /[.,;:]+$/;
 const HREF_ATTRIBUTE = /\bhref\s*=\s*(["'])(.*?)\1/g;
 
 /**
@@ -326,7 +335,8 @@ export function extractGithubSourceLinks(content: string): Array<MarkdownLink> {
     }
 
     for (const match of line.matchAll(BARE_GITHUB_SOURCE_URL)) {
-      found.push({ text: '', url: match[0], line: lineNumber, column: match.index + 1, raw: match[0] });
+      const url = match[0].replace(TRAILING_PUNCTUATION, '');
+      found.push({ text: '', url, line: lineNumber, column: match.index + 1, raw: url });
     }
   }
 
@@ -523,6 +533,8 @@ export function makeAbsoluteLink(linkUrl: string, currentFilePath: string, route
  * Replace a link in markdown content, keeping the `[text](<url>)` form when the link was written in it
  */
 export function replaceLink(content: string, oldLink: MarkdownLink, newUrl: string): string {
-  const newLinkMarkdown = `[${oldLink.text}](${newUrl})`;
-  return content.replace(oldLink.raw, newLinkMarkdown);
+  const bracketed = oldLink.raw.includes('](<');
+  const newLinkMarkdown = `[${oldLink.text}](${bracketed ? `<${newUrl}>` : newUrl})`;
+  // A replacer function, so `$&` and the other replacement patterns in the text or URL are written as they are
+  return content.replace(oldLink.raw, () => newLinkMarkdown);
 }
