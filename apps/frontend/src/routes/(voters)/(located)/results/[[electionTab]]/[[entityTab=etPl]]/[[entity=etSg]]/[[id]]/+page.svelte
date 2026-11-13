@@ -130,9 +130,9 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
     const entityType = page.params.entity as EntityType;
     const entityId = page.params.id!;
     if (isMatch(drawerEntity)) {
-      startEvent(`results_ranked_${entityType}`, { id: entityId, score: drawerEntity.score });
+      startEvent('results_ranked_entity', { entityType, entityId, score: drawerEntity.score });
     } else {
-      startEvent(`results_browse_${entityType}`, { id: entityId });
+      startEvent('results_browse_entity', { entityType, entityId });
     }
   });
 

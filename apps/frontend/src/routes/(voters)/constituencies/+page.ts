@@ -19,7 +19,7 @@
 import { staticSettings } from '@openvaa/app-shared';
 import { DataRoot } from '@openvaa/data';
 import { redirect } from '@sveltejs/kit';
-import { buildRoute, getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/routes';
+import { buildRoute, constituenciesStepOutcome, parseParams } from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Route } from '$lib/routes';
 
@@ -32,32 +32,24 @@ export async function load({ parent, params, route, url }) {
   dataRoot.provideElectionData(await electionData);
   dataRoot.provideConstituencyData(await constituencyData);
 
-  // If startFromConstituencyGroup is set, election selection will come after this page and we'll show  the constituency selector NB. We don't try to imply it, because we assume that if startFromConstituencyGroup is set, the constituency must be selected
-  if (appSettings.elections?.startFromConstituencyGroup) return;
-
-  // StartFromConstituencyGroup is not set, this route is the last one before questions
-
-  // Check whether we have the necessary electionId parameter or can imply it. If not, redirect to election selection page
-  let { electionId } = parseParams({ params, url });
-  if (!electionId)
-    electionId = getImpliedElectionIds({
-      appSettings,
-      dataRoot
-    });
-
-  // Check whether we can now imply the constituencyId
-  const impliedConstituencyId = getImpliedConstituencyIds({
+  // Every election is on offer and `elections.disallowSelection` is honoured. A constituency is never implied while `startFromConstituencyGroup` is set: the constituency must then be selected, and the election selection comes after this page.
+  const { electionId } = parseParams({ params, url });
+  const outcome = constituenciesStepOutcome({
     dataRoot,
-    selectedElectionIds: electionId ? [electionId].flat() : undefined
+    appSettings,
+    honourDisallowSelection: true,
+    implyWithinChosenConstituencies: false,
+    skipWhenFullyImplied: false,
+    electionIds: electionId ? [electionId].flat() : undefined
   });
 
   // Deferred-target handling: forward the `?next=` target past auto-redirects on this page. `next` is not a persistent search param, so buildRoute strips it unless passed through `extraParams`.
   const nextSearch = url.searchParams.get('next');
   const nextForward: { next?: string } = nextSearch ? { next: nextSearch } : {};
 
-  if (electionId && impliedConstituencyId) _redirect('Questions', nextForward);
-  if (!electionId) _redirect('Elections', nextForward);
-  // Show election selector
+  if (outcome.action === 'done') _redirect('Questions', nextForward);
+  if (outcome.action === 'goto') _redirect('Elections', nextForward);
+  // Show constituency selector
   return;
 
   function _redirect(target: Route, extraParams?: Record<string, string | Array<string> | undefined>): never {

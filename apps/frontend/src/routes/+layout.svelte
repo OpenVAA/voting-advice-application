@@ -17,16 +17,18 @@
 <script lang="ts">
   import '../app.css';
   import { log, staticSettings } from '@openvaa/app-shared';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
-  import { updated } from '$app/state';
+  import { page, updated } from '$app/state';
   import { MaintenancePage } from '$layouts/main';
   import { isValidResult } from '$lib/api/utils/isValidResult';
+  import { settleLogoutDeadline } from '$lib/auth/logoutDeadline';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { initAppContext } from '$lib/contexts/app';
   import { initAuthContext } from '$lib/contexts/auth';
   import { initComponentContext } from '$lib/contexts/component';
+  import { discardContestantDrafts } from '$lib/contexts/contestant/contestantDrafts';
   import { initDataContext } from '$lib/contexts/data';
   import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
@@ -47,8 +49,8 @@
   initComponentContext();
   initDataContext();
   const appCtx = initAppContext();
-  const { setDataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } = appCtx;
-  // appSettings is a bare reactive accessor whose own declaration in `appContext.type.ts` states it MUST be read off the context. Destructuring it would bind the value once at init, so the analytics branch below would never see a settings re-merge.
+  const { setDataRoot, openFeedbackModal, popupQueue, setPageVisible, startPageview, submitAllEvents, t } = appCtx;
+  // appSettings is a bare reactive accessor whose own declaration in `appContext.type.ts` states it MUST be read off the context. Destructuring it would bind the value once at init, so the maintenance and validity reads below would never see a settings re-merge.
   const appSettings = $derived(appCtx.appSettings);
   const layoutCtx = initLayoutContext();
   // TODO: Consider moving the candidate and admin apps to a (auth) folder with the AuthContext initialized there
@@ -137,13 +139,10 @@
   // Tracking
   ////////////////////////////////////////////////////////////////////
 
-  // Reference to UmamiAnalytics component to access its trackEvent export.
-  // `sendTrackingEvent` is the rune handle from AppContext; `.current` is read here in value position only to type `trackEvent`.
-  let umamiRef = $state<{ trackEvent?: typeof sendTrackingEvent.current }>();
+  // A view is started by its route id and route parameters, never by its URL, and its pageview is sent at the first flush: the next client navigation, the tab becoming hidden, or page hide. The events go to the application's own relay. The pageview code stays here and in the tracking service, never in a load.
 
-  $effect(() => {
-    if (umamiRef?.trackEvent) sendTrackingEvent.set(umamiRef.trackEvent);
-  });
+  // Whether a provider is configured. Read through `appCtx.analyticsGate.current`, never a destructured copy, so a change of the gate input reaches the lifecycle effect below.
+  const analyticsActive = $derived(appCtx.analyticsGate.current.projection.active);
 
   // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in apps/frontend/svelte.config.js
   beforeNavigate(({ willUnload, to }) => {
@@ -168,8 +167,9 @@
   // The view's route id and parameters are read from `page`, which SvelteKit has already set to the new page when it calls this hook, and not from the navigation's `to`. On the enter navigation, which a document's hydration makes, SvelteKit (2.70.3) reports `to.route.id` as `null` and no `to.params`, so a view started from `to` would leave the first page of every document uncounted, and the events buffered on it would be dropped at its first flush.
   // The focus reset waits for a target that renders after the first frame (the voter question heading does, on a slow host) and is cancelled by the next navigation, so a stale wait never moves focus on a newer page. See `focusNavigationTarget`.
   let cancelPendingFocus: (() => void) | undefined;
-  afterNavigate(({ from, to }) => {
-    startPageview(to?.url?.href ?? '', from?.url?.href); // record the analytics pageview
+  afterNavigate(() => {
+    startPageview(page.route.id, page.params); // start the analytics view
+    settleLogoutDeadline(discardContestantDrafts, 'navigation');
     if (typeof document === 'undefined') return;
     cancelPendingFocus?.();
     cancelPendingFocus = focusNavigationTarget();
@@ -178,12 +178,43 @@
 
   // The page lifecycle's flush points, registered only while a provider is configured. The tab becoming hidden pauses the view's visible time and flushes; page hide flushes when no hidden event came first; a page restored from the back/forward cache starts a new view.
   $effect(() => {
-    if (!appSettings.analytics?.platform) return;
-    function handler() {
-      if (document.visibilityState === 'hidden') submitAllEvents();
+    if (!analyticsActive) return;
+    function onVisibilityChange() {
+      if (document.visibilityState === 'hidden') {
+        setPageVisible(false);
+        submitAllEvents();
+      } else {
+        setPageVisible(true);
+      }
     }
-    document.addEventListener('visibilitychange', handler);
-    return () => document.removeEventListener('visibilitychange', handler);
+    function onPageHide() {
+      submitAllEvents();
+    }
+    function onPageShow(event: PageTransitionEvent) {
+      if (event.persisted) startPageview(page.route.id, page.params);
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    window.addEventListener('pagehide', onPageHide);
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      window.removeEventListener('pagehide', onPageHide);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  });
+
+  ////////////////////////////////////////////////////////////////////
+  // The logout modal's deadline
+  ////////////////////////////////////////////////////////////////////
+
+  // The logout modal's count is kept in two cookies, which outlive a tab closed during the count: an id of the count, and a deadline with the same id that the browser drops at the count's end. The server signs out a request that carries the id without the deadline and settles the id in the same response, and the drafts go on that settled value alone: in a document as it loads or is restored, and after any navigation, so a tab that met the sign-out through a client-side request removes them too. The navigation that follows a sign-out unmounts the entity layout, which drops its draft handles first. A fresh document of the tab that held the modal removes a count still running, as the reload closed the modal; a page of another tab, and a page restored with its modal still counting, leave it.
+  onMount(() => {
+    settleLogoutDeadline(discardContestantDrafts, 'document');
+    function onPageShow(event: PageTransitionEvent) {
+      if (event.persisted) settleLogoutDeadline(discardContestantDrafts, 'document');
+    }
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -229,15 +260,6 @@
 
   <!-- Feedback modal -->
   <FeedbackModal bind:this={feedbackModalRef} />
-
-  <!-- Handle analytics loading -->
-  {#if appSettings.analytics?.platform}
-    {#if appSettings.analytics?.platform?.name === 'umami'}
-      {#await import('$lib/components/analytics/umami/UmamiAnalytics.svelte') then UmamiAnalytics}
-        <UmamiAnalytics.default websiteId={appSettings.analytics.platform.code} bind:this={umamiRef} />
-      {/await}
-    {/if}
-  {/if}
 {/if}
 
 <!-- Popup service: inline, runes-idiomatic renderer — no wrapper component -->
