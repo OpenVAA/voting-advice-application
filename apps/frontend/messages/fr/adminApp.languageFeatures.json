@@ -1,8 +1,8 @@
 {
   "adminApp.languageFeatures": {
     "targetLanguage": {
-      "label": "Target Language",
-      "help": "The language in which to generate content. Questions will be processed and results will be stored in this language."
+      "label": "Langue cible",
+      "help": "La langue dans laquelle le contenu est généré. Les questions seront traitées et les résultats enregistrés dans cette langue."
     }
   }
 }

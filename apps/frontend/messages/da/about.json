@@ -11,8 +11,8 @@
           "selectors": ["partyMatchingMethod"],
           "match": {
             "partyMatchingMethod=answersOnly": "<p>Partiernes resultater er beregnet ud fra de svar, de selv har afgivet.</p> ",
-            "partyMatchingMethod=imputed": "<p>Partiernes resultater er beregnet ud fra deres egne svar, eller hvis et parti ikke har svaret, ud fra flertallet eller gennemsnittet af deres kandidaters svar i valgkredsen.</p> ",
-            "partyMatchingMethod=other": "<p>Partiernes resultater er beregnet ud fra deres egne svar, eller hvis et parti ikke har svaret, ud fra deres kandidaters svar i valgkredsen.</p> <p>Bemærk, at partiets kandidater kan være uenige med deres parti i visse spørgsmål, så det beregnede standpunkt repræsenterer ikke nødvendigvis partiets officielle holdning.</p>"
+            "partyMatchingMethod=impute": "<p>Partiernes resultater er beregnet ud fra deres egne svar, eller hvis et parti ikke har svaret, ud fra flertallet eller gennemsnittet af deres kandidaters svar i valgkredsen.</p> ",
+            "partyMatchingMethod=*": "<p>Partiernes resultater er beregnet ud fra deres egne svar, eller hvis et parti ikke har svaret, ud fra deres kandidaters svar i valgkredsen.</p> <p>Bemærk, at partiets kandidater kan være uenige med deres parti i visse spørgsmål, så det beregnede standpunkt repræsenterer ikke nødvendigvis partiets officielle holdning.</p>"
           }
         }
       ],

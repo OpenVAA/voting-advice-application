@@ -1,10 +1,10 @@
 {
   "adminApp.common": {
-    "home": "Home",
-    "description": "Use the tools below to manage the voting advice application.",
+    "home": "Accueil",
+    "description": "Utilisez les outils ci-dessous pour gérer la boussole électorale.",
     "notAccessible": {
-      "content": "The Admin App has currently been configured to be unavailable.",
-      "title": "Sorry, the Admin App is not available"
+      "content": "L’application d’administration est actuellement configurée comme indisponible.",
+      "title": "Désolé, l’application d’administration n’est pas disponible"
     }
   }
 }

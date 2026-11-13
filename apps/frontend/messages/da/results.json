@@ -3,12 +3,12 @@
     "alliance": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Ingen alliancer",
-            "numShownPlural=one": "1 alliance",
-            "numShownPlural=other": "{numShown} alliancer"
+            "numShown=0": "Ingen alliancer",
+            "numShown=1": "1 alliance",
+            "numShown=*": "{numShown} alliancer"
           }
         }
       ],
@@ -17,22 +17,22 @@
         "candidates": [
           {
             "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidatesPlural"],
+            "selectors": ["numCandidates", "numCandidatesPlural"],
             "match": {
-              "numCandidatesPlural=zero": "Ingen kandidater",
-              "numCandidatesPlural=one": "1 kandidat",
-              "numCandidatesPlural=other": "{numCandidates} kandidater"
+              "numCandidates=0, numCandidatesPlural=*": "Ingen kandidater",
+              "numCandidates=*, numCandidatesPlural=one": "1 kandidat",
+              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} kandidater"
             }
           }
         ],
         "parties": [
           {
             "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numPartiesPlural"],
+            "selectors": ["numParties", "numPartiesPlural"],
             "match": {
-              "numPartiesPlural=zero": "ingen partier",
-              "numPartiesPlural=one": "1 parti",
-              "numPartiesPlural=other": "{numParties} partier"
+              "numParties=0, numPartiesPlural=*": "ingen partier",
+              "numParties=*, numPartiesPlural=one": "1 parti",
+              "numParties=*, numPartiesPlural=*": "{numParties} partier"
             }
           }
         ]
@@ -41,12 +41,12 @@
     "candidate": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Ingen kandidater",
-            "numShownPlural=one": "1 kandidat",
-            "numShownPlural=other": "{numShown} kandidater"
+            "numShown=0": "Ingen kandidater",
+            "numShown=1": "1 kandidat",
+            "numShown=*": "{numShown} kandidater"
           }
         }
       ]
@@ -54,12 +54,12 @@
     "faction": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Ingen fraktioner",
-            "numShownPlural=one": "1 fraktion",
-            "numShownPlural=other": "{numShown} fraktioner"
+            "numShown=0": "Ingen fraktioner",
+            "numShown=1": "1 fraktion",
+            "numShown=*": "{numShown} fraktioner"
           }
         }
       ]
@@ -69,11 +69,11 @@
       "answerMinQuestions": "Hvis du vil finde de kandidater og partier, du er mest enig med, så {questionsLink} først.",
       "questionsLinkText": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=one": "besvar mindst ét spørgsmål",
-            "numQuestionsPlural=other": "besvar mindst {numQuestions} spørgsmål"
+            "numQuestions=1": "besvar mindst ét spørgsmål",
+            "numQuestions=*": "besvar mindst {numQuestions} spørgsmål"
           }
         }
       ]
@@ -92,12 +92,12 @@
     "organization": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Ingen partier",
-            "numShownPlural=one": "1 parti",
-            "numShownPlural=other": "{numShown} partier"
+            "numShown=0": "Ingen partier",
+            "numShown=1": "1 parti",
+            "numShown=*": "{numShown} partier"
           }
         }
       ]

@@ -1,0 +1,12 @@
+{
+  "contestantApp.preview": {
+    "close": "Stäng förhandsvisning",
+    "notFound": "Profilen hittades inte",
+    "tagLabel": "Bredvid sina kandidater visas ditt parti som",
+    "tip": {
+      "candidate": "Detta är en preliminär förhandsgranskning av hur din profil kommer att se ut för väljarna. Den publicerade versionen kan se något annorlunda ut. Om du ställer upp i flera val kommer endast de svar som är relevanta för det val som väljaren är intresserad av att visas.",
+      "organization": "Detta är en preliminär förhandsgranskning av hur ditt partis profil kommer att se ut för väljarna. Den publicerade versionen kan se något annorlunda ut. Om ditt parti ställer upp i flera val kommer endast de svar som är relevanta för det val som väljaren är intresserad av att visas."
+    },
+    "title": "Förhandsgranska"
+  }
+}

@@ -15,11 +15,11 @@
       "label": "Allgemeng Bewäertung vun der App",
       "valueLabel": [
         {
-          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
-          "selectors": ["ratingPlural"],
+          "declarations": ["input rating", "input ratingMax"],
+          "selectors": ["rating"],
           "match": {
-            "ratingPlural=zero": "Keng Bewäertung",
-            "ratingPlural=other": "Bewäertung {rating} vun {ratingMax}"
+            "rating=0": "Keng Bewäertung",
+            "rating=*": "Bewäertung {rating} vun {ratingMax}"
           }
         }
       ]

@@ -1,0 +1,17 @@
+{
+  "contestantApp.login": {
+    "emailRequired": "Saisissez votre adresse e-mail.",
+    "emailTaken": "Cette adresse e-mail est désormais utilisée par un autre compte ; elle n’a donc pas pu être ajoutée au vôtre. Connectez-vous avec un Bank ID et saisissez une autre adresse.",
+    "enterEmailAndPassword": "Saisissez votre e-mail et votre mot de passe pour vous connecter.",
+    "forgotPassword": "Mot de passe oublié ?",
+    "linkFailed": "Ce lien ne peut plus être utilisé. Un lien ne fonctionne qu’une seule fois, et seul le dernier lien que vous avez demandé fonctionne. Veuillez en demander un nouveau de la même manière qu’auparavant.",
+    "noPasswordYet": "Je n’ai pas encore défini de mot de passe",
+    "noProfile": "Votre compte utilisateur n’est associé à aucun profil dans cette application. Si vous vous êtes inscrit·e avec une autre adresse e-mail, connectez-vous avec cette adresse. Sinon, veuillez contacter l’assistance.",
+    "passwordRequired": "Saisissez votre mot de passe.",
+    "signedOut": "Vous avez été déconnecté·e, car les informations de votre compte n’ont pas pu être lues. Veuillez vous reconnecter. Si cela se reproduit, veuillez contacter l’assistance.",
+    "signInWithEmail": "Se connecter par e-mail",
+    "title": "Se connecter",
+    "unknownError": "Une erreur est survenue avec vos données utilisateur. Veuillez contacter l’assistance si le problème persiste.",
+    "answersLockedInfo": "L’inscription ou la modification des réponses n’est plus possible, mais vous pouvez encore vous connecter pour consulter vos informations."
+  }
+}

@@ -3,12 +3,12 @@
     "alliance": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Inga allianser",
-            "numShownPlural=one": "1 alliance",
-            "numShownPlural=other": "{numShown} alliances"
+            "numShown=0": "Inga allianser",
+            "numShown=1": "1 allians",
+            "numShown=*": "{numShown} allianser"
           }
         }
       ],
@@ -17,22 +17,22 @@
         "candidates": [
           {
             "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidatesPlural"],
+            "selectors": ["numCandidates", "numCandidatesPlural"],
             "match": {
-              "numCandidatesPlural=zero": "Inga kandidater",
-              "numCandidatesPlural=one": "1 kandidat",
-              "numCandidatesPlural=other": "{numCandidates} kandidater"
+              "numCandidates=0, numCandidatesPlural=*": "Inga kandidater",
+              "numCandidates=*, numCandidatesPlural=one": "1 kandidat",
+              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} kandidater"
             }
           }
         ],
         "parties": [
           {
             "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numPartiesPlural"],
+            "selectors": ["numParties", "numPartiesPlural"],
             "match": {
-              "numPartiesPlural=zero": "inga partier",
-              "numPartiesPlural=one": "1 parti",
-              "numPartiesPlural=other": "{numParties} partier"
+              "numParties=0, numPartiesPlural=*": "inga partier",
+              "numParties=*, numPartiesPlural=one": "1 parti",
+              "numParties=*, numPartiesPlural=*": "{numParties} partier"
             }
           }
         ]
@@ -41,12 +41,12 @@
     "candidate": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Inga kandidater",
-            "numShownPlural=one": "1 kandidat",
-            "numShownPlural=other": "{numShown} kandidater"
+            "numShown=0": "Inga kandidater",
+            "numShown=1": "1 kandidat",
+            "numShown=*": "{numShown} kandidater"
           }
         }
       ]
@@ -54,12 +54,12 @@
     "faction": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Inga fraktioner",
-            "numShownPlural=one": "1 fraktion",
-            "numShownPlural=other": "{numShown} fraktioner"
+            "numShown=0": "Inga fraktioner",
+            "numShown=1": "1 fraktion",
+            "numShown=*": "{numShown} fraktioner"
           }
         }
       ]
@@ -69,11 +69,11 @@
       "answerMinQuestions": "Om du vill för att hitta de kandidaterna och partierna som håller med dig mest, {questionsLink} först.",
       "questionsLinkText": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=one": "svara minst en fråga",
-            "numQuestionsPlural=other": "svara minst {numQuestions} frågor"
+            "numQuestions=1": "svara minst en fråga",
+            "numQuestions=*": "svara minst {numQuestions} frågor"
           }
         }
       ]
@@ -92,12 +92,12 @@
     "organization": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "Inga partier",
-            "numShownPlural=one": "1 parti",
-            "numShownPlural=other": "{numShown} partier"
+            "numShown=0": "Inga partier",
+            "numShown=1": "1 parti",
+            "numShown=*": "{numShown} partier"
           }
         }
       ]
