@@ -32,15 +32,14 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '../../../..');
 
 /**
- * The declarative schema copy of `_bulk_upsert_record`. Note the doubled `supabase/` segment — `apps/supabase/supabase/schema/…` is the real path.
+ * The schema file that defines `_bulk_upsert_record`, read as the current definition of the function. Note the doubled `supabase/` segment — `apps/supabase/supabase/schema/…` is the real path.
  */
 const SCHEMA_SQL = resolve(REPO_ROOT, 'apps/supabase/supabase/schema/501-bulk-operations.sql');
 /** The applied migration copy of the same function. */
 const MIGRATION_SQL = resolve(REPO_ROOT, 'apps/supabase/supabase/migrations/00001_initial_schema.sql');
 
 /**
- * Extract the `CASE p_table_name … END CASE;` relationship block verbatim.
- * Used both for parsing (parity with `RELATIONSHIP_REFS`) and for the schema-vs-migration byte comparison (research assumption A3).
+ * Extract the `CASE p_table_name … END CASE;` relationship block verbatim, for parsing into the shape of `RELATIONSHIP_REFS`.
  */
 function extractCaseBlock(sql: string): string {
   const start = sql.indexOf('CASE p_table_name');

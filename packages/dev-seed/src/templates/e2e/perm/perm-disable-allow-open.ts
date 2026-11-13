@@ -6,12 +6,12 @@
  *   Q1: customData.allowOpen = true  → candidate-side info input visible
  *                                       + voter-side info renders.
  *   Q2: customData.allowOpen = false → candidate-side info input absent
- *       (gated `{#if customData.allowOpen}` at apps/frontend/src/routes/candidate/(protected)/questions/[questionId]/+page.svelte:294)
+ *       (gated `{#if customData.allowOpen}` in apps/frontend/src/routes/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/questions/[questionId]/+page.svelte)
  *       + voter-side info hidden (gated `{#if answer?.info && customData?.allowOpen !== false}` at apps/frontend/src/lib/dynamic-components/entityDetails/EntityOpinions.svelte:78).
  *
  * Prefix: 'e2e-perm-no-allowopen-'.
  *
- * The spec uses TWO describe blocks — one authenticated (storageState via candidateSessionMinter) for the candidate-side assertions + one unauthenticated for the voter walk to /results → cand-1 detail.
+ * The spec uses TWO describe blocks — one authenticated (storageState via contestantSessionMinter) for the candidate-side assertions + one unauthenticated for the voter walk to /results → cand-1 detail.
  */
 
 import { buildMinimal } from '../../_helpers/buildMinimal';

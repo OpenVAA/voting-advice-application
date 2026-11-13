@@ -54,7 +54,7 @@ export type CollectionKey =
   | 'feedback';
 
 /**
- * The two tables `Writer.write` strips from the payload before Pass 1 (`writer.ts`, the `delete bulkData.accounts` / `delete bulkData.projects` pair). They are NOT template-declarable — `TemplateSchema` has no slot for either and all 30 built-ins emit zero rows — but they ARE `TOPO_ORDER` entries, so `runPipeline` puts an (empty) array under each key, and `writer.test.ts` passes `accounts: [{ id: 'x' }]` and `projects: [{ id: 'y' }]` as pass-through fixtures.
+ * The two tables `Writer.write` strips from the payload before Pass 1 (`writer.ts`, the `delete bulkData.accounts` / `delete bulkData.projects` pair). They are NOT template-declarable — `TemplateSchema` has no slot for either and every built-in emits zero rows — but they ARE `TOPO_ORDER` entries, so `runPipeline` puts an (empty) array under each key, and `writer.test.ts` passes `accounts: [{ id: 'x' }]` and `projects: [{ id: 'y' }]` as pass-through fixtures.
  *
  * ⚠ **They are modelled here because Pass 0 reads the PRE-DELETION `data`.**
  * Measured: with these two unmodelled, the guard's `permittedKeys` lookup throws `unknown collection "accounts"` on the two `writer.test.ts` pass-through fixtures — offences on the non-pipeline fixture surface. Widening the allow-list with a stated reason is the fix; excluding those fixtures from what the guard reads is not. Kept OUT of {@link CollectionKey}, so the twelve template-declarable slots, the twelve `FixedRow` aliases and `Template`'s key-set conformance assertion cover the twelve only.
@@ -367,7 +367,7 @@ const NON_COLUMN_FIELD_LIST = ['answersByExternalId'] as const;
  *
  * On a `questions` row the key is not a typo a spell-checker would catch; it is a plausible key on the wrong table, and it is silently stripped with nothing written from it. That is exactly what the class-(2) negative control at `tests/fixtures/negctl-questions-answers.ts` asserts. Admitting the key globally would make that control **structurally unable to fire** — a guard that cannot fail.
  *
- * Measured cost of the scoping: **zero.** Across all 30 built-ins the key occurs on `candidates` (438 rows) and `organizations` (1 row, `perm-org-matching`) and nowhere else.
+ * Measured cost of the scoping: **zero.** Across all 33 built-ins the key occurs on `candidates` (441 rows) and `organizations` (2 rows, one in `perm-org-matching` and one in `perm-organization-editing`) and nowhere else.
  */
 const NON_COLUMN_FIELD_READERS = {
   answersByExternalId: ['candidates', 'organizations']
@@ -389,7 +389,7 @@ export const ANSWERS_BY_EXTERNAL_ID_KEY = 'answersByExternalId' satisfies (typeo
  *   column on the table.
  * - `candidates.organization` — the candidate's party reference. No column holds it, so nothing may reach the database under this name, but it has a reader that never touches the database: `pipeline.ts` installs `latentAnswerEmitter` for EVERY template unless a caller has already wired one, and the emitter resolves its party cluster through `findOrganizationIndex(candidate, organizations)`, reading this reference in memory BEFORE any write. An unresolved index does not throw — it falls back to random emission, silently, for every synthetic candidate. So the key is permitted on the row and stripped before the write, as `email` above is.
  * - `elections.constituencyGroups` / `.constituency_groups` and
- *   `constituency_groups.constituencies` — M:N declarations consumed by `linkJoinTables` (writer Pass 3). There is no scalar column on the parent table, so leaving them in the payload makes `_bulk_upsert_record` reject the row with `column "x" of relation "y" does not exist`.
+ *   `constituency_groups.constituencies` — M:N declarations, which `bulkImport` strips as the template wrote them and sends again, normalised, as the item's `bulk_import` link key (`constituency_groups` or `constituencies`, an array of `{ external_id }` references). `bulk_import` takes that key off the item and writes the join table; no scalar column holds it.
  *
  * ⚠ Those last three pairs are ALSO sentinel key forms under source (2). They are listed here because `bulkImport` strips them, but `LINK_SENTINELS` is the authority for PERMISSION. Asserting them against the four-source union cannot detect their removal from `LINK_SENTINELS`, because this const supplies them independently, so the derivation spec asserts them against `LINK_SENTINELS` specifically.
  */
@@ -437,7 +437,7 @@ const AUTHORING_KEYS = ['external_id'] as const;
  *
  * This matters most on the path with no zod layer: `setupFromTemplate` calls `runPipeline` → `writer.write` WITHOUT `validateTemplate`, so for the E2E templates the runtime guard is the only check.
  *
- * **Measured cost of the narrowing: zero.** Across all 30 built-ins — 1,481 rows and 11,125 key occurrences — `externalId` appears as a top-level row key exactly **0** times. (It appears often as a NESTED key, inside sentinel payloads and `ExternalRef` objects; Pass 0 inspects top-level row keys only, so those are untouched.)
+ * **Measured cost of the narrowing: zero.** Across the rows every built-in emits, `externalId` appears as a top-level row key exactly **0** times. (It appears often as a NESTED key, inside sentinel payloads and `ExternalRef` objects; Pass 0 inspects top-level row keys only, so those are untouched.)
  *
  * ⚠ `describeRow` in `assertKnownRowProps` still READS `row.externalId` when labelling a row in a message. That is deliberate and is not a permission: a guard should be able to name the row it is rejecting using whatever id the row carries.
  */
@@ -494,11 +494,11 @@ export const SKIP_COLUMNS_SOURCE = 'apps/supabase/supabase/schema/501-bulk-opera
 /**
  * Keys that are REAL columns of their table and therefore survive any allow-list, but which the `bulk_import` RPC silently discards.
  *
- * This is why an allow-list alone is not enough: `entity_type` is a genuine column on the three tables below, so it passes every `TablesInsert`-derived permitted set — and the RPC drops it anyway, handing the template author exit 0 and a row that lacks what they asked for.
+ * This is why an allow-list alone is not enough: `entity_type` is a genuine column of the table below, so it passes every `TablesInsert`-derived permitted set — and the RPC drops it anyway, handing the template author exit 0 and a row that ignores what they wrote.
  *
- * ⚠ **This map is deliberately NOT the RPC's `skip_columns` array.** Seeding it literally rejects every row in the repository: `project_id` is emitted by every generator on all 1,481 rows, and the RPC drops the payload's copy only to re-supply its own from its `p_project_id` parameter. The four columns that are skipped-but-not-denied live in {@link SKIP_COLUMNS_NOT_DENIED} with a reason each, and a spec asserts that the two sets together reproduce the SQL array exactly, in both directions — so a future `skip_columns` addition cannot pass unnoticed.
+ * ⚠ **This map is deliberately NOT the RPC's `skip_columns` array.** Seeding it literally rejects every row in the repository: `project_id` is emitted by every generator on every row, and the RPC drops the payload's copy only to re-supply its own from its `p_project_id` parameter. The four columns that are skipped-but-not-denied live in {@link SKIP_COLUMNS_NOT_DENIED} with a reason each, and a spec asserts that the two sets together reproduce the SQL array exactly, in both directions — so a future `skip_columns` addition cannot pass unnoticed.
  *
- * `entity_type` is denied on exactly the three tables that declare the column; on any other table it is simply an unknown key and the allow-list catches it with the allow-list's own message.
+ * `entity_type` is denied on `nominations` alone. Three tables declare a column of that name, and it is two different things. On `nominations` it is generated from whichever entity reference the row carries, so no writer can set it and the RPC skips the key. On `question_categories` and `questions` it is a filter list the RPC carries and the database validates, so there the key is permitted and typed as an {@link EntityTypeList}. The condition in `_bulk_upsert_record` that exempts those two tables from the skip and this map state one rule and change together. On any other table the key is simply unknown, and the allow-list catches it with the allow-list's own message.
  */
 export const DENIED_BY_TABLE = {
   nominations: ['entity_type'],
@@ -677,7 +677,7 @@ export function permittedKeys(collection: string): ReadonlySet<string> {
  * ⚠ **This symmetry is load-bearing, not tidiness.** `DENIED_BY_TABLE` is written in snake case because that is how the RPC's `skip_columns` array names its entries — but source (1) admits, for every column, *every camel form that resolves to it*, and `COLUMN_MAP` maps `entity_type` to `entityType`. A literal `new Set(['entity_type'])` would leave `entityType` in the PERMITTED set and out of the DENIED one, so the allow-list would wave it through; `bulkImport` would run `resolveFieldName('entityType') === 'entity_type'` and ship it to the RPC, whose `skip_columns` discards it — exit 0 and a row missing what the author asked for, which is the exact failure mode {@link DENIED_BY_TABLE} exists to eliminate.
  *
  * The rule this encodes: **every spelling `resolveFieldName` collapses onto a denied column is itself denied.** Deriving it here rather than listing it is what makes that true for a column added to `DENIED_BY_TABLE` tomorrow.
- * `tests/assertKnownRowProps.test.ts` asserts it for both spellings on all three declaring tables, and holds the derived set to the declaration in both directions so neither can grow silently.
+ * `tests/assertKnownRowProps.test.ts` asserts it for both spellings on every denying table, and holds the derived set to the declaration in both directions so neither can grow silently.
  */
 function deriveDeniedKeys(columns: ReadonlyArray<string>): ReadonlySet<string> {
   const keys = new Set<string>();
