@@ -22,7 +22,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (90);
+  plan (89);
 
 -- Create test fixture data
 SELECT
@@ -391,104 +391,6 @@ SELECT
 SELECT
   reset_role ();
 
--- Column exists
-SELECT
-  has_column (
-    'public',
-    'candidates',
-    'terms_of_use_accepted',
-    'candidates has terms_of_use_accepted column'
-  );
-
--- Column type is timestamptz
-SELECT
-  col_type_is (
-    'public',
-    'candidates',
-    'terms_of_use_accepted',
-    'timestamp with time zone',
-    'terms_of_use_accepted is timestamptz type'
-  );
-
--- Column is nullable
-SELECT
-  col_is_null (
-    'public',
-    'candidates',
-    'terms_of_use_accepted',
-    'terms_of_use_accepted is nullable'
-  );
-
--- Candidate_a can UPDATE terms_of_use_accepted on own row
-SELECT
-  set_test_user (
-    'authenticated',
-    test_user_id ('candidate_a'),
-    test_user_grants ('candidate_a')
-  );
-
-SELECT
-  lives_ok (
-    format(
-      $$UPDATE candidates SET terms_of_use_accepted = now() WHERE id = '%s'$$,
-      test_id ('candidate_a')
-    ),
-    'candidate_a can UPDATE terms_of_use_accepted on own row'
-  );
-
--- Verify it was set
-SELECT
-  reset_role ();
-
-SELECT
-  ok (
-    (
-      SELECT
-        terms_of_use_accepted IS NOT NULL
-      FROM
-        candidates
-      WHERE
-        id = test_id ('candidate_a')
-    ),
-    'terms_of_use_accepted was actually set for candidate_a'
-  );
-
--- Candidate_a cannot UPDATE terms_of_use_accepted on candidate_b's row
-SELECT
-  set_test_user (
-    'authenticated',
-    test_user_id ('candidate_a'),
-    test_user_grants ('candidate_a')
-  );
-
-SELECT
-  lives_ok (
-    format(
-      $$UPDATE candidates SET terms_of_use_accepted = now() WHERE id = '%s'$$,
-      test_id ('candidate_b')
-    ),
-    'candidate_a UPDATE on candidate_b terms_of_use_accepted does not raise error (0 rows)'
-  );
-
-SELECT
-  reset_role ();
-
-SELECT
-  ok (
-    (
-      SELECT
-        terms_of_use_accepted IS NULL
-      FROM
-        candidates
-      WHERE
-        id = test_id ('candidate_b')
-    ),
-    'candidate_b terms_of_use_accepted unchanged after candidate_a update attempt'
-  );
-
--- =====================================================================
--- upsert_answers RPC
--- =====================================================================
 -- Function exists
 SELECT
   has_function (
@@ -563,9 +465,60 @@ SELECT
     'candidate_a cannot call upsert_answers for candidate_b (throws error)'
   );
 
+-- The same refusal inside the caller's own project, where no project boundary helps: candidate_a2 is another candidate of project A, and org_a an organization of it. Each is a row the caller can see and holds no editor grant on, so the named table's update policy admits no row and the function ends at its not-found RAISE.
+SELECT
+  throws_ok (
+    format(
+      $$SELECT upsert_answers('candidate', %L, '{"x": 1}'::jsonb, false)$$,
+      test_id ('candidate_a2')
+    ),
+    'P0001',
+    'Entity not found or access denied: ' || test_id ('candidate_a2')::text,
+    'candidate_a cannot call upsert_answers for candidate_a2, another candidate of its own project'
+  );
+
+SELECT
+  throws_ok (
+    format(
+      $$SELECT upsert_answers('organization', %L, '{"x": 1}'::jsonb, false)$$,
+      test_id ('org_a')
+    ),
+    'P0001',
+    'Entity not found or access denied: ' || test_id ('org_a')::text,
+    'candidate_a cannot call upsert_answers for org_a, an organization of its own project'
+  );
+
 -- Reset to postgres for RPC merge/overwrite tests
 SELECT
   reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        answers
+      FROM
+        candidates
+      WHERE
+        id = test_id ('candidate_a2')
+    ),
+    '{}'::jsonb,
+    'candidate_a2 answers are untouched by the rejected write of another candidate of its project'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        answers
+      FROM
+        organizations
+      WHERE
+        id = test_id ('org_a')
+    ),
+    '{}'::jsonb,
+    'org_a answers are untouched by the rejected write of a candidate editor of its project'
+  );
 
 -- Set up a valid answer on candidate_a for merge testing (question_a is singleChoiceOrdinal in project_a)
 UPDATE candidates
@@ -822,6 +775,45 @@ SELECT
     ),
     '{}'::jsonb,
     'org_b answers are untouched by the rejected cross-organization write (the throw is not merely a return-value artefact - nothing landed)'
+  );
+
+-- The other direction of the cross-type refusal: an organization editor naming the type `candidate` and a candidate of its own project. candidate_a holds stored answers by now, written by its own editor above, so "untouched" is asserted against a value that is not empty.
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+SELECT
+  throws_ok (
+    format(
+      $$SELECT upsert_answers('candidate', %L, '{"x": 1}'::jsonb, false)$$,
+      test_id ('candidate_a')
+    ),
+    'P0001',
+    'Entity not found or access denied: ' || test_id ('candidate_a')::text,
+    'organization_a cannot call upsert_answers for candidate_a, a candidate of its own project'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        answers
+      FROM
+        candidates
+      WHERE
+        id = test_id ('candidate_a')
+    ),
+    jsonb_build_object(
+      'eeeeeeee-eeee-eeee-eeee-000000000301',
+      '{"value": "still a candidate write"}'::jsonb
+    ),
+    'candidate_a answers are untouched by the rejected write of an organization editor of its project'
   );
 
 -- =====================================================================

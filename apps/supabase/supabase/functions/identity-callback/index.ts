@@ -34,12 +34,18 @@
  * - SUPABASE_SERVICE_ROLE_KEY: Service role key for admin operations (auto-set by Supabase)
  */
 
-import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.117.2';
 import * as jose from 'npm:jose@6.2.12';
-import { createCandidate, deleteCandidate, findExistingCandidate } from './candidateRecord.ts';
-import { writeEntityGrant } from './entityGrant.ts';
+import { requireEnv } from '../_shared/envConfig.ts';
+import { placeholderAddressFor } from '../_shared/placeholderAddress.ts';
+import { identityAppMetadata } from './appMetadata.ts';
 import { extractIdentityClaims, resolveProviderConfig } from './claimConfig.ts';
-import { requireEnv } from './envConfig.ts';
+import { findOrCreateOutcome } from './ownEntity.ts';
+import { existingAccountSetup, holdsPlaceholderAddress } from './placeholderAccount.ts';
+import { resolveEntityType } from './registrationMatrix.ts';
+import { IDENTITY_CALLBACK_RESULT, parseIdentityCallbackRequest, resultBody, resultStatus } from './requestContract.ts';
+import type { IdentityCallbackResult } from './requestContract.ts';
+import { presentsServerCredential, SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
 import { requireVerifyClaimBinding } from './verifyConfig.ts';
 
 const corsHeaders = {
@@ -47,6 +53,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
+
+/** The error codes that mean the deployment is not configured, answered as `configuration` rather than as an outage. */
+const CONFIGURATION_FAILURE_CODES: ReadonlyArray<string> = [
+  'ERR_ENV_UNCONFIGURED',
+  'ERR_AUDIENCE_UNCONFIGURED',
+  'ERR_ISSUER_UNCONFIGURED'
+];
+
+/** The account fields this function reads from the auth service's admin answers. */
+interface AuthAccount {
+  id: string;
+  email?: string | null;
+  app_metadata?: Record<string, unknown> | null;
+}
+
+/**
+ * The answer for one result, its body built by `resultBody` alone.
+ *
+ * @param result - The result.
+ * @param token - The sign-in token, for a success.
+ */
+function respond(result: IdentityCallbackResult, token?: string): Response {
+  return new Response(JSON.stringify(resultBody(result, token)), {
+    status: resultStatus(result),
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+/** Whether a caught error is a configuration failure, read by its `code` alone. */
+function isConfigurationFailure(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  return typeof code === 'string' && CONFIGURATION_FAILURE_CODES.includes(code);
+}
+
+/** An error carrying a code and the client-reported text only: no address, no user id, no project id. */
+function failure(code: string, message: string): Error & { code: string } {
+  return Object.assign(new Error(message), { code });
+}
 
 /**
  * Determine whether a compact-serialization token is JWE (5 parts) or JWS/JWT (3 parts).
@@ -104,49 +148,41 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
  * @param matches - The predicate.
  * @throws {Error & { code: string }} `ERR_ACCOUNT_LOOKUP_FAILED` when a page cannot be listed.
  */
-async function findUserByIdentityMatch(
-  // reason: this function has no generated `Database` type to parameterise `SupabaseClient` with, and nothing type-checks this file (no `deno check` runs, and vitest reads it only as source text), so a client type here would go unchecked. Only `.auth.admin.listUsers` is used, and its result is destructured and guarded below.
-  // deno-lint-ignore no-explicit-any
-  supabaseAdmin: any,
-  identityMatchValue: string
-): Promise<string | null> {
-  // listUsers returns paginated results; iterate through pages
+async function findUser(
+  supabaseAdmin: SupabaseClient,
+  matches: (user: AuthAccount) => boolean
+): Promise<AuthAccount | null> {
   let page = 1;
   const perPage = 1000;
 
   while (true) {
-    const {
-      data: { users },
-      error
-    } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+    if (error) throw failure('ERR_ACCOUNT_LOOKUP_FAILED', `Failed to list users: ${error.message}`);
 
-    if (error) {
-      throw new Error(`Failed to list users: ${error.message}`);
-    }
+    const users: Array<AuthAccount> = data?.users ?? [];
+    const matching = users.find(matches);
+    if (matching) return matching;
 
-    if (!users || users.length === 0) {
-      break;
-    }
-
-    const matchingUser = users.find(
-      // reason: `users` comes from the untyped admin client above, so its element type is unavailable here. Only `app_metadata.identity_match_value` is read, via optional chaining.
-      // deno-lint-ignore no-explicit-any
-      (u: any) => u.app_metadata?.identity_match_value === identityMatchValue
-    );
-
-    if (matchingUser) {
-      return matchingUser.id;
-    }
-
-    // If we got fewer results than perPage, we have reached the last page
-    if (users.length < perPage) {
-      break;
-    }
-
+    // A page shorter than perPage is the last one.
+    if (users.length < perPage) return null;
     page++;
   }
+}
 
-  return null;
+/** The account whose `app_metadata` holds the identity's match value, or null. */
+function findUserByIdentityMatch(
+  supabaseAdmin: SupabaseClient,
+  identityMatchValue: string
+): Promise<AuthAccount | null> {
+  return findUser(supabaseAdmin, (user) => user.app_metadata?.identity_match_value === identityMatchValue);
+}
+
+/** The account whose address is the given placeholder, compared without case, or null. */
+function findUserByPlaceholderAddress(
+  supabaseAdmin: SupabaseClient,
+  placeholderAddress: string
+): Promise<AuthAccount | null> {
+  return findUser(supabaseAdmin, (user) => holdsPlaceholderAddress(user, placeholderAddress));
 }
 
 Deno.serve(async (req: Request) => {
@@ -155,82 +191,59 @@ Deno.serve(async (req: Request) => {
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    return respond(IDENTITY_CALLBACK_RESULT.bad_request);
   }
 
   try {
-    // Resolve provider configuration. Unset and unrecognised are ONE story told in two places, and the split is deliberate. An unset variable is a configuration error: the deployment never chose which provider to trust, and the choice decides which provider's claim map is applied to a verified token, so it throws here naming IDENTITY_PROVIDER_TYPE rather than being handed a provider silently. A value that is set but unknown to `resolveProviderConfig` -- a typo, or a keyword without its `-ftn` suffix -- is something the operator can act on, so the 500 below logs the value it was given and answers with a fixed message, because this endpoint is served --no-verify-jwt. The throw's message names the variable and nothing else, and it is caught by the outer handler, which logs the real error and answers with a fixed opaque string -- so neither the variable name nor its value leaves this function by that route.
+    // 0. The caller. A request without the header is refused before the configured secret is read; an unset secret throws and is answered as `configuration`, never as an open door.
+    const presentedCredential = req.headers.get(SERVER_CREDENTIAL_HEADER);
+    if (!presentedCredential) return respond(IDENTITY_CALLBACK_RESULT.refused);
+    const secret = requireEnv('IDENTITY_CALLBACK_SERVER_SECRET', Deno.env.get('IDENTITY_CALLBACK_SERVER_SECRET'));
+    if (!presentsServerCredential(presentedCredential, secret)) {
+      return respond(IDENTITY_CALLBACK_RESULT.refused);
+    }
+
+    // An unset IDENTITY_PROVIDER_TYPE throws and is answered as `configuration` by the catch below. A value that is set but unknown is logged here, because the operator can act on it, and answered the same way.
     const providerType = requireEnv('IDENTITY_PROVIDER_TYPE', Deno.env.get('IDENTITY_PROVIDER_TYPE'));
     const config = resolveProviderConfig(providerType);
     if (!config) {
       console.error(`identity-callback: unknown identity provider type: ${providerType}`);
-      return new Response(JSON.stringify({ error: 'Identity provider is not configured' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      return respond(IDENTITY_CALLBACK_RESULT.configuration);
     }
 
-    // 1. Parse request body
-    let body: Record<string, unknown>;
+    // 1. The request.
+    let body: unknown;
     try {
       body = await req.json();
     } catch {
-      return new Response(JSON.stringify({ error: 'Invalid or missing request body' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      return respond(IDENTITY_CALLBACK_RESULT.bad_request);
     }
-    const { id_token, project_id } = body;
+    const request = parseIdentityCallbackRequest(body);
+    if (!request) return respond(IDENTITY_CALLBACK_RESULT.bad_request);
 
-    if (!id_token || typeof id_token !== 'string') {
-      return new Response(JSON.stringify({ error: 'Missing or invalid id_token' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
+    const projectId = request.projectId;
 
-    // The project this function serves comes from configuration ONLY, and is never defaulted: a deployment that has not chosen a project refuses to run rather than writing self-registered candidates into a project nobody picked. A request body project_id is therefore not a selection but a claim, and is honoured only when it names that same project, because this endpoint is served --no-verify-jwt and is reachable with the publishable key -- an unvalidated body field would let an unauthenticated caller direct a self-registration into any project uuid it knows. Both failure answers are fixed strings for the reason the token arms below are: a response that varied with the submitted value, with the configured value, or with the name of an unset variable would confirm project ids and deployment configuration to whoever asked.
-    const projectId = requireEnv('PUBLIC_PROJECT_ID', Deno.env.get('PUBLIC_PROJECT_ID')?.trim());
-
-    // Absent, null and empty are not claims about the project: the configured project is used. Every other value is a claim, and is compared case-insensitively after trimming so that a caller echoing back the configured id in a different case is not refused for a difference that does not exist.
-    const claimsAProject = project_id !== undefined && project_id !== null && project_id !== '';
-    if (
-      claimsAProject &&
-      (typeof project_id !== 'string' || project_id.trim().toLowerCase() !== projectId.toLowerCase())
-    ) {
-      return new Response(JSON.stringify({ error: 'Invalid project_id' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // 2. Process the token -- handle both JWE (5-part) and plain JWT (3-part)
+    // 2. The token -- both JWE (5-part) and plain JWT (3-part). A configuration failure inside either step is rethrown, so it is answered as `configuration` and not as a bad token.
     let innerJwt: string;
 
-    if (isJweToken(id_token)) {
-      // JWE-encrypted token: decrypt first, then verify
+    if (isJweToken(request.idToken)) {
       try {
-        innerJwt = await decryptJweToken(id_token);
+        innerJwt = await decryptJweToken(request.idToken);
       } catch (e) {
-        // Logged, NEVER returned. This endpoint is served --no-verify-jwt and is reachable with the public anon key, so echoing the caught message back turns it into a step-by-step verification oracle: jose's own wording tells an unauthenticated caller whether the kid matched, whether decryption succeeded, whether the signature verified and whether iss/aud bound. The outer `error` string stays fixed and opaque.
+        if (isConfigurationFailure(e)) throw e;
+        // Logged, NEVER returned. This endpoint is served --no-verify-jwt, so echoing the caught message back would turn it into a step-by-step verification oracle for anyone who obtains the server's credential: jose's own wording tells the caller whether the kid matched, whether decryption succeeded, whether the signature verified and whether iss/aud bound.
         console.error('[identity-callback] token decryption failed:', e);
-        return new Response(JSON.stringify({ error: 'Token decryption failed' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+        return respond(IDENTITY_CALLBACK_RESULT.invalid_token);
       }
     } else {
-      // Plain JWT: use directly
-      innerJwt = id_token;
+      innerJwt = request.idToken;
     }
 
     let payload: jose.JWTPayload;
     try {
       payload = await verifyJwt(innerJwt);
     } catch (e) {
+      if (isConfigurationFailure(e)) throw e;
       // Logged, never returned -- see the decryption arm above. jose's claim-validation messages name the offending claim ("unexpected \"iss\" claim value"), which is exactly the discrimination the oracle needs.
       //
       // FIELDS, NOT THE ERROR OBJECT. Deno serialises an error's own enumerable properties, and for `JWTClaimValidationFailed` those include `payload`, the ENTIRE DECODED ID TOKEN. Passing `e` to `console.error` would put `hetu` (a national identity number), the holder's full name and their date of birth into the container log in plaintext, on a path that fires for any `aud`/`iss` misconfiguration, so an ordinary config error would leave a durable record of a real person's identity claims.
@@ -240,168 +253,109 @@ Deno.serve(async (req: Request) => {
       console.error(
         `[identity-callback] token verification failed: code=${String(claimFailure.code ?? 'none')} claim=${String(claimFailure.claim ?? 'none')} reason=${String(claimFailure.reason ?? 'none')}`
       );
-      return new Response(JSON.stringify({ error: 'Token verification failed' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      return respond(IDENTITY_CALLBACK_RESULT.invalid_token);
     }
 
-    // 4. Extract identity claims based on provider configuration
-    let claimResult: {
-      matchValue: string;
-      firstName: string;
-      lastName: string;
-      extraClaims: Record<string, unknown>;
-    };
+    // 3. The subject identifier and the names. Nothing else of the token is kept.
+    let claims: { matchValue: string; firstName: string; lastName: string };
     try {
-      claimResult = extractIdentityClaims(payload, config);
+      claims = extractIdentityClaims(payload, config);
     } catch (e) {
       // Logged, never returned -- see the decryption arm above. The claim-extraction message enumerates which configured claim names were present or missing, which discloses the provider's claim mapping to an unauthenticated caller.
       console.error('[identity-callback] identity claim extraction failed:', e);
-      return new Response(JSON.stringify({ error: 'Invalid identity claims' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+      return respond(IDENTITY_CALLBACK_RESULT.invalid_token);
     }
+    const { firstName, lastName, matchValue } = claims;
 
-    const { firstName, lastName, matchValue: identityMatchValue, extraClaims: extractedClaims } = claimResult;
-
-    // 5. Create admin Supabase client for user/candidate operations
     const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-    // 6. Find or create auth user by identity_match_value
-    let userId = await findUserByIdentityMatch(supabaseAdmin, identityMatchValue);
-    let isNewUser = false;
+    // 4. The entity type, decided by the project's stored matrix. A failed read throws and is answered as `unavailable`; it is never read as settings that allow something.
+    const { data: settingsRow, error: settingsError } = await supabaseAdmin
+      .from('app_settings')
+      .select('settings')
+      .eq('project_id', projectId)
+      .maybeSingle();
+    if (settingsError) throw failure('ERR_SETTINGS_READ_FAILED', `Settings read failed: ${settingsError.message}`);
 
-    // Bank-auth identities carry no real email at sign-in (the candidate is prompted to add one after login). GoTrue still requires an email or phone, so derive a stable placeholder from the persistent identity match value (`sub` for both providers, per PROVIDER_CONFIGS). The same value is reused for the magic-link generation below so user creation and login resolve to a single user record.
-    //
-    // This line is why `PROVIDER_CONFIGS[*].identityMatchProp` must name a claim that is unique per person: two candidates whose claim values are equal get the SAME placeholder email and the same `identity_match_value`, so the second to authenticate is matched to the first one's account above and handed a session for it below. Keying on `birthdate` -- a non-identifier claim -- would put that collision a shared birthday away rather than an attack.
-    const placeholderEmail = `${identityMatchValue}@bank-auth.placeholder`;
+    const decision = resolveEntityType(settingsRow?.settings ?? {}, request.entityType);
+    if ('refused' in decision) return respond(IDENTITY_CALLBACK_RESULT.mode_not_allowed);
+    const entityType = decision.entityType;
 
-    if (!userId) {
-      // Create new auth user with the identity-derived placeholder email (candidate will be prompted to add a real one after login).
-      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: placeholderEmail,
-        email_confirm: true,
-        app_metadata: {
-          identity_provider: providerType,
-          identity_match_prop: config.identityMatchProp,
-          identity_match_value: identityMatchValue,
-          ...extractedClaims
-        },
-        user_metadata: {
-          given_name: firstName,
-          family_name: lastName
-        }
+    // 5. The account. The placeholder address is derived from the subject identifier, which is unique per person, so one identity always has one placeholder.
+    let account = await findUserByIdentityMatch(supabaseAdmin, matchValue);
+    let initialise = false;
+
+    if (!account) {
+      const placeholderAddress = placeholderAddressFor(matchValue);
+
+      // An invite creates the account with no password. Its token is discarded: the token answered is minted at the end, as a magic link, which leaves the password unset when it is verified. When the invite fails, the account may still be on the address: the auth service answers `email_exists` for a confirmed account, and fails an invite that loses the race to create the account to another request for this identity.
+      const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'invite',
+        email: placeholderAddress,
+        options: { data: { given_name: firstName, family_name: lastName } }
       });
-
-      if (createError) {
-        throw new Error(`Failed to create auth user: ${createError.message}`);
+      account = inviteError ? await findUserByPlaceholderAddress(supabaseAdmin, placeholderAddress) : invited?.user;
+      if (inviteError && !account) {
+        throw failure('ERR_ACCOUNT_CREATE_FAILED', `Failed to create auth user: ${inviteError.message}`);
       }
+      if (!account?.id) throw failure('ERR_ACCOUNT_CREATE_FAILED', 'The auth service answered no user.');
 
-      userId = newUser.user.id;
-      isNewUser = true;
-    }
-
-    // 7. Find or create the candidate record. The lookup goes through the identity's candidate-editor grant and names the project this deployment serves: grants carry no project, one identity may hold candidates in several projects, and this admin client bypasses row-level security, so the project filter inside the lookup is the only thing keeping a candidate from another project from being adopted here. A failed lookup throws rather than answering null, because a null answer is indistinguishable from "no candidate in this project" and would send the branch below into its insert arm, creating a second candidate for an identity that already has one.
-    const existingCandidate = await findExistingCandidate(supabaseAdmin, { projectId, authUserId: userId });
-
-    let candidateId: string;
-
-    if (existingCandidate) {
-      candidateId = existingCandidate.id;
-    } else {
-      // Create new candidate record. The insert lives in `candidateRecord.ts` beside the lookup above, in the shape that module established: no remote specifier, no environment read, the client and the scope as parameters. That is what makes the row it writes ASSERTABLE -- `index.ts` resolves remote Deno specifiers and cannot be imported by vitest, so an inline insert here could only ever be checked against source text. The row is written CONFIRMED, the one automatic confirmation path; the reason is in that function's docblock.
-      const candidate = await createCandidate(supabaseAdmin, {
-        projectId,
-        firstName,
-        lastName
-      });
-
-      candidateId = candidate.id;
-    }
-
-    // Write the grant that links the identity to its candidate, once, after both branches. On the existing branch the candidate was found through this same grant, so the write is an idempotent no-op; on the create branch it is the only link to the new row. A failed write on the create branch deletes that row, because a candidate no grant names can never be found again and the next login would create a second one; a failed delete is logged and is the one case that can still leave such a row. The failure itself is still thrown: an identity holding no grant row can do nothing at all, so a swallowed failure would hand the candidate a session into an application that refuses them everything.
-    //
-    // The entity type is named HERE and nowhere else in this function. This entry point creates candidates only; the grant write takes the entity type as a parameter, so a second entity kind needs only a second call site.
-    try {
-      await writeEntityGrant(supabaseAdmin, {
-        userId,
-        entityType: 'candidate',
-        entityId: candidateId
-      });
-    } catch (grantError) {
-      if (!existingCandidate) {
-        await deleteCandidate(supabaseAdmin, { projectId, candidateId }).catch((deleteError: unknown) => {
-          console.error('identity-callback: the candidate whose grant write failed could not be deleted:', deleteError);
-        });
+      // An account found on the address may have been finished by another request for this identity; one of another identity is never taken over. An account that holds no match value yet is finished by this request, after the entity step.
+      const setup = inviteError
+        ? existingAccountSetup(account.app_metadata, matchValue)
+        : { kind: 'initialise' as const };
+      if (setup.kind === 'refuse') {
+        throw failure('ERR_ACCOUNT_CREATE_FAILED', 'The placeholder address belongs to another identity.');
       }
-      throw grantError;
+      initialise = setup.kind === 'initialise';
+    }
+    const userId = account.id;
+
+    // 6. The entity, found or created by one database call: it takes a lock on the account, reads the account's record inside it, and for a first sign-in writes the entity, its editor grant and the record in the same transaction, so sign-ins of one identity that arrive together make one entity, and a failed write leaves none behind. A record whose grant or row is gone answers `no_entity`, and nothing is created for it. On every answer the call also writes the identity metadata, which removes the provider's claims an older account still holds; the record is the call's own and is never part of it.
+    const { data: entityAnswer, error: entityError } = await supabaseAdmin.rpc('identity_entity_find_or_create', {
+      p_user_id: userId,
+      p_project_id: projectId,
+      p_entity_type: entityType,
+      p_first_name: firstName,
+      p_last_name: lastName,
+      p_identity_metadata: identityAppMetadata({
+        providerType,
+        matchProp: config.identityMatchProp,
+        matchValue
+      })
+    });
+    if (entityError) throw failure('ERR_ENTITY_RESOLVE_FAILED', `Entity find-or-create failed: ${entityError.message}`);
+    const { result } = findOrCreateOutcome(entityAnswer, projectId, entityType);
+
+    // The placeholder's confirmation, before the link: the only confirmation this function makes, for an account this identity has not finished yet. The update carries nothing else, so it writes no `app_metadata`.
+    if (initialise) {
+      const { error: confirmError } = await supabaseAdmin.auth.admin.updateUserById(userId, { email_confirm: true });
+      if (confirmError) throw failure('ERR_ACCOUNT_CONFIRM_FAILED', `Confirmation failed: ${confirmError.message}`);
     }
 
-    // 8. Generate session for immediate login. Use generateLink with magiclink type to create a login URL, addressed to the same identity-derived placeholder email the user record was created with above so the admin generateLink API resolves to the existing user.
-    const siteUrl = Deno.env.get('SUPABASE_URL')!.replace(/\/+$/, '');
-
-    // A DIFFERENT value from `siteUrl` on the line above, which holds the trimmed Supabase API origin; this one is the browser-facing site origin the candidate lands on after the magic link is consumed. The two names are kept distinct on purpose, and SITE_URL has no fallback: a hard-coded loopback origin with a dev-server port would address a production deployment's login redirect to a developer's machine.
-    const redirectSiteUrl = requireEnv('SITE_URL', Deno.env.get('SITE_URL'));
+    // 7. The sign-in link, for the account's current address: once the person has proved an address of their own, the placeholder belongs to no account, and a link for it would create a stray one.
+    const { data: current, error: currentError } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const currentAddress = current?.user?.email;
+    if (currentError || typeof currentAddress !== 'string' || currentAddress === '') {
+      throw failure('ERR_ACCOUNT_LOOKUP_FAILED', 'The account has no current address.');
+    }
 
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
-      email: placeholderEmail,
-      options: {
-        redirectTo: `${redirectSiteUrl}/candidate`
-      }
+      email: currentAddress
     });
+    if (linkError) throw failure('ERR_LINK_FAILED', `Sign-in link failed: ${linkError.message}`);
 
-    if (linkError) {
-      // Fallback: if generateLink fails (e.g., requires real email), return user info and let the frontend establish the session via a different mechanism.
-      // The frontend can use supabase.auth.admin methods or prompt for email first.
-      return new Response(
-        JSON.stringify({
-          success: true,
-          user_id: userId,
-          candidate_id: candidateId,
-          is_new_user: isNewUser,
-          session: null,
-          message: 'User created/found but magic link generation failed. Frontend should prompt for email.',
-          given_name: firstName,
-          family_name: lastName
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
+    const actionLink = linkData?.properties?.action_link;
+    const token = typeof actionLink === 'string' ? new URL(actionLink).searchParams.get('token') : null;
+    if (!token) throw failure('ERR_LINK_FAILED', 'The sign-in link carries no token.');
 
-    // Return the session data with the magic link properties
-    return new Response(
-      JSON.stringify({
-        success: true,
-        user_id: userId,
-        candidate_id: candidateId,
-        is_new_user: isNewUser,
-        session: {
-          action_link: linkData.properties?.action_link,
-          hashed_token: linkData.properties?.hashed_token,
-          verification_type: linkData.properties?.verification_type,
-          redirect_to: linkData.properties?.redirect_to
-        },
-        given_name: firstName,
-        family_name: lastName
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+    return respond(result, token);
   } catch (e) {
     // Logged, never returned. This arm catches the auth service's and the database's failures, whose messages carry Postgres error text and schema detail, and the four ERR_ENV_UNCONFIGURED throws for IDENTITY_CALLBACK_SERVER_SECRET, IDENTITY_PROVIDER_TYPE, IDENTITY_PROVIDER_DECRYPTION_JWKS and IDENTITY_PROVIDER_JWKS_URI, with the two claim-binding throws. A configuration failure is told from an outage by its code alone, and the answer is one result with nothing interpolated into it.
     console.error('identity-callback error:', e);
-
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+    return respond(
+      isConfigurationFailure(e) ? IDENTITY_CALLBACK_RESULT.configuration : IDENTITY_CALLBACK_RESULT.unavailable
+    );
   }
 });

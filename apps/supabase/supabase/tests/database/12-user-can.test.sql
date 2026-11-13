@@ -697,7 +697,8 @@ SELECT
       'entity.read_answers',
       'entity.invite_children',
       'nomination.edit',
-      'nomination.read'
+      'nomination.read',
+      'nomination.create_parent'
     ]::grant_permission[],
     'the 23-permission answer vector for OrganizationEditor equals the matrix row'
   );
@@ -1000,8 +1001,19 @@ SELECT
 SELECT
   is (
     pg_temp.allowed ('project', test_id ('project_a')),
-    ARRAY[]::grant_permission[],
-    'a claim entry with an undeclared scope is ignored'
+    (
+      SELECT
+        array_agg(
+          p.v
+          ORDER BY
+            p.n
+        )
+      FROM
+        unnest(enum_range(NULL::grant_permission)) WITH ORDINALITY AS p (v, n)
+      WHERE
+        p.v = ANY (grant_role_permissions ('global', 'admin', NULL))
+    ),
+    'RVK: a garbage claim entry in place of the claim takes nothing away: the table''s global admin row answers in full'
   );
 
 -- The other direction: a claim naming a grant the table does not hold. The project editor's claim is replaced by a project admin grant on the same project; the table holds the editor row only, and only the editor's permissions are answered.
@@ -1024,8 +1036,17 @@ SELECT
     jsonb_set(
       current_setting('request.jwt.claims')::jsonb,
       '{grants}',
-      '[{"scope": "galaxy", "target_type": null, "target_id": null, "role": "admin"}]'::jsonb || (
-        current_setting('request.jwt.claims')::jsonb -> 'grants'
+      jsonb_build_array(
+        jsonb_build_object(
+          'scope',
+          'project',
+          'target_type',
+          NULL,
+          'target_id',
+          test_id ('project_a'),
+          'role',
+          'admin'
+        )
       )
     )::text,
     true
@@ -1053,7 +1074,7 @@ SELECT
       'nomination.read',
       'nomination.create_parent'
     ]::grant_permission[],
-    'a garbage claim entry alongside a valid grant answers as the valid grant alone'
+    'RVK: a claim naming a grant the table does not hold confers nothing: the project editor is answered as the table''s editor row alone'
   );
 
 -- =====================================================================
@@ -1091,18 +1112,7 @@ SELECT
     jsonb_set(
       current_setting('request.jwt.claims')::jsonb,
       '{grants}',
-      (
-        SELECT
-          jsonb_agg(
-            e
-            ORDER BY
-              ord DESC
-          )
-        FROM
-          jsonb_array_elements(
-            current_setting('request.jwt.claims')::jsonb -> 'grants'
-          ) WITH ORDINALITY AS t (e, ord)
-      )
+      '[]'::jsonb
     )::text,
     true
   );
@@ -1129,7 +1139,7 @@ SELECT
       'nomination.read',
       'nomination.create_parent'
     ]::grant_permission[],
-    'the answer vector is identical when the two grants are listed in the reverse order'
+    'RVK: two table grants still union under an empty grants claim'
   );
 
 -- =====================================================================
