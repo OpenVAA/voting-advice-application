@@ -100,7 +100,51 @@ const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const PLAYWRIGHT_CONFIG = path.resolve(REPO_ROOT, 'tests', 'playwright.config.ts');
 const AXE_SCAN_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'axeScan.ts');
 const A11Y_SMOKE_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'a11y', 'a11y-smoke.spec.ts');
-const CANDIDATE_A11Y_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'a11y', 'candidate-a11y.spec.ts');
+const CONTESTANT_A11Y_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'a11y', 'contestant-a11y.spec.ts');
+const CONTESTANT_AXE_SCAN_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'contestantAxeScan.ts');
+const ENTRY_AXE_SCAN_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'entryAxeScan.ts');
+const ORGANIZATION_EDITING_SPEC = path.resolve(
+  REPO_ROOT,
+  'tests',
+  'tests',
+  'specs',
+  'perm',
+  'perm-organization-editing.spec.ts'
+);
+const NO_NOMINATION_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'perm', 'perm-no-nomination.spec.ts');
+const CONTESTANT_NOMINATIONS_SPEC = path.resolve(
+  REPO_ROOT,
+  'tests',
+  'tests',
+  'specs',
+  'perm',
+  'contestant-nominations.spec.ts'
+);
+const CLOSED_PROJECT_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'perm', 'perm-closed-project.spec.ts');
+const CONTESTANT_ENTRY_SCAN_SPEC = path.resolve(
+  REPO_ROOT,
+  'tests',
+  'tests',
+  'specs',
+  'contestant',
+  'contestant-entry-scan.spec.ts'
+);
+const ADMIN_ACCOUNT_FLOWS_SPEC = path.resolve(
+  REPO_ROOT,
+  'tests',
+  'tests',
+  'specs',
+  'admin',
+  'admin-account-flows.spec.ts'
+);
+const IDENTITY_PROVIDER_SPEC = path.resolve(
+  REPO_ROOT,
+  'tests',
+  'tests',
+  'specs',
+  'contestant',
+  'contestant-identity-provider.spec.ts'
+);
 
 function readSource(filePath) {
   try {
@@ -118,9 +162,31 @@ function main() {
   const configSrc = readSource(PLAYWRIGHT_CONFIG);
   const axeScanSrc = readSource(AXE_SCAN_UTIL);
   const a11ySmokeSrc = readSource(A11Y_SMOKE_SPEC);
-  const candidateA11ySrc = readSource(CANDIDATE_A11Y_SPEC);
+  const contestantA11ySrc = readSource(CONTESTANT_A11Y_SPEC);
+  const contestantAxeScanSrc = readSource(CONTESTANT_AXE_SCAN_UTIL);
+  const entryAxeScanSrc = readSource(ENTRY_AXE_SCAN_UTIL);
+  const organizationEditingSrc = readSource(ORGANIZATION_EDITING_SPEC);
+  const noNominationSrc = readSource(NO_NOMINATION_SPEC);
+  const contestantNominationsSrc = readSource(CONTESTANT_NOMINATIONS_SPEC);
+  const closedProjectSrc = readSource(CLOSED_PROJECT_SPEC);
+  const contestantEntryScanSrc = readSource(CONTESTANT_ENTRY_SCAN_SPEC);
+  const identityProviderSrc = readSource(IDENTITY_PROVIDER_SPEC);
+  const adminAccountFlowsSrc = readSource(ADMIN_ACCOUNT_FLOWS_SPEC);
 
-  if (configSrc === null || axeScanSrc === null || a11ySmokeSrc === null || candidateA11ySrc === null) {
+  if (
+    configSrc === null ||
+    axeScanSrc === null ||
+    a11ySmokeSrc === null ||
+    contestantA11ySrc === null ||
+    contestantAxeScanSrc === null ||
+    entryAxeScanSrc === null ||
+    organizationEditingSrc === null ||
+    noNominationSrc === null ||
+    contestantNominationsSrc === null ||
+    closedProjectSrc === null ||
+    contestantEntryScanSrc === null ||
+    identityProviderSrc === null
+  ) {
     process.exitCode = 1;
     return;
   }
@@ -131,27 +197,27 @@ function main() {
     console.error(`[ERROR] ${SELF}: ${message}`);
   };
 
-  // --- Check 1: candidate-a11y-scan project, gated + testMatch + storageState ---
-  const candidateProjectMatch = configSrc.match(
-    /name:\s*'candidate-a11y-scan'[\s\S]{0,400}?dependencies:\s*\[[^\]]*\]/
+  // --- Check 1: contestant-a11y-scan project, gated + testMatch + storageState ---
+  const contestantProjectMatch = configSrc.match(
+    /name:\s*'contestant-a11y-scan'[\s\S]{0,400}?dependencies:\s*\[[^\]]*\]/
   );
-  if (!candidateProjectMatch) {
+  if (!contestantProjectMatch) {
     violate(
-      "tests/playwright.config.ts no longer declares a 'candidate-a11y-scan' project (or its shape " +
-        'changed enough that this guard cannot find it). Losing this project drops 14 candidate a11y ' +
+      "tests/playwright.config.ts no longer declares a 'contestant-a11y-scan' project (or its shape " +
+        'changed enough that this guard cannot find it). Losing this project drops 24 candidate a11y ' +
         'scans from the suite silently (CSCAN-02).'
     );
   } else {
-    const block = candidateProjectMatch[0];
-    if (!/testMatch:\s*\/candidate-a11y\\\.spec\\\.ts\//.test(block)) {
+    const block = contestantProjectMatch[0];
+    if (!/testMatch:\s*\/contestant-a11y\\\.spec\\\.ts\//.test(block)) {
       violate(
-        "'candidate-a11y-scan' project no longer has an explicit testMatch for candidate-a11y.spec.ts. " +
+        "'contestant-a11y-scan' project no longer has an explicit testMatch for contestant-a11y.spec.ts. " +
           'Without it, project selection over the shared testDir is ambiguous (CSCAN-02).'
       );
     }
     if (!/storageState:\s*STORAGE_STATE/.test(block)) {
       violate(
-        "'candidate-a11y-scan' project no longer supplies storageState: STORAGE_STATE. Without it, " +
+        "'contestant-a11y-scan' project no longer supplies storageState: STORAGE_STATE. Without it, " +
           'candidate (protected) routes are unreachable and every scan would 307 to login (CSCAN-01/02).'
       );
     }
@@ -160,9 +226,9 @@ function main() {
   // `process.env.PLAYWRIGHT_NO_A11Y ? [] : [ ... ]` conditional array, alongside
   // 'a11y-smoke'.
   const a11yGateBlock = configSrc.match(/process\.env\.PLAYWRIGHT_NO_A11Y[\s\S]{0,900}?\]\),/);
-  if (!a11yGateBlock || !a11yGateBlock[0].includes("name: 'candidate-a11y-scan'")) {
+  if (!a11yGateBlock || !a11yGateBlock[0].includes("name: 'contestant-a11y-scan'")) {
     violate(
-      "'candidate-a11y-scan' is no longer inside the PLAYWRIGHT_NO_A11Y-gated project array alongside " +
+      "'contestant-a11y-scan' is no longer inside the PLAYWRIGHT_NO_A11Y-gated project array alongside " +
         "'a11y-smoke'. It must default-on and share the same opt-out (CSCAN-02)."
     );
   }
@@ -184,34 +250,108 @@ function main() {
   const permSetupMatch = configSrc.match(/name:\s*'data-setup-perm-1e1cg1co'[\s\S]{0,900}?\}/);
   if (!permSetupMatch) {
     violate("tests/playwright.config.ts no longer declares a 'data-setup-perm-1e1cg1co' project.");
-  } else if (!permSetupMatch[0].includes("'candidate-a11y-scan'")) {
+  } else if (!permSetupMatch[0].includes("'contestant-a11y-scan'")) {
     violate(
-      "'data-setup-perm-1e1cg1co' no longer names 'candidate-a11y-scan' in its dependencies array. " +
+      "'data-setup-perm-1e1cg1co' no longer names 'contestant-a11y-scan' in its dependencies array. " +
         'Without the explicit edge, the candidate scan is only INCIDENTALLY ordered before the perm ' +
-        "family's app_settings REPLACE (via 'candidate-journey' sharing its phase) — a later edit that " +
+        "family's app_settings REPLACE (via 'contestant-journey' sharing its phase) — a later edit that " +
         'reorders phases could silently run the scan against a mutated singleton (CSCAN-02).'
     );
   }
 
-  // --- Check 4a: neither spec constructs its own AxeBuilder / withTags ---
-  for (const [label, src] of [
-    ['a11y-smoke.spec.ts', a11ySmokeSrc],
-    ['candidate-a11y.spec.ts', candidateA11ySrc]
+  // --- Check 4a: no file that declares a scan, or helps declare one, builds its own axe gate ---
+  // `gate` names where a file must obtain the shared gate from: the import it
+  // must hold and the symbol it must name. The organization-editing spec, the
+  // no-nomination spec and the contestant-nominations spec have none: each
+  // holds tests other than scans, so only the prohibition binds it.
+  for (const { label, src, gate } of [
+    {
+      label: 'a11y-smoke.spec.ts',
+      src: a11ySmokeSrc,
+      gate: { from: /from\s+'\.\.\/\.\.\/utils\/axeScan'/, source: "'../../utils/axeScan'", symbol: 'assertAxeScan' }
+    },
+    {
+      label: 'contestant-a11y.spec.ts',
+      src: contestantA11ySrc,
+      gate: {
+        from: /from\s+'\.\.\/\.\.\/utils\/contestantAxeScan'/,
+        source: "'../../utils/contestantAxeScan'",
+        symbol: 'declareScans'
+      }
+    },
+    {
+      label: 'contestant-a11y.spec.ts (the confirm page)',
+      src: contestantA11ySrc,
+      gate: {
+        from: /from\s+'\.\.\/\.\.\/utils\/entryAxeScan'/,
+        source: "'../../utils/entryAxeScan'",
+        symbol: 'declareEntryScans'
+      }
+    },
+    {
+      label: 'tests/tests/utils/contestantAxeScan.ts',
+      src: contestantAxeScanSrc,
+      gate: { from: /from\s+'\.\/axeScan'/, source: "'./axeScan'", symbol: 'assertAxeScan' }
+    },
+    {
+      label: 'tests/tests/utils/entryAxeScan.ts',
+      src: entryAxeScanSrc,
+      gate: { from: /from\s+'\.\/axeScan'/, source: "'./axeScan'", symbol: 'assertAxeScan' }
+    },
+    { label: 'specs/perm/perm-organization-editing.spec.ts', src: organizationEditingSrc, gate: null },
+    { label: 'specs/perm/perm-no-nomination.spec.ts', src: noNominationSrc, gate: null },
+    { label: 'specs/perm/contestant-nominations.spec.ts', src: contestantNominationsSrc, gate: null },
+    {
+      label: 'specs/perm/perm-closed-project.spec.ts',
+      src: closedProjectSrc,
+      gate: {
+        from: /from\s+'\.\.\/\.\.\/utils\/entryAxeScan'/,
+        source: "'../../utils/entryAxeScan'",
+        symbol: 'declareEntryScans'
+      }
+    },
+    {
+      label: 'specs/contestant/contestant-entry-scan.spec.ts',
+      src: contestantEntryScanSrc,
+      gate: {
+        from: /from\s+'\.\.\/\.\.\/utils\/entryAxeScan'/,
+        source: "'../../utils/entryAxeScan'",
+        symbol: 'declareEntryScans'
+      }
+    },
+    {
+      label: 'specs/admin/admin-account-flows.spec.ts',
+      src: adminAccountFlowsSrc,
+      gate: {
+        from: /from\s+'\.\.\/\.\.\/utils\/entryAxeScan'/,
+        source: "'../../utils/entryAxeScan'",
+        symbol: 'declareEntryScans'
+      }
+    },
+    {
+      label: 'specs/contestant/contestant-identity-provider.spec.ts',
+      src: identityProviderSrc,
+      gate: {
+        from: /from\s+'\.\.\/\.\.\/utils\/contestantAxeScan'/,
+        source: "'../../utils/contestantAxeScan'",
+        symbol: 'declareScans'
+      }
+    }
   ]) {
     // Strip comments/docblocks before scanning for real usage, so a doc mention
     // of "new AxeBuilder" (as in a11y-smoke.spec.ts's own docblock) is not a
     // false positive.
     const codeOnly = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-    if (/new AxeBuilder/.test(codeOnly) || /\.withTags\(/.test(codeOnly)) {
+    if (/new AxeBuilder/.test(codeOnly) || /\.withTags\(/.test(codeOnly) || /@axe-core\/playwright/.test(codeOnly)) {
       violate(
-        `${label} constructs its own AxeBuilder or calls .withTags(\`), instead of obtaining the gate ` +
-          "from the shared 'assertAxeScan' in tests/tests/utils/axeScan.ts. A per-spec AxeBuilder can " +
-          'relax the WCAG tag set independently of the other half, breaking strictness parity (CSCAN-02 ' +
-          'criterion 6).'
+        `${label} constructs its own AxeBuilder, calls .withTags(\`) or imports the axe package, instead of ` +
+          "obtaining the gate from the shared 'assertAxeScan' in tests/tests/utils/axeScan.ts. A gate built " +
+          'outside that one function can relax the WCAG tag set independently of every other scan, breaking ' +
+          'strictness parity (CSCAN-02 criterion 6).'
       );
     }
-    if (!/from\s+'\.\.\/\.\.\/utils\/axeScan'/.test(src) || !/assertAxeScan/.test(src)) {
-      violate(`${label} no longer imports assertAxeScan from '../../utils/axeScan' — the shared scan core.`);
+    if (gate && (!gate.from.test(codeOnly) || !new RegExp(`\\b${gate.symbol}\\b`).test(codeOnly))) {
+      violate(`${label} no longer imports ${gate.symbol} from ${gate.source} — its route to the shared scan core.`);
     }
   }
 

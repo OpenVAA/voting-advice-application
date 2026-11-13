@@ -165,6 +165,19 @@ const TEST_FILE_PATTERN = /\.(test|spec)\.(c|m)?[jt]sx?$/;
 const TEST_RUNNER = /(^|[\s&|;])vitest(\s|$)/;
 
 /**
+ * The Vitest suites that live outside every workspace, each with the root script that runs it.
+ *
+ * `tests/` holds the E2E harness and is not a workspace, so `turbo run test:unit` never reaches
+ * the unit tests of the harness's own utilities. `TEST_FILE_PATTERN` cannot find them by walking
+ * either: the Playwright specs beside them carry the same suffixes and are not Vitest's to run.
+ * The suite is therefore NAMED here, by the config that selects its files.
+ *
+ * A suite added under another non-workspace directory gets an entry here and a link in the root
+ * `test:unit` script; Check 3 then holds the two together.
+ */
+const NON_WORKSPACE_SUITES = [{ config: 'tests/vitest.config.ts', script: 'test:unit:tests' }];
+
+/**
  * Directory names the walk never descends into. Excluding `node_modules` is D-09's explicit
  * requirement — a dependency's own test files are not this repository's coverage — and the rest
  * are build outputs whose contents are copies of sources already scanned. Pruning is also what
@@ -762,6 +775,65 @@ function checkTurboExecution(workspaces) {
 }
 
 // ---------------------------------------------------------------------------
+// Check 3 — suites outside the workspaces
+// ---------------------------------------------------------------------------
+
+/**
+ * Every suite in NON_WORKSPACE_SUITES MUST be run by its root script, and the root `test:unit`
+ * script MUST chain that script as an `&&` link of its own.
+ *
+ * The link is compared whole, so `yarn test:unit:tests || true`, which runs the suite and discards
+ * its status, does not satisfy it.
+ */
+function checkNonWorkspaceSuites() {
+  let scripts;
+  try {
+    scripts = JSON.parse(readFileSync(fromRepoRoot('package.json'), 'utf8')).scripts ?? {};
+  } catch (error) {
+    fail(`could not read the root package.json for Check 3 (${error.message}).`);
+  }
+
+  const composed = typeof scripts['test:unit'] === 'string' ? scripts['test:unit'] : '';
+  const links = composed.split('&&').map((link) => link.trim());
+  const problems = [];
+
+  for (const suite of NON_WORKSPACE_SUITES) {
+    if (!existsSync(fromRepoRoot(suite.config))) {
+      problems.push(
+        `${suite.config} does not exist. Remove its entry from NON_WORKSPACE_SUITES in ${SELF}, ` +
+          `together with the root \`${suite.script}\` script and its link in \`test:unit\`.`
+      );
+      continue;
+    }
+    const command = scripts[suite.script];
+    if (typeof command !== 'string' || !TEST_RUNNER.test(command) || !command.includes(`--config ${suite.config}`)) {
+      problems.push(
+        `the root \`${suite.script}\` script is ${JSON.stringify(command)}; it must run ` +
+          `\`vitest run --config ${suite.config}\`.`
+      );
+    }
+    if (!links.includes(`yarn ${suite.script}`)) {
+      problems.push(
+        `the root \`test:unit\` script does not chain \`yarn ${suite.script}\` as an \`&&\` link of ` +
+          `its own, so the tests ${suite.config} selects run in no gate. It is ${JSON.stringify(composed)}.`
+      );
+    }
+  }
+
+  if (problems.length > 0) {
+    console.error(
+      `[ERROR] Check 3 — suites outside the workspaces: ${problems.length} violation(s). Turbo runs ` +
+        `\`test:unit\` in workspaces only, so a suite kept elsewhere runs from \`yarn test:unit\` ` +
+        `only through a link of the root script:\n` +
+        problems.map((problem) => `  - ${problem}`).join('\n') +
+        `\n`
+    );
+  }
+
+  return { violations: problems.length, suiteCount: NON_WORKSPACE_SUITES.length };
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -779,7 +851,8 @@ function main() {
   const enumerationViolations = reportManifestAnomalies(anomalies);
   const check1Violations = checkDeclaredCoverage(workspaces);
   const check2 = checkTurboExecution(workspaces);
-  const errorCount = enumerationViolations + check1Violations + check2.violations;
+  const check3 = checkNonWorkspaceSuites();
+  const errorCount = enumerationViolations + check1Violations + check2.violations + check3.violations;
 
   console.log(
     `Unit-test coverage guard (phase 141: UNIT-04, UNIT-02) — ` +
@@ -787,7 +860,9 @@ function main() {
       `Check 1 (declared coverage): ${check1Violations} violation(s); ` +
       `Check 2 (turbo execution): ${check2.violations} violation(s), ` +
       `${check2.executedCount} workspace(s) executed, ${check2.unwired.length} unwired` +
-      `${check2.unwired.length > 0 ? `: ${check2.unwired.join(', ')}` : ''}. ` +
+      `${check2.unwired.length > 0 ? `: ${check2.unwired.join(', ')}` : ''}; ` +
+      `Check 3 (suites outside the workspaces): ${check3.violations} violation(s), ` +
+      `${check3.suiteCount} suite(s) named. ` +
       `Scanned ${workspaces.length} workspace(s) under ${WORKSPACE_ROOTS.join(', ')}; ` +
       `${skipped.length} non-workspace entr(ies) skipped` +
       `${skipped.length > 0 ? `: ${skipped.join(', ')}` : ''}. ` +

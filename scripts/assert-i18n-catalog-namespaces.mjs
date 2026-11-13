@@ -61,7 +61,7 @@ const CATALOG_DIR = path.resolve(REPO_ROOT, 'apps', 'frontend', 'messages', 'en'
  * other two buckets' headroom.
  */
 const NAMESPACE_FLOORS = [
-  { label: 'candidateApp.*', prefix: 'candidateApp.', floor: 60 },
+  { label: 'contestantApp.*', prefix: 'contestantApp.', floor: 60 },
   { label: 'adminApp.*', prefix: 'adminApp.', floor: 50 }
 ];
 /** Floor for every key that is NOT in one of the prefixed buckets above (voter/shared). */
@@ -140,12 +140,12 @@ function main() {
   if (otherCount < OTHER_FLOOR) {
     violations++;
     console.error(
-      `[ERROR] ${SELF}: the voter/shared namespace bucket (every key not under candidateApp./adminApp.) ` +
+      `[ERROR] ${SELF}: the voter/shared namespace bucket (every key not under contestantApp./adminApp.) ` +
         `has only ${otherCount} catalog key(s), below its floor of ${OTHER_FLOOR}.`
     );
   }
 
-  const requiredKeys = ['candidateApp.questions.editAnswer', 'common.required'];
+  const requiredKeys = ['contestantApp.questions.editAnswer', 'common.required'];
   for (const requiredKey of requiredKeys) {
     if (!keys.has(requiredKey)) {
       violations++;

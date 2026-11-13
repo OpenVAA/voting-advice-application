@@ -1,0 +1,15 @@
+# The exact findings `node scripts/assert-test-keys-scope.mjs --self-test` must report against
+# `assert-test-keys-scope.input.txt`, in line order, one `path:line: needle kind` per line. A line that holds two
+# needles is listed once for each. Every line of the fixture's POSITIVE block is here at least once; no line of its
+# NEGATIVE block is here, so a guard that scanned the test tree, the planning record, the vendored release or its own
+# source, or that matched a near miss, would differ from this file.
+scripts/fixtures/assert-test-keys-scope.input.txt:11: mock issuer
+scripts/fixtures/assert-test-keys-scope.input.txt:12: test key id
+scripts/fixtures/assert-test-keys-scope.input.txt:14: test key id
+scripts/fixtures/assert-test-keys-scope.input.txt:14: test public modulus
+scripts/fixtures/assert-test-keys-scope.input.txt:16: mock issuer
+scripts/fixtures/assert-test-keys-scope.input.txt:18: test public modulus
+scripts/fixtures/assert-test-keys-scope.input.txt:20: test key id
+scripts/fixtures/assert-test-keys-scope.input.txt:20: test public modulus
+scripts/fixtures/assert-test-keys-scope.input.txt:22: mock issuer
+scripts/fixtures/assert-test-keys-scope.input.txt:24: mock issuer

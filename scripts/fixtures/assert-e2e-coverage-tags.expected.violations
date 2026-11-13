@@ -1,0 +1,2 @@
+# The census of scripts/fixtures/assert-e2e-coverage-tags.list.json: one line per tag with no test in the default run.
+@reg-code: no test in the default run

@@ -174,7 +174,8 @@ const PROJECT_SCOPED_TABLES = [
   'nominations',
   'organizations',
   'question_categories',
-  'questions'
+  'questions',
+  'terms_of_use_acceptances'
 ];
 
 /**
@@ -252,10 +253,17 @@ const NON_PROJECT_SCOPED_TABLES = {
 const PROJECT_SCOPED_RPCS = {
   get_nominations: 'requires p_project_id',
   get_questions: 'requires p_project_id',
-  get_candidate_user_data: 'requires p_project_id',
+  get_user_entities: 'requires p_project_id',
+  get_entity_user_data: 'requires p_project_id',
+  get_entity_nominations: 'requires p_project_id',
+  get_nomination_parent_options: 'requires p_project_id',
+  claim_invitations: 'requires p_project_id',
+  get_user_project_grants: 'requires p_project_id',
   upsert_answers: 'scoped-by-identity: entity type + entity id + RLS',
+  set_entity_nominations: 'scoped-by-identity: entity type + entity id + RLS',
   merge_question_custom_data: 'scoped-by-identity: question id + RLS',
   project_open_for_voters: 'requires p_project_id',
+  contestant_app_public_config: 'requires p_project_id',
   user_can:
     'scoped-by-identity: the caller JWT grants claim, asked of the target the call names (the adapter passes its own project id)'
 };
@@ -277,9 +285,9 @@ const PROJECT_SCOPED_RPCS = {
  * the frontend, not the function, knows which one a visitor is in.
  */
 const PROJECT_SCOPED_EDGE_FUNCTIONS = {
-  'invite-candidate': 'requires a project term',
   'send-email': 'requires a project term',
-  'identity-callback': 'scoped-by-deployment: PUBLIC_PROJECT_ID'
+  'account-access': 'requires a project term',
+  'identity-callback': 'requires a project term'
 };
 
 /**
@@ -299,17 +307,24 @@ const GUARDED_SOURCES = [
   `${ADAPTER_DIR}/dataWriter/supabaseDataWriter.ts`,
   `${ADAPTER_DIR}/adminWriter/supabaseAdminWriter.ts`,
   `${ADAPTER_DIR}/feedbackWriter/supabaseFeedbackWriter.ts`,
+  `${ADAPTER_DIR}/sessionGone.ts`,
   `${ADAPTER_DIR}/utils/bySortOrderThenId.ts`,
   `${ADAPTER_DIR}/utils/convertFilterValue.ts`,
+  `${ADAPTER_DIR}/utils/entityNominations.ts`,
   `${ADAPTER_DIR}/utils/fetchAllRows.ts`,
+  `${ADAPTER_DIR}/utils/invitationAccess.ts`,
   `${ADAPTER_DIR}/utils/localizeRow.ts`,
   `${ADAPTER_DIR}/utils/mapRow.ts`,
+  `${ADAPTER_DIR}/utils/nominationParentOptions.ts`,
   `${ADAPTER_DIR}/utils/parseFailureMessages.ts`,
   `${ADAPTER_DIR}/utils/parseJsonbColumn.ts`,
   `${ADAPTER_DIR}/utils/parseOutcome.ts`,
   `${ADAPTER_DIR}/utils/parseStoredCustomization.ts`,
+  `${ADAPTER_DIR}/utils/rpcAnswer.ts`,
+  `${ADAPTER_DIR}/utils/setEntityNominationsAnswer.ts`,
   `${ADAPTER_DIR}/utils/storageUrl.ts`,
-  `${ADAPTER_DIR}/utils/toDataObject.ts`
+  `${ADAPTER_DIR}/utils/toDataObject.ts`,
+  `${ADAPTER_DIR}/utils/userEntities.ts`
 ];
 
 /**

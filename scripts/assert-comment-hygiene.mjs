@@ -224,6 +224,31 @@ const VENDORED_EXCLUSIONS = new Map([
   ['apps/docs/src/lib/layouts/prism-vs.css', 'an upstream author credit for the VS Prism theme (2 rule-2 junctions)']
 ]);
 
+/**
+ * APPLIED MIGRATIONS, EXCLUDED BY PATH PREFIX.
+ *
+ * A file under this directory is SQL that databases apply as written, and an applied migration
+ * cannot be edited. A rule added to this guard, or tightened in it, could therefore redden a file
+ * nobody may change, and the only ways out would be to weaken the rule or to break the migration.
+ * The hand-edited sources under `apps/supabase/supabase/schema/` are outside the prefix and stay
+ * under both rules.
+ *
+ * AN EXACT PREFIX IN A NAMED CONSTANT, like `VENDORED_EXCLUSIONS` above and for the same reason:
+ * there is no flag and no ignore file, and widening the exclusion means editing this line. It is
+ * a prefix and not a roster of files because every new migration adds a file. It is deliberately
+ * not an alternative of `SKIP_PATH_RE`: that pattern matches a path segment anywhere, so it would
+ * also silence any other directory of the same name.
+ *
+ * The exclusion is REPORTED in this guard's summary line with the number of files it excused, and
+ * the guard fails closed when no tracked file starts with the prefix.
+ */
+const FROZEN_MIGRATIONS_PREFIX = 'apps/supabase/supabase/migrations/';
+
+/** True for a path, with either separator, that the frozen-migrations prefix excuses. */
+function isFrozenMigration(rel) {
+  return rel.replaceAll('\\', '/').startsWith(FROZEN_MIGRATIONS_PREFIX);
+}
+
 // ── Rule 1 (D-A5): a literal unicode escape inside a comment span ─────────
 const UNICODE_ESCAPE_RE = /\\u[0-9a-fA-F]{4}/g;
 const QUOTE_LIMIT = 120;
@@ -825,7 +850,18 @@ function enumerateFiles(violate) {
     );
   }
 
-  const files = candidates.filter((f) => !VENDORED_EXCLUSIONS.has(f));
+  // The same hole by another route: the directory is moved or emptied, the prefix stops matching
+  // anything, and the constant keeps excusing a path that holds no file.
+  const frozenMigrations = candidates.filter(isFrozenMigration);
+  if (frozenMigrations.length === 0) {
+    violate(
+      `the frozen-migrations prefix '${FROZEN_MIGRATIONS_PREFIX}' matches no tracked, scannable ` +
+        `file under ${SCAN_ROOTS.join(', ')}. An exclusion that excuses nothing is a hole nobody can ` +
+        'see — correct the prefix, or delete the constant with its filter and its summary clause.'
+    );
+  }
+
+  const files = candidates.filter((f) => !VENDORED_EXCLUSIONS.has(f) && !isFrozenMigration(f));
 
   if (files.length === 0) {
     violate(
@@ -835,7 +871,7 @@ function enumerateFiles(violate) {
     return null;
   }
 
-  return files;
+  return { files, frozenMigrationCount: frozenMigrations.length };
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────
@@ -882,11 +918,12 @@ function main() {
     console.error(`[ERROR] ${SELF}: ${message}`);
   };
 
-  const files = enumerateFiles(violate);
-  if (files === null) {
+  const enumerated = enumerateFiles(violate);
+  if (enumerated === null) {
     process.exitCode = 1;
     return;
   }
+  const { files, frozenMigrationCount } = enumerated;
 
   let scanned = 0;
   for (const rel of files) {
@@ -911,6 +948,7 @@ function main() {
     `Comment hygiene guard (phase 152: REVIEW-HYG-01) — files scanned: ${scanned}; ` +
       `vendored files excluded by name: ${VENDORED_EXCLUSIONS.size} ` +
       `(${[...VENDORED_EXCLUSIONS.keys()].join(', ')}); ` +
+      `applied migrations excluded by prefix: ${frozenMigrationCount} (${FROZEN_MIGRATIONS_PREFIX}); ` +
       `rules live: 2 of 2 (unicode-escape-in-comment; forced-line-break). ` +
       `${violations} violation(s).`
   );
