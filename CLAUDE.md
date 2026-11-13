@@ -34,12 +34,16 @@ yarn test:unit                 # Run all unit tests (vitest)
 yarn test:unit:watch          # Run unit tests in watch mode
 yarn playwright install       # Install Playwright browsers
 
-# One preflight-confirmed E2E run. The wrapper starts Supabase AND the dev server itself, on the
-# project the suite seeds, and writes every artifact of the run into --run-dir.
+# One preflight-confirmed E2E run. The wrapper starts Supabase, serves `identity-callback` with the
+# identity provider's test environment, starts the dev server itself on the project the suite seeds
+# with that environment, restores the shared stack at its end (exit 9 if it cannot), and writes every
+# artifact of the run into --run-dir.
 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset
 
 # The same specs against a server you started yourself. That server MUST be scoped to the
-# project the suite seeds, or the preflight aborts the run and names both ids.
+# project the suite seeds, or the preflight aborts the run and names both ids. Without the identity
+# provider's test environment, which only the wrapper prepares, the `bank-auth` and
+# `contestant-identity-provider` projects fail.
 yarn test:e2e                 # Run Playwright E2E tests; EXCLUDES the @probe specs
 ```
 
@@ -48,8 +52,10 @@ yarn test:e2e                 # Run Playwright E2E tests; EXCLUDES the @probe sp
 > **Failing E2E tests are a CARDINAL FAILURE. No task may proceed, complete, or be marked done while any E2E test is failing — the tests must pass first, full stop.**
 
 - **No "known-flaky" exemptions.** There is no such thing as an acceptable flaky test in this project. A test that fails intermittently is a real defect (in the test or the code) and MUST be ironed out — not skipped, retried-until-green, or annotated as flaky. Diagnose the root cause and fix it.
-- **Prefer E2E for interim verification.** When checking work-in-progress results, prefer running the E2E suite over ad-hoc manual checks. The recommended method is to **run the whole suite** (`yarn test:e2e`) — it does not take long, and a full-suite run is the trusted signal.
+- **Prefer E2E for interim verification.** When checking work-in-progress results, prefer running the E2E suite over ad-hoc manual checks.
+- **Within a phase, targeted runs; the full suite at the phase's end (operator ruling, 2026-11-09).** A full run takes about 18 minutes, so plans inside a phase make no full run, neither a held full control nor a per-plan close. A plan's browser proof is its one-project runs (each new or rewritten test red first, then green) plus one targeted green run after its last code commit (one `tests/scripts/e2e-run.sh ... --project <p>` run per project: the wrapper keeps only its last `--project`). That run covers every project whose spec or fixture the plan adds, renames or changes, and every project whose tests drive a route or helper the plan's source change serves. Each plan records its project test-count deltas and title pins against the last full run. The phase's final plan, or its verification when no plan does, makes one complete full-suite run and judges it against that last full run with the summed deltas. A planner writes plans this way; plan rules written before this ruling are read through it. Nothing else is relaxed: a red or "did not run" test in a targeted run blocks the plan exactly as in a full run.
 - A "did not run" E2E test counts as a failure (e.g. cascade failures from an upstream dependency), not a pass.
+- **A void run is neither a pass nor a failure — it is not evidence.** `tests/scripts/e2e-run.sh` runs a wall-clock heartbeat and, when the host was suspended during the run, exits with status **8** and writes `VOID-host-suspend.txt` into the run directory. The timeouts and "did not run" tests inside such a run say nothing about the tree, so they are not diagnosed and not counted. Keep the directory and make the run again under a new `--run-dir`; the criterion is met only by a complete run that is green. Void is decided by the wrapper's marker alone, never by judgment: a red run with no marker is a failure under every rule above, and "the host was probably busy" is not a void. Sleeps shorter than the heartbeat's 3-second threshold go undetected, so `pmset -g log` is still the check when a red run has no marker and no other cause.
 
 #### E2E preflight (served-application gate)
 
@@ -200,7 +206,7 @@ The development stack uses Supabase CLI for backend services:
 
 **Environment variables**: Edit the root `.env` file (copied from `.env.example`).
 
-**Project scoping (`PUBLIC_PROJECT_ID`)**: names the project every query the application issues is scoped to. For a normal local stack the value is the project `apps/supabase/supabase/seed.sql` creates, `00000000-0000-0000-0000-000000000001`. There is deliberately **no fallback**: an unset, empty or non-canonical value throws when the Supabase adapter is constructed — naming the variable and the remedy — rather than letting queries succeed against some other project's rows. The `identity-callback` Edge Function reads the same variable under the same name; the local edge runtime resolves it from the **process environment** rather than from the root `.env`, so export it in the shell that starts the stack when you need that function locally.
+**Project scoping (`PUBLIC_PROJECT_ID`)**: names the project every query the application issues is scoped to. For a normal local stack the value is the project `apps/supabase/supabase/seed.sql` creates, `00000000-0000-0000-0000-000000000001`. There is deliberately **no fallback**: an unset, empty or non-canonical value throws when the Supabase adapter is constructed — naming the variable and the remedy — rather than letting queries succeed against some other project's rows. The `send-email` Edge Function reads the same variable under the same name; the local edge runtime resolves it from the **process environment** rather than from the root `.env`, so export it in the shell that starts the stack when you need that function locally. `identity-callback` reads no project from its environment: the request names it.
 
 **Seed data**: The database is seeded automatically on `supabase start` via `apps/supabase/supabase/seed.sql`.
 
@@ -212,7 +218,7 @@ The development stack uses Supabase CLI for backend services:
 
 - No locale route param: locale is resolved by Paraglide's `url` strategy (`strategy: ['url', 'cookie', 'baseLocale']`), so no `ROUTE` constant carries a locale segment
 - Voters app: `apps/frontend/src/routes/(voters)/`
-- Candidate app: `apps/frontend/src/routes/candidate/`, protected routes under `apps/frontend/src/routes/candidate/(protected)/`
+- Contestant app: `apps/frontend/src/routes/contestant/`, protected routes under `apps/frontend/src/routes/contestant/(protected)/`
 - Route constants, the route builder and the app gates live in `apps/frontend/src/lib/routes/` and are imported as `$lib/routes`
 
 **Styling**: Tailwind CSS + DaisyUI components. Theme colors defined in `packages/app-shared/src/settings/staticSettings.ts`.
@@ -220,7 +226,7 @@ The development stack uses Supabase CLI for backend services:
 **Path aliases** — all three declared in `apps/frontend/svelte.config.js`, and there are only three; everything else under `apps/frontend/src/lib/` is reached through SvelteKit's built-in `$lib`:
 
 - `$types` -> `apps/frontend/src/lib/types`
-- `$candidate` -> `apps/frontend/src/lib/candidate`
+- `$contestant` -> `apps/frontend/src/lib/contestant`
 - `$layouts` -> `apps/frontend/src/lib/layouts`
 
 **Key directories**:
@@ -228,8 +234,8 @@ The development stack uses Supabase CLI for backend services:
 - `apps/frontend/src/lib/api/` - Client-side data adapters, `apiRoute` and `supabase` only; the local adapter is server-side, under `apps/frontend/src/lib/server/api/adapters/local/`
 - `apps/frontend/src/lib/components/` - Base, presentational components
 - `apps/frontend/src/lib/dynamic-components/` - Data-aware components, reading `@openvaa/data` objects and the contexts
-- `apps/frontend/src/lib/candidate/` - Candidate-app code, including its own component library
-- `apps/frontend/src/lib/contexts/` - Svelte context providers (app, voter, candidate, data, filter, layout, i18n)
+- `apps/frontend/src/lib/contestant/` - Contestant-app code, including its own component library
+- `apps/frontend/src/lib/contexts/` - Svelte context providers (app, voter, contestant, data, filter, layout, i18n)
 - `apps/frontend/src/lib/layouts/` - Route-root layout components, imported as `$layouts`
 - `apps/frontend/src/lib/routes/` - Route constants, route building and app gates, imported as `$lib/routes`
 - `apps/frontend/src/lib/server/` - Server-only code (admin, server-side API adapters, LLM)
@@ -244,8 +250,8 @@ The development stack uses Supabase CLI for backend services:
 ## Backend (Supabase)
 
 - **Database**: PostgreSQL managed by Supabase — local via `yarn db:start`, production via Supabase Cloud. Migrations in `apps/supabase/supabase/migrations/`, pgTAP tests in `apps/supabase/supabase/tests/`
-- **Edge Functions**: `apps/supabase/supabase/functions/` — `identity-callback`, `invite-candidate`, `send-email`
-- **Auth**: cookie-based sessions with PKCE; candidates authenticate via Supabase Auth; candidate pre-registration goes through the `invite-candidate` Edge Function; bank authentication via OpenID Connect (Signicat), IdP settings in `.env`, completed by the `identity-callback` Edge Function
+- **Edge Functions**: `apps/supabase/supabase/functions/` — `account-access`, `identity-callback`, `send-email`
+- **Auth**: cookie-based sessions; candidates authenticate via Supabase Auth, which sends no mail of its own (a no-op Send Email hook); an invitation is a row of `public.invitations` that promises a grant — `create_invitations` creates it and sends nothing, the `account-access` Edge Function mails a sign-in link, or a recovery link to a holder of a grant in the project or of any global grant or an account grant on the project's account, when one is asked for, and `claim_invitations` writes the promised grants for the signed-in user's own confirmed address, for a candidate or organization invitation only under a registration mode the project allows for that type; every mailed link opens the confirm page at `/auth/confirm`, which verifies it only when Continue is pressed and lands it in the app it was asked from, the Contestant App's or the Admin App's; a signed-in user with no password meets the set-password gate of the app they are in, the Contestant App's or the Admin App's, before any protected page, and the gate asks only an account whose address is confirmed; an account an identity provider made is asked for an address first; bank authentication via OpenID Connect (Signicat), IdP settings in `.env`, completed by the `identity-callback` Edge Function, which answers the frontend server alone, proven by the shared `IDENTITY_CALLBACK_SERVER_SECRET`
 - **After a schema change**: `yarn db:types` regenerates `packages/supabase-types/`, and `yarn db:lint:sql` lints the applied database
 
 The schema itself — tables, RLS policies, JWT claims, the bulk import/delete RPCs and the storage buckets — is documented in `.claude/skills/database/schema-reference.md` and `.claude/skills/database/rls-policy-map.md` — `Skill("database")`.
@@ -254,7 +260,7 @@ The schema itself — tables, RLS policies, JWT claims, the bulk import/delete R
 
 **Starting a feature**: `yarn build` first (cached, fast if already built), then read the relevant package README. Frontend components live in the three directories listed under § _Frontend_; backend schema in `apps/supabase/supabase/migrations/`.
 
-**Running tests**: `yarn test:unit` for the quick check, `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset` for the full E2E run. The wrapper starts Supabase and one fresh dev server with `PUBLIC_PROJECT_ID` set to the project the suite seeds; a plain `yarn dev` serves the **default** project instead, so the specs would drive an application with no elections, no questions and no nominations. The suite creates and owns its own project, so clearing the database is **not** a precondition of a run — and doing it while a run is in flight destroys the state that run depends on.
+**Running tests**: `yarn test:unit` for the quick check, `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset` for the full E2E run. The wrapper starts Supabase, serves `identity-callback` with the identity provider's test environment, and starts one fresh dev server with `PUBLIC_PROJECT_ID` set to the project the suite seeds and that environment; at its end it restarts the shared stack (`yarn db:stop`, `yarn db:start`, about 30 s) to put the default edge runtime back, so a run also interrupts anything else using that stack; a plain `yarn dev` serves the **default** project instead, so the specs would drive an application with no elections, no questions and no nominations. The suite creates and owns its own project, so clearing the database is **not** a precondition of a run — and doing it while a run is in flight destroys the state that run depends on.
 
 **Debugging the matching algorithm**: `cd packages/matching && tsx examples/example.ts` — see `packages/matching/examples/example.ts`.
 
@@ -294,7 +300,7 @@ See `packages/dev-seed/README.md` for authoring custom templates (mixing `fixed[
 
 ### Context Destructuring Rule (Svelte 5)
 
-**Two property classes, two prohibitions.** OpenVAA's Svelte 5 contexts (`getVoterContext()`, `getCandidateContext()`, `getAppContext()`) expose _stable references_ — `t`, `getRoute`, `darkMode`, `answers`, `userData`, the lifecycle functions — which are safe to destructure, and _reactive accessors_ — `appSettings`, `dataRoot`, `locale`, `selectedElections`, `opinionQuestions`, `matches` and some twenty more — which are not.
+**Two property classes, two prohibitions.** OpenVAA's Svelte 5 contexts (`getVoterContext()`, `getContestantContext()`, `getAppContext()`) expose _stable references_ — `t`, `getRoute`, `darkMode`, `answers`, `userData`, the lifecycle functions — which are safe to destructure, and _reactive accessors_ — `appSettings`, `dataRoot`, `locale`, `selectedElections`, `opinionQuestions`, `matches` and some twenty more — which are not.
 
 - **NEVER destructure a reactive accessor.** Destructuring invokes the getter once at component-init and binds the captured value — usually the initial empty array — as a static local that never updates again. Read `ctx.X` instead, so the getter is re-invoked inside the tracking scope on every read.
 - **NEVER bind `dataRoot` to an intermediate read alias.** It is identity-stable behind a private `#version` counter, so `const dataRoot = $derived(ctx.dataRoot)` recomputes but yields the same reference, Svelte 5 skips downstream notification, and the consumer keeps its pre-mount snapshot on cold / direct-URL entry. Read `ctx.dataRoot.<prop>` directly inside the consuming tracking scope.
@@ -342,7 +348,7 @@ When performing code review or developing new features, make sure to check all t
 Every entry here is one hop: it reaches either this file's own content or a skill that exists. There is no second index — an entry that sends you onward sends you to the file that holds the answer.
 
 - **Application architecture — no skill; the answer is in this file.** Cross-cutting architectural questions — how the monorepo fits together, the cross-package dependency flow, frontend routing and the context system, the data adapter pattern, the server/client boundary, settings architecture, how the packages connect — are answered above by § _Architecture_ (the package list, the `core` -> `data`/`matching`/`filters` -> `app-shared` -> `frontend`/`supabase` dependency flow, the adapter map, the `StaticSettings`/`DynamicSettings` split) and § _Frontend (SvelteKit)_ (routing, path aliases, key directories). For one subsystem rather than the whole, use that subsystem's skill below: `components`, `data`, `matching`, `filters` or `database`. There is deliberately no architecture skill: a stub whose entire body is a pointer back to this file routes nothing, so this entry carries its content directly instead.
-- **Svelte components and context reactivity** — creating, modifying or reviewing a `.svelte` component under `apps/frontend/src/lib/components`, `apps/frontend/src/lib/dynamic-components` or `apps/frontend/src/lib/candidate/components`; the runes-era prop and snippet API, `concatClass` styling, the WCAG 2.1 AA axe gate; and above all the context destructure trap and the `dataRoot` carve-out — a context value that renders empty, or that goes stale on cold / direct-URL entry. This is the second route to the rule stated in § _Context Destructuring Rule_ above.
+- **Svelte components and context reactivity** — creating, modifying or reviewing a `.svelte` component under `apps/frontend/src/lib/components`, `apps/frontend/src/lib/dynamic-components` or `apps/frontend/src/lib/contestant/components`; the runes-era prop and snippet API, `concatClass` styling, the WCAG 2.1 AA axe gate; and above all the context destructure trap and the `dataRoot` carve-out — a context value that renders empty, or that goes stale on cold / direct-URL entry. This is the second route to the rule stated in § _Context Destructuring Rule_ above.
   → `Skill("components")`
 - **The package domains** — one skill each, chosen by which package the file is in:
   - `packages/data` — the `DataRoot`/`DataObject` hierarchy, entity variants, question types and their matching interfaces, the nomination system, smart defaults, `MISSING_VALUE`.
@@ -355,9 +361,12 @@ Every entry here is one hop: it reaches either this file's own content or a skil
     → `Skill("database")`
 - **Restructuring a long-lived branch into a reviewable stack of PRs** — index-level tree surgery, pure-rename commit reconstruction, path-partition dry runs, byte-identity and commit-taxonomy proofs. Not for ordinary feature branches, which need none of it.
   → `Skill("ship-review-stack")`
+- **Recommended external agent skill sets** — installing or setting up an agent skill set that is not in this repository (today the Supabase skills), at a pinned commit and for your user only, never into the project; and what to do when such a skill's advice disagrees with a project skill, which then wins. Schema, migration and RLS work itself stays with `database`.
+  → `Skill("recommended-skills")`
 - **Why the skill corpus is shaped the way it is** — `.claude/skills/README.md` records the corpus measurement and the below-threshold verdict it produced, the judgements behind the current shape, the one-level routing rule every entry in this section obeys, and the conventions for adding a skill. Read it before writing a new skill — not to find an existing one, which is what the entries above are for.
-- **Spike findings for voting-advice-application-gsd** — three domains:
-  - Svelte 5 rune migration (spikes 001–012): reactive context shapes, `runeLocalStorage` helper, `untrack()` write-after-read invariant, token-keyed overlay registry, SSR-aware synchronous-init for appSettings, voterContext/candidateContext orchestration, destructure-trap reproduction, consumer-migration codemod, 4-wave migration order, HMR DX, `$derived.by` over per-field `page` reads for getRoute.
+- **Spike findings for voting-advice-application-gsd** — four domains:
+  - Svelte 5 rune migration (spikes 001–012): reactive context shapes, `runeLocalStorage` helper, `untrack()` write-after-read invariant, token-keyed overlay registry, SSR-aware synchronous-init for appSettings, voterContext/contestantContext orchestration, destructure-trap reproduction, consumer-migration codemod, 4-wave migration order, HMR DX, `$derived.by` over per-field `page` reads for getRoute.
   - Page navigation + View Transitions + a11y (spikes 013–016): SvelteKit already reuses `+page.svelte` across param-only URL changes (production: 9/25 ≈ 36% element survival); the user-perceived "redraw" is reactive content-node regeneration, fixed via `onNavigate(navigation => Promise(startViewTransition))` with per-element `view-transition-name`; unified-layout-with-empty-leaf shape (matches results pattern) + `{#key question.type}` for variant remount; WCAG 2.1 AA gate via `afterNavigate(focus({preventScroll: true}))` + `aria-live="polite"` route announcer + reduced-motion belt-and-braces.
   - Results redraw (spikes 031–034, landed by Phase 165.1): the voter results section was a genuine full-subtree remount, not content-node regeneration — one tracked `url.pathname` read defeated the `(located)` load's own `untrack`. Carries the two durable invariants with the mechanism behind each — a document View Transition must never run with names while a modal is open, and the `(located)` load must not read the URL tracked; overlay navigations get no document View Transition at all; one `DrawerHost` per app, mounted below that app's contexts, serving two openers; the teardown-safe last-defined-value payload; the list on a single innermost page node with every param optional; "did not remount" asserted by DOM node identity.
+  - Deno Edge Function typecheck (spikes 037–040): a scoped, import-map-free `apps/supabase/supabase/functions/deno.json` with `deno check .` run from that directory; Deno pinned as an npm devDependency of `@openvaa/supabase`; `deno.enablePaths`, never `deno.enable` or a root `deno.json`, so Deno tooling never reaches the vanilla TypeScript; `functions/_shared/` for a module more than one function uses. Measured on a four-function tree, with this branch's counts and the steps void here in the reference's own section for `feat/entity-signup-multi-grant`.
     → `Skill("spike-findings-voting-advice-application-gsd")`
