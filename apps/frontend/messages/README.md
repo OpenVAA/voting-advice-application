@@ -38,11 +38,16 @@ A locale directory must be complete even if no current deployment offers it.
    English message interpolates two values, so must yours.
 5. **Some values are HTML** and are rendered through a sanitiser. Keep the tag structure valid and keep
    heading levels consistent with the page that renders them — the `<h3>`s in
-   `dynamic.candidateAppPrivacy.registryStatement.content`, for example, sit under an `<h2>` that
+   `dynamic.contestantAppPrivacy.registryStatement.content`, for example, sit under an `<h2>` that
    `TermsOfUse.svelte` supplies, so they are correct at that level and would be wrong at any other.
 6. **Plural and selector forms use the inlang message format**, with a `declarations` / `selectors` /
    `match` object rather than a plain string. Add or remove a variant only together with its
-   `selectors` entry.
+   `selectors` entry. A variant key with more than one selector separates them with a comma and a
+   space (`infoQuestionsLeft=1, opinionQuestionsLeft=*`); a space alone compiles to a variant that
+   never matches. An exact count is the input itself matched as `=0` or `=1`, not the plural
+   category `zero` or `one`: no configured locale ever yields `zero`, and French `one` covers 0 too.
+   Every variant message with a number ends in a `*` catch-all, listed last, which takes every value
+   and category no other variant names.
 
 ## Checking your work
 
