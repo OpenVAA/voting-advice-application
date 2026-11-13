@@ -1,9 +1,9 @@
 /**
- * perm-access-disable consolidated minimal-data template.
+ * perm-access-disable minimal-data template.
  *
- * Consolidates the former `perm-disable-voter-app` + `perm-disable-candidate-app` templates into a single access-gating perm. The consolidated spec re-seeds this app_settings singleton per sub-test to exercise each of the three access modes:
+ * The one access-gating perm: it serves every access mode, so no dataset of a single mode exists. Its spec re-seeds this app_settings singleton per sub-test to exercise each of the three access modes:
  *   - `access.voterApp: false`        — voter-app routes (`/`, `/elections`) render the MaintenancePage.
- *   - `access.candidateApp: false`    — candidate-app route (`/candidate`) renders the MaintenancePage.
+ *   - `access.contestantApp: false`    — contestant-app route (`/contestant`) renders the MaintenancePage.
  *   - `access.underMaintenance: true` — the whole app renders the MaintenancePage.
  *
  * The template ships a single base posture (`access.voterApp: false`); the spec re-seeds the singleton per mode via `settingsOverlay` at setup time, matching the perm-singleton re-seed pattern. All three `access.*` flags are plain app-availability toggles seeded into the local test DB's app_settings — they gate maintenance-page display, NOT authentication or authorization.

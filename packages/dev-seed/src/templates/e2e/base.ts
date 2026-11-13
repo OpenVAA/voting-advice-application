@@ -19,8 +19,8 @@
  *     - Question categories: test-e2e-base-qg-info, test-e2e-base-qg-opin-base, test-e2e-base-qg-opin-opt-a, test-e2e-base-qg-opin-opt-b, test-e2e-base-qg-opin-el-reg, test-e2e-base-qg-opin-co-mun-se-sw, test-e2e-base-qg-opin-filt-a, test-e2e-base-qg-opin-filt-b
  *     - Questions:           test-e2e-base-qu-info-{type}, test-e2e-base-qu-opin-base-{i}-{type}, test-e2e-base-qu-opin-opt-a-1, test-e2e-base-qu-opin-opt-b-1, test-e2e-base-qu-opin-el-reg-1, test-e2e-base-qu-opin-co-mun-se-sw-1, test-e2e-base-qu-open-filt-mun-ne, test-e2e-base-qu-open-filt-mun-se
  *     - Alliances:           test-e2e-base-al-a, test-e2e-base-al-b
- *     - Organisations:       test-e2e-base-or-aa, test-e2e-base-or-ab, test-e2e-base-or-ba, test-e2e-base-or-bb, test-e2e-base-or-c
- *     - Candidates:          test-e2e-base-ca-{org}-{name} or test-e2e-base-ca-{org}-{n}-gen
+ *     - Organisations:       test-e2e-base-or-aa, test-e2e-base-or-ab, test-e2e-base-or-ba, test-e2e-base-or-bb, test-e2e-base-or-c, and the unconfirmed test-e2e-base-or-sel, test-e2e-base-or-invitation and test-e2e-base-or-registration
+ *     - Candidates:          test-e2e-base-ca-{org}-{name} or test-e2e-base-ca-{org}-{n}-gen; the two unconfirmed selection rows are test-e2e-base-ca-sel-{a|b}, the unconfirmed invitation row is test-e2e-base-ca-invitation, the four unconfirmed rows reserved for the registration, recovery and scan tests are test-e2e-base-ca-registration, test-e2e-base-ca-recovery and test-e2e-base-ca-scan-{open|used}, and the unconfirmed row reserved for the Admin App's account-flow tests is test-e2e-base-ca-admin-flows
  *     - Nominations:         test-e2e-base-nom-{constituency-stub}-{entity-type}-{entity-name}
  * - `generateTranslationsForAllLocales: false` (single-locale E2E).
  * - `seed: 42` for deterministic generation.
@@ -860,7 +860,7 @@ export const baseTemplate: Template = {
 
   // ------------------------------------------------------------------- candidates
 
-  // terms_of_use_accepted is set on all except CA-AA-Hidden. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
+  // CA-AA-Hidden, CA-AA-Unregistered, CA-Sel-A and CA-Sel-B are seeded unconfirmed, which is what hides them from voters; every other candidate takes the import's confirmed default. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
   //
   // Perfect-match candidate: CA-AA-Special (also exercises 4-case matrix below).
   // Worst-match candidate: CA-BA-1 (CO-Reg-N) — all base opinions at polar min.
@@ -1017,9 +1017,9 @@ export const baseTemplate: Template = {
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
       },
-      // Unregistered candidate under party AA in CO-Reg-N. NO terms_of_use_accepted (registration must trigger ToU gate). NO answersByExternalId (unregistered → no answers). NO editor grant (the sendEmail-driven invite flow writes it at runtime).
+      // Unregistered candidate under party AA. Seeded unconfirmed and with no nomination. NO answersByExternalId (unregistered → no answers). NO editor grant (the claim of the contestant journey's invitation writes it).
+      // The contestant journey's invitation confirms it and states its one nomination — under party AA in CO-Reg-N of the regional election, election symbol "999", unconfirmed — so voters never see it.
       // candidates table has NO email column; email lives in a sibling const file.
-      // Election symbol "999" is set on the paired nomination row below.
       {
         external_id: 'test-e2e-base-ca-aa-unregistered',
         first_name: 'Unregistered',
@@ -1386,7 +1386,7 @@ export const baseTemplate: Template = {
         constituency: { external_id: 'test-e2e-base-co-reg-n' },
         election_round: 1
       },
-      // Nomination for the unregistered candidate under OR-AA in CO-Reg-N. Election symbol "999" is the canonical sentinel for the unregistered-candidate fixture used by candidate-journey.
+      // One nomination for each of the three entity-selection rows, none under a parent. Their entities are unconfirmed, so voters do not see these nominations either.
       {
         external_id: 'test-e2e-base-nom-reg-n-ca-aa-unregistered',
         election_symbol: '999',

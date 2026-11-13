@@ -66,7 +66,7 @@ const REQUIRED_EXTERNAL_IDS: Array<{ table: string; id: string }> = [
   { table: 'constituencies', id: 'test-e2e-base-co-mun-ne' },
   { table: 'constituencies', id: 'test-e2e-base-co-mun-sw' },
 
-  // 5 organizations
+  // 8 organizations: the 5 parties voters see, the unconfirmed selection organization, the unconfirmed invitation organization and the unconfirmed registration organization
   { table: 'organizations', id: 'test-e2e-base-or-aa' },
   { table: 'organizations', id: 'test-e2e-base-or-c' },
 
