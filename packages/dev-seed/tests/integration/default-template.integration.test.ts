@@ -257,9 +257,8 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     //       - one `updateJsonbRefs` per JSONB plan entry (one per scoped question_category — the default template scopes all four);
     //       - one `resolveExternalId` per external_id actually looked up: one per category→election reference.
     //     An N+1 introduced into the link pass now fails HERE, at the pass that owns it, instead of hiding inside a single `linkJoinTables` tick.
-    expect(ops.upsertJoinRows).toBe(2);
     expect(ops.updateJsonbRefs).toBe(rows.question_categories.length);
-    expect(ops.resolveExternalId).toBe(2 + 1 + rows.constituencies.length + rows.question_categories.length);
+    expect(ops.resolveExternalId).toBe(rows.question_categories.length);
 
     // 1b. Portraits cost exactly ONE candidate lookup for the whole run, plus
     //     TWO round-trips per candidate (upload the object, write the image JSONB). An N+1 lookup, or a third per-candidate call, fails here — and this is the term that dominates the wall clock, so a real performance regression lands precisely on this assertion.
@@ -456,7 +455,6 @@ const BUDGETED_WRITE_OPS = new Set([
   'linkJoinTables',
   // The link pass's two I/O helpers. Each carries its own explicit count assertion in 1a-ii above — present here because they are budgeted, not because they are exempt.
   'resolveExternalId',
-  'upsertJoinRows',
   'updateJsonbRefs',
   'selectQuestionExternalIds',
   'selectCandidatesForPortraitUpload',

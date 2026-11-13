@@ -69,6 +69,9 @@ const REQUIRED_EXTERNAL_IDS: Array<{ table: string; id: string }> = [
   // 8 organizations: the 5 parties voters see, the unconfirmed selection organization, the unconfirmed invitation organization and the unconfirmed registration organization
   { table: 'organizations', id: 'test-e2e-base-or-aa' },
   { table: 'organizations', id: 'test-e2e-base-or-c' },
+  { table: 'organizations', id: 'test-e2e-base-or-sel' },
+  { table: 'organizations', id: 'test-e2e-base-or-invitation' },
+  { table: 'organizations', id: 'test-e2e-base-or-registration' },
 
   // 2 alliances
   { table: 'alliances', id: 'test-e2e-base-al-a' },
@@ -90,7 +93,23 @@ const REQUIRED_EXTERNAL_IDS: Array<{ table: string; id: string }> = [
   { table: 'candidates', id: 'test-e2e-base-ca-aa-hidden' },
   { table: 'candidates', id: 'test-e2e-base-ca-ba-1' },
   { table: 'candidates', id: 'test-e2e-base-ca-independent' },
-  { table: 'candidates', id: 'test-e2e-base-ca-aa-unregistered' }
+  { table: 'candidates', id: 'test-e2e-base-ca-aa-unregistered' },
+
+  // the two unconfirmed selection candidates
+  { table: 'candidates', id: 'test-e2e-base-ca-sel-a' },
+  { table: 'candidates', id: 'test-e2e-base-ca-sel-b' },
+
+  // the unconfirmed invitation candidate
+  { table: 'candidates', id: 'test-e2e-base-ca-invitation' },
+
+  // the four unconfirmed candidates reserved for the registration, recovery and scan tests
+  { table: 'candidates', id: 'test-e2e-base-ca-registration' },
+  { table: 'candidates', id: 'test-e2e-base-ca-recovery' },
+  { table: 'candidates', id: 'test-e2e-base-ca-scan-open' },
+  { table: 'candidates', id: 'test-e2e-base-ca-scan-used' },
+
+  // the unconfirmed candidate reserved for the Admin App's account-flow tests
+  { table: 'candidates', id: 'test-e2e-base-ca-admin-flows' }
 ];
 
 // ---------------------------------------------------------------------------
@@ -141,8 +160,16 @@ describe('baseTemplate — multi-election row-count shape (derived from e2e/base
     expect(fixedOf('constituencies')).toHaveLength(6);
   });
 
-  it('organizations.fixed has exactly 5 entries', () => {
-    expect(fixedOf('organizations')).toHaveLength(5);
+  it('organizations.fixed has 5 + 1 + 1 + 1 entries (the 5 parties voters see + 1 unconfirmed selection organization + 1 unconfirmed invitation organization + 1 unconfirmed registration organization)', () => {
+    expect(fixedOf('organizations')).toHaveLength(5 + 1 + 1 + 1);
+  });
+
+  it("candidates.fixed has 30 + 2 + 1 + 4 + 1 entries (30 journey candidates + 2 unconfirmed selection candidates + 1 unconfirmed invitation candidate + 4 unconfirmed candidates reserved for the registration, recovery and scan tests + 1 unconfirmed candidate reserved for the Admin App's account-flow tests)", () => {
+    expect(fixedOf('candidates')).toHaveLength(30 + 2 + 1 + 4 + 1);
+  });
+
+  it('nominations.fixed has 60 + 3 entries (60 journey nominations + 1 for each of the 3 selection rows; none for the invited candidate of the contestant journey, whose invitation creates its nomination, for the 2 invitation rows or for the 5 rows reserved for the registration, recovery and scan tests)', () => {
+    expect(fixedOf('nominations')).toHaveLength(60 + 3);
   });
 
   it('alliances.fixed has exactly 2 entries', () => {
@@ -182,19 +209,46 @@ describe('baseTemplate — display-text contracts (bracketed [id] desc naming)',
 });
 
 describe('baseTemplate — registration + hierarchy invariants', () => {
-  it('test-e2e-base-ca-aa-hidden has NO terms_of_use_accepted (candidate-level hidden)', () => {
+  it('test-e2e-base-ca-aa-hidden is seeded confirmed: false (candidate-level hidden)', () => {
     const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-aa-hidden') as
-      { terms_of_use_accepted?: string } | undefined;
+      { confirmed?: boolean } | undefined;
     expect(c).toBeDefined();
-    expect(c?.terms_of_use_accepted).toBeUndefined();
+    expect(c?.confirmed).toBe(false);
   });
 
-  it('test-e2e-base-ca-aa-unregistered has NO terms_of_use_accepted and NO answers', () => {
+  it('test-e2e-base-ca-aa-unregistered is seeded confirmed: false and has NO answers', () => {
     const c = fixedOf('candidates').find((r) => r.external_id === 'test-e2e-base-ca-aa-unregistered') as
-      { terms_of_use_accepted?: string; answersByExternalId?: unknown } | undefined;
+      { confirmed?: boolean; answersByExternalId?: unknown } | undefined;
     expect(c).toBeDefined();
-    expect(c?.terms_of_use_accepted).toBeUndefined();
+    expect(c?.confirmed).toBe(false);
     expect(c?.answersByExternalId).toBeUndefined();
+  });
+
+  it("the 2 unconfirmed control rows, the 2 selection candidates, the invitation candidate, the 4 candidates reserved for the registration, recovery and scan tests and the one reserved for the Admin App's account-flow tests are the only candidates that state confirmed", () => {
+    const stating = (fixedOf('candidates') as Array<{ external_id?: string }>)
+      .filter((r) => 'confirmed' in r)
+      .map((r) => r.external_id)
+      .sort();
+    expect(stating).toEqual([
+      'test-e2e-base-ca-aa-hidden',
+      'test-e2e-base-ca-aa-unregistered',
+      'test-e2e-base-ca-admin-flows',
+      'test-e2e-base-ca-invitation',
+      'test-e2e-base-ca-recovery',
+      'test-e2e-base-ca-registration',
+      'test-e2e-base-ca-scan-open',
+      'test-e2e-base-ca-scan-used',
+      'test-e2e-base-ca-sel-a',
+      'test-e2e-base-ca-sel-b'
+    ]);
+  });
+
+  it('the selection organization, the invitation organization and the registration organization are the only organizations that state confirmed', () => {
+    const stating = (fixedOf('organizations') as Array<{ external_id?: string }>)
+      .filter((r) => 'confirmed' in r)
+      .map((r) => r.external_id)
+      .sort();
+    expect(stating).toEqual(['test-e2e-base-or-invitation', 'test-e2e-base-or-registration', 'test-e2e-base-or-sel']);
   });
 
   it('test-e2e-base-ca-independent has no organization ref (independent candidate)', () => {
@@ -220,6 +274,235 @@ describe('baseTemplate — registration + hierarchy invariants', () => {
       expect(co, `missing constituency ${id}`).toBeDefined();
       expect(co?.parent?.external_id, `${id} missing parent ref`).toMatch(/^test-e2e-base-co-reg-[ns]$/);
     }
+  });
+});
+
+describe('baseTemplate — the three entity-selection rows', () => {
+  type SelectionRow = {
+    external_id?: string;
+    confirmed?: boolean;
+    first_name?: string;
+    last_name?: string;
+    name?: { en?: string };
+    short_name?: { en?: string };
+    organization?: unknown;
+    answersByExternalId?: Record<string, { value: unknown }>;
+  };
+  type NominationRow = {
+    external_id?: string;
+    candidate?: { external_id?: string };
+    organization?: { external_id?: string };
+    parent_nomination?: unknown;
+    election?: { external_id?: string };
+    constituency?: { external_id?: string };
+  };
+
+  const SELECTION_ROWS = [
+    { table: 'candidates', ref: 'candidate', id: 'test-e2e-base-ca-sel-a' },
+    { table: 'candidates', ref: 'candidate', id: 'test-e2e-base-ca-sel-b' },
+    { table: 'organizations', ref: 'organization', id: 'test-e2e-base-or-sel' }
+  ] as const;
+
+  function rowOf(table: string, id: string): SelectionRow | undefined {
+    return (fixedOf(table) as Array<SelectionRow>).find((r) => r.external_id === id);
+  }
+
+  it.each(SELECTION_ROWS)('$id is seeded confirmed: false, so voters do not see it', ({ table, id }) => {
+    const row = rowOf(table, id);
+    expect(row).toBeDefined();
+    expect(row?.confirmed).toBe(false);
+  });
+
+  it.each(SELECTION_ROWS)(
+    '$id has exactly one nomination, in the regional election, under no parent',
+    ({ ref, id }) => {
+      const noms = (fixedOf('nominations') as Array<NominationRow>).filter((n) => n[ref]?.external_id === id);
+      expect(noms).toHaveLength(1);
+      expect(noms[0].election?.external_id).toBe('test-e2e-base-el-reg');
+      expect(noms[0].constituency?.external_id).toBe('test-e2e-base-co-reg-n');
+      expect(noms[0].parent_nomination).toBeUndefined();
+    }
+  );
+
+  it('neither selection candidate belongs to an organization, so no party gains a member', () => {
+    expect(rowOf('candidates', 'test-e2e-base-ca-sel-a')?.organization).toBeUndefined();
+    expect(rowOf('candidates', 'test-e2e-base-ca-sel-b')?.organization).toBeUndefined();
+  });
+
+  it('the two selection candidates differ in first name and last name, and sort A before B on both', () => {
+    const a = rowOf('candidates', 'test-e2e-base-ca-sel-a');
+    const b = rowOf('candidates', 'test-e2e-base-ca-sel-b');
+    expect(a?.first_name).toBe('Switch-A');
+    expect(a?.last_name).toBe('Entity One');
+    expect(b?.first_name).toBe('Switch-B');
+    expect(b?.last_name).toBe('Entity Two');
+    expect(a!.first_name!.localeCompare(b!.first_name!)).toBeLessThan(0);
+    expect(a!.last_name!.localeCompare(b!.last_name!)).toBeLessThan(0);
+  });
+
+  it('the two selection candidates answer the same questions as CA-AA-1 and differ on QU-Opin-Base-1 alone', () => {
+    const session = rowOf('candidates', 'test-e2e-base-ca-aa-1')?.answersByExternalId;
+    const a = rowOf('candidates', 'test-e2e-base-ca-sel-a')?.answersByExternalId;
+    const b = rowOf('candidates', 'test-e2e-base-ca-sel-b')?.answersByExternalId;
+    expect(session).toBeDefined();
+    expect(a).toEqual(session);
+    expect(Object.keys(b ?? {}).sort()).toEqual(Object.keys(session ?? {}).sort());
+    const differing = Object.keys(a ?? {}).filter((key) => JSON.stringify(a![key]) !== JSON.stringify(b![key]));
+    expect(differing).toEqual(['test-e2e-base-qu-opin-base-1-likert5']);
+    expect(a!['test-e2e-base-qu-opin-base-1-likert5'].value).toBe('3');
+    expect(b!['test-e2e-base-qu-opin-base-1-likert5'].value).toBe('5');
+  });
+
+  it('the selection organization has a name and a short name of its own and no answers', () => {
+    const org = rowOf('organizations', 'test-e2e-base-or-sel');
+    expect(org?.name?.en).toBe('[or-sel] Party Sel');
+    expect(org?.short_name?.en).toBe('SEL');
+    expect(org?.answersByExternalId).toBeUndefined();
+    const others = (fixedOf('organizations') as Array<SelectionRow>).filter(
+      (r) => r.external_id !== 'test-e2e-base-or-sel'
+    );
+    expect(others.map((r) => r.name?.en)).not.toContain(org?.name?.en);
+    expect(others.map((r) => r.short_name?.en)).not.toContain(org?.short_name?.en);
+  });
+});
+
+describe('baseTemplate — the two invitation rows', () => {
+  type InvitationRow = {
+    external_id?: string;
+    confirmed?: boolean;
+    first_name?: string;
+    last_name?: string;
+    name?: { en?: string };
+    short_name?: { en?: string };
+    organization?: unknown;
+    answersByExternalId?: unknown;
+  };
+  type NominationRefs = {
+    candidate?: { external_id?: string };
+    organization?: { external_id?: string };
+  };
+
+  const INVITATION_ROWS = [
+    { table: 'candidates', ref: 'candidate', id: 'test-e2e-base-ca-invitation' },
+    { table: 'organizations', ref: 'organization', id: 'test-e2e-base-or-invitation' }
+  ] as const;
+
+  function rowOf(table: string, id: string): InvitationRow | undefined {
+    return (fixedOf(table) as Array<InvitationRow>).find((r) => r.external_id === id);
+  }
+
+  it.each(INVITATION_ROWS)(
+    '$id is seeded confirmed: false, so only an invitation that confirms it makes it confirmed',
+    ({ table, id }) => {
+      const row = rowOf(table, id);
+      expect(row).toBeDefined();
+      expect(row?.confirmed).toBe(false);
+    }
+  );
+
+  it.each(INVITATION_ROWS)('$id has no nomination, so it can never be public', ({ ref, id }) => {
+    const noms = (fixedOf('nominations') as Array<NominationRefs>).filter((n) => n[ref]?.external_id === id);
+    expect(noms).toHaveLength(0);
+  });
+
+  it.each(INVITATION_ROWS)('$id answers nothing', ({ table, id }) => {
+    expect(rowOf(table, id)?.answersByExternalId).toBeUndefined();
+  });
+
+  it('the invitation candidate has both names and belongs to no organization', () => {
+    const candidate = rowOf('candidates', 'test-e2e-base-ca-invitation');
+    expect(candidate?.first_name?.trim()).toBeTruthy();
+    expect(candidate?.last_name?.trim()).toBeTruthy();
+    expect(candidate?.organization).toBeUndefined();
+  });
+
+  it('the invitation organization has a name and a short name no other organization carries', () => {
+    const org = rowOf('organizations', 'test-e2e-base-or-invitation');
+    expect(org?.name?.en?.trim()).toBeTruthy();
+    expect(org?.short_name?.en?.trim()).toBeTruthy();
+    const others = (fixedOf('organizations') as Array<InvitationRow>).filter(
+      (r) => r.external_id !== 'test-e2e-base-or-invitation'
+    );
+    expect(others.map((r) => r.name?.en)).not.toContain(org?.name?.en);
+    expect(others.map((r) => r.short_name?.en)).not.toContain(org?.short_name?.en);
+  });
+
+  it('no candidate belongs to the invitation organization', () => {
+    const members = (fixedOf('candidates') as Array<{ organization?: { external_id?: string } }>).filter(
+      (c) => c.organization?.external_id === 'test-e2e-base-or-invitation'
+    );
+    expect(members).toHaveLength(0);
+  });
+});
+
+describe("baseTemplate — the six rows reserved for the registration, recovery and scan tests and the Admin App's account-flow tests", () => {
+  type ReservedRow = {
+    external_id?: string;
+    confirmed?: boolean;
+    first_name?: string;
+    last_name?: string;
+    name?: { en?: string };
+    short_name?: { en?: string };
+    organization?: unknown;
+    answersByExternalId?: unknown;
+  };
+
+  const RESERVED_ROWS = [
+    { table: 'candidates', id: 'test-e2e-base-ca-registration' },
+    { table: 'organizations', id: 'test-e2e-base-or-registration' },
+    { table: 'candidates', id: 'test-e2e-base-ca-recovery' },
+    { table: 'candidates', id: 'test-e2e-base-ca-scan-open' },
+    { table: 'candidates', id: 'test-e2e-base-ca-scan-used' },
+    { table: 'candidates', id: 'test-e2e-base-ca-admin-flows' }
+  ] as const;
+  const RESERVED_CANDIDATES = RESERVED_ROWS.filter((row) => row.table === 'candidates');
+
+  function rowOf(table: string, id: string): ReservedRow | undefined {
+    return (fixedOf(table) as Array<ReservedRow>).find((r) => r.external_id === id);
+  }
+
+  it.each(RESERVED_ROWS)('$id is seeded confirmed: false', ({ table, id }) => {
+    const row = rowOf(table, id);
+    expect(row).toBeDefined();
+    expect(row?.confirmed).toBe(false);
+  });
+
+  it.each(RESERVED_ROWS)(
+    '$id is named once in the whole template, so no nomination, answer or other row refers to it and it can never be public',
+    ({ id }) => {
+      expect(JSON.stringify(baseTemplate).split(`"${id}"`).length - 1).toBe(1);
+    }
+  );
+
+  it.each(RESERVED_ROWS)('$id answers nothing', ({ table, id }) => {
+    expect(rowOf(table, id)).toBeDefined();
+    expect(rowOf(table, id)?.answersByExternalId).toBeUndefined();
+  });
+
+  it.each(RESERVED_CANDIDATES)('$id has both names and belongs to no organization', ({ table, id }) => {
+    const candidate = rowOf(table, id);
+    expect(candidate?.first_name?.trim()).toBeTruthy();
+    expect(candidate?.last_name?.trim()).toBeTruthy();
+    expect(candidate?.organization).toBeUndefined();
+  });
+
+  it('each reserved candidate has a full name no other candidate of the dataset carries', () => {
+    const fullNames = (fixedOf('candidates') as Array<ReservedRow>).map((r) => `${r.first_name} ${r.last_name}`);
+    for (const { table, id } of RESERVED_CANDIDATES) {
+      const row = rowOf(table, id);
+      expect(fullNames.filter((name) => name === `${row?.first_name} ${row?.last_name}`)).toHaveLength(1);
+    }
+  });
+
+  it('the registration organization has a name and a short name no other organization carries', () => {
+    const org = rowOf('organizations', 'test-e2e-base-or-registration');
+    expect(org?.name?.en?.trim()).toBeTruthy();
+    expect(org?.short_name?.en?.trim()).toBeTruthy();
+    const others = (fixedOf('organizations') as Array<ReservedRow>).filter(
+      (r) => r.external_id !== 'test-e2e-base-or-registration'
+    );
+    expect(others.map((r) => r.name?.en)).not.toContain(org?.name?.en);
+    expect(others.map((r) => r.short_name?.en)).not.toContain(org?.short_name?.en);
   });
 });
 

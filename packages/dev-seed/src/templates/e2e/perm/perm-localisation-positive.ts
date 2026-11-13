@@ -124,7 +124,6 @@ export const permLocalizationPositiveTemplate: Template = {
         external_id: 'ca-1-1a',
         first_name: '[CA1A]',
         last_name: 'Candidate One A',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 0,
         organization: { external_id: `${P}or-1` },
         answersByExternalId: {

@@ -17,8 +17,8 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PROPERTY_MAP } from '@openvaa/supabase-types';
 import { describe, expect, it } from 'vitest';
-import negctlEntityTypeSnake from './fixtures/negctl-questions-entity-type';
-import negctlEntityTypeCamel from './fixtures/negctl-questions-entity-type-camel';
+import negctlEntityTypeSnake from './fixtures/negctl-nominations-entity-type';
+import negctlEntityTypeCamel from './fixtures/negctl-nominations-entity-type-camel';
 import { assertKnownRowProps } from '../src/assertKnownRowProps';
 import { DENIED_BY_TABLE, deniedKeys, SKIP_COLUMNS_NOT_DENIED } from '../src/template/permittedKeys';
 
@@ -225,13 +225,9 @@ describe('assertKnownRowProps — source (4): the RPC relationship references ar
 // The deny-list and its documented, non-throwing exclusion table
 // -----------------------------------------------------------------------------
 
-describe('assertKnownRowProps — entity_type is denied, the other four skip_columns are excluded', () => {
-  it('throws the DENY message for entity_type on each of the three declaring tables', () => {
-    for (const [collection, externalId] of [
-      ['questions', 'qu-1'],
-      ['question_categories', 'qc-1'],
-      ['nominations', 'nom-1']
-    ] as const) {
+describe('assertKnownRowProps — entity_type is denied on nominations, the other four skip_columns are excluded', () => {
+  it('throws the DENY message for entity_type on the one table that denies it', () => {
+    for (const [collection, externalId] of [['nominations', 'nom-1']] as const) {
       const message = messageOf(() =>
         assertKnownRowProps({ [collection]: [{ external_id: externalId, entity_type: 'candidate' }] })
       );
@@ -246,14 +242,10 @@ describe('assertKnownRowProps — entity_type is denied, the other four skip_col
     }
   });
 
-  it('throws the DENY message for the CAMEL form entityType on each of the three declaring tables', () => {
-    // `COLUMN_MAP` maps `entity_type` → `entityType`, so source (1) admits the camel form on every table that declares the column. A deny-list holding only the snake form would let it through: `bulkImport` resolves `entityType` to `entity_type`, the RPC's `skip_columns` discards it, and the seed exits 0 with the column unset.
+  it('throws the DENY message for the CAMEL form entityType on the one table that denies it', () => {
+    // `COLUMN_MAP` maps `entity_type` → `entityType`, so source (1) admits the camel form on every table that declares the column. A deny-list holding only the snake form would let it through: `bulkImport` resolves `entityType` to `entity_type`, the RPC's `skip_columns` discards it, and the seed exits 0 with a row that ignores what the author wrote.
     // The camel form must produce the SAME deny message as the snake one.
-    for (const [collection, externalId] of [
-      ['questions', 'qu-1'],
-      ['question_categories', 'qc-1'],
-      ['nominations', 'nom-1']
-    ] as const) {
+    for (const [collection, externalId] of [['nominations', 'nom-1']] as const) {
       const message = messageOf(() =>
         assertKnownRowProps({ [collection]: [{ external_id: externalId, entityType: 'candidate' }] })
       );
@@ -265,6 +257,18 @@ describe('assertKnownRowProps — entity_type is denied, the other four skip_col
       expect(message).toMatch(/[Rr]emove it/);
       // The camel form must NOT fall through to the allow-list: the allow-list PERMITS it, so falling through means passing.
       expect(message).not.toMatch(/unknown property/);
+    }
+  });
+
+  it('PERMITS entity_type, in both spellings, on the two question tables, where the RPC carries it', () => {
+    // On `questions` and `question_categories` the column is a filter list, not a generated value: the RPC stores it and the database validates it. The value is an array, the only shape the column accepts beyond null.
+    for (const collection of ['questions', 'question_categories'] as const) {
+      for (const key of ['entity_type', 'entityType'] as const) {
+        const message = messageOf(() =>
+          assertKnownRowProps({ [collection]: [{ external_id: 'row-1', [key]: ['organization'] }] })
+        );
+        expect(message, `${collection}.${key}`).toBe('');
+      }
     }
   });
 
@@ -288,10 +292,10 @@ describe('assertKnownRowProps — entity_type is denied, the other four skip_col
       ['snake', negctlEntityTypeSnake],
       ['camel', negctlEntityTypeCamel]
     ] as const) {
-      const rows = fixture.questions.fixed as Array<Record<string, unknown>>;
+      const rows = fixture.nominations.fixed as Array<Record<string, unknown>>;
       // The fixture is a template, so guard the shape: an empty `fixed[]` would make this case pass without looking at anything.
       expect(rows.length, label).toBeGreaterThan(0);
-      const message = messageOf(() => assertKnownRowProps({ questions: rows }));
+      const message = messageOf(() => assertKnownRowProps({ nominations: rows }));
       expect(message, label).toMatch(/skip_columns/);
       expect(message, label).not.toMatch(/unknown property/);
     }
@@ -353,8 +357,8 @@ describe('assertKnownRowProps — entity_type is denied, the other four skip_col
     expect([...denied].sort()).toEqual(['entity_type']);
   });
 
-  it('denies entity_type on exactly the three tables that declare the column', () => {
-    expect(Object.keys(DENIED_BY_TABLE).sort()).toEqual(['nominations', 'question_categories', 'questions']);
+  it('denies entity_type on nominations alone, the one table where the column is generated', () => {
+    expect(Object.keys(DENIED_BY_TABLE).sort()).toEqual(['nominations']);
   });
 });
 

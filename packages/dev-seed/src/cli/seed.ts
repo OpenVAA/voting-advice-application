@@ -103,7 +103,7 @@ try {
   const writeResult: unknown = await (writer.write as (...args: Array<unknown>) => Promise<unknown>)(
     rows,
     (template as Template & { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_',
-    { openForVoters: template.openForVoters }
+    { openForVoters: template.openForVoters, templateName: templateArg }
   );
   const portraits = extractPortraitCount(writeResult);
 
