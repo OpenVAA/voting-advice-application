@@ -59,9 +59,7 @@ The logo is rendered as a `<svg>` element, and you can also pass any valid attri
         c += ' fill-neutral inline';
         break;
       default:
-    }
-    if (color != null) {
-      c += ` fill-${color} inline`;
+        if (color != null) c += ` fill-${color} inline`;
     }
     return c;
   });
