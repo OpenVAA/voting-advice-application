@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { load as adminLoad } from './+layout.server';
-import { load as candidateLoad } from '../candidate/+layout.server';
+import { load as contestantLoad } from '../contestant/+layout.server';
 import type { getUserData } from '$lib/auth/getUserData';
 
 /** The exact member list the projection is allowed to carry. An adjacent extra member fails by name against this array. */
@@ -66,7 +66,7 @@ function authenticatedEvent({
 
 const LOADS: Array<[string, LoadFn]> = [
   ['routes/admin/+layout.server.ts', adminLoad as unknown as LoadFn],
-  ['routes/candidate/+layout.server.ts', candidateLoad as unknown as LoadFn]
+  ['routes/contestant/+layout.server.ts', contestantLoad as unknown as LoadFn]
 ];
 
 describe.each(LOADS)('%s — the returned session projection', (_name, load) => {
@@ -179,7 +179,7 @@ describe('getUserData’s structural ancestor-data type still names a REQUIRED m
    */
   it('both loads’ own return types are accepted where the helper expects its ancestor data', () => {
     const adminPayloadSatisfiesTheHelper: Accepts<Awaited<ReturnType<typeof adminLoad>>> = true;
-    const candidatePayloadSatisfiesTheHelper: Accepts<Awaited<ReturnType<typeof candidateLoad>>> = true;
+    const candidatePayloadSatisfiesTheHelper: Accepts<Awaited<ReturnType<typeof contestantLoad>>> = true;
 
     expect([adminPayloadSatisfiesTheHelper, candidatePayloadSatisfiesTheHelper]).toEqual([true, true]);
   });
