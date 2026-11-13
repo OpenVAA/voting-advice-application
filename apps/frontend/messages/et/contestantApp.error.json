@@ -1,0 +1,13 @@
+{
+  "contestantApp.error": {
+    "saveFailed": "Vabandust! Sinu vastuste salvestamine ebaõnnestus. Palun proovi uuesti ja kui probleem jätkub, võta ühendust toega.",
+    "nameLocked": {
+      "candidate": "Sinu nime ei saanud salvestada: administraator on sinu profiili kinnitanud ja nime ei saa siin enam muuta. Sinu muud muudatused salvestati. Kui nimi on vale, võta palun ühendust toega.",
+      "organization": "Nime ja lühendit ei saanud salvestada: administraator on sinu erakonna kinnitanud ja neid ei saa siin enam muuta. Sinu muud muudatused salvestati. Kui need on valed, võta palun ühendust toega."
+    },
+    "readFailed": {
+      "content": "Sinu andmeid ei õnnestunud laadida. Oled endiselt sisse logitud, nii et võid uuesti proovida. Kui probleem jätkub, võta ühendust toega.",
+      "tryAgain": "Proovi uuesti"
+    }
+  }
+}

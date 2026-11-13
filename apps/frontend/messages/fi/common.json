@@ -14,11 +14,11 @@
       "plural": "ehdokkaat",
       "singular": "ehdokas"
     },
-    "candidatePortrait": "Omakuva",
     "clear": "Tyhjennä",
     "close": "Sulje",
     "closeDialog": "Sulje valintaikkuna",
     "closeMenu": "Sulje valikko",
+    "color": "Väri",
     "confirmed": "Vahvistettu",
     "constituency": "Vaalipiiri",
     "continue": "Jatka",
@@ -31,7 +31,12 @@
       "organization": "Vaalisymboli"
     },
     "email": "Sähköposti",
+    "emailConfirmation": "Vahvista sähköposti",
     "emailPlaceholder": "Sähköposti",
+    "entityImage": {
+      "candidate": "Omakuva",
+      "organization": "Logo"
+    },
     "expandOrCollapse": "Laajenna tai pienennä tämä sisältö",
     "faction": {
       "plural": "ryhmittymät",
@@ -46,12 +51,17 @@
     "lastName": "Sukunimi",
     "loading": "Ladataan…",
     "locked": "Lukittu",
+    "loggedOutAutomatically": "Sinut kirjattiin automaattisesti ulos, koska aloittamaasi uloskirjautumista ei peruttu ajoissa.",
+    "loggedOutElsewhere": "Sinut kirjattiin ulos toisessa välilehdessä tai ikkunassa.",
     "login": "Kirjaudu",
     "logout": "Kirjaudu ulos",
+    "logoutFailed": "Uloskirjautumista ei voitu vahvistaa. Saatat olla yhä kirjautuneena, joten yritä uudelleen.",
+    "logoutUnsavedChanges": "Sinulla on tallentamattomia muutoksia. Ne menetetään, jos kirjaudut ulos.",
     "madeWithPrefix": "Rakennettu",
     "madeWithSuffix": ":n avulla",
     "missingAnswer": "—",
     "multipleAnswerSeparator": " • ",
+    "name": "Nimi",
     "nomination": "Ehdokkuus",
     "openCloseMenu": "Avaa tai sulje valikko",
     "openMenu": "Avaa valikko",
@@ -63,7 +73,6 @@
     },
     "password": "Salasana",
     "passwordConfirmation": "Vahvista salasana",
-    "pending": "Vahvistamaton",
     "primaryActions": "Ensijaiset toiminnot",
     "privacy": {
       "dataCollection": {
@@ -82,9 +91,9 @@
     "saveAndContinue": "Tallenna ja jatka",
     "saveAndReturn": "Tallenna ja palaa",
     "saving": "Tallennetaan…",
+    "shortName": "Lyhenne",
     "showFullImage": "Näytä täysikokoinen kuva",
     "skipToMain": "Hyppää sisältöön",
-    "state": "Tila",
     "success": "Toiminto onnistui!",
     "thanksNo": "Ei kiitos",
     "unaffiliated": "Sitoutumaton",

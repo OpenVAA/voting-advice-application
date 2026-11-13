@@ -1,22 +1,22 @@
 {
   "adminApp.factorAnalysis": {
-    "title": "Factor Analysis",
-    "description": "Analyze and manage factors for the election questions.",
+    "title": "Analyse factorielle",
+    "description": "Analysez et gérez les facteurs des questions de l’élection.",
     "compute": {
-      "title": "Compute factors",
-      "description": "Compute the latent factors from the answers given by candidates and parties.",
-      "selectElections": "Select the elections for which to compute the factors.",
-      "button": "Compute factors",
-      "buttonLoading": "Computing factors...",
-      "mayTakeTime": "This may take some time.",
-      "noElections": "No elections available",
-      "candidates": "candidates",
+      "title": "Calculer les facteurs",
+      "description": "Calculez les facteurs latents à partir des réponses des candidat·es et des partis.",
+      "selectElections": "Sélectionnez les élections pour lesquelles calculer les facteurs.",
+      "button": "Calculer les facteurs",
+      "buttonLoading": "Calcul des facteurs…",
+      "mayTakeTime": "Cela peut prendre un certain temps.",
+      "noElections": "Aucune élection disponible",
+      "candidates": "candidat·es",
       "parties": {
-        "some": "and {count} parties",
-        "none": "and no parties"
+        "some": "et {count} partis",
+        "none": "et aucun parti"
       },
-      "haveAnswered": "have answered",
-      "error": "Failed to compute factors"
+      "haveAnswered": "ont répondu",
+      "error": "Échec du calcul des facteurs"
     }
   }
 }

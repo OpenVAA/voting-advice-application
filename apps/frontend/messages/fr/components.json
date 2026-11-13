@@ -14,9 +14,11 @@
       "addImage": "Ajouter une image",
       "allSelected": "Tout sélectionné",
       "changeImage": "Changer l’image",
+      "colorPicker": "Sélecteur de couleur",
       "deleteOption": "Désélectionner {option}",
       "error": {
         "fileLoadingError": "Échec du chargement du fichier.",
+        "invalidColor": "La couleur n’est pas valide. Saisissez un code hexadécimal, par exemple #2546a8.",
         "invalidEmail": "L'adresse e-mail n'est pas valide.",
         "invalidFile": "Le fichier n’est pas valide.",
         "invalidUrl": "L’URL n’est pas valide.",
@@ -25,7 +27,9 @@
       "hideTranslations": "Masquer",
       "imageInfo": "La taille maximale de l’image est de {maxFilesize} Mo. Veuillez patienter lors de l’enregistrement, le chargement peut prendre un moment.",
       "multilingualInfo": "Vous pouvez saisir votre réponse dans toutes les langues de l’application si vous le souhaitez.",
+      "noColor": "Aucune couleur",
       "noImage": "Aucune image",
+      "requiredLocaleInfo": "Langue obligatoire : {language}. Les autres langues sont facultatives.",
       "selectAnother": "Sélectionner une autre",
       "selectFirst": "Sélectionner d’abord",
       "selectOne": "Sélectionner",
@@ -42,7 +46,6 @@
       "remove": "Supprimer l'élément"
     },
     "passwordInput": {
-      "hidePassword": "Masquer le mot de passe",
       "password": "Mot de passe",
       "placeholder": "Mot de passe",
       "showPassword": "Afficher le mot de passe"
@@ -55,7 +58,7 @@
     },
     "select": {
       "noMatchingOptions": "Aucune option correspondante trouvée",
-      "placeholder": "Select an option below"
+      "placeholder": "Sélectionnez une option ci-dessous"
     },
     "video": {
       "captions": "Sous-titres",
@@ -72,28 +75,6 @@
       "showTranscript": "Afficher la vidéo en texte",
       "showVideo": "Afficher la vidéo",
       "subtitles": "Sous-titres",
-      "timeLeft": [
-        {
-          "declarations": [
-            "input minutes",
-            "local minutesPlural = minutes: plural",
-            "input seconds",
-            "local secondsPlural = seconds: plural"
-          ],
-          "selectors": ["minutesPlural", "secondsPlural"],
-          "match": {
-            "minutesPlural=zero secondsPlural=zero": "Il reste  ",
-            "minutesPlural=zero secondsPlural=one": "Il reste  une seconde",
-            "minutesPlural=zero secondsPlural=other": "Il reste  {seconds} secondes",
-            "minutesPlural=one secondsPlural=zero": "Il reste une minute ",
-            "minutesPlural=one secondsPlural=one": "Il reste une minute une seconde",
-            "minutesPlural=one secondsPlural=other": "Il reste une minute {seconds} secondes",
-            "minutesPlural=other secondsPlural=zero": "Il reste {minutes} minutes ",
-            "minutesPlural=other secondsPlural=one": "Il reste {minutes} minutes une seconde",
-            "minutesPlural=other secondsPlural=other": "Il reste {minutes} minutes {seconds} secondes"
-          }
-        }
-      ],
       "transcript": "Texte",
       "transcriptToggleLabel": "Basculer entre la vidéo et le texte",
       "unmute": "Activer le son",
