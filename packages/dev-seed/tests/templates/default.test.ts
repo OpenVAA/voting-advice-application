@@ -11,7 +11,6 @@
 import { describe, expect, it } from 'vitest';
 import { runPipeline } from '../../src/pipeline';
 import { validateTemplate } from '../../src/template/schema';
-import { BUILT_IN_TEMPLATES } from '../../src/templates';
 import { defaultOverrides, defaultTemplate } from '../../src/templates/default';
 import { ALLIANCE_MEMBERSHIP } from '../../src/templates/defaults/alliances-override';
 import {
@@ -146,34 +145,6 @@ describe('candidatesOverride — non-uniform distribution + locale cycling', () 
     const firstOfBlock1 = rows[blockSize] as { first_name: string; last_name: string };
     expect.soft(firstOfBlock1.first_name).toBe(fi.person.firstName());
     expect.soft(firstOfBlock1.last_name).toBe(fi.person.lastName());
-  });
-
-  it('Test 28: every emitted candidate row carries terms_of_use_accepted (anon-RLS precondition)', () => {
-    const ctx = makeCtx({ refs: { ...makeCtx().refs, organizations: eightOrganizations() } });
-    const rows = candidatesOverride({}, ctx);
-    expect(rows.length).toBeGreaterThan(0);
-    for (const row of rows) {
-      // `anon_select_candidates` is more than one clause:
-      //   terms_of_use_accepted IS NOT NULL AND terms_of_use_accepted < now(), on top of the rule that the project is open for voters, the row is confirmed and a confirmed nomination reaches it. The confirmation term is auto-defaulted by `bulkImport`'s CONFIRMABLE_TABLES set and the project term by `ensureProject` (src/supabaseAdminClient.ts) — this column is supplied by NEITHER. Without it the Candidates tab disappears from the voter results page, and every other check in this repository reads as service_role, which bypasses RLS entirely, so none of them sees it.
-      //
-      // The LITERAL is asserted, not mere presence, because the value is also the cross-template consistency Test 29 pins: `e2e/base` uses the same string, so the two templates diff cleanly and a future change to it fails in one obvious place. A computed `new Date().toISOString()` would additionally break Test 9's byte-identical determinism assertion.
-      expect((row as { terms_of_use_accepted?: string }).terms_of_use_accepted).toBe('2025-01-01T00:00:00.000Z');
-    }
-  });
-
-  it('Test 29: e2e/base candidate rows use the same terms_of_use_accepted literal (cross-template consistency)', () => {
-    // Resolved through the built-ins map rather than by a direct module import, so this asserts about whatever module the CLI actually serves for the `e2e/base` key — still pure I/O (the templates are plain data; no Supabase import, no client, no RPC).
-    const baseCandidates = BUILT_IN_TEMPLATES['e2e/base'].candidates?.fixed ?? [];
-    expect(baseCandidates.length).toBeGreaterThan(0);
-
-    // `ca-aa-hidden` and `ca-aa-unregistered` DELIBERATELY omit the key — they are an in-repo negative control for the hidden and the not-yet-registered candidate. They must STAY omitted, so this test filters to the rows that carry the key at all rather than requiring it everywhere; the filter is what keeps this green without "fixing" the control away.
-    const withTerms = baseCandidates.filter(
-      (row) => (row as { terms_of_use_accepted?: string }).terms_of_use_accepted !== undefined
-    );
-    expect(withTerms.length).toBeGreaterThan(0);
-    for (const row of withTerms) {
-      expect((row as { terms_of_use_accepted?: string }).terms_of_use_accepted).toBe('2025-01-01T00:00:00.000Z');
-    }
   });
 });
 

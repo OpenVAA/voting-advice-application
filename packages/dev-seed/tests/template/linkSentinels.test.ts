@@ -175,11 +175,20 @@ describe('planLinks — behaviour preservation (the six measured properties)', (
       target: {
         kind: 'join',
         table: 'election_constituency_groups',
-        parentColumn: 'election_id',
-        childColumn: 'constituency_group_id',
-        onConflict: 'election_id,constituency_group_id'
+        importKey: 'constituency_groups'
       }
     });
+  });
+
+  it('names the bulk_import link key each join rule is sent under', () => {
+    const plan = planLinks({
+      elections: [{ external_id: 'el-1', _constituencyGroups: { externalId: ['cg-1'] } }],
+      constituency_groups: [{ external_id: 'cg-1', _constituencies: { externalId: ['co-1'] } }]
+    });
+    expect(plan.map((entry) => entry.target)).toEqual([
+      { kind: 'join', table: 'election_constituency_groups', importKey: 'constituency_groups' },
+      { kind: 'join', table: 'constituency_group_constituencies', importKey: 'constituencies' }
+    ]);
   });
 });
 
