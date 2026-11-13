@@ -4,13 +4,13 @@
  * A11Y-SCAN WIRING GUARD (phase 147, requirements CSCAN-02 / CSCAN-03).
  *
  * The incident this file exists for: Phase 147 wired the candidate half of the
- * axe/raw-key scan family (`candidate-a11y-scan`, 14 scans) into
+ * axe/raw-key scan family (`contestant-a11y-scan`, 24 scans today) into
  * `tests/playwright.config.ts` and its shared scan core
  * (`tests/tests/utils/axeScan.ts`), but nothing STANDING re-asserts that
  * wiring. Phase 147's own ordering instrument
  * (`tests/e2e-runs/147/phases.mjs`) is gitignored, so it proves nothing about
- * future commits. Removing either the `candidate-a11y-scan` project or its
- * dependency edge into `data-setup-perm-1e1cg1co` drops 14 scans from the
+ * future commits. Removing either the `contestant-a11y-scan` project or its
+ * dependency edge into `data-setup-perm-1e1cg1co` drops 24 scans from the
  * suite; the suite then reports FEWER tests and STILL 0 failures — a green
  * that means nothing (CLAUDE.md's "did not run" == failure rule, restated as
  * a static config guard rather than a runtime one, because the tests simply
@@ -18,30 +18,63 @@
  *
  * FOUR checks, each a distinct way that green-but-blind could reoccur:
  *
- *   Check 1 (CSCAN-02a) — `candidate-a11y-scan` remains a project in
+ *   Check 1 (CSCAN-02a) — `contestant-a11y-scan` remains a project in
  *     `tests/playwright.config.ts`, gated by the same `PLAYWRIGHT_NO_A11Y`
  *     opt-out as `a11y-smoke`, with an explicit `testMatch` for
- *     `candidate-a11y.spec.ts` and a `storageState`.
+ *     `contestant-a11y.spec.ts` and a `storageState`.
  *   Check 2 (CSCAN-02a) — `a11y-smoke` keeps its explicit `testMatch` for
  *     `a11y-smoke.spec.ts`. Without it, both specs sharing `testDir:
  *     './tests/specs/a11y'` means `a11y-smoke` collects the candidate spec
  *     too and runs it WITHOUT the stored session — every candidate route 307s
  *     to login, and the scan reports a confident, silently-wrong zero
  *     (playwright.config.ts's own docblock at this site, restated as a check).
- *   Check 3 (CSCAN-02b) — `candidate-a11y-scan` is named in
+ *   Check 3 (CSCAN-02b) — `contestant-a11y-scan` is named in
  *     `data-setup-perm-1e1cg1co`'s `dependencies` array, so the candidate scan
  *     runs BEFORE the perm family's `app_settings` singleton REPLACE.
  *   Check 4 (CSCAN-02 criterion 6 / CSCAN-03) — strictness parity + ordering.
- *     Neither `a11y-smoke.spec.ts` nor `candidate-a11y.spec.ts` constructs its
- *     own `AxeBuilder` or calls `.withTags(` — both must obtain their gate
- *     from the one shared `assertAxeScan` in `tests/tests/utils/axeScan.ts`.
+ *     4a covers every file that declares an axe scan or helps declare one:
+ *     the two specs of the scan family (`a11y-smoke.spec.ts`,
+ *     `contestant-a11y.spec.ts`), the organization-editing spec
+ *     (`specs/perm/perm-organization-editing.spec.ts`), the no-nomination
+ *     spec (`specs/perm/perm-no-nomination.spec.ts`), the
+ *     contestant-nominations spec
+ *     (`specs/perm/contestant-nominations.spec.ts`) and the closed-project
+ *     spec (`specs/perm/perm-closed-project.spec.ts`), each of which scans its
+ *     own dataset's surfaces in its own project, the entry-scan spec
+ *     (`specs/contestant/contestant-entry-scan.spec.ts`), which scans the
+ *     Contestant App's screens shown with no session in its own project,
+ *     the identity-provider spec
+ *     (`specs/contestant/contestant-identity-provider.spec.ts`), which scans
+ *     the view an identity the mock issuer minted arrives at, the Admin App's
+ *     account-flow spec (`specs/admin/admin-account-flows.spec.ts`), which
+ *     scans the Admin App's entry screens in its own project,
+ *     and the two helper modules
+ *     specs declare their scans through: the one for the Contestant App's
+ *     signed-in surfaces (`tests/tests/utils/contestantAxeScan.ts`) and the
+ *     one for its screens shown with no session
+ *     (`tests/tests/utils/entryAxeScan.ts`). None of the eleven constructs
+ *     its own `AxeBuilder`, calls `.withTags(` or imports the axe package:
+ *     each must obtain its gate from the one shared `assertAxeScan` in
+ *     `tests/tests/utils/axeScan.ts` — the voter spec and the two helper
+ *     modules by importing it, `contestant-a11y.spec.ts` and the
+ *     identity-provider spec by importing `declareScans` from the first
+ *     helper module, and the closed-project
+ *     spec, the entry-scan spec and the Admin App's account-flow spec by
+ *     importing `declareEntryScans` from the second. `contestant-a11y.spec.ts` imports `declareEntryScans` from the
+ *     second as well, for the confirm page a mailed link opens: that page
+ *     belongs to neither app, and the first module's reach proof requires an
+ *     address inside the Contestant App. The entry-scan spec scans the same
+ *     page with no session. The
+ *     organization-editing spec, the no-nomination spec and the
+ *     contestant-nominations spec hold tests other than scans, so no import
+ *     is required of them; what they may not do is build a gate of their own.
  *     And in `axeScan.ts` itself, the raw-key verdict
  *     (`collectRawI18nKeyFindings`) is computed and reported via
  *     `expect.soft` BEFORE `new AxeBuilder(...)` runs, and `assertAxeGates`
  *     always runs after — so a raw-key finding can never suppress the axe
  *     result on the same surface (147-ORDERING.md § Decision (B)).
  *
- * This is a plain text/regex read of the three source files, matching the
+ * This is a plain text/regex read of the eleven source files, matching the
  * house style of `scripts/assert-unit-test-coverage.mjs` (Node built-ins
  * only, no build step, exit 1 naming the specific problem). It is
  * deliberately NOT an AST parse: these are single-sourced, hand-authored
@@ -147,7 +180,7 @@ function main() {
     );
   }
 
-  // --- Check 3: candidate-a11y-scan named in data-setup-perm-1e1cg1co dependencies ---
+  // --- Check 3: contestant-a11y-scan named in data-setup-perm-1e1cg1co dependencies ---
   const permSetupMatch = configSrc.match(/name:\s*'data-setup-perm-1e1cg1co'[\s\S]{0,900}?\}/);
   if (!permSetupMatch) {
     violate("tests/playwright.config.ts no longer declares a 'data-setup-perm-1e1cg1co' project.");

@@ -7,11 +7,12 @@
  * `loadCatalogKeys()` guards its own non-vacuity with a single scalar floor,
  * `MIN_EXPECTED_KEYS = 400`. That floor is APPLICATION-WIDE, not per-namespace,
  * so it cannot tell "the catalog is healthy" from "one whole namespace vanished
- * and the rest happens to cover the gap". Concretely: the verified decomposition
- * of `apps/frontend/messages/en/` is 598 keys = 161 `candidateApp.*` + 121
- * `adminApp.*` + 316 voter/shared keys. Deleting the entire `adminApp`
- * namespace leaves 477 keys — comfortably above 400 — and the scalar floor
- * passes silently while every raw `adminApp.*` key rendered on an admin surface
+ * and the rest happens to cover the gap". Concretely: the keys of
+ * `apps/frontend/messages/en/` fall into three buckets, `contestantApp.*`,
+ * `adminApp.*` and the voter/shared rest, and each run of this script prints
+ * the size of each. The other two buckets together are far above 400, so
+ * deleting the entire `adminApp` namespace leaves the scalar floor passing
+ * silently while every raw `adminApp.*` key rendered on an admin surface
  * would go undetected by the very scanner CSCAN-04 claims covers it.
  *
  * This guard is deliberately a SEPARATE, standalone read of the catalog
@@ -25,14 +26,14 @@
  * what counts as a "key".
  *
  * The invariant, in both directions:
- *   1. Each of the three namespace buckets (`candidateApp.*`, `adminApp.*`,
+ *   1. Each of the three namespace buckets (`contestantApp.*`, `adminApp.*`,
  *      "everything else" = voter/shared) must clear a floor set FAR below its
- *      currently-observed count (161 / 121 / 316), so ordinary catalog churn
+ *      observed count, which each run prints, so ordinary catalog churn
  *      (renaming a handful of keys, adding a new question type) never trips
  *      it, but the wholesale loss of a namespace — which the scalar
  *      MIN_EXPECTED_KEYS floor cannot see — does.
  *   2. Two specific keys Phase 147's own negative controls exercised must
- *      still resolve: `candidateApp.questions.editAnswer` and
+ *      still resolve: `contestantApp.questions.editAnswer` and
  *      `common.required`. Their disappearance is the exact shape of defect
  *      the phase's `RK1-OLD`/`RK2-OLD` rows measured the scanner catching.
  *
@@ -54,7 +55,7 @@ const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 const CATALOG_DIR = path.resolve(REPO_ROOT, 'apps', 'frontend', 'messages', 'en');
 
 /**
- * Floors set well below the verified current counts (161 / 121 / 316), per
+ * Floors set well below the counts a run prints for the three buckets, per
  * this file's own docblock rationale: far enough to absorb ordinary catalog
  * churn, close enough that losing the whole namespace cannot hide under the
  * other two buckets' headroom.
@@ -103,7 +104,7 @@ function loadRuntimeCatalogKeys() {
       continue;
     }
     // The runtime catalog namespaces its own top-level key (e.g.
-    // candidateApp.questions.json opens with "candidateApp.questions"), so no
+    // contestantApp.questions.json opens with "contestantApp.questions"), so no
     // filename-derived prefixing here — matches rawKeyScan.ts's
     // `flattenCatalogDir(RUNTIME_CATALOG_DIR, false, keys)` call.
     flattenCatalog(parsed, '', keys);
