@@ -1,0 +1,24 @@
+import type { EntryLinkRequest } from '$lib/auth/entryFlow';
+
+export type ForgotPasswordScreenProps = {
+  /**
+   * The name of the app, shown above the heading.
+   */
+  appName: string;
+  /**
+   * The app's own way to ask for a mailed link, as its context's entry flow holds it. It resolves once the request has settled or its bound has passed, whatever it settled as.
+   */
+  sendEntryLink: (request: EntryLinkRequest) => Promise<void>;
+  /**
+   * The address of the app's "email sent" page, opened when the request has settled.
+   */
+  emailSentHref: string;
+  /**
+   * The address of the screen's way back.
+   */
+  returnHref: string;
+  /**
+   * The test id of the screen's root.
+   */
+  testId: string;
+};

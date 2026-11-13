@@ -66,7 +66,15 @@ See the `<ModalContainer>` component documentation for more information.
   import ModalContainer from './ModalContainer.svelte';
   import type { ModalProps } from './Modal.type';
 
-  let { title, boxClass = '', isOpen = $bindable(false), actions, children, ...restProps }: ModalProps = $props();
+  let {
+    title,
+    boxClass = '',
+    holdOpen,
+    isOpen = $bindable(false),
+    actions,
+    children,
+    ...restProps
+  }: ModalProps = $props();
 
   let containerRef: ModalContainer | undefined = $state(undefined);
 
@@ -88,6 +96,7 @@ See the `<ModalContainer>` component documentation for more information.
   bind:this={containerRef}
   {...concatClass(restProps, 'modal-bottom sm:modal-middle')}
   {title}
+  holdOpen={holdOpen ?? false}
   bind:isOpen>
   <div class="modal-box {boxClass ?? ''}">
     <h2 class="mb-lg text-center">{title}</h2>
@@ -97,7 +106,11 @@ See the `<ModalContainer>` component documentation for more information.
         {@render actions()}
       </div>
     {/if}
-    <button class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2" onclick={() => closeModal()}>
+    <button
+      class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2"
+      onclick={() => {
+        if (!holdOpen) closeModal();
+      }}>
       <span aria-hidden="true">✕</span>
       <span class="sr-only">{t('common.closeDialog')}</span>
     </button>

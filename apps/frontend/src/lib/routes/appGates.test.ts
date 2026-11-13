@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { APP_GATES, isAdminRoute, resolveAppGate } from './appGates';
-import { isCandidateRoute, ROUTE } from './route';
+import { APP_GATES, isAdminRoute, isEntryRoute, resolveAppGate } from './appGates';
+import { isContestantRoute, isProtectedRoute, ROUTE } from './route';
 import type { AppGate } from './appGates';
 
 /**
@@ -23,7 +23,7 @@ import type { AppGate } from './appGates';
 const ADMIN_SIBLING_PREFIX_ROUTE_IDS = ['/admin-tools', '/admin-tools/jobs', '/administration', '/adminx'];
 
 /** The same shape on the candidate side, so the two predicates are held to one standard. */
-const CANDIDATE_SIBLING_PREFIX_ROUTE_IDS = ['/candidate-portal', '/candidates'];
+const CONTESTANT_SIBLING_PREFIX_ROUTE_IDS = ['/contestant-portal', '/contestants'];
 
 /**
  * The descriptor parameters, resolved with a representative redirect target.
@@ -61,8 +61,8 @@ describe('isAdminRoute — segment-exact membership of the Admin App (D10-C09)',
   it.each([
     ['the voter app root', ROUTE.Home],
     ['a voter results page', ROUTE.Results],
-    ['the candidate app root', ROUTE.CandAppHome],
-    ['a protected candidate page', ROUTE.CandAppProfile]
+    ['the contestant app root', ROUTE.ContestantAppHome],
+    ['a protected candidate page', ROUTE.ContestantAppProfile]
   ])('answers false for %s', (_what, routeId) => {
     expect(
       isAdminRoute(routeId),
@@ -70,9 +70,9 @@ describe('isAdminRoute — segment-exact membership of the Admin App (D10-C09)',
     ).toBe(false);
   });
 
-  it('is disjoint from isCandidateRoute over every route id in the map', () => {
+  it('is disjoint from isContestantRoute over every route id in the map', () => {
     const bothApps = Object.entries(ROUTE)
-      .filter(([, routeId]) => isAdminRoute(routeId) && isCandidateRoute(routeId))
+      .filter(([, routeId]) => isAdminRoute(routeId) && isContestantRoute(routeId))
       .map(([key, routeId]) => `${key} (${routeId})`);
     expect(
       bothApps,
@@ -102,7 +102,7 @@ describe('APP_GATES — one declared table, two rows (D10-C09)', () => {
     expect(
       APP_GATES.map((gate) => gate.loginRoute),
       'The order of the gate table is load-bearing, because resolveAppGate returns the FIRST matching row. This assertion fixes the order the identity assertions below are written against.'
-    ).toEqual(['CandAppLogin', 'AdminAppLogin']);
+    ).toEqual(['ContestantAppLogin', 'AdminAppLogin']);
   });
 
   it('is frozen, and a write to it throws', () => {
@@ -113,7 +113,7 @@ describe('APP_GATES — one declared table, two rows (D10-C09)', () => {
     expect(
       APP_GATES[0].loginRoute,
       'The gate table changed after a write was attempted against it, so the freeze is nominal.'
-    ).toBe('CandAppLogin');
+    ).toBe('ContestantAppLogin');
   });
 
   it('freezes every row and every redirect descriptor', () => {
@@ -127,6 +127,7 @@ describe('APP_GATES — one declared table, two rows (D10-C09)', () => {
         Object.isFrozen(gate.whenUnauthenticatedInProtectedGroup),
         `The unauthenticated-in-protected descriptor of ${gate.name} is not frozen.`
       ).toBe(true);
+      expect(Object.isFrozen(gate.entryRoutes), `The list of entry routes of ${gate.name} is not frozen.`).toBe(true);
     }
   });
 
@@ -139,15 +140,21 @@ describe('APP_GATES — one declared table, two rows (D10-C09)', () => {
         ).toBe(true);
       }
       expect(gate.loginRoute in ROUTE, `The login route key of ${gate.name} is not a key of the ROUTE map.`).toBe(true);
+      for (const key of gate.entryRoutes) {
+        expect(
+          key in ROUTE,
+          `The entry route ${key} on the row ${gate.name} is not a key of the ROUTE map. The list names route keys, and the handler resolves each to its route id.`
+        ).toBe(true);
+      }
     }
   });
 });
 
 describe('resolveAppGate — the first matching row wins (D10-C09)', () => {
   it.each([
-    ['the candidate app root', ROUTE.CandAppHome, 0],
-    ['the candidate login page', ROUTE.CandAppLogin, 0],
-    ['a protected candidate page', ROUTE.CandAppProfile, 0],
+    ['the contestant app root', ROUTE.ContestantAppHome, 0],
+    ['the candidate login page', ROUTE.ContestantAppLogin, 0],
+    ['a protected candidate page', ROUTE.ContestantAppProfile, 0],
     ['the admin app root', ROUTE.AdminAppHome, 1],
     ['the admin login page', ROUTE.AdminAppLogin, 1],
     ['a protected admin page', ROUTE.AdminAppJobs, 1]
@@ -162,9 +169,9 @@ describe('resolveAppGate — the first matching row wins (D10-C09)', () => {
     ['the voter app root', ROUTE.Home],
     ['a voter results page', ROUTE.Results],
     ['a voter question page', ROUTE.Question],
-    ['an api route id', ROUTE.CandAppAuthLogout],
+    ['an api route id', ROUTE.AuthLogout],
     ...ADMIN_SIBLING_PREFIX_ROUTE_IDS.map((routeId): [string, string] => [`the admin sibling ${routeId}`, routeId]),
-    ...CANDIDATE_SIBLING_PREFIX_ROUTE_IDS.map((routeId): [string, string] => [
+    ...CONTESTANT_SIBLING_PREFIX_ROUTE_IDS.map((routeId): [string, string] => [
       `the candidate sibling ${routeId}`,
       routeId
     ])
@@ -179,10 +186,10 @@ describe('resolveAppGate — the first matching row wins (D10-C09)', () => {
 
   it('returns independent results for two different route ids and mutates nothing', () => {
     const before = APP_GATES.map((gate) => gate.name);
-    const candidate = resolveAppGate(ROUTE.CandAppProfile);
+    const candidate = resolveAppGate(ROUTE.ContestantAppProfile);
     const admin = resolveAppGate(ROUTE.AdminAppJobs);
     expect(candidate, 'The two lookups returned the same row for two different applications.').not.toBe(admin);
-    expect(candidate?.loginRoute).toBe('CandAppLogin');
+    expect(candidate?.loginRoute).toBe('ContestantAppLogin');
     expect(admin?.loginRoute).toBe('AdminAppLogin');
     expect(
       APP_GATES.map((gate) => gate.name),
@@ -195,11 +202,11 @@ describe('the two rows carry their genuinely different redirect shapes as data (
   it('bounces an unauthenticated candidate with 303 to the candidate login page, carrying the redirect target', () => {
     const [candidate] = APP_GATES;
     expect(candidate.whenUnauthenticatedInProtectedGroup.status).toBe(303);
-    expect(candidate.whenUnauthenticatedInProtectedGroup.route).toBe('CandAppLogin');
+    expect(candidate.whenUnauthenticatedInProtectedGroup.route).toBe('ContestantAppLogin');
     expect(
-      protectedBounceParams(candidate, 'candidate/profile'),
+      protectedBounceParams(candidate, 'contestant/profile'),
       'The candidate row must carry the path the visitor was trying to reach, so the login page can return them to it. This is the query parameter the hook emits today and it must survive the move into the table unchanged.'
-    ).toEqual({ redirectTo: 'candidate/profile' });
+    ).toEqual({ redirectTo: 'contestant/profile' });
   });
 
   it('bounces an unauthenticated admin with 307 to the admin login page, carrying the error message', () => {
@@ -218,8 +225,8 @@ describe('the two rows carry their genuinely different redirect shapes as data (
   it('sends an authenticated caller away from each app login page to that app home', () => {
     const [candidate, admin] = APP_GATES;
     expect(candidate.whenAuthenticatedOnLogin.status).toBe(303);
-    expect(candidate.whenAuthenticatedOnLogin.route).toBe('CandAppHome');
-    expect(candidate.whenAuthenticatedOnLogin.params({ redirectTo: 'candidate/profile' })).toEqual({});
+    expect(candidate.whenAuthenticatedOnLogin.route).toBe('ContestantAppHome');
+    expect(candidate.whenAuthenticatedOnLogin.params({ redirectTo: 'contestant/profile' })).toEqual({});
     expect(admin.whenAuthenticatedOnLogin.status).toBe(303);
     expect(admin.whenAuthenticatedOnLogin.route).toBe('AdminAppHome');
     expect(
@@ -238,5 +245,114 @@ describe('the two rows carry their genuinely different redirect shapes as data (
         ).toBe(true);
       }
     }
+  });
+});
+
+describe('the entry routes — every route a signed-in caller is sent away from', () => {
+  it('lists exactly the screens of the entry flow that offer a sign-in or a registration for the Contestant App', () => {
+    const [candidate] = APP_GATES;
+    expect(
+      [...candidate.entryRoutes].sort(),
+      "The Contestant App row must name the login screen, the sign-in screen, the registration page, the two screens a registration code leads to and the identity provider's error screen, and nothing else. A screen of the entry flow left out is one a signed-in user can open, and start a second sign-in or registration over a live session from."
+    ).toEqual(
+      [
+        'ContestantAppIdentityProviderError',
+        'ContestantAppLogin',
+        'ContestantAppRegister',
+        'ContestantAppRegisterEmail',
+        'ContestantAppRegisterSignIn',
+        'ContestantAppSignIn'
+      ].sort()
+    );
+  });
+
+  it('lists the one login page for the Admin App', () => {
+    expect([...APP_GATES[1].entryRoutes]).toEqual(['AdminAppLogin']);
+  });
+
+  it('holds the login route of its own row, and no key twice', () => {
+    for (const gate of APP_GATES) {
+      expect(gate.entryRoutes, `The entry routes of ${gate.name} do not hold its own login route.`).toContain(
+        gate.loginRoute
+      );
+      expect(new Set(gate.entryRoutes).size, `An entry route of ${gate.name} is listed twice.`).toBe(
+        gate.entryRoutes.length
+      );
+    }
+  });
+
+  it('holds none of the forgot-password page, the password-reset page and the "email sent" screen', () => {
+    const [candidate] = APP_GATES;
+    expect(
+      candidate.entryRoutes,
+      'A signed-in user reaches the password-reset page by design: the mailed recovery link signs them in first. Listing it, or the page that asks for that link, would send them away from the page the link is for.'
+    ).not.toContain('ContestantAppForgotPassword');
+    expect(candidate.entryRoutes).not.toContain('ContestantAppResetPassword');
+    expect(
+      candidate.entryRoutes,
+      'A signed-in user who asks for a link on the forgot-password page ends on the "email sent" screen, and the page has no server load. Listing it would send them away from the screen that says the mail was sent, or take the message of a failed sign-out away while it is true.'
+    ).not.toContain('ContestantAppEmailSent');
+  });
+
+  it('is frozen, and a write to it throws', () => {
+    for (const gate of APP_GATES) {
+      expect(Object.isFrozen(gate.entryRoutes), `The list of entry routes of ${gate.name} is not frozen.`).toBe(true);
+      expect(() => {
+        (gate.entryRoutes as Array<string>).push('ContestantAppResetPassword');
+      }, `Adding to the entry routes of ${gate.name} did not throw. The table is shared by every concurrent request.`).toThrow();
+    }
+  });
+
+  it('holds route keys alone: no entry is a path, and each resolves to a route id its own application claims', () => {
+    for (const gate of APP_GATES) {
+      for (const key of gate.entryRoutes) {
+        expect(key, `The entry route ${key} of ${gate.name} is a path, not a route key.`).not.toContain('/');
+        expect(
+          gate.isRoute(ROUTE[key]),
+          `The entry route ${key} of ${gate.name} resolves to ${ROUTE[key]}, which its own predicate does not claim, so the handler would never test it.`
+        ).toBe(true);
+      }
+    }
+  });
+
+  it('names no route of a protected group', () => {
+    for (const gate of APP_GATES) {
+      const inProtectedGroup = gate.entryRoutes.filter((key) => isProtectedRoute(ROUTE[key]));
+      expect(
+        inProtectedGroup,
+        `Entry routes of ${gate.name} sit inside a protected group, which a signed-in caller must reach: ${inProtectedGroup.join(', ')}`
+      ).toEqual([]);
+    }
+  });
+});
+
+describe('isEntryRoute — whether a route id is an entry route of the row that claims it', () => {
+  const entryRouteIds = APP_GATES.flatMap((gate) => gate.entryRoutes.map((key) => ROUTE[key]));
+  const otherRouteIds = [...new Set(Object.values(ROUTE))].filter((routeId) => !entryRouteIds.includes(routeId));
+
+  it.each(entryRouteIds)('answers true for the entry route %s', (routeId) => {
+    expect(
+      isEntryRoute(routeId),
+      `isEntryRoute answered false for ${routeId}, which a row of the gate table lists. The application's layout withdraws the message of a failed sign-out on such a route, because a request that reaches it found no session.`
+    ).toBe(true);
+  });
+
+  it.each(otherRouteIds)('answers false for %s', (routeId) => {
+    expect(
+      isEntryRoute(routeId),
+      `isEntryRoute answered true for ${routeId}, which no row of the gate table lists. A signed-in user may stand on it, so a message that a sign-out failed would be withdrawn while it is still true.`
+    ).toBe(false);
+  });
+
+  it.each([null, undefined])('answers false for %s, which a page with no matched route has as its id', (routeId) => {
+    expect(isEntryRoute(routeId)).toBe(false);
+  });
+
+  it('answers false for the forgot-password page, which a signed-in user may use', () => {
+    expect(isEntryRoute(ROUTE.ContestantAppForgotPassword)).toBe(false);
+  });
+
+  it('answers false for the "email sent" screen, which a signed-in user reaches from the forgot-password page', () => {
+    expect(isEntryRoute(ROUTE.ContestantAppEmailSent)).toBe(false);
   });
 });

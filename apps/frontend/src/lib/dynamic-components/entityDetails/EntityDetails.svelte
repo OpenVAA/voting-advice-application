@@ -45,7 +45,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import type { VoterContext } from '$lib/contexts/voter/voterContext.type';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
-  let { entity, ...restProps }: EntityDetailsProps = $props();
+  let { entity, excludeTabs = [], ...restProps }: EntityDetailsProps = $props();
 
   const ctx = getAppContext();
   const { appType, startEvent, t } = ctx;
@@ -77,6 +77,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
           : nakedEntity.type === 'organization'
             ? ['info', 'opinions', 'children']
             : ['info', 'opinions'];
+    if (excludeTabs.length) {
+      tabs = tabs.filter((tab) => !excludeTabs.includes(tab));
+      if (!tabs.length) tabs = ['info', 'opinions'];
+    }
     return tabs.map((tab) => ({ id: tab, label: t(`entityDetails.tabs.${tab}`) }));
   });
 

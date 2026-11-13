@@ -1,5 +1,4 @@
-import type { WritableHandle } from '../../utils/reactiveHandle.type';
-import type { TrackingEvent } from './trackingEvent.type';
+import type { TrackingEvent, TrackingEventData, TrackingEventName } from './trackingEvent.type';
 
 /**
  * A service provider for tracking functions.
@@ -16,20 +15,20 @@ export type TrackingService = {
    * @param routeId - The route id of the page, e.g. `page.route.id`, or `null` when there is none
    * @param params - The route parameters of the page; only those the pageview list allows for the route are kept
    */
-  startPageview: (url: string, from?: string | null) => void;
+  startPageview: (routeId: string | null, params: Readonly<Record<string, string | undefined>> | null) => void;
   /**
    * Buffer an analytics event, to be sent with the next flush.
    * @param name - Event name, one of the vocabulary
    * @param data - The event's attributes. Required when the event has a required attribute, optional when it has none.
    * @returns The buffered event object.
    */
-  startEvent: (name: TrackingEvent['name'], data?: TrackingEvent['data']) => TrackingEvent;
+  startEvent: <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>) => TrackingEvent;
   /**
    * Buffer an analytics event, to be sent with the next flush, like `startEvent`. Nothing is sent by this call.
    * @param name - Event name, one of the vocabulary
    * @param data - The event's attributes. Required when the event has a required attribute, optional when it has none.
    */
-  track: (name: TrackingEvent['name'], data?: TrackingEvent['data']) => void;
+  track: <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>) => void;
   /**
    * Flush: send the current view's pageview, when it has not been sent, and the buffered events the gates allow, in one request to the relay. The buffer is empty afterwards; events the gates did not allow are discarded.
    */
@@ -42,7 +41,21 @@ export type TrackingService = {
    * Report a change of the page's visibility, so that the view's duration counts only the time the page was visible.
    * @param visible - Whether the page is visible now
    */
-  sendTrackingEvent: WritableHandle<TrackingHandler | null | undefined>;
+  setPageVisible: (visible: boolean) => void;
 };
 
-export type TrackingHandler = (event: TrackingEvent<Record<string, JSONData>>) => void;
+/**
+ * The keys of `TData` that are required, or `never` when every key is optional or there is none.
+ */
+type RequiredKeys<TData> = {
+  [TKey in keyof TData]-?: Record<never, never> extends Pick<TData, TKey> ? never : TKey;
+}[keyof TData];
+
+/**
+ * The data argument of a tracking call for the event `TName`: required when the event has at least one required attribute, optional when it has none.
+ */
+export type TrackingDataArgument<TName extends TrackingEventName> = [RequiredKeys<TrackingEventData<TName>>] extends [
+  never
+]
+  ? [data?: TrackingEventData<TName>]
+  : [data: TrackingEventData<TName>];

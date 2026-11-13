@@ -63,6 +63,112 @@ describe('persistedState helpers', () => {
     vi.restoreAllMocks();
   });
 
+  /**
+   * Tell this document of a change another document made to a storage, as the browser does by a `storage` event: the storage already holds the change when the event arrives.
+   * @param key - The key that changed, or `null` for a storage that was cleared.
+   * @param newValue - The key's new value as stored, or `null` for a key that was removed.
+   * @param storageArea - The storage that changed.
+   */
+  function announceChangeElsewhere(
+    key: string | null,
+    newValue: string | null,
+    storageArea: Storage = mockLocalStorage
+  ) {
+    const event = new Event('storage');
+    Object.defineProperties(event, {
+      key: { value: key },
+      newValue: { value: newValue },
+      storageArea: { value: storageArea }
+    });
+    window.dispatchEvent(event);
+  }
+
+  describe('a localStorageState handle and another document’s change of its storage', () => {
+    it('returns to its default when another document removes its key, and does not store it', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const draft = localStorageState<Record<string, string>>('ls-removed-elsewhere', {});
+        draft.update((answers) => ({ ...answers, q1: 'typed here' }));
+        delete mockStorageData['ls-removed-elsewhere'];
+        vi.mocked(mockLocalStorage.setItem).mockClear();
+
+        announceChangeElsewhere('ls-removed-elsewhere', null);
+
+        expect(draft.current).toEqual({});
+        expect(mockStorageData['ls-removed-elsewhere']).toBeUndefined();
+        expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
+      });
+      cleanup();
+    });
+
+    it('stores only what a later update adds, after another document removed its key', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const draft = localStorageState<Record<string, string>>('ls-updated-after-removal', {});
+        draft.update((answers) => ({ ...answers, q1: 'typed before' }));
+        delete mockStorageData['ls-updated-after-removal'];
+        announceChangeElsewhere('ls-updated-after-removal', null);
+
+        draft.update((answers) => ({ ...answers, q2: 'typed after' }));
+
+        expect(draft.current).toEqual({ q2: 'typed after' });
+        expect(JSON.parse(mockStorageData['ls-updated-after-removal'])).toHaveProperty('data', { q2: 'typed after' });
+      });
+      cleanup();
+    });
+
+    it('reads a value another document stores under its key, and writes nothing back', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = localStorageState('ls-written-elsewhere', 'default');
+        const written = JSON.stringify({ version: 2, data: 'from elsewhere' });
+        mockStorageData['ls-written-elsewhere'] = written;
+        vi.mocked(mockLocalStorage.setItem).mockClear();
+
+        announceChangeElsewhere('ls-written-elsewhere', written);
+
+        expect(store.current).toBe('from elsewhere');
+        expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
+        expect(mockStorageData['ls-written-elsewhere']).toBe(written);
+      });
+      cleanup();
+    });
+
+    it('keeps its value on a change of another key, or of its key in the other storage', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const store = localStorageState('ls-kept', 'default');
+        store.set('mine');
+
+        announceChangeElsewhere('ls-other', null);
+        announceChangeElsewhere('ls-kept', null, mockSessionStorage);
+
+        expect(store.current).toBe('mine');
+      });
+      cleanup();
+    });
+
+    it('returns every handle to its default when another document clears the storage, and stores none', async () => {
+      const { localStorageState } = await importWithBrowser(true);
+      const cleanup = $effect.root(() => {
+        const first = localStorageState('ls-cleared-a', 'default a');
+        const second = localStorageState('ls-cleared-b', 'default b');
+        first.set('stored a');
+        second.set('stored b');
+        mockStorageData = {};
+        vi.mocked(mockLocalStorage.setItem).mockClear();
+
+        announceChangeElsewhere(null, null);
+
+        expect(first.current).toBe('default a');
+        expect(second.current).toBe('default b');
+        expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
+        expect(mockStorageData).toEqual({});
+      });
+      cleanup();
+    });
+  });
+
   describe('localStorageState (rune-native helper)', () => {
     it('returns defaultValue when nothing is stored', async () => {
       const { localStorageState } = await importWithBrowser(true);
@@ -224,6 +330,54 @@ describe('persistedState helpers', () => {
         expect(mockStorageData['ss-ssr-noinit']).toBeUndefined();
       });
       cleanup();
+    });
+  });
+
+  describe('removePersistedByPrefix', () => {
+    it('removes every key that starts with the prefix and leaves the others', async () => {
+      mockStorageData = {
+        'family-a': '1',
+        'family-b': '2',
+        'family-c-d': '3',
+        unrelated: '4'
+      };
+      const { removePersistedByPrefix } = await importWithBrowser(true);
+
+      removePersistedByPrefix('localStorage', 'family-');
+
+      expect(Object.keys(mockStorageData)).toEqual(['unrelated']);
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledTimes(3);
+    });
+
+    it('keeps a key that only contains the prefix later in its name', async () => {
+      mockStorageData = {
+        'family-a': '1',
+        'other-family-a': '2'
+      };
+      const { removePersistedByPrefix } = await importWithBrowser(true);
+
+      removePersistedByPrefix('localStorage', 'family-');
+
+      expect(mockStorageData).toEqual({ 'other-family-a': '2' });
+    });
+
+    it('does nothing outside the browser', async () => {
+      mockStorageData = { 'family-a': '1' };
+      const { removePersistedByPrefix } = await importWithBrowser(false);
+
+      removePersistedByPrefix('localStorage', 'family-');
+
+      expect(mockStorageData).toEqual({ 'family-a': '1' });
+      expect(mockLocalStorage.key).not.toHaveBeenCalled();
+      expect(mockLocalStorage.removeItem).not.toHaveBeenCalled();
+    });
+
+    it('throws for an empty prefix and removes nothing', async () => {
+      mockStorageData = { 'family-a': '1', unrelated: '2' };
+      const { removePersistedByPrefix } = await importWithBrowser(true);
+
+      expect(() => removePersistedByPrefix('localStorage', '')).toThrow(/empty prefix/);
+      expect(Object.keys(mockStorageData)).toEqual(['family-a', 'unrelated']);
     });
   });
 

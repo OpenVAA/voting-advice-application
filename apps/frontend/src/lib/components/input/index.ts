@@ -7,4 +7,6 @@ export { default as PreviewAllInputs } from './PreviewAllInputs.svelte';
 export * from './PreviewAllInputs.type';
 export { default as QuestionInput } from './QuestionInput.svelte';
 export * from './QuestionInput.type';
+export { default as Radio } from './Radio.svelte';
+export * from './Radio.type';
 export * from './shared';

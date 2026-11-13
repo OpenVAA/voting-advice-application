@@ -96,11 +96,8 @@ TODO: Consider moving the tracking events away from the component and just addin
     filtersModalRef?.closeModal();
   }
   function trackActiveFilters() {
-    const af = filterGroup?.filters
-      .filter((f) => f.active)
-      .map((f) => f.name)
-      .join(',');
-    if (af) startEvent('filters_active', { activeFilters: af });
+    const count = filterGroup?.filters.filter((f) => f.active).length ?? 0;
+    if (count > 0) startEvent('filters_active', { count });
   }
 </script>
 

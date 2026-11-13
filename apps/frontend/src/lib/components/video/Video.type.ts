@@ -1,6 +1,6 @@
 import type { VideoContent } from '@openvaa/app-shared';
 import type { SvelteHTMLElements } from 'svelte/elements';
-import type { TrackingEvent } from '$lib/contexts/app/tracking';
+import type { TrackingEvent, TrackingEventData } from '$lib/contexts/app/tracking';
 
 /**
  * If `VideoContent` are not provided, the `video` element will be hidden until these properties are provided.
@@ -46,7 +46,7 @@ export type OptionalVideoProps = {
   /**
    * A callback triggered when the video tracking event should be sent. Send to `TrackingService.startEvent` or `track` to track.
    */
-  onTrack?: (event: TrackingEvent<VideoTrackingEventData>) => void;
+  onTrack?: (event: TrackingEvent<'video'>) => void;
 };
 
 /**
@@ -81,23 +81,4 @@ export type VideoControl = 'pause' | 'mute' | 'skip' | 'captions' | 'transcript'
 /**
  * The analytics data for a video event: the attributes of the `video` event of the vocabulary, all optional. `duration` is in seconds, `endAt` is a fraction of the duration in [0, 1] or `'end'`, `ended` tells whether the end was reached at any point, `jump` lists the jump steps as `'1,-1,1,'` and `toggleTranscript` the toggle values as `'true,false,true,'`.
  */
-export type VideoTrackingEventData = TrackingEvent['data'] &
-  Partial<{
-    duration: number;
-    /** As a fraction of duration [0,1] */
-    endAt: 'end' | number;
-    /** Whether the end was reached at any point */
-    ended: boolean;
-    endMuted: boolean;
-    endWithCaptions: boolean;
-    endWithTranscript: boolean;
-    error: boolean;
-    /** Jump steps as a comma-separeted list, '1,-1,1,' */
-    jump: string;
-    src: string;
-    startMuted: boolean;
-    startWithCaptions: boolean;
-    startWithTranscript: boolean;
-    /** Toggle values as a comma-separeted list, 'true,false,true,' */
-    toggleTranscript: string;
-  }>;
+export type VideoTrackingEventData = TrackingEventData<'video'>;

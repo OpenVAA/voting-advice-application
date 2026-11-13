@@ -61,6 +61,8 @@ text="Add to list">
 
   let {
     text,
+    suffix = undefined,
+    suffixProps = undefined,
     variant = 'normal',
     icon = null,
     iconPos = 'right',
@@ -152,11 +154,12 @@ text="Add to list">
   // `disabled` is non-standard on `<a>`. The `<a>` branch uses `aria-disabled` and drops `href` when disabled (WCAG 2.1 AA + `toBeDisabled()`-compatible); the `<button>` branch keeps native `disabled`. `loading` also disables.
   const isDisabled = $derived(disabled || loading);
 
+  // The icon and the label are siblings under the root, whose text colour the icon's `fill-current` would otherwise follow, so each takes the disabled colour itself.
+  const DISABLED_TEXT_CLASS =
+    'group-disabled:text-neutral/20 group-aria-disabled:text-neutral/20 group-[.disabled]:text-neutral/20';
+
   let labelClass = $derived.by(() => {
-    let lc = cn(
-      'first-letter:uppercase',
-      'group-disabled:text-neutral/20 group-aria-disabled:text-neutral/20 group-[.disabled]:text-neutral/20'
-    );
+    let lc = cn('first-letter:uppercase', DISABLED_TEXT_CLASS);
 
     // 7. Finally, define the class for the text label
     switch (variant) {
@@ -198,9 +201,9 @@ text="Add to list">
   {#if loading || icon}
     <div class="relative">
       {#if loading}
-        <Loading inline size="sm" class="pe-2" />
+        <Loading inline size="sm" class="pe-2" aria-hidden="true" />
       {:else if icon}
-        <Icon name={icon} />
+        <Icon name={icon} class={DISABLED_TEXT_CLASS} />
       {/if}
       {#if variant !== 'main'}
         <div class="absolute -end-6 -top-8">
@@ -213,6 +216,9 @@ text="Add to list">
     <div class={labelClass}>
       <span class="uc-first relative">
         {effectiveText}
+        {#if suffix}
+          <span {...concatClass(suffixProps ?? {}, 'font-normal text-secondary')}>{suffix}</span>
+        {/if}
         {#if !icon && variant !== 'main'}
           <div class="absolute -end-20 -top-8">
             {@render badge?.()}

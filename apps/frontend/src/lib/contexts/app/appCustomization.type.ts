@@ -20,7 +20,7 @@ export type AppCustomization = {
   /**
    * The frontpage poster image for the Contestant App.
    */
-  candPoster?: Image;
+  contestantPoster?: Image;
   /**
    * Any translation overrides.
    */
@@ -28,5 +28,5 @@ export type AppCustomization = {
   /**
    * An `Array` of FAQs for the Contestant App.
    */
-  candidateAppFAQ?: Array<{ question: string; answer: string }>;
+  contestantAppFAQ?: Array<{ question: string; answer: string }>;
 };
