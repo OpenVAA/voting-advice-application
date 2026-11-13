@@ -1,10 +1,10 @@
 -- 12-user-can.test.sql: the user_can permission predicate
 --
--- This file asserts the properties of user_can that the RLS policies rely on when they delegate their authority decision to it: the answer vector of each of the eight grant-bearing user types against the role x permission matrix (grant_role_permissions), reach per scope, the project-read and child-nominee branches, union over several grants, and deny on no grants, the wrong tenant, the wrong permission and malformed claims. Its failure mode is silent, because a predicate that answers true when it should answer false breaks nothing and reddens nothing, so every allow assertion is paired with a deny assertion.
+-- This file asserts the properties of user_can that the RLS policies rely on when they delegate their authority decision to it: the answer vector of each of the eight grant-bearing user types against the role x permission matrix (grant_role_permissions), reach per scope, the project-read and child-nominee branches, union over several grants, deny on no grants, the wrong tenant and the wrong permission, and that the token's `grants` claim is not read: user_can answers from the caller's rows of public.grants alone. Its failure mode is silent, because a predicate that answers true when it should answer false breaks nothing and reddens nothing, so every allow assertion is paired with a deny assertion.
 --
 -- The assertion count is declared explicitly, because under no_plan a file that asserts nothing exits 0. The declaration below is the only occurrence of that call in the file: a tool that reads the declared count takes the first occurrence, so prose above it must not name the call.
 --
--- Grant rows are inserted into public.grants inside this transaction, as postgres, and projected into the session JWT by test_grants_claim in the shape the access-token hook emits. The ROLLBACK at the end removes them.
+-- Grant rows are inserted into public.grants inside this transaction, as postgres, and projected into the session JWT by test_grants_claim in the shape the access-token hook emits, so a session's claim agrees with its rows except where a section below sets the claim to something else on purpose. The ROLLBACK at the end removes them.
 --
 -- The test users are chosen for their ids only. Every set_test_user call below passes an empty grant array, so nothing is written for the fixture identities and a caller's authority comes from the grant rows this file inserts. That is why candidate_b can carry the AllianceEditor grant: which auth user holds which grant is arbitrary.
 --
@@ -985,7 +985,7 @@ SELECT
     'a target id present in no entity table denies'
   );
 
--- A claim entry whose scope is not a declared literal. Compared as text and skipped rather than cast, because a cast would raise inside every policy predicate that calls user_can.
+-- The claim is not read. The root admin's claim is replaced by one entry whose scope is no declared literal, so a function reading the claim would find no grant; the table still holds the global admin row, and that row answers in full.
 SELECT
   set_config(
     'request.jwt.claims',
@@ -1004,7 +1004,7 @@ SELECT
     'a claim entry with an undeclared scope is ignored'
   );
 
--- The same garbage entry, this time alongside one valid project-editor grant.
+-- The other direction: a claim naming a grant the table does not hold. The project editor's claim is replaced by a project admin grant on the same project; the table holds the editor row only, and only the editor's permissions are answered.
 SELECT
   reset_role ();
 
@@ -1084,7 +1084,7 @@ SELECT
     'two grants union: an entity grantee who is also a project editor is allowed project.edit_questions'
   );
 
--- The identical claim with its two entries in the reverse order.
+-- The same caller with an empty grants claim: the union is read from the caller's two rows of the table, not from the claim.
 SELECT
   set_config(
     'request.jwt.claims',

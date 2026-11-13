@@ -1,6 +1,6 @@
--- 36-entity-identity.test.sql: the caller's own entity is read from the grant table
+-- 36-entity-identity.test.sql: the caller's own entities are read from the grant table
 --
--- `get_candidate_user_data` answers "which entity am I" from the caller's own `(entity, <type>, <id>, editor)` rows in `public.grants`, in the one project the caller names. This file pins that answer for zero, one and two such grants, across two projects, for a project admin and an entity-admin grant holder (both resolve to nothing), for anon, and in both the candidate and the organization arm. Two editor grants of the asked type in one project raise P0001 with the hint ERR_ENTITY_IDENTITY_AMBIGUOUS, and the answer comes from the table rather than the caller's token. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by an INVOKER RPC. The last section pins the write-side rule: a candidate admits one editor, an organization several, and each refusal names its unique key.
+-- `get_user_entities` lists every candidate and organization the caller holds an `(entity, <type>, <id>, editor)` row on in `public.grants`, in the one project the caller names, as one jsonb object whose `entities` array holds the entries and whose `password_set` says whether the caller's own account has a password and whose `pending_email_taken` whether the address the caller's own account is changing to is already another account's. `get_entity_user_data` returns the editable row of one such entity, or no row. This file pins the list for zero, one and several grants, for mixed types, across two projects, and for a project admin, an entity-admin grant holder and a faction editor (none of which is listed); the one-entity read for the caller's own candidate and organization and for every refusal, each of which is an empty result and never a raise; that an entity is listed exactly when the read returns it, with a token older than a grant (served, read and written at once, since row-level security reads the grant table too) and with a token that outlives one (neither served nor read nor written); and that anon is refused both functions by privilege. The password section pins the fact for a stored hash, an empty string and a null, each read by its own account, and for a session with no caller. The pending-address section pins `pending_email_taken` for no pending address, one that is another account's in another case and with spaces, one that is no account's, one that is the caller's own address, a caller whose own address is another caller's pending address, and a session with no caller. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by two INVOKER RPCs; where the password fact lives: a zero-argument definer function in `private` that `authenticated` alone may execute, over a helper no API role may; and where the pending-address fact lives: another such zero-argument definer function. The last section pins the write-side rule: a candidate admits one editor, an organization several, and each refusal names its unique key.
 --
 -- The first section pins what anon can read: no column holding an auth user id on any table anon can select, with nominations.created_by the one named exemption.
 --
@@ -82,7 +82,7 @@ SELECT
 -- =====================================================================
 -- Fixture, local to this transaction
 -- =====================================================================
--- Five auth users: U1 (...36a1) edits C1 in project A and C4 in project B; U2 (...36a2) holds only an admin-role entity grant on C1; U3 (...36a3) edits org_a; U4 (...36a4) edits org_a and O2, both in project A; U5 (...36a5) starts with no grant.
+-- Five auth users. U1 (...36a1) edits C1, C2 and O2 in project A and C4 in project B, and also holds an admin-role entity grant on C3 and an editor grant on faction_a; U2 (...36a2) holds only an admin-role entity grant on C1; U3 (...36a3) edits org_a; U4 (...36a4) edits org_a and O2, both in project A; U5 (...36a5) starts with no grant. Three more hold no grant and differ only in the stored password: P1 (...36b1) an empty string, P2 (...36b2) a null, P3 (...36b3) a hash.
 SELECT
   reset_role ();
 
@@ -167,7 +167,7 @@ VALUES
     now()
   );
 
--- C1 and C2 in project A, C4 in project B.
+-- C1, C2 and C3 in project A, C4 in project B. None is confirmed or nominated, so none is publicly visible and each is readable only through the caller's own authority.
 INSERT INTO
   candidates (id, project_id, first_name, last_name)
 VALUES
@@ -190,7 +190,7 @@ VALUES
     'Four'
   );
 
--- O2 in project A.
+-- O2 in project A, and an organization in project B that shares C1's uuid: the entity tables have independent primary keys, so one uuid names a candidate of project A and an organization of project B.
 INSERT INTO
   organizations (id, project_id, name)
 VALUES
@@ -264,8 +264,9 @@ END;
 $$;
 
 -- =====================================================================
--- Who the caller is
+-- The list
 -- =====================================================================
+-- U5 holds no grant. The answer is still one row holding one object, whose `entities` is an empty array.
 SELECT
   set_test_user (
     'authenticated',
@@ -300,6 +301,7 @@ SELECT
 SELECT
   reset_role ();
 
+-- U3 holds one grant, on org_a.
 SELECT
   set_test_user (
     'authenticated',
@@ -322,6 +324,7 @@ SELECT
 SELECT
   reset_role ();
 
+-- U1 holds editor grants on C1, C2 and O2 in project A and on C4 in project B, an admin-role grant on C3 and an editor grant on faction_a.
 SELECT
   set_test_user (
     'authenticated',
@@ -405,7 +408,6 @@ SELECT
 SELECT
   reset_role ();
 
--- The claim is built while U1 holds one candidate-editor grant in project A; the second grant is written afterwards and the claim is not rebuilt.
 SELECT
   set_test_user (
     'authenticated',
@@ -456,9 +458,6 @@ SELECT
 SELECT
   reset_role ();
 
--- =====================================================================
--- Catalog
--- =====================================================================
 SELECT
   is (
     (
@@ -512,6 +511,7 @@ SELECT
     'get_candidate_user_data runs with the caller''s rights'
   );
 
+-- Agreement. The three entries of project A are established above, so the comparison is not between two zeros.
 SELECT
   ok (
     EXISTS (

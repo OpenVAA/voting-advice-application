@@ -1,11 +1,9 @@
 /**
- * Source-level conformance checks over `identity-callback`'s grant write.
+ * Source-level conformance checks over `identity-callback`'s path.
  *
- * This is the IDENTITY ENTRY POINT, not an authorisation gate: it asks no authority question of a claim, it MINTS one. What is checked here is therefore the grant it writes: that the row is an entity-scope editor grant, that the entity type reaches the write site as a VALUE rather than as a literal inside the grant module, that the write happens once after both candidate branches with the new candidate deleted when it fails, and that no claim key outside the grant model is read on the path.
+ * This is the IDENTITY ENTRY POINT, not an authorisation gate on a claim: it decides from the project's stored matrix which entity type may be created, creates the account the passwordless way, and has one database function find or create the identity's entity and its grant. What is checked here is the shape of that path: the frontend server's credential is checked before anything else is read, and the frontend's callback sends it under the header the function reads; the project is the one the request names; no account is created by a call that stores a password; no admin update carries an address or `app_metadata`, and the only admin update confirms the placeholder the identity's account was created on; the identity metadata is built by `identityAppMetadata`, so no claim of the provider's token is spread into it, and is handed to the database function, which writes it under the same lock as the record; the matrix decides before anything is written; the account is resolved, then the entity is found or created with the decided type and the metadata written, then the placeholder is confirmed, then the sign-in link is generated; and every answer is built by `resultBody`.
  *
- * The entry point also names exactly one entity type and takes no type selection from the request. That is asserted as present, so the check reddens when a selection is added and the entry point starts creating other entity kinds.
- *
- * In the shape of `envReadSites.test.ts`, which sits beside this file and states the reason `index.ts` cannot be imported by vitest. The grant WRITE half is asserted by IMPORT of `entityGrant.ts`, which reaches no remote origin.
+ * `index.ts` cannot be imported by vitest (see `envReadSites.test.ts`), so these checks read its source with the comments stripped: the comments describe the path in the same words the checks look for. The entity, its grant and the record are written by `public.identity_entity_find_or_create`, whose own pgTAP file asserts them.
  */
 
 import { readFileSync } from 'node:fs';
@@ -32,7 +30,7 @@ const RETIRED_CLAIM_KEYS = ['user_roles', 'user_role_type', 'role_scope_type'] a
 const GRANT_SCOPES = ['global', 'account', 'project', 'entity'] as const;
 const GRANT_ROLES = ['admin', 'editor'] as const;
 
-/** How many times `needle` occurs in the entry point's source. */
+/** How many times `needle` occurs in the code. */
 function occurrences(needle: string): number {
   return INDEX_SOURCE.split(needle).length - 1;
 }

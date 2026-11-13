@@ -1,16 +1,27 @@
 /**
  * Provider-Agnostic Identity Callback Edge Function
  *
- * Handles identity provider (Signicat or Idura) bank authentication callbacks by:
- * 1. Accepting a JWE-encrypted (or plain JWT) id_token from the OIDC callback
- * 2. Decrypting JWE tokens using the private JWKS from environment
- * 3. Verifying the inner JWT signature against the provider's public JWKS
- * 4. Extracting identity claims based on provider configuration
- * 5. Finding or creating a Supabase auth user matched by identity claim value
- * 6. Finding the identity's candidate through its editor grant, or creating the candidate and that grant for a new identity
- * 7. Returning a session for immediate login
+ * Turns an identity provider's ID token (Signicat or Idura) into an account, the entity the identity registered, and a sign-in token, in this order:
+ * 0. Refuse every caller but the frontend server, which proves itself with the secret it sends in the `x-identity-callback-secret` header.
+ * 1. Read the request: the ID token, the project, and the entity type asked for.
+ * 2. Decrypt the token when it is a JWE, and verify its signature, audience and issuer against the configured provider.
+ * 3. Read the provider's persistent subject identifier and the two name parts from the verified claims, a name sent all in capitals smart-cased.
+ * 4. Decide the entity type from the project's stored registration-mode matrix, before any account or row is touched. This function is the authority on that decision: a caller's own check only selects, and a type the matrix does not allow for the identity provider's mode is refused here whoever asks.
+ * 5. Find the account by the subject identifier, or create it without a password: an invite for its placeholder address.
+ * 6. Find or create the entity, and write the account's identity metadata, with one call of `public.identity_entity_find_or_create`; then confirm the placeholder of an account this identity has not finished yet. The call finds the entity the account's record names for the project and type, confirmed by a live editor grant, or creates the entity, its grant and the record. A candidate is written confirmed with the provider's names; an organization unconfirmed and without a name.
+ * 7. Generate a sign-in link for the account's current address and answer with its token.
  *
- * POST /functions/v1/identity-callback Body: { id_token: string, project_id?: string }
+ * The entity, its grant and the record are written before the link is generated, so the session the caller obtains already carries the grant.
+ *
+ * SIGN-INS THAT ARRIVE TOGETHER. Several first sign-ins of one identity can reach the function at once, from tabs or retries. The invites race for the one placeholder address and all but one fail, so a failed invite is followed by a look-up of the account on the address. The entity is found or created in one transaction under a lock on the account, so the requests make one entity between them. The identity metadata is written by that call too, under the same lock, and no admin update carries `app_metadata`: the auth service writes the whole of `app_metadata` from the copy it read when the update began, so such an update could put back a record without the entry another request had just written for another project or type.
+ *
+ * WHY THE FUNCTION ANSWERS THE FRONTEND SERVER ALONE. The function turns a verified ID token into a sign-in token for the identity's account. It is reachable directly at its public address, so without the server's secret anyone holding a stolen or replayed ID token could present it here and sign in as its holder, bypassing the frontend's binding of the token to the browser that started the flow. A request without the header is refused before anything else is read, so an anonymous caller makes the function do no work and learns nothing about its configuration.
+ *
+ * POST /functions/v1/identity-callback Header: x-identity-callback-secret. Body: { id_token: string, project_id: uuid, entity_type?: 'candidate' | 'organization' }
+ *
+ * The project is the one the request names; the function reads none from its environment. A request that names no entity type is for the one served type whose matrix row allows the identity provider's mode; with none or several such types it is refused.
+ *
+ * Every answer is one result of the closed set in `requestContract.ts`, built by `resultBody` and sent with `resultStatus`: `created`, `found` and `no_entity` (200) carry the sign-in token; `refused` (401), `mode_not_allowed` (403), `invalid_token` (401), `bad_request` (400), `configuration` (500) and `unavailable` (503) carry nothing else. No caught message leaves the function.
  *
  * Environment variables (set via Supabase secrets):
  * - IDENTITY_PROVIDER_TYPE: Provider type; required, and one of 'signicat-ftn' or 'idura-ftn' (there is no default -- an unset value throws)
@@ -18,8 +29,7 @@
  * - IDENTITY_PROVIDER_JWKS_URI: URL to the provider's public JWKS endpoint for JWT signature verification (required; an unset value throws)
  * - IDENTITY_PROVIDER_CLIENT_ID: Expected audience in the JWT (required; verification throws when unset)
  * - IDENTITY_PROVIDER_ISSUER: Expected issuer of the JWT (required; verification throws when unset)
- * - PUBLIC_PROJECT_ID: The project this deployment serves, and the project self-registered candidates are assigned to (required; an unset value throws, and a request body project_id is accepted only when it names this same project)
- * - SITE_URL: Browser-facing site origin the post-login magic link redirects to (required; an unset value throws)
+ * - IDENTITY_CALLBACK_SERVER_SECRET: The secret the frontend server sends in the credential header (required; read only for a request that carries the header, and an unset value then throws)
  * - SUPABASE_URL: Supabase project URL (auto-set by Supabase)
  * - SUPABASE_SERVICE_ROLE_KEY: Service role key for admin operations (auto-set by Supabase)
  */
@@ -87,11 +97,12 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
   return payload;
 }
 
-// extractIdentityClaims and resolveProviderConfig are imported from claimConfig.ts (pure functions, no Deno deps)
-
 /**
- * Find an existing auth user by identity_match_value in app_metadata.
- * Returns the user ID if found, null otherwise.
+ * The first account, page by page, that a predicate accepts, or null when none does.
+ *
+ * @param supabaseAdmin - The service-role client.
+ * @param matches - The predicate.
+ * @throws {Error & { code: string }} `ERR_ACCOUNT_LOOKUP_FAILED` when a page cannot be listed.
  */
 async function findUserByIdentityMatch(
   // reason: this function has no generated `Database` type to parameterise `SupabaseClient` with, and nothing type-checks this file (no `deno check` runs, and vitest reads it only as source text), so a client type here would go unchecked. Only `.auth.admin.listUsers` is used, and its result is destructured and guarded below.
@@ -139,12 +150,10 @@ async function findUserByIdentityMatch(
 }
 
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Only accept POST requests
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
@@ -218,7 +227,6 @@ Deno.serve(async (req: Request) => {
       innerJwt = id_token;
     }
 
-    // 3. Verify the JWT signature against the provider's public JWKS
     let payload: jose.JWTPayload;
     try {
       payload = await verifyJwt(innerJwt);
@@ -388,7 +396,7 @@ Deno.serve(async (req: Request) => {
       }
     );
   } catch (e) {
-    // Logged, never returned. This arm catches the Supabase admin-API failures thrown above ("Failed to create auth user: ...", "Failed to list users: ..."), whose messages carry Postgres error text and schema detail. It ALSO catches the five ERR_ENV_UNCONFIGURED throws for IDENTITY_PROVIDER_TYPE, IDENTITY_PROVIDER_DECRYPTION_JWKS, IDENTITY_PROVIDER_JWKS_URI, PUBLIC_PROJECT_ID and SITE_URL: this endpoint is served --no-verify-jwt, so a message naming an unset variable would tell an unauthenticated caller which parts of the deployment are unconfigured. The returned string below is a fixed literal with nothing interpolated into it, which is what keeps that true for every throw that reaches here, present and future.
+    // Logged, never returned. This arm catches the auth service's and the database's failures, whose messages carry Postgres error text and schema detail, and the four ERR_ENV_UNCONFIGURED throws for IDENTITY_CALLBACK_SERVER_SECRET, IDENTITY_PROVIDER_TYPE, IDENTITY_PROVIDER_DECRYPTION_JWKS and IDENTITY_PROVIDER_JWKS_URI, with the two claim-binding throws. A configuration failure is told from an outage by its code alone, and the answer is one result with nothing interpolated into it.
     console.error('identity-callback error:', e);
 
     return new Response(JSON.stringify({ error: 'Internal server error' }), {

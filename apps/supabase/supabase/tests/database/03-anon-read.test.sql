@@ -14,7 +14,6 @@ SET
 -- Reset pgTAP internal state from previous test files in same session
 DROP TABLE IF EXISTS __tcache__;
 
--- The plan count includes the 3 terms-of-use visibility assertions (ToU NULL / past now() / future now()) at the end of Section 1.
 SELECT
   plan (59);
 

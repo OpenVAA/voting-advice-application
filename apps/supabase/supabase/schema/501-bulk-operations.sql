@@ -68,6 +68,7 @@ $$;
 --
 -- Builds dynamic SQL to INSERT ON CONFLICT (project_id, external_id) DO UPDATE.
 -- Handles relationship field resolution using resolve_external_ref().
+-- An item's key is a column name and is quoted as an identifier wherever it enters the statement, and a value is quoted as a literal, so a key that is not a column's name fails as an unknown column (SQLSTATE 42703) and never becomes part of the statement's text.
 -- Returns true if the row was inserted (created), false if updated.
 --
 -- Relationship mapping defines which JSON keys map to FK columns and which target tables they reference.
@@ -211,6 +212,11 @@ $$;
 --   - "project_id": UUID of the target project (for RLS enforcement)
 --
 -- Relationship fields (e.g., "organization", "election") are expressed as {"external_id": "..."} objects and resolved to UUIDs internally.
+--
+-- Two keys are links rather than columns:
+--   - "constituency_groups" on an elections item: the constituency groups the election is held in, written to election_constituency_groups;
+--   - "constituencies" on a constituency_groups item: the constituencies of the group, written to constituency_group_constituencies.
+-- Each is a JSON array of references in a form resolve_external_ref reads, every one of which must name a row of the item's own project. The key is taken off the item before the upsert, so it never reaches a column and never counts as one, and its links are written once the constituencies collection is done, whether or not the payload holds one, and before any nomination: a nomination is judged against its election's constituencies when it is inserted. A link that already exists is left as it is, and no link is ever removed.
 --
 -- Returns: {"elections": {"created": N, "updated": M}, ...}
 --------------------------------------------------------------------------------
