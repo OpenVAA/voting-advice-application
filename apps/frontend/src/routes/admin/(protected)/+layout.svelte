@@ -4,6 +4,7 @@
 
 - Only displays children if user is authenticated with admin privileges
 - Handles loading and error states
+- Renders the view of the gate the server load reported (see `$lib/admin/gates`) in place of the page, and moves focus to it when it replaced another view without a navigation
 
 -->
 
