@@ -100,7 +100,7 @@ describe('send-email flow conformance', () => {
     expect(INDEX_SOURCE).not.toMatch(/g\.role\s*===/);
   });
 
-  it('takes its gate from the shared callerAuthority module and declares none of its own', () => {
+  it('takes its gate from the callerAuthority module and declares none of its own', () => {
     // Guards a LOCAL SHADOW of the helper (162-REVIEW WR-09): a same-named function declared in index.ts would satisfy every call-shape assertion here while answering whatever it likes.
     expect(INDEX_SOURCE).toContain("import { callerMayOnProject } from './callerAuthority.ts';");
     expect(INDEX_SOURCE).not.toMatch(/\bfunction\s*\*?\s*callerMayOnProject\b/);
@@ -142,13 +142,6 @@ describe('send-email flow conformance', () => {
     const adminAt = INDEX_SOURCE.indexOf('SUPABASE_SERVICE_ROLE_KEY');
     expect(gateAt).toBeGreaterThan(-1);
     expect(adminAt).toBeGreaterThan(gateAt);
-  });
-
-  it('shares ONE gate module with invite-candidate, byte for byte', () => {
-    const mine = readFileSync(new URL('./callerAuthority.ts', import.meta.url), 'utf8');
-    const theirs = readFileSync(new URL('../invite-candidate/callerAuthority.ts', import.meta.url), 'utf8');
-    expect(mine.length).toBeGreaterThan(500);
-    expect(mine).toBe(theirs);
   });
 
   it('sends the HTML part with escaped variables and never as a caller-chosen sender (162-REVIEW WR-02)', () => {

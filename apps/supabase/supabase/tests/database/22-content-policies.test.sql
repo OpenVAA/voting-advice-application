@@ -23,7 +23,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (68);
+  plan (72);
 
 SELECT
   create_test_data ();
@@ -306,6 +306,89 @@ SELECT
     ),
     0,
     'candidate_a, an entity grantee of the SAME project, CANNOT update its app_settings row'
+  );
+
+-- =====================================================================
+-- Section 3b: the one settings key a policy reads, set by the project editor
+--
+-- `access.nominationsLocked` is the nominations lock, and the entity-user policies on `nominations` read it through `private.project_nominations_locked`. It is a member of `app_settings.settings`, so its authority is `project.edit_app_settings`: the editor of sections 2 and 3, who cannot write the `projects` row, turns the lock on and off. Both directions are asserted on the same nomination under the same entity user, so the editor's write is what decides each.
+--
+-- The editor's statement sets the one key and keeps whatever else the stored object holds.
+-- =====================================================================
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000000e1',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    t22_affected (
+      format(
+        $$UPDATE app_settings SET settings = jsonb_set(settings, '{access}', COALESCE(settings -> 'access', '{}'::jsonb) || '{"nominationsLocked":true}'::jsonb) WHERE project_id = '%s'$$,
+        test_id ('project_a')
+      )
+    ),
+    1,
+    'a project editor CAN turn the nominations lock ON through its project''s app_settings row'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  is (
+    t22_affected (
+      format(
+        $$UPDATE nominations SET custom_data = '{"note":"attempted under the editor''s lock"}'::jsonb WHERE id = '%s'$$,
+        test_id ('nomination_cand_a')
+      )
+    ),
+    0,
+    'and with the editor''s lock ON candidate_a, the owning entity user, CANNOT update its own nomination'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000000e1',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    t22_affected (
+      format(
+        $$UPDATE app_settings SET settings = jsonb_set(settings, '{access}', COALESCE(settings -> 'access', '{}'::jsonb) || '{"nominationsLocked":false}'::jsonb) WHERE project_id = '%s'$$,
+        test_id ('project_a')
+      )
+    ),
+    1,
+    'the same project editor CAN turn the nominations lock OFF again'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  is (
+    t22_affected (
+      format(
+        $$UPDATE nominations SET custom_data = '{"note":"written once the editor unlocked"}'::jsonb WHERE id = '%s'$$,
+        test_id ('nomination_cand_a')
+      )
+    ),
+    1,
+    'and with the editor''s lock OFF the SAME statement by candidate_a affects one row -- so the refusal above was the editor''s setting and nothing else'
   );
 
 -- =====================================================================
@@ -1323,7 +1406,7 @@ SELECT
       'efefefef-efef-efef-efef-00000000001e',
       test_id ('project_a')
     ),
-    'and an authenticated caller CAN submit feedback from the candidate app, whatever project it names'
+    'and an authenticated caller CAN submit feedback from the contestant app, whatever project it names'
   );
 
 SELECT

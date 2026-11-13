@@ -17,7 +17,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (51);
+  plan (141);
 
 SELECT
   create_test_data ();
@@ -252,11 +252,14 @@ SELECT
 SELECT
   reset_role ();
 
-UPDATE projects
+UPDATE app_settings
 SET
-  lock_nominations = true
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"access":{"nominationsLocked":true}}'::jsonb
+  )
 WHERE
-  id = test_id ('project_a');
+  project_id = test_id ('project_a');
 
 SELECT
   set_test_user (
@@ -278,11 +281,34 @@ SELECT
 SELECT
   reset_role ();
 
-UPDATE projects
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('admin_a'),
+    test_user_grants ('admin_a')
+  );
+
+SELECT
+  is (
+    pg_temp.try_edit_nomination (
+      test_id ('nomination_cand_a'),
+      'by the project admin while locked'
+    ),
+    1,
+    'with the lock still ON a project admin edits the same nomination -- the lock binds the entity policies and not the admin ones'
+  );
+
+SELECT
+  reset_role ();
+
+UPDATE app_settings
 SET
-  lock_nominations = false
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"access":{"nominationsLocked":false}}'::jsonb
+  )
 WHERE
-  id = test_id ('project_a');
+  project_id = test_id ('project_a');
 
 SELECT
   set_test_user (
@@ -556,7 +582,7 @@ SELECT
     ),
     '42501',
     NULL,
-    'G1-neg: guard 1 -- a CANDIDATE-type row is refused through the parent policy; the hole is organization-shaped'
+    'G1-neg: guard 1 -- a CANDIDATE-type row is refused through the parent policy, which admits an organization''s row and an alliance''s row only'
   );
 
 -- G2-neg: the confirmation flag is refused at PRIVILEGE level, before any policy is consulted.
@@ -609,11 +635,14 @@ SELECT
 SELECT
   reset_role ();
 
-UPDATE projects
+UPDATE app_settings
 SET
-  lock_nominations = true
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"access":{"nominationsLocked":true}}'::jsonb
+  )
 WHERE
-  id = test_id ('project_a');
+  project_id = test_id ('project_a');
 
 SELECT
   set_test_user (
@@ -636,14 +665,33 @@ SELECT
     'G4-neg: guard 4 -- with the project nomination lock ON the parent insert is refused; a locked project is not writable through a side door'
   );
 
+-- OWN: the lock pair on `entity_insert_nominations`, the entity's insert of its own nomination. candidate_a holds `nomination.edit` on the row's entity and no nomination of it stands at round 40, so between the two halves only the setting differs.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '%s', '%s', '%s', 40)$$,
+      test_id ('project_a'),
+      test_id ('candidate_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    NULL,
+    'OWN-neg: with the project nomination lock ON an entity user''s insert of its OWN nomination is refused'
+  );
+
 SELECT
   reset_role ();
 
-UPDATE projects
+UPDATE app_settings
 SET
-  lock_nominations = false
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"access":{"nominationsLocked":false}}'::jsonb
+  )
 WHERE
-  id = test_id ('project_a');
+  project_id = test_id ('project_a');
 
 SELECT
   set_test_user (
@@ -662,6 +710,19 @@ SELECT
       test_id ('constituency_a')
     ),
     'G4: with the lock OFF the SAME statement succeeds -- the guard asserted in both directions'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '%s', '%s', '%s', 40)$$,
+      test_id ('project_a'),
+      test_id ('candidate_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'OWN: with the lock OFF the SAME statement succeeds -- the own insert asserted in both directions'
   );
 
 -- G5: the caller must already hold a nomination at THAT contest. candidate_a2 holds `nomination.create_parent` and holds no nomination at round 4, so the permission alone is not enough.
@@ -796,6 +857,344 @@ SELECT
 SELECT
   reset_role ();
 
+INSERT INTO
+  alliances (id, project_id, name, confirmed)
+SELECT
+  (
+    '12121212-1212-1212-1212-0000000054' || lpad(i::text, 2, '0')
+  )::uuid,
+  test_id ('project_a'),
+  jsonb_build_object('en', 'Alliance ' || i),
+  false
+FROM
+  generate_series(1, 13) AS i;
+
+INSERT INTO
+  organizations (id, project_id, name, confirmed)
+SELECT
+  (
+    '12121212-1212-1212-1212-0000000055' || lpad(i::text, 2, '0')
+  )::uuid,
+  test_id ('project_a'),
+  jsonb_build_object('en', 'Party ' || i),
+  false
+FROM
+  generate_series(1, 12) AS i;
+
+INSERT INTO
+  factions (id, project_id, organization_id, name, confirmed)
+VALUES
+  (
+    '12121212-1212-1212-1212-000000005701'::uuid,
+    test_id ('project_a'),
+    test_id ('org_a'),
+    '{"en":"Faction A2"}'::jsonb,
+    false
+  );
+
+INSERT INTO
+  auth.users (
+    id,
+    instance_id,
+    email,
+    encrypted_password,
+    aud,
+    role,
+    email_confirmed_at,
+    raw_user_meta_data,
+    raw_app_meta_data,
+    created_at,
+    updated_at
+  )
+VALUES
+  (
+    '12121212-1212-1212-1212-000000005601'::uuid,
+    '00000000-0000-0000-0000-000000000000',
+    'n23_faction_editor@test.com',
+    crypt ('testpass', gen_salt ('bf')),
+    'authenticated',
+    'authenticated',
+    now(),
+    '{}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now()
+  );
+
+INSERT INTO
+  public.grants (user_id, scope, target_type, target_id, role)
+VALUES
+  (
+    '12121212-1212-1212-1212-000000005601'::uuid,
+    'entity',
+    'faction',
+    test_id ('faction_a'),
+    'editor'
+  );
+
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    organization_id,
+    election_id,
+    constituency_id,
+    election_round
+  )
+VALUES
+  (
+    '12121212-1212-1212-1212-000000007001'::uuid,
+    test_id ('project_a'),
+    test_id ('org_a'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    70
+  );
+
+INSERT INTO
+  nominations (
+    project_id,
+    candidate_id,
+    election_id,
+    constituency_id,
+    election_round
+  )
+VALUES
+  (
+    test_id ('project_a'),
+    test_id ('candidate_a'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    70
+  );
+
+INSERT INTO
+  nominations (
+    project_id,
+    faction_id,
+    election_id,
+    constituency_id,
+    election_round,
+    parent_nomination_id
+  )
+VALUES
+  (
+    test_id ('project_a'),
+    test_id ('faction_a'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    70,
+    '12121212-1212-1212-1212-000000007001'::uuid
+  );
+
+-- Alliance 03 is already nominated at round 70: guard 3's occupant for an alliance's row.
+INSERT INTO
+  nominations (
+    project_id,
+    alliance_id,
+    election_id,
+    constituency_id,
+    election_round
+  )
+VALUES
+  (
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005403'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    70
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+-- G1 (an alliance's row): the organization's editor, nominated at the contest, creates the nomination of an alliance that has none there.
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005401'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'G1: an organization''s editor whose organization is nominated at the contest creates the nomination of an alliance that has none there'
+  );
+
+SELECT
+  reset_role ();
+
+-- Read as the owner: the caller cannot read the alliance's row it created.
+SELECT
+  is (
+    (
+      SELECT
+        confirmed::text || '/' || COALESCE(created_by::text, 'NULL')
+      FROM
+        nominations
+      WHERE
+        alliance_id = '12121212-1212-1212-1212-000000005401'::uuid
+        AND election_round = 70
+    ),
+    'false/' || test_user_id ('organization_a')::text,
+    'G1: the alliance''s nomination is stored unconfirmed and records the organization''s editor as its creator'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+-- PAIR-neg: the same caller at the same contest, and the row is another organization's. An organization's editor is not a caller an organization's row admits, and its child nominee at the contest does not make it one.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005501'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    NULL,
+    'PAIR-neg: an organization''s editor is refused another organization''s row, although its own organization and a faction under it are nominated at the contest'
+  );
+
+-- G3 (an alliance's row): alliance 03 is nominated at round 70 and alliance 02 is not. Nothing else differs between the two inserts.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005403'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    NULL,
+    'G3: an alliance that already has a nomination at the contest gets no second one from an organization''s editor'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005402'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'G3: the same insert for an alliance with no nomination at the contest is admitted'
+  );
+
+-- G5-neg (an alliance's row): organization A holds no nomination at round 81, so the same caller is refused there.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005402'::uuid, '%s', '%s', 81)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    NULL,
+    'G5-neg: an organization''s editor whose organization is not nominated at the contest is refused an alliance''s row there'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+-- PAIR and PAIR-neg for a candidate's editor: one caller, one contest, and the two rows differ in their type alone.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005404'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    NULL,
+    'PAIR-neg: a candidate''s editor nominated at the contest is refused an alliance''s row'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005502'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'PAIR: the same candidate''s editor at the same contest creates an organization''s row'
+  );
+
+-- G1-neg (a faction's row): faction A2 has no nomination at round 70 and the row names its own organization's nomination as parent, as a faction's nomination must. The caller holds no permission on that faction, so only the parent policy could admit the row.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, faction_id, election_id, constituency_id, election_round, parent_nomination_id)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005701'::uuid, '%s', '%s', 70, '12121212-1212-1212-1212-000000007001'::uuid)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    NULL,
+    'G1-neg: a faction''s row is refused through the parent policy, which admits an organization''s row and an alliance''s row only'
+  );
+
+-- PAIR and PAIR-neg for a faction's editor. A faction's nomination stands under its own organization's, so that organization is always nominated where the faction is, and the organization's row the faction's editor creates is another organization's.
+SELECT
+  set_test_user (
+    'authenticated',
+    '12121212-1212-1212-1212-000000005601'::uuid,
+    '[]'::jsonb
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005503'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'PAIR: a faction''s editor whose faction is nominated at the contest creates an organization''s row'
+  );
+
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005405'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    NULL,
+    'PAIR-neg: the same faction''s editor at the same contest is refused an alliance''s row'
+  );
+
+-- CAP: nine parent nominations already originated by this caller, so the next sits AT the boundary and the one after it is over. They are inserted LAST rather than with the rest of the fixture, and the ordering is load-bearing: the cap is enforced by a BEFORE INSERT trigger, which runs AHEAD of the row-level check clause, so a caller already at the cap is refused by the cap BEFORE any guard is consulted. Creating these rows earlier would have made every guard assertion above measure the cap instead of its guard -- observed directly, as P0001 where 42501 was wanted.
+SELECT
+  reset_role ();
+
 -- Normalise first. The guard assertions above legitimately originated parents of their own, so the count at this point depends on how many of them ran; clearing the authorship makes the boundary EXACTLY nine rather than nine-plus-whatever-came-before, and an off-by-one here would turn the pair below into an assertion about the fixture rather than about the cap.
 UPDATE nominations
 SET
@@ -852,16 +1251,19 @@ SELECT
       test_id ('election_a'),
       test_id ('constituency_a')
     ),
-    '%at most 10 unconfirmed parent organization nominations%',
+    '%at most 10 unconfirmed parent nominations%',
     'CAP: the next one is REFUSED with a message naming the ruled cap value -- a caller is told what they hit, which a row-level-security refusal alone would never say'
   );
 
--- PERM: `nomination.create_parent` is SEPARATELY REVOCABLE, which is the whole argument for it being its own verb rather than a widening of `nomination.edit`. An organization editor holds the edit verb and not this one (section 3.3 withholds it: an organization's parent would be an alliance nomination).
+-- CAP (both parent types): an alliance's row counts against the cap as an organization's does, and so does a row of the caller's own organization. Nine unconfirmed rows are recorded for the organization's editor: three of other organizations, two of its own organization and four of alliances, each at a round of its own. Like the block above, it comes after every guard assertion of its caller and clears that caller's authorship first.
 SELECT
   reset_role ();
 
-SELECT
-  test_seed_identity_grants ('organization_a');
+UPDATE nominations
+SET
+  created_by = NULL
+WHERE
+  created_by = test_user_id ('organization_a');
 
 INSERT INTO
   nominations (
@@ -869,16 +1271,46 @@ INSERT INTO
     organization_id,
     election_id,
     constituency_id,
-    election_round
+    election_round,
+    created_by
   )
-VALUES
+SELECT
+  test_id ('project_a'),
+  o.id,
+  test_id ('election_a'),
+  test_id ('constituency_a'),
+  70 + o.n,
+  test_user_id ('organization_a')
+FROM
   (
-    test_id ('project_a'),
-    test_id ('org_a'),
-    test_id ('election_a'),
-    test_id ('constituency_a'),
-    9
-  );
+    VALUES
+      (1, '12121212-1212-1212-1212-000000005510'::uuid),
+      (2, '12121212-1212-1212-1212-000000005511'::uuid),
+      (3, '12121212-1212-1212-1212-000000005512'::uuid),
+      (4, test_id ('org_a')),
+      (5, test_id ('org_a'))
+  ) AS o (n, id);
+
+INSERT INTO
+  nominations (
+    project_id,
+    alliance_id,
+    election_id,
+    constituency_id,
+    election_round,
+    created_by
+  )
+SELECT
+  test_id ('project_a'),
+  (
+    '12121212-1212-1212-1212-0000000054' || lpad((i + 7)::text, 2, '0')
+  )::uuid,
+  test_id ('election_a'),
+  test_id ('constituency_a'),
+  75 + i,
+  test_user_id ('organization_a')
+FROM
+  generate_series(1, 4) AS i;
 
 SELECT
   set_test_user (
@@ -888,20 +1320,358 @@ SELECT
   );
 
 SELECT
+  is (
+    private.caller_unconfirmed_originated_count (),
+    9,
+    'CAP: the count holds the caller''s unconfirmed organization rows and alliance rows together, its own organization''s among them'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005412'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'CAP: with nine rows of both parent types the tenth, an alliance''s row, is admitted'
+  );
+
+SELECT
+  throws_like (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005413'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '%at most 10 unconfirmed parent nominations%',
+    'CAP: the eleventh, an alliance''s row, is refused with the message that names the cap'
+  );
+
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, alliance_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005413'::uuid, '%s', '%s', 70)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'P0001',
+    'A caller may originate at most 10 unconfirmed parent nominations; this caller already holds 10. An administrator must confirm or reject some before more can be created.',
+    'CAP: that refusal is a raised exception whose whole message states the cap and the number the caller holds'
+  );
+
+-- PERM: `nomination.create_parent` is a verb of its own and not a part of `nomination.edit`. Every entity editor's row of the matrix holds both, so no caller of the matrix as it stands holds the one without the other. The matrix is therefore read here with that one verb taken out of every row: `grant_role_permissions` is renamed and a function of its name answers the renamed one's set without `nomination.create_parent`. candidate_a2 holds a nomination at round 4 and created an organization's row there above; with the verb taken out the same caller is refused the next one, and with the matrix put back the same statement is admitted.
+SELECT
+  reset_role ();
+
+ALTER FUNCTION public.grant_role_permissions (
+  public.grant_scope_type,
+  public.grant_role_type,
+  public.entity_type
+)
+RENAME TO grant_role_permissions_whole;
+
+CREATE FUNCTION public.grant_role_permissions (
+  p_scope public.grant_scope_type,
+  p_role public.grant_role_type,
+  p_target_type public.entity_type
+) RETURNS public.grant_permission[] LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $fn$
+  SELECT array_remove(
+    public.grant_role_permissions_whole (p_scope, p_role, p_target_type),
+    'nomination.create_parent'::public.grant_permission
+  );
+$fn$;
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a2'),
+    test_user_grants ('candidate_a2')
+  );
+
+SELECT
+  is (
+    user_can (
+      'entity',
+      test_id ('candidate_a2'),
+      'nomination.edit',
+      'candidate'
+    )::text || '/' || user_can (
+      'entity',
+      test_id ('candidate_a2'),
+      'nomination.create_parent',
+      'candidate'
+    )::text,
+    'true/false',
+    'PERM: with the verb taken out of the matrix the caller still holds nomination.edit on its own entity and does not hold nomination.create_parent'
+  );
+
+SELECT
   throws_ok (
     format(
       $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round)
-      VALUES ('%s', '12121212-1212-1212-1212-000000000010'::uuid, '%s', '%s', 9)$$,
+      VALUES ('%s', '12121212-1212-1212-1212-000000005504'::uuid, '%s', '%s', 4)$$,
       test_id ('project_a'),
       test_id ('election_a'),
       test_id ('constituency_a')
     ),
     '42501',
     NULL,
-    'PERM: a caller holding nomination.edit but NOT nomination.create_parent is refused, even with a nomination of their own at that contest -- the verb is separately revocable'
+    'PERM: a caller holding nomination.edit and not nomination.create_parent is refused an organization''s row, even with a nomination of its own at that contest'
   );
 
--- D1: THE HARDENING, asserted behaviourally. `validate_nomination` is SECURITY DEFINER because from the moment an entity user may insert, an invoker-rights parent lookup would run under that user's own row-level security and report a parent that EXISTS as one that does not. Measured at Task 1: such a lookup returns ZERO ROWS. This is the paired opposite.
+SELECT
+  reset_role ();
+
+DROP FUNCTION public.grant_role_permissions (
+  public.grant_scope_type,
+  public.grant_role_type,
+  public.entity_type
+);
+
+ALTER FUNCTION public.grant_role_permissions_whole (
+  public.grant_scope_type,
+  public.grant_role_type,
+  public.entity_type
+)
+RENAME TO grant_role_permissions;
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a2'),
+    test_user_grants ('candidate_a2')
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000005504'::uuid, '%s', '%s', 4)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'PERM: with the matrix put back the same caller creates the same row -- the verb alone differed'
+  );
+
+-- ID: `private.nomination_id_in_contest` answers the id of an entity's nomination at a contest. Where the entity holds several there it answers the one with no parent first, then the oldest, then the lowest id; where it holds none, and where the type asked is not the entity's, it answers NULL. Round 80 holds every case, and each pair is built so that the rule under test and the rules after it point at different rows.
+--
+-- `pg_temp.nomination_id_at_round_80` asks the lookup through dynamic SQL and answers its uuid as text, 'NULL' for a NULL and 'no such function' where the lookup does not exist, so each assertion below is an expectation whatever the database holds.
+SELECT
+  reset_role ();
+
+CREATE FUNCTION pg_temp.nomination_id_at_round_80 (
+  p_entity_type public.entity_type,
+  p_entity_id uuid
+) RETURNS text LANGUAGE plpgsql AS $fn$
+DECLARE
+  v_id uuid;
+BEGIN
+  EXECUTE 'SELECT private.nomination_id_in_contest ($1, $2, $3, $4, 80)'
+  INTO v_id
+  USING p_entity_type, p_entity_id, public.test_id ('election_a'), public.test_id ('constituency_a');
+  RETURN COALESCE(v_id::text, 'NULL');
+EXCEPTION
+  WHEN undefined_function THEN
+    RETURN 'no such function';
+END;
+$fn$;
+
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    alliance_id,
+    election_id,
+    constituency_id,
+    election_round
+  )
+VALUES
+  (
+    '12121212-1212-1212-1212-000000008001'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005406'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80
+  ),
+  (
+    '12121212-1212-1212-1212-000000008002'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005407'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80
+  );
+
+-- Party 05 once, with no parent. Party 06 twice: under an alliance, older and with the lower id, and with no parent. Party 07 twice under an alliance: the older row has the higher id. Party 08 twice under an alliance, of one age. Party 09 not at all.
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    organization_id,
+    election_id,
+    constituency_id,
+    election_round,
+    parent_nomination_id,
+    created_at
+  )
+VALUES
+  (
+    '12121212-1212-1212-1212-000000008003'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005505'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80,
+    NULL,
+    '2026-01-01T00:00:00Z'
+  ),
+  (
+    '12121212-1212-1212-1212-000000008004'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005506'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80,
+    '12121212-1212-1212-1212-000000008001'::uuid,
+    '2026-01-01T00:00:00Z'
+  ),
+  (
+    '12121212-1212-1212-1212-000000008005'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005506'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80,
+    NULL,
+    '2026-02-01T00:00:00Z'
+  ),
+  (
+    '12121212-1212-1212-1212-000000008006'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005507'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80,
+    '12121212-1212-1212-1212-000000008002'::uuid,
+    '2026-02-01T00:00:00Z'
+  ),
+  (
+    '12121212-1212-1212-1212-000000008007'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005507'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80,
+    '12121212-1212-1212-1212-000000008001'::uuid,
+    '2026-01-01T00:00:00Z'
+  ),
+  (
+    '12121212-1212-1212-1212-000000008008'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005508'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80,
+    '12121212-1212-1212-1212-000000008001'::uuid,
+    '2026-01-01T00:00:00Z'
+  ),
+  (
+    '12121212-1212-1212-1212-000000008009'::uuid,
+    test_id ('project_a'),
+    '12121212-1212-1212-1212-000000005508'::uuid,
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    80,
+    '12121212-1212-1212-1212-000000008002'::uuid,
+    '2026-01-01T00:00:00Z'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        p.prosecdef::text || '/' || (p.proconfig = ARRAY['search_path=""'])::text || '/' || p.provolatile::text || '/' || has_function_privilege('authenticated', p.oid, 'EXECUTE')::text
+      FROM
+        pg_proc p
+      WHERE
+        p.pronamespace = 'private'::regnamespace
+        AND p.proname = 'nomination_id_in_contest'
+    ),
+    'true/true/s/true',
+    'ID: the lookup is a stable SECURITY DEFINER function of the private schema with an empty search_path, and authenticated may execute it'
+  );
+
+SELECT
+  is (
+    pg_temp.nomination_id_at_round_80 (
+      'organization',
+      '12121212-1212-1212-1212-000000005505'::uuid
+    ),
+    '12121212-1212-1212-1212-000000008003',
+    'ID: an entity nominated once at the contest answers that nomination''s id'
+  );
+
+SELECT
+  is (
+    pg_temp.nomination_id_at_round_80 (
+      'organization',
+      '12121212-1212-1212-1212-000000005509'::uuid
+    ),
+    'NULL',
+    'ID: an entity with no nomination at the contest answers NULL'
+  );
+
+SELECT
+  is (
+    pg_temp.nomination_id_at_round_80 (
+      'alliance',
+      '12121212-1212-1212-1212-000000005505'::uuid
+    ),
+    'NULL',
+    'ID: asked with a type that is not the entity''s, the lookup answers NULL'
+  );
+
+SELECT
+  is (
+    pg_temp.nomination_id_at_round_80 (
+      'organization',
+      '12121212-1212-1212-1212-000000005506'::uuid
+    ),
+    '12121212-1212-1212-1212-000000008005',
+    'ID: of a nomination with no parent and one under an alliance, the lookup answers the one with no parent, although it is the newer and has the higher id'
+  );
+
+SELECT
+  is (
+    pg_temp.nomination_id_at_round_80 (
+      'organization',
+      '12121212-1212-1212-1212-000000005507'::uuid
+    ),
+    '12121212-1212-1212-1212-000000008007',
+    'ID: of two nominations that both have a parent, the lookup answers the older, although it has the higher id'
+  );
+
+SELECT
+  is (
+    pg_temp.nomination_id_at_round_80 (
+      'organization',
+      '12121212-1212-1212-1212-000000005508'::uuid
+    ),
+    '12121212-1212-1212-1212-000000008008',
+    'ID: of two nominations of one age that both have a parent, the lookup answers the lower id'
+  );
+
+-- The hardening, asserted behaviourally. `validate_nomination` is SECURITY DEFINER because from the moment an entity user may insert, an invoker-rights parent lookup would run under that user's own row-level security and report a parent that EXISTS as one that does not. Measured at Task 1: such a lookup returns ZERO ROWS. This is the paired opposite.
 SELECT
   reset_role ();
 
@@ -944,7 +1714,7 @@ SELECT
         id = '12121212-1212-1212-1212-0000000000e1'::uuid
     ),
     0,
-    'D1 control: the entity user CANNOT READ the parent it is about to name -- without this the assertion below would pass against an unhardened validator too'
+    'hardening control: the entity user CANNOT READ the parent it is about to name -- without this the assertion below would pass against an unhardened validator too'
   );
 
 SELECT
@@ -957,10 +1727,10 @@ SELECT
       test_id ('election_a'),
       test_id ('constituency_a')
     ),
-    'D1: the entity user nonetheless INSERTS a child under that parent -- the hardened validator sees what it validates, where an invoker-rights one would have reported the parent missing'
+    'hardening: the entity user nonetheless INSERTS a child under that parent -- the hardened validator sees what it validates, where an invoker-rights one would have reported the parent missing'
   );
 
--- G5-neg (an alliance's row): organization A holds no nomination at round 81, so the same caller is refused there.
+-- REQ: the free-text branch (D-12a). Section 11.5's third and fourth branches are BYTE-IDENTICAL in every column; the only thing distinguishing "my party is not in the system yet" from "I am independent" is this key. Confirming such a row publishes as an INDEPENDENT a candidate who asked for a party. The two rows in the pair differ in that key ALONE, so the guard is shown to be the key's presence and not some other property of the row.
 SELECT
   reset_role ();
 
@@ -1007,6 +1777,13 @@ SELECT
     'REQ: the same row WITHOUT that key confirms normally -- so the guard is the key presence and not some other property of the row'
   );
 
+-- =====================================================================
+-- Section 8: the read model, in BOTH directions
+--
+-- A read test that only checks visibility cannot tell "correctly visible" from "should have been hidden", so every assertion here has its opposite. The three disjuncts are exercised one at a time.
+--
+-- ⚠ THE PUBLIC DISJUNCT IS THE ONE THAT WOULD FAIL SILENTLY. It replaces `OR published = true`, which is what let a SIGNED-IN reader see a project they hold no grant in. Delete it without replacing it and a logged-in candidate browsing the voter application sees nothing at all -- and no anon-read test covers them, because the anonymous policies apply to a different role.
+-- =====================================================================
 SELECT
   reset_role ();
 
@@ -1137,6 +1914,11 @@ SELECT
 SELECT
   reset_role ();
 
+-- =====================================================================
+-- Tenancy: an entity grantee cannot write or move its nomination into ANOTHER project
+--
+-- `nomination.edit` is asked of the ENTITY, which lives in its own project, so the policy must also compare the entity's project, and the election's, with the row's. The positive control first, so the refusals below are the tenancy conjuncts at work and not an insert path that was already closed.
+-- =====================================================================
 SELECT
   set_test_user (
     'authenticated',
@@ -1154,7 +1936,7 @@ SELECT
       test_id ('election_a'),
       test_id ('constituency_a')
     ),
-    'CR-03 control: candidate_a can insert its own nomination into its OWN project''s contest'
+    'tenancy control: candidate_a can insert its own nomination into its OWN project''s contest'
   );
 
 SELECT
@@ -1169,7 +1951,7 @@ SELECT
     ),
     '42501',
     NULL,
-    'CR-03: candidate_a cannot insert its nomination into project B, whose election and constituency agree with the row but whose project is not the entity''s (policy project-agreement conjunct)'
+    'tenancy: candidate_a cannot insert its nomination into project B, whose election and constituency agree with the row but whose project is not the entity''s (policy project-agreement conjunct)'
   );
 
 SELECT
@@ -1184,7 +1966,7 @@ SELECT
     ),
     '23514',
     NULL,
-    'CR-03: a nomination in project A naming project B''s ELECTION is refused by validate_nomination'
+    'tenancy: a nomination in project A naming project B''s ELECTION is refused by validate_nomination'
   );
 
 SELECT
@@ -1197,12 +1979,13 @@ SELECT
     ),
     '23514',
     NULL,
-    'CR-03: candidate_a cannot MOVE its existing nomination into project B''s election and constituency'
+    'tenancy: candidate_a cannot MOVE its existing nomination into project B''s election and constituency'
   );
 
 SELECT
   reset_role ();
 
+-- The trigger half binds every writer, not only entity grantees: a cross-project constituency is corrupt data whoever writes it.
 SELECT
   throws_ok (
     format(
@@ -1215,13 +1998,13 @@ SELECT
     ),
     '23514',
     NULL,
-    'CR-03: even the database owner cannot write a project-A nomination naming project B''s CONSTITUENCY'
+    'tenancy: even the database owner cannot write a project-A nomination naming project B''s CONSTITUENCY'
   );
 
 -- =====================================================================
--- WR-05: a project admin writes the ordinary nomination fields; an entity user still cannot
+-- Admin columns: a project admin writes the ordinary nomination fields; an entity user still cannot
 --
--- 162-REVIEW WR-05 reproduced a project admin (project.edit_nominations) refused `permission denied for table nominations` for inserting a nomination with `election_symbol`: the column grant bounding entity users is a global grant against `authenticated` and bound the admin too. The grant now admits the columns and `enforce_nomination_entity_columns()` bounds the caller who lacks project.edit_nominations -- so both directions are asserted.
+-- The column grant bounding entity users is a global grant against `authenticated`, so it would bound a project admin (project.edit_nominations) too. The grant therefore admits the columns and `enforce_nomination_entity_columns()` bounds the caller who lacks project.edit_nominations -- so both directions are asserted.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -1240,13 +2023,13 @@ SELECT
       test_id ('election_a'),
       test_id ('constituency_a')
     ),
-    'WR-05: a project admin can insert a nomination carrying name, election_symbol, sort_order and external_id'
+    'admin columns: a project admin can insert a nomination carrying name, election_symbol, sort_order and external_id'
   );
 
 SELECT
   lives_ok (
     $$UPDATE nominations SET election_symbol = '8', short_name = '{"en": "A"}'::jsonb WHERE external_id = 'wr05-admin-nomination'$$,
-    'WR-05: a project admin can update a nomination''s election_symbol and short_name'
+    'admin columns: a project admin can update a nomination''s election_symbol and short_name'
   );
 
 SELECT
@@ -1263,7 +2046,7 @@ SELECT
         external_id = 'wr05-admin-nomination'
     ),
     '8',
-    'WR-05: the admin''s update landed'
+    'admin columns: the admin''s update landed'
   );
 
 SELECT
@@ -1276,8 +2059,8 @@ SELECT
 SELECT
   throws_ok (
     format(
-      $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round, election_symbol)
-      VALUES ('%s', '%s', '%s', '%s', 21, '9')$$,
+      $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round, sort_order)
+      VALUES ('%s', '%s', '%s', '%s', 21, 9)$$,
       test_id ('project_a'),
       test_id ('candidate_a'),
       test_id ('election_a'),
@@ -1285,18 +2068,18 @@ SELECT
     ),
     '42501',
     NULL,
-    'WR-05: an entity user still cannot set election_symbol on its own nomination insert'
+    'admin columns: an entity user cannot set sort_order on its own nomination insert'
   );
 
 SELECT
   throws_ok (
     format(
-      $$UPDATE nominations SET election_symbol = '9' WHERE id = '%s'$$,
+      $$UPDATE nominations SET short_name = '{"en": "A"}'::jsonb WHERE id = '%s'$$,
       test_id ('nomination_cand_a')
     ),
     '42501',
     NULL,
-    'WR-05: an entity user still cannot change election_symbol on its own nomination'
+    'admin columns: an entity user cannot change short_name on its own nomination'
   );
 
 SELECT
@@ -1308,11 +2091,942 @@ SELECT
     ),
     '42501',
     NULL,
-    'WR-05: an entity user cannot re-point its own nomination at another entity'
+    'admin columns: an entity user cannot re-point its own nomination at another entity'
   );
 
 SELECT
   reset_role ();
+
+-- =====================================================================
+-- SYM: the election symbol on the entity's own nomination
+--
+-- `enforce_nomination_entity_columns` lets the editor of a nomination's own entity set and change `election_symbol`, and none of the other eight presentation and bookkeeping columns. A row is the caller's own when the caller holds `nomination.edit` on the entity it nominates, so a placeholder parent row the caller inserts for an organization is not. Each positive below has a control that differs from it in one thing: the entity the row nominates, the column written, or the lock.
+--
+-- `42501` is the code of this trigger's refusal, of a row-level-security refusal and of a column-grant refusal, so a refusal is asserted with its whole message. The trigger's two messages are stated once, in `pg_temp.symbol_insert_refusal` and `pg_temp.symbol_update_refusal`.
+--
+-- `pg_temp.try_set_nomination_symbol` returns the number of rows an UPDATE of one nomination's symbol affected under the calling session's row-level security, or -1 when the statement was refused with `42501`. Like `pg_temp.try_edit_nomination` it is not SECURITY DEFINER.
+-- =====================================================================
+CREATE FUNCTION pg_temp.symbol_insert_refusal () RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
+  SELECT $m$Only a holder of project.edit_nominations may set a nomination's name, short_name, info, color, image, sort_order, subtype or external_id, or the election_symbol of a nomination that is not the caller's own$m$::text
+$fn$;
+
+CREATE FUNCTION pg_temp.symbol_update_refusal () RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
+  SELECT $m$Only a holder of project.edit_nominations may change a nomination's presentation columns, external_id or entity, or the election_symbol of a nomination that is not the caller's own$m$::text
+$fn$;
+
+CREATE FUNCTION pg_temp.try_set_nomination_symbol (p_id uuid, p_symbol text) RETURNS integer LANGUAGE plpgsql AS $fn$
+DECLARE
+  v_rows integer;
+BEGIN
+  UPDATE public.nominations
+  SET election_symbol = p_symbol
+  WHERE id = p_id;
+  GET DIAGNOSTICS v_rows = ROW_COUNT;
+  RETURN v_rows;
+EXCEPTION
+  WHEN insufficient_privilege THEN
+    RETURN -1;
+END;
+$fn$;
+
+SELECT
+  is (
+    (
+      SELECT
+        prosecdef
+      FROM
+        pg_proc
+      WHERE
+        oid = 'public.enforce_nomination_entity_columns()'::regprocedure
+    ),
+    false,
+    'SYM: the column rule is not SECURITY DEFINER, so its role test and its own-row question are asked of the caller'
+  );
+
+-- The cap's trigger runs before every guard, and the two CAP blocks left candidate_a and organization_a at the cap. Clearing the authorship puts each caller's count at zero, so the inserts below meet the symbol rule and not the cap.
+UPDATE nominations
+SET
+  created_by = NULL
+WHERE
+  created_by IN (
+    test_user_id ('candidate_a'),
+    test_user_id ('organization_a')
+  );
+
+-- Round 51: a confirmed nomination of candidate_a and one of candidate_a2, each with a symbol. Both are public, so candidate_a can read the one that is not its own.
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    candidate_id,
+    election_id,
+    constituency_id,
+    election_round,
+    election_symbol,
+    confirmed
+  )
+VALUES
+  (
+    '12121212-1212-1212-1212-000000005101'::uuid,
+    test_id ('project_a'),
+    test_id ('candidate_a'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    51,
+    '3',
+    true
+  ),
+  (
+    '12121212-1212-1212-1212-000000005102'::uuid,
+    test_id ('project_a'),
+    test_id ('candidate_a2'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    51,
+    '30',
+    true
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round, election_symbol)
+      VALUES ('%s', '%s', '%s', '%s', 50, '17')$$,
+      test_id ('project_a'),
+      test_id ('candidate_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'SYM: a candidate''s editor inserts its own nomination WITH an election symbol'
+  );
+
+-- The placeholder pair. candidate_a holds a nomination at round 51 and organization 20 has none there, so every guard of the parent policy is satisfied and the two statements differ in the symbol alone.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round, election_symbol)
+      VALUES ('%s', '12121212-1212-1212-1212-000000000020'::uuid, '%s', '%s', 51, '9')$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    pg_temp.symbol_insert_refusal (),
+    'SYM-neg: the same editor inserting a placeholder parent row for an organization WITH a symbol is refused by the column rule -- that row is not its own'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round)
+      VALUES ('%s', '12121212-1212-1212-1212-000000000020'::uuid, '%s', '%s', 51)$$,
+      test_id ('project_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'SYM-neg: the same placeholder WITHOUT a symbol is created -- so the refusal above is the symbol''s and no other guard''s'
+  );
+
+SELECT
+  is (
+    pg_temp.try_set_nomination_symbol ('12121212-1212-1212-1212-000000005101'::uuid, '4'),
+    1,
+    'SYM: that editor changes the symbol of its own CONFIRMED nomination -- one row'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005102'::uuid
+    ),
+    1,
+    'SYM-neg: the editor can READ another candidate''s public nomination -- so the zero below is the update policy''s and not the read policy''s'
+  );
+
+SELECT
+  is (
+    pg_temp.try_set_nomination_symbol (
+      '12121212-1212-1212-1212-000000005102'::uuid,
+      '31'
+    ),
+    0,
+    'SYM-neg: the editor changing the symbol of ANOTHER candidate''s nomination affects zero rows'
+  );
+
+-- The other eight columns, one at a time and on both verbs. Each statement differs from an admitted one in the named column alone, and each refusal rolls back, so round 52 and the row of round 51 serve every line.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round, %I)
+      VALUES ('%s', '%s', '%s', '%s', 52, %s)$$,
+      c.col,
+      test_id ('project_a'),
+      test_id ('candidate_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a'),
+      c.val
+    ),
+    '42501',
+    pg_temp.symbol_insert_refusal (),
+    'SYM-neg: the editor setting ' || c.col || ' on an insert of its own nomination is refused by the column rule'
+  )
+FROM
+  (
+    VALUES
+      ('name', $v$'{"en":"A name"}'::jsonb$v$),
+      ('short_name', $v$'{"en":"N"}'::jsonb$v$),
+      ('info', $v$'{"en":"Some info"}'::jsonb$v$),
+      ('color', $v$'{"normal":"#123456"}'::jsonb$v$),
+      ('image', $v$'{"path":"an-image.png"}'::jsonb$v$),
+      ('sort_order', $v$5$v$),
+      ('subtype', $v$'a-subtype'$v$),
+      ('external_id', $v$'sym-neg-insert'$v$)
+  ) AS c (col, val);
+
+SELECT
+  throws_ok (
+    format(
+      $$UPDATE nominations SET %I = %s WHERE id = '12121212-1212-1212-1212-000000005101'::uuid$$,
+      c.col,
+      c.val
+    ),
+    '42501',
+    pg_temp.symbol_update_refusal (),
+    'SYM-neg: the editor changing ' || c.col || ' of its own nomination is refused by the column rule'
+  )
+FROM
+  (
+    VALUES
+      ('name', $v$'{"en":"A name"}'::jsonb$v$),
+      ('short_name', $v$'{"en":"N"}'::jsonb$v$),
+      ('info', $v$'{"en":"Some info"}'::jsonb$v$),
+      ('color', $v$'{"normal":"#123456"}'::jsonb$v$),
+      ('image', $v$'{"path":"an-image.png"}'::jsonb$v$),
+      ('sort_order', $v$5$v$),
+      ('subtype', $v$'a-subtype'$v$),
+      ('external_id', $v$'sym-neg-update'$v$)
+  ) AS c (col, val);
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        election_symbol || '/' || confirmed::text
+      FROM
+        nominations
+      WHERE
+        candidate_id = test_id ('candidate_a')
+        AND election_round = 50
+    ),
+    '17/false',
+    'SYM: the inserted row holds the symbol and is UNCONFIRMED, read as the owner'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        election_symbol || '/' || confirmed::text
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005101'::uuid
+    ),
+    '4/false',
+    'SYM: the changed row holds the new symbol and is UNCONFIRMED afterwards -- an administrator reviews a self-declared symbol before voters see it'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        election_symbol || '/' || confirmed::text
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005102'::uuid
+    ),
+    '30/true',
+    'SYM-neg: the other candidate''s nomination holds its symbol and its confirmation, read as the owner'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::text || '/' || count(election_symbol)::text
+      FROM
+        nominations
+      WHERE
+        organization_id = '12121212-1212-1212-1212-000000000020'::uuid
+        AND election_round = 51
+    ),
+    '1/0',
+    'SYM-neg: one placeholder row stands at that contest and it carries no symbol'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, organization_id, election_id, constituency_id, election_round, election_symbol)
+      VALUES ('%s', '%s', '%s', '%s', 50, 'A')$$,
+      test_id ('project_a'),
+      test_id ('org_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'SYM: an organization''s editor inserts its own nomination WITH an election symbol'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        election_symbol || '/' || confirmed::text
+      FROM
+        nominations
+      WHERE
+        organization_id = test_id ('org_a')
+        AND election_round = 50
+    ),
+    'A/false',
+    'SYM: the organization''s inserted row holds the symbol and is UNCONFIRMED, read as the owner'
+  );
+
+-- SYM-lock: the lock pair on both verbs. With the lock on, the insert passes the column rule, because the row is the caller's own, and is refused by the row-level-security check; the update finds no row. With the lock off the same two statements write.
+UPDATE app_settings
+SET
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"access":{"nominationsLocked":true}}'::jsonb
+  )
+WHERE
+  project_id = test_id ('project_a');
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round, election_symbol)
+      VALUES ('%s', '%s', '%s', '%s', 53, '5')$$,
+      test_id ('project_a'),
+      test_id ('candidate_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    '42501',
+    'new row violates row-level security policy for table "nominations"',
+    'SYM-lock: with the project nomination lock ON the insert of an own nomination with a symbol is refused by the policy'
+  );
+
+SELECT
+  is (
+    pg_temp.try_set_nomination_symbol ('12121212-1212-1212-1212-000000005101'::uuid, '6'),
+    0,
+    'SYM-lock: with the lock ON a change of the symbol of an own nomination affects zero rows'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  isnt (
+    (
+      SELECT
+        election_symbol
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005101'::uuid
+    ),
+    '6',
+    'SYM-lock: the stored symbol is not the one the locked update named, read as the owner'
+  );
+
+UPDATE app_settings
+SET
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"access":{"nominationsLocked":false}}'::jsonb
+  )
+WHERE
+  project_id = test_id ('project_a');
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO nominations (project_id, candidate_id, election_id, constituency_id, election_round, election_symbol)
+      VALUES ('%s', '%s', '%s', '%s', 53, '5')$$,
+      test_id ('project_a'),
+      test_id ('candidate_a'),
+      test_id ('election_a'),
+      test_id ('constituency_a')
+    ),
+    'SYM-lock: with the lock OFF the SAME insert is admitted'
+  );
+
+SELECT
+  is (
+    pg_temp.try_set_nomination_symbol ('12121212-1212-1212-1212-000000005101'::uuid, '6'),
+    1,
+    'SYM-lock: with the lock OFF the SAME update affects one row'
+  );
+
+SELECT
+  reset_role ();
+
+-- =====================================================================
+-- DEL: the entity editor deletes its own nomination
+--
+-- `entity_delete_nominations` has two conjuncts: `nomination.edit` on the entity the row nominates, and the project's nominations unlocked. Whether the row is confirmed, and who created it, are not asked. The foreign key on `parent_nomination_id` refuses the delete while a nomination is listed under the row.
+--
+-- `pg_temp.try_delete_nomination` returns the number of rows a DELETE of one nomination removed under the calling session's row-level security. Like `pg_temp.try_edit_nomination` it is not SECURITY DEFINER.
+--
+-- Every row a control tries to delete is one its caller can read, and an assertion says so, so a count of zero is the delete policy's answer and not the read policy's.
+-- =====================================================================
+CREATE FUNCTION pg_temp.try_delete_nomination (p_id uuid) RETURNS integer LANGUAGE plpgsql AS $fn$
+DECLARE
+  v_rows integer;
+BEGIN
+  DELETE FROM public.nominations
+  WHERE id = p_id;
+  GET DIAGNOSTICS v_rows = ROW_COUNT;
+  RETURN v_rows;
+END;
+$fn$;
+
+SELECT
+  is (
+    has_table_privilege('authenticated', 'public.nominations', 'DELETE'),
+    true,
+    'DEL: authenticated holds DELETE on public.nominations at the table level -- the policies are the only gate on the verb'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        cmd || '/' || roles::text || '/' || (qual ~ 'private\.project_nominations_locked')::text || '/' || (qual !~ 'app_settings')::text
+      FROM
+        pg_policies
+      WHERE
+        schemaname = 'public'
+        AND tablename = 'nominations'
+        AND policyname = 'entity_delete_nominations'
+    ),
+    'DELETE/{authenticated}/true/true',
+    'DEL: the policy is FOR DELETE TO authenticated, and it asks the lock of private.project_nominations_locked and reads no settings row itself'
+  );
+
+-- Rounds 61 to 64. candidate_a: an unconfirmed row, a confirmed row and the confirmed row of the lock pair. candidate_a2: a confirmed, public row. org_a: a row with candidate_a2's nomination listed under it.
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    candidate_id,
+    election_id,
+    constituency_id,
+    election_round,
+    confirmed
+  )
+VALUES
+  (
+    '12121212-1212-1212-1212-000000005201'::uuid,
+    test_id ('project_a'),
+    test_id ('candidate_a'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    61,
+    false
+  ),
+  (
+    '12121212-1212-1212-1212-000000005202'::uuid,
+    test_id ('project_a'),
+    test_id ('candidate_a'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    62,
+    true
+  ),
+  (
+    '12121212-1212-1212-1212-000000005203'::uuid,
+    test_id ('project_a'),
+    test_id ('candidate_a2'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    61,
+    true
+  ),
+  (
+    '12121212-1212-1212-1212-000000005204'::uuid,
+    test_id ('project_a'),
+    test_id ('candidate_a'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    63,
+    true
+  );
+
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    organization_id,
+    election_id,
+    constituency_id,
+    election_round
+  )
+VALUES
+  (
+    '12121212-1212-1212-1212-000000005210'::uuid,
+    test_id ('project_a'),
+    test_id ('org_a'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    64
+  );
+
+INSERT INTO
+  nominations (
+    id,
+    project_id,
+    candidate_id,
+    election_id,
+    constituency_id,
+    election_round,
+    parent_nomination_id
+  )
+VALUES
+  (
+    '12121212-1212-1212-1212-000000005211'::uuid,
+    test_id ('project_a'),
+    test_id ('candidate_a2'),
+    test_id ('election_a'),
+    test_id ('constituency_a'),
+    64,
+    '12121212-1212-1212-1212-000000005210'::uuid
+  );
+
+-- The placeholder candidate_a created at round 51 is made public, so that its creator can read it and the delete policy alone decides.
+UPDATE organizations
+SET
+  confirmed = true
+WHERE
+  id = '12121212-1212-1212-1212-000000000020'::uuid;
+
+UPDATE nominations
+SET
+  confirmed = true
+WHERE
+  organization_id = '12121212-1212-1212-1212-000000000020'::uuid
+  AND election_round = 51;
+
+SELECT
+  is (
+    (
+      SELECT
+        created_by
+      FROM
+        nominations
+      WHERE
+        organization_id = '12121212-1212-1212-1212-000000000020'::uuid
+        AND election_round = 51
+    ),
+    test_user_id ('candidate_a'),
+    'DEL-neg: the placeholder parent row records candidate_a as the caller who created it'
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  is (
+    pg_temp.try_delete_nomination ('12121212-1212-1212-1212-000000005201'::uuid),
+    1,
+    'DEL: an editor deletes its own UNCONFIRMED nomination -- one row'
+  );
+
+SELECT
+  is (
+    pg_temp.try_delete_nomination ('12121212-1212-1212-1212-000000005202'::uuid),
+    1,
+    'DEL: an editor deletes its own CONFIRMED nomination -- one row'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005203'::uuid
+        OR (
+          organization_id = '12121212-1212-1212-1212-000000000020'::uuid
+          AND election_round = 51
+        )
+    ),
+    2,
+    'DEL-neg: the editor can READ the placeholder it created and another candidate''s nomination -- so the zeros below are the delete policy''s'
+  );
+
+SELECT
+  is (
+    pg_temp.try_delete_nomination (
+      (
+        SELECT
+          id
+        FROM
+          nominations
+        WHERE
+          organization_id = '12121212-1212-1212-1212-000000000020'::uuid
+          AND election_round = 51
+      )
+    ),
+    0,
+    'DEL-neg: the editor deleting the placeholder parent row it created ITSELF affects zero rows -- a row created for another entity is not its own'
+  );
+
+SELECT
+  is (
+    pg_temp.try_delete_nomination ('12121212-1212-1212-1212-000000005203'::uuid),
+    0,
+    'DEL-neg: the editor deleting ANOTHER candidate''s nomination affects zero rows'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations
+      WHERE
+        id IN (
+          '12121212-1212-1212-1212-000000005201'::uuid,
+          '12121212-1212-1212-1212-000000005202'::uuid
+        )
+    ),
+    0,
+    'DEL: both of the editor''s own rows are gone, read as the owner'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005203'::uuid
+        OR (
+          organization_id = '12121212-1212-1212-1212-000000000020'::uuid
+          AND election_round = 51
+        )
+    ),
+    2,
+    'DEL-neg: the placeholder and the other candidate''s nomination are still there, read as the owner'
+  );
+
+UPDATE app_settings
+SET
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"access":{"nominationsLocked":true}}'::jsonb
+  )
+WHERE
+  project_id = test_id ('project_a');
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  is (
+    pg_temp.try_delete_nomination ('12121212-1212-1212-1212-000000005204'::uuid),
+    0,
+    'DEL-neg: with the project nomination lock ON the editor deleting its own nomination affects zero rows'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005204'::uuid
+    ),
+    1,
+    'DEL-neg: that nomination is still there while the lock is on, read as the owner'
+  );
+
+UPDATE app_settings
+SET
+  settings = jsonb_recursive_merge (
+    settings,
+    '{"access":{"nominationsLocked":false}}'::jsonb
+  )
+WHERE
+  project_id = test_id ('project_a');
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    test_user_grants ('candidate_a')
+  );
+
+SELECT
+  is (
+    pg_temp.try_delete_nomination ('12121212-1212-1212-1212-000000005204'::uuid),
+    1,
+    'DEL: with the lock OFF the SAME statement removes the row -- the lock asserted in both directions'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+SELECT
+  throws_ok (
+    $$DELETE FROM nominations WHERE id = '12121212-1212-1212-1212-000000005210'::uuid$$,
+    '23503',
+    'update or delete on table "nominations" violates foreign key constraint "nominations_parent_nomination_id_fkey" on table "nominations"',
+    'DEL-fk: an organization''s editor deleting its nomination while a candidate''s nomination names it as parent is refused, and the refusal names the constraint'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005210'::uuid
+    ),
+    1,
+    'DEL-fk: the organization''s nomination is still there, read as the owner'
+  );
+
+DELETE FROM nominations
+WHERE
+  id = '12121212-1212-1212-1212-000000005211'::uuid;
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+SELECT
+  is (
+    pg_temp.try_delete_nomination ('12121212-1212-1212-1212-000000005210'::uuid),
+    1,
+    'DEL-fk: once no nomination is listed under it the SAME editor removes the same row -- so the refusal above is the foreign key''s'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user ('anon');
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005203'::uuid
+    ),
+    1,
+    'DEL-neg: anon can READ a public nomination -- so the zero below is the absence of a delete policy for anon'
+  );
+
+SELECT
+  is (
+    pg_temp.try_delete_nomination ('12121212-1212-1212-1212-000000005203'::uuid),
+    0,
+    'DEL-neg: anon deletes nothing'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        count(*)::integer
+      FROM
+        nominations
+      WHERE
+        id = '12121212-1212-1212-1212-000000005203'::uuid
+    ),
+    1,
+    'DEL-neg: the nomination anon named is still there, read as the owner'
+  );
+
+-- =====================================================================
+-- Section 10: which stored values lock
+--
+-- `private.project_nominations_locked` answers locked for a project that does not exist and for the JSON boolean `true` at `access.nominationsLocked`, and unlocked for everything else: no settings row, no `access` member, no key, and a key holding any other JSON value. The string is the case a text comparison would read as locked, and the number the case a cast to boolean would.
+--
+-- `pg_temp.locked_with_access` stores its argument as project B's `access` member, or removes the member when the argument is NULL, and returns the function's answer for project B. It runs as the fixture owner and is not SECURITY DEFINER; the function it calls is, which is how it reads the row whoever asks. Project B is used because no pair above depends on its settings row.
+-- =====================================================================
+CREATE FUNCTION pg_temp.locked_with_access (p_access jsonb) RETURNS boolean LANGUAGE plpgsql AS $fn$
+BEGIN
+  UPDATE public.app_settings
+  SET settings = CASE
+    WHEN p_access IS NULL THEN settings - 'access'
+    ELSE jsonb_set(settings, '{access}', p_access)
+  END
+  WHERE project_id = public.test_id('project_b');
+  RETURN private.project_nominations_locked(public.test_id('project_b'));
+END;
+$fn$;
+
+SELECT
+  is (
+    private.project_nominations_locked ('0badc0de-0000-4000-8000-000000000023'::uuid),
+    true,
+    'SOURCE: an id that names no project is LOCKED -- what cannot be read never unlocks anything'
+  );
+
+SELECT
+  is (
+    pg_temp.locked_with_access (NULL),
+    false,
+    'SOURCE: a settings row with no access member is unlocked'
+  );
+
+SELECT
+  is (
+    pg_temp.locked_with_access ('{"answersLocked":true}'::jsonb),
+    false,
+    'SOURCE: an access member without the key is unlocked, whatever its other members say'
+  );
+
+SELECT
+  is (
+    pg_temp.locked_with_access ('{"nominationsLocked":true}'::jsonb),
+    true,
+    'SOURCE: the JSON boolean true is LOCKED -- the one stored value that locks'
+  );
+
+SELECT
+  is (
+    pg_temp.locked_with_access ('{"nominationsLocked":false}'::jsonb),
+    false,
+    'SOURCE: the JSON boolean false is unlocked'
+  );
+
+SELECT
+  is (
+    pg_temp.locked_with_access ('{"nominationsLocked":"true"}'::jsonb),
+    false,
+    'SOURCE: the STRING "true" is unlocked -- the value is compared as JSON, not as text'
+  );
+
+SELECT
+  is (
+    pg_temp.locked_with_access ('{"nominationsLocked":1}'::jsonb),
+    false,
+    'SOURCE: the number 1 is unlocked'
+  );
+
+SELECT
+  is (
+    pg_temp.locked_with_access ('{"nominationsLocked":null}'::jsonb),
+    false,
+    'SOURCE: a JSON null is unlocked'
+  );
+
+SELECT
+  is (
+    pg_temp.locked_with_access ('["nominationsLocked"]'::jsonb),
+    false,
+    'SOURCE: an access member that is an array and not an object is unlocked'
+  );
+
+DELETE FROM app_settings
+WHERE
+  project_id = test_id ('project_b');
+
+SELECT
+  is (
+    private.project_nominations_locked (test_id ('project_b')),
+    false,
+    'SOURCE: a project with NO settings row is unlocked -- only a missing project fails closed'
+  );
 
 -- =====================================================================
 -- Section 9: the parent foreign key's delete action (D-12d, task 2 Q2 = A)

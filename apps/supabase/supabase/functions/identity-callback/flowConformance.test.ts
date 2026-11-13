@@ -6,13 +6,27 @@
  * `index.ts` cannot be imported by vitest (see `envReadSites.test.ts`), so these checks read its source with the comments stripped: the comments describe the path in the same words the checks look for. The entity, its grant and the record are written by `public.identity_entity_find_or_create`, whose own pgTAP file asserts them.
  */
 
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { writeEntityGrant } from './entityGrant.ts';
+import { SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
 
-const INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
-const GRANT_MODULE_SOURCE = readFileSync(new URL('./entityGrant.ts', import.meta.url), 'utf8');
+const RAW_INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
 const ENUM_SOURCE = readFileSync(new URL('../../schema/000-enums.sql', import.meta.url), 'utf8');
+const CALLBACK_SOURCE = readFileSync(
+  new URL('../../../../frontend/src/routes/api/oidc/callback/+server.ts', import.meta.url),
+  'utf8'
+);
+
+/** The source without block comments and without whole-line `//` comments. */
+function stripComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .filter((line) => !/^\s*\/\//.test(line))
+    .join('\n');
+}
+
+const CODE = stripComments(RAW_INDEX_SOURCE);
 
 /** The 23 permission verbs, derived from the declarative enum declaration at run time. */
 function derivePermissionVocabulary(sql: string): Array<string> {
@@ -23,17 +37,90 @@ function derivePermissionVocabulary(sql: string): Array<string> {
 
 const PERMISSIONS = derivePermissionVocabulary(ENUM_SOURCE);
 
-/** The shape of a permission literal wherever one appears in TypeScript source. */
-const PERMISSION_SHAPED = /\b(?:feedback|account|project|entity|nomination)\.[a-z0-9_]+\b/g;
+/** The shape of a permission literal wherever one appears in TypeScript source: a quoted string, so a property read such as `account.id` is not one. */
+const PERMISSION_SHAPED = /(?<=['"`])(?:feedback|account|project|entity|nomination)\.[a-z0-9_]+(?=['"`])/g;
 
 const RETIRED_CLAIM_KEYS = ['user_roles', 'user_role_type', 'role_scope_type'] as const;
-const GRANT_SCOPES = ['global', 'account', 'project', 'entity'] as const;
-const GRANT_ROLES = ['admin', 'editor'] as const;
 
 /** How many times `needle` occurs in the code. */
 function occurrences(needle: string): number {
-  return INDEX_SOURCE.split(needle).length - 1;
+  return CODE.split(needle).length - 1;
 }
+
+/** Every position at which `needle` occurs in the code. */
+function positions(needle: string): Array<number> {
+  const found: Array<number> = [];
+  let at = CODE.indexOf(needle);
+  while (at !== -1) {
+    found.push(at);
+    at = CODE.indexOf(needle, at + needle.length);
+  }
+  return found;
+}
+
+/**
+ * The argument text of every call of `callee`, from its opening parenthesis to the one that closes it.
+ *
+ * Bracket-balanced and aware of quoted strings, so an argument object spanning several lines is read whole.
+ */
+function callArguments(callee: string): Array<string> {
+  return positions(`${callee}(`).map((start) => {
+    const open = start + callee.length;
+    let depth = 0;
+    let quote: string | null = null;
+    for (let index = open; index < CODE.length; index++) {
+      const char = CODE[index];
+      if (quote) {
+        if (char === '\\') index++;
+        else if (char === quote) quote = null;
+        continue;
+      }
+      if (char === "'" || char === '"' || char === '`') quote = char;
+      else if (char === '(' || char === '{' || char === '[') depth++;
+      else if (char === ')' || char === '}' || char === ']') {
+        depth--;
+        if (depth === 0) return CODE.slice(open + 1, index);
+      }
+    }
+    return CODE.slice(open + 1);
+  });
+}
+
+/** The first position of `needle` in the code, asserted present. */
+function firstAt(needle: string): number {
+  const at = CODE.indexOf(needle);
+  expect(at, `${needle} not found in index.ts`).toBeGreaterThan(-1);
+  return at;
+}
+
+/** The function's modules other than its tests, each with its comments stripped. */
+const MODULE_CODE: Record<string, string> = Object.fromEntries(
+  readdirSync(new URL('./', import.meta.url))
+    .filter((name) => name.endsWith('.ts') && !name.endsWith('.test.ts'))
+    .map((name) => [name, stripComments(readFileSync(new URL(`./${name}`, import.meta.url), 'utf8'))])
+);
+
+/** Every exported function, constant and class of the function's modules, by module. */
+const EXPORTED_VALUES: Array<{ module: string; name: string }> = Object.entries(MODULE_CODE).flatMap(([module, code]) =>
+  Array.from(code.matchAll(/^export (?:async )?(?:function|const|let|class)\s+([A-Za-z_$][\w$]*)/gm)).map((match) => ({
+    module,
+    name: match[1]
+  }))
+);
+
+describe('identity-callback modules', () => {
+  it('were read, and export values', () => {
+    expect(Object.keys(MODULE_CODE)).toContain('index.ts');
+    expect(Object.keys(MODULE_CODE)).toContain('ownEntity.ts');
+    expect(EXPORTED_VALUES.length).toBeGreaterThan(10);
+  });
+
+  it.each(EXPORTED_VALUES)('export no value the function does not use: $name of $module', ({ module, name }) => {
+    const reference = new RegExp(`(?<![\\w$])${name.replace(/\$/g, '\\$')}(?![\\w$])`, 'g');
+    const uses = Object.values(MODULE_CODE).reduce((count, code) => count + (code.match(reference)?.length ?? 0), 0);
+    expect(uses, `${name} of ${module} is named nowhere but in its own declaration`).toBeGreaterThan(1);
+  });
+});
 
 describe('identity-callback flow conformance', () => {
   it('derived a 23-member permission vocabulary before any membership assertion uses it', () => {
@@ -41,117 +128,276 @@ describe('identity-callback flow conformance', () => {
   });
 
   it('read a non-empty index.ts, and it is the module under test', () => {
-    expect(INDEX_SOURCE.length).toBeGreaterThan(1000);
-    expect(INDEX_SOURCE).toContain('Provider-Agnostic Identity Callback Edge Function');
+    expect(RAW_INDEX_SOURCE.length).toBeGreaterThan(1000);
+    expect(RAW_INDEX_SOURCE).toContain('Provider-Agnostic Identity Callback Edge Function');
+    expect(CODE).toContain('Deno.serve(');
+    expect(CODE.length).toBeGreaterThan(5000);
   });
 
-  it('read a non-empty entityGrant.ts, and it is the module under test', () => {
-    expect(GRANT_MODULE_SOURCE.length).toBeGreaterThan(1000);
-    expect(GRANT_MODULE_SOURCE).toContain('ENTITY_GRANT_VOCABULARY');
+  describe('the caller', () => {
+    it('is checked before the request body, the provider configuration or the token is read', () => {
+      const credentialAt = firstAt('presentsServerCredential(');
+      for (const later of ['req.json()', "requireEnv('IDENTITY_PROVIDER_TYPE'", 'parseIdentityCallbackRequest(']) {
+        expect(firstAt(later), `${later} comes before the credential check`).toBeGreaterThan(credentialAt);
+      }
+    });
+
+    it('is refused at once without the header, before the configured secret is read', () => {
+      const headerAt = firstAt('req.headers.get(SERVER_CREDENTIAL_HEADER)');
+      const secretAt = firstAt("requireEnv('IDENTITY_CALLBACK_SERVER_SECRET'");
+      const refusalAt = CODE.indexOf('return respond(IDENTITY_CALLBACK_RESULT.refused);', headerAt);
+      expect(refusalAt).toBeGreaterThan(headerAt);
+      expect(refusalAt).toBeLessThan(secretAt);
+    });
+
+    it('is refused when the header does not carry the configured secret', () => {
+      const credentialAt = firstAt('presentsServerCredential(');
+      expect(callArguments('presentsServerCredential')).toHaveLength(1);
+      const refusalAt = CODE.indexOf('return respond(IDENTITY_CALLBACK_RESULT.refused);', credentialAt);
+      expect(refusalAt).toBeGreaterThan(credentialAt);
+      expect(refusalAt).toBeLessThan(firstAt('req.json()'));
+    });
+
+    it('is not offered the credential header by the CORS answer', () => {
+      const corsAt = firstAt('const corsHeaders = {');
+      const corsBlock = CODE.slice(corsAt, CODE.indexOf('};', corsAt));
+      expect(corsBlock).not.toContain(SERVER_CREDENTIAL_HEADER);
+    });
+
+    it("is the frontend's callback, which sends the credential under the header the function reads", () => {
+      expect(CALLBACK_SOURCE).toContain(`'${SERVER_CREDENTIAL_HEADER}': `);
+      expect(CALLBACK_SOURCE).toContain('constants.IDENTITY_CALLBACK_SERVER_SECRET');
+    });
+  });
+
+  describe('the request', () => {
+    it('names the project, and no other source of a project is read', () => {
+      expect(CODE).toContain('const projectId = request.projectId;');
+      expect(CODE).not.toContain('PUBLIC_PROJECT_ID');
+    });
+
+    it('is answered with the token alone, never with a whole sign-in link', () => {
+      expect(CODE).toContain('function respond(result: IdentityCallbackResult, token?: string): Response {');
+      expect(CODE).not.toMatch(/session\s*:/);
+      expect(CODE).not.toMatch(/action_link\s*:/);
+    });
   });
 
   it('names no permission literal outside the derived enum', () => {
-    const named = Array.from(INDEX_SOURCE.matchAll(PERMISSION_SHAPED)).map((m) => m[0]);
+    const named = Array.from(CODE.matchAll(PERMISSION_SHAPED)).map((m) => m[0]);
     const outside = named.filter((n) => !PERMISSIONS.includes(n));
     expect(outside).toEqual([]);
   });
 
   it.each(RETIRED_CLAIM_KEYS)('reads no claim key outside the grant model: %s', (key) => {
-    expect(INDEX_SOURCE).not.toContain(`payload.${key}`);
-    expect(INDEX_SOURCE).not.toContain(`['${key}']`);
+    expect(CODE).not.toContain(`payload.${key}`);
+    expect(CODE).not.toContain(`['${key}']`);
   });
 
-  it('writes its grant through the extracted module rather than inline', () => {
-    expect(INDEX_SOURCE).toContain('writeEntityGrant(');
-    expect(INDEX_SOURCE).not.toContain("scope: 'entity'");
-  });
-
-  it('writes the grant once, after both candidate branches, and deletes a just-created candidate when that write fails', () => {
-    // The grant is the only link from the identity to its candidate, so a candidate created on this request whose grant write failed could never be found again, and the next login would create a second one. The delete sits in the write's catch arm, guarded to the create branch, and runs before the failure is rethrown.
-    const branchEnd = INDEX_SOURCE.indexOf('candidateId = candidate.id;\n    }\n');
-    const grantAt = INDEX_SOURCE.indexOf('await writeEntityGrant(supabaseAdmin');
-    expect(branchEnd).toBeGreaterThan(-1);
-    expect(grantAt).toBeGreaterThan(branchEnd);
-    expect(occurrences('await writeEntityGrant(')).toBe(1);
-
-    const tryAt = INDEX_SOURCE.lastIndexOf('try {', grantAt);
-    expect(tryAt).toBeGreaterThan(branchEnd);
-
-    const catchAt = INDEX_SOURCE.indexOf('catch (grantError)', grantAt);
-    const guardAt = INDEX_SOURCE.indexOf('if (!existingCandidate)', catchAt);
-    const deleteAt = INDEX_SOURCE.indexOf('await deleteCandidate(supabaseAdmin', guardAt);
-    const rethrowAt = INDEX_SOURCE.indexOf('throw grantError', deleteAt);
-    expect(catchAt).toBeGreaterThan(grantAt);
-    expect(guardAt).toBeGreaterThan(catchAt);
-    expect(deleteAt).toBeGreaterThan(guardAt);
-    expect(rethrowAt).toBeGreaterThan(deleteAt);
-    expect(occurrences('await deleteCandidate(')).toBe(1);
-  });
-
-  it('writes an entity-scope editor grant, one of the scope and role pairs the grant model defines', async () => {
-    const written: Array<Record<string, unknown>> = [];
-    const client = {
-      from: () => ({
-        insert: async (row: Record<string, unknown>) => {
-          written.push(row);
-          return { error: null };
-        }
-      })
-    };
-    await writeEntityGrant(client, {
-      userId: '00000000-0000-0000-0000-0000000000aa',
-      entityType: 'candidate',
-      entityId: '00000000-0000-0000-0000-0000000000bb'
+  describe('the account', () => {
+    it('is never created by createUser, which always stores a password', () => {
+      expect(CODE).not.toMatch(/\.createUser\s*\(/);
+      expect(CODE).not.toContain('createUser');
     });
-    expect(written).toHaveLength(1);
-    expect(GRANT_SCOPES).toContain(written[0].scope as (typeof GRANT_SCOPES)[number]);
-    expect(GRANT_ROLES).toContain(written[0].role as (typeof GRANT_ROLES)[number]);
-    expect(written[0].scope).toBe('entity');
-    expect(written[0].role).toBe('editor');
-    expect(written[0].target_type).toBe('candidate');
+
+    it('is created by an invite for the placeholder of the match value', () => {
+      const invites = callArguments('generateLink').filter((args) => args.includes("type: 'invite'"));
+      expect(invites).toHaveLength(1);
+      expect(invites[0]).toMatch(/email:\s*placeholderAddress\b/);
+      expect(CODE).toContain('const placeholderAddress = placeholderAddressFor(matchValue);');
+    });
+
+    it('passes no address to any admin update', () => {
+      const updates = callArguments('updateUserById');
+      expect(updates.length).toBeGreaterThan(0);
+      for (const args of updates) {
+        expect(args).not.toMatch(/(^|[^A-Za-z0-9_])email\s*:/);
+        expect(args).not.toMatch(/[{,]\s*email\s*[,}]/);
+      }
+    });
+
+    it('finds the account on its placeholder whatever the case of the stored address', () => {
+      const lookup = CODE.slice(CODE.indexOf('function findUserByPlaceholderAddress('));
+      expect(lookup.slice(0, lookup.indexOf('\n}\n'))).toContain(
+        'findUser(supabaseAdmin, (user) => holdsPlaceholderAddress(user, placeholderAddress))'
+      );
+      expect(CODE).not.toMatch(/user\.email\s*===/);
+    });
+
+    it('looks the account up on its placeholder whenever the invite fails, so a request that lost the race to create it goes on with it', () => {
+      const inviteAt = firstAt("type: 'invite'");
+      const lookupAt = CODE.indexOf(
+        'account = inviteError ? await findUserByPlaceholderAddress(supabaseAdmin, placeholderAddress) : invited?.user;',
+        inviteAt
+      );
+      expect(lookupAt).toBeGreaterThan(inviteAt);
+      const createFailureAt = CODE.indexOf("throw failure('ERR_ACCOUNT_CREATE_FAILED'", inviteAt);
+      expect(createFailureAt).toBeGreaterThan(lookupAt);
+      expect(CODE.slice(lookupAt, createFailureAt)).toContain('if (inviteError && !account)');
+      expect(CODE).not.toContain("inviteError.code !== 'email_exists'");
+    });
+
+    it('finishes an account no request has finished yet, and refuses one of another identity', () => {
+      const setupAt = firstAt('existingAccountSetup(account.app_metadata, matchValue)');
+      expect(setupAt).toBeLessThan(firstAt('email_confirm: true'));
+      expect(CODE).toMatch(/setup\.kind === 'refuse'/);
+      expect(CODE).toContain("initialise = setup.kind === 'initialise';");
+    });
+
+    it('confirms exactly once, in the one admin update, and only for an account it finishes', () => {
+      expect(occurrences('email_confirm')).toBe(1);
+      expect(occurrences('email_confirm: true')).toBe(1);
+      const updates = callArguments('updateUserById');
+      expect(updates).toHaveLength(1);
+      expect(updates[0].replace(/\s+/g, ' ').trim()).toBe('userId, { email_confirm: true }');
+      const updateAt = firstAt('updateUserById(');
+      const guardAt = CODE.lastIndexOf('if (initialise) {', updateAt);
+      expect(guardAt).toBeGreaterThan(firstAt("rpc('identity_entity_find_or_create'"));
+      const between = CODE.slice(guardAt, updateAt);
+      expect(between.split('{').length - between.split('}').length).toBeGreaterThan(0);
+    });
   });
 
-  it('takes the entity type as a VALUE at the write site rather than as a literal in the grant module', async () => {
-    const written: Array<Record<string, unknown>> = [];
-    const client = {
-      from: () => ({
-        insert: async (row: Record<string, unknown>) => {
-          written.push(row);
-          return { error: null };
-        }
-      })
-    };
-    for (const entityType of ['candidate', 'organization', 'faction', 'alliance'] as const) {
-      await writeEntityGrant(client, {
-        userId: '00000000-0000-0000-0000-0000000000aa',
-        entityType,
-        entityId: '00000000-0000-0000-0000-0000000000bb'
-      });
-    }
-    expect(written.map((r) => r.target_type)).toEqual(['candidate', 'organization', 'faction', 'alliance']);
-    expect(GRANT_MODULE_SOURCE).not.toContain("'candidate'");
+  describe('app_metadata', () => {
+    it('is never sent in an admin update, which writes the whole of app_metadata from the copy the auth service read', () => {
+      const updates = callArguments('updateUserById');
+      expect(updates.length).toBeGreaterThan(0);
+      for (const args of updates) expect(args).not.toContain('app_metadata');
+      expect(CODE).not.toMatch(/app_metadata\s*:/);
+    });
+
+    it('reaches the find-or-create as a call of identityAppMetadata, so it is written under the lock that guards the record', () => {
+      const values = Array.from(CODE.matchAll(/p_identity_metadata\s*:\s*([^\s,}]+)/g)).map((m) => m[1]);
+      expect(values).toHaveLength(1);
+      expect(values[0].startsWith('identityAppMetadata(')).toBe(true);
+      const [args] = callArguments('supabaseAdmin.rpc');
+      expect(args).toMatch(/p_identity_metadata:\s*identityAppMetadata\(/);
+    });
+
+    it('never carries the registered-entities record, which the find-or-create alone writes', () => {
+      const writes = callArguments('identityAppMetadata');
+      expect(writes.length).toBeGreaterThan(0);
+      for (const args of writes) expect(args).not.toContain('registeredEntities');
+    });
+
+    it('never receives a spread of the claims or of the token', () => {
+      expect(CODE).not.toMatch(/\.\.\.\s*(claims|extraClaims|extractedClaims|payload|claimResult)\b/);
+      expect(CODE).not.toMatch(/extraClaims|extractedClaims/);
+    });
   });
 
-  it('a failed grant write THROWS rather than being swallowed', async () => {
-    const client = {
-      from: () => ({
-        insert: async () => ({ error: { message: 'boom' } })
-      })
-    };
-    await expect(
-      writeEntityGrant(client, {
-        userId: '00000000-0000-0000-0000-0000000000aa',
-        entityType: 'candidate',
-        entityId: '00000000-0000-0000-0000-0000000000bb'
-      })
-    ).rejects.toThrow(/Grant write failed/);
+  describe('the order', () => {
+    it('decides the entity type from the matrix before any account or row is written', () => {
+      const decidedAt = firstAt('resolveEntityType(');
+      for (const call of ['generateLink(', 'updateUserById(', "rpc('identity_entity_find_or_create'"]) {
+        const first = CODE.indexOf(call);
+        expect(first, `${call} is not called`).toBeGreaterThan(-1);
+        expect(first, `${call} comes before resolveEntityType`).toBeGreaterThan(decidedAt);
+      }
+      expect(CODE).toMatch(
+        /if \('refused' in decision\) return respond\(IDENTITY_CALLBACK_RESULT\.mode_not_allowed\);/
+      );
+    });
+
+    it('resolves the account, then finds or creates the entity and writes the identity metadata, then confirms the placeholder, then generates the link', () => {
+      const serveAt = firstAt('Deno.serve(');
+      const accountAt = CODE.indexOf('findUserByIdentityMatch(supabaseAdmin, matchValue)', serveAt);
+      const inviteAt = firstAt("type: 'invite'");
+      const entityAt = firstAt("rpc('identity_entity_find_or_create'");
+      const confirmAt = firstAt('updateUserById(');
+      const currentAt = firstAt('getUserById(');
+      const linkAt = firstAt("type: 'magiclink'");
+
+      expect(occurrences("rpc('identity_entity_find_or_create'")).toBe(1);
+      expect(occurrences('.rpc(')).toBe(1);
+      expect(accountAt).toBeGreaterThan(serveAt);
+      expect(inviteAt).toBeGreaterThan(accountAt);
+      expect(entityAt).toBeGreaterThan(inviteAt);
+      expect(confirmAt).toBeGreaterThan(entityAt);
+      expect(currentAt).toBeGreaterThan(confirmAt);
+      expect(linkAt).toBeGreaterThan(currentAt);
+
+      const links = callArguments('generateLink').filter((args) => args.includes("type: 'magiclink'"));
+      expect(links).toHaveLength(1);
+      expect(links[0]).toMatch(/email:\s*currentAddress\b/);
+    });
+
+    it('throws when the find-or-create reports an error, and reads its answer through findOrCreateOutcome', () => {
+      const entityAt = firstAt("rpc('identity_entity_find_or_create'");
+      const throwAt = CODE.indexOf("if (entityError) throw failure('ERR_ENTITY_RESOLVE_FAILED'", entityAt);
+      const readAt = CODE.indexOf('findOrCreateOutcome(entityAnswer, projectId, entityType)', entityAt);
+      expect(throwAt).toBeGreaterThan(entityAt);
+      expect(readAt).toBeGreaterThan(throwAt);
+      expect(readAt).toBeLessThan(firstAt('updateUserById('));
+    });
+
+    it.each([
+      'resolveOwnEntity(',
+      'createCandidate(',
+      'createOrganization(',
+      'writeEntityGrant(',
+      'deleteCandidate(',
+      'deleteOrganization('
+    ])('calls no separate lookup, insert, grant write or compensating delete: %s', (call) => {
+      expect(CODE).not.toContain(call);
+    });
   });
 
-  /**
-   * The entity type is named at exactly ONE call site in this function and nowhere else, and there is no selection of it anywhere on the path: no request field, no parameter, no branch. When the entry point starts accepting a type selection, this assertion reddens, which is the signal to re-derive the checks in this file for every entity kind it can then create.
-   */
-  it('names exactly ONE entity type on the whole path and takes no type selection from the request', () => {
-    const entityTypeArguments = Array.from(INDEX_SOURCE.matchAll(/entityType:\s*'([a-z]+)'/g)).map((m) => m[1]);
-    expect(entityTypeArguments).toEqual(['candidate']);
+  describe('the entity type', () => {
+    it('reaches the find-or-create as the decided value, never as a literal', () => {
+      expect(CODE).toContain('const entityType = decision.entityType;');
+      const calls = callArguments('supabaseAdmin.rpc');
+      expect(calls).toHaveLength(1);
+      expect(calls[0]).toMatch(/p_entity_type:\s*entityType\s*[,}]/);
+    });
+
+    it('is never named as a literal argument anywhere on the path', () => {
+      expect(Array.from(CODE.matchAll(/entityType:\s*'([a-z]+)'/g)).map((m) => m[1])).toEqual([]);
+      expect(Array.from(CODE.matchAll(/p_entity_type:\s*'([a-z]+)'/g)).map((m) => m[1])).toEqual([]);
+    });
+
+    it("hands the find-or-create the account, the request's project and the names read from the token", () => {
+      const [args] = callArguments('supabaseAdmin.rpc');
+      expect(args).toMatch(/p_user_id:\s*userId\s*,/);
+      expect(args).toMatch(/p_project_id:\s*projectId\s*,/);
+      expect(args).toMatch(/p_first_name:\s*firstName\s*,/);
+      expect(args).toMatch(/p_last_name:\s*lastName\s*[,}]/);
+    });
+  });
+
+  describe('the answers', () => {
+    it('builds every answer body with resultBody, in one place', () => {
+      expect(occurrences('new Response(')).toBe(2);
+      expect(occurrences("new Response('ok'")).toBe(1);
+      expect(occurrences('JSON.stringify(')).toBe(1);
+
+      const respondAt = firstAt('function respond(');
+      const respondEnd = CODE.indexOf('\n}\n', respondAt);
+      const respondBody = CODE.slice(respondAt, respondEnd);
+      expect(respondBody).toContain('resultBody(result, token)');
+      expect(respondBody).toContain('new Response(JSON.stringify(');
+      expect(respondBody).toContain('resultStatus(result)');
+    });
+
+    it('tells a configuration failure from an outage by its code alone', () => {
+      expect(CODE).toMatch(
+        /isConfigurationFailure\(e\) \? IDENTITY_CALLBACK_RESULT\.configuration : IDENTITY_CALLBACK_RESULT\.unavailable/
+      );
+      for (const code of ['ERR_ENV_UNCONFIGURED', 'ERR_AUDIENCE_UNCONFIGURED', 'ERR_ISSUER_UNCONFIGURED']) {
+        expect(CODE).toContain(`'${code}'`);
+      }
+    });
+
+    it('answers every refusal and failure through respond, with no message of its own', () => {
+      expect(CODE).not.toMatch(/error:\s*'[^']*'/);
+      expect(CODE).not.toContain('Internal server error');
+    });
+  });
+
+  it('writes no grant and no entity row itself', () => {
+    expect(CODE).not.toContain("from('grants')");
+    expect(CODE).not.toContain("from('candidates')");
+    expect(CODE).not.toContain("from('organizations')");
+    expect(CODE).not.toContain("scope: 'entity'");
   });
 });

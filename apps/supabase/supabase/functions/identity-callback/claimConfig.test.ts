@@ -59,9 +59,12 @@ describe('PROVIDER_CONFIGS', () => {
       expect(PROVIDER_CONFIGS['signicat-ftn'].lastNameProp).toBe('family_name');
     });
 
-    it('still captures birthdate, as metadata rather than as the key', () => {
-      // Keying on `sub` must not LOSE the claim: `birthdate` is kept, in app_metadata rather than as the account key.
-      expect(PROVIDER_CONFIGS['signicat-ftn'].extractClaims).toEqual(['birthdate']);
+    it('holds the match property and the two name properties, and no list of claims to keep', () => {
+      expect(Object.keys(PROVIDER_CONFIGS['signicat-ftn']).sort()).toEqual([
+        'firstNameProp',
+        'identityMatchProp',
+        'lastNameProp'
+      ]);
     });
   });
 
@@ -78,9 +81,12 @@ describe('PROVIDER_CONFIGS', () => {
       expect(PROVIDER_CONFIGS['idura-ftn'].lastNameProp).toBe('family_name');
     });
 
-    it('extractClaims includes birthdate and hetu', () => {
-      expect(PROVIDER_CONFIGS['idura-ftn'].extractClaims).toContain('birthdate');
-      expect(PROVIDER_CONFIGS['idura-ftn'].extractClaims).toContain('hetu');
+    it('holds the match property and the two name properties, and no list of claims to keep', () => {
+      expect(Object.keys(PROVIDER_CONFIGS['idura-ftn']).sort()).toEqual([
+        'firstNameProp',
+        'identityMatchProp',
+        'lastNameProp'
+      ]);
     });
   });
 });
@@ -111,37 +117,44 @@ describe('extractIdentityClaims', () => {
     expect(result.lastName).toBe('Virtanen');
   });
 
-  it('signicat extraClaims carries the birthdate as metadata, not as the key', () => {
-    const result = extractIdentityClaims(testPayload, PROVIDER_CONFIGS['signicat-ftn']);
+  it.each(['signicat-ftn', 'idura-ftn'] as const)(
+    '%s: answers the match value and the two names only, with neither hetu nor birthdate',
+    (provider) => {
+      const result = extractIdentityClaims(testPayload, PROVIDER_CONFIGS[provider]);
 
-    expect(result.extraClaims).toEqual({ birthdate: '1985-06-15' });
-  });
+      expect(result).toStrictEqual({ matchValue: 'some-uuid-1234', firstName: 'Matti', lastName: 'Virtanen' });
+      expect(result).not.toHaveProperty('hetu');
+      expect(result).not.toHaveProperty('birthdate');
+      const serialized = JSON.stringify(result);
+      expect(serialized).not.toContain(testPayload.hetu);
+      expect(serialized).not.toContain(testPayload.birthdate);
+    }
+  );
 
-  it('idura extraClaims includes birthdate and hetu values', () => {
-    const result = extractIdentityClaims(testPayload, PROVIDER_CONFIGS['idura-ftn']);
+  it.each(['signicat-ftn', 'idura-ftn'] as const)(
+    '%s: answers the two names smart-cased when the provider sends them in capitals, and the match value as sent',
+    (provider) => {
+      const result = extractIdentityClaims(
+        { ...testPayload, given_name: 'MATTI-PEKKA', family_name: 'ÄIJÄLÄ-ÖSTERBERG', sub: 'SUBJECT-ABC' },
+        PROVIDER_CONFIGS[provider]
+      );
 
-    expect(result.extraClaims).toEqual({
-      birthdate: '1985-06-15',
-      hetu: '150685-1234'
-    });
-  });
+      expect(result).toStrictEqual({
+        matchValue: 'SUBJECT-ABC',
+        firstName: 'Matti-Pekka',
+        lastName: 'Äijälä-Österberg'
+      });
+    }
+  );
 
-  it('idura extraClaims omits undefined claims gracefully', () => {
-    const payloadWithoutHetu = {
-      given_name: 'Liisa',
-      family_name: 'Korhonen',
-      sub: 'other-uuid',
-      birthdate: '1990-01-01'
-      // no hetu
-    };
+  it('answers a name the provider sends in mixed case as it was sent', () => {
+    const result = extractIdentityClaims(
+      { ...testPayload, given_name: 'Matti-Pekka', family_name: 'van der Berg' },
+      PROVIDER_CONFIGS['idura-ftn']
+    );
 
-    const result = extractIdentityClaims(payloadWithoutHetu, PROVIDER_CONFIGS['idura-ftn']);
-
-    expect(result.extraClaims).toEqual({
-      birthdate: '1990-01-01'
-      // hetu is not present -- omitted rather than set to undefined
-    });
-    expect(result.extraClaims).not.toHaveProperty('hetu');
+    expect(result.firstName).toBe('Matti-Pekka');
+    expect(result.lastName).toBe('van der Berg');
   });
 
   it('throws when required identity match claim is missing', () => {
