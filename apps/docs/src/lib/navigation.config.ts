@@ -199,29 +199,41 @@ export const navigation: Navigation = [
         ]
       },
       {
-        title: 'Candidate app',
-        route: '/developers-guide/candidate-app',
+        title: 'Contestant app',
+        route: '/developers-guide/contestant-app',
         fixedTitle: true,
         children: [
           {
-            title: 'Pre-registration and invitation',
-            route: '/developers-guide/candidate-app/pre-registration-and-invitation'
+            title: 'Invitation',
+            route: '/developers-guide/contestant-app/pre-registration-and-invitation'
           },
           {
             title: 'Registration',
-            route: '/developers-guide/candidate-app/registration'
+            route: '/developers-guide/contestant-app/registration'
           },
           {
             title: 'Login and password reset',
-            route: '/developers-guide/candidate-app/login-and-password-reset'
+            route: '/developers-guide/contestant-app/login-and-password-reset'
+          },
+          {
+            title: 'Entity selection and the entity routes',
+            route: '/developers-guide/contestant-app/entity-selection'
+          },
+          {
+            title: 'The home, the tasks and the nominations view',
+            route: '/developers-guide/contestant-app/home-and-tasks'
+          },
+          {
+            title: 'Defining nominations',
+            route: '/developers-guide/contestant-app/defining-nominations'
           },
           {
             title: 'Bank authentication (OIDC)',
-            route: '/developers-guide/candidate-app/bank-authentication'
+            route: '/developers-guide/contestant-app/bank-authentication'
           },
           {
             title: 'Password validation',
-            route: '/developers-guide/candidate-app/password-validation'
+            route: '/developers-guide/contestant-app/password-validation'
           }
         ]
       },
