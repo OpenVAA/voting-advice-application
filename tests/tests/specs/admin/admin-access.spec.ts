@@ -1,7 +1,10 @@
 import { expect, test } from '@playwright/test';
-import { TEST_ADMIN_EMAIL } from '../../utils/adminCredentials';
+import { createAdminLoginPage } from '../../fixtures/admin/adminLoginPage.fixture';
+import { createHeaderLogout } from '../../fixtures/shared/headerLogout.fixture';
+import { TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD } from '../../utils/adminCredentials';
 import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import type { Page } from '@playwright/test';
 
 /**
  * # The Admin App's first end-to-end coverage
@@ -40,7 +43,14 @@ const UNRESOLVABLE_QUESTION_ID = '00000000-0000-4000-8000-00000000dead';
  *
  * `apps/frontend/src/lib/cookies/index.ts` is the single declaration of the names, but it does not say which of them are `httpOnly`. The copy is not unguarded: the unit spec `apps/frontend/src/routes/admin/(protected)/layout.server.test.ts` pins that map's names, so a newly registered cookie reddens there rather than slipping past here unnoticed.
  */
-const HTTP_ONLY_COOKIE_NAMES = ['id_token', 'oidc_state', 'oidc_nonce', 'oidc_code_verifier'] as const;
+const HTTP_ONLY_COOKIE_NAMES = [
+  'oidc_state',
+  'oidc_nonce',
+  'oidc_code_verifier',
+  'oidc_entity_type',
+  'identity_provider_arrival',
+  'registered'
+] as const;
 
 /**
  * Resolve ONE election that belongs to the project this admin's role is scoped to.
@@ -218,5 +228,340 @@ test.describe('admin-access (D10-C11 / D10-C08 / D10-C12)', () => {
     ]);
 
     // The row is deliberately LEFT for `data-teardown-admin-access` to remove. Nothing else in the suite can reach it: `admin_jobs` is not in the prefix-counting teardown's table list, carries no external identifier, and its election reference is nulled rather than cascaded.
+  });
+});
+
+// Each test signs in through the form, with a session of its own. Signing out ends only the session of this browser, so the stored admin session stays valid for the projects that read it.
+test.describe('the header’s Log out in the Admin App', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('a signed-in admin sees Log out in the header, and it signs the admin out to the login page', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await headerLogout.expectAbsent();
+
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+
+    await headerLogout.press();
+    await adminLoginPage.expectOnLoginPage();
+    await headerLogout.expectAbsent();
+  });
+
+  test("the Admin App's Log out leaves no Contestant App draft in the browser", async ({ page }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await adminLoginPage.goToPage();
+    await headerLogout.seedContestantDraft();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+
+    await headerLogout.press();
+    await adminLoginPage.expectOnLoginPage();
+    await headerLogout.expectNoContestantDraft();
+  });
+
+  test("the header's Log out shows that a slow sign-out is under way: a spinner, and the button disabled until it ends", async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+
+    await headerLogout.holdSignOut();
+    await headerLogout.press();
+    await headerLogout.expectInProgress();
+
+    await headerLogout.releaseSignOut();
+    await adminLoginPage.expectOnLoginPage();
+    await headerLogout.expectAbsent();
+  });
+
+  test('a sign-out that fails shows the message above the page, whose Close closes it, and a later press signs the admin out to the login page', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+
+    await headerLogout.failSignOut();
+    await headerLogout.press();
+    await headerLogout.expectFailureMessage();
+    await headerLogout.expectFailureMessagePressable();
+    await headerLogout.closeFailureMessage();
+    await headerLogout.expectNoFailureMessage();
+
+    await headerLogout.press();
+    await headerLogout.expectFailureMessage();
+
+    await headerLogout.restoreSignOut();
+    await headerLogout.press();
+    await adminLoginPage.expectOnLoginPage();
+    await headerLogout.expectAbsent();
+    await headerLogout.expectNoFailureMessage();
+  });
+
+  test("the failed sign-out's message is named apart from Log out and has one Close", async ({ page }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+
+    await headerLogout.failSignOut();
+    await headerLogout.press();
+    await headerLogout.expectFailureMessage();
+    await headerLogout.expectFailureMessageNamedOnce();
+  });
+
+  test('a sign-out that fails with the session alive: Back to the login page ends on the home with the message still there, and a press there says so', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+
+    await headerLogout.failSignOut();
+    await headerLogout.press();
+    await headerLogout.expectFailureMessage();
+    const length = await headerLogout.historyLength();
+
+    await test.step('Back to the login page ends on the home, keeps the message and writes no history', async () => {
+      // The sign-in writes one history entry, the home's, so one Back reaches the login page's entry.
+      await adminLoginPage.goBackToHomeOrLoginForm();
+      await expect(page).toHaveURL(new RegExp(`${buildRoute({ route: 'AdminAppLogin', locale: 'en' })}$`));
+      await adminLoginPage.expectHomeShownAtAnyAddress();
+      await headerLogout.expectFailureMessage();
+      expect(await headerLogout.historyLength()).toBe(length);
+      await adminLoginPage.expectGateSendsASessionHome();
+    });
+
+    await test.step('a press there that fails says so', async () => {
+      await headerLogout.closeFailureMessage();
+      await headerLogout.press();
+      await headerLogout.expectFailureMessage();
+    });
+
+    await test.step('a press that works signs the admin out to the login page', async () => {
+      await headerLogout.restoreSignOut();
+      await headerLogout.press();
+      await adminLoginPage.expectOnLoginPage();
+      await headerLogout.expectAbsent();
+      await headerLogout.expectNoFailureMessage();
+    });
+  });
+
+  test('on a phone, the message of a sign-out that fails lies inside the viewport', async ({ page }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+
+    await headerLogout.failSignOut();
+    await headerLogout.press();
+    await headerLogout.expectFailureMessage();
+    await headerLogout.expectFailureMessageInsideThePhoneViewport();
+  });
+});
+
+/**
+ * Sign in through the form, sign out with the header's Log out, and sign in again in another tab, which then closes. The page stays on the login form, whose data still reads no session, while the cookies hold a live one.
+ *
+ * @param page - The tab that signs out and stays.
+ */
+async function signOutHereAndSignInInAnotherTab(page: Page): Promise<void> {
+  const adminLoginPage = createAdminLoginPage(page);
+  const headerLogout = createHeaderLogout(page);
+
+  await adminLoginPage.goToPage();
+  await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+  await adminLoginPage.submit();
+  await adminLoginPage.expectAdminHome();
+  await headerLogout.expectShown();
+  await headerLogout.press();
+  await adminLoginPage.expectOnLoginPage();
+
+  const otherTab = await page.context().newPage();
+  const otherTabLogin = createAdminLoginPage(otherTab);
+  await otherTabLogin.goToPage();
+  await otherTabLogin.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+  await otherTabLogin.submit();
+  await otherTabLogin.expectAdminHome();
+  await otherTab.close();
+}
+
+// Each test signs in through the form, with a session of its own, as the describe above does.
+test.describe("the Admin App's protected load", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('a read of the user data that fails at sign-in ends on the error page, with no request to the login page, and a reload reaches the home once the read works', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.failUserDataRead();
+    await adminLoginPage.submit();
+    await adminLoginPage.expectErrorPageSays('default');
+    await adminLoginPage.expectNoLoginPageRequest();
+
+    await adminLoginPage.restoreUserDataRead();
+    await adminLoginPage.reload();
+    await adminLoginPage.expectAdminHome();
+  });
+
+  test('the error page of a failed read speaks the language of the page', async ({ page }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+
+    await adminLoginPage.goToPage('fi');
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.failUserDataRead();
+    await adminLoginPage.submit();
+    await adminLoginPage.expectErrorPageSays('default', 'fi');
+  });
+
+  test('after a sign-out here and a sign-in in another tab: after Back, a reload reaches the home', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await signOutHereAndSignInInAnotherTab(page);
+    await adminLoginPage.goBackToHomeOrLoginForm();
+
+    await adminLoginPage.reload();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+  });
+
+  test('after a sign-out here and a sign-in in another tab, a sign-in on the form after Back reaches the home', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+
+    await signOutHereAndSignInInAnotherTab(page);
+    await adminLoginPage.goBackFromLoginFormToLoginForm();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+  });
+
+  test('the login form labels its email field, and typing enables the sign-in', async ({ page }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.expectEmailFieldLabelled();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+  });
+
+  test('after a sign-out here and a sign-in in another tab, a link stands on the login form, and a reload reaches the home', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await signOutHereAndSignInInAnotherTab(page);
+    await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
+    await adminLoginPage.expectLoginAddressSaysLoginFailed();
+    await adminLoginPage.expectLoginFormStandsWithNoMessage();
+
+    await adminLoginPage.reload();
+    await adminLoginPage.expectAdminHome();
+    await headerLogout.expectShown();
+  });
+
+  test('a session ended elsewhere with no signal to this tab: a link from the login form into the app reaches the login form, and so does a reload', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+    const headerLogout = createHeaderLogout(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+
+    await headerLogout.endSessionWithNoSignal();
+
+    // The sign-in writes one history entry, the home's, so one Back reaches the login form.
+    await adminLoginPage.goBackToHomeOrLoginForm();
+    await adminLoginPage.expectOnLoginPage();
+    await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
+    await adminLoginPage.expectOnLoginPage();
+    await adminLoginPage.expectLoginAddressSaysLoginFailed();
+
+    await adminLoginPage.reload();
+    await adminLoginPage.expectOnLoginPage();
+  });
+
+  test('a sign-out in another tab sends this tab at once to a login page that says why', async ({ page }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+
+    const otherTab = await page.context().newPage();
+    const otherTabLogin = createAdminLoginPage(otherTab);
+    const otherTabLogout = createHeaderLogout(otherTab);
+    await otherTabLogin.goToHome();
+    await otherTabLogin.expectAdminHome();
+    await otherTabLogout.press();
+    await otherTabLogin.expectOnLoginPage();
+    await otherTab.close();
+
+    await adminLoginPage.expectOnLoginPage();
+    await adminLoginPage.expectSaysWhy('loggedOutElsewhere');
+  });
+
+  // The count is written, not driven: no page of the Admin App writes one, and the Contestant App's logout modal, which does, is driven in `contestant-entity-selection`.
+  test('a count the browser has let run out ends the session at the next request, on a login page that says why', async ({
+    page
+  }) => {
+    const adminLoginPage = createAdminLoginPage(page);
+
+    await adminLoginPage.goToPage();
+    await adminLoginPage.fillAwaitingScript(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
+    await adminLoginPage.submit();
+    await adminLoginPage.expectAdminHome();
+
+    await adminLoginPage.writeRunOutCount();
+    await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppQuestionInfo', locale: 'en' }));
+
+    await adminLoginPage.expectOnLoginPage();
+    await adminLoginPage.expectSaysWhy('loggedOutAutomatically');
   });
 });

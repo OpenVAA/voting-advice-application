@@ -10,6 +10,26 @@
  */
 
 import { expect, test } from '@playwright/test';
+import {
+  chooseConstituencyGroupFirst,
+  clearWrittenNominations,
+  removeCandidateNominations,
+  restoreConstituencyGroupFirst,
+  setElectionType,
+  test as contestantTest
+} from '../../fixtures/contestant/perm-startfromcg';
+import {
+  CANDIDATE_GRANT,
+  CANDIDATE_STORAGE_STATE,
+  CHILD_CONSTITUENCY_NAME,
+  FIRST_GROUP_NAME,
+  MUNICIPALITIES_ELECTION_EXTERNAL_ID,
+  MUNICIPALITIES_ELECTION_NAME,
+  ORPHAN_CONSTITUENCY_NAME,
+  PARENT_CONSTITUENCY_NAME,
+  REGIONS_ELECTION_NAME,
+  SEEDED_ELECTION_TYPES
+} from '../../utils/permStartFromCgData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import {
@@ -85,4 +105,118 @@ test.describe('perm-startfromcg', () => {
     await page.getByTestId(testIds.voter.elections.continue).click();
     await expectQuestion(page);
   });
+});
+
+contestantTest.describe('perm-startfromcg: the nomination editor of a candidate with no nomination', () => {
+  contestantTest.describe.configure({ mode: 'serial' });
+  contestantTest.use({ storageState: CANDIDATE_STORAGE_STATE });
+
+  let priorGroup: string | null = null;
+
+  contestantTest.beforeAll(async () => {
+    priorGroup = await chooseConstituencyGroupFirst();
+    await removeCandidateNominations();
+  });
+
+  contestantTest.afterAll(async () => {
+    await restoreConstituencyGroupFirst(priorGroup);
+    await clearWrittenNominations();
+  });
+
+  contestantTest(
+    'contestant: the entry leads to the constituency step as one picker over the group',
+    { tag: '@nomination-definition' },
+    async ({ contestantNominationEditor, contestantNominationsPage }) => {
+      await contestantNominationsPage.open(CANDIDATE_GRANT);
+      await contestantNominationsPage.expectState({ state: 'empty', locked: false });
+      await contestantNominationsPage.expectCardCount(0);
+
+      // The entry address, as a new document. Two elections admit a candidate, and the group is chosen before either.
+      await contestantNominationEditor.open(CANDIDATE_GRANT);
+      await contestantNominationEditor.expectStep('constituencies');
+      await contestantNominationEditor.expectGroupPicker(FIRST_GROUP_NAME);
+      await contestantNominationEditor.expectNoElectionSentence(false);
+      await contestantNominationEditor.expectConstituenciesContinue(false);
+    }
+  );
+
+  contestantTest(
+    'contestant: a constituency with two admissible elections leads to the election step listing those two',
+    { tag: '@nomination-definition' },
+    async ({ contestantNominationEditor }) => {
+      await contestantNominationEditor.open(CANDIDATE_GRANT);
+      await contestantNominationEditor.expectStep('constituencies');
+
+      // A municipality that lies in a region: the municipalities' election is held in it, and the regions' election in its region.
+      await contestantNominationEditor.chooseConstituency(CHILD_CONSTITUENCY_NAME);
+      await contestantNominationEditor.expectNoElectionSentence(false);
+      await contestantNominationEditor.continueFromConstituencies();
+      await contestantNominationEditor.expectStep('elections');
+      await contestantNominationEditor.expectElections([REGIONS_ELECTION_NAME, MUNICIPALITIES_ELECTION_NAME]);
+      await contestantNominationEditor.expectChecked([]);
+    }
+  );
+
+  contestantTest(
+    'contestant: a constituency with one admissible election leads to the details step',
+    { tag: '@nomination-definition' },
+    async ({ contestantNominationEditor }) => {
+      await contestantNominationEditor.open(CANDIDATE_GRANT);
+      await contestantNominationEditor.expectStep('constituencies');
+
+      // The municipality that lies in no region: the municipalities' election alone is held in it, so no election is chosen.
+      await contestantNominationEditor.chooseConstituency(ORPHAN_CONSTITUENCY_NAME);
+      await contestantNominationEditor.expectNoElectionSentence(false);
+      await contestantNominationEditor.continueFromConstituencies();
+      await contestantNominationEditor.expectStep('details');
+      await contestantNominationEditor.expectCards([
+        {
+          election: MUNICIPALITIES_ELECTION_NAME,
+          constituency: ORPHAN_CONSTITUENCY_NAME,
+          state: 'new',
+          confirmed: false,
+          moved: false
+        }
+      ]);
+    }
+  );
+
+  contestantTest(
+    'contestant: a constituency with no election the candidate can stand in keeps the constituency step',
+    { tag: '@nomination-definition' },
+    async ({ contestantNominationEditor }) => {
+      try {
+        // The one election held in the municipality that lies in no region admits parties alone. The step after the change is a full page load.
+        await setElectionType(MUNICIPALITIES_ELECTION_EXTERNAL_ID, 'organization_only');
+        await contestantNominationEditor.open(CANDIDATE_GRANT);
+        await contestantNominationEditor.expectStep('constituencies');
+        await contestantNominationEditor.expectGroupPicker(FIRST_GROUP_NAME);
+
+        await contestantNominationEditor.chooseConstituency(ORPHAN_CONSTITUENCY_NAME);
+        await contestantNominationEditor.expectNoElectionSentence(true);
+        await contestantNominationEditor.expectConstituenciesContinue(false);
+        await contestantNominationEditor.expectStep('constituencies');
+
+        // A municipality that lies in a region: the regions' election, which still admits a candidate, is held there, in the region.
+        await contestantNominationEditor.chooseConstituency(CHILD_CONSTITUENCY_NAME);
+        await contestantNominationEditor.expectNoElectionSentence(false);
+        await contestantNominationEditor.continueFromConstituencies();
+        await contestantNominationEditor.expectStep('details');
+        await contestantNominationEditor.expectCards([
+          {
+            election: REGIONS_ELECTION_NAME,
+            constituency: PARENT_CONSTITUENCY_NAME,
+            state: 'new',
+            confirmed: false,
+            moved: false
+          }
+        ]);
+      } finally {
+        await setElectionType(
+          MUNICIPALITIES_ELECTION_EXTERNAL_ID,
+          SEEDED_ELECTION_TYPES[MUNICIPALITIES_ELECTION_EXTERNAL_ID]
+        );
+      }
+    }
+  );
 });

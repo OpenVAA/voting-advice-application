@@ -55,9 +55,12 @@ import {
   TEST_PROJECT_ID
 } from '@openvaa/dev-seed';
 import { PROPERTY_MAP, TABLE_MAP } from '@openvaa/supabase-types';
-import type { FindDataResult } from '@openvaa/dev-seed';
+import { requestLink } from './accountAccessClient';
+import { TIMEOUTS } from '../helpers/timeouts';
+import type { FindDataResult, InvitationNominationSeed, SeededInvitation } from '@openvaa/dev-seed';
 // Direct import, the same shape `buildRoute.ts` uses. Type-only: the constant is consumed as `typeof ADMIN_GRANTS` below, which is a compile-time read of the application's own declaration and needs no runtime binding.
 import type { ADMIN_GRANTS } from '../../../apps/frontend/src/lib/auth/roles';
+import type { GrantSpec } from './authApi';
 
 // Re-exports for backward-compat with existing E2E imports.
 // `tests/seed-test-data.ts` + all tests/tests/**/*.spec.ts files may import
@@ -68,12 +71,6 @@ export { E2E_PROJECT_ID, resolveE2eProjectId };
 export type { FindDataResult };
 
 /**
- * Default Supabase URL for local development (supabase start).
- * Used by `sendEmail`/`sendForgotPassword` for the frontend redirect URL.
- */
-const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
-
-/**
  * The admin grant shape `forceRegisterAdmin` mints.
  *
  * The annotation is the point: the type is `ADMIN_GRANTS`'s own element type, so this is a COMPILE-TIME membership check against the application's declaration rather than a pair chosen here. A shape removed from `ADMIN_GRANTS` reddens this line under `yarn typecheck:tests` instead of silently minting an identity the app's gates no longer accept.
@@ -81,6 +78,51 @@ const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
  * The project scope is the NARROWEST of the three — a project grant reaches its own project and nothing else, whereas an account grant reaches every project under an account and a global one reaches everything. A test identity should be no wider than the test needs.
  */
 const TEST_ADMIN_GRANT: (typeof ADMIN_GRANTS)[number] = { scope: 'project', role: 'admin' };
+
+/** How often {@link SupabaseAdminClient.awaitLinkWitness} reads a witness. */
+const LINK_WITNESS_POLL_INTERVAL_MS = 250;
+
+/**
+ * How long {@link SupabaseAdminClient.awaitLinkWitness} reads a witness before it gives up.
+ *
+ * reason: three slow timeouts, not one. The function bounds each of its own requests to the auth service and each phase of its mail conversation at ten seconds, so a link request that ends as `not-sent` through a hung dependency finishes later than one slow timeout. This is a ceiling on a polled state, never a wait: a finished witness is returned by the next read.
+ */
+const LINK_WITNESS_CEILING_MS = TIMEOUTS.slowPage * 3;
+
+/** Users read per page by the exact listing. */
+const AUTH_USERS_PAGE_SIZE = 200;
+
+/** The outcome a finished completion witness reads: whether the request's background work handed a mail over. */
+export type LinkWitnessOutcome = 'sent' | 'not-sent';
+
+/** One row of `public.grants` as its four specification columns: the shape the access token's `grants` claim states a grant in. */
+export type GrantRow = GrantSpec;
+
+/** An auth user as the listing returns it, narrowed to the fields this file reads. */
+interface AuthUserRow {
+  id: string;
+  email?: string;
+  app_metadata?: Record<string, unknown>;
+}
+
+/**
+ * An entity an editor grant names: its type and its `external_id` in the client's project.
+ */
+export interface EntityGrantTarget {
+  /** The entity's type. Only the two types a contestant can edit are admitted. */
+  entityType: 'candidate' | 'organization';
+  /** The entity's `external_id`, looked up in the client's own project. */
+  externalId: string;
+}
+
+/**
+ * The table holding the entities of each type an editor grant can name.
+ */
+const ENTITY_GRANT_TABLES: Readonly<Record<EntityGrantTarget['entityType'], 'candidates' | 'organizations'>> =
+  Object.freeze({
+    candidate: 'candidates',
+    organization: 'organizations'
+  });
 
 /**
  * Maps camelCase collection names to Supabase snake_case table names.
@@ -119,6 +161,26 @@ function resolveFieldName(field: string): string {
   return FIELD_MAP[field] ?? field;
 }
 
+/**
+ * The ids of the entities of a type that an account registered in a project through the identity provider, as the `registered_entities` record of its `app_metadata` names them: `{ "<project id>": { "<entity type>": "<entity id>" } }`. Anything else in the metadata reads as no id.
+ *
+ * @param appMetadata - The account's `app_metadata`.
+ * @param projectId - The project.
+ * @param entityType - The entity type.
+ */
+function registeredEntityIds(
+  appMetadata: Record<string, unknown> | undefined,
+  projectId: string,
+  entityType: 'candidate' | 'organization'
+): Array<string> {
+  const record = appMetadata?.registered_entities;
+  if (typeof record !== 'object' || record === null) return [];
+  const inProject = (record as Record<string, unknown>)[projectId];
+  if (typeof inProject !== 'object' || inProject === null) return [];
+  const id = (inProject as Record<string, unknown>)[entityType];
+  return typeof id === 'string' && id !== '' ? [id] : [];
+}
+
 export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Same signature as the base constructor; the only difference is the project it falls back to.
@@ -141,16 +203,341 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @param caller - Name of the public method making the call; it prefixes the error text.
    * @throws Error if any page fails.
    */
-  private async safeListUsers(): Promise<Array<{ id: string; email?: string; [key: string]: unknown }>> {
-    const {
-      data: { users },
-      error
-    } = await this.client.auth.admin.listUsers();
-    if (error) {
-      console.warn(`listUsers failed (GoTrue NULL column bug?): ${JSON.stringify(error)}`);
-      return [];
+  private async listAllUsers(caller: string): Promise<Array<AuthUserRow>> {
+    const all: Array<AuthUserRow> = [];
+    for (let page = 1; ; page++) {
+      const { data, error } = await this.client.auth.admin.listUsers({ page, perPage: AUTH_USERS_PAGE_SIZE });
+      if (error) throw new Error(`${caller}: listing the auth users failed: ${error.message}`);
+      all.push(...data.users.map((user) => ({ id: user.id, email: user.email, app_metadata: user.app_metadata })));
+      if (data.users.length < AUTH_USERS_PAGE_SIZE) return all;
     }
-    return users as Array<{ id: string; email?: string; [key: string]: unknown }>;
+  }
+
+  /**
+   * The auth user holding an address, looked up over every user.
+   *
+   * @param email - The address looked up, compared trimmed and lower-cased, as the auth service stores it.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @returns The user, or `undefined` when no user holds the address.
+   * @throws Error if the users cannot be listed; a failed listing is never read as "no such user".
+   */
+  private async findAuthUser(email: string, caller: string): Promise<AuthUserRow | undefined> {
+    const address = email.trim().toLowerCase();
+    return (await this.listAllUsers(caller)).find((user) => user.email?.toLowerCase() === address);
+  }
+
+  /**
+   * Whether an auth user holds an address, decided over every user.
+   *
+   * @param email - The address looked up, compared trimmed and lower-cased.
+   * @throws Error if the users cannot be listed; a failed listing is never read as "no such user".
+   */
+  async hasAuthUser(email: string): Promise<boolean> {
+    return (await this.findAuthUser(email, 'hasAuthUser')) !== undefined;
+  }
+
+  /**
+   * Every grant a user holds, each as its four specification columns.
+   *
+   * @param email - Address of the auth user whose grants are read.
+   * @returns The user's rows of `public.grants`, in no particular order.
+   * @throws Error if no auth user holds the address, or if a read fails.
+   */
+  async grantRowsForUser(email: string): Promise<Array<GrantRow>> {
+    const user = await this.findAuthUser(email, 'grantRowsForUser');
+    if (!user) throw new Error(`grantRowsForUser: no user found with email ${email}`);
+    const { data, error } = await this.client
+      .from('grants')
+      .select('scope, target_type, target_id, role')
+      .eq('user_id', user.id);
+    if (error) throw new Error(`grantRowsForUser: ${error.message}`);
+    return (data ?? []) as Array<GrantRow>;
+  }
+
+  /**
+   * How many auth users have an address that begins with a prefix, counted over every user.
+   *
+   * @param prefix - The beginning of the addresses to count, compared without regard to case.
+   * @throws Error if the users cannot be listed; a failed listing is never read as "none".
+   */
+  async countUsersByEmailPrefix(prefix: string): Promise<number> {
+    const users = await this.listAllUsers('countUsersByEmailPrefix');
+    return users.filter((user) => user.email?.toLowerCase().startsWith(prefix.toLowerCase())).length;
+  }
+
+  /**
+   * Remove every auth user whose address begins with a prefix, with the user's grants and the user's invitations in this client's project.
+   *
+   * For a spec that invents its addresses under a prefix of its own: it clears what an interrupted run left, whichever addresses that run used.
+   *
+   * @param prefix - The beginning of the addresses to remove. At least eight characters, so that a slip cannot name half the suite's users.
+   * @returns How many users were removed.
+   * @throws Error if the prefix is too short, or if a listing or a removal fails.
+   */
+  async removeUsersByEmailPrefix(prefix: string): Promise<number> {
+    if (prefix.length < 8) {
+      throw new Error(`removeUsersByEmailPrefix: the prefix '${prefix}' is shorter than eight characters`);
+    }
+    const users = (await this.listAllUsers('removeUsersByEmailPrefix')).filter((user) =>
+      user.email?.toLowerCase().startsWith(prefix.toLowerCase())
+    );
+    for (const user of users) {
+      // The invitations go before the user, for the reasons `unregisterCandidate` gives.
+      await this.removeInvitations({ emails: user.email ? [user.email] : [], claimedByUserIds: [user.id] });
+      const { error: grantError } = await this.client.from('grants').delete().eq('user_id', user.id);
+      if (grantError) throw new Error(`removeUsersByEmailPrefix: delete grants failed: ${grantError.message}`);
+      const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
+      if (deleteError) throw new Error(`removeUsersByEmailPrefix: deleteUser failed: ${deleteError.message}`);
+    }
+    return users.length;
+  }
+
+  /**
+   * Remove, in this client's project, every candidate and organization that carries no external id and that a user whose address begins with a prefix either edits or registered, with the grants naming it.
+   *
+   * The `identity-callback` Edge Function creates an identity's own entity with no external id, so no dataset's prefix teardown reaches it. The entity is found through the user's editor grants and through the record of registered entities in the user's `app_metadata`, which still names it after an administrator removed the grant. Call this before {@link removeUsersByEmailPrefix}: both go with the user. A row with an external id belongs to a dataset and is left to that dataset's teardown.
+   *
+   * @param prefix - The beginning of the addresses whose entities go. At least eight characters, as for {@link removeUsersByEmailPrefix}.
+   * @returns How many entities were removed.
+   * @throws Error if the prefix is too short, or if a listing, a read or a removal fails.
+   */
+  async removeOwnEntitiesOfUsersByEmailPrefix(prefix: string): Promise<number> {
+    if (prefix.length < 8) {
+      throw new Error(`removeOwnEntitiesOfUsersByEmailPrefix: the prefix '${prefix}' is shorter than eight characters`);
+    }
+    const users = (await this.listAllUsers('removeOwnEntitiesOfUsersByEmailPrefix')).filter((user) =>
+      user.email?.toLowerCase().startsWith(prefix.toLowerCase())
+    );
+    let removed = 0;
+    for (const user of users) {
+      const { data: grants, error: grantError } = await this.client
+        .from('grants')
+        .select('target_type, target_id')
+        .eq('user_id', user.id)
+        .eq('scope', 'entity')
+        .eq('role', 'editor')
+        .in('target_type', ['candidate', 'organization']);
+      if (grantError) throw new Error(`removeOwnEntitiesOfUsersByEmailPrefix: ${grantError.message}`);
+      for (const table of ['candidates', 'organizations'] as const) {
+        const targetType = table === 'candidates' ? 'candidate' : 'organization';
+        const ids = [
+          ...new Set([
+            ...(grants ?? [])
+              .filter((grant) => grant.target_type === targetType)
+              .map((grant) => String(grant.target_id)),
+            ...registeredEntityIds(user.app_metadata, this.projectId, targetType)
+          ])
+        ];
+        if (ids.length === 0) continue;
+        const { data: rows, error: readError } = await this.client
+          .from(table)
+          .select('id')
+          .in('id', ids)
+          .eq('project_id', this.projectId)
+          .is('external_id', null);
+        if (readError) throw new Error(`removeOwnEntitiesOfUsersByEmailPrefix: ${readError.message}`);
+        const ownIds = (rows ?? []).map((row) => row.id as string);
+        if (ownIds.length === 0) continue;
+        const { error: deleteGrantsError } = await this.client
+          .from('grants')
+          .delete()
+          .eq('scope', 'entity')
+          .in('target_id', ownIds);
+        if (deleteGrantsError) {
+          throw new Error(`removeOwnEntitiesOfUsersByEmailPrefix: delete grants failed: ${deleteGrantsError.message}`);
+        }
+        const { error: deleteError } = await this.client
+          .from(table)
+          .delete()
+          .in('id', ownIds)
+          .eq('project_id', this.projectId);
+        if (deleteError)
+          throw new Error(`removeOwnEntitiesOfUsersByEmailPrefix: delete ${table} failed: ${deleteError.message}`);
+        removed += ownIds.length;
+      }
+    }
+    return removed;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Invitations
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Delete invitation rows of this client's project: those addressed to one of the addresses, as `email` or as the pending address of a code; those promising a grant on one of the targets; and those one of the users claimed. Claimed rows are deleted like open ones.
+   *
+   * The three criteria are alternatives: a row matching any one of them goes. With nothing given, nothing is deleted.
+   *
+   * A deleted row gives back the one-mail-per-address slot of each address it still holds. A claimed code row holds none, so its claimant's slot runs out by itself; see {@link releaseLinkSlot}.
+   *
+   * @param criteria.emails - Addresses, compared trimmed and lower-cased, as the table stores them.
+   * @param criteria.targetIds - Ids of the promised targets: entities, or the project itself.
+   * @param criteria.claimedByUserIds - Ids of the auth users whose claimed invitations go.
+   * @returns How many rows were deleted.
+   * @throws Error naming the failed step and the database error's code. The message holds no address.
+   */
+  async removeInvitations(
+    criteria: {
+      emails?: ReadonlyArray<string>;
+      targetIds?: ReadonlyArray<string>;
+      claimedByUserIds?: ReadonlyArray<string>;
+    } = {}
+  ): Promise<number> {
+    const emails = (criteria.emails ?? []).map((email) => email.trim().toLowerCase()).filter((email) => email !== '');
+    const steps: Array<{ column: string; values: ReadonlyArray<string> }> = [
+      { column: 'email', values: emails },
+      { column: 'pending_email', values: emails },
+      { column: 'target_id', values: criteria.targetIds ?? [] },
+      { column: 'claimed_by', values: criteria.claimedByUserIds ?? [] }
+    ];
+    let removed = 0;
+    for (const { column, values } of steps) {
+      if (values.length === 0) continue;
+      const { data, error } = await this.client
+        .from('invitations')
+        .delete()
+        .eq('project_id', this.projectId)
+        .in(column, [...values])
+        .select('id');
+      if (error) {
+        throw new Error(`removeInvitations: delete by ${column} failed with database error ${error.code}`);
+      }
+      removed += (data ?? []).length;
+    }
+    return removed;
+  }
+
+  /**
+   * Give back the one-mail-per-address slot of an address in this client's project, so that the next link request for it is not answered by the interval.
+   *
+   * For a test that asks for a second mail to an address it already mailed, or that reuses an address across runs. With a code, the code's binding interval is given back too.
+   *
+   * @param email - The address whose slot is given back.
+   * @param code - A code whose pending address is that address.
+   * @throws Error naming the database error's code.
+   */
+  async releaseLinkSlot(email: string, code?: string): Promise<void> {
+    const { error } = await this.client.rpc('invitation_link_release', {
+      p_project_id: this.projectId,
+      p_email: email,
+      ...(code === undefined ? {} : { p_code: code })
+    });
+    if (error) throw new Error(`releaseLinkSlot failed with database error ${error.code}`);
+  }
+
+  /**
+   * Give back the one-mail-a-minute slot of the address confirmation for an address, so that the next confirmation mail for it is not answered by the interval.
+   *
+   * The slot belongs to no project and is not the sign-in and recovery mails' slot, which {@link releaseLinkSlot} gives back.
+   *
+   * @param email - The address whose confirmation slot is given back.
+   * @throws Error naming the database error's code.
+   */
+  async releaseConfirmationSlot(email: string): Promise<void> {
+    const { error } = await this.client.rpc('address_confirmation_release', { p_email: email });
+    if (error) throw new Error(`releaseConfirmationSlot failed with database error ${error.code}`);
+  }
+
+  /**
+   * Seed one email invitation for an entity of this client's project and ask the `account-access` function to mail its address a sign-in link.
+   *
+   * It first removes any invitation for that address on that entity, claimed or not, and gives the address's slot back, so a repeated call mails again instead of meeting the interval: an open earlier invitation collides with the new one, and a claimed one would stay behind on the entity, where the leftover checks count every invitation on the reserved rows. It sends nothing itself and writes no grant: the mail is the function's, and the grant is written when the invited user claims.
+   *
+   * The function answers before it has mailed, so the request carries a completion witness and this method returns only once that witness reads `sent`. On return the mail has been handed over and the invited address has an auth user: the newest sign-in mail the catcher holds for the address is this request's, also for an address an earlier run mailed. A caller that asserts no mail was sent does not use this helper, and carries a witness of its own (see {@link openLinkWitness}).
+   *
+   * @param params.entityType - The entity's type.
+   * @param params.externalId - The entity's `external_id` in this client's project.
+   * @param params.email - The invited address.
+   * @param params.locale - The locale of the mail and of the link's path.
+   * @param params.confirmEntity - Whether the call confirms the entity when it has a name; it never unconfirms one.
+   * @param params.nominations - Nominations of the entity the same call creates or updates; build each with {@link invitationNomination}.
+   * @param params.afterSeeding - Awaited after the invitation is seeded and before the link is asked for: the place to assert what seeding alone did.
+   * @returns The seeded invitation.
+   * @throws Error if the entity is not found, if a database step fails, if the function does not answer 200, or if the request finishes without handing a mail over.
+   */
+  async inviteByEmail({
+    entityType,
+    externalId,
+    email,
+    locale,
+    confirmEntity,
+    nominations,
+    afterSeeding
+  }: {
+    entityType: EntityGrantTarget['entityType'];
+    externalId: string;
+    email: string;
+    locale?: string;
+    confirmEntity: boolean;
+    nominations?: ReadonlyArray<InvitationNominationSeed>;
+    afterSeeding?: (seeded: SeededInvitation) => Promise<void>;
+  }): Promise<SeededInvitation> {
+    const address = email.trim().toLowerCase();
+    const targetId = await this.entityIdForGrantTarget({ entityType, externalId }, 'inviteByEmail');
+
+    const { error: deleteError } = await this.client
+      .from('invitations')
+      .delete()
+      .eq('project_id', this.projectId)
+      .eq('target_id', targetId)
+      .eq('email', address);
+    if (deleteError) {
+      throw new Error(`inviteByEmail: removing the earlier invitation failed with database error ${deleteError.code}`);
+    }
+    await this.releaseLinkSlot(address);
+
+    const [seeded] = await this.createInvitations(
+      [{ target_type: entityType, target_id: targetId, email: address, ...(nominations ? { nominations } : {}) }],
+      { confirmEntity }
+    );
+    if (!seeded) throw new Error('inviteByEmail: create_invitations returned no row');
+    await afterSeeding?.(seeded);
+
+    const witness = await this.openLinkWitness();
+    const answer = await requestLink({ projectId: this.projectId, email: address, locale, witness });
+    if (answer.status !== 200) throw new Error(`inviteByEmail: the link request answered status ${answer.status}`);
+    const outcome = await this.awaitLinkWitness(witness);
+    if (outcome !== 'sent') throw new Error('inviteByEmail: the link request finished without handing a mail over');
+    return seeded;
+  }
+
+  /**
+   * Open a completion witness for one link request.
+   *
+   * A link request is answered before its work is done, and the background work of two requests does not finish in the order the requests were made. A test therefore cannot conclude that no mail was sent from the answer, from elapsed time, or from a later request's mail. It opens a witness here, sends the id with the request, and waits with {@link awaitLinkWitness} for the end of THAT request's work before it looks at the mail catcher or at the accounts.
+   *
+   * @returns The id of a new open witness record.
+   * @throws Error naming the database error's code, or if no id is returned.
+   */
+  async openLinkWitness(): Promise<string> {
+    const { data, error } = await this.client.rpc('invitation_link_witness_open');
+    if (error) throw new Error(`openLinkWitness failed with database error ${error.code}`);
+    if (typeof data !== 'string' || data === '') throw new Error('openLinkWitness: no witness id was returned');
+    return data;
+  }
+
+  /**
+   * Wait until the link request that carried a witness has finished its background work, and return what it did.
+   *
+   * Polls the witness until it reads a finished outcome: `sent` when a mail was handed over, `not-sent` when none was, for whatever reason. An open witness reads null.
+   *
+   * @param id - The id {@link openLinkWitness} returned.
+   * @returns The finished outcome.
+   * @throws Error naming the id when the witness is still open at the ceiling, or naming the database error's code when a read fails.
+   */
+  async awaitLinkWitness(id: string): Promise<LinkWitnessOutcome> {
+    const deadline = Date.now() + LINK_WITNESS_CEILING_MS;
+    for (;;) {
+      const { data, error } = await this.client.rpc('invitation_link_witness', { p_id: id });
+      if (error) throw new Error(`awaitLinkWitness: reading witness ${id} failed with database error ${error.code}`);
+      if (data === 'sent' || data === 'not-sent') return data;
+      if (Date.now() >= deadline) {
+        throw new Error(
+          `awaitLinkWitness: witness ${id} read neither sent nor not-sent within ${LINK_WITNESS_CEILING_MS} ms`
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, LINK_WITNESS_POLL_INTERVAL_MS));
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -374,6 +761,355 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   // ---------------------------------------------------------------------------
+  // Entity-editor grants
+  // ---------------------------------------------------------------------------
+
+  /**
+   * The id of the auth user holding an email address.
+   *
+   * @param email - The email address looked up.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if no auth user has that email, or if the users cannot be listed.
+   */
+  private async userIdForEmail(email: string, caller: string): Promise<string> {
+    const user = await this.findAuthUser(email, caller);
+    if (!user) throw new Error(`${caller}: no user found with email ${email}`);
+    return user.id;
+  }
+
+  /**
+   * The id of the entity a grant target names, read from the table of its type in this client's project.
+   *
+   * @param target - The entity's type and external id.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if the type is not one an editor grant can name, or if no such entity exists in this project.
+   */
+  private async entityIdForGrantTarget(target: EntityGrantTarget, caller: string): Promise<string> {
+    // A lookup, not an index access: a type that is not an own key of the map throws by name instead of reading a table called `undefined`.
+    const table = Object.hasOwn(ENTITY_GRANT_TABLES, target.entityType)
+      ? ENTITY_GRANT_TABLES[target.entityType]
+      : undefined;
+    if (!table) throw new Error(`${caller}: entity type '${target.entityType}' cannot be granted to an editor`);
+    return this.rowIdByExternalId(table, target.externalId, caller);
+  }
+
+  /**
+   * The id of an election, a constituency, a candidate or an organization of this client's project, by its `external_id`.
+   *
+   * @param table - The table the row is read from.
+   * @param externalId - The row's `external_id`.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if no such row exists in this project.
+   */
+  private async rowIdByExternalId(
+    table: 'elections' | 'constituencies' | 'candidates' | 'organizations',
+    externalId: string,
+    caller: string
+  ): Promise<string> {
+    const { data: row, error } = await this.client
+      .from(table)
+      .select('id')
+      .eq('external_id', externalId)
+      .eq('project_id', this.projectId)
+      .single();
+    if (error) throw new Error(`${caller}: failed to find ${table} row ${externalId}: ${error.message}`);
+    return row.id as string;
+  }
+
+  /**
+   * A nomination of an invited entity, in the shape `inviteByEmail` and `createInvitations` take, from external ids of this client's project.
+   *
+   * @param params.election - The election's `external_id`.
+   * @param params.constituency - The constituency's `external_id`.
+   * @param params.parentOrganization - The parent organization's `external_id`; without one the nomination has no parent.
+   * @param params.symbol - The nomination's election symbol.
+   * @param params.externalId - The nomination's own `external_id`.
+   * @param params.confirmed - Whether the nomination is confirmed.
+   * @returns The nomination with the uuids the call takes.
+   * @throws Error if the election, the constituency or the organization is not found in this project.
+   */
+  async invitationNomination({
+    election,
+    constituency,
+    parentOrganization,
+    symbol,
+    externalId,
+    confirmed
+  }: {
+    election: string;
+    constituency: string;
+    parentOrganization?: string;
+    symbol?: string;
+    externalId?: string;
+    confirmed: boolean;
+  }): Promise<InvitationNominationSeed> {
+    const caller = 'invitationNomination';
+    const [electionId, constituencyId, parentId] = await Promise.all([
+      this.rowIdByExternalId('elections', election, caller),
+      this.rowIdByExternalId('constituencies', constituency, caller),
+      parentOrganization === undefined
+        ? Promise.resolve(undefined)
+        : this.rowIdByExternalId('organizations', parentOrganization, caller)
+    ]);
+    return {
+      election_id: electionId,
+      constituency_id: constituencyId,
+      parent:
+        parentId === undefined
+          ? { kind: 'none' }
+          : { kind: 'entity', entity_type: 'organization', entity_id: parentId },
+      confirmed,
+      ...(symbol === undefined ? {} : { election_symbol: symbol }),
+      ...(externalId === undefined ? {} : { external_id: externalId })
+    };
+  }
+
+  /**
+   * The id of an entity of this client's project, by its type and `external_id`.
+   *
+   * For a spec or fixture that knows a seeded row by its external id and needs the id the application's URLs and writes carry.
+   *
+   * @param target - The entity's type and external id.
+   * @throws Error if the type is not one an editor grant can name, or if no such entity exists in this project.
+   */
+  async entityId(target: EntityGrantTarget): Promise<string> {
+    return this.entityIdForGrantTarget(target, 'entityId');
+  }
+
+  /**
+   * Write one `(entity, <type>, <id>, editor)` grant for a user, on an entity named by its external id.
+   *
+   * The grant row is the only link from an identity to an entity, which is how the contestant app finds the user's own records, and `custom_access_token_hook` projects `public.grants` into the JWT on every token issue: a caller whose claim is an empty array is denied everything, so an identity minted without this row logs in and is then refused by policies, which reads as a product defect rather than as a fixture gap.
+   *
+   * A candidate admits one editor. Whether a candidate is free is decided here, at run time, against this client's project, and a candidate that already has an editor is refused by name before the insert; `idx_grants_one_candidate_editor` would refuse it too, with a message that names no candidate.
+   *
+   * @param userId - The auth user the grant is written for.
+   * @param target - The entity's type and external id.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if the entity is not found, if a candidate already has an editor, or if the insert fails.
+   */
+  private async grantEntityToUser(userId: string, target: EntityGrantTarget, caller: string): Promise<void> {
+    const entityId = await this.entityIdForGrantTarget(target, caller);
+
+    if (target.entityType === 'candidate') {
+      const editorId = await this.userIdForCandidate(entityId);
+      if (editorId) {
+        throw new Error(
+          `${caller}: candidate ${target.externalId} already has an editor (user ${editorId}); a candidate admits one. ` +
+            'Unregister that user first, or grant a candidate that no identity of the run edits.'
+        );
+      }
+    }
+
+    await this.insertEntityEditorGrant(userId, target.entityType, entityId, caller);
+  }
+
+  /**
+   * Insert one `(entity, <type>, <id>, editor)` grant row. The one place in this file that inserts an entity grant.
+   *
+   * @param userId - The auth user the grant is written for.
+   * @param entityType - The entity's type.
+   * @param entityId - The entity's id.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if the insert fails.
+   */
+  private async insertEntityEditorGrant(
+    userId: string,
+    entityType: EntityGrantTarget['entityType'],
+    entityId: string,
+    caller: string
+  ): Promise<void> {
+    const { error } = await this.client.from('grants').insert({
+      user_id: userId,
+      scope: 'entity',
+      target_type: entityType,
+      target_id: entityId,
+      role: 'editor'
+    });
+    if (error) throw new Error(`${caller}: insert grant failed: ${error.message}`);
+  }
+
+  /**
+   * Make an existing user the editor of an entity of this client's project.
+   *
+   * The second half of {@link forceRegister} on its own: that method creates the user and then writes the user's first grant through the same code path this method uses. Which candidates are free is decided here, at run time, against the suite's project: a candidate that already has an editor is refused with an error naming it. An organization admits several editors.
+   *
+   * A grant written after the user's token was issued is not in that token. Write the grants before the user signs in when the session must carry them.
+   *
+   * @param email - Email address of the auth user the grant is written for.
+   * @param target - The entity's type and external id.
+   * @throws Error if no auth user has that email, if the entity is not found, if a candidate already has an editor, or if the insert fails.
+   */
+  async grantEntity(email: string, target: EntityGrantTarget): Promise<void> {
+    const userId = await this.userIdForEmail(email, 'grantEntity');
+    await this.grantEntityToUser(userId, target, 'grantEntity');
+  }
+
+  /**
+   * Remove one user's editor grant on one entity. The inverse of {@link grantEntity}.
+   *
+   * Idempotent: a user who holds no such grant, or who does not exist, is left as they are. The user's other grants and the entity row are not touched. A token issued before the removal still carries the grant; the row-level policies read the table, so the entity is no longer listed or readable for that user.
+   *
+   * @param email - Email address of the auth user whose grant is removed.
+   * @param target - The entity's type and external id.
+   * @throws Error if the users cannot be listed, if the entity is not found or if the delete fails.
+   */
+  async revokeEntityGrant(email: string, target: EntityGrantTarget): Promise<void> {
+    const user = await this.findAuthUser(email, 'revokeEntityGrant');
+    if (!user) return;
+
+    const entityId = await this.entityIdForGrantTarget(target, 'revokeEntityGrant');
+    const { error } = await this.client
+      .from('grants')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('scope', 'entity')
+      .eq('target_type', target.entityType)
+      .eq('target_id', entityId)
+      .eq('role', 'editor');
+    if (error) throw new Error(`revokeEntityGrant: delete grant failed: ${error.message}`);
+  }
+
+  /**
+   * Remove a user's editor grant on one entity named by its id, as an administrator does who decides that the user no longer edits it. The entity row and the user's other grants are not touched.
+   *
+   * For an entity with no external id, such as the one the identity provider's registration creates; {@link revokeEntityGrant} names an entity by its external id.
+   *
+   * @param userId - The auth user whose grant is removed.
+   * @param entityType - The entity's type.
+   * @param entityId - The entity's id.
+   * @returns How many grant rows were removed.
+   * @throws Error if the delete fails.
+   */
+  async revokeEntityGrantById(
+    userId: string,
+    entityType: 'candidate' | 'organization',
+    entityId: string
+  ): Promise<number> {
+    const { data, error } = await this.client
+      .from('grants')
+      .delete()
+      .eq('user_id', userId)
+      .eq('scope', 'entity')
+      .eq('target_type', entityType)
+      .eq('target_id', entityId)
+      .eq('role', 'editor')
+      .select('target_id');
+    if (error) throw new Error(`revokeEntityGrantById: delete grant failed: ${error.message}`);
+    return (data ?? []).length;
+  }
+
+  /**
+   * The id of the account a project belongs to.
+   *
+   * @param projectId - The project's id.
+   * @throws Error if the read fails or no such project exists.
+   */
+  async accountIdOfProject(projectId: string): Promise<string> {
+    const { data, error } = await this.client.from('projects').select('account_id').eq('id', projectId).maybeSingle();
+    if (error) throw new Error(`accountIdOfProject: read failed: ${error.message}`);
+    if (!data) throw new Error(`accountIdOfProject: no project ${projectId}`);
+    return String(data.account_id);
+  }
+
+  /**
+   * Give an existing user a grant at account scope.
+   *
+   * Such a user reaches every project of the account, not only this client's project, so a test that writes it removes the user, with its grants, in its own hooks.
+   *
+   * @param email - Email address of the auth user the grant is written for.
+   * @param accountId - The account the grant names, for example {@link accountIdOfProject} of the suite's project.
+   * @param role - The grant's role.
+   * @throws Error if no auth user has that email, or if the insert fails.
+   */
+  async grantAccount(email: string, accountId: string, role: 'admin' | 'editor'): Promise<void> {
+    const userId = await this.userIdForEmail(email, 'grantAccount');
+    const { error } = await this.client
+      .from('grants')
+      .insert({ user_id: userId, scope: 'account', target_type: null, target_id: accountId, role });
+    if (error) throw new Error(`grantAccount: insert grant failed: ${error.message}`);
+  }
+
+  /**
+   * Give an existing user a grant at global scope.
+   *
+   * Such a user reaches every project of the stack, so a test that writes it removes the user, with its grants, in its own hooks.
+   *
+   * @param email - Email address of the auth user the grant is written for.
+   * @param role - The grant's role.
+   * @throws Error if no auth user has that email, or if the insert fails.
+   */
+  async grantGlobal(email: string, role: 'admin' | 'editor'): Promise<void> {
+    const userId = await this.userIdForEmail(email, 'grantGlobal');
+    const { error } = await this.client
+      .from('grants')
+      .insert({ user_id: userId, scope: 'global', target_type: null, target_id: null, role });
+    if (error) throw new Error(`grantGlobal: insert grant failed: ${error.message}`);
+  }
+
+  /**
+   * Create a confirmed candidate with no external id in this client's project and make a user its editor, as an administrator does who gives an account a candidate of its own. When the grant cannot be written, the candidate is removed again.
+   *
+   * The candidate has no dataset prefix, so it is removed with the user's other entities by {@link removeOwnEntitiesOfUsersByEmailPrefix}, through the grant written here.
+   *
+   * @param userId - The auth user who edits the candidate.
+   * @param names - The candidate's first and last name.
+   * @returns The candidate's id.
+   * @throws Error if the insert of the candidate or of the grant fails.
+   */
+  async createCandidateEditedBy(
+    userId: string,
+    { firstName, lastName }: { firstName: string; lastName: string }
+  ): Promise<string> {
+    const { data: candidate, error: insertError } = await this.client
+      .from('candidates')
+      .insert({ project_id: this.projectId, first_name: firstName, last_name: lastName, confirmed: true })
+      .select('id')
+      .single();
+    if (insertError || !candidate) {
+      throw new Error(`createCandidateEditedBy: insert candidate failed: ${insertError?.message ?? 'no row returned'}`);
+    }
+    const candidateId = candidate.id as string;
+    try {
+      await this.insertEntityEditorGrant(userId, 'candidate', candidateId, 'createCandidateEditedBy');
+    } catch (grantError) {
+      await this.client.from('candidates').delete().eq('id', candidateId).eq('project_id', this.projectId);
+      throw grantError;
+    }
+    return candidateId;
+  }
+
+  /**
+   * The id of the account the identity provider's registration made for an identity: the user whose `app_metadata` names the identity's persistent subject identifier as its match value. Found whatever address the account holds, a placeholder or one the user proved.
+   *
+   * @param sub - The identity's subject identifier.
+   * @returns The user id, or `undefined` when no account names the identity.
+   * @throws Error if the users cannot be listed; `undefined` always means that every user was read and none names the identity.
+   */
+  async authUserIdForIdentity(sub: string): Promise<string | undefined> {
+    const users = await this.listAllUsers('authUserIdForIdentity');
+    return users.find((user) => user.app_metadata?.identity_match_value === sub)?.id;
+  }
+
+  /**
+   * How many entity grants a user holds, whatever their type, role or project.
+   *
+   * @param email - Email address of the auth user whose grants are counted.
+   * @returns The exact number of the user's entity-scope grant rows.
+   * @throws Error if no auth user has that email, or if the count fails.
+   */
+  async entityGrantCountForUser(email: string): Promise<number> {
+    const userId = await this.userIdForEmail(email, 'entityGrantCountForUser');
+    const { count, error } = await this.client
+      .from('grants')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('scope', 'entity');
+    if (error) throw new Error(`entityGrantCountForUser: ${error.message}`);
+    return count ?? 0;
+  }
+
+  // ---------------------------------------------------------------------------
   // Auth user management
   // ---------------------------------------------------------------------------
 
@@ -387,9 +1123,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @throws Error if the users cannot be listed, if the user is not found or if the update fails
    */
   async setPassword(email: string, password: string): Promise<void> {
-    const users = await this.safeListUsers();
-
-    const user = users.find((u) => u.email === email);
+    const user = await this.findAuthUser(email, 'setPassword');
     if (!user) throw new Error(`setPassword: no user found with email ${email}`);
 
     const { error } = await this.client.auth.admin.updateUserById(user.id, { password });
@@ -405,47 +1139,132 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @param caller - Name of the public method making the call; it prefixes the error text.
    * @throws Error if the write fails.
    */
-  async forceRegister(candidateExternalId: string, email: string, password: string): Promise<void> {
+  protected async insertTermsOfUseAcceptance(userId: string, caller: string): Promise<void> {
+    const { error } = await this.client
+      .from('terms_of_use_acceptances')
+      .upsert(
+        { user_id: userId, project_id: this.projectId },
+        { onConflict: 'user_id,project_id', ignoreDuplicates: true }
+      );
+    if (error) throw new Error(`${caller}: record terms-of-use acceptance failed: ${error.message}`);
+  }
+
+  /**
+   * Record a user's acceptance of the terms of use of this client's project, naming the user by email.
+   *
+   * For an identity a spec created by some other route than {@link forceRegister}, such as an email invitation, when meeting the acceptance gate is not what the spec is about. Safe to call twice: the second call changes nothing.
+   *
+   * @param email - Email address of the auth user the acceptance is recorded for.
+   * @throws Error if the users cannot be listed, if no auth user has that email, or if the write fails.
+   */
+  async acceptTermsOfUse(email: string): Promise<void> {
+    const user = await this.findAuthUser(email, 'acceptTermsOfUse');
+    if (!user) throw new Error(`acceptTermsOfUse: no user found with email ${email}`);
+
+    await this.insertTermsOfUseAcceptance(user.id, 'acceptTermsOfUse');
+  }
+
+  /**
+   * Create an auth user, write the user's entity-editor grants, and record the user's acceptance of the terms of use of this client's project.
+   *
+   * The one mechanism behind {@link forceRegister} and {@link forceRegisterUser}. Every step after the account exists runs inside a compensating `auth.admin.deleteUser` rollback, so a failure never leaves a user without its intended grants: an orphan auth user would surface as "User already exists" on every later run and need manual cleanup.
+   *
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @param email - Email address for the new auth user.
+   * @param password - Password for the new auth user.
+   * @param entityGrants - The entities the user is made the editor of, each through {@link grantEntity}'s code path.
+   * @param acceptTermsOfUse - Whether to record the user's acceptance of the terms of use.
+   * @throws Error if any step fails. On a failure after the account exists the account is rolled back and the original cause is re-thrown.
+   */
+  private async registerWithGrants(
+    caller: string,
+    email: string,
+    password: string,
+    entityGrants: ReadonlyArray<EntityGrantTarget>,
+    acceptTermsOfUse: boolean
+  ): Promise<void> {
     // 1. Create auth user with confirmed email
     const { data: createData, error: createError } = await this.client.auth.admin.createUser({
       email,
       password,
       email_confirm: true
     });
-    if (createError) throw new Error(`forceRegister: createUser failed: ${createError.message}`);
+    if (createError) throw new Error(`${caller}: createUser failed: ${createError.message}`);
     const user = createData.user;
 
     try {
-      // 2. Look up candidate ID by external_id
-      const { data: candidate, error: cError } = await this.client
-        .from('candidates')
-        .select('id')
-        .eq('external_id', candidateExternalId)
-        .eq('project_id', this.projectId)
-        .single();
-      if (cError) {
-        throw new Error(`forceRegister: failed to find candidate ${candidateExternalId}: ${cError.message}`);
+      // 2. Write the entity-editor grants, each the only link from the identity to that entity.
+      for (const target of entityGrants) {
+        await this.grantEntityToUser(user.id, target, caller);
       }
 
-      // 3. Write the candidate-editor grant. It is the only link from the identity to the candidate, which is how the candidate app finds the user's own record, and `custom_access_token_hook` projects `public.grants` into the JWT on every token issue: a caller whose claim is an empty array is denied everything, so an identity minted without this row logs in and is then refused by policies, which reads as a product defect rather than as a fixture gap.
-      const { error: grantError } = await this.client.from('grants').insert({
-        user_id: user.id,
-        scope: 'entity',
-        target_type: 'candidate',
-        target_id: candidate.id,
-        role: 'editor'
-      });
-      if (grantError) throw new Error(`forceRegister: insert grant failed: ${grantError.message}`);
+      // 3. Record the user's acceptance of the terms of use of this client's project, unless the caller opted out. The row belongs to the auth user, so the rollback below removes it with the user.
+      if (acceptTermsOfUse) {
+        await this.insertTermsOfUseAcceptance(user.id, caller);
+      }
     } catch (mutationErr) {
       // reason: compensating rollback on partial failure prevents orphan auth users that cascade as "User already exists" errors across subsequent test runs. The rollback failure (if any) is logged but not re-thrown — we always re-throw the original mutationErr so the caller sees the real cause.
       await this.client.auth.admin.deleteUser(user.id).then(
         () => {},
         (rollbackErr) => {
-          console.error('[forceRegister] rollback (auth.admin.deleteUser) failed:', rollbackErr);
+          console.error(`[${caller}] rollback (auth.admin.deleteUser) failed:`, rollbackErr);
         }
       );
       throw mutationErr;
     }
+  }
+
+  /**
+   * Force-register a candidate: create the auth user, write the candidate-editor grant that links it to the candidate record, and record the user's acceptance of the terms of use of this client's project.
+   *
+   * The grant is written through {@link grantEntity}'s code path, so a candidate that already has an editor is refused by name.
+   *
+   * @param candidateExternalId - External ID of the candidate to register
+   * @param email - Email address for the new auth user
+   * @param password - Password for the new auth user
+   * @param options - Optional settings.
+   * @param options.acceptTermsOfUse - Whether to record the user's acceptance of the terms of use. Defaults to recording it; pass `false` for an identity that must meet the acceptance gate.
+   * @throws Error if any step fails
+   */
+  async forceRegister(
+    candidateExternalId: string,
+    email: string,
+    password: string,
+    options: { acceptTermsOfUse?: boolean } = {}
+  ): Promise<void> {
+    await this.registerWithGrants(
+      'forceRegister',
+      email,
+      password,
+      [{ entityType: 'candidate', externalId: candidateExternalId }],
+      options.acceptTermsOfUse !== false
+    );
+  }
+
+  /**
+   * Force-register a user who is not, or not only, the editor of one candidate: create the auth user, write the entity-editor grants the caller lists, and record the user's acceptance of the terms of use of this client's project.
+   *
+   * For an identity whose first grant is an organization, or who edits several entities. With no `entityGrants` the user is registered with no entity grant at all; add grants afterwards with {@link grantEntity}. Listing them here instead puts them inside the registration's rollback, so a grant that fails leaves no user behind.
+   *
+   * @param email - Email address for the new auth user.
+   * @param password - Password for the new auth user.
+   * @param options - Optional settings.
+   * @param options.entityGrants - The entities the user is made the editor of. Defaults to none.
+   * @param options.acceptTermsOfUse - Whether to record the user's acceptance of the terms of use. Defaults to recording it; pass `false` for an identity that must meet the acceptance gate.
+   * @throws Error if any step fails. On a failure after the account exists the account is rolled back.
+   */
+  async forceRegisterUser(
+    email: string,
+    password: string,
+    options: { entityGrants?: ReadonlyArray<EntityGrantTarget>; acceptTermsOfUse?: boolean } = {}
+  ): Promise<void> {
+    await this.registerWithGrants(
+      'forceRegisterUser',
+      email,
+      password,
+      options.entityGrants ?? [],
+      options.acceptTermsOfUse !== false
+    );
   }
 
   /**
@@ -516,8 +1335,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       }
     | undefined
   > {
-    const users = await this.safeListUsers();
-    const user = users.find((u) => u.email === email);
+    const user = await this.findAuthUser(email, 'getAuthUserByEmail');
     if (!user) return undefined;
     return {
       id: user.id,
@@ -541,9 +1359,8 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @throws Error if the users cannot be listed, or if the lookup or a delete fails.
    */
   async deleteBankAuthCandidateBySub(placeholderEmail: string): Promise<void> {
-    const users = await this.safeListUsers();
-    const user = users.find((u) => u.email === placeholderEmail);
-    if (!user) return; // Nothing created yet (or listUsers failed — safe to skip).
+    const user = await this.findAuthUser(placeholderEmail, 'deleteBankAuthCandidateBySub');
+    if (!user) return; // Nothing created yet.
 
     const candidateIds = await this.candidateIdsForUser(user.id);
     for (const candidateId of candidateIds) {
@@ -598,127 +1415,20 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    */
   async unregisterCandidate(email: string): Promise<void> {
     // 1. Find auth user by email
-    const users = await this.safeListUsers();
+    const user = await this.findAuthUser(email, 'unregisterCandidate');
 
-    const user = users.find((u) => u.email === email);
-    if (!user) return; // Already unregistered (or listUsers failed - safe to skip)
+    // The invitations go before the user, and when no user exists too. An open earlier invitation for the address and a target collides with a new one; the leftover checks count every invitation on the reserved rows, claimed or not; and an open row left for the address is claimed by the next user created with that address. Before the user, because a code row the user claimed names the user only by `claimed_by`, which the user's deletion sets to null.
+    await this.removeInvitations({ emails: [email], claimedByUserIds: user ? [user.id] : [] });
 
-    // 2. Read the ids of the candidates the user edits BEFORE anything is deleted. The grant is the only link from the user to a candidate, so once step 4 deletes the grants (or step 5 deletes the user, which cascades to them) the ids can no longer be found and the reset in step 3 silently matches nothing.
-    const candidateIds = await this.candidateIdsForUser(user.id);
+    if (!user) return; // Already unregistered
 
-    // 3. Reset `terms_of_use_accepted` on those candidates. Without the reset the candidate-registration spec sees a stale "ToU already accepted" state on later runs: the auth user is freshly created by the test but the underlying candidate row still carries the ToU timestamp from the prior run, so the post-login ToU gate is bypassed and the test reaches /candidate home directly instead of finding the ToU checkbox.
-    if (candidateIds.length > 0) {
-      const { error: resetError } = await this.client
-        .from('candidates')
-        .update({ terms_of_use_accepted: null })
-        .in('id', candidateIds);
-      if (resetError) throw new Error(`unregisterCandidate: reset terms of use failed: ${resetError.message}`);
-    }
-
-    // 4. Delete the identity's grants. Step 5 deletes the auth user and `grants.user_id` is `ON DELETE CASCADE`, so this is belt-and-braces rather than the load-bearing step — it is kept explicit so every removal path in this file reads the same way and none of them depends on remembering which constraint does the work.
+    // 2. Delete the identity's grants. Step 3 deletes the auth user and `grants.user_id` is `ON DELETE CASCADE`, so this is belt-and-braces rather than the load-bearing step — it is kept explicit so every removal path in this file reads the same way and none of them depends on remembering which constraint does the work.
     const { error: grantError } = await this.client.from('grants').delete().eq('user_id', user.id);
     if (grantError) throw new Error(`unregisterCandidate: delete grants failed: ${grantError.message}`);
 
     // 3. Delete auth user
     const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
     if (deleteError) throw new Error(`unregisterCandidate: deleteUser failed: ${deleteError.message}`);
-  }
-
-  /**
-   * Send an email to a candidate via the Supabase Admin Auth API.
-   *
-   * For test purposes, this uses `auth.admin.inviteUserByEmail` which sends an invite/magic link email via Inbucket in local dev. The invite email contains a link the candidate can use to set their password.
-   *
-   * A candidate is registered exactly when a candidate-editor grant names it. A registered candidate gets a magic link instead (since inviteUserByEmail would fail for existing users); an unregistered one is invited, and the grant linking the new user to the candidate is written.
-   *
-   * @param params - Email parameters
-   * @param params.candidateExternalId - External ID of the candidate
-   * @param params.subject - Email subject (used for logging; actual subject from GoTrue template)
-   * @param params.content - Email content (used for logging; actual content from GoTrue template)
-   * @throws Error if the candidate is not found or email sending fails
-   */
-  async sendEmail(params: {
-    candidateExternalId: string;
-    subject: string;
-    content: string;
-    email?: string;
-  }): Promise<void> {
-    const { data: candidate, error: cError } = await this.client
-      .from('candidates')
-      .select('id, first_name, last_name')
-      .eq('external_id', params.candidateExternalId)
-      .eq('project_id', this.projectId)
-      .single();
-
-    if (cError) {
-      throw new Error(`sendEmail: failed to find candidate ${params.candidateExternalId}: ${cError.message}`);
-    }
-
-    const registeredUserId = await this.userIdForCandidate(candidate.id);
-
-    if (registeredUserId) {
-      // A candidate-editor grant names the candidate, so it is already registered -- generate a magic link which sends an email via Inbucket
-      const {
-        data: { user },
-        error: getUserError
-      } = await this.client.auth.admin.getUserById(registeredUserId);
-      if (getUserError || !user?.email) {
-        throw new Error(`sendEmail: failed to get auth user for candidate: ${getUserError?.message}`);
-      }
-
-      const { error: linkError } = await this.client.auth.admin.generateLink({
-        type: 'magiclink',
-        email: user.email
-      });
-      if (linkError) throw new Error(`sendEmail: generateLink failed: ${linkError.message}`);
-    } else {
-      // No grant names the candidate yet -- use inviteUserByEmail to create the user and send an invite email via Inbucket, then write the candidate-editor grant that links the new user to the candidate.
-      const email = params.email;
-      if (!email) {
-        throw new Error(
-          `sendEmail: candidate ${params.candidateExternalId} is not registered and no email was provided.`
-        );
-      }
-
-      // Use inviteUserByEmail to create the user and send the invite email.
-      // redirectTo points to the auth callback which handles token exchange.
-      const frontendUrl = SUPABASE_URL.replace('54321', '5173');
-      const { data: inviteData, error: inviteError } = await this.client.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${frontendUrl}/en/api/candidate/auth/callback`
-      });
-      if (inviteError) throw new Error(`sendEmail: inviteUserByEmail failed: ${inviteError.message}`);
-
-      const userId = inviteData.user.id;
-
-      // Write the candidate-editor grant. Same reason as the other two minting sites: the grant row is the only link from the new identity to the candidate and the whole of its authority.
-      const { error: grantError } = await this.client.from('grants').insert({
-        user_id: userId,
-        scope: 'entity',
-        target_type: 'candidate',
-        target_id: candidate.id,
-        role: 'editor'
-      });
-      if (grantError) throw new Error(`sendEmail: insert grant failed: ${grantError.message}`);
-    }
-  }
-
-  /**
-   * Trigger a password recovery email for a user.
-   *
-   * Uses `auth.admin.generateLink({ type: 'recovery' })` which generates a recovery link. In local dev with Inbucket, the email is delivered to the Inbucket inbox for the user's email address.
-   *
-   * Alternatively uses `auth.resetPasswordForEmail` which sends the actual recovery email via GoTrue/Inbucket.
-   *
-   * @param email - Email address of the user to send recovery to
-   * @throws Error if the operation fails
-   */
-  async sendForgotPassword(email: string): Promise<void> {
-    // Use resetPasswordForEmail which sends the actual email via Mailpit.
-    // Redirect to the auth callback which exchanges the token and redirects to password-reset.
-    const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${SUPABASE_URL.replace('54321', '5173')}/en/api/candidate/auth/callback`
-    });
-    if (error) throw new Error(`sendForgotPassword: failed: ${error.message}`);
   }
 
   /**
@@ -729,7 +1439,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @throws Error if the users cannot be listed, before anything is deleted; or an error listing every per-user step that failed, after all users have been processed.
    */
   async deleteAllTestUsers(): Promise<void> {
-    const users = await this.safeListUsers();
+    const users = await this.listAllUsers('deleteAllTestUsers');
 
     const testUsers = users.filter((u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test')));
 
@@ -738,21 +1448,13 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     const errors: Array<{ user: string; step: string; error: unknown }> = [];
 
     for (const user of testUsers) {
-      // Read the candidate ids BEFORE the grants are deleted: the grant is the only link from the user to a candidate, so afterwards the reset below would match nothing.
-      let candidateIds: Array<string> = [];
-      try {
-        candidateIds = await this.candidateIdsForUser(user.id);
-      } catch (lookupError) {
-        errors.push({ user: user.id, step: 'read-candidate-ids', error: lookupError });
-      }
-
-      if (candidateIds.length > 0) {
-        const { error: resetError } = await this.client
-          .from('candidates')
-          .update({ terms_of_use_accepted: null })
-          .in('id', candidateIds);
-        if (resetError) errors.push({ user: user.id, step: 'reset-terms-of-use', error: resetError });
-      }
+      // The invitations go before the user, for the reasons `unregisterCandidate` gives.
+      await this.removeInvitations({ emails: user.email ? [user.email] : [], claimedByUserIds: [user.id] }).then(
+        () => {},
+        (invitationsError: unknown) => {
+          errors.push({ user: user.id, step: 'delete-invitations', error: String(invitationsError) });
+        }
+      );
 
       // Delete the identity's grants. The auth-user deletion below cascades to them anyway; explicit for the same symmetry reason as `unregisterCandidate`.
       const { error: grantsError } = await this.client.from('grants').delete().eq('user_id', user.id);

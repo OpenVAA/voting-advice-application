@@ -17,7 +17,7 @@
 
 import { expect } from '@playwright/test';
 import path from 'path';
-import { createCandidateQuestionsOverviewPage } from '../../fixtures/candidate/candidateQuestionsOverviewPage.fixture';
+import { createContestantQuestionsOverviewPage } from '../../fixtures/contestant/contestantQuestionsOverviewPage.fixture';
 import { minimalVoterResultsTest as test } from '../../fixtures/voter/minimalVoterResultsPage.fixture';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
@@ -27,19 +27,19 @@ const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-disabl
 test.describe('perm-disable-allow-open (candidate side — authenticated)', () => {
   test.use({ storageState: STORAGE_STATE_PATH });
 
-  // The per-question candidate URL is keyed on the INTERNAL question id, not the seed external_id, so `page.goto('/candidate/questions/<external_id>')` resolves to the "no questions for your constituency" empty state. Navigate via the questions-overview instead (label-matched), mirroring perm-answers-locked.spec.ts.
-  test('Q1 allowOpen=true: candidate-questions-comment visible', async ({ page }) => {
-    const overview = createCandidateQuestionsOverviewPage(page);
+  // The per-question candidate URL is keyed on the INTERNAL question id, not the seed external_id, so `page.goto('/contestant/questions/<external_id>')` does not reach the question. Navigate via the questions-overview instead (label-matched), mirroring perm-answers-locked.spec.ts.
+  test('Q1 allowOpen=true: contestant-questions-comment visible', async ({ page }) => {
+    const overview = createContestantQuestionsOverviewPage(page);
     await overview.goToPage();
     await overview.goToQuestion(/\[QU-OPIN-L5-1\]/);
-    await expect(page.getByTestId(testIds.candidate.questions.commentInput)).toBeVisible();
+    await expect(page.getByTestId(testIds.contestant.questions.commentInput)).toBeVisible();
   });
 
-  test('Q2 allowOpen=false: candidate-questions-comment absent', async ({ page }) => {
-    const overview = createCandidateQuestionsOverviewPage(page);
+  test('Q2 allowOpen=false: contestant-questions-comment absent', async ({ page }) => {
+    const overview = createContestantQuestionsOverviewPage(page);
     await overview.goToPage();
     await overview.goToQuestion(/\[QU-OPIN-L5-2\]/);
-    await expect(page.getByTestId(testIds.candidate.questions.commentInput)).toHaveCount(0);
+    await expect(page.getByTestId(testIds.contestant.questions.commentInput)).toHaveCount(0);
   });
 });
 
