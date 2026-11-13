@@ -2,14 +2,27 @@
 import { configureLogger, log } from '@openvaa/app-shared';
 import { redirect } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
+import { building, dev } from '$app/environment';
+import { env as privateEnv } from '$env/dynamic/private';
+import { env as publicEnv } from '$env/dynamic/public';
+import {
+  cookieValues,
+  LOGOUT_DEADLINE_SETTLED,
+  LOGOUT_PENDING_MAX_AGE_SECONDS,
+  logoutDeadlineState,
+  removalDomainsOf
+} from '$lib/auth/logoutDeadline';
+import { COOKIE } from '$lib/cookies';
 import { getLocale } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { buildRoute, isApiRoute, isProtectedRoute, loginRedirectTargetOf, resolveAppGate, ROUTE } from '$lib/routes';
+import { analyticsConfigProblems } from '$lib/server/analytics/env';
+import { missingRequiredEnv } from '$lib/server/startup/requiredEnv';
 import { createSafeGetSession } from '$lib/supabase/safeGetSession';
 import { createSupabaseServerClient } from '$lib/supabase/server';
 import { constants } from '$lib/utils/constants';
 import { resolveLogLevel } from '$lib/utils/logLevel';
-import type { Handle, HandleServerError } from '@sveltejs/kit';
+import type { Handle, HandleServerError, ServerInit } from '@sveltejs/kit';
 
 // Configure the shared logger for the SSR module graph, once at server start and before any handler runs. `hooks.client.ts` makes the same call for the browser module graph, so both run at the same level.
 // Resolve, configure, then emit, in that order: the logger drops records while its threshold is still `'silent'`, so a problem reported before `configureLogger` would be lost.
@@ -26,6 +39,11 @@ if (logLevelProblem) {
     ...logLevelProblem,
     level: logLevel
   });
+}
+
+// Report each analytics configuration problem by variable name, now that the logger is configured. Any problem resolves the provider to `none`, so nothing is sent. The fields never carry the key's or the host's value.
+for (const problem of analyticsConfigProblems) {
+  log.error('The analytics configuration is unusable; no analytics events are sent.', { ...problem });
 }
 
 // The project id this server queries, published on the HTML root so a caller can observe it.
@@ -54,6 +72,46 @@ const supabaseHandle: Handle = async ({ event, resolve }) => {
   } finally {
     endRequest();
   }
+};
+
+/**
+ * Logout-deadline handler.
+ *
+ * Signs out a request whose logout count the browser has let run out: it carries an id of the count's opening in `COOKIE.logoutPending` and no `COOKIE.logoutDeadline`, which the browser drops by its own clock at the count's end plus a grace. The count ended while no document ran it, as in a tab closed during the count. No time is compared, so a device clock that is off neither moves the deadline nor signs out a user who is present. The sign-out is local and made with the request's client, so the cookie removal it writes reaches the response and the gate below reads no session.
+ *
+ * Once the sign-out has worked, or has found no session, the count is settled in the same response: `COOKIE.logoutPending` is set to `LOGOUT_DEADLINE_SETTLED`, with the attributes the page writes it with. This handler never acts on a request that carries that value, so every later request keeps its session, a sign-in made after this one included. The page reads the value as "discard the Contestant App's drafts" and removes it at the tab's next navigation or in the next document. A sign-out that fails otherwise is logged by the error's name alone and writes nothing: the request goes through with its session, and the next request tries again.
+ *
+ * More than one id pending at once, as a copy written for the host's own domain or a parent domain makes possible, signs nothing out: every copy of both cookies is expired, host-only, for the request's host's own domain and for each of its parent domains, and a line naming the cookie is logged.
+ *
+ * Reads those two cookies alone, from the request's `Cookie` header, which holds every copy. Runs after `supabaseHandle`, which provides `event.locals.supabase`, and before the gate.
+ */
+const logoutDeadlineHandle: Handle = async ({ event, resolve }) => {
+  const header = event.request.headers.get('cookie');
+  const state = logoutDeadlineState(
+    cookieValues(header, COOKIE.logoutPending),
+    cookieValues(header, COOKIE.logoutDeadline)
+  );
+  if (state === 'runOut') {
+    const { error } = await event.locals.supabase.auth.signOut({ scope: 'local' }).catch((e: Error) => ({ error: e }));
+    if (error && error.name !== 'AuthSessionMissingError') {
+      log.error(`[logout deadline] sign-out failed: ${error.name}`);
+    } else {
+      event.cookies.set(COOKIE.logoutPending, LOGOUT_DEADLINE_SETTLED, {
+        path: '/',
+        httpOnly: false,
+        sameSite: 'lax',
+        secure: event.url.protocol === 'https:',
+        maxAge: LOGOUT_PENDING_MAX_AGE_SECONDS
+      });
+    }
+  } else if (state === 'duplicated') {
+    log.warn(`[logout deadline] more than one ${COOKIE.logoutPending} cookie; every copy is expired`);
+    for (const name of [COOKIE.logoutPending, COOKIE.logoutDeadline]) {
+      event.cookies.delete(name, { path: '/' });
+      for (const domain of removalDomainsOf(event.url.hostname)) event.cookies.delete(name, { path: '/', domain });
+    }
+  }
+  return resolve(event);
 };
 
 /**
@@ -96,7 +154,7 @@ const appGateHandle: Handle = async ({ event, resolve }) => {
 
   const { session } = await event.locals.safeGetSession();
 
-  if (session && routeId === ROUTE[gate.loginRoute]) {
+  if (session && gate.entryRoutes.some((key) => ROUTE[key] === routeId)) {
     const { status, route: target, params } = gate.whenAuthenticatedOnLogin;
     redirect(status, buildRoute({ route: target, locale, ...params({ redirectTo: '' }) }));
   }
@@ -109,9 +167,25 @@ const appGateHandle: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle: Handle = sequence(supabaseHandle, paraglideHandle, appGateHandle);
+export const handle: Handle = sequence(supabaseHandle, logoutDeadlineHandle, paraglideHandle, appGateHandle);
 
-export const handleError: HandleServerError = async ({ error }) => {
+/**
+ * The error the error page renders for an unexpected error or a page that does not exist.
+ * Its `message` is the response's status, which the error page shows as its title, so a missing page is titled 404 and a server error 500. The error itself is logged on the server and never reaches the page.
+ */
+export const handleError: HandleServerError = async ({ error, status }) => {
   console.error('Server error:', error);
-  return { message: '500' };
+  return { message: String(status) };
+};
+
+/**
+ * Start-up check of a production server.
+ * Runs once, before the server answers its first request and after both dynamic environments are populated. It does nothing in development and during the build.
+ * Refuses to start when a required variable is unset: it throws one error that names every such variable and prints no value.
+ */
+export const init: ServerInit = () => {
+  if (dev || building) return;
+
+  const missing = missingRequiredEnv({ ...privateEnv, ...publicEnv });
+  if (missing.length > 0) throw new Error(`Required environment variables are not set: ${missing.join(', ')}`);
 };

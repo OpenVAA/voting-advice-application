@@ -47,9 +47,14 @@ FROM frontend AS production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
+# The commit the image is built from. The build takes it as its version name; left empty, the name is time-based.
+ARG BUILD_SHA=""
+ENV BUILD_SHA=${BUILD_SHA}
+
 WORKDIR /opt
 
 RUN yarn workspace @openvaa/frontend build
 
 EXPOSE 3000
-CMD node ./apps/frontend/build/index.js
+# Exec form, so that Node is the container's first process and receives its signals.
+CMD ["node", "./apps/frontend/build/index.js"]
