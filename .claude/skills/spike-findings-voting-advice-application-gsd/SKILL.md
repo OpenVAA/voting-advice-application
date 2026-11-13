@@ -1,6 +1,6 @@
 ---
 name: spike-findings-voting-advice-application-gsd
-description: Implementation blueprint from spike experiments. Requirements, proven patterns, and verified knowledge for three domains — (1) migrating OpenVAA's legacy svelte/store bridges to fully idiomatic Svelte 5 runes (spikes 001–012), (2) fixing the perceived "redraw on Q→Q" symptom via View Transitions + layout-as-state restructure + a11y focus management (spikes 013–016), and (3) the voter results redraw — the tracked-URL load rerun, document View Transitions painting above an open modal, the layout-shaped results route tree and the per-app drawer host (spikes 031–035, landed in production by Phase 165.1). Auto-loaded during implementation work.
+description: Implementation blueprint from spike experiments. Requirements, proven patterns, and verified knowledge for four domains — (1) migrating OpenVAA's legacy svelte/store bridges to fully idiomatic Svelte 5 runes (spikes 001–012), (2) fixing the perceived "redraw on Q→Q" symptom via View Transitions + layout-as-state restructure + a11y focus management (spikes 013–016), (3) the voter results redraw — the tracked-URL load rerun, document View Transitions painting above an open modal, the layout-shaped results route tree and the per-app drawer host (spikes 031–035, landed in production by Phase 165.1), and (4) typechecking the Supabase Edge Functions with Deno without Deno tooling reaching the vanilla TypeScript, and one `functions/_shared/` for the modules the functions share (spikes 037–040). Auto-loaded during implementation work.
 ---
 
 <context>
@@ -90,7 +90,7 @@ provideEntityData → provideNominationData` each triggers downstream
 - **Migration order respects dependency direction** (Spike 010). Tier 1 leaf
   contexts (appSettings, dataRoot, answer stores, popupStore, settingsOverlay)
   ship first; Tier 2 secondary bridges (survey, tracking, voterContext,
-  candidateContext, getRoute) consume Tier 1 and ship next; consumer codemod
+  contestantContext, getRoute) consume Tier 1 and ship next; consumer codemod
   runs in Wave 3; cleanup deletes in Wave 4.
 - **`getRoute` over `$app/state.page` uses fine-grained per-field reads**
   (Spike 012). Pure `$derived.by` reading `page.params` / `page.route` /
@@ -142,6 +142,13 @@ provideEntityData → provideNominationData` each triggers downstream
   accumulated in the layout's `$state` survive Q→Q nav for free. UX
   benefit: accidental nav doesn't wipe progress (additive to production
   answer-store persistence from Spike 003).
+
+### `deno-edge-typecheck` (Spikes 037–040):
+
+- Deno must not cause the vanilla TS code in the repo to be flagged, in the
+  editor or on the CLI. An earlier Deno installation did exactly that.
+- Spike work happens on branch `spike/deno-edge-typecheck` in its own worktree
+  off `feat/entity-signup-multi-grant`.
   </requirements>
 
 <findings_index>
@@ -154,11 +161,12 @@ provideEntityData → provideNominationData` each triggers downstream
 | Persistent Rune Stores        | references/persistent-rune-stores.md          | One `runeLocalStorage<T>(key, default)` helper retires the three-layer `$state → localStorageWritable → fromStore` bridge in both voter and candidate answer stores. After migration `localStorageWritable` + `persistedState.svelte.ts` become deletable. Add `runeSessionStorage` sibling in Wave 2 for `voterContext`'s `firstQuestionId`.                                                                                                                                                                                                                                                                                                                                  |
 | Matching Integration          | references/matching-integration.md            | `matchStore.svelte.ts` and `nominationAndQuestionStore.svelte.ts` are already rune-native — zero migration work. The runtime proof: a single answer-button click recomputes all 80 matches and re-renders the top-5 table reactively.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Layout Overlay Registry       | references/layout-overlay-registry.md         | Token-keyed registry + declarative `use*()` consumer API replaces `StackedState` (`Readable<T>` shim) + `getLayoutContext(onDestroy)` index plumbing. 28 push callsites + 14 onDestroy plumbing sites become trivially editable; robust against out-of-order unmount.                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Context Orchestration         | references/context-orchestration.md           | Rune-native `voterContext` / `candidateContext` factory that composes upstream contexts via `getXContext()` and exposes 18+/30+ reactive accessors as getters. **Destructure trap reproduces identically** in the rune-native version (Spike 007) — CLAUDE.md rule applies unchanged. **HMR DX is non-degraded** (Spike 011) but masks the destructure trap during remount — run the codemod audit pass.                                                                                                                                                                                                                                                                       |
+| Context Orchestration         | references/context-orchestration.md           | Rune-native `voterContext` / `contestantContext` factory that composes upstream contexts via `getXContext()` and exposes 18+/30+ reactive accessors as getters. **Destructure trap reproduces identically** in the rune-native version (Spike 007) — CLAUDE.md rule applies unchanged. **HMR DX is non-degraded** (Spike 011) but masks the destructure trap during remount — run the codemod audit pass.                                                                                                                                                                                                                                                                       |
 | Consumer Migration Codemod    | references/consumer-migration-codemod.md      | Pure-Node, dependency-free codemod rewrites 146 `$store.X` template sites across 45 files in ~1 hour. Two passes: rewrite + destructure-trap audit. **Surfaces a real production bug** in AdminNav (destructure of `isAuthenticated`) and a related spread-of-context anti-pattern in `adminContext.svelte.ts:97`. Idempotent and dry-run by default.                                                                                                                                                                                                                                                                                                                          |
 | Migration Inventory & Order   | references/migration-inventory-and-order.md   | Complete Tier 1/2/3 inventory of 18 files in `lib/contexts/**` importing from `svelte/store`. 4-wave migration order respects dependencies — Wave 1 leaf contexts in parallel, Wave 2 secondary bridges, Wave 3 codemod-driven consumer migration, Wave 4 cleanup deletes. Generalized popupStore pattern shows queue-shaped stores follow [[reactive-contexts]] Pattern 1.                                                                                                                                                                                                                                                                                                    |
 | Page Navigation & Transitions | references/page-navigation-and-transitions.md | The user-perceived "redraw on Q→Q" is a render-cycle problem, not a remount-cycle problem — SvelteKit already reuses `+page.svelte` instances across param-only URL changes (production: 9/25 ≈ 36% of tracked elements survive a hop). Load-bearing fix is **View Transitions** via `onNavigate(navigation => Promise(startViewTransition))` — ~1 day to wire, additive on existing structure. Optional Wave B: adopt unified-layout-with-empty-leaf shape for `/questions` (matches existing results pattern; cleaner reads). WCAG 2.1 AA passes with `afterNavigate(focus({preventScroll: true}))` + `aria-live="polite"` route announcer + reduced-motion belt-and-braces. |
 | Results Redraw                | references/results-redraw.md                  | The voter results section was a genuine full-subtree REMOUNT, not content-node regeneration: one tracked `url.pathname` read in the `(located)` load defeated its own `untrack`, so every tab / drawer navigation reran the load, re-streamed the data and blanked the subtree via the `ready` flag. Two invariants outlive the code — **a document View Transition must never run with names while a modal is open** (named groups paint ABOVE a top-layer `<dialog>`; the strip is a class on `<html>` whose `!important` is load-bearing because the names are inline styles) and **the `(located)` load must not read the URL tracked**. Plus: overlay navigations get NO document VT at all; one `DrawerHost` per app, mounted below that app's contexts, lets a single `<dialog>` serve two openers and swap content without reopening; a hosted payload must render from a last-defined value because the host outlives its opener; "did not remount" is asserted by DOM node identity, not a mount counter. |
+| Deno Edge Function Typecheck | references/deno-edge-typecheck.md | One import-map-free `functions/deno.json` + `deno check .` run **from that directory** typechecks the Edge Functions (baseline: 5 real type errors, cleared by a 6-line patch). `deno.enablePaths` — never `deno.enable`, never a root `deno.json` — keeps Deno off the vanilla TS (0/7 files flagged vs 6/7). A pinned `deno@2.9.6` devDependency joins the existing turbo `typecheck` with no pipeline change, and `functions/_shared/` replaces the byte-identical copies. Measured on a four-function tree: the reference's section for `feat/entity-signup-multi-grant` gives this tree's counts and the steps that are void here. |
 
 ## Source Files
 
@@ -182,6 +190,18 @@ component harnesses, the rune-based context and store implementations, and the
 codemod script. **It exists nowhere else.** `.planning/spikes/` holds write-ups
 only, so these are not duplicates of anything and were kept for that reason.
 The reference files below cite them by path; those citations still resolve.
+
+**Spikes 037–040 add 13 files** under `sources/037-deno-check-functions/`,
+`sources/038-editor-blast-radius/`, `sources/039-shared-module/` and
+`sources/040-toolchain-wiring/` (scripts, two `deno.json`, three patches and
+captured output), bringing `sources/` to 72 files in 20 directories. They
+were brought from branch `spike/deno-edge-typecheck` at `796e610a7` byte for
+byte. Their write-ups are on that branch only
+(`git show 796e610a7:.planning/spikes/<spike-id>/README.md`); this branch's
+`.planning/spikes/` does not hold them, so the scripts do not run from where
+their Origin section says. `references/deno-edge-typecheck.md` § On
+`feat/entity-signup-multi-grant` says which steps are void on this tree and
+where the phase-180 copies of the scripts are.
 </findings_index>
 
 <production_landing_map>
@@ -195,13 +215,13 @@ The reference files below cite them by path; those citations still resolve.
 | `apps/frontend/src/lib/contexts/voter/answerStore.svelte.ts`                                      | `localStorageWritable` + `fromStore` three-layer bridge                                                                                                                                            | 003        | [[persistent-rune-stores]]                                      |
 | `apps/frontend/src/lib/contexts/voter/matchStore.svelte.ts`                                       | (none — already rune-native)                                                                                                                                                                       | 004        | [[matching-integration]]                                        |
 | `apps/frontend/src/lib/contexts/voter/nominationAndQuestionStore.svelte.ts`                       | (none — already rune-native)                                                                                                                                                                       | 004        | [[matching-integration]]                                        |
-| `apps/frontend/src/lib/contexts/candidate/candidateUserDataStore.svelte.ts`                       | 7-line edited-answer persistence bridge                                                                                                                                                            | 005        | [[persistent-rune-stores]]                                      |
+| `apps/frontend/src/lib/contexts/contestant/contestantUserDataState.svelte.ts`                       | 7-line edited-answer persistence bridge                                                                                                                                                            | 005        | [[persistent-rune-stores]]                                      |
 | `apps/frontend/src/lib/contexts/utils/persistedState.svelte.ts` (entire file)                     | `Writable<T>` + `toStore()` + `subscribe`-based persistence                                                                                                                                        | 003+005    | [[persistent-rune-stores]]                                      |
 | `apps/frontend/src/lib/contexts/utils/StackedState.svelte.ts` (entire file)                       | `implements Readable<T>` + `toStore()` + LIFO index revert                                                                                                                                         | 006        | [[layout-overlay-registry]]                                     |
 | `apps/frontend/src/lib/contexts/layout/layoutContext.svelte.ts` (`getLayoutContext(onDestroy)`)   | `onDestroy`-plumbed index-revert pattern at 14+ callsites                                                                                                                                          | 006        | [[layout-overlay-registry]]                                     |
 | `apps/frontend/src/lib/contexts/app/popup/popupStore.svelte.ts`                                   | `toStore(() => firstItem)` + `subscribe` getter                                                                                                                                                    | 010        | [[migration-inventory-and-order]]                               |
 | `apps/frontend/src/lib/contexts/voter/voterContext.svelte.ts`                                     | `fromStore(appSettings) + fromStore(locale) + sessionStorageWritable(firstQuestionId) + fromStore(...)` (18+ reactive accessors)                                                                   | 007        | [[context-orchestration]]                                       |
-| `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts`                             | `fromStore(appSettings) + fromStore(locale) + fromStore(getRoute)` (30+ reactive accessors)                                                                                                        | 007        | [[context-orchestration]]                                       |
+| `apps/frontend/src/lib/contexts/contestant/contestantContext.svelte.ts`                             | `fromStore(appSettings) + fromStore(locale) + fromStore(getRoute)` (30+ reactive accessors)                                                                                                        | 007        | [[context-orchestration]]                                       |
 | `apps/frontend/src/lib/contexts/app/survey.svelte.ts`                                             | `fromStore(appSettings) + fromStore(sessionId)` + `toStore(() => linkValue)`                                                                                                                       | 010        | [[migration-inventory-and-order]]                               |
 | `apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.ts`                           | `fromStore(appSettings + userPreferences + sessionId)` + `toStore(...)`                                                                                                                            | 010        | [[migration-inventory-and-order]]                               |
 | `apps/frontend/src/lib/contexts/app/getRoute.svelte.ts`                                           | `writable(routeFn)` + custom `afterNavigate` workaround (see file header)                                                                                                                          | 010, 012   | [[reactive-contexts]] Pattern 3 — VALIDATED Wave 3 unblocker    |
@@ -230,8 +250,8 @@ Svelte 5 runes are a strict superset of what these stores were doing.
 
 ```
 Wave 1 (parallel)  →  Tier 1 leaf contexts: appContext, dataContext, answerStore,
-                      candidateUserDataStore, settingsOverlay+layoutContext, popupStore
-Wave 2             →  Tier 2 secondary bridges + voterContext + candidateContext +
+                      contestantUserDataState, settingsOverlay+layoutContext, popupStore
+Wave 2             →  Tier 2 secondary bridges + voterContext + contestantContext +
                       add runeSessionStorage helper
 Wave 3             →  getRoute migration ([[reactive-contexts]] Pattern 3 — Spike 012) +
                       run consumer-migration-codemod on 179 .svelte files (146 $store.X
@@ -282,4 +302,8 @@ Wave B (1d)  →  Adopt 014b shape for /questions: hoist all rendering from
 - 032-results-redraw-hardened-fixes
 - 033-layout-shaped-results-routes
 - 034-global-drawer-host
+- 037-deno-check-functions
+- 038-editor-blast-radius
+- 039-shared-module
+- 040-toolchain-wiring
   </metadata>

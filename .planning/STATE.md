@@ -1,825 +1,50 @@
 ---
 gsd_state_version: "1.0"
-milestone: v2.15
-milestone_name: Trustworthy Foundations — Guards, Seed Data & CI Coverage
-current_phase: 169
-current_phase_name: COMPLETE 2026-10-04
-current_plan: Not started
-status: "Phases 166-169 shipped — PR #890 updated"
-stopped_at: "Phase 169 complete (2026-10-04): nodemailer 10.0.11 pin landed, DEPS-09 closed, re-verified 20/20 passed"
-last_updated: "2026-10-04T10:27:25.179Z"
-last_activity: 2026-10-04
-state_head: dd9762419cdcc933675b46da0c2ee8cdf0f60af6
+milestone: v2.16
+milestone_name: Contestant App — Registration Modes & Multi-Entity Editing
+current_phase: 180
+current_phase_name: Edge Functions — Typecheck & Shared Modules
+status: executing
+stopped_at: Phase 180 complete (verification passed, UAT 3 passed and 1 deferred, security threats_open 0); 177.1, 178 and 179 remain open
+last_updated: "2026-11-13T17:00:00.000Z"
+last_activity: 2026-11-13
+last_activity_desc: Phase 180 complete
+state_head: d767dd895afc53c62b004cd8b368757bc76296b3
 progress:
-  total_phases: 35
-  completed_phases: 31
-  total_plans: 347
-  completed_plans: 347
-  percent: 89
+  total_phases: 15
+  completed_phases: 11
+  total_plans: 248
+  completed_plans: 248
+  percent: 67
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-20 — v2.15 complete)
+See: .planning/PROJECT.md (updated 2026-10-04 — milestone v2.16 started)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
-**Current focus:** Phase 169 — Dependency Bump to Latest Safe Versions
+**Current focus:** Phase 180 — Edge Functions — Typecheck & Shared Modules
 
 ## Current Position
 
-Milestone: v2.15 (Phases 137-166 + 142.1 + 157.1 + 157.2 + 162.1 + 165.1, 32 phases; 148 absorbed into 147) — **31/32 phases complete (97%), 315/315 plans**
-_(**Re-derived 2026-09-29 from disk** when the planning records of PR #888 and PR #889 were merged: `ls .planning/phases | grep -v '^999' | wc -l` → **32**; `ls .planning/phases/*/[0-9]*-PLAN.md | grep -v '/999' | wc -l` → **315** (270 before either branch + 36 for Phase 165 + 9 for Phase 165.1); a per-directory PLAN-vs-SUMMARY comparison finds every plan summarised and only Phase 166 with no plan, so 31 phases are complete. The SUMMARY file count is 317: `142-W1-SUMMARY.md` (a wave summary) and `161-02.1-SUMMARY.md` (no plan file) are not plans. `percent` is completed/total phases, 31/32 rounded. The Phases 167-171 placeholders PR #888 added were dropped as superseded by Phase 165.)_
-Phase: 169 (Dependency Bump to Latest Safe Versions) — COMPLETE 2026-10-04 (13/13 plans; nodemailer 10.0.11 pin landed post-phase; verification passed 20/20)
-Completed: 165 (Review-Stack Comment Remediation) — 2026-09-29 on `ship/v2.15-13-review-fixes` (PR #889); 165.1 (Results Navigation Redraw) — 2026-09-24 on `feat/165-results-navigation-redraw` (PR #888), numbered 165 on that branch and renumbered to 165.1 when rebased onto #889
-Previous phase: 161 — Project Scoping (ready for `/gsd-verify-work 161`, fifth pass)
-Current Plan: 13 (complete)
-Total Plans in Phase: 13
+Milestone: v2.16 Contestant App — Registration Modes & Multi-Entity Editing (Phases 170-180 plus the inserted 174.1 and 177.1, 13 phases) — 6/13 phases complete, 47/47 requirements mapped
+Phase: 180 (Edge Functions — Typecheck & Shared Modules) — COMPLETE
+Plan: 3 of 3
+Status: Phase 180 complete; 177.1, 178 and 179 remain open
+Last activity: 2026-11-13 — Phase 180 complete (verification passed, UAT complete, SECURITY.md threats_open 0)
 
-162 (2026-09-17): **One grants matrix, one authority predicate, and a standing guard that fails when
-they collapse.** `public.grants` keyed `user_id x scope x target_type x target_id x role`; a **23-member**
-`grant_permission` enum, never widened; **two** role levels (`admin`, `editor`); one predicate
-`user_can(grant_scope_type, uuid, grant_permission)`. The legacy estate is **gone, verified against the
-applied database**: no `user_roles` table, no `has_role`, no `can_access_project`, and `can_edit_project`
-was never built. Policies **102** (87 `public` + 15 `storage`). pgTAP **1077 declared `plan()` assertions
-across 28 files** (1086 by the runner's count, which includes `00-helpers`' nine smoke tests — both
-figures recorded with the instrument named). The full E2E suite closed at **155 passed / 0 failed /
-0 flaky / 0 skipped / 0 did-not-run**, and did so on **every one of the 19 plans**, not only at the end.
+Note on the tool: `verification.status` reads the reports of 170, 171 and 172 as `stale`, because Phases 173 and 174 have since edited files those reports cover (`route.ts`, `config.toml`, `package.json`, `playwright.config.ts`, the protected layout's server load and others). Each report was made on its own phase's head and its digest is left as written; the phases are marked complete in ROADMAP.md by hand.
 
-**Five operator rulings shaped it**, all recorded in `162-CONTEXT.md`: the 50 blocking checkpoints
-answered in one pass and folded into the plans (D-29); two matrix gaps CLOSED by disposition rather than
-recorded, without widening the enum (D-30); `feedback.project_id` made nullable `ON DELETE SET NULL`
-(D-31); the public-visibility composition flattened then REVERTED to eight direct assemblies after
-measurement (D-35 superseded by D-36); and the guard that makes that duplication safe, built by 162-17
-with **both** perturbations observed red — including the one that previously left 923 assertions green
-while doubling what a grant-less caller could see.
+C6 (a) is done (2026-10-07, commits `a3dd90644`..`514165f21`): `tests/scripts/e2e-run.sh` runs a 2-second wall-clock heartbeat and ends a run as void — exit status 8, marker `VOID-host-suspend.txt` in the run directory — when a beat is more than 3000 ms late. `determinism-batch.sh` (exit 6), `e2e-evidence.mjs`, `174-verdict.mjs e2e` (exit 3), `174-e2e.sh` and `174-bankauth.sh` (exit 3) report a void run as void. Closing run through the changed wrapper: 200 passed, 0 failed, 0 flaky, 0 did not run, 104 projects, no marker. Not observed: a real system sleep (the control held the loop with SIGSTOP), and anything on a GitHub runner. The drivers of Phases 165 and 169–173 do not name status 8. No SUMMARY.md exists under `.planning/quick/261007-c6-e2e-wrapper-suspend-heartbeat/`; the record is the closed todo's Resolution section and `lateness-measurement.txt` there.
 
-**Open and quantified, not hidden:** authenticated entity-read cost **4.47x** (the converted authority
-mechanism plus window 267's reach, not the composition — no arrangement of the composition removes it);
-anon storage-bucket read **6.4x**; a closed project returns the anon caller **zero `app_settings` rows**,
-which the voter app must render and which nothing in the test tree can catch, every seeded project being
-open. `PRESHIP-02` remains **blocking-ship with an unticked checkbox** — that is the verifier's call and
-then the operator's.
-
-Plans: 161-01 … 161-09 complete (wave 7 of 7 done); gap closure 161-10 through 161-19 complete — **19 of 19 summaries on disk, ALL PLANS EXECUTED 2026-09-07** (ready for `/gsd-verify-work 161`, fifth pass).
-
-161-16 (2026-09-07): **The guard's reach stopped being a sentence.** All three of
-`161-VERIFICATION.md`'s `missing:` items are now answered on disk. The nineteen optional-punctuator
-cells are DERIVED from each matcher declaration's own text, reverted one at a time and required to
-break the self-test (18 red, 1 inverted exemption whose mutant must stay green) — reproducing
-161-15's by-hand sweep 19 for 19 with no disagreement. Thirty-four (link x punctuator) cells are
-generated from each matcher's committed canonical call shape and each must carry a written
-disposition, so a position the language has that no matcher admits is a named failure. A bridge
-assertion ties the two enumerations together, going red for a token with no link and for a link with
-no token. The module docblock's two universal-reach sentences are gone; four stated residuals stand
-in their place, each pinned to the assertion that measures it and counted in both directions. Both
-matcher-local `ONE RESIDUAL` paragraphs now cross-reference that list (WR-06). The gate spec's slicer
-was repaired first (line-anchored marker, window-bounded delimiter, throws by name) and its two
-instrument assertions that could not fail were replaced (WR-04, WR-05). Guard numbers byte-identical:
-self-test 27 / 0 / 6 / 0 against sites 27 / 8 / 6 / 2, live 5 / 2 / 7 / 550 / 1 / 0. Gate spec 21 → 87
-tests. `yarn test:unit` and `yarn lint:check` both exit 0. Four follow-ups filed under
-`.planning/todos/pending/`. PRESHIP-01 deliberately left at `Gaps Found`.
-
-161-14 (2026-09-06): **The guard's last-named blind spot is closed: every matcher reads both
-member-access operators.** `this.supabase?.from('elections')` and `locals.supabase?.rpc(…)` were
-invisible to all six matcher families and therefore UNCOUNTED, so the per-family non-vacuity floor
-could not see the family go silent either. All six declarations now carry an optional operator at
-every position they contain; `CLIENT_BINDING_RE` was repaired by NARROWING — an alternation excluding
-`?.` specifically, because the naive bare-`?` character class also excludes `??` and silently stops
-reporting a genuine nullish-coalesced client alias (measured: the alias/destructure count pair reads
-3/1 unrepaired, 1/1 under the naive form, 2/1 only when correct). Twelve new fixture shapes across the
-four fixture files, four raised exact site counts (violation 9→15, clean 4→6, outside violation 2→4,
-outside clean 1→2), six exact per-shape message counts, and a second derivation of the whole closure
-from OUTSIDE the guard in the gate spec (14→20 tests). Live corpus unchanged — 5 raw client calls, 2
-invocations, 7 client-touching sites, 550 outside sources, 1 outside site, 0 violations — so
-`lint:check` stays green for the same reason it was green before. `yarn test:unit` 0, `yarn lint:check`
-0, prettier 0. No E2E run: nothing under `apps/` was touched, so the phase's closing full-suite run at
-`tests/e2e-runs/161-13-close` still stands. `161-VERIFICATION.md`'s sole remaining criterion-2
-`missing:` item is answered on disk; PRESHIP-01 was deliberately LEFT at `Gaps Found` rather than
-flipped to `Complete` — that is the re-verifier's verdict to reach, not this plan's to pre-empt.
-
-161-13 (2026-09-05): **The guard's reach is no longer bounded by the adapter directory, and the phase's
-closing full-suite E2E run is green.** Check 9 walks the 550 frontend sources outside the adapter
-directory and reports a table or rpc reached there on a Supabase client, naming the file, the line and
-the boundary; the sentence the guard's reach depends on is now written into its own docblock and enforced
-rather than left as a comment. The invocation check runs over that same corpus, so the third live
-invocation — `identity-callback` through `locals.supabase` in `routes/api/candidate/preregister/+server.ts`
-— is examined and held to its written deployment-scoped disposition instead of being invisible. The
-widened corpus fails closed on an empty or throwing walk, reproduced on purpose by a second mutation
-probe: a walker that has stopped walking is the failure a 550-file corpus actually has, because a shorter
-list still looks like a list. One Rule-2 fix: comment spans are now read per file through the shared
-classifier's extension map, so prose inside an HTML comment in a `.svelte` source is not taken for code.
-Closing run `tests/e2e-runs/161-13-close`: exit 0, 155 expected / 0 unexpected / 0 flaky / 0 skipped,
-preflight 1/0, `db_reset=true` (DR-41 — migration 00008 changed a granted signature), at HEAD `9215476ea`.
-Both of `161-VERIFICATION.md`'s recorded gaps are discharged: CR-01 by 161-10 (with 161-11 closing the
-`send-email` surface found alongside it), CR-02 by 161-12 (checks 7 and 8) and 161-13 (the boundary).
-The re-verification should AMEND the stale `missing:` entries rather than append beside them.
-One residual stays OPEN for Phase 162: `send-email` accepts any admin role without comparing `scope_id`
-to the project.
-
-161-12 (2026-09-05): **CR-02's two remaining blind spots are closed, and closing them exposed two defects
-in the guard itself.** Check 7 holds every `.functions.invoke(` in a guarded source to a written
-disposition — `PROJECT_SCOPED_EDGE_FUNCTIONS` names all three functions this repository invokes, and both
-live spellings of the project term are accepted because both are live (`invite-candidate` camelCase,
-`send-email` snake_case as 161-11 left it). Anchored on the function name rather than the receiver, so the
-third invocation (`locals.supabase.…` in a route) is not a new blind spot when 161-13 widens the corpus.
-Check 8 forbids `.schema(…).from(…)` outright — measured first: a repository-wide search returns nothing,
-so the prohibition costs no live site. The RED commit demonstrated the blind spot rather than asserting
-it: adding the schema-hop fixture member left the fixture count unchanged at 8.
-Two Rule-1 fixes, both defects the new checks exposed rather than caused. `readCallArguments` read an
-apostrophe inside a comment as a string delimiter and over-read the live `send-email` call from 562
-characters to 2019 — a disposition checked against that text is checked against the wrong text. And
-pooling the new families into the non-vacuity floor's single total let two live invocations hold the floor
-up for a dead `ACCESS_RE`; the committed vacuity reproduction caught it, and the floor now reads the
-dot-access family, which is strictly stronger than the pooled one. No assertion was weakened to go green.
-Fixture counts 6→9 and 1→4, each re-derived by running the guard and reading the number it printed.
-Gates, every exit code read directly and never through a pipe: guard + `--self-test` **exit 0** with
-`0 violation(s)` over the real corpus, dev-seed **666 exit 0**, `lint:check` **exit 0** (23/23 turbo
-tasks, 0 `[ERROR]` lines across all fifteen assert gates), `test:unit` **exit 0** (25/25).
-**Still open, unchanged:** `send-email` accepts any admin role without comparing `scope_id` to the
-project (deferred to Phase 162); no disposition written here claims otherwise.
-
-161-09 (2026-09-05): **criteria 2 and 4 close on evidence, and one cross-project defect is fixed.**
-Criterion 4's weaker half was a documentation edit, so the MECHANISM landed first: the served application
-publishes its resolved project id on the HTML root (`data-project-id`, substituted on the existing
-`%lang%` transform) and `tests/global-setup.ts` aborts before any spec body when it disagrees with
-`resolveE2eProjectId()`. Proven in BOTH directions against a real mis-scoped server on :5273 — once with
-the attribute absent, once naming both ids (`…0001` observed, `…00e2` expected) — and the wrong-checkout
-clause still fires first, demonstrated against a genuinely foreign checkout holding :5173. Only then were
-`CLAUDE.md`, `tests/README.md` and `tests/IDURA-TEST-RUNBOOK.md` corrected (all three IDURA steps, not
-just E-4), held by a second class check in `e2eDocPreconditionGate.test.ts` proven red twice: against the
-pre-edit text (9 unvouched co-occurrences) and against an injected reintroduction. That gate discriminates
-rather than banning the string — it exempts a window carrying `PUBLIC_PROJECT_ID=<E2E_PROJECT_ID>`, built
-from the harness's own constant.
-Criterion 2: the scoping guard now fails closed on an empty call-site corpus (the review's reproduction
-re-run — breaking `ACCESS_RE` yields **exit 1** where it yielded **0**) and runs its fixture self-test
-inside `main()`, so the spelling wired into `lint:check` is the self-proving one and `package.json` did
-not change. Check 6 forbids the three demonstrated evasions outright (aliased client, destructured `from`,
-computed member access), each observed uncaught before and caught after, each pinned by a committed
-expectation. Migration **00007** qualifies `get_nominations`' four entity joins with `p_project_id`;
-pgTAP section 8 seeds the illegal cross-project nomination and asserts over ENTITY ids — tests 14, 18 and
-19 observed red first, `supabase test db` **397/397 PASS** after (was 393). `00005`/`00006` byte-unchanged;
-migration and `schema/503` bodies byte-identical; parity manifest re-baselined and green.
-Closing full-suite run `tests/e2e-runs/161-09-close`: **155/155, exit 0, 0 unexpected, 0 flaky, 0 skipped,
-preflight 1/0, `db_reset=false`, no `db-reset.log`**, at `b9cddbcfd` = HEAD — re-exercising criterion 3 on
-the database the plan's own pgTAP transaction and applied migration had been writing to.
-**Carried to Phase 162:** all 13 `anon_select_*` policies in `schema/302-rls.sql` remain project-unscoped
-(re-measured: 13 policies, 0 `project_id` references), so isolation is enforced in application queries and
-one RPC, not at the database security boundary; plus the missing composite FK / `validate_nomination`
-project check that would stop the illegal row being written at all.
-
-161-08 (2026-09-05): **the isolation claim is proven, not asserted.**
-`packages/dev-seed/tests/projectScopedContaminationIsolation.test.ts` writes 5 candidate rows into the
-DEFAULT project under a reserved prefix and asserts three counts in one run: **0** through an
-E2E-project-scoped read, **5** through the same read with no project filter (the negative control), **5**
-through a default-project-scoped read. The control was first committed MIS-SCOPED and observed to fail
-(`dd4b0b841`), then unscoped (`811f40d0c`) — a control never seen to fail is not a control. Then
-`yarn test:unit` was run to create the contamination for real (its newest `seed_` row's `created_at`
-moved inside that step's window, so the residue is fresh, not stale), leaving **751 rows across 9
-tables** in the default project and **0** in the E2E project; the full gate suite then ran
-**155/155 green, exit 0, preflight-ok 1 / fail 0, `db_reset=false`, no `db-reset.log`**
-(`tests/e2e-runs/161-contamination-run3`), and the 751 rows were byte-identical afterwards with an
-unmoved `created_at`. A second instrument agrees independently: the freshness probe's 25 warnings all
-name concurrently-seeding `e2e-perm-*` siblings and **not one** mentions `seed_` — the probe reads
-"scoped to this project only" and cannot see the residue at all. Phase 144 lost a full suite to exactly
-these rows and recovered only by re-inserting a `db:reset`; that reset is now demonstrably unnecessary.
-The database was NOT reset at any point and was deliberately left as run three left it.
-
-161-06 (2026-09-04): **criterion 4 delivered and gated.** The database reset is gone as a stated E2E
-precondition from `CLAUDE.md`, `tests/README.md` and `tests/IDURA-TEST-RUNBOOK.md`; `CLAUDE.md` now
-documents `PUBLIC_PROJECT_ID` and its no-fallback throw, and `tests/README.md` documents the project the
-suite owns, the teardown posture and `--no-db-reset`. The retirement is held by
-`packages/dev-seed/tests/e2eDocPreconditionGate.test.ts` — a class check (framing near the command,
-plus an exact 8-entry allowlist for the surviving command-map entries and the mid-run-wipe warning),
-proven red against the pre-edit tree AND against an injected precondition line before being believed.
-The plan's own `awk` acceptance instrument was measured unsatisfiable (its range runs four subsections
-past the block it names) and corrected. Record: `161-06-SUMMARY.md`.
-161-02.1 (2026-09-04): operator-approved follow-up to 161-02, executed with no PLAN.md. `get_questions` now takes a
-required `p_project_id` (migration `00006`), the adapter guard's `PROJECT_SCOPED_RPCS` carries **no `UNSCOPED` entry at
-all**, and `07-rpc-security` test 14 — the one 161-03 measured as `have: 4, want: 381` — is scoped to its own fixture
-data so it survives the seeded-database, no-`db:reset` run that **plan 161-07** has to prove twice in a row. Both changes
-probed in both directions against the operator's live 377-nomination database, with byte-identical `md5` restores of both
-RPC definitions. `supabase test db` 393 PASS (386 before). Nothing pushed. Record: `161-02.1-SUMMARY.md`.
-
-161-04 (2026-09-04): **both remaining writers converted; criterion 2's adapter half is complete.**
-`supabaseDataWriter.ts` and `supabaseAdminWriter.ts` issue **zero** bare `this.supabase.from(` calls, all
-**four** project-id derivation round-trips are deleted (the plan says six — measured four, through three
-code blocks) together with the `#resolveProjectId` helper, and both candidate Storage paths are built
-from the configured project id. `get_candidate_user_data` stays identity-scoped but its returned
-`project_id` is now cross-checked and a mismatch throws **without naming either uuid**. The guard's
-`DEFERRED_SOURCES` is **empty**, `GUARDED_SOURCES` names **all five** adapter sources, and two independent
-assertions hold it there — each flipped red on its own before being accepted. Guard non-vacuity proven:
-5 sources on disk, 5 raw client calls examined, 0 violations; red/green flip recorded on
-`supabaseAdminWriter.ts:76`. Gates, each exit code read directly and never through a pipe: frontend unit
-**1630 exit 0**, dev-seed **634 exit 0**, guard + `--self-test` **exit 0**, `typecheck` **0 errors**,
-`lint:check` **exit 0**, `build` **exit 0**. The run was interrupted by a harness watchdog during the
-`lint:check` gate and resumed at task 3; nothing was lost. **Downstream note:** `scopedFrom(...).insert()`
-OWNS `project_id` — its parameter type omits the column, so later plans must read
-`insert({ project_id: ..., ... })` in plan text as `insert({ ... })`. Nothing pushed.
-Record: `161-04-SUMMARY.md`.
-
-161-05 (2026-09-04): **the E2E suite now owns project `00000000-0000-0000-0000-0000000000e2`, and the
-reset is no longer a precondition of a run.** `ensureProject()` on the dev-seed admin client does the
-`seed.sql` bootstrap as two ordered conflict-ignoring upserts — `projects` then the REQUIRED
-`app_settings` row — creates no `accounts` row and has **no delete path**; `globalSetup` calls it
-immediately after `assertServedApp`, which stays first. One constructor override on the `tests/`
-subclass re-points every argument-less client in `tests/`, and `setupFromTemplate` threads the same id
-into `runPipeline` and the `Writer` so seeded rows land where the client reads. **`yarn db:seed` is
-untouched** — `ctx.ts` and the dev-seed base constructor are byte-identical, `resolveE2eProjectId` has
-no call site in `packages/` outside its own definition and barrel export, and the `.env.example` line
-stays commented out; measured, the default project's **328** dev-seed candidates survived two full E2E
-runs. `tests/scripts/e2e-run.sh --no-db-reset` skips the reset but still runs `yarn db:start` (the
-block it guards was ALSO the start), and the dev-server spawn now carries `PUBLIC_PROJECT_ID`.
-`BASELINE_SEED_PREFIX` and both exclusion clauses deleted; the probe asks about unowned rows inside the
-run's own project, warn-by-default intact. **Two consecutive `--no-db-reset` runs, no reset between:
-both exit 0, 18/18, preflight 0 failures / 1 success, ZERO probe warnings** — an early positive on the
-promotion todo's evidence prerequisite, at single-project scope. Gates, each exit code read directly:
-dev-seed **649 exit 0** (`ensureProject.test.ts` 15), `typecheck:tests` **exit 0**,
-`TURBO_FORCE=true yarn lint:check` **exit 0**. **DR-4 IS STALE AND IS CORRECTED HERE:** the
-`app_settings` `ON DELETE CASCADE` gap is **CLOSED in both trees** — **13 of 13** `project_id` foreign
-keys cascade, at `106-app-settings.sql:7` and `00001_initial_schema.sql:934`, not the plan's 12-of-13
-at `:8`/`:916` — so the cascade todo was **deliberately NOT filed**. The plan's own task-3 verify regex
-could not match the tree's `public.projects (id)` spacing and would have forced a false filing; the
-instrument was corrected and flipped in both directions. Only the probe-promotion todo was filed.
-Nothing pushed. Record: `161-05-SUMMARY.md`.
-
-Next plan in 161: **161-06**. Note for `161-07`: its two full-suite runs are
-`tests/scripts/e2e-run.sh --run-dir <dir> --no-db-reset`; the verdict triple is
-`preflight-failures` / `preflight-successes` / `exit`, and `env-posture.txt` records `db_reset` and
-`e2e_project_id`. Do NOT expect `2026-08-28-app-settings-fk-missing-on-delete-cascade.md` to exist.
-
-Next plan: none in 163. **Two operator items are owed before the phase is signed off:** (1) confirm 163-09 Task 3, a `gate="blocking-human"` checkpoint that was performed in full but not confirmed — five containment assertions (four met, one reported NOT met), ten gate exit codes, five E2E counts, all recorded in `163-09-SUMMARY.md` and `163-CI-EVIDENCE.md` §4; (2) rule on whether `ci-evidence/163-gates` is deleted or kept as Phase 164's evidence channel (WINDOWS 259).
-
-163-09 STATUS: **PHASE 163 IS CLOSED and its evidence document closes as evidence.** `163-CI-EVIDENCE.md`
-carries 12 filled ledger rows against the `≥ 9` its own §3 declared before any row existed, 12 distinct
-run URLs equal to the row count, **0** rows without a URL, and all twelve job conclusions **re-read from
-the live GitHub API** at close — 12 of 12 matching. The single most misreadable thing about it is now
-written down: **every one of the twelve workflow RUNS concluded `failure`**, because `e2e-tests` and
-`e2e-visual` fail on every run of this branch, so the Conclusion column is the **job's** conclusion and a
-run-level reading would report all four criteria as failed including their green halves. All four
-transient hazards are re-asserted absent, and the strongest assertion is against a live database rather
-than a file listing: the criterion-1 plant was a `gsd_lint_plant_163 TEXT;` **declaration**, not a file,
-so after `yarn db:reset` **150** routine definitions were examined, the plant appears in **0**, and the
-positive control `p_value` — the variable directly above where the plant went, in the two functions it
-went into — appears in **2**. The cardinal LOCAL E2E gate is **GREEN**: 155 passed / 0 failed / 0 flaky /
-0 skipped / 0 did-not-run, exit 0, 11.8m, 155 distinct `[n/155]` indices with `[155/155]` highest,
-`E2E PREFLIGHT OK` for this checkout, one dev server, DB reset immediately before. The first attempt at
-those counts returned **0 passed** from an anchored grep defeated by ANSI cursor escapes — the fifth
-instrument failure this phase has caught, re-measured on a stripped log with a planted control proving
-each absence-grep can match. `yarn lint:check` was run despite the plan's own gate list omitting it, and
-it is the row that mattered: three of the four guards 163-07's reformat broke live behind it, and its
-output is non-vacuous (RPC-nullability **3** RPCs, parity **29** hunks / **111** lines, hygiene **1647**
-files with **2 of 2** rules). `.git-blame-ignore-revs` names `83e07d0ba97c9ea858331155ac39812cb1ef9bfa`,
-resolved with `git rev-parse` and re-checked with `git cat-file -t` rather than transcribed, and names
-the three guard-repair commits as deliberately NOT blame-ignored. `CLAUDE.md:87` corrected —
-`grep -c 'sqlfluff'` returns **0**. THREE criteria are **reported NOT MET rather than bent**:
-`ci-evidence/163-gates` survives (deleting a remote ref is a push this plan is forbidden to make);
-`git log --follow` shows the todo move as a rename only at `-M1%` (`R002`), because the same task also
-required a close note that grew the file 12×; and the workflow has **eleven** jobs, not the plan's nine.
-**CI E2E is still RED and is recorded as an open, deferred defect in four places and claimed green
-nowhere** — CLAUDE.md's cardinal rule has only ever been enforced against LOCAL runs. WINDOWS 242 and 252
-CLOSED: Phase 164's `supabase-types-drift` job has now executed three times in CI, all `success`, via
-this phase's trigger glob. **NOTHING WAS PUSHED.**
-Prior:
-
-163-08 STATUS: **the [BLOCKING] gate is GREEN and criterion 2 is proven LOCALLY a second time; its
-CI half is NOT delivered and nothing was pushed.** The SQL reformat did not break the database:
-`yarn db:reset` exit 0, `supabase test db` `Files=12, Tests=379, PASS` — EQUAL to the 163-03
-baseline, both numbers on the page — `yarn db:lint:sql` exit 0 on the freshly reset schema with the
-Splinter banner present, codemod self-test 0 failures. `yarn lint:check` exit 0 with 0 `[ERROR]`
-lines was run as a gate in its own right (163-07's carry-forward warning: three of the four guards
-its reformat broke live behind it) and the RPC-nullability guard harvests **3** RETURNS TABLE RPCs,
-not zero, so it is non-vacuous. `build --force` 14/14 and `test:unit --force` 25/25 both with
-**0 cached** — the cached greens were re-run because `FULL TURBO` is a vacuous instrument.
-Criterion 2 re-demonstrated on `200-indexes.sql` (deliberately NOT 163-07's `000-enums.sql`, so two
-distinct schema files are now proven in scope): `format:check` exit **1** naming it, then
-`yarn format` → `git diff --exit-code 83e07d0ba` = **0**, byte-identical to the normalisation
-commit. The exit-1-vs-exit-2 note is MEASURED in both directions with a positive control, and its
-first attempt was recorded as vacuous (control files outside the repo: prettier reports
-`ignored: true` and exits 0 having matched nothing). Covered surface re-measured with the gate's own
-resolver: **42** `.sql` files over four directories, not the plan's 39. Ledger rows 6-8 were
-mislabelled `CIGATE-02` (they are `CIGATE-03`) and were repaired. Rows 9 and 10 exist and carry
-`**OWED — no run**` — §2.1 makes a URL-less row that ledger's own detection mechanism for a missing
-run. WHAT REMAINS: push `ci-evidence/163-crit2-red` and `…-green`, assert the red at STEP
-granularity (`frontend-and-shared-module-validation` → `Run Prettier check globally`, log naming the
-file), fill rows 9/10, delete both branches. `CIGATE-02` was NOT marked complete
-(`requirements.ready-ids` → 0/1 ready).
-Status: Phases 166-169 shipped — PR #890 updated
-PUSHED.** `prettier-plugin-sql@0.20.0` is declared once in `packages/shared-config` with
-`overrides: [{ files: '*.sql', options: { language: 'postgresql' } }]`, and reaches every workspace
-through the `?? []` spreads the leaf configs already carried (both leaf configs byte-unchanged).
-42 `.sql` files normalised in ONE formatting commit `83e07d0ba`; `yarn format:check` exit 0.
-The criterion was DEMONSTRATED, not asserted: a mis-formatted `.sql` file makes `yarn format:check`
-exit **1** naming it, `yarn format` repairs it in place, and the same mis-formatted file under the
-pre-plugin config exits **0** — the negative control that proves the skip was real and the red is
-attributable to the plugin. Semantics preservation MEASURED four ways: all 42 files byte-identical
-once whitespace is stripped (comparator controlled in both directions), per-file DDL census
-unchanged, pgTAP `Files=12, Tests=379, Result: PASS` identical to baseline, `db:reset` 0 and
-`db:lint:sql` 0 (0 errors / 2 warnings, unchanged). Three plan premises were FALSE at HEAD and were
-reported rather than forced: `.claude/` is already `.prettierignore`d (153-05), `apps/supabase/
-benchmarks/` no longer exists (156-09 deleted it, so the "forced" pgbench exclusion and its
-acceptance grep are unsatisfiable), and `snippets/` was already covered by `.gitignore`. The
-reformat broke THREE SQL-reading guards the plan did not anticipate — parity (re-baselined),
-comment-hygiene (2 new rule-2 violations, fixed) and `assert:rpc-nullability`, which went INERT
-(harvested zero RETURNS TABLE functions) and correctly FAILED CLOSED; each repaired in its own
-commit so the formatting commit stays `.sql`-only and blame-ignorable.
-Prior: **163-05 COMPLETE 2026-09-03 — the dependency-vulnerability gate exists, is GREEN on the
-current tree, and is proven to catch; NOTHING PUSHED.** `yarn audit:deps` exits **0** with
-`Summary: 0 new advisory(ies) at high+, 70 accepted`, and exits **1** the moment one accepted
-advisory is withdrawn from the baseline. Threshold `high`+ per D-L3(a), READ FROM
-`security/audit-baseline.json` rather than hard-coded, so the file that documents the gate and the
-value it runs at cannot drift; it is echoed in the step name so it is legible in the Actions UI. The
-baseline was regenerated live at HEAD `5c1295f18` rather than copied from RESEARCH: **153 findings
-at all severities (14 low / 69 moderate / 64 high / 6 critical) and 70 at high+**, against RESEARCH's
-2026-08-28 figures of 147 and 68 — drift of **+2 added, 0 removed** (`@faker-js/faker` 1158500,
-`nanoid` 1153189), computed against RESEARCH's own ID list rather than eyeballed. RESEARCH §P4.2's
-"43 distinct packages" is WRONG (its own table lists 24; the live measurement gives 25) and is
-corrected in the summary rather than propagated. Every row carries a severity, a GHSA, the advisory
-title, the dependency path and a written rationale; subtraction is per ADVISORY ID and never per
-package name, so a new advisory on an already-accepted package still reddens. Six negative controls
-on the gate and nine mutation runs on `auditBaselineShape.test.ts` all fired, tree restored
-byte-identical (sha256 verified) after each; every exit code read directly, never through a pipe.
-`format:check` 0, `lint:check` 0, dev-seed suite 56 files / 627 tests passed.
-
-**The 315-vs-153 Dependabot discrepancy is MEASURED and RECONCILED, not waved away.** GitHub's push
-banner reports 315 open alerts (25 critical / 118 high / 136 moderate / 36 low); this tree's audit
-reports 153. Measured with `gh api`: Dependabot resolves the DEFAULT branch, which still carries the
-pre-v2 layout (12 alerts against `frontend/package.json` and `backend/vaa-strapi/package.json`,
-paths absent here); **49 of the 59 distinct high+ advisories it reports and the baseline does not are
-for packages absent from this lockfile entirely** (Strapi, axios, handlebars, xmldom, fast-uri,
-tar-fs …); and **the remaining 10 were each checked against the resolved version here and are ranges
-this branch has already moved past** — not one is a finding `yarn npm audit` should have reported
-and did not. Recorded in the baseline's own `note` and filed as
-`.planning/todos/pending/2026-09-03-dependabot-alert-list-is-stale-against-main.md` (re-check only
-after v2.15 merges; a surviving high+ on an in-lockfile vulnerable version WOULD be gate blindness).
-
-⛔ **`dependency-audit` HAS NEVER EXECUTED.** Nothing was pushed; the orchestrator owns the evidence
-branch. No row was added to `163-CI-EVIDENCE.md` — a row without a run URL is that ledger's own
-stated detection mechanism for a missing run. **CIGATE-03's dependency half is unblocked, not
-proven.** Two facts 163-06 must carry: (1) RESEARCH §P4.5's pin `minimist@1.2.5` (advisory 1097678)
-is CONFIRMED still absent from today's 70-row baseline, so the baseline cannot mask it, but its
-critical scoring is `[ASSUMED]` and must be re-measured immediately before the red run; (2)
-`security/` is NOT in `.prettierignore`, so any baseline edit made during the evidence runs must
-stay prettier-clean or `frontend-and-shared-module-validation` reddens for the wrong reason.
-
-Earlier in this phase: **163-04 proved CIGATE-01** (sql-lint red `33790909985` / green
-`33791749587`); **163-01 proved CIGATE-03's secret half** (secret-scan red `33781690298` / green
-`33782481241`); **163-03** took `yarn db:lint:sql` from exit 1 to exit 0 by removing four dead
-plpgsql bindings in one commit (`697dca86d`) without relaxing `--fail-on warning`, and made the
-second half of `lint:all` (`lint-schema.mjs`) actually execute.
-
-Prior context — **164-05 COMPLETE 2026-09-03 — PHASE GATE GREEN, and the phase's own negative control
-turned into a guard.** Seven gates at ONE HEAD `57204c21b`, every cached gate forced rather than replayed:
-unit 25/25 tasks with **0 cached** (224 files / 2759 tests, 0 failed, **0 skipped**, and the dev-seed
-live-Supabase integration file **executed** rather than skipped), `lint:check` 0 errors with 0 cached
-on both turbo runs, `format:check` 0, `build` 14/14 with 0 cached (frontend production build
-included), `frontend check` **2750 files 0 errors 0 warnings**, `turbo run typecheck` 23/23 with
-0 cached and `grep -c 'error TS'` **0** with `@openvaa/supabase-types:typecheck` force-executing, and
-the cardinal E2E gate **LAST**, after `yarn db:reset`, against exactly one fresh dev server that
-printed `E2E PREFLIGHT OK` for this checkout: **155 passed / 0 failed / 0 flaky / 0 skipped /
-0 did-not-run** in 10.9m — each zero a counted search of the log, with 155 distinct progress markers
-as the did-not-run proof rather than the summary line. Every exit code read directly, never through a
-pipe. Logs at `tests/e2e-runs/164-05-cardinal-gate/`.
-
-**Operator-authorised scope addition, delivered and probed:** the one-token barrel bypass `164-04`
-surfaced (WINDOWS 247) is **CLOSED** by check 6 of `scripts/assert-rpc-return-nullability.mjs`, which
-rides the `lint:check` link and asserts **both** links of the delivery chain — `index.ts` must
-re-export `Database` from `./database.merged`, and `database.merged.ts` must declare it applying
-`FunctionReturnOverrides`. It reads the export STATEMENT, not the specifier as a bare string. Five
-mutation runs NC-7a…NC-7e all RED with verbatim output, including the disguise a bare grep passes and
-the two fail-closed branches; both mutated files restored byte-identically by `git hash-object`.
-NC-7e also measures that link 2's bypass is invisible to `frontend check` (exit 0, 2750 files), so
-the guard closes a real gap rather than a manufactured one. The `index.ts:1` anchor was re-measured
-first and is **exact** — the first plan in twelve with no drift to report.
-
-**Criterion 2's failure proof is NC-1, not the committed unit test** — `164-04` § 5 shows that test
-passes with the guard deleted. No SUMMARY in this phase may be read as claiming otherwise.
-
-**Still NOT delivered and carried forward:** the `supabase-types-drift` CI job has never run.
-`main.yaml` triggers only on `main` and this branch has never been pushed, so no Actions run of it
-exists or can exist here. All seven gates above are LOCAL. Carried as `164-03` coverage D6,
-`164-05` coverage D6, the blocker below, and WINDOWS 242. **Never to be recorded as verified in CI.**
-The milestone counters below are derived by gsd-tools from a milestone-wide scan, not read, so they
-must not be hand-tuned.
-
-**Progress:** [█████████░] 89%
-
-> **Ordering note for the phases still queued.** 164 runs before 163 because both edit
-> `.github/workflows/main.yaml` and ROADMAP § 164 explicitly forbids them sharing an execution wave.
-> 161 runs after 163: they collide on migration number `00004`, on the `apps/supabase/supabase/schema/`
-> tree 163 reformats wholesale, and on `package.json`. 160 runs last — its stated dependency is
-> "Phases 152–159", and `160-01` and `161-06` both rewrite `CLAUDE.md`.
-> **Phase 163 carries an unresolved blocker:** its criteria 1, 3 and 4 each require an *observed*
-> GitHub Actions run, but `main.yaml` triggers only on `main` and this branch has never run CI.
-> That needs an operator decision before 163 starts.
-
-> **Phase 159 gate, on the final tree:** full E2E **155 passed / 0 failed / 0 skipped / 0 did-not-run**
-> (exit 0, 10.5m) after `yarn db:reset`, against exactly one fresh dev server on 5173 that printed
-> `E2E PREFLIGHT OK` for this checkout; `yarn build --force` 14/14 with **0 cached**; monorepo unit
-> 25/25 (frontend 88 files / 1590 tests); lint, format and typecheck all 0. Every exit code read
-> directly, never through a pipe. REVIEW-CMP-01..06 released (6/6 ready).
-
-> **One operator decision is open, routed to Phase 157.1:** whether to remove the last
-> identity-provider default so an unconfigured deployment fails loudly. `159-11` deliberately did not
-> decide it, and deliberately did NOT apply its own Task 1 edit — commit `55c9c07e9` (157-13) had
-> already collapsed the duplicated default keeping the upstream copy, so the planned change would have
-> thrown at four server routes with the variable unset (the plan's own high-severity T-159-34 outcome).
-
-> **Deferred to milestone close:** the 2-choice / multi-select UI UAT
-> (`159-UAT-QUESTION-INPUTS.md`). Operator-scheduled; explicitly not a Phase 159 blocker.
-
-**OB-1 is DISCHARGED (2026-09-02, plan 14), option (i)/(a+).** Both admin feature subtrees carry their own
-`+layout.server.ts` and build their client from it, so neither is serialised behind the root load. Two halves
-of that obligation are **not** closed here and are owned by **`158-16`**: the rendered-payload observation
-(four `httpOnly` values absent from an authenticated admin SSR payload with an `sb-` sentinel as the positive
-control), and the end-to-end overlap observation on the real `/admin/**` chain — plan 14 measured the
-framework mechanism on probe routes and says plainly that composing the two is an inference.
-
-**Phase 157.2 is closed (2026-09-01, 9/9 plans).** Ruling **D11** asked for *the proof, not the patch*, and
-the register carries it: `1-OLD` recorded request A reading back request B's tag, `2-OLD` recorded fetch spies at
-`[0, 2]` instead of `[1, 1]`, `3-OLD` recorded job A's post-resume write reporting job B's tag in **both** job
-modules, and every NEW half is GREEN **with the assertions byte-identical between the halves**. `4-OLD` recorded
-the tree blind on 75 of 75 fixture x zone pairs before any rule existed and `4-NEW` records it catching. All ten
-cells measured; none inferred from a sibling.
-
-**Three facts Phase 158 must not re-derive.**
-
-1. **The dead `/api/auth/login` credential oracle was DELETED here** (`157.2-04`, with evidence). 158's criterion
-   covering it is now a **verification**, not a deletion.
-2. **The mechanism 158's admin restoration consumes exists**: per-request instancing carrying the request's own
-   cookie-bearing client, in `src/lib/supabase/`, the four factories under `src/lib/api/adapters/`, and the root
-   layout that supplies the universal client. **Observed working**: an authenticated admin now gets **200** on
-   direct entry to `/admin`, **200** on refresh, and **200** on `/api/admin/jobs/{active,past}` — all of which
-   ruling D10 recorded as bouncing or 403-ing a genuine admin. Unauthenticated access still fails closed (307 to
-   login; 403 on the API routes). **No admin E2E spec was written** — decision A2(a) assigns that proof to 158's
-   criterion 11.
-3. **`apps/frontend/src/hooks.server.ts` was NOT modified anywhere in the phase** — 0 commits since the phase
-   opened at `7ddecbde0`, empty diffstat. Every anchor 158 cites into that file is unmoved, and the missing
-   `/admin` gate 158 folds in is still missing.
-
-**The class cannot reopen, and the guard says what it cannot see.** The adapter-singleton ban is spread into the
-three existing `no-restricted-syntax` arrays in `apps/frontend/eslint.config.mjs` — never a fourth block, because
-a later matching object REPLACES an earlier one's array entirely and would delete 2-7 inherited restrictions
-**while producing zero errors**. Thirteen standing regressions in
-`src/lib/_guards/eslint-adapter-singleton-guard.test.ts` are the only detector of that trap. Clause 2 bans the
-**declaration**, not the `.init(` call: the call form was measured firing on two live non-adapter sites. Three
-forms are NOT caught (lazy memoization, a renamed class, a non-adapter-named class outside the adapter tree) —
-all three are written into the config's own comment, blind spot 3 is additionally **asserted**, and the
-concurrency spec is the backstop for all three.
-
-**Carry to 158 and to every later gate: `yarn test:unit` still seeds the LIVE local database.**
-`packages/dev-seed/tests/integration/default-template.integration.test.ts` writes the default template into local
-Supabase whenever the DB is up and its teardown leaves it. That is why the gate order puts `db:reset`
-**immediately before** the E2E half rather than at the head of the chain. 157.1 measured the head-of-chain order
-as **4 failed and 79 did-not-run**, deterministic. Two phases have now paid a documentation workaround; the
-incomplete teardown is the actual defect and is still open in `157.2`'s `deferred-items.md`.
-
-**Phase 157 is closed.** Its six criteria were measured green by the `157-18` gate and the full
-E2E suite is green twice (150 passed, exit 0, at `1f5f3247c` and again at `5ef212902` after the
-fixes). The code review of its 74 changed source files found **15 blockers**; the six needing no
-ruling were fixed in-phase with proven RED→GREEN round trips, and the remaining four classes were
-ruled by the operator rather than charged to the phase.
-
-**The four rulings — `.planning/v2.15-OPERATOR-DECISIONS-2026-08-31.md`:**
-
-- **D8 — the degrade-to-empty class: FAIL LOUDLY, own phase → 157.1.** A `z.strictObject` schema
-  describes a JSONB column more narrowly than the database permits; the consuming `safeParse`
-  degrades a failed parse to an empty value; so one unacceptable field silently discards every
-  other value in the column, and the caller cannot tell "absent" from "malformed". Widening the
-  schemas (landed) removed the known triggers, not the class. Blast radius: five schemas and their
-  call sites. The two worst instances are on the write path — `_setAnswers` returning `{}` after a
-  SUCCESSFUL RPC write (the candidate's answers vanish while the UI reports success), and one
-  unrecognised key in `app_settings.settings` discarding every dynamic setting. A test currently
-  specifies the defect (`supabaseDataProvider.test.ts:248-270` asserts `expect(result).toEqual({})`
-  on a fixture holding a valid `access: { candidateApp: true }`) and must be inverted, not deleted.
-
-- **D9 — the production logger: ENABLE warn/error NOW, inside 157.1.** `hooks.server.ts:15` /
-  `hooks.client.ts:7` set the level to `'silent'` unless `DEV || PUBLIC_DEBUG`, and `logger.ts`
-  early-returns on silent — so every "degrades with one warning" comment in the adapter layer is
-  FALSE in production. A durable structured sink is explicitly out of scope and goes to backlog.
-
-- **D10 — the admin-app outage: FOLD INTO PHASE 158.** `_getBasicUserData` authorizes off
-  `supabase.auth.getSession()` while `supabaseAdapter.ts:41-44` builds a plain `createClient` on
-  the server branch that never reads the forwarded cookies, so every server-side `getUserData`
-  resolves `undefined`: all six `/api/admin/jobs/*` routes 403 genuine admins, and
-  `admin/(protected)/+layout.ts` — a universal load with no `ssr = false` anywhere under
-  `routes/admin/` — bounces an authenticated admin to login on every direct entry or refresh. It
-  fails CLOSED, so it is an outage, not an authorization hole. **The pairing dates to `c3e948a84`**,
-  long before this phase; review lot C's attribution to 157-11 is wrong and corrected in
-  `157-REVIEW.md`. **Not charged to Phase 157.** Folded in with it: the missing `/admin` gate in
-  `hooks.server.ts`, the admin form actions' missing role check, deletion of the dead
-  `/api/auth/login` credential oracle, and the first admin E2E coverage — zero specs touch the
-  admin app today, which is why both green suites said nothing.
-
-- **D11 — adapter singleton concurrency: OWN PHASE → 157.2.** Server-side adapter selectors are
-  module singletons re-`init()`ed per request with an `await` before use. Concurrent candidates can
-  be served each other's data (`candidate/(protected)/+layout.server.ts:30→33→44`), and
-  `condenseArguments.ts:44` rebinds the shared `#supabase` mid-job so a concurrent admin request can
-  make the first job's writes execute under the second admin's JWT. Two instances pre-date v2.15;
-  157 added a third. The deliverable is the proof, not the patch: a concurrency test that FAILS on
-  the singleton before it passes on the fix.
-
-**Wave E is re-ordered by the rulings:** `157.1 → 157.2 → 158`. 158's admin restoration depends on
-157.2 — per-request instancing carrying the request's own cookie-bearing client is the same
-mechanism that makes the admin server branch see the forwarded session.
-
-**Phases 158, 159 and 161 were already planned**, but **158's 9 plans are now stale** — they predate
-the D10 widening and need a re-plan pass. 158's wave 1 also carries `158-01` and `158-04` as
-`autonomous: false`, and `158-01` has an unresolved flagged assumption (`EDGE-RT-03-unclassified`).
-`158-08` is the one dependency-free autonomous plan and produces the caller measurement `158-05`'s
-checkpoint depends on.
-
-**`svelte-check` is load-bearing and `build` + `test:unit` is not a sufficient backstop.**
-Three times in Phase 157 a green build and a green unit suite sat on top of a real defect that
-only the frontend typecheck caught — 157-17's four missing `log` imports, and twice during the
-review fixes. Include it in every gate.
-
-**Trust your own measurement over a review's.** Two of the three review lots needed a correction:
-lot C's attribution (D10 above), and lot A's own note that the cast guard's zero is true *by
-spelling*, not by class — `as unknown as` without the `Json` hop survives it, and two instances
-remain at `supabaseDataWriter.ts:343,356`.
-
-**The E2E database prerequisite is `yarn db:reset`, NOT `yarn db:reset-with-data`.** The latter
-seeds the `seed_`-prefixed `default` template into a suite asserting against `e2e/base`, and
-`setupFromTemplate` whitelists `seed_` in its freshness probe — so the wrong one fails
-*quietly*. 157-18's plan text and the previous pause handoff both had it wrong. CI's own e2e
-job seeds nothing.
-
-**pgTAP GREEN at `Files=12, Tests=379, Result: PASS`, zero `not ok`** (re-measured by 157-18 at
-the phase-157 gate; the 156-era figure below was `Files=11, Tests=317`, verified from `apps/supabase`
-at 156-08's HEAD; 309 `plan(N)` literals + 8 under `no_plan()`. 156-07 added 10 and 156-08 added 5:
-`10-schema-migrations` 79 -> 84, `09-column-restrictions` 15 -> 25). **`Tests=` is the PLANNED count
-and is identical on pass and fail** — assert `Result: PASS` AND non-zero `Files=` AND `Tests=` above a
-floor, never any one alone (WINDOWS 184 + 186).
-
-**Running the pgTAP suite CONTAMINATES the live database, which matters before `yarn db:types`.**
-`00-helpers.test.sql` defines `test_id`, `test_user_id`, `test_user_roles`, `set_test_user`,
-`reset_role` and `create_test_data` OUTSIDE its `BEGIN;`/`ROLLBACK;` block, so they persist in
-`public` after any `supabase test db`. 156-08 regenerated types straight after a suite run and got all
-six fixtures written into `packages/supabase-types/src/database.ts`. **Always `yarn db:reset-with-data`
-immediately before `yarn db:types`, and read the diff.**
-
-**`yarn db:lint:sql` exits 1 and has since phase 151 — PRE-EXISTING, four plpgsql advisories on
-`is_localized_string`, `_bulk_upsert_record`, `resolve_email_variables` (WINDOWS 17 / 115 / 125).
-156-06 measured it again and confirmed zero NEW advisories from its own functions. Any remaining 156
-plan whose acceptance criteria say "`db:lint:sql` exits 0" should read that as "no NEW advisory" and
-say so, rather than ticking or silently skipping it.**
-
-**Carry to every remaining 156 plan:** (1) `156-PATTERNS.md`'s line map is STALE throughout — 156-02
-found `303:3,15,33` not `:3,22,48` and `302:223,231,...` not `:230,238,...`. Navigate by symbol.
-(2) `permittedKeys.ts` is a literal COLUMN-NAME array — it bites column drops/renames (plan 05), not
-enum-label renames; 156-02 needed no edit there and said so.
-
-**Carry to every remaining 156 plan:** (1) `156-PATTERNS.md`'s twin-line map is STALE for all nine — Phase 152's comment sweep shifted every offset (503:60 not :62; 00001:3051 not :3159; 00002:82 not :90). Navigate by symbol. (2) `packages/dev-seed/src/template/permittedKeys.ts` is a LITERAL key array, not a derived one — RESEARCH's "narrows automatically" is false, and every plan dropping or renaming a column must hand-edit it or typecheck fails.
-
-**REVIEW-CFG-08 is an UNDISCHARGED BOUNDARY, not a pass.** 153-05 discharged clause one verbatim
-(stage a mis-formatted `.svelte`, observe pass then reject) but clause two — *"so the gate starts from
-clean"* — cannot be met from within that plan's constraints and was left `Pending`, deliberately
-unmarked. Measured cause: the pre-commit hook was **already red before this phase** — `apps/docs`
-aborts eslint with a Node `ERR_INTERNAL_ASSERTION`, and `eslint --fix` would rewrite 27 of 44 `.mjs`
-files while leaving 366 problems. 153-05 enlarged the population the hook sees; it did not create the
-defect. 153-09 must carry this as a THIRD named boundary alongside criterion 2's binding observation
-and criterion 5's real-workflow-run half — never as a green tick.
-
-**153-03 is HELD — it must be RE-PLANNED, not executed as written.** Two independent reasons, both
-recorded: operator ruling O5 (option b, install-time binding) drops its `node-version-file` edit to
-`main.yaml`; and 153-02 measured `actions/setup-node` at the pinned tag to emit `core.warning` and
-install no Node at all when `engines.node` is absent — it WARNS, it does not fail — which falsifies
-its negative control independently of the ruling. Full amendment:
-`.planning/todos/pending/2026-08-29-153-03-scope-amendment-after-d-b5-reversal.md`.
-**153-09 depends on 01, 02 AND 03**, so 03 blocks the phase close and nothing else in the phase.
-Last activity: 2026-10-04
-
-**Phase 155 (Edge Function Hardening) is COMPLETE and verified — 6/6 plans.** Its completion line was
-overwritten in this single position slot by 153-01's `record-session` (STATE.md holds one position, and
-the phase-155 session left `current_phase: 155 / status: verifying` behind after finishing). Restored
-here by the orchestrator rather than by an executor, so the file keeps one writer. Phase 155's
-completion is durably recorded in its own phase docs and in commit `13e3729cc`; nothing was lost.
-Two decisions recorded by 153-01 were auto-labelled `[Phase 155]` for the same reason — they belong to
-**Phase 153**.
-
-**Phase 147 Plan 05 (2026-08-27) — records last, after the gates.** The claim later phases would have
-inherited is retired: the **598 raw-key figure was never voter-only**, because `loadCatalogKeys()` already
-flattened every catalog file in each source directory. The retirement is therefore a **WORDING** correction
-and says so — decomposition `candidateApp` **161** + `adminApp` **121** + voter/shared **316** = **598**,
-from the union of three derived sources, with **nothing recomputed**. REAL-04's own D-136-04-1 boundary note
-scoped the gap to **surface reach** and was *accurate*; the error entered in a later restatement, and only
-that is retired (a **premise correction, not a decision change**). The two drifted line numbers (921 → 924,
-174 → 179) and the wildcard key spelling are corrected in **four** live records — the plan named three, and
-`.planning/PROJECT.md` carried the same drift.
-
-**⚠ The phase's most misreadable claim, stated where it will be read.** The phase closes the raw-key
-**CLASS** on the candidate surfaces via the scan. It did **NOT** fix the two named matchers —
-`candidate-journey.spec.ts:924` and `candidateProfilePage.fixture.ts:179` remain **blind by design**,
-because ROADMAP criterion 3 says in terms that patching them does not satisfy it. CSCAN-03's own wording
-(*"the two named blind sites … now fail"*) is **falsified by this phase's measurement**, and the clause is
-struck inline at the operator's direction so it cannot be read in isolation. The same correction now appears
-in the v2.14 REAL-04 block, the closed todo, `PROJECT.md` and the ROADMAP phase description (which had read
-"two blind matchers fixed").
-
-CSCAN-01..04 ticked, **each citing register row IDs rather than prose** — CSCAN-02 against `AX1-NEW` read
-against `AX1-OLD`, because the flip is the evidence and the green is not; CSCAN-03 against the two catch
-halves and their **simultaneous** matcher passes. **12 todos filed**, split by lever: six unscanned states
-(5 todos), **twelve** out-of-family candidate routes (the scout said 11 while naming 12 — corrected, not
-propagated), the soft assertion at `:179`, criterion 5's accepted-not-solved reporting shape, the
-determinism bound, disk headroom, the register convention `147-01`'s unrecoverable injection text exposed,
-and — raised at the checkpoint — the **verify-script defect class**: `147-03`, `147-04` and `147-05` each
-found their OWN plan's script wrong, one failing a correct implementation and one vacuous. Register closed:
-`## Residue` A–F, `## Completeness` re-asserted at **13 rows / 0 unfilled cells** with the HEAD every gate
-was green at (`ff37a87fc`), the `REV1-CLEAN` owner discrepancy resolved against the Gates table.
-
-**Phase 147 Plan 04 (2026-08-27).** The candidate gate is now proven to CATCH rather than merely to run.
-`AX1-NEW`: `147-01`'s identical `image-alt` defect, in the same file at the same compiled location
-`191:2`, was missed by a **135/0** full suite two plans ago and now fails **14 of 14** candidate scans,
-each message naming `"id": "image-alt"` and a resolved `"target"` selector — the flip that gives the
-scout's 42-scan zero its meaning. `RK1-NEW` / `RK2-NEW`: each key caught by name (`598 catalog keys were
-checked`) **while its named matcher passes in the same invocation** — `candidate-journey.spec.ts:924` and
-the soft `candidateProfilePage.fixture.ts:179` both green under the very catalogue the scan reddens, which
-is what shows the route-family extension was the fix and a matcher patch never was. All **14** raw-key
-injected-state blob hashes were byte-identical to `147-01`'s, compared before each run.
-
-The gates: **150 passed / 0 failed / 0 skipped / 0 flaky / 0 did-not-run, exit 0, four consecutive times**
-on one HEAD (`E2E1-SUITE` + three `DET-RUNS`), each from its own `yarn db:reset`, each preflight-confirmed,
-wall clocks within 2.1 s. The delta against `BASE-GREEN` reconciles exactly — 135 → 150 = +15 = 14 scans +
-`auth-setup`, no residue. The 14 added scans summed 33.4 / 32.6 / 32.1 s under real suite contention
-(widest single-scan spread 0.7 s), their first exposure to it; recorded as **low failure frequency, not
-absence**. `REV1-CLEAN`: 15/15 injected paths byte-identical across `4adf451ed..ff37a87fc` by range diff
-AND blob hash, `preflight.ts` + `global-setup.ts` likewise, no dependency added; the whole phase changed
-**7** tracked files, every one under `tests/`. The register is closed at **13 rows / 0 unfilled cells**.
-
-One disclosure `147-05` must carry into `## Residue`: **`AX1-NEW`'s source-blob pairing could not be taken
-as designed.** The register promises `AX1-OLD`'s injected text is "recoverable from this plan's commit
-range", but `147-01` committed zero product bytes by design, the blob is not in the object database, and
-the Svelte compiler strips the 6-line comment the hash covers — so the register's own permitted
-alternative was taken (record your own injected hash) and identity is carried instead by equal clean hash,
-byte-identical element line, identical compiled location and a byte-identical served DOM node. A
-record-quality defect in `147-01`, not a measurement one. Also for Residue: the `REV1-CLEAN` owner
-discrepancy (corpus says `147-04`, the Gates table still says `147-05`), and host disk at ~23 GiB falling
-~0.5–1 GiB per full-suite run.
-
-**Phase 147 Plan 03 (2026-08-27).** The extension landed and the full default suite stayed green:
-**150 passed / 0 failed / 0 skipped / 0 flaky / 0 did-not-run**, exit 0, **10.7 min** against
-`BASE-GREEN`'s 10.8 — `REACH-14` filled from two preflight-confirmed runs. Fourteen candidate scans
-(7 `(protected)` surfaces × 2 themes) now run from **one** scan core, `tests/tests/utils/axeScan.ts`,
-which the voter spec imports too — so criterion 6's "identical in strictness" is a property of the code
-rather than of two tables agreeing (`grep -rl` resolves all five shared symbols to that one file, and the
-candidate spec declares no gate of its own). Every scan carries a `reach-proof-*.json` taken from its own
-run — settled URL asserted inside `/candidate` and asserted **not** `/candidate/login`, plus a per-entry
-post-login marker — attached before being asserted and evaluated **before** the scan, so a lost session
-fails by name instead of reporting a confident zero about a login form. `147-02`'s phase instrument held
-against a run it had not seen: **0 mismatches over 91 scheduled projects**, scan at **phase 3 of 80**,
-`auth-setup` at phase 2, `candidate-journey` the only co-scheduled project, opt-in closures 2/1/1 — the
-W3 prediction on all eight quantities.
-
-Three decisions worth carrying forward. (1) **Decision (B) was implemented without touching the raw-key
-detector**: `147-ORDERING.md` item 6 says make `assertNoRawI18nKeys` return its findings, while the plan
-prohibits changing its body because `147-04` re-runs `147-01`'s injections against it — so the detection
-was extracted verbatim as `collectRawI18nKeyFindings`, the throwing wrapper kept, and the shared body now
-reports both verdicts with `expect.soft` + the hard axe gates. **`147-04` should note that an injected raw
-key now fails the test at its end rather than aborting it** — the run still goes red, but the same test
-also reports its axe verdict, so read the failure list rather than the first error. (2) **`PLAYWRIGHT_NO_A11Y`
-was a gap in § *For 147-03***: an unconditional perm-chain-head anchor on `candidate-a11y-scan` would make
-that opt-out throw at config load, so both the project and the anchor entry follow the file's own existing
-opt-out convention — recorded, not decided quietly. (3) **The plan's own Task-2 verify script over-counts**:
-its `/cand-/` title filter also matches an unrelated perm test; filtering by project name is the same
-assertion with a filter that measures it. Same class as `147-03`'s Task-1 dotenv-banner parser note.
-
-Two numbers recorded as unattributed rather than explained away: `a11y-smoke`'s **summed** per-test time
-read 130.2 s → 166.5 s, but the same project measured 194.9 s and 301.4 s in this plan's own Task-1
-isolated runs *before* the shared body was touched, so the figure varies by ~2.3× regardless of the
-change and cannot carry a causal claim; and phase 3 grew +4.9 s rather than the predicted flat zero. The
-suite wall clock — the number the cardinal rule turns on — is unchanged.
-
-**Phase 147 Plan 02 (2026-08-27).** `ORD-PERTURB` — the row two prior full-suite runs had **voided on the
-host disk** — was measured on the third attempt: **136 passed / 0 failed / 0 skipped / 0 flaky / 0
-did-not-run**, exit 0, **10.7 min** (`BASE-GREEN` 10.8), preflight OK=1 FAILED=0. Verdict **DOES NOT
-PERTURB**: the test count moves by exactly **+1** (the declared setup itself), observed phases **80 → 80**,
-and **0 of 89 projects moved phase**. `auth-setup` landed in **phase 2 of 80** (1/1 PASS, 3.0 s) sharing it
-with `voter-journey`, `a11y-smoke` and 8 others — so its force-register of base CA-AA-1 *did* run
-concurrently with the journeys, which is the interaction the hazard analysis flagged, and every
-candidate-side authenticated assertion still held. Phase assignment was read from **this run's own
-`results.json`**, never from a prediction. Revert proven twice.
-
-**What unblocked it:** `trace: 'on'` was retaining a trace for every PASSING test — 260–340 MB per
-full-suite run, and the same bytes again inside every archived run, since `e2e-run.sh` writes its HTML
-report into the run dir. Now `retain-on-failure` (`fde174ccf`); measured live during the run at **14 MB**
-where it would have been ~280 MB.
-
-**Both deferred mechanisms decided.** **Decision (A) = wiring W3**, selected by the if-X-then-Y rule
-**pre-registered in `147-ORDERING.md` before the measurement was taken** and retained verbatim, so the
-choice is auditable as prospective rather than fitted. Scan lands in phase 3 of 80, both hazard axes NONE,
-both opt-in closures preserved, ≈0 s. All six alternatives rejected in the selection criterion's own terms;
-**W2 is flagged as the one rejection reasonable to overturn** (it differs by one array entry).
-**Decision (B) = report both verdicts in one body**, chosen against a cost derived from `BASE-GREEN`'s own
-durations (`a11y-smoke` 130.2 s = 14 axe scans at 116.0 s + 2 navigation at 14.2 s; a separate test per
-surface is **≤ +138 s, ≈+21 % of suite wall clock**). **Flagged, not glossed:** that satisfies criterion 5's
-*purpose*, not the scout's literal "reported as its own test" — the one place in the document where the
-evidence does not force the answer.
-
-**⚠ Disk finding recorded, NOT acted on (operator decision).** `Docker.raw` occupies **60 GiB** of
-allocated host blocks against **~7.5 GB** of live content per `docker system df` — ~**52 GiB** of
-never-TRIMmed sparse bloat whose reclamation destroys no image, volume or file. Host free was 51 GiB at
-95% capacity. Separately, `tests/e2e-runs/` is **6.8 GB**, but the **140 and 146 registers cite it by
-path**, so it must not be deleted. A privileged `fstrim` container was declined by the sandbox classifier
-and is left for the operator.
-
-**⚠ A pinned baseline moved.** `fde174ccf` changed `tests/playwright.config.ts`, whose clean blob hash
-`ORD-PERTURB` had pinned at `68ef2b19…`. The two prior revert proofs are **left standing as true
-statements about HEAD `23448af0b`** rather than rewritten, with the current clean hash
-`fbbd85ae27895d9e19a73ad95113610dcf511c04` recorded beside them and an explicit instruction that any
-re-run take a fresh pre-edit hash.
-
-**Phase 147 Plan 01 (2026-08-27).** `147-NEGATIVE-CONTROL.md` opened with its corpus declared at **13
-rows** before any row was filled, and four filled: `BASE-GREEN` (full default suite **135 passed / 0
-failed / 0 skipped / 0 flaky / 0 did-not-run**, total re-derived from the run rather than carried from
-the scout's 135), `RK1-OLD` and `RK2-OLD` (both named matchers **PASS while their i18n keys render
-raw** — the raw-key blindness, each as a two-run control, each injection proven to have taken via
-Paraglide `en.js` **598 → 597**), and `AX1-OLD` (**the full default suite green at 135/0 with a real
-WCAG 2.1 AA `image-alt` violation live on every candidate `(protected)` surface** — nothing caught it,
-`a11y-smoke` itself 16/16 because its route table is voter-only). **All three passes are the findings,
-not successes.** Three injections, three reverts, each proven twice; `git diff --exit-code` over
-`apps packages tests .github package.json yarn.lock` is 0 and the first surviving product byte is still
-owed to `147-03`. Clean AND injected blob hashes recorded for all 15 instrument paths so `147-04` can
-prove instrument identity. Five suite runs, all preflight-confirmed, none retried.
-
-**Record discrepancy noted, NOT adjudicated here (for `147-05`'s correction pass):** `gsd-tools`
-recomputed `completed_phases` 11 → 10 and `percent` 73 → 67 as a side effect of recording this plan's
-metric. A direct count of the ROADMAP progress table yields **8** rows reading "Complete", so neither
-figure is derivable from it — Phases 137 and 143 both read "Not started" despite their work being
-shipped and documented in `CLAUDE.md`. The prior committed values were restored rather than let a
-tool-derived regression land silently; the plan-level counts (`total_plans` 90, `completed_plans` 86)
-were kept because those ARE derivable now that 147's five plans exist on disk.
-
-**Phase 146 close (2026-08-26).** Gates green at HEAD `5bb95083e`: egress-blocked visual project 7/7,
-six determinism runs 6/6 with 0 retries consumed, cardinal suite **135 passed / 0 failed / 0 skipped /
-0 flaky / 0 did-not-run**, register closed at 29 rows / 0 placeholder cells. `146-09` corrected
-**thirteen** record claims (the plan chartered five) and filed **seven** todos (the plan chartered
-three), all under `.planning/todos/pending/2026-08-26-146-*.md`. Two boundaries carried forward on
-ticked requirements rather than hidden behind unticked boxes: no run was taken on a **GitHub runner**
-(`D17-CI` used CI's *invocation*, never CI's *environment*), and **D-16's end-to-end symptom was never
-reproduced post-fix** — the chain is mechanical, not demonstrated.
-
-**STATE correction 2026-08-24 (retained):** the post-144 transition set `current_phase: 157`, but
-Phase 151 was executed out of roadmap order on 2026-08-16..18 (19/19 plans, VERIFICATION.md present,
-`- [x]` in ROADMAP.md). Remaining after 146: **147, 148, 149, 150**.
-
-**⚠ Pre-existing counter drift, logged not fixed (`146-09` scope boundary).** `.planning/phases/`
-holds **85** `*-PLAN.md` and **86** `*-SUMMARY.md` — one summary has no matching plan. The `progress`
-block's `total_plans: 85` / `completed_plans: 85` therefore cannot both be right. Not caused by this
-plan and not repaired here; recorded in `146-.../deferred-items.md`.
-
-**Phase 144 planning outcome:** discussion returned with all 10 items at ★ RECOMMENDED, 0 overrules ·
-CONTEXT.md re-measured at HEAD `b3ba1621d`, then **amended in place** after research corrected 9 items
-(4 substantive) · research 2,277 lines, all measured · 37-row negative-control ledger enumerated ·
-7 plans, only `03 ∥ 05` parallel · ledger-first ordering (144-01 writes **zero product bytes**), which
-overrides tracer-first per the milestone's standing acceptance rule.
-
-**Phase 144 hazards carried into execution** (each pinned to a task, none implicit):
-**(1)** the allow-list has **four** sources — omitting source (4), the RPC's relationship map
-(10 pairs / 2,955 key occurrences), throws on every `nominations` row and **fails every E2E setup
-project**; **(2)** the deny-list is `entity_type` **only** — seeding it literally from `skip_columns`
-rejects all 1,481 rows, since `project_id` is on every one; **(3)** `writer.test.ts`'s ~20 fixtures
-carry **no `external_id`**; **(4)** Pass 0 takes pre-deletion `data`, not `bulkData`; **(5)** the
-sentinel set is **10 pairs** (7 `_`-prefixed + 3 bare, the bare forms used by 76 rows).
-
-**Phase 144 record note:** the roadmap's criteria 1 and 5 were **stale when written** — the
-`questions._elections` sentinel criterion 1 asks us to forbid has been a working feature since
-`4aeae0ace` (2026-06-01), one day after the motivating todo was filed, and criterion 5 names
-`baseV1`, gone since Phase 93. Re-scoped per **D-01**; the record is corrected in `144-07`, after the
-gates. A count error of my own ("12 pairs") was caught by the planner and corrected to **10** in
-`a264a972e`, with the error left visible rather than overwritten.
-
-**Phase 143 outcome:** 8 measured negative-control halves, 0 cited · 19 ledger rows, 0 cache replays ·
-guard spec 2 → 30 cases · 2 measured reach gaps closed · 5 records corrected · exclusion list 16 → 16,
-0 additions · ASSERT-09 discharged as a measured zero (`0 real imports`, invariant across both phase
-HEADs) · six gates green at one HEAD, first attempt, E2E 135/0/0.
-
-**Phase 143 background:** the roadmap's premise for this phase was stale — the `src/**` widening it asked for
-landed in `7c47b35b7` (Phase 115, 2026-06-13) and ASSERT-09's fallout is a measured zero. Re-scoped per
-CONTEXT.md **D-01** to prove the reach, close two measured reach gaps, and correct five record targets.
-Five derived decisions were added after re-measurement disproved parts of the discussion baseline:
-**D-02a** (lint is turbo-cached — every evidence run uses `TURBO_FORCE=true`), **D-06a**
-(`no-restricted-syntax` already bans `TSEnumDeclaration`; flat-config REPLACE would delete it silently
-and produce zero errors — new **SC-9**), **D-09a** (disposition set is 5 files / 10 lines, not 5 sites),
-**D-11a** (exclusion list is 16 entries at `:23-40`, not 18), **D-12a** (a fifth record target).
-
-**Standing acceptance rule for every v2.15 phase:** prove the guard fails before claiming it guards —
-negative control run twice (once against the old assertion to demonstrate blindness, once against the
-new one to demonstrate the catch). Visual baselines only in
-`mcr.microsoft.com/playwright:v1.58.2-noble`, `--platform linux/amd64`, dev server `--host 0.0.0.0`;
-never on a developer Mac.
-
-**Phase order rationale:** 137 first (every later phase's E2E evidence depends on the served-app
-preflight), 138 second (an undiagnosed 1-in-8 intermittent contaminates every later "suite green"),
-139 before 142 (a withdrawn finding must shrink scope, not surprise remediation), 141 before 142 (the
-AI-package tests being repaired must actually run in CI), 144 before 145, 147 before 148. 143/146/149/150
-are independent.
+Progress: [███████░░░] 67%
 
 ## Session Continuity
 
-Last session: 2026-10-03T19:21:50.258Z
-Stopped at: Phase 169 complete — all phases complete
+Last session: 2026-11-13T08:53:27.680Z
+Stopped at: Completed 180-02-PLAN.md
 Resume file: None
 
 ## Deferred Items
@@ -1159,6 +384,43 @@ Items acknowledged and deferred at milestone close on 2026-08-12:
 | Phase 169 P11 | 100min | 3 tasks | 14 files |
 | Phase 169 P12 | 5min | 1 tasks | 3 files |
 | Phase 169 P13 | 24min | 3 tasks | 23 files |
+| Phase 179.1 P41 | 55 min | 3 tasks | 12 files |
+| Phase 179.1 P42 | 30min | 2 tasks | 8 files |
+| Phase 179.1 P43 | 2min | 2 tasks | 9 files |
+| Phase 179.1 P44 | 60min | 3 tasks | 15 files |
+| Phase 179.1 P45 | 40min | 3 tasks | 14 files |
+| Phase 179.1 P46 | about 3 h | 2 tasks | 13 files |
+| Phase 179.1 P47 | about 75 min | 3 tasks | 12 files |
+| Phase 179.1 P48 | 50 min | 3 tasks | 8 files |
+| Phase 179.1 P49 | 54 min | 2 tasks | 10 files |
+| Phase 179.1 P50 | 30 min | 2 tasks | 11 files |
+| Phase 179.1 P51 | 60min | 3 tasks | 15 files |
+| Phase 179.1 P52 | 90min | 3 tasks | 14 files |
+| Phase 179.1 P53 | 30 min | 2 tasks | 9 files |
+| Phase 179.1 P54 | 1h 32m | 3 tasks | 9 files |
+| Phase 179.1 P55 | 32 min | 3 tasks | 12 files |
+| Phase 179.1 P56 | 35 min | 3 tasks | 72 files |
+| Phase 179.1 P57 | 59 min | 3 tasks | 8 files |
+| Phase 179.1 P58 | 61 min | 3 tasks | 10 files |
+| Phase 179.1 P59 | 52 min | 3 tasks | 20 files |
+| Phase 179.1 P60 | 71min | 3 tasks | 17 files |
+| Phase 179.1 P61 | 66min | 3 tasks | 18 files |
+| Phase 179.1 P62 | 54 min | 3 tasks | 16 files |
+| Phase 179.1 P63 | 55 min | 3 tasks | 18 files |
+| Phase 179.1 P64 | 120 min | 3 tasks | 7 files |
+| Phase 179.1 P65 | 148min | 3 tasks | 6 files |
+| Phase 179.1 P66 | 72min | 3 tasks | 21 files |
+| Phase 179.1 P81 | about 1 h | 3 tasks | 8 files |
+| Phase 179.1 P82 | 7 min | 2 tasks | 7 files |
+| Phase 179.1 P83 | 33 min | 3 tasks | 11 files |
+| Phase 179.1 P84 | 3h 8m | 3 tasks | 9 files |
+| Phase 179.1 P85 | 21h 13m | 3 tasks | 5 files |
+| Phase 179.1 P86 | 10 min | 3 tasks | 7 files |
+| Phase 179.1 P87 | 47min | 3 tasks | 9 files |
+| Phase 179.1 P88 | 2h 6min | 3 tasks | 13 files |
+| Phase 179.1 P89 | 1h 26min | 3 tasks | 13 files |
+| Phase 179.1 P90 | 30min | 3 tasks | 5 files |
+| Phase 180 P02 | 12h wall (Task 7 25min) | 7 tasks | 28 files |
 
 ## Deferred Items
 
@@ -2194,6 +1456,88 @@ Key cross-milestone reference points carried forward into v2.10:
 - [Phase 169]: 169-13: nodemailer 10 Edge pin NOT applied (clears 2026-10-04T07:51Z, ~13 h after the run); DEPS-09 stays Pending for that alone — todo 2026-10-03-nodemailer-10-edge-pin-held-until-2026-10-04.md
 - [Phase 169]: 169-13: DEPS-12 complete via its 'held with a reason' branch (dotenv 18 / intl-messageformat 12 dated holds; in-major 0)
 - [Phase 169]: 169-13: phase gate on one HEAD be000f31a — 12/12 gates, PG17.6 pgTAP 1335/1335 + db:lint:sql 0, full E2E 171/171/0/0/0; DEPS-01/08/15/16 complete
+- [Phase 179.1]: Plan 41: a user who presses Log out with an unsaved edit and walks away stays signed in behind the native question, and no count ends that session (T-179.1-89, the operator's to overrule); for a user who is present the question takes the modal's place
+- [Phase 179.1]: Plan 41: AdminLogoutButton is not changed, because no route of the Admin App mounts PreventNavigation; phase 179.2's account flows must use the registry if they mount a guard
+- [Phase 179.1]: WR-01 to WR-04 and IN-01 to IN-07 of the review are recorded as open in deferred-items.md (plan 42), and none is fixed by plans 41 or 42
+- [Phase 179.1]: 179.1-43: E2E-03 is not recorded as completed by this plan, because it has no close and no E2E run was made; plans 44 to 46 hold it
+- [Phase 179.1]: 179.1-44: logout() asks nothing; the modal in LogoutButton holds the user's answer, and the native question stays local to PreventNavigation's beforeNavigate (ruling 2)
+- [Phase 179.1]: 179.1-44: the order after Log out is sign-out, discard, leave, reset, so a failed sign-out in plan 45 loses no edit (ruling 3)
+- [Phase 179.1]: 179.1-44: T-179.1-89 is retired and T-179.1-98 registered (ruling 1)
+- [Phase 179.1]: 179.1-45: AuthContext.logout rejects on a failed sign-out, and #runLogout holds the failure and rethrows before anything is discarded, navigated or reset (ruling 2)
+- [Phase 179.1]: 179.1-45: the Contestant App shows the message from one place, the contestant layout, while #logoutFailed is true; the next logout clears it (ruling 3)
+- [Phase 179.1]: 179.1-45: T-179.1-92 changes from accept to mitigate; T-179.1-103 and T-179.1-104 are accepted and registered, and neither is closed by this fix
+- [Phase 179.1]: 179.1-46: the closing run is 179.1-46-final-r2; 179.1-46-final was void (status 8, Clamshell Sleep) and its counts are not evidence
+- [Phase 179.1]: 179.1-46: the first gate pass's red unit row was ruled on by the orchestrator, not the operator: not called void, and the eleven rows were run again on the unchanged tree
+- [Phase 179.1]: Plan 179.1-47 stands as halted, not complete: both fixes are committed and their controls passed, but its full close is red, so E2E-03 is not marked and the plan counter is not advanced.
+- [Phase 179.1]: 179.1-47: the operator decided one rerun of the red close once outside load was down, knowing a green run does not show the cause; 179.1-47-close-r2 is green, 662 of 662, and is the plan's close
+- [Phase 179.1]: 179.1-47: E2E-03 is not marked by this plan: it closes each phase, and plan 50 holds this phase's final run
+- [Phase 179.1]: WR-10's proposal alone is not built: the login route is a second arm of the layout's effect, because the session's load does not run again on a link; 179.1-48-mut-session shows the proposal alone red in a browser
+- [Phase 179.1]: The logout modal's description holds the count's full length and never the ticking number; what a screen reader announces stays on the operator's UAT list
+- [Phase 179.1]: 179.1-49: a resolved navigation that did not move the page is logged as well as a rejected one, as the plan's truth and behaviour say; its ruling 4 names only the rejection
+- [Phase 179.1]: 179.1-49: the Admin and Contestant layouts repeat the failure message and its effect, because a shared component is outside the operator's waiver
+- [Phase 179.1]: 179.1-50: the two truth lines of plans 44 and 46 were edited as the plan's ruling 2 and the execution rules word them; that is the planner's proposal, the operator has not ruled on it, and the operator may overrule it in favour of a restatement
+- [Phase 179.1]: 179.1-50: the phase closes on 179.1-50-final, 666 of 666 on its first run; it says nothing about the slow first route load's cause, and the todo stays open and blocking
+- [Phase 179.1]: 179.1-50: E2E-03's line in REQUIREMENTS.md is not this plan's, so it stays unmarked
+- [Phase 179.1]: 179.1-51: on the operator's ruling, Task 3's verdict on 179.1-51-mut-push names both red titles, and the mutation was not run again; the cause of the second red is UNCONFIRMED
+- [Phase 179.1]: 179.1-51: on the operator's ruling, the storage volume supabase_storage_openvaa-local was removed to clear the disk floor; the close passed on the new volume, and the default project's 327 storage rows have no file behind them
+- [Phase 179.1]: 179.1-51: E2E-03's line in REQUIREMENTS.md stays unmarked, because it is discharged at Phase 179
+- [Phase 179.1]: 179.1-52: on the operator's ruling, Task 2's criterion reads that assert-no-session-in-loads.mjs exits 0 and its lines scanned grow (observed: 1041 to 1063); c528153f3 went in with the original wording unmet
+- [Phase 179.1]: 179.1-52: on the operator's ruling, the driver's docker builder prune -af ran unchanged for the close; no volume or image was removed
+- [Phase 179.1]: 179.1-52: E2E-03's line in REQUIREMENTS.md stays unmarked, as in plan 51, because it is discharged at Phase 179 and the rules allow no other edit of that file
+- [Phase 179.1]: 179.1-53: T-179.1-131, the auth-outage row, is accepted (AR-179.1-09) on the operator's ruling 2; the session read does not tell no session from could not check
+- [Phase 179.1]: 179.1-53: T-179.1-134 and T-179.1-135, the consequences of the operator's ruling 4, are accepted (AR-179.1-10, AR-179.1-11); T-179.1-135 is recorded as narrower than the consequence the operator accepted
+- [Phase 179.1]: 179.1-53: E2E-03's line in REQUIREMENTS.md stays unmarked; the operator may overrule
+- [Phase 179.1]: 179.1-54: WR-16 is fixed with no new load, by the operator's rulings of 2026-11-04 and R1: the Admin App's protected load reads session from parent(), redirects only when it reads none, and answers a read that failed with a 503 under error.default
+- [Phase 179.1]: 179.1-54: by the operator's ruling R2 a sign-out that fails ends on the translated error page in both apps and no redirect follows it; signOutToLogin logs an answer of { error } as well as a rejection
+- [Phase 179.1]: 179.1-54: the first reds of the title on the language of the page are not its evidence, because the fixture opened the English page; the fixture was corrected and both reds taken again under -r2
+- [Phase 179.1]: 179.1-55: WR-17 is accepted by the override the verification proposed, on the operator's ruling of 2026-11-04; status, score and overrides_applied stay for the verifier's next run to recount
+- [Phase 179.1]: 179.1-55: T-179.1-130 closes as mitigated by the operator's ruling R2, which reverses the acceptance in plan 52's row; no accepted residue of the loop is left
+- [Phase 179.1]: 179.1-55: the stale tab is AR-179.1-12 by the operator's ruling R1, on the measured terms; T-179.1-137 and T-179.1-140 stay undecided on the UAT list and are not rulings
+- [Phase 179.1]: 179.1-55: E2E-03's line in REQUIREMENTS.md is not this plan's and stays unmarked, though the shared-id gate now reads it as ready; the operator may overrule
+- [Phase 179.1]: 179.1-56: the round's copy decided once, C1 to C6 all at their recommended answer; no unsavedTitle or logoutFailedTitle key exists
+- [Phase 179.1]: 179.1-56: numeric variant messages match ICU exact counts as input matches (=0, =1, =-1) and end in a * catch-all; @inlang/plugin-message-format pinned to 4.6.0
+- [Phase 179.1]: 179.1-56: about.organizationMatching.content returning its key for the default impute is recorded for the operator (deferred D-56-1), not fixed: a select outside the plural ruling
+- [Phase 179.1]: 179.1-57: the spinner path is Button's loading prop bound to a reactive leaving in both LogoutButtons; Button ignores a Promise its onclick returns
+- [Phase 179.1]: 179.1-57: the spinner inside Button is aria-hidden, so a loading button is named by its loading text once; Loading standing alone keeps its sr-only label
+- [Phase 179.1]: 179.1-58: over an unsaved edit the logout dialog's aria-label is common.logoutUnsavedChanges (C3 a), its visible title stays common.logout, and the hidden description leaves that sentence out
+- [Phase 179.1]: 179.1-58: both apps title the failed sign-out's message error.general (C4 a); an Alert with no actions hides its corner button from assistive technology and the tab order, so it exposes one Close
+- [Phase 179.1]: 179.1-59: A client holds no session when auth.getSession() answers no session and no error; a session, an error or a rejection keeps the error page, in both apps (G-179.1-WR16-1 option b)
+- [Phase 179.1]: 179.1-59: The Admin App's handleError asks whether a session is left only in the browser: the universal client on the server writes no cookies
+- [Phase 179.1]: 179.1-59: The Contestant App's navigation test is shown red by a production mutation that also skips the protected load's first-stage redirect; the plan's two-file mutation stays green
+- [Phase 179.1]: 179.1-60: one SIGNED_OUT subscriber per app through DataWriter.onSignOut; 'here' while this document's browser signOut runs (module counter), and neither app acts on it
+- [Phase 179.1]: 179.1-60: localStorageState handles follow another document's storage event (weak registry, one listener), returning to the default unsaved on a removal or a clear; sessionStorage unchanged
+- [Phase 179.1]: 179.1-60: contexts that call onMount in their constructor are unit-tested with svelte's onMount stubbed through a promise-chain vi.mock factory
+- [Phase 179.1]: 179.1-61: every browser sign-out removes the Contestant App's drafts through one function, discardContestantDrafts in contestantDrafts.ts (the store's reset, the Admin App's logout and its 'elsewhere' subscriber, handleError in the browser once the session has ended, the Contestant App's 'here' reset); a lapsed session, a server-side sign-out and a failed sign-out with the session left keep them
+- [Phase 179.1]: 179.1-62: the logout modal is held open by an opt-in holdOpen that follows leaving (Escape, backdrop, cancel and a forced close refused; closeModal always closes), TimedModal awaits onTimeout, and navigations are held while the Contestant App's sign-out runs and followed with goto only after a failure
+- [Phase 179.1]: The logout count's deadline is a page-written cookie (logout-deadline, count end + 10 s) that logoutDeadlineHandle in hooks.server.ts enforces at the browser's next request; the next document removes the drafts
+- [Phase 179.1]: TimedModal's count is a wall-clock deadline checked every second and on visibilitychange, pageshow, focus and resume, ending once per opening
+- [Phase 179.1]: The cookie module imports deepFreeze relatively so the E2E workspace can import COOKIE
+- [Phase 179.1]: 179.1-64: the Admin App's login form posts to getRoute.current('AdminAppLogin'), so a sign-in after Back reaches the home; the email field is the shared Input; the password control carries autocapitalize none, autocorrect off, spellcheck false, and its toggle returns focus with the caret at the end
+- [Phase 179.1]: 179.1-64: ruling 4, the register page's ?/dismissRegistered stays query-only, because no redirect draws that page at another address
+- [Phase 179.1]: 179.1-64: a test acting after Back on a page that also stood before Back waits for the router's blur of a focused field (goBackFromLoginFormToLoginForm)
+- [Phase 179.1]: 179.1-65: the text-md size rule for .btn/.input/.textarea/.select and the iOS 16px floor moved from @layer components to un-sublayered :where() rules in @layer utilities, where they win over daisyUI 5's sublayers; input-sm stays in inputClass
+- [Phase 179.1]: 179.1-65: only the voter-results baselines changed; the contestant-preview captures came out byte-identical under --update-snapshots-all
+- [Phase 179.1]: 179.1-65: operator ruling (a) on the first visual red (auth-setup, not pixels): one rerun, -r2, red on pixels as intended
+- [Phase 179.1]: 179.1-66: the first final run 179.1-66-final was red on a loaded host (performance budget, 90 s timeout; 24 did not run); the operator ruled diagnose-then-rerun, the debug session found no tree defect (source UNCONFIRMED, leading candidate an iOS Simulator), and the operator chose host-state recording in e2e-run.sh (954bd07bd) then -r2
+- [Phase 179.1]: 179.1-66: the gate set made again as 179.1-66-gates-r2 on head a3fa09eb4 (the gates verdict refuses a stale head); 179.1-66-final-r2 green 695/695 on that head, PASS against 179.1-65-close and 179.1-55-final with the round's deltas; scope, hygiene and ledger --closed (257 rows) PASS; the production drive not made again, as the harness change reaches neither the app nor its specs
+- [Phase 179.1]: 179.1-81 checkpoint: the operator answered `approved`, then `A` at the second checkpoint with one edit: lb questions.arguments.proCategory is `Dofir: {option}`, not the proposed `Fir {option}`
+- [Phase 179.1]: 179.1-81: after the red targeted run 179.1-81-targeted-r2 (the slow first route load signature, Skimle stack up), the operator ruled `a`: Skimle stack stopped, one more run 179.1-81-targeted-r3, green 68 of 68 at load mean 9.4
+- [Phase 179.1]: 179.1-82: the page's logout-count removal is tested at https://example.org/ and https://app.example.org/ by per-file @vitest-environment-options; the expected domains are literal constants, and the red is the mutation that removes expireEveryCopy's Domain= loop (logoutDeadline.test.ts on localhost stays green under it)
+- [Phase 179.1]: 179.1-83: a Log out posts one message on the BroadcastChannel openvaa-logout before its request; a follower gives loggedOutElsewhere only after an announcement heard within 5 000 ms of SIGNED_OUT, in both apps; any other sign-out the tab did not start gets no reason
+- [Phase 179.1]: 179.1-83: the plan's PROH-179.1-56 stage compares apps/frontend/messages with 3c379d3d5 and fails on plan 81's approved fr/lb values; restated against the plan's start head it passes, the check unedited
+- [Phase 179.1]: signOutToLogin takes one event and withdraws the logout count only after a sign-out that worked or a confirmed-gone session; the 503 path keeps it
+- [Phase 179.1]: The OIDC callback withdraws the logout count in register(), right after verifyOtp set the session and before the arrival marker; every earlier failure keeps it
+- [Phase 179.1]: 179.1-85: the round's full run made three times on the operator's rulings: 179.1-85-final red (ERR_NETWORK_CHANGED, battery, Skimle load ~57; ruling A), -r2 red (the -infra worktree restarted the shared stack ~20:08Z; ruling A plus stop and reset), -r3 707 of 707, PASS against 179.1-79-final
+- [Phase 179.1]: 179.1-86: Task 3's verify stage compares apps/frontend/messages with 3c379d3d5, before plan 81's approved fr/lb commit abd0b366a, so it fails on a correct tree; run with that stage restated (catalogue vs the plan's start head, hook and endpoint vs 3c379d3d5), exit 0. Plans 87 to 90 that copy it meet the same failure.
+- [Phase 179.1]: 179.1-87: checkpoint answered 'approved' — 43-entry allowlist with reasons, nine da/sv machine translations as in 179.1-87-approved-strings.json, the tag rule, en Feedack -> Feedback; sv components.video.unmute stays for the native reader
+- [Phase 179.1]: A Log out posts start before its requests and end in a finally after them; another tab names it as the cause while a start is outstanding (LOGOUT_IN_FLIGHT_CAP_MS, 30 s) or within LOGOUT_ANNOUNCEMENT_WINDOW_MS (5 s) of an end; the Admin App's sign-out of a non-administrator posts the same pair in the browser
+- [Phase 179.1]: Plan 88's targeted run is 179.1-88-targeted-r3 (707 of 707, PASS): the first attempt exited 9 on a failed stack restore and -r2 was void; -r2-r2 would not be read by the verdict's newest-attempt rule
+- [Phase 179.1]: 179.1-89: the confirm page and the three gated sign-ins withdraw a closed tab's logout count only once their outcome is known (after verifyOtp set the session, or after the helper admitted it); a held sign-out that leaves a session ends on the 503 with error.default
+- [Phase 179.1]: 179.1-89: the first targeted run was red in the slow-first-route-load shape under another project's host load; on the operator's ruling (a) one rerun, 179.1-89-targeted-r2, was 707 of 707, verdict PASS
+- [Phase 179.1]: 179.1-90: the round's one full run, 179.1-90-final, green at its first attempt (707 of 707 on fb0ca3522), verdict PASS against 179.1-85-final-r3 with plan 88's two title pins and no --except
+- [Phase 179.1]: 179.1-90: the eight WR16J gaps resolved by name in deferred-items.md § From plans 86 to 90, the six WR16J findings fixed, the da and sv strings of plan 87 in a native reader's todo; the ledger closed with 323 rows
+- [Phase 180]: 180-02: the function-driving record names all 129 projects the literal derivation reaches (research's 13 among them); the superset run holds the same 129
+- [Phase 180]: 180-02: the stack held a 1-migration schema after db:stop/db:start; db:reset + db:seed:default per the execution rules, then 22 of 22
 
 ### Quick Tasks Completed
 
@@ -2240,6 +1584,7 @@ Key cross-milestone reference points carried forward into v2.10:
 | 260930-kxi | PR 888 follow-ups: Docker CI build, dev-seed teardown env, bank-auth guard, cf-connecting-ip trust + full E2E | 2026-09-30 | 60a7cfbad | — | [260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se](./quick/260930-kxi-pr-888-follow-ups-docker-ci-build-dev-se/) |
 | 261001-n8y | Remove the legacy src/lib/i18n/translations catalog (messages/ is the single source) and sweep the branch for origin/main-era vestiges | 2026-10-01 | 985f26a6c | — | [261001-n8y-remove-the-legacy-src-lib-i18n-translati](./quick/261001-n8y-remove-the-legacy-src-lib-i18n-translati/) |
 | 261004-hzy | Fix local send-email SMTP_PORT 2500 → 1025 (Mailpit). Both `.env.example` templates + email docs page; `SMTP_HOST=inbucket` kept (Mailpit's network alias). Verified on the stack network: `inbucket:1025` gives the Mailpit ESMTP banner, `:2500` refused. Closes the Phase 169 deferred item. Local gitignored `.env` files must be updated by hand. | 2026-10-04 | 04a6fd021 | complete | [261004-hzy-fix-local-send-email-smtp-port-2500-to-1](./quick/261004-hzy-fix-local-send-email-smtp-port-2500-to-1/) |
+| 261011-ujg | Section H read on 2026-10-11 applied to Phase 178: H1 (b) in the plans and the reading command, H38 (a) accepted, the rest at recommended | 2026-10-11 | d2c890bf7 | — | [261011-ujg-apply-the-operator-s-reading-of-section-](./quick/261011-ujg-apply-the-operator-s-reading-of-section-/) |
 
 **Follow-up to 260607-cd0 (executed 2026-06-07, user-approved):** Deprecation run on the report's proposal. Removed dead code — `utils/{answerQuestion,translations,paths}.ts` (`6edeb9fa2`) + `helpers/{db-precondition,voter-iteration}.helper.ts` & the dead `gotoAndSettle` export (`fc08e10f3`). Renamed the 3 surviving helpers `*.helper.ts`→`*.ts` (navigation/select/settle) + retired the `<concern>.helper.ts` convention (barrel + README updated; only the barrel imported them by path so consumers unaffected). Kept + tracked `tests/IDURA-TEST-RUNBOOK.md` in place (`1d90db68c`). **Item 6 (emailHelper→emailBucket) — DONE + verified green 2026-06-07** (`2764a79a9`): the fixture never actually imported emailHelper (docstring was wrong); whole file was dead except `toCallbackUrl`, which moved into `emailBucket.fixture.ts`; both spec imports repointed; `emailHelper.ts` deleted. User confirmed all tests pass on a live stack; todo moved to `.planning/todos/completed/`. **The entire 260607-cd0 cleanup follow-up is now closed** (dead-code sweep + `.helper` rename + IDURA + emailHelper consolidation).
 
@@ -2267,6 +1612,7 @@ Key cross-milestone reference points carried forward into v2.10:
 - RESOLVED 2026-09-23 by 165.1-05.1 (was BLOCKING, phase 165.1): voter-journey EQTYP-02 intermittent failure in the results election AccordionSelect. Before 6/16 red at the phase tip and 4/16 on the pre-fix body re-measured contemporaneously; after 0/16 red at the fix HEAD (Fisher p = 0.0196 vs the pooled 10/32 pre-fix evidence). Cause CONFIRMED and narrower than the 165.1-05 hypothesis: AccordionSelect's `expanded` was initialised once and never reconciled, so on the now-persistent results subtree only `activate`'s fire-and-forget DELAY.lg timer collapsed it — a ~450 ms window in which a click on the already-active option re-opens the widget permanently. Both mechanisms PRE-EXIST on base verbatim; the phase made them reachable by removing the teardown (D-03), it did not introduce them. Fix + three-arm negative control in 165.1-NEGATIVE-CONTROL.md § 8; full suite 171/171 at the fix HEAD. WINDOWS 278 fixed.
 - [Phase 165.1] The visual gate has NO baseline capturing an open drawer, so this phase's headline change — the app-wide DrawerHost replacing the per-route drawer — is visually unmeasured. G-9 ran green with 4/4 matched, but all four baselines screenshot a page with no overlay showing; G-8's axe scans cover the drawer's conformance, not its appearance. See deferred-items.md D-165.1-07-01 and WINDOWS 282 (open).
 - ~~168-02..08 and 169-01/169-03 PLANs still write the pre-ruling 'check:research-quotes --base' form~~ — resolved 2026-10-02: the orchestrator rewrote all 21 invocations to add `--component-base` (168-07, 168-08, 169-01, 169-03)
+- The slow first route load todo stays open and blocking: the green rerun does not show its cause.
 
 ## Session Continuity
 
