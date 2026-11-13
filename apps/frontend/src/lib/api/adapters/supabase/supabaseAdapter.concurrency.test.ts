@@ -265,8 +265,8 @@ describe('supabase adapter concurrency — criteria C1 and C2, D11', () => {
 
   // THE `#fetch` VECTOR. Same driver, `abortAllJobs()` as the operation, and the assertion is on the two fetch spies. This vector is live even though no Supabase adapter calls `this.fetch` itself: `SupabaseDataWriter` inherits `logout` and the job methods from `UniversalDataWriter` un-overridden, and those reach same-origin app routes — `abortAllJobs` posts to `/api/admin/jobs/abort-all` — where the forwarded cookie really is the request's own session. The request-scoped fetch does not matter for Supabase itself, which is cross-origin and authenticates on `Authorization`, so this vector rests on the same-origin inheritance. Shared between requests, fetchA records 0 calls and fetchB records 2.
   describe('the #fetch vector — two requests must not share one fetch', () => {
-    it('drives the same interleaving with clearIdToken() as the operation through obtain()', async () => {
-      const run = await driveTwoRequests('writer', (adapter) => adapter.clearIdToken());
+    it('drives the same interleaving with abortAllJobs() as the operation through obtain()', async () => {
+      const run = await driveTwoRequests('writer', (adapter) => adapter.abortAllJobs());
 
       expect(run.order).toEqual(EXPECTED_ORDER);
       // The positive control again: B completes inside A's window, so B's own spy served B's request in both runs.
@@ -274,7 +274,7 @@ describe('supabase adapter concurrency — criteria C1 and C2, D11', () => {
     });
 
     it('asserts each request’s fetch spy records exactly one call', async () => {
-      const run = await driveTwoRequests('writer', (adapter) => adapter.clearIdToken());
+      const run = await driveTwoRequests('writer', (adapter) => adapter.abortAllJobs());
 
       // Both counts are read in ONE assertion on purpose: the failure message then carries the whole shape a shared fetch produces — A's spy at 0 calls and B's at 2 — rather than only the first of the two numbers.
       expect([run.fetchA.mock.calls.length, run.fetchB.mock.calls.length]).toEqual([1, 1]);

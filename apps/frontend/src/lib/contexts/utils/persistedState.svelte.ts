@@ -55,6 +55,29 @@ export function sessionStorageState<TValue>(key: string, defaultValue: TValue): 
 }
 
 /**
+ * Remove from storage every item whose key starts with `prefix` and not with `keepPrefix`. Keys are matched as they are stored: `localStorageState` and `sessionStorageState` store an item under the key they are given, unchanged. Does nothing outside the browser.
+ *
+ * A handle already constructed for a removed key keeps its value in memory and stores it again on its next `set` or `update`, so drop such handles before calling this. This holds in the document that removes: a `localStorage` handle in another document follows the removal.
+ *
+ * @param type - The storage to remove from.
+ * @param prefix - The start of the keys to remove.
+ * @param keepPrefix - The start of the keys among them to keep. Left out, none is kept.
+ * @throws An error if `prefix` is empty: every key starts with the empty string, so the whole storage would be cleared.
+ */
+export function removePersistedByPrefix(type: StorageType, prefix: string, keepPrefix?: string): void {
+  if (!prefix) throw new Error('removePersistedByPrefix: an empty prefix would clear the whole storage');
+  const storage = getStorage(type);
+  if (!storage) return;
+  // The matching keys are listed before any is removed, because a removal renumbers the storage's index.
+  const keys = new Array<string>();
+  for (let index = 0; index < storage.length; index += 1) {
+    const key = storage.key(index);
+    if (key?.startsWith(prefix) && !(keepPrefix && key.startsWith(keepPrefix))) keys.push(key);
+  }
+  for (const key of keys) storage.removeItem(key);
+}
+
+/**
  * Shared versioned-payload core backing `localStorageState` and `sessionStorageState` as a Svelte 5 CLASS. Parametrized on `StorageType` so the versioned storage helpers (`getItemFromStorage`/`saveItemToStorage`) are reused — no re-implementation of the `{ version, data }` payload, `requireUserDataVersion` expiry, or `browser` gate.
  *
  * The reactive core is the private `#value` `$state` field; the public `current` getter reads it (reactive read tracks the `$state` dependency).
@@ -66,6 +89,7 @@ export function sessionStorageState<TValue>(key: string, defaultValue: TValue): 
 class PersistedStateImpl<TValue> implements PersistedState<TValue> {
   #type: StorageType;
   #key: string;
+  #defaultValue: TValue;
   #value: TValue;
 
   /**
@@ -76,11 +100,24 @@ class PersistedStateImpl<TValue> implements PersistedState<TValue> {
   constructor(type: StorageType, key: string, defaultValue: TValue) {
     this.#type = type;
     this.#key = key;
+    this.#defaultValue = defaultValue;
     const stored = getItemFromStorage<TValue>(type, key);
     this.#value = $state<TValue>(stored ?? defaultValue) as TValue;
 
     // Persist the default on init when nothing valid was stored, so a non-deterministic default round-trips a reload. This is a synchronous constructor side-effect (NOT an `$effect`); the write is `browser`-gated inside `saveItemToStorage`, so SSR is a no-op.
     if (stored === null) saveItemToStorage(type, key, defaultValue);
+    if (type === 'localStorage') followLocalStorage(this);
+  }
+
+  /**
+   * Take another document's change of `localStorage`, writing nothing back.
+   * @param key - The key that changed, or `null` for a storage that was cleared.
+   * @param newValue - The key's new value as stored, or `null` for a key that was removed.
+   */
+  followChange(key: string | null, newValue: string | null): void {
+    if (key !== null && key !== this.#key) return;
+    const stored = key === null || newValue === null ? null : parseStoredItem<TValue>(this.#type, key, newValue).value;
+    this.#value = stored ?? this.#defaultValue;
   }
 
   get current(): TValue {
@@ -99,6 +136,31 @@ class PersistedStateImpl<TValue> implements PersistedState<TValue> {
 }
 
 /**
+ * The `localStorage` handles of this document, held weakly so that a handle nothing else holds is not kept alive by it. Empty outside the browser.
+ */
+const localStorageHandles = new Set<WeakRef<PersistedStateImpl<unknown>>>();
+let followingLocalStorage = false;
+
+/**
+ * Make a `localStorage` handle follow another document's changes of the storage. The one `storage` listener is added with the first handle, in the browser only.
+ * @param handle - The handle.
+ */
+function followLocalStorage<TValue>(handle: PersistedStateImpl<TValue>): void {
+  if (!browser) return;
+  localStorageHandles.add(new WeakRef(handle as PersistedStateImpl<unknown>));
+  if (followingLocalStorage) return;
+  followingLocalStorage = true;
+  window.addEventListener('storage', (event: StorageEvent) => {
+    if (event.storageArea !== getStorage('localStorage')) return;
+    for (const ref of [...localStorageHandles]) {
+      const live = ref.deref();
+      if (live) live.followChange(event.key, event.newValue);
+      else localStorageHandles.delete(ref);
+    }
+  });
+}
+
+/**
  * Shared versioned-payload core backing `localStorageState` and `sessionStorageState`. Returns a `PersistedStateImpl` instance.
  */
 function storageState<TValue>(type: StorageType, key: string, defaultValue: TValue): PersistedState<TValue> {
@@ -109,37 +171,47 @@ function storageState<TValue>(type: StorageType, key: string, defaultValue: TVal
  * Get an item from storage. If the `type` is `localStorage`, the version number saved with the item is checked and the data is expired if it does not match the required version defined in `settings`.
  */
 function getItemFromStorage<TValue>(type: StorageType, key: string): TValue | null {
-  let item: TValue | null = null;
   const storage = getStorage(type);
   if (!storage) return null;
   const savedItem = storage.getItem(key);
-  if (savedItem) {
-    let savedValue: TValue | null;
-    try {
-      savedValue = JSON.parse(savedItem);
-    } catch (e) {
-      log.error(`Failed to parse ${key} from ${type}`, { err: e });
-      savedValue = null;
-    }
-    if (type === 'localStorage') {
-      // Check that stored data is versioned and the version is greater than or equal to the required version
-      if (
-        savedValue &&
-        typeof savedValue === 'object' &&
-        'version' in savedValue &&
-        'data' in savedValue &&
-        typeof savedValue.version === 'number' &&
-        savedValue.version >= staticSettings.appVersion.requireUserDataVersion
-      ) {
-        item = savedValue.data as TValue;
-      } else {
-        storage.removeItem(key);
-      }
-    } else {
-      item = savedValue as TValue;
-    }
+  if (!savedItem) return null;
+  const { value, expired } = parseStoredItem<TValue>(type, key, savedItem);
+  if (expired) storage.removeItem(key);
+  return value;
+}
+
+/**
+ * Read an item as it is stored. If the `type` is `localStorage`, an item that is not versioned, or whose version is older than the required version defined in `settings`, is expired.
+ * @param type - The storage the item is stored in.
+ * @param key - The item's key, for the log line of an item that cannot be parsed.
+ * @param savedItem - The item as stored.
+ * @returns The item's value, `null` when it cannot be read, and whether it is expired.
+ */
+function parseStoredItem<TValue>(
+  type: StorageType,
+  key: string,
+  savedItem: string
+): { value: TValue | null; expired: boolean } {
+  let savedValue: TValue | null;
+  try {
+    savedValue = JSON.parse(savedItem);
+  } catch (e) {
+    log.error(`Failed to parse ${key} from ${type}`, { err: e });
+    savedValue = null;
   }
-  return item;
+  if (type !== 'localStorage') return { value: savedValue, expired: false };
+  // Check that stored data is versioned and the version is greater than or equal to the required version
+  if (
+    savedValue &&
+    typeof savedValue === 'object' &&
+    'version' in savedValue &&
+    'data' in savedValue &&
+    typeof savedValue.version === 'number' &&
+    savedValue.version >= staticSettings.appVersion.requireUserDataVersion
+  ) {
+    return { value: savedValue.data as TValue, expired: false };
+  }
+  return { value: null, expired: true };
 }
 
 /**

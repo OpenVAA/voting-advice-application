@@ -27,7 +27,7 @@ const eslint = new ESLint();
 const SRC = path.resolve(__dirname, '../..');
 
 // Three structurally distinct loci the boundary can be crossed from: a server-route tree, an API-route tree and a component tree. None of these directories is on the allowlist, so a violation in any of them must fire.
-const GUARDED_DIRS = ['routes/candidate', 'routes/api', 'lib/components'] as const;
+const GUARDED_DIRS = ['routes/contestant', 'routes/api', 'lib/components'] as const;
 
 /** The two allowed loci INSIDE the boundary. The adapter must keep using Supabase; a guard that fires here is broken rather than strict. */
 const ALLOWED_LOCI = ['lib/api/adapters/supabase/dataProvider', 'lib/supabase'] as const;
@@ -170,7 +170,7 @@ describe('adapter-boundary ESLint guard — REVIEW-ADP-06', () => {
 
   // The shrinking half of the allowlist: the grandfathered sites OUTSIDE the boundary. These probe the REAL file paths rather than invented ones, because the allowlist names exact files — an entry that stopped matching its file would turn the gate red on the untouched tree, and this is what catches a mistyped path before the next editor does.
   describe('grandfathered allowlist entries stay silent', () => {
-    it.each([['routes/candidate/(protected)/+layout.server.ts'], ['hooks.server.ts']])(
+    it.each([['lib/server/contestant/signOutToLogin.ts'], ['hooks.server.ts']])(
       'stays silent on a locals.supabase access in the allowlisted src/%s',
       async (relativePath) => {
         const [result] = await eslint.lintText(fixtureFor('a locals.supabase member access').source['.ts'], {
@@ -181,13 +181,13 @@ describe('adapter-boundary ESLint guard — REVIEW-ADP-06', () => {
     );
   });
 
-  // The allowlist SHRINKING, measured rather than asserted. `157-16` moved `routes/candidate/preregister/+layout.server.ts` onto `dataProvider.getAppSettings()` and struck its allowlist entry, taking the list from ten to nine. Deleting a line from an array is not evidence that the path became guarded, so these cases lint the same violation fixtures at that REAL path and require them to FIRE. They are the inverse of the silence cases above, and they are what would go red if a future editor re-added the entry.
-  describe('the de-allowlisted preregister route is now guarded (157-16)', () => {
-    const DE_ALLOWLISTED = 'routes/candidate/preregister/+layout.server.ts';
-    const probePath = path.join(SRC, DE_ALLOWLISTED);
+  // An off-list path, measured rather than asserted. The identity provider's registration endpoint sits in the same API tree as the allowlisted OIDC callback and reaches Supabase only through the server-side data writer, so it is not on the list. Leaving a path off an array is not evidence that the path is guarded, so these cases lint the violation fixtures at that REAL path and require them to FIRE. They are the inverse of the silence cases above, and they are what would go red if a future editor added the entry.
+  describe('an API route off the allowlist is guarded', () => {
+    const OFF_LIST = 'routes/api/contestant/identity-provider/+server.ts';
+    const probePath = path.join(SRC, OFF_LIST);
 
     it.each(VIOLATIONS.map((v) => [v.name] as const))(
-      'fires on %s at the de-allowlisted src/routes/candidate/preregister path',
+      'fires on %s at the off-list src/routes/api/contestant/identity-provider path',
       async (name) => {
         const fixture = fixtureFor(name);
         const [result] = await eslint.lintText(fixture.source['.ts'], { filePath: probePath });
@@ -210,8 +210,8 @@ describe('adapter-boundary ESLint guard — REVIEW-ADP-06', () => {
       }
     );
 
-    // The real file, not a fixture: after the `157-16` rewrite it must be clean under the now-stricter scope. This is the case that goes red if the rewrite left a Supabase reference behind.
-    it('finds no boundary violation in the real rewritten route file', async () => {
+    // The real file, not a fixture: it must be clean under the guard's scope. This is the case that goes red if a Supabase reference is added to it.
+    it('finds no boundary violation in the real route file', async () => {
       const [result] = await eslint.lintFiles([probePath]);
       expect(boundaryMessages(result.messages)).toEqual([]);
     });

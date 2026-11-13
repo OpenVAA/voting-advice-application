@@ -1,16 +1,22 @@
+import { dynamicSettings, staticSettings } from '@openvaa/app-shared';
 import { describe, expect, it } from 'vitest';
 import { mergeAppSettings, mergeInitialAppSettings } from './settings';
 import type { DynamicSettings, StaticSettings } from '@openvaa/app-shared';
 
 /**
- * Wave-0 purity gate for `mergeAppSettings` (Pattern 8).
- *
- * The historical bug: `mergeAppSettings` returned `Object.assign(target, nonNull)`, mutating the shared `staticSettings` module reference and polluting every other context that read it. The fix makes the merge a pure spread `{ ...target, ...nonNull }`. These tests pin that purity.
+ * Stored settings as a loader hands them over: a deep partial of the settings, typed as the merge's second parameter.
+ */
+function stored(value: unknown): DynamicSettings {
+  return value as DynamicSettings;
+}
+
+/**
+ * The contract of `mergeAppSettings`: plain objects merge member by member at every depth, lists and scalars are replaced whole, a nullish root is skipped, and `target` is never mutated.
  *
  * The cases use small representative objects cast to the public types where the shape does not matter, and the shipped `staticSettings` and `dynamicSettings` where a shipped default is the thing asserted.
  */
 describe('mergeAppSettings', () => {
-  it('returns a new object equal to { ...target, ...nonNull(additional) }', () => {
+  it('adds the roots of additional that target lacks', () => {
     const target = { colors: { primary: 'red' }, locales: ['en'] } as unknown as StaticSettings;
     const additional = { matching: { algorithm: 'manhattan' } } as unknown as DynamicSettings;
 
@@ -23,18 +29,42 @@ describe('mergeAppSettings', () => {
     });
   });
 
-  it('does not mutate the target object (no shared-ref mutation)', () => {
+  it('does not mutate the target object, and returns a different object', () => {
     const target = { colors: { primary: 'red' }, locales: ['en'] } as unknown as StaticSettings;
     const targetSnapshot = JSON.parse(JSON.stringify(target));
-    const additional = { matching: { algorithm: 'manhattan' } } as unknown as DynamicSettings;
+    const additional = { colors: { secondary: 'green' }, matching: { algorithm: 'manhattan' } };
 
-    const result = mergeAppSettings(target, additional);
+    const result = mergeAppSettings(target, stored(additional));
 
     expect(target).toEqual(targetSnapshot);
     expect(result).not.toBe(target);
   });
 
-  it('filters out null/undefined values in additional (does not overwrite populated target keys)', () => {
+  it('does not mutate a nested object of the target that it merges into', () => {
+    const base = mergeAppSettings(staticSettings, dynamicSettings);
+    const snapshot = JSON.parse(JSON.stringify(base));
+
+    const result = mergeAppSettings(
+      base,
+      stored({ access: { voterApp: false }, results: { sections: ['candidate'] } })
+    );
+
+    expect(JSON.parse(JSON.stringify(base))).toEqual(snapshot);
+    expect(result.access).not.toBe(base.access);
+    expect(result.results).not.toBe(base.results);
+  });
+
+  it('shares a subtree the source does not touch, by reference', () => {
+    const base = mergeAppSettings(staticSettings, dynamicSettings);
+
+    const result = mergeAppSettings(base, stored({ access: { voterApp: false } }));
+
+    expect(result.entityDetails).toBe(base.entityDetails);
+    expect(result.contestantApp).toBe(base.contestantApp);
+    expect(result.results.cardContents).toBe(base.results.cardContents);
+  });
+
+  it('skips a root whose value is null or undefined', () => {
     const target = { colors: { primary: 'red' }, locales: ['en'] } as unknown as StaticSettings;
     const additional = {
       colors: null,
@@ -49,13 +79,147 @@ describe('mergeAppSettings', () => {
     expect(result.matching).toEqual({ algorithm: 'manhattan' });
   });
 
-  it('overrides the corresponding target key when additional has a non-null value', () => {
-    const target = { colors: { primary: 'red' } } as unknown as StaticSettings;
+  it('merges a root member by member: the members additional does not name survive', () => {
+    const target = { colors: { primary: 'red', secondary: 'green' } } as unknown as StaticSettings;
     const additional = { colors: { primary: 'blue' } } as unknown as DynamicSettings;
 
     const result = mergeAppSettings(target, additional) as unknown as Record<string, unknown>;
 
-    expect(result.colors).toEqual({ primary: 'blue' });
+    expect(result.colors).toEqual({ primary: 'blue', secondary: 'green' });
+  });
+
+  it('keeps the shipped `questions` when the stored `contestantApp` root does not carry it', () => {
+    const result = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      stored({ contestantApp: { entityTypes: ['candidate', 'organization'] } })
+    );
+
+    expect(result.contestantApp.questions).toEqual(dynamicSettings.contestantApp.questions);
+    expect(result.contestantApp.entityTypes).toEqual(['candidate', 'organization']);
+  });
+
+  it('keeps the shipped siblings three levels down when one nested member is stored', () => {
+    const result = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      stored({ contestantApp: { questions: { hideHero: true } } })
+    );
+
+    expect(result.contestantApp).toEqual({
+      questions: { hideHero: true, hideVideo: dynamicSettings.contestantApp.questions.hideVideo },
+      entityTypes: dynamicSettings.contestantApp.entityTypes,
+      registrationModes: dynamicSettings.contestantApp.registrationModes
+    });
+  });
+
+  it('replaces a list whole and never unions it', () => {
+    const result = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      stored({
+        contestantApp: { entityTypes: ['organization'], registrationModes: { candidate: ['email', 'code'] } },
+        results: { sections: ['organization'] }
+      })
+    );
+
+    expect(dynamicSettings.contestantApp.entityTypes).toEqual(['candidate']);
+    expect(result.contestantApp.entityTypes).toEqual(['organization']);
+    expect(dynamicSettings.results.sections).toEqual(['candidate', 'organization']);
+    expect(result.results.sections).toEqual(['organization']);
+    // The matrix is an object and merges by row; each row is a list and is replaced whole.
+    expect(result.contestantApp.registrationModes).toEqual({ candidate: ['email', 'code'], organization: [] });
+  });
+
+  it('replaces a stored list with a shorter one, down to empty', () => {
+    const withModes = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      stored({ contestantApp: { registrationModes: { candidate: ['identity_provider', 'email', 'code'] } } })
+    );
+
+    const result = mergeAppSettings(withModes, stored({ contestantApp: { registrationModes: { candidate: [] } } }));
+
+    expect(result.contestantApp.registrationModes.candidate).toEqual([]);
+  });
+
+  it('lets a stored object win over a shipped null, without throwing', () => {
+    expect(dynamicSettings.notifications.voterApp).toBeNull();
+
+    const result = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      stored({ notifications: { voterApp: { show: false } } })
+    );
+
+    expect(result.notifications.voterApp).toEqual({ show: false });
+    expect(result.notifications.contestantApp).toBeNull();
+  });
+
+  it('skips a nested undefined, so it does not erase the value beneath it', () => {
+    const result = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      stored({ contestantApp: { questions: undefined, entityTypes: undefined }, access: { voterApp: undefined } })
+    );
+
+    expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);
+    expect(result.access.voterApp).toBe(dynamicSettings.access.voterApp);
+  });
+
+  it('lets a nested null replace the value beneath it', () => {
+    const withNotification = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      stored({ notifications: { voterApp: { show: true } } })
+    );
+
+    const result = mergeAppSettings(withNotification, stored({ notifications: { voterApp: null } }));
+
+    expect(result.notifications.voterApp).toBeNull();
+  });
+
+  it('answers a value deep-equal to the target for the stored value `{}`', () => {
+    const base = mergeAppSettings(staticSettings, dynamicSettings);
+
+    const result = mergeAppSettings(base, stored({}));
+
+    expect(result).toEqual(base);
+    expect(result).not.toBe(base);
+  });
+
+  it('merges an Error passed as the source as nothing', () => {
+    const base = mergeAppSettings(staticSettings, dynamicSettings);
+
+    const result = mergeAppSettings(base, stored(new Error('the settings failed to load')));
+
+    expect(result).toEqual(base);
+  });
+
+  it.each(['__proto__', 'constructor', 'prototype'])('skips a source key named %s at the root', (key) => {
+    const base = mergeAppSettings(staticSettings, dynamicSettings);
+    // Parsed from JSON so that `__proto__` is an own key of the source, as it is in a stored value.
+    const additional = JSON.parse(`{ "${key}": { "polluted": true }, "access": { "voterApp": false } }`);
+
+    const result = mergeAppSettings(base, stored(additional));
+
+    expect(Object.hasOwn(result, key)).toBe(false);
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(result.access.voterApp).toBe(false);
+  });
+
+  it.each(['__proto__', 'constructor', 'prototype'])('skips a source key named %s inside a merged root', (key) => {
+    const base = mergeAppSettings(staticSettings, dynamicSettings);
+    const additional = JSON.parse(`{ "access": { "${key}": { "polluted": true }, "voterApp": false } }`);
+
+    const result = mergeAppSettings(base, stored(additional));
+
+    expect(Object.hasOwn(result.access, key)).toBe(false);
+    expect(Object.getPrototypeOf(result.access)).toBe(Object.prototype);
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(result.access.voterApp).toBe(false);
+    expect(result.access.contestantApp).toBe(dynamicSettings.access.contestantApp);
   });
 });
 
@@ -119,8 +283,8 @@ describe('mergeInitialAppSettings (SSR-init DB-override merge)', () => {
  */
 describe('access.underMaintenance fail-safe (the value the maintenance gate reads)', () => {
   const staticPart = { colors: { primary: 'red' } } as unknown as StaticSettings;
-  const maintenanceOn = { access: { candidateApp: true, underMaintenance: true } } as unknown as DynamicSettings;
-  const maintenanceOff = { access: { candidateApp: true, underMaintenance: false } } as unknown as DynamicSettings;
+  const maintenanceOn = { access: { contestantApp: true, underMaintenance: true } } as unknown as DynamicSettings;
+  const maintenanceOff = { access: { contestantApp: true, underMaintenance: false } } as unknown as DynamicSettings;
 
   it('resolves ON when the build-time settings declare maintenance and the stored column is malformed', () => {
     // A malformed `access` member is dropped whole by partial-preserve (decision A2), so the column reaches the layout as `{}`.

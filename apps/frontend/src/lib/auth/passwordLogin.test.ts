@@ -1,7 +1,8 @@
 import { configureLogger } from '@openvaa/app-shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { passwordLogin } from './passwordLogin';
-import { ADMIN_GRANTS, CANDIDATE_GRANTS, hasAnyGrant, readGrants } from './roles';
+import { ADMIN_GRANTS, CONTESTANT_GRANTS, hasAnyGrant, parseGrantClaims, readGrants, readSessionGrants } from './roles';
+import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
 import type { PasswordLoginContext } from './passwordLogin';
 import type { GrantClaim, GrantShape } from './roles';
 
@@ -40,6 +41,9 @@ const ENTITY_ADMIN: GrantClaim = { scope: 'entity', target_type: 'candidate', ta
 /** Seventeen permissions, including every app-settings and question right. Its role is `editor` and its door is the admin one. */
 const PROJECT_EDITOR: GrantClaim = { scope: 'project', target_type: null, target_id: 'proj-1', role: 'editor' };
 
+/** A claim that found nothing to claim, for a user who has a password. */
+const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [], passwordSet: true };
+
 /**
  * Build the request-context stub the helper acts through, plus the spies needed to observe it.
  *
@@ -63,16 +67,23 @@ function contextWith({
   context: PasswordLoginContext;
   signInWithPassword: ReturnType<typeof vi.fn>;
   signOut: ReturnType<typeof vi.fn>;
+  refreshSession: ReturnType<typeof vi.fn>;
+  claimInvitations: ReturnType<typeof vi.fn>;
 } {
   const signInWithPassword = vi.fn(async () => ({ error: signInError }));
   const signOut = vi.fn(async () => ({ error: null }));
+  const refreshSession = vi.fn(async () => ({ error: null }));
+  const claimInvitations = vi.fn(async () => NOTHING_CLAIMED);
   return {
     context: {
-      auth: { signInWithPassword, signOut },
-      getSession: async () => ({ session, user })
+      auth: { signInWithPassword, signOut, refreshSession },
+      getSession: async () => ({ session, user }),
+      claimInvitations
     },
     signInWithPassword,
-    signOut
+    signOut,
+    refreshSession,
+    claimInvitations
   };
 }
 
@@ -95,30 +106,72 @@ describe('passwordLogin', () => {
   it('returns a 400-class failure when the backend rejects the credentials, without throwing or redirecting', async () => {
     const { context, signOut } = contextWith({ signInError: { message: 'Invalid login credentials' } });
 
-    const outcome = await login(context, CANDIDATE_GRANTS);
+    const outcome = await login(context, CONTESTANT_GRANTS);
 
     expect(outcome).toEqual({ ok: false, status: 400, reason: 'invalidCredentials' });
     expect(signOut).not.toHaveBeenCalled();
   });
 
+  it('never reaches the claim or the refresh when the backend rejects the credentials', async () => {
+    const { context, claimInvitations, refreshSession } = contextWith({
+      signInError: { message: 'Invalid login credentials' }
+    });
+
+    await login(context, CONTESTANT_GRANTS);
+
+    expect(claimInvitations).not.toHaveBeenCalled();
+    expect(refreshSession).not.toHaveBeenCalled();
+  });
+
+  it('claims once after a successful sign-in, and does not refresh when nothing was claimed', async () => {
+    const { context, claimInvitations, refreshSession } = contextWith();
+
+    await login(context, CONTESTANT_GRANTS);
+
+    expect(claimInvitations).toHaveBeenCalledTimes(1);
+    expect(claimInvitations).toHaveBeenCalledWith();
+    expect(refreshSession).not.toHaveBeenCalled();
+  });
+
   it('returns a 500-class failure when the sign-in succeeds but no session comes back', async () => {
     const { context } = contextWith({ session: null });
 
-    expect(await login(context, CANDIDATE_GRANTS)).toEqual({ ok: false, status: 500, reason: 'noSession' });
+    expect(await login(context, CONTESTANT_GRANTS)).toEqual({ ok: false, status: 500, reason: 'noSession' });
   });
 
   it('returns a 500-class failure when the sign-in succeeds but no user comes back', async () => {
     const { context } = contextWith({ user: null });
 
-    expect(await login(context, CANDIDATE_GRANTS)).toEqual({ ok: false, status: 500, reason: 'noSession' });
+    expect(await login(context, CONTESTANT_GRANTS)).toEqual({ ok: false, status: 500, reason: 'noSession' });
   });
 
-  it('returns a success outcome carrying the session and the user when a grant shape is allowed', async () => {
+  it('returns a success outcome carrying the session, the user and the claim when a grant shape is allowed', async () => {
     const session = { access_token: accessTokenFor([ENTITY_EDITOR]) };
     const { context, signOut } = contextWith({ session });
 
-    expect(await login(context, CANDIDATE_GRANTS)).toEqual({ ok: true, session, user: { id: 'user-1' } });
+    expect(await login(context, CONTESTANT_GRANTS)).toEqual({
+      ok: true,
+      session,
+      user: { id: 'user-1' },
+      claim: NOTHING_CLAIMED
+    });
     expect(signOut).not.toHaveBeenCalled();
+  });
+
+  it('admits an organization editor against the contestant shape set, and refuses a faction or an alliance editor', async () => {
+    const organization = contextWith({
+      session: { access_token: accessTokenFor([{ ...ENTITY_EDITOR, target_type: 'organization' }]) }
+    });
+    expect((await login(organization.context, CONTESTANT_GRANTS)).ok).toBe(true);
+    expect(organization.signOut).not.toHaveBeenCalled();
+
+    for (const target_type of ['faction', 'alliance']) {
+      const { context, signOut } = contextWith({
+        session: { access_token: accessTokenFor([{ ...ENTITY_EDITOR, target_type }]) }
+      });
+      expect(await login(context, CONTESTANT_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
+      expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
+    }
   });
 
   it('signs the local session out before returning the 403-class failure, so a rejected principal keeps no session', async () => {
@@ -138,12 +191,12 @@ describe('passwordLogin', () => {
     expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
   });
 
-  it('rejects an admin-only principal against the candidate shape set', async () => {
+  it('rejects an admin-only principal against the contestant shape set', async () => {
     const { context, signOut } = contextWith({
       session: { access_token: accessTokenFor([PROJECT_ADMIN, GLOBAL_ADMIN]) }
     });
 
-    expect(await login(context, CANDIDATE_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
+    expect(await login(context, CONTESTANT_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
     expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
   });
 
@@ -161,17 +214,17 @@ describe('passwordLogin', () => {
     expect(signOut).toHaveBeenCalledWith({ scope: 'local' });
   });
 
-  it('denies the candidate door to that same shape, so it opens neither', async () => {
+  it('denies the contestant door to that same shape, so it opens neither', async () => {
     const { context } = contextWith({ session: { access_token: accessTokenFor([ENTITY_ADMIN]) } });
 
-    expect(await login(context, CANDIDATE_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
+    expect(await login(context, CONTESTANT_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
   });
 
   // THE WRONG-DOOR CASE, the other half of what a role-only gate would get wrong: a project editor is an administrator of a project, and its role literal is `editor`.
-  it('denies the candidate door to a project-scope editor', async () => {
+  it('denies the contestant door to a project-scope editor', async () => {
     const { context } = contextWith({ session: { access_token: accessTokenFor([PROJECT_EDITOR]) } });
 
-    expect(await login(context, CANDIDATE_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
+    expect(await login(context, CONTESTANT_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
   });
 
   // A session minted before the access-token hook changed carries the retired claim key until its token refreshes. It opens nothing, here or in the database, and there is deliberately no fallback that would let it.
@@ -190,7 +243,7 @@ describe('passwordLogin', () => {
       status: 403,
       reason: 'grantNotAllowed'
     });
-    expect(await login(contextWith({ session: retired }).context, CANDIDATE_GRANTS)).toEqual({
+    expect(await login(contextWith({ session: retired }).context, CONTESTANT_GRANTS)).toEqual({
       ok: false,
       status: 403,
       reason: 'grantNotAllowed'
@@ -200,7 +253,7 @@ describe('passwordLogin', () => {
   it('issues exactly one backend sign-in call per invocation', async () => {
     const { context, signInWithPassword } = contextWith();
 
-    await login(context, CANDIDATE_GRANTS);
+    await login(context, CONTESTANT_GRANTS);
 
     expect(signInWithPassword).toHaveBeenCalledTimes(1);
     expect(signInWithPassword).toHaveBeenCalledWith({
@@ -224,6 +277,22 @@ describe('passwordLogin', () => {
   });
 });
 
+describe('parseGrantClaims', () => {
+  it('keeps the well-formed entries of a list and drops the rest', () => {
+    expect(parseGrantClaims([PROJECT_ADMIN, null, 'admin', { scope: 'project' }, ENTITY_EDITOR])).toEqual([
+      PROJECT_ADMIN,
+      ENTITY_EDITOR
+    ]);
+  });
+
+  it.each([[null], [undefined], [{ grants: [PROJECT_ADMIN] }], ['[]']])(
+    'answers an empty list for %j, which is no list',
+    (value) => {
+      expect(parseGrantClaims(value)).toEqual([]);
+    }
+  );
+});
+
 describe('readGrants', () => {
   it('returns the grant entries of a token that carries them', () => {
     expect(readGrants(accessTokenFor([PROJECT_ADMIN, ENTITY_EDITOR]))).toEqual([PROJECT_ADMIN, ENTITY_EDITOR]);
@@ -241,6 +310,10 @@ describe('readGrants', () => {
   it('returns an empty list rather than throwing on a token that is not a JWT at all', () => {
     expect(readGrants('not-a-token')).toEqual([]);
     expect(readGrants('')).toEqual([]);
+  });
+
+  it('returns an empty list rather than throwing for a session that carries no access token', () => {
+    expect(readSessionGrants({} as { access_token: string })).toEqual([]);
   });
 
   it('returns an empty list rather than throwing when the payload is not decodable JSON', () => {
@@ -268,20 +341,24 @@ describe('readGrants', () => {
 
 describe('hasAnyGrant', () => {
   it('is a pure membership test over the claims list, matching on the scope and the role together', () => {
-    expect(hasAnyGrant([ENTITY_EDITOR], CANDIDATE_GRANTS)).toBe(true);
+    expect(hasAnyGrant([ENTITY_EDITOR], CONTESTANT_GRANTS)).toBe(true);
     expect(hasAnyGrant([ENTITY_EDITOR], ADMIN_GRANTS)).toBe(false);
     expect(hasAnyGrant([], ADMIN_GRANTS)).toBe(false);
     expect(hasAnyGrant([GLOBAL_ADMIN], ADMIN_GRANTS)).toBe(true);
     // Neither half alone is enough: the entity-scope admin matches the admin set's role and the contestant set's scope, and is admitted by neither.
     expect(hasAnyGrant([ENTITY_ADMIN], ADMIN_GRANTS)).toBe(false);
-    expect(hasAnyGrant([ENTITY_ADMIN], CANDIDATE_GRANTS)).toBe(false);
+    expect(hasAnyGrant([ENTITY_ADMIN], CONTESTANT_GRANTS)).toBe(false);
   });
 
-  it('admits only the CANDIDATE entity editor to the Candidate App, not an organization, faction or alliance editor (162-REVIEW IN-05)', () => {
-    for (const target_type of ['organization', 'faction', 'alliance']) {
-      expect(hasAnyGrant([{ ...ENTITY_EDITOR, target_type }], CANDIDATE_GRANTS)).toBe(false);
+  it('admits the candidate and the organization entity editor to the Contestant App, and neither a faction nor an alliance editor', () => {
+    for (const target_type of ['candidate', 'organization']) {
+      expect(hasAnyGrant([{ ...ENTITY_EDITOR, target_type }], CONTESTANT_GRANTS)).toBe(true);
     }
-    expect(hasAnyGrant([ENTITY_EDITOR], CANDIDATE_GRANTS)).toBe(true);
+    for (const target_type of ['faction', 'alliance']) {
+      expect(hasAnyGrant([{ ...ENTITY_EDITOR, target_type }], CONTESTANT_GRANTS)).toBe(false);
+    }
+    // The pair still decides: an entity-scope admin of an organization holds the admitted target type and the wrong role.
+    expect(hasAnyGrant([{ ...ENTITY_ADMIN, target_type: 'organization' }], CONTESTANT_GRANTS)).toBe(false);
     // A shape that names no target_type still matches any, so the admin shapes are unaffected.
     expect(hasAnyGrant([PROJECT_EDITOR], [{ scope: 'project', role: 'editor' }])).toBe(true);
   });
@@ -296,6 +373,9 @@ describe('hasAnyGrant', () => {
       { scope: 'account', role: 'admin' },
       { scope: 'project', role: 'admin' }
     ]);
-    expect([...CANDIDATE_GRANTS]).toEqual([{ scope: 'entity', role: 'editor', target_type: 'candidate' }]);
+    expect([...CONTESTANT_GRANTS]).toEqual([
+      { scope: 'entity', role: 'editor', target_type: 'candidate' },
+      { scope: 'entity', role: 'editor', target_type: 'organization' }
+    ]);
   });
 });

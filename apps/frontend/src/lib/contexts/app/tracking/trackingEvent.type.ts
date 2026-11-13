@@ -1,43 +1,19 @@
-import type { EntityType } from '@openvaa/data';
+import type { EventAttributes, EventName } from '$lib/analytics/events.schema';
 
 /**
  * A name a call site may track: every name of the event vocabulary except the pageview, which the tracking service builds itself.
  */
-export interface TrackingEvent<
-  TData extends Record<string, JSONData | undefined> = Record<string, JSONData | undefined>
-> {
-  name: TrackingEventName;
-  data: TData;
-}
+export type TrackingEventName = Exclude<EventName, 'pageview'>;
 
-type TrackingEventName =
-  | 'answer_delete'
-  | 'answer_resetAll'
-  | 'answer'
-  | 'dataConsent_granted'
-  | 'entityCard_expandSubcards'
-  | 'entityDetails_changeTab'
-  | 'feedback_error'
-  | 'feedback_sent'
-  | 'filters_active'
-  | 'filters_reset'
-  | 'maintenance_shown'
-  | 'menu_open'
-  | 'pageview'
-  | 'question_next'
-  | 'question_previous'
-  | 'question_skip'
-  | 'question_startFrom'
-  | 'questionInfo_collapse'
-  | 'questionInfo_expand'
-  | 'questionExtendedInfo_collapseSection'
-  | 'questionExtendedInfo_expandSection'
-  | 'questionExtendedInfo_open'
-  | `results_browse_${EntityType}`
-  | 'results_browse'
-  | 'results_changeElection'
-  | 'results_changeTab'
-  | `results_ranked_${EntityType}`
-  | 'results_ranked'
-  | 'survey_opened'
-  | 'video';
+/**
+ * The attributes a call site passes for the event `TName`, exactly as the event vocabulary defines them.
+ */
+export type TrackingEventData<TName extends TrackingEventName> = EventAttributes<TName>;
+
+/**
+ * An analytics event of the vocabulary: its name and the attributes that event may carry.
+ */
+export interface TrackingEvent<TName extends TrackingEventName = TrackingEventName> {
+  name: TName;
+  data: TrackingEventData<TName>;
+}

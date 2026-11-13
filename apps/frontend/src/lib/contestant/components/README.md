@@ -1,0 +1,17 @@
+# Candidate Components
+
+> See also the online doc [Components](https://openvaa.org/developers-guide/frontend/components) (or [locally](</apps/docs/src/routes/(content)/developers-guide/frontend/components/+page.md>))
+
+This directory contains components specific to the contestant application used throughout the OpenVAA frontend.
+
+| Component                      | Purpose                                                                                                                                                                                                                                                                                                     |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NotEditableNote`              | A note saying that something cannot be edited, with one Contact support button. Its `reason` is `'answersLocked'`, `'nominationsLocked'` or `'nominationsAnswersLocked'`, and a second sentence is passed as children. It goes in `MainContent`'s `note` snippet.                                           |
+| `NothingToEdit`                | The view of a signed-in user who edits no entity.                                                                                                                                                                                                                                                           |
+| `PasswordSignIn`               | The password half of a sign-in form: the labelled password field, the message of a refused sign-in, the link to the forgot-password page and, where it is offered, the link for a user who has not set a password. Both links carry the typed address. Each screen that renders it passes its own test ids. |
+| `ReadFailure`                  | The view shown in place of a page when the user's data could not be read: the error message, a sentence saying the user is still signed in, a Try again button that reruns the loads, the support block and logout.                                                                                         |
+| `RegistrationCodeField`        | One labelled text input for a registration code, with the format of a code as its hint: the input library's `Input` of the `text` kind. It never rewrites what was typed or pasted and sets no limit on its length.                                                                                         |
+| `RegistrationModeSelector`     | A choice among the ways to register: native radios in a fieldset, with the chosen mode’s panel, a snippet of the caller’s, under its radio. Only the chosen panel is in the document. With one mode the panel is rendered directly, and with none nothing is.                                               |
+| `TermsOfUse`, `TermsOfUseForm` | The terms of use and the form for accepting them.                                                                                                                                                                                                                                                           |
+
+For auto-generated component documentation, see the [generated components documentation](https://openvaa.org/developers-guide/frontend/components/generated).

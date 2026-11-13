@@ -38,7 +38,8 @@ See `MultilingualTextPart.type.ts`.
     placeholder,
     disabled,
     isTranslationsVisible,
-    mainInputs,
+    requiredLocale,
+    describedBy,
     restProps,
     onChange
   }: MultilingualTextPartProps = $props();
@@ -53,6 +54,23 @@ See `MultilingualTextPart.type.ts`.
   const currentLocale = ctx.locale;
 
   ////////////////////////////////////////////////////////////////////
+  // Which fields are rendered
+  ////////////////////////////////////////////////////////////////////
+
+  /** The supported locales in field order: the displayed one, the required one, the rest. */
+  const orderedLocales = $derived([
+    ...new Set([currentLocale, ...(requiredLocale ? [requiredLocale] : []), ...locales])
+  ]);
+  /** The locales whose field is rendered. A prefix of `orderedLocales`, so revealing the translations moves no field. */
+  const visibleLocales = $derived(
+    isTranslationsVisible
+      ? orderedLocales
+      : orderedLocales.filter((locale) => locale === currentLocale || locale === requiredLocale)
+  );
+  /** Whether the language labels are visible: whenever more than one field is on screen. */
+  const showLanguageLabels = $derived(visibleLocales.length > 1);
+
+  ////////////////////////////////////////////////////////////////////
   // Value handling
   ////////////////////////////////////////////////////////////////////
 
@@ -62,63 +80,80 @@ See `MultilingualTextPart.type.ts`.
   function getLocalizedValue(locale: string): string {
     return isLocalizedString(value) ? ((value as LocalizedString)[locale] ?? '') : '';
   }
+
+  ////////////////////////////////////////////////////////////////////
+  // Keyboard navigation
+  ////////////////////////////////////////////////////////////////////
+
+  /** The rendered fields, in field order. `$state`, because `bind:this` writes its members. */
+  const fields: Array<HTMLElement> = $state([]);
+
+  /**
+   * Move focus to the first field, which is the displayed locale's. Does nothing when no field is rendered.
+   */
+  export function focus(): void {
+    fields[0]?.focus();
+  }
 </script>
 
 <div class="join join-vertical items-stretch {joinGap}">
-  <!-- Show the field for the current locale and for all others, if translations are visible -->
-  {#each [currentLocale, ...locales.filter((l) => l !== currentLocale)] as locale, i}
-    {#if locale === currentLocale || isTranslationsVisible}
-      {#if type === 'textarea-multilingual'}
-        <div class="relative flex flex-col items-stretch">
-          <!-- The language label inside the field -->
-          <!-- svelte-ignore a11y_label_has_associated_control -->
-          <label
-            id="{id}-label-{locale}"
-            class="small-label left-md top-sm text-secondary absolute transition-opacity"
-            class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
-          <!-- The actual textarea
+  {#each visibleLocales as locale, i (locale)}
+    {#if type === 'textarea-multilingual'}
+      <div class="relative flex flex-col items-stretch">
+        <!-- The language label inside the field -->
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label
+          id="{id}-label-{locale}"
+          lang={locale}
+          class="small-label left-md top-sm text-secondary absolute transition-opacity"
+          class:opacity-0={!showLanguageLabels}>{t(assertTranslationKey(`lang.${locale}`))}</label>
+        <!-- The actual textarea
                NB. Join does not work it, so we do it by hand -->
-          <!-- bind: keep — $state target for bind:this; mainInputs is $state([]) in the owning Input. -->
-          <textarea
+        <textarea
+          id="{id}-{locale}"
+          lang={locale}
+          aria-labelledby="{id}-label {id}-label-{locale}"
+          aria-describedby={describedBy}
+          aria-required={locale === requiredLocale ? 'true' : undefined}
+          {placeholder}
+          {disabled}
+          rows="4"
+          {...concatClass(restProps ?? {}, `${textareaClass} transition-[padding]`)}
+          class:pt-24={showLanguageLabels}
+          class:rounded-t-none={showLanguageLabels && i > 0}
+          class:rounded-b-none={showLanguageLabels && i !== visibleLocales.length - 1}
+          bind:this={fields[i]}
+          onchange={(e) => onChange?.(e, locale)}
+          value={getLocalizedValue(locale)}></textarea>
+      </div>
+    {:else if type === 'text-multilingual'}
+      <div class="{inputContainerClass} join-item">
+        <!-- The language label inside the field -->
+        <!-- svelte-ignore a11y_label_has_associated_control -->
+        <label
+          id="{id}-label-{locale}"
+          lang={locale}
+          class="{inputLabelClass} transition-opacity"
+          class:opacity-0={!showLanguageLabels}>{t(assertTranslationKey(`lang.${locale}`))}</label>
+        <div class={inputAndIconContainerClass}>
+          <!-- The actual text input -->
+          <input
+            type="text"
             id="{id}-{locale}"
+            lang={locale}
             aria-labelledby="{id}-label {id}-label-{locale}"
+            aria-describedby={describedBy}
+            aria-required={locale === requiredLocale ? 'true' : undefined}
             {placeholder}
             {disabled}
-            rows="4"
-            {...concatClass(restProps ?? {}, `${textareaClass} transition-[padding]`)}
-            class:pt-24={isTranslationsVisible}
-            class:rounded-t-none={isTranslationsVisible && i > 0}
-            class:rounded-b-none={isTranslationsVisible && i !== locales.length - 1}
-            bind:this={mainInputs[i]}
+            {...concatClass(restProps ?? {}, inputClass)}
+            bind:this={fields[i]}
             onchange={(e) => onChange?.(e, locale)}
-            value={getLocalizedValue(locale)}></textarea>
+            value={getLocalizedValue(locale)} />
         </div>
-      {:else if type === 'text-multilingual'}
-        <div class="{inputContainerClass} join-item">
-          <!-- The language label inside the field -->
-          <!-- svelte-ignore a11y_label_has_associated_control -->
-          <label
-            id="{id}-label-{locale}"
-            class="{inputLabelClass} transition-opacity"
-            class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
-          <div class={inputAndIconContainerClass}>
-            <!-- The actual text input -->
-            <!-- bind: keep — $state target for bind:this; mainInputs is $state([]) in the owning Input. -->
-            <input
-              type="text"
-              id="{id}-{locale}"
-              aria-labelledby="{id}-label {id}-label-{locale}"
-              {placeholder}
-              {disabled}
-              {...concatClass(restProps ?? {}, inputClass)}
-              bind:this={mainInputs[i]}
-              onchange={(e) => onChange?.(e, locale)}
-              value={getLocalizedValue(locale)} />
-          </div>
-        </div>
-      {:else}
-        <ErrorMessage inline message={t('error.general')} />
-      {/if}
+      </div>
+    {:else}
+      <ErrorMessage inline message={t('error.general')} />
     {/if}
   {/each}
 </div>

@@ -1,26 +1,38 @@
 import { resolveRoute } from '$app/paths';
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
-import type { Id } from '@openvaa/core';
+import type { GrantClaim } from '$lib/auth/roles';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
 import type { DataApiActionResult } from './actionResult.type';
 import type {
   AbortJobOptions,
+  AddressConfirmationResult,
   BasicUserData,
-  CandidateUserData,
-  CheckRegistrationData,
+  ContestantUserData,
   DataWriter,
   DWReturnType,
   GetActiveJobsOptions,
-  GetCandidateUserDataOptions,
+  GetEntityUserDataOptions,
   GetJobProgressOptions,
+  GetNominationParentOptionsOptions,
   GetPastJobsOptions,
-  LocalizedCandidateData,
+  GetUserEntitiesOptions,
+  InvitationClaimResult,
+  InvitationCodeStatus,
+  NominationParentOption,
+  RequestAddressConfirmationOptions,
+  RequestPasswordRecoveryOptions,
+  RequestSignInLinkOptions,
   SetAnswersOptions,
   SetAnswersResult,
+  SetEntityNominationsOptions,
+  SetEntityNominationsResult,
   SetPropertiesOptions,
+  SignOutOrigin,
   StartJobOptions,
-  UnverifiedAnswers
+  UnverifiedAnswers,
+  UpdateEntityPropertiesResult,
+  UserEntity
 } from './dataWriter.type';
 
 /**
@@ -42,71 +54,32 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // PUBLIC METHODS
   ////////////////////////////////////////////////////////////////////
 
-  checkRegistrationKey(opts: { registrationKey: string }): DWReturnType<CheckRegistrationData> {
-    return this._checkRegistrationKey(opts);
+  checkInvitationCode(opts: { code: string }): DWReturnType<InvitationCodeStatus> {
+    return this._checkInvitationCode(opts);
   }
 
-  register(opts: { registrationKey: string; password: string }): DWReturnType<DataApiActionResult> {
-    return this._register(opts);
+  requestSignInLink(opts: RequestSignInLinkOptions): DWReturnType<DataApiActionResult> {
+    return this._requestSignInLink(opts);
+  }
+
+  requestPasswordRecovery(opts: RequestPasswordRecoveryOptions): DWReturnType<DataApiActionResult> {
+    return this._requestPasswordRecovery(opts);
+  }
+
+  requestAddressConfirmation(opts: RequestAddressConfirmationOptions): Promise<AddressConfirmationResult> {
+    return this._requestAddressConfirmation(opts);
+  }
+
+  signInWithInvitationCode(opts: { code: string; password: string }): DWReturnType<DataApiActionResult> {
+    return this._signInWithInvitationCode(opts);
+  }
+
+  claimInvitations(): DWReturnType<InvitationClaimResult> {
+    return this._claimInvitations();
   }
 
   login(opts: { username: string; password: string }): DWReturnType<DataApiActionResult> {
     return this._login(opts);
-  }
-
-  async exchangeCodeForIdToken(opts: {
-    authorizationCode: string;
-    codeVerifier: string;
-    redirectUri: string;
-  }): DWReturnType<DataApiActionResult> {
-    return (await this.post({
-      url: UNIVERSAL_API_ROUTES.token,
-      body: {
-        authorizationCode: opts.authorizationCode,
-        codeVerifier: opts.codeVerifier,
-        redirectUri: opts.redirectUri
-      }
-    })) as DataApiActionResult;
-  }
-
-  async preregisterWithIdToken(body: {
-    email: string;
-    nominations: Array<{ electionId: Id; constituencyId: Id }>;
-    extra: {
-      emailTemplate: {
-        subject: string;
-        text: string;
-        html: string;
-      };
-    };
-  }): DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }> {
-    const response = await this.post({
-      url: UNIVERSAL_API_ROUTES.preregister,
-      body,
-      parser: 'none'
-    });
-    return {
-      type: response.ok ? 'success' : 'failure',
-      response: { status: response.status }
-    };
-  }
-
-  preregisterWithApiToken(opts: {
-    body: {
-      firstName: string;
-      lastName: string;
-      identifier: string;
-      email: string;
-      nominations: Array<{ electionId: Id; constituencyId: Id }>;
-    };
-  }): DWReturnType<DataApiActionResult> {
-    return this._preregister(opts);
-  }
-
-  async clearIdToken(): DWReturnType<DataApiActionResult> {
-    return (await this.delete({
-      url: UNIVERSAL_API_ROUTES.token
-    })) as DataApiActionResult;
   }
 
   async logout(): DWReturnType<DataApiActionResult> {
@@ -140,22 +113,34 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._getBasicUserData();
   }
 
-  requestForgotPasswordEmail(opts: { email: string }): DWReturnType<DataApiActionResult> {
-    return this._requestForgotPasswordEmail(opts);
+  isSessionGone(): Promise<boolean> {
+    return this._isSessionGone();
   }
 
-  resetPassword(opts: { code: string; password: string }): DWReturnType<DataApiActionResult> {
-    return this._resetPassword(opts);
+  getProjectGrants(): DWReturnType<Array<GrantClaim>> {
+    return this._getProjectGrants();
+  }
+
+  onSignOut(handler: (origin: SignOutOrigin) => void): () => void {
+    return this._onSignOut(handler);
   }
 
   setPassword(opts: { password: string }): DWReturnType<DataApiActionResult> {
     return this._setPassword(opts);
   }
 
-  getCandidateUserData<TNominations extends boolean | undefined>(
-    opts: GetCandidateUserDataOptions<TNominations>
-  ): DWReturnType<CandidateUserData<TNominations>> {
-    return this._getCandidateUserData(opts);
+  acceptTermsOfUse(): DWReturnType<DataApiActionResult> {
+    return this._acceptTermsOfUse();
+  }
+
+  getUserEntities(opts: GetUserEntitiesOptions = {}): DWReturnType<Array<UserEntity>> {
+    return this._getUserEntities(opts);
+  }
+
+  getEntityUserData<TNominations extends boolean | undefined>(
+    opts: GetEntityUserDataOptions<TNominations>
+  ): DWReturnType<ContestantUserData<TNominations> | undefined> {
+    return this._getEntityUserData(opts);
   }
 
   updateAnswers(opts: SetAnswersOptions): DWReturnType<SetAnswersResult> {
@@ -166,12 +151,28 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._setAnswers({ ...opts, overwrite: true });
   }
 
-  updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData> {
-    if (!opts.properties.image?.file && opts.properties.termsOfUseAccepted === undefined)
-      throw new Error(
-        'Either an image file or a value for termsOfUseAccepted is required for updating entity properties'
-      );
+  updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<UpdateEntityPropertiesResult> {
+    const { image } = opts.properties;
+    if (!Object.values(opts.properties).some((value) => value !== undefined))
+      throw new Error('updateEntityProperties: no property was given');
+    if (image !== undefined && image !== null && !image.file)
+      throw new Error('updateEntityProperties: the image carries no file');
     return this._updateEntityProperties(opts);
+  }
+
+  setEntityNominations(opts: SetEntityNominationsOptions): DWReturnType<SetEntityNominationsResult> {
+    if (!opts.target?.id) throw new Error('setEntityNominations: the target entity has no id');
+    if (!Array.isArray(opts.nominations)) throw new Error('setEntityNominations: the nominations are not a list');
+    if (!Array.isArray(opts.readFrom)) throw new Error('setEntityNominations: the nominations read are not a list');
+    return this._setEntityNominations(opts);
+  }
+
+  getNominationParentOptions(
+    opts: GetNominationParentOptionsOptions
+  ): DWReturnType<Array<NominationParentOption> | undefined> {
+    if (!opts.target?.id) throw new Error('getNominationParentOptions: the target entity has no id');
+    if (!Array.isArray(opts.contests)) throw new Error('getNominationParentOptions: the contests are not a list');
+    return this._getNominationParentOptions(opts);
   }
 
   /////////////////////////////////////////////////////////////////////
@@ -224,28 +225,35 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // PROTECTED INTERNAL METHODS TO BE IMPLEMENTED BY SUBCLASSES
   /////////////////////////////////////////////////////////////////////
 
-  protected abstract _preregister(opts: {
-    body: {
-      firstName: string;
-      lastName: string;
-      identifier: string;
-      email: string;
-      nominations: Array<{ electionId: Id; constituencyId: Id }>;
-    };
+  protected abstract _checkInvitationCode(opts: { code: string }): DWReturnType<InvitationCodeStatus>;
+  protected abstract _requestSignInLink(opts: RequestSignInLinkOptions): DWReturnType<DataApiActionResult>;
+  protected abstract _requestPasswordRecovery(opts: RequestPasswordRecoveryOptions): DWReturnType<DataApiActionResult>;
+  protected abstract _requestAddressConfirmation(
+    opts: RequestAddressConfirmationOptions
+  ): Promise<AddressConfirmationResult>;
+  protected abstract _signInWithInvitationCode(opts: {
+    code: string;
+    password: string;
   }): DWReturnType<DataApiActionResult>;
-  protected abstract _checkRegistrationKey(opts: { registrationKey: string }): DWReturnType<CheckRegistrationData>;
-  protected abstract _register(opts: { registrationKey: string; password: string }): DWReturnType<DataApiActionResult>;
+  protected abstract _claimInvitations(): DWReturnType<InvitationClaimResult>;
   protected abstract _login(opts: { username: string; password: string }): DWReturnType<DataApiActionResult>;
   protected abstract _logout(): DWReturnType<DataApiActionResult>;
   protected abstract _getBasicUserData(): DWReturnType<BasicUserData>;
-  protected abstract _requestForgotPasswordEmail(opts: { email: string }): DWReturnType<DataApiActionResult>;
-  protected abstract _resetPassword(opts: { code: string; password: string }): DWReturnType<DataApiActionResult>;
+  protected abstract _isSessionGone(): Promise<boolean>;
+  protected abstract _getProjectGrants(): DWReturnType<Array<GrantClaim>>;
+  protected abstract _onSignOut(handler: (origin: SignOutOrigin) => void): () => void;
   protected abstract _setPassword(opts: { password: string }): DWReturnType<DataApiActionResult>;
-  protected abstract _getCandidateUserData<TNominations extends boolean | undefined>(
-    opts: GetCandidateUserDataOptions<TNominations>
-  ): DWReturnType<CandidateUserData<TNominations>>;
+  protected abstract _acceptTermsOfUse(): DWReturnType<DataApiActionResult>;
+  protected abstract _getUserEntities(opts: GetUserEntitiesOptions): DWReturnType<Array<UserEntity>>;
+  protected abstract _getEntityUserData<TNominations extends boolean | undefined>(
+    opts: GetEntityUserDataOptions<TNominations>
+  ): DWReturnType<ContestantUserData<TNominations> | undefined>;
   protected abstract _setAnswers(opts: SetAnswersOptions & { overwrite: boolean }): DWReturnType<SetAnswersResult>;
-  protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<LocalizedCandidateData>;
+  protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<UpdateEntityPropertiesResult>;
+  protected abstract _setEntityNominations(opts: SetEntityNominationsOptions): DWReturnType<SetEntityNominationsResult>;
+  protected abstract _getNominationParentOptions(
+    opts: GetNominationParentOptionsOptions
+  ): DWReturnType<Array<NominationParentOption> | undefined>;
 }
 
 /**

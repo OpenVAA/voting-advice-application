@@ -85,6 +85,13 @@ export interface AuthorizeParams {
    * Idura uses JAR (JWT Authorization Request) instead of PKCE.
    */
   codeChallenge?: string;
+
+  /**
+   * The application's locale, sent to the provider as `ui_locales` so that its screens open in it, where the provider honours the parameter.
+   *
+   * Only the language subtag is sent (see `uiLocalesFor`). Idura receives it inside the signed request object, Signicat as a query parameter.
+   */
+  locale?: string;
 }
 
 /**

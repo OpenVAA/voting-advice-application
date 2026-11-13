@@ -43,6 +43,11 @@ vi.mock('$lib/contexts/app', () => ({
   })
 }));
 
+// The header's Log out reads the Admin App's context in the Admin App.
+vi.mock('$lib/contexts/admin', () => ({
+  getAdminContext: () => ({ logout: async () => undefined })
+}));
+
 vi.mock('$lib/contexts/layout', () => ({
   getLayoutContext: () => ({
     pageStyles: { current: { drawer: { background: '' } } },

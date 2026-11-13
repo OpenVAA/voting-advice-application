@@ -1,3 +1,5 @@
+import type { Snippet } from 'svelte';
+
 /**
  * Props for the `ImagePart` component — the hidden file input, its trigger button and the preview `Input` renders for its `image` kind.
  *
@@ -33,6 +35,18 @@ export type ImagePartProps = {
    * Whether to show the required badge. @default false
    */
   showRequired?: boolean;
+  /**
+   * The ids of the elements that describe the input — the info line and the inline error `Input` renders, and any the caller passed — set as the `aria-describedby` of the button that opens the file dialog and of the file input. @default undefined
+   */
+  describedBy?: string;
+  /**
+   * Whether `Input` is showing an error for the chosen file, which marks the file input `aria-invalid`. @default false
+   */
+  invalid?: boolean;
+  /**
+   * A control of the caller's, rendered before the button that opens the file dialog, as that button's sibling. @default undefined
+   */
+  action?: Snippet;
   /**
    * Event handler triggered when a file is chosen.
    * @param event - The originating change event, whose target carries the selected file.

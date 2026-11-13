@@ -120,6 +120,10 @@ export function supabaseAdapterMixin<TBase extends Constructor>(base: TBase): Co
       // reason: the second and last cast, for the same generic-union reason as `scoped` above. `insert`, `upsert` and `update` type their payload as a conditional over `TTable`, which does not resolve while `TTable` is still a type parameter, so a payload assembled here cannot be shown to match it. The cast names only the three write calls and preserves each of their return types, so the caller still sees the real builder for the real table.
       const writes = builder as unknown as {
         insert: (values: Record<string, unknown>) => ReturnType<ScopedTableAccess<TTable>['insert']>;
+        upsert: (
+          values: Record<string, unknown>,
+          options: { ignoreDuplicates: true }
+        ) => ReturnType<ScopedTableAccess<TTable>['upsert']>;
         update: (values: Record<string, unknown>) => ReturnType<ScopedTableAccess<TTable>['update']>;
       };
       return {
@@ -127,6 +131,8 @@ export function supabaseAdapterMixin<TBase extends Constructor>(base: TBase): Co
         select: ((...args: Parameters<typeof builder.select>) =>
           scoped(builder.select(...args))) as ScopedTableAccess<TTable>['select'],
         insert: (values) => writes.insert({ ...values, project_id: projectId }),
+        // The option is fixed here and no caller can pass one. The default form of an upsert updates the row it collides with, and a table reached through this member may grant its callers INSERT without UPDATE.
+        upsert: (values) => writes.upsert({ ...values, project_id: projectId }, { ignoreDuplicates: true }),
         update: (values) => scoped(writes.update({ ...values })),
         delete: () => scoped(builder.delete())
       };

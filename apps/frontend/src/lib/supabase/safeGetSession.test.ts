@@ -41,11 +41,31 @@ function strict<TTarget extends object>(target: TTarget, path: string, allowed: 
       if (allowed.has(prop)) return Reflect.get(obj, prop, receiver);
       // Symbols (inspection, `toStringTag`) and `then` (thenable probing) are not round trips.
       if (typeof prop === 'symbol' || prop === 'then') return undefined;
-      const member = `${path}.${String(prop)}`;
-      unexpectedAccesses.push(member);
-      throw new UnexpectedClientAccess(member);
+      return refuse(`${path}.${String(prop)}`);
+    },
+    has(obj, prop) {
+      if (allowed.has(prop)) return Reflect.has(obj, prop);
+      return refuse(`${path}.${String(prop)} (in)`);
+    },
+    set(_obj, prop) {
+      return refuse(`${path}.${String(prop)} (set)`);
+    },
+    deleteProperty(_obj, prop) {
+      return refuse(`${path}.${String(prop)} (delete)`);
+    },
+    ownKeys() {
+      return refuse(`${path} (keys)`);
     }
   });
+}
+
+/**
+ * Record a stray reach of the client and throw.
+ * @param access - The reach, as the member path and, for anything but a read, its kind.
+ */
+function refuse(access: string): never {
+  unexpectedAccesses.push(access);
+  throw new UnexpectedClientAccess(access);
 }
 
 /**
@@ -220,5 +240,26 @@ describe('createSafeGetSession', () => {
 
     expect(getUser).toHaveBeenCalledTimes(2);
     expect(getSession).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe('the strict client stub', () => {
+  it('records and refuses an `in` probe, a write, a delete and a key enumeration, not only a read', () => {
+    unexpectedAccesses.length = 0;
+    const client = fakeClient(null).supabase as unknown as Record<string, unknown>;
+
+    expect(() => 'from' in client).toThrow(UnexpectedClientAccess);
+    expect(() => {
+      client.from = () => undefined;
+    }).toThrow(UnexpectedClientAccess);
+    expect(() => delete client.auth).toThrow(UnexpectedClientAccess);
+    expect(() => Object.keys(client)).toThrow(UnexpectedClientAccess);
+    expect(unexpectedAccesses).toEqual([
+      'supabase.from (in)',
+      'supabase.from (set)',
+      'supabase.auth (delete)',
+      'supabase (keys)'
+    ]);
+    unexpectedAccesses.length = 0;
   });
 });

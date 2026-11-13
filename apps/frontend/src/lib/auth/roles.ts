@@ -31,10 +31,30 @@ export function hasAnyGrant(claims: ReadonlyArray<GrantClaim>, allowed: Readonly
  * @returns The well-formed grant claims, or an empty list.
  */
 export function readGrants(accessToken: string): Array<GrantClaim> {
-  const payload = decodeTokenPayload(accessToken);
-  const claimed = payload?.grants;
-  if (!Array.isArray(claimed)) return [];
-  return claimed.filter(isGrantClaim);
+  return parseGrantClaims(decodeTokenPayload(accessToken)?.grants);
+}
+
+/**
+ * Read a list of grant claims out of an untrusted value: the `grants` key of a token's payload, or the database's answer of the grants that reach a project, which has the same shape.
+ *
+ * Fails closed: a value that is not an array yields the empty list, and entries that are not objects carrying both a `scope` string and a `role` string are dropped. The return type is an assertion about the entries' shape, not a check of their values.
+ * @param value - The value to read.
+ * @returns The well-formed grant claims, or an empty list.
+ */
+export function parseGrantClaims(value: unknown): Array<GrantClaim> {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isGrantClaim);
+}
+
+/**
+ * Read the grant claims of a session `safeGetSession` verified, from its access token, as {@link readGrants} reads them.
+ *
+ * A route's server code reads a session's grants through this, so that it names no credential field of the session.
+ * @param session - A verified session.
+ * @returns The well-formed grant claims, or an empty list.
+ */
+export function readSessionGrants(session: { access_token: string }): Array<GrantClaim> {
+  return readGrants(session.access_token);
 }
 
 /**
@@ -57,8 +77,9 @@ export const ADMIN_GRANTS = [
  *
  * The editor of a candidate or of an organization is admitted. Faction and alliance editors hold the same `(entity, editor)` pair with a different `target_type` and are not admitted, because the app serves neither type. Whether this project serves the editor's type is decided after sign-in, where the user's entities are listed.
  */
-export const CANDIDATE_GRANTS = [
-  { scope: 'entity', role: 'editor', target_type: 'candidate' }
+export const CONTESTANT_GRANTS = [
+  { scope: 'entity', role: 'editor', target_type: 'candidate' },
+  { scope: 'entity', role: 'editor', target_type: 'organization' }
 ] as const satisfies ReadonlyArray<GrantShape>;
 
 /**
@@ -108,6 +129,7 @@ export type GrantRole = (typeof GRANT_ROLES)[number];
  * @returns The payload object, or `undefined` for anything that does not yield a JSON object.
  */
 function decodeTokenPayload(token: string): Record<string, unknown> | undefined {
+  if (typeof token !== 'string') return undefined;
   const segment = token.split('.')[1];
   if (!segment) return undefined;
   try {

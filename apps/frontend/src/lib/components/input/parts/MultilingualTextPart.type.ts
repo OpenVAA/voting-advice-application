@@ -33,7 +33,11 @@ export type MultilingualTextPartProps = {
   /**
    * The locale whose field is the required one: it is rendered even while the translations are hidden, placed directly after the displayed locale's field, and marked `aria-required`. `Input` passes it only for a `required` input whose `requiredLocale` is a supported locale. @default undefined
    */
-  mainInputs: Array<HTMLElement>;
+  requiredLocale?: string;
+  /**
+   * The ids of the elements that describe the input — the info line and the inline error `Input` renders, and any the caller passed — set as every field's `aria-describedby`. @default undefined
+   */
+  describedBy?: string;
   /**
    * Any remaining attributes the caller passed to `Input`, spread onto every locale's field. @default {}
    */

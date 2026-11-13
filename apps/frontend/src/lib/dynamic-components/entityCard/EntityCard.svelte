@@ -71,6 +71,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     variant = 'list',
     maxSubcards = 3,
     showElection,
+    headerOnly = false,
+    showType = false,
+    keepScroll = true,
     children,
     ...restProps
   }: EntityCardProps = $props();
@@ -120,7 +123,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // The questions and possible submatches to display in the card TODO: Add support for all entity types by expanding the setting type to cover all of them
     let cardQuestions: CardQuestions | undefined;
     let showSubMatches = false;
-    if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
+    // A header-only card makes no question lookup at all: the data root throws for a question it has not loaded.
+    if (!headerOnly && (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization)) {
       showSubMatches = appSettings.results?.cardContents?.[type]?.includes('submatches') ?? false;
       if (variant !== 'details') {
         cardQuestions = getCardQuestions({
@@ -135,6 +139,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     let subcards: Array<EntityCardProps> | undefined;
     let subcardsMaxOverride: number | undefined; // the alliance branch overrides maxSubcards to render all member orgs
     if (
+      !headerOnly &&
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.OrganizationNomination) &&
@@ -146,6 +151,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         })
       );
     } else if (
+      !headerOnly &&
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
@@ -163,6 +169,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard is consumed inside EntityDetails.
     let allianceSummary: { numCandidates: number; numParties: number } | undefined;
     if (
+      !headerOnly &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
       variant === 'list'
@@ -252,7 +259,7 @@ Possibly wraps `content` in a clickable action. The snippet is card-local and is
   {:else if typeof action === 'string'}
     <a
       href={action}
-      data-sveltekit-noscroll
+      data-sveltekit-noscroll={keepScroll ? true : undefined}
       data-testid="entity-card-action"
       {...concatClass({ class: extraClass }, cn('transition-all !text-neutral', shadeOnHover && HOVER_SHADE))}>
       {@render content()}
@@ -299,6 +306,11 @@ Possibly wraps `content` in a clickable action. The snippet is card-local and is
         <!-- Subtitle -->
         <div id="{baseId}_subtitle" class="gap-sm grid grid-flow-col items-center" style="grid-area: subtitle">
           {#if variant !== 'subcard'}
+            {#if showType}
+              <span class="small-label" data-testid="entity-card-type">
+                {t(`common.${parsed.nakedEntity.type}.singular`)}
+              </span>
+            {/if}
             {#if parsed.nomination?.parentNomination}
               <EntityTag entity={parsed.nomination.parentNomination} variant="short" />
             {/if}

@@ -116,8 +116,12 @@
       <Button onclick={closeAlert} color="warning" text={t('common.close')} class="-mt-16 sm:mt-0" />
     {/if}
   </div>
-  <!-- top-2 / right-2 is the 2px spacing token; the close buttons of Video, Modal and Drawer use the same class string. -->
-  <button onclick={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2">
+  <!-- top-2 / right-2 is the 2px spacing token; the close buttons of Video, Modal and Drawer use the same class string. Beside the text Close it is for pointer users alone. -->
+  <button
+    onclick={closeAlert}
+    aria-hidden={actions ? undefined : 'true'}
+    tabindex={actions ? undefined : -1}
+    class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2">
     <span aria-hidden="true">✕</span>
     <span class="sr-only">{t('common.close')}</span>
   </button>

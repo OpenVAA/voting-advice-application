@@ -13,6 +13,7 @@
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
 import { requireConfigured } from './requireConfigured';
+import { uiLocalesFor } from './uiLocales';
 import { decryptAndVerifyIdToken } from '../decryptAndVerifyIdToken';
 import type {
   AuthConfig,
@@ -49,7 +50,7 @@ export const signicatProvider: IdentityProvider = {
 
   callbackBinding: 'pkce',
 
-  async getAuthorizeUrl({ redirectUri, codeChallenge }: AuthorizeParams): Promise<AuthorizeResult> {
+  async getAuthorizeUrl({ redirectUri, codeChallenge, locale }: AuthorizeParams): Promise<AuthorizeResult> {
     const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID, PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT } = publicConstants;
 
     // Assert BEFORE concatenating, never after. An empty endpoint produces a string starting `?`, which is a valid RELATIVE url the browser resolves against the current document — so the failure mode is a silent same-origin reload, not an error. See `requireConfigured`.
@@ -63,6 +64,7 @@ export const signicatProvider: IdentityProvider = {
       throw new Error('Signicat authorization requires a PKCE `codeChallenge`, but none was supplied.');
     }
 
+    const uiLocales = uiLocalesFor(locale);
     const authorizeUrl =
       `${PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}` +
       `?client_id=${PUBLIC_IDENTITY_PROVIDER_CLIENT_ID}` +
@@ -71,7 +73,8 @@ export const signicatProvider: IdentityProvider = {
       '&scope=openid%20profile' +
       '&prompt=login' +
       `&code_challenge=${codeChallenge}` +
-      '&code_challenge_method=S256';
+      '&code_challenge_method=S256' +
+      (uiLocales ? `&ui_locales=${uiLocales}` : '');
 
     return { authorizeUrl, clientSideRedirect: true };
   },

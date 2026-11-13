@@ -85,6 +85,9 @@ class NominationAndQuestionStateImpl {
                 return hasAllAnswers;
               });
             }
+            if (entityType === ENTITY_TYPE.Organization && hideIfMissing?.organization) {
+              nominations = nominations.filter((n) => opinionQuestions.every((q) => n.entity.getAnswer(q) != null));
+            }
             if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
               // We need to also purge child nomination ids from the data if they don't have answers to all opinion questions
               if (entityType === ENTITY_TYPE.Organization && hideIfMissing?.candidate) {

@@ -54,12 +54,21 @@ const { stubs, prefsHolder, pushed } = vi.hoisted(() => {
       },
       // tracking producer: the producer's members, inert.
       tracking: {
-        sendTrackingEvent: { current: () => {}, set: (_v: unknown) => {} },
-        startPageview: (_href: string) => {},
+        startPageview: (_routeId: string | null, _params: Readonly<Record<string, string | undefined>> | null) => {},
         startEvent: (_name: string) => {},
         track: (_name: string, _data?: unknown) => {},
         submitAllEvents: () => {},
-        resetAllEvents: () => {}
+        resetAllEvents: () => {},
+        setPageVisible: (_visible: boolean) => {},
+        gate: {
+          current: {
+            projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
+            globalPrivacyControl: false,
+            trackEvents: false,
+            consent: undefined
+          }
+        },
+        surveySessionId: { current: undefined as string | undefined }
       },
       // survey-link producer: `{ readonly current }` handle.
       survey: { current: 'https://example.invalid/survey' as string | undefined },

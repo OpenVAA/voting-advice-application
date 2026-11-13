@@ -26,7 +26,8 @@ export type ProjectScopedTable =
   | 'nominations'
   | 'organizations'
   | 'question_categories'
-  | 'questions';
+  | 'questions'
+  | 'terms_of_use_acceptances';
 
 /**
  * The PostgREST query builder for one project-scoped table, read off `tableBuilder`'s inferred return rather than restated here, so there is one opinion about its shape rather than two.
@@ -47,6 +48,8 @@ export type ScopedTableAccess<TTable extends ProjectScopedTable> = {
   select: QueryBuilderFor<TTable>['select'];
   /** Insert one row, with this adapter's project id supplied. */
   insert: (values: Omit<TablesInsert<TTable>, 'project_id'>) => ReturnType<QueryBuilderFor<TTable>['insert']>;
+  /** Insert one row, with this adapter's project id supplied, unless a row with the same key exists. An existing row is left as it is and is never updated. */
+  upsert: (values: Omit<TablesInsert<TTable>, 'project_id'>) => ReturnType<QueryBuilderFor<TTable>['upsert']>;
   /** Update rows of the table, filtered to this adapter's project. */
   update: (values: Omit<TablesUpdate<TTable>, 'project_id'>) => ReturnType<QueryBuilderFor<TTable>['update']>;
   /** Delete rows of the table, filtered to this adapter's project. */

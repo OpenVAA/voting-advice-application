@@ -26,7 +26,6 @@ Accesses `AppContext` to set and read `userPreferences`. The description names n
 -->
 
 <script lang="ts">
-  import { staticSettings } from '@openvaa/app-shared';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
@@ -40,16 +39,6 @@ Accesses `AppContext` to set and read `userPreferences`. The description names n
 
   const ctx = getAppContext();
   const { userPreferences, setDataConsent, t } = ctx;
-  // appSettings is a reactive accessor — read via ctx.X, never destructure.
-  const appSettings = $derived(ctx.appSettings);
-
-  // Construct the analytics link for privacy translations
-  const analyticsLink = staticSettings.analytics?.platform?.infoUrl
-    ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${
-        staticSettings.analytics.platform.name.charAt(0).toUpperCase() + staticSettings.analytics.platform.name.slice(1)
-      }</a>`
-    : '';
-
   function handleChange(consent: ConsentStatus) {
     if (consent !== userPreferences.current.dataCollection?.consent) setDataConsent(consent);
     onChange?.(consent);
@@ -57,16 +46,10 @@ Accesses `AppContext` to set and read `userPreferences`. The description names n
 </script>
 
 <div {...concatClass(restProps, 'grid justify-items-center')}>
-  {#if description === 'inline' && appSettings.analytics.platform}
+  {#if description === 'inline'}
     <div>
       <p>{@html sanitizeHtml(t('common.privacy.dataCollection.content'))}</p>
-      <p>
-        {@html sanitizeHtml(
-          t(assertTranslationKey(`privacy.dataCollection.platform.${appSettings.analytics.platform.name}`), {
-            analyticsLink
-          })
-        )}
-      </p>
+      <p>{t('privacy.dataCollection.info')}</p>
     </div>
     <p class="mt-md text-center font-bold">
       {t(

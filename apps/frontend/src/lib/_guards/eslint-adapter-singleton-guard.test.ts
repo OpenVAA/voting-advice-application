@@ -454,7 +454,7 @@ const IN_SCOPE_MESSAGE = 'const assertion';
 
 /** The three real files whose CURRENT source this spec lints from disk. The store is the false positive the two declaration forms exist to avoid; the two singletons are the exemptions whose directives must be doing their job. */
 const REAL_FILES = {
-  store: 'lib/contexts/candidate/candidateUserDataState.svelte.ts',
+  store: 'lib/contexts/contestant/contestantUserDataState.svelte.ts',
   localDataProvider: 'lib/server/api/adapters/local/dataProvider/index.ts',
   localFeedbackWriter: 'lib/server/api/adapters/local/feedbackWriter/index.ts'
 } as const;

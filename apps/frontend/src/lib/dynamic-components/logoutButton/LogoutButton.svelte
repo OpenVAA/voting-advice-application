@@ -30,21 +30,201 @@ With unsaved changes on the page the modal's dialog is named by the sentence say
 -->
 
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { log } from '@openvaa/app-shared';
+  import { beforeNavigate, goto, onNavigate } from '$app/navigation';
+  import { page } from '$app/state';
+  import { clearLogoutDeadline, writeLogoutDeadline } from '$lib/auth/logoutDeadline';
   import { Button } from '$lib/components/button';
-  import { getAppContext } from '$lib/contexts/app';
-  import { getAuthContext } from '$lib/contexts/auth';
+  import { TimedModal } from '$lib/components/modal/timed';
+  import {
+    hasActiveNavigationGuard,
+    holdNavigation,
+    holdNavigationWhile,
+    keepGuardedEdits,
+    leaveByFullLoad
+  } from '$lib/components/preventNavigation/navigationGuards';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { buildRoute } from '$lib/routes';
+  import { getUUID } from '$lib/utils/components';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
-  let { redirectTo = 'Home', ...restProps }: LogoutButtonProps = $props();
+  let { logout, redirectTo, warning, logoutModalTimer = 30, ...restProps }: LogoutButtonProps = $props();
 
-  const { getRoute, t } = getAppContext();
-  const { logout } = getAuthContext();
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
 
-  async function handleLogout() {
-    await logout();
-    await goto(getRoute.current(redirectTo!), { invalidateAll: true });
+  const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Handle logout and the modal
+  ////////////////////////////////////////////////////////////////////
+
+  // reference to TimedModal
+  let timedModalRef: TimedModal | undefined = $state();
+  // `timeLeft` is bound by TimedModal (countdown ticks); seed from the prop's initial value. Reading the prop inside the initializer is intentional: we want the initial seed, not a reactive dependency.
+  // svelte-ignore state_referenced_locally
+  let timeLeft = $state(logoutModalTimer);
+  let modalOpen = $state(false);
+  // Whether a logout is running, from the press or the count's end until it settles.
+  let leaving = $state(false);
+  // Whether the close under way is the navigation handler's, which is no answer from the user.
+  let closingForNavigation = false;
+
+  // The header's button and a page's can be mounted together, so a fixed id would point one dialog at the other's text.
+  const descriptionId = getUUID();
+
+  /** Whether the page holds unsaved changes the open modal must speak of. Read live, so a guard that comes or goes behind the modal changes what it says. */
+  const unsavedOnPage = $derived(modalOpen && hasActiveNavigationGuard());
+  /** Whether the app says something is left undone, which the modal counts. */
+  const countedTaskLeft = $derived(warning !== undefined);
+  // The title that says data is missing is false over anything else.
+  const title = $derived(countedTaskLeft && !unsavedOnPage ? t('contestantApp.logoutModal.title') : t('common.logout'));
+  /** The dialog's accessible name: over unsaved changes the sentence saying they will be lost, which a dialog's description would not carry to every reader, and otherwise its title. */
+  const dialogName = $derived(unsavedOnPage ? t('common.logoutUnsavedChanges') : title);
+
+  // A navigation asked for while a sign-out runs waits for it. Each instance registers a function of its own: the framework keeps these callbacks in a set, so a function two instances shared would be removed for both when one is destroyed, such as the home's own Log out on a navigation away from the home.
+  beforeNavigate((navigation) => holdNavigation(navigation));
+
+  // Closing a modal that was never open would remove its `hidden` class for good, because the transition that puts the class back never runs. This runs before the new page is written, so the guard is not read across the route change.
+  onNavigate(() => {
+    if (!modalOpen) return;
+    closingForNavigation = true;
+    timedModalRef?.closeModal();
+    closingForNavigation = false;
+  });
+
+  async function triggerLogout() {
+    if (leaving) return;
+    if (hasActiveNavigationGuard() || countedTaskLeft) timedModalRef?.openModal();
+    else await leave();
+  }
+
+  /**
+   * Log out, once however often it is asked for while it runs, logging a failure rather than leaving it unhandled.
+   * @param reason - Why the session ends, for the login screen to say: the count's end gives `loggedOutAutomatically`, and a press gives none.
+   */
+  async function leave(reason?: 'loggedOutAutomatically') {
+    if (leaving) return;
+    leaving = true;
+    clearLogoutDeadline();
+    const addressBefore = page.url.href;
+    // An app whose logout navigates holds the page's navigations until it settles; one whose logout does not is left to navigate as it would.
+    const run = redirectTo ? logout() : holdNavigationWhile(() => (reason ? logout({ reason }) : logout()));
+    const signedOut = await run.then(
+      () => true,
+      (e) => {
+        log.error(`Error logging out: ${e?.message}`);
+        return false;
+      }
+    );
+    if (modalOpen) timedModalRef?.closeModal();
+    if (signedOut && redirectTo)
+      await leaveTo(buildRoute({ route: redirectTo, ...(reason ? { errorMessage: reason } : {}) }), addressBefore);
+    leaving = false;
+  }
+
+  /**
+   * Leave to the route after a sign-out that worked: by a navigation or, when that rejects or does not move the page, by a full load. A page that did not move would go on reading as signed in, with no session behind it.
+   * @param route - The address to leave to.
+   * @param addressBefore - The page's address when the sign-out started.
+   */
+  async function leaveTo(route: string, addressBefore: string): Promise<void> {
+    let moved = false;
+    try {
+      await goto(route, { invalidateAll: true });
+      moved = page.url.href !== addressBefore;
+      if (!moved) log.error('The navigation after logging out did not move the page');
+    } catch (e) {
+      // A rejection can come after the address changed, so the address says nothing here.
+      log.error(`Error navigating after logout: ${(e as Error)?.message}`);
+    }
+    if (!moved) await leaveByFullLoad(route);
+  }
+
+  // The count's end, kept where a closed tab cannot lose it.
+  function handleOpen() {
+    modalOpen = true;
+    writeLogoutDeadline(logoutModalTimer);
+  }
+
+  // Continue, the close button and Escape all arrive here, and each is a choice to stay. The modal's Log out and the count's end close it with `leaving` up.
+  function handleClose() {
+    modalOpen = false;
+    clearLogoutDeadline();
+    if (!leaving && !closingForNavigation) keepGuardedEdits();
   }
 </script>
 
-<Button onclick={handleLogout} icon="logout" text={t('common.logout')} color="warning" {...restProps} />
+<Button
+  disabled={!timedModalRef}
+  loading={leaving}
+  onclick={triggerLogout}
+  icon="logout"
+  text={t('common.logout')}
+  color="warning"
+  {...restProps} />
+
+<!-- Declared outside TimedModal, where a snippet would become one of its props. No wrapper holds the visible copy in the modal's body: the paragraphs' margins depend on their being siblings. The description leaves out the sentence on unsaved changes, which names the dialog. -->
+{#snippet whatIsAtStake(inDescription: boolean)}
+  {#if unsavedOnPage && !inDescription}
+    <p>{t('common.logoutUnsavedChanges')}</p>
+  {/if}
+  {#if warning}
+    {#if warning.infoQuestionsLeft === 0}
+      <p>
+        {t('contestantApp.logoutModal.questionsLeft', {
+          opinionQuestionsLeft: warning.opinionQuestionsLeft
+        })}
+      </p>
+    {:else}
+      <p>
+        {t('contestantApp.logoutModal.itemsLeft', {
+          infoQuestionsLeft: warning.infoQuestionsLeft,
+          opinionQuestionsLeft: warning.opinionQuestionsLeft
+        })}
+      </p>
+      {#if warning.infoQuestionsLeft !== 0 || (warning.hiddenIfMissing && warning.opinionQuestionsLeft !== 0)}
+        <p>{t('contestantApp.common.willBeHiddenIfMissing')}</p>
+      {/if}
+    {/if}
+  {/if}
+{/snippet}
+
+<!-- bind: keep — timedModalRef is $state(); single ref read in event handlers. bind:timeLeft against TimedModal.timeLeft = $bindable(...) -->
+<TimedModal
+  bind:this={timedModalRef}
+  bind:timeLeft
+  onOpen={handleOpen}
+  onClose={handleClose}
+  onTimeout={() => leave('loggedOutAutomatically')}
+  holdOpen={leaving}
+  {title}
+  timerDuration={logoutModalTimer}
+  aria-label={dialogName}
+  aria-describedby={descriptionId}>
+  {@render whatIsAtStake(false)}
+  <p>
+    {t('contestantApp.logoutModal.ingress', { timeLeft })}
+  </p>
+  <!-- The dialog's description holds the count's full length and not the ticking number, so it stays the same while the count runs. -->
+  <div id={descriptionId} hidden>
+    {@render whatIsAtStake(true)}
+    <p>{t('contestantApp.logoutModal.ingress', { timeLeft: logoutModalTimer })}</p>
+  </div>
+  {#snippet actions()}
+    <div class="flex w-full flex-col items-center">
+      <Button
+        onclick={() => timedModalRef?.closeModal()}
+        disabled={leaving}
+        text={t('contestantApp.logoutModal.continue')}
+        variant="main" />
+      <Button
+        onclick={() => leave()}
+        loading={leaving}
+        text={t('common.logout')}
+        class="hover:bg-warning hover:text-warning-content w-full"
+        color="warning" />
+    </div>
+  {/snippet}
+</TimedModal>
