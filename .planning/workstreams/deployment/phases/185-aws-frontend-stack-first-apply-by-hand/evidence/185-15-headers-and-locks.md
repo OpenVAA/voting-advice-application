@@ -126,3 +126,55 @@ ALB_SG_RULES_DURING=3
   `single-address` on 443 and on 80.
 - **The service.** `describe-services` exit 0: task definition revision 2, one running task, one
   deployment, `COMPLETED`. The diagnostics body of Task 1 was therefore served by the new revision.
+
+## Task 3: diagnostics off, the `/32` removed, the depth kept (item 6, 11:19 to 11:23)
+
+```
+RESTORE_APPLY_EXIT=0
+DIAGNOSTICS_AFTER=404
+ALB_SG_RULES_AFTER=1
+LOCK1_DIRECT_AFTER=no-answer
+PLAN_AFTER_EXIT=0
+```
+
+- **The depth.** `DEPTH_VERDICT=2-confirmed`, so `XFF_DEPTH` in `infra/envs/staging/aws/terraform.tfvars`
+  was left at `"2"`; the file equals `HEAD` (`git diff --quiet` exit 0) and holds neither
+  `environment_overrides` nor `debug_ingress_cidrs`, with `DEPLOYMENT_DIAGNOSTICS = "false"`.
+- **The plan and the apply.** The saved plan with neither variable: `s9_off_plan_exit=0`,
+  `s9_off_plan_line=Plan: 1 to add, 1 to change, 3 to destroy.`, `s9_off_show_exit=0`, and exactly the
+  runbook's four changes:
+
+  ```
+  s9_off_change=update module.frontend.aws_ecs_service.app
+  s9_off_change=delete-create module.frontend.aws_ecs_task_definition.app
+  s9_off_change=delete module.frontend.aws_vpc_security_group_ingress_rule.load_balancer_debug[<address>]
+  s9_off_change=delete module.frontend.aws_vpc_security_group_ingress_rule.load_balancer_debug[<address>]
+  ```
+
+  The container's environment differs by `DEPLOYMENT_DIAGNOSTICS=false` alone. The apply ran in the
+  background from 11:19:55Z to 11:21:48Z: `s9_off_apply_exit=0`,
+  `Apply complete! Resources: 1 added, 1 changed, 3 destroyed.`, the plan file removed.
+- **The stack read back, at 11:22:09Z.**
+  - `s9_diagnostics_after=404` through the CDN over IPv4 (curl exit 0); `/api/health` 200.
+  - `s9_direct_after_http=000` with `s9_direct_after_curl_exit=28`: the direct request to the load
+    balancer, without the `/32`, got no answer in 10 s.
+  - `s9_lb_sg_ingress_after=1`, by role `cloudfront-prefix-list` on 443 (`describe-security-group-rules`
+    exit 0).
+  - The service runs task definition revision 3, whose `DEPLOYMENT_DIAGNOSTICS` is `false` and
+    `XFF_DEPTH` is `2` (`describe-task-definition` exit 0).
+  - `terraform plan -detailed-exitcode`: `s9_plan_after_exit=0`,
+    `No changes. Your infrastructure matches the configuration.`
+- **The rollout, settled.** At that first read the service still listed two deployments, the new one
+  `IN_PROGRESS`: the apply returned once the new task was registered, before ECS reported the old
+  deployment gone. The service's events, read at 11:22:57Z: the new target registered at 11:21:05Z,
+  the old task stopped at 11:21:24Z and its target deregistered at 11:21:26Z, the deployment
+  completed and the service steady at 11:22:38Z. The old target was therefore out of the target group
+  before the 404 above was read. Five more requests to `/api/diagnostics` after the steady state all
+  answered 404 (`s9_diagnostics_after_settled=5 404`), and the service reads one deployment,
+  `COMPLETED`, one running task.
+- **Item 7.** `WS`, `HV` and `LB_IP` were unset at the end of each command that held them; the plan
+  file was removed after each apply; `$L` was removed at the end (`s9_logs_removed=yes`).
+
+The stack is back in the shape of 185-14's reads, with task definition revision 3 in place of
+revision 1: two task-definition revisions were registered by this plan, 2 (diagnostics on) and 3
+(diagnostics off).
