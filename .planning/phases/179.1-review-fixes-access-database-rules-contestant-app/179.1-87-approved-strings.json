@@ -1,0 +1,86 @@
+{
+  "about": "The strings plan 179.1-87 writes, as its checkpoint (Task 1) presents them, each at its recommended answer: the da and sv values that are the English of the base locale, which the per-value comparison of the untranslated-catalogue guard finds once it reads every locale other than en (the operator's ruling C5 at the WR16J UAT, test 13), the one sv value that is en's behind a locale tag, and en's feedback.error.emailSubject, whose typo the UAT found. en is the source each translation was made from; for feedback.error.emailSubject it is the corrected value plan 87 writes. da and sv are machine translations, flagged for a native reader. Where the operator's answer edits a string, plan 87 replaces that value here, word for word, before anything is written, and commits this file alone. 179.1-approved-strings.mjs reads this file together with every other 179.1-<n>-approved-strings.json beside it and compares the catalogues with all of them, per locale and key.",
+  "entries": [
+    {
+      "item": "C5",
+      "file": "feedback.json",
+      "path": ["feedback", "error", "emailSubject"],
+      "values": {
+        "en": "Feedback",
+        "sv": "Respons"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "feedback.json",
+      "path": ["feedback", "send"],
+      "values": {
+        "en": "Send feedback",
+        "sv": "Skicka feedback"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "common.json",
+      "path": ["common", "website"],
+      "values": {
+        "en": "Website",
+        "da": "Websted"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "components.json",
+      "path": ["components", "video", "mute"],
+      "values": {
+        "en": "Mute",
+        "sv": "Ljud av"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "components.json",
+      "path": ["components", "video", "replay"],
+      "values": {
+        "en": "Replay",
+        "sv": "Spela igen"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "entityFilters.json",
+      "path": ["entityFilters", "numeric", "maxLabel"],
+      "values": {
+        "en": "Maximum",
+        "sv": "Högst"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "privacy.json",
+      "path": ["privacy", "analytics", "title"],
+      "values": {
+        "en": "Analytics",
+        "sv": "Analys"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "results.json",
+      "path": ["results", "alliance", "numShown", 0, "match", "numShown=1"],
+      "values": {
+        "en": "1 alliance",
+        "sv": "1 allians"
+      }
+    },
+    {
+      "item": "C5",
+      "file": "results.json",
+      "path": ["results", "alliance", "numShown", 0, "match", "numShown=*"],
+      "values": {
+        "en": "{numShown} alliances",
+        "sv": "{numShown} allianser"
+      }
+    }
+  ]
+}
