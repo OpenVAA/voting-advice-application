@@ -64,3 +64,7 @@ form independent of the refactor; suite-ordering state left by an earlier spec
 
 Not "it passed N times". A **named** root cause, plus a negative control showing
 the fix addresses that cause. Until then the `260824-sdp` E2E gate stays open.
+
+## Update 2026-10-09 — three isolated runs green at the close of Phase 176; the cause is still unknown
+
+At the close of Phase 176 the journey (now `tests/tests/specs/contestant/contestant-journey.spec.ts`, project `contestant-journey`) was run three times in isolation, each on a database the run reset itself: `tests/e2e-runs/176-determinism/176-19-final-journey`, head `0ca0305c0` — run 01: 5 of 5 passed, the journey 1 of 1; run 02: 5 of 5 passed, the journey 1 of 1; run 03: 5 of 5 passed, the journey 1 of 1. It also passed in every full run of the phase's chain. This is three more observations and no diagnosis: the failure of 2026-08-28 was not seen and its root cause was not looked for. The todo stays open.

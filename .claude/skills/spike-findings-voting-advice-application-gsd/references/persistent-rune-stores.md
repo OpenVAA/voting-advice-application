@@ -133,7 +133,7 @@ structurally cloneable.
 
 ### Step 3 — Migrate candidate edited-answers (~7-line surgical diff)
 
-`apps/frontend/src/lib/contexts/candidate/candidateUserDataStore.svelte.ts` is
+`apps/frontend/src/lib/contexts/contestant/contestantUserDataState.svelte.ts` is
 **already ~95% rune-native** — only the edited-answer persistence (lines
 38-42, 130, 138, 144) bridges through legacy stores. The rest (`$state`,
 `$effect`, `$derived.by`, getter exports) stays untouched.
@@ -182,7 +182,7 @@ pattern is fully retired from the OpenVAA codebase.
    The migration must read existing user data identically — break this and
    every existing user gets a wiped local store.
 
-4. **Don't migrate `answerStore` and `candidateUserDataStore` separately and
+4. **Don't migrate `answerStore` and `contestantUserDataState` separately and
    then forget to delete `localStorageWritable`.** Once both callsites land,
    the legacy helper is dead code; leaving it invites future regressions.
 
@@ -195,14 +195,14 @@ pattern is fully retired from the OpenVAA codebase.
 
 - **2 production consumers of `localStorageWritable`** exist:
   - `apps/frontend/src/lib/contexts/voter/answerStore.svelte.ts`
-  - `apps/frontend/src/lib/contexts/candidate/candidateUserDataStore.svelte.ts`
+  - `apps/frontend/src/lib/contexts/contestant/contestantUserDataState.svelte.ts`
 - **Tracking-event integration in voter answerStore** (`startEvent` for analytics)
   is orthogonal — production migration re-adds it via a hook param, same as
   today. The spike intentionally omits it.
 - **`reloadCandidateData()` and `save()` are out of scope** for this migration —
   those are auth-bound DB operations whose Svelte-store usage is already zero.
 - **The composite `$derived.by` merging saved+edited** in
-  `candidateUserDataStore` is preserved verbatim — only the `editedAnswers`
+  `contestantUserDataState` is preserved verbatim — only the `editedAnswers`
   source field swaps from `Writable<T> + fromStore` to `runeLocalStorage`.
 
 ## Origin

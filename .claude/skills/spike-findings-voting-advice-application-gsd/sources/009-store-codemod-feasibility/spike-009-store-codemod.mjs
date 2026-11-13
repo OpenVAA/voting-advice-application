@@ -13,7 +13,7 @@
  *
  *   PASS 2 (lint / warn — does not rewrite):
  *     const { selectedElections, opinionQuestions, matches, ... } = getVoterContext();
- *     const { unsavedQuestionIds, hasUnsavedAnswers, ... } = getCandidateContext();
+ *     const { unsavedQuestionIds, hasUnsavedAnswers, ... } = getContestantContext();
  *   Where any of the destructured names are in the documented reactive-accessor
  *   list (CLAUDE.md Context Destructuring Rule). Spike 007 verified this
  *   trap reproduces in the rune-native pattern; the codemod flags every such

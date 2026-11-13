@@ -17,7 +17,7 @@ identity-stable-accessor hole).
 
 ## 1. The two property classes
 
-OpenVAA's Svelte 5 contexts (`getCandidateContext()`, `getVoterContext()`, `getAppContext()`, plus
+OpenVAA's Svelte 5 contexts (`getContestantContext()`, `getVoterContext()`, `getAppContext()`, plus
 generic `getContext()` consumers) expose two property classes with **different reactivity semantics
 under destructuring**.
 
@@ -25,7 +25,14 @@ under destructuring**.
 
 The translation function `t`; the route helper `getRoute` (still a `{ current }` handle); `darkMode`;
 `answers`; the `userData` object (whose internal `$state` getters are accessed by property); and the
-lifecycle functions (`logout`, `register`, `preregister`, `startEvent`, `*Countdown`).
+lifecycle functions (`logout`, `preregister`, `startEvent`, `*Countdown`). On the contestant
+context also the two nomination functions, `setEntityNominations` and `getNominationParentOptions`:
+each is a stable arrow function that reads the selected entity when it is called, so a destructured
+copy acts on the entity the route names at that moment. And the seven functions of the entry flow:
+`checkInvitationCode`, `requestSignInLink` and `requestPasswordRecovery`, which forward to the data
+writer, and `holdEntryCode`, `sendEntryLink`, `resendEntryLink` and `clearEntryFlow`, which write the
+flow state (see `entryFlow` below). A screen calls `sendEntryLink`, never the two link forwards, so
+that the request is held for the "email sent" screen.
 
 ```ts
 const { t, getRoute } = getVoterContext();
@@ -41,12 +48,50 @@ previously stable `{ current }` handles, now bare reactive fields). Plus: `selec
 `unansweredRequiredInfoQuestions`, `requiredInfoQuestions`, `answersLocked`, `profileComplete`,
 `electionsSelectable`, `constituenciesSelectable`, `matches`, `nominationsAvailable`,
 `resultsAvailable`, `idTokenClaims`, `isPreregistered`, `isAuthenticated`, `preregistrationElections`,
-`preregistrationNominations`, `newUserEmail`.
+`preregistrationNominations`. On the contestant context also `entryFlow`, what the entry screens
+share — a checked registration code, the one link request that can be repeated, both, or nothing — a
+private `$state.raw` field replaced whole on every write and written only through the four functions
+above. On the contestant and admin contexts also `logoutFailed`, true after a sign-out that failed,
+until the next attempt, the message's Close, an entry route or the session's end, read as
+`contestantCtx.logoutFailed` and, in the admin layout, `ctx.logoutFailed`. On the contestant context
+also the three user-level accessors derived from page data: `user`, `entities` and
+`selectedEntity` — the signed-in user, the entities they edit, and the one the route's `entityType` and `entityId` params name — and
+`homeRoute`, the built route "home" leads to from the current page: that entity's home when the
+route params name one, the app root otherwise. They sit beside `userData`, which stays a stable
+reference; read them as `contestantCtx.X`. Two more on the contestant context: `nominationsLocked`,
+which follows the app setting `access.nominationsLocked` as `answersLocked` follows its own key, and
+`questionsReady`, which is `true` once the question lists were rolled up for a loaded entity with a
+selected election — the fact that tells an empty list that means "no questions" from one that means
+"not loaded yet". The lists themselves are scoped to the loaded entity's type and are empty while no
+entity is loaded. They are empty too for a loaded entity with no selected election. And five that
+hold the entity's tasks:
+
+- `nominations` — derived from page data: the list the entity-level load read for the entity on the
+  page, an empty list for an entity with none and `undefined` on a page whose data holds no entity.
+  It follows the load and not the store, so it changes when that load reruns.
+- `taskState` — one `$derived.by` that hands values the context reads in its own scope to the pure
+  `taskStateOf` of `$lib/contestant/tasks`: whether the entity has a nomination from `nominations`,
+  and the counts of unanswered questions from the store and the question lists, read only while the
+  store holds the entity the route names and `questionsReady` is true.
+- `tasks` — the state's own `tasks` member: the entity's tasks in order, each with a status that is
+  `undefined` while the facts it rests on are not loaded.
+- `nextStep` — the state's own `nextStep` member: the first incomplete task and its route,
+  `undefined` when there is none and while the state is not known.
+- `previewOpen` — the state's own `previewOpen` member: false while the state is not known.
+
+`profileComplete` is the state's `allComplete`: false for an entity with no nomination and while the
+state is not known.
+
+`taskState`, `tasks` and `nextStep` are **value-replacing**: `taskStateOf` returns a fresh object on
+every call, so the reference changes on every change and a `$derived(contestantCtx.taskState)` read
+alias follows it. `dataRoot` is not (§ 5). A value-replacing accessor is still never destructured.
+Nothing is decided from a list's length before the state's `known` member is true: an empty list
+that is not loaded looks the same as one with nothing left to do.
 
 These **MUST** be read via direct property access:
 
 ```ts
-const ctx = getCandidateContext();
+const ctx = getContestantContext();
 const opinionQuestions = $derived(ctx.opinionQuestions); // correct
 // const { opinionQuestions } = ctx;                     // captures initial empty array
 ```
@@ -87,15 +132,15 @@ warning.
 
 v2.6 Phase 61 Plan 03 — see
 `.planning/milestones/v2.6-phases/61-voter-app-question-flow/61-03-DIAGNOSIS.md`. The
-`candidateContext` `$derived` chain captured initial empty arrays at component init and never
+`contestantContext` `$derived` chain captured initial empty arrays at component init and never
 re-evaluated after the data layer populated, because consumers destructured reactive properties out of
 the context object. The fix landed by switching consumers to `ctx.X` reads.
 
 The in-tree explanation lives in two places, both in
-`apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts`: the `Destructure-trap contract`
-docblock section at `apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts:44-45`, and
-the root-mechanism comment — why a destructured context property has no live reactive source — at
-`apps/frontend/src/lib/contexts/candidate/candidateContext.svelte.ts:131-134`.
+`apps/frontend/src/lib/contexts/contestant/contestantContext.svelte.ts`: the `Destructure-trap contract`
+section of the class docblock, and the root-mechanism comment — why a destructured context property
+has no live reactive source — which begins `Root mechanism:`. Find both by those words; the file
+grows, so a line range would not keep pointing at them.
 
 ## 4. Caveat — genuinely store-shaped stable members
 
@@ -111,7 +156,9 @@ codemod removed every `.current` read on these three). Only the genuinely-handle
 
 The canonical `const X = $derived(ctx.X)` read pattern (§ 2) is correct for **value-replacing**
 accessors — `appSettings` (its reference is replaced on update), `locale` (a scalar), and the array
-accessors `selectedElections` / `opinionQuestions` / `matches` (their array reference is replaced). For
+accessors `selectedElections` / `opinionQuestions` / `matches` (their array reference is replaced), and
+the contestant context's `taskState` with its members `tasks` and `nextStep` (a fresh object on every
+change). For
 those the destructure-trap guidance above fully applies and the `$derived` read alias is safe.
 
 It has a HOLE for `dataRoot` — and any same-shape **identity-stable** `#version`-bridge accessor (an
@@ -126,11 +173,16 @@ first computes; cold entry exposes it because the data arrives after mount.)
 **Safe consumption for `dataRoot`:** read `ctx.dataRoot.<prop>` **DIRECTLY** inside the consuming
 tracking scope (`$derived.by` thunk / template `{#if}` / `{#each}` / `{@const}` / `$effect`) so the
 consumer itself takes the `#version` dependency — **never bind** it to an intermediate read alias.
-Canonical analog, `apps/frontend/src/routes/(voters)/elections/+page.svelte:40-41`:
+Canonical analog, the derivation of `elections` in
+`apps/frontend/src/routes/(voters)/elections/+page.svelte`, which reads `voterCtx.dataRoot.elections`
+inside the `$derived` expression itself, once as an argument and once as the result:
 
 ```ts
-let elections = $derived.by(() => {
-  let result = voterCtx.dataRoot.elections;
+let elections = $derived(
+  appSettings.elections?.startFromConstituencyGroup
+    ? electionsHeldIn({ elections: voterCtx.dataRoot.elections, constituencies: voterCtx.selectedConstituencies })
+    : voterCtx.dataRoot.elections
+);
 ```
 
 ## 6. References

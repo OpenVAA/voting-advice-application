@@ -10,7 +10,7 @@
  * Consumer contract:
  *   const ctx = getAppSettingsRuneContext();
  *   // template:        {ctx.current.publisher.name}
- *   // .ts $derived:    const platform = $derived(ctx.current.analytics?.platform);
+ *   // .ts $derived:    const trackEvents = $derived(ctx.current.analytics?.trackEvents);
  *   // .ts $effect:     $effect(() => { console.log(ctx.current); });
  *
  * No `$appSettings` auto-subscribe. No `get(appSettings)`. No `toStore`.

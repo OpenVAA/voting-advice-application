@@ -42,3 +42,9 @@ redirect boundary into an open one.
 
 `<INSTANCE_ORIGIN>/en/candidate/auth/callback` and any sibling locale-prefixed form of
 the old path are dead after this move and should be removed once the new code is live.
+
+## Update 2026-10-07 (Phase 174, plan 174-10)
+
+The paths above are the callback's as they were at Phase 158. On the tree at the close of Phase 174 the route is `/api/auth/callback`, and the local allowlist in `config.toml` admits it with and without one locale segment (`http://localhost:5173/api/auth/callback` and `http://localhost:5173/*/api/auth/callback`). The production list therefore needs `<INSTANCE_ORIGIN>/api/auth/callback` and `<INSTANCE_ORIGIN>/*/api/auth/callback`, the single-segment mid-path form this todo anticipated, and none of the entries listed above.
+
+The deployment page now carries the step (`apps/docs/src/routes/(content)/developers-guide/deployment/+page.md`, § 2 item 3 and § The sign-in link of an invitation). What remains is doing it on a hosted project and observing the result, which is filed as `2026-10-07-174-hosted-project-auth-settings-allowlist-and-function-variables.md`. `account-access` asks the auth service whether its callback URL is admitted and mails no link when it is not, so a missing entry now shows as a log line of that function rather than as a broken link.
