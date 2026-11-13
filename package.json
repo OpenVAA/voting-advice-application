@@ -29,6 +29,10 @@
     "assert:rpc-nullability": "node scripts/assert-rpc-return-nullability.mjs",
     "assert:project-scoped-queries": "node scripts/assert-project-scoped-queries.mjs",
     "assert:comment-hygiene": "node scripts/assert-comment-hygiene.mjs",
+    "assert:no-candidate-app-names": "node scripts/assert-no-candidate-app-names.mjs",
+    "assert:no-preregister": "node scripts/assert-no-preregister.mjs",
+    "assert:e2e-coverage-tags": "node scripts/assert-e2e-coverage-tags.mjs",
+    "assert:test-keys-scope": "node scripts/assert-test-keys-scope.mjs",
     "assert:edge-env-defaults": "node scripts/assert-edge-env-defaults.mjs",
     "assert:declared-binaries": "node scripts/assert-declared-binaries.mjs",
     "assert:node-engine": "node scripts/assert-node-engine.mjs",
@@ -40,15 +44,20 @@
     "assert:no-session-in-loads": "node scripts/assert-no-session-in-loads.mjs",
     "assert:grant-permission-enum": "node scripts/assert-grant-permission-enum.mjs",
     "check:env-pairs-agree": "node scripts/assert-env-pairs-agree.mjs",
+    "check:schema-equivalence": "bash apps/supabase/scripts/check-schema-equivalence.sh",
+    "check:migration-drift": "bash infra/scripts/check-drift.sh",
+    "check:seed": "psql -X -f infra/scripts/check-seed.sql",
+    "check:proxy-topology": "bash infra/local/check-proxy-topology.sh",
     "preinstall": "node scripts/assert-node-engine.mjs",
-    "test:unit": "yarn assert:unit-coverage && turbo run test:unit",
+    "test:unit": "yarn assert:unit-coverage && turbo run test:unit && yarn test:unit:tests",
+    "test:unit:tests": "vitest run --config tests/vitest.config.ts",
     "test:unit:watch": "echo '###################################\nNB! Running only tests in /packages\n###################################\n' && vitest",
     "test:e2e": "yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && playwright test -c ./tests/playwright.config.ts ./tests --grep-invert @probe",
     "test:e2e:probes": "playwright test -c ./tests/playwright.config.ts --project=_probes",
     "format": "turbo run build --filter=@openvaa/app-shared... && prettier --write . && yarn workspace @openvaa/docs format",
     "format:check": "turbo run build --filter=@openvaa/app-shared... && prettier --check . && yarn workspace @openvaa/docs format:check",
     "lint:fix": "turbo run lint -- --fix && eslint --fix tests",
-    "lint:check": "turbo run lint && eslint tests && yarn typecheck:tests && yarn typecheck && yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && yarn assert:comment-hygiene && yarn assert:edge-env-defaults && yarn assert:declared-binaries && yarn assert:node-engine && yarn assert:env-pair-registry && yarn assert:schema-migration-parity && yarn assert:adapter-casts && yarn assert:cookie-names && yarn assert:no-session-in-loads && yarn assert:rpc-nullability && yarn assert:project-scoped-queries && yarn assert:grant-permission-enum && yarn assert:edge-function-env",
+    "lint:check": "turbo run lint && eslint tests && yarn typecheck:tests && yarn typecheck && yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && yarn assert:comment-hygiene && yarn assert:no-candidate-app-names && yarn assert:edge-env-defaults && yarn assert:declared-binaries && yarn assert:node-engine && yarn assert:env-pair-registry && yarn assert:schema-migration-parity && yarn assert:adapter-casts && yarn assert:cookie-names && yarn assert:no-session-in-loads && yarn assert:rpc-nullability && yarn assert:project-scoped-queries && yarn assert:grant-permission-enum && yarn assert:edge-function-env && yarn assert:auth-signup-closed && yarn assert:no-inline-iam-policies && yarn assert:hosted-settings-parity && yarn assert:test-keys-scope && yarn assert:no-preregister",
     "typecheck": "turbo run typecheck",
     "typecheck:tests": "node_modules/.bin/tsc -p tests/tsconfig.json --noEmit",
     "docs:prepare": "turbo run build --filter='./packages/*' && yarn workspace @openvaa/frontend prepare",
@@ -57,6 +66,9 @@
     "docs:routes": "yarn workspace @openvaa/docs generate:route-map",
     "docs:dev": "yarn workspace @openvaa/docs dev",
     "assert:edge-function-env": "node scripts/assert-edge-function-env.mjs",
+    "assert:auth-signup-closed": "node scripts/assert-auth-signup-closed.mjs",
+    "assert:no-inline-iam-policies": "node scripts/assert-no-inline-iam-policies.mjs",
+    "assert:hosted-settings-parity": "node scripts/assert-hosted-settings-parity.mjs",
     "check:env-local": "yarn check:env-pairs-agree .env --deno-file apps/supabase/supabase/functions/.env --require-both && yarn assert:edge-function-env apps/supabase/supabase/functions/.env"
   },
   "devDependencies": {
@@ -99,9 +111,6 @@
   "packageManager": "yarn@4.18.1",
   "dependenciesMeta": {
     "esbuild": {
-      "built": true
-    },
-    "supabase": {
       "built": true
     },
     "unrs-resolver": {

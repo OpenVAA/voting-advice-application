@@ -76,7 +76,8 @@
  *   1 - a finding, a failed self-test, or `--write`
  */
 
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readdirSync, readFileSync, realpathSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -85,14 +86,16 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 
 const SCHEMA_DIR = 'apps/supabase/supabase/schema';
 const MIGRATIONS_DIR = 'apps/supabase/supabase/migrations';
-const MIGRATION_FILE = `${MIGRATIONS_DIR}/00001_initial_schema.sql`;
+const MANIFEST_FILE = 'apps/supabase/supabase/migrations.manifest.json';
 
 /** Refuses: the baseline is frozen and is never regenerated. */
 const WRITE = process.argv.slice(2).includes('--write');
+/** Runs the frozen-mode self-test alone: the real migrations are not checked. */
+const SELF_TEST_ONLY = process.argv.slice(2).includes('--self-test');
 
-/** Non-vacuity floor. Absolute thresholds; raise them as the schema grows. */
-const MIN_SCHEMA_FILES = 20;
-const MIN_SCHEMA_LINES = 3000;
+/** One directory for each rule of the frozen-mode checker, and a clean one. */
+const FREEZE_FIXTURE_DIR = 'scripts/fixtures/schema-migration-freeze';
+const CLEAN_FREEZE_FIXTURE = 'ok';
 
 function fail(message) {
   console.error(`Schema-migration parity guard: ${message}`);
@@ -114,14 +117,36 @@ function countLines(text) {
  *
  * @type {ReadonlyArray<Readonly<{ id: string, kind: string, fixture: string }>>}
  */
-function concatenateSchema(schemaDir, names) {
-  // Normalise the join: a schema file added without a trailing newline would otherwise glue its last line to the next file's first line. All files end with a newline today, so this is latent rather than live - one character keeps it that way.
-  let out = '';
-  for (const name of names) {
-    const text = readFileSync(path.join(schemaDir, name), 'utf8');
-    out += text.endsWith('\n') ? text : `${text}\n`;
-  }
-  return out;
+export const FROZEN_RULES = Object.freeze(
+  [
+    { id: 'manifest-exists', kind: 'MALFORMED MANIFEST', fixture: 'missing-manifest' },
+    { id: 'manifest-json', kind: 'MALFORMED MANIFEST', fixture: 'malformed-manifest' },
+    { id: 'baseline-members', kind: 'MALFORMED MANIFEST', fixture: 'missing-baseline-member' },
+    { id: 'baseline-commit-shape', kind: 'MALFORMED MANIFEST', fixture: 'bad-baseline-commit' },
+    { id: 'migrations-array', kind: 'MALFORMED MANIFEST', fixture: 'empty-migrations' },
+    { id: 'baseline-first', kind: 'BASELINE NOT FIRST', fixture: 'baseline-not-first' },
+    { id: 'name-pattern', kind: 'BAD NAME', fixture: 'bad-name' },
+    { id: 'version-unique', kind: 'DUPLICATE VERSION', fixture: 'duplicate-version' },
+    { id: 'version-order', kind: 'NON-INCREASING VERSION', fixture: 'non-increasing-version' },
+    { id: 'version-contiguous', kind: 'VERSION GAP', fixture: 'version-gap' },
+    { id: 'file-exists', kind: 'MISSING MIGRATION', fixture: 'missing-file' },
+    { id: 'file-hash', kind: 'EDITED FROZEN MIGRATION', fixture: 'edited-file' },
+    { id: 'file-listed', kind: 'UNLISTED MIGRATION', fixture: 'unlisted-file' },
+    { id: 'baseline-not-empty', kind: 'EMPTY BASELINE', fixture: 'empty-baseline' },
+    { id: 'baseline-has-table', kind: 'EMPTY BASELINE', fixture: 'baseline-without-table' }
+  ].map((rule) => Object.freeze(rule))
+);
+
+/** A migration's file name. The five digits are its version. */
+const MIGRATION_NAME_RE = /^([0-9]{5})_[a-z0-9_]+\.sql$/;
+
+/** A full commit id, as `git rev-parse` prints it. */
+const COMMIT_RE = /^[0-9a-f]{40}$/;
+
+const BASELINE_MEMBERS = ['name', 'file', 'commit'];
+
+function isRecord(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -133,8 +158,10 @@ function concatenateSchema(schemaDir, names) {
  * @param {string} detail
  * @returns {string}
  */
-function bytesEqual(a, b) {
-  return a === b;
+function frozenFinding(ruleId, fileName, detail) {
+  const rule = FROZEN_RULES.find((candidate) => candidate.id === ruleId);
+  if (!rule) throw new Error(`No frozen-mode rule has the id '${ruleId}'.`);
+  return `${rule.kind}: ${fileName} ${detail}`;
 }
 
 /**
@@ -176,148 +203,515 @@ function bytesEqual(a, b) {
  * @param {{ migrationsDir: string, manifestPath: string }} paths absolute, or relative to the working directory
  * @returns {Array<string>}
  */
-function selfCheck() {
-  const base = 'CREATE TABLE public.a (id uuid);\n';
-  const oneCharDifferent = 'CREATE TABLE public.b (id uuid);\n';
-  const copy = `CREATE TABLE public.a (id uuid);${'\n'}`;
+export function checkFrozenMigrations({ migrationsDir, manifestPath }) {
+  const manifestName = path.basename(manifestPath);
 
-  if (!bytesEqual(base, copy)) {
-    fail(
-      `self-check failed: the comparator reported two identical strings as unequal, so every run would ` +
-        `be red regardless of the files. Its verdict on ${SCHEMA_DIR} is withheld.`
+  let manifestText;
+  try {
+    manifestText = readFileSync(manifestPath, 'utf8');
+  } catch (error) {
+    return [frozenFinding('manifest-exists', manifestName, `cannot be read (${error.code ?? 'unknown error'}).`)];
+  }
+
+  let manifest;
+  try {
+    manifest = JSON.parse(manifestText);
+  } catch {
+    return [frozenFinding('manifest-json', manifestName, 'is not valid JSON.')];
+  }
+
+  const baseline = isRecord(manifest) && isRecord(manifest.baseline) ? manifest.baseline : {};
+  const absentMembers = BASELINE_MEMBERS.filter((member) => typeof baseline[member] !== 'string');
+  if (absentMembers.length > 0) {
+    return [
+      frozenFinding(
+        'baseline-members',
+        manifestName,
+        `has no string value for ${absentMembers.map((member) => `baseline.${member}`).join(', ')}.`
+      )
+    ];
+  }
+
+  if (!COMMIT_RE.test(baseline.commit)) {
+    return [
+      frozenFinding(
+        'baseline-commit-shape',
+        manifestName,
+        `gives baseline.commit as ${JSON.stringify(baseline.commit)}, which is not 40 lower-case hex characters.`
+      )
+    ];
+  }
+
+  const entries = manifest.migrations;
+  const entriesAreWellFormed =
+    Array.isArray(entries) &&
+    entries.length > 0 &&
+    entries.every((entry) => isRecord(entry) && typeof entry.file === 'string' && typeof entry.sha256 === 'string');
+  if (!entriesAreWellFormed) {
+    return [
+      frozenFinding(
+        'migrations-array',
+        manifestName,
+        'does not give migrations as a non-empty array of objects with a string file and a string sha256.'
+      )
+    ];
+  }
+
+  if (entries[0].file !== baseline.file) {
+    return [
+      frozenFinding(
+        'baseline-first',
+        entries[0].file,
+        `is the first entry of the manifest, and baseline.file is ${baseline.file}.`
+      )
+    ];
+  }
+
+  const findings = [];
+
+  /** The entries with a valid name, in manifest order. */
+  const versioned = [];
+  const badNames = [];
+  for (const entry of entries) {
+    const match = MIGRATION_NAME_RE.exec(entry.file);
+    if (match) versioned.push({ file: entry.file, version: match[1] });
+    else badNames.push(entry.file);
+  }
+  const highestVersion = versioned.reduce(
+    (highest, item) => (item.version > highest ? item.version : highest),
+    '00000'
+  );
+  const nextVersion = String(Number(highestVersion) + 1).padStart(5, '0');
+  for (const file of badNames) {
+    findings.push(
+      frozenFinding(
+        'name-pattern',
+        file,
+        'is not five digits, an underscore, a name of lower-case letters, digits and underscores, and .sql; ' +
+          `rename it to the next number, ${nextVersion}_<name>.sql.`
+      )
     );
   }
 
-  if (bytesEqual(base, oneCharDifferent)) {
-    fail(
-      `self-check failed: on two synthetic strings differing by one character the comparator reported ` +
-        `equality. A comparator that cannot find a difference it was handed would report parity over ` +
-        `anything, including two empty files. Its verdict on ${SCHEMA_DIR} is withheld.`
-    );
+  /** The first file of each distinct version. */
+  const firstFileOf = new Map();
+  const duplicateIndexes = new Set();
+  versioned.forEach((item, index) => {
+    if (firstFileOf.has(item.version)) {
+      duplicateIndexes.add(index);
+      findings.push(
+        frozenFinding(
+          'version-unique',
+          item.file,
+          `has version ${item.version}, which ${firstFileOf.get(item.version)} already has.`
+        )
+      );
+    } else {
+      firstFileOf.set(item.version, item.file);
+    }
+  });
+
+  // Fixed width makes the comparison of two version strings a numeric one.
+  for (let index = 1; index < versioned.length; index++) {
+    if (duplicateIndexes.has(index)) continue;
+    const item = versioned[index];
+    const before = versioned[index - 1];
+    if (item.version < before.version) {
+      findings.push(
+        frozenFinding('version-order', item.file, `has version ${item.version}, lower than ${before.file} before it.`)
+      );
+    }
   }
 
-  if (bytesEqual('', '') !== true || countLines('') !== 0) {
-    fail('self-check failed: the line counter or the comparator disagrees with itself on empty input.');
+  const distinctVersions = [...firstFileOf.keys()].sort();
+  const baselineVersion = MIGRATION_NAME_RE.exec(baseline.file)?.[1] ?? distinctVersions[0];
+  for (const version of distinctVersions) {
+    if (version <= baselineVersion) continue;
+    const predecessor = String(Number(version) - 1).padStart(5, '0');
+    if (!firstFileOf.has(predecessor)) {
+      findings.push(
+        frozenFinding(
+          'version-contiguous',
+          firstFileOf.get(version),
+          `has version ${version}, and no entry has version ${predecessor}.`
+        )
+      );
+    }
   }
+
+  // An unreadable directory is an empty one: every listed file is then reported as missing.
+  let onDisk;
+  try {
+    onDisk = readdirSync(migrationsDir)
+      .filter((name) => name.endsWith('.sql'))
+      .sort();
+  } catch {
+    onDisk = [];
+  }
+
+  /** The bytes of each listed file that could be read. */
+  const bytesOf = new Map();
+  const missing = new Set();
+  for (const entry of entries) {
+    if (bytesOf.has(entry.file) || missing.has(entry.file)) continue;
+    let bytes = null;
+    if (onDisk.includes(entry.file)) {
+      try {
+        bytes = readFileSync(path.join(migrationsDir, entry.file));
+      } catch {
+        bytes = null;
+      }
+    }
+    if (bytes === null) {
+      missing.add(entry.file);
+      findings.push(
+        frozenFinding(
+          'file-exists',
+          entry.file,
+          'is listed in the manifest and is not a readable file in the migrations directory.'
+        )
+      );
+    } else {
+      bytesOf.set(entry.file, bytes);
+    }
+  }
+
+  for (const entry of entries) {
+    const bytes = bytesOf.get(entry.file);
+    if (bytes === undefined) continue;
+    const actual = createHash('sha256').update(bytes).digest('hex');
+    if (actual !== entry.sha256) {
+      findings.push(
+        frozenFinding('file-hash', entry.file, `has sha256 ${actual}, and the manifest records ${entry.sha256}.`)
+      );
+    }
+  }
+
+  const listed = new Set(entries.map((entry) => entry.file));
+  for (const name of onDisk) {
+    if (!listed.has(name)) {
+      findings.push(
+        frozenFinding(
+          'file-listed',
+          name,
+          'is in the migrations directory and has no entry in the manifest; a new migration needs its line there.'
+        )
+      );
+    }
+  }
+
+  const baselineBytes = bytesOf.get(baseline.file);
+  if (baselineBytes !== undefined) {
+    if (baselineBytes.length === 0) {
+      findings.push(frozenFinding('baseline-not-empty', baseline.file, 'is zero bytes long.'));
+    } else if (!/^CREATE TABLE public\./m.test(baselineBytes.toString('utf8'))) {
+      findings.push(
+        frozenFinding('baseline-has-table', baseline.file, 'holds no line beginning `CREATE TABLE public.`.')
+      );
+    }
+  }
+
+  return findings;
+}
+
+/** The lines of a fixture's `expected.violations`, or null when the file cannot be read. */
+function readExpectedFindings(fixtureDir) {
+  try {
+    return readFileSync(path.join(fixtureDir, 'expected.violations'), 'utf8')
+      .split('\n')
+      .filter((line) => line.trim() !== '');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Runs `checkFrozenMigrations` over every fixture directory and compares what
+ * it returns with the findings committed beside the fixture. It runs in every
+ * verifying invocation, before the verdict, and alone under `--self-test`.
+ *
+ * A checker that reports nothing passes a clean tree and every broken one, so
+ * its verdict means nothing until each rule has been seen to fire. The
+ * self-test fails when:
+ *
+ *   - the fixture directory cannot be read, holds no fixture, or lacks the
+ *     clean fixture;
+ *   - a fixture's findings differ from its `expected.violations`, compared as
+ *     sets and reported in both directions;
+ *   - the clean fixture produces a finding;
+ *   - a seeded fixture's `expected.violations` does not hold exactly one line;
+ *   - a rule of `FROZEN_RULES` names a fixture that is not there, or whose
+ *     finding does not begin with the rule's kind;
+ *   - a fixture other than the clean one is not named by exactly one rule.
+ *
+ * So a rule added without its fixture, and a fixture deleted or emptied, each
+ * turn the guard red.
+ *
+ * @returns {{ passed: boolean, summary: string, report: Array<string>, problems: Array<string>, fixtureCount: number }}
+ *   `report` holds one line for each fixture with what the checker returned, and `fixtureCount` the
+ *   number of fixtures checked
+ */
+function selfTestFrozenChecker() {
+  const fixtureRoot = path.join(REPO_ROOT, FREEZE_FIXTURE_DIR);
+  const report = [];
+  const problems = [];
+
+  let fixtures;
+  try {
+    fixtures = readdirSync(fixtureRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+  } catch (error) {
+    fixtures = [];
+    problems.push(`${FREEZE_FIXTURE_DIR} could not be read (${error.code ?? 'unknown error'})`);
+  }
+  if (fixtures.length === 0) {
+    problems.push(`${FREEZE_FIXTURE_DIR} holds no fixture directory, so the checker was run over nothing`);
+  } else if (!fixtures.includes(CLEAN_FREEZE_FIXTURE)) {
+    problems.push(`the clean fixture '${CLEAN_FREEZE_FIXTURE}' is missing, so nothing shows the checker can pass`);
+  }
+
+  /** What the checker returned for each fixture. */
+  const producedBy = new Map();
+  for (const fixture of fixtures) {
+    const fixtureDir = path.join(fixtureRoot, fixture);
+    let produced;
+    try {
+      produced = checkFrozenMigrations({
+        migrationsDir: path.join(fixtureDir, 'migrations'),
+        manifestPath: path.join(fixtureDir, 'manifest.json')
+      });
+    } catch (error) {
+      problems.push(`${fixture}: the checker threw (${error.message})`);
+      continue;
+    }
+    producedBy.set(fixture, produced);
+    if (produced.length === 0) report.push(`  ${fixture}: no finding`);
+    for (const finding of produced) report.push(`  ${fixture}: ${finding}`);
+
+    const expected = readExpectedFindings(fixtureDir);
+    if (expected === null) {
+      problems.push(`${fixture}: expected.violations could not be read`);
+      continue;
+    }
+    if (fixture === CLEAN_FREEZE_FIXTURE) {
+      if (produced.length > 0) {
+        problems.push(`${fixture}: the clean fixture produced ${produced.length} finding(s) and must produce none`);
+      }
+    } else if (expected.length !== 1) {
+      problems.push(
+        `${fixture}: expected.violations holds ${expected.length} line(s), and a seeded fixture commits exactly one`
+      );
+    }
+    for (const finding of produced) {
+      if (!expected.includes(finding)) problems.push(`${fixture}: produced but not expected: ${finding}`);
+    }
+    for (const finding of expected) {
+      if (!produced.includes(finding)) problems.push(`${fixture}: expected but not produced: ${finding}`);
+    }
+  }
+
+  for (const rule of FROZEN_RULES) {
+    if (!fixtures.includes(rule.fixture)) {
+      problems.push(
+        `rule '${rule.id}' names the fixture '${rule.fixture}', and ${FREEZE_FIXTURE_DIR} holds no such directory`
+      );
+      continue;
+    }
+    const produced = producedBy.get(rule.fixture) ?? [];
+    if (produced.length === 0 || !produced.every((finding) => finding.startsWith(`${rule.kind}: `))) {
+      problems.push(
+        `rule '${rule.id}': its fixture '${rule.fixture}' did not produce a finding that begins '${rule.kind}: '`
+      );
+    }
+  }
+
+  for (const fixture of fixtures) {
+    if (fixture === CLEAN_FREEZE_FIXTURE) continue;
+    const owners = FROZEN_RULES.filter((rule) => rule.fixture === fixture);
+    if (owners.length !== 1) {
+      problems.push(`fixture '${fixture}' is named by ${owners.length} rule(s), and each fixture belongs to one`);
+    }
+  }
+
+  const passed = problems.length === 0;
+  const summary = passed
+    ? `frozen-mode self-test: ${fixtures.length} fixture(s) checked, each produced its committed findings; ` +
+      `${FROZEN_RULES.length} rule(s), each with its fixture`
+    : `frozen-mode self-test: FAILED with ${problems.length} problem(s) over ${fixtures.length} fixture(s)`;
+  return { passed, summary, report, problems, fixtureCount: fixtures.length };
+}
+
+/** Prints each problem of a failed self-test on its own line. A problem that quotes a finding already ends in a full stop. */
+function printSelfTestProblems(problems) {
+  for (const problem of problems) {
+    console.error(`Schema-migration parity guard: self-test: ${problem}${problem.endsWith('.') ? '' : '.'}`);
+  }
+}
+
+/** What to do about a finding, for each kind of `FROZEN_RULES`. */
+const REMEDY_BY_KIND = Object.freeze({
+  'MALFORMED MANIFEST':
+    `Restore ${MANIFEST_FILE} from git. The guard checks the frozen migrations whether or not the manifest ` +
+    'is there, and without it every run fails.',
+  'BASELINE NOT FIRST': "Put the baseline's entry first in `migrations`; every later migration follows it.",
+  'BAD NAME': 'Rename the file as the finding says, and its manifest entry with it.',
+  'DUPLICATE VERSION': 'Give the later migration the next version after the highest one in the manifest.',
+  'NON-INCREASING VERSION': 'List the migrations in the manifest in version order.',
+  'VERSION GAP': 'Number the migrations one after another, leaving no version out.',
+  'MISSING MIGRATION':
+    'Restore the file from git. A listed migration is never deleted; a change to the schema is a new migration.',
+  'EDITED FROZEN MIGRATION':
+    'Restore the file from git and write the change as a new numbered migration. `supabase db push` skips a ' +
+    'version a database has recorded, so an edit to an applied migration never reaches that database.',
+  'UNLISTED MIGRATION':
+    'Add its entry, with its sha256 (`shasum -a 256 <file>`), to the end of the manifest in the same commit as the file.',
+  'EMPTY BASELINE': 'Restore the baseline from git.'
+});
+
+/** The version of a migration's file name, or null when the name is not one. */
+function versionOf(name) {
+  const match = typeof name === 'string' ? MIGRATION_NAME_RE.exec(name) : null;
+  return match ? Number(match[1]) : null;
+}
+
+/**
+ * The versions of the manifest's entries, or of the migrations directory's
+ * files when the manifest cannot be read.
+ *
+ * @returns {{ versions: Array<number>, source: string }}
+ */
+function knownVersions() {
+  try {
+    const manifest = JSON.parse(readFileSync(path.join(REPO_ROOT, MANIFEST_FILE), 'utf8'));
+    if (Array.isArray(manifest?.migrations)) {
+      const versions = manifest.migrations.map((entry) => versionOf(entry?.file)).filter((v) => v !== null);
+      if (versions.length > 0) return { versions, source: 'the manifest' };
+    }
+  } catch {
+    // An unreadable manifest falls through to the directory listing.
+  }
+  let names;
+  try {
+    names = readdirSync(path.join(REPO_ROOT, MIGRATIONS_DIR));
+  } catch {
+    names = [];
+  }
+  return {
+    versions: names.map(versionOf).filter((v) => v !== null),
+    source: 'the migrations directory, because the manifest could not be read'
+  };
+}
+
+/** Prints why `--write` no longer writes, and the steps of a schema change. Exits 1. */
+function refuseWrite() {
+  const { versions, source } = knownVersions();
+  const next = String(Math.max(0, ...versions) + 1).padStart(5, '0');
+  console.error(
+    'Schema-migration parity guard: the baseline is frozen. `--write` (`yarn schema:regenerate`) no longer\n' +
+      'rewrites a migration, and a listed migration is never edited.\n\n' +
+      'A schema change is one commit, in three steps:\n' +
+      `  1. Edit the file under ${SCHEMA_DIR}/ that holds the object.\n` +
+      `  2. Write the same change as a new migration, ${MIGRATIONS_DIR}/${next}_<name>.sql,\n` +
+      '     where <name> is yours to choose (lower-case letters, digits and underscores).\n' +
+      `     ${next} is the next version after the highest in ${source}.\n` +
+      `  3. Add its line, with its sha256 (\`shasum -a 256 <file>\`), to the end of ${MANIFEST_FILE}.\n\n` +
+      `Then run \`yarn check:schema-equivalence\`: it builds one database from ${SCHEMA_DIR}/ and one from\n` +
+      `${MIGRATIONS_DIR}/ and fails when they differ.`
+  );
+  process.exit(1);
+}
+
+/**
+ * The census of the real migrations: how many the manifest lists and how long
+ * the baseline is. The baseline is looked up in the directory's own listing
+ * before it is read, as the checker does.
+ *
+ * @param {number} fixtureCount
+ * @returns {string}
+ */
+function censusOf(fixtureCount) {
+  let listed = 'no readable manifest';
+  let baseline = 'baseline unread';
+  try {
+    const manifest = JSON.parse(readFileSync(path.join(REPO_ROOT, MANIFEST_FILE), 'utf8'));
+    if (Array.isArray(manifest?.migrations)) listed = `${manifest.migrations.length} migration(s) in the manifest`;
+    const file = manifest?.baseline?.file;
+    const migrationsDir = path.join(REPO_ROOT, MIGRATIONS_DIR);
+    if (typeof file === 'string' && readdirSync(migrationsDir).includes(file)) {
+      baseline = `baseline ${file} -> ${countLines(readFileSync(path.join(migrationsDir, file), 'utf8'))} line(s)`;
+    }
+  } catch {
+    // The checker reports the cause as a finding; the census says what it could not read.
+  }
+  return `census: ${listed}; ${baseline}; ${fixtureCount} fixture(s) checked`;
 }
 
 function main() {
-  selfCheck();
+  if (WRITE) refuseWrite();
 
-  const schemaDir = path.join(REPO_ROOT, SCHEMA_DIR);
-  let schemaNames;
-  try {
-    schemaNames = readdirSync(schemaDir)
-      .filter((f) => f.endsWith('.sql'))
-      .sort();
-  } catch (error) {
-    fail(`could not read ${SCHEMA_DIR} (${error.message}).`);
-  }
+  const frozen = selfTestFrozenChecker();
 
-  if (schemaNames.length < MIN_SCHEMA_FILES) {
-    fail(
-      `precondition failed: ${SCHEMA_DIR} yielded ${schemaNames.length} .sql file(s), below this check's ` +
-        `non-vacuity floor of ${MIN_SCHEMA_FILES}. A comparison over a truncated or empty schema directory ` +
-        `is equality between two nearly-empty strings: it exits 0 and examines nothing.`
-    );
-  }
-
-  const schemaText = concatenateSchema(schemaDir, schemaNames);
-  const schemaLineCount = countLines(schemaText);
-  if (schemaLineCount < MIN_SCHEMA_LINES) {
-    fail(
-      `precondition failed: the ${schemaNames.length} file(s) under ${SCHEMA_DIR} concatenate to ` +
-        `${schemaLineCount} line(s), below this check's non-vacuity floor of ${MIN_SCHEMA_LINES}.`
-    );
-  }
-
-  const migrationsDir = path.join(REPO_ROOT, MIGRATIONS_DIR);
-  let migrationNames;
-  try {
-    migrationNames = readdirSync(migrationsDir)
-      .filter((f) => f.endsWith('.sql'))
-      .sort();
-  } catch (error) {
-    fail(`could not read ${MIGRATIONS_DIR} (${error.message}).`);
-  }
-
-  const migrationPath = path.join(REPO_ROOT, MIGRATION_FILE);
-
-  if (WRITE) {
-    writeFileSync(migrationPath, schemaText);
-    console.log(
-      `Schema-migration parity guard — census: ${schemaNames.length} schema file(s) -> ${schemaLineCount} ` +
-        `line(s); wrote ${MIGRATION_FILE} -> ${schemaLineCount} line(s); ${MIGRATIONS_DIR} holds ` +
-        `${readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).length} .sql file(s).`
-    );
-    console.log(
-      'D-17: review the regenerated migration as a diff, in the same commit as the schema/ edit that caused it. ' +
-        'Nothing else enforces this now that the golden fixture is gone.'
-    );
+  if (SELF_TEST_ONLY) {
+    console.log(`Schema-migration parity guard — the frozen-mode checker over ${FREEZE_FIXTURE_DIR}:`);
+    for (const line of frozen.report) console.log(line);
+    printSelfTestProblems(frozen.problems);
+    console.log(`Schema-migration parity guard — ${frozen.summary}.`);
+    process.exitCode = frozen.passed ? 0 : 1;
     return;
   }
 
-  let migrationText;
-  try {
-    migrationText = readFileSync(migrationPath, 'utf8');
-  } catch (error) {
-    fail(`could not read ${MIGRATION_FILE} (${error.message}). Regenerate it with \`yarn schema:regenerate\`.`);
-  }
-  const migrationLineCount = countLines(migrationText);
-
-  if (!/^CREATE TABLE public\./m.test(migrationText)) {
+  if (!frozen.passed) {
+    printSelfTestProblems(frozen.problems);
     fail(
-      `precondition failed: ${MIGRATION_FILE} contains no line beginning \`CREATE TABLE public.\`. It is ` +
-        `empty, truncated, or not the initial schema — comparing against it proves nothing.`
+      `the frozen-mode self-test did not match its committed fixtures under ${FREEZE_FIXTURE_DIR} (printed ` +
+        `above). A checker that has not been seen to fire has not been shown to check anything, so the verdict ` +
+        `on ${MIGRATIONS_DIR} is withheld.`
     );
   }
 
-  const census =
-    `census: ${schemaNames.length} schema file(s) -> ${schemaLineCount} line(s); ` +
-    `${path.basename(MIGRATION_FILE)} -> ${migrationLineCount} line(s); ` +
-    `${MIGRATIONS_DIR} holds ${migrationNames.length} .sql file(s)`;
+  const unremedied = [...new Set(FROZEN_RULES.map((rule) => rule.kind))].filter((kind) => !REMEDY_BY_KIND[kind]);
+  if (unremedied.length > 0) {
+    fail(`no remedy is written for the finding kind(s) ${unremedied.join(', ')}; add one to REMEDY_BY_KIND.`);
+  }
 
-  if (migrationNames.length !== 1) {
+  const findings = checkFrozenMigrations({
+    migrationsDir: path.join(REPO_ROOT, MIGRATIONS_DIR),
+    manifestPath: path.join(REPO_ROOT, MANIFEST_FILE)
+  });
+  const census = censusOf(frozen.fixtureCount);
+
+  if (findings.length > 0) {
+    console.error(`Schema-migration parity guard — ${census}.\n`);
+    for (const finding of findings) {
+      const kind = finding.slice(0, finding.indexOf(':'));
+      console.error(`${finding}\n  ${REMEDY_BY_KIND[kind]}\n`);
+    }
     console.error(
-      `Schema-migration parity guard — ${census}.\n\n` +
-        `SECOND MIGRATION FILE: ${MIGRATIONS_DIR} holds ${migrationNames.length} .sql file(s) where the\n` +
-        `invariant allows exactly one:\n` +
-        migrationNames.map((n) => `  ${n}`).join('\n') +
-        `\n\nThe schema is declarative (decision D-14): a change goes into ${SCHEMA_DIR}/<file>.sql and\n` +
-        `\`yarn schema:regenerate\` folds it into ${path.basename(MIGRATION_FILE)}. A numbered migration\n` +
-        `beside it reinstates the two-source divergence this guard was collapsed to remove — the applied\n` +
-        `database would carry the extra file's definitions while the readable copy said otherwise.`
+      `${findings.length} finding(s) in ${MIGRATIONS_DIR} against ${MANIFEST_FILE}. A schema change is a new ` +
+        'numbered migration; `yarn schema:regenerate` prints the steps.'
     );
     process.exit(1);
   }
 
-  if (!bytesEqual(schemaText, migrationText)) {
-    const schemaLines = schemaText.split('\n');
-    const migrationLines = migrationText.split('\n');
-    let firstDiff = 0;
-    while (
-      firstDiff < schemaLines.length &&
-      firstDiff < migrationLines.length &&
-      schemaLines[firstDiff] === migrationLines[firstDiff]
-    )
-      firstDiff++;
-
-    console.error(
-      `Schema-migration parity guard — ${census}.\n\n` +
-        `STALE GENERATED MIGRATION: ${MIGRATION_FILE} is not the current concatenation of\n` +
-        `${SCHEMA_DIR}/*.sql. They first differ at line ${firstDiff + 1}:\n\n` +
-        `  schema/    ${JSON.stringify(schemaLines[firstDiff] ?? '(end of file)')}\n` +
-        `  migration  ${JSON.stringify(migrationLines[firstDiff] ?? '(end of file)')}\n\n` +
-        `Almost always this means a ${SCHEMA_DIR} edit landed without regenerating. Run\n` +
-        `  yarn schema:regenerate\n` +
-        `and, per D-17, read the regenerated diff and commit it together with the schema edit that\n` +
-        `caused it. Never hand-edit ${path.basename(MIGRATION_FILE)}: it is generated, and the next\n` +
-        `regeneration discards anything written into it directly.`
-    );
-    process.exit(1);
-  }
-
-  console.log(`Schema-migration parity guard (phase 156: REVIEW-DB-07) — ${census}; generated copy is current.`);
+  console.log(`Schema-migration parity guard — ${census}; the frozen migrations match the manifest.`);
+  console.log(`Schema-migration parity guard — ${frozen.summary}.`);
 }
 
-main();
+/**
+ * True when this file is the script Node was started with, and false when it is
+ * imported. Both sides are resolved through symbolic links: Node resolves them
+ * for the module's own URL and not for `process.argv[1]`, and a plain string
+ * comparison would then skip `main()` and exit 0 without checking anything.
+ */
+function invokedDirectly() {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (invokedDirectly()) main();
