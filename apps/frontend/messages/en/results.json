@@ -3,12 +3,12 @@
     "alliance": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "No alliances",
-            "numShownPlural=one": "1 alliance",
-            "numShownPlural=other": "{numShown} alliances"
+            "numShown=0": "No alliances",
+            "numShown=1": "1 alliance",
+            "numShown=*": "{numShown} alliances"
           }
         }
       ],
@@ -17,22 +17,22 @@
         "candidates": [
           {
             "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidatesPlural"],
+            "selectors": ["numCandidates", "numCandidatesPlural"],
             "match": {
-              "numCandidatesPlural=zero": "No candidates",
-              "numCandidatesPlural=one": "1 candidate",
-              "numCandidatesPlural=other": "{numCandidates} candidates"
+              "numCandidates=0, numCandidatesPlural=*": "No candidates",
+              "numCandidates=*, numCandidatesPlural=one": "1 candidate",
+              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} candidates"
             }
           }
         ],
         "parties": [
           {
             "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numPartiesPlural"],
+            "selectors": ["numParties", "numPartiesPlural"],
             "match": {
-              "numPartiesPlural=zero": "no parties",
-              "numPartiesPlural=one": "1 party",
-              "numPartiesPlural=other": "{numParties} parties"
+              "numParties=0, numPartiesPlural=*": "no parties",
+              "numParties=*, numPartiesPlural=one": "1 party",
+              "numParties=*, numPartiesPlural=*": "{numParties} parties"
             }
           }
         ]
@@ -41,12 +41,12 @@
     "candidate": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "No candidates",
-            "numShownPlural=one": "1 candidate",
-            "numShownPlural=other": "{numShown} candidates"
+            "numShown=0": "No candidates",
+            "numShown=1": "1 candidate",
+            "numShown=*": "{numShown} candidates"
           }
         }
       ]
@@ -54,12 +54,12 @@
     "faction": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "No factions",
-            "numShownPlural=one": "1 faction",
-            "numShownPlural=other": "{numShown} factions"
+            "numShown=0": "No factions",
+            "numShown=1": "1 faction",
+            "numShown=*": "{numShown} factions"
           }
         }
       ]
@@ -69,11 +69,11 @@
       "answerMinQuestions": "If you want to find the candidates and parties that agree with you the most, {questionsLink} first.",
       "questionsLinkText": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=one": "answer at least one question",
-            "numQuestionsPlural=other": "answer at least {numQuestions} questions"
+            "numQuestions=1": "answer at least one question",
+            "numQuestions=*": "answer at least {numQuestions} questions"
           }
         }
       ]
@@ -92,12 +92,12 @@
     "organization": {
       "numShown": [
         {
-          "declarations": ["input numShown", "local numShownPlural = numShown: plural"],
-          "selectors": ["numShownPlural"],
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
           "match": {
-            "numShownPlural=zero": "No parties",
-            "numShownPlural=one": "1 party",
-            "numShownPlural=other": "{numShown} parties"
+            "numShown=0": "No parties",
+            "numShown=1": "1 party",
+            "numShown=*": "{numShown} parties"
           }
         }
       ]

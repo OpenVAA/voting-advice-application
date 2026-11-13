@@ -13,7 +13,8 @@
       "genericError": "An error occurred while trying to log in. Please try again.",
       "unauthorized": "You need admin privileges to access this area",
       "sessionExpired": "Your session has expired, please log in again",
-      "unknown": "An unknown error occurred"
+      "unknown": "An unknown error occurred",
+      "linkFailed": "This link can no longer be used. A link works once, and only the newest one you asked for works. Please ask for a new one in the same way as before."
     }
   }
 }
