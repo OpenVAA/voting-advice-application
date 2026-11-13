@@ -107,8 +107,10 @@ item before you leave the terminal.
 ## Before you start
 
 - **The tools:** Terraform 1.16.5, the version in `infra/.terraform-version`; the AWS CLI version 2;
-  `jq`, `git` and `curl`; Docker with `buildx`, running. The service runs on arm64 and the image is
-  built natively, so build on an arm64 workstation.
+  `jq`, `git` and `curl`; Docker with `buildx`, running; Node and the repository's dependencies, with
+  Playwright's Chromium installed (`yarn playwright install`), for the one page Step 7 renders in a
+  browser. The service runs on arm64 and the image is built natively, so build on an arm64
+  workstation.
 - **The profile `openvaa-admin`**, an IAM Identity Center profile in your AWS configuration that signs
   in to account `471112560111` with administrator rights. Sign in before the first step and whenever
   the session expires:
@@ -1035,7 +1037,11 @@ U=https://staging.openvaa.org
    server carries the project id on its `<body>`, and inlines each response its server-side load
    fetched as a `data-sveltekit-fetched` script whose `data-url` is the address fetched; an inlined
    fetch of the Supabase REST host shows that the task read the hosted project with the key from the
-   parameter store. The six statements are those of the smoke dataset:
+   parameter store. The statements are not in the server's HTML: the located layout renders the
+   questions only once its data has resolved in the browser, and the server's render shows its
+   loading state. So the questions page is also rendered in a headless browser, the Chromium of the
+   repository's Playwright (`yarn playwright install`), which follows the page to the first
+   question. The six statements are those of the smoke dataset:
 
    ```bash
    curl -sS --max-time 30 -L -o "$L/s7-home.html" \
@@ -1062,14 +1068,34 @@ U=https://staging.openvaa.org
      'Defence spending should be increased.' \
      'Immigration for work should be made easier.' \
      > "$L/s7-statements.txt"
-   grep -o -F -f "$L/s7-statements.txt" "$L/s7-questions.html" \
+   echo "s7_questions_html_statements=$(grep -c -F \
+     -f "$L/s7-statements.txt" "$L/s7-questions.html")"
+   node --input-type=module -e '
+     import { createRequire } from "node:module";
+     import { writeFileSync } from "node:fs";
+     const req = createRequire(process.cwd() + "/package.json");
+     const { chromium } = req("@playwright/test");
+     const [url, out] = process.argv.slice(1);
+     const browser = await chromium.launch();
+     const page = await browser.newPage();
+     const answer = await page.goto(url, { timeout: 60000 });
+     await page.getByText("1/6").waitFor({ timeout: 30000 });
+     writeFileSync(out, await page.locator("body").innerText());
+     console.log(`s7_rendered=${answer.status()} ${page.url()}`);
+     await browser.close();
+   ' "$U/questions" "$L/s7-rendered.txt" 2> "$L/s7-render.err"
+   echo "s7_render_exit=$?"
+   grep -o -F -f "$L/s7-statements.txt" "$L/s7-rendered.txt" \
      | sort -u | sed 's/^/s7_statement_seen=/'
    ```
 
    Expected: `s7_home=` and `s7_questions=` each `200` and an address on `https://staging.openvaa.org`;
    both `_project_id=00000000-0000-0000-0000-000000000001`; at least one `_supabase_fetches=` above 0;
-   and at least one `s7_statement_seen=` line, such as
-   `s7_statement_seen=Defence spending should be increased.`
+   `s7_questions_html_statements=0`; `s7_rendered=200 https://staging.openvaa.org/questions/__first__`,
+   `s7_render_exit=0`, and at least one `s7_statement_seen=` line, such as
+   `s7_statement_seen=Public transport should be free of charge in cities.`, the first question's.
+   The wait for `1/6`, the first question's counter, is what tells the render that the six questions
+   have arrived.
 
 5. The origin check of a form post, as `infra/local/check-proxy-topology.sh` makes it locally: a post
    to the contestant login with the public origin in its `Origin` header is not refused, and the same
