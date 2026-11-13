@@ -1,7 +1,7 @@
 /**
  * The two subtree server loaders' returned session PROJECTION (phase 158, D10 criterion 13).
  *
- * Everything a server load returns is serialised into the hydration payload in the HTML body. Until this spec, `routes/admin/+layout.server.ts` and `routes/candidate/+layout.server.ts` each returned `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record — so a REFRESH TOKEN sat in the document of every authenticated admin page and every authenticated candidate page. `158-ADMIN-BASELINE.md` measured that shape at this phase's HEAD rather than assuming it.
+ * Everything a server load returns is serialised into the hydration payload in the HTML body. Until this spec, `routes/admin/+layout.server.ts` and `routes/contestant/+layout.server.ts` each returned `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record — so a REFRESH TOKEN sat in the document of every authenticated admin page and every authenticated candidate page. `158-ADMIN-BASELINE.md` measured that shape at this phase's HEAD rather than assuming it.
  *
  * The remedy is the projection the root server loader's docstring already sanctions: `{ userId, expiresAt }`, and never the token-bearing object. Both consumers need EXISTENCE only — `authContext`'s `$derived(!!page.data.session)` and `getUserData`'s ancestor pre-check `if (!parentData.session)` — so the narrowing is invisible to them and visible to anyone reading the document body.
  *
