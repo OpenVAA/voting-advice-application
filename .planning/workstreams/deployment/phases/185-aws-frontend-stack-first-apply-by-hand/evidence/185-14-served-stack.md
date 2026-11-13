@@ -113,3 +113,67 @@ TARGET_STATE=healthy
   group's `HealthCheckPath` is `/api/health`, and its one target is `healthy`.
 
 `s7_logs_removed=yes`: the step's `$L` was removed after item 7.
+
+## Task 3: the network, the tags, the regions, the logs and the state (Step 8, 11:08 to 11:11)
+
+```
+TASK_SG_INGRESS=1 from=load-balancer-sg port=3000
+ALB_SG_INGRESS=1 from=cloudfront-prefix-list port=443
+NAT_GATEWAYS=0
+DEFAULT_ROUTE=internet-gateway
+TASK_PUBLIC_ADDRESS=present
+DIRECT_TO_TASK=no-answer
+DIRECT_TO_ALB=no-answer
+UNTAGGED_TAGGABLE_RESOURCES=0
+UNTAGGABLE_TYPES=aws_acm_certificate_validation,aws_appautoscaling_policy,aws_cloudwatch_event_target,aws_route53_record,aws_route_table_association,aws_sns_topic_policy,aws_sns_topic_subscription,random_password
+TASK_TAG_ROOT=aws
+ARNS_OUTSIDE_HOME_REGION=viewer-certificate,distribution
+LOG_RETENTION_DAYS=90
+LOG_STREAM_FOR_TASK=present
+STATE_SSE=AES256 STATE_VERSIONED=yes
+LOCK_SECOND_PLAN=refused
+LOCK_FIRST_PLAN_EXIT=0
+```
+
+- **Item 1.** `terraform init -lockfile=readonly` exit 0, the outputs read, `dig` present.
+- **Item 2, the ingress rules, by the role of their source.** `describe-managed-prefix-lists` and
+  `describe-security-group-rules` exit 0.
+  - The task's group: one ingress rule, `from=load-balancer-sg port=3000`, described
+    `Requests and health checks from the load balancer.`; one egress rule, 443.
+  - The load balancer's group: one ingress rule, `from=cloudfront-prefix-list port=443`, described
+    `HTTPS from the CloudFront origin-facing prefix list.` (the description of the 185-13 fix);
+    one egress rule, 3000 to the tasks.
+  - No `single-address` rule in either group: no debug ingress is applied.
+  - `describe-nat-gateways` exit 0, `s8_nat_gateways=0`. `describe-route-tables` exit 0: one
+    `0.0.0.0/0` route in the network, to an `igw-` gateway.
+- **Item 3, the direct requests.** `list-tasks` exit 0, one running task; `describe-tasks` and
+  `describe-network-interfaces` exit 0. The task's network interface has a public address
+  (`s8_task_public_address=present`) and the load balancer's name resolved
+  (`s8_lb_address=resolved`); both addresses were held in variables, used, unset, and never printed.
+  `http://<task address>:3000/api/health`: curl exit 28 after 10 s, HTTP `000`.
+  `https://origin.staging.openvaa.org/api/health` resolved to the load balancer's address: curl
+  exit 28 after 10 s, HTTP `000`. The `.err` files, which name the addresses, were not read out.
+  The probe was the workstation's alone; a request from inside AWS from another account was not
+  tried (the plan's assumption on INFRA-11).
+- **Item 4, the tags.** `terraform show -json` into `$L`, exit 0. 40 managed resources, 26 of them
+  with `tags_all`, and each of the 26 carries `Project=openvaa`, `Environment=staging`, `Root=aws`
+  and `ManagedBy=terraform` (`s8_untagged=0`, no `s8_untagged_address=` line). The other 14 are of
+  the eight types above, none of which carries tags.
+- **Item 5, the task's tags.** `s8_task_tag_root=aws`;
+  `s8_task_tag_keys=Environment,ManagedBy,Project,Root,aws:ecs:clusterName,aws:ecs:serviceName`.
+- **Item 6, the regions.** 30 managed resources carry an ARN; two are outside `eu-north-1`:
+  `module.frontend.aws_acm_certificate.viewer us-east-1` and
+  `module.frontend.aws_cloudfront_distribution.this global`, and no other.
+- **Item 7, the logs.** `describe-log-groups` exit 0: `/openvaa/staging/frontend` has
+  `retentionInDays` 90. `describe-log-streams` with the prefix `frontend/frontend/<task id>` of the
+  running task exit 0: one stream.
+- **Item 8, the state and its lock.** `TF_VAR_alert_email` checked with `test -n` only (exit 0).
+  - `s3api head-object` of `pipeline/staging/aws/terraform.tfstate` exit 0: `AES256`, a version id
+    present (not recorded). `get-bucket-versioning` reads `Enabled`.
+  - Two plans, no `-out`, `-lock-timeout=0s`, the second started 5 s after the first, at 11:10:33Z.
+    The second exited 1 with one `Error acquiring the state lock`, its lock information naming
+    `openvaa-tfstate-471112560111/pipeline/staging/aws/terraform.tfstate` and
+    `OperationTypePlan`. The first exited 0 at 11:10:45Z with `No changes. Your infrastructure
+    matches the configuration.`, so the stack had not drifted since 185-13's no-change plan.
+
+`s8_logs_removed=yes`: the step's `$L`, with the state JSON and the address-bearing `.err` files, was removed after item 8.
