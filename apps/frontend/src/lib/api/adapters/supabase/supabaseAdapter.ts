@@ -98,9 +98,9 @@ export function supabaseAdapterMixin<TBase extends Constructor>(base: TBase): Co
     /**
      * The project-scoped entry point to a table.
      *
-     * Every read and write against a table carrying a `project_id` foreign key to `public.projects` goes through here. Reads, updates and deletes get the project filter appended; inserts get the project column supplied, because an insert carries no filter. The union of tables this accepts is the set of tables holding that foreign key.
+     * Every read and write against a table carrying a `project_id` foreign key to `public.projects` goes through here. Reads, updates and deletes get the project filter appended; inserts and upserts get the project column supplied, because neither carries a filter. An upsert is always sent in the ignore-duplicates form, so it can add a row and can never change one. The union of tables this accepts is the set of tables holding that foreign key.
      * @param table - The project-scoped table to reach.
-     * @returns The four operations, each already carrying this adapter's project.
+     * @returns The five operations, each already carrying this adapter's project.
      */
     scopedFrom<TTable extends ProjectScopedTable>(table: TTable): ScopedTableAccess<TTable> {
       const builder = tableBuilder(this.#supabase, table);
@@ -111,13 +111,13 @@ export function supabaseAdapterMixin<TBase extends Constructor>(base: TBase): Co
        * @returns The same builder, now carrying the project filter.
        */
       function scoped<TBuilder>(builderToScope: TBuilder): TBuilder {
-        // reason: the ONE cast, and it is deliberately the narrowest possible. Inside a method generic over `TTable` the builder's row type is the UNION of all thirteen scoped tables, so PostgREST's `eq(column, value)` resolves its value parameter to an unresolvable conditional and rejects a plain `string`. The cast names only the call being made and returns `TBuilder` unchanged, so the builder's own static type — the caller's real table, its real columns — survives untouched. Widening to `any` here would erase it.
+        // reason: the ONE cast, and it is deliberately the narrowest possible. Inside a method generic over `TTable` the builder's row type is the UNION of all fourteen scoped tables, so PostgREST's `eq(column, value)` resolves its value parameter to an unresolvable conditional and rejects a plain `string`. The cast names only the call being made and returns `TBuilder` unchanged, so the builder's own static type — the caller's real table, its real columns — survives untouched. Widening to `any` here would erase it.
         return (builderToScope as unknown as { eq: (column: string, value: string) => TBuilder }).eq(
           'project_id',
           projectId
         );
       }
-      // reason: the second and last cast, for the same generic-union reason as `scoped` above. `insert` and `update` type their payload as a conditional over `TTable`, which does not resolve while `TTable` is still a type parameter, so a payload assembled here cannot be shown to match it. The cast names only the two write calls and preserves both their return types, so the caller still sees the real builder for the real table.
+      // reason: the second and last cast, for the same generic-union reason as `scoped` above. `insert`, `upsert` and `update` type their payload as a conditional over `TTable`, which does not resolve while `TTable` is still a type parameter, so a payload assembled here cannot be shown to match it. The cast names only the three write calls and preserves each of their return types, so the caller still sees the real builder for the real table.
       const writes = builder as unknown as {
         insert: (values: Record<string, unknown>) => ReturnType<ScopedTableAccess<TTable>['insert']>;
         update: (values: Record<string, unknown>) => ReturnType<ScopedTableAccess<TTable>['update']>;

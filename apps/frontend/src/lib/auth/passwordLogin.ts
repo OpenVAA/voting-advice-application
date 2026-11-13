@@ -5,6 +5,8 @@ import type { GrantShape } from './roles';
 /**
  * Sign a principal in with a password and gate them on a set of grant shapes.
  *
+ * After a successful sign-in the session is handed to `admitSession`, which claims the user's invitations, refreshes the session when a grant was written, and only then reads the session and applies the gate. Wrong credentials never reach the claim.
+ *
  * ## Why the caller's request context is required rather than optional
  *
  * The sign-in must be issued on the CALLER'S OWN client, so the session cookies land on the response the caller is building. Creating a client inside this helper would put them on a nested response instead, whose `Set-Cookie` headers never reach the browser — a recorded incident, and the reason both login form actions carry a docblock warning about it. There is deliberately no arm of this function that works without a context.
@@ -60,7 +62,7 @@ export async function passwordLogin({
 }
 
 /**
- * The slice of the caller's request context this helper acts through.
+ * The slice of the caller's request context this helper acts through: what an admission needs, and the sign-in.
  *
  * Described structurally rather than imported. The backend client's own types are banned outside the adapter directory, and naming them here would hard-wire today's backend into this helper's contract — which is precisely what the single sign-in function below exists to avoid.
  */
@@ -89,9 +91,9 @@ export type PasswordLoginContext = {
 };
 
 /**
- * What a login attempt came to.
+ * What a login attempt came to: refused credentials, or what the admission of the session came to.
  *
- * Statuses are the ones the callers already returned for these three cases, so translating an outcome into a form-action failure stays a one-liner. `reason` is for the caller and the logs; it is never surfaced to the browser as a message, because the three failures are deliberately indistinguishable to an unauthenticated caller beyond their status.
+ * Statuses are the ones the callers return for these cases, so translating an outcome into a form-action failure stays a one-liner. `reason` is for the caller and the logs; it is never surfaced to the browser as a message, because the three failures are deliberately indistinguishable to an unauthenticated caller beyond their status.
  */
 export type PasswordLoginOutcome =
   | { ok: true; session: { access_token: string }; user: { id: string } }

@@ -50,7 +50,7 @@ This component reads `fctx.version` inside its `$derived` so that any filter-rul
   // appContext exposes `locale` as a reactive accessor — read via `ctx.locale`, never destructure it (destructuring would capture the value once at init and stop updating). It is NOT a store, so `fromStore(ctx.locale)` would throw `store.subscribe is not a function`.
   const locale = $derived(ctx.locale);
 
-  // Active FilterGroup: prop override wins over context (additive contract for off-context use such as tests and the candidate-app migration).
+  // Active FilterGroup: prop override wins over context (additive contract for off-context use such as tests and the contestant-app migration).
   // The cast to FilterGroup<MaybeWrappedEntityVariant> handles the generic variance gap — FilterGroup<TEntity> is invariant in TEntity, but our consumers (EntityFilters, computeFiltered helper) treat the FilterGroup structurally and only call the contravariant `apply` and `filters` shapes.
   const activeFilterGroup = $derived(
     (filterGroupProp ?? fctx.filterGroup) as FilterGroup<MaybeWrappedEntityVariant> | undefined

@@ -20,6 +20,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   - `'subcard'`: In a list of nested entity cards, e.g., the candidates for a party.
 - `maxSubcards`: The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. Default: `3`
 - `showElection`: Whether to show the possible nomination's election and constituency. Default: `false`
+- `headerOnly`: Whether to render the card header only: avatar, title and subtitle. Featured questions, sub-matches and sub-cards are neither rendered nor looked up, so the card needs no question data. Default: `false`
+- `showType`: Whether to show the entity's type, e.g. "candidate" or "party", in the subtitle. Not shown in the `'subcard'` variant. Default: `false`
+- `keepScroll`: Whether a link action keeps the scroll position. Set to `false` when the action navigates to another page rather than opening an overlay over the list. Default: `true`
 - Any valid attributes of an `<article>` element.
 
 ### Tracking events
@@ -128,7 +131,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       }
     }
 
-    // The possible subentities to display in the card, shown only in the list variant
+    // The possible subentities to display in the card, shown only in the list variant and never in a header-only card
     let subcards: Array<EntityCardProps> | undefined;
     let subcardsMaxOverride: number | undefined; // the alliance branch overrides maxSubcards to render all member orgs
     if (

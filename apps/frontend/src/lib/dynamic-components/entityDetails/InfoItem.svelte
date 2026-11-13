@@ -11,7 +11,7 @@
 ### Usage
 
 ```tsx
-<InfoItem label={t('candidateApp.common.firstNameLabel')}>
+<InfoItem label={t('contestantApp.common.firstNameLabel')}>
   {candidate.firstName}
 </InfoItem>
 ```

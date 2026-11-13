@@ -19,7 +19,7 @@ export type TimedModalProps = Omit<ModalProps, 'children' | 'actions'> & {
    */
   timeLeft?: number;
   /**
-   * Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
+   * Callback triggered when the count ends. The modal stays open until a promise it returns settles, and then closes if it is still open. Note that the `onClose` callback will be triggered after this.
    */
   onTimeout?: () => unknown;
 };

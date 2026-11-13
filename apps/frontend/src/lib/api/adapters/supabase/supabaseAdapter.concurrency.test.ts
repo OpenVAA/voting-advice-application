@@ -23,7 +23,7 @@ vi.mock('$env/dynamic/public', () => ({
  *
  * ## Two facts the shape depends on, recorded because neither is visible from the code under test
  *
- * **1. The contamination window is wider than "two awaits in one function."** Fact 7 describes the window as the writer obtained at `candidate/(protected)/+layout.server.ts:30`, then `await locals.safeGetSession()` at `:33`, then `await dataWriter.getCandidateUserData(…)` at `:44` — three statements inside one load. That is the NARROWEST instance, not the widest. Two voter universal loads return UNAWAITED promises (`(voters)/(located)/+layout.ts:102-112` and `(voters)/nominations/+layout.ts:32-42`, research finding D-8 and pitfall P6), so the adapter is captured by a promise that outlives the load's own return and is settled long after the request that configured it has finished. A per-request instance that looks correct at the call site is still wrong if the promise it produced was created against a rebound singleton. The interleaving below models the narrow window because that is the one that can be driven deterministically; the wide one is why the fix has to be a fresh instance rather than a save-and-restore around the await.
+ * **1. The contamination window is wider than "two awaits in one function."** Fact 7 describes the window as the writer obtained at `contestant/(protected)/+layout.server.ts:30`, then `await locals.safeGetSession()` at `:33`, then the awaited user-data read at `:44` — three statements inside one load. That is the NARROWEST instance, not the widest. Two voter universal loads return UNAWAITED promises (`(voters)/(located)/+layout.ts:102-112` and `(voters)/nominations/+layout.ts:32-42`, research finding D-8 and pitfall P6), so the adapter is captured by a promise that outlives the load's own return and is settled long after the request that configured it has finished. A per-request instance that looks correct at the call site is still wrong if the promise it produced was created against a rebound singleton. The interleaving below models the narrow window because that is the one that can be driven deterministically; the wide one is why the fix has to be a fresh instance rather than a save-and-restore around the await.
  *
  * **2. The ordering here is program control flow, not an observed interleaving — which is what makes this a negative control rather than a race.** Every ordering constraint comes from an explicit `await` on an externally-resolved promise built by `deferred()`. There is no timer of any kind, no fake-timer harness, no promise-race, no zero-delay scheduling, and no dependence on microtask-queue depth or on how busy the machine is. The literal names of those constructs are deliberately absent from this file: the plan's own acceptance criterion is a grep for them, so writing them out even in prose would trip the check that proves they are unused. The sequence `configure A → park A → configure B → complete B → resume A` is written down rather than hoped for, so this spec fails on the singleton BY CONSTRUCTION. A test that failed because it lost a race would be a flake, and `CLAUDE.md`'s cardinal rule forbids shipping one — which is also why decision **C1** rejected the Playwright variant with two overlapping authenticated sessions.
  *
@@ -36,7 +36,7 @@ vi.mock('$env/dynamic/public', () => ({
  * `157.2-RESEARCH.md` § "Interleaving A" sketches the fake resolving `{ data: { settings: { tag } }, error: null }` and asserting on `.tag`. That carrier does not survive the tree as it stands after Phase 157.1: `StoredSettingsSchema` is a `z.strictObject`, so a bare `tag` key is an unrecognised top-level member, `parseWithPartialPreserve` refuses it and preserves nothing, and `.tag` comes back undefined for BOTH requests — which would make the GREEN pass vacuously and the RED fail ambiguously. The tag therefore rides on `survey.linkTemplate`, a real optional string member of the schema that reaches `getAppSettings`'s caller unchanged. The apparatus exposes the same identity at three points so `157.2-02` can assert on whichever reads most honestly: the client's own `tag` field, the `tables` array recording every `from()` it served, and the payload it resolves.
  */
 
-/** The two adapter kinds the two vectors exercise. The provider carries `#supabase`; the writer carries `#fetch` through its inherited, un-overridden `clearIdToken`. */
+/** The two adapter kinds the two vectors exercise. The provider carries `#supabase`; the writer carries `#fetch` through its inherited, un-overridden `abortAllJobs`. */
 type AdapterKind = 'provider' | 'writer';
 
 /** The concrete adapter each kind resolves to. Declared against the CLASSES rather than against `typeof dataProvider`, so it survives `157.2-02` replacing the singleton with a factory. */
@@ -148,7 +148,7 @@ type Interleaving<TResult> = {
 /**
  * Drive the one interleaving both vectors use: configure A, park A, configure B, complete B, resume A.
  *
- * Request A's `await` on the gate models `await locals.safeGetSession()` at `candidate/(protected)/+layout.server.ts:33` — the request's OWN await, between configuring the adapter and using it, which is fact 7's measured window and the narrowest instance of ruling D11's defect. Request B configures and completes entirely inside that window. Every ordering constraint below is an `await` on an externally-resolved promise; see the file docstring for why no other ordering mechanism appears anywhere in this file.
+ * Request A's `await` on the gate models `await locals.safeGetSession()` at `contestant/(protected)/+layout.server.ts:33` — the request's OWN await, between configuring the adapter and using it, which is fact 7's measured window and the narrowest instance of ruling D11's defect. Request B configures and completes entirely inside that window. Every ordering constraint below is an `await` on an externally-resolved promise; see the file docstring for why no other ordering mechanism appears anywhere in this file.
  * @param kind - Which adapter both logical requests need.
  * @param operate - The adapter operation each logical request performs. It is the ONLY difference between the two vectors.
  * @returns Everything the assertions read: the recorded order, both tagged clients, both fetch spies and both results.
@@ -243,7 +243,7 @@ describe('supabase adapter concurrency — criteria C1 and C2, D11', () => {
     });
   });
 
-  // THE `#supabase` VECTOR — ledger row 1, filled by `157.2-02`. Request A obtains an adapter with client A and parks on the gate, request B obtains one with client B and completes, then A resumes and reads back a tagged value. A's own await models `await locals.safeGetSession()` at `candidate/(protected)/+layout.server.ts:33`, the real window from ruling D11's first instance. RED on the singleton: A reads back B's tag.
+  // THE `#supabase` VECTOR. Request A obtains an adapter with client A and parks on the gate, request B obtains one with client B and completes, then A resumes and reads back a tagged value. A's own await models `await locals.safeGetSession()` at `contestant/(protected)/+layout.server.ts:33`, the real window from ruling D11's first instance. RED on the singleton: A reads back B's tag.
   describe('the #supabase vector — two requests must not share one client', () => {
     it('drives the interleaving configure A, park A, configure B, complete B, resume A through obtain()', async () => {
       const run = await driveTwoRequests('provider', (adapter) => adapter.getAppSettings());
@@ -263,7 +263,7 @@ describe('supabase adapter concurrency — criteria C1 and C2, D11', () => {
     });
   });
 
-  // THE `#fetch` VECTOR — ledger row 2, filled by `157.2-02`. Same driver, `clearIdToken()` as the operation, and the assertion is on the two fetch spies. This vector is live even though no Supabase adapter calls `this.fetch` itself: `SupabaseDataWriter` inherits `clearIdToken`, `logout` and `exchangeCodeForIdToken` from `UniversalDataWriter` UN-OVERRIDDEN, and those reach SAME-ORIGIN app routes — `clearIdToken` at `universalDataWriter.ts:106-110` hits `/api/oidc/token` — where the forwarded cookie really is the request's own session. Amendment finding C: the ORIGINAL justification, that the request-scoped fetch forwards cookies to Supabase, is false because Supabase is cross-origin and PostgREST authenticates on `Authorization`; that sentence is itself ruling D10's root cause, so this vector rests on the same-origin inheritance instead. RED on the singleton: fetchA records 0 calls and fetchB records 2.
+  // THE `#fetch` VECTOR. Same driver, `abortAllJobs()` as the operation, and the assertion is on the two fetch spies. This vector is live even though no Supabase adapter calls `this.fetch` itself: `SupabaseDataWriter` inherits `logout` and the job methods from `UniversalDataWriter` un-overridden, and those reach same-origin app routes — `abortAllJobs` posts to `/api/admin/jobs/abort-all` — where the forwarded cookie really is the request's own session. The request-scoped fetch does not matter for Supabase itself, which is cross-origin and authenticates on `Authorization`, so this vector rests on the same-origin inheritance. Shared between requests, fetchA records 0 calls and fetchB records 2.
   describe('the #fetch vector — two requests must not share one fetch', () => {
     it('drives the same interleaving with clearIdToken() as the operation through obtain()', async () => {
       const run = await driveTwoRequests('writer', (adapter) => adapter.clearIdToken());
@@ -276,7 +276,7 @@ describe('supabase adapter concurrency — criteria C1 and C2, D11', () => {
     it('asserts each request’s fetch spy records exactly one call', async () => {
       const run = await driveTwoRequests('writer', (adapter) => adapter.clearIdToken());
 
-      // Both counts are read in ONE assertion on purpose: the failure message then carries the whole RED shape ledger row 2 predicts — A's spy at 0 calls and B's at 2 — rather than only the first of the two numbers.
+      // Both counts are read in ONE assertion on purpose: the failure message then carries the whole shape a shared fetch produces — A's spy at 0 calls and B's at 2 — rather than only the first of the two numbers.
       expect([run.fetchA.mock.calls.length, run.fetchB.mock.calls.length]).toEqual([1, 1]);
     });
   });

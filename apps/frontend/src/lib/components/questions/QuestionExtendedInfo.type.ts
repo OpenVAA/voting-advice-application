@@ -11,11 +11,11 @@ export type QuestionExtendedInfoProps = SvelteHTMLElements['div'] & {
    */
   title?: string;
   /**
-   * A callback triggered when an info section is collapsed. Mostly used for tracking.
+   * A callback triggered when an info section is collapsed, with the section's localised title. Mostly used for tracking.
    */
   onSectionCollapse?: (title: string) => void;
   /**
-   * A callback triggered when an info section is expanded.  Mostly used for tracking.
+   * A callback triggered when an info section is expanded, with the section's localised title. Mostly used for tracking.
    */
   onSectionExpand?: (title: string) => void;
 };

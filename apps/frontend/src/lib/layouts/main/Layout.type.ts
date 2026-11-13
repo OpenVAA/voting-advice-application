@@ -15,7 +15,7 @@ export type LayoutProps = {
    */
   mainProps?: Omit<SvelteHTMLElements['main'], 'id'>;
   /**
-   * The navigation menu snippet, normally a `VoterNav` or `CandidateNav` component.
+   * The navigation menu snippet, normally a `VoterNav` or `ContestantNav` component.
    */
   menu?: Snippet;
   /**

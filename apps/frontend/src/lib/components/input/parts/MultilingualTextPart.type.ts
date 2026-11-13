@@ -27,11 +27,11 @@ export type MultilingualTextPartProps = {
    */
   disabled?: boolean;
   /**
-   * Whether the non-displayed locales are revealed. When `false` only the current locale renders, and the per-locale language labels are held at zero opacity. @default false
+   * Whether every supported locale's field is rendered. When `false` only the displayed locale and the `requiredLocale` render; the per-locale language labels are held at zero opacity while a single field is on screen. @default false
    */
   isTranslationsVisible?: boolean;
   /**
-   * The owning `Input`'s focus-target array, indexed by locale position. `Input` refocuses its first entry after the translation toggle is pressed. Always supplied, so the part can bind into it without a non-null assertion.
+   * The locale whose field is the required one: it is rendered even while the translations are hidden, placed directly after the displayed locale's field, and marked `aria-required`. `Input` passes it only for a `required` input whose `requiredLocale` is a supported locale. @default undefined
    */
   mainInputs: Array<HTMLElement>;
   /**

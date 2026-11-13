@@ -651,7 +651,7 @@ describe('SupabaseDataProvider', () => {
       expect(result[0].name).toBe('Election 2024');
     });
 
-    // REWRITTEN, not deleted. These lines are the only statement anywhere in the repository of what the elections mapping is, and a mapping with no test is how `election_type` came to have two meanings in the first place. Before 162-07 this case pinned `election_type -> subtype`; that term is gone under Q2 = (A), so the case now states the mapping that replaced it -- and states it in BOTH directions, because the failure this guards against is silent. A row whose two columns disagree is the only fixture that can tell them apart.
+    // The row's two columns disagree on purpose: `subtype` holds the kind of election and `election_type` holds the nomination shape, and only a row where they differ can tell which column fed which property.
     it('maps election_date to date and current_round to round, and feeds subtype from its OWN column', async () => {
       mockSupabase._mockResponses['elections'] = {
         data: [
@@ -682,7 +682,7 @@ describe('SupabaseDataProvider', () => {
       expect(result[0].subtype).toBe('presidential');
     });
 
-    // The negative half, as its own case. `election_type` now carries the nomination shape (D-16), and the hazard that ruling names is that the application property "would start receiving nomination shapes" with nothing recording that its meaning had changed. Nothing goes red on its own when that happens, so it is asserted directly: a row whose nomination-shape column is populated and whose subtype column is empty must produce NO subtype.
+    // A row whose nomination-shape column is populated and whose subtype column is empty yields no subtype: the shape reaches `nominationShape` and nothing else.
     it('never feeds subtype from the nomination-shape column', async () => {
       mockSupabase._mockResponses['elections'] = {
         data: [
@@ -1845,7 +1845,7 @@ describe('SupabaseDataProvider', () => {
     });
 
     it('fans out over election and constituency arrays and merges the results by id', async () => {
-      // A caller nominated in two elections passes a two-element array; picking [0] would drop the other election's scoped questions. See `candidate/(protected)/+layout.server.ts`, which derives electionId from the candidate's nominations.
+      // A caller nominated in two elections passes a two-element array; picking [0] would drop the other election's scoped questions. See `contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/+layout.server.ts`, which derives electionId from the candidate's nominations.
       mockSupabase._mockRpcResponses['get_questions'] = rpcPayload({
         categories: [{ id: 'cat1', name: { en: 'C' }, sort_order: 1, category_type: 'opinion' }],
         questions: [

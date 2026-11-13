@@ -27,11 +27,11 @@ import type {
 /**
  * Signicat claim mapping for Finnish Trust Network authentication.
  *
- * Signicat returns standard OIDC claims in the id_token. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person; `extractClaims` are additional claims stored in user metadata for audit and verification purposes.
+ * Signicat returns standard OIDC claims in the id_token. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person; `extractClaims` are additional claims returned to the caller, and stored nowhere.
  *
  * - Identity matching: `sub` (stable OIDC subject identifier)
  * - Name claims: Standard OIDC `given_name` and `family_name`
- * - Extra claims: `birthdate` (Finnish date of birth), captured as metadata only
+ * - Extra claims: `birthdate` (Finnish date of birth), returned to the caller only
  *
  * Keyed on `sub`, and it MUST NOT be keyed on `birthdate`, which is NOT an identifier: the Edge Function twin of this config (`identity-callback/claimConfig.ts`) turns `identityMatchProp`'s value into both the `app_metadata.identity_match_value` lookup key and the placeholder email local part, so keying on a birthdate collapses every candidate sharing a date of birth into a single Supabase auth account. The two configs must stay in agreement -- a mismatch keys the frontend and the backend to different claims.
  */

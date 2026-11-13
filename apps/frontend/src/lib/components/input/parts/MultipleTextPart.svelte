@@ -14,12 +14,17 @@ Internal to the `input` package — not exported from its barrel. See `./README.
 - Values are opaque strings: no numeric coercion, no dedup, no sorting, no case
   folding, no Unicode normalization.
 
+- When `multilingual`, each field and its language label carry `lang` set to their locale. Every field names `describedBy` in its `aria-describedby`.
+
 ### Properties
 See `MultipleTextPart.type.ts`.
 
 ### Callbacks
 - `onChange`: triggered on every edit / add / remove / reorder with the filtered,
   order-preserving value array.
+
+### Bindable functions
+- `focus`: Moves focus to the first row's first field.
 -->
 
 <script lang="ts">
@@ -183,7 +188,6 @@ See `MultipleTextPart.type.ts`.
                 class="{inputLabelClass} transition-opacity"
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
             {/if}
-            <!-- bind: keep — $state target for bind:this; mainInputs is $state([]) in the owning Input. -->
             <input
               type="text"
               data-testid="multiple-text-row"

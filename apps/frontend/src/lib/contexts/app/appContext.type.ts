@@ -10,7 +10,7 @@ import type { UserPreferences } from './userPreferences.type';
 /**
  * The AppContext type.
  *
- * ComponentContext properties are overridden: `locale` is a BARE reactive accessor (read `ctx.locale`); `locales`/`darkMode` remain `{ readonly current }` rune handles for the downstream contexts (VoterContext, CandidateContext, AdminContext) which read them via `.current`.
+ * ComponentContext properties are overridden: `locale` is a BARE reactive accessor (read `ctx.locale`); `locales`/`darkMode` remain `{ readonly current }` rune handles for the downstream contexts (VoterContext, ContestantContext, AdminContext) which read them via `.current`.
  *
  * Plain function properties (`t`, `translate`) are kept as-is from ComponentContext.
  */

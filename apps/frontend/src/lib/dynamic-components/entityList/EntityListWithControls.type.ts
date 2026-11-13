@@ -7,7 +7,7 @@ import type { SvelteHTMLElements } from 'svelte/elements';
  * Compared to the legacy `EntityListControls.type.ts`:
  *   - Drops `onUpdate` — filtering is now derived (no callback chain).
  *   - Adds optional forwarded `EntityList` props: `itemsPerPage`, `itemsTolerance`, `scrollIntoView`.
- *   - `filterGroup` is optional. When omitted, the component reads `filterContext.filterGroup` — the canonical shape for the results-page integration. The override prop is kept for off-context usage (tests, candidate-app migration).
+ *   - `filterGroup` is optional. When omitted, the component reads `filterContext.filterGroup` — the canonical shape for the results-page integration. The override prop is kept for off-context usage (tests, contestant-app migration).
  */
 export type EntityListWithControlsProps<TEntity extends MaybeWrappedEntityVariant = MaybeWrappedEntityVariant> =
   SvelteHTMLElements['div'] & {

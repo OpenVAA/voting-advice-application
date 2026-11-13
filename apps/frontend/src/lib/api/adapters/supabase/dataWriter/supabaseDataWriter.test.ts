@@ -248,7 +248,7 @@ describe('SupabaseDataWriter', () => {
 
     it('does not derive the endpoint from window.location.pathname (regression guard for the /candidate-prefix bug)', async () => {
       mockSupabase.auth.signOut.mockResolvedValue({ error: null });
-      // Simulate an unprefixed candidate route URL. Reading the locale from the first path segment would produce "/candidate/candidate/auth/logout" from exactly this input.
+      // Simulate an unprefixed candidate route URL. Reading the locale from the first path segment would take "contestant" for a locale and put it in front of the endpoint from exactly this input.
       Object.defineProperty(window, 'location', {
         configurable: true,
         value: { pathname: '/candidate/auth/logout', origin: 'http://localhost' }
@@ -883,7 +883,6 @@ describe('SupabaseDataWriter', () => {
         error: null
       };
 
-      // The reachable no-write shape: the public wrapper requires an image `file` OR a `termsOfUseAccepted`, and the adapter then writes nothing when that `file` is not a `File` instance and the image carries no `url` — which is what an SSR pass, where `File` is undefined, produces.
       const result = await writer.updateEntityProperties({
         target: { type: 'candidate', id: 'entity-1' },
         // reason: a non-`File` `file` is the state under test and the public option type cannot name it.
@@ -912,7 +911,7 @@ describe('SupabaseDataWriter', () => {
     }
 
     /**
-     * The row `get_candidate_user_data` answers with, in the project this adapter is configured for unless a test says otherwise.
+     * The row the one-entity read answers with, in the project this adapter is configured for unless a test says otherwise.
      * @param projectId - The project the returned candidate belongs to.
      * @returns The row.
      */

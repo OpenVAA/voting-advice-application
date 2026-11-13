@@ -4,6 +4,6 @@
 export type ReactiveHandle<TValue> = { readonly current: TValue };
 
 /**
- * A rune-shaped read+write handle (e.g. the producer's `sendTrackingEvent` surface).
+ * A rune-shaped read+write handle: a value exposed via a `current` getter together with a `set` that replaces it.
  */
 export type WritableHandle<TValue> = { current: TValue; set: (v: TValue) => void };

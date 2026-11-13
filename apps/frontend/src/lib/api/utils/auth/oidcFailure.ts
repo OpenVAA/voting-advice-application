@@ -1,7 +1,7 @@
 /**
  * The closed set of ID-token failure classes, and the leak-safe description of each.
  *
- * `/api/oidc/callback` and `/api/oidc/token` both log the failure class returned by `IdentityProvider.getIdTokenClaims`, and the codes that can reach those logs form an open set: `decryptAndVerifyIdToken` throws the project's own codes, and both provider catch arms forward jose's `e.code` verbatim for any `Error` carrying one. An unmapped code in a log line -- jose's base `ERR_JOSE_GENERIC`, say -- does not tell the reader which stage failed.
+ * `/api/oidc/callback` logs the failure class returned by `IdentityProvider.getIdTokenClaims`, and the codes that can reach that log form an open set: `decryptAndVerifyIdToken` throws the project's own codes, and both provider catch arms forward jose's `e.code` verbatim for any `Error` carrying one. An unmapped code in a log line -- jose's base `ERR_JOSE_GENERIC`, say -- does not tell the reader which stage failed.
  *
  * So this module does three things:
  *
@@ -9,7 +9,7 @@
  * 2. Maps every code -- ours and jose's -- to the STAGE it failed at and a static operator hint naming the environment variable behind it ({@link describeOidcFailure}), so a log line is actionable without a source dive.
  * 3. Stays honest about the open tail: an unrecognised code is reported as such rather than silently mis-attributed.
  *
- * LEAK SAFETY. Every hint in this module is a FIXED string. Nothing here interpolates a value, a URL, a host, a `kid`, a token, a claim or any key material, which is what makes the output of {@link formatOidcFailure} safe to write to a server log. That is a property of the data in this file, not of its callers, so keep it: a hint that interpolates is a hint that can leak. The separate and stricter rule -- that only the opaque failure CLASS crosses the redirect boundary to the browser, never a message -- lives at the two route call sites.
+ * LEAK SAFETY. Every hint in this module is a FIXED string. Nothing here interpolates a value, a URL, a host, a `kid`, a token, a claim or any key material, which is what makes the output of {@link formatOidcFailure} safe to write to a server log. That is a property of the data in this file, not of its callers, so keep it: a hint that interpolates is a hint that can leak. The separate and stricter rule -- that only the opaque failure CLASS crosses the redirect boundary to the browser, never a message -- lives at the route's call site.
  *
  * This module is intentionally free of imports. It reads no environment and no secret, so it is safe to import from anywhere, including a client bundle, and needs no `$lib/server` guard.
  */
@@ -19,7 +19,7 @@
  *
  * The spellings are a LOGGED CONTRACT: they appear in operator-facing server logs and in the bank-authentication runbook, so renaming one is a documentation change, not a refactor. The four `JWKS_URI` members cover the one stage jose leaves uncoded, fetching the remote signature key set.
  *
- * Typed as a `Record` over the key union so that omitting a member is a compile error rather than a silently missing case -- the same shape, and for the same reason, as `OIDC_ERROR` in `$candidate/utils/oidcError`.
+ * Typed as a `Record` over the key union so that omitting a member is a compile error rather than a silently missing case -- the same shape, and for the same reason, as `OIDC_ERROR` in `$contestant/utils/oidcError`.
  */
 export const OIDC_FAILURE: Record<OidcFailureKey, string> = {
   /** `IDENTITY_PROVIDER_DECRYPTION_JWKS` is set but is not valid JSON. */
@@ -255,7 +255,7 @@ export function formatOidcFailure(code: string | undefined, providerType: string
 /**
  * The keys call sites use to reach an {@link OIDC_FAILURE} value.
  *
- * Exported, unlike `OidcErrorKey` in `$candidate/utils/oidcError`, because the colocated test enumerates the union to prove every member is mapped -- which is the assertion that keeps this module's promise from rotting.
+ * Exported, unlike `OidcErrorKey` in `$contestant/utils/oidcError`, because the colocated test enumerates the union to prove every member is mapped -- which is the assertion that keeps this module's promise from rotting.
  */
 export type OidcFailureKey =
   | 'jwksMalformed'

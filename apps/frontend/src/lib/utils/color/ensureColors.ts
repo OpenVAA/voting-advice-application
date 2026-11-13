@@ -6,9 +6,9 @@ const bg = staticSettings.colors?.light?.['base-300'] ?? 'd1ebee';
 const bgDark = staticSettings.colors?.dark?.['base-300'] ?? '1f2324';
 
 /**
- * Tries to ensure that `color` and `colorDark` have a sufficient contrast ratio on their respective backgrounds. If `colorDark` is `undefined`, it will be constructed from `color`, if available. In case either color cannot be constructed, an empty string is returned for it.
- * @param color - The light theme color
- * @param colorDark - The dark theme color
+ * Ensure that a colour pair has a sufficient contrast ratio on the background of each theme, and that nothing but a colour is returned. Each member is parsed and adjusted, and a member that is absent or cannot be parsed counts as absent: the normal colour is then the empty string, and the dark colour is constructed from the normal one, or is the empty string when there is none. A returned member is therefore a hex colour or the empty string and never the text that was passed in, so it is safe to write into a `style` attribute.
+ * @param normal - The light theme color
+ * @param dark - The dark theme color
  * @returns An object with the adjusted colors
  */
 export function ensureColors({ normal, dark }: Partial<Colors>): WithRequired<Colors, 'dark'> {

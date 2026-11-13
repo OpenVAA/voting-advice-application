@@ -2,7 +2,7 @@
 
 # Banner component
 
-Contains the secondary action buttons in the header.
+Contains the secondary action buttons in the header. The logout action is shown to a signed-in user of the Contestant App or the Admin App, read from the session the app's outermost load provides.
 
 ### TODO
 
@@ -10,7 +10,7 @@ Allow layouts to insert arbitrary content in the header and make this a static c
 
 ### Dynamic component
 
-Accesses `AppContext` and optionally `VoterContext`.
+Accesses `AppContext`, and `VoterContext`, `ContestantContext` or `AdminContext` in the app of that type. The Log out is the one shared `LogoutButton`, given the app's own sign-out: the Contestant App's with its warning of what is left undone, the Admin App's with its login to leave to.
 -->
 
 <script lang="ts">

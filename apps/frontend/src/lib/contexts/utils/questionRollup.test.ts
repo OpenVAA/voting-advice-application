@@ -5,11 +5,11 @@ import type { QuestionCategoryType } from '@openvaa/data';
 import type { QuestionRollupTargets } from './questionRollup';
 
 /**
- * Contract guard for the shared question-category rollup (phase 159, requirement REVIEW-CMP-05).
+ * Contract guard for the shared question-category rollup.
  *
- * The rollup used to be written twice — once in `candidateContext.svelte.ts` and once in `voterContext.svelte.ts` — with three deliberate differences that neither copy documented. This file pins the extracted contract so the three differences stay parameterised instead of quietly collapsing into whichever copy the extraction happened to start from.
+ * `contestantContext.svelte.ts` and `voterContext.svelte.ts` both call the rollup, with three deliberate differences. This file pins the contract so the three differences stay parameterised instead of quietly collapsing into one caller's behaviour.
  *
- * What a wrong implementation would have produced. Dropping the entity-type scope from the applicable-question lookup (it is passed to two calls, and only one of them is the obvious one) would widen the candidate app's question set past its entity scope while the applicability check still looked correct — a silent over-disclosure with no type error and no failing route. Applying the question filter to only the opinion list would leave hidden informational questions rendering in the voter app. Losing the opinion-matchability guard would let a non-matchable question reach the matching algorithm, where it fails far from its cause. Returning `undefined` rather than four empty collections on an empty category set would crash both callers on cold entry, when the data root is legitimately empty for the first frames.
+ * What a wrong implementation would have produced. Dropping the entity-type scope from the applicable-question lookup (it is passed to two calls, and only one of them is the obvious one) would widen the contestant app's question set past its entity scope while the applicability check still looked correct — a silent over-disclosure with no type error and no failing route. Applying the question filter to only the opinion list would leave hidden informational questions rendering in the voter app. Losing the opinion-matchability guard would let a non-matchable question reach the matching algorithm, where it fails far from its cause. Returning `undefined` rather than four empty collections on an empty category set would crash both callers on cold entry, when the data root is legitimately empty for the first frames.
  *
  * The fixtures are plain objects shaped like the surface the rollup actually reads — the category collection, the applicability predicate, the applicable-question lookup, the category type and the matchability flag — rather than instances of the real data model, so this stays a unit test of the rollup and not of `@openvaa/data`.
  */

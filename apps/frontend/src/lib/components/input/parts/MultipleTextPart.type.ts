@@ -36,7 +36,7 @@ export type MultipleTextPartProps = {
    */
   maxItems?: number;
   /**
-   * The owning `Input`'s focus-target array, indexed by row and then by locale position. `Input` refocuses its first entry after the translation toggle is pressed.
+   * The ids of the elements that describe the input — the info line and the inline error `Input` renders, and any the caller passed — set as every row field's `aria-describedby`. @default undefined
    */
   mainInputs: Array<HTMLElement>;
   /**

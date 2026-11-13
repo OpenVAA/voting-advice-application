@@ -34,9 +34,9 @@ export type ProjectScopedTable =
 type QueryBuilderFor<TTable extends ProjectScopedTable> = ReturnType<typeof tableBuilder<TTable>>;
 
 /**
- * The project-scoped view of one table: the same four operations the raw query builder offers, each with the project already applied.
+ * The project-scoped view of one table: five operations of the raw query builder, each with the project already applied.
  *
- * Reads, updates and deletes carry `project_id = <this adapter's project>` as a filter. Inserts carry it as a column instead, because an insert has no filter to carry it in, and the caller therefore does not supply `project_id` itself. No member of this type can express an operation that reaches another project's rows.
+ * Reads, updates and deletes carry `project_id = <this adapter's project>` as a filter. Inserts and upserts carry it as a column instead, because neither has a filter to carry it in, and the caller therefore does not supply `project_id` itself. No member of this type can express an operation that reaches another project's rows.
  */
 export type ScopedTableAccess<TTable extends ProjectScopedTable> = {
   /**

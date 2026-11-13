@@ -23,11 +23,11 @@ import type {
 import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 
 /**
- * The file extensions a candidate upload may end up carrying in its Storage object path.
+ * The file extensions an entity's upload may end up carrying in its Storage object path.
  *
  * ## Why a whitelist rather than the uploader's own suffix
  *
- * `file.name` is fully controlled by the uploading candidate. Its suffix, `file.name.split('.').pop()`, cannot yield a `..` segment, because it contains no dot by construction, but it CAN contain a `/`: a file named `a.b/c/d` yields `"/d"` and a path of `…/<uuid>./d`, which would let the uploader place objects at chosen sub-paths inside the prefix. It can also be arbitrarily long, or carry control characters, `%`, `?`, `#` or non-ASCII, any of which can confuse a Storage RLS policy or a later parser written against the expected `<project>/candidates/<id>/<uuid>.<ext>` shape. The extension is also copied verbatim into the stored `{ path }`, which `parseImageColumn`/`storageUrl` later turn into a public URL.
+ * `file.name` is fully controlled by the uploader. Its suffix, `file.name.split('.').pop()`, cannot yield a `..` segment, because it contains no dot by construction, but it CAN contain a `/`: a file named `a.b/c/d` yields `"/d"` and a path of `…/<uuid>./d`, which would let the uploader place objects at chosen sub-paths inside the prefix. It can also be arbitrarily long, or carry control characters, `%`, `?`, `#` or non-ASCII, any of which can confuse a Storage RLS policy or a later parser written against the expected `<project>/<table>/<id>/<uuid>.<ext>` shape. The extension is also copied verbatim into the stored `{ path }`, which `parseImageColumn`/`storageUrl` later turn into a public URL.
  *
  * Deriving the extension from a fixed set makes the produced path a member of a small, known language regardless of what was uploaded.
  */
@@ -95,6 +95,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // The `code` param is unused; Supabase uses the recovery session.
     const { error } = await this.supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
+    // `auth.updateUser({ password })` leaves the session's access token as it is: the auth service answers with the user and issues no new token, and a read made with the same token straight afterwards sees the account's password as set.
+    // No `refreshSession()` follows for that reason. It would cost a network round-trip on every password set, and an expired refresh token would turn a working password set into a thrown error.
     return { type: 'success' as const };
   }
 
@@ -107,7 +109,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   }
 
   ////////////////////////////////////////////////////////////////////
-  // REGISTRATION METHODS
+  // INVITATION METHODS
   ////////////////////////////////////////////////////////////////////
 
   protected async _preregister({
@@ -201,13 +203,13 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // Get basic user data first
     const user = await this._getBasicUserData();
 
-    // Get candidate entity data via RPC
+    // The read answers with no row, and no error, for an entity that is not the caller's. That is a different fact from a failed read, so it resolves with no value rather than rejecting.
     const { data: entityRow, error } = await this.supabase
       .rpc('get_candidate_user_data', { p_project_id: this.projectId, p_entity_type: 'candidate' })
       .single();
     if (error || !entityRow) throw new Error(`Failed to load candidate data: ${error?.message ?? 'no data'}`);
 
-    // The rpc resolves the caller's IDENTITY from their editor grant in this adapter's project, which it takes as a required `p_project_id`, and raises when the caller holds more than one such grant in that project; that error surfaces here as a thrown load error. The returned row's own `project_id` is still compared here, as defence in depth: a mismatch stops the read rather than rendering another project's candidate.
+    // The RPC takes this adapter's project as a required `p_project_id` and answers only for entities the caller holds an editor grant on in it. The returned row's own `project_id` is still compared here, as defence in depth: a mismatch stops the read rather than rendering another project's entity.
     //
     // Neither uuid is interpolated. The message names the condition, which is what an operator needs to act on; the pair of ids is exactly what a deployment in this state should not be putting into logs and error reporters.
     if (entityRow.project_id !== this.projectId)
@@ -272,11 +274,12 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Upload one candidate-supplied file to the `public-assets` bucket and return the object path it was stored at.
+   * Upload one file supplied by an entity's editor to the `public-assets` bucket and return the object path it was stored at.
    *
-   * ONE helper for BOTH upload sites, `_setAnswers` and `_updateEntityProperties`, so the path sanitizing cannot drift between them. The extension is chosen from {@link ALLOWED_IMAGE_EXTENSIONS} rather than taken from the upload, so the returned path is always `<project>/candidates/<id>/<uuid>.<known-ext>` no matter what the candidate named their file.
+   * ONE helper for BOTH upload sites, `_setAnswers` and `_updateEntityProperties`, so the path sanitizing cannot drift between them. The extension is chosen from {@link ALLOWED_IMAGE_EXTENSIONS} rather than taken from the upload, so the returned path is always `<project>/<table>/<id>/<uuid>.<known-ext>` no matter what the uploader named their file.
    * @param options.projectId - The project the object is written under, which is this adapter's configured project.
-   * @param options.id - The candidate's id.
+   * @param options.table - The entity's table, which is its folder segment.
+   * @param options.id - The entity's id.
    * @param options.file - The uploaded file. Its `name` is attacker-controlled and is used only to CHOOSE from the whitelist.
    * @returns The Storage object path, safe to persist in an image column.
    */

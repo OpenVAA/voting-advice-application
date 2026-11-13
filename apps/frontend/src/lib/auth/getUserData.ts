@@ -12,7 +12,7 @@ import type { AdapterSource } from '$lib/api/dataProvider';
  *
  * @example
  * ```ts
- * // Accepted — the shape `routes/admin/+layout.server.ts` and `routes/candidate/+layout.server.ts` return.
+ * // Accepted — the shape `routes/admin/+layout.server.ts` and `routes/contestant/+layout.server.ts` return.
  * { session: { userId: 'a1b2', expiresAt: 1893456000 } }
  * { session: null }
  * // Rejected — a truthy value that is not evidence of a session.

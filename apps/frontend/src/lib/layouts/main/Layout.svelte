@@ -7,7 +7,7 @@ Defines the outer layout for the application, including the header and menu.
 ### Snippets
 
 - `children`: `main` content of the page, normally a `MainContent` component.
-- `menu`: the navigation menu, normally a `VoterNav` or `CandidateNav` component.
+- `menu`: the navigation menu, normally a `VoterNav` or `ContestantNav` component.
 
 ### Properties
 

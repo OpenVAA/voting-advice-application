@@ -4,7 +4,7 @@
  *
  * `appContext` exposes `appSettings` / `dataRoot` / `locale` as BARE own-enumerable reactive accessors (`Object.defineProperty(this, …, { get, enumerable: true })`).
  *
- * An orchestrator context (voter / candidate / admin) that reproduced those members with `Object.assign(this, this.#appContext)` would be wrong: `Object.assign` invokes each accessor getter ONCE and copies the resulting **value** as a plain data property — so a bare reactive accessor is frozen at construction time and never re-evaluates. For `dataRoot` (populated after construction) and `appSettings` / `locale` this silently freezes reactivity for every consumer that reads `voterCtx.appSettings`, `candidateCtx.dataRoot`, etc. — the exact reactivity-loss bug this helper exists to prevent.
+ * An orchestrator context (voter / candidate / admin) that reproduced those members with `Object.assign(this, this.#appContext)` would be wrong: `Object.assign` invokes each accessor getter ONCE and copies the resulting **value** as a plain data property — so a bare reactive accessor is frozen at construction time and never re-evaluates. For `dataRoot` (populated after construction) and `appSettings` / `locale` this silently freezes reactivity for every consumer that reads `voterCtx.appSettings`, `contestantCtx.dataRoot`, etc. — the exact reactivity-loss bug this helper exists to prevent.
  *
  * This helper copies each own-enumerable member by its property descriptor:
  * - **Accessor** members (a `get`/`set` pair) are re-installed as a live

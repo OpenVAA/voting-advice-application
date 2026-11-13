@@ -52,7 +52,7 @@ const { stubs, prefsHolder, pushed } = vi.hoisted(() => {
         },
         setDataRoot: (_v: unknown) => {}
       },
-      // tracking producer: only the six members appContext's selective forward takes.
+      // tracking producer: the producer's members, inert.
       tracking: {
         sendTrackingEvent: { current: () => {}, set: (_v: unknown) => {} },
         startPageview: (_href: string) => {},

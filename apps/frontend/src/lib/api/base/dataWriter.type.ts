@@ -23,14 +23,14 @@ import type { DPDataType } from './dataTypes';
  */
 export interface DataWriter<TType extends AdapterType = 'universal'> {
   ////////////////////////////////////////////////////////////////////
-  // Preregistration
+  // Invitations
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Exchange an authorization code for an ID token.
-   * @param authorizationCode - An authorization code received from an IdP.
-   * @param redirectUri - A redirect URI used to obtain the authorization code.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   * Ask whether an invitation code of the project this adapter serves is valid, used or unknown. The caller needs no session. The answer says nothing else about the invitation or about whoever claimed it.
+   * @param code - The code as typed.
+   * @returns A `Promise` resolving to the status, or a `Response` containing it.
+   * @throws An error if the check cannot be made or its answer does not have the expected shape.
    */
   exchangeCodeForIdToken: (opts: {
     authorizationCode: string;
@@ -39,11 +39,12 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   }) => DWReturnType<DataApiActionResult, TType>;
 
   /**
-   * Create a candidate with a nomination or nominations and send a registration link.
-   * @param email - Email.
-   * @param nominations - Nominations.
-   * Access:  ID token.
+   * Ask for a sign-in link to be mailed, in the project this adapter serves. The caller needs no session. The backend answers every request alike, whether or not a mail is sent, so a success says only that the request was received.
+   * @param email - The address to mail. Ignored when `code` names a used code, whose mail goes to the address of whoever claimed it.
+   * @param code - An invitation code. At least one of `email` and `code` is given.
+   * @param locale - The locale the mail is written in and its link leads to.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   * @throws An error if the request cannot be made or its answer does not have the expected shape.
    */
   preregisterWithIdToken: (opts: {
     email: string;
@@ -66,6 +67,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param nominations - Nominations.
    * Access:  API token.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   * @throws An error if the request cannot be made or its answer does not have the expected shape.
    */
   preregisterWithApiToken: (opts: {
     body: {
@@ -78,7 +80,10 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   }) => DWReturnType<DataApiActionResult, TType>;
 
   /**
-   * Clear the OIDC ID token.
+   * Ask, as the signed-in user, for an address the user typed to be proved, in the project this adapter serves. Only an account an identity provider made that has no proved address may ask: the backend mails the address a link, and the address becomes the account's only when that link is opened. The call carries the session of the client it is made on.
+   * @param email - The address the user typed.
+   * @param locale - The locale the mail is written in and its link leads to.
+   * @returns A `Promise` resolving to an {@link AddressConfirmationResult}. A refused session, any other answer and a failed call all resolve to `refused`.
    */
   clearIdToken: () => DWReturnType<DataApiActionResult, TType>;
 
@@ -87,16 +92,17 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Check whether the registration key is valid.
-   * @param registrationKey - The registration key to check.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   * Sign in the user who claimed an invitation code, with that code and their password, in the project this adapter serves. The session is established on this adapter's own client, so on the server its cookies are written to the response of the request that client belongs to. No token is returned.
+   * @param code - The code as typed.
+   * @param password - The user’s password.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one: a success when a session was established, and a failure for an unknown code, a wrong password and every other refusal, which the backend does not tell apart.
+   * @throws An error if the request cannot be made, its answer does not have the expected shape, or the session cannot be established.
    */
   checkRegistrationKey: (opts: { registrationKey: string }) => DWReturnType<CheckRegistrationData, TType>;
   /**
-   * Activate an already registered user with the provided registration key and password.
-   * @param registrationKey - The registration key to check.
-   * @param password - The user’s password.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   * Turn the signed-in user’s open invitations in the project this adapter serves into grants. The backend decides whose invitations they are from the session alone: the call names the project and nothing that identifies a user. A grant written here is not in the session’s access token until the session is refreshed.
+   * @returns A `Promise` resolving to the grants written, the promises left open and whether the user has a password, or a `Response` containing them.
+   * @throws An error if the claim fails or its answer does not have the expected shape. A failed claim is never reported as an empty one.
    */
   register: (opts: { registrationKey: string; password: string }) => DWReturnType<DataApiActionResult, TType>;
 
@@ -123,7 +129,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   backendLogout: () => DWReturnType<DataApiActionResult, TType>;
   /**
-   * Get the basic data for a user, mostly their username, email, and preferred language.
+   * Get the basic data for a user, mostly their username, email, and preferred language. Every call also reads whether the user's account has a password, and the call rejects when that cannot be read: a failed read of it is never answered as a value.
    * @returns A `Promise` resolving to a `BasicUserData` object or a `Response` containing one.
    */
   getBasicUserData: () => DWReturnType<BasicUserData, TType>;
@@ -146,8 +152,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   resetPassword: (opts: { code: string; password: string }) => DWReturnType<DataApiActionResult, TType>;
   /**
-   * Change a user’s password. Authorisation comes from the caller’s active session, not from a supplied current password.
-   * @param password - The new password.
+   * Record the signed-in user’s acceptance of the terms of use for the project this adapter serves. Authorisation comes from the caller’s active session. Recording an acceptance that already exists is not an error and leaves the earlier one as it is.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
   setPassword: (opts: { password: string }) => DWReturnType<DataApiActionResult, TType>;
@@ -167,7 +172,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   ) => DWReturnType<CandidateUserData<TNominations>, TType>;
 
   ////////////////////////////////////////////////////////////////////
-  // Setting data owned by the user NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the updated `LocalizedAnswers` map for synchronization — or {@link UNVERIFIED_ANSWERS}, when the write succeeded but its read-back could not be validated (decision B3) — while the property setter (`updateEntityProperties`) returns the whole updated `LocalizedCandidateData`.
+  // Setting data owned by the user NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the updated `LocalizedAnswers` map for synchronization — or {@link UNVERIFIED_ANSWERS}, when the write succeeded but its read-back could not be validated — while the property setter (`updateEntityProperties`) returns the properties it wrote and no others, or says that a changed name was refused, and the nominations setter (`setEntityNominations`) returns the counts of what it stored, or says which of four named refusals it met.
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -176,6 +181,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param target.id - The id of the entity.
    * @param answers - A `LocalizedAnswers` object containing the answers to update.
    * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity, or {@link UNVERIFIED_ANSWERS} when the write succeeded but its read-back could not be validated, or a `Response` containing either.
+   * @throws An `AnswersLockedError` when the backend refuses the write because the project's answers are locked, and an error when the write fails for any other reason.
    */
   updateAnswers: (opts: SetAnswersOptions) => DWReturnType<SetAnswersResult, TType>;
   /**
@@ -184,14 +190,17 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param target.id - The id of the entity.
    * @param answers - A `LocalizedAnswers` object containing the new `answers`.
    * @returns A `Promise` resolving the updated `LocalizedAnswers` for the entity, or {@link UNVERIFIED_ANSWERS} when the write succeeded but its read-back could not be validated, or a `Response` containing either.
+   * @throws An `AnswersLockedError` when the backend refuses the write because the project's answers are locked, and an error when the write fails for any other reason.
    */
   overwriteAnswers: (opts: SetAnswersOptions) => DWReturnType<SetAnswersResult, TType>;
   /**
-   * Update any editable properties of an entity owned by the user.
+   * Update editable properties of an entity owned by the user. The properties given are written and no others, so the call carries the properties that changed.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
-   * @param properties - An object containing the properties to update.
-   * @returns A `Promise` resolving the updated `LocalizedCandidateData` object or a `Response` containing one.
+   * @param properties - The properties to store. Which properties an entity has depends on its type, see {@link EditableEntityProps}.
+   * @param locale - The locale the written names are translated to in the result, as `getEntityUserData` translates them.
+   * @returns A `Promise` resolving to an {@link UpdateEntityPropertiesResult}, or a `Response` containing one: the properties as stored, or the name-refused result when the backend refuses a changed name because the entity has been confirmed, in which case nothing of the call was stored.
+   * @throws An error if no property is given, if `properties.image` is neither `null` nor carries a file, if a property does not belong to the entity's type, if a value does not have the form its property is stored in, or if the write fails for any reason other than a refused name.
    */
   updateEntityProperties: (opts: SetPropertiesOptions) => DWReturnType<LocalizedCandidateData, TType>;
 
@@ -229,10 +238,18 @@ export type DWReturnType<TData, TType extends AdapterType = 'universal'> = Promi
 
 /**
  * The minimal data needed for a logged-in `User`.
+ *
+ * Every member is read from the verified user and the user-level read the database answers for the caller alone, never from the session object or the URL.
  */
 export interface BasicUserData extends WithUserSettings {
   id: Id;
+  /**
+   * The account's address, the one the user signs in with. Empty when the account has no address of its holder's own: an account an identity provider made holds a placeholder address until a typed address is proved, and a placeholder address is never held here.
+   */
   email: string;
+  /**
+   * The same address as `email`, for a password manager's user-name field. Never a placeholder address, for the same reason.
+   */
   username: string;
   role?: UserRole | null;
 }
@@ -269,7 +286,7 @@ export type UnverifiedAnswers = 'unverified-answers';
 export type SetAnswersResult = LocalizedAnswers | UnverifiedAnswers;
 
 /**
- * `CandidateData` with localized `answers` and `termsOfUseAccepted`. Used for editing.
+ * `CandidateData` with localized `answers`. Used for editing.
  * @remarks The naming is a bit misleading and the type could as well be `EditableCandidateData`.
  */
 export type LocalizedCandidateData = CandidateData & {
@@ -283,15 +300,15 @@ export type LocalizedCandidateData = CandidateData & {
  */
 export type CandidateUserData<TNominations extends boolean | undefined = undefined> = {
   /**
-   * The data for the `User`.
+   * The stored image, or `null` when the entity has none.
    */
   user: BasicUserData;
   /**
-   * The data for the `Candidate` owned by the `User`.
+   * An organization's name, translated to one locale. Empty when no locale holds a name.
    */
   candidate: LocalizedCandidateData;
   /**
-   * The partial nominations the `Candidate` has and their linked `Entity`s, e.g. organizations.
+   * An organization's short name, translated to one locale, or `null` when it has none.
    */
   nominations: TNominations extends true ? DPDataType['nominations'] : undefined;
 };

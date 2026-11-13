@@ -1,9 +1,11 @@
 /**
  * OIDC Authorize endpoint tests.
  *
- * Tests the POST handler that constructs an authorization URL via the active identity provider and manages state/nonce cookies for CSRF and replay protection.
+ * Tests the POST handler that starts the identity provider's flow: it checks the entity type the body names against the project's registration matrix, builds the redirect from its own origin, builds the authorization URL through the active identity provider, and sets the flow's cookies — the provider's own bindings and the type cookie.
  *
- * For Idura: verifies the JAR (JWT Authorization Request) is correctly signed with RS256, contains the required payload fields, and is verifiable with the signing public key.
+ * `$lib/api/dataProvider` is replaced, so no Supabase client is built: `createDataProvider` answers a provider whose `getAppSettings` each case controls. The matrix functions are the real ones, and the function the registration screen reads its types from is wrapped in a spy that calls through, so a case can show the endpoint asks that same function.
+ *
+ * For Idura: verifies the JAR (JWT Authorization Request) is correctly signed with RS256, contains the required payload fields, and is verifiable with the signing public key. For Signicat: verifies the server generates the PKCE pair and keeps the verifier in an httpOnly cookie.
  *
  * @vitest-environment node
  */

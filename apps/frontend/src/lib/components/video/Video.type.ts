@@ -79,7 +79,7 @@ export type VideoMode = 'video' | 'text';
 export type VideoControl = 'pause' | 'mute' | 'skip' | 'captions' | 'transcript';
 
 /**
- * The analytics data for a video event.
+ * The analytics data for a video event: the attributes of the `video` event of the vocabulary, all optional. `duration` is in seconds, `endAt` is a fraction of the duration in [0, 1] or `'end'`, `ended` tells whether the end was reached at any point, `jump` lists the jump steps as `'1,-1,1,'` and `toggleTranscript` the toggle values as `'true,false,true,'`.
  */
 export type VideoTrackingEventData = TrackingEvent['data'] &
   Partial<{

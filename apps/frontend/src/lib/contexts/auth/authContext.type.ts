@@ -13,7 +13,7 @@ export type AuthContext = {
   ////////////////////////////////////////////////////////////////////
 
   /**
-   * Logout the user.
+   * Logout the user. It rejects when the sign-out failed, in which case the session may still be alive, and the caller is what tells the user.
    * @returns A Promise resolving when logout is complete.
    */
   logout: () => Promise<void>;
@@ -34,7 +34,7 @@ export type AuthContext = {
 
   /**
    * Change the current user's password.
-   * The one argument is the new password: authorisation comes from the active Supabase session (verified via cookies), so no current password is collected or forwarded. The wrapper serves three flows that all supply only a new password — the settings change-password page, the register first-set page and the post-recovery password-reset page.
+   * The one argument is the new password: authorisation comes from the active Supabase session (verified via cookies), so no current password is collected or forwarded. The wrapper serves three callers that all supply only a new password: the settings page's change-password form, the set-password view a user with no password is shown, and the password-reset page.
    * @param password - The new password.
    */
   setPassword: (opts: { password: string }) => Promise<DataApiActionResult>;

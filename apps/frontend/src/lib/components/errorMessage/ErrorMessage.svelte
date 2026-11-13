@@ -3,7 +3,7 @@
 
 ### Properties
 
-- `inline`: Whether to show an inline version of the message. By default the message tries to center itself in the available area and displays a large emoji. Default: `false`
+- `inline`: Whether to show an inline version of the message. By default the message tries to center itself in the available area and displays a large emoji. The inline version shows a small emoji before the message, hidden from assistive technology, so that the message is what is spoken. Default: `false`
 - `message`: The message to display. Default: `t('error.default')`
 - `logMessage`: The message to log in the console in development mode. Default: value of `message`
 - Any valid attributes of a `<div>` element.

@@ -6,6 +6,7 @@ See `<ModalContainer>` component for more information.
 
 - `title`: The title of the modal
 - `boxClass`: Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
+- `holdOpen`: Whether the modal refuses every close but `closeModal`, its close button included, which looks the same and does nothing while it is up. @default `false`
 - Any valid properties of a `<ModalContainer>` component.
 
 ### Snippet Props

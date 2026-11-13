@@ -12,7 +12,7 @@ type LocallyStoredValue<TData> = {
 };
 
 /**
- * A rune-native persisted state handle. Reactive reads happen via the `current` getter (which tracks the underlying `$state` dependency); `set`/`update` write the value through to the backing storage.
+ * A rune-native persisted state handle. Reactive reads happen via the `current` getter (which tracks the underlying `$state` dependency); `set`/`update` write the value through to the backing storage. A `localStorage` handle also follows another document's change of its key: see `localStorageState`.
  */
 export interface PersistedState<TValue> {
   /** Reactive read — invocation tracks the `$state` dependency. */
@@ -26,6 +26,8 @@ export interface PersistedState<TValue> {
 /**
  * Create a rune-native state handle persisted in `localStorage`, replacing the three-layer `$state → store-shaped writable → fromStore` bridge with a single `{ current, set, update }` handle. Reads the initial value via the versioned `getItemFromStorage` helper (so a stale/wrong-version or old-format payload is discarded and `defaultValue` is returned — there is deliberately NO format-migration shim) and persists every `set`/`update` via `saveItemToStorage`.
  *
+ * In the browser the handle follows another document's change of its key, as the `storage` event announces it, and writes nothing back: a removed key or a cleared storage returns it to `defaultValue`, and a new value is read as the handle's first read reads one. So a later `set` or `update` stores only what it adds, and cannot store again what another tab removed.
+ *
  * NB. The type of `defaultValue` should be one that can be serialized to JSON.
  * See: https://github.com/microsoft/TypeScript/issues/1897#issuecomment-1415776159
  *
@@ -37,9 +39,10 @@ export function localStorageState<TValue>(key: string, defaultValue: TValue): Pe
 }
 
 /**
- * Create a rune-native state handle persisted in `sessionStorage` — the `sessionStorage` sibling of `localStorageState`, sharing the SAME `StorageType`-parametrized `storageState` core. The only behavioural difference comes from that shared core's session branch:
- *   - reads/writes are NOT version-wrapped (the persisted payload is the RAW JSON value, not a `{ version, data }` envelope — see `saveItemToStorage`), so there is no version-expiry check; a malformed/unparseable payload simply falls back to `defaultValue`, and
- *   - both reads and writes are `browser`-gated (SSR → `defaultValue`).
+ * Create a rune-native state handle persisted in `sessionStorage` — the `sessionStorage` sibling of `localStorageState`, sharing the SAME `StorageType`-parametrized `storageState` core. The behavioural differences come from that shared core's session branch:
+ *   - reads/writes are NOT version-wrapped (the persisted payload is the RAW JSON value, not a `{ version, data }` envelope — see `saveItemToStorage`), so there is no version-expiry check; a malformed/unparseable payload simply falls back to `defaultValue`,
+ *   - both reads and writes are `browser`-gated (SSR → `defaultValue`), and
+ *   - the handle does not follow other documents: `sessionStorage` is the tab's own.
  *
  * NB. The type of `defaultValue` should be one that can be serialized to JSON.
  * See: https://github.com/microsoft/TypeScript/issues/1897#issuecomment-1415776159
@@ -58,7 +61,7 @@ export function sessionStorageState<TValue>(key: string, defaultValue: TValue): 
  * `set`/`update` are ARROW-FUNCTION FIELDS so they survive `const { set } = handle` detach (the candidate stores destructure them) — they capture `this` on detach. Each mutates `#value` then persists IMPERATIVELY via `saveItemToStorage` (NEVER `$effect`); this is what keeps the class constructable OUTSIDE any effect context (e.g. inside `initXxxContext()` factories / module scope) without `effect_orphan`.
  *
  * When nothing valid is stored, the freshly-defaulted value is persisted on init in the CONSTRUCTOR BODY (a synchronous side-effect, NOT an `$effect`).
- * Persisting ONLY on `set`/`update` would silently break any consumer whose default is non-deterministic and is never explicitly `set` — notably the tracking `sessionId`, whose generated UUID would be regenerated on every fresh load instead of surviving the reload it lives in `sessionStorage` to survive. The write is `browser`-gated via `saveItemToStorage` (SSR → no-op).
+ * Persisting ONLY on `set`/`update` would silently break any consumer whose default is non-deterministic and is never explicitly `set`: a generated default (a random id, a timestamp) would be regenerated on every fresh load instead of surviving the reload it is stored to survive. The write is `browser`-gated via `saveItemToStorage` (SSR → no-op).
  */
 class PersistedStateImpl<TValue> implements PersistedState<TValue> {
   #type: StorageType;
