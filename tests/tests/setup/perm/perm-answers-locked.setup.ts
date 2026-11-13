@@ -1,9 +1,9 @@
 /**
  * perm-answers-locked data-setup project.
  *
- * Invokes setupFromTemplate('perm-answers-locked') then mints a per-perm Playwright storage-state JSON via real `forceRegister` + real UI login through the candidate-app login form. This MIRRORS the canonical pattern in `auth.setup.ts` + `data.setup.ts`: synthetic base64 tokens fail server-side `safeGetSession()` JWT validation, so only real Supabase-minted sessions survive the protected candidate layout.
+ * Invokes setupFromTemplate('perm-answers-locked') then mints a per-perm Playwright storage-state JSON via real `forceRegister` + a real sign-in on the contestant app's sign-in screen. Synthetic base64 tokens fail server-side `safeGetSession()` JWT validation, so only real Supabase-minted sessions survive the protected candidate layout.
  *
- * The storage-state file is consumed by the AUTHENTICATED sub-tests in perm-answers-locked.spec.ts (surfaces 2 + 3: /candidate/profile + /candidate/questions/[questionId]); the UNAUTH sub-test (surface 1, /candidate login) does not use storage state.
+ * The storage-state file is consumed by the AUTHENTICATED sub-tests in perm-answers-locked.spec.ts (surfaces 2 + 3: /contestant/profile + /contestant/questions/[questionId]); the UNAUTH sub-test (surface 1, the contestant app's login and sign-in screens) does not use storage state.
  *
  * Prefix: 'e2e-perm-answers-locked-'.
  *
@@ -44,7 +44,7 @@ async function waitForLoginForm(page: Page, loginRoute: string, emailTestId: str
 }
 
 setup('import perm-answers-locked dataset + mint candidate session', async ({ page }) => {
-  // Candidate app data loading can be slow; mirror auth.setup.ts ceiling.
+  // Contestant app data loading can be slow.
   setup.setTimeout(TIMEOUTS.testMax);
 
   // 1. Seed the dataset.
@@ -60,8 +60,7 @@ setup('import perm-answers-locked dataset + mint candidate session', async ({ pa
   await client.unregisterCandidate(candidateEmail);
   await client.forceRegister(fullExternalId, candidateEmail, TEST_CANDIDATE_PASSWORD);
 
-  // 3. Perform a real UI login through the candidate-app login form and
-  //    save the resulting cookie-based Supabase session as Playwright storage state. Mirrors the login in auth.setup.ts.
+  // 3. Sign in on the contestant app's sign-in screen and save the resulting cookie-based Supabase session as Playwright storage state.
   fs.mkdirSync(path.dirname(STORAGE_STATE_PATH), { recursive: true });
   const candidateHome = buildRoute({ route: 'CandAppHome', locale: 'en' });
   await waitForLoginForm(page, candidateHome, testIds.candidate.login.email);

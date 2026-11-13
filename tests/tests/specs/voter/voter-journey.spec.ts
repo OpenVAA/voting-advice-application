@@ -334,7 +334,7 @@ const SELECT_EXACT_ONE_EN = 'Select 1 option.';
  *
  * `qu-opin-base-8-multichoice-exact` is that question: min === max === 1 makes QuestionChoices render `selectExact` with `count = 1`. Exactly ONE checkbox is a valid answer here — clicking two would be over-max, so the answer would never persist.
  *
- * Shape precedent: the `selectRange` lock at candidate-journey step 18.5. This one asserts the RESOLVED text rather than a digit pattern, per the reasoning on SELECT_EXACT_ONE_EN above.
+ * Shape precedent: the `selectRange` lock at contestant-journey step 18.5. This one asserts the RESOLVED text rather than a digit pattern, per the reasoning on SELECT_EXACT_ONE_EN above.
  */
 async function expectExactOneMultiChoiceQuestionAndAdvance({
   page,
@@ -938,9 +938,7 @@ test.describe('voter journey', () => {
     //   - 5 outer org-cards (Party AA, AB, BA, BB, C).
     //   - Party BB has 2 members (test-ca-bb-1 + test-ca-bb-2). 2 ≤ 3
     //     maxSubcards → NO 'Show all' button.
-    //   - Party AA has 6 nominal members; 1 hidden (test-ca-aa-hidden via
-    //     terms_of_use_accepted absent) → 5 visible. Default shows 3;
-    //     'Show all 5 candidates' reveals 5; Collapse returns to 3.
+    //   - Party AA has 6 nominated members in the dataset; 1 is unconfirmed and so hidden from voters (test-e2e-base-ca-aa-hidden) → 5 visible. The contestant journey's invitation adds a seventh, unconfirmed nomination, which voters do not see. Default shows 3; 'Show all 5 candidates' reveals 5; Collapse returns to 3.
     // ====================================================================
 
     await test.step('organisation matching shows 5 cards, Party BB members, and Party AA show-all/collapse', async () => {
@@ -1015,7 +1013,7 @@ test.describe('voter journey', () => {
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
       const cards = candidateSection.getByTestId(testIds.voter.results.card);
-      // Expect to see 14 candidates minus the one who is hidden
+      // CO-Reg-N has 16 candidate nominations in the dataset; 3 of those candidates are unconfirmed and so hidden from voters, which leaves 13 cards. The contestant journey's invitation adds one unconfirmed nomination, which voters do not see.
       await expect.soft(cards).toHaveCount(13);
       // Expect the polar max and min candidates to be first and last on the list, respectively.
       const firstCardTitle = cards.first().getByTestId(testIds.voter.results.cardTitle);
@@ -1024,7 +1022,7 @@ test.describe('voter journey', () => {
       await expect.soft(lastCardTitle).toContainText(TEXT_RE.polarMin, { timeout: TIMEOUTS.element });
       // The partial-answer candidate (CA-AA-Special) should be somewhere in the middle (no first or last).
       await expect.soft(candidateSection).toContainText(TEXT_RE.specialCandidate);
-      // Expect the hidden candidate (CA-AA-Hidden) to NOT be present in the list (termsOfUseAccepted=false).
+      // Expect the hidden candidate (CA-AA-Hidden) to NOT be present in the list: it is unconfirmed.
       const hiddenCandidates = candidateSection
         .getByTestId(testIds.voter.results.card)
         .filter({ hasText: TEXT_RE.hiddenCandidate });
@@ -1252,7 +1250,7 @@ test.describe('voter journey', () => {
       const d1 = await entityFilters.openFilterDialog();
       await expect.soft(d1.getFilters()).toHaveCount(3, { timeout: TIMEOUTS.page });
 
-      // STAGE 2 — Party filter: 'No answer' option visible with count badge text containing '1' (1 candidate without parent_nomination → test-ca-independent).
+      // STAGE 2 — Party filter: 'No answer' option visible with count badge text containing '1' (1 candidate voters see has no parent_nomination → test-ca-independent).
       const partyFilter = await d1.getFilter(/Party/i);
       const noAnswerOption = await partyFilter.getOption(/No answer/i);
       await expect.soft(noAnswerOption).toBeVisible();

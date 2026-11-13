@@ -14,13 +14,12 @@
  *  2. switchTo('fi') → URL is /fi/, voter-home start button shows non-English
  *     text ('Aloita' for Finnish); switchTo('en') → URL is /en/, voter-home
  *     start button shows English again ('Start').
- *  3. Inbucket-driven candidate registration → ToU is already accepted (the
- *     seeded candidate carries terms_of_use_accepted), so login lands on the candidate home directly.
+ *  3. Candidate registration through an invitation: an email invitation is seeded, a sign-in link is asked for, and the mailed link is opened as received. The invited user's acceptance of the terms of use is recorded through the admin client. The user has no password, so the set-password view is shown in place of the page, titled in the locale the link was asked for in; with a password saved the user is in the app, still signed in.
  *  4. Profile q1 ('[Q1]'): textbox value contains '[en-answer-q1]'; expectTranslationOptions(scope, true).
  *  5. openTranslations(q1) → setLocaleValue(fi, '[fi-answer-q1]') →
  *     closeTranslations → expectLocaleHidden(fi).
  *  6. Profile q2 ('[Q2]'): expectTranslationOptions(scope, false).
- *  7. Save profile via candidateProfilePage.submit().
+ *  7. Save profile via contestantProfilePage.submit().
  *  8. q3 + q4 opinion-editor: navigate to questions overview, start; on q3:
  *       - assert comment textarea contains '[en-answer-q3]';
  *       - expectTranslationOptions(commentScope, true);
@@ -36,9 +35,9 @@
  *      - Re-open candidate details if the switch landed off the detail dialog (switchTo preserves the path so usually no re-navigation is needed, but the dialog state may not survive the reload; if the dialog closed, click the card again).
  *      - assert info-tab contains '[fi-answer-q1]'; opinions-tab contains '[fi-answer-q3]'.
  *
- * Candidate login: seeded candidate has ToU pre-accepted but NO auth.users row (dev-seed excludes auth.users by design). Spec drives Inbucket registration via SupabaseAdminClient.sendEmail — mirrors the candidate-journey registration chain.
+ * Candidate login: the seeded candidate has NO auth.users row (dev-seed excludes auth.users by design). The spec invites one via SupabaseAdminClient.inviteByEmail — mirroring the contestant-journey registration chain — which seeds an email invitation and asks the `account-access` function for a sign-in link; the user comes into being when the link is asked for, and the candidate's editor grant when the opened link is claimed. The spec records that user's acceptance of the terms of use via SupabaseAdminClient.acceptTermsOfUse.
  *
- * Per-perm recipientEmail: 'candidate-l10n-pos-aa@test.openvaa.local' — unique per perm prevents cross-perm Inbucket pollution.
+ * Per-perm recipientEmail: `L10N_POSITIVE_CANDIDATE_EMAIL` — unique per perm prevents cross-perm Inbucket pollution, and it carries the run tag, so each run asks for the sign-in link of an address of its own.
  *
  * Rigidity contract: every assertion is HARD — no expect.soft, no try/catch wrapping expect(), no .catch fallbacks.
  */
@@ -161,10 +160,10 @@ test.describe('perm-localisation-positive', () => {
       englishLabel
     );
 
-    // ============== Step 3: candidate registration via Inbucket =========== The seeded candidate has no auth.users row. Drive registration via sendEmail (which calls inviteUserByEmail under the hood).
+    // ============== Step 3: candidate registration through an invitation === The seeded candidate has no auth.users row. An email invitation is seeded for it and a sign-in link is asked for; the mail arrives in Inbucket.
 
-    // Defensive self-heal: if a PRIOR run crashed before its teardown ran, the invited auth user leaks and inviteUserByEmail below fails with "already registered". Clear any stale row first (idempotent no-op when absent).
-    // Normal-path cleanup lives in perm-localisation-positive.teardown.ts.
+    // A retry of this walk in the same run reuses this run's address: a user and a claimed invitation an earlier attempt left would make this registration a returning user's sign-in. Clear both first (idempotent no-op when absent).
+    // Users of earlier runs hold addresses of their own: the setup and the teardown remove them by the address's stable beginning.
     await client.unregisterCandidate(RECIPIENT_EMAIL);
 
     await client.sendEmail({
@@ -219,7 +218,7 @@ test.describe('perm-localisation-positive', () => {
 
     // ============== Step 8: opinion-editor q3 + q4 — comment multilingual Navigate to the questions overview → open q3.
     //
-    // The seeded candidate already carries answers to BOTH opinion questions (q3 value '3' + comment '[en-answer-q3]', q4 value '3'), so the overview renders the COMPLETED ("full") variant — NOT the empty state. The `candidate-questions-start` button only exists in the empty branch (questions/+page.svelte:86-99), so it never appears here. Instead the opinion category renders inside a collapsed Expander (defaultExpanded gates on there being unanswered questions in the category — there are none). Expand the category, then open q3 via its per-card edit action.
+    // The seeded candidate already carries answers to BOTH opinion questions (q3 value '3' + comment '[en-answer-q3]', q4 value '3'), so the overview renders the COMPLETED ("full") variant — NOT the empty state. The `contestant-questions-start` button only exists in the empty branch (questions/+page.svelte:86-99), so it never appears here. Instead the opinion category renders inside a collapsed Expander (defaultExpanded gates on there being unanswered questions in the category — there are none). Expand the category, then open q3 via its per-card edit action.
 
     await candidateQuestionsOverviewPage.goToPage();
     const opinionCategory = candidateQuestionsOverviewPage.getCategoryExpander(/\[QC-OPIN\]/);

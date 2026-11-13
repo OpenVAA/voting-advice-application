@@ -5,7 +5,7 @@
  *
  * ## This file is one half of a family
  *
- * The candidate `(protected)` routes are scanned by the sibling `candidate-a11y.spec.ts` in this same directory — 7 more routes, 14 more surfaces, under its own `candidate-a11y-scan` project because those routes need a stored candidate session. **Neither file declares a gate.** The tag set, both gate assertions, the animation settle, the dark-theme guard, the route-entry types and the one shared scan body all live in `tests/tests/utils/axeScan.ts`, which both files import. So the two halves can differ in their ROUTE TABLES and in nothing else, and the strictness parity between the two halves is checkable by reading an import list rather than by comparing two tables. The candidate spec's own docblock carries the parity table: what is identical by construction, every divergence with its reason, and the known gaps.
+ * The candidate `(protected)` routes are scanned by the sibling `contestant-a11y.spec.ts` in this same directory — 7 more routes, 14 more surfaces, under its own `contestant-a11y-scan` project because those routes need a stored candidate session. **Neither file declares a gate.** The tag set, both gate assertions, the animation settle, the dark-theme guard, the route-entry types and the one shared scan body all live in `tests/tests/utils/axeScan.ts`, which both files import. So the two halves can differ in their ROUTE TABLES and in nothing else, and the strictness parity between the two halves is checkable by reading an import list rather than by comparing two tables. The candidate spec's own docblock carries the parity table: what is identical by construction, every divergence with its reason, and the known gaps.
  *
  * ## The route contract
  *
@@ -67,7 +67,7 @@ async function advancePastCategoryIntro(page: Page): Promise<void> {
 
 // Run unauthenticated — all routes IN THIS FILE are voter-app (public).
 //
-// The property is file-scoped, NOT project-scoped and NOT family-scoped: the sibling `candidate-a11y.spec.ts` runs the candidate `(protected)` routes WITH a stored candidate session, under its own project. Do not read this line as "the a11y scans are unauthenticated" — half of them are not, and that is the point of the split.
+// The property is file-scoped, NOT project-scoped and NOT family-scoped: the sibling `contestant-a11y.spec.ts` runs the candidate `(protected)` routes WITH a stored candidate session, under its own project. Do not read this line as "the a11y scans are unauthenticated" — half of them are not, and that is the point of the split.
 test.use({ storageState: { cookies: [], origins: [] } });
 voterJourneyTest.use({ storageState: { cookies: [], origins: [] } });
 

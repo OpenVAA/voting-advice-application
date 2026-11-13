@@ -13,6 +13,25 @@
  *  - items()                    — all nav-menu-item Locators inside the menu.
  *  - openMobileNav()            — click the hamburger toggle; the mobile-only open step before reading items.
  *  - expectNavMenuItems(items)  — assert the menu contains EXACTLY the given item labels, in order.
+ *  - closeNav()                  — close the open drawer through its own close item.
+ *  - expectItemLeadsTo(name, path) — exactly one item has that name, and it is a link to that path.
+ *  - expectNoItemLeadsTo(path)  — no item is a link to that path, in any locale.
+ *
+ * Contestant-app members, for the group of the entity being edited (`ContestantNav.svelte`; ids under `testIds.contestant.nav`):
+ *  - expectEntityGroupTitle(text)   — the group's title, which names the selected entity with its type.
+ *  - expectSwitchEntityItem()       — the item that returns to the profile selection screen is the group's last link and leads to the app root.
+ *  - expectNoSwitchEntityItem()     — the menu holds no such item, as for a user with a single entity.
+ *  - switchEntity()                 — activate that item.
+ *  - expectQuestionsItem(present)   — the group holds the item that leads to the entity's questions, or holds none.
+ *  - goHome()                       — open the menu and activate the item that leads to the entity's home, a navigation inside the application.
+ *  - expectNominationsItem()        — the item that leads to the entity's nominations is the group's second link, after the home item.
+ *  - openNominations()              — activate that item, a navigation inside the application.
+ *  - expectClosedItems(items)       — of the profile, questions and preview items, exactly the named ones are disabled, each collapsed over the reason it shows when clicked and described by nothing.
+ *  - expectNoReasonShown()          — the menu shows no reason why an item is closed.
+ *  - openClosedItemReason(item, reason) — click a closed item, which shows in its own list item the reason it is closed, carrying that reason, without navigating or closing the menu.
+ *  - expectClosedItemReason(item, reason) — a closed item shows no reason until it is clicked, shows that reason inside the drawer when it is, and hides it on a second click.
+ *  - expectQuestionsBadge(count)    — the figure of the questions item's badge, or no badge.
+ *  - expectClosedPartsInsideDrawer() — every closed item, and the reason it shows when clicked, lie inside the drawer's panel and show their whole text.
  *
  * **Rigidity contract**: no soft assertions, no try/catch wrapping an assertion, no best-effort swallowing of assertion-bearing interactions.
  * All locators are testid-anchored (locale-resilient).

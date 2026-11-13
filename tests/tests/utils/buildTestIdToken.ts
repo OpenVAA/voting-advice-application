@@ -1,5 +1,5 @@
 /**
- * Shared synthetic JWE id_token builder for bank-auth (Idura/Signicat OIDC) E2E tests. Extracted verbatim from the in-spec copy in `candidate-bank-auth.spec.ts`, parameterized on `iss`/`aud` so ONE builder serves both the Edge-Function spec and the mock OIDC issuer (EFLOW-10b) — the latter aligns `iss`/`aud` with `IDENTITY_PROVIDER_ISSUER` / `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID`.
+ * The synthetic JWE id_token builder of the identity-provider E2E tests. The suite has one issuer: a token built with the defaults carries the issuer and the audience of the mock OIDC issuer (`tests/tests/support/mockOidcIssuer.ts`), so a token a test builds and a token the mock mints are accepted by the same `identity-callback` environment.
  *
  * The output mirrors what Idura (or Signicat) returns: an RS256-signed inner JWT wrapped in an RSA-OAEP-256 / A256GCM JWE. Kid contract: inner JWS `test-sig-1`, outer JWE `test-enc-1` (must match the fixed test key pair in `testKeys.ts`).
  *
@@ -9,9 +9,11 @@ import * as jose from 'jose';
 import type { JWK } from 'jose';
 
 /**
- * Default inner-JWT `iss`/`aud` (back-compat with the original in-spec builder).
+ * Default inner-JWT `iss`/`aud`: {@link MOCK_ISSUER} and {@link MOCK_AUDIENCE}.
  *
- * Exported because the Edge Function now binds BOTH claims unconditionally, so whoever configures `IDENTITY_PROVIDER_CLIENT_ID` / `IDENTITY_PROVIDER_ISSUER` for a bank-auth run must configure exactly these values or every token is rejected. `tests/IDURA-TEST-RUNBOOK.md` Step E-1 reads them from here rather than retyping them, so the two cannot drift apart.
+ * Exported because `identity-callback` binds both claims, so whoever configures `IDENTITY_PROVIDER_CLIENT_ID` / `IDENTITY_PROVIDER_ISSUER` for a run must configure exactly these values or every token is refused. `tests/IDURA-TEST-RUNBOOK.md` Step E-1 reads them from here rather than retyping them, so the two cannot drift apart.
+ *
+ * The values are read through getters because the mock issuer module imports this one: a getter reads the binding when it is used, not while the two modules are still loading.
  */
 export const DEFAULT_TOKEN_OPTS: { issuer: string; audience: string } = {
   issuer: 'https://test-idp.example.com',
@@ -25,7 +27,7 @@ export const DEFAULT_TOKEN_OPTS: { issuer: string; audience: string } = {
  * @param sigPriv - RS256 signing key. jose v6 removed the `KeyLike` alias;
  *   `importJWK`/`generateKeyPair` now return a WebCrypto `CryptoKey`.
  * @param encPubJwk - Public encryption JWK (RSA-OAEP-256) the JWE is sealed to.
- * @param opts - `iss`/`aud` for the inner JWT; defaults to the back-compat test values.
+ * @param opts - `iss`/`aud` for the inner JWT; {@link DEFAULT_TOKEN_OPTS} when absent.
  * @returns A compact JWE string.
  */
 export async function buildTestIdToken(
