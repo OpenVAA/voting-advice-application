@@ -26,10 +26,10 @@ export const permPerAppNotificationsTemplate: Template = buildMinimal({
         title: { en: '[notif-voter] Voter-only notification.' },
         content: { en: '[notif-voter-content] voter content body' }
       },
-      candidateApp: {
+      contestantApp: {
         show: true,
-        title: { en: '[notif-cand] Candidate-only notification.' },
-        content: { en: '[notif-cand-content] candidate content body' }
+        title: { en: '[notif-contestant] Candidate-only notification.' },
+        content: { en: '[notif-contestant-content] candidate content body' }
       }
     }
   }

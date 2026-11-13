@@ -194,20 +194,26 @@ export const BASE_APP_SETTINGS = {
     // `startFromConstituencyGroup` is deliberately OMITTED rather than set to `undefined`: the two are equivalent here, but JSONB drops `undefined` on serialize, so writing the literal breaks post-seed `toMatchObject` parity.
   },
   access: {
-    candidateApp: true,
+    contestantApp: true,
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
     answersLocked: false
   },
   notifications: {
-    candidateApp: null,
+    contestantApp: null,
     voterApp: null
   },
-  candidateApp: {
+  // The whole root: `entityTypes` is a list, which replaces the default whole, and the voter loaders merge the row over the static settings only. Both entity types are served, so the app names itself for candidates and parties; candidates and organizations alike register by email or code.
+  contestantApp: {
     questions: {
       hideHero: false,
       hideVideo: false
+    },
+    entityTypes: ['candidate', 'organization'],
+    registrationModes: {
+      candidate: ['email', 'code'],
+      organization: ['email', 'code']
     }
   }
   // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
@@ -343,7 +349,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-el-reg',
         name: { en: '[el-reg] Regional Election' },
         short_name: { en: 'Regional' },
-        election_type: 'organization_list',
+        election_type: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -354,7 +360,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-el-mun',
         name: { en: '[el-mun] Municipal Election' },
         short_name: { en: 'Municipal' },
-        election_type: 'organization_list',
+        election_type: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 1,
         multiple_rounds: false,
@@ -469,6 +475,33 @@ export const baseTemplate: Template = {
         short_name: { en: 'C' },
         color: { normal: '#1f8b3c', dark: '#6bdc88' },
         sort_order: 4
+      },
+      // OR-Sel is reserved for entity-selection tests, with CA-Sel-A and CA-Sel-B below: three rows a test may edit. It is seeded unconfirmed, so voters see neither it nor its nomination, and a write to it cannot move a voter assertion. The dataset gives it no editor; a test that edits it grants its own.
+      {
+        external_id: 'test-e2e-base-or-sel',
+        name: { en: '[or-sel] Party Sel' },
+        short_name: { en: 'SEL' },
+        color: { normal: '#6b3fa0', dark: '#b79ad9' },
+        confirmed: false,
+        sort_order: 5
+      },
+      // OR-Invitation is the organization invitation tests promise a grant on, with CA-Invitation below. It is seeded unconfirmed and has no nomination, so it can never be public; an invitation confirms it only when its call says so. The dataset gives it no editor.
+      {
+        external_id: 'test-e2e-base-or-invitation',
+        name: { en: '[or-invitation] Party Invitation' },
+        short_name: { en: 'INV' },
+        color: { normal: '#8a5a00', dark: '#d9b36b' },
+        confirmed: false,
+        sort_order: 6
+      },
+      // OR-Registration is the organization registration tests promise a grant on, with CA-Registration below, so that they share no row with the invitation tests that run beside them. It is seeded unconfirmed and has no nomination, so it can never be public, even after an invitation whose call confirms it. The dataset gives it no answer and no editor.
+      {
+        external_id: 'test-e2e-base-or-registration',
+        name: { en: '[or-registration] Party Registration' },
+        short_name: { en: 'REG' },
+        color: { normal: '#0f6b6b', dark: '#6bcfcf' },
+        confirmed: false,
+        sort_order: 7
       }
     ]
   },
@@ -876,7 +909,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-aa-special',
         first_name: 'Special',
         last_name: 'Candidate AA',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 0,
         organization: { external_id: 'test-e2e-base-or-aa' },
         // Partial-answer arrangement (top-of-file docstring, "Partial-answer candidate arrangement"):
@@ -908,7 +940,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-aa-hidden',
         first_name: 'Hidden',
         last_name: 'Candidate AA',
-        // terms_of_use_accepted DELIBERATELY absent
+        confirmed: false,
         sort_order: 1,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -918,7 +950,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-aa-1',
         first_name: 'Generic',
         last_name: 'AA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 2,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -927,7 +958,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-aa-2',
         first_name: 'Generic',
         last_name: 'AA Two',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 3,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -936,7 +966,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-aa-3',
         first_name: 'Generic',
         last_name: 'AA Three',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 4,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -945,7 +974,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-aa-4',
         first_name: 'Generic',
         last_name: 'AA Four',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 5,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -955,7 +983,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-ab-1',
         first_name: 'Generic',
         last_name: 'AB One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 6,
         organization: { external_id: 'test-e2e-base-or-ab' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -965,7 +992,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-ba-1',
         first_name: 'Polar-Min',
         last_name: 'BA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 7,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(POLAR_MIN)
@@ -974,7 +1000,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-ba-2',
         first_name: 'Near-Max',
         last_name: 'BA Two',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 8,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(NEAR_MAX)
@@ -984,7 +1009,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-bb-1',
         first_name: 'Polar-Max',
         last_name: 'BB One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 9,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(POLAR_MAX)
@@ -993,7 +1017,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-bb-2',
         first_name: 'Generic',
         last_name: 'BB Two',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 10,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1003,7 +1026,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-c-1',
         first_name: 'Generic',
         last_name: 'C One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 11,
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1012,7 +1034,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-c-2',
         first_name: 'Generic',
         last_name: 'C Two',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 12,
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1024,7 +1045,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-aa-unregistered',
         first_name: 'Unregistered',
         last_name: 'Candidate AA',
-        // terms_of_use_accepted DELIBERATELY absent — registration must trigger the ToU gate
+        confirmed: false,
         sort_order: 14,
         organization: { external_id: 'test-e2e-base-or-aa' }
         // answersByExternalId DELIBERATELY absent (unregistered → no answers)
@@ -1034,10 +1055,76 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-independent',
         first_name: 'Free',
         last_name: 'Independent',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 13,
         // No organization — independent
         answersByExternalId: withInfoAnswers(GENERIC)
+      },
+      // CA-Sel-A and CA-Sel-B are the two candidates reserved for entity-selection tests; OR-Sel above is the organization. Both are seeded unconfirmed, so voters see neither them nor their nominations, and a write to them cannot move a voter assertion. Neither belongs to an organization, so no party's member count includes them, and the dataset gives neither an editor; a test that edits them grants its own. They answer every info question, as CA-AA-1 does, and differ from each other in first name, last name and one opinion answer (QU-Opin-Base-1).
+      {
+        external_id: 'test-e2e-base-ca-sel-a',
+        first_name: 'Switch-A',
+        last_name: 'Entity One',
+        confirmed: false,
+        sort_order: 15,
+        answersByExternalId: withInfoAnswers(GENERIC)
+      },
+      {
+        external_id: 'test-e2e-base-ca-sel-b',
+        first_name: 'Switch-B',
+        last_name: 'Entity Two',
+        confirmed: false,
+        sort_order: 16,
+        answersByExternalId: withInfoAnswers({
+          ...GENERIC,
+          'test-e2e-base-qu-opin-base-1-likert5': { value: '5' }
+        })
+      },
+      // CA-Invitation is the candidate invitation tests promise a grant on; OR-Invitation above is the organization. It is seeded unconfirmed and has no nomination, so it can never be public; an invitation confirms it only when its call says so. It belongs to no organization, answers nothing, and the dataset gives it no editor.
+      {
+        external_id: 'test-e2e-base-ca-invitation',
+        first_name: 'Invited',
+        last_name: 'Entity Three',
+        confirmed: false,
+        sort_order: 17
+      },
+      // CA-Registration is the candidate registration tests promise a grant on; OR-Registration above is the organization. A candidate admits one editor, so the tests that claim an invitation for a candidate each have a candidate of their own and can run side by side. It is seeded unconfirmed and has no nomination, so it can never be public, even after an invitation whose call confirms it. It belongs to no organization, answers nothing, and the dataset gives it no editor.
+      {
+        external_id: 'test-e2e-base-ca-registration',
+        first_name: 'Registering',
+        last_name: 'Entity Four',
+        confirmed: false,
+        sort_order: 18
+      },
+      // CA-Recovery is the candidate password-recovery tests promise a grant on. Unconfirmed, with no nomination, organization, answer or editor, as CA-Registration is, so it can never be public.
+      {
+        external_id: 'test-e2e-base-ca-recovery',
+        first_name: 'Recovering',
+        last_name: 'Entity Five',
+        confirmed: false,
+        sort_order: 19
+      },
+      // CA-Scan-Open and CA-Scan-Used are the two candidates the scans of the signed-out entry screens seed registration codes for: one code that is still open and one that has been used, each on a candidate of its own because a candidate admits one editor. Both are unconfirmed, with no nomination, organization, answer or editor, as CA-Registration is, so neither can ever be public. Their sort orders are the next two no candidate holds.
+      {
+        external_id: 'test-e2e-base-ca-scan-open',
+        first_name: 'Scanned',
+        last_name: 'Entity Six',
+        confirmed: false,
+        sort_order: 24
+      },
+      {
+        external_id: 'test-e2e-base-ca-scan-used',
+        first_name: 'Scanned',
+        last_name: 'Entity Seven',
+        confirmed: false,
+        sort_order: 25
+      },
+      // CA-Admin-Flows is the candidate the Admin App's account-flow tests make an admin the editor of, beside the admin's own admin grant, to show such a user uses both apps. Unconfirmed, with no nomination, organization, answer or editor, as CA-Recovery is, so it can never be public. Its sort order is the next no candidate holds.
+      {
+        external_id: 'test-e2e-base-ca-admin-flows',
+        first_name: 'Administering',
+        last_name: 'Entity Eight',
+        confirmed: false,
+        sort_order: 26
       },
 
       // ---- CO-Reg-S — 4 candidates ("not always allied" foil) ----
@@ -1047,7 +1134,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-reg-s-aa-1',
         first_name: 'South',
         last_name: 'AA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 20,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1056,7 +1142,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-reg-s-ab-1',
         first_name: 'South',
         last_name: 'AB One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 21,
         organization: { external_id: 'test-e2e-base-or-ab' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1065,7 +1150,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-reg-s-ba-1',
         first_name: 'South',
         last_name: 'BA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 22,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1074,7 +1158,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-reg-s-bb-1',
         first_name: 'South',
         last_name: 'BB One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 23,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1087,7 +1170,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-ne-aa-1',
         first_name: 'NE',
         last_name: 'AA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 30,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1096,7 +1178,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-ne-ab-1',
         first_name: 'NE',
         last_name: 'AB One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 31,
         organization: { external_id: 'test-e2e-base-or-ab' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1105,7 +1186,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-ne-ba-1',
         first_name: 'NE',
         last_name: 'BA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 32,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1114,7 +1194,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-ne-bb-1',
         first_name: 'NE',
         last_name: 'BB One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 33,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1123,7 +1202,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-ne-c-1',
         first_name: 'NE',
         last_name: 'C One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 34,
         organization: { external_id: 'test-e2e-base-or-c' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1134,7 +1212,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-se-aa-1',
         first_name: 'SE',
         last_name: 'AA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 40,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1143,7 +1220,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-se-ab-1',
         first_name: 'SE',
         last_name: 'AB One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 41,
         organization: { external_id: 'test-e2e-base-or-ab' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1152,7 +1228,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-se-ba-1',
         first_name: 'SE',
         last_name: 'BA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 42,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1161,7 +1236,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-se-bb-1',
         first_name: 'SE',
         last_name: 'BB One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 43,
         organization: { external_id: 'test-e2e-base-or-bb' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1172,7 +1246,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-sw-aa-1',
         first_name: 'SW',
         last_name: 'AA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 50,
         organization: { external_id: 'test-e2e-base-or-aa' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1181,7 +1254,6 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-ca-mun-sw-ba-1',
         first_name: 'SW',
         last_name: 'BA One',
-        terms_of_use_accepted: '2025-01-01T00:00:00.000Z',
         sort_order: 51,
         organization: { external_id: 'test-e2e-base-or-ba' },
         answersByExternalId: withInfoAnswers(GENERIC)
@@ -1388,10 +1460,24 @@ export const baseTemplate: Template = {
       },
       // One nomination for each of the three entity-selection rows, none under a parent. Their entities are unconfirmed, so voters do not see these nominations either.
       {
-        external_id: 'test-e2e-base-nom-reg-n-ca-aa-unregistered',
-        election_symbol: '999',
-        candidate: { external_id: 'test-e2e-base-ca-aa-unregistered' },
-        parent_nomination: { external_id: 'test-e2e-base-nom-reg-n-or-aa' },
+        external_id: 'test-e2e-base-nom-reg-n-or-sel',
+        organization: { external_id: 'test-e2e-base-or-sel' },
+        election: { external_id: 'test-e2e-base-el-reg' },
+        constituency: { external_id: 'test-e2e-base-co-reg-n' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-e2e-base-nom-reg-n-ca-sel-a',
+        election_symbol: '31',
+        candidate: { external_id: 'test-e2e-base-ca-sel-a' },
+        election: { external_id: 'test-e2e-base-el-reg' },
+        constituency: { external_id: 'test-e2e-base-co-reg-n' },
+        election_round: 1
+      },
+      {
+        external_id: 'test-e2e-base-nom-reg-n-ca-sel-b',
+        election_symbol: '32',
+        candidate: { external_id: 'test-e2e-base-ca-sel-b' },
         election: { external_id: 'test-e2e-base-el-reg' },
         constituency: { external_id: 'test-e2e-base-co-reg-n' },
         election_round: 1

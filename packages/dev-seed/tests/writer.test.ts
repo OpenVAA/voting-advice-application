@@ -207,7 +207,7 @@ describe('Writer', () => {
         await expect(
           writer.write({
             elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-            app_settings: [{ settings: { k: 'v' }, bogusSetting: true }]
+            app_settings: [{ settings: { matching: { minimumAnswers: 1 } }, bogusSetting: true }]
           })
         ).rejects.toThrow(/bogusSetting[\s\S]*app_settings|app_settings[\s\S]*bogusSetting/);
 
@@ -221,7 +221,7 @@ describe('Writer', () => {
 
         await writer.write({
           elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-          app_settings: [{ settings: { k: 'v' } }],
+          app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }],
           feedback: [{ rating: 5 }]
         });
 
@@ -270,7 +270,7 @@ describe('Writer', () => {
     it('routes app_settings through updateAppSettings, NOT bulk_import', async () => {
       const writer = new Writer();
       await writer.write({
-        app_settings: [{ settings: { key: 'value' } }],
+        app_settings: [{ settings: { matching: { minimumAnswers: 2 } } }],
         elections: [{ external_id: 'seed_e1', project_id: 'p' }]
       });
 
@@ -281,7 +281,7 @@ describe('Writer', () => {
       expect(bulkImportArg).not.toHaveProperty('app_settings');
 
       // updateAppSettings called with the settings blob.
-      expect(instance.updateAppSettings).toHaveBeenCalledWith({ key: 'value' });
+      expect(instance.updateAppSettings).toHaveBeenCalledWith({ matching: { minimumAnswers: 2 } });
     });
 
     it('passes the 10 bulk-import tables through to bulkImport untouched', async () => {
@@ -342,7 +342,7 @@ describe('Writer', () => {
         // With default mock (returns [] candidates), uploadPortrait is never called but selectCandidatesForPortraitUpload still runs — that's the assertion point.
         await writer.write({
           elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-          app_settings: [{ settings: { k: 'v' } }]
+          app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }]
         });
 
         const instance = await getMockedAdminClient();
@@ -486,7 +486,7 @@ describe('Writer', () => {
         await expect(
           writer.write({
             elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-            app_settings: [{ settings: { k: 'v' } }]
+            app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }]
           })
         ).rejects.toThrow(/Portrait upload failed for seed_cand_0000/);
 
@@ -508,7 +508,7 @@ describe('Writer', () => {
         await expect(
           writer.write({
             elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-            app_settings: [{ settings: { k: 'v' } }]
+            app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }]
           })
         ).rejects.toThrow(/Image column update failed for seed_cand_0001/);
 
@@ -545,7 +545,7 @@ describe('Writer', () => {
         await writer.write(
           {
             elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-            app_settings: [{ settings: { k: 'v' } }],
+            app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }],
             feedback: [{ rating: 5 }]
           },
           'seed_',

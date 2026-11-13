@@ -34,9 +34,7 @@ type Data = Record<string, Array<Record<string, unknown>>>;
  * The one honest deny entry, on the one table where the column is generated. Held locally here; `deniedKeys` in `permittedKeys.ts` is the shipped form, and the repoint below routes this spec through it.
  */
 const DENIED_AT_TASK_1: Record<string, ReadonlyArray<string>> = {
-  nominations: ['entity_type'],
-  question_categories: ['entity_type'],
-  questions: ['entity_type']
+  nominations: ['entity_type']
 };
 
 /** One human-readable line per offence, carrying all four diagnostic facts. */
@@ -113,8 +111,8 @@ const EMITTED: Array<{ name: string; data: Data }> = TEMPLATE_NAMES.map((name) =
 });
 
 describe('Pass 0 must-NOT-fire control — every row every built-in emits (row NC)', () => {
-  it('iterates the registry and covers at least the 30 built-ins registered today', () => {
-    // A floor, not an equality: registering a 31st template must not turn this spec red, but a registry that shrank to nothing must not let the zero-offence case below pass vacuously.
+  it('iterates the registry and covers at least 30 built-ins', () => {
+    // A floor, not an equality: registering another template must not turn this spec red, but a registry that shrank to nothing must not let the zero-offence case below pass vacuously.
     expect(TEMPLATE_NAMES.length).toBeGreaterThanOrEqual(30);
     expect(EMITTED).toHaveLength(TEMPLATE_NAMES.length);
   });
