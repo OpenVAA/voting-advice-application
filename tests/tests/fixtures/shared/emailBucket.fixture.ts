@@ -1,17 +1,18 @@
 /**
  * @file emailBucket fixture.
  *
- * Self-contained Mailpit (Inbucket) access for E2E tests. Talks directly to the Mailpit REST API (port 54324, started by `supabase start`) — it owns its own HTTP plumbing and does not depend on any other email module. Sibling to the other candidate fixtures (candidateLoginPage.fixture.ts, etc.); composed in `candidate-journey.ts`.
+ * Self-contained Mailpit (Inbucket) access for E2E tests. Talks directly to the Mailpit REST API (port 54324, started by `supabase start`) — it owns its own HTTP plumbing and does not depend on any other email module. Sibling to the other candidate fixtures (contestantLoginPage.fixture.ts, etc.); composed in `contestant-journey.ts`.
  *
  * Surface:
  *  - expectEmail(subject)              → polls Mailpit until a message with
  *                                        matching Subject arrives (15s timeout, [1000, 2000, 3000] retry intervals).
- *  - getEmail(subjectOrNth)            → string/RegExp → match by Subject;
+ *  - getEmail(subjectOrNth)            → string → the whole Subject; RegExp → a pattern over it;
  *                                        number → 0-indexed nth latest email.
  *  - getLinksInEmail(subjectOrNth)     → array of href values (cheerio-parsed
  *                                        anchors from the email HTML).
+ *  - listSubjects()                    → the subject of every mail the recipient has right now, read once; throws when Mailpit cannot be read.
  *
- * Also exports `toCallbackUrl(verifyLink)` — a pure transform that rewrites a Supabase Auth verify link (extracted from an email via `getLinksInEmail`) into a direct frontend auth-callback URL. Absorbed here when the legacy `utils/emailHelper.ts` was retired (its only remaining consumer).
+ * A link the `account-access` function mails, for a sign-in or for a password recovery, is already the application's callback URL. A spec opens it as received, through `utils/mailedLink`; nothing here builds or rewrites a link.
  *
  * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
@@ -85,6 +86,9 @@ async function fetchFullMessage(id: string): Promise<MailpitMessage | undefined>
   return (await response.json()) as MailpitMessage;
 }
 
+/**
+ * Whether a message's subject is the one asked for: a string is the whole subject, a RegExp is a pattern over it.
+ */
 function matchSubject(summary: MailpitMessageSummary, subject: string | RegExp): boolean {
   if (subject instanceof RegExp) return subject.test(summary.Subject);
   return summary.Subject.includes(subject);
@@ -107,6 +111,7 @@ function toEmailRecord(message: MailpitMessage): EmailRecord {
  *
  * @param _page Playwright Page (unused — emailBucket talks to Mailpit REST,
  *              not to the browser — but accepted for fixture-factory parity).
+ *              `null` from a caller that drives no page.
  * @param recipientEmail The recipient address to filter Mailpit by.
  */
 export function createEmailBucket(_page: Page, recipientEmail: string) {
@@ -134,7 +139,7 @@ export function createEmailBucket(_page: Page, recipientEmail: string) {
      * Retrieve a single email by subject match (string / RegExp) OR by 0-indexed nth latest position (number). Polls until the target email exists.
      *
      * Polymorphic-overload dispatch:
-     *  - string | RegExp → subject match (returns the newest matching).
+     *  - string | RegExp → subject match, a string being the whole subject (returns the newest matching).
      *  - number          → nth latest (Mailpit returns newest-first).
      */
     async getEmail(subjectOrNth: string | RegExp | number): Promise<EmailRecord> {

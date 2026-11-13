@@ -1,16 +1,12 @@
 /**
- * Vitest config for `tests/` test-utility unit tests. Restricted to
- * `tests/utils/**\/*.test.ts` so we do NOT pick up the Playwright spec files in
- * `tests/specs/**` (those are e2e tests run by Playwright, NOT vitest).
+ * Vitest config for the unit tests of the E2E harness's own utilities. Restricted to `tests/utils/**\/*.test.ts` so that it does not pick up the Playwright spec files in `tests/specs/**`, which Playwright runs.
  *
- * Note: this config is NOT listed in the root `vitest.config.ts`, whose `test.projects` names only the package-level configs under `packages`.
- * Authors who add a tests unit-test entry should run it directly via:
+ * `tests/` is not a workspace, so turbo does not reach this config. The root `test:unit` script runs it as its last link, through `yarn test:unit:tests`, and `scripts/assert-unit-test-coverage.mjs` fails `yarn test:unit` when that link is missing.
  *
- *   yarn vitest run --config tests/vitest.config.ts
+ * To run it alone, or one file of it:
  *
- * Or from inside `tests/`:
- *
- *   cd tests && npx vitest run --config vitest.config.ts
+ *   yarn test:unit:tests
+ *   yarn test:unit:tests mailedLink
  */
 
 import { defineConfig } from 'vitest/config';

@@ -1,9 +1,15 @@
 /**
- * perm-startfromcg data-setup project.
+ * perm-startfromcg data-setup project: the start-from-constituency dataset, and one stored session for the editor of one of its candidates.
  *
- * Invokes setupFromTemplate('perm-startfromcg'). The template OMITS elections.startFromConstituencyGroup; the perm-startfromcg.spec.ts beforeAll resolves the CG-2 UUID via SupabaseAdminClient and writes it at runtime.
+ * It seeds the `perm-startfromcg` template into the suite's project, then registers one user through the shared session helper: created with the service role and an editor grant on one candidate, with the terms of use accepted, so signing in sends the user straight to that candidate's home, and the session is stored only once that home's status message has rendered.
  *
- * Prefix: 'test-perm-startfromcg-'.
+ * The template leaves `elections.startFromConstituencyGroup` out: `perm-startfromcg.spec.ts` resolves the id of the group of municipalities and writes the setting when its tests run.
+ *
+ * What it leaves behind: the dataset's rows under `e2e-perm-startfromcg-`, the settings row replaced with the template's, one auth user holding one editor grant, and one storage-state file. The session is this dataset's own: nothing but the contestant tests of `perm-startfromcg.spec.ts` reads it. `data-teardown-perm-startfromcg` removes all of it.
+ *
+ * The registration runs in a browser context of its own. The session helper unregisters any user that already holds the address before it registers one, so a second run starts clean.
+ *
+ * `extraTeardownPrefix: ['test-', 'e2e-perm-']` clears the rows an earlier link of the chain may still hold while its own teardown runs.
  */
 
 import { test as setup } from '@playwright/test';

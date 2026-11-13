@@ -1,5 +1,5 @@
 /**
- * Topology: 1 election, 1 CG, 1 CO, 2 candidates. Settings override: `notifications.voterApp` + `notifications.candidateApp` both `show: true` with DISTINCT title/content markers `[notif-voter]` (voter side) and `[notif-cand]` (candidate side). The spec asserts each app's notification renders ONLY on its own route — strict cross-route absence enforcement (the [notif-cand] marker MUST NOT appear in the voter-route dialog and vice versa).
+ * Topology: 1 election, 1 CG, 1 CO, 2 candidates. Settings override: `notifications.voterApp` + `notifications.contestantApp` both `show: true` with DISTINCT title/content markers `[notif-voter]` (voter side) and `[notif-contestant]` (candidate side). The spec asserts each app's notification renders ONLY on its own route — strict cross-route absence enforcement: once a route's own dialog is shown, no dialog on the page carries the other app's marker.
  *
  * Notifications are rendered as Alert components with `role="dialog"`.
  *

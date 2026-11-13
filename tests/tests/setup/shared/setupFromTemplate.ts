@@ -36,11 +36,11 @@ export interface SetupFromTemplateOptions {
    */
   extraTeardownPrefix?: string | Array<string>;
   /**
-   * Optional `app_settings` overlay deep-merged onto the persisted settings AFTER the template's `app_settings.fixed[]` block has seeded + the post-seed subset-match assertion has run.
+   * Optional `app_settings` overlay, merged into the persisted settings after the template's own settings have replaced the row and the exact post-seed assertion has run.
    *
-   * This is a SCENARIO mutation, not a baseline-settings change: it mutates the runtime DB `app_settings` row for the duration of a single opt-in run (the caller's paired teardown is responsible for restoring it), and it does NOT touch the shared template nor `MINIMAL_BASE_APP_SETTINGS`. The bank-auth journey uses it to flip `preRegistration.enabled = true` while reusing the SHARED `perm-not-located-2e2cg` template (whose other consumer must keep preregistration disabled).
+   * It is a scenario mutation and not a change of the baseline: it changes the stored row for one run and touches neither the template nor `MINIMAL_BASE_APP_SETTINGS`. No teardown has to restore it, because the next `setupFromTemplate` call replaces the row. The bank-auth journey uses it to allow the `identity_provider` registration mode for candidates on a template that does not.
    *
-   * Applied via the additive `merge_jsonb_column` RPC (`updateAppSettings`), so the post-seed `toMatchObject` assertion on the template's settings still holds (the overlay only ADDS the scoped key).
+   * Applied with `updateAppSettings`, which calls the `merge_jsonb_column` RPC: objects merge recursively, and a list or a scalar in the overlay replaces the stored one whole. An overlay that changes a list therefore states the complete list.
    */
   appSettingsOverride?: Record<string, unknown>;
 }
@@ -179,8 +179,7 @@ export async function setupFromTemplate(
     expect(persisted).toEqual(JSON.parse(JSON.stringify(expected)));
   }
 
-  // 3b. (Optional) Scenario-scoped app_settings overlay. Applied AFTER the
-  //     post-seed subset-match so the assertion compares the seeded template shape, not the overlaid shape. Additive merge_jsonb_column — the overlay only ADDS the scoped key (e.g. preRegistration.enabled) on top of the template's baseline. The caller's paired teardown restores it.
+  // 3b. (Optional) Scenario-scoped app_settings overlay. Applied after the exact post-seed assertion, so that assertion compares the row with the template's settings and not with the overlaid ones. `merge_jsonb_column` merges the overlay into the row: objects recursively, a list or a scalar replacing the stored one. The next `setupFromTemplate` call replaces the row, so nothing restores it.
   if (options?.appSettingsOverride) {
     await client.updateAppSettings(options.appSettingsOverride);
   }

@@ -7,7 +7,7 @@
  *
  * cand-1 authors info text on BOTH Q1 + Q2 answers. customData.allowOpen=true on Q1 keeps the info surfaces visible (candidate-side comment input + voter-side QuestionOpenAnswer wrapper). customData.allowOpen=false on Q2 SUPPRESSES rendering on BOTH surfaces:
  *
- *   Candidate side: the candidate question page (`candidate/(protected)/questions/[questionId]/+page.svelte`) gates the comment input on `{#if customData.allowOpen}` → Q2's `false` skips the <Input data-testid="candidate-questions-comment" /> entirely (toHaveCount(0)).
+ *   Candidate side: the candidate question page (`contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/questions/[questionId]/+page.svelte`) gates the comment input on `{#if customData.allowOpen}` → Q2's `false` skips the <Input data-testid="contestant-questions-comment" /> entirely (toHaveCount(0)).
  *   Voter side: `EntityOpinions.svelte` gates on
  *     `{#if answer?.info && customData?.allowOpen !== false}` → Q2's
  *     `false` skips the QuestionOpenAnswer (no entity-opinion-open-answer for that question).

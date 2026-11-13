@@ -6,7 +6,7 @@
  * Surface:
  *  - goToPage(locale?)              — navigate to /about and assert it loaded.
  *  - expectPageVisible(visible?)    — canonical voter-page load-anchor pair.
- *  - expectOrgMatchingDisclosure(mode) — assert the org-matching disclosure block renders for an active org-matching mode, or is ABSENT when `mode='none'` (the disclosure renders only when `matching.organizationMatching !== 'none'`). The disclosure TEXT is locale-dependent (interpolates the matching method), so the reader asserts the disclosure block's PRESENCE/ABSENCE per mode rather than a specific string.
+ *  - expectOrgMatchingDisclosure(mode) — assert the org-matching disclosure block is ABSENT when `mode='none'` (the disclosure renders only when `matching.organizationMatching !== 'none'`); for an active mode, assert the block is visible, does not show the message's key, and holds the English sentence the catalogue gives that method, read from `apps/frontend/messages/en/about.json` and reduced to its text.
  *
  * **Rigidity contract**:
  *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
@@ -48,7 +48,7 @@ export function createAboutPage(page: Page) {
     /**
      * Assert the org-matching disclosure block per `mode`:
      *  - 'none'                  → the disclosure block is ABSENT (hidden).
-     *  - 'answersOnly' | 'impute'→ the disclosure block is VISIBLE.
+     *  - 'answersOnly' | 'impute'→ the disclosure block is VISIBLE, does not show the message's key, and holds the English sentence the catalogue gives that method.
      */
     async expectOrgMatchingDisclosure(mode: OrgMatchingMode): Promise<void> {
       const disclosure = page.getByTestId(testIds.voter.about.organizationMatching);

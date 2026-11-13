@@ -1,22 +1,24 @@
 /**
- * Option-B local mock OIDC issuer for the bank-auth full-browser journey (EFLOW-10b). PLAYWRIGHT_BANK_AUTH-gated, localhost-only, TEST-ONLY.
+ * A mock OIDC issuer for the identity-provider E2E tests: the provider the application's Idura flow talks to when a run points `IDURA_DOMAIN` at this server. Test-only.
  *
- * WHY THIS EXISTS (the decisive architectural fact):
- *   The real OIDC code→token exchange AND the JWE id_token decryption run in the
- *   SvelteKit Node server (`/api/oidc/callback` → `exchangeCodeForToken()`;
- *   `+layout.server.ts` → `getIdTokenClaims()`), NOT in the browser — so
- *   `page.route()` cannot stub them. The only deterministic, no-live-IdP path is a SERVER-reachable mock issuer that the existing env vars point at, leaving the real authorize→callback→exchange→decrypt→claims chain UNMODIFIED (Option C — a test-only branch in production auth code — was rejected + operator-LOCKED).
+ * The code-for-token exchange and the token's decryption run in the SvelteKit server, not in the browser, so `page.route()` cannot stand in for the provider. This server is reachable from that server and leaves the application's authorize, callback, exchange and decryption code unchanged.
  *
- * THE THREE ENDPOINTS (derived from the verified server-side Idura flow — `providers/idura.ts` + `api/oidc/callback/+server.ts` + `decryptAndVerifyIdToken.ts`):
- *   1. GET  /oauth2/authorize  — `idura.ts` builds `https://${IDURA_DOMAIN}/oauth2/authorize` with all params inside an RS256-signed JAR (RFC 9101) carried in the `request` query param. We DECODE (NOT verify) the JAR to read `state` + `redirect_uri`, then 302 back to `${redirect_uri}?code=test-code&state=${state}` so the callback's `returnedState === oidc_state cookie` check passes.
- *   2. POST /oauth2/token      — returns `{ id_token }` built by the shared `buildTestIdToken` with iss/aud aligned to IDENTITY_PROVIDER_ISSUER / PUBLIC_IDENTITY_PROVIDER_CLIENT_ID (Pitfall 4). The `client_assertion` is accepted without validation (the mock does not authenticate the client).
- *   3. GET  <JWKS path>        — returns `{ keys: [sigPubJwk] }` (kid `test-sig-1`) so the server's `createRemoteJWKSet` can verify the inner JWT signature.
+ * **What it serves**, over HTTPS:
+ *   1. `GET /oauth2/authorize`: decodes, without verifying, the signed request object the application sends in the `request` parameter, reads its `redirect_uri` and `state`, and redirects back to that `redirect_uri` with a code or an error and the same `state`. The redirect also sets the cookie {@link MOCK_UI_LOCALES_COOKIE} on this server's origin to the request object's `ui_locales`, or to {@link NO_UI_LOCALES} when it carries none, so a test can read what the provider was asked for.
+ *   2. `POST /oauth2/token`: exchanges a code for `{ id_token }`, a token built by `buildTestIdToken` with the issuer {@link MOCK_ISSUER} and the audience {@link MOCK_AUDIENCE}. The client assertion is not checked.
+ *   3. `GET` any path ending in `/jwks`: the public signing key of the committed test pair.
  *
- * HTTPS (A3 / Pitfall 2 — the single highest-uncertainty design point, resolved here):
- *   `idura.ts` hard-codes the `https://` prefix for BOTH the browser authorize leg AND the server `fetch` token/JWKS leg. A plain-HTTP mock is therefore unreachable; this issuer serves over HTTPS with a committed self-signed localhost cert (CN=127.0.0.1, SAN IP:127.0.0.1 + DNS:localhost). Because the cert is self-signed, the SvelteKit-server process must run with `NODE_TLS_REJECT_UNAUTHORIZED=0` SCOPED to the opt-in bank-auth-journey run only (documented in IDURA-TEST-RUNBOOK.md EFLOW-10b; threat T-122-07 — never in a default run / CI).
+ * **The selector.** A test chooses who the provider says the user is, and how it answers, with the cookie {@link MOCK_SCENARIO_COOKIE} set in the test's own browser context; its value is {@link encodeMockScenario} of a {@link MockScenario}. The authorize endpoint reads it from the request's `Cookie` header and from nowhere else:
+ *   - `success`: a fresh random code, remembered with the scenario's claims; the token endpoint mints a token for that identity.
+ *   - `token-error`: a fresh random code that the token endpoint refuses with 400 `invalid_grant`.
+ *   - `cancel`: a redirect with `error=access_denied`; `provider-error`: a redirect with `error=server_error`.
+ * A request with no selector, or one that does not decode, gets the fixed code `test-code`, which always mints {@link IDURA_CLAIMS}.
  *
- * SECURITY — TEST-ONLY (threats T-122-08 / T-122-09):
- *   Binds 127.0.0.1 ONLY (never a public interface). The self-signed cert/key under `tests/tests/support/` are TEST-ONLY localhost certs, never installed into any trust store, never used by production. The keys served come from the committed TEST key pair (`tests/tests/utils/testKeys.ts`); production keys are never this pair.
+ * **Single use.** The token endpoint is called server to server and carries no browser cookie, so it reads only the code. A random code is removed from memory on its first exchange; a second exchange of it, or a code never issued, is refused with 400 `invalid_grant`. Two tests therefore cannot receive each other's identity.
+ *
+ * **TLS.** The application builds `https://` URLs for the provider, so the server uses the committed self-signed certificate under this directory (subject alternative names `127.0.0.1` and `localhost`). That certificate is installed into no trust store. The dev server trusts it through `NODE_EXTRA_CA_CERTS`, which `tests/scripts/e2e-run.sh` sets for that process alone, and the browser through `ignoreHTTPSErrors` on the projects that navigate here. Certificate verification is disabled nowhere.
+ *
+ * **Security.** It listens on `127.0.0.1` alone. It signs with the committed test key pair (`tests/tests/utils/testKeys.ts`) and no other key; no deployment trusts that pair.
  */
 import { readFileSync } from 'node:fs';
 import https from 'node:https';
@@ -33,7 +35,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const BIND_HOST = '127.0.0.1';
 
 /**
- * The Idura test identity claims the token endpoint mints (reuses the TEST_IDENTITY shape: sub/given_name/family_name/birthdate/hetu/country). `sub` is the persistent pseudonym Idura matches identity on.
+ * The fixed identity: the claims the token endpoint mints for {@link FIXED_CODE}. `sub` is the persistent pseudonym an Idura identity is matched on.
  */
 export const IDURA_CLAIMS: Record<string, string> = {
   sub: 'test-bank-auth-journey-sub-001',
@@ -47,7 +49,7 @@ export const IDURA_CLAIMS: Record<string, string> = {
 
 /** Options for {@link createMockOidcIssuer}. */
 export interface MockOidcIssuerOptions {
-  /** Port to bind on 127.0.0.1. */
+  /** Port to bind on 127.0.0.1; 0 for any free port. */
   port: number;
   /**
    * Absolute paths to the TLS cert/key. Defaults to the committed self-signed localhost pair colocated with this module.
@@ -62,7 +64,7 @@ export interface MockOidcIssuerHandle {
   start(): Promise<void>;
   /** Stop listening; resolves once closed. */
   stop(): Promise<void>;
-  /** The base HTTPS URL (e.g. `https://127.0.0.1:9443`). */
+  /** The base HTTPS URL, read from the bound socket once started (e.g. `https://127.0.0.1:9443`). */
   readonly url: string;
 }
 
@@ -91,12 +93,9 @@ async function readBody(req: IncomingMessage): Promise<string> {
 }
 
 /**
- * Create the Option-B mock OIDC issuer. Returns a `{ start, stop, url }` handle.
+ * Create the mock OIDC issuer. Returns a `{ start, stop, url }` handle.
  *
- * Serves exactly three routes over HTTPS (self-signed localhost cert):
- *   - `GET  /oauth2/authorize` → 302 echoing the JAR state + redirect_uri
- *   - `POST /oauth2/token`     → `{ id_token }` via the shared `buildTestIdToken`
- *   - `GET  <any path ending /jwks>` → `{ keys: [sigPubJwk] }`
+ * Each issuer keeps its own memory of the codes it issued for a selector.
  */
 export function createMockOidcIssuer(opts: MockOidcIssuerOptions): MockOidcIssuerHandle {
   const certPath = opts.certPath ?? join(HERE, 'mock-oidc-cert.pem');
@@ -111,10 +110,9 @@ export function createMockOidcIssuer(opts: MockOidcIssuerOptions): MockOidcIssue
 
   async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     try {
-      // Base only matters for relative-URL parsing; the host is irrelevant here.
+      // The base only serves relative-URL parsing.
       const u = new URL(req.url ?? '/', `https://${BIND_HOST}`);
 
-      // 1. Authorize — decode (NOT verify) the signed JAR to echo state + redirect_uri.
       if (u.pathname === '/oauth2/authorize') {
         const jarParam = u.searchParams.get('request');
         if (!jarParam) {
@@ -136,7 +134,6 @@ export function createMockOidcIssuer(opts: MockOidcIssuerOptions): MockOidcIssue
         return;
       }
 
-      // 2. Token — return a synthetic JWE id_token via the shared builder.
       if (u.pathname === '/oauth2/token' && req.method === 'POST') {
         await readBody(req); // drain the body; client_assertion accepted without validation
         const { sigPriv, encPubJwk } = await getTestKeys();
@@ -146,7 +143,6 @@ export function createMockOidcIssuer(opts: MockOidcIssuerOptions): MockOidcIssue
         return;
       }
 
-      // 3. JWKS — serve the TEST signing public key (kid test-sig-1).
       if (req.method === 'GET' && u.pathname.endsWith('/jwks')) {
         const { sigPubJwk } = await getTestKeys();
         res.writeHead(200, { 'Content-Type': 'application/json' });

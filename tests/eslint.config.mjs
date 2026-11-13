@@ -20,7 +20,7 @@ export default [
       // No test.only in committed code
       'playwright/no-focused-test': 'error',
 
-      // === Lint-gate hard enforcement (0/0 warnings at CI time) === Bank-auth has 3 inline-justified test.skip directives in candidate-bank-auth.spec.ts — each preceded by `// eslint-disable-next-line playwright/no-skipped-test` with a `// reason:` block. These per-line disables MUST survive.
+      // === Lint-gate hard enforcement (0/0 warnings at CI time) === Bank-auth has 3 inline-justified test.skip directives in contestant-bank-auth.spec.ts — each preceded by `// eslint-disable-next-line playwright/no-skipped-test` with a `// reason:` block. These per-line disables MUST survive.
       // === Forbidden-locator hardening === `no-raw-locators` only catches string-arg `.locator()` and misses `getByText` + non-string `.locator()` args. `no-restricted-locators` matches ANY member-call whose property name is listed — catching bare `page.locator(...)`, chained `.locator(...)`, and `getByText(...)`.
       // `getByRole`/`getByTestId` are intentionally NOT listed (kept allowed).
       // Locale-stable exceptions carry an inline `// reason:` block + `// eslint-disable-next-line playwright/no-restricted-locators`.
