@@ -16,9 +16,9 @@ const LocalizedStringSchema = z.record(z.string(), z.string());
  * Four measured divergences between the two:
  *
  * 1. `publisherName` is a LOCALE OBJECT in storage and a `string` in the type.
- * 2. `publisherLogo`, `poster` and `candPoster` are {@link StoredImageSchema}-shaped — a storage **path** — in storage, and `Image` — a resolved **URL** — in the type.
+ * 2. `publisherLogo`, `poster` and `contestantPoster` are {@link StoredImageSchema}-shaped — a storage **path** — in storage, and `Image` — a resolved **URL** — in the type.
  * 3. `translationOverrides` values are locale objects in storage and plain strings in the type.
- * 4. `candidateAppFAQ[].question` and `.answer` are locale objects in storage and strings in the type.
+ * 4. `contestantAppFAQ[].question` and `.answer` are locale objects in storage and strings in the type.
  *
  * Every field is optional: the column is `DEFAULT '{}'::jsonb` (`apps/supabase/supabase/schema/106-app-settings.sql:19`) and the provider returns `{}` on `PGRST116`, so `{}` MUST parse.
  *
