@@ -78,14 +78,14 @@ export class CleanFixture {
     return data;
   }
 
-  /** An Edge Function dispositioned as needing a project term, invoked with the camelCase spelling one of its two live call sites uses. */
+  /** An Edge Function dispositioned as needing a project term, invoked with the camelCase spelling of the term. */
   dispositionedInvocationCamelCase(): Promise<unknown> {
     return this.supabase.functions.invoke('invite-candidate', {
       body: { firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org', projectId: this.projectId }
     });
   }
 
-  /** The same disposition satisfied by the snake_case spelling the other live call site uses. Both spellings are live, so a check that accepted only one would be wrong about one of them. */
+  /** The same disposition satisfied by the snake_case spelling of the term. The check accepts both spellings, so each is held by a shape of its own. */
   dispositionedInvocationSnakeCase(): Promise<unknown> {
     return this.supabase.functions.invoke('send-email', {
       body: { recipient_user_ids: [], project_id: this.projectId }

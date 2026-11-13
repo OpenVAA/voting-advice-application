@@ -11,7 +11,7 @@ Rewrite the current E2E (in tests) tests to follow an extensible, modular paradi
 3. reset db state after tests so that re-running them will work
 4. enable testing with different options
 5. use user stories as a base on which actual tests are created
-6. test both the candidate app (some pre-existing test are defined) and the voter app
+6. test both the contestant app (some pre-existing test are defined) and the voter app
 
 Create helper utilities for common tasks, so that these are easy to replace when the app changes.
 
@@ -19,7 +19,7 @@ For 2 and 3, we can use the Supabase admin client to import and delete test data
 
 For 4, we can change the dynamicSettings.ts file and rebuild the web app, or update app_settings in the database. In dev mode, changes are automatically reflected.
 
-For 5–6, first write user stories for the candidate app based on the current e2e tests. Then mine the documentation in /docs for user stories for the voter app, with regard to how different settings are supposed to function.
+For 5–6, first write user stories for the contestant app based on the current e2e tests. Then mine the documentation in /docs for user stories for the voter app, with regard to how different settings are supposed to function.
 
 Regarding certain features, such as one vs. multiple elections, we should have multiple test datasets to facilitate these. These can be created separatetly once the logic and needs are clear.
 
