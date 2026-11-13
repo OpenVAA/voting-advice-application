@@ -53,3 +53,11 @@ prejudge. Options, roughly in increasing cost:
 - `bank-auth` (the opt-in E2E project) exercises **this** Edge Function directly and never touches the
   frontend provider path — which is why Phase 142.1 recorded it as non-regression cover rather than as
   evidence.
+
+## Phase 180 note (2026-11-13)
+
+`apps/supabase/supabase/functions/_shared/` now exists as the place for a module more than one Edge Function uses
+(today `envConfig.ts` and `placeholderAddress.ts`, each with its test), and `yarn typecheck` type-checks every
+non-test module of the tree with Deno 2.9.6. Phase 180 moved no verifier: the decrypt→verify→claims path is still
+inside `identity-callback/index.ts`, and a shared module with the frontend's core (option 3 above) would still need
+a Deno-consumable build of it. This todo stays open.

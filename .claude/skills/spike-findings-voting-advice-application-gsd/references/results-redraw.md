@@ -92,7 +92,7 @@ reads everything tracked.
   itself. A root-layout host would lose them and need the opener's
   `getAllContexts()` re-provided around the content — spike 034 built that
   bridge, spike 035 measured it away (all three alternatives green; the
-  per-app mount smallest). Enabling drawers in the candidate app is one more
+  per-app mount smallest). Enabling drawers in the contestant app is one more
   `<DrawerHost />` in its root layout; `drawerHost.register()` warns on a second
   concurrent host and `open()` warns when none is mounted. The one host serves
   both the entity-details and the extended-question-info drawer, and an A → B
