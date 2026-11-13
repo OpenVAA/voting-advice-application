@@ -20,7 +20,7 @@
 import { staticSettings } from '@openvaa/app-shared';
 import { DataRoot } from '@openvaa/data';
 import { redirect } from '@sveltejs/kit';
-import { buildRoute, getImpliedElectionIds, parseParams } from '$lib/routes';
+import { buildRoute, electionsStepOutcome, parseParams } from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Route } from '$lib/routes';
 
@@ -33,29 +33,28 @@ export async function load({ parent, params, route, url }) {
   dataRoot.provideElectionData(await electionData);
   dataRoot.provideConstituencyData(await constituencyData);
 
-  // Check whether can imply any parameters NB. We  don't pass the selected constituencyIds here, because we want to show the election selector even if there's only one possible election in a multi-election app so that the user knows this
-  const impliedElectionId = getImpliedElectionIds({
+  // Every election is on offer and `elections.disallowSelection` is honoured. A single election held in the selected constituencies is not treated as implied: the election selector is shown for it, so that the voter of a multi-election app learns that only that election is held there. A constituency is never implied here either: if `startFromConstituencyGroup` is set, the constituency must be selected.
+  const { constituencyId } = parseParams({ params, url });
+  const outcome = electionsStepOutcome({
+    dataRoot,
     appSettings,
-    dataRoot
+    honourDisallowSelection: true,
+    implyWithinChosenConstituencies: false,
+    skipWhenFullyImplied: false,
+    constituencyIds: constituencyId ? [constituencyId].flat() : undefined
   });
 
   // Deferred-target handling: a `?next=` target from `(voters)/(located)/+layout.ts` is NOT a persistent search param, so it gets dropped by buildRoute's `filterPersistent` pass. Forward it explicitly so an auto-implied election still chains the deferred target through to /constituencies.
   const nextSearch = url.searchParams.get('next');
   const nextForward: { next?: string } = nextSearch ? { next: nextSearch } : {};
 
-  // If startFromConstituencyGroup is set, this route is the last one before questions
-  if (appSettings.elections?.startFromConstituencyGroup) {
-    // Check whether we have the necessary constituencyId parameter. If not, redirect to constituency selection page NB. We don't try to imply it, because we assume that if startFromConstituencyGroup is set, the constituency must be selected
-    const { constituencyId } = parseParams({ params, url });
-    if (constituencyId && impliedElectionId) _redirect('Questions', nextForward);
-    if (!constituencyId) _redirect('Constituencies', nextForward);
-    // Show election selector
-    return;
-  }
-
-  // StartFromConstituencyGroup is not set, so constituency selection will come after this page Pass impliedElectionId forward so /constituencies and the voter context's selectedElections see the implied id without re-implying it on every read.
-  // (Symmetry with `(located)/+layout.ts:60-67` which also passes electionId.)
-  if (impliedElectionId) _redirect('Constituencies', { electionId: impliedElectionId, ...nextForward });
+  if (outcome.action === 'done') _redirect('Questions', nextForward);
+  // The implied `electionId` is passed forward so that /constituencies and the voter context's `selectedElections` see it without implying it again.
+  if (outcome.action === 'goto')
+    _redirect('Constituencies', {
+      ...(outcome.electionIds ? { electionId: outcome.electionIds } : {}),
+      ...nextForward
+    });
   // Show election selector
   return;
 

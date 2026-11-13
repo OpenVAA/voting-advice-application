@@ -11,22 +11,50 @@
  */
 
 import { fail, redirect } from '@sveltejs/kit';
+import { createDataWriter } from '$lib/api/dataWriter';
 import { ADMIN_GRANTS, passwordLogin } from '$lib/auth';
+import { LOGOUT_DEADLINE_SETTLED } from '$lib/auth/logoutDeadline';
+import { COOKIE } from '$lib/cookies';
 import { buildRoute, safeRedirectTarget } from '$lib/routes';
+import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
+import type { LoginError } from '$lib/admin/utils/loginError';
+
+/**
+ * The login page's load serves two purposes.
+ *
+ * - A client-side navigation to this page sends a request the request hook sees, which sends a caller with a session to the app's home; see `appGates.ts`.
+ * - It answers why the visitor was sent here when the request hook has just ended the session at the end of a logout count. The hook writes {@link LOGOUT_DEADLINE_SETTLED} into `COOKIE.logoutPending` in the response that signs out, the gate sends the request here with `errorMessage=loginFailed`, and the browser's request for this page carries the value; the root layout removes it only after this page has loaded. The page shows this reason before the address bar's, which says less. The load reads that one cookie and no session.
+ *
+ * Tested in `page.server.test.ts`.
+ *
+ * @returns `{ signedOutReason: 'loggedOutAutomatically' }` when the request carries the settled value, and an empty object otherwise.
+ */
+export function load({ cookies }): { signedOutReason?: Extract<LoginError, 'loggedOutAutomatically'> } {
+  return cookies.get(COOKIE.logoutPending) === LOGOUT_DEADLINE_SETTLED
+    ? { signedOutReason: 'loggedOutAutomatically' }
+    : {};
+}
 
 export const actions = {
-  default: async ({ request, locals }) => {
+  default: async (event) => {
+    const { request, locals, fetch } = event;
     const data = await request.formData();
     // Caller-controlled: see `loginRedirectTarget.ts`. Rejected values fall back to the app home.
     const redirectTo = safeRedirectTarget(data.get('redirectTo') as string | null);
     const outcome = await passwordLogin({
-      context: { auth: locals.supabase.auth, getSession: locals.safeGetSession },
+      context: {
+        auth: locals.supabase.auth,
+        getSession: locals.safeGetSession,
+        claimInvitations: () => createDataWriter({ fetch, locals }).claimInvitations(),
+        getProjectGrants: () => createDataWriter({ fetch, locals }).getProjectGrants()
+      },
       email: data.get('email') as string,
       password: data.get('password') as string,
       allowedGrants: ADMIN_GRANTS,
       logLabel: 'Admin login'
     });
     if (!outcome.ok) return fail(outcome.status);
+    withdrawLogoutCount(event);
     // The override target stays interpolated rather than built: `buildRoute` resolves a NAMED route from the route map, and a validated `redirectTo` is an arbitrary relative path with no name. The leading `/{locale}/` is what keeps the result same-origin, so the validator above must run first and its rejection must fall through to the named home route.
     const home = buildRoute({ route: 'AdminAppHome', locale: locals.currentLocale });
     return redirect(303, redirectTo ? `/${locals.currentLocale}/${redirectTo}` : home);

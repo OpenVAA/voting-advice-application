@@ -1,11 +1,11 @@
 /**
- * # Candidate App outermost server loader — the request's session, as a PROJECTION
+ * # Contestant App outermost server loader — the request's session, as a PROJECTION
  *
- * Provides the Candidate App's `page.data.session` to `authContext`'s `isAuthenticated` derived flag and to `getUserData`'s ancestor pre-check, both of which need EXISTENCE only.
+ * Provides the Contestant App's `page.data.session` to `authContext`'s `isAuthenticated` derived flag and to `getUserData`'s ancestor pre-check, both of which need EXISTENCE only.
  *
  * ## ⚠ Why this returns a PROJECTION and never the session
  *
- * This load returns `{ userId, expiresAt }` and not `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record. Everything a server load returns is serialised into the hydration payload in the HTML body, so the session would put a REFRESH TOKEN into the document of every Candidate App page, for every signed-in user. The refresh token is the higher-value credential of the pair: it is long-lived, and a document body exposes it to HTML/page caches, to `view-source` sharing, and to DOM-snapshot error reporters.
+ * This load returns `{ userId, expiresAt }` and not `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record. Everything a server load returns is serialised into the hydration payload in the HTML body, so the session would put a REFRESH TOKEN into the document of every Contestant App page, for every signed-in user. The refresh token is the higher-value credential of the pair: it is long-lived, and a document body exposes it to HTML/page caches, to `view-source` sharing, and to DOM-snapshot error reporters.
  *
  * The reason is written out HERE, in full, rather than referenced: a reader arriving at this file must find it without following a link. The root layout, `routes/+layout.server.ts`, follows the same rule and returns no session at all.
  *
