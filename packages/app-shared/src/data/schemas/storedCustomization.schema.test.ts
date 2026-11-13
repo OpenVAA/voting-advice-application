@@ -17,9 +17,9 @@ describe('StoredCustomizationSchema', () => {
       publisherName: { en: 'The Publisher', fi: 'Julkaisija' },
       publisherLogo: { path: 'brand/logo.png', pathDark: 'brand/logo-dark.png', alt: 'Logo' },
       poster: { path: 'brand/poster.png' },
-      candPoster: { path: 'brand/cand-poster.png', focalPoint: { x: 0.5, y: 0.25 } },
+      contestantPoster: { path: 'brand/cand-poster.png', focalPoint: { x: 0.5, y: 0.25 } },
       translationOverrides: { 'common.next': { en: 'Onwards', fi: 'Eteenpäin' } },
-      candidateAppFAQ: [{ question: { en: 'How?' }, answer: { en: 'Like this.' } }]
+      contestantAppFAQ: [{ question: { en: 'How?' }, answer: { en: 'Like this.' } }]
     };
     const result = StoredCustomizationSchema.safeParse(input);
     expect(result.success === false ? result.error.issues : result.success).toBe(true);
@@ -41,14 +41,14 @@ describe('StoredCustomizationSchema', () => {
     expect(result.success === false && result.error.issues[0]?.path).toEqual(['publisherLogo']);
   });
 
-  it('LEVEL 2: rejects an unknown key inside a `candidateAppFAQ` entry', () => {
+  it('LEVEL 2: rejects an unknown key inside a `contestantAppFAQ` entry', () => {
     // Top-level strictness alone does NOT reach into an array element: measured at zod 4.3.6, a top-level-only strict schema parses this input with SUCCESS and silently strips `bogusFaqKey`.
     const result = StoredCustomizationSchema.safeParse({
-      candidateAppFAQ: [{ question: { en: 'How?' }, answer: { en: 'Like this.' }, bogusFaqKey: 1 }]
+      contestantAppFAQ: [{ question: { en: 'How?' }, answer: { en: 'Like this.' }, bogusFaqKey: 1 }]
     });
     expect(result.success).toBe(false);
     expect(result.success === false && result.error.issues[0]?.message).toMatch(/Unrecognized key/);
-    expect(result.success === false && result.error.issues[0]?.path).toEqual(['candidateAppFAQ', 0]);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['contestantAppFAQ', 0]);
   });
 
   it('rejects a plain-string `publisherName` — the stored form is a locale object', () => {

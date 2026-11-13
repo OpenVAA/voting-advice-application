@@ -28,6 +28,7 @@
     "@openvaa/app-shared": "workspace:^",
     "@openvaa/core": "workspace:^",
     "@openvaa/data": "workspace:^",
-    "@openvaa/llm": "workspace:^"
+    "@openvaa/llm": "workspace:^",
+    "zod": "catalog:"
   }
 }

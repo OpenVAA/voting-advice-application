@@ -1,6 +1,7 @@
 import type { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 import type { LocalizedString } from '../data/localized.type';
+import type { RegistrationModeMatrix, ServedEntityType } from './contestantAppConfig';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
@@ -113,6 +114,10 @@ export type DynamicSettings = {
        * Whether to hide candidates with missing answers in the app.
        */
       [ENTITY_TYPE.Candidate]: boolean;
+      /**
+       * Whether to hide organizations that lack an answer to an opinion question addressed to organizations.
+       */
+      [ENTITY_TYPE.Organization]: boolean;
     };
     /**
      * Whether to show the `/nominations` route on which all nominations in the app are shown.
@@ -276,7 +281,7 @@ export type DynamicSettings = {
     /**
      * If `true`, the Contestant App can be accessed.
      */
-    candidateApp: boolean;
+    contestantApp: boolean;
     /**
      * If `true`, the Voter App can be accessed.
      */
@@ -293,6 +298,10 @@ export type DynamicSettings = {
      * If `true`, candidates can no longer edit their answers.
      */
     answersLocked?: boolean;
+    /**
+     * If `true`, an entity's own users can no longer add or change that entity's nominations. A project admin still can. The database enforces the lock from this same stored key, so the app only reads it to say so.
+     */
+    nominationsLocked?: boolean;
   };
   /**
    * Settings related to important notifications shown to users.
@@ -301,7 +310,7 @@ export type DynamicSettings = {
     /**
      * The notification shown to users of the Contestant App.
      */
-    candidateApp?: NotificationData | null;
+    contestantApp?: NotificationData | null;
     /**
      * The notification shown to users of the Voter App.
      */
@@ -310,7 +319,7 @@ export type DynamicSettings = {
   /**
    * Settings related to the Contestant App.
    */
-  candidateApp: {
+  contestantApp: {
     /**
      * Settings related to the question view in the Contestant App.
      */
@@ -324,15 +333,23 @@ export type DynamicSettings = {
        */
       hideHero: boolean;
     };
+    /**
+     * The entity types the Contestant App serves: `candidate`, `organization` or both, and never none. The app's name follows this list. A type named twice counts once, and the list is stored in the order `candidate`, `organization` whatever order it is written in. Read it with `getServedEntityTypes`.
+     */
+    entityTypes: Array<ServedEntityType>;
+    /**
+     * The registration modes allowed for each entity type: any of `identity_provider`, `email` and `code`. An empty row allows no registration for that type, and with every row empty the app offers sign-in only. A mode named twice counts once, and each row is stored in the order `identity_provider`, `email`, `code`. A row for a type that `entityTypes` does not list is stored and ignored when read. Read it with `getEffectiveRegistrationModes` and `isRegistrationModeAllowed`. Allowing `identity_provider` also needs the identity provider's environment variables.
+     */
+    registrationModes: RegistrationModeMatrix;
   };
   /**
    * Settings related to usage analytics.
    */
-  preRegistration?: {
+  analytics: {
     /**
      * Whether usage events other than the identifier-free page-view count are collected. The analytics provider, the consent mode and the visit-id mode are deployment configuration of the server and are not settings.
      */
-    enabled?: boolean;
+    trackEvents: boolean;
   };
 };
 

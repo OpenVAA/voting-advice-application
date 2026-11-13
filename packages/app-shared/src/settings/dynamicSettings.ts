@@ -34,7 +34,8 @@ export const dynamicSettings: DynamicSettings = {
   },
   entities: {
     hideIfMissingAnswers: {
-      candidate: true
+      candidate: true,
+      organization: false
     },
     showAllNominations: true
   },
@@ -73,20 +74,27 @@ export const dynamicSettings: DynamicSettings = {
     startFromConstituencyGroup: undefined
   },
   access: {
-    candidateApp: true,
+    contestantApp: true,
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
-    answersLocked: false
+    answersLocked: false,
+    nominationsLocked: false
   },
   notifications: {
-    candidateApp: null,
+    contestantApp: null,
     voterApp: null
   },
-  candidateApp: {
+  contestantApp: {
     questions: {
       hideHero: false,
       hideVideo: false
+    },
+    entityTypes: ['candidate'],
+    registrationModes: {
+      candidate: [],
+      organization: []
     }
-  }
+  },
+  analytics: { trackEvents: false }
 };
