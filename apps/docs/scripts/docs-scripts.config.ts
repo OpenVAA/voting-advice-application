@@ -4,7 +4,7 @@
 import { join } from 'path';
 
 /**
- * Base directories
+ * Base directories, anchored on this file's location so they do not depend on the directory a script is started from
  */
 export const DOCS_ROOT = process.cwd();
 export const REPO_ROOT = join(DOCS_ROOT, '../..');
@@ -52,7 +52,7 @@ export const COPY_TARGETS = [
 ] as const;
 
 /**
- * Component directories for extraction
+ * Component directories for extraction. `categorySubdir` is where a directory's pages are written under the generated components route, and so where the table of contents links them.
  */
 export const COMPONENT_DIRS = [
   {

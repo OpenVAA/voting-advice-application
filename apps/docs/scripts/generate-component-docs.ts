@@ -28,7 +28,9 @@ interface ComponentDoc {
 }
 
 /**
- * Main function
+ * Write a page for every component with a `@component` docstring, and a table of contents, into the output directory.
+ * @param options.outputDir - Where the pages are written.
+ * @param options.componentDirs - The component directories to read.
  */
 async function main() {
   console.info('Extracting component documentation...\n');
@@ -181,7 +183,7 @@ async function generateComponentMarkdown(doc: ComponentDoc): Promise<string> {
   // The README of the component's directory, with its headings moved one level down so the page keeps a single H1
   if (doc.readmePath) {
     const readmeContent = await fs.readFile(doc.readmePath, 'utf-8');
-    // A tree link, because move-generated.ts rewrites every link ending in `/README.md` to its directory
+    // A link to the README's directory, whose page GitHub renders with the README
     const relativeReadmeDir = repoRelative(path.dirname(doc.readmePath));
     lines.push('## Directory README\n');
     lines.push(

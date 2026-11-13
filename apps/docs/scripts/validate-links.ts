@@ -7,12 +7,12 @@
  * - `svelte-href`: every literal internal `href="/…"` in a `.svelte` file (or HTML in a `.md` file) under `src` resolves to a page or a static asset
  * - `nav-route`: every leaf item of `src/lib/navigation.config.ts` resolves to a page (section routes are prefixes, not links, and are not checked)
  * - `anchor`: every `#hash` of an internal link (markdown links, hrefs, same-page links, redirect stub targets) names an id on its target page
- * - `stub`: every redirect stub (a route with only `+page.ts`) makes exactly one `redirect(301 | 308, '<literal>')` call to an internal route that is a page, not another stub
- * - `github-path`: every GitHub source link (`https://github.com/OpenVAA/voting-advice-application/(blob|tree)/main/<path>`) in a `.md` or `.svelte` file under `src` names a file or directory tracked by git
+ * - `stub`: every redirect stub (a route with only `+page.ts`) exports `prerender = true` once and makes exactly one `redirect(301 | 308, '<literal>')` call to an internal route that is a page, not another stub
+ * - `github-path`: every GitHub source link (`https://github.com/OpenVAA/voting-advice-application/(blob|tree)/main/<path>`) in a `.md` or `.svelte` file under `src` names a file or directory tracked by git. The paths are read from the checked-out branch while the links name `main`, so a link this class accepts on another branch answers 404 on GitHub until that branch is merged
  * - `inbound`: every reference to the site from a tracked file outside `apps/docs` (an `openvaa.org` URL, with its `#hash`, or a repository path under `docs/src/routes`) resolves
  *
  * Modes:
- * - default: also rewrites relative markdown links to absolute ones in place (run by `generate:docs`)
+ * - default: also rewrites relative markdown links to absolute ones in place (run by `generate:docs`), unless `--only` leaves out `md-link`
  * - `--check`: report only; no file is written, and a link that lands on a redirect stub is a finding
  *
  * Options:
@@ -347,7 +347,7 @@ function collectLeaves(items: Array<NavigationSection | NavigationItem>, leaves:
 }
 
 /**
- * Validate every redirect stub: a route directory holding `+page.ts` and no page file.
+ * Validate every redirect stub under `routesDir` (the site's routes by default): a route directory holding `+page.ts` and no page file. Stub targets are resolved against the site's routes.
  */
 async function validateStubs(result: ValidationResult): Promise<void> {
   const stubFiles = await glob('**/+page.ts', { cwd: ROUTES_DIR, absolute: true });

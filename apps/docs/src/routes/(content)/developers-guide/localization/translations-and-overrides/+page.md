@@ -14,7 +14,7 @@ The catalogue is in `apps/frontend/messages/<locale>/`, one JSON file per namesp
 The files are organised as follows:
 
 - One file for each Voter App page or [dynamic component](/developers-guide/frontend/components), named `<pageOrComponentName>.json`.
-- One file for each Candidate App page, named `candidateApp.<pageName>.json`. The Admin App's files are prefixed `adminApp.` in the same way.
+- One file for each Contestant App page, named `contestantApp.<pageName>.json`. The Admin App's files are prefixed `adminApp.` in the same way.
 - `components.json` for the base components, with a subkey per component.
 - `common.json` for terms used across the app.
 - `dynamic.json` for the defaults of the texts a deployment usually overrides, such as the app name.
@@ -43,7 +43,8 @@ The locale does not change while a page is shown, because switching it reloads t
 
 - **The `TranslationKey` type** in `src/lib/types/generated/translationKey.ts` is generated from the base-locale messages. Run `yarn workspace @openvaa/frontend generate:translation-key-type` after you add, rename or remove a key.
 - **The translation tests** in `src/lib/i18n/tests/translations.test.ts` run with `yarn workspace @openvaa/frontend test:unit`. They fail when the committed `TranslationKey` type is stale, when a locale lacks a file or a key that the base locale has, when a file is not wrapped in its namespace key, when `lang.json` lacks a display name, or when a plural uses ICU inline syntax.
-- **`yarn assert:i18n-catalog-namespaces`**, part of `yarn lint:check`, fails when the `candidateApp`, `adminApp` or voter and shared namespaces of the base-locale catalogue lose most of their keys.
+- **The compiled-message test** in `src/lib/i18n/tests/compiledMessages.test.ts` calls every compiled message in every locale, a number that chooses a variant taking values that reach every plural category, 0 and 1 included, and fails when one returns its own key, which is what a message whose variants match nothing answers with. It reads the compiled output, so it needs the frontend build or `yarn workspace @openvaa/frontend paraglide:compile` first.
+- **`yarn assert:i18n-catalog-namespaces`**, part of `yarn lint:check`, fails when the `contestantApp`, `adminApp` or voter and shared namespaces of the base-locale catalogue lose most of their keys.
 
 The [`editTranslations`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/tools/editTranslations/editTranslations.ts) tool can export, import and replace translation keys in bulk.
 

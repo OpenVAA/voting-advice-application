@@ -14,7 +14,7 @@ Show a non-modal alert or dialog that appears at the bottom of the screen.
 
 ### Snippet Props
 
-- `actions`: The action buttons to display.
+- `actions`: The action buttons to display. Without them the alert shows a Close button, and the round ✕ in its corner is hidden from assistive technology and out of the tab order, so a reader meets one Close; with them the ✕ is the alert's Close for everyone.
 - `children`: The content of the alert.
 
 ### Bindable functions
