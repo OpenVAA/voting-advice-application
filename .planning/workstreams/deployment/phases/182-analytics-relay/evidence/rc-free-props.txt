@@ -1,0 +1,100 @@
+ATTEMPT=20261020T073024Z.80e421ea1bd6
+PREVIOUS_ATTEMPT=20261020T072053Z.adf9a4e6bc0d
+    the previous attempt ran on adf9a4e6b and stopped before the send check (evidence/rc-free-props.txt at ecaad997c); this attempt runs on the commit that closes the prompt under the switch
+PREP_HEAD=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+PREP_TREE_CLEAN=yes
+SWITCH_COMMIT=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+GATES_ATTEMPT=20261020T072853Z.80e421ea1bd6
+ENV_FILE=present
+    from a standalone `test -f` of the root env file, exit 0
+PORT_FREE=yes
+CHECKPOINT_PRESENTED attempt=20261020T073024Z.80e421ea1bd6 head=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+    I'll keep the stack free, so just continue w the rest of the steps at will
+    (standing authorisation given 2026-10-19 for the remaining phase-182 stack windows, relayed by the orchestrator for attempt 20261020T073024Z.80e421ea1bd6; this window was requested by the operator on 2026-10-20 with 'prove it')
+OPERATOR_CONFIRMED_STACK_FREE=yes attempt=20261020T073024Z.80e421ea1bd6 head=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+TASK3_STARTED=2026-10-20T07:30:40Z
+DB_STOP_AT_START_EXIT=0
+E2E_HEAD=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+COMMAND=export PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log PLAYWRIGHT_RED_CONTROL_SKIP_MODE_CHECK=1; unset ANALYTICS_CONSENT_MODE; bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-rc-free-props-20261020T073024Z.80e421ea1bd6 --project analytics-consent-free
+RUN_DIR=tests/e2e-runs/182-rc-free-props-20261020T073024Z.80e421ea1bd6
+WRAPPER_EXIT=1
+PASSED=2
+FAILED=5
+FLAKY=0
+SKIPPED=0
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+RED_REASON_SEND=the answer was not sent without a prompt: no answer event reached the relay path /api/usage while no consent choice was made (consent-free mode sends it without asking; this spec needs ANALYTICS_CONSENT_MODE=free and ANALYTICS_PROVIDER=log)
+RED_REASON_PROMPT=a consent prompt is shown
+SCHEMA_PROBE=t
+E2E_HEAD_AFTER=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+    e2e-evidence.mjs: tests/e2e-runs/182-rc-free-props-20261020T073024Z.80e421ea1bd6 -- total 7, passed 2, failed 5, flaky 0, skipped 0, didNotRun 0
+    VERDICT OK: 7 tests -- passed 2, failed 5, flaky 0, skipped 0, did not run 0
+    failure record of the test "the server is in consent-free mode" (from results.json):
+    project=analytics-consent-free test.status=unexpected annotations=[{"type":"red-control","description":"PLAYWRIGHT_RED_CONTROL_SKIP_MODE_CHECK=1: the mode precondition was skipped"}]
+    status=failed retry=0 duration=15928ms annotations=[{"type":"red-control","description":"PLAYWRIGHT_RED_CONTROL_SKIP_MODE_CHECK=1: the mode precondition was skipped"}]
+    location=/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tests/tests/specs/voter/voter-tracking-consent-free.spec.ts:133:6
+    Error: the answer was not sent without a prompt: no answer event reached the relay path /api/usage while no consent choice was made (consent-free mode sends it without asking; this spec needs ANALYTICS_CONSENT_MODE=free and ANALYTICS_PROVIDER=log)
+    
+    the answer was not sent without a prompt: no answer event reached the relay path /api/usage while no consent choice was made (consent-free mode sends it without asking; this spec needs ANALYTICS_CONSENT_MODE=free and ANALYTICS_PROVIDER=log)
+    
+    expect(received).toBe(expected) // Object.is equality
+    
+    Expected: true
+    Received: false
+    
+    Call Log:
+    - Timeout 10000ms exceeded while waiting on the predicate
+    
+      131 |       { message, timeout: TIMEOUTS.slowPage }
+      132 |     )
+    > 133 |     .toBe(true);
+          |      ^
+      134 | }
+      135 |
+      136 | /**
+        at flushUntil (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tests/tests/specs/voter/voter-tracking-consent-free.spec.ts:133:6)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tests/tests/specs/voter/voter-tracking-consent-free.spec.ts:284:11
+    failure record of the test "no prompt is shown" (from results.json):
+    project=analytics-consent-free test.status=unexpected annotations=[]
+    status=failed retry=0 duration=6014ms annotations=[]
+    location=/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tests/tests/specs/voter/voter-tracking-consent-free.spec.ts:224:97
+    Error: a consent prompt is shown
+    
+    expect(locator).toHaveCount(expected) failed
+    
+    Locator:  getByRole('dialog', { name: /collecting usage data/i })
+    Expected: 0
+    Received: 1
+    Timeout:  5000ms
+    
+    Call log:
+      - a consent prompt is shown getByRole('dialog', { name: /collecting usage data/i }) with timeout 5000ms
+      - waiting for getByRole('dialog', { name: /collecting usage data/i })
+        14 × locator resolved to 1 element
+           - unexpected value "1"
+    
+    
+      222 | /** Assert that no consent prompt and no control that grants consent is on the page now. */
+      223 | async function expectNoConsentPrompt(page: Page): Promise<void> {
+    > 224 |   await expect(page.getByRole('dialog', { name: CONSENT_PROMPT }), 'a consent prompt is shown').toHaveCount(0);
+          |                                                                                                 ^
+      225 |   await expect(
+      226 |     page.getByRole('button', { name: GRANTED_BUTTON }),
+      227 |     'a control that grants consent is shown'
+        at expectNoConsentPrompt (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tests/tests/specs/voter/voter-tracking-consent-free.spec.ts:224:97)
+        at walkAndAnswer (/Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tests/tests/specs/voter/voter-tracking-consent-free.spec.ts:246:9)
+        at /Users/kallejarvenpaa/Desktop/OpenVAA/voting-advice-application-infra/tests/tests/specs/voter/voter-tracking-consent-free.spec.ts:288:5
+    the other failed tests of the run (first message line and location, from results.json):
+    an answer cannot be linked: a consent prompt is shown (voter-tracking-consent-free.spec.ts:224:97)
+    the privacy page describes the mode: the privacy page does not show the consent-free description (voter-tracking-consent-free.spec.ts:324:7)
+    the device holds only allow-listed state: a consent prompt is shown (voter-tracking-consent-free.spec.ts:224:97)
+    passed: data-setup-analytics-standalone and data-teardown-analytics-standalone; no test skipped, none did not run (the switch put the describe in default mode)
+PROP_B_RESULT=red on its own send assertion: expect.poll(...).toBe(true) in flushUntil (spec :133) called from the first test at :284, message SEND_MESSAGE, Expected true, Received false over its 10000 ms poll window; the walk had reached the results page (closeConsentPromptInRedControl, startToFirstQuestion and answerAndAdvanceToResults all passed), so the poll window is the assertion's own, not a navigation timeout
+PROP_C_RESULT=red on its own property assertion: toHaveCount(0) on the consent dialog (spec :224) via walkAndAnswer :246 from the test at :288, Expected 0, Received 1
+DB_STOP_AT_END_EXIT=0
+    run directory: head 80e421ea1bd6..., exit 1, provenance db-reset: yes, void: no, no VOID-host-suspend.txt; worktree-status.txt lists only two untracked files of another session (.planning/workstreams/deployment/config.json and state.json), no tracked change
+STACK_STOPPED_AT_END=yes
+SHARED_DB_RESET_BY_THIS_SESSION=yes
+WINDOW_RESULT=red as expected: wrapper 1, verdict 0; (b) the send check failed by SEND_MESSAGE, (c) "no prompt is shown" failed by "a consent prompt is shown"; one run, on 80e421ea1bd6, database reset by the wrapper, schema probe t
+The v2.16 session must run `yarn db:reset` from its own worktree before it uses the local stack again.

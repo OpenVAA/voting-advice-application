@@ -1,0 +1,27 @@
+ATTEMPT=20261020T055034Z.cb8da595b414
+PREP_HEAD=cb8da595b414c15572ad05e23b7658731834727c
+PREP_TREE_CLEAN=yes
+    Gates of plan 182-22 do not describe PREP_HEAD: the pointer 22-gates.current holds one line and the tracked 22-static-gates.txt is cmp-equal to it, but git diff --quiet e4d535df3 PREP_HEAD -- . ':!.planning' exits 1 (the 182-24 debug commits b410026b0, 3029d15e3, e06816d05, 0e343a40d changed code), so the four gates are run again here.
+ENV_FILE=present
+PORT_FREE=yes
+BASELINE_LINES=0
+LOCAL_BUILD_EXIT=0
+LOCAL_LINT_EXIT=0
+LOCAL_UNIT_EXIT=0
+LOCAL_FORMAT_EXIT=0
+LOCAL_GATES_SOURCE=rerun
+LOCAL_GATES_HEAD=cb8da595b414c15572ad05e23b7658731834727c
+    The four gates ran one at a time in one background script, each status read from its file, with TURBO_CACHE_DIR=tmp/turbo-182-28; the shared stack was started with yarn db:start (no reset, status 0) before them, because the root test:unit needs it. Unit: 25 of 25 turbo tasks. Second tree sample clean, HEAD unchanged.
+SHARED_STACK_RUNNING=yes
+CHECKPOINT_PRESENTED attempt=20261020T055034Z.cb8da595b414 head=cb8da595b414c15572ad05e23b7658731834727c
+    I'll keep the stack free, so just continue w the rest of the steps at will
+    (standing authorisation given 2026-10-19 for the remaining phase-182 stack windows, relayed by the orchestrator for attempt 20261020T055034Z.cb8da595b414)
+OPERATOR_CONFIRMED_STACK_FREE=yes attempt=20261020T055034Z.cb8da595b414 head=cb8da595b414c15572ad05e23b7658731834727c
+TASK3_STARTED=2026-10-20T05:54:20Z
+DB_STOP_AT_START_EXIT=0
+DB_STOP_AT_END_EXIT=0
+WINDOW_RESULT=green: 28-full (wrapper 0, verdict 0, 548 of 548 passed, skips equal to the empty 11-skipped-baseline); 28-free (wrapper 0, verdict 0, 7 of 7 passed); each run once, on cb8da595b414c15572ad05e23b7658731834727c, database reset by the wrapper, schema probe t
+    Log observations of the full run: pageview lines for voter, contestant and admin; no pageview line carries session.id; no line carries vaaSessionId. No serial-describe follower was skipped and no test did not run in either run.
+STACK_STOPPED_AT_END=yes
+SHARED_DB_RESET_BY_THIS_SESSION=yes
+The v2.16 session must run `yarn db:reset` from its own worktree before it uses the local stack again.
