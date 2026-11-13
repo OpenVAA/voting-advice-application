@@ -211,9 +211,43 @@ const NON_PROJECT_SCOPED_TABLES = {
  * holds, and the adapter asks it only when the caller can read no `app_settings` row. It takes the
  * project as a required argument, so it is held to check 4.
  *
+ * `contestant_app_public_config` returns five stored settings values of one project and never a
+ * row: whether the Contestant app is accessible, whether answers are locked, the entity types it
+ * serves, its registration modes and whether usage events are tracked. The adapter asks it only when
+ * the caller can read no `app_settings` row and the project is not open for voters. It takes the
+ * project as a required argument, so it is held to check 4.
+ *
  * `user_can` returns only a boolean about the caller's own grants claim, and the admin writer asks it
  * of the adapter's own project. Its target argument is `p_target_id`, not `p_project_id`, so it is
  * dispositioned by identity rather than held to check 4's key test.
+ *
+ * `claim_invitations` returns, to the signed-in caller alone, the grants it wrote for that caller's
+ * own confirmed address from the open invitations of one project, the promises it left open and
+ * whether the caller has a password. It takes the project as a required argument and no other, so it
+ * is held to check 4.
+ *
+ * `get_user_project_grants` returns, to the signed-in caller alone, the caller's own grants that
+ * reach one project: a project grant on it, an entity grant on one of its entities, a global grant
+ * and an account grant on its account. It takes the project as a required argument and no other, so
+ * it is held to check 4.
+ *
+ * `get_entity_nominations` returns the nominations of one entity the caller edits in one project,
+ * each with the names of its election, its constituency and the entity it is nominated under, and
+ * NULL for every other entity. It takes the project as a required argument beside the entity's type
+ * and id, and reads nominations of that project alone, so it is held to check 4.
+ *
+ * `get_nomination_parent_options` returns the organizations or the alliances of one project that a
+ * nomination of one entity the caller edits in that project may be placed under, each with its type,
+ * names, colour and image and the contests asked about at which it is nominated, and NULL for every
+ * other entity. It takes the project as a required argument beside the entity's type and id, and
+ * reads entities and nominations of that project alone, so it is held to check 4.
+ *
+ * `set_entity_nominations` writes the nominations of the one entity named by its type and id, and the
+ * nominations it creates for the entities named as their parents. It takes no project: it runs with
+ * the caller's own rights, refuses a caller who does not hold `nomination.edit` on the named entity,
+ * and every row it reads or writes passes the row-level security of `nominations`, which holds a
+ * nomination to the project of its entity, its election and its constituency. It is dispositioned by
+ * identity, as `upsert_answers` is.
  */
 const PROJECT_SCOPED_RPCS = {
   get_nominations: 'requires p_project_id',
@@ -231,14 +265,16 @@ const PROJECT_SCOPED_RPCS = {
  *
  * A static source guard cannot see inside an Edge Function body either, so a function's scoping is a
  * written claim. `requires a project term` means the invocation must carry the project it is for:
- * check 7 asserts a `projectId` or `project_id` key in the argument text, because the live call
- * sites use both spellings. `scoped-by-deployment: …` means the function resolves its project from
- * the named deployment variable and refuses a body project term naming any other project, so its
- * payload carries no project term by design.
+ * check 7 asserts a `projectId` or `project_id` key in the argument text and accepts either
+ * spelling.
  *
  * There is no UNSCOPED value: a function whose queries carry no project term is fixed before it is
  * dispositioned. The map is keyed by function name because the disposition belongs to the function,
  * whichever file invokes it.
+ *
+ * `account-access` and `identity-callback` read no project from their environment and act in the
+ * project their request names, because one edge runtime serves every project of a deployment and
+ * the frontend, not the function, knows which one a visitor is in.
  */
 const PROJECT_SCOPED_EDGE_FUNCTIONS = {
   'invite-candidate': 'requires a project term',

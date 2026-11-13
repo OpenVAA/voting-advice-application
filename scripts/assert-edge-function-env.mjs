@@ -11,7 +11,7 @@
  * DERIVED, NOT TRANSCRIBED. The required set is read from the function sources at run time,
  * anchored on the two primitives that do the enforcing:
  *
- *   - `requireEnv('NAME', …)`            — `functions/identity-callback/envConfig.ts`
+ *   - `requireEnv('NAME', …)`            — `functions/_shared/envConfig.ts`
  *   - `requireVerifyClaimBinding(a, b)`  — `functions/identity-callback/verifyConfig.ts`, whose two
  *                                          arguments are the audience and issuer reads
  *

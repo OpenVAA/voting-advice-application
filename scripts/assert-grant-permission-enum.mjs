@@ -29,8 +29,8 @@
  *   3. `packages/supabase-types/src/database.ts`, which `yarn db:types` GENERATES from the applied
  *      database.
  * Channel 2 says what was declared. Channel 3 says what reached PostgreSQL. A declaration that was
- * edited but never regenerated into `migrations/00001_initial_schema.sql`, or regenerated but never
- * applied, disagrees with channel 3 and agrees with channel 2 — so the pair distinguishes "the
+ * edited but never written as a migration, or written as one but never applied, disagrees with
+ * channel 3 and agrees with channel 2 — so the pair distinguishes "the
  * declaration is wrong" from "the declaration never took effect", which one channel cannot.
  *
  * DIFFERENCES ARE REPORTED BY NAME AND IN BOTH DIRECTIONS, as separate findings. A single "the sets

@@ -25,6 +25,10 @@
  *   Check 2 — turbo execution:   a workspace that declares `test:unit` MUST actually be executed
  *             by `turbo run test:unit`. Without it, the declaration is the same empty
  *             claim. (UNIT-02 / D-17)
+ *   Check 3 — suites outside the workspaces: a Vitest suite kept under a directory that is not a
+ *             workspace MUST be run by a root script of its own, and the root `test:unit` script
+ *             MUST chain that script. Turbo fans out to workspaces only, so Checks 1 and 2 cannot
+ *             see such a suite at all.
  *
  * Check 1 alone would pass a tree where every workspace declares the script and turbo runs none
  * of them; Check 2 alone would pass a tree where the test-bearing workspaces declare nothing at
