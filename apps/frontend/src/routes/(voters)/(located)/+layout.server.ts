@@ -16,7 +16,7 @@ import { SUPABASE_COOKIE_PREFIX } from '$lib/api/dataProvider';
 import type { UniversalCookie } from '$lib/api/dataProvider';
 
 export async function load({ cookies }) {
-  // ⚠ THE FILTER BELOW IS A DATA-PROTECTION BOUNDARY, NOT A TIDINESS MEASURE, and the reasoning is the same one written out at `routes/+layout.server.ts`. Everything a server load returns is serialised into the HTML and is readable by client JavaScript. The unfiltered read on the next line also yields the bank-auth `id_token`, the OIDC `oidc_state` and `oidc_nonce` replay/CSRF guards, and the preregister pair — all set `httpOnly: true` — and serialising any of them would defeat that flag outright. `requestCookies` is a LOCAL and never a return value; only `supabaseCookies` leaves this function.
+  // ⚠ THE FILTER BELOW IS A DATA-PROTECTION BOUNDARY, NOT A TIDINESS MEASURE, and the reasoning is the same one written out at `routes/+layout.server.ts`. Everything a server load returns is serialised into the HTML and is readable by client JavaScript. The unfiltered read on the next line also yields the OIDC `oidc_state` and `oidc_nonce` replay/CSRF guards, the `oidc_code_verifier` PKCE companion, the `oidc_entity_type` selector and the `identity_provider_arrival` marker — all set `httpOnly: true` — and serialising any of them would defeat that flag outright. `requestCookies` is a LOCAL and never a return value; only `supabaseCookies` leaves this function.
   const requestCookies = cookies.getAll();
   const supabaseCookies: Array<UniversalCookie> = requestCookies
     .filter(({ name }) => name.startsWith(SUPABASE_COOKIE_PREFIX))

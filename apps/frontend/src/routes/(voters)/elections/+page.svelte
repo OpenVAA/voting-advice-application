@@ -63,7 +63,7 @@ See `+page.ts` for possible redirects.
 
   let canSubmit = $derived(selected?.length > 0);
 
-  // Async + awaited so the click handler reports navigation errors instead of swallowing them. Prior implementation `function handleSubmit(): void` discarded the goto() promise — when SvelteKit's client-side navigation raced with a $effect (e.g. a stores' `.set()` triggered on first click hydration) goto() resolved to undefined and the URL never changed (multi-election.spec.ts:173 documents the same flake). The Array.from copy decouples the URL builder from the $state proxy on `selected` so qs.stringify sees a plain array.
+  // The navigation is awaited, so that an error of it reaches the click handler and the handler does not return before the address has changed. The `Array.from` copy hands the route builder a plain array and not the `$state` proxy on `selected`.
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
     const electionId = Array.from(selected);
