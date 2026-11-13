@@ -467,6 +467,40 @@ run "security_groups" {
   }
 }
 
+# EC2 accepts a security group's or a rule's description only when it is shorter than 256 characters
+# and drawn from a-zA-Z0-9, space and ._-:/()#,@[]+=&;{}!$*. It refuses any other one at apply time,
+# after the resources before it have been created, so the mocks would let it through to a real apply.
+# A debug address is set so that the debug rules exist and are checked too.
+run "descriptions_use_the_ec2_character_set" {
+  command = apply
+
+  variables {
+    debug_ingress_cidrs = ["203.0.113.7/32"]
+  }
+
+  assert {
+    condition = alltrue([
+      for description in concat(
+        [
+          aws_security_group.load_balancer.description,
+          aws_security_group.task.description,
+          aws_vpc_security_group_ingress_rule.load_balancer_from_cloudfront.description,
+          aws_vpc_security_group_egress_rule.load_balancer_to_task.description,
+          aws_vpc_security_group_ingress_rule.task_from_load_balancer.description,
+          aws_vpc_security_group_egress_rule.task_https.description,
+        ],
+        [for r in aws_vpc_security_group_ingress_rule.load_balancer_debug : r.description],
+      ) : can(regex("^[a-zA-Z0-9. _:/()#,@\\[\\]+=&;{}!$*-]{0,255}$", description))
+    ])
+    error_message = "Every security group and rule description must be under 256 characters of a-zA-Z0-9, space and ._-:/()#,@[]+=&;{}!$*, which EC2 accepts."
+  }
+
+  assert {
+    condition     = length(aws_vpc_security_group_ingress_rule.load_balancer_debug) == 2
+    error_message = "The debug address must open its two rules, so that their descriptions are checked."
+  }
+}
+
 run "network" {
   command = apply
 

@@ -153,7 +153,7 @@ data "aws_ec2_managed_prefix_list" "cloudfront" {
 # group's 60 rules, so this is the only rule that names it, for 443 alone.
 resource "aws_vpc_security_group_ingress_rule" "load_balancer_from_cloudfront" {
   security_group_id = aws_security_group.load_balancer.id
-  description       = "HTTPS from CloudFront's origin-facing addresses."
+  description       = "HTTPS from the CloudFront origin-facing prefix list."
   ip_protocol       = "tcp"
   from_port         = 443
   to_port           = 443
