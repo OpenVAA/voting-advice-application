@@ -379,11 +379,11 @@ SELECT
   );
 
 -- =====================================================================
--- Section 8: get_candidate_user_data answers for ONE project, named by the caller
+-- Section 8: get_entity_user_data answers for ONE project, named by the caller
 --
--- An identity may hold candidate rows in several projects. candidate_a is given a second candidate row in project B, with an editor grant on it, so the identity is the editor of one candidate in each project -- the project argument is then the only thing that can pick one.
+-- An identity may hold candidate rows in several projects. candidate_a is given a second candidate row in project B, with an editor grant on it, so the identity is the editor of one candidate in each project. Both candidates are then asked for under each project in turn, and the project argument is the only thing that picks one.
 --
--- The function reads the grant rows, not the token, and create_test_data() writes none, so candidate_a's own rows are written here before the project B row joins them.
+-- The function reads the grant rows as well as the token, and create_test_data() writes none, so candidate_a's own rows are written here before the project B row joins them.
 -- =====================================================================
 SELECT
   test_seed_identity_grants ('candidate_a');

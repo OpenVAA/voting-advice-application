@@ -4,9 +4,10 @@
 --   - validate_answer_value: rejects malformed answer data by type
 --   - validate_answers_jsonb: smart trigger only validates changed keys
 --   - validate_nomination: rejects invalid hierarchy and mismatched election/constituency
+--   - nomination_shape_rule, validate_nomination and nominations_parent_required: the election-type rule, cell by cell and for every role
 --   - enforce_external_id_immutability: blocks external_id changes once set
 --
--- Tests run as postgres role since triggers fire regardless of role, and we need to bypass RLS for test data manipulation.
+-- Tests run as postgres role since triggers fire regardless of role, and we need to bypass RLS for test data manipulation. Section 12 also writes as a project administrator, as an entity's own editor and as the service role, to show that the election-type rule exempts none of them.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.)
 --             000-functions.sql (validate_answer_value, validate_nomination) 006-answers-jsonb.sql (validate_answers_jsonb trigger) 015-external-id.sql (enforce_external_id_immutability trigger)

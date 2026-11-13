@@ -3,7 +3,7 @@
 -- Verifies that an organization admin (an `(entity, organization, org_a, editor)` grant) can read and update their own organization, see their organization's candidates, but cannot insert/delete organizations, modify candidates, or access admin-only tables.
 --
 -- Organization admin access patterns (from 302-rls.sql):
--- - organizations SELECT and candidates SELECT (`authenticated_select_*`): `user_can('project', project_id, 'project.read_entities')` OR the public disjunct `project_open_for_voters(project_id) AND confirmed AND entity_has_confirmed_nomination(<type>, id, project_id)`, assembled in the qual, OR `user_can('entity', id, 'entity.read_answers', <type>)`. The two predicates are one expression modulo the table name, the entity-type literal and the two terms-of-use conjuncts only `candidates` carries.
+-- - organizations SELECT and candidates SELECT (`authenticated_select_*`): `user_can('project', project_id, 'project.read_entities')` OR the public disjunct `project_open_for_voters(project_id) AND confirmed AND entity_has_confirmed_nomination(<type>, id, project_id)`, assembled in the qual, OR `user_can('entity', id, 'entity.read_answers', <type>)`. The two predicates are one expression modulo the table name and the entity-type literal.
 -- - A nominating parent reads its child's basic data through `get_entity_basic_data` (503-entity-rpcs.sql) and never through a row policy, because a row policy discloses the whole row, answers included. Section 5c asserts both halves.
 -- - organizations UPDATE (`entity_update_own_organizations`): `user_can('entity', id, 'entity.edit_answers', 'organization')`.
 -- - organizations INSERT/DELETE and all `admin_*` policies: `user_can('project', project_id, 'project.edit_entities')`, which an organization grantee does not hold.
@@ -273,7 +273,7 @@ SELECT
 -- =====================================================================
 -- TEST A above is the control. Nadia is in project A but nominated nowhere, so she is outside organization_a's nomination hierarchy and stays invisible, which proves the parent reach is not a project-wide read.
 --
--- TEST C is the subject. Nora is unconfirmed and nominated under organization_a's own nomination, and her row is refused, because a row policy would return the whole row (answers, terms_of_use_accepted, custom_data) to her parent's editor. Her basic data is served by `get_entity_basic_data`, which asks the same `user_can` question and returns an allow-listed projection; the assertions below cover both halves and a non-parent control.
+-- TEST C is the subject. Nora is unconfirmed and nominated under organization_a's own nomination, and her row is refused, because a row policy would return the whole row (answers, custom_data) to her parent's editor. Her basic data is served by `get_entity_basic_data`, which asks the same `user_can` question and returns an allow-listed projection; the assertions below cover both halves and a non-parent control.
 SELECT
   reset_role ();
 
@@ -330,7 +330,7 @@ SELECT
     'TEST C: an organization-role caller CANNOT SELECT the row of a non-public, unconfirmed candidate nominated under its own nomination -- a row policy would disclose the whole row, answers included'
   );
 
--- The reach itself survives, as a column projection: get_entity_basic_data answers the parent with the child's basic data and WITHOUT the answers, terms_of_use_accepted or custom_data keys.
+-- The reach itself survives, as a column projection: get_entity_basic_data answers the parent with the child's basic data and WITHOUT the answers or custom_data keys.
 SELECT
   ok (
     (
@@ -407,9 +407,7 @@ SELECT
     'TEST B: the candidates SELECT qual delegates to user_can, does NOT carry the nomination.read row reach, calls BOTH public-visibility helpers directly, and re-derives none of the four predicates the policy must not name -- nor the entity_is_anon_visible composition'
   );
 
--- The companion that keeps TEST B from being satisfiable by a policy that simply removed everything: the organizations and candidates SELECT predicates are the same expression modulo the table name, the entity-type literal and the two terms-of-use conjuncts only `candidates` carries.
---
--- The strip cannot be vacuous. The next assertion counts the entity-table SELECT policies whose qual carries the stripped term and pins it at two, `anon_select_candidates` and `authenticated_select_candidates`, so a strip that matched nothing, or a terms-of-use conjunct on another table, fails there.
+-- The companion that keeps TEST B from being satisfiable by a policy that simply removed everything: the organizations and candidates SELECT predicates are the same expression modulo the table name and the entity-type literal.
 SELECT
   is (
     (

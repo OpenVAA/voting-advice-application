@@ -3,7 +3,6 @@
 -- Asserts:
 -- - the customization JSONB column on app_settings
 -- - the feedback table with its CHECK constraint, RLS and rate limiting
--- - the terms_of_use_accepted timestamptz column on candidates
 -- - the upsert_answers RPC (merge/overwrite modes, null stripping, RLS), for candidates and organizations
 -- - the admin_jobs table with admin-only RLS
 -- - the merge_question_custom_data RPC for question custom_data JSONB merge
@@ -387,7 +386,7 @@ SELECT
   );
 
 -- =====================================================================
--- terms_of_use_accepted column on candidates
+-- upsert_answers RPC
 -- =====================================================================
 SELECT
   reset_role ();

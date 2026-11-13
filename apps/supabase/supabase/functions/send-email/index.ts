@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
 
     // THE PERMISSION BULK SEND ASKS FOR IS `project.edit_entities`, ON THE PROJECT NAMED IN THE REQUEST. That is the operator's ruling of 2026-09-16, and it is an existing member of the permission vocabulary, so nothing is widened to accommodate this gate. No entity grant holds it, which is what keeps a candidate or an organization editor from mailing every recipient in the project.
     //
-    // THE DECISION IS THE DATABASE'S, asked through the caller's own token (162-REVIEW WR-09, WR-02). This used to be a TypeScript copy of the matrix over the raw `grants` claim, and its account arm admitted an account admin of ANY account because resolving which account owns the project is a reach rule only `user_can` holds. SPEC section 9 forbids the second copy; the invite-candidate gate asks the same function the same way.
+    // THE DECISION IS THE DATABASE'S, asked through the caller's own token. A TypeScript copy of the matrix over the raw `grants` claim cannot make it: resolving which account owns the project is a reach rule only `user_can` holds, so a copy's account arm admits an account admin of ANY account.
     //
     // A non-string or blank project_id is a denial inside the helper, before any round trip -- so an absent value can never compare equal to anything. The request's project_id is additionally required to match this deployment's configured project, just below.
     const mayBulkSend = await callerMayOnProject(callerClient, project_id, 'project.edit_entities');

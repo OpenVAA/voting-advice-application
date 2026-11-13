@@ -1297,9 +1297,7 @@ SELECT
 
 -- For each verb family the four policy expressions, with the table name and the table's own entity-type literal replaced by placeholders, must be ONE string. That makes "no predicate names a single entity type where it could take one as an argument" a checkable property of the applied database.
 --
--- The SELECT family also strips the two terms-of-use conjuncts, because `candidates` alone carries them and they are a property of that table. The assertion after it pins the stripped term to exactly two of the eight entity SELECT policies, so the strip cannot be vacuous, and 25-matrix-conformance.test.sql holds the eight public-visibility assemblies identical.
---
--- The other four families collapse to one string with no strip at all.
+-- All five families collapse to one string under those two replacements alone, and 25-matrix-conformance.test.sql holds the eight public-visibility assemblies identical.
 SELECT
   is (
     (
