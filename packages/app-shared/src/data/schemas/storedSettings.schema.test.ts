@@ -1,7 +1,7 @@
 /**
  * `StoredSettingsSchema` — the stored shape of the `app_settings.settings` JSONB column.
  *
- * Covers the `{}` case the column's `'{}'::jsonb` default and the provider's `PGRST116` branch both produce, a representative real payload (the package's own shipped `dynamicSettings`), the locale-object notification fields, and one unknown-key rejection per nesting level: top level, `notifications`, and `notifications.candidateApp`.
+ * Covers the `{}` case the column's `'{}'::jsonb` default and the provider's `PGRST116` branch both produce, a representative real payload (the package's own shipped `dynamicSettings`), the locale-object notification fields, one unknown-key rejection per nesting level (top level, `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp` and `contestantApp.registrationModes`), the one member of `analytics` and the stored provider member it rejects, the two list members of `contestantApp` — what parses, what each parses to, and the path each rejection names — and the two keys `access.nominationsLocked` and `entities.hideIfMissingAnswers.organization`, with their shipped defaults.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -52,7 +52,7 @@ describe('StoredSettingsSchema', () => {
     expect(result.success && result.data.matching?.minimumAnswers).toBe(1);
   });
 
-  // REGRESSION (157-18). `analytics` is declared on `StaticSettings`, not on `DynamicSettings`, and was therefore missing from this strict schema — so every stored blob carrying it was rejected wholesale and, via the provider's degrade-to-`{}`, stripped of every unrelated setting. Both stored shapes are pinned: the `trackEvents`-only overlay 23 perm templates write through `MINIMAL_BASE_APP_SETTINGS`, and the full `platform` object `perm-analytics-tracking` writes to arm the frontend's analytics integration.
+  // `analytics` must be part of this strict schema: without it every stored blob carrying it is rejected wholesale and, via the provider's degrade-to-`{}`, stripped of every unrelated setting. The stored shape is pinned: the `trackEvents`-only overlay 23 perm templates write through `MINIMAL_BASE_APP_SETTINGS` and `perm-analytics-tracking` writes with `true`.
   it('accepts a `trackEvents`-only `analytics` overlay, and keeps its SIBLING settings', () => {
     const result = StoredSettingsSchema.safeParse({
       questions: { questionsIntro: { show: false, allowCategorySelection: false } },
