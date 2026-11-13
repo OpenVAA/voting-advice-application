@@ -14,11 +14,11 @@
       "plural": "candidates",
       "singular": "candidate"
     },
-    "candidatePortrait": "Portrait",
     "clear": "Clear",
     "close": "Close",
     "closeDialog": "Close dialog",
     "closeMenu": "Close menu",
+    "color": "Colour",
     "confirmed": "Confirmed",
     "constituency": "Constituency",
     "continue": "Continue",
@@ -31,7 +31,12 @@
       "organization": "Election Symbol"
     },
     "email": "Email",
+    "emailConfirmation": "Confirm email",
     "emailPlaceholder": "Email",
+    "entityImage": {
+      "candidate": "Portrait",
+      "organization": "Logo"
+    },
     "expandOrCollapse": "Expand or collapse this section",
     "faction": {
       "plural": "factions",
@@ -46,12 +51,17 @@
     "lastName": "Surname",
     "loading": "Loading…",
     "locked": "Locked",
+    "loggedOutAutomatically": "You have been logged out automatically, because a logout you started was not cancelled in time.",
+    "loggedOutElsewhere": "You have been logged out in another tab or window.",
     "login": "Sign in",
     "logout": "Log Out",
+    "logoutFailed": "We could not confirm that you were logged out. You may still be logged in, so please try again.",
+    "logoutUnsavedChanges": "You have unsaved changes. They will be lost if you log out.",
     "madeWithPrefix": "Made with",
     "madeWithSuffix": "",
     "missingAnswer": "—",
     "multipleAnswerSeparator": " • ",
+    "name": "Name",
     "nomination": "Nomination",
     "openCloseMenu": "Toggle menu",
     "openMenu": "Open menu",
@@ -63,7 +73,6 @@
     },
     "password": "Password",
     "passwordConfirmation": "Confirm password",
-    "pending": "Pending",
     "primaryActions": "Primary actions",
     "privacy": {
       "dataCollection": {
@@ -82,9 +91,9 @@
     "saveAndContinue": "Save and Continue",
     "saveAndReturn": "Save and Return",
     "saving": "Saving…",
+    "shortName": "Abbreviation",
     "showFullImage": "Show full image",
     "skipToMain": "Skip to main content",
-    "state": "State",
     "success": "Action succesful!",
     "thanksNo": "No Thanks",
     "unaffiliated": "Unaffiliated",
