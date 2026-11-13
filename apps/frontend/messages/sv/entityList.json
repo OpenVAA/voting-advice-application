@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "Filtren gav inga träffar. Du kan försöka ändra dem.",
+      "noSearchResults": "Sökningen gav inga träffar. Du kan försöka ändra det.",
+      "searchPlaceholder": "Sök efter namn",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=1": "Visar 1 resultat",
+            "numShown=*": "Visar {numShown} resultat"
+          }
+        }
+      ]
+    },
+    "showMore": "Visa mer"
+  }
+}

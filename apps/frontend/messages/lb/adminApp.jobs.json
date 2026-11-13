@@ -1,0 +1,47 @@
+{
+  "adminApp.jobs": {
+    "title": "Kontrollpanel fir d’Administratioun",
+    "emergencyCleanup": "Noutfall-Opraumen",
+    "features": {
+      "ArgumentCondensation": {
+        "title": "Zesummefaassung vun Argumenter"
+      },
+      "QuestionInfoGeneration": {
+        "title": "Generéierung vun Informatiounen iwwer d’Froen"
+      }
+    },
+    "confirmAbortAll": "Sidd Dir sécher, datt Dir ALL lafend Aufgabe wëllt ofbriechen?",
+    "authRequired": "Authentifizéierung erfuerderlech",
+    "abortAllFailed": "D’Noutfall-Opraumen ass feelgeschloen. Kuckt an der Konsol no fir Detailer.",
+    "systemHealth": "Systemzoustand",
+    "activeJobs": "Aktiv Aufgaben",
+    "successfulJobs": "Erfollegräich Aufgaben",
+    "failedJobs": "Feelgeschloen Aufgaben",
+    "abortedJobs": "Ofgebrach Aufgaben",
+    "abortingInfo": "Ofbroch ugefrot. Et gëtt gewaart, bis de Prozess gestoppt ass a sécher opgeraumt huet.",
+    "abortJob": "Aufgab ofbriechen",
+    "pastJobs": "Vergaangen Aufgaben",
+    "hidePastJobs": "Vergaangen Aufgabe verstoppen",
+    "showPastJobs": "Vergaangen Aufgabe weisen",
+    "pastJobsDescription": "Vergaangen Aufgaben",
+    "noActiveJobs": "Keng aktiv Aufgaben",
+    "noPastJobs": "Keng vergaangen Aufgaben",
+    "started": "Ufank",
+    "messages": "Messagen",
+    "notAvailable": "n. v.",
+    "confirmAbortJob": "Sidd Dir sécher, datt Dir dës Aufgab ({feature}) wëllt ofbriechen?",
+    "abortJobFailed": "D’Aufgab konnt net ofgebrach ginn. Kuckt an der Konsol no fir Detailer.",
+    "alreadyRunning": "Et leeft schonn eng Aufgab. Waart wgl., bis se fäerdeg ass.",
+    "progress": "Fortschrëtt",
+    "warningsAndErrors": "Warnungen a Feeler",
+    "noWarningsOrErrors": "Keng Warnungen oder Feeler",
+    "infoMessages": "Informatiounsmessagen",
+    "noInfoMessages": "Keng Informatiounsmessagen",
+    "author": "Auteur",
+    "duration": "Dauer",
+    "aborting": "Gëtt ofgebrach…",
+    "hideMessages": "Messagen verstoppen",
+    "showMessages": "Messagen weisen",
+    "id": "ID"
+  }
+}

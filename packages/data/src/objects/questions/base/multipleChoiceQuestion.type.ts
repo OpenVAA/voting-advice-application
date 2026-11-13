@@ -1,7 +1,9 @@
 import type { ChoiceQuestionData, MultipleChoiceQuestionType } from '../../../internal';
 
-export interface MultipleChoiceQuestionData<TType extends MultipleChoiceQuestionType, TValue = number>
-  extends ChoiceQuestionData<TType, TValue> {
+export interface MultipleChoiceQuestionData<
+  TType extends MultipleChoiceQuestionType,
+  TValue = number
+> extends ChoiceQuestionData<TType, TValue> {
   // From HasId
   // - id: Id;
   //
@@ -32,8 +34,7 @@ export interface MultipleChoiceQuestionData<TType extends MultipleChoiceQuestion
   // - choices: Array<Choice<TValue>>;
 
   /**
-   * Whether or not the same choice can be selected multiple times. @defaultValue false
-   * NB. `allowDuplicates` is assumed `false` if `ordered` is `true`.
+   * Whether or not the same choice can be selected multiple times. @defaultValue false NB. `allowDuplicates` is assumed `false` if `ordered` is `true`.
    */
   allowDuplicates?: boolean | null;
   /**

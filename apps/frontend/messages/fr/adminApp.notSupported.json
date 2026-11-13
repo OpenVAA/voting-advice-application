@@ -1,0 +1,7 @@
+{
+  "adminApp.notSupported": {
+    "title": "Application d’administration non prise en charge",
+    "content": "L’application d’administration n’est pas prise en charge avec l’adaptateur de données actuel.",
+    "heroEmoji": "🔧"
+  }
+}

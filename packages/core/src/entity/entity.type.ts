@@ -9,9 +9,7 @@ export type Entity = HasAnswers;
  * The `MaybeWrappedEntity` type is used to enable universal handling of wrapped or naked `Entity`s.
  */
 export type MaybeWrappedEntity<TEntity extends Entity = Entity> =
-  | TEntity
-  | WrappedEntity<TEntity>
-  | MatchedEntity<TEntity>;
+  TEntity | WrappedEntity<TEntity> | MatchedEntity<TEntity>;
 
 /**
  * An `Entity` be wrapped in another object, e.g., when nominated.

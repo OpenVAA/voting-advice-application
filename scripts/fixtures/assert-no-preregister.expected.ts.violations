@@ -1,0 +1,18 @@
+# The exact findings `node scripts/assert-no-preregister.mjs --self-test` must report against
+# `assert-no-preregister.input.ts`, in line order: `path:line: matched text` for a content line, and
+# `path: path segment <segment>` for each segment of a judged path that holds the stem. Every line of the
+# fixture's POSITIVE blocks is here; no line of its NEGATIVE block is, so a guard that reported the
+# stored-settings key, the hyphenated or underscored form or the stem outside `apps/`, `packages/` and `tests/` would
+# differ from this file.
+scripts/fixtures/assert-no-preregister.input.ts:14: ContestantAppPreregisterEmail
+scripts/fixtures/assert-no-preregister.input.ts:15: contestantApp.preregister.title
+scripts/fixtures/assert-no-preregister.input.ts:16: /api/contestant/preregister
+scripts/fixtures/assert-no-preregister.input.ts:17: dataWriter.preregisterWithIdToken
+scripts/fixtures/assert-no-preregister.input.ts:18: contestantCtx.isPreregistered
+scripts/fixtures/assert-no-preregister.input.ts:19: PREREGISTER_ROUTE
+scripts/fixtures/assert-no-preregister.input.ts:20: CONTESTANT_PREREGISTRATION_ERROR
+apps/frontend/src/routes/contestant/preregister/+page.svelte: path segment preregister
+apps/frontend/messages/en/contestantApp.preregister.json: path segment contestantApp.preregister.json
+apps/frontend/src/routes/api/contestant/preregister/+server.ts: path segment preregister
+apps/frontend/src/lib/contestant/utils/preregistrationError.ts: path segment preregistrationError.ts
+tests/tests/fixtures/contestant/contestantPreregisterPage.fixture.ts: path segment contestantPreregisterPage.fixture.ts
