@@ -16,6 +16,8 @@ Internal to the `input` package — not exported from its barrel. See `./README.
 - Values are opaque strings: no numeric coercion, no dedup, no sorting, no case
   folding, no Unicode normalization.
 
+- When `multilingual`, each field and its language label carry `lang` set to their locale. Every field names `describedBy` in its `aria-describedby`.
+
 ### Properties
 
 See `MultipleTextPart.type.ts`.
@@ -24,6 +26,10 @@ See `MultipleTextPart.type.ts`.
 
 - `onChange`: triggered on every edit / add / remove / reorder with the filtered,
   order-preserving value array.
+
+### Bindable functions
+
+- `focus`: Moves focus to the first row's first field.
 
 ## Source
 
@@ -53,3 +59,16 @@ Each part has a co-located `<Part>.type.ts` prop contract in the house style —
 on every member, with a default marker on every optional one. The parts are imported by relative path
 from `Input.svelte`, matching `questions/OpinionQuestionInput.svelte`'s treatment of its own extracted
 siblings.
+
+**A part owns its element references.** `Input` returns focus to its first field after the
+translations toggle is pressed and after a selected option is deleted. The three parts that render
+such a field — `MultilingualTextPart`, `SelectMultiplePart` and `MultipleTextPart` — each keep their
+own `bind:this` references and export `focus()`; `Input` holds the rendered part through `bind:this`
+and calls that method. No element reference is passed to a part as a prop: a part that writes into a
+`$state` object its parent owns is reported by a dev build of Svelte as `ownership_invalid_mutation`.
+`Input.focusReturn.svelte.test.ts` holds both the focus return and the absence of that warning.
+
+**A part describes its controls.** `Input` renders the info line and the inline error under every
+kind, and hands each part their ids — after any `aria-describedby` its caller passed — as the
+`describedBy` prop. A part sets it as the `aria-describedby` of each control it renders.
+`Input.described.svelte.test.ts` holds that for every kind.

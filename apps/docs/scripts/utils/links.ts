@@ -248,7 +248,9 @@ export async function resolvePage(routePath: string, routesDir = ROUTES_DIR): Pr
 export type StubTarget = { target: string; error?: undefined } | { target?: undefined; error: string };
 
 /**
- * Parse the source of a redirect stub. A valid stub makes exactly one call `redirect(301 | 308, '<target>')` whose target is a single string literal starting with a single `/` (an internal route, no scheme, no `//`).
+ * Parse the source of a redirect stub. A valid stub makes exactly one call `redirect(301 | 308, '<target>')` whose target is a single string literal starting with a single `/` (an internal route, no scheme, no `//`), and declares `prerender` once, as `export const prerender = true`. Only declarations are counted: a comment may name `prerender`.
+ *
+ * The status is checked as the stub states it. The export makes the `adapter-static` build prerender the stub to a page that redirects by script and by `<meta http-equiv="refresh">`, so a client without JavaScript is redirected too; no status code is sent, as the host serves static files.
  */
 export function parseStubTarget(source: string): StubTarget {
   const calls = source.match(/\bredirect\s*\(/g) ?? [];
@@ -301,7 +303,7 @@ const BARE_GITHUB_SOURCE_URL =
 const HREF_ATTRIBUTE = /\bhref\s*=\s*(["'])(.*?)\1/g;
 
 /**
- * Extract every GitHub source link (`https://github.com/OpenVAA/voting-advice-application/(blob|tree)/main/<path>`) from markdown or Svelte source: markdown links (including `[text](<url>)` URLs containing `)` or `[[`), `href` attributes and bare URLs. Each occurrence is reported once.
+ * Extract every GitHub source link (`https://github.com/OpenVAA/voting-advice-application/(blob|tree)/main/<path>`, or the branch root with a `?query` or `#hash`) from markdown or Svelte source: markdown links (including `[text](<url>)` URLs containing `)` or `[[`), `href` attributes and bare URLs. A bare URL ends before the sentence punctuation that follows it. Each occurrence is reported once.
  */
 export function extractGithubSourceLinks(content: string): Array<MarkdownLink> {
   const found: Array<MarkdownLink> = [];
@@ -518,7 +520,7 @@ export function makeAbsoluteLink(linkUrl: string, currentFilePath: string, route
 }
 
 /**
- * Replace a link in markdown content
+ * Replace a link in markdown content, keeping the `[text](<url>)` form when the link was written in it
  */
 export function replaceLink(content: string, oldLink: MarkdownLink, newUrl: string): string {
   const newLinkMarkdown = `[${oldLink.text}](${newUrl})`;

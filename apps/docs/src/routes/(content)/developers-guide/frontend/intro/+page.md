@@ -1,6 +1,6 @@
 # Frontend overview
 
-The frontend is the `@openvaa/frontend` workspace in [`apps/frontend`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend). It is one SvelteKit application that serves three apps: the Voter App, the Candidate App and the Admin App.
+The frontend is the `@openvaa/frontend` workspace in [`apps/frontend`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend). It is one SvelteKit application that serves three apps: the Voter App, the Contestant App and the Admin App.
 
 ## Stack
 
@@ -19,11 +19,11 @@ SvelteKit reads its environment from the repo-root `.env`, because `kit.env.dir`
 
 Besides SvelteKit's own `$lib` (`src/lib`), `svelte.config.js` defines three aliases:
 
-| Alias        | Directory           |
-| ------------ | ------------------- |
-| `$types`     | `src/lib/types`     |
-| `$candidate` | `src/lib/candidate` |
-| `$layouts`   | `src/lib/layouts`   |
+| Alias         | Directory            |
+| ------------- | -------------------- |
+| `$types`      | `src/lib/types`      |
+| `$contestant` | `src/lib/contestant` |
+| `$layouts`    | `src/lib/layouts`    |
 
 Everything else in `src/lib` is imported through `$lib`, for example `$lib/contexts/voter` or `$lib/routes`.
 
@@ -35,7 +35,7 @@ In `apps/frontend/src/lib`:
 - `server/`: code that only runs on the server: the server-side data API with the local adapter, the Admin App's job features and the private constants.
 - `supabase/`: the Supabase client factories: `createSupabaseServerClient`, `createSupabaseBrowserClient`, `createSupabaseAnonClient` and the client for Admin App jobs.
 - `contexts/`: the Svelte contexts through which components read data and state. See [Contexts](/developers-guide/frontend/contexts).
-- `components/`, `dynamic-components/` and `candidate/components/`: the three component libraries. See [Components](/developers-guide/frontend/components).
+- `components/`, `dynamic-components/` and `contestant/components/`: the three component libraries. See [Components](/developers-guide/frontend/components).
 - `layouts/`: the app shell (`Layout`, `Header`, `MainContent` and the rest), imported from `$layouts/main`.
 - `routes/`: the route keys, the route builder and the app gates, imported from `$lib/routes`. See [Routing](/developers-guide/frontend/routing).
 - `i18n/`: the `t()` wrapper and the runtime translation overrides. See [Localization](/developers-guide/localization/intro).
@@ -55,7 +55,7 @@ Elsewhere in `apps/frontend`:
 
 1. `supabaseHandle` creates a Supabase server client for the request, with cookie-based auth. It puts the client on `event.locals` together with `safeGetSession`, which verifies the access token once per request.
 2. `paraglideHandle` runs Paraglide's middleware, sets `event.locals.currentLocale`, and fills the `%lang%` and `%projectId%` placeholders in `app.html`.
-3. `appGateHandle` matches the route id against the app gates in `$lib/routes`. It redirects a signed-in user away from a gated app's login page, and a user without a session away from the app's `(protected)` routes. It is a session gate, not a role gate: each app's protected layout decides whether the user may use the app.
+3. `appGateHandle` matches the route id against the app gates in `$lib/routes`. It redirects a signed-in user away from a gated app's entry routes (the Admin App's login page; the Contestant App's login, sign-in, registration and code screens and its identity provider's error screen), and a user without a session away from the app's `(protected)` routes. It is a session gate, not a role gate: each app's protected layout decides whether the user may use the app.
 
 [`hooks.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/hooks.ts) defines `reroute`, which removes the locale from the URL with Paraglide's `deLocalizeUrl`. This is why no route has a locale segment. See [Locale resolution](/developers-guide/localization/locale-resolution).
 
@@ -63,14 +63,14 @@ Both `hooks.server.ts` and `hooks.client.ts` also set the shared logger's level 
 
 ## The three apps
 
-| App           | Route root              | Routes with an extra condition                                                                         |
-| ------------- | ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| Voter App     | `src/routes/(voters)/`  | `(voters)/(located)/` redirects to the selection pages until elections and constituencies are selected |
-| Candidate App | `src/routes/candidate/` | `candidate/(protected)/` needs a signed-in session                                                     |
-| Admin App     | `src/routes/admin/`     | `admin/(protected)/` needs a signed-in session                                                         |
-| Server routes | `src/routes/api/`       | Each endpoint makes its own checks                                                                     |
+| App            | Route root               | Routes with an extra condition                                                                         |
+| -------------- | ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Voter App      | `src/routes/(voters)/`   | `(voters)/(located)/` redirects to the selection pages until elections and constituencies are selected |
+| Contestant App | `src/routes/contestant/` | `contestant/(protected)/` needs a signed-in session                                                    |
+| Admin App      | `src/routes/admin/`      | `admin/(protected)/` needs a signed-in session                                                         |
+| Server routes  | `src/routes/api/`        | Each endpoint makes its own checks                                                                     |
 
-See [Routing](/developers-guide/frontend/routing), the Candidate App pages, starting with [Pre-registration and invitation](/developers-guide/candidate-app/pre-registration-and-invitation), and the [Admin app](/developers-guide/admin-app).
+See [Routing](/developers-guide/frontend/routing), the Contestant App pages, starting with [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation), and the [Admin app](/developers-guide/admin-app).
 
 ## Workspace scripts
 

@@ -62,6 +62,6 @@ To start from a clean database instead, `yarn db:reset-with-data` resets the dat
 - The local email testing server, which catches every email the stack sends, is at <http://127.0.0.1:54324>.
 - [Running the development environment](/developers-guide/development/running-the-development-environment) explains the other `dev:*` and `db:*` scripts.
 - [Architecture](/developers-guide/architecture) shows how the packages and the backend fit together.
-- [Pre-registration and invitation](/developers-guide/candidate-app/pre-registration-and-invitation) is the first page on the Candidate app.
+- [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation) is the first page on the Contestant app.
 
 If something fails, see [Troubleshooting](/developers-guide/troubleshooting).

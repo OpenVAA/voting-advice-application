@@ -27,7 +27,7 @@ The database has a matching SQL function, `get_localized`, with the same fallbac
 
 ## Editing
 
-The Candidate App works with multi-locale data directly. The data writer's methods that write translations keep the raw locale objects instead of localizing them, and the `Input` component's multilingual text fields show one field per supported locale.
+The Contestant App works with multi-locale data directly. The data writer's methods that write translations keep the raw locale objects instead of localizing them, and the `Input` component's multilingual text fields show one field per supported locale.
 
 In components, `translate` from the contexts picks a translation from a `LocalizedString` that has not been localized yet. It uses the current locale by default, falls back to a soft match, then to the default locale and then to the first translation, and it ignores empty translations.
 

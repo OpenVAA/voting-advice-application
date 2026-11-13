@@ -12,8 +12,8 @@ The dialog itself is the app's `DrawerHost` (`$lib/components/modal/drawerHost`)
 ### Callback properties
 
 - `onOpen`: A callback function to be executed when the drawer is opened, mostly for tracking.
-- `onSectionCollapse`: A callback triggered when an info section is collapsed. Mostly used for tracking.
-- `onSectionExpand`: A callback triggered when an info section is expanded. Mostly used for tracking.
+- `onSectionCollapse`: A callback triggered when an info section is collapsed, with the section's localised title. Mostly used for tracking.
+- `onSectionExpand`: A callback triggered when an info section is expanded, with the section's localised title. Mostly used for tracking.
 
 ### Usage
 

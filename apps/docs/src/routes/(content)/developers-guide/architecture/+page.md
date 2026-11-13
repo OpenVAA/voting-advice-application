@@ -11,7 +11,7 @@ OpenVAA is a monorepo of Yarn workspaces: every directory under `packages/` and 
   - [`@openvaa/filters`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/filters) — filtering entities by their properties and answers
 - Application
   - [`@openvaa/app-shared`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/app-shared) — settings and utilities shared by the frontend and the dev tooling
-  - [`@openvaa/frontend`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend) — the SvelteKit app: the voter app, the [Candidate app](/developers-guide/candidate-app/pre-registration-and-invitation) and the [Admin app](/developers-guide/admin-app)
+  - [`@openvaa/frontend`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend) — the SvelteKit app: the voter app, the [Contestant app](/developers-guide/contestant-app/pre-registration-and-invitation) and the [Admin app](/developers-guide/admin-app)
   - [`@openvaa/supabase`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase) — the [backend](/developers-guide/backend/intro): schema, migrations, row-level security policies, Edge Functions and pgTAP tests
 - LLM features, used by the Admin app
   - [`@openvaa/llm`](https://github.com/OpenVAA/voting-advice-application/tree/main/packages/llm)
@@ -47,6 +47,6 @@ The frontend talks to Supabase directly, through `@supabase/supabase-js`. There 
 
 - **Reads.** A route calls `createDataProvider` and names where its Supabase client comes from: the request's own cookie-bearing client on the server, a client the caller already holds, or the browser tab's single client. The provider queries the database API with that client, so the caller's session and the database's row-level security decide what it can see. Queries on project-scoped tables are also limited to the project in `PUBLIC_PROJECT_ID`.
 - **Writes.** `createDataWriter`, `createAdminWriter` and `createFeedbackWriter` return the writers, built the same way, from the same three client sources.
-- **Edge Functions.** Steps that need privileges the browser must not have, such as bank-authentication callbacks, candidate invitations and email, run as [Edge Functions](/developers-guide/backend/edge-functions) inside Supabase.
+- **Edge Functions.** Steps that need privileges the browser must not have, such as bank-authentication callbacks, sign-in links for invited users and email, run as [Edge Functions](/developers-guide/backend/edge-functions) inside Supabase.
 
 `createDataProvider` always returns the Supabase data provider. The tree also holds a `local` server adapter, which reads JSON files from `LOCAL_DATA_DIR` and serves them through the `/api/data/[collection]` route, and an `apiRoute` adapter for reading that route. The server adapter is loaded only when `dataAdapter.type` in the [static settings](/developers-guide/configuration/static-settings) is `local`; it is `supabase`. [Data API and adapters](/developers-guide/frontend/data-api-and-adapters) describes the adapters in detail.

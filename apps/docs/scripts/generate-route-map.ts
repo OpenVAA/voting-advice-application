@@ -25,7 +25,8 @@ interface RouteNode {
 }
 
 /**
- * Main function
+ * Write the route map into the output directory.
+ * @param options.outputDir - Where the map's `README.md` is written.
  */
 async function main() {
   console.info('Generating route map...\n');
@@ -51,7 +52,7 @@ async function buildRouteTree(): Promise<RouteNode> {
     files: []
   };
 
-  // Get all route files
+  // Every directory that holds a route file
   const files = await glob(`${ROUTES_DIR}/**/*.{svelte,ts,js}`, {
     ignore: ['**/node_modules/**']
   });

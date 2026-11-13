@@ -7,7 +7,7 @@ In local development the Supabase CLI runs the whole stack on your machine. `yar
 ## Pages in this section
 
 - [Authentication and authorisation](/developers-guide/backend/authentication): sessions, grants, the access-token hook, row-level security and column grants.
-- [Edge Functions](/developers-guide/backend/edge-functions): `identity-callback`, `invite-candidate` and `send-email`.
+- [Edge Functions](/developers-guide/backend/edge-functions): `account-access`, `identity-callback` and `send-email`.
 - [Email](/developers-guide/backend/email): how the application and Supabase Auth send email, and where to read it locally.
 - [Data import and deletion](/developers-guide/backend/data-import-and-deletion): the bulk import and delete functions.
 - [Generated types](/developers-guide/backend/generated-types): the `@openvaa/supabase-types` package and `yarn db:types`.
@@ -15,12 +15,14 @@ In local development the Supabase CLI runs the whole stack on your machine. `yar
 
 ## Schema and migrations
 
-The SQL lives in two directories under `apps/supabase/supabase/`. You edit one of them, and the other is generated from it.
+The SQL lives in two directories under `apps/supabase/supabase/`. `schema/` is the schema as it is now, and `migrations/` is what a database is built from.
 
-| Directory     | What it is                                                                                                                                                                                                       |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `schema/`     | The source. Hand-edited SQL files, numbered by concern. The Supabase CLI never reads this directory, because `config.toml` sets `schema_paths = []`.                                                             |
-| `migrations/` | Generated. It holds exactly one file, `00001_initial_schema.sql`, which is the files of `schema/` concatenated in filename order. `supabase db reset` applies this file and nothing else. Never edit it by hand. |
+| Directory     | What it is                                                                                                                                                                                                                                                                                                                       |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema/`     | The current view of the schema. Hand-edited SQL files, numbered by concern. The Supabase CLI never reads this directory, because `config.toml` sets `schema_paths = []`.                                                                                                                                                         |
+| `migrations/` | What a database is built from: the frozen baseline `00001_initial_schema.sql`, then one appended migration per schema change, named by the next five-digit version, an underscore and a name, such as `00002_add_example.sql`. `supabase db reset` applies them in version order. A migration is never edited once it is listed. |
+
+Beside them, `migrations.manifest.json` lists every migration in version order with the sha256 of its bytes.
 
 The [`schema/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/schema) files are grouped by their number:
 
@@ -34,16 +36,17 @@ The [`schema/`](https://github.com/OpenVAA/voting-advice-application/tree/main/a
 | `500`–`505` | external ids, bulk operations, email helpers, entity functions, admin functions and question functions               |
 | `900`       | helper functions for the pgTAP tests                                                                                 |
 
-To change the schema:
+A schema change is one commit with three parts:
 
 1. Edit the `schema/` file that owns the concern.
-2. Run `yarn schema:regenerate` to rewrite `migrations/00001_initial_schema.sql` from `schema/`.
-3. Run `yarn db:reset` to recreate the local database from the regenerated migration.
-4. Run `yarn db:types` to regenerate the TypeScript types (see [Generated types](/developers-guide/backend/generated-types)).
+2. Write the same change as a new migration, `migrations/<version>_<name>.sql`. The version is the next five-digit number after the highest in the manifest, and the name is lower-case letters, digits and underscores. A file that `supabase migration new` names with a timestamp is renamed to the next number.
+3. Add the migration's line, with its sha256 from `shasum -a 256 <file>`, to the end of `migrations.manifest.json`.
 
-Commit the `schema/` edit, the regenerated migration and the regenerated types together, and read the regenerated migration diff before you commit: nothing else shows a policy or grant that changed by accident.
+Then run `yarn check:schema-equivalence`, which builds one database from `schema/` and one from `migrations/` and fails when the two differ. It needs Docker and is not part of `yarn lint:check`. Run `yarn db:reset` to recreate the local database from the migrations, and `yarn db:types` to regenerate the TypeScript types (see [Generated types](/developers-guide/backend/generated-types)); commit the types with the same change. Read the migration you wrote before you commit: nothing else shows a policy or grant that changed by accident.
 
-`yarn assert:schema-migration-parity`, which `yarn lint:check` runs, fails when the migration differs from the concatenated `schema/` files by a single byte, and also when a second `.sql` file appears in `migrations/`. It proves that the two are equal, not that either is correct.
+`yarn assert:schema-migration-parity`, which `yarn lint:check` runs, fails when a listed migration's bytes change, when a migration has no manifest line, and when versions repeat, go down or leave a gap. `yarn schema:regenerate` writes nothing: it refuses and prints these steps with the next file name. The check proves that the listed migrations are unchanged, not that either directory is correct.
+
+The two storage buckets are created by the migration. A deployment's own rows, such as its project, are written by `infra/scripts/bootstrap.sql`.
 
 ## Project scoping
 

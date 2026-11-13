@@ -2,9 +2,11 @@
 
 # Election selection component
 
-Display constituency selection inputs for elections.
+Display the elections to select from, each with a checkbox.
 
 If there's only one option, it is automatically selected and no interactions are allowed.
+
+Each election is a checkbox with the election's name beside it. A name longer than the space beside the checkbox wraps onto further lines instead of widening the selector.
 
 ### Properties
 

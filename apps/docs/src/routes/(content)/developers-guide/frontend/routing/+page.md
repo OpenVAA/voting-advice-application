@@ -8,15 +8,15 @@ No route has a locale segment. The locale prefix in a URL, such as `/fi/election
 
 ## The route tree
 
-| Directory                | Contents                                                                                                                                                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `(voters)/`              | The Voter App. The `(voters)` group adds no URL segment, so the Voter App's front page is `/`.                                                                                                             |
-| `(voters)/(located)/`    | The Voter App pages that need selected elections and constituencies: the questions and the results. Its `+layout.ts` redirects to the selection pages when the selection is missing and cannot be implied. |
-| `candidate/`             | The Candidate App: login, registration, pre-registration, password reset, help and privacy.                                                                                                                |
-| `candidate/(protected)/` | The Candidate App pages that need a signed-in session: profile, questions, preview and settings.                                                                                                           |
-| `admin/`                 | The Admin App's login page.                                                                                                                                                                                |
-| `admin/(protected)/`     | The Admin App pages that need a signed-in session: the dashboard, jobs, question info and argument condensation.                                                                                           |
-| `api/`                   | Server endpoints: the Admin App's job control, auth, the bank-authentication (OIDC) exchange, candidate pre-registration, `data/[collection]` and `feedback`.                                              |
+| Directory                 | Contents                                                                                                                                                                                                                             |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `(voters)/`               | The Voter App. The `(voters)` group adds no URL segment, so the Voter App's front page is `/`.                                                                                                                                       |
+| `(voters)/(located)/`     | The Voter App pages that need selected elections and constituencies: the questions and the results. Its `+layout.ts` redirects to the selection pages when the selection is missing and cannot be implied.                           |
+| `contestant/`             | The Contestant App: login, registration, the identity provider's error screen, password reset, help and privacy.                                                                                                                     |
+| `contestant/(protected)/` | The Contestant App pages that need a signed-in session: the app root, and under `[entityType]/[entityId]/` the pages of one entity. See [Entity selection and the entity routes](/developers-guide/contestant-app/entity-selection). |
+| `admin/`                  | The Admin App's login page.                                                                                                                                                                                                          |
+| `admin/(protected)/`      | The Admin App pages that need a signed-in session: the dashboard, jobs, question info and argument condensation.                                                                                                                     |
+| `api/`                    | Server endpoints: the Admin App's job control, auth, the bank-authentication (OIDC) exchange, the identity provider's registration endpoint, `data/[collection]` and `feedback`.                                                     |
 
 The `(protected)` group is defined once, as `PROTECTED_GROUP` in `$lib/routes`. The request hook redirects a user without a session away from any route whose id contains it. See [Request hooks](/developers-guide/frontend/intro#request-hooks).
 
@@ -24,10 +24,11 @@ The `(protected)` group is defined once, as `PROTECTED_GROUP` in `$lib/routes`. 
 
 [`$lib/routes`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/frontend/src/lib/routes) holds everything the app knows about its routes:
 
-- `ROUTE` in `route.ts` maps a route key, such as `Results` or `CandAppProfile`, to a SvelteKit route id. `Route` is the type of the keys.
-- `isCandidateRoute`, `isApiRoute` and `isProtectedRoute` in `route.ts`, and `isAdminRoute` in `appGates.ts`, decide membership from a route id, never from a URL path.
-- `APP_GATES` and `resolveAppGate` in `appGates.ts` are the table the request hook uses to gate the Candidate App and the Admin App.
+- `ROUTE` in `route.ts` maps a route key, such as `Results` or `ContestantAppProfile`, to a SvelteKit route id. `Route` is the type of the keys.
+- `isContestantRoute`, `isApiRoute` and `isProtectedRoute` in `route.ts`, and `isAdminRoute` in `appGates.ts`, decide membership from a route id, never from a URL path.
+- `APP_GATES` and `resolveAppGate` in `appGates.ts` are the table the request hook uses to gate the Contestant App and the Admin App.
 - `params.ts` lists the parameters, `parseParams.ts` reads them from the current page, and `impliedParams.ts` implies elections and constituencies that need not be selected.
+- `selectionOrder.ts` decides the order of the election and constituency selection: which step an address leads to. The Voter App's two selection pages and the Contestant App's nomination editor ask the same functions with different values; see [Defining nominations](/developers-guide/contestant-app/defining-nominations#the-order-of-the-steps).
 - `buildRoute.ts` builds URLs.
 
 `routeConsistency.test.ts` checks `ROUTE` against the route tree in `yarn test:unit`. When you add a route under a `(protected)` directory, also add a `ROUTE` entry for it. Two keys, `AdminAppJob` and `AdminAppFactorAnalysis`, have no page yet; the test lists them in `KNOWN_UNBUILT_PROTECTED_ROUTES`.

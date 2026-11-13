@@ -1,21 +1,45 @@
 # Email
 
-Two parts of the backend send email:
+Two Edge Functions send email, and Supabase Auth sends none:
 
-| Email                                 | Sent by                                                                            |
-| ------------------------------------- | ---------------------------------------------------------------------------------- |
-| Candidate invitation                  | Supabase Auth, when the `invite-candidate` Edge Function calls `inviteUserByEmail` |
-| Password recovery                     | Supabase Auth, when the Candidate App calls `resetPasswordForEmail`                |
-| Templated messages to a list of users | the `send-email` Edge Function, over SMTP                                          |
+| Email                                 | Sent by                                                                                                                                                                                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The sign-in link                      | the `account-access` Edge Function's `request-link` operation, over SMTP                                                                                                                                                        |
+| The recovery link                     | the `account-access` Edge Function's `request-recovery` operation, over SMTP                                                                                                                                                    |
+| The address-confirmation link         | the `account-access` Edge Function's `confirm-address` operation, over SMTP, for an account an identity provider created; see [Bank authentication](/developers-guide/contestant-app/bank-authentication#the-confirmation-mail) |
+| Templated messages to a list of users | the `send-email` Edge Function, over SMTP                                                                                                                                                                                       |
 
-## Supabase Auth email
+Creating an invitation sends nothing. A link is mailed when somebody asks for one, and only to an address the database returns for the request; see [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation#asking-for-a-sign-in-link).
 
-Supabase Auth sends the invitation and recovery messages with its own templates and its own mail settings.
+## Supabase Auth sends no mail
 
-- **Templates.** In `config.toml` the `[auth.email.template.*]` sections are commented out, so the local stack uses Supabase Auth's default templates. To customise one locally, uncomment its section and point `content_path` at an HTML file. For a hosted project, see Supabase's [email templates guide](https://supabase.com/docs/guides/auth/auth-email-templates).
-- **Links.** The links in these messages return to the `/api/candidate/auth/callback` route, which creates the session and redirects by link type (see [Authentication and authorisation](/developers-guide/backend/authentication#sessions)). The Candidate App passes that route as the redirect target of a recovery email. The auth server redirects only to `site_url` and the URLs in `additional_redirect_urls`, both set in the `[auth]` section of `config.toml` for the local stack.
-- **Confirmation.** `[auth.email]` sets `enable_confirmations = false`, so locally a user does not have to confirm an email address before signing in.
-- **SMTP.** `[auth.email.smtp]` is commented out in `config.toml`, so locally Supabase Auth delivers its email to the email testing server described below. A hosted project needs its own SMTP server for Auth email; see Supabase's [custom SMTP guide](https://supabase.com/docs/guides/auth/auth-smtp).
+The auth service hands every mail it would send to a hook instead of sending it. `[auth.hook.send_email]` in `config.toml` names `public.send_email_hook` ([`301-auth-functions.sql`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/schema/301-auth-functions.sql)), a function that takes the mail and sends none. Only `supabase_auth_admin` may execute it, because the event it receives holds an address and a token. The application's two mails are sent by `account-access` alone, behind the database's checks, its limits and its own texts.
+
+- **What the hook stops.** The auth service's own one-time-code, recovery, invitation and change-of-address mails. Nothing in the application asks the auth service itself to mail a one-time code, a recovery link, an invitation, a reauthentication or a change of address, and a test that needs a mail gets it through the Edge Function.
+- **What it does not change.** What the auth service's endpoints answer; see [Known residuals](/developers-guide/backend/authentication#known-residuals).
+- **A change of address** asked through the auth service gets no confirmation mail, so a user cannot complete one.
+- **Confirmation.** `[auth.email]` sets `enable_confirmations = true` and `[auth]` sets `enable_signup = false`, so an address is confirmed only by a mailed link, or by the service role when it creates the user; see [Who can create an account](/developers-guide/backend/authentication#who-can-create-an-account).
+- **A hosted project** adopts the hook in its dashboard; see [Auth settings of a hosted project](/developers-guide/deployment#auth-settings-of-a-hosted-project).
+
+## The sign-in link
+
+[`account-access`](/developers-guide/backend/edge-functions#account-access) mails one message, the sign-in link, when its `request-link` operation finds an address the database lets it mail.
+
+- **Text.** The subject and body are fixed in the function, in five parts (the subject, the sentence before the link, the link, the sentences that say the link works once, that only the newest link works and where to ask for a new one, and the sentence for a recipient who did not ask), in seven locales (`da`, `en`, `et`, `fi`, `fr`, `lb` and `sv`), in [`mailTemplates.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/functions/account-access/mailTemplates.ts). The request's `locale` picks one, and any other value gives `en`. The caller supplies no text, subject or sender.
+- **Link.** The message holds one link, `<SITE_URL>/<locale>/auth/confirm?token_hash=…&type=magiclink`, which opens the confirm page. Its origin is the function's `SITE_URL` and never a header of the request. A later link for the same address stops an earlier unopened one from working.
+- **Limit.** The database allows one mail per address and project in 60 seconds, and twenty per address a day in all projects together, a sign-in mail and a recovery mail counted together.
+
+## The recovery link
+
+The `request-recovery` operation of `account-access` mails one of two messages, or none, as the database function `recovery_link_request` decides for the address:
+
+- **An account that holds a grant reaching the project** is sent the recovery mail: a project grant on the project, an entity grant on one of its entities, any global grant, or an account grant on the project's account, whatever its role. Its link is `<SITE_URL>/<locale>/auth/confirm?token_hash=…&type=recovery`, minted for the existing account; no user is created. Whether the account has a password is not asked: opening the link stores none, and the page it leads to sets one.
+- **An address with an open invitation whose registration mode is allowed, and no account,** is sent the sign-in mail, because it has no password to recover. The function does for it what a sign-in request does, and creates the user without a password.
+- **Any other address** is sent nothing, and the caller's answer is the same.
+
+The recovery mail is fixed in [`mailTemplates.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/functions/account-access/mailTemplates.ts) in the same seven locales and the same five parts as the sign-in mail. Each locale's text names the control that asks for a new link by the label its message catalogue gives `contestantApp.login.forgotPassword`; `mailTemplates.test.ts` reads that label from the seven catalogues. A recovery link and a sign-in link share one slot per address, so a later link of either kind stops an earlier unopened one of either kind, and both mails say that only the newest link works.
+
+- **SMTP.** The function reads the same SMTP variables as `send-email`, described below, and `SMTP_FROM` is the sender.
 
 ## The `send-email` function
 
@@ -35,7 +59,7 @@ Supabase Auth sends the invitation and recovery messages with its own templates 
 
 A placeholder with no value for a recipient is left in the message as written.
 
-`send-email` reads its SMTP settings from the function environment (see [Edge Functions](/developers-guide/backend/edge-functions#configuration)):
+`send-email` and `account-access` read their SMTP settings from the function environment (see [Edge Functions](/developers-guide/backend/edge-functions#configuration)):
 
 | Variable                 | Use                                                     |
 | ------------------------ | ------------------------------------------------------- |
@@ -51,8 +75,8 @@ SMTP_PORT=1025
 SMTP_FROM=noreply@openvaa.org
 ```
 
-Without `SMTP_USER` and `SMTP_PASS` the function also accepts a server certificate it cannot verify, which is meant only for the local testing server.
+Without `SMTP_USER` and `SMTP_PASS` a function also accepts a server certificate it cannot verify, which is meant only for the local testing server.
 
 ## Reading email locally
 
-The local stack does not deliver email to real inboxes. Everything it sends, from Supabase Auth and from `send-email`, is caught by the email testing server configured in the `[inbucket]` section of `config.toml`. Read it in the server's web interface at [http://127.0.0.1:54324](http://127.0.0.1:54324) while the stack is running.
+The local stack does not deliver email to real inboxes. Everything it sends, from `send-email` and from `account-access`, is caught by the email testing server configured in the `[inbucket]` section of `config.toml`. Read it in the server's web interface at [http://127.0.0.1:54324](http://127.0.0.1:54324) while the stack is running.
