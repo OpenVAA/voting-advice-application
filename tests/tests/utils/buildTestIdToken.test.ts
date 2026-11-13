@@ -9,6 +9,7 @@ import * as jose from 'jose';
 import { describe, expect, it } from 'vitest';
 import { buildTestIdToken } from './buildTestIdToken';
 import { encPrivJwk, getTestKeys, sigPubJwk } from './testKeys';
+import { MOCK_AUDIENCE, MOCK_ISSUER } from '../support/mockOidcIssuer';
 
 const CLAIMS = {
   sub: 'test-sub-001',
@@ -37,13 +38,13 @@ describe('buildTestIdToken', () => {
     expect(payload.family_name).toBe(CLAIMS.family_name);
   });
 
-  it('defaults iss/aud to the back-compat test values', async () => {
+  it('defaults iss/aud to the mock issuer and its audience', async () => {
     const { sigPriv, encPubJwk } = await getTestKeys();
     const jwe = await buildTestIdToken(CLAIMS, sigPriv, encPubJwk);
 
     const { payload } = await decryptAndVerify(jwe);
-    expect(payload.iss).toBe('https://test-idp.example.com');
-    expect(payload.aud).toBe('test-client-id');
+    expect(payload.iss).toBe(MOCK_ISSUER);
+    expect(payload.aud).toBe(MOCK_AUDIENCE);
   });
 
   it('honours explicit opts.issuer/opts.audience', async () => {

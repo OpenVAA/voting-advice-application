@@ -16,6 +16,7 @@
  */
 
 import { expect, test } from '@playwright/test';
+import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 
@@ -32,14 +33,14 @@ test.describe('perm-access-disable (EPERM-11)', () => {
     // Restore the seed's shipped base posture so the singleton is clean for any downstream perm node (the per-app-notifications node re-points here).
     if (client) {
       await client.updateAppSettings({
-        access: { voterApp: false, candidateApp: true, underMaintenance: false }
+        access: { voterApp: false, contestantApp: true, underMaintenance: false }
       });
     }
   });
 
-  test('voterApp disabled: / + /elections show maintenance; /candidate available', async ({ page }) => {
+  test('voterApp disabled: / + /elections show maintenance; /contestant available', async ({ page }) => {
     await client.updateAppSettings({
-      access: { voterApp: false, candidateApp: true, underMaintenance: false }
+      access: { voterApp: false, contestantApp: true, underMaintenance: false }
     });
 
     // GET /en — maintenance page on the voter-app root route.
@@ -54,21 +55,21 @@ test.describe('perm-access-disable (EPERM-11)', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByTestId(testIds.voter.home.startButton)).toBeHidden();
 
-    // GET /en/candidate — NON-maintenance: candidate login page renders.
-    await page.goto('/en/candidate');
-    await expect(page.getByTestId(testIds.candidate.login.email)).toBeVisible();
+    // GET /en/contestant — NON-maintenance: the login screen renders.
+    await page.goto('/en/contestant');
+    await createContestantLoginPage(page).expectEntryShown();
   });
 
-  test('candidateApp disabled: /candidate shows maintenance; / + /elections available', async ({ page }) => {
+  test('contestantApp disabled: /contestant shows maintenance; / + /elections available', async ({ page }) => {
     await client.updateAppSettings({
-      access: { voterApp: true, candidateApp: false, underMaintenance: false }
+      access: { voterApp: true, contestantApp: false, underMaintenance: false }
     });
 
-    // GET /en/candidate — maintenance page on the candidate-app route.
-    await page.goto('/en/candidate');
+    // GET /en/contestant — maintenance page on the contestant-app route.
+    await page.goto('/en/contestant');
     await expect(page.getByRole('main')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByTestId(testIds.candidate.login.email)).toBeHidden();
+    await createContestantLoginPage(page).expectEntryNotShown();
 
     // GET /en — NON-maintenance: voter home renders with the start button visible.
     await page.goto('/en');
@@ -79,9 +80,9 @@ test.describe('perm-access-disable (EPERM-11)', () => {
     await expect(page.getByRole('main')).toBeVisible();
   });
 
-  test('underMaintenance: BOTH voter + candidate apps show maintenance simultaneously', async ({ page }) => {
+  test('underMaintenance: BOTH voter + contestant apps show maintenance simultaneously', async ({ page }) => {
     await client.updateAppSettings({
-      access: { voterApp: true, candidateApp: true, underMaintenance: true }
+      access: { voterApp: true, contestantApp: true, underMaintenance: true }
     });
 
     // GET /en — voter root under global maintenance: MaintenancePage, start hidden.
@@ -96,10 +97,10 @@ test.describe('perm-access-disable (EPERM-11)', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByTestId(testIds.voter.home.startButton)).toBeHidden();
 
-    // GET /en/candidate — candidate app under global maintenance: login HIDDEN.
-    await page.goto('/en/candidate');
+    // GET /en/contestant — contestant app under global maintenance: the login screen is not rendered.
+    await page.goto('/en/contestant');
     await expect(page.getByRole('main')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await expect(page.getByTestId(testIds.candidate.login.email)).toBeHidden();
+    await createContestantLoginPage(page).expectEntryNotShown();
   });
 });
