@@ -44,6 +44,7 @@ import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fi
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
 import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { routeUntilEnded } from '../../utils/endableRoute';
 import { testIds } from '../../utils/testIds';
 import { navigateToFirstQuestion, walkVoterStages } from '../../utils/voterNavigation';
 import type { BrowserContext, Page, Route, TestInfo } from '@playwright/test';
@@ -363,9 +364,10 @@ test.describe("the application's own send at page leave", () => {
 
 test.describe('the relay does not hold up the interface', () => {
   test('the interface does not wait for the relay', async ({ context, page }) => {
-    // Hold every request to the relay open until the end of the test.
+    // Hold every request to the relay open until the route is ended below.
     const held: Array<Route> = [];
-    await context.route(
+    const endHolding = await routeUntilEnded(
+      context,
       (url) => url.pathname === RELAY_PATH,
       (route) => {
         held.push(route);
@@ -388,8 +390,8 @@ test.describe('the relay does not hold up the interface', () => {
       .toContain('answer');
     expect(page.url(), 'the page is still on the results while the relay requests are held').toContain('/results');
 
-    // Release the held requests, then stop holding new ones.
+    // Stop holding new requests, then release the held ones.
+    endHolding();
     for (const route of held.splice(0)) await route.continue();
-    await context.unrouteAll({ behavior: 'wait' });
   });
 });
