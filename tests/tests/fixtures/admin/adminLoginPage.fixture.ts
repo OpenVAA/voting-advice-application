@@ -47,10 +47,12 @@ import { expect } from '@playwright/test';
 import { COOKIE } from '../../../../apps/frontend/src/lib/cookies/index';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { routeUntilEnded } from '../../utils/endableRoute';
 import { expectLabelInRow, expectLabelOnOneLine } from '../../utils/labelInRow';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
 import type { Locator, Page } from '@playwright/test';
+import type { EndRoute } from '../../utils/endableRoute';
 
 /**
  * Read a locale's messages of one namespace from the message source, rather than copying their strings.
@@ -177,6 +179,8 @@ export function createAdminLoginPage(page: Page) {
   const heading = page.getByRole('main').getByRole('heading', { level: 1 });
 
   let loginPageDataRequests = 0;
+  /** Ends each failure of the user data read that `failUserDataRead()` started and nothing has ended yet. */
+  const userDataReadFailureEnds: Array<EndRoute> = [];
 
   page.on('request', (request) => {
     if (new URL(request.url()).pathname.endsWith('/admin/login/__data.json')) loginPageDataRequests += 1;
@@ -375,14 +379,16 @@ export function createAdminLoginPage(page: Page) {
      * From now on answer the browser's read of the user data with a failure. This is the read that `getBasicUserData` makes last, and it runs in the browser on a client-side navigation, while a document request reads on the server, out of this step's reach. {@link restoreUserDataRead} ends it.
      */
     async failUserDataRead(): Promise<void> {
-      await page.route(isUserDataRead, (route) => route.fulfill(USER_DATA_READ_FAILURE));
+      userDataReadFailureEnds.push(
+        await routeUntilEnded(page, isUserDataRead, (route) => route.fulfill(USER_DATA_READ_FAILURE))
+      );
     },
 
     /**
      * End what {@link failUserDataRead} started: the read works again.
      */
     async restoreUserDataRead(): Promise<void> {
-      await page.unroute(isUserDataRead);
+      for (const end of userDataReadFailureEnds.splice(0)) end();
     },
 
     /**
