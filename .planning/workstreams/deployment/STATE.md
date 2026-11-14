@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: 185
-current_phase_name: AWS Frontend Stack, First Apply by Hand
+current_phase: 186
+current_phase_name: Deployed Smoke Entry
 current_plan: 1
-status: executing
-stopped_at: Phase 185 context gathered
-last_updated: "2026-11-12T13:05:05.987Z"
-last_activity: 2026-11-12
-last_activity_desc: Phase 185 execution started
-state_head: ee336dea37f567074f95338bcc5166b3a5ea4d5d
+status: planning
+stopped_at: Phase 185 complete, ready to plan Phase 186
+last_updated: "2026-11-14T19:31:58.516Z"
+last_activity: 2026-11-14
+last_activity_desc: Phase 185 complete, transitioned to Phase 186
+state_head: c8f0ab9e28bf2c09e3d142e26b713257eecdd0b4
 progress:
   total_phases: 10
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 129
-  completed_plans: 107
-  percent: 40
+  completed_plans: 129
+  percent: 50
 ---
 
 # Project State
@@ -33,12 +33,12 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 185 (AWS Frontend Stack, First Apply by Hand) — EXECUTING
-Plan: 1 of 22
-Status: Executing Phase 185
-Last activity: 2026-11-12 — Phase 185 execution started
+Phase: 186 — Deployed Smoke Entry
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-11-14 — Phase 185 complete, transitioned to Phase 186
 
-Progress: [████░░░░░░] 40% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
+Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
 ## Progress
 
@@ -50,7 +50,7 @@ From 184 on, the numeric order is the dependency order.
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 76
+- Total plans completed: 98
 - Average duration: 14 min
 - Total execution time: 0.2 hours
 
@@ -62,6 +62,7 @@ From 184 on, the numeric order is the dependency order.
 | 181 | 19 | - | - |
 | 183 | 28 | - | - |
 | 184 | 25 | - | - |
+| 185 | 22 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -328,5 +329,5 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 ## Session Continuity
 
 Last session: 2026-11-12T09:42:53.970Z
-**Stopped At:** Phase 185 context gathered
+**Stopped At:** Phase 185 complete, ready to plan Phase 186
 **Resume File:** .planning/workstreams/deployment/phases/185-aws-frontend-stack-first-apply-by-hand/185-CONTEXT.md

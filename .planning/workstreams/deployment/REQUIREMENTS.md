@@ -21,35 +21,35 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 
 ### INFRA — AWS infrastructure
 
-- [ ] **INFRA-01**: A deployer can push the production image to a registry whose tags are immutable and name the
+- [x] **INFRA-01**: A deployer can push the production image to a registry whose tags are immutable and name the
       commit that built them.
-- [ ] **INFRA-02**: The frontend runs as an ECS Fargate service behind an HTTPS application load balancer,
+- [x] **INFRA-02**: The frontend runs as an ECS Fargate service behind an HTTPS application load balancer,
       written as explicit Terraform resources, in two availability zones. The task floor is a variable: 1 for
       staging, 2 for the production-shaped settings (D1).
-- [ ] **INFRA-03**: The service is reached at a custom domain with a DNS-validated certificate, and HTTP is
+- [x] **INFRA-03**: The service is reached at a custom domain with a DNS-validated certificate, and HTTP is
       redirected to HTTPS.
-- [ ] **INFRA-04**: A health endpoint answers without calling Supabase, and the load balancer's health check
+- [x] **INFRA-04**: A health endpoint answers without calling Supabase, and the load balancer's health check
       uses it with a start-up grace period.
 - [x] **INFRA-05**: Runtime configuration reaches the task as environment, with secrets from a secret store. It
       includes `PUBLIC_PROJECT_ID`. The service-role key never reaches the frontend task. A start with a required
       variable unset fails and names the variable.
-- [ ] **INFRA-06**: The Node server is configured for its proxy (public origin, protocol and host headers,
+- [x] **INFRA-06**: The Node server is configured for its proxy (public origin, protocol and host headers,
       client-address header and depth), so that form posts succeed behind the load balancer and a spoofed
       forwarded address is not taken as the client's.
-- [ ] **INFRA-07**: The service scales between a floor and a ceiling, and a scheduled action can raise the floor
+- [x] **INFRA-07**: The service scales between a floor and a ceiling, and a scheduled action can raise the floor
       before a known peak.
-- [ ] **INFRA-08**: Container output is collected to a durable log store with a set retention period.
-- [ ] **INFRA-09**: A rollout is health-gated and rolls back by itself on failure, and a stopping task drains
+- [x] **INFRA-08**: Container output is collected to a durable log store with a set retention period.
+- [x] **INFRA-09**: A rollout is health-gated and rolls back by itself on failure, and a stopping task drains
       its requests. `SIGTERM` is shown to reach the Node process.
-- [ ] **INFRA-10**: State is remote and locked; each environment has its own variables and outputs; the AWS stack
+- [x] **INFRA-10**: State is remote and locked; each environment has its own variables and outputs; the AWS stack
       can be destroyed cleanly.
 - [x] **INFRA-11**: Roles are least-privilege and only the load balancer reaches the tasks. Tasks run in public
       subnets with no NAT gateway (D2).
-- [ ] **INFRA-12**: The stack is in `eu-north-1` by default, and the Supabase project's region is stated beside
+- [x] **INFRA-12**: The stack is in `eu-north-1` by default, and the Supabase project's region is stated beside
       it.
 - [ ] **INFRA-13**: Every resource carries cost tags, and a monthly estimate measured on the applied stack is
       documented.
-- [ ] **INFRA-14**: A CDN serves the immutable build assets, and rendered HTML is never cached at the edge.
+- [x] **INFRA-14**: A CDN serves the immutable build assets, and rendered HTML is never cached at the edge.
       [A2, added]
 - [x] **INFRA-15**: A budget alarm notifies the operator when the account's spend passes a set threshold. [A2]
       [complete 2026-10-25 on the operator's ruling accept-console-alert of 2026-10-23 (plan 183-20): the
@@ -90,7 +90,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       [C1]
 - [x] **SUPA-11**: A guard in `lint:check` fails when the security-relevant keys of the local `config.toml` and
       the hosted settings in the HCL disagree. [A2]
-- [ ] **SUPA-12**: The hosted project is created by the operator, imported into a long-lived Supabase Terraform
+- [x] **SUPA-12**: The hosted project is created by the operator, imported into a long-lived Supabase Terraform
       root with `prevent_destroy`, and kept in a state file separate from the AWS root. A teardown of the AWS
       root leaves the database untouched. [C2, C3]
 - [x] **SUPA-13**: The key model a new project issues is measured and recorded. The deployment stays on legacy
@@ -129,18 +129,18 @@ Each is run on a real project, recorded with its date, and acted on.
       host on other ports, and what `/auth/v1/verify` returns when admitted and when refused.
 - [x] **OBS-03**: Whether the hosted gateway accepts a call with the anon key and no user token is recorded, and
       `account-access` works or is changed.
-- [ ] **OBS-04**: The forwarded headers that reach an Edge Function, a PostgREST trigger and the frontend
+- [x] **OBS-04**: The forwarded headers that reach an Edge Function, a PostgREST trigger and the frontend
       container are recorded.
 - [x] **OBS-05**: Both refusing branches of `account-access`, and the release of a slot after a failed send, are
       seen on a served function.
-- [ ] **OBS-06**: One invitation mail through real SMTP arrives with the correct origin and signs in. A manual
+- [x] **OBS-06**: One invitation mail through real SMTP arrives with the correct origin and signs in. A manual
       observation, not a pipeline gate (E2).
 - [x] **OBS-07**: A read of more than 1000 rows is not truncated, and `anon` runs with an 8 s statement timeout.
-- [ ] **OBS-08**: A frontend started from the template's variables alone reads from Supabase.
+- [x] **OBS-08**: A frontend started from the template's variables alone reads from Supabase.
 - [ ] **OBS-09**: The per-caller limit on the anonymous invitation operations is decided after OBS-04: built in
       this milestone if the measurement supports a design, otherwise deferred with the measurement and a date
       (A3).
-- [ ] **OBS-10**: The feedback rate limit buckets by client on the hosted project with `behind_cloudflare` set
+- [x] **OBS-10**: The feedback rate limit buckets by client on the hosted project with `behind_cloudflare` set
       as deployed.
 - [ ] **OBS-11**: A load check of the voter journey and the relay against the deployed stack yields a recorded
       capacity figure. [A2]
@@ -259,20 +259,20 @@ closes; those are not listed against the earlier phase here.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 185 | Pending |
-| INFRA-02 | Phase 185 | Pending |
-| INFRA-03 | Phase 185 | Pending |
-| INFRA-04 | Phase 185 | Pending |
+| INFRA-01 | Phase 185 | Complete |
+| INFRA-02 | Phase 185 | Complete |
+| INFRA-03 | Phase 185 | Complete |
+| INFRA-04 | Phase 185 | Complete |
 | INFRA-05 | Phase 185 | Complete |
-| INFRA-06 | Phase 185 | Pending |
-| INFRA-07 | Phase 185 | Pending |
-| INFRA-08 | Phase 185 | Pending |
-| INFRA-09 | Phase 185 | Pending |
-| INFRA-10 | Phase 185 | Pending |
+| INFRA-06 | Phase 185 | Complete |
+| INFRA-07 | Phase 185 | Complete |
+| INFRA-08 | Phase 185 | Complete |
+| INFRA-09 | Phase 185 | Complete |
+| INFRA-10 | Phase 185 | Complete |
 | INFRA-11 | Phase 185 | Complete |
-| INFRA-12 | Phase 185 | Pending |
-| INFRA-13 | Phase 185 | Pending |
-| INFRA-14 | Phase 185 | Pending |
+| INFRA-12 | Phase 185 | Complete |
+| INFRA-13 | Phase 185 | Pending (measured cost deferred to phase 189 todo) |
+| INFRA-14 | Phase 185 | Complete |
 | INFRA-15 | Phase 183 | Complete |
 | INFRA-16 | Phase 187 | Pending |
 | INFRA-17 | Phase 183 | Complete |
@@ -289,7 +289,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-09 | Phase 186 | Pending |
 | SUPA-10 | Phase 181 | Complete |
 | SUPA-11 | Phase 183 | Complete |
-| SUPA-12 | Phase 185 | Pending |
+| SUPA-12 | Phase 185 | Complete |
 | SUPA-13 | Phase 184 | Complete |
 | SUPA-14 | Phase 184 | Complete |
 | PIPE-01 | Phase 187 | Pending |
@@ -305,13 +305,13 @@ closes; those are not listed against the earlier phase here.
 | OBS-01 | Phase 184 | Complete |
 | OBS-02 | Phase 184 | Complete |
 | OBS-03 | Phase 184 | Complete |
-| OBS-04 | Phase 185 | Pending |
+| OBS-04 | Phase 185 | Complete |
 | OBS-05 | Phase 184 | Complete |
-| OBS-06 | Phase 185 | Pending |
+| OBS-06 | Phase 185 | Complete |
 | OBS-07 | Phase 184 | Complete |
-| OBS-08 | Phase 185 | Pending |
+| OBS-08 | Phase 185 | Complete |
 | OBS-09 | Phase 188 | Pending |
-| OBS-10 | Phase 185 | Pending |
+| OBS-10 | Phase 185 | Complete |
 | OBS-11 | Phase 188 | Pending |
 | RELAY-01 | Phase 182 | Complete |
 | RELAY-02 | Phase 182 | Complete |

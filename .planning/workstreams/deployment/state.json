@@ -26,7 +26,7 @@
     {
       "number": "185",
       "name": "AWS Frontend Stack, First Apply by Hand",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "186",
@@ -51,8 +51,8 @@
   ],
   "next": {
     "command": "/gsd-progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 6 of 10 · 40% · executing"
+    "label": "Advance to the next step (plan phase 186)",
+    "reason": "Phase 7 of 10 — needs a plan"
   },
-  "updated_at": "2026-11-12T13:05:06.034Z"
+  "updated_at": "2026-11-14T19:31:58.537Z"
 }

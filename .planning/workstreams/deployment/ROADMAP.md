@@ -76,7 +76,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 - [x] **Phase 182: Analytics Relay** - Events go through a same-origin relay to a provider chosen by configuration, with no analytics identifier on the device, consent asked by default, and Umami removed (RELAY-01, RELAY-02, RELAY-03, RELAY-05, RELAY-06, RELAY-07, RELAY-08, RELAY-10 to RELAY-21)
 - [x] **Phase 183: Terraform Foundation and Supabase as Code** - Remote state, access roles, a budget alarm, the staging zone and the mail identity exist in AWS, and the hosted Supabase project is imported into a root of its own with a settings parity guard (INFRA-15, INFRA-17, INFRA-18, SUPA-11) (completed 2026-10-26)
 - [x] **Phase 184: Hosted Supabase Measurement and Conformance Probe** - The schema, functions and bootstrap rows are on the hosted project, what it serves is measured and dated, and a probe fails by name when it drifts (SUPA-01 to SUPA-07, SUPA-13, SUPA-14, OBS-01, OBS-02, OBS-03, OBS-05, OBS-07) (completed 2026-11-12)
-- [ ] **Phase 185: AWS Frontend Stack, First Apply by Hand** - The frontend runs at `https://staging.openvaa.org` from a stack applied by hand, with a failed rollout, a teardown and the frontend-side observations each seen once (INFRA-01 to INFRA-14, SUPA-12, OBS-04, OBS-06, OBS-08, OBS-10)
+- [x] **Phase 185: AWS Frontend Stack, First Apply by Hand** - The frontend runs at `https://staging.openvaa.org` from a stack applied by hand, with a failed rollout, a teardown and the frontend-side observations each seen once (INFRA-01 to INFRA-14, SUPA-12, OBS-04, OBS-06, OBS-08, OBS-10) (completed 2026-11-14)
 - [ ] **Phase 186: Deployed Smoke Entry** - A read-mostly smoke run proves from a workstation that the deployed URL serves the intended build on the dedicated project, and refuses anything else (SUPA-09)
 - [ ] **Phase 187: Deploy Pipeline** - GitHub Actions deploys staging without stored keys, behind a gate and in a fixed order, and the run goes red when the build, the rollout or the smoke run fails (PIPE-01 to PIPE-10, INFRA-16, INFRA-19, SUPA-08)
 - [ ] **Phase 188: Relay on the Deployed Stack, and the Per-Caller Limit** - Events from staging arrive in PostHog EU as anonymous events, the stack's capacity is measured, and the per-caller limit is built or deferred on the evidence (RELAY-04, RELAY-09, OBS-09, OBS-11)
@@ -487,7 +487,7 @@ Notes:
   5. State is remote and locked, and staging has its own variables and outputs. A destroy of the AWS root, run once on purpose, removes the stack cleanly and leaves the hosted project, its data and its settings untouched, and the stack is then applied again. Every resource carries the cost tags, and a monthly estimate measured on the applied stack is recorded.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topic from `research/SUMMARY.md`: ACM and DNS staging. It was written for a zone outside Route 53, and F1 moves the zone to Route 53 in phase 183, so what remains is the order of the staged apply (registry, image, DNS and certificate, compute). Added by ruling A2 after the research, and so not researched: the CDN (INFRA-14). Where it sits can change the proxy depth of INFRA-06, the region of the certificate against the default of INFRA-12, the header record of OBS-04 and the scope of the WAF variable of RELAY-09. The header observations are made with the CDN in place.
-**Plans**: 22/22 plans executed in 18 waves. Waves 1 to 7 write and gate the code without AWS (the first stops once for the operator's rulings on the execution role's home, the push and the alert address); waves 8 to 17 are the hosted sittings in order, the agent applying `envs/staging/aws` under D-01; wave 18 closes on the repository gates and a full E2E run beside the cost read.
+**Plans**: 22/22 plans complete in 18 waves. Waves 1 to 7 write and gate the code without AWS (the first stops once for the operator's rulings on the execution role's home, the push and the alert address); waves 8 to 17 are the hosted sittings in order, the agent applying `envs/staging/aws` under D-01; wave 18 closes on the repository gates and a full E2E run beside the cost read.
 
 Plans:
 **Wave 1**
@@ -677,7 +677,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 182. Analytics Relay | 31/31 | Complete | 2026-10-20 |
 | 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
-| 185. AWS Frontend Stack, First Apply by Hand | 22/22 | In Progress | - |
+| 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
 | 186. Deployed Smoke Entry | 0/TBD | Not started | - |
 | 187. Deploy Pipeline | 0/TBD | Not started | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
