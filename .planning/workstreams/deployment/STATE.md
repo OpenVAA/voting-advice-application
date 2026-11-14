@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 186
 current_phase_name: Deployed Smoke Entry
-current_plan: 1
+current_plan: 2
 status: executing
-stopped_at: Phase 185 complete, ready to plan Phase 186
-last_updated: "2026-11-14T22:42:53.489Z"
-last_activity: 2026-11-14
-last_activity_desc: Phase 185 complete, transitioned to Phase 186
-state_head: faa30ac77b5c3c810c4083355b5b60b71a1a4dcd
+stopped_at: Completed 186-01-PLAN.md
+last_updated: "2026-11-14T22:51:04.427Z"
+last_activity: 2026-11-15
+last_activity_desc: Phase 186 execution started
+state_head: b9dd2176865bd2593e1955c8a878c72accfb468e
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 137
-  completed_plans: 129
+  completed_plans: 130
   percent: 50
 ---
 
@@ -27,23 +27,23 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 185 — AWS Frontend Stack, First Apply by Hand
+**Current focus:** Phase 186 — Deployed Smoke Entry
 
 ## Current Position
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 186 (Deployed Smoke Entry) — READY TO EXECUTE
-Plan: Not started
+Phase: 186 (Deployed Smoke Entry) — EXECUTING
+Plan: 2 of 8
 Status: Ready to execute
-Last activity: 2026-11-14 — Phase 185 complete, transitioned to Phase 186
+Last activity: 2026-11-15 — Phase 186 execution started
 
 Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 1
+**Current Plan:** 2
 
 From 184 on, the numeric order is the dependency order.
 
@@ -144,6 +144,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P23 | 25min | 3 tasks | 4 files |
 | Phase 184 P24 | about 30 min of work (11 h wall, waiting for the operator) | 3 tasks | 6 files |
 | Phase 184 P25 | about 25 min of gates (orchestrator) and 10 min of recording | 2 tasks | 2 files |
+| Phase 186 P01 | 4min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -276,6 +277,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 184]: 184-23: the persistent project's conformance probe passed (22 PASS, exit 0) and its 39 auth and 3 API settings are served as declared; FUT-02 holds both projects' key model, legacy keys retiring early 2027
 - [Phase 184]: 184-24: SCRATCH_SCOPE=keep-root (2026-11-11, the plan's auto-selected recommended option, applied by the orchestrator while the operator was away); the throwaway begckvkapaopoztbreqc was deleted by the operator (reported 2026-11-12T06:10Z), Management API 404, local state removed
 - [Phase 184]: 184-25: the phase closes green on dccdf490842d: lint, format and unit exit 0 (infra 96/96) and the full E2E suite 548/548 in tests/e2e-runs/184-25-20261112T062610Z; the two red first runs were the -gsd worktree's hold on the shared stack (its 00001-00010 schema, and its functions mounted in the edge runtime), cleared by db:reset and by db:stop plus db:start from -infra
+- [Phase 186]: 186-01: SUPA-09 stays Pending until the hosted run of 186-08; the pure deployed-target gate module alone does not meet it
+- [Phase 186]: 186-01: the deployed gate reads the expected Supabase ref and project id only from infra/envs/staging/supabase/terraform.tfvars; runDeployedGate has no identity parameter
 
 ### Pending Todos
 
@@ -328,6 +331,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-12T09:42:53.970Z
-**Stopped At:** Phase 185 complete, ready to plan Phase 186
-**Resume File:** .planning/workstreams/deployment/phases/185-aws-frontend-stack-first-apply-by-hand/185-CONTEXT.md
+Last session: 2026-11-14T22:51:03.318Z
+**Stopped At:** Completed 186-01-PLAN.md
+**Resume File:** None
