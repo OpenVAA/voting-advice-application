@@ -94,5 +94,40 @@ export default [
       'playwright/expect-expect': 'off',
       'playwright/no-conditional-in-test': 'off'
     }
+  },
+  {
+    // === The deployed smoke entry holds no service-role client and loads no environment file ===
+    // It runs against a hosted deployment, so no module that creates a service-role or Supabase client, and no `.env` loader, may be value-imported here; a type import is allowed.
+    // `playwright.deployed.config.ts` itself is outside lint because of the `playwright*` ignore above, and this rule sees direct imports only: `tests/utils/deployedSmokeGuards.test.ts` covers the config and the whole value-import closure instead.
+    files: ['tests/deployed/**/*.ts', 'tests/utils/deployedTarget.ts', 'deployed-global-setup.ts'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '(^|/)(supabaseAdminClient|authApi|accountAccessClient|localSupabaseUrl)(\\.ts)?$',
+              allowTypeImports: true,
+              message: 'The deployed smoke entry holds no service-role client; a type import is allowed.'
+            },
+            {
+              regex: '^@openvaa/dev-seed$',
+              allowTypeImports: true,
+              message:
+                'The @openvaa/dev-seed barrel re-exports its service-role client; import the template module by path instead.'
+            },
+            {
+              regex: '^@supabase/(supabase-js|ssr)$',
+              allowTypeImports: true,
+              message: 'The deployed smoke entry creates no Supabase client.'
+            },
+            {
+              regex: '^dotenv(/.*)?$',
+              message: 'The deployed smoke entry reads only its named inputs and loads no .env file.'
+            }
+          ]
+        }
+      ]
+    }
   }
 ];

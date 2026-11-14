@@ -55,6 +55,7 @@
     "test:unit:watch": "echo '###################################\nNB! Running only tests in /packages\n###################################\n' && vitest",
     "test:e2e": "yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && playwright test -c ./tests/playwright.config.ts ./tests --grep-invert @probe",
     "test:e2e:probes": "playwright test -c ./tests/playwright.config.ts --project=_probes",
+    "test:e2e:deployed": "playwright test -c ./tests/playwright.deployed.config.ts",
     "format": "turbo run build --filter=@openvaa/app-shared... && prettier --write . && yarn workspace @openvaa/docs format",
     "format:check": "turbo run build --filter=@openvaa/app-shared... && prettier --check . && yarn workspace @openvaa/docs format:check",
     "lint:fix": "turbo run lint -- --fix && eslint --fix tests",
