@@ -4,11 +4,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  assertSmokeProjects,
   DEDICATED_SUPABASE_TFVARS,
+  evaluateGate,
+  extractServedEnv,
   GATE_CHECK_ORDER,
   gateFailureMessage,
   readDedicatedTarget,
-  runDeployedGate
+  requireSmokeInputs,
+  runDeployedGate,
+  servedSupabaseRef
 } from './deployedTarget';
 import type { IncomingMessage, Server, ServerResponse } from 'http';
 import type { AddressInfo } from 'net';
@@ -184,5 +189,317 @@ describe('gateFailureMessage', () => {
     const failLine = result.lines[1];
     expect(message).toContain(`\n  ${failLine}`);
     expect(message.split('\n').filter((line) => /^(PASS|FAIL) /.test(line))).toEqual([]);
+  });
+});
+
+describe('the ref check fails closed', () => {
+  it.each([
+    ['a made-up ref', 'https://aaaaaaaaaaaaaaaaaaaa.supabase.co'],
+    ['the deleted throwaway project', 'https://begckvkapaopoztbreqc.supabase.co'],
+    ['the local stack by address', 'http://127.0.0.1:54321'],
+    ['the local stack by name', 'http://localhost:54321'],
+    ['the ref under a foreign domain', 'https://cofbsatfrdysyphajsky.supabase.co.evil.example'],
+    ['the ref as user info of a foreign host', 'https://cofbsatfrdysyphajsky.supabase.co@evil.example'],
+    ['a port', 'https://cofbsatfrdysyphajsky.supabase.co:8443'],
+    ['plain http', 'http://cofbsatfrdysyphajsky.supabase.co'],
+    ['a path', 'https://cofbsatfrdysyphajsky.supabase.co/rest/v1'],
+    ['a query', 'https://cofbsatfrdysyphajsky.supabase.co/?x=1'],
+    ['a host outside supabase.co', 'https://evil.example'],
+    ['two labels before supabase.co', 'https://a.cofbsatfrdysyphajsky.supabase.co'],
+    ['a numeric value', 54321],
+    ['a value that is not a URL', 'not a url']
+  ])('refuses %s', async (_label, supabaseUrl) => {
+    const page = { status: 200, body: servedPage({ supabaseUrl }) };
+    const result = await gate(await startStub({ page }));
+    expect(failedNames(result)).toEqual(['ref']);
+  });
+
+  it.each([
+    ['a document with no env line', ''],
+    ['env: null', '\t\t\t\t\t\tenv: null,'],
+    ['an env line that is not JSON', '\t\t\t\t\t\tenv: {PUBLIC_SUPABASE_URL: nope},'],
+    [
+      'an env object without PUBLIC_SUPABASE_URL',
+      `\t\t\t\t\t\tenv: ${JSON.stringify({ PUBLIC_PROJECT_ID: '00000000-0000-0000-0000-000000000001' })},`
+    ]
+  ])('refuses %s', async (_label, envLine) => {
+    const page = { status: 200, body: servedPage({ envLine }) };
+    const result = await gate(await startStub({ page }));
+    expect(failedNames(result)).toEqual(['ref']);
+  });
+
+  it('accepts the dedicated URL with a trailing slash', async () => {
+    const page = { status: 200, body: servedPage({ supabaseUrl: `${DEDICATED_URL}/` }) };
+    const result = await gate(await startStub({ page }));
+    expect(result.failed).toBe(0);
+  });
+
+  it.each([
+    ['no env block', null, '(no env block in the served document)'],
+    ['no URL in the block', {}, '(PUBLIC_SUPABASE_URL absent from the env block)'],
+    ['a numeric URL', { PUBLIC_SUPABASE_URL: 1 }, '(PUBLIC_SUPABASE_URL is not a string)'],
+    ['an unparsable URL', { PUBLIC_SUPABASE_URL: 'not a url' }, '(unparsable URL: not a url)'],
+    [
+      'a foreign shape',
+      { PUBLIC_SUPABASE_URL: 'http://localhost:54321' },
+      'http://localhost:54321 (not https://<ref>.supabase.co)'
+    ]
+  ])('names why no ref was read from %s', (_label, env, observed) => {
+    expect(servedSupabaseRef(env)).toEqual({ ref: null, observed });
+  });
+
+  it('reads no env from an array or a missing line', () => {
+    expect(extractServedEnv('\tenv: [{}],')).toBeNull();
+    expect(extractServedEnv('<html></html>')).toBeNull();
+    expect(extractServedEnv(`\tenv: ${JSON.stringify({ PUBLIC_SUPABASE_URL: DEDICATED_URL })}`)).toEqual({
+      PUBLIC_SUPABASE_URL: DEDICATED_URL
+    });
+  });
+});
+
+describe('no input widens the ref', () => {
+  const foreignRef = 'aaaaaaaaaaaaaaaaaaaa';
+  const foreignUrl = `https://${foreignRef}.supabase.co`;
+  const foreignId = '00000000-0000-0000-0000-0000000000aa';
+  const crowded: GateEnv = {
+    SMOKE_EXPECTED_SHA: SHA,
+    SUPABASE_URL: foreignUrl,
+    PUBLIC_SUPABASE_URL: foreignUrl,
+    SMOKE_BASE_URL: foreignUrl,
+    SMOKE_EXPECTED_REF: foreignRef,
+    SUPABASE_REF: foreignRef,
+    DEDICATED_REF: foreignRef,
+    SMOKE_PROJECT_REF: foreignRef,
+    PROJECT_REF: foreignRef,
+    SUPABASE_PROJECT_REF: foreignRef,
+    SMOKE_SUPABASE_URL: foreignUrl,
+    TF_VAR_project_ref: foreignRef,
+    EXPECTED_SUPABASE_URL: foreignUrl,
+    PUBLIC_PROJECT_ID: foreignId,
+    SMOKE_EXPECTED_PROJECT_ID: foreignId,
+    SUPABASE_PROJECT_ID: foreignId,
+    TF_VAR_public_project_id: foreignId
+  };
+
+  it('still refuses a foreign ref when every input names it', async () => {
+    const page = { status: 200, body: servedPage({ supabaseUrl: foreignUrl }) };
+    const result = await gate(await startStub({ page }), crowded);
+    expect(failedNames(result)).toEqual(['ref']);
+    expect(result.dedicated).toEqual(DEDICATED);
+  });
+
+  it('gives the same checks for a crowded environment as for the expected commit alone', async () => {
+    const baseURL = await startStub();
+    const crowdedResult = await gate(baseURL, crowded);
+    const plainResult = await gate(baseURL, { SMOKE_EXPECTED_SHA: SHA });
+    expect(crowdedResult.checks).toEqual(plainResult.checks);
+    expect(plainResult.failed).toBe(0);
+  });
+});
+
+describe('the project-id check', () => {
+  it.each([
+    ['an absent attribute', null, '(attribute absent)'],
+    ['the unsubstituted placeholder', '%projectId%', '(unsubstituted %projectId% placeholder)'],
+    ['another project id', '00000000-0000-0000-0000-0000000000e2', '00000000-0000-0000-0000-0000000000e2']
+  ])('refuses %s', async (_label, projectId, observed) => {
+    const page = { status: 200, body: servedPage({ projectId }) };
+    const result = await gate(await startStub({ page }));
+    expect(failedNames(result)).toEqual(['project-id']);
+    expect(result.checks[3].observed).toBe(observed);
+  });
+
+  it('accepts the dedicated id in upper case', async () => {
+    const page = { status: 200, body: servedPage({ projectId: DEDICATED.publicProjectId.toUpperCase() }) };
+    const result = await gate(await startStub({ page }));
+    expect(result.failed).toBe(0);
+  });
+});
+
+describe('the sha check', () => {
+  const notFullSha = '(SMOKE_EXPECTED_SHA is not a full 40-hex commit id)';
+
+  it.each([
+    ['unset', undefined],
+    ['empty', ''],
+    ['39 characters', SHA.slice(0, 39)],
+    ['41 characters', `${SHA}0`],
+    ['upper case', SHA.toUpperCase()]
+  ])('refuses an expected commit that is %s', async (_label, expectedSha) => {
+    const result = await gate(await startStub(), { SMOKE_EXPECTED_SHA: expectedSha });
+    expect(failedNames(result)).toEqual(['sha']);
+    expect(result.lines[1]).toBe(`FAIL sha: observed ${SHA}, expected ${notFullSha}`);
+  });
+
+  it.each([
+    ['status 500', { status: 500, body: JSON.stringify({ build: SHA }) }, '(status 500)'],
+    ['a body that is not JSON', { status: 200, body: 'not json' }, '(body is not JSON)'],
+    ['JSON without build', { status: 200, body: JSON.stringify({ status: 'ok' }) }, '(no build field)'],
+    ['a numeric build', healthAnswer(7), '(no build field)']
+  ])('refuses a health answer with %s', async (_label, health, reason) => {
+    const result = await gate(await startStub({ health }));
+    expect(failedNames(result)).toEqual(['sha']);
+    expect(result.lines[1]).toBe(`FAIL sha: observed ${reason}, expected ${SHA}`);
+  });
+});
+
+describe('the service-role-key-absent check', () => {
+  it.each([
+    [{ SUPABASE_SERVICE_ROLE_KEY: MADE_UP_KEY_VALUE }, 'SUPABASE_SERVICE_ROLE_KEY is set (value withheld)'],
+    [{ SUPABASE_SECRET_KEY: MADE_UP_KEY_VALUE }, 'SUPABASE_SECRET_KEY is set (value withheld)'],
+    [
+      { SUPABASE_SERVICE_ROLE_KEY: MADE_UP_KEY_VALUE, SUPABASE_SECRET_KEY: MADE_UP_KEY_VALUE },
+      'SUPABASE_SERVICE_ROLE_KEY is set (value withheld), SUPABASE_SECRET_KEY is set (value withheld)'
+    ]
+  ])('refuses %o without printing the value', async (keys, observed) => {
+    const result = await gate(await startStub(), { SMOKE_EXPECTED_SHA: SHA, ...keys });
+    expect(failedNames(result)).toEqual(['service-role-key-absent']);
+    expect(result.lines[0]).toBe(`FAIL service-role-key-absent: observed ${observed}, expected unset`);
+    expect(JSON.stringify(result)).not.toContain(MADE_UP_KEY_VALUE);
+    expect(gateFailureMessage(result)).not.toContain(MADE_UP_KEY_VALUE);
+  });
+
+  it('passes a key variable that is empty or blank', async () => {
+    const result = await gate(await startStub(), {
+      SMOKE_EXPECTED_SHA: SHA,
+      SUPABASE_SERVICE_ROLE_KEY: '',
+      SUPABASE_SECRET_KEY: '  \t'
+    });
+    expect(result.failed).toBe(0);
+  });
+});
+
+describe('every check is evaluated', () => {
+  it('reports all four failures in order when all four fail', async () => {
+    const page = {
+      status: 200,
+      body: servedPage({
+        supabaseUrl: 'https://begckvkapaopoztbreqc.supabase.co',
+        projectId: '00000000-0000-0000-0000-0000000000e2'
+      })
+    };
+    const result = await gate(await startStub({ page }), { SUPABASE_SERVICE_ROLE_KEY: MADE_UP_KEY_VALUE });
+    expect(result.failed).toBe(4);
+    expect(result.lines.map((line) => line.split(':')[0])).toEqual([
+      'FAIL service-role-key-absent',
+      'FAIL sha',
+      'FAIL ref',
+      'FAIL project-id'
+    ]);
+    expect(gateFailureMessage(result).startsWith('DEPLOYED SMOKE GATE FAILED — 4 of 4 checks failed')).toBe(true);
+  });
+
+  it('evaluates a failed page request without a thrown error', () => {
+    const checks = evaluateGate({
+      env: { SMOKE_EXPECTED_SHA: SHA },
+      health: { status: 200, body: JSON.stringify({ build: SHA }) },
+      page: { error: 'refused' },
+      dedicated: DEDICATED
+    });
+    expect(checks.map((check) => check.pass)).toEqual([true, true, false, false]);
+    expect(checks[2].observed).toBe('(request to / failed: refused)');
+  });
+});
+
+describe('an unreachable target', () => {
+  it('fails the three checks that need the target when nothing listens', async () => {
+    const probe = createServer();
+    const port = await new Promise<number>((resolve) =>
+      probe.listen(0, '127.0.0.1', () => resolve((probe.address() as AddressInfo).port))
+    );
+    await new Promise<void>((resolve) => probe.close(() => resolve()));
+    const result = await gate(`http://127.0.0.1:${port}`);
+    expect(failedNames(result)).toEqual(['sha', 'ref', 'project-id']);
+    expect(result.checks[1].observed).toContain('request to /api/health failed');
+  });
+
+  it('fails the page checks when the page never answers', async () => {
+    const result = await gate(await startStub({ page: 'hang' }), { SMOKE_EXPECTED_SHA: SHA }, 200);
+    expect(failedNames(result)).toEqual(['ref', 'project-id']);
+    expect(result.checks[2].observed).toContain('failed');
+    expect(result.checks[3].observed).toContain('failed');
+  });
+});
+
+describe('readDedicatedTarget refusals', () => {
+  const ref = 'project_ref     = "cofbsatfrdysyphajsky"';
+  const id = 'public_project_id = "00000000-0000-0000-0000-000000000001"';
+
+  it.each([
+    ['a missing project_ref', [id]],
+    ['a missing public_project_id', [ref]],
+    ['a repeated key', [ref, ref, id]],
+    ['a ref of 19 characters', ['project_ref = "cofbsatfrdysyphajsk"', id]],
+    ['an upper-case ref', ['project_ref = "COFBSATFRDYSYPHAJSKY"', id]],
+    ['a non-canonical id', [ref, 'public_project_id = "00000000000000000000000000000001"']],
+    ['an upper-case id', [ref, 'public_project_id = "0000000A-0000-0000-0000-000000000001"']]
+  ])('throws on %s', (_label, lines) => {
+    expect(() => readDedicatedTarget(lines.join('\n'))).toThrow(DEDICATED_SUPABASE_TFVARS);
+  });
+
+  it('ignores a commented-out line', () => {
+    const text = ['# project_ref = "aaaaaaaaaaaaaaaaaaaa"', '// project_ref = "bbbbbbbbbbbbbbbbbbbb"', ref, id].join(
+      '\n'
+    );
+    expect(readDedicatedTarget(text)).toEqual(DEDICATED);
+  });
+});
+
+describe('assertSmokeProjects', () => {
+  it('passes one project named deployed-smoke', () => {
+    expect(() => assertSmokeProjects([{ name: 'deployed-smoke', testMatch: /\.smoke\.ts$/ }])).not.toThrow();
+  });
+
+  it.each([
+    ['no project', []],
+    ['two projects', [{ name: 'deployed-smoke' }, { name: 'deployed-smoke' }]],
+    ['another name', [{ name: 'chromium' }]],
+    ['a dependency', [{ name: 'deployed-smoke', dependencies: ['x'] }]],
+    ['a teardown', [{ name: 'deployed-smoke', teardown: 'x' }]],
+    ['a name holding setup', [{ name: 'deployed-smoke-Setup' }]],
+    ['a testMatch holding teardown', [{ name: 'deployed-smoke', testMatch: /base\.teardown\.ts/ }]]
+  ])('refuses %s', (_label, projects) => {
+    expect(() => assertSmokeProjects(projects)).toThrow(/^DEPLOYED SMOKE CONFIG REFUSED: /);
+  });
+
+  it('names the offending project', () => {
+    expect(() => assertSmokeProjects([{ name: 'deployed-smoke', dependencies: ['data-setup-base'] }])).toThrow(
+      'deployed-smoke'
+    );
+  });
+});
+
+describe('requireSmokeInputs', () => {
+  const names = ['SMOKE_CONTESTANT_EMAIL', 'SMOKE_CONTESTANT_PASSWORD'];
+  const missingBoth =
+    'SMOKE INPUT MISSING: SMOKE_CONTESTANT_EMAIL, SMOKE_CONTESTANT_PASSWORD (read from the environment only, never printed)';
+
+  it('returns the named values when set', () => {
+    expect(
+      requireSmokeInputs(names, {
+        SMOKE_CONTESTANT_EMAIL: 'made-up-address',
+        SMOKE_CONTESTANT_PASSWORD: 'made-up-word'
+      })
+    ).toEqual({ SMOKE_CONTESTANT_EMAIL: 'made-up-address', SMOKE_CONTESTANT_PASSWORD: 'made-up-word' });
+  });
+
+  it.each([
+    ['unset', {}],
+    ['blank', { SMOKE_CONTESTANT_EMAIL: '', SMOKE_CONTESTANT_PASSWORD: '  ' }]
+  ])('names every missing input when they are %s', (_label, env) => {
+    expect(() => requireSmokeInputs(names, env)).toThrow(missingBoth);
+  });
+
+  it('holds no value in its message', () => {
+    expect(() => requireSmokeInputs(names, { SMOKE_CONTESTANT_PASSWORD: 'made-up-word' })).toThrow(
+      /^SMOKE INPUT MISSING: SMOKE_CONTESTANT_EMAIL \(/
+    );
+    let message = '';
+    try {
+      requireSmokeInputs(names, { SMOKE_CONTESTANT_PASSWORD: 'made-up-word' });
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).not.toContain('made-up-word');
   });
 });
