@@ -96,8 +96,7 @@ export default [
     }
   },
   {
-    // === The deployed smoke entry holds no service-role client and loads no environment file ===
-    // It runs against a hosted deployment, so no module that creates a service-role or Supabase client, and no `.env` loader, may be value-imported here; a type import is allowed.
+    // === The deployed smoke entry holds no service-role client and loads no environment file === It runs against a hosted deployment, so no module that creates a service-role or Supabase client, and no `.env` loader, may be value-imported here; a type import is allowed.
     // `playwright.deployed.config.ts` itself is outside lint because of the `playwright*` ignore above, and this rule sees direct imports only: `tests/utils/deployedSmokeGuards.test.ts` covers the config and the whole value-import closure instead.
     files: ['tests/deployed/**/*.ts', 'tests/utils/deployedTarget.ts', 'deployed-global-setup.ts'],
     rules: {
