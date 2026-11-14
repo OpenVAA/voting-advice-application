@@ -182,8 +182,28 @@ preceded by the account check:
 - **Still listed at 15:49Z, six hours after the destroy:** the `INACTIVE` cluster
   `openvaa-staging` and the `INACTIVE` service `openvaa-staging-frontend`. Neither is a resource
   that can be deleted further: `delete-cluster` and `delete-service` are what made them `INACTIVE`.
-  Research A2 named only the task definitions, so the runbook's expectation of an empty search does
-  not hold yet for these two.
+  Research A2 named only the task definitions, so the runbook's expectation of an empty search did
+  not hold for these two.
+
+### The operator's ruling on the two `INACTIVE` ECS records (2026-11-14, decision B)
+
+```
+SWEEP_AFTER_EU_NORTH_1=2 (ecs:cluster openvaa-staging INACTIVE, ecs:service openvaa-staging-frontend INACTIVE)
+SWEEP_AFTER_US_EAST_1=0
+INACTIVE_TASK_DEFINITIONS_DELETED=5
+RULING_SWEEP_RESIDUE=accepted ecs:cluster INACTIVE, ecs:service INACTIVE
+```
+
+- **Ruling:** the operator accepted the two records as classified residue. They are `INACTIVE`
+  records that cannot be deleted: `delete-cluster` and `delete-service` are the calls that made
+  them `INACTIVE`, and no further call removes them. Nothing they name runs or is billed.
+- **What it overrides:** the plan's verify line `SWEEP_AFTER_EU_NORTH_1=0` and Step 16 item 5's
+  expectation of an empty search in both regions. The eu-north-1 line is the last read, at
+  15:49:06Z, about six hours after the destroy; the us-east-1 line is every read.
+- **INFRA-10 reads:** the Tagging API lists nothing tagged `Root=aws` in either region except
+  `INACTIVE` ECS records that cannot be deleted. Both regions were read at every sweep.
+- **The sweep did not re-run** after the ruling: the SSO session had expired, and the ruling needs
+  no further read.
 
 ## What survived (Step 16 item 6, about 09:56Z)
 
@@ -220,5 +240,3 @@ Only this root's key changed:
 The AWS root's key `pipeline/staging/aws/terraform.tfstate` is a literal in its backend block and
 shares no key with a root applied by hand. The `dns-mail` plan read no change before and after; the
 `supabase` plan after the destroy is the operator's (Step 16 item 7, plan 185-20).
-
-<!-- gsd:write-continue -->
