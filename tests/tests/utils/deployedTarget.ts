@@ -337,3 +337,58 @@ export function gateFailureMessage(result: GateResult): string {
     'See tests/README.md § Deployed smoke run.'
   ].join('\n');
 }
+
+/** The parts of a resolved Playwright project entry the smoke configuration's shape check reads. */
+export type SmokeProjectShape = {
+  name?: string;
+  dependencies?: ReadonlyArray<string>;
+  teardown?: string;
+  testMatch?: string | RegExp | ReadonlyArray<string | RegExp>;
+};
+
+/**
+ * Refuses a deployed smoke configuration that could run anything but the read-mostly smoke specs.
+ *
+ * @param projects - The resolved project entries of the configuration.
+ * @throws `DEPLOYED SMOKE CONFIG REFUSED: <reason>`, naming the offending project, unless there is exactly one project, named {@link SMOKE_PROJECT_NAME}, with no dependencies, no teardown, and neither its name nor its `testMatch` mentioning setup or teardown.
+ */
+export function assertSmokeProjects(projects: ReadonlyArray<SmokeProjectShape>): void {
+  const refuse = (reason: string): never => {
+    throw new Error(`DEPLOYED SMOKE CONFIG REFUSED: ${reason}`);
+  };
+  if (projects.length !== 1) {
+    const names = projects.map((project) => project.name ?? '(unnamed)').join(', ');
+    refuse(
+      `expected exactly one project named ${SMOKE_PROJECT_NAME}, found ${projects.length}${names ? ` (${names})` : ''}`
+    );
+  }
+  const [project] = projects;
+  const name = project.name ?? '(unnamed)';
+  if (/setup|teardown/i.test(name)) refuse(`project ${name} names a setup or teardown`);
+  if (project.testMatch !== undefined && /setup|teardown/i.test(String(project.testMatch))) {
+    refuse(`project ${name} matches setup or teardown files: ${String(project.testMatch)}`);
+  }
+  if (name !== SMOKE_PROJECT_NAME) refuse(`project ${name} is not named ${SMOKE_PROJECT_NAME}`);
+  if (project.dependencies !== undefined && project.dependencies.length > 0) {
+    refuse(`project ${name} has dependencies: ${project.dependencies.join(', ')}`);
+  }
+  if (project.teardown !== undefined && project.teardown !== '') {
+    refuse(`project ${name} has a teardown: ${project.teardown}`);
+  }
+}
+
+/**
+ * Reads named inputs of a smoke spec from the environment.
+ *
+ * @param names - The variable names, in the order a missing-input message lists them.
+ * @param env - The environment to read.
+ * @returns A record of each name and its value.
+ * @throws `SMOKE INPUT MISSING: <names> (read from the environment only, never printed)`, naming every unset or blank variable and holding no value.
+ */
+export function requireSmokeInputs(names: ReadonlyArray<string>, env: GateEnv): Record<string, string> {
+  const missing = names.filter((name) => (env[name] ?? '').trim() === '');
+  if (missing.length > 0) {
+    throw new Error(`SMOKE INPUT MISSING: ${missing.join(', ')} (read from the environment only, never printed)`);
+  }
+  return Object.fromEntries(names.map((name) => [name, env[name] ?? '']));
+}
