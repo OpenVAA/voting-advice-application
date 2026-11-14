@@ -3,7 +3,7 @@
  *
  * ## Strict at every level
  *
- * Each event is a `z.strictObject`, and so is its `attributes`, so an unknown key anywhere fails the parse. Names are literals, closed sets are enums, and every string has a pattern or a length cap. No member admits text a visitor typed. Text taken from published content is admitted in one place only: the localised title of an information section, which the two section events carry (an operator ruling of 2026-10-20) and which is length-capped. Every other event that used to carry such text carries an index or a count instead.
+ * Each event is a `z.strictObject`, and so is its `attributes`, so an unknown key anywhere fails the parse. Names are literals, closed sets are enums, and every string has a pattern or a length cap. No member admits text a visitor typed. Text taken from published content is admitted in one place only: the localised title of an information section, which the two section events carry and which is length-capped. Every other event identifies content by an index or a count, never by its text.
  *
  * ## The wire shape of one event
  *
