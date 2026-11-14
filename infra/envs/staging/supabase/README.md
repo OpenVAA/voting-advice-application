@@ -116,7 +116,7 @@ Step 18 the settings and the function secrets: plan, go-ahead, apply, read-back
 Step 19 the server's logging settings                    <- the bootstrap waits on them
 Step 20 the bootstrap, twice, and the seed check
 Step 21 the first administrator: the user, the grant, the claims of a token
-Step 22 the smoke dataset, once per project
+Step 22 the smoke dataset, once per project; the smoke contestant, once
 Step 23 the conformance probe
 ```
 
@@ -1298,12 +1298,308 @@ Secrets: `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_ANON_KEY`.
    `s22_rows_range=0-0/<total>` must give a total above 1000. A total of 0 means that no row is
    readable: the project is closed for voters or holds no nominations.
 
-3. Last item:
+**The smoke contestant.** The deployed smoke run signs one contestant in and out again. The
+contestant is one auth user with a password, at an address outside the `openvaa.test` domain (the
+seed check fails on that domain), one entity-scope `editor` grant on the project's `smoke_`
+candidate with the lowest external id that has a nomination, and one terms-of-use acceptance on the
+project; `infra/scripts/grant-smoke-contestant.sql` writes the two rows. It is written once, at a
+sitting the operator approves, and never by dev-seed. That sitting begins with the lines of the
+sitting, with `R=staging`, and Step 15, then runs items 3 to 13 in order; its record lines begin
+`s22c_`. No item prints the address, the password, a key or a token: the address is read from the
+keychain, the password is made in the sitting, and both travel in the environment and on standard
+input only. `printf` and `test` are shell builtins, so a value they are given is in no process's
+arguments. A workstation reads the two back for `yarn test:e2e:deployed` from the same keychain
+item, the password with `security find-generic-password -s openvaa-staging-smoke-contestant -w` and
+the address from the item's `acct` attribute as item 6 reads it (see `tests/README.md` § Deployed
+smoke run). The sitting ends with a dated row in "Observations".
+
+Secrets: `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, and `PGPASSWORD` with Step 15's variables.
+
+3. The ref, and the unset of every credential this part does not name:
 
    ```bash
-   unset SUPABASE_URL
-   test -n "$L" && rm -rf "$L" && echo "s22_logs_removed=yes"
+   test "$REF" = cofbsatfrdysyphajsky \
+     && echo "s22c_ref=ok"
+   unset SUPABASE_ACCESS_TOKEN SUPABASE_SECRET_KEY \
+     SUPABASE_DB_PASSWORD TF_VAR_database_password \
+     TF_VAR_smtp_user TF_VAR_smtp_password
    ```
+
+   It must print `s22c_ref=ok`. Without it the sitting stops here, with nothing written.
+
+4. The keychain method, checked on a throwaway service before anything hosted is written. The
+   command `security -i` runs is read from its standard input, so the value is never on a command
+   line:
+
+   ```bash
+   S=openvaa-keychain-method-check
+   V=$(openssl rand -hex 16)
+   printf 'add-generic-password -U -s %s -a %s -w %s\n' \
+     "$S" method-check "$V" | security -i
+   K=$(security find-generic-password -s "$S" -w)
+   test -n "$K" && test "$K" = "$V" \
+     && echo "s22c_keychain_method=ok"
+   security delete-generic-password -s "$S" > /dev/null
+   security find-generic-password -s "$S" \
+     > /dev/null 2>&1
+   test "$?" = 44 \
+     && echo "s22c_keychain_check_removed=yes"
+   unset S V K
+   ```
+
+   It must print `s22c_keychain_method=ok` and `s22c_keychain_check_removed=yes`. If either is
+   missing, the sitting stops here, with nothing hosted written.
+
+5. The operator's one action, in their own terminal and before the sitting: the address, typed once
+   into `read` and stored as the account of the keychain item `openvaa-staging-smoke-contestant`,
+   with a placeholder password that item 11 replaces. The address is never typed into a command
+   line or a transcript.
+
+   ```bash
+   printf 'contestant address: '; read -r A
+   printf 'add-generic-password -U -s %s -a %s -w %s\n' \
+     openvaa-staging-smoke-contestant "$A" placeholder \
+     | security -i
+   unset A
+   ```
+
+   It prints the prompt only. Answer `answer_contestant_address_stored=yes`.
+
+6. The address, read from the item's `acct` attribute and never echoed, and the users that already
+   have it, counted with the address as a bound parameter under a 5-second statement timeout:
+
+   ```bash
+   SMOKE_CONTESTANT_EMAIL=$(security find-generic-password \
+     -s openvaa-staging-smoke-contestant \
+     | sed -n 's/^ *"acct"<blob>="\(.*\)"$/\1/p')
+   export SMOKE_CONTESTANT_EMAIL
+   X=$(printf '%s' "$SMOKE_CONTESTANT_EMAIL" \
+     | tr '[:upper:]' '[:lower:]')
+   case "$X" in
+     '') echo "s22c_address_read=no" ;;
+     *@openvaa.test) echo "s22c_address_read=refused" ;;
+     *) echo "s22c_address_read=yes" ;;
+   esac
+   unset X
+   psql -X -q -At 2> "$L/s22c-users.err" <<'SQL'
+   \set ON_ERROR_STOP on
+   SET statement_timeout = '5s';
+   SET log_parameter_max_length_on_error = 0;
+   \getenv a SMOKE_CONTESTANT_EMAIL
+   SELECT 's22c_users_before=' || count(*)
+   FROM auth.users WHERE lower(email) = lower($1)
+   \bind :a \g
+   SQL
+   echo "s22c_users_exit=$?"
+   ```
+
+   It must print `s22c_address_read=yes`, `s22c_users_before=0` and `s22c_users_exit=0`. Anything
+   else stops the sitting here, with nothing written: an address in `openvaa.test` would fail the
+   seed check, and a user who already has the address is either the contestant of an earlier
+   sitting, removed first as below, or someone else.
+
+7. The password, 32 random bytes in base64url without padding:
+
+   ```bash
+   SMOKE_CONTESTANT_PASSWORD=$(openssl rand -base64 32 \
+     | tr '+/' '-_' | tr -d '=\n')
+   export SMOKE_CONTESTANT_PASSWORD
+   echo "s22c_password_length=${#SMOKE_CONTESTANT_PASSWORD}"
+   ```
+
+   It must print `s22c_password_length=43`. The hosted policy accepts it: `password_min_length` is 8
+   and `password_required_characters` is empty in `infra/modules/supabase/hosted-settings.json`.
+
+8. The user, created through the Auth Admin API with the address confirmed. The key goes into a
+   header file in `$L` and the body, built by `jq` from the environment, goes to `curl` on its
+   standard input; the answer, which holds the address, goes to `$L`:
+
+   ```bash
+   (umask 077
+    printf 'apikey: %s\nAuthorization: Bearer %s\n' \
+      "$SUPABASE_SERVICE_ROLE_KEY" \
+      "$SUPABASE_SERVICE_ROLE_KEY" > "$L/s22c-service.h")
+   jq -n '{email: env.SMOKE_CONTESTANT_EMAIL,
+     password: env.SMOKE_CONTESTANT_PASSWORD,
+     email_confirm: true}' \
+     | curl -sS -o "$L/s22c-user.json" \
+       -w 's22c_create_http=%{http_code}\n' \
+       -H @"$L/s22c-service.h" \
+       -H 'Content-Type: application/json' \
+       --data-binary @- \
+       "https://$REF.supabase.co/auth/v1/admin/users"
+   ```
+
+   It must print `s22c_create_http=200`. From here on the user exists: if the sitting stops before
+   item 11 has stored the password, remove the user as below and begin again at item 3.
+
+9. The grant. It prints its three lines, here prefixed, and exits 3 with nothing written on every
+   refusal, each reason on an `s22c_grant_error=` line that names no address:
+
+   ```bash
+   PUBLIC_PROJECT_ID=$(sed -n \
+     's/^public_project_id *= *"\([0-9a-f-]*\)".*/\1/p' \
+     "infra/envs/$R/supabase/terraform.tfvars")
+   export PUBLIC_PROJECT_ID
+   psql -X -f infra/scripts/grant-smoke-contestant.sql \
+     > "$L/s22c-grant.out" 2> "$L/s22c-grant.err"
+   echo "s22c_grant_exit=$?"
+   sed 's/^/s22c_/' "$L/s22c-grant.out"
+   grep -o 'grant-smoke-contestant: .*' \
+     "$L/s22c-grant.err" \
+     | sed 's/^/s22c_grant_error=/'
+   ```
+
+   It must print `s22c_grant_exit=0`, `s22c_candidate=smoke_cand_0000`, `s22c_grants=1` and
+   `s22c_terms=1`. A second run adds nothing and prints the same.
+
+10. The readback: Step 21's password sign-in with the contestant's variables, the claims decoded as
+    in Step 21 item 5, and a sign-out with the token, so the readback leaves no live session. The
+    token goes into a header file in `$L`, never on a command line:
+
+    ```bash
+    jq -n '{email: env.SMOKE_CONTESTANT_EMAIL,
+      password: env.SMOKE_CONTESTANT_PASSWORD}' \
+      | curl -sS -o "$L/s22c-token.json" \
+        -w 's22c_signin_http=%{http_code}\n' \
+        -H "apikey: $SUPABASE_ANON_KEY" \
+        -H 'Content-Type: application/json' \
+        --data-binary @- \
+        "https://$REF.supabase.co/auth/v1/token?grant_type=password"
+    jq -r '.access_token | split(".")[1]
+      | gsub("-"; "+") | gsub("_"; "/")
+      | . + ("=" * ((4 - length % 4) % 4))
+      | @base64d | fromjson
+      | "s22c_claim_names=\(keys | join(","))",
+        "s22c_claim_grants=\(.grants | tojson)"' \
+      "$L/s22c-token.json"
+    (umask 077
+     jq -r '"Authorization: Bearer \(.access_token)"' \
+       "$L/s22c-token.json" > "$L/s22c-user.h")
+    curl -sS -o /dev/null -X POST \
+      -w 's22c_logout_http=%{http_code}\n' \
+      -H "apikey: $SUPABASE_ANON_KEY" \
+      -H @"$L/s22c-user.h" \
+      "https://$REF.supabase.co/auth/v1/logout"
+    rm -f "$L/s22c-token.json" "$L/s22c-user.h"
+    ```
+
+    It must print `s22c_signin_http=200`, a `s22c_claim_grants=` array holding one object with
+    `"scope":"entity"` and `"role":"editor"`, and `s22c_logout_http=204`.
+
+11. The keychain store: the password replaces the placeholder of item 5, and a read-back compares
+    equal:
+
+    ```bash
+    printf 'add-generic-password -U -s %s -a %s -w %s\n' \
+      openvaa-staging-smoke-contestant \
+      "$SMOKE_CONTESTANT_EMAIL" \
+      "$SMOKE_CONTESTANT_PASSWORD" | security -i
+    K=$(security find-generic-password \
+      -s openvaa-staging-smoke-contestant -w)
+    test -n "$K" \
+      && test "$K" = "$SMOKE_CONTESTANT_PASSWORD" \
+      && echo "s22c_keychain_stored=yes"
+    unset K
+    ```
+
+    It must print `s22c_keychain_stored=yes`.
+
+12. Step 20's seed check, with the service-role key unset first, then the unset of both contestant
+    variables and the anon key:
+
+    ```bash
+    unset SUPABASE_SERVICE_ROLE_KEY
+    psql -X -f infra/scripts/check-seed.sql \
+      > "$L/s22c-check-seed.log" 2>&1
+    echo "s22c_check_seed_exit=$?"
+    unset SMOKE_CONTESTANT_EMAIL \
+      SMOKE_CONTESTANT_PASSWORD SUPABASE_ANON_KEY
+    ```
+
+    It must print `s22c_check_seed_exit=0`.
+
+13. Last item:
+
+    ```bash
+    unset SUPABASE_URL
+    test -n "$L" && rm -rf "$L" && echo "s22_logs_removed=yes"
+    ```
+
+**Removing the contestant.** The user is deleted through the Auth Admin API, and the grant and the
+acceptance go with it by `ON DELETE CASCADE` on both tables' `user_id` (seen on an isolated
+database, `evidence/186-04-grant-script.md` of phase 186). Begin with the lines of the sitting,
+`R=staging`, Step 15, item 3 and item 6 up to its `unset X`, which must print
+`s22c_address_read=yes`. Secrets: as above.
+
+1. The user's id, looked up by the address as a bound parameter:
+
+   ```bash
+   psql -X -q -At > "$L/s22c-user-id.txt" \
+     2> "$L/s22c-lookup.err" <<'SQL'
+   \set ON_ERROR_STOP on
+   SET statement_timeout = '5s';
+   SET log_parameter_max_length_on_error = 0;
+   \getenv a SMOKE_CONTESTANT_EMAIL
+   SELECT id FROM auth.users
+   WHERE lower(email) = lower($1)
+   \bind :a \g
+   SQL
+   echo "s22c_lookup_exit=$?"
+   U=$(cat "$L/s22c-user-id.txt")
+   N=$(grep -c . "$L/s22c-user-id.txt")
+   echo "s22c_users_found=$N"
+   ```
+
+   It must print `s22c_lookup_exit=0` and `s22c_users_found=1`; otherwise stop here.
+
+2. The delete:
+
+   ```bash
+   (umask 077
+    printf 'apikey: %s\nAuthorization: Bearer %s\n' \
+      "$SUPABASE_SERVICE_ROLE_KEY" \
+      "$SUPABASE_SERVICE_ROLE_KEY" > "$L/s22c-service.h")
+   curl -sS -o /dev/null -X DELETE \
+     -w 's22c_delete_http=%{http_code}\n' \
+     -H @"$L/s22c-service.h" \
+     "https://$REF.supabase.co/auth/v1/admin/users/$U"
+   ```
+
+   It must print `s22c_delete_http=200`.
+
+3. The rows that went with it:
+
+   ```bash
+   psql -X -q -At -v u="$U" <<'SQL'
+   SELECT 's22c_rows_after=' || concat_ws(',',
+     (SELECT count(*) FROM public.grants
+      WHERE user_id = :'u'::uuid),
+     (SELECT count(*) FROM public.terms_of_use_acceptances
+      WHERE user_id = :'u'::uuid));
+   SQL
+   ```
+
+   It must print `s22c_rows_after=0,0`.
+
+4. The keychain item. `delete-generic-password` prints the item's attributes, the address among
+   them, so its output is discarded:
+
+   ```bash
+   security delete-generic-password \
+     -s openvaa-staging-smoke-contestant > /dev/null
+   security find-generic-password \
+     -s openvaa-staging-smoke-contestant \
+     > /dev/null 2>&1
+   test "$?" = 44 && echo "s22c_keychain_removed=yes"
+   unset U N SMOKE_CONTESTANT_EMAIL \
+     SUPABASE_SERVICE_ROLE_KEY
+   ```
+
+   It must print `s22c_keychain_removed=yes`.
+
+5. Step 20 item 5, the seed check, and Step 23, the probe, again; then item 13 above; then a dated
+   row in "Observations".
 
 ### Step 23: The conformance probe
 
