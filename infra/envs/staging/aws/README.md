@@ -112,8 +112,8 @@ item before you leave the terminal.
 
 - **The tools:** Terraform 1.16.5, the version in `infra/.terraform-version`; the AWS CLI version 2;
   `jq`, `git` and `curl`; Docker with `buildx`, running; Node and the repository's dependencies, with
-  Playwright's Chromium installed (`yarn playwright install`), for the one page Step 7 renders in a
-  browser. The service runs on arm64 and the image is built natively, so build on an arm64
+  Playwright's Chromium installed (`yarn playwright install`), for the questions page Steps 7 and 17
+  render in a browser. The service runs on arm64 and the image is built natively, so build on an arm64
   workstation.
 - **The profile `openvaa-admin`**, an IAM Identity Center profile in your AWS configuration that signs
   in to account `471112560111` with administrator rights. Sign in before the first step and whenever
@@ -3238,8 +3238,11 @@ TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
    ```
 
 5. The site through the CDN: the health answer from the same build, and the questions page with the
-   project id and a statement of the smoke dataset, as Step 7 item 4 reads them. A `curl` status of 6
-   means the name did not resolve yet, as in Step 5: wait a few minutes and run this item again:
+   project id and a statement of the smoke dataset, as Step 7 item 4 reads them. The server's HTML
+   carries the project id but none of the statements: the located layout renders the questions only
+   in the browser, so the statements are read from the same headless render as Step 7 item 4's. A
+   `curl` status of 6 means the name did not resolve yet, as in Step 5: wait a few minutes and run
+   this item again:
 
    ```bash
    curl -sS --max-time 20 -o "$L/s17-health.json" \
@@ -3255,13 +3258,31 @@ TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
    echo "s17_questions_project_id=$(grep -o -m1 \
      'data-project-id="[^"]*"' "$L/s17-questions.html" \
      | cut -d'"' -f2)"
-   echo "s17_defence_statement_seen=$(grep -c -F \
-     'Defence spending should be increased.' "$L/s17-questions.html")"
+   node --input-type=module -e '
+     import { createRequire } from "node:module";
+     import { writeFileSync } from "node:fs";
+     const req = createRequire(process.cwd() + "/package.json");
+     const { chromium } = req("@playwright/test");
+     const [url, out] = process.argv.slice(1);
+     const browser = await chromium.launch();
+     const page = await browser.newPage();
+     const answer = await page.goto(url, { timeout: 60000 });
+     await page.getByText("1/6").waitFor({ timeout: 30000 });
+     writeFileSync(out, await page.locator("body").innerText());
+     console.log(`s17_rendered=${answer.status()} ${page.url()}`);
+     await browser.close();
+   ' "$U/questions" "$L/s17-rendered.txt" 2> "$L/s17-render.err"
+   echo "s17_render_exit=$?"
+   echo "s17_first_statement_seen=$(grep -c -F \
+     'Public transport should be free of charge in cities.' \
+     "$L/s17-rendered.txt")"
    ```
 
    Expected: `s17_health_http=200`, `s17_health_build_matches_exit=0`, `s17_questions_http=200`,
-   `s17_questions_project_id=00000000-0000-0000-0000-000000000001` and
-   `s17_defence_statement_seen=` above 0.
+   `s17_questions_project_id=00000000-0000-0000-0000-000000000001`,
+   `s17_rendered=200 https://staging.openvaa.org/questions/__first__`, `s17_render_exit=0` and
+   `s17_first_statement_seen=` above 0. The first question is the one the render waits on, so its
+   statement is the one read.
 
 6. The re-created log group's retention, and the new subscription's state. **The operator's:** AWS
    mails a new confirmation to the alert address; follow its link, answer

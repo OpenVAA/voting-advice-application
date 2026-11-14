@@ -48,4 +48,55 @@ PROBE_AFTER_DESTROY_PASS_LINES=22
 
 So the destroy of `envs/staging/aws` left the persistent project, its data and its settings alone.
 
-<!-- gsd:write-continue -->
+## The re-apply (Step 17)
+
+```
+REAPPLY_UTC=2026-11-14T18:12Z
+REAPPLY_PLAN_ONLY_CREATES=yes
+REAPPLY_EXIT=0
+REAPPLY_SECOND_PLAN_EXIT=0
+REAPPLY_HEALTH_BUILD_MATCHES=yes
+REAPPLY_VOTER_PAGE=yes
+REAPPLY_LOG_RETENTION_DAYS=90
+SUBSCRIPTION_AFTER_REAPPLY=PendingConfirmation
+```
+
+- **The same tag, the same root (item 1).**
+  - `s17_account_read_exit=0` and `s17_account_match_exit=0`.
+  - `s17_image_tag_length=40`, with the tag `712947a1bd44a735f66ee8f51610f4748d76cd30`, which is
+    185-12's `SOURCE_COMMIT`.
+  - `s17_head=c2340b1e5f3ff7ea2549841ce6099e88359986d2`. `git diff 82451b387 HEAD -- infra` is
+    empty, so the root and its module are as they were at the destroy.
+  - `s17_dirty_lines=0`, `s17_image_exit=0` and `s17_alert_email_set_exit=0`.
+  - The state was empty before the plan: `terraform state list` exited 0 with no line.
+- **One plan with only creates (item 2).** `s17_init_exit=0` (`-lockfile=readonly`),
+  `s17_plan_exit=0`, `s17_plan_line=Plan: 40 to add, 0 to change, 0 to destroy.`,
+  `s17_show_exit=0`, `s17_planned_create=40` and no other `s17_planned_` line, and
+  `s17_outside_module=0`. That is the shape the item allows, and the same 40 that 185-19 destroyed.
+- **One apply from nothing (item 3).** The saved plan was applied once, in the background under
+  `caffeinate -i`, from 18:08:04Z. `s17_apply_exit=0`, `s17_apply_completed_utc=2026-11-14T18:12Z`,
+  and `s17_apply_line=Apply complete! Resources: 40 added, 0 changed, 0 destroyed.`, with no
+  `s17_error=` line. The plan file was removed (`s17_plan_file_removed=yes`). `pmset -g log` shows
+  no sleep during the apply or the reads below. **This is the single from-nothing apply that
+  185-13 could not show** (`FIRST_APPLY_EXIT=1`, completed by a one-create follow-up apply): one
+  plan and one apply brought up the whole stack.
+- **The second plan (item 4).** `s17_second_plan_exit=0`, with
+  `No changes. Your infrastructure matches the configuration.` and no `s17_second_change=` line.
+- **The site through the CDN (item 5), 18:13Z.**
+  - `s17_health_http=200`, `s17_health_curl_exit=0` and `s17_health_build_matches_exit=0`, so
+    `build` equals the tag. The response read `x-cache: Miss from cloudfront`.
+  - `s17_questions_http=200` and
+    `s17_questions_project_id=00000000-0000-0000-0000-000000000001`.
+  - The literal item read `s17_defence_statement_seen=0` from the server's HTML. That is the
+    runbook's defect, not the stack's: Step 7 item 4 says the statements are never in the server's
+    HTML (`s7_questions_html_statements=0` is that item's expectation), and that they are read from
+    a headless render. So the read of Step 7 item 4 was run as written, and it read:
+    `s17_questions=200 https://staging.openvaa.org/questions`,
+    `s17_questions_supabase_fetches=5`, `s17_questions_html_statements=0`,
+    `s17_rendered=200 https://staging.openvaa.org/questions/__first__`, `s17_render_exit=0` and
+    `s17_statement_seen=Public transport should be free of charge in cities.`, the first question's.
+    That is the voter page of Step 7 again. Step 17 item 5 now runs the same render.
+- **The log group and the subscription (item 6), 18:13:51Z.** `s17_log_group_read_exit=0` and
+  `s17_log_retention_days=90`, the same as the first log group's. `s17_subscriptions_exit=0` and
+  `s17_subscription=email pending`: the re-created topic's new subscription is waiting for the
+  operator's confirmation.
