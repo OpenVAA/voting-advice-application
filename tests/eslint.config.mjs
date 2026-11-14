@@ -47,6 +47,19 @@ export default [
       'playwright/no-conditional-expect': 'error',
       // Helpers like `expectLandedOn`, `expectQuestion`, `expectConstituencySelector` wrap `expect()` assertions; whitelist any `expect[A-Z]…` identifier so the rule sees them as assertions. `assert[A-Z]…` helpers (e.g. `assertAxeGates`, `assertDbRowCount`) are likewise assertion wrappers — whitelist them too.
       'playwright/expect-expect': ['error', { assertFunctionPatterns: ['^expect[A-Z]', '^assert[A-Z]'] }],
+      // Removing a page's last route turns Chromium's request interception off, and a request the page starts meanwhile can be held by the browser and never answered. `routeUntilEnded` (utils/endableRoute.ts) ends a route without removing it. The enum entry restates the shared config's, which this rule's options replace for these files.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSEnumDeclaration',
+          message: 'Use const assertion or a string union type instead.'
+        },
+        {
+          selector: 'CallExpression[callee.property.name=/^unroute(All)?$/]',
+          message:
+            "unroute() and unrouteAll() can leave a request the page makes meanwhile unanswered for good. End the route with routeUntilEnded's returned function (utils/endableRoute.ts) instead."
+        }
+      ],
 
       // === Other plugin warning rules (aspirational) === Prefer web-first assertions (toBeVisible over manual checks)
       'playwright/prefer-web-first-assertions': 'warn',
