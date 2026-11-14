@@ -69,9 +69,11 @@ import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { DRAFT_KEY_STEM } from '../../utils/contestantDrafts';
+import { routeUntilEnded } from '../../utils/endableRoute';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
+import type { EndRoute } from '../../utils/endableRoute';
 
 /** The length of the logout modal's count in seconds, by the button's default. */
 const MODAL_COUNT_SECONDS = 30;
@@ -163,6 +165,14 @@ export function createHeaderLogout(page: Page) {
       .sort();
 
   let signOutRequests = 0;
+
+  /** Ends each route of the sign-out request that `failSignOut()`, `failSignOutAfterClearingCookies()` or `holdSignOut()` set and nothing has ended yet. */
+  const signOutRouteEnds: Array<EndRoute> = [];
+
+  /** Let every later sign-out request through as it is. */
+  const endSignOutRoutes = (): void => {
+    for (const end of signOutRouteEnds.splice(0)) end();
+  };
 
   /** The sign-out request {@link holdSignOut} keeps: the release that ends it, by letting it reach the server or by answering it with a failure, and its arrival and the end of its handling. */
   let heldSignOut:
@@ -463,24 +473,26 @@ export function createHeaderLogout(page: Page) {
      * From now on answer the sign-out request with a failure, without letting it reach the server, so the cookies stay as they are. {@link restoreSignOut} ends it.
      */
     async failSignOut(): Promise<void> {
-      await page.route(isSignOutRequest, (route) => route.fulfill(SIGN_OUT_FAILURE));
+      signOutRouteEnds.push(await routeUntilEnded(page, isSignOutRequest, (route) => route.fulfill(SIGN_OUT_FAILURE)));
     },
 
     /**
      * From now on let the sign-out request reach the server and tell the page that it failed. The real sign-out runs and the cookies its response clears are cleared in the browser's context, while the page sees the failure the endpoint answers when the auth service fails with a valid access token. {@link restoreSignOut} ends it.
      */
     async failSignOutAfterClearingCookies(): Promise<void> {
-      await page.route(isSignOutRequest, async (route) => {
-        const response = await route.fetch();
-        await route.fulfill({ response, status: SIGN_OUT_FAILURE.status });
-      });
+      signOutRouteEnds.push(
+        await routeUntilEnded(page, isSignOutRequest, async (route) => {
+          const response = await route.fetch();
+          await route.fulfill({ response, status: SIGN_OUT_FAILURE.status });
+        })
+      );
     },
 
     /**
      * End what {@link failSignOut} or {@link failSignOutAfterClearingCookies} started: the sign-out request works again.
      */
     async restoreSignOut(): Promise<void> {
-      await page.unroute(isSignOutRequest);
+      endSignOutRoutes();
     },
 
     /**
@@ -494,12 +506,14 @@ export function createHeaderLogout(page: Page) {
       const arrived = new Promise<void>((resolve) => (markArrived = resolve));
       const passedOn = new Promise<void>((resolve) => (markPassedOn = resolve));
       heldSignOut = { release, arrived, passedOn };
-      await page.route(isSignOutRequest, async (route) => {
-        markArrived();
-        if ((await released) === 'fail') await route.fulfill(SIGN_OUT_FAILURE);
-        else await route.continue();
-        markPassedOn();
-      });
+      signOutRouteEnds.push(
+        await routeUntilEnded(page, isSignOutRequest, async (route) => {
+          markArrived();
+          if ((await released) === 'fail') await route.fulfill(SIGN_OUT_FAILURE);
+          else await route.continue();
+          markPassedOn();
+        })
+      );
     },
 
     /**
@@ -512,7 +526,7 @@ export function createHeaderLogout(page: Page) {
       held.release('reachServer');
       await held.passedOn;
       heldSignOut = undefined;
-      await page.unroute(isSignOutRequest);
+      endSignOutRoutes();
     },
 
     /**
@@ -525,7 +539,7 @@ export function createHeaderLogout(page: Page) {
       held.release('fail');
       await held.passedOn;
       heldSignOut = undefined;
-      await page.unroute(isSignOutRequest);
+      endSignOutRoutes();
     },
 
     /**

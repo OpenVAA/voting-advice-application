@@ -43,6 +43,7 @@ import {
   signInWithPassword,
   verifyTokenHash
 } from '../../utils/authApi';
+import { routeUntilEnded } from '../../utils/endableRoute';
 import {
   freshInvitationAddress,
   INVITATION_CANDIDATE_EXTERNAL_ID,
@@ -552,10 +553,10 @@ export function createInvitationFlow(
         });
       };
 
-      await page.route(ACCOUNT_ACCESS_ROUTE, addWitness);
+      const endWitnessing = await routeUntilEnded(page, ACCOUNT_ACCESS_ROUTE, addWitness);
       await action();
       await expect.poll(() => witnessed, 'link requests of the page that were given the witness').toBe(1);
-      await page.unroute(ACCOUNT_ACCESS_ROUTE, addWitness);
+      endWitnessing();
       expect(unwitnessed, 'further link requests of the page, which carried no witness').toBe(0);
 
       return admin.awaitLinkWitness(witness);
@@ -578,9 +579,9 @@ export function createInvitationFlow(
         return route.fallback();
       };
 
-      await page.route(ACCOUNT_ACCESS_ROUTE, count);
+      const endCounting = await routeUntilEnded(page, ACCOUNT_ACCESS_ROUTE, count);
       await action();
-      await page.unroute(ACCOUNT_ACCESS_ROUTE, count);
+      endCounting();
       expect(requests, 'requests the page made to the account-access function').toBe(0);
     },
 
