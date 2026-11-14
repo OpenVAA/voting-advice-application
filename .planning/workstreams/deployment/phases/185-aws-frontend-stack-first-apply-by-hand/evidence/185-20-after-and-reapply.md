@@ -100,3 +100,17 @@ SUBSCRIPTION_AFTER_REAPPLY=PendingConfirmation
   `s17_log_retention_days=90`, the same as the first log group's. `s17_subscriptions_exit=0` and
   `s17_subscription=email pending`: the re-created topic's new subscription is waiting for the
   operator's confirmation.
+
+## The new subscription confirmed (Step 17 item 6, the operator's)
+
+```
+SUBSCRIPTION_CONFIRMED_AFTER_REAPPLY=yes
+```
+
+The operator followed the confirmation link of the re-created topic's mail, in attempt
+`20261114T181502Z.4aa202a84` of key `185-20-3`: `answer_subscription_confirmed=yes`,
+`answer_subscription_confirmed_utc=2026-11-14T18:20Z` (written as 20:20 EET, converted by the
+coordinator). The reply was stored with `attempt.sh put` (exit 0) and bound to plan 185-20 task 3
+(`bound` exit 0). The agent's read at 18:20:56Z, in a new `$L` after the account check
+(`s17_account_match_exit=0`): `s17_subscriptions_exit=0`, `s17_subscription=email confirmed`, and
+`s17_log_retention_days=90` again. `$L` was removed (`s17_logs_removed=yes`).
