@@ -55,39 +55,105 @@ type ImportWalk = {
   unresolved: Array<{ specifier: string; chain: ImportChain }>;
 };
 
+/** Extensions of the files whose imports the walk reads; any other reached file is recorded and not parsed. */
+const PARSED_EXTENSIONS = new Set(['.ts', '.mts', '.cts', '.js', '.mjs', '.cjs', '.svelte']);
+
+/**
+ * A static `import` or `export … from` at the start of a line: an optional `type` keyword, an optional clause ending in `from`, and the quoted specifier. The clause holds no semicolon, quote, parenthesis or `=`, so it cannot run on from one statement into the next.
+ */
+const STATIC_IMPORT = /^[ \t]*(?:import|export)\s+(type\s+)?(?:[^;'"`()=]*?\bfrom\s*)?['"]([^'"\n]+)['"]/gm;
+/** A dynamic `import('…')` that is not a `typeof import('…')` type query. */
+const DYNAMIC_IMPORT = /(?<!typeof\s+)\bimport\s*\(\s*['"]([^'"\n]+)['"]\s*\)/g;
+/** Block comments that open a line, and line comments that open a line or follow whitespace. */
+const COMMENTS = [/^[ \t]*\/\*[\s\S]*?\*\//gm, /(^|\s)\/\/.*$/gm];
+
 /** Every file under `dir`, recursively, as sorted absolute paths. */
-function listFiles(_dir: string): Array<string> {
-  return [];
+function listFiles(dir: string): Array<string> {
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .flatMap((entry) => {
+      const full = path.join(dir, entry.name);
+      return entry.isDirectory() ? listFiles(full) : [full];
+    })
+    .sort();
 }
 
 /** The deployed config, its global setup, the gate module and every file under `tests/tests/deployed/`. */
 function smokeEntryFiles(): Array<string> {
-  return [];
+  return [
+    path.join(TESTS_ROOT, 'playwright.deployed.config.ts'),
+    path.join(TESTS_ROOT, 'deployed-global-setup.ts'),
+    path.join(TESTS_ROOT, 'tests', 'utils', 'deployedTarget.ts'),
+    ...listFiles(DEPLOYED_DIR)
+  ];
 }
 
 /** One finding per line of `text` that matches `pattern`. */
-function scanForTokens(_text: string, _pattern: RegExp): Array<TokenFinding> {
-  return [];
+function scanForTokens(text: string, pattern: RegExp): Array<TokenFinding> {
+  return text.split('\n').flatMap((content, index) => {
+    const match = pattern.exec(content);
+    return match ? [{ line: index + 1, token: match[0] }] : [];
+  });
 }
 
 /** The specifiers `text` imports or re-exports as values, static and dynamic; `import type` and `export type` are skipped. */
-function valueImportSpecifiers(_text: string): Array<string> {
-  return [];
+function valueImportSpecifiers(text: string): Array<string> {
+  const code = COMMENTS.reduce((stripped, comment) => stripped.replace(comment, '$1'), text);
+  const staticSpecifiers = [...code.matchAll(STATIC_IMPORT)]
+    .filter(([, typeKeyword]) => !typeKeyword)
+    .map(([, , specifier]) => specifier);
+  const dynamicSpecifiers = [...code.matchAll(DYNAMIC_IMPORT)].map(([, specifier]) => specifier);
+  return [...staticSpecifiers, ...dynamicSpecifiers];
 }
 
 /** The file a relative specifier names: as written, then with `.ts`, `/index.ts`, `.mjs` or `.js`. */
-function resolveRelative(_fromFile: string, _specifier: string): string | undefined {
-  return undefined;
+function resolveRelative(fromFile: string, specifier: string): string | undefined {
+  const base = path.resolve(path.dirname(fromFile), specifier);
+  return [base, `${base}.ts`, path.join(base, 'index.ts'), `${base}.mjs`, `${base}.js`].find(
+    (candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile()
+  );
 }
 
 /** A breadth-first walk over the relative value imports of `entries`; bare specifiers are recorded and not followed. */
-function walkValueImports(_entries: Array<string>, root: string): ImportWalk {
-  return { root, reached: new Map(), bare: [], unresolved: [] };
+function walkValueImports(entries: Array<string>, root: string): ImportWalk {
+  const walk: ImportWalk = { root, reached: new Map(), bare: [], unresolved: [] };
+  const queue = entries.map((entry) => path.resolve(entry));
+  for (const entry of queue) walk.reached.set(entry, [entry]);
+  for (let next = queue.shift(); next !== undefined; next = queue.shift()) {
+    const file = next;
+    const chain = walk.reached.get(file) ?? [file];
+    if (!PARSED_EXTENSIONS.has(path.extname(file))) continue;
+    for (const specifier of valueImportSpecifiers(fs.readFileSync(file, 'utf8'))) {
+      if (!specifier.startsWith('.') && !specifier.startsWith('/')) {
+        walk.bare.push({ specifier, chain });
+        continue;
+      }
+      const resolved = resolveRelative(file, specifier);
+      if (resolved === undefined) {
+        walk.unresolved.push({ specifier, chain });
+      } else if (!walk.reached.has(resolved)) {
+        walk.reached.set(resolved, [...chain, resolved]);
+        queue.push(resolved);
+      }
+    }
+  }
+  return walk;
 }
 
 /** Every chain of `walk` that reaches a forbidden module or package, or a relative specifier that resolves to nothing. */
-function forbiddenReach(_walk: ImportWalk): Array<string> {
-  return [];
+function forbiddenReach(walk: ImportWalk): Array<string> {
+  const show = (chain: ImportChain): string => chain.map((file) => path.relative(walk.root, file)).join(' → ');
+  const forbiddenFiles = [...walk.reached.values()]
+    .filter((chain) => {
+      const file = chain[chain.length - 1];
+      return FORBIDDEN_FILE_NAMES.has(path.basename(file)) || FORBIDDEN_FILES.has(path.relative(walk.root, file));
+    })
+    .map(show);
+  const forbiddenPackages = walk.bare
+    .filter(({ specifier }) => FORBIDDEN_PACKAGES.test(specifier))
+    .map(({ specifier, chain }) => `${show(chain)} → ${specifier}`);
+  const unresolved = walk.unresolved.map(({ specifier, chain }) => `${show(chain)} → ${specifier} (unresolved)`);
+  return [...forbiddenFiles, ...forbiddenPackages, ...unresolved];
 }
 
 function tokenFindingsIn(files: Array<string>, pattern: RegExp): Array<string> {
