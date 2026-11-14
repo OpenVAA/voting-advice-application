@@ -45,6 +45,7 @@ tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset
 # provider's test environment, which only the wrapper prepares, the `bank-auth` and
 # `contestant-identity-provider` projects fail.
 yarn test:e2e                 # Run Playwright E2E tests; EXCLUDES the @probe specs
+yarn test:e2e:deployed        # Read-mostly smoke of a deployed URL; needs SMOKE_EXPECTED_SHA. See tests/README.md § Deployed smoke run
 ```
 
 #### E2E Hard Rule (cardinal failure)
