@@ -3463,8 +3463,10 @@ T=infra/envs/staging/aws
 6. The priced inventory. Each usage type's on-demand price, its first tier where it is tiered, is
    read from the price list with the list's publication date. The month assumes one task of 0.5 vCPU
    and 1 GB, one load balancer at one capacity unit, three public IPv4 addresses (the task's and the
-   load balancer's two), all for 729.6 hours (30.4 days), and the log and CDN volumes set in the first
-   lines below. CloudFront's free tier is not subtracted, so the CDN's lines are an upper bound:
+   load balancer's two), all for 729.6 hours (30.4 days), the two alarms target tracking creates, and
+   the log and CDN volumes set in the first lines below. The log volume is both ingested and stored
+   for the month. Neither CloudFront's free tier nor CloudWatch's is subtracted, so those lines are an
+   upper bound:
 
    ```bash
    LOG_GB=1 CDN_GB=1 CDN_REQUESTS=100000
@@ -3495,6 +3497,8 @@ T=infra/envs/staging/aws
    price AWSELB EUN1-LCUUsage 'Load Balancer-Application'
    price AmazonVPC EUN1-PublicIPv4:InUseAddress
    price AmazonCloudWatch EUN1-DataProcessing-Bytes
+   price AmazonCloudWatch EUN1-TimedStorage-ByteHrs
+   price AmazonCloudWatch EUN1-CW:AlarmMonitorUsage
    price AmazonCloudFront EU-DataTransfer-Out-Bytes
    price AmazonCloudFront EU-Requests-Tier2-HTTPS
    awk -v h=729.6 -v lg="$LOG_GB" -v cg="$CDN_GB" \
@@ -3506,12 +3510,15 @@ T=infra/envs/staging/aws
        m += 1 * h * p["EUN1-LCUUsage"]
        m += 3 * h * p["EUN1-PublicIPv4:InUseAddress"]
        m += lg * p["EUN1-DataProcessing-Bytes"]
+       m += lg * p["EUN1-TimedStorage-ByteHrs"]
+       m += 2 * p["EUN1-CW:AlarmMonitorUsage"]
        m += cg * p["EU-DataTransfer-Out-Bytes"]
        m += cr * p["EU-Requests-Tier2-HTTPS"]
        printf "s18_inventory_usd_month=%.2f\n", m
      }' "$L/s18-prices.txt"
    echo "s18_inventory_assumptions=task 0.5vCPU/1GB, 1 LCU," \
-     "3 IPv4, logs ${LOG_GB}GB, CDN ${CDN_GB}GB ${CDN_REQUESTS}req"
+     "3 IPv4, 2 alarms, logs ${LOG_GB}GB," \
+     "CDN ${CDN_GB}GB ${CDN_REQUESTS}req"
    ```
 
    Expected: one `s18_price=` line per usage type, none of them `none`, and
