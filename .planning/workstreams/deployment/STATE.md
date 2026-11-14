@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 186
 current_phase_name: Deployed Smoke Entry
-current_plan: 6
+current_plan: 7
 status: executing
-stopped_at: Completed 186-05-PLAN.md
-last_updated: "2026-11-14T23:20:52.065Z"
+stopped_at: Completed 186-06-PLAN.md
+last_updated: "2026-11-14T23:27:17.013Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 186 execution started
-state_head: 74e5e90c4c83a19ed41f373b59655161a775e6fe
+state_head: 8b6accd8addada2aae39730dde2c957ca819c21e
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 137
-  completed_plans: 134
+  completed_plans: 135
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 186 (Deployed Smoke Entry) — EXECUTING
-Plan: 6 of 8
+Plan: 7 of 8
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 186 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 6
+**Current Plan:** 7
 
 From 184 on, the numeric order is the dependency order.
 
@@ -149,6 +149,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 186 P02 | 12min | 2 tasks | 6 files |
 | Phase 186 P03 | 7min | 2 tasks | 4 files |
 | Phase 186 P05 | 4min | 2 tasks | 1 files |
+| Phase 186 P06 | 3 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -292,6 +293,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 186]: 186-03: forbidden packages match their subpaths too (dotenv/config, @supabase/supabase-js/...), stricter than the lint lock's exact names
 - [Phase 186]: 186-03: RED evidence for vitest guards uses the JUnit report; the classifier rejects vitest's TAP multi-line YAML
 - [Phase 186]: 186-05: all three negative controls seen red on real targets, each failing only its own gate check (sha, project-id, ref); research A3 held (a project id with no rows still serves data-project-id and the env block)
+- [Phase 186]: 186-06: the error-context.md aria-snapshot risk is documented in tests/README.md § Deployed smoke run (a failed contestant run directory is never published); PLAYWRIGHT_NO_COPY_PROMPT is not recommended there, left to 186-08/187
 
 ### Pending Todos
 
@@ -344,6 +346,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-14T23:20:50.909Z
-**Stopped At:** Completed 186-05-PLAN.md
+Last session: 2026-11-14T23:27:15.868Z
+**Stopped At:** Completed 186-06-PLAN.md
 **Resume File:** None
