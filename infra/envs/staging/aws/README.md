@@ -2625,7 +2625,10 @@ U=https://staging.openvaa.org
 2. **The operator's:** the first administrator's sign-in through the Admin App's login form at the
    staging URL. The address and the password are read at prompts, the password without echoing it,
    and reach `curl` from the environment through `jq`, on standard input. Only the status, the
-   redirect's path, two headers and the names of the cookies the answer sets are printed:
+   redirect's path, two headers and the names of the cookies the answer sets are printed. The form
+   body is written with `jq -j`, which ends it without a newline: `--data-binary` sends its input
+   unchanged, so a trailing newline would become part of the last field, the password, and the
+   sign-in would be refused with 400:
 
    ```bash
    printf 'administrator address: '; read -r ADMIN_EMAIL
@@ -2640,7 +2643,7 @@ U=https://staging.openvaa.org
    LP=$(sed "s|^$U||; s|?.*||" "$L/s14-login.url")
    echo "s14_login_path=$LP"
    A='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-   jq -rn '"email=\(env.ADMIN_EMAIL | @uri)"
+   jq -jn '"email=\(env.ADMIN_EMAIL | @uri)"
      + "&password=\(env.ADMIN_PASSWORD | @uri)"' \
      | curl -sS --max-time 20 -o /dev/null -D "$L/s14-signin.txt" \
        -w 's14_admin_signin_http=%{http_code}\n' \
@@ -2657,9 +2660,11 @@ U=https://staging.openvaa.org
      | sort -u | paste -sd, -)"
    ```
 
-   Expected: `s14_admin_signin_http=303`, `s14_signin_location=` a path of the Admin App,
-   `s14_signin_cookie_names=` naming the auth cookies, and `s14_signin_x_cache=Miss from cloudfront`.
-   `s14_signin_cache_control=` is recorded as it reads.
+   Expected: `s14_admin_signin_http=303`, `s14_signin_location=` the Admin App on the public origin,
+   as a path or as `https://staging.openvaa.org/admin`, `s14_signin_cookie_names=` naming the auth
+   cookies, and `s14_signin_x_cache=Miss from cloudfront`. `s14_signin_cache_control=` is recorded as
+   it reads. A 400 with `Error from cloudfront` and no cookies is the action's refusal of the
+   credentials: check that the body was written with `jq -j`.
 
 3. **The operator's:** the administrator's access token, by the password sign-in of
    [`../supabase/README.md`](../supabase/README.md) Step 21. The answer, which holds the token, stays
@@ -3540,29 +3545,22 @@ This root was first applied on 2026-11-13, in two applies (see "Observations"). 
 is something this runbook relies on and that has not been seen. It moves to "Observations", with its
 date, once the step named beside it has shown it.
 
-| Statement                                                                                                                                                                              | Checked by                  |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| The destroy check does not list the two parameters, which carry no `Root` tag                                                                                                          | Step 16                     |
-| One apply brings up the whole stack, the certificates' validation waiting inside it                                                                                                    | Step 5, item 5, and Step 17 |
-| Every page carries the anon key in its inlined public environment                                                                                                                      | Step 13, item 1             |
-| Hosted Supabase keys the feedback limit on the workstation's address: five inserts are admitted and the sixth is refused with 400 and `P0001`                                          | Step 13, item 3             |
-| A phone on another network is admitted inside the same five minutes while the workstation stays refused, so the two clients have a bucket each                                         | Step 13, items 4 and 5      |
-| The persistent project lists `email` among the candidates' registration modes, and a smoke candidate's id can be read anonymously                                                      | Step 14, item 1             |
-| The Admin App's login form signs the first administrator in through CloudFront with 303 and the auth cookies, and the answer is not taken from the edge                                | Step 14, item 2             |
-| `create_invitations`, called with the administrator's own session, creates an email invitation for an entity with `p_confirm_entity` false                                             | Step 14, item 4             |
-| The sign-in link's mail reaches the second mailbox with the origin `https://staging.openvaa.org` and the path `/<locale>/api/auth/callback`, and following it shows a signed-in screen | Step 14, item 5             |
-| `postgres`, over the connection `psql` uses, can delete a user of `auth.users`, its grant going with it, and a claimed invitation by id                                                | Step 15, item 4             |
-| With the stack running, the plans of `dns-mail` and `supabase` show no change                                                                                                          | Step 15, items 2 and 5      |
-| The destroy plan's count equals the managed resources of the state, and its apply exits 0                                                                                              | Step 16, items 2 and 3      |
-| The Tagging API lists the `INACTIVE` task definitions after the destroy, `delete-task-definitions` removes them, and stopped tasks age out of the list                                 | Step 16, items 4 and 5      |
-| After the destroy, the Tagging API lists nothing tagged `Root=aws` in `eu-north-1` or in `us-east-1`                                                                                   | Step 16, item 5             |
-| The image keeps its digest, the two parameters, the zone and the execution role survive the destroy, and the `dns-mail` plan still shows no change                                     | Step 16, item 6             |
-| After the destroy, the `supabase` plan shows no change and the conformance probe passes                                                                                                | Step 16, item 7             |
-| A re-apply from the same tag plans only creates, applies, shows no change in a second plan, and serves the same build and the voter page                                               | Step 17, items 2 to 5       |
-| The re-created log group keeps 90 days, and the new subscription is pending until the operator confirms it                                                                             | Step 17, item 6             |
-| Cost Explorer filtered by `Root=aws` gives the stack's daily cost, Fargate included through the tasks' propagated tags                                                                 | Step 18, item 3             |
-| The public IPv4 charges either carry the tag or show in the account's usage types alone                                                                                                | Step 18, item 5             |
-| The price list holds one on-demand price, first tier, for each usage type Step 18 names                                                                                                | Step 18, item 6             |
+| Statement                                                                                                                                              | Checked by                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| The destroy check does not list the two parameters, which carry no `Root` tag                                                                          | Step 16                     |
+| One apply brings up the whole stack, the certificates' validation waiting inside it                                                                    | Step 5, item 5, and Step 17 |
+| `postgres`, over the connection `psql` uses, can delete a user of `auth.users`, its grant going with it, and a claimed invitation by id                | Step 15, item 4             |
+| With the stack running, the plans of `dns-mail` and `supabase` show no change                                                                          | Step 15, items 2 and 5      |
+| The destroy plan's count equals the managed resources of the state, and its apply exits 0                                                              | Step 16, items 2 and 3      |
+| The Tagging API lists the `INACTIVE` task definitions after the destroy, `delete-task-definitions` removes them, and stopped tasks age out of the list | Step 16, items 4 and 5      |
+| After the destroy, the Tagging API lists nothing tagged `Root=aws` in `eu-north-1` or in `us-east-1`                                                   | Step 16, item 5             |
+| The image keeps its digest, the two parameters, the zone and the execution role survive the destroy, and the `dns-mail` plan still shows no change     | Step 16, item 6             |
+| After the destroy, the `supabase` plan shows no change and the conformance probe passes                                                                | Step 16, item 7             |
+| A re-apply from the same tag plans only creates, applies, shows no change in a second plan, and serves the same build and the voter page               | Step 17, items 2 to 5       |
+| The re-created log group keeps 90 days, and the new subscription is pending until the operator confirms it                                             | Step 17, item 6             |
+| Cost Explorer filtered by `Root=aws` gives the stack's daily cost, Fargate included through the tasks' propagated tags                                 | Step 18, item 3             |
+| The public IPv4 charges either carry the tag or show in the account's usage types alone                                                                | Step 18, item 5             |
+| The price list holds one on-demand price, first tier, for each usage type Step 18 names                                                                | Step 18, item 6             |
 
 ## Observations
 
@@ -3611,3 +3609,11 @@ date, once the step named beside it has shown it.
 | 2026-11-13 | Step 12, item 6: the scale-in stopped the raise's task, not the older one, with `ServiceSchedulerInitiated`, `Scaling activity initiated by (deployment ...)` and exit 0. Its own stream holds the stop record with `signal: 'SIGTERM',`, `inFlightAtSignal` 0 and `drainMs` 0, 56 seconds after the deregistration began. This is the stop signal's second record, after Step 11. In the first run the stopped task had already aged out of `describe-tasks` (`MISSING`) about 93 minutes after it stopped, while its stream still held the same record.                                                                                                                                           |
 | 2026-11-13 | Step 12, item 4: a lid-closed sleep of the workstation on battery, from 13:49Z to 15:31Z with two DarkWakes of about a minute, left gaps of 8 and 92 minutes in the minute reads of the first run. The loop woke past its end and stopped. The scaling activities and the service's events, written by AWS, kept the whole run. The pair was taken off with item 7 and the step was run again under `caffeinate -i`, with no gap over 68 seconds.                                                                                                                                                                                                                                                   |
 | 2026-11-13 | Step 12, item 7: the removal's plan read `Plan: 0 to add, 0 to change, 2 to destroy.` with the two scheduled actions' `delete` alone, and its apply exited 0, twice. Afterwards no scheduled action is listed for the service, the scalable target reads 1 and 2, and a plan with `-detailed-exitcode` exits 0.                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-11-13 | Step 13, items 1 and 2: `https://staging.openvaa.org/` answered 200 and its inlined public environment carries the anon key. One insert into `public.feedback` from the workstation, made as the browser makes it, straight to the REST API with the anon key and the public origin, answered 201 at 15:59:21Z.                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-11-14 | Step 13, item 3: from 08:42:46Z, five inserts from the workstation over IPv4 answered 201 and the sixth 400 with `P0001`, so hosted Supabase keys the feedback limit on one client, admitting five in the window and refusing the sixth.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2026-11-14 | Step 13, items 4 and 5: the phone, on mobile data, sent feedback through the voter app's form at 08:43Z and was thanked, while the workstation's bucket was full. The workstation's insert at 08:44:18Z, 92 seconds after the block began, was still refused with 400 and `P0001`. The two networks have a bucket each, keyed on the client Cloudflare gives the project.                                                                                                                                                                                                                                                                                                                           |
+| 2026-11-13 | Step 14, item 1: read anonymously, the persistent project lists `email,code` as the candidates' registration modes, and the first smoke candidate's id can be read. Because the anonymous read of a candidate admits only a confirmed one, the candidate was confirmed before the invitation.                                                                                                                                                                                                                                                                                                                                                                                                       |
+| 2026-11-14 | Step 14, item 2: the first two posts of the Admin App's login form answered 400 with `Error from cloudfront` and no cookies. The application's log held `Admin login failed: Invalid login credentials`: `jq -r` ended the form body with a newline, and `--data-binary` sent it as part of the password. With the body written by `jq -j`, which this step now gives, the post answered 303 to `https://staging.openvaa.org/admin`, with `x-cache` `Miss from cloudfront` and the cookie `sb-<project ref>-auth-token`.                                                                                                                                                                            |
+| 2026-11-14 | Step 14, item 2: the answer that sets the auth cookie carries `cache-control: private, no-cache, no-store, must-revalidate, max-age=0` from the origin, and CloudFront missed it, so the edge did not answer it from its cache.                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-11-14 | Step 14, item 4: `create_invitations`, called with the administrator's own session and `p_confirm_entity` false, answered 200 with one email invitation for the smoke candidate, no code, and `entity_confirmed` `true`. That field is the entity's confirmation after the call, not the flag: the candidate was already confirmed, as item 1 shows, and the call left it so.                                                                                                                                                                                                                                                                                                                       |
+| 2026-11-14 | Step 14, item 5: the sign-in link asked for on `/contestant/login/email` with "I have not set a password yet" reached the second mailbox through SES at 08:55Z. It came from the project's sender `noreply` on `staging.openvaa.org`, the client showed it as verified by `staging.openvaa.org`, and its subject was `Sign-in link for the voting advice application`. Its link has the origin `https://staging.openvaa.org`, the path `/en/api/auth/callback` and the type `magiclink`. Following it showed the screen that asks a user with no password to set one.                                                                                                                               |
