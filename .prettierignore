@@ -85,3 +85,4 @@ apps/supabase/supabase/migrations/
 infra/scripts/bootstrap.sql
 infra/scripts/check-seed.sql
 infra/scripts/grant-project-admin.sql
+infra/scripts/grant-smoke-contestant.sql
