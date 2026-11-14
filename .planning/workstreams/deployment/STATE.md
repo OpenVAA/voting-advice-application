@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 186
 current_phase_name: Deployed Smoke Entry
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 186-02-PLAN.md
-last_updated: "2026-11-14T23:05:45.654Z"
+stopped_at: Completed 186-03-PLAN.md
+last_updated: "2026-11-14T23:15:18.187Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 186 execution started
-state_head: 5867d1ffd5caaa4e3e2cd77a8d59207ab43a1a06
+state_head: d719ae1422dd3770783b7816b7bf325e834b5ad4
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 137
-  completed_plans: 132
+  completed_plans: 133
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 186 (Deployed Smoke Entry) — EXECUTING
-Plan: 4 of 8
+Plan: 5 of 8
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 186 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 4
+**Current Plan:** 5
 
 From 184 on, the numeric order is the dependency order.
 
@@ -147,6 +147,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 186 P01 | 4min | 2 tasks | 2 files |
 | Phase 186 P04 | 8min | 2 tasks | 4 files |
 | Phase 186 P02 | 12min | 2 tasks | 6 files |
+| Phase 186 P03 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -286,6 +287,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 186]: The deployed config adds its JSON reporter only when PLAYWRIGHT_JSON_OUTPUT_FILE is set, so --list never prints a JSON report to stdout
 - [Phase 186]: Contestant smoke inputs fail only that test by name (requireSmokeInputs), never a skip or a gate check; trace/screenshot/video off in that file
 - [Phase 186]: Playwright writes error-context.md with an aria snapshot on failure even with trace off; 186-08/187 credentialed runs should set PLAYWRIGHT_NO_COPY_PROMPT=1 or check the file for an address
+- [Phase 186]: 186-03: the import walk fails closed - an unresolved relative specifier counts as a forbidden reach
+- [Phase 186]: 186-03: forbidden packages match their subpaths too (dotenv/config, @supabase/supabase-js/...), stricter than the lint lock's exact names
+- [Phase 186]: 186-03: RED evidence for vitest guards uses the JUnit report; the classifier rejects vitest's TAP multi-line YAML
 
 ### Pending Todos
 
@@ -338,6 +342,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-14T23:05:44.507Z
-**Stopped At:** Completed 186-02-PLAN.md
+Last session: 2026-11-14T23:15:17.019Z
+**Stopped At:** Completed 186-03-PLAN.md
 **Resume File:** None

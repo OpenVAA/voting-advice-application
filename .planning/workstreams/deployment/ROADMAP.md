@@ -570,7 +570,7 @@ Notes:
   4. The local gate suite and its preflight are unchanged, and the full local suite is green on the tree that adds the smoke entry.
 
 **Research flag**: Standard pattern, no research phase. A second Playwright config reuses the existing fixtures. The local-port assumption in `supabaseAdminClient.ts` must be made a parameter.
-**Plans**: 3/8 plans executed in 6 waves. Waves 1 to 5 run without the operator: the gate, the entry and its specs, the lock, the grant SQL and its runbook item, the three negative controls, the docs and the closing local gates with the one full local E2E run. Wave 6 is the one hosted write, at a checkpoint the operator approves, followed by the full green deployed smoke run. The research flag is read as "the smoke entry holds no service-role client, enforced" (A-05), not as a parameterised admin client.
+**Plans**: 4/8 plans executed in 6 waves. Waves 1 to 5 run without the operator: the gate, the entry and its specs, the lock, the grant SQL and its runbook item, the three negative controls, the docs and the closing local gates with the one full local E2E run. Wave 6 is the one hosted write, at a checkpoint the operator approves, followed by the full green deployed smoke run. The research flag is read as "the smoke entry holds no service-role client, enforced" (A-05), not as a parameterised admin client.
 
 Plans:
 **Wave 1**
@@ -581,7 +581,7 @@ Plans:
 - [x] 186-02-PLAN.md — wave 2 — The second Playwright entry and its two specs; the voter half run green against staging; the contestant spec failing by name without its inputs.
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 186-03-PLAN.md — wave 3 — The root script, the ESLint import lock seen red and green, and the unit guard over workflows, config shape and import closure.
+- [x] 186-03-PLAN.md — wave 3 — The root script, the ESLint import lock seen red and green, and the unit guard over workflows, config shape and import closure.
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 186-05-PLAN.md — wave 4 — The three negative controls, each seen red on a real target at its own check alone.
@@ -699,7 +699,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
 | 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
-| 186. Deployed Smoke Entry | 3/8 | In Progress | - |
+| 186. Deployed Smoke Entry | 4/8 | In Progress | - |
 | 187. Deploy Pipeline | 0/TBD | Not started | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
 | 189. Documentation and Closure | 0/TBD | Not started | - |
