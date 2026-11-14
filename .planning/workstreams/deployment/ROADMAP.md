@@ -570,7 +570,28 @@ Notes:
   4. The local gate suite and its preflight are unchanged, and the full local suite is green on the tree that adds the smoke entry.
 
 **Research flag**: Standard pattern, no research phase. A second Playwright config reuses the existing fixtures. The local-port assumption in `supabaseAdminClient.ts` must be made a parameter.
-**Plans**: TBD
+**Plans**: 8 plans in 6 waves. Waves 1 to 5 run without the operator: the gate, the entry and its specs, the lock, the grant SQL and its runbook item, the three negative controls, the docs and the closing local gates with the one full local E2E run. Wave 6 is the one hosted write, at a checkpoint the operator approves, followed by the full green deployed smoke run. The research flag is read as "the smoke entry holds no service-role client, enforced" (A-05), not as a parameterised admin client.
+
+Plans:
+**Wave 1**
+- [ ] 186-01-PLAN.md — wave 1 — The deployed-target gate as a pure module with its unit refusals: tfvars identity, served ref and project id, SHA, service-role refusal.
+- [ ] 186-04-PLAN.md — wave 1 — The contestant grant SQL proven on an isolated database, and its creation and removal in Step 22 of the staging runbook; nothing hosted written.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 186-02-PLAN.md — wave 2 — The second Playwright entry and its two specs; the voter half run green against staging; the contestant spec failing by name without its inputs.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 186-03-PLAN.md — wave 3 — The root script, the ESLint import lock seen red and green, and the unit guard over workflows, config shape and import closure.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 186-05-PLAN.md — wave 4 — The three negative controls, each seen red on a real target at its own check alone.
+- [ ] 186-06-PLAN.md — wave 4 — § Deployed smoke run in tests/README.md and one CLAUDE.md Testing line.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 186-07-PLAN.md — wave 5 — Lint, format and unit gates, the unchanged-local-gate proofs, and the phase's one full local E2E run.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 186-08-PLAN.md — wave 6, needs the operator — Readiness, the operator-approved contestant sitting, and the full deployed smoke run green.
 
 Notes:
 

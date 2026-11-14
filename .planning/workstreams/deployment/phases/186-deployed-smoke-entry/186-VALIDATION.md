@@ -38,7 +38,29 @@ created: "2026-11-15"
 
 ## Per-Task Verification Map
 
-Filled by the planner per task. The requirement → test map:
+Filled by the planner per task:
+
+| Plan / Task | Wave | Behavior | Automated Command (abbreviated; full form in the plan) |
+|-------------|------|----------|--------------------------------------------------------|
+| 186-01 T1 (tracer) | 1 | gate end to end against a stub: four ordered PASS/FAIL lines, tfvars read | `vitest run --config tests/vitest.config.ts deployedTarget`; eslint + `yarn typecheck:tests` + comment hygiene |
+| 186-01 T2 | 1 | refusal matrix, no input widens the ref, config-shape check, input reader | same, plus `yarn test:unit:tests` |
+| 186-04 T1 (tracer) | 1 | grant SQL outcomes on an isolated instance | evidence `GRANT_*` lines; `isolated-instance.sh list` empty; SQL anatomy greps |
+| 186-04 T2 | 1 | Step 22 contestant items and removal | `prettier --check` + anchor greps; Step 22 fenced lines ≤ 80; no address added |
+| 186-02 T1 (tracer) | 2 | deployed entry + voter walk green on staging | deployed `--list`; typecheck/eslint/hygiene; evidence + `e2e-spec-verdict.mjs --passed voter.smoke.ts --no-flaky` |
+| 186-02 T2 | 2 | contestant spec fails by name without inputs; both lists | deployed list `Total: 2 tests in 2 files`; local list `Total: 548 tests in 127 files`; verdict `--failed-test … --failure-contains 'SMOKE INPUT MISSING'` |
+| 186-03 T1 (tracer) | 3 | root script, ESLint lock seen red/green, run through the script | evidence `LOCK_*`/`VIA_SCRIPT_*` lines; eslint on the smoke files; package.json script check; verdict |
+| 186-03 T2 | 3 | unit guard: tokens, config shape, import closure | `vitest run … deployedSmokeGuards`; `yarn test:unit:tests` + `assert-unit-test-coverage.mjs` |
+| 186-05 T1 (tracer) | 4 | control 1: wrong SHA | evidence `CONTROL_SHA_EXIT` non-zero; log FAIL sha only; `SUPA09_UNIT_EXIT=0` |
+| 186-05 T2 | 4 | controls 2 and 3 from a local production build | evidence build version = deployed SHA; logs FAIL project-id only / FAIL ref only |
+| 186-06 T1 (tracer) | 4 | tests/README § Deployed smoke run | `prettier --check` + anchors; `yarn test:e2e:deployed --list --reporter=list` → 2 tests |
+| 186-06 T2 | 4 | CLAUDE.md Testing line | `prettier --check`; one added line |
+| 186-07 T1 (tracer) | 5 | lint/format/unit; SC4 diff; local list; deployed-tree diff | evidence lines; `git diff --quiet a7a4222a8 -- <three local gate files>` |
+| 186-07 T2 | 5 | the one full local E2E run | evidence `E2E_GATE=green`; `e2e-spec-verdict.mjs <run> --no-flaky` |
+| 186-08 T1 (tracer) | 6 | readiness, read-only | evidence lines; voter verdict |
+| 186-08 T2 (checkpoint:human-action) | 6 | operator approval and keychain address item | readiness lines present; reply bound with `attempt.sh` |
+| 186-08 T3 | 6 | the sitting and the full deployed smoke green | evidence `s22c_*`, `GREEN_*`, `CREDENTIAL_LEAK_CHECK=clean`; verdict `--passed voter.smoke.ts --passed contestant.smoke.ts --no-flaky` |
+
+The requirement → test map:
 
 | Req / SC | Behavior | Test Type | Automated Command | File Exists |
 |----------|----------|-----------|-------------------|-------------|

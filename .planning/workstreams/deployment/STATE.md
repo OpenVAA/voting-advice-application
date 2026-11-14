@@ -5,16 +5,16 @@ milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytic
 current_phase: 186
 current_phase_name: Deployed Smoke Entry
 current_plan: 1
-status: planning
+status: executing
 stopped_at: Phase 185 complete, ready to plan Phase 186
-last_updated: "2026-11-14T19:31:58.516Z"
+last_updated: "2026-11-14T22:42:53.489Z"
 last_activity: 2026-11-14
 last_activity_desc: Phase 185 complete, transitioned to Phase 186
-state_head: c8f0ab9e28bf2c09e3d142e26b713257eecdd0b4
+state_head: faa30ac77b5c3c810c4083355b5b60b71a1a4dcd
 progress:
   total_phases: 10
   completed_phases: 5
-  total_plans: 129
+  total_plans: 137
   completed_plans: 129
   percent: 50
 ---
@@ -33,9 +33,9 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 186 — Deployed Smoke Entry
+Phase: 186 (Deployed Smoke Entry) — READY TO EXECUTE
 Plan: Not started
-Status: Ready to plan
+Status: Ready to execute
 Last activity: 2026-11-14 — Phase 185 complete, transitioned to Phase 186
 
 Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
