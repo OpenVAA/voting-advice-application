@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 186
 current_phase_name: Deployed Smoke Entry
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 186-04-PLAN.md
-last_updated: "2026-11-14T22:59:21.194Z"
+stopped_at: Completed 186-02-PLAN.md
+last_updated: "2026-11-14T23:05:45.654Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 186 execution started
-state_head: 5bc1e32d52b6bd6a5ae0466607fd08fac2d4f89a
+state_head: 5867d1ffd5caaa4e3e2cd77a8d59207ab43a1a06
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 137
-  completed_plans: 131
+  completed_plans: 132
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 186 (Deployed Smoke Entry) — EXECUTING
-Plan: 3 of 8
+Plan: 4 of 8
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 186 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 3
+**Current Plan:** 4
 
 From 184 on, the numeric order is the dependency order.
 
@@ -146,6 +146,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 184 P25 | about 25 min of gates (orchestrator) and 10 min of recording | 2 tasks | 2 files |
 | Phase 186 P01 | 4min | 2 tasks | 2 files |
 | Phase 186 P04 | 8min | 2 tasks | 4 files |
+| Phase 186 P02 | 12min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -282,6 +283,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 186]: 186-01: the deployed gate reads the expected Supabase ref and project id only from infra/envs/staging/supabase/terraform.tfvars; runDeployedGate has no identity parameter
 - [Phase 186]: 186-04: grant-smoke-contestant.sql refuses 'holds another grant' before 'another user edits the candidate', locks the chosen candidate FOR UPDATE and orders COLLATE "C"
 - [Phase 186]: 186-04: the Step 22 contestant items pass the service-role key and the contestant token to curl as -H @file header files in $L, never on argv
+- [Phase 186]: The deployed config adds its JSON reporter only when PLAYWRIGHT_JSON_OUTPUT_FILE is set, so --list never prints a JSON report to stdout
+- [Phase 186]: Contestant smoke inputs fail only that test by name (requireSmokeInputs), never a skip or a gate check; trace/screenshot/video off in that file
+- [Phase 186]: Playwright writes error-context.md with an aria snapshot on failure even with trace off; 186-08/187 credentialed runs should set PLAYWRIGHT_NO_COPY_PROMPT=1 or check the file for an address
 
 ### Pending Todos
 
@@ -334,6 +338,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-14T22:59:20.027Z
-**Stopped At:** Completed 186-04-PLAN.md
+Last session: 2026-11-14T23:05:44.507Z
+**Stopped At:** Completed 186-02-PLAN.md
 **Resume File:** None
