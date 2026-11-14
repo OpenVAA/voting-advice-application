@@ -487,7 +487,7 @@ Notes:
   5. State is remote and locked, and staging has its own variables and outputs. A destroy of the AWS root, run once on purpose, removes the stack cleanly and leaves the hosted project, its data and its settings untouched, and the stack is then applied again. Every resource carries the cost tags, and a monthly estimate measured on the applied stack is recorded.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topic from `research/SUMMARY.md`: ACM and DNS staging. It was written for a zone outside Route 53, and F1 moves the zone to Route 53 in phase 183, so what remains is the order of the staged apply (registry, image, DNS and certificate, compute). Added by ruling A2 after the research, and so not researched: the CDN (INFRA-14). Where it sits can change the proxy depth of INFRA-06, the region of the certificate against the default of INFRA-12, the header record of OBS-04 and the scope of the WAF variable of RELAY-09. The header observations are made with the CDN in place.
-**Plans**: 18/22 plans executed in 18 waves. Waves 1 to 7 write and gate the code without AWS (the first stops once for the operator's rulings on the execution role's home, the push and the alert address); waves 8 to 17 are the hosted sittings in order, the agent applying `envs/staging/aws` under D-01; wave 18 closes on the repository gates and a full E2E run beside the cost read.
+**Plans**: 19/22 plans executed in 18 waves. Waves 1 to 7 write and gate the code without AWS (the first stops once for the operator's rulings on the execution role's home, the push and the alert address); waves 8 to 17 are the hosted sittings in order, the agent applying `envs/staging/aws` under D-01; wave 18 closes on the repository gates and a full E2E run beside the cost read.
 
 Plans:
 **Wave 1**
@@ -539,7 +539,7 @@ Plans:
 - [x] 185-18-PLAN.md — wave 15, needs the operator — The feedback limit from two networks and the invitation mail (OBS-10, OBS-06).
 
 **Wave 16** *(blocked on Wave 15 completion)*
-- [ ] 185-19-PLAN.md — wave 16, needs the operator — Cleanup, the plans before, the log copy, the destroy and the sweep in both regions.
+- [x] 185-19-PLAN.md — wave 16, needs the operator — Cleanup, the plans before, the log copy, the destroy and the sweep in both regions.
 
 **Wave 17** *(blocked on Wave 16 completion)*
 - [ ] 185-20-PLAN.md — wave 17, needs the operator — The Supabase plan and probe after the destroy, and the re-apply.
@@ -677,7 +677,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 182. Analytics Relay | 31/31 | Complete | 2026-10-20 |
 | 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
-| 185. AWS Frontend Stack, First Apply by Hand | 18/22 | In Progress | - |
+| 185. AWS Frontend Stack, First Apply by Hand | 19/22 | In Progress | - |
 | 186. Deployed Smoke Entry | 0/TBD | Not started | - |
 | 187. Deploy Pipeline | 0/TBD | Not started | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
