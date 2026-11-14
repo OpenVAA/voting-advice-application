@@ -31,7 +31,7 @@
     {
       "number": "186",
       "name": "Deployed Smoke Entry",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "187",
@@ -54,5 +54,5 @@
     "label": "Advance to the next step",
     "reason": "Phase 7 of 10 · 50% · executing"
   },
-  "updated_at": "2026-11-14T22:42:53.508Z"
+  "updated_at": "2026-11-14T23:46:22.495Z"
 }

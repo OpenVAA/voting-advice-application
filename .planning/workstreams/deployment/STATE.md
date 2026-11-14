@@ -312,6 +312,8 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ### Blockers/Concerns
 
+- **[Phase 186 — OPEN OPERATOR CHECKPOINT, 2026-11-15]** Plans 186-01 to 186-07 complete; full local E2E green (548/0/0/0, run `186-close-20261114T233139Z`, tree `ac3d8d42b`). Plan 186-08 Task 1 (read-only readiness) done at `48775c8c5`; Task 2 `checkpoint:human-action` attempt `186-08-2`, id `20261114T234949Z.48775c8c5`, awaits the operator's approval of the one hosted write (contestant user + editor grant on `smoke_cand_0000` + terms acceptance on `cofbsatfrdysyphajsky`) and the keychain item `openvaa-staging-smoke-contestant`. Question and reply fields: `tmp/183-evidence/186-08-2.20261114T234949Z.48775c8c5.txt`. Also decide whether the sitting's run sets `PLAYWRIGHT_NO_COPY_PROMPT=1` (Playwright writes an aria snapshot to `error-context.md` on a failed test). Phase 186 cannot be verified until Task 3 runs. SUPA-09 stays Pending.
+
 - Phase 181: the baseline freeze waits for a cutover commit agreed with the v2.16 session (SUPA-10, C1). The rest of the phase does not wait.
 - Phase 182: the legal position needs a qualified reviewer. Six readings of the operator's notes of 2026-10-11 are written into the context files and listed in `v2.17-181-183-DISCUSSION-POINTS.md`; the operator has not yet confirmed them.
 - Phase 181: the freeze also waits for one schema change of phase 182 (ruling 182-12).
