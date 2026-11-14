@@ -152,7 +152,7 @@ feedback straight to PostgREST, so the limit is the database trigger's.
 ## Rows left for plan 185-19
 
 - Feedback rows `limit-check <time>`: the agent's 1 and the workstation's 5, plus the phone's
-  `limit-check phone` row.
+  row, which reads `10.43 eet`, not `limit-check phone` (corrected by plan 185-19).
 - The invitation `af0f3920-a124-4528-88f3-3af53c5faa22`.
 - The invitee's auth user, and the grant its claim writes. Whether the claim ran was not read here.
 

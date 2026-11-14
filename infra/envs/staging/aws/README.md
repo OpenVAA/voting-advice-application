@@ -75,6 +75,10 @@ terminal's scroll-back.
 - If whoever asked you to run a step gave you an attempt id, the first line of your reply is
   `answer_attempt=<that id>`.
 - Never paste a secret, an e-mail address or a network address.
+- Copy each block whole, from its first line to its last, and paste it in one go. A line lost in
+  the copy shows only as a named line that is missing, a shell parse error or a SQL error, and a
+  lost line inside a heredoc can change what the statement does. Before you paste the reply, check
+  that every named line the block prints is there; if one is missing, run the whole block again.
 
 `$L` and a saved plan file hold secrets in clear text. The last item of each step removes `$L`, and
 the plan file with it, and prints a named line. If you stop early or a command fails, run that last
@@ -2527,7 +2531,9 @@ U=https://staging.openvaa.org
 
 4. **The operator's:** within five minutes of `s13_block_started_utc`, on the phone with Wi-Fi off, so
    that it reaches the internet through the mobile network, open `https://staging.openvaa.org`, open
-   the feedback form from the menu, write `limit-check phone` and the time as the text, and send it.
+   the feedback form from the menu, write exactly `limit-check phone` as the text, with nothing
+   before it and nothing in its place, and send it. Step 15 removes the row by that text, so a row
+   with any other text is left on the project. The time is the answer below, not part of the text.
    The form thanks you when the feedback was stored and says it failed when it was refused. Answer
    `answer_phone_feedback=accepted` or `answer_phone_feedback=refused`, and
    `answer_phone_feedback_utc=<time>`.

@@ -62,8 +62,9 @@ OBS10_WORKSTATION_STILL_REFUSED=yes
 - **Item 3, the workstation.** `s13_insert_1_http=` to `s13_insert_5_http=` each `201`, then
   `s13_insert_6_http=400`, every curl exit 0, and `s13_refusal_code=P0001`. The loop stopped at the
   first refusal.
-- **Item 4, the phone.** On mobile data with Wi-Fi off, the operator sent `limit-check phone` through
-  the voter app's feedback form at `https://staging.openvaa.org`. The form thanked them:
+- **Item 4, the phone.** On mobile data with Wi-Fi off, the operator sent feedback through
+  the voter app's feedback form, with the text `10.43 eet` (the time alone, not the
+  `limit-check phone` the item asked for; corrected by plan 185-19, which read the row back), at `https://staging.openvaa.org`. The form thanked them:
   `answer_phone_feedback=accepted`, `answer_phone_feedback_utc=2026-11-14T08:43Z` (reported as 10.43
   EET). That is inside the workstation's window, while its bucket was full.
 - **Item 5, the workstation again.** `s13_after_phone_http=400`, `s13_after_phone_code=P0001`, curl
@@ -147,7 +148,8 @@ OBS06_RECIPIENT=operator's second mailbox
 ### Left on the persistent project for plan 185-19
 
 - Feedback rows described `limit-check <time>`: the agent's one, the workstation's five admitted
-  inserts and the phone's `limit-check phone` row, which carries the operator's text.
+  inserts and the phone's row. That row reads `10.43 eet`, the operator's own text, not
+  `limit-check phone` (corrected by plan 185-19, which read it back and deleted it by that text).
 - The invitation `af0f3920-a124-4528-88f3-3af53c5faa22`, the invitee's auth user, which the
   recipient signed in as, and the grant the sign-in's claim writes. Whether the claim ran was not read
   here; plan 185-19 reads the rows before it removes them. Nothing else was written.
