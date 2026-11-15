@@ -233,7 +233,8 @@ approval:
    `infra/envs/staging/supabase` and a read of its state key under `hand/` must both be refused to
    the deploy role. It then reads the digest the service runs, lists the AWS root's state, plans
    `-destroy` of that root into a saved plan, and checks it with `infra/scripts/check-destroy-plan.sh`
-   (every change a delete under `module.frontend`, as many as the state holds) before it prints it.
+   (every change a delete under `module.frontend`, of exactly the managed addresses the state holds,
+   and at least one) before it prints it.
 2. `apply-destroy` plans again into its own saved plan, so that no plan crosses jobs, checks and
    prints it the same way, applies it, and fails unless the state is then empty.
 

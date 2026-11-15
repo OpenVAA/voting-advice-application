@@ -4,23 +4,28 @@
 #
 # The staging AWS root holds one module, `module.frontend`, and every resource it manages lives under that address. A
 # destroy of the root may therefore contain one kind of change only: a `delete` of a managed resource whose address
-# starts with `module.frontend.`. The number of those deletes must equal the number of managed resources in the state,
-# because a destroy that touches anything else, or misses part of the stack, is not the stack's destroy: the first
-# reaches beyond the root, the second leaves resources behind that the next apply or the cost window does not expect.
+# starts with `module.frontend.`. The addresses of those deletes must be exactly the managed addresses of the state,
+# and the state must hold at least one, because a destroy that touches anything else, misses part of the stack or
+# destroys nothing is not the stack's destroy: the first reaches beyond the root, the second leaves resources behind
+# that the next apply or the cost window does not expect, and the third is what a plan against an empty or unread
+# state looks like while the stack still stands.
 #
 # What it reads, and nothing else:
 #   - the plan as `terraform show -json <plan>` prints it: of each `resource_changes` entry of mode `managed`, its
-#     `address` and its `change.actions`. Entries of mode `data` are not resources and are not counted.
+#     `address`, its `change.actions` and whether it names a `deposed` object. Entries of mode `data` are not resources
+#     and are not counted. A plan without a `resource_changes` list is not a plan document.
 #   - the state as `terraform state list` prints it: one address per line. A line whose address names a data source,
 #     `data.<type>.<name>` at the root or under any module path, is not counted.
 #
-# It prints five lines and nothing of the plan:
+# It prints six lines and nothing of the plan:
 #   destroy_planned=<n>          managed changes whose actions are exactly ["delete"]
 #   destroy_state_resources=<n>  managed resources in the state list
 #   destroy_outside_module=<n>   managed changes, other than a no-op, whose address does not start with module.frontend.
 #   destroy_other_actions=<n>    managed changes whose actions are anything but ["delete"] or ["no-op"]
-#   destroy_guard=pass|fail      pass only when destroy_outside_module and destroy_other_actions are 0 and
-#                                destroy_planned equals destroy_state_resources
+#   destroy_unmatched=<n>        addresses deleted but not in the state, plus addresses in the state but not deleted
+#   destroy_guard=pass|fail      pass only when destroy_state_resources is above 0, destroy_outside_module,
+#                                destroy_other_actions and destroy_unmatched are 0, and destroy_planned equals
+#                                destroy_state_resources
 # A plan file that is not a plan document prints `destroy_guard=fail` alone. jq's own message is not printed, so that
 # no part of the plan reaches the log.
 #
@@ -64,55 +69,62 @@ usage_error() {
   exit 2
 }
 
-# The three counts of the plan, space-separated: deletes, changes outside the module, changes of another action.
+# The four counts of the plan, space-separated: deletes, changes outside the module, changes of another action, and
+# the addresses on one side only of the comparison with the state's managed addresses, given as $state.
 PLAN_COUNTS='
   if type != "object" then error("not a plan document") else . end
-  | (.resource_changes // [])
-  | if type != "array" then error("resource_changes is not a list") else . end
-  | map(select(.mode == "managed"))
+  | if (.resource_changes | type) != "array" then error("resource_changes is not a list") else . end
+  | (.resource_changes | map(select(.mode == "managed"))) as $managed
+  | ($state | split("\n") | map(select(length > 0)) | unique) as $in_state
+  | ($managed | map(select(.change.actions == ["delete"] and (has("deposed") | not)) | .address) | unique) as $deleted
   | [
-      (map(select(.change.actions == ["delete"])) | length),
-      (map(select(.change.actions != ["no-op"] and ((.address | startswith("module.frontend.")) | not))) | length),
-      (map(select(.change.actions != ["delete"] and .change.actions != ["no-op"])) | length)
+      ($managed | map(select(.change.actions == ["delete"])) | length),
+      ($managed | map(select(.change.actions != ["no-op"] and ((.address | startswith("module.frontend.")) | not))) | length),
+      ($managed | map(select(.change.actions != ["delete"] and .change.actions != ["no-op"])) | length),
+      (($deleted - $in_state | length) + ($in_state - $deleted | length))
     ]
   | map(tostring)
   | join(" ")
 '
 
-# The number of managed resources in a state list. An address names a data source when, its index keys removed, it
+# The managed addresses of a state list, one per line. An address names a data source when, its index keys removed, it
 # continues with `data.` after any number of `module.<name>.` segments, so a `data.` inside a key does not count.
-state_count() {
+state_addresses() {
   awk '
     NF {
       address = $0
       gsub(/\[[^]]*\]/, "", address)
-      if (address !~ /^(module\.[^.]+\.)*data\./) n++
+      if (address !~ /^(module\.[^.]+\.)*data\./) print $0
     }
-    END { print n + 0 }
   ' "$1"
 }
 
 check() {
-  local counts rc planned outside other state guard
+  local addresses counts rc planned outside other unmatched state guard
 
   rc=0
-  counts="$(jq -r "$PLAN_COUNTS" "$PLAN_JSON" 2> /dev/null)" || rc=$?
-  if [ "$rc" -ne 0 ]; then
-    echo "check-destroy-plan.sh: the plan file is not a plan document (jq exited $rc)" >&2
-    echo "destroy_guard=fail"
-    exit 1
-  fi
-  read -r planned outside other <<< "$counts"
-
-  rc=0
-  state="$(state_count "$STATE_LIST")" || rc=$?
+  addresses="$(state_addresses "$STATE_LIST")" || rc=$?
   if [ "$rc" -ne 0 ]; then
     echo "check-destroy-plan.sh: the state list could not be read (awk exited $rc)" >&2
     echo "destroy_guard=fail"
     exit 1
   fi
+  state=0
+  if [ -n "$addresses" ]; then
+    state="$(printf '%s\n' "$addresses" | wc -l | tr -d ' ')"
+  fi
 
-  if [ "$outside" -eq 0 ] && [ "$other" -eq 0 ] && [ "$planned" -eq "$state" ]; then
+  rc=0
+  counts="$(jq -r --arg state "$addresses" "$PLAN_COUNTS" "$PLAN_JSON" 2> /dev/null)" || rc=$?
+  if [ "$rc" -ne 0 ]; then
+    echo "check-destroy-plan.sh: the plan file is not a plan document (jq exited $rc)" >&2
+    echo "destroy_guard=fail"
+    exit 1
+  fi
+  read -r planned outside other unmatched <<< "$counts"
+
+  if [ "$state" -gt 0 ] && [ "$outside" -eq 0 ] && [ "$other" -eq 0 ] && [ "$unmatched" -eq 0 ] \
+    && [ "$planned" -eq "$state" ]; then
     guard=pass
   else
     guard=fail
@@ -122,6 +134,7 @@ check() {
   echo "destroy_state_resources=$state"
   echo "destroy_outside_module=$outside"
   echo "destroy_other_actions=$other"
+  echo "destroy_unmatched=$unmatched"
   echo "destroy_guard=$guard"
   [ "$guard" = pass ] || exit 1
 }

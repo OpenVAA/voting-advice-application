@@ -93,7 +93,7 @@ describe('check-destroy-plan.sh', () => {
   it('passes a plan that deletes every managed resource of the state, all under module.frontend', () => {
     const { status, stdout } = guard([deleteOf(BUCKET), deleteOf(SERVICE)], [BUCKET, POLICY_DOCUMENT, SERVICE]);
     expect(stdout).toBe(
-      'destroy_planned=2\ndestroy_state_resources=2\ndestroy_outside_module=0\ndestroy_other_actions=0\ndestroy_guard=pass\n'
+      'destroy_planned=2\ndestroy_state_resources=2\ndestroy_outside_module=0\ndestroy_other_actions=0\ndestroy_unmatched=0\ndestroy_guard=pass\n'
     );
     expect(status).toBe(0);
   });
@@ -184,21 +184,49 @@ describe('check-destroy-plan.sh', () => {
     expect(status).toBe(1);
   });
 
-  it('passes an empty plan against an empty state', () => {
+  it('fails an empty plan against an empty state, which destroys nothing', () => {
     const { status, stdout } = guard([], []);
     expect(stdout).toBe(
-      'destroy_planned=0\ndestroy_state_resources=0\ndestroy_outside_module=0\ndestroy_other_actions=0\ndestroy_guard=pass\n'
+      'destroy_planned=0\ndestroy_state_resources=0\ndestroy_outside_module=0\ndestroy_other_actions=0\ndestroy_unmatched=0\ndestroy_guard=fail\n'
     );
-    expect(status).toBe(0);
+    expect(status).toBe(1);
   });
 
-  it('passes a plan with no resource_changes key against an empty state', () => {
+  it('fails a plan with no resource_changes key, as not a plan document', () => {
     const dir = mkdtempSync(join(tmpdir(), 'check-destroy-plan-test-'));
     dirs.push(dir);
     writeFileSync(join(dir, 'destroy.json'), JSON.stringify({ format_version: '1.2' }));
     writeFileSync(join(dir, 'state.txt'), '');
     const { status, stdout } = run(['--plan-json', join(dir, 'destroy.json'), '--state-list', join(dir, 'state.txt')]);
-    expect(lines(stdout)).toMatchObject({ destroy_planned: '0', destroy_guard: 'pass' });
+    expect(stdout).toBe('destroy_guard=fail\n');
+    expect(status).toBe(1);
+  });
+
+  it('fails a plan whose deletes match the state in number but not in address', () => {
+    const other = 'module.frontend.aws_vpc.other';
+    const { status, stdout } = guard([deleteOf(other)], ['module.frontend.aws_ecs_cluster.this']);
+    expect(lines(stdout)).toMatchObject({
+      destroy_planned: '1',
+      destroy_state_resources: '1',
+      destroy_outside_module: '0',
+      destroy_other_actions: '0',
+      destroy_unmatched: '2',
+      destroy_guard: 'fail'
+    });
+    expect(status).toBe(1);
+  });
+
+  it('matches index keys and data-looking keys by their full address', () => {
+    const keyed = 'module.frontend.aws_ssm_parameter.this["data.example"]';
+    const { status, stdout } = guard(
+      [deleteOf(keyed), deleteOf(SERVICE)],
+      [SERVICE, keyed, 'module.frontend.data.aws_region.current']
+    );
+    expect(lines(stdout)).toMatchObject({
+      destroy_state_resources: '2',
+      destroy_unmatched: '0',
+      destroy_guard: 'pass'
+    });
     expect(status).toBe(0);
   });
 
