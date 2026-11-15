@@ -55,7 +55,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       [complete 2026-10-25 on the operator's ruling accept-console-alert of 2026-10-23 (plan 183-20): the
       actual alert was seen as triggered in the AWS Budgets console; no mail was received, so delivery to
       the operator's mailbox is not observed (WINDOWS 289)]
-- [x] **INFRA-16**: The operator is notified when a deployment fails or rolls back and when a build fails. Each
+- [ ] **INFRA-16**: The operator is notified when a deployment fails or rolls back and when a build fails. Each
       alert is seen firing once. [A2, added]
 - [x] **INFRA-17**: IAM permissions are granted through customer-managed policies where an AWS-managed policy
       does not fit; no permission depends on an inline user policy. [F1]
@@ -100,7 +100,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 
 ### PIPE — Deploy pipeline
 
-- [x] **PIPE-01**: GitHub Actions reaches AWS without stored keys, through OIDC, with a read-only plan role and a
+- [ ] **PIPE-01**: GitHub Actions reaches AWS without stored keys, through OIDC, with a read-only plan role and a
       deploy role bound to this repository and one GitHub Environment. A token with the wrong subject is seen
       refused.
 - [ ] **PIPE-02**: On a pull request the Terraform is formatted, validated and planned, and the plan can be read
@@ -108,8 +108,8 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [ ] **PIPE-03**: A pull request from a fork gets no cloud credentials, and its credentialed jobs skip visibly.
 - [ ] **PIPE-04**: An apply runs only behind a GitHub Environment gate, and applies are serialised and never
       cancelled mid-run.
-- [x] **PIPE-05**: The image is built once, pushed, and deployed by digest.
-- [x] **PIPE-06**: A deploy runs in a fixed order: migrations, functions, frontend rollout, wait until stable.
+- [ ] **PIPE-05**: The image is built once, pushed, and deployed by digest.
+- [ ] **PIPE-06**: A deploy runs in a fixed order: migrations, functions, frontend rollout, wait until stable.
 - [ ] **PIPE-07**: A smoke run against the deployed URL fails the pipeline when it fails. It proves the build
       SHA and the project id, renders a voter page from hosted data, goes from questions to results, and signs
       one contestant in. It is read-mostly: no setup or teardown project, and `DEV_SEED_ALLOW_REMOTE` appears in
@@ -274,7 +274,7 @@ closes; those are not listed against the earlier phase here.
 | INFRA-13 | Phase 185 | Pending (measured cost deferred to phase 189 todo) |
 | INFRA-14 | Phase 185 | Complete |
 | INFRA-15 | Phase 183 | Complete |
-| INFRA-16 | Phase 187 | Complete |
+| INFRA-16 | Phase 187 | Pending |
 | INFRA-17 | Phase 183 | Complete |
 | INFRA-18 | Phase 183 | Complete |
 | INFRA-19 | Phase 187 | Pending |
@@ -292,12 +292,12 @@ closes; those are not listed against the earlier phase here.
 | SUPA-12 | Phase 185 | Complete |
 | SUPA-13 | Phase 184 | Complete |
 | SUPA-14 | Phase 184 | Complete |
-| PIPE-01 | Phase 187 | Complete |
+| PIPE-01 | Phase 187 | Pending |
 | PIPE-02 | Phase 187 | Pending |
 | PIPE-03 | Phase 187 | Pending |
 | PIPE-04 | Phase 187 | Pending |
-| PIPE-05 | Phase 187 | Complete |
-| PIPE-06 | Phase 187 | Complete |
+| PIPE-05 | Phase 187 | Pending |
+| PIPE-06 | Phase 187 | Pending |
 | PIPE-07 | Phase 187 | Pending |
 | PIPE-08 | Phase 187 | Pending |
 | PIPE-09 | Phase 187 | Pending |
