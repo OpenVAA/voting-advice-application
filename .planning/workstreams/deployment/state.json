@@ -36,7 +36,7 @@
     {
       "number": "187",
       "name": "Deploy Pipeline",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "number": "188",
@@ -54,5 +54,5 @@
     "label": "Advance to the next step",
     "reason": "Phase 8 of 10 · 50% · executing"
   },
-  "updated_at": "2026-11-15T01:37:25.799Z"
+  "updated_at": "2026-11-15T01:48:50.460Z"
 }

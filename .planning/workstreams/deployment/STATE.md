@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 8
+current_plan: 2
 status: executing
-stopped_at: Completed 186-07-PLAN.md
-last_updated: "2026-11-15T01:37:25.780Z"
+stopped_at: Completed 187-01-PLAN.md
+last_updated: "2026-11-15T01:48:57.154Z"
 last_activity: 2026-11-15
-last_activity_desc: Phase 186 execution started
-state_head: dee800ad8028b6b9a7ef21c81160e6fddc54e85b
+last_activity_desc: Phase 187 execution started
+state_head: ee3bf95c39fe20be649a731204d034cfff5e845d
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 136
+  completed_plans: 137
   percent: 50
 ---
 
@@ -27,23 +27,23 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 186 — Deployed Smoke Entry
+**Current focus:** Phase 187 — Deploy Pipeline
 
 ## Current Position
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 187 (Deploy Pipeline) — READY TO EXECUTE
-Plan: 8 of 8
+Phase: 187 (Deploy Pipeline) — EXECUTING
+Plan: 2 of 25
 Status: Ready to execute
-Last activity: 2026-11-15 — Phase 186 execution started
+Last activity: 2026-11-15 — Phase 187 execution started
 
 Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 8
+**Current Plan:** 2
 
 From 184 on, the numeric order is the dependency order.
 
@@ -151,6 +151,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 186 P05 | 4min | 2 tasks | 1 files |
 | Phase 186 P06 | 3 min | 2 tasks | 2 files |
 | Phase 186 P07 | about 20 min | 2 tasks | 2 files |
+| Phase 187 P01 | 9min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -296,6 +297,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 186]: 186-05: all three negative controls seen red on real targets, each failing only its own gate check (sha, project-id, ref); research A3 held (a project id with no rows still serves data-project-id and the env block)
 - [Phase 186]: 186-06: the error-context.md aria-snapshot risk is documented in tests/README.md § Deployed smoke run (a failed contestant run directory is never published); PLAYWRIGHT_NO_COPY_PROMPT is not recommended there, left to 186-08/187
 - [Phase 186]: 186-07: the local E2E run of record is tests/e2e-runs/186-close-20261114T233139Z at E2E_TREE_SHA=ac3d8d42bc20060f4c46825d51d2bcce3826dfc1 (548 passed, 0 failed/flaky/did-not-run); 186-08 must show nothing under apps/, packages/ or tests/ changed after it
+- [Phase 187]: 187-01: network creates split by evaluated resource — new resources need request tags; creates naming a parent VPC or security group also need the root's tags on the parent
+- [Phase 187]: 187-01: creates_carry_request_tags checks an explicit list of 12 tagged-create calls; CreateRoute, CreateTags on existing resources, CreateListener and CreateRule are untaggable or name-scoped
 
 ### Pending Todos
 
@@ -350,6 +353,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-14T23:46:26.637Z
-**Stopped At:** Completed 186-07-PLAN.md
+Last session: 2026-11-15T01:48:55.947Z
+**Stopped At:** Completed 187-01-PLAN.md
 **Resume File:** None

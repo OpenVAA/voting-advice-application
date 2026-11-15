@@ -612,11 +612,11 @@ Notes:
   5. A guarded destroy path removes the AWS stack, and it is seen unable to reach the Supabase root.
 
 **Research flag**: Standard pattern, no research phase. OIDC, plan and apply, and environment gating are well documented, and the repository-specific items carry the risk. Added by rulings after the research: the named-branch trigger (PIPE-10) and the failure alerts (INFRA-16).
-**Plans**: 25 plans in 16 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 16 (plans 14 to 25) are the outward actions, each behind an operator checkpoint; plans 24 and 25 run on or after 2026-11-23.
+**Plans**: 1/25 plans executed in 16 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 16 (plans 14 to 25) are the outward actions, each behind an operator checkpoint; plans 24 and 25 run on or after 2026-11-23.
 
 Plans:
 **Wave 1**
-- [ ] 187-01-PLAN.md — wave 1 — The deploy role's nine customer-managed policies and `ecr:DescribeImages` in the github-oidc module, with the module's first offline test; nothing applied.
+- [x] 187-01-PLAN.md — wave 1 — The deploy role's nine customer-managed policies and `ecr:DescribeImages` in the github-oidc module, with the module's first offline test; nothing applied.
 - [ ] 187-02-PLAN.md — wave 1 — The task's image by a required `image_digest` in the module and both AWS roots; no image value in any tfvars.
 - [ ] 187-03-PLAN.md — wave 1 — CR-01: the image built from the commit's `git archive`, with a self-test that plants an ignored file.
 - [ ] 187-04-PLAN.md — wave 1 — `push-migrations.sh --confirmed-ref`, accepted only in a staging Actions job, tested against stubs.
@@ -758,6 +758,6 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
 | 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
 | 186. Deployed Smoke Entry | 7/8 | In Progress | - |
-| 187. Deploy Pipeline | 0/TBD | Not started | - |
+| 187. Deploy Pipeline | 1/25 | In Progress | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
 | 189. Documentation and Closure | 0/TBD | Not started | - |
