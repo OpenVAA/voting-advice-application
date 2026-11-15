@@ -78,9 +78,11 @@ DEFAULT_PLATFORM="linux/arm64"
 DOCKERFILE="apps/frontend/Dockerfile"
 BUILD_TARGET="production"
 
-# The commands the script runs. The self-test replaces the two that reach outside the host with stubs.
+# The commands the script runs. The self-test replaces the two that reach outside the host with stubs, and wraps the
+# third so that it can make an extraction fail.
 AWS="aws"
 DOCKER="docker"
+TAR="tar"
 
 REPO=""
 URL=""
@@ -227,6 +229,21 @@ lookup_digest() {
   return 1
 }
 
+# Writes the commit's tree into WORK/context: `git archive` of the commit into a file, then extracted from that file.
+# The context holds the commit's tracked files and nothing else, whatever the working tree holds beside them.
+make_context() {
+  if ! mkdir "$WORK/context"; then
+    fail_step context "the build context directory could not be created"
+  fi
+  if ! git -C "$REPO" archive --format=tar -o "$WORK/context.tar" "$SHA" 2> /dev/null; then
+    fail_step context "the commit could not be archived"
+  fi
+  if ! "$TAR" -x -f "$WORK/context.tar" -C "$WORK/context" 2> /dev/null; then
+    fail_step context "the commit's archive could not be extracted"
+  fi
+  rm -f "$WORK/context.tar"
+}
+
 build_and_push() {
   local digest rc=0 image
 
@@ -247,9 +264,12 @@ build_and_push() {
   fi
   LOGGED_IN=1
 
+  make_context
+
   image="$URL:$SHA"
-  if ! (cd "$REPO" && "$DOCKER" buildx build --platform "$PLATFORM" --target "$BUILD_TARGET" \
-    --build-arg "BUILD_SHA=$SHA" --provenance=false --sbom=false -f "$DOCKERFILE" -t "$image" --load .) >&2; then
+  if ! "$DOCKER" buildx build --platform "$PLATFORM" --target "$BUILD_TARGET" \
+    --build-arg "BUILD_SHA=$SHA" --provenance=false --sbom=false -f "$WORK/context/$DOCKERFILE" -t "$image" \
+    --load "$WORK/context" >&2; then
     fail_step build
   fi
   "$DOCKER" push "$image" >&2 || fail_step push
@@ -280,6 +300,7 @@ ST_PASSWORD="stub-registry-password-do-not-print-5e81"
 ST_DIGEST="sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 ST_STATUS=0
 ST_OUT=""
+ST_TRACKED=""
 
 st_result() {
   ST_CASES=$((ST_CASES + 1))
@@ -331,7 +352,9 @@ st_aws() {
   esac
 }
 
-# The docker stub. A build fails when the file ST/build-fails exists.
+# The docker stub. A build records the context it was given (its last argument), the script's temporary directory, and
+# what the context holds: whether the ignored file the self-test plants is in it, and whether the tracked file holds
+# ST_TRACKED. A build fails when the file ST/build-fails exists.
 st_docker() {
   printf '%s\n' "$*" >> "$ST/docker.log"
   case "$1" in
@@ -341,10 +364,21 @@ st_docker() {
       if [ "$given" = "$ST_PASSWORD" ]; then echo "login-stdin=password" >> "$ST/docker.log"; fi
       ;;
     buildx)
+      local context="${!#}" ignored=no tracked=no
+      [ ! -e "$context/planted-ignored.txt" ] || ignored=yes
+      [ "$(cat "$context/file.txt" 2> /dev/null)" != "$ST_TRACKED" ] || tracked=yes
+      printf 'context=%s\nwork=%s\ncontext-holds-ignored=%s\ncontext-holds-tracked=%s\n' \
+        "$context" "$WORK" "$ignored" "$tracked" >> "$ST/docker.log"
       [ ! -e "$ST/build-fails" ] || return 1
       ;;
   esac
   return 0
+}
+
+# The tar stub: the real tar, except that an extraction fails when the file ST/extract-fails exists.
+st_tar() {
+  [ ! -e "$ST/extract-fails" ] || return 1
+  tar "$@"
 }
 
 st_git() {
@@ -362,6 +396,7 @@ st_run() {
     URL="$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/openvaa-frontend"
     AWS=st_aws
     DOCKER=st_docker
+    TAR=st_tar
     parse_url
     make_workdir
     trap on_exit EXIT
@@ -370,7 +405,7 @@ st_run() {
 }
 
 self_test() {
-  local sha aws_calls docker_calls
+  local sha aws_calls docker_calls context work
   ST="$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-build-push-test.XXXXXX")"
   trap 'rm -rf "$ST"' EXIT
   export GIT_CONFIG_NOSYSTEM=1
@@ -419,8 +454,14 @@ self_test() {
   st_expect "planning-in-tree-makes-no-aws-call" equals "$(cat "$ST/aws.log")" ""
   st_git rm -q -r .planning
   st_git commit -q -m "no planning"
+  printf 'planted-ignored.txt\n' > "$ST/clone/.gitignore"
+  st_git add .gitignore
+  st_git commit -q -m ignore
   st_git push -q origin HEAD:refs/heads/main 2> /dev/null
   sha="$(st_git rev-parse HEAD)"
+  ST_TRACKED="three"
+  # Ignored, so the tree is still clean and every check passes with it in the working tree.
+  printf 'local secret\n' > "$ST/clone/planted-ignored.txt"
 
   st_run
   aws_calls="$(cat "$ST/aws.log")"
@@ -452,6 +493,14 @@ self_test() {
   st_expect "build-failure-signs-out" has "$docker_calls" "logout $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
   rm -f "$ST/build-fails"
 
+  : > "$ST/extract-fails"
+  st_run
+  docker_calls="$(cat "$ST/docker.log")"
+  st_expect "context-failure-fails" equals "$ST_STATUS $ST_OUT" "1 failed=context"
+  st_expect "context-failure-builds-nothing" lacks "$docker_calls" "buildx "
+  st_expect "context-failure-pushes-nothing" lacks "$docker_calls" "push "
+  rm -f "$ST/extract-fails"
+
   st_run
   aws_calls="$(cat "$ST/aws.log")"
   docker_calls="$(cat "$ST/docker.log")"
@@ -467,9 +516,16 @@ $docker_calls" "$ST_PASSWORD"
   # The flag needles are built from parts, so that each flag is written once in this file, on the build line.
   st_expect "push-turns-provenance-off" has "$docker_calls" " --""provenance=false "
   st_expect "push-turns-sbom-off" has "$docker_calls" " --""sbom=false "
-  st_expect "push-tags-the-commit" has "$docker_calls" "-t $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/openvaa-frontend:$sha --load ."
+  st_expect "push-tags-the-commit" has "$docker_calls" "-t $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/openvaa-frontend:$sha --load /"
+  context="$(sed -n 's/^context=//p' "$ST/docker.log")"
+  work="$(sed -n 's/^work=//p' "$ST/docker.log")"
+  st_expect "ignored-file-absent-from-context" has "$docker_calls" "context-holds-ignored=no"
+  st_expect "context-holds-the-commit" has "$docker_calls" "context-holds-tracked=yes"
+  st_expect "context-is-not-the-working-tree" eval '[ -n "$work" ] && [ "$context" = "$work/context" ] && lacks "$context/" "$ST/clone/"'
+  st_expect "push-builds-the-commit-dockerfile" has "$docker_calls" "-f $work/context/$DOCKERFILE "
   st_expect "push-pushes-the-tag" has "$docker_calls" "push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/openvaa-frontend:$sha"
   st_expect "push-signs-out" has "$docker_calls" "logout $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
+  rm -f "$ST/clone/planted-ignored.txt"
 
   echo "self_test summary cases=$ST_CASES failed=$ST_FAILED"
   [ "$ST_FAILED" -eq 0 ]

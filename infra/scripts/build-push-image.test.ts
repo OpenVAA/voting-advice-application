@@ -42,7 +42,12 @@ describe('build-push-image.sh', () => {
       'pushed-other-account-stops-at-the-caller',
       'tag-exists-exits-3',
       'push-password-on-no-command-line',
-      'push-build-sha-is-the-tag'
+      'push-build-sha-is-the-tag',
+      'ignored-file-absent-from-context',
+      'context-holds-the-commit',
+      'context-is-not-the-working-tree',
+      'context-failure-fails',
+      'context-failure-builds-nothing'
     ]) {
       expect(cases).toContain(`self_test ${name} PASS`);
     }
