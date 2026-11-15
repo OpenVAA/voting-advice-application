@@ -170,7 +170,9 @@ describe('running-image-digest.sh', () => {
       STUB_IMAGE: `${HOST}/openvaa-frontend:${COMMIT}`,
       STUB_REGISTRY_DIGEST: 'sha256:ABCDEF'
     });
-    expect(stdout).toBe(`running_task_definition=${TASK_DEFINITION}\nrunning_image_reference=tag\nfailed=digest-form\n`);
+    expect(stdout).toBe(
+      `running_task_definition=${TASK_DEFINITION}\nrunning_image_reference=tag\nfailed=digest-form\n`
+    );
     expect(status).toBe(1);
   });
 
