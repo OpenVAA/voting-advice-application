@@ -2,19 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: 187
-current_phase_name: Deploy Pipeline
+current_phase: 188
+current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
 current_plan: 14
 status: executing
 stopped_at: Completed 187-13-PLAN.md
-last_updated: "2026-11-15T03:44:44.958Z"
+last_updated: "2026-11-15T05:23:59.709Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 96a3a9fcf4081e33fa5defb1d3bd674438c3b7ec
+state_head: 55703f9a0588921542ab026350e0ca77738d1b30
 progress:
   total_phases: 10
   completed_phases: 5
-  total_plans: 162
+  total_plans: 182
   completed_plans: 149
   percent: 50
 ---
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 187 (Deploy Pipeline) — EXECUTING
+Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — READY TO EXECUTE
 Plan: 14 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started

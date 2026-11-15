@@ -692,7 +692,56 @@ Notes:
   4. The per-caller limit on the anonymous invitation operations is decided from the header record of OBS-04. It is either built and seen limiting one caller without limiting another, or deferred with the measurement and a date.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topics from `research/SUMMARY.md`: PostHog's price for anonymous events and the billing limit, and the cost of a WAF rule. Added by ruling A2 after the research, and so not researched: the tool and the method of the load check (OBS-11).
-**Plans**: TBD
+**Plans**: 20 plans in 14 waves. Every plan first checks that 187-21, 187-22 and 186-08 are complete (a literal `test -f` of their SUMMARY.md files), because those plans need `apps/`, `packages/` and `tests/` unchanged and 187's first green deploy would carry this phase's migration. Waves 1 to 4 (plans 01 to 08 and 20) run without the operator: the flush interval and the overlap fix, the stop timeout, the WAF variable, the per-caller limit's migration and function, the refusal and read scripts, the load-check method, and the closing gates with the phase's one full local E2E run. Waves 5 to 14 (plans 09 to 19) are the outward actions, each behind an operator checkpoint; 187's destroy-path plans 187-23 to 187-25 must not run between plans 188-10 and 188-19.
+
+Plans:
+**Wave 1**
+- [ ] 188-01-PLAN.md — wave 1 — `ANALYTICS_FLUSH_INTERVAL_MS` through the analytics configuration and the task-environment contract.
+- [ ] 188-04-PLAN.md — wave 1 — The per-caller limit's RPC as the first appended migration, its pgTAP file and census pins, and the [BLOCKING] local schema push.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 188-02-PLAN.md — wave 2 — `stop_timeout_seconds = 40` passed through both AWS roots.
+- [ ] 188-05-PLAN.md — wave 2 — `account-access` takes a slot before every operation and answers 429; the conformance pins moved; local proof; the docs corrected.
+- [ ] 188-06-PLAN.md — wave 2 — The deployed refusal script, proven against the local relay, and the named-line PostHog read.
+- [ ] 188-07-PLAN.md — wave 2 — The k6 load method: wrapper, script, figure, journey extractor, method; a local dry run.
+- [ ] 188-20-PLAN.md — wave 2 — A timer tick skipped while a flush is in flight, and the Render and Compose templates naming the flush interval.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 188-03-PLAN.md — wave 3 — The opt-in WAF rate rule as a nullable module variable, off by default, tested both ways.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 188-08-PLAN.md — wave 4 — The repository gates and the phase's one full local E2E run.
+
+**Wave 5** *(needs the operator)*
+- [ ] 188-09-PLAN.md — wave 5 — G1 to G5: the PostHog project, its settings, the billing limit and the read key; the Supabase plan; the read-back proven.
+
+**Wave 6** *(needs the operator)*
+- [ ] 188-10-PLAN.md — wave 6 — PostHog on, through the pipeline, with the first hosted append migration and the new function (one-way, gated).
+
+**Wave 7** *(needs the operator)*
+- [ ] 188-11-PLAN.md — wave 7 — The first capture with no visitor data, batching, and the nine refusals on the deployed relay.
+- [ ] 188-16-PLAN.md — wave 7 — The trust flag read first; the hosted per-caller limit seen refusing one caller and not another; the todo closed.
+
+**Wave 8** *(needs the operator)*
+- [ ] 188-12-PLAN.md — wave 8 — Queued events delivered at SIGTERM, with a ten-minute flush interval by hand apply; restored.
+
+**Wave 9** *(needs the operator)*
+- [ ] 188-13-PLAN.md — wave 9 — A full queue dropping on the deployed relay, memory flat; restored.
+
+**Wave 10** *(needs the operator)*
+- [ ] 188-14-PLAN.md — wave 10 — The site green while PostHog is unreachable; restored.
+
+**Wave 11** *(needs the operator)*
+- [ ] 188-15-PLAN.md — wave 11 — Provider `none` by hand apply of the same digest, zero events; restored.
+
+**Wave 12** *(needs the operator)*
+- [ ] 188-17-PLAN.md — wave 12 — The WAF rule planned on and costed; off reads no change.
+
+**Wave 13** *(needs the operator)*
+- [ ] 188-18-PLAN.md — wave 13 — One journey recorded and the stepped load check to a dated capacity figure.
+
+**Wave 14** *(needs the operator)*
+- [ ] 188-19-PLAN.md — wave 14 — The end state, the requirement trace and the read key settled.
 
 Notes:
 
