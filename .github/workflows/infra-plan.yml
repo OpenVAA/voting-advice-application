@@ -292,9 +292,9 @@ jobs:
           echo "deploy_role_error=${deploy_code:-none}"
           echo "plan_role_assume_status=$plan_status"
           echo "plan_role_error=${plan_code:-none}"
-          if [ "$deploy_status" -ne 0 ] && [ "$plan_status" -ne 0 ] && [ -n "$deploy_code" ] && [ -n "$plan_code" ]; then
+          if [ "$deploy_status" -ne 0 ] && [ "$plan_status" -ne 0 ] && [ "$deploy_code" = AccessDenied ] && [ "$plan_code" = AccessDenied ]; then
             echo "Both roles refused the subject $subject."
             exit 0
           fi
-          echo "::error::A role did not refuse the subject $subject with a named error."
+          echo "::error::A role did not refuse the subject $subject with AccessDenied."
           exit 1

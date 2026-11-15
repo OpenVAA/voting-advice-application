@@ -327,9 +327,9 @@ describe('the wrong-subject job of infra-plan.yml', () => {
     expect(script).not.toMatch(/echo "\$token|printf '%s' "\$token/);
   });
 
-  it('passes only when both roles refuse with a named error', () => {
+  it('passes only when both roles refuse with AccessDenied, the code of a trust that does not match', () => {
     expect(script).toContain(
-      'if [ "$deploy_status" -ne 0 ] && [ "$plan_status" -ne 0 ] && [ -n "$deploy_code" ] && [ -n "$plan_code" ]; then'
+      'if [ "$deploy_status" -ne 0 ] && [ "$plan_status" -ne 0 ] && [ "$deploy_code" = AccessDenied ] && [ "$plan_code" = AccessDenied ]; then'
     );
   });
 });

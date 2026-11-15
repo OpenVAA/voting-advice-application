@@ -228,7 +228,10 @@ and on a push to a `deploy-evidence/**` branch.
   gets no token and no secret, and the job's `if` skips it, so it shows as skipped.
 - `wrong-subject`, on a push only: names no environment, so its token's subject is the pushed
   branch's ref, which neither role trusts. It passes only when STS refuses that subject for both
-  the deploy role and the plan role, printing each error code.
+  the deploy role and the plan role with `AccessDenied`, printing each error code; another code,
+  such as `InvalidIdentityToken` for a missing OIDC provider, fails it. STS answers `AccessDenied`
+  for a role that does not exist as well, so the pull-request plan and the deploy runs, which
+  assume the same two ARNs, are what show the ARNs right.
 
 ### The destroy workflow
 
