@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 14
+current_plan: 15
 status: executing
-stopped_at: Phase 186 complete, ready to execute Phase 187
-last_updated: "2026-11-15T15:49:52.975Z"
+stopped_at: Completed 187-14-PLAN.md
+last_updated: "2026-11-15T20:01:03.124Z"
 last_activity: 2026-11-15
-last_activity_desc: Phase 186 complete, transitioned to Phase 187
-state_head: 15b5494c7c3bab76a7d7147b70aca37ca253b14a
+last_activity_desc: Phase 187 execution started
+state_head: 058ade1318b46f15483af567c22859739b2e95d7
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 182
-  completed_plans: 150
+  completed_plans: 151
   percent: 60
 ---
 
@@ -33,10 +33,10 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 187 — Deploy Pipeline
-Plan: 14 of 25
+Phase: 187 (Deploy Pipeline) — EXECUTING
+Plan: 15 of 25
 Status: Ready to execute
-Last activity: 2026-11-15 — Phase 186 complete, transitioned to Phase 187
+Last activity: 2026-11-15 — Phase 187 execution started
 
 Progress: [██████░░░░] 60% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
@@ -165,6 +165,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P11 | 8min | 3 tasks | 6 files |
 | Phase 187 P12 | 12min | 3 tasks | 2 files |
 | Phase 187 P13 | 18min | 2 tasks | 3 files |
+| Phase 187 P14 | 3h45min (operator checkpoint) | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -337,6 +338,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-11: workstation SMOKE_EXPECTED_SHA is the tip of deploy/staging via git ls-remote --exit-code
 - [Phase 187]: 187-12: the red commit fails in the Dockerfile's shared-stage RUN yarn build (line 28, turbo task @openvaa/frontend#build), one stage before the production step; the pipeline's build step still ends failed=build before any hosted write
 - [Phase 187]: Plan 186-08's tree reference is now phase 187's closing run (54e79823b), and its expected SHA is 712947a1b from 186-08-readiness.md while staging serves it (then the tip of deploy/staging)
+- [Phase 187]: 187-14: GitHub Environments staging and staging-destroy exist and are read back before any push: one User reviewer, self-review allowed, admin bypass off, branch rules exactly deploy/staging and deploy-evidence/* (none admits main); staging holds the three secrets and three variables, staging-destroy none; the repository holds AWS_PLAN_ROLE_ARN and ALERT_EMAIL
 
 ### Pending Todos
 
@@ -353,7 +355,7 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ### Blockers/Concerns
 
-- **[Phase 187 — 13/25 plans done, rest operator-gated, 2026-11-15]** Plans 187-01..13 executed (local only; closing E2E 548/0/0/0, `E2E_TREE_SHA=54e79823b`). Code review: 187-REVIEW.md (1 critical, 10 warnings, 8 info); 187-REVIEW-FIX.md fixed 14 (incl. CR-01 tag-scope of CloudFront/ACM). **OPEN DECISION R-01 (= WR-06) in 187-DISCUSSION-POINTS.md, before plan 187-18:** the single `staging` approval releases the migration push before the plan/pending list exists — recommended: split deploy.yml into two gated jobs. Next: plan 187-14 (`checkpoint:human-action`: GitHub Environments + secrets). The 187 decisions (and the three research amendments) are unreviewed ★ recommendations. Phase 188 is discussed/researched/planned but must not execute before 187-21/22 and 186-08 are complete.
+- **[Phase 187 — 14/25 plans done, rest operator-gated, 2026-11-15]** Plans 187-01..14 executed (01..13 local only; closing E2E 548/0/0/0, `E2E_TREE_SHA=54e79823b`). Code review: 187-REVIEW.md (1 critical, 10 warnings, 8 info); 187-REVIEW-FIX.md fixed 14 (incl. CR-01 tag-scope of CloudFront/ACM). R-01 (= WR-06) RESOLVED by the operator 2026-11-15 (`d55a94b7a`): one `staging` approval is kept, recorded under Accepted risks in `infra/README.md` (the reviewer reads the commit's migrations diff before approving; the approval stays blind to the plan and to migrations pending from other commits); plans 187-09/-11/-12 and 187-18..25 need no revision. 187-14 done: both GitHub Environments, their secrets and variables read back (`evidence/187-14-environments.md`, admin bypass off, branch rules deploy/staging + deploy-evidence/*). Next: plan 187-15 (first push). The 187 decisions (and the three research amendments) are unreviewed ★ recommendations. Phase 188 is discussed/researched/planned but must not execute before 187-21/22 and 186-08 are complete.
 
 - **[Phase 186 — OPEN OPERATOR CHECKPOINT, 2026-11-15]** Plans 186-01 to 186-07 complete; full local E2E green (548/0/0/0). Code review (186-REVIEW.md: 1 critical — credentials in the HTML report and error-context.md — 2 warnings, 4 info) fixed in 186-REVIEW-FIX.md except IN-04 (deferred to 187); closing gate re-run green on the fixed tree: run `186-close-rerun-20261115T002900Z`, `E2E_TREE_SHA=ee85b83a3`. Re-run 186-08 Task 1 (read-only readiness) before the sitting: its committed record names the superseded tree `ac3d8d42b`. Plan 186-08 Task 1 (read-only readiness) done at `48775c8c5`; Task 2 `checkpoint:human-action` attempt `186-08-2`, id `20261114T234949Z.48775c8c5`, awaits the operator's approval of the one hosted write (contestant user + editor grant on `smoke_cand_0000` + terms acceptance on `cofbsatfrdysyphajsky`) and the keychain item `openvaa-staging-smoke-contestant`. Question and reply fields: `tmp/183-evidence/186-08-2.20261114T234949Z.48775c8c5.txt`. Also decide whether the sitting's run sets `PLAYWRIGHT_NO_COPY_PROMPT=1` (Playwright writes an aria snapshot to `error-context.md` on a failed test). Phase 186 cannot be verified until Task 3 runs. SUPA-09 stays Pending.
 
@@ -393,6 +395,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T15:50:41Z
-**Stopped At:** Phase 186 complete, ready to execute Phase 187
+Last session: 2026-11-15T20:01:01.604Z
+**Stopped At:** Completed 187-14-PLAN.md
 **Resume File:** None

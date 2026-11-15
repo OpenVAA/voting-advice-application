@@ -33,7 +33,8 @@ key-files:
 key-decisions:
   - "The gate and the branch guard exist before any push: both environments have one User reviewer, self-review allowed, administrator bypass off, and exactly the branch rules deploy/staging and deploy-evidence/*, neither of which admits main"
 
-requirements-completed: [PIPE-04, PIPE-10, PIPE-08, SUPA-08]
+requirements-completed: []
+requirements-advanced: [PIPE-04, PIPE-10, PIPE-08, SUPA-08]
 
 metrics:
   duration: "3h45min wall clock (16:15Z-20:00Z), almost all of it the operator checkpoint"
@@ -105,6 +106,7 @@ None.
 
 - Plan 187-15 may push workflows that name `environment: staging` and `staging-destroy`. Both environments now exist with their gate, so GitHub will not create an unprotected one on the first run (T-187-37 mitigated). `can_admins_bypass` reads back false for both (T-187-38 mitigated). No secret value entered the transcript or the evidence (T-187-39 mitigated).
 - R-01 is resolved, so plan 187-18 needs no revision for it.
+- PIPE-04, PIPE-10, PIPE-08 and SUPA-08 are advanced, not completed. Plans 187-15 to 187-25 carry them too, and each one is met only once a pipeline run shows it. That is why `requirements.mark-complete` was not run.
 
 ## Self-Check: PASSED
 
