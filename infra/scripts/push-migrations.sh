@@ -65,12 +65,14 @@ DRIFT_CHECK="$SCRIPT_DIR/check-drift.sh"
 SHARED_STACK_WORKDIR="$REPO_ROOT/apps/supabase"
 CONFIRM_PROMPT="Type the project ref to push to it:"
 UP_TO_DATE_TEXT="is up to date."
+CONFIRMING_ENVIRONMENT="staging"
 INTERRUPT_GRACE_SECONDS=10
 
 REF=""
 WORKDIR=""
 MANIFEST=""
 LOG_DIR=""
+CONFIRMED_REF=""
 CHILD_PID=""
 CHILD_IS_CLI=0
 
@@ -187,6 +189,14 @@ while [ $# -gt 0 ]; do
       LOG_DIR="$2"
       shift 2
       ;;
+    --confirmed-ref)
+      require_value --confirmed-ref $#
+      if [ -z "$2" ]; then
+        usage_error "--confirmed-ref requires a value"
+      fi
+      CONFIRMED_REF="$2"
+      shift 2
+      ;;
     -h | --help)
       usage
       exit 0
@@ -207,6 +217,17 @@ if [ -z "$WORKDIR" ]; then
 fi
 if ! [[ "$REF" =~ ^[a-z]{20}$ ]]; then
   fatal "--ref must be a project ref, 20 lower-case letters; got '$REF'" 2
+fi
+if [ -n "$CONFIRMED_REF" ]; then
+  if [ "$CONFIRMED_REF" != "$REF" ]; then
+    fatal "--confirmed-ref '$CONFIRMED_REF' is not --ref '$REF'; nothing was pushed" 2
+  fi
+  if [ "${GITHUB_ACTIONS:-}" != "true" ]; then
+    fatal "--confirmed-ref is accepted only in a GitHub Actions job, and GITHUB_ACTIONS is not true; nothing was pushed" 2
+  fi
+  if [ "${OPENVAA_DEPLOY_ENVIRONMENT:-}" != "$CONFIRMING_ENVIRONMENT" ]; then
+    fatal "--confirmed-ref is accepted only in a job of the $CONFIRMING_ENVIRONMENT environment, which sets DEPLOY_ENVIRONMENT, passed by the workflow as OPENVAA_DEPLOY_ENVIRONMENT; OPENVAA_DEPLOY_ENVIRONMENT is '${OPENVAA_DEPLOY_ENVIRONMENT:-}'; nothing was pushed" 2
+  fi
 fi
 
 WORKDIR="$(physical_path "$(resolve_path "$WORKDIR")")"
@@ -310,18 +331,23 @@ else
     print_redacted "$DRY_OUT" >&2 || true
     fatal "the dry run neither said the database is up to date nor listed a migration; nothing was pushed. Its output is in $LOG_DIR" 2
   fi
-  if ! (: <>/dev/tty) 2>/dev/null; then
-    fatal "there is no terminal to confirm the push on; nothing was pushed" 2
-  fi
-  {
-    echo "The project $REF lacks these migrations:"
-    sed 's/^/  /' "$PENDING"
-    printf '%s ' "$CONFIRM_PROMPT"
-  } >/dev/tty
-  answer=""
-  IFS= read -r answer </dev/tty || true
-  if [ "$answer" != "$REF" ]; then
-    fatal "the answer is not the project ref; nothing was pushed" 2
+  if [ -n "$CONFIRMED_REF" ]; then
+    echo "push_confirmation=environment"
+  else
+    if ! (: <>/dev/tty) 2>/dev/null; then
+      fatal "there is no terminal to confirm the push on; nothing was pushed" 2
+    fi
+    {
+      echo "The project $REF lacks these migrations:"
+      sed 's/^/  /' "$PENDING"
+      printf '%s ' "$CONFIRM_PROMPT"
+    } >/dev/tty
+    answer=""
+    IFS= read -r answer </dev/tty || true
+    if [ "$answer" != "$REF" ]; then
+      fatal "the answer is not the project ref; nothing was pushed" 2
+    fi
+    echo "push_confirmation=terminal"
   fi
 
   push_status=0
