@@ -19,8 +19,15 @@ export const SMOKE_PROJECT_NAME = 'deployed-smoke';
 /** The first words of every gate failure message. */
 export const DEPLOYED_GATE_HEADLINE = 'DEPLOYED SMOKE GATE FAILED';
 
-/** Environment variables whose non-blank value fails the gate: a smoke run holds no privileged key. */
-export const FORBIDDEN_KEY_VARIABLES = ['SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_SECRET_KEY'] as const;
+/** Environment variables whose non-blank value fails the gate: a smoke run holds no privileged key, no Management API token and no database password. */
+export const FORBIDDEN_KEY_VARIABLES = [
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'SUPABASE_SECRET_KEY',
+  'SUPABASE_ACCESS_TOKEN',
+  'SUPABASE_DB_PASSWORD',
+  'TF_VAR_database_password',
+  'PGPASSWORD'
+] as const;
 
 /** The gate's checks, in the order they are evaluated and reported. */
 export const GATE_CHECK_ORDER = ['service-role-key-absent', 'sha', 'ref', 'project-id'] as const;

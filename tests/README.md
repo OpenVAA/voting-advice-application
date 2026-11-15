@@ -164,7 +164,7 @@ The entry loads no `.env` file. It reads only the variables below from the proce
 
 **The refusals.** Global setup runs the deployed-target gate before any spec, and the gate fails the run when:
 
-- `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` is set to anything but blank. A smoke run holds no privileged key; the failure names the variable and withholds its value.
+- `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `TF_VAR_database_password` or `PGPASSWORD` is set to anything but blank. A smoke run holds no privileged key, no Management API token and no database password; the failure names each variable that is set and withholds its value. The check keeps its name, `service-role-key-absent`.
 - The build `/api/health` serves is not `SMOKE_EXPECTED_SHA`, or that input is unset or not a full 40-hex id.
 - The `PUBLIC_SUPABASE_URL` in the served page's environment is not exactly `https://<project_ref>.supabase.co`.
 - The `data-project-id` attribute of the served page is not `public_project_id`. An absent attribute and an unsubstituted placeholder fail as well.
@@ -188,10 +188,12 @@ Every step runs in the same shell, at the root of this checkout, with Node 24 on
 
    It must print `tree_diff_exit=0`. A `1` means the trees differ: check out a commit whose `apps/` and `packages/` equal the deployed ones. A `128` means the commit is not in the local clone, and `git fetch` brings it.
 
-2. The expected SHA, with both keys unset:
+2. The expected SHA, with every variable the gate refuses unset:
 
    ```bash
-   unset SUPABASE_SERVICE_ROLE_KEY SUPABASE_SECRET_KEY
+   unset SUPABASE_SERVICE_ROLE_KEY SUPABASE_SECRET_KEY \
+     SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD \
+     TF_VAR_database_password PGPASSWORD
    export SMOKE_EXPECTED_SHA="$DEPLOYED_SHA"
    ```
 
@@ -290,12 +292,12 @@ See tests/README.md § Deployed smoke run.
 
 `results.json` then holds no test, so the verdict of step 5 fails as well.
 
-| Check                     | `observed` on a failure                                                                                                                              | Usual cause                                                                                                                                         |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `service-role-key-absent` | `<variable> is set (value withheld)`                                                                                                                 | The shell exported a key, for instance by sourcing the root `.env`. Unset it (step 2) and run again.                                                |
-| `sha`                     | The served build, or a reason in parentheses: `(status <n>)`, `(request to /api/health failed: …)`, `(no build field)`, `(body is not JSON)`         | A deploy that has not finished, or another build. `expected (SMOKE_EXPECTED_SHA is not a full 40-hex commit id)` means the input is unset or short. |
-| `ref`                     | The served `PUBLIC_SUPABASE_URL` with `(not https://<ref>.supabase.co)`, or a reason in parentheses, such as `(no env block in the served document)` | The target is backed by another Supabase project, or by a local stack.                                                                              |
-| `project-id`              | The served id, `(attribute absent)` or `(unsubstituted %projectId% placeholder)`                                                                     | The target serves another project.                                                                                                                  |
+| Check                     | `observed` on a failure                                                                                                                              | Usual cause                                                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `service-role-key-absent` | `<variable> is set (value withheld)`                                                                                                                 | The shell exported a key, a token or a database password, for instance by sourcing the root `.env` or after a Terraform sitting. Unset it (step 2) and run again. |
+| `sha`                     | The served build, or a reason in parentheses: `(status <n>)`, `(request to /api/health failed: …)`, `(no build field)`, `(body is not JSON)`         | A deploy that has not finished, or another build. `expected (SMOKE_EXPECTED_SHA is not a full 40-hex commit id)` means the input is unset or short.               |
+| `ref`                     | The served `PUBLIC_SUPABASE_URL` with `(not https://<ref>.supabase.co)`, or a reason in parentheses, such as `(no env block in the served document)` | The target is backed by another Supabase project, or by a local stack.                                                                                            |
+| `project-id`              | The served id, `(attribute absent)` or `(unsubstituted %projectId% placeholder)`                                                                     | The target serves another project.                                                                                                                                |
 
 ### The contestant's account
 
@@ -320,7 +322,7 @@ All three run in `yarn test:unit`, through its last link, `yarn test:unit:tests`
 
 ### In the pipeline
 
-Phase 187 calls `yarn test:e2e:deployed` as the pipeline's last stage, with the commit it built as `SMOKE_EXPECTED_SHA` and the contestant's two inputs from the environment's secrets. The smoke step's environment must hold no service-role key: a step that inherits `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY` fails `service-role-key-absent` before any spec runs. On CI (`CI` or `GITHUB_ACTIONS` set) a `test.only` left in a smoke spec fails the run. The smoke step uploads no HTML report and never uploads or attaches its per-test output directory, as [the contestant's account](#the-contestants-account) explains.
+Phase 187 calls `yarn test:e2e:deployed` as the pipeline's last stage, with the commit it built as `SMOKE_EXPECTED_SHA` and the contestant's two inputs from the environment's secrets. The smoke step's environment must hold no service-role key, access token or database password: a step that inherits any variable of [the refusals](#inputs) fails `service-role-key-absent` before any spec runs. On CI (`CI` or `GITHUB_ACTIONS` set) a `test.only` left in a smoke spec fails the run. The smoke step uploads no HTML report and never uploads or attaches its per-test output directory, as [the contestant's account](#the-contestants-account) explains.
 
 ---
 
