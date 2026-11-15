@@ -1311,7 +1311,10 @@ input only. `printf` and `test` are shell builtins, so a value they are given is
 arguments. A workstation reads the two back for `yarn test:e2e:deployed` from the same keychain
 item, the password with `security find-generic-password -s openvaa-staging-smoke-contestant -w` and
 the address from the item's `acct` attribute as item 6 reads it (see `tests/README.md` § Deployed
-smoke run). The sitting ends with a dated row in "Observations".
+smoke run). A failed test of such a run can still leave both values in plaintext in its per-test
+output directory, in the page snapshot of `error-context.md`, so that directory is treated as
+secret on every run, green or red, and is never published, uploaded or attached. The sitting ends
+with a dated row in "Observations".
 
 Secrets: `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, and `PGPASSWORD` with Step 15's variables.
 

@@ -5,7 +5,7 @@
  *
  * The account is created once, out of band, on the hosted project, and its address and password reach this spec only as the inputs `SMOKE_CONTESTANT_EMAIL` and `SMOKE_CONTESTANT_PASSWORD`. A missing input fails the test by name before any page action; the voter spec does not depend on this one.
  *
- * Tracing, screenshots and video are off for this file, so the typed credentials reach no artifact of the run.
+ * Tracing, screenshots and video are off for this file, and the deployed config writes no HTML report and no page snapshot when a failed test closes. A failed matcher still writes an accessibility snapshot of the page into `error-context.md`, so the sign-in form is emptied before any assertion when the sign-in has not led away from it. The per-test output directory of a run with the two inputs is still treated as secret: it is never published, uploaded or attached.
  *
  * Rigidity contract (project E2E Hard Rule): every assertion is hard — no soft assertion, no try/catch around expect(), no .catch fallback.
  */
@@ -24,7 +24,9 @@ test('a contestant signs in with a password, sees a complete home and signs out'
     ['SMOKE_CONTESTANT_EMAIL', 'SMOKE_CONTESTANT_PASSWORD'],
     process.env
   );
-  await createContestantLoginPage(page).signInFromCold(email, password);
+  const login = createContestantLoginPage(page);
+  await login.signInFromCold(email, password);
+  await login.emptyFormUnlessSignedIn();
   await expect(page).not.toHaveURL(/.*login.*/, { timeout: TIMEOUTS.slowPage });
   await createContestantHomePage(page).expectTaskList({
     nomination: 'complete',

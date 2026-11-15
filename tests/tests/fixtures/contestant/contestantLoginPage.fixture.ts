@@ -6,6 +6,7 @@
  * Surface:
  *  - goToPage()                    — open the sign-in screen and wait for its form.
  *  - signInFromCold(email, password) — open the sign-in screen, again if its form does not appear, and sign in. For a setup that may be the first to ask the backend for anything.
+ *  - emptyFormUnlessSignedIn()     — wait for a sign-in to lead away from the sign-in screen, and empty the form's two fields when it has not.
  *  - enterEmail(email)             — fill the login-email field.
  *  - enterPassword(password)       — fill the password-field input.
  *  - submit()                      — click the login-submit button.
@@ -171,6 +172,26 @@ export function createContestantLoginPage(page: Page) {
         );
       }
       await this.login(email, password);
+    },
+
+    /**
+     * Wait for a submitted sign-in to lead away from the sign-in screen, and empty the email and password fields when it has not.
+     *
+     * A failed matcher writes an accessibility snapshot of the page into the test's `error-context.md`, and that snapshot holds the value of every input, a password field's included. Emptying the fields after a refused sign-in keeps the address and the password out of the report of the assertion that follows. A field that is not on the page is left alone.
+     *
+     * The step asserts nothing: the caller asserts where the sign-in led.
+     */
+    async emptyFormUnlessSignedIn(): Promise<void> {
+      const signedIn = await page
+        .waitForURL((url) => !/login/.test(url.href), { timeout: TIMEOUTS.slowPage, waitUntil: 'commit' })
+        .then(
+          () => true,
+          () => false
+        );
+      if (signedIn) return;
+      for (const field of [page.getByTestId(ids.email), page.getByTestId(testIds.contestant.password.field)]) {
+        if ((await field.count()) > 0) await field.clear({ timeout: TIMEOUTS.element });
+      }
     },
 
     async enterEmail(email: string): Promise<void> {
