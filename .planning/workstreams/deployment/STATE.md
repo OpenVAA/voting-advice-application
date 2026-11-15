@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 8
+current_plan: 9
 status: executing
-stopped_at: Completed 187-07-PLAN.md
-last_updated: "2026-11-15T02:32:24.965Z"
+stopped_at: Completed 187-08-PLAN.md
+last_updated: "2026-11-15T02:42:09.631Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 5cde6be9e98587f2516b5fef29bc0df922937e50
+state_head: b8a587f9a0b7d4c3ad8576abc08e307bf9fa5f00
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 143
+  completed_plans: 144
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 8 of 25
+Plan: 9 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 8
+**Current Plan:** 9
 
 From 184 on, the numeric order is the dependency order.
 
@@ -158,6 +158,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P05 | 11min | 2 tasks | 5 files |
 | Phase 187 P06 | 6min | 2 tasks | 3 files |
 | Phase 187 P07 | 8min | 2 tasks | 3 files |
+| Phase 187 P08 | 7min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -315,6 +316,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-06: running-image-digest.sh reads only the first container's image through --query and resolves a tag image to its digest in ECR; every hand plan of the staging AWS root passes -var image_digest (Step 5 by the named commit, Steps 8-12 the running digest, Steps 16-17 the digest Step 15 read)
 - [Phase 187]: 187-06: no hand apply of the staging AWS root while a pipeline run is waiting or running; a cut-short pipeline apply is recovered with terraform force-unlock after confirming no run is active
 - [Phase 187]: 187-07: the Supabase example test asserts on the module's name outputs (Edge Function secrets, smtp_host auth key), not on project_ref, because a mock import's id is the override's stand-in
+- [Phase 187]: 187-08: the shared workflow rule no-expression-in-run rejects ANY ${{ }} expression inside a run: script (secrets, event text and step outputs alike); deploy.yml and destroy.yml route every value through env
+- [Phase 187]: 187-08: workflowGuards.ts violations are "<rule-id>: <message>" with ids from SHARED_RULES; the show -json prohibition is per-file (infra-plan.yml), not a shared rule, so a later workflow may write a JSON plan into $RUNNER_TEMP for jq
 
 ### Pending Todos
 
@@ -369,6 +372,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T02:32:23.591Z
-**Stopped At:** Completed 187-07-PLAN.md
+Last session: 2026-11-15T02:42:08.210Z
+**Stopped At:** Completed 187-08-PLAN.md
 **Resume File:** None
