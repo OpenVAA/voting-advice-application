@@ -1,0 +1,8 @@
+{
+  "contestantApp.nothingToEdit": {
+    "content": "Your user account is not connected to any profile in this application, so there is nothing for you to edit.",
+    "nextSteps": "If you registered with another email address, log out and sign in with that address. Otherwise, contact support and tell them the address shown above.",
+    "signedInAs": "Signed in as",
+    "title": "Nothing to Edit Here"
+  }
+}

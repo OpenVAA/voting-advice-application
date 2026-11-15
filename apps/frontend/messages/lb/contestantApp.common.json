@@ -1,0 +1,23 @@
+{
+  "contestantApp.common": {
+    "closedReason": {
+      "noNomination": {
+        "candidate": "Är Basisinformatiounen, Är Meenungen an d’Virukuck ginn op, soubal Dir eng Nominatioun hutt.",
+        "organization": "D’Basisinformatiounen, d’Meenungen an d’Virukuck ginn op, soubal Är Partei eng Nominatioun huet."
+      },
+      "preview": "D’Virukuck geet op, soubal déi obligatoresch Basisinformatiounen ausgefëllt an all d’Aussoe beäntwert sinn.",
+      "previewNoQuestions": "D’Virukuck geet op, soubal déi obligatoresch Basisinformatiounen ausgefëllt sinn."
+    },
+    "contactSupport": "Support kontaktéieren",
+    "continueFilling": "Weider ausfëllen",
+    "editingNotAllowed": "Är Äntwerten kënnen net méi geännert ginn, mee Dir kënnt se nach ëmmer ukucken. Kontaktéiert wgl. de Support, wann et Feeler an den Donnéeën gëtt.",
+    "fullyCompleted": "Gratulatioun! Dir hutt all d’Informatioune fir de Wal-Kompass ausgefëllt.",
+    "greeting": "Moien, {username}!",
+    "home": "Start",
+    "isHiddenBecauseMissing": "Äre Profil gëtt net ugewisen, well Dir net all Froen beäntwert hutt.",
+    "nominationsNotEditable": "Nominatioune kënnen an dëser Applikatioun net méi geännert ginn. Wann eppes falsch ass oder feelt, kontaktéiert wgl. de Support.",
+    "nominationsNotEditableAnswersLocked": "Nominatioune kënnen net méi geännert ginn, well d’Beaarbechtung an dëser Applikatioun ofgeschloss ass. Wann eppes falsch ass oder feelt, kontaktéiert wgl. de Support.",
+    "voterApp": "Wal-Kompass fir Wieler*inne",
+    "willBeHiddenIfMissing": "Äre Profil gëtt net an der Applikatioun ugewisen, éier Dir all Froen beäntwert hutt."
+  }
+}

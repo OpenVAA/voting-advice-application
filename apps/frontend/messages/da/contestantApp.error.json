@@ -1,0 +1,10 @@
+{
+  "contestantApp.error": {
+    "saveFailed": "Beklager, der opstod et problem under gemning af dine svar. Prøv igen, og kontakt support, hvis problemet fortsætter.",
+    "registrationLocked": "Det er desværre ikke længere muligt at registrere sig.",
+    "nameLocked": {
+      "candidate": "Dit navn kunne ikke gemmes: en administrator har bekræftet din profil, og navnet kan ikke længere ændres her. Dine øvrige ændringer blev gemt. Hvis navnet er forkert, bedes du kontakte support.",
+      "organization": "Navnet og forkortelsen kunne ikke gemmes: en administrator har bekræftet dit parti, og de kan ikke længere ændres her. Dine øvrige ændringer blev gemt. Hvis de er forkerte, bedes du kontakte support."
+    }
+  }
+}

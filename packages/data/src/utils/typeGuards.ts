@@ -3,8 +3,10 @@ import type {
   AnyEntityVariant,
   AnyNominationVariant,
   AnyQuestionVariant,
+  BooleanQuestion,
   DataObject,
   MultipleChoiceCategoricalQuestion,
+  NumberQuestion,
   ObjectType,
   ObjectTypeMap,
   SingleChoiceCategoricalQuestion,
@@ -26,6 +28,13 @@ export function isQuestion(obj: unknown): obj is AnyQuestionVariant {
 }
 
 /**
+ * Check if an object is a `BooleanQuestion`.
+ */
+export function isBooleanQuestion(obj: unknown): obj is BooleanQuestion {
+  return isDataObject(obj) && obj.objectType === OBJECT_TYPE.BooleanQuestion;
+}
+
+/**
  * Check if an object is a any subtype of `ChoiceQuestion`.
  */
 export function isChoiceQuestion(
@@ -44,6 +53,13 @@ export function isChoiceQuestion(
  */
 export function isMultipleChoiceQuestion(obj: unknown): obj is MultipleChoiceCategoricalQuestion {
   return isDataObject(obj) && obj.objectType === OBJECT_TYPE.MultipleChoiceCategoricalQuestion;
+}
+
+/**
+ * Check if an object is a `NumberQuestion`.
+ */
+export function isNumberQuestion(obj: unknown): obj is NumberQuestion {
+  return isDataObject(obj) && obj.objectType === OBJECT_TYPE.NumberQuestion;
 }
 
 /**

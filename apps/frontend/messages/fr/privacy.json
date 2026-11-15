@@ -1,0 +1,58 @@
+{
+  "privacy": {
+    "analytics": {
+      "content": {
+        "free": "Cette application collecte des données d’utilisation sans vous le demander séparément. Elles comprennent vos réponses aux questions, le temps passé dans l’application et les résultats que vous consultez. Chaque évènement qui révèle une réponse ou une préférence est envoyé séparément, sans identifiant partagé avec un autre évènement, de sorte que vos réponses ne peuvent être reliées ni entre elles ni aux pages que vous consultez. Les données passent par le propre serveur de ce site, qui ne transmet ni votre adresse réseau ni l’identification de votre navigateur. Rien n’est enregistré à ce sujet sur votre appareil.",
+        "gated": "Les données d’utilisation ne sont collectées que si vous l’acceptez. Elles comprennent vos réponses aux questions, le temps passé dans l’application et les résultats que vous consultez. Les évènements d’une même visite sont tout au plus reliés par un identifiant conservé uniquement dans la mémoire de la page, qui disparaît lorsque la page est rechargée ou fermée. Les données passent par le propre serveur de ce site, qui ne transmet ni votre adresse réseau ni l’identification de votre navigateur. Rien n’est enregistré à ce sujet sur votre appareil, hormis votre choix. Un choix fait dans ce navigateur s’applique à toutes les parties de l’application ouvertes dans celui-ci, et vous pouvez le modifier sur la page Confidentialité."
+      },
+      "gpc": "Si votre navigateur envoie le signal Global Privacy Control, rien n’est collecté, pas même le comptage des pages vues, et la question ne vous est pas posée. Rien n’est enregistré pour mémoriser ce signal.",
+      "pageviews": "Les pages vues sont comptées même lorsqu’aucune autre donnée d’utilisation n’est collectée : le type de page ouverte, la langue et la durée. Ces données n’indiquent toutefois pas, par exemple, de quel parti ou de quel candidat les informations ont été consultées. Ce comptage ne comporte aucun identifiant.",
+      "title": "Statistiques"
+    },
+    "cookies": {
+      "content": "L’application n’utilise pas de cookies pour stocker vos données. Vos réponses et préférences sont enregistrées localement dans votre navigateur afin d’améliorer votre expérience, et cette copie enregistrée reste sur votre appareil. Lorsque des données d’utilisation sont collectées, vos réponses peuvent également en faire partie, comme le décrit la section Statistiques.",
+      "title": "Cookies"
+    },
+    "dataCollection": {
+      "info": "Les données d’utilisation passent par le propre serveur de ce site avant d’être transmises au service de statistiques utilisé par l’éditeur. Aucun cookie n’est utilisé à cet effet."
+    },
+    "dataConsentInfoButton": "Plus d’informations sur la collecte de données d’utilisation",
+    "dataConsentIntro": {
+      "denied": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Vous avez refusé la collecte de données le {formattedConsentDate}. Vous pouvez modifier votre préférence ci-dessous."
+          }
+        }
+      ],
+      "granted": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Vous avez accepté la collecte de données le {formattedConsentDate}. Vous pouvez modifier votre préférence ci-dessous."
+          }
+        }
+      ],
+      "indetermined": "Vous pouvez accepter ou refuser la collecte de données en choisissant une des options ci-dessous."
+    },
+    "dataConsentLabel": {
+      "denied": "Je ne souhaite pas partager mes données",
+      "granted": "Oui, j’accepte de partager mes données"
+    },
+    "title": "Confidentialité",
+    "trackingOptOut": {
+      "label": "Ne pas collecter de données d’utilisation sur mon usage de l’application"
+    },
+    "usageData": {
+      "content": "L’utilisation de l’application est mesurée de la même manière dans l’application des électeur·ices, l’application candidat·es et partis et l’application d’administration. En acceptant les conditions d’utilisation, vous autorisez la collecte de données d’utilisation sur votre usage de l’application candidat·es et partis, sauf si vous cochez la case située sous les conditions. Les pages vues sont comptées sans identifiant, comme le décrit la page Confidentialité. Votre choix s’applique à toutes les parties de l’application ouvertes dans ce navigateur, et vous pouvez le modifier plus tard sur la page Confidentialité.",
+      "title": "Données d’utilisation"
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "contestantApp.nominations": {
+    "constituencies": {
+      "ingress": {
+        "candidate": "Select the constituency you are standing in.",
+        "organization": "Select the constituency your party is standing in. One constituency can be selected for each election; if your party stands in several, please contact support."
+      },
+      "noElection": {
+        "candidate": "No election you can be nominated in is held in this constituency.",
+        "organization": "No election your party can be nominated in is held in this constituency."
+      },
+      "severalKept": "You have several nominations in this election. They are kept as they are; you can change their details in the next step.",
+      "title": {
+        "candidate": "What is your constituency?",
+        "organization": "What is your party’s constituency?"
+      }
+    },
+    "description": {
+      "candidate": "These are the constituencies where you're nominated. If the election list or election symbol are missing, they will be automatically added later when candidate lists are confirmed.",
+      "organization": "These are the constituencies where your party is nominated. If the election symbol is missing, it will be added later by the administrator."
+    },
+    "descriptionEditable": {
+      "candidate": "These are your nominations. You can change them, and add your election number and list, until nominations are closed.",
+      "organization": "These are your party’s nominations. You can change them, and add its election symbol and alliance, until nominations are closed."
+    },
+    "details": {
+      "changeSelection": "Change the selection",
+      "confirmedNote": "This nomination is confirmed. If you change it, an administrator must confirm it again, and voters do not see it until then.",
+      "ingress": "Check the details of each nomination. Nothing is saved until you continue.",
+      "keep": "Keep this nomination",
+      "newNote": "This nomination is new. An administrator must confirm it, and voters do not see it until then.",
+      "previousConstituency": "Previously: {constituency}",
+      "remove": "Remove this nomination",
+      "removedConfirmedNote": "This nomination is confirmed and will be removed when you continue. A new one would have to be confirmed again.",
+      "removedNote": "This nomination will be removed when you continue.",
+      "symbolInfo": {
+        "candidate": "Optional. Your number on the ballot, if you have one. At most 50 characters.",
+        "organization": "Optional. Your party’s symbol or number on the ballot, if it has one. At most 50 characters."
+      },
+      "title": "Nomination details"
+    },
+    "edit": "Edit nominations",
+    "elections": {
+      "ingress": {
+        "candidate": "Select every election you are standing in.",
+        "organization": "Select every election your party is standing in."
+      },
+      "noneSelected": "Select at least one election to continue.",
+      "title": {
+        "candidate": "Which elections are you standing in?",
+        "organization": "Which elections is your party standing in?"
+      }
+    },
+    "empty": {
+      "candidate": "No nomination has been defined for you yet. Please contact support to have one added.",
+      "organization": "No nomination has been defined for your party yet. Please contact support to have one added."
+    },
+    "emptyEditable": {
+      "candidate": "You have not defined a nomination yet. A nomination says which election and constituency you are standing in.",
+      "organization": "No nomination has been defined for your party yet. A nomination says which election and constituency it is standing in."
+    },
+    "emptyNoElection": {
+      "candidate": "There is no election in this application in which a candidate can be nominated. If you think this is a mistake, please contact support.",
+      "organization": "There is no election in this application in which a party can be nominated. If you think this is a mistake, please contact support."
+    },
+    "error": {
+      "changed": "Your nominations have changed since you opened this page. They are shown here as they are now; please check them and try again.",
+      "checkCards": "Some nominations need your attention. Check the marked fields.",
+      "duplicateParent": "Two nominations in the same election and constituency cannot have the same list.",
+      "hasCandidates": "A nomination could not be removed or moved, because candidates are listed under it. Please contact support.",
+      "otherRequired": {
+        "candidate": "Enter the name of the party.",
+        "organization": "Enter the name of the alliance."
+      },
+      "parentRequired": "Choose one of the options to continue.",
+      "saveFailed": "We’re terribly sorry, there was a problem saving your nominations. Please try again and if the problem persists, please contact support.",
+      "tooManyPending": "You have added the maximum number of nominations that are waiting for confirmation. An administrator must confirm some of them before you can add more."
+    },
+    "parent": {
+      "none": {
+        "candidate": "Independent / no party",
+        "organization": "None"
+      },
+      "noOptions": {
+        "candidate": "No party is available for selection yet.",
+        "organization": "No alliance is available for selection yet."
+      },
+      "notNominatedHint": {
+        "candidate": "Not nominated here yet. Choosing it also adds the party’s nomination, which an administrator must confirm.",
+        "organization": "Not nominated here yet. Choosing it also adds the alliance’s nomination, which an administrator must confirm."
+      },
+      "other": {
+        "candidate": "Other",
+        "organization": "Other"
+      },
+      "otherInfo": {
+        "candidate": "Enter the name of your party if it is not in the list. An administrator will check it.",
+        "organization": "Enter the name of the alliance if it is not in the list. An administrator will check it."
+      },
+      "otherLabel": {
+        "candidate": "Name of the party",
+        "organization": "Name of the alliance"
+      },
+      "unlisted": "No longer available for selection. You can keep it or choose another."
+    },
+    "requestedParent": "Requested by you. It is not in the application yet; an administrator will check it.",
+    "state": {
+      "label": "Status",
+      "pending": "Pending confirmation",
+      "pendingInfo": "This nomination has not been confirmed yet, so voters do not see it."
+    },
+    "title": "Nominations"
+  }
+}

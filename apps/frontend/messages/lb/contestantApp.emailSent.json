@@ -1,0 +1,33 @@
+{
+  "contestantApp.emailSent": {
+    "askedAgain": "Wann Dir viru manner wéi enger Minutt eng aner E-Mail ugefrot hutt, gouf dës vläicht net geschéckt. Waart, bis Dir nach eng Kéier schécke kënnt, an dréckt dann op Nach eng Kéier schécken.",
+    "changeAddress": "Eng aner E-Mail-Adress benotzen",
+    "heroEmoji": "✉️",
+    "intro": {
+      "code": "Mir hunn eng E-Mail un d’Adress geschéckt, mat där Dir Iech registréiert hutt. Klickt op de Link an der E-Mail, fir Iech unzemellen.",
+      "recovery": "Mir hunn eng E-Mail un d’Adress geschéckt, déi Dir uginn hutt. Klickt op de Link an der E-Mail, fir Iech unzemellen an en neit Passwuert festzeleeën.",
+      "signIn": "Mir hunn eng E-Mail un d’Adress geschéckt, déi Dir uginn hutt. Klickt op de Link an der E-Mail, fir Iech unzemellen."
+    },
+    "newest": "Wann Dir méi wéi eng E-Mail ugefrot hutt, funktionéiert nëmmen de Link an der neister.",
+    "notFound": {
+      "withAddress": "Wann Dir d’E-Mail net fannt, kuckt an Ärem Spam-Dossier no an iwwerpréift, ob Dir Är E-Mail-Adress richteg aginn hutt.",
+      "withoutAddress": "Wann Dir d’E-Mail net fannt, kuckt an Ärem Spam-Dossier no."
+    },
+    "resend": "Nach eng Kéier schécken",
+    "resendReady": "Dir kënnt elo eng nei E-Mail ufroen.",
+    "resendRequested": "Eng nei E-Mail gouf ugefrot.",
+    "resendWait": [
+      {
+        "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
+        "selectors": ["secondsPlural"],
+        "match": {
+          "secondsPlural=one": "Dir kënnt an enger Sekonn eng nei E-Mail ufroen.",
+          "secondsPlural=other": "Dir kënnt an {seconds} Sekonnen eng nei E-Mail ufroen."
+        }
+      }
+    ],
+    "sentTo": "Geschéckt un",
+    "support": "Wann de Problem bestoe bleift, kontaktéiert de Support.",
+    "title": "Kontrolléiert Är E-Mailen"
+  }
+}

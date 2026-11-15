@@ -1,0 +1,41 @@
+{
+  "contestantApp.register": {
+    "code": "Registreringskod",
+    "codeFormat": "Koden ser ut så här: ABCD-EFGH-JKMN. Stora och små bokstäver behandlas lika.",
+    "codeRequired": "Ange din registreringskod.",
+    "codeUnconfirmed": "Vi kunde inte bekräfta din registreringskod.",
+    "didYouAlreadyRegister": "Har du redan registrerat dig?",
+    "emailEntry": {
+      "ingress": "Ange den e-postadress du vill använda. Vi skickar en inloggningslänk till den, och det är den adressen du sedan loggar in med.",
+      "mismatch": "E-postadresserna matchar inte.",
+      "title": "Ange din e-postadress"
+    },
+    "emailInfo": "Ange din e-postadress så skickar vi en länk som du kan logga in med.",
+    "enterCode": "Ange registreringskoden som du har fått.",
+    "modes": {
+      "code": "Med en registreringskod",
+      "email": "Med min e-postadress",
+      "identityProvider": "Med bank-id",
+      "legend": "Hur vill du registrera dig?",
+      "required": "Välj hur du vill registrera dig."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Innehåller vanliga sekvenser eller mönster",
+      "length": "Minst {minPasswordLength} tecken",
+      "lowercase": "Liten bokstav",
+      "number": "Nummer",
+      "repetition": "Innehåller upprepning av tecken",
+      "symbol": "Specialtecken (såsom !?%#€)",
+      "uppercase": "Stor bokstav",
+      "username": "Undvik att använda ditt namn i lösenordet"
+    },
+    "register": "Registrera",
+    "signIn": {
+      "failed": "Vi kunde inte logga in dig med det lösenordet. Försök igen eller be om en inloggningslänk nedan.",
+      "ingress": "Det verkar som att du redan har registrerat dig. Ange ditt lösenord för att logga in.",
+      "noPasswordYetInfo": "Vi skickar en inloggningslänk till den e-postadress du registrerade dig med.",
+      "title": "Logga in med ditt lösenord"
+    },
+    "title": "Registrering"
+  }
+}
