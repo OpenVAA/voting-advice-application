@@ -29,7 +29,7 @@ variable "aws_region" {
 }
 
 variable "registry_url" {
-  description = "URL of the image repository, without a tag. The task's image is this URL and image_tag."
+  description = "URL of the image repository, without a tag or a digest. The task's image is this URL, @ and image_digest."
   type        = string
 
   validation {
@@ -38,13 +38,13 @@ variable "registry_url" {
   }
 }
 
-variable "image_tag" {
-  description = "Tag of the image the task runs: the full commit SHA the image was built from."
+variable "image_digest" {
+  description = "Digest of the image the task runs, as the registry reports it: sha256 and 64 lower-case hexadecimal characters. The image's tag and its BUILD_SHA are the commit id it was built from."
   type        = string
 
   validation {
-    condition     = can(regex("^[0-9a-f]{40}$", var.image_tag))
-    error_message = "image_tag must be a full commit SHA, 40 lower-case hexadecimal characters."
+    condition     = can(regex("^sha256:[0-9a-f]{64}$", var.image_digest))
+    error_message = "image_digest must be sha256: followed by 64 lower-case hexadecimal characters."
   }
 }
 

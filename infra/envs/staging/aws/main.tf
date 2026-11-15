@@ -73,7 +73,7 @@ module "frontend" {
   aws_account_id          = var.aws_account_id
   aws_region              = var.aws_region
   registry_url            = var.registry_url
-  image_tag               = var.image_tag
+  image_digest            = var.image_digest
   execution_role_arn      = var.execution_role_arn
   parameter_path          = var.parameter_path
   environment_values      = var.environment_values

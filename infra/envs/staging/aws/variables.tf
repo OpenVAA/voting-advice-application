@@ -28,8 +28,8 @@ variable "registry_url" {
   type        = string
 }
 
-variable "image_tag" {
-  description = "Tag of the image the service runs: the full commit SHA the image was built from."
+variable "image_digest" {
+  description = "Digest of the image the service runs. Given per plan as -var image_digest=, never written to terraform.tfvars: the pipeline passes the digest it pushed, a hand plan the digest the service runs now."
   type        = string
 }
 

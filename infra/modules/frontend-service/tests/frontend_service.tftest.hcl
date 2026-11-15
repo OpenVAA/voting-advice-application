@@ -120,7 +120,7 @@ variables {
   aws_account_id     = "000000000000"
   aws_region         = "eu-north-1"
   registry_url       = "000000000000.dkr.ecr.eu-north-1.amazonaws.com/openvaa-frontend"
-  image_tag          = "0000000000000000000000000000000000000000"
+  image_digest       = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
   execution_role_arn = "arn:aws:iam::000000000000:role/openvaa/openvaa-test-frontend-execution"
   parameter_path     = "/openvaa/test/frontend"
   alert_email        = "alerts@example.org"
@@ -178,8 +178,8 @@ run "environment_split" {
   }
 
   assert {
-    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].image == "000000000000.dkr.ecr.eu-north-1.amazonaws.com/openvaa-frontend:0000000000000000000000000000000000000000"
-    error_message = "The image must be the repository URL and the commit tag."
+    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].image == "000000000000.dkr.ecr.eu-north-1.amazonaws.com/openvaa-frontend@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    error_message = "The image must be the repository URL and the digest."
   }
 
   assert {
@@ -299,34 +299,34 @@ run "omitted_value_needs_no_value" {
   }
 }
 
-run "image_tag_refuses_a_name" {
+run "image_digest_refuses_a_commit_id" {
   command = plan
 
   variables {
-    image_tag = "latest"
+    image_digest = "0000000000000000000000000000000000000000"
   }
 
-  expect_failures = [var.image_tag]
+  expect_failures = [var.image_digest]
 }
 
-run "image_tag_refuses_empty" {
+run "image_digest_refuses_empty" {
   command = plan
 
   variables {
-    image_tag = ""
+    image_digest = ""
   }
 
-  expect_failures = [var.image_tag]
+  expect_failures = [var.image_digest]
 }
 
-run "image_tag_refuses_upper_case" {
+run "image_digest_refuses_upper_case" {
   command = plan
 
   variables {
-    image_tag = "ABCDEF0000000000000000000000000000000000"
+    image_digest = "sha256:ABCDEF0000000000000000000000000000000000000000000000000000000000"
   }
 
-  expect_failures = [var.image_tag]
+  expect_failures = [var.image_digest]
 }
 
 run "debug_ingress_refuses_a_range" {

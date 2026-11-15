@@ -25,7 +25,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name         = local.container_name
-      image        = "${var.registry_url}:${var.image_tag}"
+      image        = "${var.registry_url}@${var.image_digest}"
       essential    = true
       portMappings = [{ containerPort = local.container_port, protocol = "tcp" }]
       stopTimeout  = var.stop_timeout_seconds
