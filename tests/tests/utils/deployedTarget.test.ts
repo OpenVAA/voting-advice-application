@@ -347,6 +347,10 @@ describe('the service-role-key-absent check', () => {
   it.each([
     [{ SUPABASE_SERVICE_ROLE_KEY: MADE_UP_KEY_VALUE }, 'SUPABASE_SERVICE_ROLE_KEY is set (value withheld)'],
     [{ SUPABASE_SECRET_KEY: MADE_UP_KEY_VALUE }, 'SUPABASE_SECRET_KEY is set (value withheld)'],
+    [{ SUPABASE_ACCESS_TOKEN: MADE_UP_KEY_VALUE }, 'SUPABASE_ACCESS_TOKEN is set (value withheld)'],
+    [{ SUPABASE_DB_PASSWORD: MADE_UP_KEY_VALUE }, 'SUPABASE_DB_PASSWORD is set (value withheld)'],
+    [{ TF_VAR_database_password: MADE_UP_KEY_VALUE }, 'TF_VAR_database_password is set (value withheld)'],
+    [{ PGPASSWORD: MADE_UP_KEY_VALUE }, 'PGPASSWORD is set (value withheld)'],
     [
       { SUPABASE_SERVICE_ROLE_KEY: MADE_UP_KEY_VALUE, SUPABASE_SECRET_KEY: MADE_UP_KEY_VALUE },
       'SUPABASE_SERVICE_ROLE_KEY is set (value withheld), SUPABASE_SECRET_KEY is set (value withheld)'
@@ -363,7 +367,9 @@ describe('the service-role-key-absent check', () => {
     const result = await gate(await startStub(), {
       SMOKE_EXPECTED_SHA: SHA,
       SUPABASE_SERVICE_ROLE_KEY: '',
-      SUPABASE_SECRET_KEY: '  \t'
+      SUPABASE_SECRET_KEY: '  \t',
+      SUPABASE_ACCESS_TOKEN: '',
+      PGPASSWORD: ' '
     });
     expect(result.failed).toBe(0);
   });
