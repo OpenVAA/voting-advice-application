@@ -244,6 +244,12 @@ describe('the deployed config', () => {
     expect(process.env.PLAYWRIGHT_NO_COPY_PROMPT).toBe('1');
   });
 
+  it('prints the target in global setup only through gateTargetLine', () => {
+    const text = fs.readFileSync(path.join(TESTS_ROOT, 'deployed-global-setup.ts'), 'utf8');
+    expect(text).toContain('console.log(gateTargetLine(baseURL));');
+    expect(text).not.toMatch(/\$\{baseURL\}/);
+  });
+
   it('turns tracing, screenshots and video off in the contestant spec', () => {
     const text = fs.readFileSync(path.join(DEPLOYED_DIR, 'contestant.smoke.ts'), 'utf8');
     expect(text).toContain("test.use({ trace: 'off', screenshot: 'off', video: 'off' });");

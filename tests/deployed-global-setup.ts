@@ -1,5 +1,10 @@
 import path from 'path';
-import { DEPLOYED_GATE_HEADLINE, gateFailureMessage, runDeployedGate } from './tests/utils/deployedTarget';
+import {
+  DEPLOYED_GATE_HEADLINE,
+  gateFailureMessage,
+  gateTargetLine,
+  runDeployedGate
+} from './tests/utils/deployedTarget';
 import { TESTS_DIR } from './tests/utils/testsDir';
 import type { FullConfig } from '@playwright/test';
 
@@ -20,7 +25,7 @@ export default async function deployedGlobalSetup(config: FullConfig): Promise<v
   // `TESTS_DIR` is `<repo-root>/tests/tests`, so the root is two levels up.
   const repoRoot = path.resolve(TESTS_DIR, '..', '..');
 
-  console.log(`DEPLOYED SMOKE GATE ${baseURL}`);
+  console.log(gateTargetLine(baseURL));
   const result = await runDeployedGate({ env: process.env, baseURL, repoRoot });
   for (const line of result.lines) console.log(line);
 

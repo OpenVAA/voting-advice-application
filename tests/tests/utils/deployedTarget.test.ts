@@ -11,6 +11,7 @@ import {
   extractServedEnv,
   GATE_CHECK_ORDER,
   gateFailureMessage,
+  gateTargetLine,
   readDedicatedTarget,
   readPublicOrigin,
   requireCredentialOrigin,
@@ -590,6 +591,30 @@ describe('a base URL the gate cannot request', () => {
     expect(observedOf(result.checks, 'origin')).toBe('(the base URL carries user info, value withheld)');
     expect(JSON.stringify(result)).not.toContain(madeUpSecret);
     expect(gateFailureMessage(result)).not.toContain(madeUpSecret);
+  });
+});
+
+describe('gateTargetLine', () => {
+  it('names a base URL without user info as given', () => {
+    expect(gateTargetLine(DEFAULT_SMOKE_BASE_URL)).toBe('DEPLOYED SMOKE GATE https://staging.openvaa.org');
+  });
+
+  it.each([
+    ['a user and a password', 'https://someone:made-up-userinfo-secret@staging.openvaa.org'],
+    ['a password alone', 'https://:made-up-userinfo-secret@staging.openvaa.org'],
+    ['a user alone', 'https://made-up-userinfo-secret@staging.openvaa.org']
+  ])('withholds user info made of %s', (_label, baseURL) => {
+    const line = gateTargetLine(baseURL);
+    expect(line).toBe('DEPLOYED SMOKE GATE https://staging.openvaa.org/ (user info withheld)');
+    expect(line).not.toContain('made-up-userinfo-secret');
+    expect(line).not.toContain('someone');
+  });
+
+  it.each([
+    ['no scheme', 'made-up-userinfo-secret@staging.openvaa.org'],
+    ['a space in the host', 'https://someone:made-up-userinfo-secret@staging openvaa.org']
+  ])('does not print a value with %s that is not an absolute URL', (_label, baseURL) => {
+    expect(gateTargetLine(baseURL)).toBe('DEPLOYED SMOKE GATE (not an absolute URL, value withheld)');
   });
 });
 

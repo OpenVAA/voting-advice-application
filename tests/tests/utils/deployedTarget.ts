@@ -155,6 +155,21 @@ export function requireCredentialOrigin(baseURL: string | undefined, repoRoot: s
   }
 }
 
+/**
+ * The line global setup prints before the gate's check lines, naming the target with its user info withheld.
+ *
+ * @param baseURL - The target the gate is about to check.
+ * @returns `DEPLOYED SMOKE GATE <baseURL>`. A URL with user info is printed without it and with a note, and a value that is not an absolute URL is not printed.
+ */
+export function gateTargetLine(baseURL: string): string {
+  const url = parseURL(baseURL);
+  if (url === null) return 'DEPLOYED SMOKE GATE (not an absolute URL, value withheld)';
+  if (url.username === '' && url.password === '') return `DEPLOYED SMOKE GATE ${baseURL}`;
+  url.username = '';
+  url.password = '';
+  return `DEPLOYED SMOKE GATE ${url.href} (user info withheld)`;
+}
+
 /** The parsed URL, or `null` when the value is not an absolute URL. */
 function parseURL(value: string): URL | null {
   try {
