@@ -136,12 +136,66 @@ jobs:
           echo "digest=$digest"
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
+      # The role's credentials stay in the job's environment only for the steps that call AWS. No package install, no
+      # Supabase CLI call and no browser install runs with them: they are dropped after the build, after the plan and
+      # after the stable check, and the role is assumed again before the plan, the apply and the alert.
+      - name: "Drop the build credentials"
+        id: drop-build-credentials
+        run: |
+          {
+            echo "AWS_ACCESS_KEY_ID="
+            echo "AWS_SECRET_ACCESS_KEY="
+            echo "AWS_SESSION_TOKEN="
+          } >> "$GITHUB_ENV"
+
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a Node below
+      # engines.node.
+      - name: "Setup Node.js 24.21.0"
+        id: node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.21.0
+
+      - name: "Setup Yarn 4.18"
+        id: yarn
+        uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # v2.0.0
+        with:
+          version: 4.18
+
+      # The drift check after the push reads the migration history with psql.
+      - name: "Install psql"
+        id: psql
+        run: |
+          set -uo pipefail
+          sudo apt-get update
+          update_exit=$?
+          if [ "$update_exit" -ne 0 ]; then
+            echo "::error::apt-get update exited $update_exit."
+            exit 1
+          fi
+          sudo apt-get install -y --no-install-recommends postgresql-client
+          install_exit=$?
+          if [ "$install_exit" -ne 0 ]; then
+            echo "::error::apt-get install postgresql-client exited $install_exit."
+            exit 1
+          fi
+          echo "psql_version=$(psql --version)"
+
       - name: "Setup Terraform 1.16.5"
         id: terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: 1.16.5
           terraform_wrapper: false
+
+      - name: "Assume the deploy role for the plan"
+        id: plan-credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: deploy-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
 
       - name: "Initialise the staging AWS root"
         id: init
@@ -181,38 +235,14 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a Node below
-      # engines.node.
-      - name: "Setup Node.js 24.21.0"
-        id: node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24.21.0
-
-      - name: "Setup Yarn 4.18"
-        id: yarn
-        uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # v2.0.0
-        with:
-          version: 4.18
-
-      # The drift check after the push reads the migration history with psql.
-      - name: "Install psql"
-        id: psql
+      - name: "Drop the plan credentials"
+        id: drop-plan-credentials
         run: |
-          set -uo pipefail
-          sudo apt-get update
-          update_exit=$?
-          if [ "$update_exit" -ne 0 ]; then
-            echo "::error::apt-get update exited $update_exit."
-            exit 1
-          fi
-          sudo apt-get install -y --no-install-recommends postgresql-client
-          install_exit=$?
-          if [ "$install_exit" -ne 0 ]; then
-            echo "::error::apt-get install postgresql-client exited $install_exit."
-            exit 1
-          fi
-          echo "psql_version=$(psql --version)"
+          {
+            echo "AWS_ACCESS_KEY_ID="
+            echo "AWS_SECRET_ACCESS_KEY="
+            echo "AWS_SESSION_TOKEN="
+          } >> "$GITHUB_ENV"
 
       # The CLI is linked in a work directory of its own under $RUNNER_TEMP, whose supabase/ holds symbolic links to the
       # repository's config.toml, migrations and functions. apps/supabase is never linked: a link writes the project's
@@ -430,6 +460,15 @@ jobs:
             exit 1
           fi
 
+      - name: "Drop the rollout credentials"
+        id: drop-rollout-credentials
+        run: |
+          {
+            echo "AWS_ACCESS_KEY_ID="
+            echo "AWS_SECRET_ACCESS_KEY="
+            echo "AWS_SESSION_TOKEN="
+          } >> "$GITHUB_ENV"
+
       - name: "Install Playwright's Chromium"
         id: playwright
         run: yarn playwright install --with-deps chromium
@@ -506,19 +545,23 @@ jobs:
           CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
           CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
-          TERRAFORM_OUTCOME: ${{ steps.terraform.outcome }}
-          INIT_OUTCOME: ${{ steps.init.outcome }}
-          PLAN_OUTCOME: ${{ steps.plan.outcome }}
-          SHOW_OUTCOME: ${{ steps.show.outcome }}
+          DROP_BUILD_CREDENTIALS_OUTCOME: ${{ steps.drop-build-credentials.outcome }}
           NODE_OUTCOME: ${{ steps.node.outcome }}
           YARN_OUTCOME: ${{ steps.yarn.outcome }}
           PSQL_OUTCOME: ${{ steps.psql.outcome }}
+          TERRAFORM_OUTCOME: ${{ steps.terraform.outcome }}
+          PLAN_CREDENTIALS_OUTCOME: ${{ steps.plan-credentials.outcome }}
+          INIT_OUTCOME: ${{ steps.init.outcome }}
+          PLAN_OUTCOME: ${{ steps.plan.outcome }}
+          SHOW_OUTCOME: ${{ steps.show.outcome }}
+          DROP_PLAN_CREDENTIALS_OUTCOME: ${{ steps.drop-plan-credentials.outcome }}
           LINK_OUTCOME: ${{ steps.link.outcome }}
           MIGRATIONS_OUTCOME: ${{ steps.migrations.outcome }}
           FUNCTIONS_OUTCOME: ${{ steps.functions.outcome }}
           REASSUME_OUTCOME: ${{ steps.reassume.outcome }}
           APPLY_OUTCOME: ${{ steps.apply.outcome }}
           STABLE_OUTCOME: ${{ steps.stable.outcome }}
+          DROP_ROLLOUT_CREDENTIALS_OUTCOME: ${{ steps.drop-rollout-credentials.outcome }}
           PLAYWRIGHT_OUTCOME: ${{ steps.playwright.outcome }}
           SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
           SERVED_BUILD_OUTCOME: ${{ steps.served-build.outcome }}
@@ -530,19 +573,23 @@ jobs:
             "setup:$CHECKOUT_OUTCOME" \
             "setup:$CREDENTIALS_OUTCOME" \
             "build:$BUILD_OUTCOME" \
+            "plan:$DROP_BUILD_CREDENTIALS_OUTCOME" \
+            "plan:$NODE_OUTCOME" \
+            "plan:$YARN_OUTCOME" \
+            "plan:$PSQL_OUTCOME" \
             "plan:$TERRAFORM_OUTCOME" \
+            "plan:$PLAN_CREDENTIALS_OUTCOME" \
             "plan:$INIT_OUTCOME" \
             "plan:$PLAN_OUTCOME" \
             "plan:$SHOW_OUTCOME" \
-            "migrations:$NODE_OUTCOME" \
-            "migrations:$YARN_OUTCOME" \
-            "migrations:$PSQL_OUTCOME" \
+            "migrations:$DROP_PLAN_CREDENTIALS_OUTCOME" \
             "migrations:$LINK_OUTCOME" \
             "migrations:$MIGRATIONS_OUTCOME" \
             "functions:$FUNCTIONS_OUTCOME" \
             "rollout:$REASSUME_OUTCOME" \
             "rollout:$APPLY_OUTCOME" \
             "stable:$STABLE_OUTCOME" \
+            "smoke:$DROP_ROLLOUT_CREDENTIALS_OUTCOME" \
             "smoke:$PLAYWRIGHT_OUTCOME" \
             "smoke:$SMOKE_OUTCOME" \
             "smoke:$SERVED_BUILD_OUTCOME" \

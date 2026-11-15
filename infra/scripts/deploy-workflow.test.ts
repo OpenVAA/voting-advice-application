@@ -273,8 +273,19 @@ describe('the stages of the deploy job', () => {
     expect(steps.indexOf(cleanup as WorkflowStep)).toBeLessThan(steps.indexOf(stepWithId(steps, 'alert')));
   });
 
-  it('writes nothing to $GITHUB_ENV', () => {
-    expect(text).not.toContain('GITHUB_ENV');
+  it('writes nothing to $GITHUB_ENV but the emptied credentials', () => {
+    const writers = steps.filter((step) => runOf(step).includes('GITHUB_ENV'));
+    expect(writers.map((step) => step.id)).toEqual([
+      'drop-build-credentials',
+      'drop-plan-credentials',
+      'drop-rollout-credentials'
+    ]);
+    for (const step of writers) {
+      expect(runOf(step).trim()).toBe(
+        '{\n  echo "AWS_ACCESS_KEY_ID="\n  echo "AWS_SECRET_ACCESS_KEY="\n  echo "AWS_SESSION_TOKEN="\n} >> "$GITHUB_ENV"'
+      );
+      expect('env' in step).toBe(false);
+    }
   });
 });
 
@@ -381,6 +392,50 @@ describe('the migrations and the functions of the deploy job', () => {
   });
 });
 
+/** The names of the credentials the assume action exports into the job's environment. */
+const CREDENTIAL_NAMES = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN'];
+
+/** Whether a step assumes the deploy role with the credentials action. */
+function assumesRole(step: WorkflowStep): boolean {
+  return typeof step.uses === 'string' && step.uses.startsWith('aws-actions/configure-aws-credentials@');
+}
+
+/** Whether a step empties the three credentials in the job's environment. */
+function dropsCredentials(step: WorkflowStep): boolean {
+  const script = runOf(step);
+  return script.includes('>> "$GITHUB_ENV"') && CREDENTIAL_NAMES.every((name) => script.includes(`echo "${name}="`));
+}
+
+/** The ids of the steps of a job that run with the role's credentials in their environment. */
+function idsHoldingCredentials(steps: Array<WorkflowStep>): Set<string> {
+  const holding = new Set<string>();
+  let held = false;
+  for (const step of steps) {
+    if (held && typeof step.id === 'string') holding.add(step.id);
+    if (assumesRole(step)) held = true;
+    if (dropsCredentials(step)) held = false;
+  }
+  return holding;
+}
+
+describe('the credentials of the deploy job', () => {
+  /** The steps that run code the job did not write: tool, package and browser installs and the Supabase CLI. */
+  const WITHOUT = ['node', 'yarn', 'psql', 'terraform', 'link', 'migrations', 'functions', 'playwright', 'smoke'];
+  /** The steps that call AWS. */
+  const WITH = ['build', 'init', 'plan', 'apply', 'stable', 'alert'];
+
+  it('holds the role only in the steps that call AWS', () => {
+    const holding = idsHoldingCredentials(stepsOf(doc, 'deploy'));
+    for (const id of WITHOUT) expect(holding.has(id), `step ${id} runs with the role's credentials`).toBe(false);
+    for (const id of WITH) expect(holding.has(id), `step ${id} runs without the role's credentials`).toBe(true);
+  });
+
+  it('is red when the credentials are not dropped after the build', () => {
+    const steps = stepsOf(doc, 'deploy').filter((step) => step.id !== 'drop-build-credentials');
+    expect(idsHoldingCredentials(steps).has('yarn')).toBe(true);
+  });
+});
+
 describe('the alert of the deploy job', () => {
   const steps = stepsOf(doc, 'deploy');
   const alert = stepWithId(steps, 'alert');
@@ -426,7 +481,8 @@ describe('the alert of the deploy job', () => {
     expect(stageOf('credentials')).toBe('setup');
     expect(stageOf('init')).toBe('plan');
     expect(stageOf('show')).toBe('plan');
-    expect(stageOf('psql')).toBe('migrations');
+    expect(stageOf('psql')).toBe('plan');
+    expect(stageOf('drop-plan-credentials')).toBe('migrations');
     expect(stageOf('reassume')).toBe('rollout');
     expect(stageOf('playwright')).toBe('smoke');
   });

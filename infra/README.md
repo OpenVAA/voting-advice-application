@@ -160,7 +160,10 @@ waits for its reviewer. Once approved, in this order:
 1. **Build**, by digest. The deploy role is assumed and `infra/scripts/build-push-image.sh` builds
    the commit natively on `ubuntu-24.04-arm` from a `git archive` of it, pushes the image under the
    commit id and prints `image_digest=`. Status 3 means the registry already holds the commit's
-   image, which is deployed as it is.
+   image, which is deployed as it is. The role's credentials are then dropped from the job's
+   environment, and they are dropped again after the plan and after the stable check: the role is
+   assumed only for the steps that call AWS, so no tool, package or browser install and no Supabase
+   CLI call runs with them.
 2. **Plan**, of the staging AWS root with `-var "image_digest=<digest>"`, saved under
    `$RUNNER_TEMP` and printed with `terraform show -no-color` to the log and the step summary.
 3. **Migrations.** A temporary work directory is linked to the Supabase project, and
@@ -254,10 +257,10 @@ prints `running_image_digest=`, and the plan takes it as `-var "image_digest=$DI
 
 The alert mail's subject names the stage that failed. Every step of the gated job belongs to the
 stage it follows: `setup` is the checkout and the first role assumption, before anything is built;
-`plan` includes Terraform's setup, the init and the printing of the plan, after the image push;
-`migrations` includes the Node, Yarn and psql setup; `rollout` includes the second role
-assumption, after the functions are deployed; `smoke` includes the Playwright install;
-`cleanup` is the removal of the step files, after everything else. `cancelled` means a cancelled
+`plan` is every step after the image push up to the printed plan, the Node, Yarn, psql and
+Terraform setup among them; `migrations` begins where the plan's credentials are dropped;
+`rollout` includes the role assumption before the apply, after the functions are deployed; `smoke`
+includes the Playwright install; `cleanup` is the removal of the step files, after everything else. `cancelled` means a cancelled
 run, and `unknown` a failed job in which no step reads as failed. A stage at or after `migrations`
 means the persistent Supabase project may already hold that run's migrations. A red `checks` job
 sends no alert, because it holds no credential and the gated job never starts. The stage's step
