@@ -116,3 +116,30 @@ None.
 - FOUND: evidence/187-12-final-gates.md, evidence/187-12-evidence-commits.md
 - FOUND commits: e5bb3601e, a664d7f77, b34c30d35 (ancestors of HEAD)
 - FOUND refs: refs/evidence/187/green = 69d10a723, refs/evidence/187/red = 4d4624315
+
+## Re-run 2026-11-15 (after review fixes)
+
+Plan 187-15 Task 1 found `PUSH_TREE_MATCHES_HEAD=no`: the green commit above predates the review fixes (`49d8ec823` … `6bf28e0e1`, `95d1d6ad5`, `d55a94b7a`) and the orchestrator's `1e10dff7f`. Those changed `.github/workflows/` and `infra/` only. All three tasks were run again. The original lines in both evidence files are kept as `*_SUPERSEDED=`, and the re-run sections at the end of each file hold the current values.
+
+```
+lint:check exit=0
+format:check exit=0
+test:unit exit=0
+lint:workflows exit=0
+GREEN_LOCAL_BUILD_EXIT=0
+RED_LOCAL_BUILD_EXIT=1
+```
+
+- **Task 1, the gates:** all of them pass at `1e10dff7f33c51e3e22e3853e3ec95f1a7e0087d`. The infra tests are 11 files with 314 tests, and github-oidc now has 11 tests. The first `test:unit` was red: one dev-seed case (`checkDriftLinkedGuard.test.ts`, the PGHOST loopback refusal) was killed at its 15 s spawn timeout while the executor ran Terraform alongside. Alone the case takes about 170 ms, and the gate passed when run once more by itself. Neither file has changed since phase 184, so the issue is logged in `deferred-items.md`. Commit `3c7be6128`.
+- **Task 2, green:** `GREEN_COMMIT=395b71c712f9af6a80512625f2b38baf93167c1a`, `GREEN_TREE=3c82ab567d5b375c81e300e6bdb9fdbf72d7e42b` (HEAD `1e10dff7f` without `.planning/`), parent `340a20070` as before, 3320 paths and 0 under `.planning/`. The archive build exits 0 in 3.7 min.
+  - The first attempt was void at the base-image fetch, because Docker Desktop's credential helper did not answer.
+  - No process was killed and the Docker client configuration was not changed. A pull that finished on its own unblocked the second attempt.
+  - Commit `ad540684c`.
+- **Task 3, red:** `RED_COMMIT=700c18362ff260a8a0e77303e464db2deef7d60a`, `RED_TREE=154717e0ed840739539376f4cdeee21e1f73be67`. It differs from green only in `apps/frontend/src/routes/+layout.ts`. Its archive build exits 1 in `@openvaa/frontend#build` (shared stage, `RUN yarn build`), naming `does-not-exist-187-red`. The working tree is unchanged and the builder cache was pruned (4.9 GB). Commit `df03799e6`.
+- **Nothing pushed:** `git for-each-ref --contains` prints only `refs/evidence/187/green` and `refs/evidence/187/red` for the two new commits. The superseded `69d10a723` and `4d4624315` are no longer held by any ref.
+
+### Self-Check (re-run): PASSED
+
+- FOUND commits: `3c7be6128`, `ad540684c`, `df03799e6`, all ancestors of HEAD
+- FOUND refs: `refs/evidence/187/green` = `395b71c71`, `refs/evidence/187/red` = `700c18362`
+- The `<automated>` verifies of Tasks 1, 2 and 3 exit 0 on the re-run lines

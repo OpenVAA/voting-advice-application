@@ -109,3 +109,32 @@ None. The run was not void and not red, and I did not retry it.
 - FOUND: evidence/187-13-closing-e2e.md, evidence/187-13-186-08-handoff.md, and the note in 186-08-PLAN.md
 - FOUND: commits 4ff51c078 and 96a3a9fcf, both ancestors of HEAD
 - Both tasks' `<automated>` verifies exited 0
+
+## Re-run 2026-11-15 (after review fixes)
+
+The review fixes and `1e10dff7f` moved the source tree after the first closing run, and plan 187-12 was run again (green `395b71c71`, red `700c18362`), so both tasks were run again too. The original lines are kept as `*_SUPERSEDED=`.
+
+```
+E2E_GATE=green
+E2E_TREE_SHA=3c7be6128515981160de0e3e5a89dafae73c4a29
+E2E_WRAPPER_EXIT=0   E2E_VERDICT_EXIT=0
+passed 548, failed 0, flaky 0, did not run 0, skipped 0
+E2E_RUN_DIR=tests/e2e-runs/187-13-rerun-20261115T202406Z
+SOURCE_TREE_MATCHES_GREEN=yes   (tree 3c82ab567 = GREEN_TREE of the 187-12 re-run)
+```
+
+- **Task 1:** the run took 2026-11-15T20:24:12Z to 20:37:51Z under `caffeinate -i`, with no void marker, no red run and no retry. The edge runtime was Up, mounting this checkout's functions, and migrations were 1 against 1.
+  - The run was first recorded under `RERUN_*` names (`ced29ef11`), while the green build was blocked.
+  - It was promoted to the plan's lines once 187-12 Tasks 2 and 3 were proven (`cce8d5cdb`).
+- **Task 2, the handoff:** plan 186-08 had already completed on the first values (`062a11c1b`), so it needs nothing further.
+  - The handoff now reads `HANDOFF_TREE_REFERENCE=3c7be6128515981160de0e3e5a89dafae73c4a29` (`HANDOFF_TREE_SINCE_REFERENCE=unchanged`), as the plan's verify requires that it equal `E2E_TREE_SHA`.
+  - For 186-08's tree check this is equivalent to the first value, because nothing under `apps/`, `packages/` or `tests/` changed in between.
+  - `HANDOFF_SMOKE_EXPECTED_SHA=712947a1bd44a735f66ee8f51610f4748d76cd30` is unchanged. Its reading time follows the readiness record that 186-08 made again (`2026-11-15T11:28:18Z`).
+  - `186-08-PLAN.md` and 186-08's evidence were not touched. The note still shows `8 0` against `NOTE_BASE_BLOB`, and `verify.plan-structure` still passes.
+  - Commit `99381ba3d`.
+
+### Self-Check (re-run): PASSED
+
+- FOUND commits: `ced29ef11`, `cce8d5cdb`, `99381ba3d`, all ancestors of HEAD
+- FOUND: `tests/e2e-runs/187-13-rerun-20261115T202406Z`, with no `VOID-host-suspend.txt`
+- The `<automated>` verifies of both tasks exit 0 on the re-run lines

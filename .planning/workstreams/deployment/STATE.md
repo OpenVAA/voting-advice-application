@@ -7,10 +7,10 @@ current_phase_name: Deploy Pipeline
 current_plan: 15
 status: executing
 stopped_at: Completed 187-17-PLAN.md
-last_updated: "2026-11-15T21:10:20.339Z"
+last_updated: "2026-11-15T21:13:44.335Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 684b474648e1492638c5a4c885f11118cc259679
+state_head: 99381ba3d6c9f2b2ab3d302e64e48f794f95d4ef
 progress:
   total_phases: 10
   completed_phases: 6
@@ -341,6 +341,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: Plan 186-08's tree reference is now phase 187's closing run (54e79823b), and its expected SHA is 712947a1b from 186-08-readiness.md while staging serves it (then the tip of deploy/staging)
 - [Phase 187]: 187-14: GitHub Environments staging and staging-destroy exist and are read back before any push: one User reviewer, self-review allowed, admin bypass off, branch rules exactly deploy/staging and deploy-evidence/* (none admits main); staging holds the three secrets and three variables, staging-destroy none; the repository holds AWS_PLAN_ROLE_ARN and ALERT_EMAIL
 - [Phase 187]: 187-17: plan 186-08 was already complete, so the handoff needed no resumption; the operator added SMOKE_CONTESTANT_EMAIL and SMOKE_CONTESTANT_PASSWORD to the staging environment only (read back by name: five staging secrets)
+- [Phase 187]: 187-12/187-13 re-run after the review fixes: green 395b71c71 (tree 3c82ab567 = HEAD 1e10dff7f without .planning/) builds, red 700c18362 fails in @openvaa/frontend#build; closing E2E re-run 548/548 green on 3c7be6128 (tests/e2e-runs/187-13-rerun-20261115T202406Z); the 186-08 handoff's tree reference follows it, the expected SHA stays 712947a1b
 
 ### Pending Todos
 
