@@ -798,7 +798,9 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
 The deploy workflow runs this step itself, in the gated `staging` job: it links a work directory of
 its own under the runner's temporary directory, reaches the database through the session pooler, and
 calls `push-migrations.sh` with `--confirmed-ref`, the environment's approval standing in for the
-typed ref. A hand push is for a sitting outside the pipeline. For the pipeline,
+typed ref. That approval is given when the job starts, before the pending versions are listed, and
+what keeps the push in that job is the database password, an environment secret; the flag's own
+conditions only guard against a mistake. A hand push is for a sitting outside the pipeline. For the pipeline,
 `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` are environment secrets of the `staging` GitHub
 Environment and nowhere else.
 

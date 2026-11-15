@@ -103,7 +103,11 @@ function run(args: Array<string>, caseEnv: Record<string, string> = {}): Promise
   });
 }
 
-const PIPELINE_ENV = { GITHUB_ACTIONS: 'true', OPENVAA_DEPLOY_ENVIRONMENT: 'staging' };
+const PIPELINE_ENV = {
+  GITHUB_ACTIONS: 'true',
+  OPENVAA_DEPLOY_ENVIRONMENT: 'staging',
+  GITHUB_REF: 'refs/heads/deploy/staging'
+};
 const CONFIRMED = ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref', PROJECT_REF];
 
 /** The positions of `lines` in `text`, each the index of the first line equal to it, or -1. */
@@ -139,7 +143,7 @@ describe('push-migrations.sh --confirmed-ref', () => {
   }, 60_000);
 
   it('refuses a confirmed ref outside a GitHub Actions job before the CLI runs', async () => {
-    const { status, stderr, cliLog } = await run(CONFIRMED, { OPENVAA_DEPLOY_ENVIRONMENT: 'staging' });
+    const { status, stderr, cliLog } = await run(CONFIRMED, { ...PIPELINE_ENV, GITHUB_ACTIONS: '' });
     expect(stderr).toMatch(/FATAL -- .*GITHUB_ACTIONS/);
     expect(cliLog).toBe('');
     expect(status).toBe(2);
@@ -147,12 +151,32 @@ describe('push-migrations.sh --confirmed-ref', () => {
 
   it('refuses a confirmed ref in a job of another environment before the CLI runs', async () => {
     const { status, stderr, cliLog } = await run(CONFIRMED, {
-      GITHUB_ACTIONS: 'true',
+      ...PIPELINE_ENV,
       OPENVAA_DEPLOY_ENVIRONMENT: 'production'
     });
     expect(stderr).toMatch(/FATAL -- .*OPENVAA_DEPLOY_ENVIRONMENT/);
     expect(cliLog).toBe('');
     expect(status).toBe(2);
+  }, 60_000);
+
+  it.each([['refs/heads/main'], ['refs/heads/deploy-evidence-other'], ['refs/tags/deploy/staging'], ['']])(
+    'refuses a confirmed ref on the ref %j, which the staging environment admits no deploy from',
+    async (ref) => {
+      const { status, stderr, cliLog } = await run(CONFIRMED, { ...PIPELINE_ENV, GITHUB_REF: ref });
+      expect(stderr).toMatch(/FATAL -- .*GITHUB_REF/);
+      expect(cliLog).toBe('');
+      expect(status).toBe(2);
+    },
+    60_000
+  );
+
+  it('accepts a confirmed ref on a deploy-evidence branch', async () => {
+    const { status, stdout } = await run(CONFIRMED, {
+      ...PIPELINE_ENV,
+      GITHUB_REF: 'refs/heads/deploy-evidence/187-x'
+    });
+    expect(stdout.split('\n')).toContain('push_confirmation=environment');
+    expect(status).toBe(0);
   }, 60_000);
 
   it('pushes nothing when the database is up to date and the ref is confirmed', async () => {

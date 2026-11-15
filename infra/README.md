@@ -168,7 +168,11 @@ waits for its reviewer. Once approved, in this order:
    `$RUNNER_TEMP` and printed with `terraform show -no-color` to the log and the step summary.
 3. **Migrations.** A temporary work directory is linked to the Supabase project, and
    `infra/scripts/push-migrations.sh --confirmed-ref` pushes the pending migrations through the
-   session pooler and checks for drift afterwards.
+   session pooler and checks for drift afterwards. The script accepts the flag only in an Actions
+   job with `DEPLOY_ENVIRONMENT=staging` on a `deploy/staging` or `deploy-evidence/*` ref, which
+   guards against a mistake and proves no environment: a repository variable of the same name, or
+   any shell that sets those variables, passes it. The boundary is `SUPABASE_DB_PASSWORD`, an
+   environment secret of `staging` alone.
 4. **Functions.** All three are deployed from the linked directory, and the Management API's list
    must then show three `ACTIVE` functions, each with `verify_jwt` as `config.toml` says.
 5. **Apply** of the saved plan, with the role assumed again so that its credentials outlive it.

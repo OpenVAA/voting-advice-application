@@ -8,7 +8,7 @@
 #   1. Refusals. The ref, a confirmed ref, the work directory, its link and the password are checked as listed under Prerequisites. A refusal exits 2, and the CLI has not run.
 #   2. Dry run. `supabase db push --linked --dry-run --skip-vault --debug` lists the migrations the project lacks. One `push_pending=<version>` line is printed for each. The debug log tells which path the CLI took to the database, printed as `push_connection=direct`, `pooler` or `unknown`.
 #   3. Up to date. When the dry run says the database `is up to date.`, `push_up_to_date=yes` is printed, nothing is pushed, and the script goes on to the drift check. A second run after a push is this case. Otherwise `push_up_to_date=no` is printed.
-#   4. Confirmed push. The pending versions and the question `Type the project ref to push to it:` are written to the terminal (/dev/tty, never standard output), and the answer is read from it. Anything but the ref exits 2 and pushes nothing; so does a run with no terminal. A correct answer prints `push_confirmation=terminal`. In the confirmed form, `--confirmed-ref <ref>`, the approval of the GitHub Environment the job runs in stands in for the typed ref: nothing is asked, `push_confirmation=environment` is printed, and the push goes ahead without a terminal. The confirmed form is accepted only when its value equals `--ref`, GITHUB_ACTIONS is `true` and OPENVAA_DEPLOY_ENVIRONMENT is `staging`; otherwise step 1 refuses it. Then `supabase db push --linked --yes --skip-vault` applies the migrations. The CLI's own question is answered by `--yes`, because without a terminal it applies by itself. The push's status is read directly, never through a pipe, and printed as `push_status=<n>`. No seed is pushed, and no migration older than the project's last one is applied out of order.
+#   4. Confirmed push. The pending versions and the question `Type the project ref to push to it:` are written to the terminal (/dev/tty, never standard output), and the answer is read from it. Anything but the ref exits 2 and pushes nothing; so does a run with no terminal. A correct answer prints `push_confirmation=terminal`. In the confirmed form, `--confirmed-ref <ref>`, the approval of the GitHub Environment the job runs in stands in for the typed ref: nothing is asked, `push_confirmation=environment` is printed, and the push goes ahead without a terminal. That approval is given when the job starts, before the dry run has listed anything, so unlike the typed ref it is not given with the pending versions in view. The confirmed form is accepted only when its value equals `--ref`, GITHUB_ACTIONS is `true`, OPENVAA_DEPLOY_ENVIRONMENT is `staging` and GITHUB_REF is `refs/heads/deploy/staging` or a `refs/heads/deploy-evidence/` branch; otherwise step 1 refuses it. These conditions guard against using the confirmed form by mistake, and prove nothing: each is an environment variable that any process can set, and a repository or organisation variable named DEPLOY_ENVIRONMENT would satisfy the second in any job. What keeps a push out of every other job's reach is SUPABASE_DB_PASSWORD, a secret of the `staging` environment alone, released only on its approval. Then `supabase db push --linked --yes --skip-vault` applies the migrations. The CLI's own question is answered by `--yes`, because without a terminal it applies by itself. The push's status is read directly, never through a pipe, and printed as `push_status=<n>`. No seed is pushed, and no migration older than the project's last one is applied out of order.
 #   5. Drift check. infra/scripts/check-drift.sh --target linked --workdir <dir> runs against the same project, and its status decides this script's status. It is printed as `drift_status=<n>`. The drift check reads the history over the PG* variables and refuses to run unless they name the linked project.
 #
 # Every CLI call passes `--agent no --output-format text`. Called by an agent the CLI answers in JSON, and the text it prints for an up-to-date database is then absent.
@@ -31,7 +31,7 @@
 #   --workdir <dir>        REQUIRED. The linked work directory: it holds supabase/config.toml, supabase/migrations and supabase/.temp/project-ref.
 #   --manifest <path>      OPTIONAL. The migration manifest, passed to the drift check. Default: the drift check's default.
 #   --log-dir <dir>        OPTIONAL. Where the CLI's raw output and the drift check's files are kept. Created when missing. Default: a temporary directory that is kept and named on standard error.
-#   --confirmed-ref <ref>  OPTIONAL. Push without asking on the terminal, the environment's approval standing in for the typed ref. Accepted only under the three conditions of step 4; GitHub sets no GITHUB_ENVIRONMENT, so the environment is read from OPENVAA_DEPLOY_ENVIRONMENT.
+#   --confirmed-ref <ref>  OPTIONAL. Push without asking on the terminal, the environment's approval standing in for the typed ref. Accepted only under the four conditions of step 4, which guard against a mistake and are not the boundary; GitHub sets no GITHUB_ENVIRONMENT, so the environment is read from OPENVAA_DEPLOY_ENVIRONMENT.
 #   -h, --help             Print this header and exit 0.
 #
 #   A relative path is resolved against the REPO ROOT, never against $PWD, so the script behaves identically from any working directory.
@@ -43,7 +43,7 @@
 # Output: on standard output, the named result lines `push_connection=`, `push_pending=` (one per pending migration), `push_up_to_date=`, `push_confirmation=environment` or `terminal` and `push_status=` (both only when a push ran) and `drift_status=`, followed by the drift check's report. Progress and the tools' errors go to standard error, the confirmation to the terminal.
 #
 # Prerequisites. This script ASSERTS them; it never performs them:
-#   1. `--ref` is 20 lower-case letters. A `--confirmed-ref` equals it, and is given only with GITHUB_ACTIONS=true and OPENVAA_DEPLOY_ENVIRONMENT=staging.
+#   1. `--ref` is 20 lower-case letters. A `--confirmed-ref` equals it, and is given only with GITHUB_ACTIONS=true, OPENVAA_DEPLOY_ENVIRONMENT=staging and a GITHUB_REF of `refs/heads/deploy/staging` or `refs/heads/deploy-evidence/<name>`.
 #   2. The work directory is not apps/supabase, and it holds supabase/migrations.
 #   3. The work directory is linked: supabase/.temp/project-ref exists and holds the ref given by `--ref`.
 #   4. SUPABASE_DB_PASSWORD is set and not empty. Without it the CLI signs in through a temporary login role it creates, instead of as `postgres`.
@@ -53,7 +53,7 @@
 # Exit codes -- the caller must be able to branch on the status alone:
 #   0:  the migrations were applied, or the database was already up to date, and the drift check found no drift
 #   1:  the drift check found drift after the push
-#   2:  refused, and nothing was pushed: a usage error, a wrong or unlinked target, no password, no CLI, no terminal, a typed answer that is not the ref, or a `--confirmed-ref` that is not `--ref`, given outside a GitHub Actions job (GITHUB_ACTIONS is not `true`) or outside a job of the `staging` environment (OPENVAA_DEPLOY_ENVIRONMENT is not `staging`)
+#   2:  refused, and nothing was pushed: a usage error, a wrong or unlinked target, no password, no CLI, no terminal, a typed answer that is not the ref, or a `--confirmed-ref` that is not `--ref`, given outside a GitHub Actions job (GITHUB_ACTIONS is not `true`), outside a job of the `staging` environment (OPENVAA_DEPLOY_ENVIRONMENT is not `staging`) or on a ref that environment admits no deploy from (GITHUB_REF is neither `refs/heads/deploy/staging` nor a `refs/heads/deploy-evidence/` branch)
 #   3:  the dry run or the push failed. After a failed push the database may hold some of the pending migrations; run the script again to see which
 #   4:  pushed or already up to date, and the drift check could not run
 #   130:  interrupted (SIGINT/SIGTERM/SIGHUP). Never 0. A CLI call still running 10 seconds after the interrupt is killed outright; the drift check is waited for, so that it removes its shadow database; after an interrupted push, run the script again to see what the database lacks
@@ -234,6 +234,12 @@ if [ -n "$CONFIRMED_REF" ]; then
   if [ "${OPENVAA_DEPLOY_ENVIRONMENT:-}" != "$CONFIRMING_ENVIRONMENT" ]; then
     fatal "--confirmed-ref is accepted only in a job of the $CONFIRMING_ENVIRONMENT environment, which sets DEPLOY_ENVIRONMENT, passed by the workflow as OPENVAA_DEPLOY_ENVIRONMENT; OPENVAA_DEPLOY_ENVIRONMENT is '${OPENVAA_DEPLOY_ENVIRONMENT:-}'; nothing was pushed" 2
   fi
+  case "${GITHUB_REF:-}" in
+    refs/heads/deploy/staging | refs/heads/deploy-evidence/?*) ;;
+    *)
+      fatal "--confirmed-ref is accepted only on refs/heads/deploy/staging or a refs/heads/deploy-evidence/ branch; GITHUB_REF is '${GITHUB_REF:-}'; nothing was pushed" 2
+      ;;
+  esac
 fi
 
 WORKDIR="$(physical_path "$(resolve_path "$WORKDIR")")"

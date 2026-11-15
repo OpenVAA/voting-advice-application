@@ -297,8 +297,10 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       # The environment's approval stands in for the typed ref: push-migrations.sh accepts --confirmed-ref only in a
-      # job that sets OPENVAA_DEPLOY_ENVIRONMENT to staging, and only when it equals --ref. The database is reached
-      # through the session pooler on port 5432, whose user name carries the ref; the transaction pooler is never used.
+      # job that sets OPENVAA_DEPLOY_ENVIRONMENT to staging, on a deploy ref, and only when it equals --ref. Those
+      # checks guard against a mistake; the push is held to this job by SUPABASE_DB_PASSWORD, a secret of the
+      # environment. The database is reached through the session pooler on port 5432, whose user name carries the ref;
+      # the transaction pooler is never used.
       - name: "Push the migrations"
         id: migrations
         env:
