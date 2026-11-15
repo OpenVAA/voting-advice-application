@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 13
+current_plan: 14
 status: executing
-stopped_at: Completed 187-12-PLAN.md
-last_updated: "2026-11-15T03:27:23.558Z"
+stopped_at: Completed 187-13-PLAN.md
+last_updated: "2026-11-15T03:44:44.958Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: b34c30d359f5a19960b1bd9d1e7f0cd4c67c2246
+state_head: 96a3a9fcf4081e33fa5defb1d3bd674438c3b7ec
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 148
+  completed_plans: 149
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 13 of 25
+Plan: 14 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 13
+**Current Plan:** 14
 
 From 184 on, the numeric order is the dependency order.
 
@@ -163,6 +163,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P10 | 7min | 2 tasks | 4 files |
 | Phase 187 P11 | 8min | 3 tasks | 6 files |
 | Phase 187 P12 | 12min | 3 tasks | 2 files |
+| Phase 187 P13 | 18min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -334,6 +335,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-11: lint-workflows maps docker status 125 to 2, never an actionlint result
 - [Phase 187]: 187-11: workstation SMOKE_EXPECTED_SHA is the tip of deploy/staging via git ls-remote --exit-code
 - [Phase 187]: 187-12: the red commit fails in the Dockerfile's shared-stage RUN yarn build (line 28, turbo task @openvaa/frontend#build), one stage before the production step; the pipeline's build step still ends failed=build before any hosted write
+- [Phase 187]: Plan 186-08's tree reference is now phase 187's closing run (54e79823b), and its expected SHA is 712947a1b from 186-08-readiness.md while staging serves it (then the tip of deploy/staging)
 
 ### Pending Todos
 
@@ -388,6 +390,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T03:27:22.108Z
-**Stopped At:** Completed 187-12-PLAN.md
+Last session: 2026-11-15T03:44:43.567Z
+**Stopped At:** Completed 187-13-PLAN.md
 **Resume File:** None
