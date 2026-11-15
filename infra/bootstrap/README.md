@@ -914,7 +914,7 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
        --cli-input-json "file://$L/s9b-$label-input.json" \
        --query "$Q" --output text > "$L/s9b-$label.out" 2> "$L/s9b-$label.err"
      echo "s9b_${label}_exit=$?"
-     tr '\t' ' ' < "$L/s9b-$label.out" | sed 's/^/s9b_decision=/'
+     tr '\t' ' ' < "$L/s9b-$label.out" | sed -e 's|:hostedzone/|:hostedzone |' -e 's/^/s9b_decision=/'
    }
    ```
 
