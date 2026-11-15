@@ -67,6 +67,12 @@ module "github_oidc" {
   pipeline_state_key         = var.pipeline_state_key
   state_bucket_arn           = module.state_bucket.bucket_arn
   registry_arn               = module.registry.repository_arn
+
+  aws_account_id              = var.aws_account_id
+  aws_region                  = var.aws_region
+  frontend_execution_role_arn = module.frontend_task_role.execution_role_arn
+  hosted_zone_id              = var.deploy_hosted_zone_id
+  domain                      = var.deploy_domain
 }
 
 module "frontend_task_role" {

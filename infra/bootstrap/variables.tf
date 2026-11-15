@@ -80,3 +80,13 @@ variable "pipeline_state_key" {
     error_message = "pipeline_state_key must lie under pipeline/ and name a terraform.tfstate object."
   }
 }
+
+variable "deploy_hosted_zone_id" {
+  description = "Id of the staging hosted zone, the dns-mail root's zone_id output. The deploy role may change the deployed frontend's records in this zone and no other."
+  type        = string
+}
+
+variable "deploy_domain" {
+  description = "The domain the deployed frontend serves. The deploy role may change the records at this name, at its origin name and the certificate validation records under it."
+  type        = string
+}

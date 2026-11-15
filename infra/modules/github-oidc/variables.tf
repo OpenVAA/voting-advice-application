@@ -94,3 +94,53 @@ variable "registry_arn" {
   description = "ARN of the image repository the deploy role pushes to."
   type        = string
 }
+
+variable "aws_account_id" {
+  description = "The AWS account of the pipeline root's resources, used to build the ARNs the deploy policies name."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[0-9]{12}$", var.aws_account_id))
+    error_message = "aws_account_id must be a 12-digit AWS account id."
+  }
+}
+
+variable "aws_region" {
+  description = "The AWS region of the pipeline root's regional resources, for example \"eu-north-1\"."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z]{2}(-[a-z]+)+-[0-9]$", var.aws_region))
+    error_message = "aws_region must be an AWS region name such as \"eu-north-1\"."
+  }
+}
+
+variable "frontend_execution_role_arn" {
+  description = "ARN of the frontend task's execution role, the one role the deploy role may pass, and only to ECS tasks."
+  type        = string
+
+  validation {
+    condition     = can(regex("^arn:aws:iam::${var.aws_account_id}:role/[A-Za-z0-9+=,.@_/-]+$", var.frontend_execution_role_arn))
+    error_message = "frontend_execution_role_arn must be the ARN of an IAM role in aws_account_id."
+  }
+}
+
+variable "hosted_zone_id" {
+  description = "Id of the hosted zone the deploy role may change the frontend's records in."
+  type        = string
+
+  validation {
+    condition     = can(regex("^Z[A-Z0-9]+$", var.hosted_zone_id))
+    error_message = "hosted_zone_id must be a Route 53 hosted zone id such as \"Z0123456789ABCDEFGHIJ\"."
+  }
+}
+
+variable "domain" {
+  description = "The domain the deployed frontend serves. The deploy role may change only the records at this name, at origin.<domain> and the certificate validation records under it."
+  type        = string
+
+  validation {
+    condition     = can(regex("^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+[a-z]{2,}$", var.domain))
+    error_message = "domain must be a lower-case DNS name without a trailing dot, such as \"staging.example.org\"."
+  }
+}
