@@ -6,16 +6,16 @@ current_phase: 187
 current_phase_name: Deploy Pipeline
 current_plan: 15
 status: executing
-stopped_at: Completed 187-14-PLAN.md
-last_updated: "2026-11-15T20:01:03.124Z"
+stopped_at: Completed 187-17-PLAN.md
+last_updated: "2026-11-15T21:10:20.339Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 058ade1318b46f15483af567c22859739b2e95d7
+state_head: 684b474648e1492638c5a4c885f11118cc259679
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 182
-  completed_plans: 151
+  completed_plans: 152
   percent: 60
 ---
 
@@ -166,6 +166,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P12 | 12min | 3 tasks | 2 files |
 | Phase 187 P13 | 18min | 2 tasks | 3 files |
 | Phase 187 P14 | 3h45min (operator checkpoint) | 3 tasks | 1 files |
+| Phase 187 P17 | 65 min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -339,6 +340,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-12: the red commit fails in the Dockerfile's shared-stage RUN yarn build (line 28, turbo task @openvaa/frontend#build), one stage before the production step; the pipeline's build step still ends failed=build before any hosted write
 - [Phase 187]: Plan 186-08's tree reference is now phase 187's closing run (54e79823b), and its expected SHA is 712947a1b from 186-08-readiness.md while staging serves it (then the tip of deploy/staging)
 - [Phase 187]: 187-14: GitHub Environments staging and staging-destroy exist and are read back before any push: one User reviewer, self-review allowed, admin bypass off, branch rules exactly deploy/staging and deploy-evidence/* (none admits main); staging holds the three secrets and three variables, staging-destroy none; the repository holds AWS_PLAN_ROLE_ARN and ALERT_EMAIL
+- [Phase 187]: 187-17: plan 186-08 was already complete, so the handoff needed no resumption; the operator added SMOKE_CONTESTANT_EMAIL and SMOKE_CONTESTANT_PASSWORD to the staging environment only (read back by name: five staging secrets)
 
 ### Pending Todos
 
@@ -395,6 +397,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T20:01:01.604Z
-**Stopped At:** Completed 187-14-PLAN.md
+Last session: 2026-11-15T21:10:18.699Z
+**Stopped At:** Completed 187-17-PLAN.md
 **Resume File:** None
