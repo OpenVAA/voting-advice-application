@@ -658,7 +658,9 @@ resource "aws_iam_role_policy_attachment" "deploy_observability" {
 }
 
 # Scaling: the service's scalable target, its policies and scheduled actions, and the alarms target
-# tracking creates and deletes in the caller's name.
+# tracking creates and deletes in the caller's name. A scalable target's ARN carries an id rather than
+# the service, so the writes are held to the desired count of an ECS service by the two condition keys
+# the service authorization reference lists for them; tagging supports neither key.
 data "aws_iam_policy_document" "deploy_scaling" {
   statement {
     sid    = "ReadScaling"
@@ -681,6 +683,26 @@ data "aws_iam_policy_document" "deploy_scaling" {
       "application-autoscaling:DeleteScalingPolicy",
       "application-autoscaling:PutScheduledAction",
       "application-autoscaling:DeleteScheduledAction",
+    ]
+    resources = ["arn:aws:application-autoscaling:${local.regional}:scalable-target/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "application-autoscaling:service-namespace"
+      values   = ["ecs"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "application-autoscaling:scalable-dimension"
+      values   = ["ecs:service:DesiredCount"]
+    }
+  }
+
+  statement {
+    sid    = "ScalableTargetTags"
+    effect = "Allow"
+    actions = [
       "application-autoscaling:TagResource",
       "application-autoscaling:UntagResource",
     ]

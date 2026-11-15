@@ -334,6 +334,10 @@ fast-forwarded to a `main` commit.
   in this account that already carries both tags, such as one of a second environment's AWS root, is
   within the role's reach. A resource without them is not: no tag call of the role is allowed on the
   request's tags alone.
+- ECS scopes neither `RegisterTaskDefinition` nor `DeregisterTaskDefinition` to a family, so the
+  deploy role can register and deregister task definitions of any family in the account. It can
+  also subscribe any endpoint to the deployment topic and rewrite the topic's policy, which the root
+  manages.
 
 ## Example environment
 

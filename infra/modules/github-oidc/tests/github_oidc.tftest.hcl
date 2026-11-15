@@ -345,3 +345,38 @@ run "edge_tag_scope" {
     error_message = "acm:RequestCertificate must be limited to the frontend's two names and to the root's region and us-east-1."
   }
 }
+
+run "scaling_scope" {
+  command = plan
+
+  # Application Auto Scaling scopes its scalable-target ARNs by an id, not by the service, so the
+  # writes that support them are held to ECS services' desired count by the two condition keys.
+  # Tagging supports neither key and stays on the ARN pattern alone.
+  variables {
+    scaling_writes = [
+      "application-autoscaling:RegisterScalableTarget",
+      "application-autoscaling:DeregisterScalableTarget",
+      "application-autoscaling:PutScalingPolicy",
+      "application-autoscaling:DeleteScalingPolicy",
+      "application-autoscaling:PutScheduledAction",
+      "application-autoscaling:DeleteScheduledAction",
+    ]
+  }
+
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.deploy_scaling.policy).Statement :
+      flatten([s.Condition["StringEquals"]["application-autoscaling:service-namespace"]]) == ["ecs"]
+      && flatten([s.Condition["StringEquals"]["application-autoscaling:scalable-dimension"]]) == ["ecs:service:DesiredCount"]
+      if length(setintersection(toset(flatten([s.Action])), toset(var.scaling_writes))) > 0
+    ])
+    error_message = "Every scaling write must be held to the ecs namespace and the ecs:service:DesiredCount dimension."
+  }
+
+  assert {
+    condition = length(setsubtract(toset(var.scaling_writes), toset(flatten([
+      for s in jsondecode(aws_iam_policy.deploy_scaling.policy).Statement : flatten([s.Action])
+    ])))) == 0
+    error_message = "Every scaling write must be granted, or the check above examines nothing."
+  }
+}
