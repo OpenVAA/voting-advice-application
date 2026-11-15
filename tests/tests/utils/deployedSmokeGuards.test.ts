@@ -249,6 +249,13 @@ describe('the deployed config', () => {
     expect(text).toContain("test.use({ trace: 'off', screenshot: 'off', video: 'off' });");
   });
 
+  it('refuses every origin but public_origin in the contestant spec before it signs in', () => {
+    const text = fs.readFileSync(path.join(DEPLOYED_DIR, 'contestant.smoke.ts'), 'utf8');
+    const refusal = text.indexOf('requireCredentialOrigin(baseURL, ');
+    expect(refusal).toBeGreaterThan(-1);
+    expect(text.indexOf('signInFromCold(')).toBeGreaterThan(refusal);
+  });
+
   it('collects no file under tests/tests/deployed/ that a local project would also collect', () => {
     const collidingNames = listFiles(DEPLOYED_DIR)
       .map((file) => path.basename(file))

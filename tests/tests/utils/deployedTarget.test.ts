@@ -6,18 +6,21 @@ import { afterEach, describe, expect, it } from 'vitest';
 import {
   assertSmokeProjects,
   DEDICATED_SUPABASE_TFVARS,
+  DEFAULT_SMOKE_BASE_URL,
   evaluateGate,
   extractServedEnv,
   GATE_CHECK_ORDER,
   gateFailureMessage,
   readDedicatedTarget,
+  readPublicOrigin,
+  requireCredentialOrigin,
   requireSmokeInputs,
   runDeployedGate,
   servedSupabaseRef
 } from './deployedTarget';
 import type { IncomingMessage, Server, ServerResponse } from 'http';
 import type { AddressInfo } from 'net';
-import type { DedicatedTarget, GateEnv, GateResult } from './deployedTarget';
+import type { DedicatedTarget, FetchedDocument, GateCheckName, GateEnv, GateResult } from './deployedTarget';
 
 /**
  * Unit tests for the deployed-target gate.
@@ -116,12 +119,48 @@ function failedNames(result: GateResult): Array<string> {
   return result.checks.filter((check) => !check.pass).map((check) => check.name);
 }
 
+/** The line of one check, found by its name. */
+function lineOf(result: GateResult, name: GateCheckName): string {
+  return result.lines[result.checks.findIndex((check) => check.name === name)];
+}
+
+/** The observed value of one check, found by its name. */
+function observedOf(checks: GateResult['checks'], name: GateCheckName): string {
+  return checks.find((check) => check.name === name)?.observed ?? '(no such check)';
+}
+
+/** A second loopback server that answers every request with a redirect to the same path on `target`. */
+const redirectors: Array<Server> = [];
+function startRedirector(target: string): Promise<string> {
+  return new Promise((resolve) => {
+    const redirector = createServer((req: IncomingMessage, res: ServerResponse) => {
+      res.writeHead(302, { location: `${target}${req.url ?? '/'}` });
+      res.end();
+    });
+    redirectors.push(redirector);
+    redirector.listen(0, '127.0.0.1', () => {
+      const { port } = redirector.address() as AddressInfo;
+      resolve(`http://127.0.0.1:${port}`);
+    });
+  });
+}
+
+/** A fetch that records every request and makes none. */
+function recordingFetch(): { fetchImpl: typeof fetch; requested: Array<string> } {
+  const requested: Array<string> = [];
+  const fetchImpl = (async (input: string | URL | Request) => {
+    requested.push(String(input));
+    throw new Error('no request is made in this test');
+  }) as typeof fetch;
+  return { fetchImpl, requested };
+}
+
 afterEach(async () => {
   const current = server;
   server = null;
-  if (current) {
-    current.closeAllConnections();
-    await new Promise<void>((resolve) => current.close(() => resolve()));
+  for (const open of [...(current ? [current] : []), ...redirectors.splice(0)]) {
+    open.closeAllConnections();
+    await new Promise<void>((resolve) => open.close(() => resolve()));
   }
 });
 
@@ -135,11 +174,17 @@ describe('readDedicatedTarget', () => {
 });
 
 describe('runDeployedGate against a stub target', () => {
-  it('passes all four checks, in order, against the dedicated identity', async () => {
+  it('passes all five checks, in order, against the dedicated identity', async () => {
     const result = await gate(await startStub());
     expect(result.checks.map((check) => check.name)).toEqual([...GATE_CHECK_ORDER]);
-    expect(GATE_CHECK_ORDER).toEqual(['service-role-key-absent', 'sha', 'ref', 'project-id']);
-    expect(result.lines).toEqual(['PASS service-role-key-absent', 'PASS sha', 'PASS ref', 'PASS project-id']);
+    expect(GATE_CHECK_ORDER).toEqual(['service-role-key-absent', 'origin', 'sha', 'ref', 'project-id']);
+    expect(result.lines).toEqual([
+      'PASS service-role-key-absent',
+      'PASS origin',
+      'PASS sha',
+      'PASS ref',
+      'PASS project-id'
+    ]);
     expect(result.failed).toBe(0);
     expect(result.dedicated).toEqual(DEDICATED);
   });
@@ -148,9 +193,10 @@ describe('runDeployedGate against a stub target', () => {
     const result = await gate(await startStub(), { SMOKE_EXPECTED_SHA: OTHER_SHA });
     expect(result.failed).toBe(1);
     expect(failedNames(result)).toEqual(['sha']);
-    expect(result.lines[1].startsWith(`FAIL sha: observed ${SHA}, expected ${OTHER_SHA}`)).toBe(true);
-    expect([result.lines[0], result.lines[2], result.lines[3]]).toEqual([
+    expect(lineOf(result, 'sha').startsWith(`FAIL sha: observed ${SHA}, expected ${OTHER_SHA}`)).toBe(true);
+    expect(result.lines.filter((line) => line.startsWith('PASS '))).toEqual([
       'PASS service-role-key-absent',
+      'PASS origin',
       'PASS ref',
       'PASS project-id'
     ]);
@@ -176,8 +222,8 @@ describe('runDeployedGate against a stub target', () => {
       SUPABASE_SERVICE_ROLE_KEY: MADE_UP_KEY_VALUE
     });
     expect(failedNames(result)).toEqual(['service-role-key-absent']);
-    expect(result.lines[0]).toContain('SUPABASE_SERVICE_ROLE_KEY');
-    expect(result.lines[0]).not.toContain(MADE_UP_KEY_VALUE);
+    expect(lineOf(result, 'service-role-key-absent')).toContain('SUPABASE_SERVICE_ROLE_KEY');
+    expect(lineOf(result, 'service-role-key-absent')).not.toContain(MADE_UP_KEY_VALUE);
   });
 });
 
@@ -185,8 +231,8 @@ describe('gateFailureMessage', () => {
   it('heads the message with the failure count and indents each FAIL line', async () => {
     const result = await gate(await startStub(), { SMOKE_EXPECTED_SHA: OTHER_SHA });
     const message = gateFailureMessage(result);
-    expect(message.startsWith('DEPLOYED SMOKE GATE FAILED — 1 of 4 checks failed')).toBe(true);
-    const failLine = result.lines[1];
+    expect(message.startsWith('DEPLOYED SMOKE GATE FAILED — 1 of 5 checks failed')).toBe(true);
+    const failLine = lineOf(result, 'sha');
     expect(message).toContain(`\n  ${failLine}`);
     expect(message.split('\n').filter((line) => /^(PASS|FAIL) /.test(line))).toEqual([]);
   });
@@ -306,7 +352,7 @@ describe('the project-id check', () => {
     const page = { status: 200, body: servedPage({ projectId }) };
     const result = await gate(await startStub({ page }));
     expect(failedNames(result)).toEqual(['project-id']);
-    expect(result.checks[3].observed).toBe(observed);
+    expect(observedOf(result.checks, 'project-id')).toBe(observed);
   });
 
   it('accepts the dedicated id in upper case', async () => {
@@ -328,7 +374,7 @@ describe('the sha check', () => {
   ])('refuses an expected commit that is %s', async (_label, expectedSha) => {
     const result = await gate(await startStub(), { SMOKE_EXPECTED_SHA: expectedSha });
     expect(failedNames(result)).toEqual(['sha']);
-    expect(result.lines[1]).toBe(`FAIL sha: observed ${SHA}, expected ${notFullSha}`);
+    expect(lineOf(result, 'sha')).toBe(`FAIL sha: observed ${SHA}, expected ${notFullSha}`);
   });
 
   it.each([
@@ -339,7 +385,7 @@ describe('the sha check', () => {
   ])('refuses a health answer with %s', async (_label, health, reason) => {
     const result = await gate(await startStub({ health }));
     expect(failedNames(result)).toEqual(['sha']);
-    expect(result.lines[1]).toBe(`FAIL sha: observed ${reason}, expected ${SHA}`);
+    expect(lineOf(result, 'sha')).toBe(`FAIL sha: observed ${reason}, expected ${SHA}`);
   });
 });
 
@@ -358,7 +404,9 @@ describe('the service-role-key-absent check', () => {
   ])('refuses %o without printing the value', async (keys, observed) => {
     const result = await gate(await startStub(), { SMOKE_EXPECTED_SHA: SHA, ...keys });
     expect(failedNames(result)).toEqual(['service-role-key-absent']);
-    expect(result.lines[0]).toBe(`FAIL service-role-key-absent: observed ${observed}, expected unset`);
+    expect(lineOf(result, 'service-role-key-absent')).toBe(
+      `FAIL service-role-key-absent: observed ${observed}, expected unset`
+    );
     expect(JSON.stringify(result)).not.toContain(MADE_UP_KEY_VALUE);
     expect(gateFailureMessage(result)).not.toContain(MADE_UP_KEY_VALUE);
   });
@@ -376,7 +424,7 @@ describe('the service-role-key-absent check', () => {
 });
 
 describe('every check is evaluated', () => {
-  it('reports all four failures in order when all four fail', async () => {
+  it('reports the four failures in order when every check but origin fails', async () => {
     const page = {
       status: 200,
       body: servedPage({
@@ -388,22 +436,24 @@ describe('every check is evaluated', () => {
     expect(result.failed).toBe(4);
     expect(result.lines.map((line) => line.split(':')[0])).toEqual([
       'FAIL service-role-key-absent',
+      'PASS origin',
       'FAIL sha',
       'FAIL ref',
       'FAIL project-id'
     ]);
-    expect(gateFailureMessage(result).startsWith('DEPLOYED SMOKE GATE FAILED — 4 of 4 checks failed')).toBe(true);
+    expect(gateFailureMessage(result).startsWith('DEPLOYED SMOKE GATE FAILED — 4 of 5 checks failed')).toBe(true);
   });
 
   it('evaluates a failed page request without a thrown error', () => {
     const checks = evaluateGate({
       env: { SMOKE_EXPECTED_SHA: SHA },
-      health: { status: 200, body: JSON.stringify({ build: SHA }) },
+      baseURL: DEFAULT_SMOKE_BASE_URL,
+      health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${DEFAULT_SMOKE_BASE_URL}/api/health` },
       page: { error: 'refused' },
       dedicated: DEDICATED
     });
-    expect(checks.map((check) => check.pass)).toEqual([true, true, false, false]);
-    expect(checks[2].observed).toBe('(request to / failed: refused)');
+    expect(checks.map((check) => check.pass)).toEqual([true, true, true, false, false]);
+    expect(observedOf(checks, 'ref')).toBe('(request to / failed: refused)');
   });
 });
 
@@ -416,14 +466,176 @@ describe('an unreachable target', () => {
     await new Promise<void>((resolve) => probe.close(() => resolve()));
     const result = await gate(`http://127.0.0.1:${port}`);
     expect(failedNames(result)).toEqual(['sha', 'ref', 'project-id']);
-    expect(result.checks[1].observed).toContain('request to /api/health failed');
+    expect(observedOf(result.checks, 'sha')).toContain('request to /api/health failed');
   });
 
   it('fails the page checks when the page never answers', async () => {
     const result = await gate(await startStub({ page: 'hang' }), { SMOKE_EXPECTED_SHA: SHA }, 200);
     expect(failedNames(result)).toEqual(['ref', 'project-id']);
-    expect(result.checks[2].observed).toContain('failed');
-    expect(result.checks[3].observed).toContain('failed');
+    expect(observedOf(result.checks, 'ref')).toContain('failed');
+    expect(observedOf(result.checks, 'project-id')).toContain('failed');
+  });
+});
+
+describe('the origin check', () => {
+  const originExpected =
+    'an https origin, or http on a loopback host, with no user info, that answers /api/health and / itself';
+
+  /** The two documents a target at `origin` serves when it passes every other check. */
+  function servedFrom(origin: string): { health: FetchedDocument; page: FetchedDocument } {
+    return {
+      health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${origin}/api/health` },
+      page: { status: 200, body: servedPage(), url: `${origin}/` }
+    };
+  }
+
+  function evaluate(baseURL: string, documents = servedFrom(new URL(baseURL).origin)): GateResult['checks'] {
+    return evaluateGate({ env: { SMOKE_EXPECTED_SHA: SHA }, baseURL, ...documents, dedicated: DEDICATED });
+  }
+
+  it.each([
+    ['the dedicated https origin', DEFAULT_SMOKE_BASE_URL],
+    ['an https origin with a path', `${DEFAULT_SMOKE_BASE_URL}/en`],
+    ['http on 127.0.0.1', 'http://127.0.0.1:3186'],
+    ['http on localhost', 'http://localhost:5173'],
+    ['http on the IPv6 loopback', 'http://[::1]:3186']
+  ])('accepts %s', (_label, baseURL) => {
+    expect(evaluate(baseURL).every((check) => check.pass)).toBe(true);
+  });
+
+  it.each([
+    ['plain http on a public host', 'http://staging.openvaa.org', 'http://staging.openvaa.org'],
+    ['plain http on another loopback address', 'http://127.0.0.2:3186', 'http://127.0.0.2:3186'],
+    ['a scheme that is not http', 'ftp://staging.openvaa.org', 'ftp://staging.openvaa.org']
+  ])('refuses %s, and only the origin check', (_label, baseURL, origin) => {
+    const checks = evaluate(baseURL, servedFrom(origin));
+    expect(checks.filter((check) => !check.pass).map((check) => check.name)).toEqual(['origin']);
+    expect(observedOf(checks, 'origin')).toBe(`${origin} (not https, and not http on a loopback host)`);
+    expect(checks.find((check) => check.name === 'origin')?.expected).toBe(originExpected);
+  });
+
+  it('accepts a redirect that stays on the origin', () => {
+    const documents = {
+      health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${DEFAULT_SMOKE_BASE_URL}/api/health` },
+      page: { status: 200, body: servedPage(), url: `${DEFAULT_SMOKE_BASE_URL}/en` }
+    };
+    expect(evaluate(DEFAULT_SMOKE_BASE_URL, documents).every((check) => check.pass)).toBe(true);
+  });
+
+  it('fails every check that read a document answered from another origin', () => {
+    const elsewhere = 'https://elsewhere.example';
+    const documents = {
+      health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${elsewhere}/api/health` },
+      page: { status: 200, body: servedPage(), url: `${DEFAULT_SMOKE_BASE_URL}/` }
+    };
+    const checks = evaluate(DEFAULT_SMOKE_BASE_URL, documents);
+    expect(checks.filter((check) => !check.pass).map((check) => check.name)).toEqual(['origin', 'sha']);
+    expect(observedOf(checks, 'origin')).toBe(`${DEFAULT_SMOKE_BASE_URL}; /api/health answered from ${elsewhere}`);
+    expect(observedOf(checks, 'sha')).toBe(
+      `(request to /api/health failed: answered from another origin, ${elsewhere})`
+    );
+  });
+
+  it('refuses a target that redirects to the dedicated deployment, on every check that read it', async () => {
+    const dedicatedStub = await startStub();
+    const front = await startRedirector(dedicatedStub);
+    const result = await gate(front);
+    expect(failedNames(result)).toEqual(['origin', 'sha', 'ref', 'project-id']);
+    expect(lineOf(result, 'origin')).toBe(
+      `FAIL origin: observed ${front}; /api/health answered from ${dedicatedStub}; / answered from ${dedicatedStub}, expected ${originExpected}`
+    );
+  });
+
+  it('passes the stub target, answered from its own origin', async () => {
+    const result = await gate(await startStub());
+    expect(lineOf(result, 'origin')).toBe('PASS origin');
+  });
+});
+
+describe('a base URL the gate cannot request', () => {
+  it.each([
+    ['no scheme', 'staging.openvaa.org', '(not an absolute URL: staging.openvaa.org)'],
+    ['an empty string', '', '(not an absolute URL: )'],
+    ['spaces', 'https://staging openvaa org', '(not an absolute URL: https://staging openvaa org)']
+  ])(
+    'fails every check that needs the target, with no request and no thrown error, for %s',
+    async (_label, baseURL, observed) => {
+      const { fetchImpl, requested } = recordingFetch();
+      const result = await runDeployedGate({
+        env: { SMOKE_EXPECTED_SHA: SHA },
+        baseURL,
+        repoRoot: REPO_ROOT,
+        fetchImpl
+      });
+      expect(requested).toEqual([]);
+      expect(failedNames(result)).toEqual(['origin', 'sha', 'ref', 'project-id']);
+      expect(observedOf(result.checks, 'origin')).toBe(observed);
+      expect(observedOf(result.checks, 'sha')).toBe(
+        '(request to /api/health failed: not requested, the origin check refused the base URL)'
+      );
+      expect(gateFailureMessage(result).startsWith('DEPLOYED SMOKE GATE FAILED — 4 of 5 checks failed')).toBe(true);
+    }
+  );
+
+  it('withholds user info in the base URL and requests nothing', async () => {
+    const madeUpSecret = 'made-up-userinfo-secret';
+    const { fetchImpl, requested } = recordingFetch();
+    const result = await runDeployedGate({
+      env: { SMOKE_EXPECTED_SHA: SHA },
+      baseURL: `https://someone:${madeUpSecret}@staging.openvaa.org`,
+      repoRoot: REPO_ROOT,
+      fetchImpl
+    });
+    expect(requested).toEqual([]);
+    expect(observedOf(result.checks, 'origin')).toBe('(the base URL carries user info, value withheld)');
+    expect(JSON.stringify(result)).not.toContain(madeUpSecret);
+    expect(gateFailureMessage(result)).not.toContain(madeUpSecret);
+  });
+});
+
+describe('readPublicOrigin', () => {
+  it('reads the origin of the committed tfvars', () => {
+    expect(readPublicOrigin(fs.readFileSync(path.join(REPO_ROOT, DEDICATED_SUPABASE_TFVARS), 'utf8'))).toBe(
+      DEFAULT_SMOKE_BASE_URL
+    );
+  });
+
+  it.each([
+    ['a missing key', 'project_ref = "cofbsatfrdysyphajsky"'],
+    ['plain http', 'public_origin = "http://staging.openvaa.org"'],
+    ['a trailing slash', 'public_origin = "https://staging.openvaa.org/"'],
+    ['a path', 'public_origin = "https://staging.openvaa.org/en"'],
+    ['a repeated key', 'public_origin = "https://a.example"\npublic_origin = "https://b.example"']
+  ])('throws on %s', (_label, text) => {
+    expect(() => readPublicOrigin(text)).toThrow(DEDICATED_SUPABASE_TFVARS);
+  });
+});
+
+describe('requireCredentialOrigin', () => {
+  it.each([
+    ['the dedicated origin', DEFAULT_SMOKE_BASE_URL],
+    ['the dedicated origin with a trailing slash', `${DEFAULT_SMOKE_BASE_URL}/`]
+  ])('accepts %s', (_label, baseURL) => {
+    expect(() => requireCredentialOrigin(baseURL, REPO_ROOT)).not.toThrow();
+  });
+
+  it.each([
+    ['a local build', 'http://127.0.0.1:3186', 'http://127.0.0.1:3186'],
+    ['a local dev server', 'http://localhost:5173', 'http://localhost:5173'],
+    ['plain http on the dedicated host', 'http://staging.openvaa.org', 'http://staging.openvaa.org'],
+    ['another port', 'https://staging.openvaa.org:8443', 'https://staging.openvaa.org:8443'],
+    [
+      'the host under a foreign domain',
+      'https://staging.openvaa.org.evil.example',
+      'https://staging.openvaa.org.evil.example'
+    ],
+    ['a foreign host', 'https://evil.example', 'https://evil.example'],
+    ['no base URL', undefined, '(none)'],
+    ['a value that is not a URL', 'staging.openvaa.org', '(not an absolute URL)']
+  ])('refuses %s before any page action', (_label, baseURL, origin) => {
+    expect(() => requireCredentialOrigin(baseURL, REPO_ROOT)).toThrow(
+      `SMOKE TARGET REFUSED: the contestant's credentials are sent only to ${DEFAULT_SMOKE_BASE_URL}, public_origin of ${DEDICATED_SUPABASE_TFVARS}; the base URL's origin is ${origin}`
+    );
   });
 });
 
