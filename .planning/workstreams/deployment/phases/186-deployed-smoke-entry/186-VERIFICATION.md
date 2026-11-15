@@ -38,7 +38,12 @@ covered_files:
   - tests/tests/utils/deployedTarget.ts
 covered_digest: "v4:sha256:dea044906a573591620459717ebf09e4e36849adfec9b62ef3f963ec9508bb2a"
 behavior_unverified: 0
-overrides_applied: 0
+overrides_applied: 1
+overrides:
+  - must_have: "tests/playwright.deployed.config.ts ... the HTML reporter with open: 'never'"
+    reason: "Review fix CR-01 removed the HTML reporter: it titles each fill step with the typed value, so the contestant password reached the report. list plus optional json remain; a guard pins the reporter set."
+    accepted_by: "operator (UAT test 1)"
+    accepted_at: "2026-11-15T12:47:25Z"
 deferred:
   - truth: "The deployed identity is proven once, before the specs, and not re-checked after them (review finding IN-04)"
     addressed_in: "Phase 187"
