@@ -5,13 +5,13 @@ Recorded 2026-11-15 (UTC) by the plan executor, from this checkout. Logs are in 
 ## The green commit (Task 2)
 
 ```
-GREEN_TREE=fa16b0c68a9d32835f811344393d2bb31a173c9b
-GREEN_COMMIT=69d10a72357e149c1c35a7002d7779233ffc4d44
-GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
-GREEN_PATHS=3320
-GREEN_PLANNING_PATHS=0
-GREEN_LOCAL_BUILD_EXIT=0
-GREEN_BUILD_MINUTES=3.4
+GREEN_TREE_SUPERSEDED=fa16b0c68a9d32835f811344393d2bb31a173c9b
+GREEN_COMMIT_SUPERSEDED=69d10a72357e149c1c35a7002d7779233ffc4d44
+GREEN_PARENT_SUPERSEDED=340a200708c28fb7ed078d452138712f3400c789
+GREEN_PATHS_SUPERSEDED=3320
+GREEN_PLANNING_PATHS_SUPERSEDED=0
+GREEN_LOCAL_BUILD_EXIT_SUPERSEDED=0
+GREEN_BUILD_MINUTES_SUPERSEDED=3.4
 ```
 
 - **Date:** 2026-11-15 (UTC), commit written 03:17Z, build 03:18:11Z to 03:21:34Z (203 s).
@@ -49,3 +49,36 @@ BUILDER_CACHE_PRUNED=yes
 - `git for-each-ref --contains 4d4624315ef323b5f8bb712eebada6b394ee1074 --format='%(refname)'` prints exactly `refs/evidence/187/red`.
 
 No branch and no remote-tracking ref holds either commit. A push to origin would have left one under `refs/remotes/origin/`, since origin's fetch refspec is `+refs/heads/*:refs/remotes/origin/*`.
+
+## Re-run 2026-11-15 (after review fixes)
+
+Recorded 2026-11-15 (UTC) by a plan executor that the orchestrator spawned to re-run plan 187-12, because plan 187-15 Task 1 found `PUSH_TREE_MATCHES_HEAD=no`. The green commit above (`69d10a723`, tree `fa16b0c68`) predates the review fixes `49d8ec823` … `6bf28e0e1`, `95d1d6ad5`, `d55a94b7a` and the orchestrator's `1e10dff7f`, which changed files under `.github/workflows/` and `infra/` only. Its lines and the red commit's are kept, renamed `*_SUPERSEDED=` so that each line a verify reads has exactly one current value (the convention of `186-07-closing-e2e.md`). The lines below are current. Logs are in `tmp/187-gates/187-12-rerun/` (ignored). Nothing was pushed, no registry was signed in to, no image was tagged for a registry, and neither the repository's remote nor a hosted service was read.
+
+### The green commit (Task 2, re-run)
+
+```
+GREEN_TREE=3c82ab567d5b375c81e300e6bdb9fdbf72d7e42b
+GREEN_COMMIT=395b71c712f9af6a80512625f2b38baf93167c1a
+GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
+GREEN_PATHS=3320
+GREEN_PLANNING_PATHS=0
+GREEN_LOCAL_BUILD_EXIT=0
+GREEN_BUILD_MINUTES=3.7
+GREEN_BUILT_FROM_HEAD=1e10dff7f33c51e3e22e3853e3ec95f1a7e0087d
+GREEN_BUILD_ATTEMPTS=2, the first void at the base-image fetch (below)
+```
+
+- **Date:** 2026-11-15 (UTC). The commit was written at 20:14:08Z. The build of record ran from 21:03:24Z to 21:07:05Z (221 s).
+- **The parent, without a remote read:** `git rev-parse --verify refs/remotes/origin/main` exit 0 printed `340a200708c28fb7ed078d452138712f3400c789`, the same parent as before. There was no `git fetch` and no `git ls-remote`.
+- **The tree:** a temporary index under the session scratch directory (`GIT_INDEX_FILE=$(mktemp)`, removed afterwards). `git read-tree HEAD` exit 0 with HEAD `1e10dff7f`, the orchestrator's last source commit, then `git rm -r --cached --quiet .planning` exit 0 and `git write-tree` exit 0. `git diff --quiet HEAD <commit> -- . ':!.planning'` exit 0, so the tree is HEAD's outside `.planning/`. That is the tree the Task 1 re-run gates ran on. The Task 1 commit `3c7be6128` and the 187-13 record `ced29ef11` that followed add `.planning/` files only. The real index was not touched (`git diff --cached --quiet` exit 0).
+- **The commit:** `git commit-tree "$GREEN_TREE" -p "$GREEN_PARENT" -m "deploy: staging"` exit 0, then `git update-ref refs/evidence/187/green "$GREEN_COMMIT"` exit 0.
+- **No planning path:** `git ls-tree -r --name-only "$GREEN_COMMIT"` was written to `green-paths.txt` (exit 0, 3320 paths), and `awk -F/ '$1 == ".planning"'` counts 0.
+- **The first build attempt was void, and not because of the archive:** `attempt1/green-build.log` failed at step `#2 [internal] load metadata for docker.io/library/node:24-alpine` with `DeadlineExceeded: context deadline exceeded`, before any build work.
+  - The Docker client's credential helper (`docker-credential-desktop get`) did not answer at the time.
+  - The host reached the registry (HTTP 401 in 0.38 s), and a container started from a local image resolved it and got 401 too.
+  - A plain `docker pull --platform linux/arm64 node:24-alpine` (`pull.log`, `pull.status` 0) later finished on its own, `Downloaded newer image`.
+  - No process was killed and the Docker client configuration was not changed.
+- **The build of record (C-02 control), `attempt2/`:** the script's archive context and build flags (`infra/scripts/build-push-image.sh` `make_context` and `build_and_push`), with the registry tag and `--load` replaced by a cache-only output.
+  - `git archive --format=tar -o <tmp>/green.tar "$GREEN_COMMIT"` exit 0, and extraction into an empty `<tmp>/context` exit 0.
+  - In the background: `docker buildx build --platform linux/arm64 --target production --build-arg BUILD_SHA=395b71c712f9af6a80512625f2b38baf93167c1a --provenance=false --sbom=false -f <tmp>/context/apps/frontend/Dockerfile --output type=cacheonly --progress=plain <tmp>/context` (`attempt2/green-build.log`, status in `attempt2/green-build.status`) exit 0.
+  - Step `#19 [production 2/2] RUN yarn workspace @openvaa/frontend build` ended `DONE 11.2s`. The temporary directory was removed after the build.
