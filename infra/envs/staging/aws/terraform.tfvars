@@ -4,7 +4,8 @@
 # are named in the module's task-environment.json and created by the operator under parameter_path,
 # never here. environment_overrides, omit_environment and debug_ingress_cidrs are given on the
 # command line for one observation and never in this file. alert_email is given as
-# TF_VAR_alert_email from the operator's shell.
+# TF_VAR_alert_email from the operator's shell. The image's digest is given per plan as
+# -var image_digest= and is never written here.
 aws_account_id = "471112560111"
 aws_region     = "eu-north-1"
 environment    = "staging"
@@ -41,6 +42,3 @@ environment_values = {
   ANALYTICS_POSTHOG_HOST  = "https://eu.i.posthog.com"
   DEPLOYMENT_DIAGNOSTICS  = "false"
 }
-
-# The commit the pushed image was built from.
-image_tag = "712947a1bd44a735f66ee8f51610f4748d76cd30"

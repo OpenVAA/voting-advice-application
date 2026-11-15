@@ -5,7 +5,8 @@
 # are named in the module's task-environment.json and created under parameter_path in the parameter
 # store, never here. environment_overrides, omit_environment and debug_ingress_cidrs are given on the
 # command line for one observation and never in this file. alert_email is given as
-# TF_VAR_alert_email from the shell that runs the apply.
+# TF_VAR_alert_email from the shell that runs the apply. The image's digest is given per plan as
+# -var image_digest= and is never written here.
 
 # A stand-in. The provider refuses credentials for any account other than this one, so the root
 # cannot be applied until this value is replaced with your own account id.
@@ -21,9 +22,6 @@ domain = "vaa.example.org"
 
 # A stand-in. Replace with the URL of the image repository your bootstrap root creates, without a tag.
 registry_url = "000000000000.dkr.ecr.eu-north-1.amazonaws.com/openvaa-frontend"
-
-# A stand-in. The pipeline replaces it with the full commit SHA the image was built from.
-image_tag = "0000000000000000000000000000000000000000"
 
 # A stand-in. Replace with the frontend_execution_role_arn output of your bootstrap root.
 execution_role_arn = "arn:aws:iam::000000000000:role/openvaa/openvaa-example-frontend-execution"
