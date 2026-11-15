@@ -20,7 +20,7 @@ const WORKFLOW = join(REPO_ROOT, '.github', 'workflows', 'deploy.yml');
 const { doc, text } = loadWorkflow(WORKFLOW);
 
 /** The ids of the gated job's stage steps, in the order they must run. */
-const STAGE_ORDER = ['build', 'plan', 'apply', 'stable', 'smoke', 'served-build', 'alert'];
+const STAGE_ORDER = ['build', 'plan', 'migrations', 'functions', 'apply', 'stable', 'smoke', 'served-build', 'alert'];
 
 /** The job `id` of a workflow; fails the test when it is absent. */
 function jobOf(source: WorkflowDocument, id: string): WorkflowJob {
@@ -247,7 +247,7 @@ describe('the stages of the deploy job', () => {
   });
 
   it('has no switch, input or variable that skips the contestant spec', () => {
-    expect(text).not.toMatch(/--grep|--project|SMOKE_SKIP|skip-contestant|SKIP_CONTESTANT/i);
+    expect(text).not.toMatch(/--grep\b|--project(?![-\w])|SMOKE_SKIP|skip-contestant|SKIP_CONTESTANT/i);
     expect('inputs' in ((doc.on as Record<string, unknown>).workflow_dispatch ?? {})).toBe(false);
   });
 
@@ -271,6 +271,109 @@ describe('the stages of the deploy job', () => {
 
   it('writes nothing to $GITHUB_ENV', () => {
     expect(text).not.toContain('GITHUB_ENV');
+  });
+});
+
+describe('the migrations and the functions of the deploy job', () => {
+  const steps = stepsOf(doc, 'deploy');
+  const link = stepWithId(steps, 'link');
+  const migrations = stepWithId(steps, 'migrations');
+  const functions = stepWithId(steps, 'functions');
+
+  it('installs postgresql-client with apt before the migrations', () => {
+    const install = steps.findIndex((step) =>
+      runOf(step).includes('sudo apt-get install -y --no-install-recommends postgresql-client')
+    );
+    expect(install).toBeGreaterThanOrEqual(0);
+    expect(install).toBeLessThan(steps.indexOf(migrations));
+    expect(runOf(steps[install])).toContain('echo "psql_version=');
+  });
+
+  it('links a work directory under $RUNNER_TEMP to the project ref of the Supabase root', () => {
+    const script = runOf(link);
+    expect(script).toContain('infra/envs/staging/supabase/terraform.tfvars');
+    expect(script).toContain('^[a-z]{20}$');
+    expect(script).toContain('workdir="$RUNNER_TEMP/supabase-linked/$ref"');
+    expect(script).toContain('for p in config.toml migrations functions; do');
+    expect(script).toContain('node_modules/.bin/supabase link --project-ref "$ref" --workdir "$workdir"');
+    expect(script).toContain('apps/supabase/supabase/.temp/project-ref');
+    expect(script).toContain('echo "ref=$ref"');
+    expect(script).toContain('echo "workdir=$workdir"');
+    expect(steps.indexOf(link)).toBeLessThan(steps.indexOf(migrations));
+  });
+
+  it('never links apps/supabase, never passes it as a work directory and never calls supabase db push', () => {
+    expect(text).not.toMatch(/--workdir\s+"?(\$GITHUB_WORKSPACE\/)?apps\/supabase/);
+    expect(text).not.toMatch(/supabase\s+db\s+push/);
+  });
+
+  it('pushes the migrations through push-migrations.sh with the confirmed ref, over the session pooler', () => {
+    const script = runOf(migrations);
+    expect(script).toContain(
+      'infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF"'
+    );
+    expect(script).toContain('--log-dir "$RUNNER_TEMP/push-migrations"');
+    expect(script).toContain('export PGUSER="postgres.$REF"');
+    expect(script).toContain('push_exit=$?');
+    expect(envOf(migrations)).toEqual({
+      REF: '${{ steps.link.outputs.ref }}',
+      WORKDIR: '${{ steps.link.outputs.workdir }}',
+      OPENVAA_DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
+      PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
+      PGPORT: '5432',
+      PGDATABASE: 'postgres',
+      PGCONNECT_TIMEOUT: '10',
+      PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
+      SUPABASE_DB_PASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
+      SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
+    });
+    expect(text).not.toContain('6543');
+  });
+
+  it('deploys the functions from the linked work directory and reads back three ACTIVE with verify_jwt as configured', () => {
+    const script = runOf(functions);
+    expect(script).toContain('node_modules/.bin/supabase functions deploy --project-ref "$REF" --workdir "$WORKDIR"');
+    expect(script).toContain('curl -sS -K - ');
+    expect(script).toContain('https://api.supabase.com/v1/projects/$REF/functions');
+    expect(script).toContain('<<< "header = \\"Authorization: Bearer $SUPABASE_ACCESS_TOKEN\\""');
+    expect(script).toContain('[ "$http" != 200 ]');
+    expect(script).toContain('[functions.$1]');
+    expect(script).toContain('expected="${expected:-true}"');
+    expect(script).toContain(
+      'echo "function=$slug status=$status verify_jwt=$verify_jwt expected_verify_jwt=$expected"'
+    );
+    expect(script).toContain('[ "$count" -ne 3 ] || [ "$mismatched" -ne 0 ]');
+    expect(script).toContain('[ "$status" != ACTIVE ]');
+    expect(envOf(functions)).toEqual({
+      REF: '${{ steps.link.outputs.ref }}',
+      WORKDIR: '${{ steps.link.outputs.workdir }}',
+      SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
+    });
+  });
+
+  it('gives the Supabase and database secrets to the link, migrations and functions steps only, through env', () => {
+    const holders = steps.flatMap((step) =>
+      Object.values(envOf(step)).some((value) =>
+        /secrets\.(SUPABASE_ACCESS_TOKEN|SUPABASE_DB_PASSWORD)\b/.test(String(value))
+      )
+        ? [String(step.id)]
+        : []
+    );
+    expect(holders).toEqual(['link', 'migrations', 'functions']);
+    const mentions = text
+      .split('\n')
+      .filter((line) => /secrets\.(SUPABASE_ACCESS_TOKEN|SUPABASE_DB_PASSWORD)\b/.test(line));
+    expect(mentions.every((line) => /^ {10}[A-Z_]+: \$\{\{ secrets\./.test(line))).toBe(true);
+    expect(mentions).toHaveLength(6);
+    expect('env' in jobOf(doc, 'deploy')).toBe(false);
+    expect('env' in doc).toBe(false);
+  });
+
+  it('removes the work directory and the push logs in the cleanup step', () => {
+    const cleanup = steps.find((step) => runOf(step).includes('rm -rf'));
+    const script = runOf(cleanup as WorkflowStep);
+    expect(script).toContain('"$RUNNER_TEMP/supabase-linked"');
+    expect(script).toContain('"$RUNNER_TEMP/push-migrations"');
   });
 });
 

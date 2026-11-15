@@ -4,11 +4,12 @@ name: "Deploy staging"
 #   1. job checks, with no credential: Terraform formatting, the validation of the staging AWS root and the unit
 #      tests of the infrastructure scripts;
 #   2. job deploy, in the `staging` environment, which waits for its reviewer: builds and pushes the commit's image
-#      and takes its digest; plans the staging AWS root with that digest into a saved plan and prints it; applies the
-#      saved plan; checks that the service's primary deployment runs the task definition just applied; runs the
-#      deployed smoke entry against https://staging.openvaa.org; and reads /api/health again to confirm the commit is
-#      still the one served. When a step fails or the run is cancelled, the last step mails the operator through the
-#      deployment topic, naming the stage.
+#      and takes its digest; plans the staging AWS root with that digest into a saved plan and prints it; pushes the
+#      migrations to the Supabase project and deploys its functions; applies the saved plan; checks that the service's
+#      primary deployment runs the task definition just applied; runs the deployed smoke entry against
+#      https://staging.openvaa.org; and reads /api/health again to confirm the commit is still the one served. A failed
+#      step stops every later one but the cleanup and the alert. When a step fails or the run is cancelled, the last
+#      step mails the operator through the deployment topic, naming the stage.
 #
 # A push to `deploy/staging` and a push to a `deploy-evidence/*` branch both deploy and apply. The environment's
 # branch policy matches one path segment only, so an evidence branch name holds no further `/`: a nested name would
@@ -187,6 +188,169 @@ jobs:
         with:
           version: 4.18
 
+      # The drift check after the push reads the migration history with psql.
+      - name: "Install psql"
+        run: |
+          set -uo pipefail
+          sudo apt-get update
+          update_exit=$?
+          if [ "$update_exit" -ne 0 ]; then
+            echo "::error::apt-get update exited $update_exit."
+            exit 1
+          fi
+          sudo apt-get install -y --no-install-recommends postgresql-client
+          install_exit=$?
+          if [ "$install_exit" -ne 0 ]; then
+            echo "::error::apt-get install postgresql-client exited $install_exit."
+            exit 1
+          fi
+          echo "psql_version=$(psql --version)"
+
+      # The CLI is linked in a work directory of its own under $RUNNER_TEMP, whose supabase/ holds symbolic links to the
+      # repository's config.toml, migrations and functions. apps/supabase is never linked: a link writes the project's
+      # service versions into supabase/.temp of the directory it links.
+      - name: "Link a work directory to the Supabase project"
+        id: link
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -uo pipefail
+          ref=$(sed -n 's/^project_ref *= *"\(.*\)"$/\1/p' infra/envs/staging/supabase/terraform.tfvars)
+          if ! [[ "$ref" =~ ^[a-z]{20}$ ]]; then
+            echo "::error::project_ref of infra/envs/staging/supabase/terraform.tfvars is not 20 lower-case letters."
+            exit 1
+          fi
+          workdir="$RUNNER_TEMP/supabase-linked/$ref"
+          mkdir -p "$workdir/supabase"
+          for p in config.toml migrations functions; do
+            ln -sfn "$GITHUB_WORKSPACE/apps/supabase/supabase/$p" "$workdir/supabase/$p"
+          done
+          links=$(find "$workdir/supabase" -maxdepth 1 -type l | wc -l)
+          echo "links=$((links))"
+          if [ "$((links))" -ne 3 ]; then
+            echo "::error::The work directory holds $((links)) links, not 3."
+            exit 1
+          fi
+          node_modules/.bin/supabase link --project-ref "$ref" --workdir "$workdir" --agent no --output-format text \
+            > "$RUNNER_TEMP/supabase-link.log" 2>&1
+          link_exit=$?
+          echo "link_exit=$link_exit"
+          if [ "$link_exit" -ne 0 ]; then
+            cat "$RUNNER_TEMP/supabase-link.log"
+            echo "::error::supabase link exited $link_exit."
+            exit 1
+          fi
+          linked_ref=$(cat "$workdir/supabase/.temp/project-ref")
+          echo "linked_ref=$linked_ref"
+          if [ "$linked_ref" != "$ref" ]; then
+            echo "::error::The link wrote '$linked_ref', not $ref."
+            exit 1
+          fi
+          if [ -e apps/supabase/supabase/.temp/project-ref ]; then
+            echo "shared_dir_linked=yes"
+            echo "::error::apps/supabase/supabase/.temp/project-ref exists; the shared work directory is linked."
+            exit 1
+          fi
+          echo "shared_dir_linked=no"
+          {
+            echo "ref=$ref"
+            echo "workdir=$workdir"
+          } >> "$GITHUB_OUTPUT"
+
+      # The environment's approval stands in for the typed ref: push-migrations.sh accepts --confirmed-ref only in a
+      # job that sets OPENVAA_DEPLOY_ENVIRONMENT to staging, and only when it equals --ref. The database is reached
+      # through the session pooler on port 5432, whose user name carries the ref; the transaction pooler is never used.
+      - name: "Push the migrations"
+        id: migrations
+        env:
+          REF: ${{ steps.link.outputs.ref }}
+          WORKDIR: ${{ steps.link.outputs.workdir }}
+          OPENVAA_DEPLOY_ENVIRONMENT: ${{ vars.DEPLOY_ENVIRONMENT }}
+          PGHOST: ${{ vars.SUPABASE_POOLER_HOST }}
+          PGPORT: "5432"
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "10"
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -uo pipefail
+          if [ -z "$PGHOST" ]; then
+            echo "::error::The environment variable SUPABASE_POOLER_HOST is not set."
+            exit 1
+          fi
+          export PGUSER="postgres.$REF"
+          unset PGHOSTADDR PGSERVICE
+          infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF" \
+            --log-dir "$RUNNER_TEMP/push-migrations"
+          push_exit=$?
+          echo "push_exit=$push_exit"
+          if [ "$push_exit" -ne 0 ]; then
+            echo "::error::push-migrations.sh exited $push_exit."
+            exit "$push_exit"
+          fi
+
+      # The functions are deployed from the linked work directory, so the CLI reads each one's verify_jwt from
+      # config.toml. The read-back fails unless the project serves three ACTIVE functions, each with verify_jwt as
+      # config.toml says, true for a function it names no block for. The token reaches curl on standard input.
+      - name: "Deploy the functions"
+        id: functions
+        env:
+          REF: ${{ steps.link.outputs.ref }}
+          WORKDIR: ${{ steps.link.outputs.workdir }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -uo pipefail
+          node_modules/.bin/supabase functions deploy --project-ref "$REF" --workdir "$WORKDIR" --agent no --output-format text \
+            > "$RUNNER_TEMP/functions-deploy.log" 2>&1
+          deploy_exit=$?
+          echo "functions_deploy_exit=$deploy_exit"
+          if [ "$deploy_exit" -ne 0 ]; then
+            cat "$RUNNER_TEMP/functions-deploy.log"
+            echo "::error::supabase functions deploy exited $deploy_exit."
+            exit 1
+          fi
+          curl -sS -K - -o "$RUNNER_TEMP/functions.json" -w '%{http_code}' \
+            "https://api.supabase.com/v1/projects/$REF/functions" > "$RUNNER_TEMP/functions-http.txt" \
+            <<< "header = \"Authorization: Bearer $SUPABASE_ACCESS_TOKEN\""
+          curl_exit=$?
+          http=$(cat "$RUNNER_TEMP/functions-http.txt")
+          echo "functions_list_http=$http"
+          if [ "$curl_exit" -ne 0 ] || [ "$http" != 200 ]; then
+            echo "::error::The function list could not be read: curl exited $curl_exit with HTTP status $http."
+            exit 1
+          fi
+          jq -r 'sort_by(.slug)[] | "\(.slug) \(.status) \(.verify_jwt)"' "$RUNNER_TEMP/functions.json" \
+            > "$RUNNER_TEMP/functions.txt"
+          jq_exit=$?
+          if [ "$jq_exit" -ne 0 ]; then
+            echo "::error::The function list is not the expected JSON."
+            exit 1
+          fi
+          expected_verify_jwt() {
+            awk -v header="[functions.$1]" '
+              $0 == header { inside = 1; next }
+              /^\[/ { inside = 0 }
+              inside && /^verify_jwt *= */ { sub(/^verify_jwt *= */, ""); print; exit }
+            ' apps/supabase/supabase/config.toml
+          }
+          count=0
+          mismatched=0
+          while read -r slug status verify_jwt; do
+            expected=$(expected_verify_jwt "$slug")
+            expected="${expected:-true}"
+            echo "function=$slug status=$status verify_jwt=$verify_jwt expected_verify_jwt=$expected"
+            count=$((count + 1))
+            if [ "$status" != ACTIVE ] || [ "$verify_jwt" != "$expected" ]; then
+              mismatched=$((mismatched + 1))
+            fi
+          done < "$RUNNER_TEMP/functions.txt"
+          if [ "$count" -ne 3 ] || [ "$mismatched" -ne 0 ]; then
+            echo "::error::The project serves $count functions, $mismatched of them not ACTIVE or with another verify_jwt than config.toml; expected 3, all ACTIVE and matching."
+            exit 1
+          fi
+
       # A role session lasts one hour, and the steps before this one can take a good part of it. The apply must not
       # outlive its credentials, so they are assumed again right before it.
       - name: "Assume the deploy role again for the apply"
@@ -300,12 +464,16 @@ jobs:
             exit 1
           fi
 
+      # The push's log directory holds the CLI's unredacted debug output, which names the database's address.
       - name: "Remove the plan, the smoke output and the step files"
         if: always()
         run: >-
           rm -rf
           "$RUNNER_TEMP/tfplan" "$RUNNER_TEMP/tfplan.txt" "$RUNNER_TEMP/smoke-output"
           "$RUNNER_TEMP/build-push.txt" "$RUNNER_TEMP/service.json" "$RUNNER_TEMP/health.json"
+          "$RUNNER_TEMP/supabase-linked" "$RUNNER_TEMP/supabase-link.log" "$RUNNER_TEMP/push-migrations"
+          "$RUNNER_TEMP/functions-deploy.log" "$RUNNER_TEMP/functions.json" "$RUNNER_TEMP/functions-http.txt"
+          "$RUNNER_TEMP/functions.txt"
 
       - name: "Assume the deploy role again for the alert"
         if: failure() || cancelled()
@@ -325,6 +493,9 @@ jobs:
           JOB_STATUS: ${{ job.status }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
           PLAN_OUTCOME: ${{ steps.plan.outcome }}
+          LINK_OUTCOME: ${{ steps.link.outcome }}
+          MIGRATIONS_OUTCOME: ${{ steps.migrations.outcome }}
+          FUNCTIONS_OUTCOME: ${{ steps.functions.outcome }}
           APPLY_OUTCOME: ${{ steps.apply.outcome }}
           STABLE_OUTCOME: ${{ steps.stable.outcome }}
           SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
@@ -335,6 +506,9 @@ jobs:
           for pair in \
             "build:$BUILD_OUTCOME" \
             "plan:$PLAN_OUTCOME" \
+            "migrations:$LINK_OUTCOME" \
+            "migrations:$MIGRATIONS_OUTCOME" \
+            "functions:$FUNCTIONS_OUTCOME" \
             "rollout:$APPLY_OUTCOME" \
             "stable:$STABLE_OUTCOME" \
             "smoke:$SMOKE_OUTCOME" \
