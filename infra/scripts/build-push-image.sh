@@ -22,11 +22,15 @@
 #   2. Signs docker in to the registry. The password goes from `aws ecr get-login-password` straight to `docker login`
 #      on standard input; it is never held in a variable, never on a command line and never written by this script.
 #      Where docker keeps the login is docker's own credential store; the script signs docker out again on exit.
-#   3. Builds apps/frontend/Dockerfile, target production, from the repository root, natively for the platform, with
-#      BUILD_SHA=<id> and with the provenance and SBOM attestations turned off, so the pushed artifact is one image
-#      manifest and not an index. The image is loaded into the local image store and tagged <url>:<id>.
+#   3. Builds apps/frontend/Dockerfile, target production, natively for the platform, with BUILD_SHA=<id> and with the
+#      provenance and SBOM attestations turned off, so the pushed artifact is one image manifest and not an index. The
+#      build runs from a copy of the commit's tree, never from the working tree: `git archive` of the commit is written
+#      to a file in the script's temporary directory and extracted there, so the context holds the commit's tracked
+#      files and nothing else, and no ignored or untracked file can reach the image. `.dockerignore` then applies to
+#      that copy. The image is loaded into the local image store and tagged <url>:<id>.
 #   4. Pushes <url>:<id>, reads its digest back from the registry and prints `image_tag=<id>` and `image_digest=<digest>`.
-#   A step that fails prints `failed=<step>`, the step being describe-images, login, build, push or read-digest.
+#   A step that fails prints `failed=<step>`, the step being describe-images, login, context, build, push or read-digest.
+#   `failed=context` means the commit's archive could not be written or extracted; nothing is built or pushed.
 #
 # What it does not check: that the commit's tests passed, that the commit is on any particular branch, or that the image
 # starts. Those belong to the caller.
@@ -44,6 +48,11 @@
 #   --self-test             Run the checks against throwaway local repositories with the AWS CLI and docker replaced by
 #                           stubs. Needs no credential and no network. Each case prints `self_test <name> PASS|FAIL`.
 #   -h, --help              Print this header and exit 0.
+#
+# For a workflow caller: read the status directly, never through a pipe. Status 0 prints two lines, `image_tag=<id>`
+# and `image_digest=<digest>`. Status 3 prints one line, `tag_exists=yes image_digest=<digest>`, and means the registry
+# already holds this commit's image, which the caller deploys as it is. Any other status comes with a `refused=` or
+# `failed=` line on standard output naming the reason.
 #
 # The script judges the repository it lies in: the git checks and the build both use the top level of the working tree
 # that holds this file, whatever the current directory is. Run it from a worktree of the commit to build that commit.
