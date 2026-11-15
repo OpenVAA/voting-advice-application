@@ -24,15 +24,15 @@ GREEN_BUILD_MINUTES_SUPERSEDED=3.4
 ## The red commit (Task 3)
 
 ```
-RED_TREE=bbf466d2f18b5adf94a193a01b85ac3d1ea12c68
-RED_COMMIT=4d4624315ef323b5f8bb712eebada6b394ee1074
-RED_DIFF_PATHS=apps/frontend/src/routes/+layout.ts
-RED_LOCAL_BUILD_EXIT=1
-RED_FAILED_AT_FRONTEND_BUILD=yes
-RED_FAILING_DOCKER_STEP=shared 2/2 RUN yarn build (Dockerfile line 28), turbo task @openvaa/frontend#build
-RED_NAMES_MISSING_MODULE=yes
-WORKING_TREE_UNCHANGED=yes
-BUILDER_CACHE_PRUNED=yes
+RED_TREE_SUPERSEDED=bbf466d2f18b5adf94a193a01b85ac3d1ea12c68
+RED_COMMIT_SUPERSEDED=4d4624315ef323b5f8bb712eebada6b394ee1074
+RED_DIFF_PATHS_SUPERSEDED=apps/frontend/src/routes/+layout.ts
+RED_LOCAL_BUILD_EXIT_SUPERSEDED=1
+RED_FAILED_AT_FRONTEND_BUILD_SUPERSEDED=yes
+RED_FAILING_DOCKER_STEP_SUPERSEDED=shared 2/2 RUN yarn build (Dockerfile line 28), turbo task @openvaa/frontend#build
+RED_NAMES_MISSING_MODULE_SUPERSEDED=yes
+WORKING_TREE_UNCHANGED_SUPERSEDED=yes
+BUILDER_CACHE_PRUNED_SUPERSEDED=yes
 ```
 
 - **Date:** 2026-11-15 (UTC), commit written 03:22Z, build 03:22:33Z to 03:25:14Z.
@@ -82,3 +82,41 @@ GREEN_BUILD_ATTEMPTS=2, the first void at the base-image fetch (below)
   - `git archive --format=tar -o <tmp>/green.tar "$GREEN_COMMIT"` exit 0, and extraction into an empty `<tmp>/context` exit 0.
   - In the background: `docker buildx build --platform linux/arm64 --target production --build-arg BUILD_SHA=395b71c712f9af6a80512625f2b38baf93167c1a --provenance=false --sbom=false -f <tmp>/context/apps/frontend/Dockerfile --output type=cacheonly --progress=plain <tmp>/context` (`attempt2/green-build.log`, status in `attempt2/green-build.status`) exit 0.
   - Step `#19 [production 2/2] RUN yarn workspace @openvaa/frontend build` ended `DONE 11.2s`. The temporary directory was removed after the build.
+
+### The red commit (Task 3, re-run)
+
+```
+RED_TREE=154717e0ed840739539376f4cdeee21e1f73be67
+RED_COMMIT=700c18362ff260a8a0e77303e464db2deef7d60a
+RED_DIFF_PATHS=apps/frontend/src/routes/+layout.ts
+RED_LOCAL_BUILD_EXIT=1
+RED_FAILED_AT_FRONTEND_BUILD=yes
+RED_FAILING_DOCKER_STEP=shared 2/2 RUN yarn build (Dockerfile line 28), turbo task @openvaa/frontend#build
+RED_NAMES_MISSING_MODULE=yes
+WORKING_TREE_UNCHANGED=yes
+BUILDER_CACHE_PRUNED=yes
+```
+
+- **Date:** 2026-11-15 (UTC). The commit was written at 21:07:55Z. The build ran from 21:08:02Z to 21:10:54Z.
+- **The commit:** a new temporary index under the session scratch directory, removed afterwards.
+  - `git read-tree refs/evidence/187/green` exit 0, the new green commit `395b71c71`.
+  - A blob of the line `import '$lib/does-not-exist-187-red';` followed by the unchanged content of `apps/frontend/src/routes/+layout.ts` at that commit, written with `git hash-object -w --stdin`. It is `8ccc60be8f1696621812d5e7f8084f403b708aa7`, the same blob as before, because the review fixes did not touch the file.
+  - `git update-index --cacheinfo 100644,<blob>,apps/frontend/src/routes/+layout.ts` exit 0, `git write-tree` exit 0.
+  - `git commit-tree "$RED_TREE" -p 340a200708c28fb7ed078d452138712f3400c789 -m "deploy: a build broken on purpose, never merged"` exit 0. The parent is Task 2's `GREEN_PARENT`.
+  - `git update-ref refs/evidence/187/red "$RED_COMMIT"` exit 0.
+- **One path:** `git diff-tree -r --name-only refs/evidence/187/green "$RED_COMMIT"` prints the one path `apps/frontend/src/routes/+layout.ts`. `git diff --stat` reports `1 file changed, 1 insertion(+)`.
+- **The build:** the same archive build as Task 2, in the background (`attempt2/red-build.log`, status in `attempt2/red-build.status`).
+  - `git archive` exit 0 and extraction exit 0. `docker buildx build --platform linux/arm64 --target production --build-arg BUILD_SHA=700c18362ff260a8a0e77303e464db2deef7d60a --provenance=false --sbom=false -f <tmp>/context/apps/frontend/Dockerfile --output type=cacheonly --progress=plain <tmp>/context` exit 1.
+  - `yarn install --immutable` (`#13`) completed.
+  - The step that failed is `#15 [shared 2/2] RUN yarn build`. Its turbo run reports `Failed: @openvaa/frontend#build` (`Tasks: 13 successful, 14 total`), after the frontend's vite build printed `[UNLOADABLE_DEPENDENCY] Could not load src/lib/does-not-exist-187-red` for `import "$lib/does-not-exist-187-red";`.
+  - The build ended `ERROR: failed to build: failed to solve: process "/bin/sh -c yarn build" did not complete successfully: exit code: 1`.
+  - That is the same step and the same failing task as the first red build, for the reason stated there: the frontend's own build runs inside the shared stage's turbo build, and nothing before it failed.
+- **The working tree:** `git status --porcelain` lists only the untracked `.planning/workstreams/deployment/.verification-ledger.json`. `git diff --quiet -- apps/frontend/src/routes/+layout.ts` exit 0. Neither the working tree nor the real index was touched.
+- **The builder cache:** `docker builder prune -af` exit 0 (`attempt2/builder-prune.status`), `Total: 4.897GB` reclaimed. `docker system df` then shows `Build Cache 0 0 0B 0B`.
+
+### Nothing pushed, from local refs alone (re-run)
+
+- `git for-each-ref --contains 395b71c712f9af6a80512625f2b38baf93167c1a --format='%(refname)'` prints exactly `refs/evidence/187/green`.
+- `git for-each-ref --contains 700c18362ff260a8a0e77303e464db2deef7d60a --format='%(refname)'` prints exactly `refs/evidence/187/red`.
+
+The superseded commits `69d10a723` and `4d4624315` are no longer held by any ref. They were never pushed.
