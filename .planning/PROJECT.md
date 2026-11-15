@@ -344,6 +344,7 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ Managed IAM policies only (INFRA-17) — every permission the Terraform roots grant comes from an AWS-managed or customer-managed policy; `yarn lint:check` refuses an inline IAM policy (seen red once), and the account inventory's assert modes found no IAM user with an inline policy (2026-10-22) — v2.17 (Phase 183)
 - ✓ Staging zone (INFRA-18) — a Route 53 hosted zone answers `staging.openvaa.org`, delegated from Cloudflare (recorded in `infra/envs/staging/dns-mail/DELEGATION.md`); the SES identity is verified with DKIM, SPF and DMARC published — v2.17 (Phase 183)
 - ✓ Hosted settings parity guard (SUPA-11) — the hosted Supabase project is imported into its own Terraform root (`prevent_destroy`, settings applied, second plan empty), and a `lint:check` guard fails when the security-relevant keys of `config.toml` and the HCL disagree (seen red once per kind of finding) — v2.17 (Phase 183)
+- ✓ Tests never reach a production project (SUPA-09) — the deployed smoke entry (`yarn test:e2e:deployed`) takes its expected ref and project id only from the committed staging tfvars and refuses any other target, a wrong SHA or a set service-role key (each negative control seen red); green against `https://staging.openvaa.org` with a voter walk and a contestant sign-in — v2.17 (Phase 186)
 
 ### Active
 
@@ -586,6 +587,8 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
+
+_Last updated: 2026-11-15 after Phase 186 (Deployed Smoke Entry; workstream `deployment`, milestone v2.17) — SUPA-09 moved to Validated. Verified 48/48 with one override (HTML reporter removed by review fix CR-01), UAT 4/4, security `threats_open: 0`. Only additions; the v2.16 sections are untouched._
 
 _Last updated: 2026-10-26 after Phase 183 (Terraform Foundation and Supabase as Code; workstream `deployment`, milestone v2.17) — INFRA-15 (operator override), INFRA-17, INFRA-18 and SUPA-11 moved to Validated, five v2.17 Key Decisions added. Verified 9/9, security `threats_open: 0`. Only additions; the v2.16 sections are untouched._
 

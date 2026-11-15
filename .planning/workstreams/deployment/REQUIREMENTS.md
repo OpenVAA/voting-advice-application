@@ -83,7 +83,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [ ] **SUPA-08**: The access token, database password and service-role key exist only in the pipeline's
       environment and in Terraform state. The state bucket is encrypted, versioned and closed to the public, and
       no plan is uploaded as an artifact (C7).
-- [ ] **SUPA-09**: Tests run against a dedicated hosted project and never against a production one.
+- [x] **SUPA-09**: Tests run against a dedicated hosted project and never against a production one.
 - [x] **SUPA-10**: The schema is deployable after its first push: the single migration is frozen as a named
       baseline at a cutover commit agreed with the v2.16 session, later changes are append-only numbered
       migrations, the parity guard enforces both, and a drift check after deploy reads its exit status directly.
@@ -286,7 +286,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-06 | Phase 184 | Complete |
 | SUPA-07 | Phase 184 | Complete |
 | SUPA-08 | Phase 187 | Pending |
-| SUPA-09 | Phase 186 | Pending |
+| SUPA-09 | Phase 186 | Complete |
 | SUPA-10 | Phase 181 | Complete |
 | SUPA-11 | Phase 183 | Complete |
 | SUPA-12 | Phase 185 | Complete |

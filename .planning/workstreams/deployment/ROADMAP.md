@@ -77,7 +77,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 - [x] **Phase 183: Terraform Foundation and Supabase as Code** - Remote state, access roles, a budget alarm, the staging zone and the mail identity exist in AWS, and the hosted Supabase project is imported into a root of its own with a settings parity guard (INFRA-15, INFRA-17, INFRA-18, SUPA-11) (completed 2026-10-26)
 - [x] **Phase 184: Hosted Supabase Measurement and Conformance Probe** - The schema, functions and bootstrap rows are on the hosted project, what it serves is measured and dated, and a probe fails by name when it drifts (SUPA-01 to SUPA-07, SUPA-13, SUPA-14, OBS-01, OBS-02, OBS-03, OBS-05, OBS-07) (completed 2026-11-12)
 - [x] **Phase 185: AWS Frontend Stack, First Apply by Hand** - The frontend runs at `https://staging.openvaa.org` from a stack applied by hand, with a failed rollout, a teardown and the frontend-side observations each seen once (INFRA-01 to INFRA-14, SUPA-12, OBS-04, OBS-06, OBS-08, OBS-10) (completed 2026-11-14)
-- [ ] **Phase 186: Deployed Smoke Entry** - A read-mostly smoke run proves from a workstation that the deployed URL serves the intended build on the dedicated project, and refuses anything else (SUPA-09)
+- [x] **Phase 186: Deployed Smoke Entry** - A read-mostly smoke run proves from a workstation that the deployed URL serves the intended build on the dedicated project, and refuses anything else (SUPA-09) (completed 2026-11-15)
 - [ ] **Phase 187: Deploy Pipeline** - GitHub Actions deploys staging without stored keys, behind a gate and in a fixed order, and the run goes red when the build, the rollout or the smoke run fails (PIPE-01 to PIPE-10, INFRA-16, INFRA-19, SUPA-08)
 - [ ] **Phase 188: Relay on the Deployed Stack, and the Per-Caller Limit** - Events from staging arrive in PostHog EU as anonymous events, the stack's capacity is measured, and the per-caller limit is built or deferred on the evidence (RELAY-04, RELAY-09, OBS-09, OBS-11)
 - [ ] **Phase 189: Documentation and Closure** - The documentation follows the Terraform path, every statement about a hosted project is a dated observation, and the absorbed todos are closed on the record (DOCS-01 to DOCS-08)
@@ -570,7 +570,7 @@ Notes:
   4. The local gate suite and its preflight are unchanged, and the full local suite is green on the tree that adds the smoke entry.
 
 **Research flag**: Standard pattern, no research phase. A second Playwright config reuses the existing fixtures. The local-port assumption in `supabaseAdminClient.ts` must be made a parameter.
-**Plans**: 8/8 plans executed in 6 waves. Waves 1 to 5 run without the operator: the gate, the entry and its specs, the lock, the grant SQL and its runbook item, the three negative controls, the docs and the closing local gates with the one full local E2E run. Wave 6 is the one hosted write, at a checkpoint the operator approves, followed by the full green deployed smoke run. The research flag is read as "the smoke entry holds no service-role client, enforced" (A-05), not as a parameterised admin client.
+**Plans**: 8/8 plans complete in 6 waves. Waves 1 to 5 run without the operator: the gate, the entry and its specs, the lock, the grant SQL and its runbook item, the three negative controls, the docs and the closing local gates with the one full local E2E run. Wave 6 is the one hosted write, at a checkpoint the operator approves, followed by the full green deployed smoke run. The research flag is read as "the smoke entry holds no service-role client, enforced" (A-05), not as a parameterised admin client.
 
 Plans:
 **Wave 1**
@@ -806,7 +806,7 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 183. Terraform Foundation and Supabase as Code | 28/28 | Complete    | 2026-10-26 |
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
 | 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
-| 186. Deployed Smoke Entry | 8/8 | In Progress | - |
+| 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
 | 187. Deploy Pipeline | 13/25 | In Progress | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
 | 189. Documentation and Closure | 0/TBD | Not started | - |

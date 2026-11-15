@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: 188
-current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 15
+current_phase: 187
+current_phase_name: Deploy Pipeline
+current_plan: 14
 status: executing
-stopped_at: Completed 187-13-PLAN.md
-last_updated: "2026-11-15T12:01:57.147Z"
+stopped_at: Phase 186 complete, ready to execute Phase 187
+last_updated: "2026-11-15T15:49:52.975Z"
 last_activity: 2026-11-15
-last_activity_desc: Phase 187 execution started
-state_head: 062a11c1baa6c6fd2143a19f7c54b489077c83f4
+last_activity_desc: Phase 186 complete, transitioned to Phase 187
+state_head: 15b5494c7c3bab76a7d7147b70aca37ca253b14a
 progress:
   total_phases: 10
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 182
   completed_plans: 150
-  percent: 50
+  percent: 60
 ---
 
 # Project State
@@ -33,12 +33,12 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — READY TO EXECUTE
-Plan: 15 of 25
+Phase: 187 — Deploy Pipeline
+Plan: 14 of 25
 Status: Ready to execute
-Last activity: 2026-11-15 — Phase 187 execution started
+Last activity: 2026-11-15 — Phase 186 complete, transitioned to Phase 187
 
-Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
+Progress: [██████░░░░] 60% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
 ## Progress
 
@@ -50,7 +50,7 @@ From 184 on, the numeric order is the dependency order.
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 98
+- Total plans completed: 106
 - Average duration: 14 min
 - Total execution time: 0.2 hours
 
@@ -63,6 +63,7 @@ From 184 on, the numeric order is the dependency order.
 | 183 | 28 | - | - |
 | 184 | 25 | - | - |
 | 185 | 22 | - | - |
+| 186 | 8 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -392,6 +393,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T03:44:43.567Z
-**Stopped At:** Completed 187-13-PLAN.md
+Last session: 2026-11-15T15:50:41Z
+**Stopped At:** Phase 186 complete, ready to execute Phase 187
 **Resume File:** None
