@@ -223,6 +223,22 @@ describe('the deployed config', () => {
     expect(String(config.globalSetup)).toMatch(/deployed-global-setup\.ts$/);
   });
 
+  it('writes no report that titles a fill step with its value, and takes no page snapshot when a failed test closes', async () => {
+    const { default: config } = await import('../../playwright.deployed.config');
+    const reporter = config.reporter ?? [];
+    const names = (Array.isArray(reporter) ? reporter : [reporter]).map((entry) =>
+      Array.isArray(entry) ? String(entry[0]) : String(entry)
+    );
+    expect(names).toContain('list');
+    expect(names.filter((name) => name !== 'list' && name !== 'json')).toEqual([]);
+    expect(process.env.PLAYWRIGHT_NO_COPY_PROMPT).toBe('1');
+  });
+
+  it('turns tracing, screenshots and video off in the contestant spec', () => {
+    const text = fs.readFileSync(path.join(DEPLOYED_DIR, 'contestant.smoke.ts'), 'utf8');
+    expect(text).toContain("test.use({ trace: 'off', screenshot: 'off', video: 'off' });");
+  });
+
   it('collects no file under tests/tests/deployed/ that a local project would also collect', () => {
     const collidingNames = listFiles(DEPLOYED_DIR)
       .map((file) => path.basename(file))
