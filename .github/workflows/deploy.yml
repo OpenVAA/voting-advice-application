@@ -333,7 +333,8 @@ jobs:
 
       # The functions are deployed from the linked work directory, so the CLI reads each one's verify_jwt from
       # config.toml. The read-back fails unless the project serves three ACTIVE functions, each with verify_jwt as
-      # config.toml says, true for a function it names no block for. The token reaches curl on standard input.
+      # config.toml says, true for a function it names no block for, and their slugs are the function directories of
+      # the commit. The token reaches curl on standard input, and the list call is cut off after 20 seconds.
       - name: "Deploy the functions"
         id: functions
         env:
@@ -351,7 +352,7 @@ jobs:
             echo "::error::supabase functions deploy exited $deploy_exit."
             exit 1
           fi
-          curl -sS -K - -o "$RUNNER_TEMP/functions.json" -w '%{http_code}' \
+          curl -sS --max-time 20 -K - -o "$RUNNER_TEMP/functions.json" -w '%{http_code}' \
             "https://api.supabase.com/v1/projects/$REF/functions" > "$RUNNER_TEMP/functions-http.txt" \
             <<< "header = \"Authorization: Bearer $SUPABASE_ACCESS_TOKEN\""
           curl_exit=$?
@@ -388,6 +389,14 @@ jobs:
           done < "$RUNNER_TEMP/functions.txt"
           if [ "$count" -ne 3 ] || [ "$mismatched" -ne 0 ]; then
             echo "::error::The project serves $count functions, $mismatched of them not ACTIVE or with another verify_jwt than config.toml; expected 3, all ACTIVE and matching."
+            exit 1
+          fi
+          expected_slugs=$(find apps/supabase/supabase/functions -mindepth 1 -maxdepth 1 -type d ! -name '_*' -exec basename {} \; | sort)
+          served_slugs=$(awk '{ print $1 }' "$RUNNER_TEMP/functions.txt" | sort)
+          echo "functions_expected=${expected_slugs//$'\n'/ }"
+          echo "functions_served=${served_slugs//$'\n'/ }"
+          if [ -z "$expected_slugs" ] || [ "$served_slugs" != "$expected_slugs" ]; then
+            echo "::error::The project serves other functions than the directories of apps/supabase/supabase/functions."
             exit 1
           fi
 

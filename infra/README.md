@@ -174,7 +174,8 @@ waits for its reviewer. Once approved, in this order:
    any shell that sets those variables, passes it. The boundary is `SUPABASE_DB_PASSWORD`, an
    environment secret of `staging` alone.
 4. **Functions.** All three are deployed from the linked directory, and the Management API's list
-   must then show three `ACTIVE` functions, each with `verify_jwt` as `config.toml` says.
+   must then show three `ACTIVE` functions, each with `verify_jwt` as `config.toml` says, whose
+   slugs are the function directories of the commit.
 5. **Apply** of the saved plan, with the role assumed again so that its credentials outlive it.
 6. **Stable check.** The service's primary deployment must run the task definition just applied,
    with `rolloutState` `COMPLETED` and at least `task_floor` tasks running.
@@ -273,16 +274,16 @@ means the persistent Supabase project may already hold that run's migrations. A 
 sends no alert, because it holds no credential and the gated job never starts. The stage's step
 log then says why:
 
-| Stage        | What to read in the step's log                                                                                                                                                                   |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `build`      | The `refused=` or `failed=` line of `build-push-image.sh`, and `build_exit=`                                                                                                                     |
-| `plan`       | `plan_exit=` and Terraform's own error                                                                                                                                                           |
-| `migrations` | `link_exit=` and `linked_ref=` of the link step; then the `push_*` lines of `push-migrations.sh` (`push_connection=`, `push_pending=`, `push_confirmation=`, `push_status=`) and `drift_status=` |
-| `functions`  | `functions_deploy_exit=`, `functions_list_http=`, and the `function=` lines, one per function with its `status=`, `verify_jwt=` and `expected_verify_jwt=`                                       |
-| `rollout`    | The second role assumption's error, or `apply_exit=`; a rollout the circuit breaker stops also sends the stack's own rollout alert through the same topic                                        |
-| `stable`     | The `stable_*` lines: `stable_task_definition_matches=`, `stable_rollout_state=`, `stable_running=`, `stable_desired=`                                                                           |
-| `smoke`      | The smoke gate's `PASS` and `FAIL` lines and `smoke_exit=`, or `served_build_after_smoke=` of the re-read                                                                                        |
-| `cleanup`    | The `rm` error of the removal step; every stage before it passed                                                                                                                                 |
+| Stage        | What to read in the step's log                                                                                                                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `build`      | The `refused=` or `failed=` line of `build-push-image.sh`, and `build_exit=`                                                                                                                               |
+| `plan`       | `plan_exit=` and Terraform's own error                                                                                                                                                                     |
+| `migrations` | `link_exit=` and `linked_ref=` of the link step; then the `push_*` lines of `push-migrations.sh` (`push_connection=`, `push_pending=`, `push_confirmation=`, `push_status=`) and `drift_status=`           |
+| `functions`  | `functions_deploy_exit=`, `functions_list_http=`, the `function=` lines, one per function with its `status=`, `verify_jwt=` and `expected_verify_jwt=`, then `functions_expected=` and `functions_served=` |
+| `rollout`    | The second role assumption's error, or `apply_exit=`; a rollout the circuit breaker stops also sends the stack's own rollout alert through the same topic                                                  |
+| `stable`     | The `stable_*` lines: `stable_task_definition_matches=`, `stable_rollout_state=`, `stable_running=`, `stable_desired=`                                                                                     |
+| `smoke`      | The smoke gate's `PASS` and `FAIL` lines and `smoke_exit=`, or `served_build_after_smoke=` of the re-read                                                                                                  |
+| `cleanup`    | The `rm` error of the removal step; every stage before it passed                                                                                                                                           |
 
 No report, plan or output directory is uploaded from any job, on a green run or a red one: the log
 is all there is. An alert that could not be sent prints `alert_error=` in the alert step.

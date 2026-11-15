@@ -348,7 +348,7 @@ describe('the migrations and the functions of the deploy job', () => {
   it('deploys the functions from the linked work directory and reads back three ACTIVE with verify_jwt as configured', () => {
     const script = runOf(functions);
     expect(script).toContain('node_modules/.bin/supabase functions deploy --project-ref "$REF" --workdir "$WORKDIR"');
-    expect(script).toContain('curl -sS -K - ');
+    expect(script).toContain('curl -sS --max-time 20 -K - ');
     expect(script).toContain('https://api.supabase.com/v1/projects/$REF/functions');
     expect(script).toContain('<<< "header = \\"Authorization: Bearer $SUPABASE_ACCESS_TOKEN\\""');
     expect(script).toContain('[ "$http" != 200 ]');
@@ -358,6 +358,10 @@ describe('the migrations and the functions of the deploy job', () => {
       'echo "function=$slug status=$status verify_jwt=$verify_jwt expected_verify_jwt=$expected"'
     );
     expect(script).toContain('[ "$count" -ne 3 ] || [ "$mismatched" -ne 0 ]');
+    expect(script).toContain(
+      "find apps/supabase/supabase/functions -mindepth 1 -maxdepth 1 -type d ! -name '_*' -exec basename {} \\; | sort"
+    );
+    expect(script).toContain('[ "$served_slugs" != "$expected_slugs" ]');
     expect(script).toContain('[ "$status" != ACTIVE ]');
     expect(envOf(functions)).toEqual({
       REF: '${{ steps.link.outputs.ref }}',
