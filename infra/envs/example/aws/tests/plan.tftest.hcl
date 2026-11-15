@@ -7,33 +7,33 @@
 mock_provider "aws" {
   mock_resource "aws_lb" {
     defaults = {
-      arn     = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:loadbalancer/app/openvaa-test/0000000000000000"
+      arn     = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:loadbalancer/app/openvaa-example/0000000000000000"
       zone_id = "Z00000000000000000000"
     }
   }
 
   mock_resource "aws_lb_target_group" {
     defaults = {
-      arn = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:targetgroup/openvaa-test-frontend/0000000000000000"
+      arn = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:targetgroup/openvaa-example-frontend/0000000000000000"
     }
   }
 
   mock_resource "aws_lb_listener" {
     defaults = {
-      arn = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:listener/app/openvaa-test/0000000000000000/0000000000000000"
+      arn = "arn:aws:elasticloadbalancing:eu-north-1:000000000000:listener/app/openvaa-example/0000000000000000/0000000000000000"
     }
   }
 
   mock_resource "aws_ecs_cluster" {
     defaults = {
-      arn = "arn:aws:ecs:eu-north-1:000000000000:cluster/openvaa-test"
-      id  = "arn:aws:ecs:eu-north-1:000000000000:cluster/openvaa-test"
+      arn = "arn:aws:ecs:eu-north-1:000000000000:cluster/openvaa-example"
+      id  = "arn:aws:ecs:eu-north-1:000000000000:cluster/openvaa-example"
     }
   }
 
   mock_resource "aws_ecs_task_definition" {
     defaults = {
-      arn = "arn:aws:ecs:eu-north-1:000000000000:task-definition/openvaa-test-frontend:1"
+      arn = "arn:aws:ecs:eu-north-1:000000000000:task-definition/openvaa-example-frontend:1"
     }
   }
 
@@ -43,8 +43,8 @@ mock_provider "aws" {
       arn = "arn:aws:acm:eu-north-1:000000000000:certificate/00000000-0000-0000-0000-000000000000"
       domain_validation_options = [
         {
-          domain_name           = "origin.test.example.org"
-          resource_record_name  = "_0000.origin.test.example.org."
+          domain_name           = "origin.vaa.example.org"
+          resource_record_name  = "_0000.origin.vaa.example.org."
           resource_record_type  = "CNAME"
           resource_record_value = "_0000.acm-validations.aws."
         },
@@ -60,19 +60,19 @@ mock_provider "aws" {
 
   mock_resource "aws_ecs_service" {
     defaults = {
-      id = "arn:aws:ecs:eu-north-1:000000000000:service/openvaa-test/openvaa-test-frontend"
+      id = "arn:aws:ecs:eu-north-1:000000000000:service/openvaa-example/openvaa-example-frontend"
     }
   }
 
   mock_resource "aws_sns_topic" {
     defaults = {
-      arn = "arn:aws:sns:eu-north-1:000000000000:openvaa-test-frontend-deployments"
+      arn = "arn:aws:sns:eu-north-1:000000000000:openvaa-example-frontend-deployments"
     }
   }
 
   mock_resource "aws_cloudwatch_event_rule" {
     defaults = {
-      arn = "arn:aws:events:eu-north-1:000000000000:rule/openvaa-test-frontend-deployment-failed"
+      arn = "arn:aws:events:eu-north-1:000000000000:rule/openvaa-example-frontend-deployment-failed"
     }
   }
 
@@ -91,8 +91,8 @@ mock_provider "aws" {
       arn = "arn:aws:acm:us-east-1:000000000000:certificate/00000000-0000-0000-0000-000000000001"
       domain_validation_options = [
         {
-          domain_name           = "test.example.org"
-          resource_record_name  = "_0001.test.example.org."
+          domain_name           = "vaa.example.org"
+          resource_record_name  = "_0001.vaa.example.org."
           resource_record_type  = "CNAME"
           resource_record_value = "_0001.acm-validations.aws."
         },
