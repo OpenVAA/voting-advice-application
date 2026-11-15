@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Completed 187-04-PLAN.md
-last_updated: "2026-11-15T02:04:03.944Z"
+stopped_at: Completed 187-05-PLAN.md
+last_updated: "2026-11-15T02:17:53.525Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 9454afaa6f1b69f1ac2f9513bf53abe7a692278d
+state_head: 0081ccc37abf2580fc77a3de90444513a92954b8
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 140
+  completed_plans: 141
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 5 of 25
+Plan: 6 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 5
+**Current Plan:** 6
 
 From 184 on, the numeric order is the dependency order.
 
@@ -155,6 +155,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P02 | 3min | 2 tasks | 9 files |
 | Phase 187 P03 | 3min | 2 tasks | 2 files |
 | Phase 187 P04 | 3min | 2 tasks | 3 files |
+| Phase 187 P05 | 11min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -307,6 +308,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-03: exit 3 of build-push-image.sh (tag_exists=yes image_digest=<digest>) means the registry already holds this commit's image; the caller deploys it as it is
 - [Phase 187]: push-migrations.sh --confirmed-ref is refused (exit 2, before the CLI) unless it equals --ref, GITHUB_ACTIONS=true and OPENVAA_DEPLOY_ENVIRONMENT=staging; GITHUB_ENVIRONMENT is never read (C-04 as amended)
 - [Phase 187]: push-migrations.sh prints push_confirmation=environment or push_confirmation=terminal between push_pending= and push_status=; an empty --confirmed-ref is a usage error
+- [Phase 187]: 187-05: Both bootstrap trusts carry repository_id 546467466 and repository_owner_id 115159211; the deploy trust adds environment:staging-destroy; plan_lock removed so the plan role is read-only and pull-request plans must use -lock=false (written, applied in 187-16)
+- [Phase 187]: 187-05: Bootstrap Step 9 CloudTrail destroy window opens at 09:47Z (not 09:40Z) to exclude the 09:46Z read-only dns-mail plan; every simulator case uses all eleven deploy-role policies
 
 ### Pending Todos
 
@@ -361,6 +364,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T02:04:02.602Z
-**Stopped At:** Completed 187-04-PLAN.md
+Last session: 2026-11-15T02:17:52.115Z
+**Stopped At:** Completed 187-05-PLAN.md
 **Resume File:** None
