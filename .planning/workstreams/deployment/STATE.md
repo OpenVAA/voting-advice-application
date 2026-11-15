@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 10
+current_plan: 11
 status: executing
-stopped_at: Completed 187-09-PLAN.md
-last_updated: "2026-11-15T02:51:53.483Z"
+stopped_at: Completed 187-10-PLAN.md
+last_updated: "2026-11-15T03:02:12.047Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: b161040ca6a14f246b986374a95fdb165b23edcf
+state_head: 5daeba100b1ccbbf97980a58988925019e776a12
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 145
+  completed_plans: 146
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 10 of 25
+Plan: 11 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 10
+**Current Plan:** 11
 
 From 184 on, the numeric order is the dependency order.
 
@@ -160,6 +160,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P07 | 8min | 2 tasks | 3 files |
 | Phase 187 P08 | 7min | 2 tasks | 5 files |
 | Phase 187 P09 | 7min | 2 tasks | 2 files |
+| Phase 187 P10 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -323,6 +324,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-09: the smoke step runs under env -u for the three AWS session variables, so the deploy role's session never reaches the Playwright run; its env holds only SMOKE_EXPECTED_SHA and the two contestant secrets
 - [Phase 187]: 187-09: the alert maps the first failed stage step (link and migrations -> migrations, apply -> rollout, served-build -> smoke), else setup when job.status is failure, else cancelled; it prints only the AWS error code of a failed publish
 - [Phase 187]: 187-09: the always-run cleanup removes the linked work directory and the push-migrations log directory (unredacted CLI debug output naming the database address) along with the plan and smoke output
+- [Phase 187]: 187-10: check-destroy-plan.sh passes only managed deletes under module.frontend. equal in number to the state's managed resources; prints nothing of the plan
+- [Phase 187]: 187-10: destroy.yml is two staging-destroy jobs, each re-planning into its own RUNNER_TEMP file; plan output goes to a file so nothing is printed before the guard
+- [Phase 187]: 187-10: the Supabase-root refusal needs both reads to fail and name AccessDenied/403/Forbidden; the role is named by literal ARN, alert address a placeholder
 
 ### Pending Todos
 
@@ -377,6 +381,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T02:51:52.076Z
-**Stopped At:** Completed 187-09-PLAN.md
+Last session: 2026-11-15T03:02:10.649Z
+**Stopped At:** Completed 187-10-PLAN.md
 **Resume File:** None

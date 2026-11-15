@@ -612,7 +612,7 @@ Notes:
   5. A guarded destroy path removes the AWS stack, and it is seen unable to reach the Supabase root.
 
 **Research flag**: Standard pattern, no research phase. OIDC, plan and apply, and environment gating are well documented, and the repository-specific items carry the risk. Added by rulings after the research: the named-branch trigger (PIPE-10) and the failure alerts (INFRA-16).
-**Plans**: 9/25 plans executed in 16 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 16 (plans 14 to 25) are the outward actions, each behind an operator checkpoint; plans 24 and 25 run on or after 2026-11-23.
+**Plans**: 10/25 plans executed in 16 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 16 (plans 14 to 25) are the outward actions, each behind an operator checkpoint; plans 24 and 25 run on or after 2026-11-23.
 
 Plans:
 **Wave 1**
@@ -631,7 +631,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [x] 187-09-PLAN.md — wave 4 — `deploy.yml`: one gated job, build, plan, migrations, functions, apply, stable, smoke, re-read, alert.
-- [ ] 187-10-PLAN.md — wave 4 — `destroy.yml`: two approved jobs, the Supabase-root refusal, the destroy-plan guard.
+- [x] 187-10-PLAN.md — wave 4 — `destroy.yml`: two approved jobs, the Supabase-root refusal, the destroy-plan guard.
 
 **Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 187-11-PLAN.md — wave 5 — Cross-workflow guards, `yarn lint:workflows`, `infra/README.md` § The deploy pipeline, the smoke entry's notes, the secret scan's two exclusions.
@@ -758,6 +758,6 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
 | 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
 | 186. Deployed Smoke Entry | 7/8 | In Progress | - |
-| 187. Deploy Pipeline | 9/25 | In Progress | - |
+| 187. Deploy Pipeline | 10/25 | In Progress | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
 | 189. Documentation and Closure | 0/TBD | Not started | - |
