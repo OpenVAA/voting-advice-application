@@ -31,7 +31,8 @@ deploy_subjects    = ["repo:EXAMPLE-ORG@1234567/EXAMPLE-REPO@7654321:environment
 deploy_hosted_zone_id = "Z00000000000000000000"
 deploy_domain         = "vaa.example.org"
 
-# Optional: pin the trust policies to the numeric ids as well.
+# Optional: pin the trust policies to the numeric ids as well. Read them from the GitHub API, the
+# repository's "id" and its owner's "id": gh api repos/EXAMPLE-ORG/EXAMPLE-REPO --jq '.id, .owner.id'
 # github_repository_id       = "7654321"
 # github_repository_owner_id = "1234567"
 
