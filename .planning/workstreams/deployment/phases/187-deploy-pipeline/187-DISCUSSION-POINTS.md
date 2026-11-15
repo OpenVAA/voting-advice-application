@@ -298,3 +298,13 @@ Every item below leaves this workstation and is an **operator-approved checkpoin
 - **F-01 amended:** `destroy.yml` has two jobs, each gated by its own environment approval (plan job, then apply job), so the evidence run is approved at the plan job and rejected at the apply job. Reason: dispatch is unavailable before the workflow is on `main`, so a push-triggered destroy needs a stop between plan and apply (research Open Question 1).
 - **B-04 amended:** the pull-request evidence base branch is `pr-evidence/187-base` (from `origin/main`), not `deploy-evidence/187-base`. Reason: a base or head named `deploy-evidence/*` would itself start a gated deploy run when pushed (research Open Question 2).
 - **C-04 amended:** `push-migrations.sh --confirmed-ref` keys on an environment-scoped variable `DEPLOY_ENVIRONMENT=staging` (set in the `staging` GitHub Environment only, passed as `OPENVAA_DEPLOY_ENVIRONMENT`), not on `GITHUB_ENVIRONMENT`. Reason: GitHub does not set `GITHUB_ENVIRONMENT`, so the original condition could never hold (research Open Question 3).
+
+## Added after the code review (orchestrator, 2026-11-15 — operator away, OPEN)
+
+### R-01 — When does the reviewer see the plan and the pending migrations? ⚠ DECIDE
+
+From `187-REVIEW.md` WR-06 (`187-REVIEW-FIX.md`: needs operator decision). `deploy.yml` has one gated `staging` job: its approval is given before the Terraform plan and the pending-migration list exist, so approving releases the one-way `db push` to `cofbsatfrdysyphajsky` unseen. Decide before plan 187-18 (the first gated run).
+
+- [ ] ★ RECOMMENDED — Split into two gated `staging` jobs (as `destroy.yml` already is): job 1 builds, plans and lists pending migrations (a dry-run-only mode of `push-migrations.sh`) and prints both; job 2 re-plans, refuses if the pending list changed, then pushes migrations, deploys functions and applies. Cost: a second approval per deploy; a revision of plans 187-09/-11/-12 before 187-18.
+- [ ] Keep one approval; record it as an accepted risk in `infra/README.md` (the reviewer reads the commit's `apps/supabase/supabase/migrations/` diff before approving). Cost: the approval stays blind to the plan and to migrations pending from other commits.
+- [ ] Add an unreviewed pre-gate job using a new read-only database role and secret to print the plan and pending list. Cost: a new hosted role and secret; most work for least gain.
