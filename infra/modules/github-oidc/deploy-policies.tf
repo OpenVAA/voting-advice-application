@@ -81,7 +81,9 @@ resource "aws_iam_role_policy_attachment" "deploy_alert" {
 
 # Network: a create must carry the root's tags, and a change or delete must find them on the
 # resource it touches. A create that names a parent, a subnet, route table or security group in a VPC
-# or a rule in a security group, is allowed only when the parent carries them as well.
+# or a rule in a security group, is allowed only when the parent carries them as well. EC2 evaluates
+# that parent with its own tags as aws:ResourceTag and without the request's tags, so the parent
+# statement tests resource tags alone and the created resource's statement tests request tags.
 data "aws_iam_policy_document" "deploy_network" {
   statement {
     sid       = "ReadNetwork"
@@ -153,15 +155,6 @@ data "aws_iam_policy_document" "deploy_network" {
       "ec2:AuthorizeSecurityGroupEgress",
     ]
     resources = [local.network_arns["vpc"], local.network_arns["security-group"]]
-
-    dynamic "condition" {
-      for_each = local.root_tags
-      content {
-        test     = "StringEquals"
-        variable = "aws:RequestTag/${condition.key}"
-        values   = [condition.value]
-      }
-    }
 
     dynamic "condition" {
       for_each = local.root_tags

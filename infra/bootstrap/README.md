@@ -918,7 +918,12 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
    }
    ```
 
-   Then the nine cases, an allowed and a refused one for each concern:
+   Then the cases, an allowed and a refused one for each concern, and the same pair for a subnet
+   created in a VPC. EC2 evaluates the VPC of that create with the VPC's own tags and without the
+   request's tags, so the allowed subnet case passes the VPC's tags alone, and the refused one passes
+   the request's tags on a VPC that carries none. The simulator evaluates only the entries it is given,
+   so the context EC2 really builds is first seen by the pipeline's deploy from nothing after the
+   destroy:
 
    ```bash
    A=471112560111
@@ -934,6 +939,12 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
      "arn:aws:ec2:$R:vpc/vpc-00000000000000000" "$TAG_P" "$TAG_R"
    sim vpc_untagged ec2:CreateVpc \
      "arn:aws:ec2:$R:vpc/vpc-00000000000000000"
+   OWN_P=$(kv aws:ResourceTag/Project string openvaa)
+   OWN_R=$(kv aws:ResourceTag/Root string aws)
+   sim subnet_in_tagged_vpc ec2:CreateSubnet \
+     "arn:aws:ec2:$R:vpc/vpc-00000000000000000" "$OWN_P" "$OWN_R"
+   sim subnet_in_foreign_vpc ec2:CreateSubnet \
+     "arn:aws:ec2:$R:vpc/vpc-00000000000000000" "$TAG_P" "$TAG_R"
    sim dns_a route53:ChangeResourceRecordSets "$ZONE" \
      "$(kv "$TYPES" stringList A)" \
      "$(kv "$NAMES" stringList staging.openvaa.org)"
@@ -950,10 +961,11 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
      "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate"
    ```
 
-   > **Go on only when `s9b_policies=11`, every `s9b_<case>_exit` reads 0, there are nine
+   > **Go on only when `s9b_policies=11`, every `s9b_<case>_exit` reads 0, there are eleven
    > `s9b_decision=` lines, and they read:** `allowed` for `ec2:CreateVpc` with the tags,
-   > `ChangeResourceRecordSets` of the A record, `iam:PassRole` to ECS tasks and `sns:Publish` on
-   > the deployment topic; `implicitDeny` for `ec2:CreateVpc` without the tags, the MX record,
+   > `ec2:CreateSubnet` in the tagged VPC, `ChangeResourceRecordSets` of the A record,
+   > `iam:PassRole` to ECS tasks and `sns:Publish` on the deployment topic; `implicitDeny` for
+   > `ec2:CreateVpc` without the tags, `ec2:CreateSubnet` in the untagged VPC, the MX record,
    > `iam:PassRole` to Lambda, `sns:Publish` on another topic and `s3:GetObject` of the Supabase
    > root's state under `hand/`. **A refused case that reads `allowed` means stop**: a policy is
    > wider than its scope, and it is corrected in the module before anything is applied. An allowed

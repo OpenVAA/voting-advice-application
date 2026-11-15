@@ -220,7 +220,8 @@ run "creates_carry_request_tags" {
   command = plan
 
   # The calls that create a resource the root tags. A statement holding any of them must require the
-  # root's Project and Root tags on the request.
+  # root's Project and Root tags on the request, except the one that grants them on the parent VPC or
+  # security group, which network_parent_scope checks.
   variables {
     tagged_creates = [
       "ec2:CreateVpc",
@@ -249,7 +250,7 @@ run "creates_carry_request_tags" {
       ]) :
       contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:RequestTag/Project"]]), [])]), "openvaa")
       && contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:RequestTag/Root"]]), [])]), "aws")
-      if length(setintersection(toset(flatten([s.Action])), toset(var.tagged_creates))) > 0
+      if length(setintersection(toset(flatten([s.Action])), toset(var.tagged_creates))) > 0 && s.Sid != "CreateInTaggedParent"
     ])
     error_message = "Every statement that creates a tagged network, load-balancing, edge or certificate resource must require the request tags Project=openvaa and Root=aws."
   }
@@ -263,5 +264,34 @@ run "creates_carry_request_tags" {
       ] : [for s in jsondecode(p).Statement : flatten([s.Action])]
     ])))) == 0
     error_message = "Every tagged create the root makes must be granted, or the check above examines nothing."
+  }
+}
+
+run "network_parent_scope" {
+  command = plan
+
+  # EC2 evaluates the parent of a create, the VPC of a subnet, route table or security group and the
+  # security group of a rule, with the parent's own tags as aws:ResourceTag and no aws:RequestTag, so
+  # the statement that grants a create on the parent tests resource tags alone.
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.deploy_network.policy).Statement :
+      contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:ResourceTag/Project"]]), [])]), "openvaa")
+      && contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:ResourceTag/Root"]]), [])]), "aws")
+      && length(flatten([for op, kv in s.Condition : [for k in keys(kv) : k if startswith(k, "aws:RequestTag/")]])) == 0
+      && toset(flatten([s.Resource])) == toset([
+        "arn:aws:ec2:eu-north-1:000000000000:vpc/*",
+        "arn:aws:ec2:eu-north-1:000000000000:security-group/*",
+      ])
+      if s.Sid == "CreateInTaggedParent"
+    ])
+    error_message = "The create on a parent VPC or security group must require the parent's Project and Root tags and test no request tag."
+  }
+
+  assert {
+    condition = length([
+      for s in jsondecode(aws_iam_policy.deploy_network.policy).Statement : s if s.Sid == "CreateInTaggedParent"
+    ]) == 1
+    error_message = "The network policy must hold one CreateInTaggedParent statement, or the check above examines nothing."
   }
 }
