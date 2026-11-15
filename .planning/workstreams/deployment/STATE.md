@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 187-02-PLAN.md
-last_updated: "2026-11-15T01:53:57.207Z"
+stopped_at: Completed 187-03-PLAN.md
+last_updated: "2026-11-15T01:58:22.736Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: cb172ac72cc82bee30a61f2dd05bb40893f22df4
+state_head: 679d61217fd4c836fbf1eb4f579ab4844a6ce41b
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 138
+  completed_plans: 139
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 3 of 25
+Plan: 4 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 3
+**Current Plan:** 4
 
 From 184 on, the numeric order is the dependency order.
 
@@ -153,6 +153,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 186 P07 | about 20 min | 2 tasks | 2 files |
 | Phase 187 P01 | 9min | 3 tasks | 8 files |
 | Phase 187 P02 | 3min | 2 tasks | 9 files |
+| Phase 187 P03 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -301,6 +302,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-01: network creates split by evaluated resource — new resources need request tags; creates naming a parent VPC or security group also need the root's tags on the parent
 - [Phase 187]: 187-01: creates_carry_request_tags checks an explicit list of 12 tagged-create calls; CreateRoute, CreateTags on existing resources, CreateListener and CreateRule are untaggable or name-scoped
 - [Phase 187]: The frontend task image is <registry_url>@<image_digest>; image_digest is required (sha256: + 64 lower-case hex), given per plan as -var image_digest= and never written to a tfvars file (C-01). The ECR tag and BUILD_SHA stay the commit id.
+- [Phase 187]: 187-03: build-push-image.sh builds from git archive of the commit extracted into its temporary directory; a write or extract failure prints failed=context and builds nothing (C-02, CR-01 closed in code)
+- [Phase 187]: 187-03: exit 3 of build-push-image.sh (tag_exists=yes image_digest=<digest>) means the registry already holds this commit's image; the caller deploys it as it is
 
 ### Pending Todos
 
@@ -355,6 +358,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T01:53:55.846Z
-**Stopped At:** Completed 187-02-PLAN.md
+Last session: 2026-11-15T01:58:21.383Z
+**Stopped At:** Completed 187-03-PLAN.md
 **Resume File:** None
