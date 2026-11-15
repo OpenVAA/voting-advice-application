@@ -128,3 +128,173 @@ jobs:
             fi
           done
           echo "planned ${#planned[@]} example roots: ${planned[*]}"
+
+  # A fork's pull request gets no token and no secret, so this job's `if` skips it and it shows as skipped.
+  plan:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Setup Terraform 1.16.5"
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: "Assume the read-only plan role"
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: pr-plan-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      # The plan passes the digest the service runs now, so its diff shows the infrastructure change alone.
+      - name: "Read the digest the service runs"
+        id: digest
+        run: |
+          set -uo pipefail
+          infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend > "$RUNNER_TEMP/running-digest.txt"
+          status=$?
+          cat "$RUNNER_TEMP/running-digest.txt"
+          if [ "$status" -ne 0 ]; then
+            echo "::error::running-image-digest.sh exited $status, so the plan has no digest to pass."
+            exit 1
+          fi
+          digest=$(sed -n 's/^running_image_digest=//p' "$RUNNER_TEMP/running-digest.txt")
+          if [ -z "$digest" ]; then
+            echo "::error::running-image-digest.sh printed no running_image_digest= line."
+            exit 1
+          fi
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: "Initialise the staging AWS root"
+        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+
+      # The plan is read-only and takes no lock. It can therefore show a diff against a state an apply is writing at
+      # the same time; the next push to the pull request plans again.
+      - name: "Plan the staging AWS root"
+        env:
+          DIGEST: ${{ steps.digest.outputs.digest }}
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws plan -lock=false -input=false -no-color -detailed-exitcode -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan"
+          plan_exit=$?
+          echo "plan_exit=$plan_exit"
+          if [ "$plan_exit" -ne 0 ] && [ "$plan_exit" -ne 2 ]; then
+            echo "::error::terraform plan exited $plan_exit."
+            exit 1
+          fi
+
+      - name: "Show the plan"
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt"
+          show_exit=$?
+          if [ "$show_exit" -ne 0 ]; then
+            echo "::error::terraform show exited $show_exit."
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/tfplan.txt"
+          {
+            echo "### Plan of infra/envs/staging/aws"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/tfplan.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Remove the plan file"
+        if: always()
+        run: rm -f "$RUNNER_TEMP/tfplan" "$RUNNER_TEMP/tfplan.txt" "$RUNNER_TEMP/running-digest.txt"
+
+  # Names no environment, so its token's subject is the pushed branch's ref, which neither role's trust admits. The
+  # job passes only when STS refuses that subject for both roles.
+  wrong-subject:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+
+    steps:
+      - name: "Ask STS for the deploy role and the plan role with the branch subject"
+        env:
+          DEPLOY_ROLE_ARN: arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
+          PLAN_ROLE_ARN: ${{ vars.AWS_PLAN_ROLE_ARN }}
+        run: |
+          set -uo pipefail
+          umask 077
+          response="$RUNNER_TEMP/oidc-response.json"
+          token_file="$RUNNER_TEMP/oidc-token"
+          claims_file="$RUNNER_TEMP/oidc-claims.json"
+          cleanup() { rm -f "$response" "$token_file" "$claims_file"; }
+          trap cleanup EXIT
+          if [ -z "$PLAN_ROLE_ARN" ]; then
+            echo "::error::The repository variable AWS_PLAN_ROLE_ARN is not set."
+            exit 1
+          fi
+          curl -sS --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" -o "$response" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com"
+          curl_status=$?
+          if [ "$curl_status" -ne 0 ]; then
+            echo "::error::The OIDC token request exited $curl_status."
+            exit 1
+          fi
+          jq -j .value "$response" > "$token_file"
+          jq_status=$?
+          rm -f "$response"
+          if [ "$jq_status" -ne 0 ] || [ ! -s "$token_file" ]; then
+            echo "::error::The OIDC token response held no token."
+            exit 1
+          fi
+          echo "::add-mask::$(cat "$token_file")"
+          IFS=. read -r _ payload _ < "$token_file"
+          payload="${payload//-/+}"
+          payload="${payload//_//}"
+          case $(( ${#payload} % 4 )) in
+            2) payload="$payload==" ;;
+            3) payload="$payload=" ;;
+          esac
+          base64 -d <<< "$payload" > "$claims_file"
+          decode_status=$?
+          subject=$(jq -r .sub "$claims_file")
+          subject_status=$?
+          if [ "$decode_status" -ne 0 ] || [ "$subject_status" -ne 0 ]; then
+            echo "::error::The token's claims could not be read."
+            exit 1
+          fi
+          aws sts assume-role-with-web-identity --region eu-north-1 --role-arn "$DEPLOY_ROLE_ARN" \
+            --role-session-name wrong-subject-deploy --web-identity-token "file://$token_file" \
+            > /dev/null 2> "$RUNNER_TEMP/assume-deploy.err"
+          deploy_status=$?
+          aws sts assume-role-with-web-identity --region eu-north-1 --role-arn "$PLAN_ROLE_ARN" \
+            --role-session-name wrong-subject-plan --web-identity-token "file://$token_file" \
+            > /dev/null 2> "$RUNNER_TEMP/assume-plan.err"
+          plan_status=$?
+          cleanup
+          deploy_code=$(sed -n 's/.*An error occurred (\([A-Za-z]*\)).*/\1/p' "$RUNNER_TEMP/assume-deploy.err")
+          deploy_code="${deploy_code%%$'\n'*}"
+          plan_code=$(sed -n 's/.*An error occurred (\([A-Za-z]*\)).*/\1/p' "$RUNNER_TEMP/assume-plan.err")
+          plan_code="${plan_code%%$'\n'*}"
+          rm -f "$RUNNER_TEMP/assume-deploy.err" "$RUNNER_TEMP/assume-plan.err"
+          echo "token_subject=$subject"
+          echo "deploy_role_assume_status=$deploy_status"
+          echo "deploy_role_error=${deploy_code:-none}"
+          echo "plan_role_assume_status=$plan_status"
+          echo "plan_role_error=${plan_code:-none}"
+          if [ "$deploy_status" -ne 0 ] && [ "$plan_status" -ne 0 ] && [ -n "$deploy_code" ] && [ -n "$plan_code" ]; then
+            echo "Both roles refused the subject $subject."
+            exit 0
+          fi
+          echo "::error::A role did not refuse the subject $subject with a named error."
+          exit 1

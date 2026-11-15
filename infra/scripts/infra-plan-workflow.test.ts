@@ -202,3 +202,124 @@ describe('infra-plan.yml', () => {
     expect(text).not.toMatch(/show\s+-json/);
   });
 });
+
+describe('the plan job of infra-plan.yml', () => {
+  const plan = job('plan');
+  const steps = jobSteps(plan);
+
+  /** The first step of the plan job whose `run:` contains `fragment`. */
+  function stepRunning(fragment: string): (typeof steps)[number] {
+    const step = steps.find((candidate) => typeof candidate.run === 'string' && candidate.run.includes(fragment));
+    if (!step) throw new Error(`the plan job has no step running ${fragment}`);
+    return step;
+  }
+
+  it('runs only for a pull request whose head is this repository', () => {
+    expect(plan.if).toContain("github.event_name == 'pull_request'");
+    expect(plan.if).toContain('github.event.pull_request.head.repo.full_name == github.repository');
+  });
+
+  it('holds exactly contents: read and id-token: write', () => {
+    expect(plan.permissions).toEqual({ contents: 'read', 'id-token': 'write' });
+  });
+
+  it('assumes the plan role from the repository variable, in the staging account only', () => {
+    const assume = steps.find(
+      (step) => typeof step.uses === 'string' && step.uses.startsWith('aws-actions/configure-aws-credentials@')
+    );
+    expect(assume?.with).toMatchObject({
+      'role-to-assume': '${{ vars.AWS_PLAN_ROLE_ARN }}',
+      'aws-region': 'eu-north-1',
+      'role-session-name': 'pr-plan-${{ github.run_id }}',
+      'allowed-account-ids': '471112560111'
+    });
+  });
+
+  it('passes the running digest to a lock-free plan whose file stays in $RUNNER_TEMP', () => {
+    const digest = steps.find((step) => step.id === 'digest');
+    expect(String(digest?.run)).toContain(
+      'infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend'
+    );
+    expect(String(digest?.run)).toContain('>> "$GITHUB_OUTPUT"');
+
+    const planStep = stepRunning('terraform -chdir=infra/envs/staging/aws plan ');
+    const script = String(planStep.run);
+    expect(script).toContain('-chdir=infra/envs/staging/aws');
+    expect(script).toContain('-lock=false');
+    expect(script).toContain('-var "image_digest=$DIGEST"');
+    expect(script).toContain('-out="$RUNNER_TEMP/tfplan"');
+    expect(script).toContain('echo "plan_exit=$plan_exit"');
+    expect(planStep.env).toEqual({
+      DIGEST: '${{ steps.digest.outputs.digest }}',
+      TF_VAR_alert_email: '${{ secrets.ALERT_EMAIL }}'
+    });
+  });
+
+  it('prints the plan with terraform show -no-color to the log and the step summary', () => {
+    const show = stepRunning('show -no-color');
+    expect(String(show.run)).toContain('cat "$RUNNER_TEMP/tfplan.txt"');
+    expect(String(show.run)).toContain('>> "$GITHUB_STEP_SUMMARY"');
+    expect(steps.indexOf(show)).toBeGreaterThan(
+      steps.indexOf(stepRunning('terraform -chdir=infra/envs/staging/aws plan '))
+    );
+  });
+
+  it('removes the plan file in a final step that always runs', () => {
+    const last = steps[steps.length - 1];
+    expect(last.if).toBe('always()');
+    expect(String(last.run)).toContain('rm -f "$RUNNER_TEMP/tfplan"');
+  });
+});
+
+describe('the wrong-subject job of infra-plan.yml', () => {
+  const wrongSubject = job('wrong-subject');
+  const steps = jobSteps(wrongSubject);
+  const script = runScripts(wrongSubject);
+
+  it('runs only on a push, names no environment and checks nothing out', () => {
+    expect(wrongSubject.if).toBe("github.event_name == 'push'");
+    expect('environment' in wrongSubject).toBe(false);
+    expect(steps.some((step) => typeof step.uses === 'string')).toBe(false);
+  });
+
+  it('holds exactly id-token: write', () => {
+    expect(wrongSubject.permissions).toEqual({ 'id-token': 'write' });
+  });
+
+  it('names the deploy role and reads the plan role from the repository variable through env', () => {
+    expect(steps).toHaveLength(1);
+    expect(steps[0].env).toEqual({
+      DEPLOY_ROLE_ARN: 'arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy',
+      PLAN_ROLE_ARN: '${{ vars.AWS_PLAN_ROLE_ARN }}'
+    });
+  });
+
+  it('asks STS for both roles with the push token and prints the subject and each refusal', () => {
+    expect(script).toContain('audience=sts.amazonaws.com');
+    expect(script).toContain('::add-mask::');
+    expect(script.match(/aws sts assume-role-with-web-identity/g)).toHaveLength(2);
+    expect(script).toContain('--role-arn "$DEPLOY_ROLE_ARN"');
+    expect(script).toContain('--role-arn "$PLAN_ROLE_ARN"');
+    for (const line of [
+      'token_subject=',
+      'deploy_role_assume_status=',
+      'deploy_role_error=',
+      'plan_role_assume_status=',
+      'plan_role_error='
+    ]) {
+      expect(script).toContain(`echo "${line}`);
+    }
+  });
+
+  it('keeps the token in $RUNNER_TEMP and removes it', () => {
+    expect(script).toContain('token_file="$RUNNER_TEMP/oidc-token"');
+    expect(script).toContain('trap cleanup EXIT');
+    expect(script).not.toMatch(/echo "\$token|printf '%s' "\$token/);
+  });
+
+  it('passes only when both roles refuse with a named error', () => {
+    expect(script).toContain(
+      'if [ "$deploy_status" -ne 0 ] && [ "$plan_status" -ne 0 ] && [ -n "$deploy_code" ] && [ -n "$plan_code" ]; then'
+    );
+  });
+});
