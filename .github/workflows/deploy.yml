@@ -94,11 +94,13 @@ jobs:
 
     steps:
       - name: "Checkout source code"
+        id: checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: "Assume the deploy role"
+        id: credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
@@ -135,12 +137,14 @@ jobs:
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
       - name: "Setup Terraform 1.16.5"
+        id: terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: 1.16.5
           terraform_wrapper: false
 
       - name: "Initialise the staging AWS root"
+        id: init
         run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
 
       - name: "Plan the staging AWS root with the built digest"
@@ -159,6 +163,7 @@ jobs:
           fi
 
       - name: "Show the plan"
+        id: show
         run: |
           set -uo pipefail
           terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt"
@@ -179,17 +184,20 @@ jobs:
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a Node below
       # engines.node.
       - name: "Setup Node.js 24.21.0"
+        id: node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24.21.0
 
       - name: "Setup Yarn 4.18"
+        id: yarn
         uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # v2.0.0
         with:
           version: 4.18
 
       # The drift check after the push reads the migration history with psql.
       - name: "Install psql"
+        id: psql
         run: |
           set -uo pipefail
           sudo apt-get update
@@ -354,6 +362,7 @@ jobs:
       # A role session lasts one hour, and the steps before this one can take a good part of it. The apply must not
       # outlive its credentials, so they are assumed again right before it.
       - name: "Assume the deploy role again for the apply"
+        id: reassume
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
@@ -422,6 +431,7 @@ jobs:
           fi
 
       - name: "Install Playwright's Chromium"
+        id: playwright
         run: yarn playwright install --with-deps chromium
 
       # No report and no output directory of this step is ever uploaded: a run that signs the contestant in can hold
@@ -466,6 +476,7 @@ jobs:
 
       # The push's log directory holds the CLI's unredacted debug output, which names the database's address.
       - name: "Remove the plan, the smoke output and the step files"
+        id: cleanup
         if: always()
         run: >-
           rm -rf
@@ -485,41 +496,64 @@ jobs:
           allowed-account-ids: "471112560111"
 
       # The message names the stage, the commit, the trigger and the run, and nothing else: no secret, no address and
-      # no tool output.
+      # no tool output. Every step before this one is named with the stage it belongs to, so a failed step is reported
+      # by what it follows: a step after the migrations push never reads as a stage before it.
       - name: "Alert the operator"
         id: alert
         if: failure() || cancelled()
         env:
           JOB_STATUS: ${{ job.status }}
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
+          TERRAFORM_OUTCOME: ${{ steps.terraform.outcome }}
+          INIT_OUTCOME: ${{ steps.init.outcome }}
           PLAN_OUTCOME: ${{ steps.plan.outcome }}
+          SHOW_OUTCOME: ${{ steps.show.outcome }}
+          NODE_OUTCOME: ${{ steps.node.outcome }}
+          YARN_OUTCOME: ${{ steps.yarn.outcome }}
+          PSQL_OUTCOME: ${{ steps.psql.outcome }}
           LINK_OUTCOME: ${{ steps.link.outcome }}
           MIGRATIONS_OUTCOME: ${{ steps.migrations.outcome }}
           FUNCTIONS_OUTCOME: ${{ steps.functions.outcome }}
+          REASSUME_OUTCOME: ${{ steps.reassume.outcome }}
           APPLY_OUTCOME: ${{ steps.apply.outcome }}
           STABLE_OUTCOME: ${{ steps.stable.outcome }}
+          PLAYWRIGHT_OUTCOME: ${{ steps.playwright.outcome }}
           SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
           SERVED_BUILD_OUTCOME: ${{ steps.served-build.outcome }}
+          CLEANUP_OUTCOME: ${{ steps.cleanup.outcome }}
         run: |
           set -uo pipefail
           stage=""
           for pair in \
+            "setup:$CHECKOUT_OUTCOME" \
+            "setup:$CREDENTIALS_OUTCOME" \
             "build:$BUILD_OUTCOME" \
+            "plan:$TERRAFORM_OUTCOME" \
+            "plan:$INIT_OUTCOME" \
             "plan:$PLAN_OUTCOME" \
+            "plan:$SHOW_OUTCOME" \
+            "migrations:$NODE_OUTCOME" \
+            "migrations:$YARN_OUTCOME" \
+            "migrations:$PSQL_OUTCOME" \
             "migrations:$LINK_OUTCOME" \
             "migrations:$MIGRATIONS_OUTCOME" \
             "functions:$FUNCTIONS_OUTCOME" \
+            "rollout:$REASSUME_OUTCOME" \
             "rollout:$APPLY_OUTCOME" \
             "stable:$STABLE_OUTCOME" \
+            "smoke:$PLAYWRIGHT_OUTCOME" \
             "smoke:$SMOKE_OUTCOME" \
-            "smoke:$SERVED_BUILD_OUTCOME"; do
+            "smoke:$SERVED_BUILD_OUTCOME" \
+            "cleanup:$CLEANUP_OUTCOME"; do
             if [ "${pair#*:}" = failure ]; then
               stage="${pair%%:*}"
               break
             fi
           done
           if [ -z "$stage" ]; then
-            if [ "$JOB_STATUS" = failure ]; then stage=setup; else stage=cancelled; fi
+            if [ "$JOB_STATUS" = failure ]; then stage=unknown; else stage=cancelled; fi
           fi
           echo "alert_stage=$stage"
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

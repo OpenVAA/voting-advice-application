@@ -252,8 +252,14 @@ prints `running_image_digest=`, and the plan takes it as `-var "image_digest=$DI
 
 ### Reading a red run
 
-The alert mail's subject names the stage that failed; `setup` means a step before the build, such
-as the checkout or the first role assumption, and `cancelled` a cancelled run. A red `checks` job
+The alert mail's subject names the stage that failed. Every step of the gated job belongs to the
+stage it follows: `setup` is the checkout and the first role assumption, before anything is built;
+`plan` includes Terraform's setup, the init and the printing of the plan, after the image push;
+`migrations` includes the Node, Yarn and psql setup; `rollout` includes the second role
+assumption, after the functions are deployed; `smoke` includes the Playwright install;
+`cleanup` is the removal of the step files, after everything else. `cancelled` means a cancelled
+run, and `unknown` a failed job in which no step reads as failed. A stage at or after `migrations`
+means the persistent Supabase project may already hold that run's migrations. A red `checks` job
 sends no alert, because it holds no credential and the gated job never starts. The stage's step
 log then says why:
 
@@ -263,9 +269,10 @@ log then says why:
 | `plan`       | `plan_exit=` and Terraform's own error                                                                                                                                                           |
 | `migrations` | `link_exit=` and `linked_ref=` of the link step; then the `push_*` lines of `push-migrations.sh` (`push_connection=`, `push_pending=`, `push_confirmation=`, `push_status=`) and `drift_status=` |
 | `functions`  | `functions_deploy_exit=`, `functions_list_http=`, and the `function=` lines, one per function with its `status=`, `verify_jwt=` and `expected_verify_jwt=`                                       |
-| `rollout`    | `apply_exit=`; a rollout the circuit breaker stops also sends the stack's own rollout alert through the same topic                                                                               |
+| `rollout`    | The second role assumption's error, or `apply_exit=`; a rollout the circuit breaker stops also sends the stack's own rollout alert through the same topic                                        |
 | `stable`     | The `stable_*` lines: `stable_task_definition_matches=`, `stable_rollout_state=`, `stable_running=`, `stable_desired=`                                                                           |
 | `smoke`      | The smoke gate's `PASS` and `FAIL` lines and `smoke_exit=`, or `served_build_after_smoke=` of the re-read                                                                                        |
+| `cleanup`    | The `rm` error of the removal step; every stage before it passed                                                                                                                                 |
 
 No report, plan or output directory is uploaded from any job, on a green run or a red one: the log
 is all there is. An alert that could not be sent prints `alert_error=` in the alert step.

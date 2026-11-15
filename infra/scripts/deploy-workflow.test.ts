@@ -63,6 +63,11 @@ function stageIdsInOrder(steps: Array<WorkflowStep>, stages: Array<string>): Arr
   return steps.flatMap((step) => (typeof step.id === 'string' && stages.includes(step.id) ? [step.id] : []));
 }
 
+/** The alert step's variable holding the outcome of the step `id`. */
+function outcomeVariable(id: string): string {
+  return `${id.toUpperCase().replaceAll('-', '_')}_OUTCOME`;
+}
+
 /** `source` with the first match of `pattern` replaced; fails when nothing matched, so a mutation is never a no-op. */
 function mutate(source: string, pattern: string | RegExp, replacement: string): string {
   const mutated = source.replace(pattern, replacement);
@@ -396,8 +401,34 @@ describe('the alert of the deploy job', () => {
     }
     expect(script).toContain('"rollout:$APPLY_OUTCOME"');
     expect(script).toContain('"smoke:$SERVED_BUILD_OUTCOME"');
-    expect(script).toContain('stage=setup');
+    expect(script).toContain('stage=unknown');
     expect(script).toContain('stage=cancelled');
+  });
+
+  /** The stage the alert names for a failure of the step `id`, or undefined when it names none. */
+  function stageOf(id: string): string | undefined {
+    return new RegExp(`"([a-z]+):\\$${outcomeVariable(id)}"`).exec(script)?.[1];
+  }
+
+  it('names a stage for every step before it, so that no failed step falls through to another stage', () => {
+    const env = envOf(alert);
+    const before = steps.slice(0, steps.indexOf(alert) - 1);
+    for (const [index, step] of before.entries()) {
+      expect(typeof step.id, `step ${index + 1} (${String(step.name)}) has no id`).toBe('string');
+      const id = String(step.id);
+      expect(env[outcomeVariable(id)], `the alert reads no outcome of step ${id}`).toBe(`\${{ steps.${id}.outcome }}`);
+      expect(stageOf(id), `the alert maps no stage to step ${id}`).toBeDefined();
+    }
+  });
+
+  it('names the stage of each step by what it follows, not by the first stage', () => {
+    expect(stageOf('checkout')).toBe('setup');
+    expect(stageOf('credentials')).toBe('setup');
+    expect(stageOf('init')).toBe('plan');
+    expect(stageOf('show')).toBe('plan');
+    expect(stageOf('psql')).toBe('migrations');
+    expect(stageOf('reassume')).toBe('rollout');
+    expect(stageOf('playwright')).toBe('smoke');
   });
 
   it('publishes one message naming the stage, the commit, the trigger and the run to the deployment topic', () => {
