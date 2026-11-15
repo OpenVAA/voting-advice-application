@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 12
+current_plan: 13
 status: executing
-stopped_at: Completed 187-11-PLAN.md
-last_updated: "2026-11-15T03:12:33.215Z"
+stopped_at: Completed 187-12-PLAN.md
+last_updated: "2026-11-15T03:27:23.558Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 924b7f94942a23aa43335c17da8d767a7fb0aa88
+state_head: b34c30d359f5a19960b1bd9d1e7f0cd4c67c2246
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 147
+  completed_plans: 148
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 12 of 25
+Plan: 13 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 12
+**Current Plan:** 13
 
 From 184 on, the numeric order is the dependency order.
 
@@ -162,6 +162,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P09 | 7min | 2 tasks | 2 files |
 | Phase 187 P10 | 7min | 2 tasks | 4 files |
 | Phase 187 P11 | 8min | 3 tasks | 6 files |
+| Phase 187 P12 | 12min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -332,6 +333,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-11: no-main-push also fails an unfiltered push, branches-ignore, or bare on: push
 - [Phase 187]: 187-11: lint-workflows maps docker status 125 to 2, never an actionlint result
 - [Phase 187]: 187-11: workstation SMOKE_EXPECTED_SHA is the tip of deploy/staging via git ls-remote --exit-code
+- [Phase 187]: 187-12: the red commit fails in the Dockerfile's shared-stage RUN yarn build (line 28, turbo task @openvaa/frontend#build), one stage before the production step; the pipeline's build step still ends failed=build before any hosted write
 
 ### Pending Todos
 
@@ -386,6 +388,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T03:12:31.795Z
-**Stopped At:** Completed 187-11-PLAN.md
+Last session: 2026-11-15T03:27:22.108Z
+**Stopped At:** Completed 187-12-PLAN.md
 **Resume File:** None
