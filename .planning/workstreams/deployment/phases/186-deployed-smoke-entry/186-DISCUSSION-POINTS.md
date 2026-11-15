@@ -120,7 +120,7 @@ The roadmap's research flag says the local-port assumption in `supabaseAdminClie
 
 ### C-02 — The voter walk
 
-- [ ] ★ RECOMMENDED — Home, intro, questions, all six answered, then results. With one election and one constituency the selection steps are skipped, so the walk is driven by `walkVoterStages` / `resolveVoterStage` and the voter page objects, not by the `answeredVoterPage` fixture, which is written for `e2e/base`. Assertions: the first question's text equals the template's first statement, and the results page shows candidate cards. The SSR reads come from the dedicated host, which A-01 already established.
+- [x] ★ RECOMMENDED — Home, intro, questions, all six answered, then results. With one election and one constituency the selection steps are skipped, so the walk is driven by `walkVoterStages` / `resolveVoterStage` and the voter page objects, not by the `answeredVoterPage` fixture, which is written for `e2e/base`. Assertions: the first question's text equals the template's first statement, and the results page shows candidate cards. The SSR reads come from the dedicated host, which A-01 already established. NOTE: Make sure that we use the existing helpers and fixtures for all subtask with possibly variable logic. You can extract parts from the existing code to reusable modules if needed.
 - [ ] Reuse `answeredVoterPage` and generalise it. Less new code, but it changes a fixture that the local gate depends on, against success criterion 4.
 
 ### C-03 — The contestant sign-in
@@ -150,7 +150,7 @@ The only thing missing on the hosted project is a contestant who can sign in (ba
 
 - [ ] ★ RECOMMENDED — **The orchestrator runs the committed step from this workstation at a checkpoint you approve**, with the service-role key and the database password from your keychain (the 184 sitting pattern). A prelude refuses any ref but `cofbsatfrdysyphajsky`, unsets every credential the step does not name, and refuses when the address already belongs to a user that is not this contestant. The step reads its result back (`grants=1`, `terms=1`, and a password sign-in answers 200) and prints no address, password or token. The executor writes the code and holds no credential. **Until you approve, the contestant half of the green run waits. The voter half and every negative control do not.**
 - [ ] You run it by hand from the runbook, in your own terminal, and paste back the status lines. Same result, with about six paste-backs and your time.
-- [ ] Run it tonight under the "standing staging authorisation" recorded in 184-22, with no fresh approval. This is fastest, but it stretches an authorisation given for 184's sittings to a new kind of write: an account with a password on a public URL. If the keychain asks for a confirmation, nobody is there to give it.
+- [x] Run it tonight under the "standing staging authorisation" recorded in 184-22, with no fresh approval. This is fastest, but it stretches an authorisation given for 184's sittings to a new kind of write: an account with a password on a public URL. If the keychain asks for a confirmation, nobody is there to give it.
 
 ### D-03 — The password
 

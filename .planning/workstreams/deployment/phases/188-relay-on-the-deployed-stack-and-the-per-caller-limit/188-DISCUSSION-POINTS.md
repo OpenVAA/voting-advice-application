@@ -76,7 +76,7 @@ A real project key has been in the parameter store since 2026-11-12 (baseline), 
 The free allowance is 1M events a month. The docs do not say whether a limit needs a paid plan or what the free plan does past 1M (baseline).
 
 - [ ] ★ RECOMMENDED — **A Product analytics billing limit at the lowest amount PostHog accepts (ideally $0, i.e. ingestion stops at the free allowance), every other product off or at $0.** You set it in the UI; the phase records the amount, the date and a screenshot-free text read of the setting. If research shows a limit needs a card, the card is yours to add; if it shows the free plan already stops at 1M, the record says so and quotes the page.
-- [ ] A limit of a small positive amount (say $10 a month). Room for a load check through PostHog, at a cost you accept.
+- [x] A limit of a small positive amount (say $10 a month). Room for a load check through PostHog, at a cost you accept.
 - [ ] No explicit limit, relying on the free plan's behaviour. Contradicts B6 ("with a PostHog billing limit") unless research proves the free plan caps by itself.
 
 ### A-03 — Doing the deployed work before or after 187's pipeline exists ⚠ DECIDE
