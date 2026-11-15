@@ -8,9 +8,10 @@ the service's scaling, and the alert that mails a failed rollout. Its state is t
 
 It is applied by hand, from this runbook, in the operator's administrator session, until the deploy
 workflow exists. From then on that workflow applies it through the deploy role, on the same state
-key, and the workflow's first run must be a plan that shows no change: any change it shows is a
-difference between what this runbook applied and what the workflow would apply, and is resolved
-before the workflow applies anything.
+key. The workflow's first plan shows at most the task definition replaced and the service updated,
+a rollout of the image the run built, as Step 5 describes for the first plan after the switch to a
+digest: any other change it shows is a difference between what this runbook applied and what the
+workflow would apply, and is resolved before the workflow applies anything.
 
 What this root does not hold, and why each survives its destroy:
 
@@ -61,6 +62,26 @@ The overview of every root, the order of first applies and the rules that hold f
   `terraform.tfvars`.
 - **The evidence logs are copied out before a destroy**, because the log group goes with the destroy
   and its lines cannot be read afterwards.
+- **Every plan of this root is given the image as `-var "image_digest=$DIGEST"`, and no file names an
+  image**, because the variable is required and the root's variable file is the record of how the
+  stack runs, not of which build it runs. Step 5 reads the digest from the registry by the commit the
+  operator names. Every plan of a running stack, in Steps 8 to 12 and "Election day", is given the
+  digest the service runs now, which the step's item 1 reads with
+  `infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend`:
+  its `s<n>_running_digest_exit=` must read 0, or the step stops before its first plan: run its last
+  item, paste the lines and stop. The plan's diff then shows the infrastructure change alone and no
+  change of image. Step 15 reads the same digest before the
+  destroy, and Steps 16 and 17 are given it, because after the destroy there is no service to read it
+  from.
+- **Once the deploy workflow runs** (see "The deploy pipeline" in
+  [`../../../README.md`](../../../README.md)), **it applies this root, and a hand plan is given the
+  running digest from the script above.** **No hand apply runs while a pipeline run is waiting or
+  running**, because the run's saved plan then no longer matches the state, and its apply fails or
+  undoes the hand change. A pipeline apply cut short by a timeout or a cancel can leave the state's
+  lock object behind, and every later plan then fails with `Error acquiring the state lock`. Confirm
+  in the repository's Actions page that no run of the deploy workflow is waiting or running, then
+  release the lock by hand with `terraform -chdir="$T" force-unlock <lock id>`, the id being the `ID`
+  that the refused plan prints under `Lock Info`.
 
 ## What you paste back
 
@@ -713,21 +734,17 @@ B=deploy-evidence/185-image
    Expected: `s4_digest_unchanged_exit=0`, `s4_script_again_exit=3`, and
    `s4_again_tag_exists=yes image_digest=` with the digest of item 5.
 
-10. Pin the tag in this root's variable file, so that the plan of Step 5 runs this image, and commit
-    that change. If the file already holds an `image_tag` line from an earlier build, edit that line
-    instead of adding one.
+10. The commit and the digest the plan of Step 5 runs. The digest is passed to that plan as
+    `-var image_digest=` and is written to no file; Step 5 reads it again from the registry by the
+    commit:
 
     ```bash
-    printf '\n# The commit the pushed image was built from.\n' \
-      >> "$T/terraform.tfvars"
-    printf 'image_tag = "%s"\n' "$SHA" >> "$T/terraform.tfvars"
-    terraform fmt -check "$T" > "$L/s4-fmt.txt" 2>&1
-    echo "s4_fmt_exit=$?"
-    git add "$T/terraform.tfvars"
-    git commit --quiet -m "infra: run the staging image of $SHA" \
-      > "$L/s4-commit.log" 2>&1
-    echo "s4_commit_exit=$?"
+    echo "s4_source_commit=$SHA"
+    sed -n 's/^image_digest=/s4_image_digest=/p' "$L/s4-build.txt"
     ```
+
+    Expected: `s4_image_digest=` equal to `s4_registry_digest=` of item 6. Keep `s4_source_commit=`
+    for Step 5.
 
 11. Last item, also when you stop early or a command failed. It removes the derived image's local tag,
     the worktree and `$L`; a line for something not yet made reads not 0, which is expected then.
@@ -744,11 +761,19 @@ Return: every `s4_` line, in order.
 
 ### Step 5: The first plan and the one apply
 
-There is one plan and one apply of the whole root, with `image_tag` set, no `-target` and no switch
-that brings the stack up in stages, because a stack that comes up in pieces is not the stack the
-workflow will later plan against. The apply waits for both certificates to be validated, for the
+There is one plan and one apply of the whole root, with `image_digest` set, no `-target` and no
+switch that brings the stack up in stages, because a stack that comes up in pieces is not the stack
+the workflow will later plan against. The apply waits for both certificates to be validated, for the
 distribution to be deployed and for the service to reach a steady state, which together take a
-quarter of an hour or more, so it runs in the background and its status is read from a file.
+quarter of an hour or more, so it runs in the background and its status is read from a file. The
+commit to run is the one Step 4 pushed, typed at the prompt as its `s4_source_commit=`, and its
+digest is read from the registry by that commit, as the tag.
+
+This step's stop rule is for a state that holds nothing. On a state that already holds the stack
+with its image named by a tag, the first plan after the switch to a digest shows the task definition
+replaced and the service updated, `Plan: 1 to add, 1 to change, 1 to destroy.` on
+`module.frontend.aws_ecs_task_definition.app` and `module.frontend.aws_ecs_service.app` only: a
+rollout of the same image.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
@@ -762,18 +787,31 @@ ACCOUNT=$(aws sts get-caller-identity --query Account \
 echo "s5_account_read_exit=$?"
 test "$ACCOUNT" = 471112560111; echo "s5_account_match_exit=$?"
 T=infra/envs/staging/aws
-TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
-  "$T/terraform.tfvars")
+printf 'commit to run (s4_source_commit): '; read -r SHA
+aws ecr describe-images --repository-name openvaa-frontend \
+  --image-ids imageTag="$SHA" \
+  --query 'imageDetails[0].imageDigest' --output text \
+  > "$L/s5-digest.txt" 2> "$L/s5-digest.err"
+echo "s5_digest_read_exit=$?"
+DIGEST=$(cat "$L/s5-digest.txt")
 ```
 
-1. What the plan needs from the shell and the variable file:
+1. What the plan needs from the shell and the registry:
 
    ```bash
    test -n "${TF_VAR_alert_email:-}"; echo "s5_alert_email_set_exit=$?"
-   echo "s5_image_tag_length=${#TAG}"
+   echo "s5_commit_length=${#SHA}"
+   if printf '%s\n' "$DIGEST" | grep -Eqx 'sha256:[0-9a-f]{64}'; then
+     echo "s5_image_digest_form=ok"
+   else
+     echo "s5_image_digest_form=bad"
+   fi
+   echo "s5_image_digest=$DIGEST"
    ```
 
-   Expected: `s5_alert_email_set_exit=0` and `s5_image_tag_length=40`.
+   Expected: `s5_digest_read_exit=0`, `s5_alert_email_set_exit=0`, `s5_commit_length=40`,
+   `s5_image_digest_form=ok`, and `s5_image_digest=` equal to `s4_image_digest=`. Otherwise do not
+   plan: run item 8, paste the lines and stop.
 
 2. Initialise against the state bucket. The lock file is read, never changed:
 
@@ -789,6 +827,7 @@ TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfplan" > "$L/s5-plan.log" 2>&1
    echo "s5_plan_exit=$?"
    grep -m1 -E '^(Plan:|No changes)' "$L/s5-plan.log" \
@@ -838,6 +877,7 @@ destroy.`, every `s5_planned_` line is `s5_planned_create=` (or `s5_planned_read
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -detailed-exitcode > "$L/s5-second.log" 2>&1
    echo "s5_second_plan_exit=$?"
    grep -E '^  # ' "$L/s5-second.log" | sed 's/^/s5_second_change=/'
@@ -859,7 +899,7 @@ destroy.`, every `s5_planned_` line is `s5_planned_create=` (or `s5_planned_read
      https://staging.openvaa.org/api/health 2> "$L/s5-curl.err"
    echo "s5_curl_exit=$?"
    jq -r '"s5_health_build=\(.build)"' "$L/s5-health.json"
-   test "$(jq -r .build "$L/s5-health.json")" = "$TAG"
+   test "$(jq -r .build "$L/s5-health.json")" = "$SHA"
    echo "s5_health_build_matches_exit=$?"
    awk 'tolower($1) == "x-cache:" { sub(/\r$/, "");
      sub(/^[^:]*: */, ""); print "s5_health_x_cache=" $0 }' \
@@ -1245,6 +1285,11 @@ T=infra/envs/staging/aws
    S=$(out service_name)
    G=$(out log_group_name)
    test -n "$VPC" && test -n "$G"; echo "s8_outputs_read_exit=$?"
+   infra/scripts/running-image-digest.sh --cluster openvaa-staging \
+     --service openvaa-staging-frontend \
+     > "$L/s8-running.txt" 2> "$L/s8-running.err"
+   echo "s8_running_digest_exit=$?"
+   DIGEST=$(sed -n 's/^running_image_digest=//p' "$L/s8-running.txt")
    command -v dig > /dev/null; echo "s8_has_dig_exit=$?"
    yn() { if test -n "$1"; then echo "$2"; else echo "$3"; fi; }
    ```
@@ -1428,10 +1473,12 @@ T=infra/envs/staging/aws
      "s8_state_versioned=\(if .VersionId then "yes" else "no" end)"' \
      "$L/s8-state-object.json"
    ( terraform -chdir="$T" plan -input=false -no-color \
+       -var "image_digest=$DIGEST" \
        -lock-timeout=0s > "$L/s8-lock-first.log" 2>&1
      echo "s8_lock_first_plan_exit=$?" > "$L/s8-lock-first.status" ) &
    sleep 5
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -lock-timeout=0s > "$L/s8-lock-second.log" 2>&1
    echo "s8_lock_second_plan_exit=$?"
    echo "s8_lock_second_refusals=$(grep -c \
@@ -1495,6 +1542,11 @@ O=origin.staging.openvaa.org
    LB_DNS=$(out load_balancer_dns_name)
    LB_SG=$(out load_balancer_security_group_id)
    test -n "$LB_SG"; echo "s9_outputs_read_exit=$?"
+   infra/scripts/running-image-digest.sh --cluster openvaa-staging \
+     --service openvaa-staging-frontend \
+     > "$L/s9-running.txt" 2> "$L/s9-running.err"
+   echo "s9_running_digest_exit=$?"
+   DIGEST=$(sed -n 's/^running_image_digest=//p' "$L/s9-running.txt")
    D=$(sed -n 's/^ *XFF_DEPTH *= *"\([0-9]*\)".*/\1/p' \
      "$T/terraform.tfvars")
    echo "s9_tfvars_xff_depth=$D"
@@ -1523,6 +1575,7 @@ O=origin.staging.openvaa.org
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfplan" \
      -var 'environment_overrides={DEPLOYMENT_DIAGNOSTICS="true"}' \
      -var "debug_ingress_cidrs=[\"$WS/32\"]" \
@@ -1662,6 +1715,7 @@ O=origin.staging.openvaa.org
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfplan" > "$L/s9-off-plan.log" 2>&1
    echo "s9_off_plan_exit=$?"
    grep -m1 -E '^(Plan:|No changes)' "$L/s9-off-plan.log" \
@@ -1700,6 +1754,7 @@ O=origin.staging.openvaa.org
      | select(.IsEgress | not)] | length)"' \
      "$L/s9-lb-sg-after.json"
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -detailed-exitcode > "$L/s9-plan-after.log" 2>&1
    echo "s9_plan_after_exit=$?"
    ```
@@ -1758,6 +1813,11 @@ T=infra/envs/staging/aws
    S=$(out service_name)
    G=$(out log_group_name)
    test -n "$G"; echo "s10_outputs_read_exit=$?"
+   infra/scripts/running-image-digest.sh --cluster openvaa-staging \
+     --service openvaa-staging-frontend \
+     > "$L/s10-running.txt" 2> "$L/s10-running.err"
+   echo "s10_running_digest_exit=$?"
+   DIGEST=$(sed -n 's/^running_image_digest=//p' "$L/s10-running.txt")
    changes() {
      jq -r --arg p "$1" '.resource_changes[]
        | select(.change.actions != ["no-op"])
@@ -1808,6 +1868,7 @@ T=infra/envs/staging/aws
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfplan" -var 'omit_environment=["ORIGIN"]' \
      > "$L/s10-plan.log" 2>&1
    echo "s10_plan_exit=$?"
@@ -2037,6 +2098,11 @@ T=infra/envs/staging/aws
    S=$(out service_name)
    G=$(out log_group_name)
    test -n "$G"; echo "s11_outputs_read_exit=$?"
+   infra/scripts/running-image-digest.sh --cluster openvaa-staging \
+     --service openvaa-staging-frontend \
+     > "$L/s11-running.txt" 2> "$L/s11-running.err"
+   echo "s11_running_digest_exit=$?"
+   DIGEST=$(sed -n 's/^running_image_digest=//p' "$L/s11-running.txt")
    changes() {
      jq -r --arg p "$1" '.resource_changes[]
        | select(.change.actions != ["no-op"])
@@ -2069,6 +2135,7 @@ T=infra/envs/staging/aws
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfplan" > "$L/s11-plan.log" 2>&1
    echo "s11_plan_exit=$?"
    grep -m1 -E '^(Plan:|No changes)' "$L/s11-plan.log" \
@@ -2148,6 +2215,7 @@ T=infra/envs/staging/aws
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -detailed-exitcode > "$L/s11-second.log" 2>&1
    echo "s11_plan_after_exit=$?"
    grep -E '^  # ' "$L/s11-second.log" | sed 's/^/s11_second_change=/'
@@ -2209,6 +2277,11 @@ T=infra/envs/staging/aws
    S=$(out service_name)
    G=$(out log_group_name)
    test -n "$G"; echo "s12_outputs_read_exit=$?"
+   infra/scripts/running-image-digest.sh --cluster openvaa-staging \
+     --service openvaa-staging-frontend \
+     > "$L/s12-running.txt" 2> "$L/s12-running.err"
+   echo "s12_running_digest_exit=$?"
+   DIGEST=$(sed -n 's/^running_image_digest=//p' "$L/s12-running.txt")
    RID="service/$C/$S"
    changes() {
      jq -r --arg p "$1" '.resource_changes[]
@@ -2238,6 +2311,7 @@ T=infra/envs/staging/aws
    R1="{name=\"raise\",schedule=\"at($T1)\",min_capacity=2,max_capacity=2}"
    R2="{name=\"lower\",schedule=\"at($T2)\",min_capacity=1,max_capacity=2}"
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfplan" -var "scheduled_floor_changes=[$R1,$R2]" \
      > "$L/s12-plan.log" 2>&1
    echo "s12_plan_exit=$?"
@@ -2381,6 +2455,7 @@ T=infra/envs/staging/aws
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfplan" > "$L/s12-off-plan.log" 2>&1
    echo "s12_off_plan_exit=$?"
    grep -m1 -E '^(Plan:|No changes)' "$L/s12-off-plan.log" \
@@ -2415,6 +2490,7 @@ T=infra/envs/staging/aws
      | "s12_target_bounds_after=\(.MinCapacity),\(.MaxCapacity)"' \
      "$L/s12-target-after.json"
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -detailed-exitcode > "$L/s12-plan-after.log" 2>&1
    echo "s12_plan_after_exit=$?"
    ```
@@ -2751,15 +2827,16 @@ and Step 18 reads its cost over full days of that second stack.
 
 ### Step 15: Before the destroy
 
-Three things come before the destroy: a last copy of the evidence log lines, because the log group
+Four things come before the destroy: a last copy of the evidence log lines, because the log group
 goes with the destroy; the removal of what Steps 13 and 14 wrote to the persistent project, the
-feedback rows marked `limit-check`, the invitation and its recipient's user; and a plan of each of
-the two long-lived roots beside this one, `dns-mail` and `supabase`, which must show no change. Those
-plans are read only and are never applied. **Step 16 runs only when every item here reads as
-expected.**
+feedback rows marked `limit-check`, the invitation and its recipient's user; a plan of each of the
+two long-lived roots beside this one, `dns-mail` and `supabase`, which must show no change; and the
+digest of the image the service runs, which the destroy plan of Step 16 and the re-apply of Step 17
+are given, because after the destroy there is no service to read it from. Those plans are read only
+and are never applied. **Step 16 runs only when every item here reads as expected.**
 
-Items 1 to 3 are run from the workstation with the lines below. Items 4 and 5 are the operator's, in
-a terminal of their own.
+Items 1 to 3 and 6 are run from the workstation with the lines below. Items 4 and 5 are the
+operator's, in a terminal of their own.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
@@ -2907,14 +2984,28 @@ T=infra/envs/staging/aws
    Expected: `s15_supabase_plan_exit=0`. This plan is never applied. With any other status, the
    destroy does not run.
 
-6. Last item on the workstation, also when you stop early or a command failed:
+6. The digest of the image the service runs, read on the workstation:
+
+   ```bash
+   infra/scripts/running-image-digest.sh --cluster openvaa-staging \
+     --service openvaa-staging-frontend \
+     > "$L/s15-running.txt" 2> "$L/s15-running.err"
+   echo "s15_running_digest_exit=$?"
+   grep -E '^running_image_(reference|digest)=' "$L/s15-running.txt" \
+     | sed 's/^/s15_/'
+   ```
+
+   Expected: `s15_running_digest_exit=0`, a `s15_running_image_reference=` line and one
+   `s15_running_image_digest=sha256:` line. Keep that digest: Steps 16 and 17 ask for it.
+
+7. Last item on the workstation, also when you stop early or a command failed:
 
    ```bash
    test -n "$L" && rm -rf "$L" && echo "s15_logs_removed=yes"
    ```
 
-Return: every `s15_` line. The destroy runs only when the three `_after=` counts are 0 and both
-`_plan_exit=` lines are 0.
+Return: every `s15_` line. The destroy runs only when the three `_after=` counts are 0, both
+`_plan_exit=` lines are 0 and `s15_running_digest_exit=0`.
 
 ### Step 16: The destroy
 
@@ -2944,21 +3035,34 @@ test "$ACCOUNT" = 471112560111; echo "s16_account_match_exit=$?"
 T=infra/envs/staging/aws
 ```
 
-1. What the destroy plan needs, and the image's digest before it:
+1. What the destroy plan needs: the alert address, and the digest Step 15 read, typed at the prompt
+   as its `s15_running_image_digest=` and read once more from the service, which still runs. Then
+   the image as the registry holds it under that digest, before the destroy:
 
    ```bash
    terraform -chdir="$T" init -input=false -no-color \
      -lockfile=readonly > "$L/s16-init.log" 2>&1
    echo "s16_init_exit=$?"
    test -n "${TF_VAR_alert_email:-}"; echo "s16_alert_email_set_exit=$?"
-   TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
-     "$T/terraform.tfvars")
-   RU=$(sed -n 's/^registry_url *= *"\(.*\)"/\1/p' "$T/terraform.tfvars")
-   aws ecr describe-images --repository-name "${RU#*/}" \
-     --image-ids imageTag="$TAG" \
+   printf 'running image digest (s15_running_image_digest): '
+   read -r DIGEST
+   infra/scripts/running-image-digest.sh --cluster openvaa-staging \
+     --service openvaa-staging-frontend \
+     > "$L/s16-running.txt" 2> "$L/s16-running.err"
+   echo "s16_running_digest_exit=$?"
+   test "$(sed -n 's/^running_image_digest=//p' \
+     "$L/s16-running.txt")" = "$DIGEST"
+   echo "s16_running_digest_unchanged_exit=$?"
+   aws ecr describe-images --repository-name openvaa-frontend \
+     --image-ids imageDigest="$DIGEST" \
      > "$L/s16-image-before.json" 2> "$L/s16-image-before.err"
    echo "s16_image_before_exit=$?"
    ```
+
+   Expected: `s16_init_exit=0`, `s16_alert_email_set_exit=0`, `s16_running_digest_exit=0`,
+   `s16_running_digest_unchanged_exit=0` and `s16_image_before_exit=0`. A changed digest means the
+   service was deployed again after Step 15: run item 8, and read Step 15's item 6 again before this
+   step.
 
 2. The managed resources in the state, counted without the data sources, and the destroy plan,
    saved. Its summary line must name exactly that count:
@@ -2971,6 +3075,7 @@ T=infra/envs/staging/aws
      | wc -l | tr -d ' ')
    echo "s16_state_managed_count=$M"
    terraform -chdir="$T" plan -destroy -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfdestroy" > "$L/s16-plan.log" 2>&1
    echo "s16_destroy_plan_exit=$?"
    LINE=$(grep -m1 -E '^(Plan:|No changes)' "$L/s16-plan.log")
@@ -3068,18 +3173,19 @@ T=infra/envs/staging/aws
    still listed after the last read is named by its type line: paste it and stop. Keep the lid open
    for the whole loop: a closed lid sleeps the host, which `caffeinate -i` does not prevent.
 
-6. What survives, each read: the image under its tag with an unchanged digest, the two parameters by
+6. What survives, each read: the image under its digest with an unchanged tag, the two parameters by
    name, the delegated zone, the execution role, and the plan of `dns-mail`, which must still show no
    change:
 
    ```bash
-   aws ecr describe-images --repository-name "${RU#*/}" \
-     --image-ids imageTag="$TAG" \
+   aws ecr describe-images --repository-name openvaa-frontend \
+     --image-ids imageDigest="$DIGEST" \
      > "$L/s16-image-after.json" 2> "$L/s16-image-after.err"
    echo "s16_image_after_exit=$?"
-   test "$(jq -r '.imageDetails[0].imageDigest' \
-     "$L/s16-image-after.json")" = "$(jq -r \
-     '.imageDetails[0].imageDigest' "$L/s16-image-before.json")"
+   test "$(jq -c '.imageDetails[0] | [.imageDigest, .imageTags]' \
+     "$L/s16-image-after.json")" = "$(jq -c \
+     '.imageDetails[0] | [.imageDigest, .imageTags]' \
+     "$L/s16-image-before.json")"
    echo "s16_image_digest_unchanged_exit=$?"
    aws ssm describe-parameters --parameter-filters \
      "Key=Path,Option=OneLevel,Values=/openvaa/staging/frontend" \
@@ -3142,11 +3248,11 @@ Return: every `s16_` line and the operator's `s16_` and `s23_` lines.
 
 ### Step 17: The re-apply
 
-The root is applied again from the same image and the same tag, with one plan and one apply, as Step
-5 did: the image is still in the registry under its tag, `image_tag` in this root's variable file is
-unchanged, and the files of the root are as committed. The stack must come back serving the same
-build. The re-created topic gets a new subscription, which stays pending until the operator confirms
-it again.
+The root is applied again from the same image, by the digest Step 15 read, with one plan and one
+apply, as Step 5 did: the image is still in the registry under that digest and its tag, no file of
+the root names an image, and the files of the root are as committed. The stack must come back
+serving the same build. The re-created topic gets a new subscription, which stays pending until the
+operator confirms it again.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
@@ -3161,28 +3267,34 @@ echo "s17_account_read_exit=$?"
 test "$ACCOUNT" = 471112560111; echo "s17_account_match_exit=$?"
 T=infra/envs/staging/aws
 U=https://staging.openvaa.org
-TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
-  "$T/terraform.tfvars")
+printf 'running image digest (s15_running_image_digest): '
+read -r DIGEST
 ```
 
-1. The same tag, the image under it, a clean tree for the root and its module, and the alert address:
+1. The same digest, the image under it and its tag, a clean tree for the root and its module, and
+   the alert address:
 
    ```bash
-   echo "s17_image_tag_length=${#TAG}"
+   if printf '%s\n' "$DIGEST" | grep -Eqx 'sha256:[0-9a-f]{64}'; then
+     echo "s17_image_digest_form=ok"
+   else
+     echo "s17_image_digest_form=bad"
+   fi
    echo "s17_head=$(git rev-parse HEAD)"
    git status --porcelain -- infra/envs/staging/aws \
      infra/modules/frontend-service > "$L/s17-status.txt"
    echo "s17_dirty_lines=$(wc -l < "$L/s17-status.txt" | tr -d ' ')"
-   RU=$(sed -n 's/^registry_url *= *"\(.*\)"/\1/p' "$T/terraform.tfvars")
-   aws ecr describe-images --repository-name "${RU#*/}" \
-     --image-ids imageTag="$TAG" \
+   aws ecr describe-images --repository-name openvaa-frontend \
+     --image-ids imageDigest="$DIGEST" \
      > "$L/s17-image.json" 2> "$L/s17-image.err"
    echo "s17_image_exit=$?"
+   SHA=$(jq -r '.imageDetails[0].imageTags[0]' "$L/s17-image.json")
+   echo "s17_image_tag_length=${#SHA}"
    test -n "${TF_VAR_alert_email:-}"; echo "s17_alert_email_set_exit=$?"
    ```
 
-   Expected: `s17_image_tag_length=40`, `s17_dirty_lines=0`, `s17_image_exit=0` and
-   `s17_alert_email_set_exit=0`.
+   Expected: `s17_image_digest_form=ok`, `s17_dirty_lines=0`, `s17_image_exit=0`,
+   `s17_image_tag_length=40` and `s17_alert_email_set_exit=0`.
 
 2. Initialise, plan, and print the plan's summary line, the count of planned actions by kind and the
    count of planned addresses outside the module, as Step 5 does:
@@ -3192,6 +3304,7 @@ TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
      -lockfile=readonly > "$L/s17-init.log" 2>&1
    echo "s17_init_exit=$?"
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -out="$L/tfplan" > "$L/s17-plan.log" 2>&1
    echo "s17_plan_exit=$?"
    grep -m1 -E '^(Plan:|No changes)' "$L/s17-plan.log" \
@@ -3232,6 +3345,7 @@ TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
 
    ```bash
    terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
      -detailed-exitcode > "$L/s17-second.log" 2>&1
    echo "s17_second_plan_exit=$?"
    grep -E '^  # ' "$L/s17-second.log" | sed 's/^/s17_second_change=/'
@@ -3249,7 +3363,7 @@ TAG=$(sed -n 's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
      -w 's17_health_http=%{http_code}\n' "$U/api/health" \
      2> "$L/s17-health.err"
    echo "s17_health_curl_exit=$?"
-   test "$(jq -r .build "$L/s17-health.json")" = "$TAG"
+   test "$(jq -r .build "$L/s17-health.json")" = "$SHA"
    echo "s17_health_build_matches_exit=$?"
    curl -sS --max-time 30 -L -o "$L/s17-questions.html" \
      -w 's17_questions_http=%{http_code}\n' "$U/questions" \
@@ -3568,15 +3682,17 @@ election's time zone, to UTC before writing them.
    ]
    ```
 
-2. Plan and apply once, well before the raise, with the protocol of Step 12, items 2 and 3: the plan
-   must read `Plan: 2 to add, 0 to change, 0 to destroy.` and create the two scheduled actions alone.
+2. Plan and apply once, well before the raise, with the protocol of Step 12, items 2 and 3, the plan
+   given the digest the service runs as Step 12's item 1 reads it: the plan must read
+   `Plan: 2 to add, 0 to change, 0 to destroy.` and create the two scheduled actions alone.
    Commit the change of `terraform.tfvars`.
 3. **No apply is made between the two actions.** Inside that window the scalable target's bounds are
    the raising entry's, a plan shows them as a change, and an apply would put back `task_floor` and
    `task_ceiling` in the middle of the peak.
 4. After the lowering has run and the count is back at the floor, remove both entries from
-   `terraform.tfvars`, plan, which must read `Plan: 0 to add, 0 to change, 2 to destroy.` and delete
-   the two scheduled actions alone, apply once, and commit the change.
+   `terraform.tfvars`, plan with the running digest read again, which must read
+   `Plan: 0 to add, 0 to change, 2 to destroy.` and delete the two scheduled actions alone, apply
+   once, and commit the change.
 
 ## Not yet observed
 
@@ -3584,10 +3700,13 @@ This root was first applied on 2026-11-13, in two applies, destroyed on 2026-11-
 is something this runbook relies on and that has not been seen. It moves to "Observations", with its
 date, once the step named beside it has shown it.
 
-| Statement                                                                                                              | Checked by      |
-| ---------------------------------------------------------------------------------------------------------------------- | --------------- |
-| Cost Explorer filtered by `Root=aws` gives the stack's daily cost, Fargate included through the tasks' propagated tags | Step 18, item 3 |
-| The public IPv4 charges either carry the tag or show in the account's usage types alone                                | Step 18, item 5 |
+| Statement                                                                                                                                                                           | Checked by                                                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Cost Explorer filtered by `Root=aws` gives the stack's daily cost, Fargate included through the tasks' propagated tags                                                              | Step 18, item 3                                                     |
+| The public IPv4 charges either carry the tag or show in the account's usage types alone                                                                                             | Step 18, item 5                                                     |
+| `infra/scripts/running-image-digest.sh` reads the digest of a running service whose task definition names its image by a tag                                                        | Step 8, item 1                                                      |
+| The first plan after the switch to a digest reads `Plan: 1 to add, 1 to change, 1 to destroy.` on the task definition and the service alone, and its apply rolls out the same build | The first plan of Steps 8 to 12, or the deploy workflow's first run |
+| ECS pulls and runs the image named as `<registry_url>@sha256:<digest>`                                                                                                              | Step 5, item 7, or Step 17, item 5                                  |
 
 ## Observations
 
