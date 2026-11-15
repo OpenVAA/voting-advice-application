@@ -1,0 +1,368 @@
+name: "Deploy staging"
+
+# Deploys one commit to staging. A run, in order:
+#   1. job checks, with no credential: Terraform formatting, the validation of the staging AWS root and the unit
+#      tests of the infrastructure scripts;
+#   2. job deploy, in the `staging` environment, which waits for its reviewer: builds and pushes the commit's image
+#      and takes its digest; plans the staging AWS root with that digest into a saved plan and prints it; applies the
+#      saved plan; checks that the service's primary deployment runs the task definition just applied; runs the
+#      deployed smoke entry against https://staging.openvaa.org; and reads /api/health again to confirm the commit is
+#      still the one served. When a step fails or the run is cancelled, the last step mails the operator through the
+#      deployment topic, naming the stage.
+#
+# A push to `deploy/staging` and a push to a `deploy-evidence/*` branch both deploy and apply. The environment's
+# branch policy matches one path segment only, so an evidence branch name holds no further `/`: a nested name would
+# start this workflow and then be refused at the gate. `deploy-evidence/destroy-staging` belongs to the destroy
+# workflow and does not start this one. A dispatch must pick the `deploy/staging` ref, because the environment admits
+# no other branch for it.
+#
+# The repository's default token may write, so the top-level permissions are empty and every job names its own.
+
+on:
+  push:
+    branches:
+      - "deploy/staging"
+      - "deploy-evidence/**"
+      - "!deploy-evidence/destroy-staging"
+  workflow_dispatch:
+
+# One group with the destroy workflow. A run waiting for the group is replaced by a newer one; a running one is never
+# cancelled, because a cancelled apply can leave the state lock held.
+concurrency:
+  group: staging-aws
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Setup Terraform 1.16.5"
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: "Check Terraform formatting"
+        run: terraform fmt -check -recursive -diff infra
+
+      - name: "Validate the staging AWS root"
+        run: |
+          set -euo pipefail
+          terraform -chdir=infra/envs/staging/aws init -backend=false -input=false -lockfile=readonly
+          terraform -chdir=infra/envs/staging/aws validate -no-color
+
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a Node below
+      # engines.node.
+      - name: "Setup Node.js 24.21.0"
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.21.0
+
+      - name: "Setup Yarn 4.18"
+        uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # v2.0.0
+        with:
+          version: 4.18
+
+      - name: "Unit tests of the infrastructure scripts"
+        run: yarn test:unit:infra
+
+  # Every hosted write of a deploy happens in this one job. The `staging` environment holds its reviewer, its branch
+  # policy and its secrets, which are released only on approval.
+  deploy:
+    needs: checks
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: staging
+      url: https://staging.openvaa.org
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Assume the deploy role"
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: deploy-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      # The build script refuses a working tree that is not the pushed commit, untracked files included, so it runs
+      # before `yarn install` writes anything into the checkout. Status 3 means the registry already holds this
+      # commit's image, which is deployed as it is.
+      - name: "Build and push the image"
+        id: build
+        run: |
+          set -uo pipefail
+          url=$(sed -n 's/^registry_url *= *"\(.*\)"$/\1/p' infra/envs/staging/aws/terraform.tfvars)
+          if [ -z "$url" ]; then
+            echo "::error::infra/envs/staging/aws/terraform.tfvars has no registry_url."
+            exit 1
+          fi
+          infra/scripts/build-push-image.sh --repository-url "$url" > "$RUNNER_TEMP/build-push.txt"
+          build_exit=$?
+          cat "$RUNNER_TEMP/build-push.txt"
+          echo "build_exit=$build_exit"
+          if [ "$build_exit" -ne 0 ] && [ "$build_exit" -ne 3 ]; then
+            echo "::error::build-push-image.sh exited $build_exit."
+            exit 1
+          fi
+          digest=$(sed -n 's/.*image_digest=\(sha256:[0-9a-f]\{64\}\).*/\1/p' "$RUNNER_TEMP/build-push.txt")
+          if [ -z "$digest" ]; then
+            echo "::error::build-push-image.sh printed no image_digest= line."
+            exit 1
+          fi
+          echo "digest=$digest"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: "Setup Terraform 1.16.5"
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: "Initialise the staging AWS root"
+        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+
+      - name: "Plan the staging AWS root with the built digest"
+        id: plan
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws plan -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan"
+          plan_exit=$?
+          echo "plan_exit=$plan_exit"
+          if [ "$plan_exit" -ne 0 ]; then
+            echo "::error::terraform plan exited $plan_exit."
+            exit 1
+          fi
+
+      - name: "Show the plan"
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt"
+          show_exit=$?
+          if [ "$show_exit" -ne 0 ]; then
+            echo "::error::terraform show exited $show_exit."
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/tfplan.txt"
+          {
+            echo "### Plan of infra/envs/staging/aws"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/tfplan.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a Node below
+      # engines.node.
+      - name: "Setup Node.js 24.21.0"
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.21.0
+
+      - name: "Setup Yarn 4.18"
+        uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # v2.0.0
+        with:
+          version: 4.18
+
+      # A role session lasts one hour, and the steps before this one can take a good part of it. The apply must not
+      # outlive its credentials, so they are assumed again right before it.
+      - name: "Assume the deploy role again for the apply"
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: deploy-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      - name: "Apply the saved plan"
+        id: apply
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/tfplan"
+          apply_exit=$?
+          echo "apply_exit=$apply_exit"
+          if [ "$apply_exit" -ne 0 ]; then
+            echo "::error::terraform apply exited $apply_exit."
+            exit 1
+          fi
+
+      # The apply waits for a steady state and the circuit breaker fails it on a broken rollout. This step reads the
+      # service again and fails unless its primary deployment runs the task definition the apply wrote, has completed
+      # its rollout and runs at least the floor of tasks.
+      - name: "Check the rollout is stable"
+        id: stable
+        run: |
+          set -uo pipefail
+          floor=$(sed -n 's/^task_floor *= *\([0-9][0-9]*\)$/\1/p' infra/envs/staging/aws/terraform.tfvars)
+          if [ -z "$floor" ]; then
+            echo "::error::infra/envs/staging/aws/terraform.tfvars has no task_floor."
+            exit 1
+          fi
+          applied=$(terraform -chdir=infra/envs/staging/aws output -raw task_definition_arn)
+          applied_exit=$?
+          cluster=$(terraform -chdir=infra/envs/staging/aws output -raw cluster_name)
+          cluster_exit=$?
+          service=$(terraform -chdir=infra/envs/staging/aws output -raw service_name)
+          service_exit=$?
+          if [ "$applied_exit" -ne 0 ] || [ "$cluster_exit" -ne 0 ] || [ "$service_exit" -ne 0 ]; then
+            echo "::error::The outputs task_definition_arn, cluster_name and service_name could not all be read."
+            exit 1
+          fi
+          aws ecs describe-services --cluster "$cluster" --services "$service" --output json > "$RUNNER_TEMP/service.json"
+          describe_exit=$?
+          echo "stable_describe_exit=$describe_exit"
+          if [ "$describe_exit" -ne 0 ]; then
+            echo "::error::aws ecs describe-services exited $describe_exit."
+            exit 1
+          fi
+          primary='[.services[0].deployments[] | select(.status == "PRIMARY")][0]'
+          primary_task_definition=$(jq -r "$primary.taskDefinition // \"\"" "$RUNNER_TEMP/service.json")
+          rollout_state=$(jq -r "$primary.rolloutState // \"\"" "$RUNNER_TEMP/service.json")
+          running=$(jq -r "$primary.runningCount // 0" "$RUNNER_TEMP/service.json")
+          desired=$(jq -r '.services[0].desiredCount // 0' "$RUNNER_TEMP/service.json")
+          if [ -n "$primary_task_definition" ] && [ "$primary_task_definition" = "$applied" ]; then
+            matches=yes
+          else
+            matches=no
+          fi
+          echo "stable_task_definition_matches=$matches"
+          echo "stable_rollout_state=$rollout_state"
+          echo "stable_running=$running"
+          echo "stable_desired=$desired"
+          if [ "$matches" != yes ] || [ "$rollout_state" != COMPLETED ] || ! [ "$running" -ge "$floor" ] 2> /dev/null; then
+            echo "::error::The primary deployment does not run the applied task definition with a completed rollout and at least $floor running tasks."
+            exit 1
+          fi
+
+      - name: "Install Playwright's Chromium"
+        run: yarn playwright install --with-deps chromium
+
+      # No report and no output directory of this step is ever uploaded: a run that signs the contestant in can hold
+      # the values it typed in what it writes, on a green run as on a red one. The output stays in $RUNNER_TEMP and is
+      # removed below. The AWS credentials are taken out of the smoke run's environment, which needs none.
+      - name: "Run the deployed smoke entry"
+        id: smoke
+        env:
+          SMOKE_EXPECTED_SHA: ${{ github.sha }}
+          SMOKE_CONTESTANT_EMAIL: ${{ secrets.SMOKE_CONTESTANT_EMAIL }}
+          SMOKE_CONTESTANT_PASSWORD: ${{ secrets.SMOKE_CONTESTANT_PASSWORD }}
+        run: |
+          set -uo pipefail
+          env -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN \
+            yarn test:e2e:deployed --output "$RUNNER_TEMP/smoke-output"
+          smoke_exit=$?
+          echo "smoke_exit=$smoke_exit"
+          if [ "$smoke_exit" -ne 0 ]; then
+            echo "::error::yarn test:e2e:deployed exited $smoke_exit."
+            exit 1
+          fi
+
+      # The smoke gate read the served build before the specs ran. Reading it again closes the window in which
+      # another apply could have landed while they ran.
+      - name: "Read the served build again"
+        id: served-build
+        run: |
+          set -uo pipefail
+          curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" https://staging.openvaa.org/api/health
+          curl_exit=$?
+          if [ "$curl_exit" -ne 0 ]; then
+            echo "served_build_after_smoke="
+            echo "::error::Reading /api/health exited $curl_exit."
+            exit 1
+          fi
+          served=$(jq -r '.build // ""' "$RUNNER_TEMP/health.json")
+          echo "served_build_after_smoke=$served"
+          if [ "$served" != "$GITHUB_SHA" ]; then
+            echo "::error::/api/health serves build '$served', not $GITHUB_SHA."
+            exit 1
+          fi
+
+      - name: "Remove the plan, the smoke output and the step files"
+        if: always()
+        run: >-
+          rm -rf
+          "$RUNNER_TEMP/tfplan" "$RUNNER_TEMP/tfplan.txt" "$RUNNER_TEMP/smoke-output"
+          "$RUNNER_TEMP/build-push.txt" "$RUNNER_TEMP/service.json" "$RUNNER_TEMP/health.json"
+
+      - name: "Assume the deploy role again for the alert"
+        if: failure() || cancelled()
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: deploy-alert-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      # The message names the stage, the commit, the trigger and the run, and nothing else: no secret, no address and
+      # no tool output.
+      - name: "Alert the operator"
+        id: alert
+        if: failure() || cancelled()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          PLAN_OUTCOME: ${{ steps.plan.outcome }}
+          APPLY_OUTCOME: ${{ steps.apply.outcome }}
+          STABLE_OUTCOME: ${{ steps.stable.outcome }}
+          SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
+          SERVED_BUILD_OUTCOME: ${{ steps.served-build.outcome }}
+        run: |
+          set -uo pipefail
+          stage=""
+          for pair in \
+            "build:$BUILD_OUTCOME" \
+            "plan:$PLAN_OUTCOME" \
+            "rollout:$APPLY_OUTCOME" \
+            "stable:$STABLE_OUTCOME" \
+            "smoke:$SMOKE_OUTCOME" \
+            "smoke:$SERVED_BUILD_OUTCOME"; do
+            if [ "${pair#*:}" = failure ]; then
+              stage="${pair%%:*}"
+              break
+            fi
+          done
+          if [ -z "$stage" ]; then
+            if [ "$JOB_STATUS" = failure ]; then stage=setup; else stage=cancelled; fi
+          fi
+          echo "alert_stage=$stage"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          message=$(printf 'The staging deploy failed at %s.\n\nCommit: %s\nTrigger: %s of %s\nRun: %s\n' \
+            "$stage" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$GITHUB_REF_NAME" "$run_url")
+          aws sns publish \
+            --topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments \
+            --subject "openvaa staging deploy failed at $stage" \
+            --message "$message" \
+            --query MessageId --output text > "$RUNNER_TEMP/alert.txt" 2> "$RUNNER_TEMP/alert.err"
+          publish_exit=$?
+          message_id=$(cat "$RUNNER_TEMP/alert.txt")
+          error_code=$(sed -n 's/.*An error occurred (\([A-Za-z.]*\)).*/\1/p' "$RUNNER_TEMP/alert.err")
+          rm -f "$RUNNER_TEMP/alert.txt" "$RUNNER_TEMP/alert.err"
+          echo "alert_message_id=$message_id"
+          if [ "$publish_exit" -ne 0 ]; then
+            echo "alert_error=$error_code"
+            echo "::error::aws sns publish exited $publish_exit."
+            exit 1
+          fi
