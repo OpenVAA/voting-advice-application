@@ -289,3 +289,12 @@ Every item below leaves this workstation and is an **operator-approved checkpoin
 | F The destroy path | 2 | 1 |
 | G Proofs, records, carried debts | 5 | 0 |
 | **Total** | **28** | **7** |
+
+
+## Amendments after research (orchestrator, 2026-11-15 — operator away, unreviewed)
+
+`187-RESEARCH.md` (commit `0d6864d8b`) found facts that change three ★ recommendations above. Read these amendments as the ★ for their decisions; tick a box above or write **EDIT:** here to overrule.
+
+- **F-01 amended:** `destroy.yml` has two jobs, each gated by its own environment approval (plan job, then apply job), so the evidence run is approved at the plan job and rejected at the apply job. Reason: dispatch is unavailable before the workflow is on `main`, so a push-triggered destroy needs a stop between plan and apply (research Open Question 1).
+- **B-04 amended:** the pull-request evidence base branch is `pr-evidence/187-base` (from `origin/main`), not `deploy-evidence/187-base`. Reason: a base or head named `deploy-evidence/*` would itself start a gated deploy run when pushed (research Open Question 2).
+- **C-04 amended:** `push-migrations.sh --confirmed-ref` keys on an environment-scoped variable `DEPLOY_ENVIRONMENT=staging` (set in the `staging` GitHub Environment only, passed as `OPENVAA_DEPLOY_ENVIRONMENT`), not on `GITHUB_ENVIRONMENT`. Reason: GitHub does not set `GITHUB_ENVIRONMENT`, so the original condition could never hold (research Open Question 3).

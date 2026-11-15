@@ -67,6 +67,11 @@ Every answer below is the ★ RECOMMENDED option of `187-DISCUSSION-POINTS.md`. 
 - [Alerts] Q: 'Message format of the failure alert?' → Selected: 'subject names the environment and the failed stage; body names the commit, the trigger and the run URL; no secret, no address' — message text in one step.
 - [Destroy] Q: 'What is checked after a real destroy?' → Selected: 'the state holds no resource, the Supabase root plan is No changes and the conformance probe passes, as in 185-19 and 185-20' — evidence procedure.
 
+### Amendments after research (2026-11-15, unreviewed)
+- [F-01] destroy.yml is two jobs, each behind its own environment approval (plan job, then apply job); the evidence run is approved at the plan job and rejected at the apply job — **Reversibility:** costly — workflow shape and environment rules; see 187-DISCUSSION-POINTS.md § Amendments after research.
+- [B-04] the pull-request evidence base branch is pr-evidence/187-base from origin/main, never a deploy-evidence/* name, because a deploy-evidence/* push starts a gated deploy run.
+- [C-04] push-migrations.sh --confirmed-ref keys on DEPLOY_ENVIRONMENT=staging, a variable set only in the staging GitHub Environment and passed as OPENVAA_DEPLOY_ENVIRONMENT; GitHub never sets GITHUB_ENVIRONMENT.
+
 </decisions>
 
 <code_context>
