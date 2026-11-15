@@ -27,8 +27,9 @@ on:
       - "!deploy-evidence/destroy-staging"
   workflow_dispatch:
 
-# One group with the destroy workflow. A run waiting for the group is replaced by a newer one; a running one is never
-# cancelled, because a cancelled apply can leave the state lock held.
+# One group with the destroy workflow. A run waiting for the group is replaced by a newer one; a running one, which
+# includes one whose deploy job waits for approval, is never cancelled, because a cancelled apply can leave the state
+# lock held.
 concurrency:
   group: staging-aws
   cancel-in-progress: false

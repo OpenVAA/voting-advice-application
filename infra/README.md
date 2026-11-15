@@ -182,7 +182,8 @@ waits for its reviewer. Once approved, in this order:
 
 A failed step stops every later one but the cleanup and the alert. `deploy.yml` and `destroy.yml`
 share the concurrency group `staging-aws` with `cancel-in-progress: false`: a run waiting for the
-group is replaced by a newer one, and a running one is never cancelled.
+group is replaced by a newer one, and a running one is never cancelled. The group is workflow-wide,
+so a run whose gated job waits for approval is already running and holds it.
 
 ### The environments and their settings
 
@@ -277,8 +278,10 @@ is all there is. An alert that could not be sent prints `alert_error=` in the al
   error of the next plan.
 - No hand apply of the staging AWS root while a run waits or runs: a saved plan is refused once the
   state has changed under it, and the run turns red at its apply.
-- A run waiting for approval or for the group is replaced by a newer one. To deploy the commit it
-  carried, push it again or re-run it once the newer run is done.
+- A run waiting for approval holds the group until it is approved, rejected or cancelled, and
+  blocks every later deploy and destroy until then: reject or cancel a stale one before pushing
+  again. A run waiting for the group is replaced by a newer one; to deploy the commit it carried,
+  push it again or re-run it once the newer run is done.
 - A destroy that stopped part-way, on a lost runner, a timeout or a failed delete, is finished by
   running the destroy workflow again: its plan reads no running service, and its guard plans the
   destroy of whatever the state still holds.
