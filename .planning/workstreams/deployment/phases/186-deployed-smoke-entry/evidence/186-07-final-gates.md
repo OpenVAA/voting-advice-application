@@ -46,3 +46,54 @@ DEPLOYED_TREE_DIFF=empty
 No pending todo was folded into this phase (F-02). No commit of the phase, from its first (`a7a4222a8`, 2026-11-14) to this tree, touches `.planning/todos/` (`git log a7a4222a8^..HEAD -- .planning/todos` is empty).
 
 **Outcome:** all three repository gates exit 0 at `0ac8151e4a5fc2a003db02bbd776e22f8bcf5bce`, both guards pass, and the local gate suite, its list and the deployed application tree are unchanged.
+
+## Re-run after the code-review fixes (2026-11-15)
+
+Recorded 2026-11-15 (UTC) by an executor spawned by the orchestrator as an ad-hoc follow-up to plan 186-07, after the code-review fixes (`186-REVIEW-FIX.md`) and the follow-up `a2fa17061`, which makes the deployed setup's first line withhold user info. That executor ran every gate itself from this checkout. Logs are in `tmp/186-gates/rerun/`. The lines above the heading record the run at `0ac8151e4`; the lines below record the re-run at the new HEAD. Each gate's status was written to its own `<gate>.status` file by the command right after the gate and read from that file, never through a pipe.
+
+- **Commit:** `a2fa170619315dfa6078c7f9f32cb05fb4604efc` when the gates started. Four phase-187 docs commits (`0d6864d8b`..`ee85b83a3`) landed while they ran, touching `.planning/` only. `git diff --quiet a2fa17061 ee85b83a3 -- . ':!.planning'` exited 0, so `ee85b83a38488f052edc7a00c7a80facd6602871`, the tree of the closing E2E re-run, has the same code.
+- **Date:** 2026-11-15 (UTC), gates from 00:26:04Z to 00:28:37Z
+- **Node:** v24.21.0
+- **Turbo cache:** a new private `mktemp -d` directory under `tmp/186-gates/` (`tmp/186-gates/rerun/turbo-cache-dir.txt` names it)
+- **Precondition:** `yarn db:status` exit 0, with `supabase_edge_runtime_openvaa-local` Up and mounting this checkout's `apps/supabase/supabase/functions`
+
+### The follow-up fix and its gates
+
+`a2fa17061 fix(186): withhold user info from the deployed setup's first line`: `gateTargetLine` in `tests/tests/utils/deployedTarget.ts` prints a base URL without user info as given, prints one with user info without it and with `(user info withheld)`, and does not print a value that is not an absolute URL. `tests/deployed-global-setup.ts` prints only through it. Seven new unit cases, plus a guard in `deployedSmokeGuards.test.ts` that refuses a raw `${baseURL}` in the setup file. `tests/README.md` § Reading the gate says so.
+
+| Gate | Status |
+| --- | --- |
+| `node_modules/.bin/vitest run --config tests/vitest.config.ts deployed` | exit 0, 2 files, 134 tests passed (127 before) |
+| `yarn typecheck:tests` | exit 0 |
+| `node_modules/.bin/eslint` on the four changed `.ts` files | exit 0 |
+| `node scripts/assert-comment-hygiene.mjs` | exit 0, 0 violations |
+| `prettier --check` on the five changed files | exit 0 |
+| `yarn test:e2e:deployed --list --reporter=list` | exit 0, `Total: 2 tests in 2 files` |
+
+### Final lines of the re-run
+
+```
+lint:check exit=0
+format:check exit=0
+test:unit exit=0
+GUARD_DEPLOYED_TARGET=passed
+GUARD_DEPLOYED_SMOKE=passed
+SC4_LOCAL_GATE_DIFF=empty
+LOCAL_LIST=Total: 548 tests in 127 files
+DEPLOYED_TREE_DIFF=empty
+```
+
+| Gate | Status | Start (UTC) | End (UTC) | Log | Note |
+| --- | --- | --- | --- | --- | --- |
+| `yarn lint:check` | `lint:check exit=0` | 00:26:04Z | 00:26:50Z | `lint.log` | `No-inline-IAM-policies guard — 57 .tf file(s) read under 'infra'; 0 finding(s).`; the hosted-settings parity guard: `every classified key holds` |
+| `yarn format:check` | `format:check exit=0` | 00:26:50Z | 00:27:07Z | `format.log` | `All matched files use Prettier code style!` |
+| `yarn test:unit` | `test:unit exit=0` | 00:27:07Z | 00:28:37Z | `unit.log` | turbo `Tasks: 25 successful, 25 total`; `test:unit:tests` `Test Files 12 passed (12)`, `Tests 323 passed (323)` (276 before the review fixes); `test:unit:infra` `Test Files 3 passed (3)`, `Tests 102 passed (102)` |
+
+- **`GUARD_DEPLOYED_TARGET=passed`**, **`GUARD_DEPLOYED_SMOKE=passed`**: `node_modules/.bin/vitest run --config tests/vitest.config.ts --reporter=verbose` exited 0 (`unit-tests-files.status`), `Tests 323 passed (323)`; 118 lines `✓ tests/utils/deployedTarget.test.ts > …` and 16 lines `✓ tests/utils/deployedSmokeGuards.test.ts > …`, and no failed line.
+- **`SC4_LOCAL_GATE_DIFF=empty`**: `git diff --quiet a7a4222a8 -- tests/playwright.config.ts tests/global-setup.ts tests/tests/support/preflight.ts` exited 0.
+- **`LOCAL_LIST=Total: 548 tests in 127 files`**: the last line of `node_modules/.bin/playwright test --list -c tests/playwright.config.ts ./tests --grep-invert @probe`, exit 0 (`list.log`).
+- **`DEPLOYED_TREE_DIFF=empty`**: `git diff --quiet 712947a1bd44a735f66ee8f51610f4748d76cd30 -- apps packages` exited 0.
+- **F-02:** no pending todo was folded into this phase. `git log a7a4222a8^..HEAD -- .planning/todos` is still empty.
+
+**Outcome:** all three repository gates exit 0 on the tree with the code-review fixes, both guards pass, and the local gate suite, its list and the deployed application tree are unchanged. The closing E2E re-run is in `186-07-closing-e2e.md` § Re-run after the code-review fixes, `E2E_TREE_SHA=ee85b83a38488f052edc7a00c7a80facd6602871`.
+
