@@ -325,6 +325,10 @@ fast-forwarded to a `main` commit.
   configuration of the CloudFront distribution and of the load balancer's rules.
 - `SUPABASE_ACCESS_TOKEN` reaches every project of its Supabase account, not the staging project
   alone.
+- A deploy has one approval, given when the `staging` job starts, before the Terraform plan and
+  the list of pending migrations exist. Approving it releases the migration push, which cannot be
+  undone. The reviewer approves the commit, and its diff of `apps/supabase/supabase/migrations/`
+  since the last deploy is the pending list.
 - Between a real destroy and the redeploy the alert topic does not exist, so a failure in that
   window sends no alert, and the new subscription has to be confirmed again.
 - An assumption of the deploy role that fails cannot publish its own alert: the alert step needs
