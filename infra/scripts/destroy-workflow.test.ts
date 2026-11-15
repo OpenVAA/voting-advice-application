@@ -277,7 +277,7 @@ describe('the Supabase root is shown out of reach in plan-destroy', () => {
     expect(script).toMatch(/\[ "\$init_status" -ne 0 \]/);
     expect(script).toMatch(/\[ "\$head_status" -ne 0 \]/);
     expect(script).toContain('supabase_root_refused=no');
-    expect(script).toMatch(/supabase_root_refused=no"\n\s+echo "::error::[^\n]*"\n\s+exit 1/);
+    expect(script).toMatch(/supabase_root_refused=no"\necho "::error::[^\n]*"\nexit 1\n$/);
   });
 
   it('names the backend key the Supabase root itself declares', () => {
