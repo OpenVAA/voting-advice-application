@@ -921,8 +921,11 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
    Then the cases, an allowed and a refused one for each concern, and the same pair for a subnet
    created in a VPC. EC2 evaluates the VPC of that create with the VPC's own tags and without the
    request's tags, so the allowed subnet case passes the VPC's tags alone, and the refused one passes
-   the request's tags on a VPC that carries none. The simulator evaluates only the entries it is given,
-   so the context EC2 really builds is first seen by the pipeline's deploy from nothing after the
+   the request's tags on a VPC that carries none. The edge cases show that a tag call reaches only a
+   distribution or certificate that already carries the root's tags: the foreign cases pass the
+   request's tags on a resource that carries none, which is how the role would otherwise take over a
+   resource of another owner. The simulator evaluates only the entries it is given, so the context
+   EC2, CloudFront and ACM really build is first seen by the pipeline's deploy from nothing after the
    destroy:
 
    ```bash
@@ -955,19 +958,37 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
      "$(kv iam:PassedToService string ecs-tasks.amazonaws.com)"
    sim pass_lambda iam:PassRole "$EXEC" \
      "$(kv iam:PassedToService string lambda.amazonaws.com)"
+   CF=arn:aws:cloudfront::$A:distribution
+   CERT=arn:aws:acm:us-east-1:$A:certificate/00000000-0000-0000-0000-000000000000
+   sim create_distribution cloudfront:CreateDistribution "*" "$TAG_P" "$TAG_R"
+   sim tag_owned_distribution cloudfront:TagResource "$CF/EOWNED0000000" \
+     "$OWN_P" "$OWN_R" "$TAG_P" "$TAG_R"
+   sim tag_foreign_distribution cloudfront:TagResource \
+     "$CF/EFOREIGN000000" "$TAG_P" "$TAG_R"
+   sim tag_foreign_certificate acm:AddTagsToCertificate "$CERT" \
+     "$TAG_P" "$TAG_R"
+   DOMAINS=acm:DomainNames
+   IN_US=$(kv aws:RequestedRegion string us-east-1)
+   sim cert_viewer acm:RequestCertificate "*" "$TAG_P" "$TAG_R" "$IN_US" \
+     "$(kv "$DOMAINS" stringList staging.openvaa.org)"
+   sim cert_other_name acm:RequestCertificate "*" "$TAG_P" "$TAG_R" \
+     "$IN_US" "$(kv "$DOMAINS" stringList other.openvaa.org)"
    sim publish_topic sns:Publish "$TOPIC"
    sim publish_other sns:Publish "arn:aws:sns:$R:openvaa-other"
    sim hand_state s3:GetObject \
      "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate"
    ```
 
-   > **Go on only when `s9b_policies=11`, every `s9b_<case>_exit` reads 0, there are eleven
+   > **Go on only when `s9b_policies=11`, every `s9b_<case>_exit` reads 0, there are seventeen
    > `s9b_decision=` lines, and they read:** `allowed` for `ec2:CreateVpc` with the tags,
-   > `ec2:CreateSubnet` in the tagged VPC, `ChangeResourceRecordSets` of the A record,
-   > `iam:PassRole` to ECS tasks and `sns:Publish` on the deployment topic; `implicitDeny` for
-   > `ec2:CreateVpc` without the tags, `ec2:CreateSubnet` in the untagged VPC, the MX record,
-   > `iam:PassRole` to Lambda, `sns:Publish` on another topic and `s3:GetObject` of the Supabase
-   > root's state under `hand/`. **A refused case that reads `allowed` means stop**: a policy is
+   > `ec2:CreateSubnet` in the tagged VPC, `cloudfront:CreateDistribution` with the tags,
+   > `cloudfront:TagResource` on the owned distribution, `acm:RequestCertificate` of
+   > `staging.openvaa.org`, `ChangeResourceRecordSets` of the A record, `iam:PassRole` to ECS tasks
+   > and `sns:Publish` on the deployment topic; `implicitDeny` for `ec2:CreateVpc` without the tags,
+   > `ec2:CreateSubnet` in the untagged VPC, `cloudfront:TagResource` on the foreign distribution,
+   > `acm:AddTagsToCertificate` on the foreign certificate, `acm:RequestCertificate` of another name,
+   > the MX record, `iam:PassRole` to Lambda, `sns:Publish` on another topic and `s3:GetObject` of
+   > the Supabase root's state under `hand/`. **A refused case that reads `allowed` means stop**: a policy is
    > wider than its scope, and it is corrected in the module before anything is applied. An allowed
    > case that reads a deny stops the step too, because the pipeline's apply would fail on it. In
    > either case run item 7, paste the lines and stop. If a call fails, do not paste its error text,
@@ -1144,6 +1165,7 @@ it.
 | A workflow can assume the plan role and the deploy role, and a token with a wrong subject is refused                             | The first deploy workflow run (`infra/README.md` § The deploy pipeline)   |
 | AWS evaluates the claims `repository_id` and `repository_owner_id` in a trust condition once they are set                        | The first deploy workflow run (`infra/README.md` § The deploy pipeline)   |
 | The deploy role's policies hold every call a pipeline plan, apply and destroy of the AWS root makes                              | Step 9 item 4, then the first pipeline deploy and destroy                 |
+| A distribution or certificate created with the root's tags passes the edge tag calls' `aws:ResourceTag` test                     | The first pipeline deploy from nothing, after the real destroy            |
 
 ## Observations
 

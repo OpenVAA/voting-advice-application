@@ -303,6 +303,11 @@ fast-forwarded to a `main` commit.
   window sends no alert, and the new subscription has to be confirmed again.
 - An assumption of the deploy role that fails cannot publish its own alert: the alert step needs
   that role too, so such a run is red with no mail.
+- The deploy role's EC2 and edge scopes test the tags `Project=openvaa` and `Root=aws`, which name
+  the project and the root but not the environment. A distribution, certificate or network resource
+  in this account that already carries both tags, such as one of a second environment's AWS root, is
+  within the role's reach. A resource without them is not: no tag call of the role is allowed on the
+  request's tags alone.
 
 ## Example environment
 

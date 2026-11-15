@@ -75,8 +75,9 @@ resource "aws_iam_role_policy_attachment" "deploy_alert" {
 
 # The eight policies below hold the actions that a refresh, a create, an update and a destroy of the
 # pipeline root make. Every scope is a name the root gives its resources, the tags its providers set
-# on them, or the one hosted zone it writes to. Reads that the services do not scope to a resource
-# are granted on every resource. No statement grants an S3, SSM, Secrets Manager or KMS action or a
+# on them, the one hosted zone it writes to, or the names its certificates are requested for. Reads
+# and creates that the services do not scope to a resource are granted on every resource, a create
+# held by its request's tags. No statement grants an S3, SSM, Secrets Manager or KMS action or a
 # read of log events, so the deploy role reaches no state but the pipeline key and no secret value.
 
 # Network: a create must carry the root's tags, and a change or delete must find them on the
@@ -392,8 +393,14 @@ resource "aws_iam_role_policy_attachment" "deploy_pass_role" {
   policy_arn = aws_iam_policy.deploy_pass_role.arn
 }
 
-# Edge: the distribution and both certificates are created with the root's tags and changed or
-# deleted only while they carry them.
+# Edge: the distribution and both certificates are created with the root's tags and changed, tagged
+# or deleted only while they carry them. CloudFront and ACM have no condition key that limits a tag
+# call to a create, so no tag call is allowed on the request's tags alone: such a grant could put the
+# root's tags on a distribution or certificate of another owner and so bring it within reach of the
+# change statements. A tag call made as part of a create with tags passes on aws:ResourceTag, which
+# IAM fills from the tags such a request attaches. A distribution's ARN does not exist before it is
+# created, so the create is granted on "*" as CloudFront documents, and a certificate request is
+# held to the frontend's two names and to the regions of the two certificates.
 data "aws_iam_policy_document" "deploy_edge" {
   statement {
     sid    = "ReadEdge"
@@ -414,9 +421,8 @@ data "aws_iam_policy_document" "deploy_edge" {
     actions = [
       "cloudfront:CreateDistribution",
       "cloudfront:CreateDistributionWithTags",
-      "cloudfront:TagResource",
     ]
-    resources = ["arn:aws:cloudfront::${var.aws_account_id}:distribution/*"]
+    resources = ["*"]
 
     dynamic "condition" {
       for_each = local.root_tags
@@ -434,7 +440,6 @@ data "aws_iam_policy_document" "deploy_edge" {
     actions = [
       "cloudfront:UpdateDistribution",
       "cloudfront:DeleteDistribution",
-      "cloudfront:TagResource",
       "cloudfront:UntagResource",
     ]
     resources = ["arn:aws:cloudfront::${var.aws_account_id}:distribution/*"]
@@ -452,8 +457,20 @@ data "aws_iam_policy_document" "deploy_edge" {
   statement {
     sid       = "RequestTaggedCertificate"
     effect    = "Allow"
-    actions   = ["acm:RequestCertificate", "acm:AddTagsToCertificate"]
-    resources = local.certificate_arns
+    actions   = ["acm:RequestCertificate"]
+    resources = ["*"]
+
+    condition {
+      test     = "ForAllValues:StringEquals"
+      variable = "acm:DomainNames"
+      values   = [var.domain, "origin.${var.domain}"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestedRegion"
+      values   = distinct([var.aws_region, "us-east-1"])
+    }
 
     dynamic "condition" {
       for_each = local.root_tags
@@ -470,10 +487,25 @@ data "aws_iam_policy_document" "deploy_edge" {
     effect = "Allow"
     actions = [
       "acm:DeleteCertificate",
-      "acm:AddTagsToCertificate",
       "acm:RemoveTagsFromCertificate",
     ]
     resources = local.certificate_arns
+
+    dynamic "condition" {
+      for_each = local.root_tags
+      content {
+        test     = "StringEquals"
+        variable = "aws:ResourceTag/${condition.key}"
+        values   = [condition.value]
+      }
+    }
+  }
+
+  statement {
+    sid       = "TagOwnedEdge"
+    effect    = "Allow"
+    actions   = ["cloudfront:TagResource", "acm:AddTagsToCertificate"]
+    resources = ["*"]
 
     dynamic "condition" {
       for_each = local.root_tags

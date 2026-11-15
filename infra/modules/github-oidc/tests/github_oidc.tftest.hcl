@@ -295,3 +295,53 @@ run "network_parent_scope" {
     error_message = "The network policy must hold one CreateInTaggedParent statement, or the check above examines nothing."
   }
 }
+
+run "edge_tag_scope" {
+  command = plan
+
+  # CloudFront and ACM have no key that limits a tag call to a create, so a tag call that tested the
+  # request's tags alone would let the role put the root's tags on any distribution or certificate
+  # and then change or delete it. Every tag call of the edge is allowed only on a resource that
+  # already carries the root's tags, or is created with them, which aws:ResourceTag covers.
+  variables {
+    edge_tag_calls = ["cloudfront:TagResource", "acm:AddTagsToCertificate"]
+  }
+
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.deploy_edge.policy).Statement :
+      contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:ResourceTag/Project"]]), [])]), "openvaa")
+      && contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:ResourceTag/Root"]]), [])]), "aws")
+      if length(setintersection(toset(flatten([s.Action])), toset(var.edge_tag_calls))) > 0
+    ])
+    error_message = "Every edge statement that allows cloudfront:TagResource or acm:AddTagsToCertificate must require the resource tags Project=openvaa and Root=aws."
+  }
+
+  assert {
+    condition = length(setsubtract(toset(var.edge_tag_calls), toset(flatten([
+      for s in jsondecode(aws_iam_policy.deploy_edge.policy).Statement : flatten([s.Action])
+    ])))) == 0
+    error_message = "Both edge tag calls must be granted, or the check above examines nothing."
+  }
+
+  # CloudFront's developer guide gives CreateDistribution the resource "*", since a distribution's
+  # ARN does not exist before it is created.
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.deploy_edge.policy).Statement :
+      flatten([s.Resource]) == ["*"]
+      if contains(flatten([s.Action]), "cloudfront:CreateDistribution")
+    ])
+    error_message = "cloudfront:CreateDistribution must be granted on the resource \"*\"."
+  }
+
+  assert {
+    condition = alltrue([
+      for s in jsondecode(aws_iam_policy.deploy_edge.policy).Statement :
+      toset(flatten([s.Condition["ForAllValues:StringEquals"]["acm:DomainNames"]])) == toset(["staging.openvaa.org", "origin.staging.openvaa.org"])
+      && toset(flatten([s.Condition["StringEquals"]["aws:RequestedRegion"]])) == toset(["eu-north-1", "us-east-1"])
+      if contains(flatten([s.Action]), "acm:RequestCertificate")
+    ])
+    error_message = "acm:RequestCertificate must be limited to the frontend's two names and to the root's region and us-east-1."
+  }
+}
