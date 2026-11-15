@@ -17,6 +17,10 @@ deploy_environment = "staging"
 plan_subjects      = ["repo:OpenVAA/voting-advice-application:pull_request"]
 deploy_subjects    = ["repo:OpenVAA/voting-advice-application:environment:staging"]
 
+# The dns-mail root's zone (its zone_id output) and the AWS root's domain, for the frontend's records.
+deploy_hosted_zone_id = "Z02494181MAM7OCUAIPKC"
+deploy_domain         = "staging.openvaa.org"
+
 # Must equal the backend key of infra/envs/staging/aws: the deploy role may reach this key only.
 pipeline_state_key = "pipeline/staging/aws/terraform.tfstate"
 

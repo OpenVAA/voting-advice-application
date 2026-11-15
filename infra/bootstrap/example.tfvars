@@ -26,6 +26,11 @@ deploy_environment = "production"
 plan_subjects      = ["repo:EXAMPLE-ORG@1234567/EXAMPLE-REPO@7654321:pull_request"]
 deploy_subjects    = ["repo:EXAMPLE-ORG@1234567/EXAMPLE-REPO@7654321:environment:production"]
 
+# Stand-ins. The zone is the dns-mail root's zone_id output and the domain that of the AWS root the
+# pipeline applies; the deploy role may change the frontend's records in that zone and no other.
+deploy_hosted_zone_id = "Z00000000000000000000"
+deploy_domain         = "vaa.example.org"
+
 # Optional: pin the trust policies to the numeric ids as well.
 # github_repository_id       = "7654321"
 # github_repository_owner_id = "1234567"
