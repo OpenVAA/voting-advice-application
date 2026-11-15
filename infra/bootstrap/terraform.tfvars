@@ -15,7 +15,18 @@ budget_limit_usd = 100
 
 deploy_environment = "staging"
 plan_subjects      = ["repo:OpenVAA/voting-advice-application:pull_request"]
-deploy_subjects    = ["repo:OpenVAA/voting-advice-application:environment:staging"]
+
+# The second subject is the destroy workflow's environment, which holds no secret.
+deploy_subjects = [
+  "repo:OpenVAA/voting-advice-application:environment:staging",
+  "repo:OpenVAA/voting-advice-application:environment:staging-destroy",
+]
+
+# The numeric ids of OpenVAA/voting-advice-application and of its owner, read from the GitHub API. With
+# them both trusts refuse a token from a repository recreated under the same name. The ids stay the same
+# through a rename or a transfer; the subjects above are name-based and do not.
+github_repository_id       = "546467466"
+github_repository_owner_id = "115159211"
 
 # The dns-mail root's zone (its zone_id output) and the AWS root's domain, for the frontend's records.
 deploy_hosted_zone_id = "Z02494181MAM7OCUAIPKC"

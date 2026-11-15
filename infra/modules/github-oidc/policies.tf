@@ -1,5 +1,7 @@
 # One customer-managed policy per concern, all under var.iam_path, each attached to one role by its own
-# role attachment. Two consequences for the roots these roles work on:
+# role attachment. The plan role is read-only: it holds the AWS-managed read-only policy and an explicit
+# deny, and no write of any kind, the state lock included, so a plan runs without the lock. Two
+# consequences for the roots these roles work on:
 # - The plan role is denied Secrets Manager reads, KMS decryption, DynamoDB item reads, log event reads
 #   and a few other data reads (the plan_deny document lists them), so the root it plans must hold no
 #   secret value that a refresh has to read, and no DynamoDB table item; such a root refers to a secret
@@ -151,25 +153,9 @@ resource "aws_iam_policy" "plan_deny" {
   policy      = data.aws_iam_policy_document.plan_deny.json
 }
 
-# A plan takes the state lock, which the AWS-managed read-only policy does not allow.
-data "aws_iam_policy_document" "plan_lock" {
-  statement {
-    sid       = "StateLock"
-    effect    = "Allow"
-    actions   = ["s3:PutObject", "s3:DeleteObject"]
-    resources = [local.pipeline_lock_arn]
-  }
-}
-
-resource "aws_iam_policy" "plan_lock" {
-  name        = "${var.name_prefix}-plan-lock"
-  path        = var.iam_path
-  description = "Lets the plan role take and release the pipeline root's state lock."
-  policy      = data.aws_iam_policy_document.plan_lock.json
-}
-
 # Attachments are per role. The account-wide exclusive attachment form is not used: it would detach a
-# policy from every other identity in the account.
+# policy from every other identity in the account. The plan role's two attachments are all it holds, so
+# it can neither take nor delete the pipeline's state lock.
 resource "aws_iam_role_policy_attachment" "plan_read_only" {
   role       = aws_iam_role.plan.name
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
@@ -178,11 +164,6 @@ resource "aws_iam_role_policy_attachment" "plan_read_only" {
 resource "aws_iam_role_policy_attachment" "plan_deny" {
   role       = aws_iam_role.plan.name
   policy_arn = aws_iam_policy.plan_deny.arn
-}
-
-resource "aws_iam_role_policy_attachment" "plan_lock" {
-  role       = aws_iam_role.plan.name
-  policy_arn = aws_iam_policy.plan_lock.arn
 }
 
 resource "aws_iam_role_policy_attachment" "deploy_tfstate" {
