@@ -25,34 +25,15 @@ const AWS_ROOT = 'infra/envs/staging/aws';
 const SUPABASE_ROOT = 'infra/envs/staging/supabase';
 const DEPLOY_ROLE_ARN = 'arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy';
 const PLAN_FILE = '"$RUNNER_TEMP/destroy.tfplan"';
+/** The digest a destroy plan passes: a destroy replaces nothing, so the value only satisfies the variable's form. */
+const PLACEHOLDER_DIGEST = `sha256:${'0'.repeat(64)}`;
 const GUARD_COMMAND =
   'infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt"';
 
 /** The ids of the plan job's steps that must run in this order. */
-const PLAN_ORDER = [
-  'credentials',
-  'supabase-root-refused',
-  'digest',
-  'init',
-  'state',
-  'plan',
-  'export',
-  'guard',
-  'show'
-];
+const PLAN_ORDER = ['credentials', 'supabase-root-refused', 'init', 'state', 'plan', 'export', 'guard', 'show'];
 /** The ids of the apply job's steps that must run in this order. */
-const APPLY_ORDER = [
-  'credentials',
-  'digest',
-  'init',
-  'state',
-  'plan',
-  'export',
-  'guard',
-  'show',
-  'apply',
-  'state-after'
-];
+const APPLY_ORDER = ['credentials', 'init', 'state', 'plan', 'export', 'guard', 'show', 'apply', 'state-after'];
 
 /** The job `id` of a workflow; fails the test when it is absent. */
 function jobOf(source: WorkflowDocument, id: string): WorkflowJob {
@@ -316,12 +297,9 @@ describe.each([
     expect(idsInOrder(steps, order)).toEqual(order);
   });
 
-  it('read the running digest with running-image-digest.sh', () => {
-    const script = runOf(stepWithId(steps, 'digest'));
-    expect(script).toContain(
-      'infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend'
-    );
-    expect(script).toContain('echo "digest=$digest" >> "$GITHUB_OUTPUT"');
+  it('read no running digest, so a destroy that stopped after the service went can be run again', () => {
+    expect(steps.some((step) => step.id === 'digest')).toBe(false);
+    expect(steps.some((step) => runOf(step).includes('running-image-digest.sh'))).toBe(false);
   });
 
   it('initialise the AWS root with the lock file read-only and list its state into $RUNNER_TEMP', () => {
@@ -333,13 +311,13 @@ describe.each([
     );
   });
 
-  it('plan -destroy with the running digest and a placeholder alert address into $RUNNER_TEMP', () => {
+  it('plan -destroy with a placeholder digest and a placeholder alert address into $RUNNER_TEMP', () => {
     const plan = stepWithId(steps, 'plan');
     expect(runOf(plan)).toContain(
       `terraform -chdir=${AWS_ROOT} plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out=${PLAN_FILE}`
     );
     expect(envOf(plan)).toEqual({
-      DIGEST: '${{ steps.digest.outputs.digest }}',
+      DIGEST: PLACEHOLDER_DIGEST,
       TF_VAR_alert_email: 'destroy-plan@example.invalid'
     });
   });

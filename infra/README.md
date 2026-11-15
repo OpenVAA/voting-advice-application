@@ -231,8 +231,8 @@ approval:
 
 1. `plan-destroy` shows the Supabase root out of reach first: an init of
    `infra/envs/staging/supabase` and a read of its state key under `hand/` must both be refused to
-   the deploy role. It then reads the digest the service runs, lists the AWS root's state, plans
-   `-destroy` of that root into a saved plan, and checks it with `infra/scripts/check-destroy-plan.sh`
+   the deploy role. It then lists the AWS root's state, plans `-destroy` of that root into a saved
+   plan with a placeholder digest, and checks it with `infra/scripts/check-destroy-plan.sh`
    (every change a delete under `module.frontend`, of exactly the managed addresses the state holds,
    and at least one) before it prints it.
 2. `apply-destroy` plans again into its own saved plan, so that no plan crosses jobs, checks and
@@ -243,8 +243,8 @@ nothing. A real destroy is approved at both.
 
 ### How a hand plan names the image
 
-No variable file holds `image_digest`. A plan by hand, like the pull-request and destroy plans,
-passes the digest the service runs now, so that its diff shows the infrastructure change alone:
+No variable file holds `image_digest`. A plan by hand, like the pull-request plan, passes the digest
+the service runs now, so that its diff shows the infrastructure change alone:
 `infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend`
 prints `running_image_digest=`, and the plan takes it as `-var "image_digest=$DIGEST"`.
 [`envs/staging/aws/README.md`](envs/staging/aws/README.md) gives the commands.
@@ -279,6 +279,11 @@ is all there is. An alert that could not be sent prints `alert_error=` in the al
   state has changed under it, and the run turns red at its apply.
 - A run waiting for approval or for the group is replaced by a newer one. To deploy the commit it
   carried, push it again or re-run it once the newer run is done.
+- A destroy that stopped part-way, on a lost runner, a timeout or a failed delete, is finished by
+  running the destroy workflow again: its plan reads no running service, and its guard plans the
+  destroy of whatever the state still holds.
+- Between a real destroy and the next deploy there is no service to read a digest from, so the
+  pull-request plan is red at "Read the digest the service runs". The deploy from nothing ends it.
 - A red run keeps what it already did: pushed migrations stay pushed and can only be followed by a
   new migration, and deployed functions stay deployed. The fix goes forward, as a new commit on
   `deploy/staging`.

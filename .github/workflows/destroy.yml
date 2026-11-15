@@ -9,8 +9,8 @@ name: "Destroy staging AWS"
 #
 # A run, in order:
 #   1. job plan-destroy, which waits for its own approval of `staging-destroy`: shows the Supabase root out of reach,
-#      reads the digest the service runs, lists the AWS root's state, plans `-destroy` of that root into a saved plan,
-#      checks the plan with infra/scripts/check-destroy-plan.sh and only then prints it;
+#      lists the AWS root's state, plans `-destroy` of that root into a saved plan, checks the plan with
+#      infra/scripts/check-destroy-plan.sh and only then prints it;
 #   2. job apply-destroy, which needs the first and waits for a second approval: plans again into its own saved plan,
 #      so that no plan crosses jobs, checks and prints it the same way, applies it and fails unless the state is then
 #      empty.
@@ -110,26 +110,6 @@ jobs:
           echo "::error::The deploy role was not refused both reads of the Supabase root's state (init $init_status, refused=$init_refused; head-object $head_status, refused=$head_refused)."
           exit 1
 
-      # The plan passes the digest the service runs now. A destroy plan replaces nothing, so the digest only satisfies
-      # the variable.
-      - name: "Read the digest the service runs"
-        id: digest
-        run: |
-          set -uo pipefail
-          infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend > "$RUNNER_TEMP/running-digest.txt"
-          status=$?
-          cat "$RUNNER_TEMP/running-digest.txt"
-          if [ "$status" -ne 0 ]; then
-            echo "::error::running-image-digest.sh exited $status, so the plan has no digest to pass."
-            exit 1
-          fi
-          digest=$(sed -n 's/^running_image_digest=//p' "$RUNNER_TEMP/running-digest.txt")
-          if [ -z "$digest" ]; then
-            echo "::error::running-image-digest.sh printed no running_image_digest= line."
-            exit 1
-          fi
-          echo "digest=$digest" >> "$GITHUB_OUTPUT"
-
       - name: "Initialise the staging AWS root"
         id: init
         run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
@@ -146,12 +126,14 @@ jobs:
             exit 1
           fi
 
-      # A destroy applies no variable value, so the alert address is a placeholder that passes the module's check and
-      # reaches no resource. The plan's output goes to a file, so that nothing of the plan is printed before the guard.
+      # A destroy applies no variable value, so the digest and the alert address are placeholders that pass the
+      # variables' checks and reach no resource. No running service is read for the digest, so a destroy that stopped
+      # after the service was deleted can be run again. The plan's output goes to a file, so that nothing of the plan is
+      # printed before the guard.
       - name: "Plan the destroy of the staging AWS root"
         id: plan
         env:
-          DIGEST: ${{ steps.digest.outputs.digest }}
+          DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
           TF_VAR_alert_email: destroy-plan@example.invalid
         run: |
           set -uo pipefail
@@ -216,7 +198,7 @@ jobs:
         run: >-
           rm -f
           "$RUNNER_TEMP/destroy.tfplan" "$RUNNER_TEMP/destroy.json" "$RUNNER_TEMP/destroy-plan.log"
-          "$RUNNER_TEMP/destroy-plan.txt" "$RUNNER_TEMP/state.txt" "$RUNNER_TEMP/running-digest.txt"
+          "$RUNNER_TEMP/destroy-plan.txt" "$RUNNER_TEMP/state.txt"
 
   # Plans again rather than taking the first job's plan, so no plan file crosses jobs. Its guard checks this plan.
   apply-destroy:
@@ -253,24 +235,6 @@ jobs:
           role-session-name: destroy-apply-${{ github.run_id }}
           allowed-account-ids: "471112560111"
 
-      - name: "Read the digest the service runs"
-        id: digest
-        run: |
-          set -uo pipefail
-          infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend > "$RUNNER_TEMP/running-digest.txt"
-          status=$?
-          cat "$RUNNER_TEMP/running-digest.txt"
-          if [ "$status" -ne 0 ]; then
-            echo "::error::running-image-digest.sh exited $status, so the plan has no digest to pass."
-            exit 1
-          fi
-          digest=$(sed -n 's/^running_image_digest=//p' "$RUNNER_TEMP/running-digest.txt")
-          if [ -z "$digest" ]; then
-            echo "::error::running-image-digest.sh printed no running_image_digest= line."
-            exit 1
-          fi
-          echo "digest=$digest" >> "$GITHUB_OUTPUT"
-
       - name: "Initialise the staging AWS root"
         id: init
         run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
@@ -287,12 +251,14 @@ jobs:
             exit 1
           fi
 
-      # A destroy applies no variable value, so the alert address is a placeholder that passes the module's check and
-      # reaches no resource. The plan's output goes to a file, so that nothing of the plan is printed before the guard.
+      # A destroy applies no variable value, so the digest and the alert address are placeholders that pass the
+      # variables' checks and reach no resource. No running service is read for the digest, so a destroy that stopped
+      # after the service was deleted can be run again. The plan's output goes to a file, so that nothing of the plan is
+      # printed before the guard.
       - name: "Plan the destroy of the staging AWS root"
         id: plan
         env:
-          DIGEST: ${{ steps.digest.outputs.digest }}
+          DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
           TF_VAR_alert_email: destroy-plan@example.invalid
         run: |
           set -uo pipefail
@@ -392,4 +358,3 @@ jobs:
           rm -f
           "$RUNNER_TEMP/destroy.tfplan" "$RUNNER_TEMP/destroy.json" "$RUNNER_TEMP/destroy-plan.log"
           "$RUNNER_TEMP/destroy-plan.txt" "$RUNNER_TEMP/state.txt" "$RUNNER_TEMP/state-after.txt"
-          "$RUNNER_TEMP/running-digest.txt"
