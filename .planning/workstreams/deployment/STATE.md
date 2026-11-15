@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 11
+current_plan: 12
 status: executing
-stopped_at: Completed 187-10-PLAN.md
-last_updated: "2026-11-15T03:02:12.047Z"
+stopped_at: Completed 187-11-PLAN.md
+last_updated: "2026-11-15T03:12:33.215Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 5daeba100b1ccbbf97980a58988925019e776a12
+state_head: 924b7f94942a23aa43335c17da8d767a7fb0aa88
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 146
+  completed_plans: 147
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 11 of 25
+Plan: 12 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 11
+**Current Plan:** 12
 
 From 184 on, the numeric order is the dependency order.
 
@@ -161,6 +161,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P08 | 7min | 2 tasks | 5 files |
 | Phase 187 P09 | 7min | 2 tasks | 2 files |
 | Phase 187 P10 | 7min | 2 tasks | 4 files |
+| Phase 187 P11 | 8min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -327,6 +328,10 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-10: check-destroy-plan.sh passes only managed deletes under module.frontend. equal in number to the state's managed resources; prints nothing of the plan
 - [Phase 187]: 187-10: destroy.yml is two staging-destroy jobs, each re-planning into its own RUNNER_TEMP file; plan output goes to a file so nothing is printed before the guard
 - [Phase 187]: 187-10: the Supabase-root refusal needs both reads to fail and name AccessDenied/403/Forbidden; the role is named by literal ARN, alert address a placeholder
+- [Phase 187]: 187-11: apply-root guard scans every workflow and asserts the exact mutating-command list, so it cannot pass vacuously
+- [Phase 187]: 187-11: no-main-push also fails an unfiltered push, branches-ignore, or bare on: push
+- [Phase 187]: 187-11: lint-workflows maps docker status 125 to 2, never an actionlint result
+- [Phase 187]: 187-11: workstation SMOKE_EXPECTED_SHA is the tip of deploy/staging via git ls-remote --exit-code
 
 ### Pending Todos
 
@@ -381,6 +386,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T03:02:10.649Z
-**Stopped At:** Completed 187-10-PLAN.md
+Last session: 2026-11-15T03:12:31.795Z
+**Stopped At:** Completed 187-11-PLAN.md
 **Resume File:** None
