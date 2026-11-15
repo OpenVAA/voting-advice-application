@@ -1,0 +1,130 @@
+name: "Infrastructure plan"
+
+# Checks the Terraform under `infra/` for a pull request: formatting, the validation of every root, the tests of every
+# module and the plans of the three example roots against mock providers, none of which needs a credential.
+#
+# A push to a `deploy-evidence/**` branch also runs this workflow. For a push GitHub takes the workflow file from the
+# pushed commit, so the run can be observed before the file is on the default branch.
+#
+# The repository's default token may write, so the top-level permissions are empty and every job names its own.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-plan.yml"
+  push:
+    branches:
+      - "deploy-evidence/**"
+
+permissions: {}
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Setup Terraform 1.16.5"
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: "Check Terraform formatting"
+        run: terraform fmt -check -recursive -diff infra
+
+      - name: "Validate every Terraform root"
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          validated=()
+          for root in infra/bootstrap infra/envs/*/*/; do
+            root="${root%/}"
+            echo "::group::$root"
+            terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly
+            terraform -chdir="$root" validate -no-color
+            echo "::endgroup::"
+            validated+=("$root")
+          done
+          for required in \
+            infra/bootstrap \
+            infra/envs/staging/dns-mail \
+            infra/envs/staging/supabase \
+            infra/envs/staging/aws \
+            infra/envs/example/dns-mail \
+            infra/envs/example/supabase \
+            infra/envs/example/aws; do
+            found=0
+            for root in "${validated[@]}"; do
+              if [ "$root" = "$required" ]; then found=1; fi
+            done
+            if [ "$found" -ne 1 ]; then
+              echo "::error::$required was not among the roots validated (${validated[*]}). A required root is missing or the glob no longer reaches it."
+              exit 1
+            fi
+          done
+          echo "validated ${#validated[@]} roots: ${validated[*]}"
+
+      - name: "Test every Terraform module that has tests"
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          tested=()
+          for tests in infra/modules/*/tests/; do
+            module="${tests%/tests/}"
+            echo "::group::$module"
+            terraform -chdir="$module" init -backend=false -input=false
+            terraform -chdir="$module" test -no-color
+            echo "::endgroup::"
+            tested+=("$module")
+          done
+          if [ "${#tested[@]}" -eq 0 ]; then
+            echo "::error::No module under infra/modules has a tests directory, so no module test ran."
+            exit 1
+          fi
+          echo "tested ${#tested[@]} modules: ${tested[*]}"
+
+      # Each example root is planned by its own test file against mock providers, so the plan reaches every resource
+      # without a credential or a backend.
+      - name: "Plan the example roots with mock providers"
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          planned=()
+          for tests in infra/envs/example/*/tests/; do
+            root="${tests%/tests/}"
+            echo "::group::$root"
+            terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly
+            terraform -chdir="$root" test -verbose -no-color
+            echo "::endgroup::"
+            planned+=("$root")
+          done
+          for required in \
+            infra/envs/example/aws \
+            infra/envs/example/dns-mail \
+            infra/envs/example/supabase; do
+            found=0
+            for root in "${planned[@]}"; do
+              if [ "$root" = "$required" ]; then found=1; fi
+            done
+            if [ "$found" -ne 1 ]; then
+              echo "::error::$required was not among the example roots planned (${planned[*]}). Its tests directory is missing or the glob no longer reaches it."
+              exit 1
+            fi
+          done
+          echo "planned ${#planned[@]} example roots: ${planned[*]}"

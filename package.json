@@ -92,6 +92,7 @@
     "eslint-plugin-simple-import-sort": "catalog:",
     "glob": "^13.0.6",
     "husky": "^9.1.7",
+    "js-yaml": "catalog:",
     "lint-staged": "^17.6.0",
     "prettier": "catalog:",
     "tsup": "catalog:",
