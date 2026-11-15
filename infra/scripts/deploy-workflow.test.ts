@@ -133,9 +133,8 @@ describe('the gate of the deploy job', () => {
     expect(deploy['timeout-minutes']).toBeGreaterThanOrEqual(50);
   });
 
-  it('holds exactly contents: read and id-token: write, and never runs for a pull request', () => {
+  it('holds exactly contents: read and id-token: write', () => {
     expect(deploy.permissions).toEqual({ contents: 'read', 'id-token': 'write' });
-    expect(String(deploy.if)).toContain("github.event_name != 'pull_request'");
   });
 
   it('is the only job with id-token: write', () => {

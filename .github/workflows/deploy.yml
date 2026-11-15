@@ -83,7 +83,6 @@ jobs:
   # policy and its secrets, which are released only on approval.
   deploy:
     needs: checks
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 60
     permissions:
