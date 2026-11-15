@@ -155,7 +155,7 @@ The entry loads no `.env` file. It reads only the variables below from the proce
 
 | Variable                                              | Required                | Default                       | What it is                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------------------------------------------------- | ----------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SMOKE_EXPECTED_SHA`                                  | yes, with no default    | —                             | The full 40-hex commit id the target must serve as `build` on `/api/health`. From a workstation it is `image_tag` of `infra/envs/staging/aws/terraform.tfvars`.                                                                                                                                                                                                                                                                              |
+| `SMOKE_EXPECTED_SHA`                                  | yes, with no default    | —                             | The full 40-hex commit id the target must serve as `build` on `/api/health`. From a workstation it is the commit the last deploy built, the tip of `deploy/staging` on origin.                                                                                                                                                                                                                                                               |
 | `SMOKE_BASE_URL`                                      | no                      | `https://staging.openvaa.org` | The target. The gate requires `https`, or `http` on `localhost`, `127.0.0.1` or `[::1]`, no user info, and answers to `/api/health` and `/` from the target's own origin; beyond that a target is accepted by the project it serves, which the gate checks. The contestant spec sends its credentials to one origin alone, `public_origin` of `infra/envs/staging/supabase/terraform.tfvars`, and fails before any page action on any other. |
 | `SMOKE_CONTESTANT_EMAIL`, `SMOKE_CONTESTANT_PASSWORD` | for the contestant spec | —                             | The smoke contestant's sign-in. Without them the contestant test fails by name, `SMOKE INPUT MISSING: SMOKE_CONTESTANT_EMAIL, SMOKE_CONTESTANT_PASSWORD (read from the environment only, never printed)`, before any page action. The voter test needs neither.                                                                                                                                                                              |
 | `PLAYWRIGHT_JSON_OUTPUT_FILE`                         | no                      | none, and then no JSON report | Adds the JSON reporter, writing to that file.                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -180,14 +180,19 @@ Every step runs in the same shell, at the root of this checkout, with Node 24 on
 
    ```bash
    cd "$(git rev-parse --show-toplevel)"
-   DEPLOYED_SHA=$(sed -n \
-     's/^image_tag *= *"\([0-9a-f]*\)".*/\1/p' \
-     infra/envs/staging/aws/terraform.tfvars)
+   TIP_FILE=$(mktemp)
+   git ls-remote --exit-code origin \
+     refs/heads/deploy/staging > "$TIP_FILE"
+   echo "ls_remote_exit=$?"
+   DEPLOYED_SHA=$(cut -f1 "$TIP_FILE")
+   rm -f "$TIP_FILE"
    git diff --quiet "$DEPLOYED_SHA" -- apps packages
    echo "tree_diff_exit=$?"
    ```
 
-   It must print `tree_diff_exit=0`. A `1` means the trees differ: check out a commit whose `apps/` and `packages/` equal the deployed ones. A `128` means the commit is not in the local clone, and `git fetch` brings it.
+   It must print `ls_remote_exit=0` and `tree_diff_exit=0`. An `ls_remote_exit=2` means origin has no `deploy/staging` branch, so the pipeline has deployed nothing yet. A `tree_diff_exit=1` means the trees differ: check out a commit whose `apps/` and `packages/` equal the deployed ones. A `128` means the commit is not in the local clone, and `git fetch` brings it.
+
+   The tip is the commit the last deploy built; after a deploy from a `deploy-evidence/*` branch, read that branch's tip in its place. When the last run went red before its apply, the served build is an older one, and the gate's `sha` row names it.
 
 2. The expected SHA, with every variable the gate refuses unset:
 
@@ -325,7 +330,9 @@ All three run in `yarn test:unit`, through its last link, `yarn test:unit:tests`
 
 ### In the pipeline
 
-Phase 187 calls `yarn test:e2e:deployed` as the pipeline's last stage, with the commit it built as `SMOKE_EXPECTED_SHA` and the contestant's two inputs from the environment's secrets. The smoke step's environment must hold no service-role key, access token or database password: a step that inherits any variable of [the refusals](#inputs) fails `service-role-key-absent` before any spec runs. The contestant spec refuses every base URL but `public_origin`, `https://staging.openvaa.org`, so the step leaves `SMOKE_BASE_URL` unset or sets it to that origin. On CI (`CI` or `GITHUB_ACTIONS` set) a `test.only` left in a smoke spec fails the run. The smoke step uploads no HTML report and never uploads or attaches its per-test output directory, as [the contestant's account](#the-contestants-account) explains.
+The `smoke` step of the deploy workflow, `.github/workflows/deploy.yml`, runs `yarn test:e2e:deployed` after the apply and the stable check, with the commit it built as `SMOKE_EXPECTED_SHA` and the contestant's two inputs from the `staging` environment's secrets. [`infra/README.md`](../infra/README.md#the-deploy-pipeline) gives the whole run. The step's environment must hold no service-role key, access token or database password: a step that inherits any variable of [the refusals](#inputs) fails `service-role-key-absent` before any spec runs. The step also takes the job's AWS credentials out of the run's environment, which needs none. The contestant spec refuses every base URL but `public_origin`, `https://staging.openvaa.org`, so the step leaves `SMOKE_BASE_URL` unset. On CI (`CI` or `GITHUB_ACTIONS` set) a `test.only` left in a smoke spec fails the run.
+
+The step writes its per-test output under the runner's temporary directory, `--output "$RUNNER_TEMP/smoke-output"`, and a later step of the job removes that directory whatever the outcome. Nothing of the step is uploaded, neither an HTML report nor its output directory, as [the contestant's account](#the-contestants-account) explains. A step that follows reads `/api/health` again and fails unless it still serves the built commit, so a deploy landing while the specs ran cannot leave a `PASS sha` line speaking for a build the specs never drove.
 
 ---
 
