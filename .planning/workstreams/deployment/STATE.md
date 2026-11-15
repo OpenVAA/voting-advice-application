@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 187-03-PLAN.md
-last_updated: "2026-11-15T01:58:22.736Z"
+stopped_at: Completed 187-04-PLAN.md
+last_updated: "2026-11-15T02:04:03.944Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 679d61217fd4c836fbf1eb4f579ab4844a6ce41b
+state_head: 9454afaa6f1b69f1ac2f9513bf53abe7a692278d
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 139
+  completed_plans: 140
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 4 of 25
+Plan: 5 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 4
+**Current Plan:** 5
 
 From 184 on, the numeric order is the dependency order.
 
@@ -154,6 +154,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P01 | 9min | 3 tasks | 8 files |
 | Phase 187 P02 | 3min | 2 tasks | 9 files |
 | Phase 187 P03 | 3min | 2 tasks | 2 files |
+| Phase 187 P04 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -304,6 +305,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: The frontend task image is <registry_url>@<image_digest>; image_digest is required (sha256: + 64 lower-case hex), given per plan as -var image_digest= and never written to a tfvars file (C-01). The ECR tag and BUILD_SHA stay the commit id.
 - [Phase 187]: 187-03: build-push-image.sh builds from git archive of the commit extracted into its temporary directory; a write or extract failure prints failed=context and builds nothing (C-02, CR-01 closed in code)
 - [Phase 187]: 187-03: exit 3 of build-push-image.sh (tag_exists=yes image_digest=<digest>) means the registry already holds this commit's image; the caller deploys it as it is
+- [Phase 187]: push-migrations.sh --confirmed-ref is refused (exit 2, before the CLI) unless it equals --ref, GITHUB_ACTIONS=true and OPENVAA_DEPLOY_ENVIRONMENT=staging; GITHUB_ENVIRONMENT is never read (C-04 as amended)
+- [Phase 187]: push-migrations.sh prints push_confirmation=environment or push_confirmation=terminal between push_pending= and push_status=; an empty --confirmed-ref is a usage error
 
 ### Pending Todos
 
@@ -358,6 +361,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T01:58:21.383Z
-**Stopped At:** Completed 187-03-PLAN.md
+Last session: 2026-11-15T02:04:02.602Z
+**Stopped At:** Completed 187-04-PLAN.md
 **Resume File:** None
