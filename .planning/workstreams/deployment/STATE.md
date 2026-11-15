@@ -2,19 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: 186
-current_phase_name: Deployed Smoke Entry
+current_phase: 187
+current_phase_name: Deploy Pipeline
 current_plan: 8
 status: executing
 stopped_at: Completed 186-07-PLAN.md
-last_updated: "2026-11-14T23:46:27.800Z"
+last_updated: "2026-11-15T01:37:25.780Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 186 execution started
-state_head: f462fe699988c2daf122ddd4a774f24417a1cde9
+state_head: dee800ad8028b6b9a7ef21c81160e6fddc54e85b
 progress:
   total_phases: 10
   completed_phases: 5
-  total_plans: 137
+  total_plans: 162
   completed_plans: 136
   percent: 50
 ---
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
-Phase: 186 (Deployed Smoke Entry) — EXECUTING
+Phase: 187 (Deploy Pipeline) — READY TO EXECUTE
 Plan: 8 of 8
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 186 execution started

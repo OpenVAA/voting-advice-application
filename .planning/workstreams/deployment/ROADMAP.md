@@ -612,7 +612,65 @@ Notes:
   5. A guarded destroy path removes the AWS stack, and it is seen unable to reach the Supabase root.
 
 **Research flag**: Standard pattern, no research phase. OIDC, plan and apply, and environment gating are well documented, and the repository-specific items carry the risk. Added by rulings after the research: the named-branch trigger (PIPE-10) and the failure alerts (INFRA-16).
-**Plans**: TBD
+**Plans**: 25 plans in 16 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 16 (plans 14 to 25) are the outward actions, each behind an operator checkpoint; plans 24 and 25 run on or after 2026-11-23.
+
+Plans:
+**Wave 1**
+- [ ] 187-01-PLAN.md — wave 1 — The deploy role's nine customer-managed policies and `ecr:DescribeImages` in the github-oidc module, with the module's first offline test; nothing applied.
+- [ ] 187-02-PLAN.md — wave 1 — The task's image by a required `image_digest` in the module and both AWS roots; no image value in any tfvars.
+- [ ] 187-03-PLAN.md — wave 1 — CR-01: the image built from the commit's `git archive`, with a self-test that plants an ignored file.
+- [ ] 187-04-PLAN.md — wave 1 — `push-migrations.sh --confirmed-ref`, accepted only in a staging Actions job, tested against stubs.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 187-05-PLAN.md — wave 2 — The numeric id conditions, the `staging-destroy` subject, the plan role's lock write removed, and bootstrap runbook Step 9.
+- [ ] 187-06-PLAN.md — wave 2 — The running-image digest script and the staging AWS runbook's plans by digest.
+- [ ] 187-07-PLAN.md — wave 2 — The three example roots planned with mock providers, production shape asserted.
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 187-08-PLAN.md — wave 3 — `infra-plan.yml` (checks, same-repository plan, wrong-subject proof) and the shared workflow guard library.
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 187-09-PLAN.md — wave 4 — `deploy.yml`: one gated job, build, plan, migrations, functions, apply, stable, smoke, re-read, alert.
+- [ ] 187-10-PLAN.md — wave 4 — `destroy.yml`: two approved jobs, the Supabase-root refusal, the destroy-plan guard.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 187-11-PLAN.md — wave 5 — Cross-workflow guards, `yarn lint:workflows`, `infra/README.md` § The deploy pipeline, the smoke entry's notes, the secret scan's two exclusions.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 187-12-PLAN.md — wave 6 — The repository gates, and the green and red evidence commits proven by local builds; nothing pushed.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 187-13-PLAN.md — wave 7 — The phase's one full local E2E run and the handoff to plan 186-08.
+
+**Wave 8** *(blocked on Wave 7 completion; needs the operator)*
+- [ ] 187-14-PLAN.md — wave 8 — H2, H3: the `staging` and `staging-destroy` environments, secrets and variables, read back.
+
+**Wave 9** *(needs the operator)*
+- [ ] 187-15-PLAN.md — wave 9 — The `ci-evidence/187-final` push: secret-scan, infra-validate, dependency-audit.
+- [ ] 187-16-PLAN.md — wave 9 — H1: the bootstrap hand apply after the simulator and CloudTrail checks.
+- [ ] 187-17-PLAN.md — wave 9 — H9: plan 186-08 completed, and the two contestant secrets set.
+
+**Wave 10** *(needs the operator)*
+- [ ] 187-18-PLAN.md — wave 10 — H8: the red run from a broken build, its alert, and the wrong-subject refusal.
+
+**Wave 11** *(needs the operator)*
+- [ ] 187-19-PLAN.md — wave 11 — H5: a draft pull request's plan, readable in its run.
+
+**Wave 12** *(needs the operator)*
+- [ ] 187-20-PLAN.md — wave 12 — H6: a fork pull request's credentialed job skipped.
+- [ ] 187-21-PLAN.md — wave 12 — H4, H7: the first green pipeline deploy, every stage in order.
+
+**Wave 13** *(needs the operator)*
+- [ ] 187-22-PLAN.md — wave 13 — The first deploy from `deploy/staging`, reusing the built image.
+
+**Wave 14** *(needs the operator)*
+- [ ] 187-23-PLAN.md — wave 14 — The destroy path up to its apply: the Supabase root refused, the apply job rejected.
+
+**Wave 15** *(needs the operator; on or after 2026-11-23)*
+- [ ] 187-24-PLAN.md — wave 15 — H10: the real destroy through the pipeline.
+
+**Wave 16** *(needs the operator)*
+- [ ] 187-25-PLAN.md — wave 16 — H10: the redeploy from nothing and the confirmed alert subscription.
 
 Notes:
 

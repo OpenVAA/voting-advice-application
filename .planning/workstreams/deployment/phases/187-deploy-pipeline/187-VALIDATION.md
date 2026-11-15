@@ -64,6 +64,47 @@ created: "2026-11-15"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
+| 187-01-T1 | 01 | 1 | INFRA-16, PIPE-01 | T-187-01 | `sns:Publish` on the one topic only | tf unit | `terraform -chdir=infra/modules/github-oidc test` + bootstrap validate | ❌ W0 (new test file) | ⬜ |
+| 187-01-T2 | 01 | 1 | PIPE-01 | — | only public values in tracked tfvars | grep + validate | `grep -qE '^deploy_hosted_zone_id' infra/bootstrap/terraform.tfvars` + validate | ✅ | ⬜ |
+| 187-01-T3 | 01 | 1 | PIPE-01, PIPE-05, PIPE-06 | T-187-01, T-187-02, T-187-03 | no iam action but PassRole; no state/secret reads; DNS scope | tf unit | module test (8 runs) + `assert-no-inline-iam-policies.mjs --self-test` | ❌ W0 | ⬜ |
+| 187-02-T1 | 02 | 1 | PIPE-05 | T-187-04 | digest form validated | tf unit | `terraform -chdir=infra/modules/frontend-service test` | ✅ (update) | ⬜ |
+| 187-02-T2 | 02 | 1 | PIPE-05 | T-187-04 | no image value in tfvars | validate + grep | example validate + `! git grep -q -e '^image_tag *=' ... -- infra/envs` | ✅ | ⬜ |
+| 187-03-T1 | 03 | 1 | PIPE-05 | T-187-06 | ignored file absent from context | script self-test | `vitest run --config infra/vitest.config.ts build-push-image` | ✅ (extend) | ⬜ |
+| 187-03-T2 | 03 | 1 | PIPE-05 | T-187-07 | contract documented | help + unit | `build-push-image.sh --help` + vitest | ✅ | ⬜ |
+| 187-04-T1 | 04 | 1 | PIPE-06 | T-187-08 | `--confirmed-ref` refused outside a staging Actions job | unit | `vitest run --config infra/vitest.config.ts push-migrations` | ❌ W0 | ⬜ |
+| 187-04-T2 | 04 | 1 | PIPE-06 | T-187-09 | — | docs + unit | prettier on the runbook + vitest | ✅ | ⬜ |
+| 187-05-T1 | 05 | 2 | PIPE-01, PIPE-02, PIPE-08 | T-187-10, T-187-11 | id conditions; plan role read-only | unit + tf unit | `vitest ... bootstrap-tfvars` + module test | ❌ W0 | ⬜ |
+| 187-05-T2 | 05 | 2 | PIPE-01, SUPA-08 | T-187-12 | Step 9 stop rules before apply | docs | prettier + named-line greps | ✅ | ⬜ |
+| 187-06-T1 | 06 | 2 | PIPE-05 | T-187-13 | image field only | unit | `vitest ... running-image-digest` | ❌ W0 | ⬜ |
+| 187-06-T2 | 06 | 2 | PIPE-05 | T-187-14 | — | docs + grep | prettier + `grep -c 's/^image_tag'` == 0 | ✅ | ⬜ |
+| 187-07-T1 | 07 | 2 | INFRA-19 | T-187-15 | mocks only, account guard intact | tf mock plan | `terraform -chdir=infra/envs/example/aws test -verbose` | ❌ W0 | ⬜ |
+| 187-07-T2 | 07 | 2 | INFRA-19, PIPE-02 | T-187-15 | — | tf mock plan | three example roots `test -verbose` | ❌ W0 | ⬜ |
+| 187-08-T1 | 08 | 3 | PIPE-02, INFRA-19, SUPA-08 | T-187-16, T-187-17, T-187-18 | shared rules red on mutated copies | unit + lint | `vitest ... infra-plan-workflow` + actionlint container | ❌ W0 | ⬜ |
+| 187-08-T2 | 08 | 3 | PIPE-01, PIPE-02, PIPE-03 | T-187-16, T-187-19, T-187-20 | fork skip; `-lock=false`; token masked | unit + lint | same | ❌ W0 | ⬜ |
+| 187-09-T1 | 09 | 4 | PIPE-04, PIPE-05, PIPE-07, PIPE-10, INFRA-16, SUPA-08 | T-187-21, T-187-22, T-187-23, T-187-25, T-187-26 | gate, order, no smoke secrets, no upload, alert last | unit + lint | `vitest ... deploy-workflow` + actionlint + `deployedSmokeGuards` | ❌ W0 | ⬜ |
+| 187-09-T2 | 09 | 4 | PIPE-06 | T-187-22, T-187-24 | Supabase secrets in three steps only | unit + lint | same | ❌ W0 | ⬜ |
+| 187-10-T1 | 10 | 4 | PIPE-08 | T-187-28 | delete-only, in-module, count equal | unit | `vitest ... check-destroy-plan` | ❌ W0 | ⬜ |
+| 187-10-T2 | 10 | 4 | PIPE-08, PIPE-04, PIPE-10 | T-187-27, T-187-29 | no secret; one root; two approvals | unit + lint | `vitest ... destroy-workflow` + actionlint | ❌ W0 | ⬜ |
+| 187-11-T1 | 11 | 5 | PIPE-10, INFRA-19, PIPE-01 | T-187-30, T-187-32 | no apply outside staging/aws; no `main`; ARN non-vacuous | unit + lint | `vitest ... workflows` + `yarn lint:workflows` | ❌ W0 | ⬜ |
+| 187-11-T2 | 11 | 5 | SUPA-08, PIPE-10 | — | settings documented | docs | prettier + heading/phrase greps | ✅ | ⬜ |
+| 187-11-T3 | 11 | 5 | PIPE-07, SUPA-08 | T-187-31 | exact-path exclusions only | docs + grep | prettier + `grep -qxF` of both exclusions | ✅ | ⬜ |
+| 187-12-T1 | 12 | 6 | SUPA-08, INFRA-19 | — | — | repo gates | `lint:check`, `format:check`, `test:unit`, `lint:workflows`, infra loops (evidence lines) | ✅ | ⬜ |
+| 187-12-T2 | 12 | 6 | PIPE-05 | T-187-33 | no `.planning/` path | local build | green archive build exit 0 (evidence + ref checks) | ✅ | ⬜ |
+| 187-12-T3 | 12 | 6 | PIPE-09 | T-187-34 | red fails at the frontend build | local build | red archive build non-zero (evidence + ref checks) | ✅ | ⬜ |
+| 187-13-T1 | 13 | 7 | PIPE-07 | T-187-35 | void run never counted | E2E | `D=$(sed -n 's/^E2E_RUN_DIR=//p' "$E"); test -d "$D" && test ! -e "$D/VOID-host-suspend.txt" && node tests/scripts/e2e-spec-verdict.mjs "$D" --no-flaky` | ✅ | ⬜ |
+| 187-13-T2 | 13 | 7 | SUPA-08 | T-187-36, T-187-66 | no address in the handoff; no hosted or remote read; 186-08's plan changed by the note only | record | handoff lines against `186-08-readiness.md` + address search + the note in `186-08-PLAN.md` (0 deleted lines against `NOTE_BASE_BLOB=`, `verify.plan-structure` exit 0) | ✅ | ⬜ |
+| 187-14-T1..T3 | 14 | 8 | PIPE-04, PIPE-10, PIPE-08, SUPA-08 | T-187-37, T-187-38, T-187-39 | gate exists before any push; bypass off; names only | manual (H2, H3) + read-back | `gh api` GET lines in `187-14-environments.md` | ✅ | ⬜ |
+| 187-15-T1..T3 | 15 | 9 | SUPA-08, PIPE-02 | T-187-40, T-187-41 | covered source-only tree; findings by file only | manual (H4b) + CI | job-level conclusions in `187-15-ci-evidence.md` | ✅ | ⬜ |
+| 187-16-T1..T3 | 16 | 9 | PIPE-01, PIPE-06, PIPE-08, INFRA-16, SUPA-08 | T-187-42, T-187-43, T-187-44 | simulator refusals before apply | manual (H1) | `s9` lines in `187-16-bootstrap-apply.md` | ✅ | ⬜ |
+| 187-17-T1..T3 | 17 | 9 | PIPE-07, SUPA-08 | T-187-45, T-187-46 | names only, keychain never read with `-w` | manual (H9) | lines in `187-17-smoke-contestant.md` | ✅ | ⬜ |
+| 187-18-T1..T3 | 18 | 10 | PIPE-09, PIPE-01, PIPE-04, INFRA-16, INFRA-19, PIPE-02 | T-187-47, T-187-48, T-187-49 | no hosted write; branch subject refused | manual (H8) + run | lines in `187-18-red-run.md`; alert mail human-check | ✅ | ⬜ |
+| 187-19-T1..T3 | 19 | 11 | PIPE-02, INFRA-19, PIPE-01, SUPA-08 | T-187-50, T-187-51 | no artifact; pr-evidence names trigger no push | manual (H5) + run | lines in `187-19-pr-plan.md` | ✅ | ⬜ |
+| 187-20-T1..T3 | 20 | 12 | PIPE-03 | T-187-52 | fork job skipped, no assume step | manual (H6) + run | lines in `187-20-fork-pr.md` | ✅ | ⬜ |
+| 187-21-T1..T3 | 21 | 12 | PIPE-09, PIPE-04, PIPE-05, PIPE-06, PIPE-07, PIPE-10, SUPA-08 | T-187-53, T-187-54, T-187-55 | covered tree; migrations listed before approval | manual (H4, H7) + run | lines in `187-21-green-run.md` | ✅ | ⬜ |
+| 187-22-T1..T3 | 22 | 13 | PIPE-10, PIPE-05, PIPE-04 | T-187-56, T-187-57 | `main` not admitted; image reused | manual (H4) + run | lines in `187-22-deploy-staging.md` | ✅ | ⬜ |
+| 187-23-T1..T3 | 23 | 14 | PIPE-08, PIPE-04 | T-187-58, T-187-59 | Supabase root refused; apply rejected | manual + run | lines in `187-23-destroy-plan.md` | ✅ | ⬜ |
+| 187-24-T1..T3 | 24 | 15 | PIPE-08 | T-187-60, T-187-61, T-187-62 | other roots unchanged | manual (H10) + run | lines in `187-24-destroy.md` (on or after 2026-11-23) | ✅ | ⬜ |
+| 187-25-T1..T3 | 25 | 16 | PIPE-08, PIPE-06, INFRA-16, PIPE-01 | T-187-63, T-187-64, T-187-65 | Supabase untouched before redeploy; subscription confirmed | manual (H10) + run | lines in `187-25-redeploy.md` | ✅ | ⬜ |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -73,14 +114,28 @@ created: "2026-11-15"
 
 Every outward action in `187-DISCUSSION-POINTS.md` section H (H1–H10) is an operator checkpoint, observed and recorded by hand.
 
+| Outward action | Plan | Observed as |
+|----------------|------|-------------|
+| H2, H3 environments, secrets, variables | 187-14, 187-17 (contestant secrets) | `gh api` read-backs, names only |
+| H4b `ci-evidence/187-final` (secret-scan, infra-validate, dependency-audit) | 187-15 | job-level conclusions |
+| H1 bootstrap hand apply | 187-16 | Step 9 `s9` lines pasted by the operator |
+| H9 plan 186-08's sitting | 187-17 | 186-08's own evidence |
+| H8 red run and its alert mail | 187-18 | run steps; mail arrival as an end-of-phase human check |
+| H5 draft pull request plan | 187-19 | the plan job's log and summary |
+| H6 fork pull request | 187-20 | the plan job skipped |
+| H4/H7 green run, then `deploy/staging` | 187-21, 187-22 | stage-by-stage step conclusions |
+| plan-only destroy evidence run | 187-23 | plan job approved, apply job rejected |
+| H10 real destroy and redeploy (on or after 2026-11-23) | 187-24, 187-25 | empty state, Supabase plan `No changes`, probe, subscription confirmed |
+| A manual dispatch of `deploy.yml` | phase 189 | GitHub offers dispatch only once the workflow is on the default branch (`DISPATCH_OBSERVABLE=after-merge`, plan 187-22) |
+
 ---
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (each new test file is created by the task that first runs it)
+- [x] No watch-mode flags
 - [ ] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
