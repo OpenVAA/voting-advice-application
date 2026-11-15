@@ -29,13 +29,12 @@ function englishName(row: { external_id: string; name?: unknown }): string {
   return en;
 }
 
-/** The number of elections the `smoke` template creates; the voter walk relies on it being one, so the election selection page is skipped. */
-export const SMOKE_ELECTION_COUNT = fragmentSize(smokeTemplate.elections);
-
+// The voter walk relies on one election, so the election selection page is skipped, and on one constituency.
+const electionCount = fragmentSize(smokeTemplate.elections);
 const constituencyCount = fragmentSize(smokeTemplate.constituencies);
-if (SMOKE_ELECTION_COUNT !== 1 || constituencyCount !== 1) {
+if (electionCount !== 1 || constituencyCount !== 1) {
   unreadable(
-    `the template must have exactly one election and one constituency, found ${SMOKE_ELECTION_COUNT} and ${constituencyCount}`
+    `the template must have exactly one election and one constituency, found ${electionCount} and ${constituencyCount}`
   );
 }
 
