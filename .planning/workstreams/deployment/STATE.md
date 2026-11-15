@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 187-01-PLAN.md
-last_updated: "2026-11-15T01:48:57.154Z"
+stopped_at: Completed 187-02-PLAN.md
+last_updated: "2026-11-15T01:53:57.207Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: ee3bf95c39fe20be649a731204d034cfff5e845d
+state_head: cb172ac72cc82bee30a61f2dd05bb40893f22df4
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 162
-  completed_plans: 137
+  completed_plans: 138
   percent: 50
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 2 of 25
+Plan: 3 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [█████░░░░░] 50% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 2
+**Current Plan:** 3
 
 From 184 on, the numeric order is the dependency order.
 
@@ -152,6 +152,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 186 P06 | 3 min | 2 tasks | 2 files |
 | Phase 186 P07 | about 20 min | 2 tasks | 2 files |
 | Phase 187 P01 | 9min | 3 tasks | 8 files |
+| Phase 187 P02 | 3min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -299,6 +300,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 186]: 186-07: the local E2E run of record is tests/e2e-runs/186-close-20261114T233139Z at E2E_TREE_SHA=ac3d8d42bc20060f4c46825d51d2bcce3826dfc1 (548 passed, 0 failed/flaky/did-not-run); 186-08 must show nothing under apps/, packages/ or tests/ changed after it
 - [Phase 187]: 187-01: network creates split by evaluated resource — new resources need request tags; creates naming a parent VPC or security group also need the root's tags on the parent
 - [Phase 187]: 187-01: creates_carry_request_tags checks an explicit list of 12 tagged-create calls; CreateRoute, CreateTags on existing resources, CreateListener and CreateRule are untaggable or name-scoped
+- [Phase 187]: The frontend task image is <registry_url>@<image_digest>; image_digest is required (sha256: + 64 lower-case hex), given per plan as -var image_digest= and never written to a tfvars file (C-01). The ECR tag and BUILD_SHA stay the commit id.
 
 ### Pending Todos
 
@@ -353,6 +355,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T01:48:55.947Z
-**Stopped At:** Completed 187-01-PLAN.md
+Last session: 2026-11-15T01:53:55.846Z
+**Stopped At:** Completed 187-02-PLAN.md
 **Resume File:** None
