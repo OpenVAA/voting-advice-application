@@ -71,6 +71,7 @@ data "aws_iam_policy_document" "ecr_push" {
       "ecr:BatchCheckLayerAvailability",
       "ecr:PutImage",
       "ecr:BatchGetImage",
+      "ecr:DescribeImages",
     ]
     resources = [var.registry_arn]
   }
