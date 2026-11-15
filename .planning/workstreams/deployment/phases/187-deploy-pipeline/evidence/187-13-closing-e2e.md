@@ -1,9 +1,9 @@
 RECORDED=2026-11-15
 RECORDED_BY=the plan executor, which ran every stack and E2E command itself from this checkout; logs in tmp/187-gates/187-13/
-HEAD=54e79823b1fa6a3548a82bdf2d27644e4b7af317
-TREE_CLEAN=yes
+HEAD_SUPERSEDED=54e79823b1fa6a3548a82bdf2d27644e4b7af317
+TREE_CLEAN_SUPERSEDED=yes
     git status --porcelain listed nothing before the run and after it; the run directory's worktree-status.txt is empty
-SOURCE_TREE_MATCHES_GREEN=yes
+SOURCE_TREE_MATCHES_GREEN_SUPERSEDED=yes
     in a temporary index under the session scratch directory (removed afterwards): git read-tree HEAD exit 0, git rm -r --cached --quiet .planning exit 0, git write-tree exit 0 printed fa16b0c68a9d32835f811344393d2bb31a173c9b, which is GREEN_TREE of 187-12-evidence-commits.md; the real index was not touched (git diff --cached --quiet exit 0)
 ENV_FILE=present
     checked with test -f .env only; no variable name or value was read
@@ -13,29 +13,29 @@ FRONTEND_PORT=5273, the wrapper's default; no listener on it before the run (lso
 HOST_SLEEP_GUARD=the wrapper ran under caffeinate -i
 COVERS_THIS_PHASES_CHANGES=the run is on the whole tree at HEAD: phase 187's workflows, infra code and scripts, the root package.json and yarn.lock, and tests/README.md, the one file under apps/, packages/ or tests/ this phase changed
 
-E2E_TREE_SHA=54e79823b1fa6a3548a82bdf2d27644e4b7af317
-E2E_HEAD=54e79823b1fa6a3548a82bdf2d27644e4b7af317
-E2E_TREE_CLEAN=yes
-E2E_RUN_DIR=tests/e2e-runs/187-close-20261115T032900Z
-E2E_STARTED=2026-11-15T03:28:52Z
-E2E_ENDED=2026-11-15T03:42:33Z
-E2E_COMMAND=caffeinate -i tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/187-close-20261115T032900Z --no-db-reset
-E2E_WRAPPER_EXIT=0
+E2E_TREE_SHA_SUPERSEDED=54e79823b1fa6a3548a82bdf2d27644e4b7af317
+E2E_HEAD_SUPERSEDED=54e79823b1fa6a3548a82bdf2d27644e4b7af317
+E2E_TREE_CLEAN_SUPERSEDED=yes
+E2E_RUN_DIR_SUPERSEDED=tests/e2e-runs/187-close-20261115T032900Z
+E2E_STARTED_SUPERSEDED=2026-11-15T03:28:52Z
+E2E_ENDED_SUPERSEDED=2026-11-15T03:42:33Z
+E2E_COMMAND_SUPERSEDED=caffeinate -i tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/187-close-20261115T032900Z --no-db-reset
+E2E_WRAPPER_EXIT_SUPERSEDED=0
     read from tmp/187-gates/187-13/e2e-1.status, written by the command on the line after the wrapper, and from the run directory's exit file (0); the run directory's head file is 54e79823b1fa6a3548a82bdf2d27644e4b7af317. Wrapper lines: "548 passed (12.8m)", "playwright exit 0", "preflight failures 0, successes 1". The run directory holds no VOID-host-suspend.txt: not a void run.
-E2E_VOID_RUNS=0
-E2E_PASSED=548
-E2E_FAILED=0
-E2E_FLAKY=0
-E2E_DID_NOT_RUN=0
-E2E_SKIPPED=0
+E2E_VOID_RUNS_SUPERSEDED=0
+E2E_PASSED_SUPERSEDED=548
+E2E_FAILED_SUPERSEDED=0
+E2E_FLAKY_SUPERSEDED=0
+E2E_DID_NOT_RUN_SUPERSEDED=0
+E2E_SKIPPED_SUPERSEDED=0
     node tests/scripts/e2e-evidence.mjs tests/e2e-runs/187-close-20261115T032900Z, exit 0: total 548, passed 548, failed 0, flaky 0, skipped 0, didNotRun 0
-E2E_VERDICT_EXIT=0
+E2E_VERDICT_EXIT_SUPERSEDED=0
     node tests/scripts/e2e-spec-verdict.mjs tests/e2e-runs/187-close-20261115T032900Z --no-flaky: VERDICT OK: 548 tests -- passed 548, failed 0, flaky 0, skipped 0, did not run 0
-E2E_HEAD_AFTER=54e79823b1fa6a3548a82bdf2d27644e4b7af317
-E2E_TREE_CLEAN_AFTER=yes
-E2E_GATE=green
-E2E_PASSED_VS_186_CLOSE=548 against 548 (186-07-closing-e2e.md, re-run of 2026-11-15): equal
-RED_RUNS=0
+E2E_HEAD_AFTER_SUPERSEDED=54e79823b1fa6a3548a82bdf2d27644e4b7af317
+E2E_TREE_CLEAN_AFTER_SUPERSEDED=yes
+E2E_GATE_SUPERSEDED=green
+E2E_PASSED_VS_186_CLOSE_SUPERSEDED=548 against 548 (186-07-closing-e2e.md, re-run of 2026-11-15): equal
+RED_RUNS_SUPERSEDED=0
     the first and only run is the run of record; no run was retried and no test was marked as flaky
 GSD_SESSION_MUST_RESET=yes: the -gsd worktree shares this stack and must reset it from its own worktree before it continues; because the edge runtime mounts this worktree's functions, a reset alone is not enough there: run yarn db:stop and yarn db:start from -gsd, then yarn db:reset
 STACK_LEFT=running, holding this branch's schema; not stopped
@@ -45,7 +45,7 @@ STACK_LEFT=running, holding this branch's schema; not stopped
 RERUN_RECORDED=2026-11-15
 RERUN_RECORDED_BY=a plan executor that the orchestrator spawned to re-run plans 187-12 and 187-13 after plan 187-15 Task 1 found PUSH_TREE_MATCHES_HEAD=no; it ran every stack and E2E command itself from this checkout; logs in tmp/187-gates/187-13-rerun/
 RERUN_REASON=the review fixes 49d8ec823 (WR-08) .. 6bf28e0e1 (IN-04), 95d1d6ad5, d55a94b7a and the orchestrator's 1e10dff7f changed files under .github/workflows/ and infra/ after the run above; nothing under apps/, packages/ or tests/ changed
-RERUN_STATUS=the run below is green and complete, but it is NOT yet promoted to the plan's lines (E2E_TREE_SHA=, E2E_RUN_DIR=, SOURCE_TREE_MATCHES_GREEN=, E2E_GATE=). Plan 187-12 Task 2's archive build of the new green commit is blocked on the host (see the 187-12 re-run report), so 187-12-evidence-commits.md does not yet record the new GREEN_TREE that SOURCE_TREE_MATCHES_GREEN compares with. Once Tasks 2 and 3 of 187-12 are proven, these RERUN_ values become the plan's lines, the original ones are renamed _SUPERSEDED, and the handoff's HANDOFF_TREE_REFERENCE follows E2E_TREE_SHA
+RERUN_STATUS=promoted: the run below is the run of record, and its values are written as the plan's lines under "Current lines (promoted)" at the end of this section, after plan 187-12 Tasks 2 and 3 were proven on the same tree (GREEN_TREE=3c82ab567d5b375c81e300e6bdb9fdbf72d7e42b, green build exit 0, red build exit 1 in the frontend build). The first run's plan lines above are renamed _SUPERSEDED=, so each line a verify reads has one value
 RERUN_ENV_FILE=present
     checked with test -f .env only; no variable name or value was read
 RERUN_DISK=198 GiB free on /; Docker build cache 0B
@@ -82,3 +82,24 @@ RERUN_RED_RUNS=0
     the first and only run of the re-run is the run of record; no run was retried and no test was marked as flaky
 RERUN_GSD_SESSION_MUST_RESET=yes: the -gsd worktree shares this stack and must reset it from its own worktree before it continues: yarn db:stop and yarn db:start from -gsd, then yarn db:reset
 RERUN_STACK_LEFT=running, holding this branch's schema; not stopped
+
+### Current lines (promoted)
+
+SOURCE_TREE_MATCHES_GREEN=yes
+    the tree of E2E_TREE_SHA without .planning/ is 3c82ab567d5b375c81e300e6bdb9fdbf72d7e42b (RERUN_SOURCE_TREE above, written in a temporary index), which is GREEN_TREE of 187-12-evidence-commits.md (re-run); also git diff --quiet 3c7be6128 refs/evidence/187/green -- . ':!.planning' exit 0, and the green tree holds no .planning entry
+E2E_TREE_SHA=3c7be6128515981160de0e3e5a89dafae73c4a29
+E2E_HEAD=3c7be6128515981160de0e3e5a89dafae73c4a29
+E2E_TREE_CLEAN=yes
+E2E_RUN_DIR=tests/e2e-runs/187-13-rerun-20261115T202406Z
+E2E_STARTED=2026-11-15T20:24:12Z
+E2E_ENDED=2026-11-15T20:37:51Z
+E2E_WRAPPER_EXIT=0
+E2E_VOID_RUNS=0
+E2E_PASSED=548
+E2E_FAILED=0
+E2E_FLAKY=0
+E2E_DID_NOT_RUN=0
+E2E_SKIPPED=0
+E2E_VERDICT_EXIT=0
+E2E_GATE=green
+RED_RUNS=0
