@@ -153,6 +153,16 @@ describe('the shared workflow rules', () => {
     expect(violations.some((violation) => violation.startsWith('checkout-no-persisted-credentials: '))).toBe(true);
   });
 
+  it('is red on no-expression-in-run when the expression holds a brace', () => {
+    const mutated = mutate(
+      text,
+      'run: terraform fmt -check -recursive -diff infra',
+      "run: echo ${{ format('{0}', github.head_ref) }}"
+    );
+    const violations = sharedViolations(parseWorkflow(mutated), mutated);
+    expect(violations.some((violation) => violation.startsWith('no-expression-in-run: '))).toBe(true);
+  });
+
   it('finds no violation in infra-plan.yml', () => {
     expect(sharedViolations(doc, text)).toEqual([]);
   });

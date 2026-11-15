@@ -62,8 +62,8 @@ const USES_WITH_TAG_COMMENT = /^\s*(?:-\s+)?uses:\s*\S+\s+#\s*v\d[\w.-]*\s*$/;
 const USES_LINE = /^\s*(?:-\s+)?uses:\s*(\S+)/;
 /** The names of a key that bypasses row-level security or signs as the project, in any of their usual spellings. */
 const PRIVILEGED_KEY_NAME = /service[\s_-]?role|secret[\s_-]?key/i;
-/** A workflow expression. */
-const EXPRESSION = /\$\{\{[^}]*\}\}/;
+/** The opener of a workflow expression. An expression may hold braces of its own, so its end is not searched for. */
+const EXPRESSION_OPENER = /\$\{\{/;
 /** A Terraform `-out` flag and its value. */
 const OUT_FLAG = /(?:^|\s)-out(?:=|\s+)(\S+)/g;
 /** The accepted beginnings of a plan file path. */
@@ -175,10 +175,12 @@ export function sharedViolations(doc: WorkflowDocument, text: string): Array<str
     }
 
     for (const [index, step] of steps.entries()) {
-      if (typeof step.run === 'string' && EXPRESSION.test(step.run)) {
+      const run = typeof step.run === 'string' ? step.run : '';
+      const opener = EXPRESSION_OPENER.exec(run);
+      if (opener) {
         report(
           'no-expression-in-run',
-          `job ${id} step ${stepName(step, index)} holds ${EXPRESSION.exec(step.run)?.[0]} in its run script; pass it through env`
+          `job ${id} step ${stepName(step, index)} holds ${run.slice(opener.index, opener.index + 60)} in its run script; pass it through env`
         );
       }
       if (typeof step.uses === 'string' && step.uses.startsWith('actions/checkout@')) {
