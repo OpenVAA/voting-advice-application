@@ -223,6 +223,16 @@ describe('the deployed config', () => {
     expect(String(config.globalSetup)).toMatch(/deployed-global-setup\.ts$/);
   });
 
+  it('collects only the .smoke.ts files of tests/tests/deployed/, and no project sets its own collection', async () => {
+    const { default: config } = await import('../../playwright.deployed.config');
+    expect(config.testDir).toBe(DEPLOYED_DIR);
+    expect(String(config.testMatch)).toBe(String(/\.smoke\.ts$/));
+    for (const project of config.projects ?? []) {
+      expect(project.testDir).toBeUndefined();
+      expect(project.testMatch).toBeUndefined();
+    }
+  });
+
   it('writes no report that titles a fill step with its value, and takes no page snapshot when a failed test closes', async () => {
     const { default: config } = await import('../../playwright.deployed.config');
     const reporter = config.reporter ?? [];

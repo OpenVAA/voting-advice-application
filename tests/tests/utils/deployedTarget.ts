@@ -347,7 +347,9 @@ export type SmokeProjectShape = {
 };
 
 /**
- * Refuses a deployed smoke configuration that could run anything but the read-mostly smoke specs.
+ * Refuses a deployed smoke configuration whose projects could run anything but the read-mostly smoke specs.
+ *
+ * It reads the project entries only. The configuration's own `testDir` and `testMatch`, which decide the files collected, are pinned by `deployedSmokeGuards.test.ts`.
  *
  * @param projects - The resolved project entries of the configuration.
  * @throws `DEPLOYED SMOKE CONFIG REFUSED: <reason>`, naming the offending project, unless there is exactly one project, named {@link SMOKE_PROJECT_NAME}, with no dependencies, no teardown, and neither its name nor its `testMatch` mentioning setup or teardown.
