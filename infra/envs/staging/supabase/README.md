@@ -795,6 +795,13 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
 
 ### Step 16: The migrations
 
+The deploy workflow runs this step itself, in the gated `staging` job: it links a work directory of
+its own under the runner's temporary directory, reaches the database through the session pooler, and
+calls `push-migrations.sh` with `--confirmed-ref`, the environment's approval standing in for the
+typed ref. A hand push is for a sitting outside the pipeline. For the pipeline,
+`SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` are environment secrets of the `staging` GitHub
+Environment and nowhere else.
+
 `infra/scripts/push-migrations.sh` refuses a work directory that is not linked to the ref it is
 given, shows what the project lacks, asks you on the terminal to type the ref, pushes, and then runs
 the drift check against the same project. Its status is the drift check's after a push. It needs
@@ -814,10 +821,11 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
 
    The lines it prints, in this order: `s16_push_connection=direct`, `pooler` or `unknown`, the path
    the CLI took; one `s16_push_pending=<version>` per migration the project lacks;
-   `s16_push_up_to_date=yes` or `no`; `s16_push_status=<n>` when a push ran; `s16_drift_status=<n>`,
-   followed by the drift check's report. `s16_push_exit=` is 0 when the migrations are in place and
-   there is no drift, 1 on drift after the push, 2 when it refused and pushed nothing, 3 when the dry
-   run or the push failed, 4 when the drift check could not run, and 130 when interrupted.
+   `s16_push_up_to_date=yes` or `no`; `s16_push_confirmation=terminal` and `s16_push_status=<n>` when
+   a push ran; `s16_drift_status=<n>`, followed by the drift check's report. `s16_push_exit=` is 0
+   when the migrations are in place and there is no drift, 1 on drift after the push, 2 when it
+   refused and pushed nothing, 3 when the dry run or the push failed, 4 when the drift check could
+   not run, and 130 when interrupted.
 
 2. Run item 1 again. It pushes nothing and asks nothing: it must print `s16_push_up_to_date=yes`
    and `s16_push_exit=0`.
@@ -829,6 +837,11 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
    ```
 
 ### Step 17: The functions
+
+The deploy workflow deploys the three functions the same way, in the gated `staging` job, and fails
+unless the read-back of item 2 shows three `ACTIVE` functions, each with `verify_jwt` as
+`config.toml` says. Their secrets stay with Step 18. For the pipeline, `SUPABASE_ACCESS_TOKEN` and
+`SUPABASE_DB_PASSWORD` are environment secrets of the `staging` GitHub Environment and nowhere else.
 
 The three functions are deployed from the linked work directory, so the CLI reads each function's
 `verify_jwt` from `config.toml`. Their secrets are set in Step 18.
