@@ -60,6 +60,7 @@
     "format:check": "turbo run build --filter=@openvaa/app-shared... && prettier --check . && yarn workspace @openvaa/docs format:check",
     "lint:fix": "turbo run lint -- --fix && eslint --fix tests",
     "lint:check": "turbo run lint && eslint tests && yarn typecheck:tests && yarn typecheck && yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && yarn assert:comment-hygiene && yarn assert:no-candidate-app-names && yarn assert:edge-env-defaults && yarn assert:declared-binaries && yarn assert:node-engine && yarn assert:env-pair-registry && yarn assert:schema-migration-parity && yarn assert:adapter-casts && yarn assert:cookie-names && yarn assert:no-session-in-loads && yarn assert:rpc-nullability && yarn assert:project-scoped-queries && yarn assert:grant-permission-enum && yarn assert:edge-function-env && yarn assert:auth-signup-closed && yarn assert:no-inline-iam-policies && yarn assert:hosted-settings-parity && yarn assert:test-keys-scope && yarn assert:no-preregister",
+    "lint:workflows": "node scripts/lint-workflows.mjs",
     "typecheck": "turbo run typecheck",
     "typecheck:tests": "node_modules/.bin/tsc -p tests/tsconfig.json --noEmit",
     "docs:prepare": "turbo run build --filter='./packages/*' && yarn workspace @openvaa/frontend prepare",
