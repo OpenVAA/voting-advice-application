@@ -421,3 +421,20 @@ READY_TO_PUSH=yes
 - **`MAIN_YAML_TRIGGERS_ON_CI_EVIDENCE=yes`.** The commit's `main.yaml`, parsed with the root `yaml` package, has `on.push.branches` `main` and `ci-evidence/**`; `paths-ignore` (`**.md` and the `.env.example` paths) does not suppress the run, since 4026 of the 4488 paths the commit changes against its parent are not `.md` files. It names 13 jobs (`MAIN_YAML_JOB_COUNT`).
 - **`MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes`.** Over the commit's `main.yaml`, comment lines excluded, `grep -ciE 'role-to-assume|aws-actions|id-token: write'` counts 0.
 - **`READY_TO_PUSH=yes`** holds for every line above. Nothing was pushed.
+
+## Task 7: the push (made by the orchestrator at top level, 2026-11-16)
+
+```
+PUSH_ATTEMPT=20261116T192353Z.8b93ad083
+PUSH_APPROVAL=answer_push=approve (standing, of 2026-11-16, stored with put)
+PUSH_VERIFY_EXIT=0
+PUSH_BRANCH_ABSENT_AT_PUSH=yes
+PUSH_COMMAND=git push origin 2b0842fd46bf6f26dfa6dad009a13b2297197b30:refs/heads/ci-evidence/187-final-3
+PUSH_EXIT=0
+```
+
+- **The approval.** The orchestrator ran `bash "$A" new 187-27-7`, which made attempt `20261116T192353Z.8b93ad083`, and stored the standing approval with `put`. `put`, `bound 187-27-7 OPERATOR_REPLY plan=187-27 task=7` and `has 187-27-7 '^answer_push=approve$'` each exited 0.
+- **The verify.** Task 7's verify ran in full immediately before the push and exited 0. A first extraction of the verify command came out empty and is not counted.
+- **The branch.** `git ls-remote origin refs/heads/ci-evidence/187-final-3` exit 0 printed nothing before the push.
+- **The push** exited 0 and created a new branch, with no lease, as the first push of a branch.
+- **Read back by the executor (Task 8).** `bash "$A" id 187-27-7` printed `20261116T192353Z.8b93ad083`; `bound 187-27-7 OPERATOR_REPLY plan=187-27 task=7` exit 0 and `has 187-27-7 '^answer_push=approve$'` exit 0. `git ls-remote origin refs/heads/ci-evidence/187-final-3` exit 0 printed `2b0842fd46bf6f26dfa6dad009a13b2297197b30`.
