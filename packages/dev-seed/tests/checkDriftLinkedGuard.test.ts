@@ -81,8 +81,30 @@ function shim(dir: string, tool: string): void {
   chmodSync(join(dir, tool), 0o755);
 }
 
+/** Binaries that exit 0 whatever their arguments, tried in this order as the target of the `docker` stand-in. */
+const DOCKER_LINK_CANDIDATES = ['/usr/bin/true', '/bin/true'];
+
+/**
+ * The first candidate that answers `docker info` with status 0 when it is run through a link named `docker`, or `undefined` when none does. A multicall binary such as BusyBox dispatches on the name it is run under and refuses `docker`, so each candidate is tried under that name.
+ */
+function dockerLinkTarget(): string | undefined {
+  const dir = tempDir('check-drift-docker-probe-');
+  for (const candidate of DOCKER_LINK_CANDIDATES) {
+    if (!existsSync(candidate)) continue;
+    const link = join(dir, 'docker');
+    rmSync(link, { force: true });
+    symlinkSync(candidate, link);
+    if (spawnSync(link, ['info'], { stdio: 'ignore', timeout: 5_000 }).status === 0) return candidate;
+  }
+  return undefined;
+}
+
+const DOCKER_LINK_TARGET = dockerLinkTarget();
+
 /**
  * A directory of links to the tools that are present, standing in for PATH. A missing `psql` or `pgrep` gets a stand-in, so that the accepting cases reach the Docker check on any host.
+ *
+ * The `docker` stand-in is a link to the existing binary `dockerLinkTarget` selects, so the case runs no file written a moment before; macOS assesses such a file on its first exec, which takes far longer than the exec of a binary it already knows. Only where no candidate answers under the name `docker` is the stand-in a written file.
  * @param withDockerShim - Whether to add a `docker` that answers `docker info` with status 0, for the case of `--target local`.
  */
 function binDir(withDockerShim: boolean): string {
@@ -92,7 +114,10 @@ function binDir(withDockerShim: boolean): string {
     if (found) symlinkSync(found, join(dir, tool));
     else if (tool === 'psql' || tool === 'pgrep') shim(dir, tool);
   }
-  if (withDockerShim) shim(dir, 'docker');
+  if (withDockerShim) {
+    if (DOCKER_LINK_TARGET) symlinkSync(DOCKER_LINK_TARGET, join(dir, 'docker'));
+    else shim(dir, 'docker');
+  }
   return dir;
 }
 
