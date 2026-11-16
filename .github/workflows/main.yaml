@@ -557,6 +557,11 @@ jobs:
       - name: "Build all packages"
         run: yarn build
 
+      # The edge runtime reads this file when the stack starts and does not inherit the root env;
+      # the tracked template holds the local stack's values.
+      - name: "Configure the Edge Functions' environment"
+        run: cp apps/supabase/supabase/functions/.env.example apps/supabase/supabase/functions/.env
+
       - name: "Start Supabase"
         working-directory: apps/supabase
         run: supabase start
@@ -577,6 +582,11 @@ jobs:
       # package watcher would add CPU load and a second process whose failure kills the dev server.
       - name: "Run E2E tests"
         run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch
+
+      # The functions log variable names, never values, and this stack's keys are the local defaults.
+      - name: "Print the edge runtime's log"
+        if: failure()
+        run: docker logs --timestamps supabase_edge_runtime_openvaa-local
 
       - name: "Upload the E2E run directory"
         uses: actions/upload-artifact@v7
