@@ -185,7 +185,13 @@ const appGateHandle: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle: Handle = sequence(inFlightHandle, supabaseHandle, logoutDeadlineHandle, paraglideHandle, appGateHandle);
+export const handle: Handle = sequence(
+  inFlightHandle,
+  supabaseHandle,
+  logoutDeadlineHandle,
+  paraglideHandle,
+  appGateHandle
+);
 
 /**
  * The error the error page renders for an unexpected error or a page that does not exist.
