@@ -1,0 +1,13 @@
+{
+  "authConfirm": {
+    "cancel": "Tühista",
+    "continue": "Jätka",
+    "intro": {
+      "email_change": "Vajuta Jätka, et kinnitada oma e-posti aadress ja sisse logida.",
+      "magiclink": "Sisselogimiseks vajuta Jätka.",
+      "recovery": "Vajuta Jätka, et sisse logida ja määrata uus parool."
+    },
+    "signedIn": "Selles brauseris on juba ühele kontole sisse logitud. Kui jätkad, logitakse see konto kõigepealt välja.",
+    "title": "Jätka oma e-kirjast"
+  }
+}

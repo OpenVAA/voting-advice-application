@@ -19,10 +19,10 @@ import type {
  * The abstract base class for all nomination variants. Represents the nomination of the associated `Entity` in a `Constituency` in an `Election`.
  */
 export abstract class Nomination<
-    TEntity extends EntityType = EntityType,
-    TParent extends EntityType | never = never,
-    TData extends NominationData<TEntity, TParent> = NominationData<TEntity, TParent>
-  >
+  TEntity extends EntityType = EntityType,
+  TParent extends EntityType | never = never,
+  TData extends NominationData<TEntity, TParent> = NominationData<TEntity, TParent>
+>
   extends DataObject<TData>
   implements DataAccessor<NominationData<TEntity, TParent>>, WrappedEntity, HasAnswers
 {

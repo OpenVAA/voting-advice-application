@@ -53,10 +53,7 @@ export type QuestionTypeSettings =
     };
 // Not supported yet
 // | {
-//     type: typeof QUESTION_TYPE.PreferenceOrder;
-//     choices: Array<LocalizedChoice>;
-//     min?: number;
-//     max?: number;
+//     type: typeof QUESTION_TYPE.PreferenceOrder; choices: Array<LocalizedChoice>; min?: number; max?: number;
 //   };
 
 export type QuestionSettingsDateType = 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday';

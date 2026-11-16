@@ -1,0 +1,111 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Aucune alliance",
+            "numShown=1": "1 alliance",
+            "numShown=*": "{numShown} alliances"
+          }
+        }
+      ],
+      "summary": {
+        "template": "{candidates} répartis sur {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
+            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "match": {
+              "numCandidates=0, numCandidatesPlural=*": "Aucun candidat",
+              "numCandidates=*, numCandidatesPlural=one": "1 candidat",
+              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} candidats"
+            }
+          }
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
+            "selectors": ["numParties", "numPartiesPlural"],
+            "match": {
+              "numParties=0, numPartiesPlural=*": "aucun parti",
+              "numParties=*, numPartiesPlural=one": "1 parti",
+              "numParties=*, numPartiesPlural=*": "{numParties} partis"
+            }
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Aucun·e candidat·es",
+            "numShown=1": "1 candidat·e",
+            "numShown=*": "{numShown} candidat·es"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Aucune faction",
+            "numShown=1": "1 faction",
+            "numShown=*": "{numShown} factions"
+          }
+        }
+      ]
+    },
+    "inConstituency": "dans la circonscription",
+    "ingress": {
+      "answerMinQuestions": "Si vous souhaitez trouver les partis qui partagent le plus vos opinions, veuillez d’abord {questionsLink}.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=1": "répondre à au moins une question",
+            "numQuestions=*": "répondre à au moins {numQuestions} questions"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "Aucun·e candidat·e ou parti de votre circonscription n’a répondu à la Boussole électorale",
+        "content": "Vous pouvez consulter les questions si vous le souhaitez, mais aucun résultat ne peut être affiché."
+      },
+      "someNominations": {
+        "title": "Certains·es candidat·es ou partis n’ont pas répondu à la Boussole électorale",
+        "content": "Toutes les élections de votre circonscription n’ont pas encore de réponses disponibles. Les résultats afficheront uniquement celles pour lesquelles des réponses existent."
+      },
+      "noNominationsForElection": "non disponible"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Aucun partis",
+            "numShown=1": "1 parti",
+            "numShown=*": "{numShown} partis"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Veuillez d’abord sélectionner une élection",
+    "title": {
+      "browse": "Parcourir les candidat·es et partis",
+      "results": "Résultats"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "authConfirm": {
+    "cancel": "Annuller",
+    "continue": "Fortsæt",
+    "intro": {
+      "email_change": "Tryk på Fortsæt for at bekræfte din e-mailadresse og logge ind.",
+      "magiclink": "Tryk på Fortsæt for at logge ind.",
+      "recovery": "Tryk på Fortsæt for at logge ind og vælge en ny adgangskode."
+    },
+    "signedIn": "Denne browser er allerede logget ind på en konto. Hvis du fortsætter, bliver den konto først logget ud.",
+    "title": "Fortsæt fra din e-mail"
+  }
+}

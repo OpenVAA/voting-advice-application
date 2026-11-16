@@ -1,0 +1,58 @@
+{
+  "privacy": {
+    "analytics": {
+      "content": {
+        "free": "Tämä sovellus kerää käyttötietoja kysymättä sinulta erikseen. Niihin sisältyvät vastauksesi kysymyksiin, sovelluksessa käytetty aika ja katsomasi tulokset. Jokainen tapahtuma, josta käy ilmi vastaus tai mieltymys, lähetetään erikseen ilman tunnistetta, joka olisi yhteinen jonkin toisen tapahtuman kanssa, joten vastauksiasi ei voi yhdistää toisiinsa eikä katsomiisi sivuihin. Tiedot lähetetään tämän sivuston oman palvelimen kautta, eikä palvelin välitä eteenpäin verkko-osoitettasi eikä selaimesi tunnistetietoja. Laitteellesi ei tallenneta tästä mitään.",
+        "gated": "Käyttötietoja kerätään vain, jos annat siihen luvan. Niihin sisältyvät vastauksesi kysymyksiin, sovelluksessa käytetty aika ja katsomasi tulokset. Saman käyntikerran tapahtumat yhdistetään enintään tunnisteella, joka säilyy vain sivun muistissa ja katoaa, kun sivu ladataan uudelleen tai suljetaan. Tiedot lähetetään tämän sivuston oman palvelimen kautta, eikä palvelin välitä eteenpäin verkko-osoitettasi eikä selaimesi tunnistetietoja. Laitteellesi ei tallenneta tästä mitään muuta kuin valintasi. Tässä selaimessa tehty valinta koskee kaikkia samassa selaimessa avattuja sovelluksen osia, ja voit muuttaa sitä tietosuojasivulla."
+      },
+      "gpc": "Jos selaimesi lähettää Global Privacy Control -signaalin, mitään ei kerätä, ei edes sivujen katselukertoja, eikä sinulta kysytä. Signaalin muistamiseksi ei tallenneta mitään.",
+      "pageviews": "Sivujen katselukerrat lasketaan silloinkin, kun muita käyttötietoja ei kerätä: minkä tyyppinen sivu avattiin, millä kielellä ja kuinka pitkäksi aikaa. Näihin tietoihin ei kuitenkaan sisälly esimerkiksi, minkä puolueen tai ehdokkaan tietoja on tarkasteltu. Laskennassa ei käytetä tunnistetta.",
+      "title": "Analytiikka"
+    },
+    "cookies": {
+      "content": "Sovellus ei käytä evästeitä tietojen tallentamiseen. Vastauksesi ja asetuksesi tallennetaan selaimesi paikalliseen säilöön (local storage) sovelluksen käyttömukavuuden parantamiseksi, ja tämä tallennettu kopio pysyy laitteellasi. Kun käyttötietoja kerätään, vastauksesi saatetaan myös lähettää osana niitä, kuten kohdassa Analytiikka kuvataan.",
+      "title": "Evästeet"
+    },
+    "dataCollection": {
+      "info": "Käyttötiedot lähetetään tämän sivuston oman palvelimen kautta julkaisijan käyttämään analytiikkapalveluun. Tähän ei käytetä evästeitä."
+    },
+    "dataConsentInfoButton": "Lisätietoja käyttötietojen keräämisestä",
+    "dataConsentIntro": {
+      "denied": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Olet kieltänyt tietojesi keräämisen {formattedConsentDate}. Voit muokata valintaasi alla."
+          }
+        }
+      ],
+      "granted": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Olet sallinut tietojesi keräämisen {formattedConsentDate}. Voit muokata valintaasi alla."
+          }
+        }
+      ],
+      "indetermined": "Voit antaa suostumuksesi tai kieltää tietojen keräämisen valitsemalla alla olevista vaihtoehdoista."
+    },
+    "dataConsentLabel": {
+      "denied": "En halua, että tietojani kerätään",
+      "granted": "Kyllä, sallin keräämisen"
+    },
+    "title": "Yksityisyys",
+    "trackingOptOut": {
+      "label": "Älä kerää käyttötietoja siitä, miten käytän sovellusta"
+    },
+    "usageData": {
+      "content": "Sovelluksen käyttöä mitataan samalla tavalla äänestäjien sovelluksessa, ehdokkaiden ja puolueiden sovelluksessa sekä ylläpitonäkymässä. Hyväksymällä käyttöehdot annat luvan kerätä käyttötietoja siitä, miten käytät ehdokkaiden ja puolueiden sovellusta, ellet rastita käyttöehtojen alla olevaa ruutua. Sivujen katselukerrat lasketaan ilman tunnistetta tietosuojasivulla kuvatulla tavalla. Valintasi koskee kaikkia tässä selaimessa avattuja sovelluksen osia, ja voit muuttaa sitä myöhemmin tietosuojasivulla.",
+      "title": "Käyttötiedot"
+    }
+  }
+}

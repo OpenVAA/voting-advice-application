@@ -1,0 +1,8 @@
+{
+  "contestantApp.entitySelection": {
+    "current": "{entityType}: {name}",
+    "ingress": "Saad muuta rohkem kui ühte profiili. Vali see, millega soovid praegu töötada. Menüüst saad igal ajal teise profiili valida.",
+    "switch": "Vaheta profiili",
+    "title": "Vali muudetav profiil"
+  }
+}
