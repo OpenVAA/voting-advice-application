@@ -1,0 +1,70 @@
+# 187-28 evidence: the rebased branch carried to a green CI run
+
+Repository `OpenVAA/voting-advice-application`, branch `feat/deployment-terraform-supabase`. Read and written by the plan executor from this checkout, 2026-11-17. Remote reads were `git ls-remote` and `gh api` GETs only. Nothing was pushed by the executor, and no GitHub, AWS or Supabase setting was read or changed. Logs and status files are under `tmp/187-28/` (ignored).
+
+**Pre-rebase commit ids.** Every -infra commit id cited in this workstream's evidence before 2026-11-16 names a commit of `backup/deployment-pre-rebase-20261116`, and every -infra id cited by plan 187-27 (and `INFRA_PRE_REBASE_HEAD` of `187-28-ci-measurement.md`) names a commit of `backup/infra-pre-rebase-2026-11-17`; none of them is a commit of HEAD. Those lines are left as written. A new line that needs a pre-rebase base uses the commit of `dfe9cae8b..HEAD` with the same subject and records both ids.
+
+## The rebase (2026-11-17)
+
+```
+REBASE_HEAD_AT_START=e42e32cf3341c0933faff9dfc290699417baa453
+REBASE_BACKUP_TIP=15e82a60bb49bed2983b03728923c443aaf7a324
+REBASE_ONTO=dfe9cae8b21fcbf3e224769500c9e50f48b9eb2a
+REBASE_OLD_ONTO=c2b3bff15c78168ae73fa244f1e443f05a34269e
+REBASE_DELTA_PATHS=tests/README.md,tests/playwright.config.ts,tests/scripts/e2e-run.sh,tests/scripts/visual-container.sh,tests/tests/specs/visual/__screenshots__/visual-regression.spec.ts/voter-results-desktop.png,tests/tests/specs/visual/__screenshots__/visual-regression.spec.ts/voter-results-mobile.png
+REBASE_SOURCE_DELTA_EQUALS_GSD_FIX=yes
+REBASE_DELTA_TOUCHES_MANIFEST_LOCKFILE_MIGRATION_WORKFLOW=no
+REBASE_COUNTERPART_ee85b83a3=642b31ce4ad2184b7c61b3981e0d6fe7cdc853b4
+REBASE_COUNTERPART_a7a4222a8=89c83eabb163fd8d82224702fae207cc453bda4b
+PRE_REBASE_SHAS_RESOLVE_IN_BACKUP_ONLY=yes
+HELPERS_COPIED=yes
+LOCAL_MIGRATIONS_APPLIED=22
+```
+
+- `REBASE_HEAD_AT_START` is `git rev-parse HEAD` before this plan's first commit: the plan's own commit `e42e32cf3`, one past the planning-time HEAD `8622c3a1b`. `REBASE_BACKUP_TIP` is `git rev-parse backup/infra-pre-rebase-2026-11-17`. `REBASE_ONTO` is `fix/v2.16-ci-e2e` (`dfe9cae8b`), and `REBASE_OLD_ONTO` the base of the rebase of 2026-11-16.
+- **`REBASE_SOURCE_DELTA_EQUALS_GSD_FIX=yes`.** `git diff --name-only backup/infra-pre-rebase-2026-11-17 HEAD -- . ':!.planning'` lists the six paths of `REBASE_DELTA_PATHS`, and `git diff --name-only 9cd30f7a5 dfe9cae8b` lists the same six in the same order. `git patch-id --stable` of the two diffs gives the same id, `1134bbc40f08346d00e1ff4962f84e0036623609`.
+- **`REBASE_DELTA_TOUCHES_MANIFEST_LOCKFILE_MIGRATION_WORKFLOW=no`.** No delta path is a `package.json`, `yarn.lock`, a file under `apps/supabase/supabase/migrations/` or a file under `.github/`. So 187-27 Task 1's install, database, pgTAP and types gates are not repeated.
+- **The counterparts.** Of the 483 commits of `dfe9cae8b..HEAD`, one each has the subject `docs(187): pattern map` (`642b31ce4`) and `docs(186): discussion points and context (recommendations, operator away)` (`89c83eabb`). Their pre-rebase ids, cited by 187-27, are `d35c1bb6a` and `36a676018`.
+- **`PRE_REBASE_SHAS_RESOLVE_IN_BACKUP_ONLY=yes`.** For each of `527d9e866`, `ced5b42bb`, `e56db5391`, `b29c91405`, `1f5c56781`, `fabe70c1b`, `e6f1e114e`, `d35c1bb6a` and `36a676018`, `git merge-base --is-ancestor <id> backup/infra-pre-rebase-2026-11-17` exited 0 and `git merge-base --is-ancestor <id> HEAD` exited 1.
+- Every earlier -infra evidence id names one of the two backups' histories and is left as written.
+- **`HELPERS_COPIED=yes`.** `build-archive.sh`, `run-tf.sh`, `scan.sh`, `t1/run-gates.sh`, `t5/run.sh` and `commits/make-commits.sh` were copied from `tmp/187-27/` to `tmp/187-28/` with `cp -p` (mode kept), then rewritten with `sed` in the copies only: `tmp/187-27` to `tmp/187-28`, and the earlier session's scratch directory to this session's. Each copy passes `bash -n` and names neither old directory.
+- **`LOCAL_MIGRATIONS_APPLIED=22`.** `docker exec supabase_db_openvaa-local psql -U postgres -tAc 'select count(*) from supabase_migrations.schema_migrations'` exit 0 printed `22`, the number of `.sql` files under `apps/supabase/supabase/migrations/` at HEAD (`git ls-tree`). No reset was needed.
+
+## Task 1: the gates on the rebased tree
+
+```
+GATES_HEAD=e42e32cf3341c0933faff9dfc290699417baa453
+lint:check exit=1
+format:check exit=0
+typecheck exit=0
+test:unit exit=0
+lint:workflows exit=0
+E2E_SELF_TEST_EXIT=0
+INFRA_TESTS_PASSED=bootstrap-tfvars.test.ts,build-push-image.test.ts,check-destroy-plan.test.ts,deploy-workflow.test.ts,destroy-workflow.test.ts,infra-plan-workflow.test.ts,main-e2e-workflow.test.ts,probe-hosted.test.ts,push-migrations.test.ts,request-loop.test.ts,running-image-digest.test.ts,workflows.test.ts
+GUARD_DEPLOYED_SMOKE=passed
+TF_FMT_EXIT=0
+TF_ROOTS_VALIDATED=8
+TF_MODULES_TESTED=frontend-service,github-oidc
+TF_EXAMPLE_PLANS=example/aws,example/dns-mail,example/supabase
+SC4_LOCAL_GATE_DIFF=empty
+PHASE_APP_DIFF=apps/frontend/src/hooks.server.ts,packages/dev-seed/tests/checkDriftLinkedGuard.test.ts,tests/README.md,tests/tests/fixtures/contestant/contestantHomePage.fixture.ts,tests/tests/fixtures/contestant/contestantTermsOfUsePage.fixture.ts,tests/tests/helpers/navigation.ts,tests/tests/specs/a11y/contestant-a11y.spec.ts,tests/tests/specs/voter/analytics-gpc.spec.ts,tests/tests/specs/voter/voter-journey.spec.ts,tests/tests/specs/voter/voter-prefs-tracking.spec.ts,tests/tests/specs/voter/voter-tracking-consent-free.spec.ts,tests/tests/utils/deployedTarget.test.ts
+PHASE_APP_DIFF_UNCHANGED_SINCE_187_27=yes
+GATE_STOPPED=lint:check: [ERROR] scripts/assert-comment-hygiene.mjs: tests/playwright.config.ts:1622: rule 2 (D-A4) — this comment line ends without terminal punctuation and the line under it continues the same comment at the same indent. Join them into one line.: tests/playwright.config.ts (owner: -gsd)
+```
+
+How each line was read (every exit from its own `.status` file under `tmp/187-28/`, never through a pipe):
+
+- **The repository gates** (`tmp/187-28/t1/run-gates.sh tmp/187-28/t5/gates`, called by `tmp/187-28/t5/run.sh` in the background, one after another, `TURBO_CACHE_DIR=tmp/187-28/turbo-cache`, a cache private to this attempt and empty at its start). HEAD was `e42e32cf3` before and after. `lint:check` 23:23:49Z to 23:24:30Z exit 1 (below). `format:check` to 23:24:48Z exit 0 (`All matched files use Prettier code style!`). `typecheck` exit 0. `test:unit` 23:24:48Z to 23:25:39Z exit 0 (`Tasks: 26 successful, 26 total`); the stack was Up for its dev-seed integration tests. `lint:workflows` exit 0 (`actionlint found nothing in 3 workflows`). Each gate ran once; none was run again.
+- **`E2E_SELF_TEST_EXIT=0`.** `tests/scripts/e2e-run.sh --self-test`, after `run.sh` in the same background command, because the wrapper is in the delta: `e2e-run.sh: self-test passed: 13 case(s).`
+- **`INFRA_TESTS_PASSED`.** `vitest run --config infra/vitest.config.ts --reporter=verbose` exit 0, `Test Files 12 passed (12)`, `Tests 323 passed (323)`, the same count as 187-27's 323.
+- **`GUARD_DEPLOYED_SMOKE=passed`.** `vitest run --config tests/vitest.config.ts --reporter=verbose` exit 0, `Test Files 15 passed (15)`, `Tests 358 passed (358)`, the same count as 187-27's 358, with 16 `✓ tests/utils/deployedSmokeGuards.test.ts` lines and no failed test.
+- **Terraform** (`tmp/187-28/run-tf.sh t5`, after the gates and the vitest configs, alone; never alongside `test:unit`). `terraform fmt -check -recursive -diff infra` exit 0. The eight roots (`infra/bootstrap` and the seven under `infra/envs/*/*/`) each `init -backend=false -lockfile=readonly` and `validate` exit 0. `terraform test` of `frontend-service` `Success! 33 passed, 0 failed.` and of `github-oidc` `Success! 11 passed, 0 failed.`. The three example roots each `Success! 1 passed, 0 failed.`. `git status --porcelain` afterwards listed only the untracked ledger and this evidence file.
+- **`SC4_LOCAL_GATE_DIFF=empty`.** `git diff --quiet 89c83eabb HEAD -- tests/playwright.config.ts tests/global-setup.ts tests/tests/support/preflight.ts` exit 0, with `89c83eabb` the rebased counterpart of `a7a4222a8` (pre-rebase `36a676018`). The -gsd change to the config lies in the base, before the counterpart.
+- **`PHASE_APP_DIFF`.** `git diff --name-only 642b31ce4..HEAD -- apps packages tests`, with `642b31ce4` the rebased counterpart of `ee85b83a3` (pre-rebase `d35c1bb6a`). It equals the `PHASE_APP_DIFF=` line of `187-27-ci-closure.md` path for path.
+
+### The red gate: `lint:check` (the plan stops here)
+
+- **The first error line**, from `tmp/187-28/t5/gates/lint-check.log`: `[ERROR] scripts/assert-comment-hygiene.mjs: tests/playwright.config.ts:1622: rule 2 (D-A4) — this comment line ends without terminal punctuation and the line under it continues the same comment at the same indent. Join them into one line.` The guard's summary: `Comment hygiene guard (phase 152: REVIEW-HYG-01) — files scanned: 2332; ... rules live: 2 of 2 (unicode-escape-in-comment; forced-line-break). 1 violation(s).` Everything in `lint:check` before it passed: `turbo run lint` (`Tasks: 12 successful, 12 total`, warnings only), `eslint tests` (one warning), `typecheck:tests`, `typecheck`, and the i18n-catalog and a11y-scan-wiring guards (0 violations each). `lint:check` is an `&&` chain, so the guards after `assert:comment-hygiene` (`assert:no-candidate-app-names` to `assert:no-preregister`) did not run in it.
+- **Where it comes from.** Line 1622 of `tests/playwright.config.ts`, the trace setting's doc comment, ends `... by the \`forensicCapture\` fixture, which`, and the line under it continues the sentence. The line is older (`d778fca2b`), but until the -gsd commit `2934f0c67` (`fix(e2e): run CI first attempts untraced, as the trace setting intends`) the line under it closed the comment (`... whether the test passed or not. */`). That commit appended a paragraph after it, so the line under it no longer closes the comment, and the guard's forced-line-break rule now applies to the pair. `git blame` of line 1623 names `2934f0c67`.
+- **The owner: -gsd.** `tests/playwright.config.ts` at HEAD is byte-identical to the file at `dfe9cae8b` (`git diff --quiet dfe9cae8b HEAD -- tests/playwright.config.ts` exit 0), and the guard `scripts/assert-comment-hygiene.mjs` is the same blob (`576cb3875`) at `9cd30f7a5`, `dfe9cae8b`, the backup and HEAD. So the violation is in the -gsd fix branch `fix/v2.16-ci-e2e` itself, and arrived in this tree only through the rebase. At the backup the file equals the one at `9cd30f7a5`, which is why 187-27's `lint:check` exited 0.
+- **Not fixed, not re-run.** This plan changes no file outside `.planning/`. The fix (joining line 1622 and the line under it, or ending it with punctuation) belongs to the -gsd stream on `fix/v2.16-ci-e2e`, after which this branch is rebased again and this plan's Task 1 made again. Tasks 2 to 5 were not started: no evidence commit was written, nothing was built, scanned or run, and nothing was pushed.
