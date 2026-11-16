@@ -195,3 +195,40 @@ The operator's step, from Step 18 of `infra/envs/staging/supabase/README.md`, wi
 6. Part C, the read-back: Step 18 item 8 as the runbook gives it (expected: `s18_auth.mailer_otp_length=10` and `s18_auth.uri_allow_list=` naming the staging origin's `/auth/confirm` and `/*/auth/confirm`), then item 9, which removes the plan file and the logs and prints `s18_logs_removed=yes`.
 
 The expected plan lines in item 3 are a reading of the module and the JSON, not of a plan; whoever reads the real lines reads them against Step 4's stop rules.
+
+## Task 3: the two CI-only contestant readiness timeouts under CPU throttling (stopped: not reproduced)
+
+```
+DIAG_COPY=tmp/187-27/diag
+FAILURE1_FIX_IN_HEAD=yes
+FAILURE1_WITNESS_USES_ROUTE_UNTIL_ENDED=yes
+FAILURE1_NO_PAGE_REQUEST_USES_ROUTE_UNTIL_ENDED=yes
+FAILURE1_ESLINT_BAN=yes
+FAILURE1_UNROUTE_RACE=13/600
+FAILURE1_FALLBACK_RACE=0/600
+FAILURE1_DIAGNOSIS_READINGS=unroute 6/600 and 1/300, fallback 0/600
+CI_TRACE_CAND_HOME=goto at 0 s; the page's load ended and the data-next-step wait began at 2.16 s; the wait failed at 12.35 s (10.19 s later); the test's steps hold no focus-reset wait, so the trace cannot say whether the reset had landed
+CI_TRACE_TERMS=goto at 0 s; terms-of-use-submit visible at 1.32 s; the box checked at 2.47 s; toBeEnabled of terms-of-use-submit began at 2.60 s and failed at 7.61 s (5.0 s later); the fixture CI ran has no focus-reset wait in open()
+CI_CONTESTANT_SCAN_MARGINS=slowest passing contestant scans in CI, whole-test durations: cand-questions (dark) 19.2 s, cand-nominations (dark) 17.7 s, cand-question 17.2 s, cand-question (dark) 17.0 s, cand-questions 16.8 s, cand-nominations 16.7 s, cand-preview 16.4 s; cand-home passed in 12.7 s and failed in 13.4 s (dark); results.json carries no step timings, so the time each passing entry spent inside its 10 s wait is not readable
+THROTTLE_MECHANISM=a temporary top-level test.beforeEach in the two specs: when E2E_DIAG_CPU_RATE is a number of at least 2, it opens a DevTools Protocol session for the test's page and sends Emulation.setCPUThrottlingRate with that rate, as eperm07-term-trigger.spec.ts's knob does for its own spec; the setup projects are unthrottled; the suite has no project-wide throttle
+NEG_CONTROL_CAND_HOME_RATE4=passed (tests/e2e-runs/187-27-thr-a11y-r4-20261116T174957Z: 44 passed, 0 failed; cand-home 6.0 s, cand-home (dark) 6.0 s)
+NEG_CONTROL_CAND_HOME_RATE6=passed (tests/e2e-runs/187-27-thr-a11y-r6-20261116T175341Z: 44 passed, 0 failed; cand-home 7.9 s, cand-home (dark) 7.9 s)
+THROTTLED_TERMS_AT_HEAD_RATE4=passed (tests/e2e-runs/187-27-thr-terms-head-r4-20261116T175142Z: 6 passed)
+THROTTLED_TERMS_AT_HEAD_RATE6=passed (tests/e2e-runs/187-27-thr-terms-head-r6-20261116T175530Z: 6 passed; the two terms tests 4.6 s each)
+NEG_CONTROL_TERMS_RATE4=passed (tests/e2e-runs/187-27-thr-terms-mut-r4-20261116T175236Z: 6 passed; 2.5 s each)
+NEG_CONTROL_TERMS_RATE6=passed (tests/e2e-runs/187-27-thr-terms-mut-r6-20261116T175626Z: 6 passed; 3.7 s each)
+NEG_CONTROL_TERMS_RESTORED=yes
+THROTTLE_REPRODUCES_CI=no
+THROTTLE_PATCH_REVERTED=yes
+TASK3_STOPPED=yes
+```
+
+How each line was read:
+
+- **The copy.** The diagnosis directory was copied whole to `tmp/187-27/diag/` (`cp -R`, exit 0) before anything ran from it.
+- **Failure 1.** `git merge-base --is-ancestor b64c1cf18 HEAD` exit 0 (`fix(e2e): end mid-test routes without turning request interception off`). In `tests/tests/fixtures/shared/invitationFlow.fixture.ts`, `witnessPageRequest` registers `addWitness` with `const endWitnessing = await routeUntilEnded(page, ACCOUNT_ACCESS_ROUTE, addWitness)` and calls `endWitnessing()`; `expectNoPageRequest` registers `count` with `routeUntilEnded` and calls `endCounting()`. Neither calls `unroute()`. `tests/eslint.config.mjs` forbids `CallExpression[callee.property.name=/^unroute(All)?$/]` with the message naming `routeUntilEnded`.
+- **The harness.** The copied `scripts/race2.cjs`, in the background, 600 iterations in unroute mode and then 600 with its `flag` argument (the handler falls back once ended, as `routeUntilEnded` does). Unroute: `hung 13/600`, exit 0, at delays 0 (2), 1 (6), 2 (1), 4 (1) and 5 (3). Fallback: `hung 0/600`, exit 0. The race fires on about 1 to 2% of calls, so a green run cannot show it closed; the harness readings are its evidence, and the code is not changed.
+- **CI's readings.** `scripts/act.py` over the three copied traces: `1c571c65…` is cand-home (dark), `b4a32f93…` is contestant-terms-gate-phone, `0d03b565…` is failure 1. Times are from each trace's own `before`/`after` records, relative to its `goto`. `scripts/res.py` over `art/results.json` for the margins.
+- **The throttle.** The patch `tmp/187-27/throttle/throttle.patch` (14 added lines over the two specs) was applied with `git apply` for the six runs and reverted with `git apply -R`; `git diff --quiet HEAD -- tests` exit 0 afterwards. It was never committed. That the variable reached the test is shown by the durations: against the unthrottled closing run of 187-26 on this host (`tests/e2e-runs/187-26-close-20261116T083717Z`), cand-home went from 4.4 s to 6.0 s at rate 4 and 7.9 s at rate 6, cand-questions from 3.8 s to 10.3 s and 11.1 s, and the terms test from 1.5 to 1.9 s to 2.5 s and 4.6 s.
+- **The controls** (`tmp/187-27/throttle/negctl.sh <rate>`, in the background; each run `E2E_DIAG_CPU_RATE=<rate> tests/scripts/e2e-run.sh --run-dir <dir> --no-db-reset --project <project>`). Every run's wrapper exited 0 with preflight successes 1 and failures 0, no `VOID-host-suspend.txt`, and `e2e-spec-verdict.mjs <dir> --no-flaky` exit 0. The terms mutation deleted the one line `      await waitForNavigationFocusReset(page);` from `open()` (count 1; diffstat `1 -`), which is the fixture CI ran; after each mutation run `git checkout --` of the fixture and `git diff --quiet` exit 0.
+- **The result.** At rate 4 and at rate 6, neither control fails: cand-home's `data-next-step` wait holds within its 10 s, and with the hydration wait removed, terms-of-use-submit enables within 5 s. The slowest throttled run is still well inside CI's times (cand-home 7.9 s against CI's 12.7 to 13.4 s; the terms test 3.7 s against CI's failure at 7.6 s). By the plan, `THROTTLE_REPRODUCES_CI=no`: the cause stays unconfirmed on this host, the patch is reverted, Task 3 stops, and no fix is committed. Browser CPU throttling slows only the page's own script; on CI's 4-CPU runner the dev server, the database and six workers share the CPU as well, and that part is not modelled here. The readings above are put to the operator.
