@@ -438,3 +438,61 @@ PUSH_EXIT=0
 - **The branch.** `git ls-remote origin refs/heads/ci-evidence/187-final-3` exit 0 printed nothing before the push.
 - **The push** exited 0 and created a new branch, with no lease, as the first push of a branch.
 - **Read back by the executor (Task 8).** `bash "$A" id 187-27-7` printed `20261116T192353Z.8b93ad083`; `bound 187-27-7 OPERATOR_REPLY plan=187-27 task=7` exit 0 and `has 187-27-7 '^answer_push=approve$'` exit 0. `git ls-remote origin refs/heads/ci-evidence/187-final-3` exit 0 printed `2b0842fd46bf6f26dfa6dad009a13b2297197b30`.
+
+## Task 8: the run job by job (read 2026-11-16T19:24Z to 19:44Z)
+
+**The run.** `gh run list --branch ci-evidence/187-final-3 --workflow main.yaml --json databaseId,headSha,…` exited 0 and listed one run, `43938990256`, at head `2b0842fd46bf6f26dfa6dad009a13b2297197b30`, event `push`, created 2026-11-16T19:24:22Z. A background poll of `gh run view --json status` every 30 s ran until the status was `completed` (19:43:46Z). Each conclusion below was read at job level from `gh run view 43938990256 --json jobs` (exit 0), never from the run's conclusion.
+
+```
+PUSHED=yes
+CI_RUN_ID=43938990256
+CI_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/43938990256
+CI_RUN_HEAD_SHA=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+CI_RUN_JOBS=13
+JOB=secret-scan conclusion=success
+JOB=skill-drift-check conclusion=success
+JOB=docker-image-build conclusion=success
+JOB=supabase-tests conclusion=success
+JOB=node-engine-range-negative-control conclusion=success
+JOB=sql-lint conclusion=success
+JOB=supabase-types-drift conclusion=success
+JOB=frontend-and-shared-module-validation conclusion=success
+JOB=e2e-tests conclusion=failure
+JOB=dev-seed-integration conclusion=success
+JOB=dependency-audit conclusion=failure
+JOB=infra-validate conclusion=success
+JOB=e2e-visual conclusion=failure
+SECRET_SCAN=success
+FRONTEND_AND_SHARED_MODULE_VALIDATION=success
+E2E_TESTS=failure
+E2E_VISUAL=failure
+INFRA_VALIDATE=success
+DEPENDENCY_AUDIT=failure
+DEPENDENCY_AUDIT_SUMMARY=Summary: 17 new advisory(ies) at high+, 0 accepted
+DEPENDENCY_AUDIT_ADVISORIES=GHSA-cg2g-xh64-v4q7 GHSA-pqg4-j6r4-53mv GHSA-3r8g-jcqq-3p5j GHSA-vc2v-76pw-4v95 GHSA-mrv2-3pqr-j5jr GHSA-587h-7wmj-h5pm GHSA-68fv-2mgg-jv7q GHSA-xjj6-f33q-929c GHSA-4w7w-5xrc-9h26 GHSA-2m5v-pch6-74hx GHSA-qrxm-fqhp-jwvm GHSA-mrhx-c7xc-m3w5
+DEPENDENCY_AUDIT_NEW_SINCE_TODO=GHSA-3r8g-jcqq-3p5j (@sveltejs/kit, audit id 1247438)
+WORKSTREAM_ADDED_PACKAGES=js-yaml
+DEPENDENCY_AUDIT_ACCEPTED=per-phase-189-todo
+E2E_VISUAL_RESULT=2 failed, 6 passed (58.9s); preflight failures 0, successes 1
+E2E_VISUAL_FAILED=visual-regression.spec.ts:119 Voter Results - Desktop (7830 pixels, ratio 0.01, differ from voter-results-desktop.png); visual-regression.spec.ts:139 Voter Results - Mobile (7841 pixels, ratio 0.01, differ from voter-results-mobile.png)
+E2E_VISUAL_CAUSE=confirmed: every differing pixel lies in a candidate portrait. The base template gained the candidate test-e2e-base-ca-admin-flows in db9e314b2 (-gsd stream, 179.2-04, 2026-11-12); the dev-seed writer assigns portraits as portraits[i % 30] over the candidates sorted by external_id, so the new row shifts the portrait of every candidate after it, and the baselines (e811fd2f1, 2026-11-07) predate it
+E2E_VISUAL_OWNER=-gsd stream (packages/dev-seed/src/templates/e2e/base.ts and tests/tests/specs/visual/__screenshots__/visual-regression.spec.ts/voter-results-*.png; no commit of this workstream touches either)
+E2E_TESTS_RESULT=7 failed, 511 did not run, 211 passed (13.3m); preflight failures 0, successes 1; no Retry line
+E2E_TESTS_FAILED=voter-nominations.spec.ts:21 (voter-nominations-list not visible in 10000 ms); contestant-code-registration.spec.ts:143 (register-submit still disabled after 10000 ms, contestantRegisterPage.fixture.ts:157); voter-results-redraw.spec.ts:440 (voter-results-list not visible in 10000 ms); contestant-email-registration.spec.ts:145 (contestant-home-status not visible in 10000 ms, contestantEntityHomePage.fixture.ts:113); admin-account-flows.spec.ts:133 (admin-set-password-gate not visible in 10000 ms, adminSetPasswordGate.fixture.ts:31); contestant-email-registration.spec.ts:481 (the focus reset never landed in 10000 ms, contestantLoginPage.fixture.ts:441 signInScriptLoaded via helpers/navigation.ts:128); entity-selection.setup.ts:57 (locator.waitFor 10000 ms at registerAndStoreSession.ts:89)
+E2E_TESTS_CAUSE=unconfirmed: seven readiness waits at the 10 s render and hydration buckets, each the first wait after a cold load or a mailed-link landing, the class this plan's two fixes closed for cand-home and the terms gate (both passed here); the 511 did-not-run tests are downstream of these, chiefly of data-setup-entity-selection
+E2E_TESTS_OWNER=-gsd stream (every failing spec, fixture and setup file above; no commit of this workstream touches any of them; helpers/navigation.ts is shared and this plan added only its optional budget, with the default unchanged)
+E2E_TESTS_FIXED_HERE_HELD=yes (contestant-a11y-scan's cand-home and contestant-terms-gate-phone did not fail)
+ALL_JOBS_GREEN_EXCEPT_DEPENDENCY_AUDIT=no
+G03_CLOSED=no
+PLAN_STOPPED=yes
+STOP_REASON=e2e-visual failed on portrait baselines shifted by a -gsd base-template row (cause confirmed), and e2e-tests failed on seven CI-only readiness timeouts in -gsd-owned specs and fixtures (cause unconfirmed); the fix is a new plan, and plans 187-15 and 187-26 are not closed
+```
+
+The job logs were read with `gh api --allow-escape-sequences repos/OpenVAA/voting-advice-application/actions/jobs/<job id>/logs` (each exit 0); they are kept in `tmp/187-27/ci/` (ignored) and not reproduced here. The visual artifact `e2e-run-visual` was downloaded with `gh run download` into an empty scratch directory to compare the expected, actual and diff images; nothing of it is kept in the repository.
+
+- **`secret-scan` (job of run 43938990256): success.** The range step scanned from the merge-base `340a200708c28fb7ed078d452138712f3400c789`; trufflehog reported `"verified_secrets": 0`, `"unverified_secrets": 0` over 4186 chunks, the local scan's exact count.
+- **`frontend-and-shared-module-validation`: success.** It ran `checkDriftLinkedGuard.test.ts (13 tests)` on the Linux runner and the infra tests including the probe's.
+- **`infra-validate`: success.**
+- **`dependency-audit` (job 133551106113): failure, accepted per the phase-189 todo.** 17 table rows: the todo's 16 rows unchanged, and one new row, `@sveltejs/kit` 1247438 `GHSA-3r8g-jcqq-3p5j` ("SvelteKit: DoS while parsing form data from a remote functions `form`"), brought by the rebase's lockfile. `git diff c2b3bff15..HEAD` of the manifests adds one dependency, `js-yaml` (root devDependency, plan 187-08); `@sveltejs/kit` is not one this workstream added, so the plan does not stop on it, and the row was appended to the todo with the date and the run id. One more GHSA id appears only inside a dompurify advisory's description and is not a row.
+- **`e2e-visual` (job 133551106526): failure; the plan stops.** Only the two Voter Results screenshots differ, by about 1% of the pixels. The diff image marks the candidate portraits alone; the cropped first card shows a different photograph for "Polar-Max BB One" in the actual and the expected image, with every other pixel equal. Candidate Preview desktop and mobile matched. The pre-rebase tree passed this job on run 43839245785 because it held neither `db9e314b2` nor its row. Regenerating the two Linux baselines, or giving the new row a portrait-neutral sort position, is the -gsd stream's call.
+- **`e2e-tests` (job 133551106103): failure; the plan stops.** The step `Run E2E tests` failed; the edge-runtime log and the run directory were uploaded. The seven failures are readiness waits, each on a page reached by a cold load or a mailed link, at the 10 s `slowPage` bucket; none is in a test this plan changed, and the two waits this plan fixed passed. The closing local run on the same source tree passed 729 of 729. A new plan has to diagnose them the way this plan did, with a delayed-hydration control per wait, before any budget changes.

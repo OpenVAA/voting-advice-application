@@ -43,3 +43,16 @@ phase's work.
 **What closes it.** Upgrade or replace each affected dependency, or accept a finding with a written rationale through
 a reviewed `--update-baseline` run. The audit's own instruction is never to silence a finding by package name. Then
 observe `dependency-audit` concluding `success`, read at job level, on a `ci-evidence/**` push or on `main`.
+
+## 2026-11-16: one new row on run 43938990256 (plan 187-27)
+
+After the rebase onto the -gsd stream, `yarn audit:deps` on run 43938990256 (`ci-evidence/187-final-3`, head
+`2b0842fd4`) printed `Summary: 17 new advisory(ies) at high+, 0 accepted`: the 16 rows above, unchanged, and one
+new row from the rebase's lockfile.
+
+| severity | package | audit id | GHSA |
+| --- | --- | --- | --- |
+| high | @sveltejs/kit | 1247438 | GHSA-3r8g-jcqq-3p5j |
+
+`@sveltejs/kit` is a third-party package the deployment workstream did not add (its one added package is still
+`js-yaml`), so the row is appended here and owned by phase 189 like the others.
