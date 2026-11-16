@@ -219,3 +219,17 @@ PUSH_OPEN_RULINGS=DRIFT_GUARD_CAUSE=unconfirmed (Task 2B; the plan's own stop fo
 - **`MAIN_YAML_TRIGGERS_ON_CI_EVIDENCE=yes`.** The commit's `main.yaml` has `on.push.branches` `main` and `ci-evidence/**`; `paths-ignore` (`**.md` and the `.env.example` paths) does not suppress the run, since 3806 of the 4262 paths the commit changes against its parent are not `.md` files. It names 13 jobs.
 - **`MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes`.** Over the commit's `main.yaml`, comment lines excluded, `grep -ciE 'role-to-assume|aws-actions|id-token: write'` counts 0.
 - **`READY_TO_PUSH=yes`** holds for every line of this list, as step 6 defines it. It does not settle the two open rulings in `PUSH_OPEN_RULINGS`: Task 6's verify lapses on `DRIFT_GUARD_CAUSE=unconfirmed` by the plan's design, and Task 5's verify fails on `NOFILE_REPRODUCES_CI`. Nothing was pushed.
+
+## Operator rulings on the open items (2026-11-16)
+
+The operator answered "a, yes" to the two open rulings:
+
+- `DRIFT_GUARD_RULING=push-now-fix-in-follow-up` — `DRIFT_GUARD_CAUSE` stays `unconfirmed`. The
+  push goes ahead now; the low-risk change on the lead (the `docker` stand-in linked to an existing
+  binary instead of a freshly written executable) lands in a follow-up before the milestone's final
+  evidence push. Task 6's own stop on `DRIFT_GUARD_CAUSE=unconfirmed` is overruled by this ruling and
+  that one check of its verify is not applied; every other check of the verify is.
+- `NOFILE_RULING=reproduced` — the run without the file counts as reproducing CI. The edge log's one
+  error is account-access's `the link issue could not start` with code `ERR_ENV_UNCONFIGURED`;
+  `describeFailure` logs a name and a code and never a message, so the plan's message grep could not
+  match. `SITE_URL` is the only `requireEnv` that `linkIssueDeps()` evaluates.
