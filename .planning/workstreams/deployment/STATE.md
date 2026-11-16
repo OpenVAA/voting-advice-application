@@ -6,16 +6,16 @@ current_phase: 187
 current_phase_name: Deploy Pipeline
 current_plan: 15
 status: executing
-stopped_at: Completed 187-17-PLAN.md
-last_updated: "2026-11-15T21:13:44.335Z"
+stopped_at: "187-15 stopped at Task 3: secret-scan red on run 43817899191; SUMMARY written status: stopped"
+last_updated: "2026-11-16T06:53:30.383Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 99381ba3d6c9f2b2ab3d302e64e48f794f95d4ef
+state_head: b2b8919a45779a9a2ebf8218e6ce65c1d66b8bc0
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 182
-  completed_plans: 152
+  completed_plans: 153
   percent: 60
 ---
 
@@ -342,6 +342,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-14: GitHub Environments staging and staging-destroy exist and are read back before any push: one User reviewer, self-review allowed, admin bypass off, branch rules exactly deploy/staging and deploy-evidence/* (none admits main); staging holds the three secrets and three variables, staging-destroy none; the repository holds AWS_PLAN_ROLE_ARN and ALERT_EMAIL
 - [Phase 187]: 187-17: plan 186-08 was already complete, so the handoff needed no resumption; the operator added SMOKE_CONTESTANT_EMAIL and SMOKE_CONTESTANT_PASSWORD to the staging environment only (read back by name: five staging secrets)
 - [Phase 187]: 187-12/187-13 re-run after the review fixes: green 395b71c71 (tree 3c82ab567 = HEAD 1e10dff7f without .planning/) builds, red 700c18362 fails in @openvaa/frontend#build; closing E2E re-run 548/548 green on 3c7be6128 (tests/e2e-runs/187-13-rerun-20261115T202406Z); the 186-08 handoff's tree reference follows it, the expected SHA stays 712947a1b
+- [Phase 187]: 187-15: dependency-audit's 16 high+ advisories are third-party (the workstream's only lockfile change is js-yaml, named by none); filed for phase 189
 
 ### Pending Todos
 
@@ -383,6 +384,7 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 - [Phase 183] The CI `secret-scan` job concluded failure on the pushed tree. It is attributed to two accepted dummy URI test inputs, but nobody has read the job log. The `dependency-audit` CI failure is also undiagnosed.
 - [Phase 183] `183-VALIDATION.md` is still draft; the Nyquist audit (`/gsd-validate-phase 183 --ws deployment`) has not run.
 - [Phase 183] 23 info review findings (IN-01 to IN-23) remain open in `183-REVIEW-DISPOSITION.md`. The lock files of the four Supabase-provider directories still record `constraints = "~> 1.11"` while the roots pin `= 1.11.0`.
+- 187-15 stopped: secret-scan red on run 43817899191 (ci-evidence/187-final) - two unverified URI fixtures at tests/tests/utils/deployedTarget.test.ts:603,604 (phase 186); fix needs a new plan + new evidence push. Same run also red: 3 push-migrations --confirmed-ref unit tests and every mailed-link E2E spec (awaitLinkWitness timeout), CI-only, cause unconfirmed
 
 ### Roadmap Evolution
 
@@ -398,6 +400,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-15T21:10:18.699Z
-**Stopped At:** Completed 187-17-PLAN.md
+Last session: 2026-11-16T06:53:28.813Z
+**Stopped At:** 187-15 stopped at Task 3: secret-scan red on run 43817899191; SUMMARY written status: stopped
 **Resume File:** None
