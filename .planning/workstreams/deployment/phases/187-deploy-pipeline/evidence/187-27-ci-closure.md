@@ -232,3 +232,39 @@ How each line was read:
 - **The throttle.** The patch `tmp/187-27/throttle/throttle.patch` (14 added lines over the two specs) was applied with `git apply` for the six runs and reverted with `git apply -R`; `git diff --quiet HEAD -- tests` exit 0 afterwards. It was never committed. That the variable reached the test is shown by the durations: against the unthrottled closing run of 187-26 on this host (`tests/e2e-runs/187-26-close-20261116T083717Z`), cand-home went from 4.4 s to 6.0 s at rate 4 and 7.9 s at rate 6, cand-questions from 3.8 s to 10.3 s and 11.1 s, and the terms test from 1.5 to 1.9 s to 2.5 s and 4.6 s.
 - **The controls** (`tmp/187-27/throttle/negctl.sh <rate>`, in the background; each run `E2E_DIAG_CPU_RATE=<rate> tests/scripts/e2e-run.sh --run-dir <dir> --no-db-reset --project <project>`). Every run's wrapper exited 0 with preflight successes 1 and failures 0, no `VOID-host-suspend.txt`, and `e2e-spec-verdict.mjs <dir> --no-flaky` exit 0. The terms mutation deleted the one line `      await waitForNavigationFocusReset(page);` from `open()` (count 1; diffstat `1 -`), which is the fixture CI ran; after each mutation run `git checkout --` of the fixture and `git diff --quiet` exit 0.
 - **The result.** At rate 4 and at rate 6, neither control fails: cand-home's `data-next-step` wait holds within its 10 s, and with the hydration wait removed, terms-of-use-submit enables within 5 s. The slowest throttled run is still well inside CI's times (cand-home 7.9 s against CI's 12.7 to 13.4 s; the terms test 3.7 s against CI's failure at 7.6 s). By the plan, `THROTTLE_REPRODUCES_CI=no`: the cause stays unconfirmed on this host, the patch is reverted, Task 3 stops, and no fix is committed. Browser CPU throttling slows only the page's own script; on CI's 4-CPU runner the dev server, the database and six workers share the CPU as well, and that part is not modelled here. The readings above are put to the operator.
+
+## Task 4: the drift guard's `docker` stand-in linked to an existing binary
+
+```
+DRIFT_GUARD_CI_RUNNER_IMAGE=ubuntu-24.04 version 20261111.127.1 (Operating System: Ubuntu 24.04.5 LTS; run 43839245785, job 133203483557, frontend-and-shared-module-validation)
+DRIFT_GUARD_LINK_PROBE=host(macOS 26.5.1) /usr/bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=host(macOS 26.5.1) /bin/true absent
+DRIFT_GUARD_LINK_PROBE=ubuntu:24.04 /usr/bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=ubuntu:24.04 /bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=ubuntu:26.04 /usr/bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=ubuntu:26.04 /bin/true exit=0
+DRIFT_GUARD_LINK_PROBE=node:24-alpine /usr/bin/true absent
+DRIFT_GUARD_LINK_PROBE=node:24-alpine /bin/true exit=127
+DRIFT_GUARD_STAND_IN_ON_HOST=link:/usr/bin/true
+DRIFT_GUARD_STAND_IN_ON_CI_IMAGE=link:/usr/bin/true
+DRIFT_GUARD_STAND_IN_ON_NODE_ALPINE=written
+DRIFT_GUARD_FIRST_EXEC_MS=129-233 for a freshly written #!/bin/sh stand-in, 4-6 for its second exec, 2-3 for a link to /usr/bin/true (10 each)
+DRIFT_GUARD_CASE_EXECS_NO_FRESH_FILE=yes
+DRIFT_GUARD_ALONE_RUNS=10
+DRIFT_GUARD_ALONE_MAX_MS=16
+DRIFT_GUARD_LOADED_SESSIONS=3
+DRIFT_GUARD_LOADED_RUNS=18
+DRIFT_GUARD_LOADED_TIMEOUTS=0
+DRIFT_GUARD_LOADED_MAX_MS=68
+DRIFT_GUARD_FIX_COMMIT=ced5b42bb
+TODO_DRIFT_GUARD_CLOSED=yes
+```
+
+- **The runner image.** `gh api --allow-escape-sequences repos/OpenVAA/voting-advice-application/actions/jobs/133203483557/logs` exit 0; the job's `Operating System` and `Runner Image` groups. `main.yaml`'s 13 jobs run on `ubuntu-latest`, which resolved to that image on run 43839245785.
+- **The probes.** For each candidate, a link named `docker` in a fresh temporary directory, run as `docker info`. On this host directly, and in `docker run --rm` containers of `ubuntu:24.04` (the runner's release), `ubuntu:26.04` (where `ubuntu-latest` moves next; its `true` is a link to `gnutrue`, a single-purpose GNU binary) and `node:24-alpine` (BusyBox's `/bin/true`, which dispatches on the name it runs under and answers `docker` with 127). The containers were discarded.
+- **The change** (`ced5b42bb`, the test file only). `dockerLinkTarget()` runs once at module load: in a probe directory it links `docker` to each of `/usr/bin/true` and `/bin/true` that exists and returns the first whose `docker info` exits 0. `binDir(true)` links `docker` to it, or writes the stand-in as before when there is none. `binDir`'s TSDoc says how the stand-in is chosen. The `psql` and `pgrep` stand-ins, `BIN_WITHOUT_DOCKER`, the case's two assertions (status 2, the loopback message) and the single `timeout: 15_000` are byte-identical to HEAD's. Prettier and ESLint on the file exit 0.
+- **The lead, measured once before the change.** 187-26's `firstexec.pl`, ten times: first exec of a freshly written stand-in 233, 135, 134, 129, 131, 137, 129, 131, 200, 134 ms; second exec 4 to 6 ms; a link to `/usr/bin/true` 2 to 3 ms.
+- **No fresh file executed.** A traced run with a `BASH_ENV` (`tmp/187-27/t4/bash-env.sh`, 187-26's xtrace method plus one line that records what `docker` resolves to in each bash) exit 0, 13 of 13: the one child with a `docker` on its PATH resolved it to `check-drift-bin-…/docker`, a link to `/usr/bin/true`, and its trace runs `docker info` at `check-drift.sh:275` and ends at `exit 2` after the loopback refusal. The other twelve children have no `docker`.
+- **Alone.** `yarn workspace @openvaa/dev-seed vitest run --reporter=verbose tests/checkDriftLinkedGuard.test.ts` ten times, each exit 0 and 13 of 13; the local case took 12, 12, 11, 13, 13, 15, 14, 13, 16 and 15 ms (160 to 215 ms with the written stand-in in 187-26).
+- **Loaded.** `tmp/187-27/t4/load.sh <session>` (187-26's method), three sessions one after another: each `yarn test:unit` with a fresh private turbo cache (`Cached: 0 cached, 26 total`, about 47 s, exit 0) and the Terraform loops (fmt, 8 roots, 2 module suites, 3 examples, each part exit 0) together, and from 25 s in, the traced file six times, 5 s apart. Of the 18 file runs, 6 ran under both loads and 12 under `yarn test:unit` alone; every one exited 0 with 13 of 13, the local case 23 to 68 ms, and every traced local child resolved `docker` to the link. `git status --porcelain` afterwards listed only the change and the untracked ledger.
+- **The todo.** `git mv` from `.planning/todos/pending/` to `.planning/todos/done/`, with `## Resolution (plan 187-27, 2026-11-16)`; a dated sub-entry under the drift-guard item of `deferred-items.md`, which is kept.

@@ -34,3 +34,20 @@ free of any `docker`.
 Land it, with the dev-seed unit tests green, before the milestone's final `ci-evidence/**` push, so that push
 carries it. Evidence: `.planning/workstreams/deployment/phases/187-deploy-pipeline/evidence/187-26-ci-closure.md`
 § Task 2B and § Operator rulings on the open items (2026-11-16). Also listed in the phase's `deferred-items.md`.
+
+## Resolution (plan 187-27, 2026-11-16)
+
+Fixed in `ced5b42bb` (`fix(187-27): link the drift guard's docker stand-in to an existing binary`). A probe at
+module load links `docker` to the first of `/usr/bin/true` and `/bin/true` that answers `docker info` with 0 under
+that name; where none does, the stand-in is the written file as before.
+
+- **Link target per host:** this macOS host `link:/usr/bin/true` (`/bin/true` absent); the CI runner's image
+  (`ubuntu-24.04`, version `20261111.127.1`, Ubuntu 24.04.5 LTS; probed in `ubuntu:24.04`) `link:/usr/bin/true`;
+  `ubuntu:26.04` `link:/usr/bin/true` (a GNU `true`, not a multicall binary); `node:24-alpine` `written` (no
+  `/usr/bin/true`, and BusyBox's `/bin/true` exits 127 under the name `docker`).
+- **Runs:** 10 alone, each 13 of 13, the local case 11 to 16 ms (it was 160 to 215 ms with the written file);
+  18 file runs in 3 loaded sessions (`yarn test:unit` with a fresh private turbo cache and the Terraform loops),
+  0 timeouts, the local case at most 68 ms. Every traced local child resolved `docker` to the link.
+- **Unchanged:** the 15 s `spawnSync` budget, the case's two assertions, `BIN_WITHOUT_DOCKER`, and the `psql` and
+  `pgrep` stand-ins.
+- **Evidence:** `.planning/workstreams/deployment/phases/187-deploy-pipeline/evidence/187-27-ci-closure.md` § Task 4.
