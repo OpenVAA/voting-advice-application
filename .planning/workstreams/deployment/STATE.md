@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 17
+current_plan: 18
 status: executing
-stopped_at: Stopped 187-26-PLAN.md at Task 7 (e2e-tests red on run 43839245785)
-last_updated: "2026-11-16T09:46:20.425Z"
+stopped_at: Stopped 187-27-PLAN.md at Task 8 (e2e-tests and e2e-visual red on run 43938990256)
+last_updated: "2026-11-16T20:52:48.000Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 260efc4160148c1e7e8996d3ae09399c5feaab72
+state_head: 1f5c56781f5983110fa703f621c6f376b046f870
 progress:
   total_phases: 10
   completed_phases: 6
-  total_plans: 183
-  completed_plans: 155
+  total_plans: 184
+  completed_plans: 156
   percent: 60
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 17 of 25
+Plan: 18 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████░░░░] 60% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 17
+**Current Plan:** 18
 
 From 184 on, the numeric order is the dependency order.
 
@@ -169,6 +169,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P17 | 65 min | 3 tasks | 1 files |
 | Phase 187 P16 | 11h05min | 3 tasks | 3 files |
 | Phase 187 P26 | 100min | 7 tasks | 11 files |
+| Phase 187 P27 | 140min | 8 tasks | 20 files |
 
 ## Accumulated Context
 
@@ -348,6 +349,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-16: Step 9 applied with s9c_uncovered_count=16, not 0, on the operator's ruling that none is a call of the staging AWS root (7 Application Auto Scaling actions logged under autoscaling.amazonaws.com, 8 dns-mail root reads, 1 SSO credential fetch); recorded as STEP9_DEVIATION. Item 4 now maps Application Auto Scaling and drops sso:GetRoleCredentials; Step 9 braces variables before a colon for zsh
 - [Phase 187]: 187-26 stops at Task 7: run 43839245785 on ci-evidence/187-final-2 cleared run 43817899191's red jobs (secret-scan 0 results, push-migrations green on Linux, no awaitLinkWitness), but e2e-tests is red on three CI-only contestant readiness timeouts (cause unconfirmed); a new plan fixes it, and 187-15 stays open
 - [Phase 187]: Drift guard (operator ruling push-now-fix-in-follow-up): link the docker stand-in in checkDriftLinkedGuard.test.ts to an existing binary before the milestone's final evidence push (todo 2026-11-16-drift-guard-docker-stand-in-link.md)
+- [Phase 187]: 187-27 stops at Task 8: run 43938990256 on ci-evidence/187-final-3 held this plan's fixes (cand-home and the terms gate passed; drift guard linked, ced5b42bb; probe updated, e56db5391), but e2e-visual is red on candidate-portrait baselines shifted by the -gsd base-template row of db9e314b2 (cause confirmed) and e2e-tests is red on seven CI-only 10 s readiness timeouts in -gsd-owned specs, 511 did not run (cause unconfirmed); 187-15 and 187-26 stay open
+- [Phase 187]: Next step (operator rulings, 2026-11-16): the -gsd-owned failures are fixed in the -gsd worktree on a new branch on top of ship/v2.16-12-planning, then the -infra stack is rebased onto it; the work starts by measuring CI (worker count and warm-up experiments on ci-evidence/* branches), because only the runner reproduces the timeouts
 
 ### Pending Todos
 
@@ -391,6 +394,7 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 - [Phase 183] 23 info review findings (IN-01 to IN-23) remain open in `183-REVIEW-DISPOSITION.md`. The lock files of the four Supabase-provider directories still record `constraints = "~> 1.11"` while the roots pin `= 1.11.0`.
 - 187-15 stopped: secret-scan red on run 43817899191 (ci-evidence/187-final) - two unverified URI fixtures at tests/tests/utils/deployedTarget.test.ts:603,604 (phase 186); fix needs a new plan + new evidence push. Same run also red: 3 push-migrations --confirmed-ref unit tests and every mailed-link E2E spec (awaitLinkWitness timeout), CI-only, cause unconfirmed
 - 187-26: e2e-tests red on run 43839245785 (3 CI-only contestant readiness timeouts: contestant-email-registration.spec.ts:186, contestantAxeScan cand-home (dark), contestant-terms-gate-phone.spec.ts:28; cause unconfirmed). G-03 and plan 187-15 stay open; 187-18 must not start until a new plan's run is green
+- 187-27: e2e-visual and e2e-tests red on run 43938990256 (e2e-visual: Voter Results desktop and mobile portraits shifted by db9e314b2's base-template row, cause confirmed; e2e-tests: 7 CI-only readiness timeouts, 511 did not run, cause unconfirmed; both -gsd-owned). G-03 and plans 187-15 and 187-26 stay open; 187-18 must not start until a run after the -gsd fixes and the rebase is green
 
 ### Roadmap Evolution
 
@@ -406,6 +410,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-16T09:46:18.408Z
-**Stopped At:** Stopped 187-26-PLAN.md at Task 7 (e2e-tests red on run 43839245785)
+Last session: 2026-11-16T20:52:46.000Z
+**Stopped At:** Stopped 187-27-PLAN.md at Task 8 (e2e-tests and e2e-visual red on run 43938990256)
 **Resume File:** None
