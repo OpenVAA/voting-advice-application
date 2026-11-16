@@ -612,7 +612,7 @@ Notes:
   5. A guarded destroy path removes the AWS stack, and it is seen unable to reach the Supabase root.
 
 **Research flag**: Standard pattern, no research phase. OIDC, plan and apply, and environment gating are well documented, and the repository-specific items carry the risk. Added by rulings after the research: the named-branch trigger (PIPE-10) and the failure alerts (INFRA-16).
-**Plans**: 18/26 plans executed in 17 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 17 (plans 14 to 26) are the outward actions, each behind an operator checkpoint; plan 26 (wave 10) is the gap closure of plan 15's CI run, and plans 24 and 25 run on or after 2026-11-23.
+**Plans**: 18/27 plans executed in 18 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 18 (plans 14 to 27) are the outward actions, each behind an operator checkpoint. Plans 26 (wave 10) and 27 (wave 11) are gap closures: plan 26 of plan 15's CI run, and plan 27 of plan 26's run, after the branch was rebased onto the -gsd stream on 2026-11-16. Plans 24 and 25 run on or after 2026-11-23.
 
 Plans:
 **Wave 1**
@@ -653,27 +653,30 @@ Plans:
 **Wave 10** *(needs the operator; gap closure)*
 - [ ] 187-26-PLAN.md — wave 10 — Gap closure of run 43817899191: the URI fixtures, `run_child` on Linux, the functions env in CI's E2E job, the drift-guard timeout; the evidence chain again, and the `ci-evidence/187-final-2` push.
 
-**Wave 11** *(needs the operator)*
-- [ ] 187-18-PLAN.md — wave 11 — H8: the red run from a broken build, its alert, and the wrong-subject refusal.
+**Wave 11** *(needs the operator; gap closure)*
+- [ ] 187-27-PLAN.md — wave 11 — Gap closure after the rebase onto the -gsd stream: every gate on the rebased tree, what it carries to staging (read-only), the two CI-only contestant readiness fixes proven under CPU throttling, the drift-guard link; the evidence chain again, and the `ci-evidence/187-final-3` push.
 
 **Wave 12** *(needs the operator)*
-- [ ] 187-19-PLAN.md — wave 12 — H5: a draft pull request's plan, readable in its run.
+- [ ] 187-18-PLAN.md — wave 12 — H8: the red run from a broken build, its alert, and the wrong-subject refusal.
 
 **Wave 13** *(needs the operator)*
-- [ ] 187-20-PLAN.md — wave 13 — H6: a fork pull request's credentialed job skipped.
-- [ ] 187-21-PLAN.md — wave 13 — H4, H7: the first green pipeline deploy, every stage in order.
+- [ ] 187-19-PLAN.md — wave 13 — H5: a draft pull request's plan, readable in its run.
 
 **Wave 14** *(needs the operator)*
-- [ ] 187-22-PLAN.md — wave 14 — The first deploy from `deploy/staging`, reusing the built image.
+- [ ] 187-20-PLAN.md — wave 14 — H6: a fork pull request's credentialed job skipped.
+- [ ] 187-21-PLAN.md — wave 14 — H4, H7: the first green pipeline deploy, every stage in order.
 
 **Wave 15** *(needs the operator)*
-- [ ] 187-23-PLAN.md — wave 15 — The destroy path up to its apply: the Supabase root refused, the apply job rejected.
+- [ ] 187-22-PLAN.md — wave 15 — The first deploy from `deploy/staging`, reusing the built image.
 
-**Wave 16** *(needs the operator; on or after 2026-11-23)*
-- [ ] 187-24-PLAN.md — wave 16 — H10: the real destroy through the pipeline.
+**Wave 16** *(needs the operator)*
+- [ ] 187-23-PLAN.md — wave 16 — The destroy path up to its apply: the Supabase root refused, the apply job rejected.
 
-**Wave 17** *(needs the operator)*
-- [ ] 187-25-PLAN.md — wave 17 — H10: the redeploy from nothing and the confirmed alert subscription.
+**Wave 17** *(needs the operator; on or after 2026-11-23)*
+- [ ] 187-24-PLAN.md — wave 17 — H10: the real destroy through the pipeline.
+
+**Wave 18** *(needs the operator)*
+- [ ] 187-25-PLAN.md — wave 18 — H10: the redeploy from nothing and the confirmed alert subscription.
 
 Notes:
 
@@ -810,6 +813,6 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
 | 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
-| 187. Deploy Pipeline | 18/26 | In Progress | - |
+| 187. Deploy Pipeline | 18/27 | In Progress | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
 | 189. Documentation and Closure | 0/TBD | Not started | - |
