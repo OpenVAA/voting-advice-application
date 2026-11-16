@@ -118,3 +118,45 @@ STAGING_FUNCTION_SECRETS_BLOCKER=none
 - **`STAGING_FUNCTION_SECRET_NAMES_OBSERVED=2026-11-11`.** The Observations row of `infra/envs/staging/supabase/README.md` for the persistent project's settings apply: "The function secrets read back by name are exactly the seven the module sets." The throwaway project's row of 2026-11-09/10 names the seven.
 - **`DEPLOY_WORKFLOW_SETS_FUNCTION_SECRETS=no`.** `.github/workflows/deploy.yml`'s `Deploy the functions` step runs `supabase functions deploy` and a read-back of the functions list; `grep -cE 'secrets (set|unset)'` over the file counts 0. A pipeline deploy keeps what the hand-applied root set.
 - No Terraform was changed and no hosted read was made.
+
+## Task 4: the gates on the final tree, the evidence commits, their builds and the green commit's scan
+
+### The gates (2026-11-16)
+
+```
+GATES_HEAD=27ee4fcea49b699ba3d8246e58ecf290fb818473
+lint:check exit=0
+format:check exit=0
+typecheck exit=0
+test:unit exit=0
+lint:workflows exit=0
+INFRA_TESTS_PASSED=workflows.test.ts,infra-plan-workflow.test.ts,deploy-workflow.test.ts,destroy-workflow.test.ts,check-destroy-plan.test.ts,running-image-digest.test.ts,push-migrations.test.ts,bootstrap-tfvars.test.ts,build-push-image.test.ts,probe-hosted.test.ts,request-loop.test.ts,main-e2e-workflow.test.ts
+GUARD_DEPLOYED_SMOKE=passed
+TF_FMT_EXIT=0
+TF_ROOTS_VALIDATED=8
+TF_MODULES_TESTED=frontend-service,github-oidc
+TF_EXAMPLE_PLANS=example/aws,example/dns-mail,example/supabase
+SC4_LOCAL_GATE_DIFF=empty
+PHASE_APP_DIFF=tests/README.md,tests/tests/utils/deployedTarget.test.ts
+```
+
+- **The repository gates.** `tmp/187-26/gates/run-gates.sh`, in the background, one gate after another with `TURBO_CACHE_DIR=tmp/187-26/turbo-cache` (new for this attempt), each status written by the command on the line after it. HEAD was `27ee4fcea` before and after. `lint:check` 08:22:31Z to 08:23:19Z (its turbo runs: 12 lint tasks and 23 typecheck tasks, 0 cached), `format:check` to 08:23:36Z, `typecheck` (23 of 23 tasks, all hits from `lint:check`'s typecheck run on the same tree in the same cache; `svelte-check found 0 errors and 0 warnings`), `test:unit` 08:23:36Z to 08:24:24Z (`Tasks: 25 successful, 25 total`; dev-seed 80 files and 1266 tests, `test:unit:tests` 323 of 323, `test:unit:infra` 12 files and 321 of 321), and `lint:workflows` (`actionlint found nothing in 3 workflows`). Every exit is 0, on the first run of each. No Terraform loop ran during them.
+- **`INFRA_TESTS_PASSED`.** `vitest run --config infra/vitest.config.ts --reporter=verbose` exit 0, `Test Files 12 passed (12)`, `Tests 321 passed (321)`, no failed test. Passing lines per file: `probe-hosted` 96, `destroy-workflow` 53, `deploy-workflow` 41, `infra-plan-workflow` 33, `workflows` 29, `check-destroy-plan` 24, `push-migrations` 14, `running-image-digest` 13, `bootstrap-tfvars` 7, `main-e2e-workflow` 5, `build-push-image` 3, `request-loop` 3.
+- **`GUARD_DEPLOYED_SMOKE=passed`.** `vitest run --config tests/vitest.config.ts --reporter=verbose` exit 0, `Tests 323 passed (323)`, with 16 lines `✓ tests/utils/deployedSmokeGuards.test.ts > …` and no failed test.
+- **Terraform** (`tmp/187-26/gates/run-tf.sh`, after the gates, alone; `TF_PLUGIN_CACHE_DIR` set, a `TF_DATA_DIR` per root under the session scratch directory). `terraform fmt -check -recursive -diff infra` exit 0. The eight roots (`infra/bootstrap`, `infra/envs/example/{aws,dns-mail,supabase}`, `infra/envs/scratch/supabase`, `infra/envs/staging/{aws,dns-mail,supabase}`) each `init -backend=false -lockfile=readonly` and `validate` exit 0, each with `Success! The configuration is valid.`. `terraform test` of `frontend-service` `Success! 33 passed, 0 failed.` and of `github-oidc` `Success! 11 passed, 0 failed.`. `test -verbose` of the three example roots, each `Success! 1 passed, 0 failed.`. `git status --porcelain` afterwards lists only the untracked ledger.
+- **`SC4_LOCAL_GATE_DIFF=empty`.** `git diff --quiet a7a4222a8 -- tests/playwright.config.ts tests/global-setup.ts tests/tests/support/preflight.ts` exit 0.
+- **`PHASE_APP_DIFF`.** `git diff --name-only ee85b83a3..HEAD -- apps packages tests` lists `tests/README.md` and `tests/tests/utils/deployedTarget.test.ts`, the second being Task 1's fixture rewrite (the G-05 amendment the operator approved). Nothing under `apps/` or `packages/`.
+
+### The evidence commits and the green commit's scan
+
+```
+GREEN_COMMIT_OF_RECORD=102202f7a162cb8a67d31cc50f7692a22e015ab7
+RED_COMMIT_OF_RECORD=34d7b211db38003e988cd4600cc7b7283341733c
+PUSH_SCAN_HEAD=102202f7a162cb8a67d31cc50f7692a22e015ab7
+PUSH_SCAN_BASE=340a200708c28fb7ed078d452138712f3400c789
+PUSH_SCAN_EXIT=0
+PUSH_SCAN_RESULTS=0
+```
+
+- The green and red commits, their archive builds (green exit 0, red exit 1 at the frontend build naming the missing module) and the builder-cache prune are recorded in `187-12-evidence-commits.md` § Re-run 2026-11-16 (plan 187-26).
+- **The scan.** Task 1's `tmp/187-26/scan.sh` with head `refs/evidence/187/green` and base `GREEN_PARENT`, in a fresh `git init` repository fetched from this checkout. The `--github-actions` run exit 0, `"verified_secrets": 0, "unverified_secrets": 0` over 3781 chunks, no annotation. The `--json` run exit 0 with no result; its mode-700 directory was deleted, and `tmp/187-26/scan/` removed.
