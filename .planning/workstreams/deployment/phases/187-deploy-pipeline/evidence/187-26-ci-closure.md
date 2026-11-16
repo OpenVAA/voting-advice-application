@@ -160,3 +160,62 @@ PUSH_SCAN_RESULTS=0
 
 - The green and red commits, their archive builds (green exit 0, red exit 1 at the frontend build naming the missing module) and the builder-cache prune are recorded in `187-12-evidence-commits.md` § Re-run 2026-11-16 (plan 187-26).
 - **The scan.** Task 1's `tmp/187-26/scan.sh` with head `refs/evidence/187/green` and base `GREEN_PARENT`, in a fresh `git init` repository fetched from this checkout. The `--github-actions` run exit 0, `"verified_secrets": 0, "unverified_secrets": 0` over 3781 chunks, no annotation. The `--json` run exit 0 with no result; its mode-700 directory was deleted, and `tmp/187-26/scan/` removed.
+
+## Task 5: the closing E2E window
+
+```
+DEV_ENV_STAT_BEFORE=342396339 10343 1791823238
+NOFILE_RUN_DIR=tests/e2e-runs/187-26-nofile-20261116T083511Z
+NOFILE_WRAPPER_EXIT=1
+NOFILE_AWAIT_LINK_WITNESS_TIMEOUTS=1
+NOFILE_EDGE_LOG_SITE_URL_LINES=0
+NOFILE_EDGE_LOG_ENV_UNCONFIGURED_LINES=1
+NOFILE_REPRODUCES_CI=partial
+E2E_FUNCTIONS_ENV=template
+TEMPLATE_LINK_SAME_INODE=yes
+DEV_FUNCTIONS_ENV_ASIDE_DURING_RUN=yes
+DEV_ENV_STAT_AFTER=342396339 10343 1791823238
+FUNCTIONS_ENV_RESTORED=yes
+EDGE_RUNTIME_RESTARTED_AFTER_RESTORE=yes
+GSD_SESSION_MUST_RESET=yes
+```
+
+- **Before.** `tmp/187-26/env-aside/functions-dotenv.aside` absent, the developer's file present (`test -e`), `refs/evidence/187/green`'s tree equal to HEAD's without `.planning/` (`git diff --quiet` exit 0), 199 GiB free and Docker build cache 0 B, no listener on 5273 (`lsof` exit 1), and the edge runtime Up. `stat -f '%i %z %m'` of the file gave the line above. The template's inode is 340008455.
+- **The window.** One background zsh command, written out on its command line, every step's status in its own file under `tmp/187-26/window/`. Before anything moved it set its restore as the trap on EXIT and, through a once-only guard, on INT, TERM and HUP.
+  - **a. Aside** (08:34:39Z). `mkdir -p -m 700 tmp/187-26/env-aside`, then `mv` of the file to `tmp/187-26/env-aside/functions-dotenv.aside`, exit 0. No hook or permission refusal occurred.
+  - **b. No file** (08:34:39Z to 08:36:47Z). `yarn db:stop` exit 0 and `yarn db:start` exit 0; the edge runtime started at 08:34:59Z. `caffeinate -i tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/187-26-nofile-20261116T083511Z --no-db-reset --project invitation-contract` exit 1: preflight successes 1 and failures 0, `5 passed`, `1 failed`, `11 did not run` (the project is one serial walk). The failed test is `invitation-contract.spec.ts:132` "an invited address receives exactly one sign-in mail, whose link is the callback link of the requested locale", with `awaitLinkWitness: witness <id> read neither sent nor not-sent within 30000 ms`, CI's error. No void marker. `docker logs` of the edge runtime went to `edge-nofile.log` (10 lines).
+  - **c. The template** (08:36:47Z to 08:52:44Z). `ln` of the template to the file's path exit 0, and `test -ef` against the template exit 0; during the run `stat` showed the path at the template's inode 340008455 with link count 2. `yarn db:stop` and `yarn db:start` exit 0; the edge runtime started at 08:37:06Z. Then the full run (below), and `docker logs` to `edge-template.log`.
+  - **d. The restore** (08:52:44Z). The path was `-ef` the template, so it was removed with `rm` (exit 0), then the aside file was moved back with `mv` (exit 0). `yarn db:stop` and `yarn db:start` exit 0, and `rmdir tmp/187-26/env-aside` exit 0. `stat` of the file afterwards equals the line before, the template's link count is 1 again, and the edge runtime's `StartedAt` is 08:53:04Z, after the restore.
+- **Judging b.** The exit is non-zero and the `awaitLinkWitness` timeout appears, as in CI. The edge log does not name `SITE_URL`: `grep -c 'Missing required environment variable: SITE_URL'` counts 0. Its one error line is account-access's `the link issue could not start; no link issued`, logged with `{"name":"Error","code":"ERR_ENV_UNCONFIGURED"}`. The function's `describeFailure` logs an error's name and code and not its message, so the variable is never in the log. By the code, that log line is the catch around `issueSignInLink(request, linkIssueDeps())` in `account-access/index.ts`, and the only `requireEnv` that `linkIssueDeps()` evaluates is `SITE_URL`; the SMTP ones are read later, inside the mail step. So the failure is the missing functions environment, and by the code the variable is `SITE_URL`, but the plan's third reading, the log naming `SITE_URL`, does not hold as written. `NOFILE_REPRODUCES_CI=partial` records that, and it is put to the orchestrator: the plan says to stop and report when b does not reproduce. The window was already one command; step c and the restore ran to the end in it.
+- **Judging c.** See `187-13-closing-e2e.md` § Re-run 2026-11-16: wrapper exit 0, no void marker, `e2e-evidence.mjs` exit 0 (548 passed, 0 failed, 0 flaky, 0 skipped, 0 did not run) and `e2e-spec-verdict.mjs --no-flaky` exit 0, so `E2E_GATE=green`. `invitation-contract`, which failed in b, passed in full on the template.
+- **The file's content was not read.** The only operations on the developer's file were `test -e`, `stat`, `mv` (twice) and `test -ef`. Two things touched its path otherwise, recorded here: a `grep -rn` over `apps/supabase/supabase/functions` at 08:39Z, while the path was the hard link to the template (inode 340008455), so it read the template; and the tail of `restore-db-start.log`, in which the Supabase CLI, starting with the restored file, printed that it skipped one variable because of its `SUPABASE_` prefix, naming that variable and no value. That log stays in `tmp/` (ignored) and the name is not repeated here.
+- **The shared stack.** It was restarted three times and is running with the developer's environment. The -gsd worktree shares it, so `GSD_SESSION_MUST_RESET=yes`.
+
+### What would be pushed (read-only; one remote read, `git ls-remote`)
+
+```
+PUSH_COMMIT=102202f7a162cb8a67d31cc50f7692a22e015ab7
+PUSH_TREE=81bc87981fce519fe86efdc7fade95df939213cf
+PUSH_PARENT=340a200708c28fb7ed078d452138712f3400c789
+PUSH_PATHS=3321
+PUSH_TREE_MATCHES_HEAD=yes
+PUSH_TREE_COVERED_BY_E2E=yes
+PUSH_PLANNING_PATHS=0
+PUSH_EXCLUSIONS=unchanged
+PUSH_TARGET_REF=refs/heads/ci-evidence/187-final-2
+BRANCH_ABSENT=yes
+MAIN_YAML_TRIGGERS_ON_CI_EVIDENCE=yes
+MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes
+READY_TO_PUSH=yes
+PUSH_OPEN_RULINGS=DRIFT_GUARD_CAUSE=unconfirmed (Task 2B; the plan's own stop for Task 6), NOFILE_REPRODUCES_CI=partial (Task 5 step 3)
+```
+
+- **`PUSH_COMMIT`.** `refs/evidence/187/green`, `GREEN_COMMIT` of `187-12-evidence-commits.md` (re-run 2026-11-16), tree `81bc87981`, parent `340a20070`. `git for-each-ref --contains` prints only `refs/evidence/187/green`.
+- **`PUSH_TREE_MATCHES_HEAD=yes`.** In a temporary index, removed afterwards, with HEAD at `797d1cfb5`: `read-tree HEAD`, `rm -r --cached --quiet .planning`, `write-tree` printed `81bc87981fce519fe86efdc7fade95df939213cf`, `PUSH_TREE`; the real index untouched. HEAD moved past `a21f94b99` by one commit of another session, `797d1cfb5`, which adds one file under `.planning/todos/` only (`git diff --quiet a21f94b99 HEAD -- . ':!.planning'` exit 0).
+- **`PUSH_TREE_COVERED_BY_E2E=yes`.** `git diff --quiet a21f94b99 102202f7a -- . ':!.planning'` exit 0, where `a21f94b99` is `E2E_TREE_SHA`.
+- **`PUSH_PLANNING_PATHS=0`.** `git ls-tree -r --name-only` of the commit lists 3321 paths and none under `.planning/`.
+- **`PUSH_EXCLUSIONS=unchanged`.** This plan added no entry (`EXCLUSION_ADDED=none`); `.github/trufflehog-exclude-paths.txt` is identical at `395b71c71` and at the commit (`git diff --quiet` exit 0).
+- **`BRANCH_ABSENT=yes`.** `git ls-remote origin refs/heads/ci-evidence/187-final-2` exit 0 printed nothing, at 08:29Z and again after the window.
+- **`MAIN_YAML_TRIGGERS_ON_CI_EVIDENCE=yes`.** The commit's `main.yaml` has `on.push.branches` `main` and `ci-evidence/**`; `paths-ignore` (`**.md` and the `.env.example` paths) does not suppress the run, since 3806 of the 4262 paths the commit changes against its parent are not `.md` files. It names 13 jobs.
+- **`MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes`.** Over the commit's `main.yaml`, comment lines excluded, `grep -ciE 'role-to-assume|aws-actions|id-token: write'` counts 0.
+- **`READY_TO_PUSH=yes`** holds for every line of this list, as step 6 defines it. It does not settle the two open rulings in `PUSH_OPEN_RULINGS`: Task 6's verify lapses on `DRIFT_GUARD_CAUSE=unconfirmed` by the plan's design, and Task 5's verify fails on `NOFILE_REPRODUCES_CI`. Nothing was pushed.
