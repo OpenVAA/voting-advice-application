@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 248
+open_count: 251
 waived_count: 1
-fixed_count: 40
-total_count: 289
-last_updated: 2026-11-02T19:43:11.392Z
+fixed_count: 42
+total_count: 294
+last_updated: 2026-11-16T16:56:45.658Z
 ---
 
 # Broken Windows Ledger
@@ -304,6 +304,11 @@ last_updated: 2026-11-02T19:43:11.392Z
 | 287 | 172 | deviation | tests/scripts/e2e-run.sh |  | 172-09 closing E2E run was red on its first attempt (tests/e2e-runs/172/172-09-final: 77 passed, 9 failed, 94 did not run; dev server ready in 161 s against a 30 s norm) and green on a second attempt on the same commit with no fix in between (172-09-final-r2: 180 of 180). What slowed the host is not identified; todo 2026-10-06-172-full-suite-red-on-a-slow-dev-server-start.md | open |  | 2026-10-06T07:42:30.704Z |  |
 | 288 | 172 | unmet-truth | .claude/scripts/audit-skill-links.sh |  | 172-09 Task 1 acceptance criterion 'audit-skill-links.sh database exits 0' cannot hold: exit 1 on the phase start tree and after the task alike, same 31 dangling citations (146 checked before, 151 after, 0 of the 5 new ones dangling). Standing todo 2026-08-28-dangling-schema-citations-database-skill.md | open |  | 2026-10-06T07:42:30.790Z |  |
 | 289 | 179.1 | unmet-truth |  |  | Plan 179.1-47's close is not green: tests/e2e-runs/179.1-e2e/179.1-47-close, 1 failed, 263 did not run, in the manner of the slow first route load | open |  | 2026-11-02T19:43:11.392Z |  |
+| 290 | 183 | deviation | .planning/workstreams/deployment/phases/183-terraform-foundation-and-supabase-as-code/evidence/183-20-budget-alert.md |  | 183-20: INFRA-15 / criterion 3 accepted on operator ruling accept-console-alert (2026-10-23). The actual alert was seen as triggered in the AWS Budgets console; no budget mail reached the operator (address not confirmed, per operator). Mail delivery to the operator's mailbox is not observed; outcome recorded as no-mail. Read-back ThresholdType printed None, not PERCENTAGE (UNCONFIRMED why; config says PERCENTAGE, second plan exit 0) | open |  | 2026-10-25T07:53:30.061Z |  |
+| 291 | 184 | unmet-truth | infra/scripts/probe/checks.mjs |  | 184-18: functions.identity-callback-unverified passed on the broken throwaway (verify_jwt PATCHed true); SUPA-07 red run 21/22 | fixed |  | 2026-11-11T12:31:36.771Z | 2026-11-11T12:40:17.249Z |
+| 292 | 185 | stub | infra/envs/staging/aws/README.md |  | The runbook's Steps 7 to 18 are not written yet (the flow overview names them); the next runbook plan writes them | fixed |  | 2026-11-12T17:54:27.466Z | 2026-11-12T18:32:17.955Z |
+| 293 | 187 | deviation | .planning/workstreams/deployment/phases/187-deploy-pipeline/evidence/187-16-bootstrap-apply.md |  | 187-16 Step 9 applied with s9c_uncovered_count=16 where the plan requires 0 (must_haves contains s9c_uncovered_count=0 unmet; Task 3 verify fails on that line); applied on the operator's ruling: 7 Application Auto Scaling, 8 dns-mail root reads, 1 sso:GetRoleCredentials | open |  | 2026-11-16T07:09:19.203Z |  |
+| 294 | 187 | unrun-verify | infra/bootstrap/README.md |  | Step 9 item 4's revised jq (Application Auto Scaling mapping, sso:GetRoleCredentials left out) tested on a synthetic trail only; not rerun against the 2026-11-14 CloudTrail history | open |  | 2026-11-16T07:09:19.314Z |  |
 
 ````json
 [
@@ -3788,6 +3793,71 @@ last_updated: 2026-11-02T19:43:11.392Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-11-02T19:43:11.392Z",
+    "resolved_at": null,
+    "milestone": "v2.16"
+  },
+  {
+    "id": 290,
+    "kind": "deviation",
+    "phase": "183",
+    "file": ".planning/workstreams/deployment/phases/183-terraform-foundation-and-supabase-as-code/evidence/183-20-budget-alert.md",
+    "line": null,
+    "description": "183-20: INFRA-15 / criterion 3 accepted on operator ruling accept-console-alert (2026-10-23). The actual alert was seen as triggered in the AWS Budgets console; no budget mail reached the operator (address not confirmed, per operator). Mail delivery to the operator's mailbox is not observed; outcome recorded as no-mail. Read-back ThresholdType printed None, not PERCENTAGE (UNCONFIRMED why; config says PERCENTAGE, second plan exit 0)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-25T07:53:30.061Z",
+    "resolved_at": null,
+    "milestone": "v2.16"
+  },
+  {
+    "id": 291,
+    "kind": "unmet-truth",
+    "phase": "184",
+    "file": "infra/scripts/probe/checks.mjs",
+    "line": null,
+    "description": "184-18: functions.identity-callback-unverified passed on the broken throwaway (verify_jwt PATCHed true); SUPA-07 red run 21/22",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-11-11T12:31:36.771Z",
+    "resolved_at": "2026-11-11T12:40:17.249Z",
+    "milestone": "v2.16"
+  },
+  {
+    "id": 292,
+    "kind": "stub",
+    "phase": "185",
+    "file": "infra/envs/staging/aws/README.md",
+    "line": null,
+    "description": "The runbook's Steps 7 to 18 are not written yet (the flow overview names them); the next runbook plan writes them",
+    "status": "fixed",
+    "reason": "",
+    "recorded_at": "2026-11-12T17:54:27.466Z",
+    "resolved_at": "2026-11-12T18:32:17.955Z",
+    "milestone": "v2.16"
+  },
+  {
+    "id": 293,
+    "kind": "deviation",
+    "phase": "187",
+    "file": ".planning/workstreams/deployment/phases/187-deploy-pipeline/evidence/187-16-bootstrap-apply.md",
+    "line": null,
+    "description": "187-16 Step 9 applied with s9c_uncovered_count=16 where the plan requires 0 (must_haves contains s9c_uncovered_count=0 unmet; Task 3 verify fails on that line); applied on the operator's ruling: 7 Application Auto Scaling, 8 dns-mail root reads, 1 sso:GetRoleCredentials",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-16T07:09:19.203Z",
+    "resolved_at": null,
+    "milestone": "v2.16"
+  },
+  {
+    "id": 294,
+    "kind": "unrun-verify",
+    "phase": "187",
+    "file": "infra/bootstrap/README.md",
+    "line": null,
+    "description": "Step 9 item 4's revised jq (Application Auto Scaling mapping, sso:GetRoleCredentials left out) tested on a synthetic trail only; not rerun against the 2026-11-14 CloudTrail history",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-16T07:09:19.314Z",
     "resolved_at": null,
     "milestone": "v2.16"
   }
