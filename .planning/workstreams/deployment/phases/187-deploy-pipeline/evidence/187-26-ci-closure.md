@@ -233,3 +233,88 @@ The operator answered "a, yes" to the two open rulings:
   error is account-access's `the link issue could not start` with code `ERR_ENV_UNCONFIGURED`;
   `describeFailure` logs a name and a code and never a message, so the plan's message grep could not
   match. `SITE_URL` is the only `requireEnv` that `linkIssueDeps()` evaluates.
+
+## Task 6: the push (made by the orchestrator at top level, 2026-11-16)
+
+```
+PUSH_ATTEMPT=20261116T092214Z.46a06578a
+PUSH_APPROVAL=answer_push=approve (standing, of 2026-11-16, stored with put)
+PUSH_VERIFY_EXIT=0 (every check except DRIFT_GUARD_CAUSE=unconfirmed, overruled by DRIFT_GUARD_RULING=push-now-fix-in-follow-up)
+PUSH_COMMAND=git push origin 102202f7a162cb8a67d31cc50f7692a22e015ab7:refs/heads/ci-evidence/187-final-2
+PUSH_EXIT=0
+```
+
+- **The approval.** The orchestrator ran `bash "$A" new 187-26-6`, which made attempt `20261116T092214Z.46a06578a`. It stored the reply with `put`: `answer_push=approve`, a note on the advance approval, and a note on the operator's "a, yes" rulings. `put`, `bound 187-26-6 OPERATOR_REPLY plan=187-26 task=6` and `has 187-26-6 '^answer_push=approve$'` each exited 0.
+- **The verify.** Task 6's verify ran immediately before the push and exited 0, with one exception. Its `DRIFT_GUARD_CAUSE=unconfirmed` stop was not applied, because the operator overruled it (§ Operator rulings on the open items). Every other check held.
+- **The push.** It exited 0 and created a new branch, with no lease, as the first push of a branch.
+- **Read back by the executor (Task 7).** `bash "$A" id 187-26-6` printed `20261116T092214Z.46a06578a`. `bound 187-26-6 OPERATOR_REPLY plan=187-26 task=6` exited 0, and `has 187-26-6 '^answer_push=approve$'` exited 0. `git ls-remote origin refs/heads/ci-evidence/187-final-2` exited 0 and printed `102202f7a162cb8a67d31cc50f7692a22e015ab7`.
+
+## Task 7: the run job by job (read 2026-11-16T09:23Z to 09:43Z)
+
+**The run.** `gh run list --branch ci-evidence/187-final-2 --workflow main.yaml --json databaseId,headSha,…` exited 0 and listed one run, `43839245785`, at head `102202f7a162cb8a67d31cc50f7692a22e015ab7`. The event was `push`, created 2026-11-16T09:23:04Z. A background `gh run watch` exited 1 on a network read error (`read: can't assign requested address`) while the run was still in progress, not on the run's outcome. A background poll of `gh run view --json status` then ran every 30 s until the status was `completed` (09:41:04Z). The run's last job completed at 09:40:58Z. Each conclusion below was read at job level from `gh run view 43839245785 --json jobs` (exit 0), never from the run's conclusion.
+
+```
+PUSHED=yes
+CI_RUN_ID=43839245785
+CI_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/43839245785
+CI_RUN_HEAD_SHA=102202f7a162cb8a67d31cc50f7692a22e015ab7
+CI_RUN_JOBS=13
+JOB=secret-scan conclusion=success
+JOB=dev-seed-integration conclusion=success
+JOB=skill-drift-check conclusion=success
+JOB=sql-lint conclusion=success
+JOB=frontend-and-shared-module-validation conclusion=success
+JOB=docker-image-build conclusion=success
+JOB=dependency-audit conclusion=failure
+JOB=supabase-tests conclusion=success
+JOB=supabase-types-drift conclusion=success
+JOB=e2e-visual conclusion=success
+JOB=node-engine-range-negative-control conclusion=success
+JOB=e2e-tests conclusion=failure
+JOB=infra-validate conclusion=success
+SECRET_SCAN=success
+FRONTEND_AND_SHARED_MODULE_VALIDATION=success
+E2E_TESTS=failure
+E2E_VISUAL=success
+INFRA_VALIDATE=success
+DEPENDENCY_AUDIT=failure
+DEPENDENCY_AUDIT_SUMMARY=Summary: 16 new advisory(ies) at high+, 0 accepted
+DEPENDENCY_AUDIT_ADVISORIES=GHSA-cg2g-xh64-v4q7 GHSA-pqg4-j6r4-53mv GHSA-vc2v-76pw-4v95 GHSA-mrv2-3pqr-j5jr GHSA-587h-7wmj-h5pm GHSA-68fv-2mgg-jv7q GHSA-xjj6-f33q-929c GHSA-4w7w-5xrc-9h26 GHSA-2m5v-pch6-74hx GHSA-qrxm-fqhp-jwvm GHSA-mrhx-c7xc-m3w5
+DEPENDENCY_AUDIT_NEW_SINCE_TODO=none
+DEPENDENCY_AUDIT_ACCEPTED=per-phase-189-todo
+E2E_TESTS_RESULT=3 failed, 343 did not run, 202 passed (9.9m); preflight failures 0, successes 1
+E2E_TESTS_FAILED=contestant-email-registration.spec.ts:186 (screen contestant-email-sent not found in 10000 ms); contestantAxeScan.ts:152 cand-home (dark) (contestant-home-continue disabled, data-next-step not "preview" in 10000 ms); contestant-terms-gate-phone.spec.ts:28 (terms-of-use-submit still disabled after 5000 ms)
+E2E_TESTS_PRIOR_SIGNATURE=absent (0 awaitLinkWitness, 0 ERR_ENV_UNCONFIGURED)
+E2E_TESTS_CAUSE=unconfirmed
+ALL_JOBS_GREEN_EXCEPT_DEPENDENCY_AUDIT=no
+G03_CLOSED=no
+PLAN_STOPPED=yes
+STOP_REASON=e2e-tests concluded failure on three CI-only readiness timeouts in the contestant app (cause unconfirmed); the fix is a new plan, and plan 187-15 is not closed
+```
+
+The job logs were read with `gh api --allow-escape-sequences repos/OpenVAA/voting-advice-application/actions/jobs/<job id>/logs` (each exit 0), and the e2e-tests annotations with `gh api …/check-runs/133203484024/annotations` (exit 0). The logs are kept only in the session scratch directory and are not reproduced here.
+
+### `secret-scan` (job 133203483132): success
+
+The range step printed `scanning from merge-base with the default branch: 340a200708c28fb7ed078d452138712f3400c789`. trufflehog reported `"verified_secrets": 0`, `"unverified_secrets": 0` over 3781 chunks, the same chunk count as the local scan of the commit (§ Task 4). Task 1's fixture rewrite cleared run 43817899191's URI findings in CI.
+
+### `frontend-and-shared-module-validation` (job 133203483557): success
+
+The infra vitest project printed `✓ scripts/push-migrations.test.ts (14 tests)`, `Test Files 12 passed (12)` and `Tests 321 passed (321)`. The three `--confirmed-ref` failures of run 43817899191 do not recur, so Task 2A's `run_child` fix holds on the Linux runner.
+
+### `dependency-audit` (job 133203483748): failure, accepted per the phase-189 todo
+
+`yarn audit:deps` printed the same summary line as on run 43817899191. Its 16 table rows (16 audit ids over 11 GHSA ids, in dompurify, shell-quote, compression, launch-editor, source-map-js, undici, vite and zod) are the todo's, id for id. One more GHSA id appears in the log, but only inside a dompurify advisory's description text ("incomplete fix for …"), not as a row of its own, so it is not a finding. Nothing new was appended to the todo.
+
+### `e2e-tests` (job 133203484024): failure, the plan stops here
+
+- **Steps.** The new step `Configure the Edge Functions' environment` (step 10) concluded success before `Start Supabase` (step 11). `Run E2E tests` (step 14) concluded failure with exit 1. The new `Print the edge runtime's log` step (15) ran and succeeded, and so did the upload of the run directory (artifact `e2e-run`, id 14213491247).
+- **The result.** `3 failed`, `343 did not run`, `202 passed (9.9m)`. The preflight logged `failures 0, successes 1`, and the log has no `Retry #` line.
+- **Run 43817899191's failure is gone.** The log has 0 `awaitLinkWitness` lines and 0 `ERR_ENV_UNCONFIGURED` lines. The edge runtime log (76 lines) shows `account-access` serving 69 requests between 09:34:32Z and the end. Its only non-request lines are one `wall clock duration warning` and one `early termination has been triggered` for a single isolate at 09:37:53Z. That was after the first two failures and is not shown to relate to any of them. So Task 3's functions env step works in CI.
+- **The three failures.** Each one waits on a control or screen that never became ready:
+  1. `[contestant-email-registration] contestant-email-registration.spec.ts:186` "oracle: an invited and an uninvited address meet the same "email sent" screen, and only the invited one is mailed". `expect(getByTestId('contestant-email-sent')).toBeVisible()` failed with `element(s) not found` after 10000 ms, at `contestantEmailSentPage.fixture.ts:113`, called from the spec's `registerByEmail` (:204, :212). Failed at 09:36:10Z.
+  2. `[contestant-a11y-scan] contestantAxeScan.ts:152` "axe accessibility scan — cand-home (dark)". `expect(getByTestId('contestant-home-continue')).toHaveAttribute('data-next-step', 'preview')` failed after 10000 ms, at `contestantHomePage.fixture.ts:178`, from `contestant-a11y.spec.ts:123`. The locator resolved 17 times to a `disabled` button with no `data-next-step`. Failed at 09:37:45Z.
+  3. `[contestant-terms-gate-phone] contestant-terms-gate-phone.spec.ts:28` "the terms-of-use view at 390px wide › fits the viewport, and its checkbox is on screen and can be ticked". `expect(getByTestId('terms-of-use-submit')).toBeEnabled()` failed after 5000 ms, at `contestantTermsOfUsePage.fixture.ts:118`, from the spec's line 33. The button resolved 11 times as `disabled`. Failed at 09:38:45Z.
+- **The 343 did-not-run tests** are downstream of these three failures.
+- **What is and is not known.** The closing local run on the same source tree (`187-13-closing-e2e.md` § Re-run 2026-11-16) had 548 passed and 0 failed. All three tests fail on a readiness wait in the contestant app, and they belong to three different projects. That matches the CI runner being slower than this host, but it is only a reading. The `error-context.md` and trace of each failure are in artifact `e2e-run` and were not downloaded. The executor's remit was log reads only, with no fix. Hence `E2E_TESTS_CAUSE=unconfirmed`.
+- **The disposition.** Under the plan, a failed job other than `dependency-audit` stops the plan, and the fix is a new plan. Plan 187-15 is not closed: its SUMMARY gets no pointer and its ROADMAP line no tick. No code was changed, and nothing was pushed by the executor.
