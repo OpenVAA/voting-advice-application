@@ -1,0 +1,1 @@
+BAD NAME: 20261012120000_add_note.sql is not five digits, an underscore, a name of lower-case letters, digits and underscores, and .sql; rename it to the next number, 00002_<name>.sql.

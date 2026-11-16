@@ -1,0 +1,7 @@
+{
+  "adminApp.error": {
+    "unauthorized": "Vous n’êtes pas autorisé·e à accéder à cet espace",
+    "unauthorizedDescription": "Votre compte a bien été authentifié, mais vous ne disposez pas des droits d’administration requis.",
+    "unauthorizedContact": "Cette section est réservée aux administrateurs système. Si vous pensez devoir y avoir accès, veuillez contacter l’administrateur système."
+  }
+}

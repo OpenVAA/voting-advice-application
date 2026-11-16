@@ -1,0 +1,44 @@
+# Repo-private trufflehog detectors, APPENDED to the ~800 built-ins.
+#
+# `--config` is additive, not a replacement. trufflehog builds its engine with
+# `Detectors: append(defaults.DefaultDetectors(), conf.Detectors...)`
+# (trufflesecurity/trufflehog main.go:642, and the comment directly above that
+# line says the filters "are only subtractive"). So this file ADDS one rule and
+# removes none: every built-in detector still runs. That property is what
+# answers the rule-extensibility argument that was made for gitleaks when
+# trufflehog was chosen over it by operator overrule (Phase 163, decision D-L2).
+#
+# THERE IS DELIBERATELY NO `verify:` BLOCK, and it must not be added. This
+# detector has to fire on a value with NO LIVE PROVIDER BEHIND IT, because the
+# criterion-3 evidence plant is a synthetic string and never a real or
+# previously-real credential (D-L4, and CLAUDE.md forbids committing sensitive
+# data outright). A detector with no `verify:` block makes no outbound request
+# for its matches, so the plant triggers no network traffic at all.
+#
+# THE CONSEQUENCE, AND THE TRAP IT SETS. No `verify:` block means every finding
+# from this detector is classified `unverified`. The trufflehog CLI's DEFAULT
+# result set is `verified,unverified,unknown` -- `--results` defaults to the
+# empty string (main.go:62), `parseResults` returns nil for empty input
+# (main.go:1281-1284), and the engine then sets all three notify flags
+# unconditionally (pkg/engine/engine.go:393-395). So the default reports our
+# findings. But trufflehog's own README GitHub Action example passes
+# `extra_args: --results=verified,unknown`, which sets
+# `notifyUnverifiedResults = false` and drops exactly this detector's findings
+# -- a build that goes green while the scanner saw the secret. Note that
+# `unknown` means "verification was attempted and errored", NOT "not verified".
+#
+# Do not add a result-type filter to the `secret-scan` job's `extra_args`. The
+# most copy-pasteable line in the tool's own documentation is the one that would
+# silence this file. `packages/dev-seed/tests/ciSecretScanFlags.test.ts` fails if
+# it is ever re-added, because a comment was not enough to hold this.
+#
+# The `keywords` list is an aho-corasick PREFILTER, not documentation: trufflehog
+# only evaluates `regex` on chunks containing a keyword, so a regex whose matches
+# do not contain the keyword never fires. The prefix below is deliberately shared
+# between the two.
+detectors:
+  - name: OpenVAACIEvidenceToken
+    keywords:
+      - OPENVAA_CI_EVIDENCE
+    regex:
+      token: '\bOPENVAA_CI_EVIDENCE_[A-Za-z0-9]{32}\b'

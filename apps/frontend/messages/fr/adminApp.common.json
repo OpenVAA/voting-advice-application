@@ -1,0 +1,10 @@
+{
+  "adminApp.common": {
+    "home": "Accueil",
+    "description": "Utilisez les outils ci-dessous pour gérer la boussole électorale.",
+    "notAccessible": {
+      "content": "L’application d’administration est actuellement configurée comme indisponible.",
+      "title": "Désolé, l’application d’administration n’est pas disponible"
+    }
+  }
+}
