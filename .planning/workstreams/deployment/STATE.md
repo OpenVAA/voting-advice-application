@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 15
+current_plan: 16
 status: executing
-stopped_at: "187-15 stopped at Task 3: secret-scan red on run 43817899191; SUMMARY written status: stopped"
-last_updated: "2026-11-16T06:53:30.383Z"
+stopped_at: Completed 187-16-PLAN.md
+last_updated: "2026-11-16T07:09:11.468Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: b2b8919a45779a9a2ebf8218e6ce65c1d66b8bc0
+state_head: c808126c3a7358cf533ccbbe57672a6e59108e77
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 182
-  completed_plans: 153
+  completed_plans: 154
   percent: 60
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 15 of 25
+Plan: 16 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████░░░░] 60% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 15
+**Current Plan:** 16
 
 From 184 on, the numeric order is the dependency order.
 
@@ -167,6 +167,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P13 | 18min | 2 tasks | 3 files |
 | Phase 187 P14 | 3h45min (operator checkpoint) | 3 tasks | 1 files |
 | Phase 187 P17 | 65 min | 3 tasks | 1 files |
+| Phase 187 P16 | 11h05min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -343,6 +344,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-17: plan 186-08 was already complete, so the handoff needed no resumption; the operator added SMOKE_CONTESTANT_EMAIL and SMOKE_CONTESTANT_PASSWORD to the staging environment only (read back by name: five staging secrets)
 - [Phase 187]: 187-12/187-13 re-run after the review fixes: green 395b71c71 (tree 3c82ab567 = HEAD 1e10dff7f without .planning/) builds, red 700c18362 fails in @openvaa/frontend#build; closing E2E re-run 548/548 green on 3c7be6128 (tests/e2e-runs/187-13-rerun-20261115T202406Z); the 186-08 handoff's tree reference follows it, the expected SHA stays 712947a1b
 - [Phase 187]: 187-15: dependency-audit's 16 high+ advisories are third-party (the workstream's only lockfile change is js-yaml, named by none); filed for phase 189
+- [Phase 187]: 187-16: Step 9 applied with s9c_uncovered_count=16, not 0, on the operator's ruling that none is a call of the staging AWS root (7 Application Auto Scaling actions logged under autoscaling.amazonaws.com, 8 dns-mail root reads, 1 SSO credential fetch); recorded as STEP9_DEVIATION. Item 4 now maps Application Auto Scaling and drops sso:GetRoleCredentials; Step 9 braces variables before a colon for zsh
 
 ### Pending Todos
 
@@ -400,6 +402,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-16T06:53:28.813Z
-**Stopped At:** 187-15 stopped at Task 3: secret-scan red on run 43817899191; SUMMARY written status: stopped
+Last session: 2026-11-16T07:09:09.853Z
+**Stopped At:** Completed 187-16-PLAN.md
 **Resume File:** None
