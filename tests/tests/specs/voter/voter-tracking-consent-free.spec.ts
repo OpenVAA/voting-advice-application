@@ -36,7 +36,7 @@ import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
 import { walkVoterStages } from '../../utils/voterNavigation';
@@ -134,22 +134,6 @@ async function flushUntil(page: Page, arrived: () => boolean, message: string): 
 }
 
 /**
- * Wait until the root layout's post-navigation focus reset has landed on the page's focus target (`[data-focus-on-nav] ?? h1`, the selector `focusNavigationTarget` uses). The reset runs in the root layout's `afterNavigate`, so on a page opened by its URL it shows that the page has hydrated: the voter layout has mounted, which is when a consent prompt would be queued, and the flush points are registered.
- */
-async function waitForNavigationFocusReset(page: Page): Promise<void> {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-          return target !== null && document.activeElement === target;
-        }),
-      { message: 'the page did not hydrate: the post-navigation focus reset never landed', timeout: TIMEOUTS.page }
-    )
-    .toBe(true);
-}
-
-/**
  * The mode precondition on the privacy page that is open: it must show the consent-free description. In a red-control run (`PLAYWRIGHT_RED_CONTROL_SKIP_MODE_CHECK=1`) this one assertion is skipped, and the skip is recorded as an annotation of the test.
  */
 async function expectConsentFreeMode(page: Page): Promise<void> {
@@ -194,7 +178,7 @@ async function closeConsentPromptInRedControl(page: Page): Promise<void> {
 async function openVoterHome(page: Page): Promise<void> {
   await page.goto('/en/');
   await expect(page.getByTestId(testIds.voter.home.page)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-  await waitForNavigationFocusReset(page);
+  await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
 }
 
 /** Open the voter app's privacy page by its URL and wait until its content shows. */
@@ -316,7 +300,7 @@ test.describe('voter-tracking-consent-free', () => {
 
   test('the privacy page describes the mode', async ({ page }) => {
     await openPrivacyPage(page);
-    await waitForNavigationFocusReset(page);
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
 
     await expect(
       page.getByTestId(testIds.voter.privacy.content),

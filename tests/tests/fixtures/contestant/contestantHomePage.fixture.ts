@@ -302,9 +302,12 @@ export function createContestantHomePage(page: Page) {
     /**
      * Assert where the main action leads.
      * @param step - The task, or the preview, the main action's `data-next-step` names.
+     * @param options.timeout - How long the attribute may take to say so, in ms; defaults to `TIMEOUTS.slowPage`.
      */
-    async expectNextStep(step: ContestantHomeNextStep): Promise<void> {
-      await expect(mainAction).toHaveAttribute('data-next-step', step, { timeout: TIMEOUTS.slowPage });
+    async expectNextStep(step: ContestantHomeNextStep, options: { timeout?: number } = {}): Promise<void> {
+      await expect(mainAction).toHaveAttribute('data-next-step', step, {
+        timeout: options.timeout ?? TIMEOUTS.slowPage
+      });
     },
 
     /**

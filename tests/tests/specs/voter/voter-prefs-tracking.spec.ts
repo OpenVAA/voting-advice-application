@@ -37,7 +37,7 @@ import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import { walkVoterStages } from '../../utils/voterNavigation';
 import type { BrowserContext, Page } from '@playwright/test';
@@ -157,22 +157,6 @@ const CONSENT_PROMPT = /collecting usage data/i;
 const CONSENT_FREE_MODE = process.env.ANALYTICS_CONSENT_MODE?.trim().toLowerCase() === 'free';
 
 /**
- * Wait until the root layout's post-navigation focus reset has landed on the page's focus target (`[data-focus-on-nav] ?? h1`, the selector `focusNavigationTarget` uses), the wait `voter-journey.spec.ts` makes. The reset runs in the root layout's `afterNavigate`, so on a page that is opened by its URL it shows that the page has hydrated and the voter layout has mounted, which is when the consent prompt is queued.
- */
-async function waitForNavigationFocusReset(page: Page): Promise<void> {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-          return target !== null && document.activeElement === target;
-        }),
-      { message: 'the page did not hydrate: the post-navigation focus reset never landed', timeout: TIMEOUTS.page }
-    )
-    .toBe(true);
-}
-
-/**
  * Close the voter app's consent prompt WITHOUT making a choice, and assert that no choice is stored.
  *
  * In the default mode the prompt opens on its own while no choice is stored. It is a non-modal alert fixed to the bottom of the viewport, and the pages of the walk keep their primary action at the bottom of the viewport too (the intro's Continue button), so whatever the viewport, the alert covers it. Its close button closes the alert and records nothing; the prompt is queued once, when the voter layout mounts, so it does not open again during the walk.
@@ -184,7 +168,8 @@ async function waitForNavigationFocusReset(page: Page): Promise<void> {
 async function dismissConsentPrompt(page: Page): Promise<void> {
   const prompt = page.getByRole('dialog', { name: CONSENT_PROMPT });
   if (CONSENT_FREE_MODE) {
-    await waitForNavigationFocusReset(page);
+    // The consent prompt is queued when the voter layout mounts, so its absence counts only once the page has hydrated.
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
     await expect(
       prompt,
       'the consent prompt is shown although ANALYTICS_CONSENT_MODE=free: the server is not in consent-free mode'

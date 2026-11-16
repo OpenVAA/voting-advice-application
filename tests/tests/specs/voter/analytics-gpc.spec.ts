@@ -30,7 +30,7 @@ import { expectOnlyAllowedDeviceState } from '../../fixtures/shared/deviceStores
 import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
-import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
+import { settleNetworkIdle, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import { TESTS_DIR } from '../../utils/testsDir';
 import { walkVoterStages } from '../../utils/voterNavigation';
@@ -67,22 +67,6 @@ async function startToFirstQuestion(page: Page): Promise<void> {
   await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({
     timeout: TIMEOUTS.slowPage
   });
-}
-
-/**
- * Wait until the root layout's post-navigation focus reset has landed on the page's focus target (`[data-focus-on-nav] ?? h1`, the selector `focusNavigationTarget` uses). The reset runs in the root layout's `afterNavigate`, so on a page opened by its URL it shows that the page has hydrated: the voter layout has mounted, which is when the consent prompt is queued, and the flush points are registered.
- */
-async function waitForNavigationFocusReset(page: Page): Promise<void> {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-          return target !== null && document.activeElement === target;
-        }),
-      { message: 'the page did not hydrate: the post-navigation focus reset never landed', timeout: TIMEOUTS.page }
-    )
-    .toBe(true);
 }
 
 /**
@@ -138,9 +122,9 @@ test.describe('under Global Privacy Control', () => {
   test('no prompt and no send under the signal', async ({ context, page }) => {
     const capture = createRelayCapture(context);
 
-    // The front page, hydrated.
+    // The front page, hydrated: the voter layout has mounted, which is when the consent prompt is queued, and the flush points are registered.
     await openVoterHome(page);
-    await waitForNavigationFocusReset(page);
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
     await expectNoConsentPrompt(page);
     await flushTrackingBuffer(page);
 
@@ -155,7 +139,7 @@ test.describe('under Global Privacy Control', () => {
     // The privacy page, hydrated.
     await page.goto('/en/privacy');
     await expect(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-    await waitForNavigationFocusReset(page);
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
     await expectNoConsentPrompt(page);
     await flushTrackingBuffer(page);
     await settleNetworkIdle(page, { timeoutMs: TIMEOUTS.slowPage });
@@ -174,7 +158,7 @@ test.describe('under Global Privacy Control', () => {
   test('the privacy page says so', async ({ page }) => {
     await page.goto('/en/privacy');
     await expect(page.getByTestId(testIds.voter.privacy.content)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-    await waitForNavigationFocusReset(page);
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
 
     await expect(
       page.getByTestId(testIds.voter.privacy.content),

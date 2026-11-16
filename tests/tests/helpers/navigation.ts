@@ -110,8 +110,9 @@ export async function readNavigationLandmarkText(page: Page): Promise<string | n
  * The page must be one on which nothing has moved focus since the navigation that opened it: focus moved elsewhere keeps this wait open until it fails.
  *
  * @param page - Playwright Page.
+ * @param options.timeout - How long the reset may take to land, in ms; defaults to `TIMEOUTS.slowPage`. The first wait after a page is opened by its URL spans the page's hydration, which a slow host stretches past the route-transition buckets.
  */
-export async function waitForNavigationFocusReset(page: Page): Promise<void> {
+export async function waitForNavigationFocusReset(page: Page, options: { timeout?: number } = {}): Promise<void> {
   await expect
     .poll(
       () =>
@@ -119,7 +120,10 @@ export async function waitForNavigationFocusReset(page: Page): Promise<void> {
           const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
           return target !== null && document.activeElement === target;
         }),
-      { message: 'the page did not hydrate: the post-navigation focus reset never landed', timeout: TIMEOUTS.slowPage }
+      {
+        message: 'the page did not hydrate: the post-navigation focus reset never landed',
+        timeout: options.timeout ?? TIMEOUTS.slowPage
+      }
     )
     .toBe(true);
 }

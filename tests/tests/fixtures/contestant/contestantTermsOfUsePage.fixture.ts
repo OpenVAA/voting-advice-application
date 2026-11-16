@@ -82,7 +82,8 @@ export function createContestantTermsOfUsePage(page: Page) {
     async open(): Promise<void> {
       await page.goto(buildEntityLessRoute({ route: 'ContestantAppHome', locale: 'en' }));
       await expect(page.getByTestId(testIds.contestant.terms.submit)).toBeVisible({ timeout: TIMEOUTS.slowPage });
-      await waitForNavigationFocusReset(page);
+      // reason: the first wait after a cold document load spans the page's hydration, which a slow runner stretches past the route-transition buckets, so the test's own ceiling bounds it.
+      await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.testMax });
     },
 
     /**
