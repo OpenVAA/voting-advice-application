@@ -3,6 +3,7 @@ created: 2026-10-21T12:35:50.242Z
 title: Migrate openvaa.org DNS from Cloudflare to Route 53
 area: infra
 severity: minor
+when: end of milestone v2.17 (workstream deployment), after phase 187-189
 files:
   - infra/envs/staging/dns-mail/
   - infra/modules/dns-zone/main.tf
@@ -19,6 +20,9 @@ records at or under the apex (and the delegation itself) cannot be planned, revi
 as code, and every new subdomain environment needs another manual Cloudflare step.
 
 The operator wants the deployment to be fully on AWS.
+
+Scheduled 2026-11-16 by the operator: do this at the end of milestone v2.17, once the pipeline
+phases are done, so the move does not disturb the staging delegation the pipeline runs depend on.
 
 ## Solution
 
