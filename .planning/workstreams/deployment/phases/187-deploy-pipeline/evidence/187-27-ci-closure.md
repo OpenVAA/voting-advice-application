@@ -328,3 +328,45 @@ TARGETED_UNTHROTTLED_RUNS=green
 
 - Each through `tests/scripts/e2e-run.sh --run-dir <dir> --no-db-reset --project <project>` (`tmp/187-27/delay/targeted.sh`, in the background); every wrapper exit 0, preflight successes 1 and failures 0, no void marker, and `e2e-spec-verdict.mjs <dir> --no-flaky` exit 0 with `VERDICT OK`.
 - **Which projects.** The projects of the specs whose code path changed. contestant-a11y.spec.ts (`contestant-a11y-scan`), the two callers of the terms fixture's `open()` (`contestant-terms-gate-phone`, and `contestant-terms-tracking.spec.ts`), voter-journey.spec.ts (`voter-journey`), and analytics-gpc, voter-prefs-tracking and voter-tracking-consent-free. The default run places contestant-terms-tracking, analytics-gpc and voter-prefs-tracking in the perm chain's `voter-prefs-tracking` project, whose dependencies are most of the suite, so they ran in that chain's stand-alone form, `analytics-default-standalone` (the same four spec files on the same dataset, with `PLAYWRIGHT_ANALYTICS_STANDALONE=1`). The consent-free spec runs only as `analytics-consent-free`, with `PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free`, as the config's header prescribes. The other importers of the changed modules (the identity-provider and perm specs) reach only code whose default is unchanged (`waitForNavigationFocusReset` and `expectNextStep` without options, and `toScanEntry`, which is unchanged); the closing full run of Task 6 covers every project.
+
+## Task 5: the gates on the final tree, the evidence commits, their builds and the green commit's scan
+
+### The gates (2026-11-16)
+
+```
+GATES_HEAD=fabe70c1b4b9493eb181d3cc7cd139b8e004a8a4
+lint:check exit=0
+format:check exit=0
+typecheck exit=0
+test:unit exit=0
+lint:workflows exit=0
+INFRA_TESTS_PASSED=bootstrap-tfvars.test.ts,build-push-image.test.ts,check-destroy-plan.test.ts,deploy-workflow.test.ts,destroy-workflow.test.ts,infra-plan-workflow.test.ts,main-e2e-workflow.test.ts,probe-hosted.test.ts,push-migrations.test.ts,request-loop.test.ts,running-image-digest.test.ts,workflows.test.ts
+GUARD_DEPLOYED_SMOKE=passed
+TF_FMT_EXIT=0
+TF_ROOTS_VALIDATED=8
+TF_MODULES_TESTED=frontend-service,github-oidc
+TF_EXAMPLE_PLANS=example/aws,example/dns-mail,example/supabase
+SC4_LOCAL_GATE_DIFF=empty
+PHASE_APP_DIFF=apps/frontend/src/hooks.server.ts,packages/dev-seed/tests/checkDriftLinkedGuard.test.ts,tests/README.md,tests/tests/fixtures/contestant/contestantHomePage.fixture.ts,tests/tests/fixtures/contestant/contestantTermsOfUsePage.fixture.ts,tests/tests/helpers/navigation.ts,tests/tests/specs/a11y/contestant-a11y.spec.ts,tests/tests/specs/voter/analytics-gpc.spec.ts,tests/tests/specs/voter/voter-journey.spec.ts,tests/tests/specs/voter/voter-prefs-tracking.spec.ts,tests/tests/specs/voter/voter-tracking-consent-free.spec.ts,tests/tests/utils/deployedTarget.test.ts
+```
+
+- **The repository gates** (`tmp/187-27/t1/run-gates.sh tmp/187-27/t5/gates`, in the background, one after another, `TURBO_CACHE_DIR=tmp/187-27/turbo-cache`). HEAD was `fabe70c1b` before and after. `lint:check` 18:48:57Z to 18:49:52Z, `format:check` to 18:50:12Z, `typecheck`, `test:unit` 18:50:12Z to 18:51:12Z (`Tasks: 26 successful, 26 total`), `lint:workflows` (`actionlint found nothing in 3 workflows`). Every exit 0 on the first run; no Terraform loop ran during them.
+- **`INFRA_TESTS_PASSED`.** `vitest run --config infra/vitest.config.ts --reporter=verbose` exit 0, `Test Files 12 passed (12)`, `Tests 323 passed (323)` (two more than 187-26's 321: the probe's two new cases).
+- **`GUARD_DEPLOYED_SMOKE=passed`.** `vitest run --config tests/vitest.config.ts --reporter=verbose` exit 0, `Tests 358 passed (358)`, with 16 `✓ tests/utils/deployedSmokeGuards.test.ts` lines and no failed test.
+- **Terraform** (`tmp/187-27/run-tf.sh t5`, after the gates, alone): fmt exit 0; the eight roots init and validate exit 0; `frontend-service` `Success! 33 passed, 0 failed.`, `github-oidc` `Success! 11 passed, 0 failed.`; the three example roots each `Success! 1 passed, 0 failed.`. `git status --porcelain` afterwards listed only the untracked ledger.
+- **`SC4_LOCAL_GATE_DIFF=empty`.** `git diff --quiet 36a676018 -- tests/playwright.config.ts tests/global-setup.ts tests/tests/support/preflight.ts` exit 0, with `36a676018` the rebased counterpart of `a7a4222a8` (`REBASE_COUNTERPART_a7a4222a8`).
+- **`PHASE_APP_DIFF`.** `git diff --name-only d35c1bb6a..HEAD -- apps packages tests`, with `d35c1bb6a` the rebased counterpart of `ee85b83a3`. Beyond 187-26's `tests/README.md` and `tests/tests/utils/deployedTarget.test.ts`, it holds this plan's changes: the fallout fix (`apps/frontend/src/hooks.server.ts`, the one path under `apps/`, named in the `REBASE_FALLOUT=` line), the drift guard test, and the readiness fix's eight test files.
+
+### The evidence commits and the green commit's scan
+
+```
+GREEN_COMMIT_OF_RECORD=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+RED_COMMIT_OF_RECORD=3e03b96481149573ac168d78201513335104ea22
+PUSH_SCAN_HEAD=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+PUSH_SCAN_BASE=340a200708c28fb7ed078d452138712f3400c789
+PUSH_SCAN_EXIT=0
+PUSH_SCAN_RESULTS=0
+```
+
+- The green and red commits, their archive builds (green exit 0, red exit 1 at the frontend build naming the missing module) and the builder-cache prune are recorded in `187-12-evidence-commits.md` § Re-run 2026-11-16 (plan 187-27).
+- **The scan.** `tmp/187-27/scan.sh green 340a20070 refs/evidence/187/green` (Task 1's command, trufflehog 3.97.9 at digest `sha256:52e67fef…`) in a fresh `git init` repository fetched from this checkout. The `--github-actions` run exit 0, `"verified_secrets": 0, "unverified_secrets": 0` over 4186 chunks, no annotation. The `--json` run exit 0 with no result; its mode-700 directory was deleted, the scan repository removed, and `tmp/187-27/scan/` removed after it.

@@ -128,15 +128,15 @@ Recorded 2026-11-16 (UTC) by the plan executor of plan 187-26, after Tasks 1 to 
 ### The green commit (Task 2, re-run 2026-11-16)
 
 ```
-GREEN_TREE=81bc87981fce519fe86efdc7fade95df939213cf
-GREEN_COMMIT=102202f7a162cb8a67d31cc50f7692a22e015ab7
-GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
-GREEN_PATHS=3321
-GREEN_PLANNING_PATHS=0
-GREEN_LOCAL_BUILD_EXIT=0
-GREEN_BUILD_MINUTES=4.3
-GREEN_BUILT_FROM_HEAD=27ee4fcea49b699ba3d8246e58ecf290fb818473
-GREEN_BUILD_ATTEMPTS=1
+GREEN_TREE_SUPERSEDED=81bc87981fce519fe86efdc7fade95df939213cf
+GREEN_COMMIT_SUPERSEDED=102202f7a162cb8a67d31cc50f7692a22e015ab7
+GREEN_PARENT_SUPERSEDED=340a200708c28fb7ed078d452138712f3400c789
+GREEN_PATHS_SUPERSEDED=3321
+GREEN_PLANNING_PATHS_SUPERSEDED=0
+GREEN_LOCAL_BUILD_EXIT_SUPERSEDED=0
+GREEN_BUILD_MINUTES_SUPERSEDED=4.3
+GREEN_BUILT_FROM_HEAD_SUPERSEDED=27ee4fcea49b699ba3d8246e58ecf290fb818473
+GREEN_BUILD_ATTEMPTS_SUPERSEDED=1
 ```
 
 - **Date:** the commit was written at 08:22:43Z, from HEAD `27ee4fcea`, the `GATES_HEAD` of `187-26-ci-closure.md`. The build ran from 08:25:18Z to 08:29:34Z (256 s).
@@ -149,15 +149,15 @@ GREEN_BUILD_ATTEMPTS=1
 ### The red commit (Task 3, re-run 2026-11-16)
 
 ```
-RED_TREE=e89347de20dc0a8d76d0ebf8db3c74d9898720d2
-RED_COMMIT=34d7b211db38003e988cd4600cc7b7283341733c
-RED_DIFF_PATHS=apps/frontend/src/routes/+layout.ts
-RED_LOCAL_BUILD_EXIT=1
-RED_FAILED_AT_FRONTEND_BUILD=yes
-RED_FAILING_DOCKER_STEP=shared 2/2 RUN yarn build (Dockerfile line 28), turbo task @openvaa/frontend#build
-RED_NAMES_MISSING_MODULE=yes
-WORKING_TREE_UNCHANGED=yes
-BUILDER_CACHE_PRUNED=yes
+RED_TREE_SUPERSEDED=e89347de20dc0a8d76d0ebf8db3c74d9898720d2
+RED_COMMIT_SUPERSEDED=34d7b211db38003e988cd4600cc7b7283341733c
+RED_DIFF_PATHS_SUPERSEDED=apps/frontend/src/routes/+layout.ts
+RED_LOCAL_BUILD_EXIT_SUPERSEDED=1
+RED_FAILED_AT_FRONTEND_BUILD_SUPERSEDED=yes
+RED_FAILING_DOCKER_STEP_SUPERSEDED=shared 2/2 RUN yarn build (Dockerfile line 28), turbo task @openvaa/frontend#build
+RED_NAMES_MISSING_MODULE_SUPERSEDED=yes
+WORKING_TREE_UNCHANGED_SUPERSEDED=yes
+BUILDER_CACHE_PRUNED_SUPERSEDED=yes
 ```
 
 - **The commit:** a new temporary index under the session scratch directory, removed afterwards. `git read-tree refs/evidence/187/green` exit 0. A blob of the line `import '$lib/does-not-exist-187-red';` followed by the unchanged content of `apps/frontend/src/routes/+layout.ts` at the green commit, written with `git hash-object -w --stdin`: `8ccc60be8f1696621812d5e7f8084f403b708aa7`, the same blob as on 2026-11-15. `git update-index --cacheinfo`, `git write-tree`, then `git commit-tree "$RED_TREE" -p 340a200708c28fb7ed078d452138712f3400c789 -m "deploy: a build broken on purpose, never merged"` and `git update-ref refs/evidence/187/red`, each exit 0. The commit was written at 08:23:03Z.
@@ -173,3 +173,50 @@ BUILDER_CACHE_PRUNED=yes
 - `git for-each-ref --contains 34d7b211db38003e988cd4600cc7b7283341733c --format='%(refname)'` prints exactly `refs/evidence/187/red`.
 
 The 2026-11-15 commits `395b71c71` (pushed as `ci-evidence/187-final` for run 43817899191) and `700c18362` (never pushed) are no longer held by an `refs/evidence/187/*` ref.
+
+## Re-run 2026-11-16 (plan 187-27)
+
+Recorded 2026-11-16 (UTC) by the plan executor of plan 187-27, on the branch as rebased that day onto the -gsd stream. Every id in the superseded sections above names a commit of the pre-rebase history, `backup/deployment-pre-rebase-20261116`, and those lines are left as they were apart from the `*_SUPERSEDED=` rename of the 2026-11-16 (plan 187-26) section, so that each line a verify reads has exactly one current value; plan 187-18 reads the red commit from the lines below. Logs are in `tmp/187-27/commits/` (ignored). Nothing was pushed, no registry was signed in to, and no image was tagged for a registry.
+
+### The green commit (Task 2, re-run 2026-11-16, plan 187-27)
+
+```
+GREEN_TREE=6de8539cf8f28bd2eeb835753e041ddcaec44d27
+GREEN_COMMIT=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
+GREEN_PATHS=3533
+GREEN_PLANNING_PATHS=0
+GREEN_LOCAL_BUILD_EXIT=0
+GREEN_BUILD_MINUTES=1.5
+GREEN_BUILT_FROM_HEAD=fabe70c1b4b9493eb181d3cc7cd139b8e004a8a4
+GREEN_BUILD_ATTEMPTS=1
+```
+
+- **The tree and the commit** (`tmp/187-27/commits/make-commits.sh`). The parent is `git rev-parse --verify refs/remotes/origin/main`, with no fetch. In a temporary index under the session scratch directory, removed afterwards: `git read-tree HEAD`, `git rm -r --cached --quiet .planning`, `git write-tree`, then `git commit-tree "$GREEN_TREE" -p "$GREEN_PARENT" -m "deploy: staging"` and `git update-ref refs/evidence/187/green`, each exit 0, written at 18:52Z from HEAD `fabe70c1b`. `git diff --quiet HEAD <commit> -- . ':!.planning'` exit 0; the real index untouched (`git diff --cached --quiet` exit 0). `git ls-tree -r --name-only` lists 3533 paths and none under `.planning/`.
+- **The build:** `git archive --format=tar` of the commit exit 0, extraction exit 0, and in the background `docker buildx build --platform linux/arm64 --target production --build-arg BUILD_SHA=<commit> --provenance=false --sbom=false -f <tmp>/context/apps/frontend/Dockerfile --output type=cacheonly --progress=plain <tmp>/context` exit 0, 18:52:21Z to 18:53:51Z (90 s). `#15 [shared 2/2] RUN yarn build` `DONE 43.4s`, `#19 [production 2/2] RUN yarn workspace @openvaa/frontend build` `DONE 13.9s`.
+
+### The red commit (Task 3, re-run 2026-11-16, plan 187-27)
+
+```
+RED_TREE=7d816493407973dbbbd6279e31817151f8a2ced3
+RED_COMMIT=3e03b96481149573ac168d78201513335104ea22
+RED_DIFF_PATHS=apps/frontend/src/routes/+layout.ts
+RED_LOCAL_BUILD_EXIT=1
+RED_FAILED_AT_FRONTEND_BUILD=yes
+RED_FAILING_DOCKER_STEP=shared 2/2 RUN yarn build, turbo task @openvaa/frontend#build
+RED_NAMES_MISSING_MODULE=yes
+WORKING_TREE_UNCHANGED=yes
+BUILDER_CACHE_PRUNED=yes
+```
+
+- **The commit:** a second temporary index, removed afterwards. `git read-tree refs/evidence/187/green`; a blob of the line `import '$lib/does-not-exist-187-red';` followed by the green commit's unchanged `apps/frontend/src/routes/+layout.ts`, written with `git hash-object -w --stdin` (`8ccc60be8f1696621812d5e7f8084f403b708aa7`, the same blob as on 2026-11-15 and in plan 187-26, since the file did not change); `git update-index --cacheinfo`, `git write-tree`, `git commit-tree "$RED_TREE" -p 340a20070 -m "deploy: a build broken on purpose, never merged"` and `git update-ref refs/evidence/187/red`, each exit 0. `git diff-tree -r --name-only refs/evidence/187/green refs/evidence/187/red` prints the one path, and `git diff --stat` reports `1 file changed, 1 insertion(+)`.
+- **The build:** the same archive build, 18:53:53Z to 18:54:26Z, exit 1. `#15 [shared 2/2] RUN yarn build` failed: the frontend's vite build printed `[UNLOADABLE_DEPENDENCY] Could not load src/lib/does-not-exist-187-red` for `import "$lib/does-not-exist-187-red";`, and turbo reported `Tasks: 13 successful, 14 total` and `Failed: @openvaa/frontend#build`.
+- **The working tree:** after both builds and the scan, `git status --porcelain` listed only this file (the rename above) and the untracked ledger, and `git diff --quiet -- apps/frontend/src/routes/+layout.ts` exit 0.
+- **The builder cache:** `docker builder prune -af` exit 0, `Total: 4.903GB` reclaimed; `docker system df` then shows `Build Cache 0 0 0B 0B`.
+
+### Nothing pushed, from local refs alone (re-run 2026-11-16, plan 187-27)
+
+- `git for-each-ref --contains 2b0842fd46bf6f26dfa6dad009a13b2297197b30 --format='%(refname)'` prints exactly `refs/evidence/187/green`.
+- `git for-each-ref --contains 3e03b96481149573ac168d78201513335104ea22 --format='%(refname)'` prints exactly `refs/evidence/187/red`.
+
+The plan 187-26 commits `102202f7a` (pushed as `ci-evidence/187-final-2` for run 43839245785) and `34d7b211d` (never pushed) are no longer held by a `refs/evidence/187/*` ref.
