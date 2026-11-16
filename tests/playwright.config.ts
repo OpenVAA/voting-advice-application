@@ -1590,7 +1590,7 @@ export default defineConfig({
   /* Retry tests on CI */
   retries: process.env.CI ? 3 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : 6,
+  workers: process.env.E2E_WORKERS ? Number(process.env.E2E_WORKERS) : process.env.CI ? 1 : 6,
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
@@ -1621,7 +1621,7 @@ export default defineConfig({
      *
      * When a passing test's trace IS the evidence — e.g. grepping console messages out of GREEN trace zips — flip this to `'on'` for that investigation and flip it back. That is the rare case; paying 300 MB a run for it is not worth it. Note that browser-side forensics (console / pageerror / requestfailed) are captured independently of this setting by the `forensicCapture` fixture, which
      * attaches its transcripts to the result whether the test passed or not. */
-    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+    trace: (process.env.E2E_TRACE as 'off' | 'retain-on-failure' | undefined) ?? (process.env.CI ? 'on-first-retry' : 'retain-on-failure'),
 
     baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
   },
