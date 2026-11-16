@@ -71,6 +71,31 @@ How each line was read (every exit from its own `.status` file under `tmp/187-28
 - **`SC4_LOCAL_GATE_DIFF=empty`.** `git diff --quiet e0b16c129 HEAD -- tests/playwright.config.ts tests/global-setup.ts tests/tests/support/preflight.ts` exit 0, with `e0b16c129` the rebased counterpart of `a7a4222a8` (187-27's `36a676018`). The -gsd changes to the config, `cecf649d8` included, lie in the base, before the counterpart.
 - **`PHASE_APP_DIFF`.** `git diff --name-only 4474af6b8..HEAD -- apps packages tests`, with `4474af6b8` the rebased counterpart of `ee85b83a3` (187-27's `d35c1bb6a`). It equals the `PHASE_APP_DIFF=` line of `187-27-ci-closure.md` path for path.
 
+## Task 2: the evidence commits and the green commit's scan (stopped at the red build)
+
+```
+GREEN_DIFF_VS_FINAL_3=tests/README.md,tests/playwright.config.ts,tests/scripts/e2e-run.sh,tests/scripts/visual-container.sh,tests/tests/specs/visual/__screenshots__/visual-regression.spec.ts/voter-results-desktop.png,tests/tests/specs/visual/__screenshots__/visual-regression.spec.ts/voter-results-mobile.png
+GREEN_DIFF_VS_MEASURE_3=.github/workflows/main.yaml,tests/playwright.config.ts
+TASK2_GREEN_COMMIT=68a54299aa81b2a2f95fd2151031ab4e624ef01c
+TASK2_GREEN_TREE=a9d648e87d3e075e1dafc650f2c5030afdda29fb
+TASK2_GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
+TASK2_GREEN_LOCAL_BUILD_EXIT=0
+TASK2_RED_COMMIT=3250ba0e8e964f8c87c03459f812bd935637272b
+TASK2_RED_TREE=20756a2dec61b17bab3dafecbc020c4d0f1510c0
+TASK2_RED_LOCAL_BUILD_EXIT=102
+TASK2_RED_FAILED_AT_FRONTEND_BUILD=no
+TASK2_RED_NAMES_MISSING_MODULE=no
+BUILD_STOPPED=red archive build: #13 ERROR: process "/bin/sh -c yarn install --immutable" did not complete successfully: cannot allocate memory: apps/frontend/Dockerfile:21 (owner: deployment, the local Docker VM; not a defect of the tree)
+```
+
+- **The commits** (`tmp/187-28/commits/make-commits.sh`, in the background, exit 0, written 23:36:50Z from HEAD `246f5dc8b`). The parent is `git rev-parse --verify refs/remotes/origin/main` (`340a20070`, no fetch). The green tree is HEAD's without `.planning/`, written in a temporary index under the session scratch directory and removed afterwards; `git diff --quiet HEAD <green> -- . ':!.planning'` exit 0, 3533 paths and none under `.planning/`, and the real index untouched (`git diff --cached --quiet` exit 0). The red commit is the green tree with the blob `8ccc60be8f1696621812d5e7f8084f403b708aa7` (the broken import prepended to the unchanged `apps/frontend/src/routes/+layout.ts`, the same blob as in 187-26 and 187-27) at that path; `git diff-tree -r --name-only` of the two prints that one path, `1 file changed, 1 insertion(+)`. `refs/evidence/187/green` and `refs/evidence/187/red` now point at them, and `git for-each-ref --contains` prints exactly that ref for each.
+- **`GREEN_DIFF_VS_FINAL_3`** equals Task 1's `REBASE_DELTA_PATHS` path for path. **`GREEN_DIFF_VS_MEASURE_3`** is `main.yaml`, the measurement's job matrix, and `tests/playwright.config.ts`, the comment join of `cecf649d8` (the deviation above); `5202d34df` is in this checkout's store.
+- **The green build** (`tmp/187-28/build-archive.sh green 68a54299a`, in the background): `git archive` exit 0, extraction exit 0, `docker buildx build --platform linux/arm64 --target production --build-arg BUILD_SHA=<commit> --provenance=false --sbom=false --output type=cacheonly` exit 0, 23:36:51Z to 23:38:04Z (73 s). `#15 [shared 2/2] RUN yarn build` `DONE 41.5s`, `#19 [production 2/2] RUN yarn workspace @openvaa/frontend build` `DONE 10.4s`.
+- **The red build** (`tmp/187-28/build-archive.sh red 3250ba0e8`, directly after it): archive and extraction exit 0, then the build exited 102 in 10 s, 23:38:05Z to 23:38:15Z. It did not reach the frontend build. Its first error line is `#13 ERROR: process "/bin/sh -c yarn install --immutable" did not complete successfully: cannot allocate memory`, at `Dockerfile:21` (`RUN yarn install --immutable`), during yarn's fetch step, ending `ERROR: failed to build: failed to solve: ResourceExhausted`. The install layer is not reused from the green build because `COPY apps apps` precedes it and the red tree differs under `apps/`.
+- **Why it stops the plan.** The red build must fail at the frontend build and name the missing module. This one failed earlier, for want of memory, so it proves nothing about the red commit, and the plan does not re-run a build to get the expected result. The memory is the Docker VM's (8.2 GB, `docker info`), shared at the time with this checkout's Supabase stack and a second, unrelated Supabase stack (`*_next-supabase-skimle2`), both Up. Nothing in the tree is implicated: the green commit, which differs from the red one by one import line, installed and built in the same VM a minute earlier.
+- **Not done.** The 187-12 re-run section (step 4) was not written, so its plan 187-27 lines stay current; the scan (step 5) and the builder-cache prune (step 6) were not run, and the green build's cache is left in place. Task 3 was not started: the developer's functions env file was not moved, and no E2E run was made. Nothing was pushed.
+- **To resume** (for the orchestrator to decide): free Docker VM memory (stopping the unrelated stack, or raising the VM's memory), then run `tmp/187-28/build-archive.sh red 3250ba0e8e964f8c87c03459f812bd935637272b` once as a new red-build attempt, and carry on from Task 2 step 3. The commits need not be rewritten.
+
 ## First attempt (stopped)
 
 Made on the tree rebased onto `dfe9cae8b`, HEAD `e42e32cf3`, and committed as `0d4ca8887` (now `494bfa63b`). Its lines are renamed `*_SUPERSEDED=` so that each current line above occurs once; nothing else in it is changed. Its logs, named below under `tmp/187-28/t5/` and `tmp/187-28/tf-t5/`, are now under `tmp/187-28/attempt-1/`.
