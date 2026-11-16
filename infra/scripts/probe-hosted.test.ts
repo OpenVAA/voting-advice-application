@@ -115,7 +115,14 @@ interface Expected {
 /** What a served function answered: its status and which known body it was, never the body itself. */
 interface Answer {
   status: number;
-  kind: 'method-not-allowed' | 'internal-server-error' | 'status-object' | 'other' | 'not-json';
+  kind:
+    | 'method-not-allowed'
+    | 'internal-server-error'
+    | 'bad-request-result'
+    | 'refused-result'
+    | 'status-object'
+    | 'other'
+    | 'not-json';
 }
 
 interface Responses {
@@ -199,8 +206,8 @@ function correctResponses(expected: Expected): Responses {
       functions: {
         accountAccess: { status: 200, kind: 'status-object' },
         sendEmail: { status: 405, kind: 'method-not-allowed' },
-        identityCallbackGet: { status: 405, kind: 'method-not-allowed' },
-        identityCallbackPost: { status: 500, kind: 'internal-server-error' }
+        identityCallbackGet: { status: 400, kind: 'bad-request-result' },
+        identityCallbackPost: { status: 401, kind: 'refused-result' }
       }
     },
     catalog: {
@@ -939,6 +946,18 @@ describe('the public-API checks and the bucket check', () => {
     expect(finding(responses, 'functions.identity-callback-unverified')).toContain('400');
   });
 
+  it('fails functions.identity-callback-unverified when the empty POST is answered with a detail-bearing 500', () => {
+    const responses = withAnswers({ identityCallbackPost: { status: 500, kind: 'internal-server-error' } });
+    expect(failing(responses)).toEqual(['functions.identity-callback-unverified']);
+    expect(finding(responses, 'functions.identity-callback-unverified')).toContain('expected 401');
+  });
+
+  it('fails functions.identity-callback-unverified when the GET is answered 405 rather than with its bad_request result', () => {
+    const responses = withAnswers({ identityCallbackGet: { status: 405, kind: 'method-not-allowed' } });
+    expect(failing(responses)).toEqual(['functions.identity-callback-unverified']);
+    expect(finding(responses, 'functions.identity-callback-unverified')).toContain('expected 400');
+  });
+
   it('fails only storage.buckets naming private-assets when it is absent', () => {
     const responses = correctResponses(fixtureExpected);
     responses.management.buckets = responses.management.buckets.filter((b) => b.id !== 'private-assets');
@@ -1063,6 +1082,8 @@ const PROJECT_PREFIX = '/project';
 function answerBody(kind: Answer['kind']): string {
   if (kind === 'method-not-allowed') return JSON.stringify({ error: 'Method not allowed' });
   if (kind === 'internal-server-error') return JSON.stringify({ error: 'Internal server error' });
+  if (kind === 'bad-request-result') return JSON.stringify({ result: 'bad_request' });
+  if (kind === 'refused-result') return JSON.stringify({ result: 'refused' });
   if (kind === 'status-object') return JSON.stringify({ status: 'unknown' });
   if (kind === 'not-json') return 'gateway timeout';
   return JSON.stringify({ code: 'NOT_FOUND', message: 'Requested function was not found' });

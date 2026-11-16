@@ -237,10 +237,12 @@ async function send(source, base, { method, endpoint, query = '', headers, body 
   }
 }
 
-/** The two bodies the functions write themselves, which an answer of the gateway never equals. */
+/** The bodies the functions write themselves, which an answer of the gateway never equals. */
 const FUNCTION_BODIES = {
   'method-not-allowed': { error: 'Method not allowed' },
-  'internal-server-error': { error: 'Internal server error' }
+  'internal-server-error': { error: 'Internal server error' },
+  'bad-request-result': { result: 'bad_request' },
+  'refused-result': { result: 'refused' }
 };
 
 function sameFlatObject(value, fixed) {
@@ -256,7 +258,7 @@ function sameFlatObject(value, fixed) {
 /**
  * Which known body an answer holds, so that the body itself is never kept.
  *
- * @returns `method-not-allowed` or `internal-server-error` for the functions' own fixed bodies, `status-object` for
+ * @returns `method-not-allowed`, `internal-server-error`, `bad-request-result` or `refused-result` for the functions' own fixed bodies, `status-object` for
  *   a JSON object with a `status` member, `other` for any other JSON and `not-json` for a body that is not JSON.
  */
 export function bodyKind(text) {

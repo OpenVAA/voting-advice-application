@@ -36,7 +36,8 @@
  * It never takes, reads or prints the service-role key: an anon key that is a secret key or a JWT whose role is
  * `service_role` is refused before any request. It writes nothing to any project. Every request is a GET but two
  * POSTs: a `check-code` of a random code to `account-access`, which reads, and an empty object to
- * `identity-callback`, which without a provider configured refuses before it reads its body.
+ * `identity-callback`, which refuses a request without the frontend server's credential header before it reads its
+ * body or its environment.
  * Of each response body it keeps the named fields it compares and drops the rest at once, so a secret served next to a
  * compared field (the PostgREST settings hold the JWT secret, the auth settings the SMTP credentials) is never kept or
  * printed. Of the SMTP user name it keeps only whether one is set, and of each issued key only its type and name.
@@ -73,9 +74,10 @@
  *                           GET with 405 and its own method-not-allowed body: each function, not the gateway, answered.
  *   functions.identity-callback-unverified
  *                           Called with no `apikey` and no `Authorization`, as the identity provider's browser
- *                           redirect arrives, `identity-callback` answers a GET with 405 and its own body, so the
- *                           gateway demands no JWT, and a POST of `{}` with 500 and `{"error":"Internal server
- *                           error"}`, so with no provider configured it fails closed.
+ *                           redirect arrives, `identity-callback` answers a GET with 400 and its own
+ *                           `{"result":"bad_request"}`, so the gateway demands no JWT, and a POST of `{}` without the
+ *                           frontend server's credential header with 401 and its own `{"result":"refused"}`, so an
+ *                           unverified caller is refused with a fixed body and no detail.
  *   storage.buckets         The served bucket ids are exactly the `[storage.buckets.<id>]` tables of config.toml, each
  *                           with its `public` flag. The bucket list is read from the Management API.
  *   db.hook-functions       The functions the JSON's two hook URIs name exist, as `<schema>.<name>(jsonb)`.

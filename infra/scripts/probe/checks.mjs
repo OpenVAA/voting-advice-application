@@ -230,6 +230,8 @@ function readWholeCheck(served) {
 const BODY_NAMES = {
   'method-not-allowed': 'its own method-not-allowed body',
   'internal-server-error': 'its own internal-server-error body',
+  'bad-request-result': 'its own bad_request result',
+  'refused-result': 'its own refused result',
   'status-object': 'a body with a status',
   other: 'another body than the function writes',
   'not-json': 'a body that is not JSON'
@@ -477,14 +479,14 @@ export const CHECKS = [
         answerClause(
           'identity-callback, called by GET with no key,',
           served.identityCallbackGet,
-          405,
-          'method-not-allowed'
+          400,
+          'bad-request-result'
         ),
         answerClause(
           'identity-callback, called by POST of an empty object with no key,',
           served.identityCallbackPost,
-          500,
-          'internal-server-error'
+          401,
+          'refused-result'
         )
       ]);
     }
