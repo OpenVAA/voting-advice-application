@@ -1001,11 +1001,12 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
    and re-applied from 18:08Z to 18:12Z, followed by a second plan. Its viewer certificate and
    distribution are called through `us-east-1`, everything else through `eu-north-1`. The destroy
    window opens at 09:47Z: the read-only plan of the `dns-mail` root ran at 09:46Z, and its calls are
-   not the AWS root's.
+   not the AWS root's. It closes at 09:55Z for the same reason: that root was read again from
+   09:55:11Z, its SMTP user, its send policy and its SES identity.
 
    ```bash
    for r in eu-north-1 us-east-1; do
-     for w in 09:47:00Z,10:00:00Z 18:00:00Z,18:20:00Z; do
+     for w in 09:47:00Z,09:55:00Z 18:00:00Z,18:20:00Z; do
        s=${w%,*} e=${w#*,}
        f="$L/s9c-trail-$r-${s%%:*}"
        aws cloudtrail lookup-events --region "$r" \
@@ -1076,23 +1077,9 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
    > The check compares actions, not resources or conditions: the scopes are item 3's to prove.
    > Event history holds no S3 object calls, so the backend's calls on the state are Step 5's.
 
-   A hand run of another root inside the windows is Terraform too, and its calls show up as
-   uncovered. On 2026-11-14 the `dns-mail` root read its SMTP user, its send policy and its SES
-   identity at 09:55Z, which printed `iam:GetUser`, `ses:GetEmailIdentity` and six more. To tell,
-   read the events of an uncovered line in your terminal, here for `iam:GetUser`:
-
-   ```bash
-   jq -r --arg n GetUser '.Events[].CloudTrailEvent | fromjson
-     | select((.eventName | sub("[0-9]{4}_[0-9]{2}_[0-9]{2}$"; "")) == $n)
-     | "\(.eventTime) \(.eventSource) \(.requestParameters | tojson)"' \
-     "$L"/s9c-trail-*.json
-   ```
-
-   The `requestParameters` name the objects the call read or wrote. A line is another root's only
-   when every one of its events names that root's objects: the AWS root holds no IAM user, no IAM
-   policy and no SES resource, so `dns-mail`'s are recognisable by their names. Paste the action
-   with a `note:` line naming the root and its objects, not the parameters themselves. Every other
-   `s9c_uncovered=` line stops the step as above.
+   A hand run of another root inside a window is Terraform too, and its calls show up as uncovered.
+   They are not explained away: an uncovered line stops the step, whichever root made it. A window
+   that holds another root's run is the window's fault; it is narrowed here, and item 4 run again.
 
 5. Apply the saved plan, then plan again. The second plan must exit 0, which means no change:
 
