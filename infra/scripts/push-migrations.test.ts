@@ -204,3 +204,32 @@ describe('push-migrations.sh --confirmed-ref', () => {
     expect(status).toBe(2);
   }, 60_000);
 });
+
+/**
+ * The non-comment lines of a script that name a path under the descriptor directory. Reopening a stream through such
+ * a path fails on Linux when the stream is a socket, which it is under a Node pipe spawn, so a line like this passes on
+ * macOS and fails on the runner.
+ */
+function descriptorPathLines(script: string): Array<string> {
+  return script
+    .split('\n')
+    .filter((line) => !/^\s*#/.test(line))
+    .filter((line) => /\/dev\/fd\/|\/proc\/self\/fd\/|\/dev\/std(?:in|out|err)\b/.test(line));
+}
+
+describe('push-migrations.sh reopens no stream through the descriptor directory', () => {
+  const script = readFileSync(SCRIPT, 'utf8');
+
+  it('finds no line naming a descriptor path in the script', () => {
+    expect(descriptorPathLines(script)).toEqual([]);
+  });
+
+  it('finds such a line in a copy where a redirection or an assignment through one is added', () => {
+    const redirected = script.replace('run_child() {\n', 'run_child() {\n  echo started >/dev/fd/2\n');
+    const assigned = script.replace('run_child() {\n', 'run_child() {\n  [ "$out" = "-" ] && out=/dev/fd/1\n');
+    expect(redirected).not.toBe(script);
+    expect(assigned).not.toBe(script);
+    expect(descriptorPathLines(redirected)).toEqual(['  echo started >/dev/fd/2']);
+    expect(descriptorPathLines(assigned)).toEqual(['  [ "$out" = "-" ] && out=/dev/fd/1']);
+  });
+});

@@ -288,14 +288,18 @@ else
 fi
 note "the CLI's output is kept in $LOG_DIR"
 
-# Runs one command in the background and waits for it, so that a signal reaches the trap while it runs. $1 = 1 for a CLI call, 0 for the drift check; $2 and $3 = the files for its standard output and standard error, or - for this script's own; the rest is the command. The redirections are the command's alone, so that the trap's message still reaches this script's standard error. The status is the command's.
+# Runs one command in the background and waits for it, so that a signal reaches the trap while it runs. $1 = 1 for a CLI call, 0 for the drift check; $2 and $3 = the files for its standard output and standard error, or both - for this script's own; the rest is the command. With both -, the command writes through the descriptors it inherits and no stream is reopened by path, because reopening a socket through the descriptor directory fails on Linux. With two files, the redirections are the command's alone, so that the trap's message still reaches this script's standard error. A single - beside a file is refused. Standard input is the null device either way. The status is the command's.
 run_child() {
   local status=0 out="$2" err="$3"
   CHILD_IS_CLI="$1"
   shift 3
-  [ "$out" = "-" ] && out=/dev/fd/1
-  [ "$err" = "-" ] && err=/dev/fd/2
-  "$@" </dev/null >"$out" 2>"$err" &
+  if [ "$out" = "-" ] && [ "$err" = "-" ]; then
+    "$@" </dev/null &
+  elif [ "$out" = "-" ] || [ "$err" = "-" ]; then
+    fatal "run_child takes two files or two -, not one of each" 2
+  else
+    "$@" </dev/null >"$out" 2>"$err" &
+  fi
   CHILD_PID=$!
   wait "$CHILD_PID" || status=$?
   CHILD_PID=""
