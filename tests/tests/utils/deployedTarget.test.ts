@@ -38,6 +38,17 @@ const SHA = '712947a1bd44a735f66ee8f51610f4748d76cd30';
 const OTHER_SHA = 'ffffffffffffffffffffffffffffffffffffffff';
 const MADE_UP_KEY_VALUE = 'made-up-service-role-value';
 
+/**
+ * Builds an `https://` URL that carries user info, joining the user info and the rest of the URL at the `@`.
+ *
+ * @param userInfo - The part before the `@`: a user, a password after a colon, or both.
+ * @param rest - The host and anything after it.
+ * @returns `https://<userInfo>@<rest>`.
+ */
+function httpsWithUserInfo(userInfo: string, rest: string): string {
+  return `https://${userInfo}@${rest}`;
+}
+
 /** What a stub route answers: a status and a body, or `'hang'` to accept the request and never answer it. */
 type StubAnswer = { status: number; body: string } | 'hang';
 
@@ -583,7 +594,7 @@ describe('a base URL the gate cannot request', () => {
     const { fetchImpl, requested } = recordingFetch();
     const result = await runDeployedGate({
       env: { SMOKE_EXPECTED_SHA: SHA },
-      baseURL: `https://someone:${madeUpSecret}@staging.openvaa.org`,
+      baseURL: httpsWithUserInfo(`someone:${madeUpSecret}`, 'staging.openvaa.org'),
       repoRoot: REPO_ROOT,
       fetchImpl
     });
@@ -600,8 +611,8 @@ describe('gateTargetLine', () => {
   });
 
   it.each([
-    ['a user and a password', 'https://someone:made-up-userinfo-secret@staging.openvaa.org'],
-    ['a password alone', 'https://:made-up-userinfo-secret@staging.openvaa.org'],
+    ['a user and a password', httpsWithUserInfo('someone:made-up-userinfo-secret', 'staging.openvaa.org')],
+    ['a password alone', httpsWithUserInfo(':made-up-userinfo-secret', 'staging.openvaa.org')],
     ['a user alone', 'https://made-up-userinfo-secret@staging.openvaa.org']
   ])('withholds user info made of %s', (_label, baseURL) => {
     const line = gateTargetLine(baseURL);
@@ -612,7 +623,7 @@ describe('gateTargetLine', () => {
 
   it.each([
     ['no scheme', 'made-up-userinfo-secret@staging.openvaa.org'],
-    ['a space in the host', 'https://someone:made-up-userinfo-secret@staging openvaa.org']
+    ['a space in the host', httpsWithUserInfo('someone:made-up-userinfo-secret', 'staging openvaa.org')]
   ])('does not print a value with %s that is not an absolute URL', (_label, baseURL) => {
     expect(gateTargetLine(baseURL)).toBe('DEPLOYED SMOKE GATE (not an absolute URL, value withheld)');
   });
