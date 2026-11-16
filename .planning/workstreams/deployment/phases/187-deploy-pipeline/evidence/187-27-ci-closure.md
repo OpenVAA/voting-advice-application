@@ -370,3 +370,54 @@ PUSH_SCAN_RESULTS=0
 
 - The green and red commits, their archive builds (green exit 0, red exit 1 at the frontend build naming the missing module) and the builder-cache prune are recorded in `187-12-evidence-commits.md` § Re-run 2026-11-16 (plan 187-27).
 - **The scan.** `tmp/187-27/scan.sh green 340a20070 refs/evidence/187/green` (Task 1's command, trufflehog 3.97.9 at digest `sha256:52e67fef…`) in a fresh `git init` repository fetched from this checkout. The `--github-actions` run exit 0, `"verified_secrets": 0, "unverified_secrets": 0` over 4186 chunks, no annotation. The `--json` run exit 0 with no result; its mode-700 directory was deleted, the scan repository removed, and `tmp/187-27/scan/` removed after it.
+
+## Task 6: the closing E2E window
+
+```
+DEV_ENV_STAT_BEFORE=342396339 10343 1791823238
+E2E_FUNCTIONS_ENV=template
+TEMPLATE_LINK_SAME_INODE=yes
+DEV_FUNCTIONS_ENV_ASIDE_DURING_RUN=yes
+DEV_ENV_STAT_AFTER=342396339 10343 1791823238
+FUNCTIONS_ENV_RESTORED=yes
+EDGE_RUNTIME_RESTARTED_AFTER_RESTORE=yes
+GSD_SESSION_MUST_RESET=yes
+```
+
+- **Before.** Neither `tmp/187-27/env-aside/functions-dotenv.aside` nor `tmp/187-26/env-aside/functions-dotenv.aside` existed; the developer's file existed (`test -e`); `refs/evidence/187/green`'s tree equals HEAD's without `.planning/`; 161 GiB free and Docker build cache 0 B; no listener on 5273, 8777 or 9443 (`lsof` exit 1 each); the edge runtime Up. `stat -f '%i %z %m'` of the file gave the line above. The template's inode is 395205672.
+- **The window.** One background zsh command, written out on its command line, every step's status in its own file under `tmp/187-27/window/`. Before anything moved it set its restore as the trap on EXIT and, through a once-only guard, on INT, TERM and HUP.
+  - **a. Aside** (19:01:05Z). `mkdir -p -m 700 tmp/187-27/env-aside`, then `mv` of the file to `tmp/187-27/env-aside/functions-dotenv.aside`, exit 0. No hook or permission refusal occurred.
+  - **b. The template.** `ln` of the template to the file's path exit 0, `test -ef` against the template exit 0, and `stat` showed the path at the template's inode 395205672. `yarn db:stop` and `yarn db:start` exit 0. The applied migration count read `22`, HEAD's `.sql` count, so no reset was needed. Then the full run (`187-13-closing-e2e.md` § Re-run 2026-11-16 (plan 187-27)), and `docker logs` of the edge runtime to `edge-template.log` (8 lines, no error line).
+  - **c. The restore** (19:20:30Z). The path was `-ef` the template, so it was removed with `rm` (exit 0), then the aside file was moved back with `mv` (exit 0). `yarn db:stop` and `yarn db:start` exit 0, and `rmdir tmp/187-27/env-aside` exit 0. `stat` of the file afterwards equals the line before, the template's link count is 1 again, and the edge runtime's `StartedAt` is 2026-11-16T19:20:48Z, after the restore; it is Up.
+- **Judging the run.** Wrapper exit 0, no void marker, `e2e-evidence.mjs` exit 0 (729 passed, 0 failed, 0 flaky, 0 skipped, 0 did not run) and `e2e-spec-verdict.mjs --no-flaky` exit 0, so `E2E_GATE=green`.
+- **The file's content was not read.** The only operations on the developer's file or its path were `test -e`, `stat -f '%i %z %m'`, `mv` (twice), `ln`, `test -ef` and `rm` of the link while it was the template.
+- **The shared stack.** It was restarted by the window and by the wrapper's own restore, and runs with the developer's environment. The -gsd worktree shares it, so `GSD_SESSION_MUST_RESET=yes`.
+
+### What would be pushed (read-only; one remote read, `git ls-remote`)
+
+```
+PUSH_COMMIT=2b0842fd46bf6f26dfa6dad009a13b2297197b30
+PUSH_TREE=6de8539cf8f28bd2eeb835753e041ddcaec44d27
+PUSH_PARENT=340a200708c28fb7ed078d452138712f3400c789
+PUSH_PATHS=3533
+PUSH_TREE_MATCHES_HEAD=yes
+PUSH_TREE_COVERED_BY_E2E=yes
+PUSH_PLANNING_PATHS=0
+PUSH_EXCLUSIONS=unchanged
+PUSH_TARGET_REF=refs/heads/ci-evidence/187-final-3
+BRANCH_ABSENT=yes
+MAIN_YAML_TRIGGERS_ON_CI_EVIDENCE=yes
+MAIN_YAML_JOB_COUNT=13
+MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes
+READY_TO_PUSH=yes
+```
+
+- **`PUSH_COMMIT`.** `refs/evidence/187/green`, `GREEN_COMMIT` of `187-12-evidence-commits.md` (re-run 2026-11-16, plan 187-27), tree `6de8539cf`, parent `340a20070`. `git for-each-ref --contains` prints only `refs/evidence/187/green`.
+- **`PUSH_TREE_MATCHES_HEAD=yes`.** `git diff --quiet HEAD refs/evidence/187/green -- . ':!.planning'` exit 0 with HEAD `e6f1e114e`, and the green tree was written from HEAD's tree without `.planning/` in a temporary index; the real index untouched.
+- **`PUSH_TREE_COVERED_BY_E2E=yes`.** `git diff --quiet e6f1e114e 2b0842fd4 -- . ':!.planning'` exit 0, where `e6f1e114e` is `E2E_TREE_SHA`.
+- **`PUSH_PLANNING_PATHS=0`.** `git ls-tree -r --name-only` of the commit lists 3533 paths and none under `.planning/`.
+- **`PUSH_EXCLUSIONS=unchanged`.** This plan added no entry; `.github/trufflehog-exclude-paths.txt` is identical at plan 187-26's pushed commit `102202f7a` and at this commit (`git diff --quiet` exit 0).
+- **`BRANCH_ABSENT=yes`.** `git ls-remote origin refs/heads/ci-evidence/187-final-3` exit 0 printed nothing, before the window and again after it.
+- **`MAIN_YAML_TRIGGERS_ON_CI_EVIDENCE=yes`.** The commit's `main.yaml`, parsed with the root `yaml` package, has `on.push.branches` `main` and `ci-evidence/**`; `paths-ignore` (`**.md` and the `.env.example` paths) does not suppress the run, since 4026 of the 4488 paths the commit changes against its parent are not `.md` files. It names 13 jobs (`MAIN_YAML_JOB_COUNT`).
+- **`MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes`.** Over the commit's `main.yaml`, comment lines excluded, `grep -ciE 'role-to-assume|aws-actions|id-token: write'` counts 0.
+- **`READY_TO_PUSH=yes`** holds for every line above. Nothing was pushed.

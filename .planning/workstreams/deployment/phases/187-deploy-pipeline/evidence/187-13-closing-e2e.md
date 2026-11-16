@@ -108,32 +108,67 @@ RED_RUNS_SUPERSEDED=0
 
 Recorded 2026-11-16 by the plan executor of plan 187-26, which ran every stack and E2E command itself from this checkout, in one background window; logs in `tmp/187-26/window/`. The run is made on CI's functions environment: the developer's untracked `apps/supabase/supabase/functions/.env` was moved aside for the window and the tracked template hard-linked in its place (G-05 and the operator's decision of 2026-11-16; details in `187-26-ci-closure.md` § Task 5). The lines promoted on 2026-11-15 are renamed `*_SUPERSEDED=` above, so each line a verify reads has one value.
 
-SOURCE_TREE_MATCHES_GREEN=yes
+SOURCE_TREE_MATCHES_GREEN_SUPERSEDED=yes
     the tree of E2E_TREE_SHA without .planning/, written in a temporary index under the session scratch directory (read-tree, rm -r --cached .planning, write-tree, each exit 0; the real index untouched), is 81bc87981fce519fe86efdc7fade95df939213cf, GREEN_TREE of 187-12-evidence-commits.md (re-run 2026-11-16); git diff --quiet a21f94b99 refs/evidence/187/green -- . ':!.planning' exit 0
-E2E_TREE_SHA=a21f94b99f1a8f6e18655c3dcb3fad0583455fd0
-E2E_HEAD=a21f94b99f1a8f6e18655c3dcb3fad0583455fd0
-E2E_TREE_CLEAN=yes
+E2E_TREE_SHA_SUPERSEDED=a21f94b99f1a8f6e18655c3dcb3fad0583455fd0
+E2E_HEAD_SUPERSEDED=a21f94b99f1a8f6e18655c3dcb3fad0583455fd0
+E2E_TREE_CLEAN_SUPERSEDED=yes
     git status --porcelain listed only the untracked .planning/workstreams/deployment/.verification-ledger.json before and after the run; the run directory's worktree-status.txt holds that one line. The functions env path is ignored, so neither the move nor the link shows in it
-E2E_RUN_DIR=tests/e2e-runs/187-26-close-20261116T083717Z
-E2E_STARTED=2026-11-16T08:37:17Z
-E2E_ENDED=2026-11-16T08:52:44Z
-E2E_COMMAND=caffeinate -i tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/187-26-close-20261116T083717Z --no-db-reset
-E2E_WRAPPER_EXIT=0
+E2E_RUN_DIR_SUPERSEDED=tests/e2e-runs/187-26-close-20261116T083717Z
+E2E_STARTED_SUPERSEDED=2026-11-16T08:37:17Z
+E2E_ENDED_SUPERSEDED=2026-11-16T08:52:44Z
+E2E_COMMAND_SUPERSEDED=caffeinate -i tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/187-26-close-20261116T083717Z --no-db-reset
+E2E_WRAPPER_EXIT_SUPERSEDED=0
     read from tmp/187-26/window/close-run.status, written by the command after the wrapper, and from the run directory's exit file (0); its head file is a21f94b99f1a8f6e18655c3dcb3fad0583455fd0. Wrapper lines: "548 passed (15.3m)", "playwright exit 0", "preflight failures 0, successes 1"
+E2E_VOID_RUNS_SUPERSEDED=0
+    no VOID-host-suspend.txt in the run directory, and the wrapper did not exit 8
+E2E_PASSED_SUPERSEDED=548
+E2E_FAILED_SUPERSEDED=0
+E2E_FLAKY_SUPERSEDED=0
+E2E_DID_NOT_RUN_SUPERSEDED=0
+E2E_SKIPPED_SUPERSEDED=0
+    node tests/scripts/e2e-evidence.mjs tests/e2e-runs/187-26-close-20261116T083717Z, exit 0: total 548, passed 548, failed 0, flaky 0, skipped 0, didNotRun 0
+E2E_VERDICT_EXIT_SUPERSEDED=0
+    node tests/scripts/e2e-spec-verdict.mjs tests/e2e-runs/187-26-close-20261116T083717Z --no-flaky: VERDICT OK: 548 tests -- passed 548, failed 0, flaky 0, skipped 0, did not run 0
+E2E_GATE_SUPERSEDED=green
+E2E_PASSED_VS_2026_11_15_SUPERSEDED=548 against 548 (the re-run above): equal
+RED_RUNS_SUPERSEDED=0
+    the closing run is the first and only full run of the window; no run was retried and no test was marked as flaky. The window's other run, tests/e2e-runs/187-26-nofile-20261116T083511Z, is the deliberate reproduction with no functions env file, evidence of CI's cause and not a gate of the tree
+HANDOFF_STATUS_SUPERSEDED=closed
+    plan 186-08 is complete; its handoff (187-13-186-08-handoff.md) keeps the earlier tree
+E2E_FUNCTIONS_ENV_SUPERSEDED=template
+GSD_SESSION_MUST_RESET_SUPERSEDED=yes: the -gsd worktree shares this stack and resets it from its own worktree before it continues (yarn db:stop and yarn db:start from -gsd, then yarn db:reset)
+
+## Re-run 2026-11-16 (plan 187-27)
+
+Recorded 2026-11-16 by the plan executor of plan 187-27, which ran every stack and E2E command itself from this checkout, in one background window; logs in `tmp/187-27/window/`. Every id in the superseded sections above names a commit of the pre-rebase history, `backup/deployment-pre-rebase-20261116`; the lines of the 2026-11-16 (plan 187-26) section are renamed `*_SUPERSEDED=` so that each line a verify reads has one value. The run is made on CI's functions environment: the developer's untracked `apps/supabase/supabase/functions/.env` was moved aside for the window and the tracked template hard-linked in its place (details in `187-27-ci-closure.md` § Task 6).
+
+SOURCE_TREE_MATCHES_GREEN=yes
+    git diff --quiet e6f1e114e refs/evidence/187/green -- . ':!.planning' exit 0; the green commit's tree is 6de8539cf8f28bd2eeb835753e041ddcaec44d27, GREEN_TREE of 187-12-evidence-commits.md (re-run 2026-11-16, plan 187-27), written from HEAD's tree without .planning/
+E2E_TREE_SHA=e6f1e114ed3d84a0f28c340d59180e2e11b82a93
+E2E_HEAD=e6f1e114ed3d84a0f28c340d59180e2e11b82a93
+E2E_TREE_CLEAN=yes
+    git status --porcelain listed only the untracked .planning/workstreams/deployment/.verification-ledger.json before and after the run, and the run directory's worktree-status.txt holds that one line; the functions env path is ignored, so neither the move nor the link shows in it
+E2E_RUN_DIR=tests/e2e-runs/187-27-close-20261116T190137Z
+E2E_STARTED=2026-11-16T19:01:37Z
+E2E_ENDED=2026-11-16T19:20:29Z
+E2E_COMMAND=caffeinate -i tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/187-27-close-20261116T190137Z --no-db-reset
+E2E_WRAPPER_EXIT=0
+    read from tmp/187-27/window/close-run.status, written by the command after the wrapper, and from the run directory's exit file (0); its head file is e6f1e114ed3d84a0f28c340d59180e2e11b82a93. Wrapper lines: "729 passed (18.1m)", "playwright exit 0", "preflight failures 0, successes 1"; restore.txt ends "restore: ok"
 E2E_VOID_RUNS=0
     no VOID-host-suspend.txt in the run directory, and the wrapper did not exit 8
-E2E_PASSED=548
+E2E_PASSED=729
 E2E_FAILED=0
 E2E_FLAKY=0
 E2E_DID_NOT_RUN=0
 E2E_SKIPPED=0
-    node tests/scripts/e2e-evidence.mjs tests/e2e-runs/187-26-close-20261116T083717Z, exit 0: total 548, passed 548, failed 0, flaky 0, skipped 0, didNotRun 0
+    node tests/scripts/e2e-evidence.mjs tests/e2e-runs/187-27-close-20261116T190137Z, exit 0: total 729, passed 729, failed 0, flaky 0, skipped 0, didNotRun 0
 E2E_VERDICT_EXIT=0
-    node tests/scripts/e2e-spec-verdict.mjs tests/e2e-runs/187-26-close-20261116T083717Z --no-flaky: VERDICT OK: 548 tests -- passed 548, failed 0, flaky 0, skipped 0, did not run 0
+    node tests/scripts/e2e-spec-verdict.mjs tests/e2e-runs/187-27-close-20261116T190137Z --no-flaky: VERDICT OK: 729 tests -- passed 729, failed 0, flaky 0, skipped 0, did not run 0
 E2E_GATE=green
-E2E_PASSED_VS_2026_11_15=548 against 548 (the re-run above): equal
+E2E_PASSED_VS_187_26=729 against 548: the rebase onto the -gsd stream brought 181 more tests
 RED_RUNS=0
-    the closing run is the first and only full run of the window; no run was retried and no test was marked as flaky. The window's other run, tests/e2e-runs/187-26-nofile-20261116T083511Z, is the deliberate reproduction with no functions env file, evidence of CI's cause and not a gate of the tree
+    the closing run is the first and only full run of the window; no run was retried and no test was marked as flaky
 HANDOFF_STATUS=closed
     plan 186-08 is complete; its handoff (187-13-186-08-handoff.md) keeps the earlier tree
 E2E_FUNCTIONS_ENV=template
