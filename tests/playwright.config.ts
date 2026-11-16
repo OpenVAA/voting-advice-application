@@ -1589,8 +1589,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI || process.env.GITHUB_ACTIONS === 'true',
   /* Retry tests on CI */
   retries: process.env.CI ? 3 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : 6,
+  /* Opt out of parallel tests on CI. Under GitHub Actions without CI (the wrapper unsets it), 4 workers match the 4-vCPU runner: on it 6 workers finish no sooner (1415 s against 1382 s at 4) and double the cold-start setup times, past the 10 s readiness budgets. */
+  workers: process.env.CI ? 1 : process.env.GITHUB_ACTIONS === 'true' ? 4 : 6,
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],

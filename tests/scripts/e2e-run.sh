@@ -1237,7 +1237,7 @@ unset CI || true
   echo "db_reset=$DB_RESET"
   echo "package_watcher=$WATCH"
   echo "expected_retries=0"
-  echo "expected_workers=6"
+  echo "expected_workers=$( [ "${GITHUB_ACTIONS:-}" = true ] && echo 4 || echo 6 )"
   echo "heartbeat_interval_s=$HEARTBEAT_INTERVAL_S"
   echo "suspend_threshold_ms=$SUSPEND_THRESHOLD_MS"
   # Machine capacity at run start. Recorded, never enforced: a run is not refused for a busy machine, but an outlier can then be attributed from the run directory instead of reconstructed from outside it. A run with identical code, worker count and dev-server log signatures can still take 1069s against a 627-651s baseline when the machine is loaded.
