@@ -1,0 +1,103 @@
+<!--
+@component A template part that outputs the navigation menu for the Voter App for use in `Layout`.
+
+### Dynamic component
+
+- Accesses the `VoterContext`.
+
+### Properties
+
+- Any valid properties of a `Navigation` component.
+
+### Settings
+
+- `elections.disallowSelection`: Affects whether the select elections item is shown.
+- `elections.startFromConstituencyGroup`: Affects the order of the items shown and under which conditions they are disabled.
+- `entities.showAllNominations`: Affects whether the 'All nominations' route is shown.
+
+### Usage
+
+```tsx
+<VoterNav>
+  <NavItem href={getRoute.current('Home')} icon="home" text={t('common.home')} />
+</VoterNav>
+```
+-->
+
+<script lang="ts">
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { getVoterContext } from '$lib/contexts/voter';
+  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
+  import { LanguageSelection } from '../languages';
+  import type { VoterNavProps } from './VoterNav.type';
+
+  let { onKeyboardFocusOut, ...restProps }: VoterNavProps = $props();
+
+  const { navigation } = getLayoutContext();
+
+  // The reactive context getters (constituenciesSelectable, electionsSelectable, resultsAvailable, selectedElections, selectedConstituencies) are read via voterCtx.X.
+  const voterCtx = getVoterContext();
+  // `appSettings` is a bare reactive accessor — read via voterCtx.X / $derived, never destructure (destructuring captures the mount-time snapshot and freezes when mergeAppSettings returns a new object). Stable members (getRoute, openFeedbackModal, resetVoterData, surveyLink, t) destructure safely.
+  const { getRoute, openFeedbackModal, resetVoterData, surveyLink, t } = voterCtx;
+  const appSettings = $derived(voterCtx.appSettings);
+  const elections = $derived(voterCtx.selectedElections);
+  const constituencies = $derived(voterCtx.selectedConstituencies);
+</script>
+
+<Navigation {onKeyboardFocusOut} {...restProps}>
+  <NavItem onclick={navigation.close} icon="close" text={t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+  <NavGroup>
+    <NavItem href={getRoute.current('Home')} icon="home" text={t('common.home')} />
+    <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
+    {#if voterCtx.electionsSelectable && !appSettings.elections?.startFromConstituencyGroup}
+      <NavItem href={getRoute.current('Elections')} icon="election" text={t('elections.title')} />
+    {/if}
+    {#if voterCtx.constituenciesSelectable}
+      <NavItem
+        disabled={!appSettings.elections?.startFromConstituencyGroup && !elections.length}
+        href={getRoute.current('Constituencies')}
+        icon="constituency"
+        text={t('constituencies.title')} />
+    {/if}
+    {#if voterCtx.electionsSelectable && appSettings.elections?.startFromConstituencyGroup}
+      <NavItem
+        disabled={!constituencies.length}
+        href={getRoute.current('Elections')}
+        icon="election"
+        text={t('elections.title')} />
+    {/if}
+    <NavItem
+      disabled={!(elections.length && constituencies.length)}
+      href={getRoute.current('Questions')}
+      icon="opinion"
+      text={t('questions.title')} />
+    <NavItem
+      disabled={!(elections.length && constituencies.length)}
+      href={getRoute.current('Results')}
+      icon="results"
+      text={voterCtx.resultsAvailable ? t('results.title.results') : t('results.title.browse')}
+      data-testid="voter-nav-results" />
+  </NavGroup>
+  <NavGroup>
+    <NavItem onclick={() => resetVoterData()} icon="close" text={t('common.resetAnswers')} />
+  </NavGroup>
+  <NavGroup>
+    <NavItem href={getRoute.current('Info')} icon="election" text={t('info.title')} />
+    <NavItem href={getRoute.current('About')} icon="info" text={t('about.title')} />
+    {#if appSettings.entities.showAllNominations}
+      <NavItem href={getRoute.current('Nominations')} icon="search" text={t('dynamic.nominations.title')} />
+    {/if}
+    <NavItem href={getRoute.current('Privacy')} icon="privacy" text={t('privacy.title')} />
+  </NavGroup>
+  {#if appSettings.survey?.showIn?.includes('navigation') || openFeedbackModal.current}
+    <NavGroup>
+      {#if appSettings.survey?.showIn?.includes('navigation')}
+        <NavItem href={surveyLink.current} target="_blank" icon="research" text={t('dynamic.survey.button')} />
+      {/if}
+      {#if openFeedbackModal.current}
+        <NavItem onclick={openFeedbackModal.current} icon="feedback" text={t('feedback.send')} />
+      {/if}
+    </NavGroup>
+  {/if}
+  <LanguageSelection />
+</Navigation>

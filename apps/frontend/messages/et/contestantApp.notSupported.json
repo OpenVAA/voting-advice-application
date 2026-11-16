@@ -1,0 +1,7 @@
+{
+  "contestantApp.notSupported": {
+    "content": "{contestantAppName}: see valimisnõustaja versioon ei toeta kahjuks selle teenuse kasutamist.",
+    "heroEmoji": "🐣",
+    "title": "{contestantAppName}: ei ole saadaval"
+  }
+}

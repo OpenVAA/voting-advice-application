@@ -1,0 +1,10 @@
+{
+  "contestantApp.error": {
+    "saveFailed": "Anteeksi! Vastaustesi tallentaminen ei onnistunut. Yritä uudelleen ja jos ongelma jatkuu, ota yhteyttä tukeen.",
+    "registrationLocked": "Valitettavasti rekisteröityminen ei enää ole mahdollista.",
+    "nameLocked": {
+      "candidate": "Nimeäsi ei voitu tallentaa: ylläpitäjä on vahvistanut profiilisi, eikä nimeä voi enää muuttaa täällä. Muut muutoksesi tallennettiin. Jos nimessä on virhe, ota yhteyttä tukeen.",
+      "organization": "Nimeä ja lyhennettä ei voitu tallentaa: ylläpitäjä on vahvistanut puolueesi, eikä niitä voi enää muuttaa täällä. Muut muutoksesi tallennettiin. Jos niissä on virhe, ota yhteyttä tukeen."
+    }
+  }
+}

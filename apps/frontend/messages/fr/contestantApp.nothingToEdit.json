@@ -1,0 +1,8 @@
+{
+  "contestantApp.nothingToEdit": {
+    "content": "Votre compte utilisateur n’est associé à aucun profil dans cette application, vous n’avez donc rien à modifier.",
+    "nextSteps": "Si vous vous êtes inscrit·e avec une autre adresse e-mail, déconnectez-vous et connectez-vous avec cette adresse. Sinon, contactez l’assistance et indiquez-lui l’adresse affichée ci-dessus.",
+    "signedInAs": "Connecté·e en tant que",
+    "title": "Rien à modifier ici"
+  }
+}

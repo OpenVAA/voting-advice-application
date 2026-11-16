@@ -1,0 +1,114 @@
+{
+  "contestantApp.nominations": {
+    "constituencies": {
+      "ingress": {
+        "candidate": "Vælg den valgkreds, du stiller op i.",
+        "organization": "Vælg den valgkreds, dit parti stiller op i. Der kan vælges én valgkreds for hvert valg; kontakt support, hvis dit parti stiller op i flere."
+      },
+      "noElection": {
+        "candidate": "Der afholdes intet valg i denne valgkreds, som du kan opstilles til.",
+        "organization": "Der afholdes intet valg i denne valgkreds, som dit parti kan opstilles til."
+      },
+      "severalKept": "Du har flere opstillinger i dette valg. De bevares, som de er; du kan ændre deres oplysninger i næste trin.",
+      "title": {
+        "candidate": "Hvad er din valgkreds?",
+        "organization": "Hvad er dit partis valgkreds?"
+      }
+    },
+    "description": {
+      "candidate": "Dette er de valgkredse, hvor du er opstillet. Hvis parti eller valgkreds mangler, vil de blive tilføjet automatisk, når kandidatlisten er bekræftet.",
+      "organization": "Dette er de valgkredse, hvor dit parti er opstillet. Hvis valgsymbolet mangler, tilføjes det senere af administratoren."
+    },
+    "descriptionEditable": {
+      "candidate": "Dette er dine opstillinger. Du kan ændre dem og tilføje dit valgnummer og din liste, indtil opstillingerne lukkes.",
+      "organization": "Dette er dit partis opstillinger. Du kan ændre dem og tilføje partiets valgsymbol og alliance, indtil opstillingerne lukkes."
+    },
+    "details": {
+      "changeSelection": "Ændr det valgte",
+      "confirmedNote": "Denne opstilling er bekræftet. Hvis du ændrer den, skal en administrator bekræfte den igen, og vælgerne kan ikke se den før da.",
+      "ingress": "Kontrollér oplysningerne for hver opstilling. Intet gemmes, før du fortsætter.",
+      "keep": "Behold denne opstilling",
+      "newNote": "Denne opstilling er ny. En administrator skal bekræfte den, og vælgerne kan ikke se den før da.",
+      "previousConstituency": "Tidligere: {constituency}",
+      "remove": "Fjern denne opstilling",
+      "removedConfirmedNote": "Denne opstilling er bekræftet og fjernes, når du fortsætter. En ny opstilling skulle bekræftes igen.",
+      "removedNote": "Denne opstilling fjernes, når du fortsætter.",
+      "symbolInfo": {
+        "candidate": "Valgfrit. Dit nummer på stemmesedlen, hvis du har et. Højst 50 tegn.",
+        "organization": "Valgfrit. Dit partis symbol eller nummer på stemmesedlen, hvis det har et. Højst 50 tegn."
+      },
+      "title": "Oplysninger om opstillingerne"
+    },
+    "edit": "Rediger opstillinger",
+    "elections": {
+      "ingress": {
+        "candidate": "Vælg alle de valg, du stiller op i.",
+        "organization": "Vælg alle de valg, dit parti stiller op i."
+      },
+      "noneSelected": "Vælg mindst ét valg for at fortsætte.",
+      "title": {
+        "candidate": "Hvilke valg stiller du op i?",
+        "organization": "Hvilke valg stiller dit parti op i?"
+      }
+    },
+    "empty": {
+      "candidate": "Der er endnu ikke angivet nogen opstilling for dig. Kontakt support for at få en tilføjet.",
+      "organization": "Der er endnu ikke angivet nogen opstilling for dit parti. Kontakt support for at få en tilføjet."
+    },
+    "emptyEditable": {
+      "candidate": "Du har endnu ikke angivet nogen opstilling. En opstilling angiver, i hvilket valg og i hvilken valgkreds du stiller op.",
+      "organization": "Der er endnu ikke angivet nogen opstilling for dit parti. En opstilling angiver, i hvilket valg og i hvilken valgkreds partiet stiller op."
+    },
+    "emptyNoElection": {
+      "candidate": "Der er intet valg i denne applikation, hvor en kandidat kan opstilles. Kontakt support, hvis du mener, at det er en fejl.",
+      "organization": "Der er intet valg i denne applikation, hvor et parti kan opstilles. Kontakt support, hvis du mener, at det er en fejl."
+    },
+    "error": {
+      "changed": "Dine opstillinger er blevet ændret, siden du åbnede denne side. De vises her, som de er nu; kontrollér dem, og prøv igen.",
+      "checkCards": "Nogle opstillinger kræver din opmærksomhed. Kontrollér de markerede felter.",
+      "duplicateParent": "To opstillinger i samme valg og valgkreds kan ikke have samme liste.",
+      "hasCandidates": "En opstilling kunne ikke fjernes eller flyttes, fordi der er opført kandidater under den. Kontakt support.",
+      "otherRequired": {
+        "candidate": "Angiv partiets navn.",
+        "organization": "Angiv alliancens navn."
+      },
+      "parentRequired": "Vælg en af mulighederne for at fortsætte.",
+      "saveFailed": "Beklager, der opstod et problem under gemning af dine opstillinger. Prøv igen, og kontakt support, hvis problemet fortsætter.",
+      "tooManyPending": "Du har tilføjet det maksimale antal opstillinger, der afventer bekræftelse. En administrator skal bekræfte nogle af dem, før du kan tilføje flere."
+    },
+    "parent": {
+      "none": {
+        "candidate": "Uden tilhørsforhold / intet parti",
+        "organization": "Ingen"
+      },
+      "noOptions": {
+        "candidate": "Der kan endnu ikke vælges noget parti.",
+        "organization": "Der kan endnu ikke vælges nogen alliance."
+      },
+      "notNominatedHint": {
+        "candidate": "Endnu ikke opstillet her. Hvis du vælger det, tilføjes partiets opstilling også, og den skal bekræftes af en administrator.",
+        "organization": "Endnu ikke opstillet her. Hvis du vælger den, tilføjes alliancens opstilling også, og den skal bekræftes af en administrator."
+      },
+      "other": {
+        "candidate": "Andet",
+        "organization": "Anden"
+      },
+      "otherInfo": {
+        "candidate": "Angiv navnet på dit parti, hvis det ikke står på listen. En administrator vil kontrollere det.",
+        "organization": "Angiv alliancens navn, hvis den ikke står på listen. En administrator vil kontrollere det."
+      },
+      "otherLabel": {
+        "candidate": "Partiets navn",
+        "organization": "Alliancens navn"
+      },
+      "unlisted": "Kan ikke længere vælges. Du kan beholde dit valg eller træffe et andet."
+    },
+    "requestedParent": "Du har anmodet om dette. Det findes endnu ikke i applikationen; en administrator vil kontrollere det.",
+    "state": {
+      "label": "Status",
+      "pending": "Afventer bekræftelse",
+      "pendingInfo": "Denne opstilling er endnu ikke bekræftet, så vælgerne kan ikke se den."
+    },
+    "title": "Opstillinger"
+  }
+}

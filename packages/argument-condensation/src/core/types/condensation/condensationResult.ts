@@ -5,11 +5,10 @@ import type { CondensationOutputType } from './condensationType';
 /**
  * Complete result of a condensation run.
  * Contains arguments, metadata, and evaluation metrics.
- * A single run contains only one type of output, so processing a question usually
- * involves multiple runs with different output types, e.g. finding pros and cons separately.
+ * A single run contains only one type of output, so processing a question usually involves multiple runs with different output types, e.g. finding pros and cons separately.
  *
  * @example
- *
+ * ```ts
  * const result: CondensationRunResult = {
  *   runId: 'i-am-a-unique-run-id',
  *   condensationType: 'likertCons',
@@ -18,7 +17,7 @@ import type { CondensationOutputType } from './condensationType';
  *     processingTimeMs: 420,
  *     nLlmCalls: 66,
  *     costs: { input: 0.5, output: 0.51, total: 1.01 },
- *     tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500 } // Optional: reasoningTokens, cachedInputTokens
+ *     tokens: { inputTokens: 6700, outputTokens: 6800, totalTokens: 13500, inputTokenDetails: {...}, outputTokenDetails: {...} }
  *   },
  *   success: true,
  *   metadata: {
@@ -28,11 +27,11 @@ import type { CondensationOutputType } from './condensationType';
  *     endTime: new Date()
  *   }
  * };
+ * ```
  */
-export interface CondensationRunResult
-  extends LLMPipelineResult<{
-    arguments: Array<Argument>;
-  }> {
+export interface CondensationRunResult extends LLMPipelineResult<{
+  arguments: Array<Argument>;
+}> {
   /** The type of condensation run. Common types are likertCons, likertPros, categoricalPros, booleanCons and booleanPros */
   condensationType: CondensationOutputType;
 }

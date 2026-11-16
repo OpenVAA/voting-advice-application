@@ -2,8 +2,8 @@
 
 > See also the online docs:
 >
-> - [Static settings](https://openvaa.org/developers-guide/configuration/static-settings) (or [locally](/docs/src/routes/developers-guide/configuration/static-settings/+page.md))
-> - [App Settings](https://openvaa.org/developers-guide/configuration/app-settings) (or [locally](/docs/src/routes/developers-guide/configuration/app-settings/+page.md))
+> - [Static settings](https://openvaa.org/developers-guide/configuration/static-settings) (or [locally](</apps/docs/src/routes/(content)/developers-guide/configuration/static-settings/+page.md>))
+> - [App Settings](https://openvaa.org/developers-guide/configuration/app-settings) (or [locally](</apps/docs/src/routes/(content)/developers-guide/configuration/app-settings/+page.md>))
 
 This directory contains the configuration system for OpenVAA, including both static and dynamic settings.
 

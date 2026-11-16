@@ -18,7 +18,7 @@ The filters in this module allow basic filtering of entities, e.g. candidates or
 
 ## Developing
 
-The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
+The module uses [`tsup`](https://tsup.egoist.dev/) for building ESM output with automatic import resolution.
 
 ## Basic use
 

@@ -1,0 +1,23 @@
+{
+  "contestantApp.common": {
+    "closedReason": {
+      "noNomination": {
+        "candidate": "Perustietosi, mielipiteesi ja esikatselu avautuvat, kun sinulla on ehdokkuus.",
+        "organization": "Perustiedot, mielipiteet ja esikatselu avautuvat, kun puolueellasi on ehdokkuus."
+      },
+      "preview": "Esikatselu avautuu, kun vaadittavat perustiedot on täytetty ja kaikkiin mielipidekysymyksiin on vastattu.",
+      "previewNoQuestions": "Esikatselu avautuu, kun vaadittavat perustiedot on täytetty."
+    },
+    "contactSupport": "Ota yhteys tukeen",
+    "continueFilling": "Jatka täyttämistä",
+    "editingNotAllowed": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä tukeen, jos tiedoissa on virheitä.",
+    "fullyCompleted": "Onneksi olkoon! Olet täyttänyt kaikki vaalikoneeseen tarvittavat tiedot.",
+    "greeting": "Hei, {username}!",
+    "home": "Alku",
+    "isHiddenBecauseMissing": "Profiiliasi ei näytetä vaalikoneessa, koska et vastannut kaikkiin kysymyksiin.",
+    "nominationsNotEditable": "Ehdokkuuksia ei voi enää muuttaa tässä sovelluksessa. Jos jokin on väärin tai puuttuu, ota yhteyttä tukeen.",
+    "nominationsNotEditableAnswersLocked": "Ehdokkuuksia ei voi enää muuttaa, koska muokkaaminen on päättynyt tässä sovelluksessa. Jos jokin on väärin tai puuttuu, ota yhteyttä tukeen.",
+    "voterApp": "Äänestäjien vaalikone",
+    "willBeHiddenIfMissing": "Tietosi eivät näy vaalikoneessa ennen kuin olet vastannut kaikkiin kysymyksiin."
+  }
+}
