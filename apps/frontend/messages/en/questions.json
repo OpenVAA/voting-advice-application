@@ -1,0 +1,78 @@
+{
+  "questions": {
+    "additionalActions": "Further actions for this question",
+    "answers": {
+      "bothHaventAnswered": "Neither you nor {entity} has answered this question",
+      "entityHasntAnswered": "{entity} hasn’t answered this question",
+      "youHaventAnswered": "You haven't answered this question",
+      "yourAnswer": "You"
+    },
+    "arguments": {
+      "con": "Against",
+      "pro": "For",
+      "proCategory": "For {option}",
+      "title": "Arguments"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=-1": "",
+            "numQuestions=1": "1 question",
+            "numQuestions=*": "{numQuestions} questions"
+          }
+        }
+      ],
+      "skip": "Skip This Category"
+    },
+    "infoDescription": "Background information on the question",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": ["input minQuestions", "input numCategories"],
+            "selectors": ["minQuestions"],
+            "match": {
+              "minQuestions=0": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. ",
+              "minQuestions=1": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. ",
+              "minQuestions=*": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. However, select enough categories to get at least {minQuestions} questions in total."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": ["input numCategories", "input numQuestions"],
+            "selectors": ["numCategories"],
+            "match": {
+              "numCategories=0": "Next, answer {numQuestions} questions regarding politics and values. ",
+              "numCategories=1": "Next, answer {numQuestions} questions regarding politics and values. ",
+              "numCategories=*": "Next, answer {numQuestions} questions regarding politics and values. The questions are divided into {numCategories} categories."
+            }
+          }
+        ]
+      },
+      "start": "Answer {numQuestions} Questions"
+    },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Select 1 option.",
+            "countPlural=*": "Select {count} options."
+          }
+        }
+      ],
+      "selectRange": "Select {min} to {max} options."
+    },
+    "next": "Next question",
+    "previous": "Previous",
+    "remove": "Delete answer",
+    "skip": "Skip",
+    "skipToResults": "Skip to Results",
+    "title": "Opinions"
+  }
+}

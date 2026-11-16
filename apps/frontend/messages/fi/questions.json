@@ -1,0 +1,78 @@
+{
+  "questions": {
+    "additionalActions": "Lisää toimintoja tähän kysymykseen liittyen",
+    "answers": {
+      "bothHaventAnswered": "Sinä ja {entity} ette ole vastanneet tähän kysymykseen",
+      "entityHasntAnswered": "{entity} ei ole vastannut tähän kysymykseen",
+      "youHaventAnswered": "Et ole vastannut tähän kysymykseen",
+      "yourAnswer": "Sinä"
+    },
+    "arguments": {
+      "con": "Vastaan",
+      "pro": "Puolesta",
+      "proCategory": "Puolesta: {option}",
+      "title": "Perustelut"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=-1": "",
+            "numQuestions=1": "1 kysymys",
+            "numQuestions=*": "{numQuestions} kysymystä"
+          }
+        }
+      ],
+      "skip": "Ohita tämä teema"
+    },
+    "infoDescription": "Taustatietoja tästä kysymyksestä",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": ["input minQuestions", "input numCategories"],
+            "selectors": ["minQuestions"],
+            "match": {
+              "minQuestions=0": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. ",
+              "minQuestions=1": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. ",
+              "minQuestions=*": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. Valitse kuitenkin teemat siten, että niissä on ainakin {minQuestions} kysymystä."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": ["input numCategories", "input numQuestions"],
+            "selectors": ["numCategories"],
+            "match": {
+              "numCategories=0": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. ",
+              "numCategories=1": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. ",
+              "numCategories=*": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. Ne on jaettu {numCategories} teemaan."
+            }
+          }
+        ]
+      },
+      "start": "Vastaa {numQuestions} kysymykseen"
+    },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Valitse 1 vaihtoehto.",
+            "countPlural=*": "Valitse {count} vaihtoehtoa."
+          }
+        }
+      ],
+      "selectRange": "Valitse {min}–{max} vaihtoehtoa."
+    },
+    "next": "Seuraava",
+    "previous": "Edellinen",
+    "remove": "Poista vastaus",
+    "skip": "Ohita",
+    "skipToResults": "Hyppää tuloksiin",
+    "title": "Mielipiteesi"
+  }
+}

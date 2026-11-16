@@ -1,0 +1,100 @@
+{
+  "variables": [
+    {
+      "name": "PUBLIC_SUPABASE_URL",
+      "source": "value",
+      "required": true,
+      "description": "The origin of the Supabase API the application queries, the project's API URL as the Supabase dashboard shows it."
+    },
+    {
+      "name": "PUBLIC_SUPABASE_ANON_KEY",
+      "source": "parameter",
+      "required": true,
+      "description": "The Supabase project's anon key. It is public by design and reaches every browser, but it is kept in the parameter store because it is a signed token, which secret scanners and the repository's reply screen refuse to see in a tracked file."
+    },
+    {
+      "name": "PUBLIC_PROJECT_ID",
+      "source": "value",
+      "required": true,
+      "description": "The id of the project every query the application issues is scoped to; there is no fallback, so it must name a project that exists in the database."
+    },
+    {
+      "name": "ORIGIN",
+      "source": "value",
+      "required": true,
+      "description": "The public origin of the deployment as a browser sees it, scheme and host with no trailing slash; without it the server takes each request's origin from headers the client sets."
+    },
+    {
+      "name": "ADDRESS_HEADER",
+      "source": "value",
+      "required": false,
+      "description": "The request header in which the nearest trusted proxy sets the client address, usually x-forwarded-for behind a load balancer."
+    },
+    {
+      "name": "XFF_DEPTH",
+      "source": "value",
+      "required": false,
+      "description": "The number of trusted proxies in front of the server, counted from the right of the address header; set it to the number of proxies the deployment actually has."
+    },
+    {
+      "name": "KEEP_ALIVE_TIMEOUT",
+      "source": "value",
+      "required": false,
+      "description": "Seconds the server keeps an idle connection open; set it above the load balancer's idle timeout so the load balancer, not the server, closes idle connections."
+    },
+    {
+      "name": "HEADERS_TIMEOUT",
+      "source": "value",
+      "required": false,
+      "description": "Seconds the server waits for a request's headers; set it above KEEP_ALIVE_TIMEOUT so a reused connection is never cut while its next request is arriving."
+    },
+    {
+      "name": "SHUTDOWN_TIMEOUT",
+      "source": "value",
+      "required": false,
+      "description": "Seconds the server waits for requests in flight after a stop signal before it exits; set it below the container's stop timeout so the process exits by itself rather than being killed."
+    },
+    {
+      "name": "PUBLIC_LOG_LEVEL",
+      "source": "value",
+      "required": false,
+      "description": "The minimum level the structured logger emits, one of debug, info, warn or error; unset falls back to warn."
+    },
+    {
+      "name": "ANALYTICS_PROVIDER",
+      "source": "value",
+      "required": false,
+      "description": "Where analytics events go, one of none, log or posthog; unset means none, and posthog without a key is refused at start."
+    },
+    {
+      "name": "ANALYTICS_CONSENT_MODE",
+      "source": "value",
+      "required": false,
+      "description": "Whether events wait for the voter's consent, gated (the default) or free; whether consent is needed is for the deployer to determine."
+    },
+    {
+      "name": "ANALYTICS_VISIT_ID_MODE",
+      "source": "value",
+      "required": false,
+      "description": "How a visit is identified across events, memory (the default) or none."
+    },
+    {
+      "name": "ANALYTICS_POSTHOG_HOST",
+      "source": "value",
+      "required": false,
+      "description": "The PostHog host events are forwarded to, an https origin; unset means the PostHog EU cloud."
+    },
+    {
+      "name": "ANALYTICS_POSTHOG_KEY",
+      "source": "parameter",
+      "required": false,
+      "description": "The PostHog project key events are forwarded with; it is a secret and is read only when ANALYTICS_PROVIDER is posthog."
+    },
+    {
+      "name": "DEPLOYMENT_DIAGNOSTICS",
+      "source": "value",
+      "required": false,
+      "description": "Set to true to switch on /api/diagnostics, which reports the resolved origin, client address and forwarding headers; set it only while a proxy setup is being checked, and false otherwise."
+    }
+  ]
+}

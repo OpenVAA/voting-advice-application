@@ -1,0 +1,360 @@
+name: "Destroy staging AWS"
+
+# Destroys the staging AWS stack: every resource of the staging AWS root, all of them under module.frontend. The DNS
+# and mail root and the Supabase root are not touched, and the persistent Supabase project, which holds the only copy
+# of its data, is out of this workflow's reach. Two things keep it there: the `staging-destroy` environment holds no
+# secret and no variable, so no Supabase token exists in either job, and the deploy role cannot read the hand-applied
+# state under `hand/`, which the plan job shows before it plans anything, by an init of the Supabase root and a read of
+# its state key that must both be refused.
+#
+# A run, in order:
+#   1. job plan-destroy, which waits for its own approval of `staging-destroy`: shows the Supabase root out of reach,
+#      lists the AWS root's state, plans `-destroy` of that root into a saved plan, checks the plan with
+#      infra/scripts/check-destroy-plan.sh and only then prints it;
+#   2. job apply-destroy, which needs the first and waits for a second approval: plans again into its own saved plan,
+#      so that no plan crosses jobs, checks and prints it the same way, applies it and fails unless the state is then
+#      empty.
+# An evidence run is approved at plan-destroy and rejected at apply-destroy, so it destroys nothing. A real destroy is
+# approved at both.
+#
+# A push to the one branch `deploy-evidence/destroy-staging` starts it; the deploy workflow excludes that branch. A
+# dispatch must pick the `deploy/staging` ref, because the environment admits no other branch for it, and must type
+# `destroy staging aws` into `confirm`; any other text skips both jobs.
+#
+# A cancelled or timed-out apply can leave the state lock held; `terraform force-unlock` from the operator's shell
+# releases it.
+#
+# The repository's default token may write, so the top-level permissions are empty and every job names its own.
+
+on:
+  push:
+    branches:
+      - "deploy-evidence/destroy-staging"
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type destroy staging aws to destroy the staging AWS stack"
+        required: true
+        type: string
+
+# One group with the deploy workflow. A running destroy is never cancelled, because a cancelled apply can leave the
+# state lock held.
+concurrency:
+  group: staging-aws
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  plan-destroy:
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/deploy-evidence/destroy-staging') || (github.event_name == 'workflow_dispatch' && inputs.confirm == 'destroy staging aws')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
+    environment: staging-destroy
+
+    steps:
+      - name: "Checkout source code"
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Setup Terraform 1.16.5"
+        id: terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      # The environment holds no setting, so the role is named by its ARN.
+      - name: "Assume the deploy role"
+        id: credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
+          aws-region: eu-north-1
+          role-session-name: destroy-plan-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      # An init refreshes the state right after it configures the backend and before it installs a provider, so a
+      # refused read of the state fails the init with "Error refreshing state". The step fails if either read succeeds.
+      - name: "Show the Supabase root's state is out of reach"
+        id: supabase-root-refused
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/supabase init -input=false -no-color > "$RUNNER_TEMP/supabase-init.log" 2>&1
+          init_status=$?
+          echo "supabase_root_init_status=$init_status"
+          init_refused=no
+          if grep -q 'Error refreshing state' "$RUNNER_TEMP/supabase-init.log" \
+            && grep -qE 'AccessDenied|403' "$RUNNER_TEMP/supabase-init.log"; then
+            init_refused=yes
+          fi
+          aws s3api head-object --bucket openvaa-tfstate-471112560111 --key hand/staging/supabase/terraform.tfstate > /dev/null \
+            2> "$RUNNER_TEMP/supabase-head.err"
+          head_status=$?
+          echo "supabase_state_head_status=$head_status"
+          head_refused=no
+          if grep -qE 'Forbidden|AccessDenied|403' "$RUNNER_TEMP/supabase-head.err"; then
+            head_refused=yes
+          fi
+          rm -f "$RUNNER_TEMP/supabase-init.log" "$RUNNER_TEMP/supabase-head.err"
+          if [ "$init_status" -ne 0 ] && [ "$init_refused" = yes ] && [ "$head_status" -ne 0 ] && [ "$head_refused" = yes ]; then
+            echo "supabase_root_refused=yes"
+            exit 0
+          fi
+          echo "supabase_root_refused=no"
+          echo "::error::The deploy role was not refused both reads of the Supabase root's state (init $init_status, refused=$init_refused; head-object $head_status, refused=$head_refused)."
+          exit 1
+
+      - name: "Initialise the staging AWS root"
+        id: init
+        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+
+      - name: "List the state of the staging AWS root"
+        id: state
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state.txt"
+          state_exit=$?
+          echo "state_list_exit=$state_exit"
+          if [ "$state_exit" -ne 0 ]; then
+            echo "::error::terraform state list exited $state_exit."
+            exit 1
+          fi
+
+      # A destroy applies no variable value, so the digest and the alert address are placeholders that pass the
+      # variables' checks and reach no resource. No running service is read for the digest, so a destroy that stopped
+      # after the service was deleted can be run again. The plan's output goes to a file, so that nothing of the plan is
+      # printed before the guard.
+      - name: "Plan the destroy of the staging AWS root"
+        id: plan
+        env:
+          DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
+          TF_VAR_alert_email: destroy-plan@example.invalid
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/destroy.tfplan" \
+            > "$RUNNER_TEMP/destroy-plan.log" 2>&1
+          plan_exit=$?
+          echo "plan_exit=$plan_exit"
+          if [ "$plan_exit" -ne 0 ]; then
+            cat "$RUNNER_TEMP/destroy-plan.log"
+            echo "::error::terraform plan -destroy exited $plan_exit."
+            exit 1
+          fi
+
+      # The JSON form holds sensitive values in the clear, so it is written only under $RUNNER_TEMP and never printed.
+      - name: "Export the saved plan for the guard"
+        id: export
+        run: |
+          set -uo pipefail
+          umask 077
+          terraform -chdir=infra/envs/staging/aws show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json"
+          export_exit=$?
+          echo "export_exit=$export_exit"
+          if [ "$export_exit" -ne 0 ]; then
+            echo "::error::terraform show -json exited $export_exit."
+            exit 1
+          fi
+
+      - name: "Check the plan destroys the stack and nothing else"
+        id: guard
+        run: |
+          set -uo pipefail
+          infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt"
+          guard_exit=$?
+          echo "guard_exit=$guard_exit"
+          if [ "$guard_exit" -ne 0 ]; then
+            echo "::error::check-destroy-plan.sh exited $guard_exit; the plan is not the destroy of the staging AWS stack."
+            exit 1
+          fi
+
+      - name: "Show the plan"
+        id: show
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt"
+          show_exit=$?
+          if [ "$show_exit" -ne 0 ]; then
+            echo "::error::terraform show exited $show_exit."
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/destroy-plan.txt"
+          {
+            echo "### Destroy plan of infra/envs/staging/aws"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/destroy-plan.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Remove the plan and the step files"
+        id: cleanup
+        if: always()
+        run: >-
+          rm -f
+          "$RUNNER_TEMP/destroy.tfplan" "$RUNNER_TEMP/destroy.json" "$RUNNER_TEMP/destroy-plan.log"
+          "$RUNNER_TEMP/destroy-plan.txt" "$RUNNER_TEMP/state.txt"
+
+  # Plans again rather than taking the first job's plan, so no plan file crosses jobs. Its guard checks this plan.
+  apply-destroy:
+    needs: plan-destroy
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/deploy-evidence/destroy-staging') || (github.event_name == 'workflow_dispatch' && inputs.confirm == 'destroy staging aws')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write
+    environment: staging-destroy
+
+    steps:
+      - name: "Checkout source code"
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Setup Terraform 1.16.5"
+        id: terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      # The environment holds no setting, so the role is named by its ARN.
+      - name: "Assume the deploy role"
+        id: credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
+          aws-region: eu-north-1
+          role-session-name: destroy-apply-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      - name: "Initialise the staging AWS root"
+        id: init
+        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+
+      - name: "List the state of the staging AWS root"
+        id: state
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state.txt"
+          state_exit=$?
+          echo "state_list_exit=$state_exit"
+          if [ "$state_exit" -ne 0 ]; then
+            echo "::error::terraform state list exited $state_exit."
+            exit 1
+          fi
+
+      # A destroy applies no variable value, so the digest and the alert address are placeholders that pass the
+      # variables' checks and reach no resource. No running service is read for the digest, so a destroy that stopped
+      # after the service was deleted can be run again. The plan's output goes to a file, so that nothing of the plan is
+      # printed before the guard.
+      - name: "Plan the destroy of the staging AWS root"
+        id: plan
+        env:
+          DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
+          TF_VAR_alert_email: destroy-plan@example.invalid
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/destroy.tfplan" \
+            > "$RUNNER_TEMP/destroy-plan.log" 2>&1
+          plan_exit=$?
+          echo "plan_exit=$plan_exit"
+          if [ "$plan_exit" -ne 0 ]; then
+            cat "$RUNNER_TEMP/destroy-plan.log"
+            echo "::error::terraform plan -destroy exited $plan_exit."
+            exit 1
+          fi
+
+      # The JSON form holds sensitive values in the clear, so it is written only under $RUNNER_TEMP and never printed.
+      - name: "Export the saved plan for the guard"
+        id: export
+        run: |
+          set -uo pipefail
+          umask 077
+          terraform -chdir=infra/envs/staging/aws show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json"
+          export_exit=$?
+          echo "export_exit=$export_exit"
+          if [ "$export_exit" -ne 0 ]; then
+            echo "::error::terraform show -json exited $export_exit."
+            exit 1
+          fi
+
+      - name: "Check the plan destroys the stack and nothing else"
+        id: guard
+        run: |
+          set -uo pipefail
+          infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt"
+          guard_exit=$?
+          echo "guard_exit=$guard_exit"
+          if [ "$guard_exit" -ne 0 ]; then
+            echo "::error::check-destroy-plan.sh exited $guard_exit; the plan is not the destroy of the staging AWS stack."
+            exit 1
+          fi
+
+      - name: "Show the plan"
+        id: show
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt"
+          show_exit=$?
+          if [ "$show_exit" -ne 0 ]; then
+            echo "::error::terraform show exited $show_exit."
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/destroy-plan.txt"
+          {
+            echo "### Destroy plan of infra/envs/staging/aws"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/destroy-plan.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Apply the saved destroy plan"
+        id: apply
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/destroy.tfplan"
+          apply_exit=$?
+          echo "apply_exit=$apply_exit"
+          if [ "$apply_exit" -ne 0 ]; then
+            echo "::error::terraform apply exited $apply_exit."
+            exit 1
+          fi
+
+      - name: "Show the state of the staging AWS root is empty"
+        id: state-after
+        run: |
+          set -uo pipefail
+          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state-after.txt"
+          state_exit=$?
+          if [ "$state_exit" -ne 0 ]; then
+            echo "::error::terraform state list exited $state_exit."
+            exit 1
+          fi
+          count=$(awk 'NF { n++ } END { print n + 0 }' "$RUNNER_TEMP/state-after.txt")
+          count_exit=$?
+          echo "destroy_state_after=$count"
+          if [ "$count_exit" -ne 0 ] || [ -z "$count" ]; then
+            echo "::error::The state list after the destroy could not be counted."
+            exit 1
+          fi
+          if [ "$count" -ne 0 ]; then
+            echo "::error::The state of the staging AWS root still holds $count addresses."
+            exit 1
+          fi
+
+      - name: "Remove the plan and the step files"
+        id: cleanup
+        if: always()
+        run: >-
+          rm -f
+          "$RUNNER_TEMP/destroy.tfplan" "$RUNNER_TEMP/destroy.json" "$RUNNER_TEMP/destroy-plan.log"
+          "$RUNNER_TEMP/destroy-plan.txt" "$RUNNER_TEMP/state.txt" "$RUNNER_TEMP/state-after.txt"

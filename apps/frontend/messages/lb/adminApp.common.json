@@ -1,0 +1,10 @@
+{
+  "adminApp.common": {
+    "home": "Start",
+    "description": "Benotzt d’Tools hei drënner, fir de Wal-Kompass ze verwalten.",
+    "notAccessible": {
+      "content": "D’Administratiouns-Applikatioun ass momentan esou konfiguréiert, datt se net verfügbar ass.",
+      "title": "Entschëllegt, d’Administratiouns-Applikatioun ass net verfügbar"
+    }
+  }
+}
