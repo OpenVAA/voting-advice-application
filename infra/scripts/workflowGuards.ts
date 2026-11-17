@@ -26,7 +26,8 @@ export const SHARED_RULES = [
   'id-token-only-where-assumed',
   'checkout-no-persisted-credentials',
   'runner-label',
-  'plan-file-in-runner-temp'
+  'plan-file-in-runner-temp',
+  'status-read-after-or'
 ] as const;
 
 /** One of the shared rules. */
@@ -68,6 +69,10 @@ const EXPRESSION_OPENER = /\$\{\{/;
 const OUT_FLAG = /(?:^|\s)-out(?:=|\s+)(\S+)/g;
 /** The accepted beginnings of a plan file path. */
 const RUNNER_TEMP_PREFIXES = ['$RUNNER_TEMP/', '"$RUNNER_TEMP/', '${RUNNER_TEMP}/', '"${RUNNER_TEMP}/'];
+/** A status read captured in an `||` list on its command's line, as `cmd || name=$?`. */
+const STATUS_READ_AFTER_OR = /\|\|[ \t]*[A-Za-z_][A-Za-z0-9_]*=\$\?/g;
+/** A `set` line whose options include `+e`, which turns errexit off. */
+const ERREXIT_OFF = /^[ \t]*set[ \t][^\n#]*\+e/;
 
 /**
  * Read and parse a workflow file.
@@ -137,8 +142,10 @@ export function triggerEvents(doc: WorkflowDocument): Array<string> {
  * no step uploads an artifact; the text names no service-role or secret key; no `run:` script holds a workflow
  * expression, so secrets and event text reach scripts through `env`; `id-token: write` is granted only to a job that
  * assumes a role, with the credentials action or a script reading the token request URL; every checkout sets
- * `persist-credentials: false`; every job runs on one of {@link RUNNER_LABELS}; and every Terraform `-out=` writes
- * under `$RUNNER_TEMP`.
+ * `persist-credentials: false`; every job runs on one of {@link RUNNER_LABELS}; every Terraform `-out=` writes under
+ * `$RUNNER_TEMP`; and no `run:` script reads `$?` other than in an `||` list on its command's line, as
+ * `cmd || name=$?`, or turns errexit off with `set +e`, because a `run:` step that names no `shell:` runs under
+ * `bash -e`, which ends the step at a failing command before a status read on the next line runs.
  *
  * @param doc - The parsed workflow.
  * @param text - The text the workflow was parsed from.
@@ -181,6 +188,12 @@ export function sharedViolations(doc: WorkflowDocument, text: string): Array<str
         report(
           'no-expression-in-run',
           `job ${id} step ${stepName(step, index)} holds ${run.slice(opener.index, opener.index + 60)} in its run script; pass it through env`
+        );
+      }
+      if (readsStatusOutsideOr(run) || run.split('\n').some((line) => ERREXIT_OFF.test(line))) {
+        report(
+          'status-read-after-or',
+          `job ${id} step ${stepName(step, index)} reads $? on a line of its own or turns errexit off; a run: step that names no shell: runs under bash -e`
         );
       }
       if (typeof step.uses === 'string' && step.uses.startsWith('actions/checkout@')) {
@@ -228,6 +241,11 @@ export function sharedViolations(doc: WorkflowDocument, text: string): Array<str
   }
 
   return violations;
+}
+
+/** Whether a script reads `$?` anywhere but in an `||` list on its command's line. */
+function readsStatusOutsideOr(run: string): boolean {
+  return run.split('\n').some((line) => line.replace(STATUS_READ_AFTER_OR, '').includes('$?'));
 }
 
 /** Whether a step assumes a role: the credentials action, or a script that requests an OIDC token itself. */

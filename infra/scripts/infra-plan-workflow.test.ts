@@ -127,6 +127,11 @@ const RED_COPIES: Array<{ rule: SharedRule; fault: string; copy: () => string }>
         'run: terraform fmt -check -recursive -diff infra',
         'run: terraform -chdir=infra/envs/staging/aws plan -out=tfplan'
       )
+  },
+  {
+    rule: 'status-read-after-or',
+    fault: 'a step reads $? on a line of its own',
+    copy: () => mutate(text, /^( +)(.*\S) \|\| ([A-Za-z_][A-Za-z0-9_]*=\$\?)$/m, '$1$2\n$1$3')
   }
 ];
 
@@ -161,6 +166,12 @@ describe('the shared workflow rules', () => {
     );
     const violations = sharedViolations(parseWorkflow(mutated), mutated);
     expect(violations.some((violation) => violation.startsWith('no-expression-in-run: '))).toBe(true);
+  });
+
+  it('is red on status-read-after-or when a step turns errexit off with set +e', () => {
+    const mutated = mutate(text, /^( +)set -uo pipefail\n/m, '$1set -uo pipefail\n$1set +e\n');
+    const violations = sharedViolations(parseWorkflow(mutated), mutated);
+    expect(violations.some((violation) => violation.startsWith('status-read-after-or: '))).toBe(true);
   });
 
   it('finds no violation in infra-plan.yml', () => {
