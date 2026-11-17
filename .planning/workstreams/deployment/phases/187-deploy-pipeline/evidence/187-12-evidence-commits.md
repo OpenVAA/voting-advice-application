@@ -324,15 +324,15 @@ These commits carry the runbook rows plan 187-29 wrote after its rebuild (`e7ed9
 ### The green commit (Task 2, re-run 2026-11-17, plan 187-19)
 
 ```
-GREEN_TREE=fe42deb049d9dcbb43dc53aeecd17855862cc2dd
-GREEN_COMMIT=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499
-GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
-GREEN_PATHS=3534
-GREEN_PLANNING_PATHS=0
-GREEN_LOCAL_BUILD_EXIT=0
-GREEN_BUILD_MINUTES=1.4
-GREEN_BUILT_FROM_HEAD=c5dbe5e8605ee5f433376bc4b2ec1b3a466100d0
-GREEN_BUILD_ATTEMPTS=1
+GREEN_TREE_SUPERSEDED=fe42deb049d9dcbb43dc53aeecd17855862cc2dd
+GREEN_COMMIT_SUPERSEDED=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499
+GREEN_PARENT_SUPERSEDED=340a200708c28fb7ed078d452138712f3400c789
+GREEN_PATHS_SUPERSEDED=3534
+GREEN_PLANNING_PATHS_SUPERSEDED=0
+GREEN_LOCAL_BUILD_EXIT_SUPERSEDED=0
+GREEN_BUILD_MINUTES_SUPERSEDED=1.4
+GREEN_BUILT_FROM_HEAD_SUPERSEDED=c5dbe5e8605ee5f433376bc4b2ec1b3a466100d0
+GREEN_BUILD_ATTEMPTS_SUPERSEDED=1
 ```
 
 - **The tree and the commit** (`tmp/187-19/commits/make-commits.sh`, exit 0). The parent is `git rev-parse --verify refs/remotes/origin/main`, with no fetch. In a temporary index under the session scratch directory, removed afterwards: `git read-tree HEAD`, `git rm -r --cached --quiet .planning`, `git write-tree`, then `git commit-tree "$GREEN_TREE" -p "$GREEN_PARENT" -m "deploy: staging"` and `git update-ref refs/evidence/187/green`, each exit 0, written at 14:27:59Z from HEAD `c5dbe5e86`. `git diff --quiet HEAD <commit> -- . ':!.planning'` exit 0; the real index untouched (`git diff --cached --quiet` exit 0). `git ls-tree -r --name-only` lists 3534 paths, the same count as plan 187-29's (the two README files changed in content only), and none under `.planning/`.
@@ -341,16 +341,16 @@ GREEN_BUILD_ATTEMPTS=1
 ### The red commit (Task 3, re-run 2026-11-17, plan 187-19)
 
 ```
-RED_TREE=0f2516cfefa933e11b1d0ff0a7f677bfdc1c9eeb
-RED_COMMIT=aee0ba372a2e8b7acb6e9465461f86a5b8285664
-RED_DIFF_PATHS=apps/frontend/src/routes/+layout.ts
-RED_LOCAL_BUILD_EXIT=1
-RED_FAILED_AT_FRONTEND_BUILD=yes
-RED_FAILING_DOCKER_STEP=shared 2/2 RUN yarn build, turbo task @openvaa/frontend#build
-RED_NAMES_MISSING_MODULE=yes
-RED_BUILD_ATTEMPTS=1
-WORKING_TREE_UNCHANGED=yes
-BUILDER_CACHE_PRUNED=yes
+RED_TREE_SUPERSEDED=0f2516cfefa933e11b1d0ff0a7f677bfdc1c9eeb
+RED_COMMIT_SUPERSEDED=aee0ba372a2e8b7acb6e9465461f86a5b8285664
+RED_DIFF_PATHS_SUPERSEDED=apps/frontend/src/routes/+layout.ts
+RED_LOCAL_BUILD_EXIT_SUPERSEDED=1
+RED_FAILED_AT_FRONTEND_BUILD_SUPERSEDED=yes
+RED_FAILING_DOCKER_STEP_SUPERSEDED=shared 2/2 RUN yarn build, turbo task @openvaa/frontend#build
+RED_NAMES_MISSING_MODULE_SUPERSEDED=yes
+RED_BUILD_ATTEMPTS_SUPERSEDED=1
+WORKING_TREE_UNCHANGED_SUPERSEDED=yes
+BUILDER_CACHE_PRUNED_SUPERSEDED=yes
 ```
 
 - **The commit:** a second temporary index, removed afterwards. `git read-tree <green commit>`; a blob of the line `import '$lib/does-not-exist-187-red';` followed by the green commit's unchanged `apps/frontend/src/routes/+layout.ts`, written with `git hash-object -w --stdin` (`8ccc60be8f1696621812d5e7f8084f403b708aa7`, the same blob as in plans 187-28 and 187-29, since the file did not change); `git update-index --cacheinfo`, `git write-tree`, `git commit-tree "$RED_TREE" -p 340a20070 -m "deploy: a build broken on purpose, never merged"` and `git update-ref refs/evidence/187/red`, each exit 0. `git diff-tree -r --name-only refs/evidence/187/green refs/evidence/187/red` prints the one path, and `git diff --stat` reports `1 file changed, 1 insertion(+)`.
@@ -364,3 +364,52 @@ BUILDER_CACHE_PRUNED=yes
 - `git for-each-ref --contains aee0ba372a2e8b7acb6e9465461f86a5b8285664 --format='%(refname)'` prints exactly `refs/evidence/187/red`.
 
 The plan 187-29 commits `f721ef779` and `26ecadd36` are no longer held by a `refs/evidence/187/*` ref. `26ecadd36` stays the tip of the consumed branch `deploy-evidence/187-red-2` on origin. The new red commit `aee0ba372` is not pushed by plan 187-19; it is held for a later red run.
+
+## Re-run 2026-11-17 (plan 187-30)
+
+These commits carry the four-platform provider locks and their guard, and plan 187-21's attempt 2 pushes the green one as `deploy-evidence/187-green-2`. Recorded 2026-11-17 (UTC) by the plan executor of plan 187-30, from HEAD `f2b279747`. The lines of the 2026-11-17 (plan 187-19) section are renamed `*_SUPERSEDED=`, so that each line a verify reads has exactly one current value. Logs are in `tmp/187-30/commits/` (ignored); the helpers are plan 187-19's `make-commits.sh` and `build-archive.sh`, copied to `tmp/187-30/` with only their log directory rewritten (the session scratch directory is this executor's own and the same one). Nothing was pushed, no registry was signed in to, no image was tagged for a registry, and no remote was read.
+
+### The green commit (Task 2, re-run 2026-11-17, plan 187-30)
+
+```
+GREEN_TREE=986dd2c11429bec0a578ba809444d8c76ec4c1f3
+GREEN_COMMIT=9d6a55ca36ea56a5d3883ad95a10b4619c2472ad
+GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
+GREEN_PATHS=3534
+GREEN_PLANNING_PATHS=0
+GREEN_LOCAL_BUILD_EXIT=0
+GREEN_BUILD_MINUTES=1.1
+GREEN_BUILT_FROM_HEAD=f2b27974778963e20cd4341dfeab521430b58ec7
+GREEN_BUILD_ATTEMPTS=1
+```
+
+- **The tree and the commit** (`tmp/187-30/commits/make-commits.sh`, exit 0). The parent is `git rev-parse --verify refs/remotes/origin/main`, with no fetch. In a temporary index under the session scratch directory, removed afterwards: `git read-tree HEAD`, `git rm -r --cached --quiet .planning`, `git write-tree`, then `git commit-tree "$GREEN_TREE" -p "$GREEN_PARENT" -m "deploy: staging"` and `git update-ref refs/evidence/187/green`, each exit 0, written at 21:40:22Z from HEAD `f2b279747`. `git diff --quiet HEAD <commit> -- . ':!.planning'` exit 0; the real index untouched (`git diff --cached --quiet` exit 0). `git ls-tree -r --name-only` lists 3534 paths, the same count as plan 187-19's (this plan changed files in content only), and none under `.planning/`.
+- **Against attempt 1's commit `0a73bb6df`.** `git diff --name-only 0a73bb6df <commit>` lists the eight root locks, `infra/README.md`, `infra/scripts/workflows.test.ts` and `infra/envs/staging/supabase/README.md` (the Step 18 row plan 187-21 added), and nothing under `apps/`, `packages/`, `tests/` or `.github/`, and no `.tf` or `.tfvars` file.
+- **The build:** `git archive --format=tar` of the commit exit 0, extraction exit 0, and in the background `docker buildx build --platform linux/arm64 --target production --build-arg BUILD_SHA=<commit> --provenance=false --sbom=false -f <tmp>/context/apps/frontend/Dockerfile --output type=cacheonly --progress=plain <tmp>/context` exit 0, 21:40:32Z to 21:41:40Z (68 s), with this checkout's stack stopped (`yarn db:stop` exit 0 before the builds). `#15 [shared 2/2] RUN yarn build` `DONE 41.2s`, `#19 [production 2/2] RUN yarn workspace @openvaa/frontend build` `DONE 10.9s`.
+
+### The red commit (Task 3, re-run 2026-11-17, plan 187-30)
+
+```
+RED_TREE=6bbe7e4290a8520e2ed0a4fffa7f6f6c80002f7a
+RED_COMMIT=1a3ee822f665489a7edc6f5c08e60bc6d763c3bd
+RED_DIFF_PATHS=apps/frontend/src/routes/+layout.ts
+RED_LOCAL_BUILD_EXIT=1
+RED_FAILED_AT_FRONTEND_BUILD=yes
+RED_FAILING_DOCKER_STEP=shared 2/2 RUN yarn build, turbo task @openvaa/frontend#build
+RED_NAMES_MISSING_MODULE=yes
+RED_BUILD_ATTEMPTS=1
+WORKING_TREE_UNCHANGED=yes
+BUILDER_CACHE_PRUNED=yes
+```
+
+- **The commit:** a second temporary index, removed afterwards. `git read-tree <green commit>`; a blob of the line `import '$lib/does-not-exist-187-red';` followed by the green commit's unchanged `apps/frontend/src/routes/+layout.ts`, written with `git hash-object -w --stdin` (`8ccc60be8f1696621812d5e7f8084f403b708aa7`, the same blob as in plans 187-28, 187-29 and 187-19, since the file did not change); `git update-index --cacheinfo`, `git write-tree`, `git commit-tree "$RED_TREE" -p 340a20070 -m "deploy: a build broken on purpose, never merged"` and `git update-ref refs/evidence/187/red`, each exit 0. `git diff-tree -r --name-only refs/evidence/187/green refs/evidence/187/red` prints the one path, and `git diff --stat` reports `1 file changed, 1 insertion(+)`.
+- **The build:** the same archive build, 21:41:41Z to 21:42:10Z, exit 1, on the first attempt, with this checkout's stack stopped. `#13 [base 9/9] RUN yarn install --immutable` completed (`DONE 14.3s`); `#15 [shared 2/2] RUN yarn build` failed: the frontend's vite build printed `error during build:` and `[UNLOADABLE_DEPENDENCY] Could not load src/lib/does-not-exist-187-red` at `src/routes/+layout.ts:1:8`, turbo reported `Tasks: 13 successful, 14 total` and `Failed: @openvaa/frontend#build`, and the step ended `ERROR: process "/bin/sh -c yarn build" did not complete successfully: exit code: 1`. No `ERROR` line precedes the step under test.
+- **The working tree:** after both builds, `git status --porcelain -- . ':!.planning'` listed nothing, and `git diff --quiet -- apps/frontend/src/routes/+layout.ts` exit 0.
+- **The builder cache:** `docker builder prune -af` exit 0, `Total: 4.903GB` reclaimed; `docker system df` then shows `Build Cache 0 0 0B 0B`. `yarn db:start` followed (recorded in `evidence/187-30-arm64-lock.md` § Task 5).
+
+### Nothing pushed, from local refs alone (re-run 2026-11-17, plan 187-30)
+
+- `git for-each-ref --contains 9d6a55ca36ea56a5d3883ad95a10b4619c2472ad --format='%(refname)'` prints exactly `refs/evidence/187/green`.
+- `git for-each-ref --contains 1a3ee822f665489a7edc6f5c08e60bc6d763c3bd --format='%(refname)'` prints exactly `refs/evidence/187/red`.
+
+Attempt 1's green commit `0a73bb6df` is no longer held by `refs/evidence/187/green`; the remote-tracking refs `origin/deploy-evidence/187-green` (the head of run `44165083175`), `origin/pr-evidence/187-head` and `fork/pr-evidence/187-fork` still hold it. The red commit of plan 187-19, `aee0ba372`, is no longer held by a `refs/evidence/187/*` ref; it was never pushed.
