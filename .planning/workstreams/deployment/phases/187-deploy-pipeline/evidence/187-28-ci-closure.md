@@ -158,6 +158,78 @@ Read-only; its one remote read is `git ls-remote`.
 - **`MAIN_YAML_ASSUMES_NO_AWS_ROLE=yes`.** Over the commit's `main.yaml`, comment lines excluded, `grep -ciE 'role-to-assume|aws-actions|id-token: write'` counts 0.
 - **`READY_TO_PUSH=yes`** holds for every line above. Nothing was pushed.
 
+## Task 4: the push (made by the orchestrator at top level, 2026-11-17)
+
+```
+PUSH_ATTEMPT=20261117T064156Z.a9f5a5bde
+PUSH_APPROVAL=answer_push=approve (a fresh reply of the operator, 2026-11-17, stored with put)
+PUSH_VERIFY_EXIT=0
+PUSH_BRANCH_ABSENT_AT_PUSH=yes
+PUSH_COMMAND=git push origin 68a54299aa81b2a2f95fd2151031ab4e624ef01c:refs/heads/ci-evidence/187-final-4
+PUSH_EXIT=not captured (zsh has no PIPESTATUS); the push is read back below
+PUSHED=yes
+```
+
+- **The approval.** The operator approved the push in the session, after the readiness report. The operator ran `bash "$A" new 187-28-4` in their terminal, which made attempt `20261117T064156Z.a9f5a5bde`; `bash "$A" id 187-28-4` matched. The orchestrator stored the reply with `put` (exit 0) as four lines: `OPERATOR_REPLY=received attempt=20261117T064156Z.a9f5a5bde plan=187-28 task=4`, `answer_attempt=20261117T064156Z.a9f5a5bde`, `answer_push=approve`, and `note: approved by the operator on 2026-11-17 in the session after the readiness report`. It is a fresh reply, not the standing approval of 2026-11-16.
+- **The four checks**, made by the orchestrator immediately before the push: `bound 187-28-4 OPERATOR_REPLY plan=187-28 task=4` exit 0; `has 187-28-4 '^answer_push=approve$'` exit 0; Task 4's verify, extracted from the plan (non-empty), exit 0; `git ls-remote origin refs/heads/ci-evidence/187-final-4` exit 0, printing nothing.
+- **The push**, at 2026-11-17T06:44:28Z, created a new branch with no lease, as the first push of a branch. Its exit status was not captured, because the orchestrator's zsh has no `PIPESTATUS`; `PUSHED=yes` rests on the read-back.
+- **Read back by the executor (Task 5).** `bash "$A" id 187-28-4` printed `20261117T064156Z.a9f5a5bde`; `bound 187-28-4 OPERATOR_REPLY plan=187-28 task=4` exit 0 and `has 187-28-4 '^answer_push=approve$'` exit 0. `git ls-remote origin refs/heads/ci-evidence/187-final-4` exit 0 printed `68a54299aa81b2a2f95fd2151031ab4e624ef01c	refs/heads/ci-evidence/187-final-4`.
+
+## Task 5: the run job by job (read 2026-11-17T06:46Z to 07:24Z)
+
+**The run.** `gh run list --branch ci-evidence/187-final-4 --workflow main.yaml --json databaseId,headSha,…` exited 0 and listed one run, `44033456141`, at head `68a54299aa81b2a2f95fd2151031ab4e624ef01c`, event `push`, created 2026-11-17T06:44:30Z. A background poll of `gh run view --json status` every 30 s ran until the status was `completed` (the last job ended 07:23:11Z). Each conclusion below was read at job level from `gh run view 44033456141 --json status,conclusion,jobs,headSha,url` (exit 0), never from the run's conclusion.
+
+```
+CI_RUN_ID=44033456141
+CI_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44033456141
+CI_RUN_HEAD_SHA=68a54299aa81b2a2f95fd2151031ab4e624ef01c
+CI_RUN_JOBS=13
+JOB=docker-image-build conclusion=success
+JOB=infra-validate conclusion=success
+JOB=supabase-tests conclusion=success
+JOB=sql-lint conclusion=success
+JOB=node-engine-range-negative-control conclusion=success
+JOB=secret-scan conclusion=success
+JOB=e2e-visual conclusion=failure
+JOB=supabase-types-drift conclusion=success
+JOB=e2e-tests conclusion=success
+JOB=dev-seed-integration conclusion=success
+JOB=skill-drift-check conclusion=success
+JOB=frontend-and-shared-module-validation conclusion=success
+JOB=dependency-audit conclusion=failure
+SECRET_SCAN=success
+FRONTEND_AND_SHARED_MODULE_VALIDATION=success
+E2E_TESTS=success
+E2E_VISUAL=failure
+INFRA_VALIDATE=success
+DEPENDENCY_AUDIT=failure
+CI_E2E_WORKERS=4
+E2E_TESTS_RESULT=729 passed (33.6m); playwright exit 0; preflight failures 0, successes 1; no failed, flaky or did-not-run line
+E2E_VISUAL_RESULT=did not run: the job's "Start Supabase" step (supabase start) exited 1 before the visual step; no run directory, no artifact uploaded
+E2E_VISUAL_FAILED=supabase start: failed to start docker container "supabase_inbucket_openvaa-local": ... failed to bind host port 0.0.0.0:54326/tcp: address already in use
+E2E_VISUAL_CAUSE=unconfirmed: on the runner, host port 54326 (the local mail server's pop3_port in apps/supabase/supabase/config.toml) was already bound when supabase start reached the mail container; nothing of this repository's had started on that runner before the step, and the visual specs never ran
+E2E_VISUAL_OWNER=the CI runner environment, at the e2e-visual job's supabase start step (.github/workflows/main.yaml, unchanged since ci-evidence/187-final-3, where the same step started; the step and the port configuration come from the -gsd base, 5002d5aef and 11f877913); no test, baseline or fixture is implicated
+DEPENDENCY_AUDIT_SUMMARY=Summary: 17 new advisory(ies) at high+, 0 accepted
+DEPENDENCY_AUDIT_ADVISORIES=GHSA-cg2g-xh64-v4q7 GHSA-pqg4-j6r4-53mv GHSA-3r8g-jcqq-3p5j GHSA-vc2v-76pw-4v95 GHSA-mrv2-3pqr-j5jr GHSA-587h-7wmj-h5pm GHSA-68fv-2mgg-jv7q GHSA-xjj6-f33q-929c GHSA-4w7w-5xrc-9h26 GHSA-2m5v-pch6-74hx GHSA-qrxm-fqhp-jwvm GHSA-mrhx-c7xc-m3w5
+DEPENDENCY_AUDIT_NEW_SINCE_TODO=none
+WORKSTREAM_ADDED_PACKAGES=js-yaml
+DEPENDENCY_AUDIT_ACCEPTED=per-phase-189-todo
+ALL_JOBS_GREEN_EXCEPT_DEPENDENCY_AUDIT=no
+G03_CLOSED=no
+PLAN_STOPPED=yes
+STOP_REASON=e2e-visual failed at its supabase start step, on a runner host port (54326) already in use, before any visual test ran (cause unconfirmed, the runner environment); every other job but dependency-audit succeeded, e2e-tests with 729 of 729 passed on 4 workers; no job was re-run, and plans 187-15, 187-26 and 187-27 are not closed
+```
+
+The job logs were read with `gh api --allow-escape-sequences repos/OpenVAA/voting-advice-application/actions/jobs/<job id>/logs` (each exit 0) and the failing job's annotations with `gh api .../check-runs/<job id>/annotations`; they are kept in `tmp/187-28/ci/` (ignored) and not reproduced here.
+
+- **`secret-scan` (job 133870600918): success.** trufflehog reported `"verified_secrets": 0`, `"unverified_secrets": 0` over 4186 chunks, the local scan's exact count.
+- **`frontend-and-shared-module-validation` (job 133870601011), `infra-validate` (job 133870600774): success.**
+- **`e2e-tests` (job 133870600992): success.** Playwright printed `Running 729 tests using 4 workers`, so the 4-worker fix of `dfe9cae8b` was live in the pushed run, and the wrapper printed `729 passed (33.6m)`, `playwright exit 0` and `preflight failures 0, successes 1`, with no failed, flaky or did-not-run line. That is the count of the closing local run on the same source tree, and the first green `e2e-tests` of this workstream's final tree.
+- **`dependency-audit` (job 133870601137): failure, accepted per the phase-189 todo.** The audit's table has 17 rows: the todo's 16 rows and the row it gained on 2026-11-16 (`@sveltejs/kit` 1247438 `GHSA-3r8g-jcqq-3p5j`), each unchanged, and no other row, so nothing was appended to the todo. `git diff cecf649d8..HEAD` of the manifests adds one dependency, `js-yaml` (root devDependency, plan 187-08), which names no advisory.
+- **`e2e-visual` (job 133870600988): failure; the plan stops.** The job built the packages and then ran `supabase start` (`.github/workflows/main.yaml`, the step `Start Supabase`). It applied the 22 migrations and seeded, then `Starting containers...` failed: `failed to start docker container "supabase_inbucket_openvaa-local": Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint supabase_inbucket_openvaa-local (...): failed to bind host port 0.0.0.0:54326/tcp: address already in use`, and the step ended `Process completed with exit code 1`. Port 54326 is the local mail server's `pop3_port` in `apps/supabase/supabase/config.toml`. The visual step never ran, so `tests/e2e-runs/ci-visual/` was never written, and `upload-artifact` warned `No files were found with the provided path`; the run's only artifact is `e2e-tests`' `e2e-run` (2370404 bytes), so there is no visual run directory to download. The same step started on run 43938990256 (`ci-evidence/187-final-3`, where `main.yaml` is identical) and on the measurement's runs, where the job ran green at `5202d34df`.
+- **Its cause is unconfirmed.** No step of this repository's job binds 54326 before `supabase start`, and the occupant is not named in the log. The job's annotations also carry runner-service warnings from the same minutes (`Failed to restore: Cache service responded with 400`, and `Failed to save: ... Our services aren't available right now`), and the image pulls of `e2e-tests` retried several times, but none of that is shown to bear on the port. Linux's default ephemeral port range (32768 to 60999) includes 54326, so an outbound connection holding it as its local port is one possibility, not a finding. No test, baseline, fixture or source file is implicated.
+- **Not re-run.** Re-running the job to get a green is the retry the E2E Hard Rule forbids, and the executor re-runs nothing. Whether this is a void environment fault, like the void red build of Task 2, or calls for a change to the job (for example a port check before `supabase start`), is the orchestrator's ruling. Until then plans 187-15, 187-26 and 187-27 stay open, no SUMMARY pointer or ROADMAP tick was written, and SUPA-08, PIPE-02 and PIPE-06 are not recorded advanced.
+
 ## First attempt (stopped)
 
 Made on the tree rebased onto `dfe9cae8b`, HEAD `e42e32cf3`, and committed as `0d4ca8887` (now `494bfa63b`). Its lines are renamed `*_SUPERSEDED=` so that each current line above occurs once; nothing else in it is changed. Its logs, named below under `tmp/187-28/t5/` and `tmp/187-28/tf-t5/`, are now under `tmp/187-28/attempt-1/`.
