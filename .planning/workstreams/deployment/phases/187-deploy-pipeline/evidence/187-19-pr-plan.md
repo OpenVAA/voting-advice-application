@@ -155,11 +155,13 @@ The `Show the plan` step concluded `success`. Its script writes `### Plan of inf
 - The REST API exposes no job step summary. `gh api repos/OpenVAA/voting-advice-application/check-runs/134113319133` (exit 0) has `output.title=null`, `output.summary` and `output.text` empty, and `annotations_count=0`.
 - `https://github.com/OpenVAA/voting-advice-application/actions/runs/44104573552/jobs/134113319133/summary_raw`, the same under `/job/` and with `?attempt=1` each answer HTTP 404 without a session. The public run page (HTTP 200) and job page (HTTP 200) say `Sign in to view logs` and hold no `Plan of infra` text, and the run's `summary_partial` holds only the run's status, duration and artifacts.
 
-```
-PR_PLAN_IN_SUMMARY=unread
-```
+The line stood at `unread` until someone signed in read the plan job's summary on the run page.
 
-So the line stays `unread` until someone signed in reads the plan job's summary on the run page.
+**2026-11-17, the operator's read.** The operator, signed in to GitHub, read the plan job's summary on the Summary tab of run `44104573552` and pasted it in the main session. The heading as pasted is `Plan of infra/envs/staging/aws`, and the pasted block's summary line is `Plan: 1 to add, 1 to change, 1 to destroy.` The block also holds the two action lines of the log (`# module.frontend.aws_ecs_service.app will be updated in-place`, `# module.frontend.aws_ecs_task_definition.app must be replaced`), the image change from `openvaa-frontend:712947a1bd44a735f66ee8f51610f4748d76cd30` to `openvaa-frontend@sha256:bab8fa75c6094a2cecab07282826bffa4d9746bf7ee56fc7231b8283ea937bea`, the dropped defaults (`mountPoints = []`, `hostPort = 3000`, `systemControls = []`, `volumesFrom = []`, `tags = {} -> null`) and the one output change `task_definition_arn = ".../openvaa-staging-frontend:6" -> (known after apply)`. No line names `aws_sns_topic_subscription`. The summary therefore holds the same plan as the log.
+
+```
+PR_PLAN_IN_SUMMARY=yes
+```
 
 ### Artifacts
 
