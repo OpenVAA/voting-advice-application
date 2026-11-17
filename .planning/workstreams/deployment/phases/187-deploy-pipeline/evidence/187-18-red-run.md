@@ -174,3 +174,9 @@ HOSTED_WRITE=none
 ### Not shown, against the plan's verify
 
 `RED_BUILD_LINE=failed=build`, `WRONG_SUBJECT_JOB=success`, `token_subject=repo:OpenVAA/voting-advice-application:ref:refs/heads/deploy-evidence/187-red`, `deploy_role_error=<code>` and `plan_role_error=<code>` were not observed and are not written. The plan's Task 3 verify therefore fails on these lines. Both causes are the runner's default `bash -e` under steps that capture a command's status with `$?` on the next line. The pattern recurs in other steps of `deploy.yml`, `destroy.yml` and `infra-plan.yml`, where it hides the step's diagnosis on failure. `RED_ALERT_MAIL=` and `RED_ALERT_MAIL_UTC=` await the operator.
+
+### Operator ruling (2026-11-17)
+
+`RULING_BASH_E=fix-now-and-re-observe`. The operator ruled that the `bash -e` defect is fixed before 187-19, by a gap plan of this phase. That plan fixes the pattern in `deploy.yml`, `destroy.yml` and `infra-plan.yml`, rebuilds both evidence commits and re-proves the red build locally (plan 187-12 Tasks 2 and 3). It then pushes a new red branch under a new attempt and observes `WRONG_SUBJECT_JOB=success`, both refusal codes and `RED_BUILD_LINE=failed=build`. 187-18 stays open until then. Its red run of 44042442257 is not re-run.
+
+The orchestrator confirmed the cause from the run log of job 133900001691. The step ran under `shell: /usr/bin/bash -e {0}` and ended `Process completed with exit code 1` 0.26 s after it started. `infra-plan.yml` declares no `shell:` and no `defaults:`.
