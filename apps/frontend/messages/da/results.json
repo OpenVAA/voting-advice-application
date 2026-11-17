@@ -1,0 +1,111 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Ingen alliancer",
+            "numShown=1": "1 alliance",
+            "numShown=*": "{numShown} alliancer"
+          }
+        }
+      ],
+      "summary": {
+        "template": "{candidates} på tværs af {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
+            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "match": {
+              "numCandidates=0, numCandidatesPlural=*": "Ingen kandidater",
+              "numCandidates=*, numCandidatesPlural=one": "1 kandidat",
+              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} kandidater"
+            }
+          }
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
+            "selectors": ["numParties", "numPartiesPlural"],
+            "match": {
+              "numParties=0, numPartiesPlural=*": "ingen partier",
+              "numParties=*, numPartiesPlural=one": "1 parti",
+              "numParties=*, numPartiesPlural=*": "{numParties} partier"
+            }
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Ingen kandidater",
+            "numShown=1": "1 kandidat",
+            "numShown=*": "{numShown} kandidater"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Ingen fraktioner",
+            "numShown=1": "1 fraktion",
+            "numShown=*": "{numShown} fraktioner"
+          }
+        }
+      ]
+    },
+    "inConstituency": "i valgkreds",
+    "ingress": {
+      "answerMinQuestions": "Hvis du vil finde de kandidater og partier, du er mest enig med, så {questionsLink} først.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=1": "besvar mindst ét spørgsmål",
+            "numQuestions=*": "besvar mindst {numQuestions} spørgsmål"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "Der er ingen kandidater eller partier i din valgkreds, som har besvaret Valgtesten",
+        "content": "Du kan gennemgå spørgsmålene, hvis du ønsker, men resultater kan ikke vises."
+      },
+      "someNominations": {
+        "title": "Nogle kandidater eller partier har ikke besvaret Valgtesten",
+        "content": "Der findes ikke svar fra kandidater eller partier for alle valg i din valgkreds. Resultater vises kun for de valg, hvor der findes svar."
+      },
+      "noNominationsForElection": "ikke tilgængelig"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Ingen partier",
+            "numShown=1": "1 parti",
+            "numShown=*": "{numShown} partier"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Vælg først et valg",
+    "title": {
+      "browse": "Gennemse kandidater og partier",
+      "results": "Resultater"
+    }
+  }
+}

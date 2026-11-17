@@ -8,6 +8,7 @@ import type {
   IterateMapOperationParams,
   MapOperationParams,
   ProcessingStep,
+  RefineOperationParams,
   SupportedQuestion,
   VAAComment
 } from '../../src/core/types';
@@ -134,6 +135,52 @@ describe('Condenser Integration Tests', () => {
     expect(result.data.arguments).toHaveLength(1);
     // Now expecting 3 calls: map + iterate_map
     expect(spy).toHaveBeenCalledTimes(2);
+
+    // The prompt travels as a system message, which AI SDK 7 rejects unless each request opts in explicitly.
+    for (const [{ requests }] of spy.mock.calls) {
+      for (const request of requests) {
+        expect(request.allowSystemInMessages).toBe(true);
+        expect(request.messages?.[0]?.role).toBe('system');
+      }
+    }
+  });
+
+  test('It should opt in to system messages on the sequential refine path', async () => {
+    const generateObjectSpy = vi
+      .spyOn(llmProvider, 'generateObject')
+      .mockResolvedValue({ ...createMockLLMResponse([{ id: 'arg1', text: 'Refined 1' }], 'Refined'), model: 'gpt-4o' });
+
+    const steps: Array<ProcessingStep> = [
+      {
+        operation: CondensationOperations.REFINE,
+        params: {
+          batchSize: 10,
+          initialBatchPromptId: 'refine_likertPros_initial_v1',
+          refinementPromptId: 'refine_likertPros_refinement_v1'
+        } as RefineOperationParams
+      }
+    ];
+
+    const condenser = new Condenser({
+      question: { ...mockQuestion, type: 'singleChoiceOrdinal' } as SupportedQuestion,
+      comments: mockComments,
+      options: {
+        llmProvider,
+        language: 'en',
+        outputType: 'likertPros',
+        processingSteps: steps,
+        runId: 'refine-opt-in-test',
+        createVisualizationData: false,
+        controller: noOpController
+      }
+    });
+    await condenser.run();
+
+    expect(generateObjectSpy).toHaveBeenCalled();
+    for (const [request] of generateObjectSpy.mock.calls) {
+      expect(request.allowSystemInMessages).toBe(true);
+      expect(request.messages?.[0]?.role).toBe('system');
+    }
   });
 
   test('It should handle LLM failures and successfully retry', async () => {

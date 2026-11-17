@@ -9,6 +9,7 @@ promptId: generateInfoSections
 params:
   required:
     - question
+    - questionType
     - generalInstructions
     - infoSectionInstructions
     - sectionTopics
@@ -18,6 +19,7 @@ params:
     - examples
   optional:
     - localizationInstructions
+    - choices
 
 promptText: |
   {{localizationInstructions}}
@@ -54,3 +56,9 @@ promptText: |
 
   ## Question to use for the task: 
   {{question}}
+
+  ## The question's type:
+  {{questionType}}
+
+  ## The question's answering choices, if it has any:
+  {{choices}}

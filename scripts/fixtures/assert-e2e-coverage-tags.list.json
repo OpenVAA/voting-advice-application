@@ -1,0 +1,94 @@
+{
+  "config": {},
+  "suites": [
+    {
+      "title": "specs/contestant/fixture-identity-provider.spec.ts",
+      "file": "specs/contestant/fixture-identity-provider.spec.ts",
+      "specs": [
+        {
+          "title": "a candidate registers with the identity provider @reg-idp",
+          "tags": ["reg-idp"],
+          "tests": [{ "projectName": "contestant-identity-provider", "status": "skipped", "results": [] }],
+          "file": "specs/contestant/fixture-identity-provider.spec.ts"
+        },
+        {
+          "title": "a party registers with the identity provider",
+          "tags": ["reg-idp", "org-registration"],
+          "tests": [{ "projectName": "contestant-identity-provider", "status": "skipped", "results": [] }],
+          "file": "specs/contestant/fixture-identity-provider.spec.ts"
+        }
+      ]
+    },
+    {
+      "title": "specs/contestant/fixture-email-registration.spec.ts",
+      "file": "specs/contestant/fixture-email-registration.spec.ts",
+      "suites": [
+        {
+          "title": "a nested describe",
+          "file": "specs/contestant/fixture-email-registration.spec.ts",
+          "specs": [
+            {
+              "title": "the email registration follows the mailed link",
+              "tags": ["reg-email"],
+              "tests": [
+                { "projectName": "contestant-app-mutation", "status": "skipped", "results": [] },
+                { "projectName": "contestant-app-mutation-webkit", "status": "skipped", "results": [] }
+              ],
+              "file": "specs/contestant/fixture-email-registration.spec.ts"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "specs/contestant/fixture-code-registration.spec.ts",
+      "file": "specs/contestant/fixture-code-registration.spec.ts",
+      "specs": [
+        {
+          "title": "a title that names reg-code and @reg-code in its words without carrying the tag",
+          "tags": [],
+          "tests": [{ "projectName": "contestant-app-mutation", "status": "skipped", "results": [] }],
+          "file": "specs/contestant/fixture-code-registration.spec.ts"
+        },
+        {
+          "title": "a test whose tag only begins with the name",
+          "tags": ["reg-codes"],
+          "tests": [{ "projectName": "contestant-app-mutation", "status": "skipped", "results": [] }],
+          "file": "specs/contestant/fixture-code-registration.spec.ts"
+        },
+        {
+          "title": "a probe carrying the tag, which the default run leaves out",
+          "tags": ["probe", "reg-code"],
+          "tests": [{ "projectName": "_probes", "status": "skipped", "results": [] }],
+          "file": "specs/contestant/fixture-code-registration.spec.ts"
+        }
+      ]
+    },
+    {
+      "title": "specs/contestant/fixture-entity-selection.spec.ts",
+      "file": "specs/contestant/fixture-entity-selection.spec.ts",
+      "specs": [
+        {
+          "title": "the profile selection lists both entities",
+          "tags": ["entity-selection"],
+          "tests": [{ "projectName": "contestant-app-mutation", "status": "skipped", "results": [] }],
+          "file": "specs/contestant/fixture-entity-selection.spec.ts"
+        }
+      ]
+    },
+    {
+      "title": "specs/perm/fixture-nominations.spec.ts",
+      "file": "specs/perm/fixture-nominations.spec.ts",
+      "specs": [
+        {
+          "title": "a nomination is defined",
+          "tags": ["nomination-definition"],
+          "tests": [{ "projectName": "perm-nominations", "status": "skipped", "results": [] }],
+          "file": "specs/perm/fixture-nominations.spec.ts"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": { "expected": 0, "skipped": 7, "unexpected": 0, "flaky": 0 }
+}

@@ -1,0 +1,7 @@
+{
+  "contestantApp.notSupported": {
+    "content": "{contestantAppName}: denna valkompassversion stöder inte tjänsten.",
+    "heroEmoji": "🐣",
+    "title": "{contestantAppName}: inte tillgänglig"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "contestantApp.identityProvider": {
+    "alreadyRegistered": {
+      "none": "Vous êtes déjà inscrit·e, mais nous n’avons pas encore d’adresse e-mail pour vous.",
+      "pending": "Vous êtes déjà inscrit·e. Nous avons envoyé un lien de confirmation à l’adresse ci-dessous. Tant que vous n’avez pas ouvert le lien, connectez-vous avec un Bank ID.",
+      "proved": "Vous êtes déjà inscrit·e. Veuillez utiliser votre adresse e-mail pour vous connecter la prochaine fois."
+    },
+    "awaitingConfirmation": "En attente de confirmation",
+    "emailIntro": "Saisissez l’adresse e-mail avec laquelle vous souhaitez vous connecter la prochaine fois. Nous y enverrons un lien de confirmation. Vous pouvez continuer tout de suite. Tant que vous n’avez pas ouvert le lien, connectez-vous avec un Bank ID.",
+    "emailInUse": "Cette adresse e-mail est déjà utilisée par un autre compte. Saisissez une autre adresse, ou connectez-vous plutôt avec cette adresse.",
+    "emailTakenNotice": "L’adresse que vous avez saisie précédemment est désormais utilisée par un autre compte ; elle n’a donc pas pu être ajoutée au vôtre. Saisissez une autre adresse.",
+    "error": {
+      "cancelled": {
+        "content": "Vous avez annulé l’identification, et rien n’a été enregistré. Vous pouvez vous identifier à nouveau dès que vous êtes prêt·e.",
+        "support": "Si vous avez besoin d’aide, {contactSupportLink}.",
+        "title": "Identification annulée"
+      },
+      "noRetry": {
+        "content": "Nous sommes désolés, il s’agit d’un problème de notre côté, et réessayer n’y changera rien. Veuillez contacter l’assistance.",
+        "title": "L’inscription n’est pas possible pour le moment"
+      },
+      "retry": {
+        "content": "Nous sommes désolés, l’identification n’a pas pu être menée à bien. Veuillez réessayer.",
+        "support": "Si le problème persiste, {contactSupportLink}.",
+        "title": "L’identification n’a pas abouti"
+      },
+      "tryAgain": "Réessayer"
+    },
+    "heroEmoji": "👍",
+    "identified": "Vous vous êtes identifié·e.",
+    "nameIntro": "Saisissez le nom de votre parti pour continuer.",
+    "nameRequired": "Saisissez le nom de votre parti (langue : {language}).",
+    "saveFailed": "Nous n’avons pas pu enregistrer vos informations. Veuillez réessayer. Si le problème persiste, veuillez contacter l’assistance.",
+    "signInEmail": "Votre adresse e-mail de connexion",
+    "title": {
+      "alreadyRegistered": "Vous êtes déjà inscrit·e",
+      "complete": "Finalisez votre inscription"
+    }
+  }
+}
