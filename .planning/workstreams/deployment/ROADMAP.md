@@ -612,7 +612,7 @@ Notes:
   5. A guarded destroy path removes the AWS stack, and it is seen unable to reach the Supabase root.
 
 **Research flag**: Standard pattern, no research phase. OIDC, plan and apply, and environment gating are well documented, and the repository-specific items carry the risk. Added by rulings after the research: the named-branch trigger (PIPE-10) and the failure alerts (INFRA-16).
-**Plans**: 21/29 plans executed in 20 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 20 (plans 14 to 29) are the outward actions, each behind an operator checkpoint. Plans 26 (wave 10), 27 (wave 11), 28 (wave 12) and 29 (wave 13) are gap closures: plan 26 of plan 15's CI run; plan 27 of plan 26's run, after the branch was rebased onto the -gsd stream on 2026-11-16; plan 28 of plan 27's run, after the CI measurement and the rebase onto `fix/v2.16-ci-e2e` on 2026-11-17; and plan 29 of plan 18's red run 44042442257, whose build line and wrong-subject refusal the runner's `bash -e` hid (operator ruling `RULING_BASH_E=fix-now-and-re-observe`, 2026-11-17). Plan 18 closes after plan 29, on the operator's alert-mail lines. Plans 24 and 25 run on or after 2026-11-23.
+**Plans**: 22/29 plans executed in 20 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 20 (plans 14 to 29) are the outward actions, each behind an operator checkpoint. Plans 26 (wave 10), 27 (wave 11), 28 (wave 12) and 29 (wave 13) are gap closures: plan 26 of plan 15's CI run; plan 27 of plan 26's run, after the branch was rebased onto the -gsd stream on 2026-11-16; plan 28 of plan 27's run, after the CI measurement and the rebase onto `fix/v2.16-ci-e2e` on 2026-11-17; and plan 29 of plan 18's red run 44042442257, whose build line and wrong-subject refusal the runner's `bash -e` hid (operator ruling `RULING_BASH_E=fix-now-and-re-observe`, 2026-11-17). Plan 18 closed after plan 29, on the operator's alert-mail lines. Plans 24 and 25 run on or after 2026-11-23.
 
 Plans:
 **Wave 1**
@@ -663,7 +663,7 @@ Plans:
 - [x] 187-29-PLAN.md — wave 13 — Gap closure of plan 18's red run: every status read of the three workflows is captured as `cmd || name=$?`, so the runner's `bash -e` lets each step reach its diagnosis and still ends a step at any other failing command, proven under `bash -e` with stub commands and locked by a shared rule; the evidence commits rebuilt and the red build re-proven locally; a new red push as `deploy-evidence/187-red-2` showing `failed=build`, both roles refusing the branch subject, and nothing hosted written.
 
 **Wave 14** *(needs the operator)*
-- [ ] 187-18-PLAN.md — wave 14 — H8: the red run from a broken build, its alert, and the wrong-subject refusal. (stopped at Task 3; its run 44042442257 executed; the five lines the runner's `bash -e` hid are closed by 187-29; closes on the operator's alert-mail lines)
+- [x] 187-18-PLAN.md — wave 14 — H8: the red run from a broken build, its alert, and the wrong-subject refusal. (stopped at Task 3; its run 44042442257 executed; the five lines the runner's `bash -e` hid closed by 187-29; the alert mail arrived)
 
 **Wave 15** *(needs the operator)*
 - [ ] 187-19-PLAN.md — wave 15 — H5: a draft pull request's plan, readable in its run.
@@ -819,6 +819,6 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
 | 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
-| 187. Deploy Pipeline | 21/29 | In Progress | - |
+| 187. Deploy Pipeline | 22/29 | In Progress | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
 | 189. Documentation and Closure | 0/TBD | Not started | - |

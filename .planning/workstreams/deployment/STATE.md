@@ -6,16 +6,16 @@ current_phase: 187
 current_phase_name: Deploy Pipeline
 current_plan: 19
 status: executing
-stopped_at: Completed 187-28-PLAN.md (G-03 closed on run 44033456141)
-last_updated: "2026-11-17T07:37:06.868Z"
-last_activity: 2026-11-15
-last_activity_desc: Phase 187 execution started
-state_head: 36f89c1a2bacb7fd5d496220c919dc8ea505dc03
+stopped_at: Completed 187-18-PLAN.md (stopped at Task 3; closed by 187-29; RED_ALERT_MAIL=arrived)
+last_updated: "2026-11-17T14:23:59.510Z"
+last_activity: 2026-11-17
+last_activity_desc: Phase 187 execution resumed (wave continue)
+state_head: c35fce920f5f51b2d9968673b3cf634ab0d0251b
 progress:
   total_phases: 10
   completed_phases: 6
-  total_plans: 185
-  completed_plans: 157
+  total_plans: 186
+  completed_plans: 159
   percent: 60
 ---
 
@@ -34,9 +34,9 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 19 of 25
+Plan: 19 of 28
 Status: Ready to execute
-Last activity: 2026-11-15 — Phase 187 execution started
+Last activity: 2026-11-17 — Phase 187 execution resumed (wave continue)
 
 Progress: [██████░░░░] 60% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
 
@@ -171,6 +171,8 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P26 | 100min | 7 tasks | 11 files |
 | Phase 187 P27 | 140min | 8 tasks | 20 files |
 | Phase 187 P28 | 8h15min | 5 tasks | 9 files |
+| Phase 187 P29 | 55min | 7 tasks | 12 files |
+| Phase 187 P18 | 6h30min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -354,6 +356,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: Next step (operator rulings, 2026-11-16): the -gsd-owned failures are fixed in the -gsd worktree on a new branch on top of ship/v2.16-12-planning, then the -infra stack is rebased onto it; the work starts by measuring CI (worker count and warm-up experiments on ci-evidence/* branches), because only the runner reproduces the timeouts
 - [Phase 187]: 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4, 68a54299a): every job success at job level except dependency-audit (17 rows, all the phase-189 todo's); e2e-tests 729/729 on 4 workers; e2e-visual green on attempt 2 after the operator ruled attempt 1's supabase start port collision (54326) void ('void + rerun'). Plans 187-15, 187-26 and 187-27 closed by pointer; SUPA-08, PIPE-02, PIPE-06 advanced
 - [Phase 187]: 187-28: the fix tip moved to -gsd cecf649d8 (trace comment line break joined) after Task 1's first attempt stopped on lint:check; the red archive build's out-of-memory at yarn install was ruled void and made once more
+- [Phase 187]: 187-29: pipeline steps capture every read status as name=0 then cmd || name=$?, errexit left on; red run re-observed on deploy-evidence/187-red-2 (run 44088753181 failed=build printed; run 44088753527 wrong-subject success, both roles AccessDenied); old runs not re-run
+- [Phase 187]: 187-18: stopped at Task 3; run 44042442257 red at the build with the alert published (mail arrived 09:00Z) and nothing deployed; the five lines the runner's bash -e hid (failed=build, wrong-subject success, token_subject, both AccessDenied codes) closed by 187-29 on deploy-evidence/187-red-2; requirements advanced, not complete
 
 ### Pending Todos
 
@@ -417,6 +421,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-17T07:37:05.718Z
-**Stopped At:** Completed 187-28-PLAN.md (G-03 closed on run 44033456141)
+Last session: 2026-11-17T14:23:58.375Z
+**Stopped At:** Completed 187-18-PLAN.md (stopped at Task 3; closed by 187-29; RED_ALERT_MAIL=arrived)
 **Resume File:** None
