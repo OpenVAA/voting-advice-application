@@ -646,15 +646,15 @@ Plans:
 - [x] 187-14-PLAN.md — wave 8 — H2, H3: the `staging` and `staging-destroy` environments, secrets and variables, read back.
 
 **Wave 9** *(needs the operator)*
-- [ ] 187-15-PLAN.md — wave 9 — The `ci-evidence/187-final` push: secret-scan, infra-validate, dependency-audit.
+- [x] 187-15-PLAN.md — wave 9 — The `ci-evidence/187-final` push: secret-scan, infra-validate, dependency-audit. (stopped at Task 3; G-03 closed by 187-28)
 - [x] 187-16-PLAN.md — wave 9 — H1: the bootstrap hand apply after the simulator and CloudTrail checks.
 - [x] 187-17-PLAN.md — wave 9 — H9: plan 186-08 completed, and the two contestant secrets set.
 
 **Wave 10** *(needs the operator; gap closure)*
-- [ ] 187-26-PLAN.md — wave 10 — Gap closure of run 43817899191: the URI fixtures, `run_child` on Linux, the functions env in CI's E2E job, the drift-guard timeout; the evidence chain again, and the `ci-evidence/187-final-2` push.
+- [x] 187-26-PLAN.md — wave 10 — Gap closure of run 43817899191: the URI fixtures, `run_child` on Linux, the functions env in CI's E2E job, the drift-guard timeout; the evidence chain again, and the `ci-evidence/187-final-2` push. (stopped at Task 7; closed by 187-28)
 
 **Wave 11** *(needs the operator; gap closure)*
-- [ ] 187-27-PLAN.md — wave 11 — Gap closure after the rebase onto the -gsd stream: every gate on the rebased tree, what it carries to staging (read-only), the two CI-only contestant readiness fixes proven under CPU throttling, the drift-guard link; the evidence chain again, and the `ci-evidence/187-final-3` push.
+- [x] 187-27-PLAN.md — wave 11 — Gap closure after the rebase onto the -gsd stream: every gate on the rebased tree, what it carries to staging (read-only), the two CI-only contestant readiness fixes proven under CPU throttling, the drift-guard link; the evidence chain again, and the `ci-evidence/187-final-3` push. (stopped at Task 8; closed by 187-28)
 
 **Wave 12** *(needs the operator; gap closure)*
 - [ ] 187-28-PLAN.md — wave 12 — Gap closure after the CI measurement and the rebase onto `fix/v2.16-ci-e2e`: every gate on the rebased tree, the evidence chain again, the closing full E2E run on the functions env template, the `ci-evidence/187-final-4` push, and the run read job by job; on green, 187-15, 187-26 and 187-27 closed.

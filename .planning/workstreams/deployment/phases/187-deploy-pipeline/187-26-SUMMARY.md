@@ -4,6 +4,7 @@ plan: "26"
 subsystem: infra
 tags: [ci-evidence, secret-scan, trufflehog, push-migrations, edge-functions, e2e-tests, dependency-audit, main-yaml, gap-closure]
 status: stopped
+requirements-advanced: [SUPA-08, PIPE-02, PIPE-06]
 
 requires:
   - phase: 187-15
@@ -133,3 +134,15 @@ The previous run's signature is gone: 0 `awaitLinkWitness` lines and 0 `ERR_ENV_
 - FOUND: infra/scripts/main-e2e-workflow.test.ts
 - FOUND commits: 02a1530b2, 6c8d41c6f, 97a631eb9, 260efc416 (ancestors of HEAD)
 - FOUND remote: refs/heads/ci-evidence/187-final-2 at 102202f7a162cb8a67d31cc50f7692a22e015ab7
+
+## Closed by plan 187-28 (2026-11-17)
+
+G-03 is closed by plan 187-28 on run [44033456141](https://github.com/OpenVAA/voting-advice-application/actions/runs/44033456141), the push of the rebased final tree as `ci-evidence/187-final-4` at `68a54299aa81b2a2f95fd2151031ab4e624ef01c`. Every conclusion was read at job level:
+
+- `SECRET_SCAN=success`
+- `E2E_TESTS=success` (729 passed on 4 workers)
+- `E2E_VISUAL=success` (run attempt 2, after the operator ruled attempt 1's `supabase start` port collision void)
+- `INFRA_VALIDATE=success`
+- `DEPENDENCY_AUDIT=failure`, accepted per the phase-189 todo (`.planning/todos/pending/2026-11-15-dependency-audit-third-party-advisories.md`)
+
+Every other job concluded `success`. The record is `evidence/187-28-ci-closure.md` § Task 5. This plan's status stays `stopped`, because its run 43839245785 (`ci-evidence/187-final-2`) was red; the closure is plan 187-28's.

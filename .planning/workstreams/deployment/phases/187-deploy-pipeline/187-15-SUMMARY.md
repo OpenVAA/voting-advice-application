@@ -109,3 +109,15 @@ The secret-scan fix needs a new plan. The likely fix is a third measured exact-p
 - FOUND: .planning/todos/pending/2026-11-15-dependency-audit-third-party-advisories.md
 - FOUND commits: b2a3c5dbd, 3aff29a93, b2b8919a4 (ancestors of HEAD)
 - FOUND remote: refs/heads/ci-evidence/187-final at 395b71c712f9af6a80512625f2b38baf93167c1a
+
+## Closed by plan 187-28 (2026-11-17)
+
+G-03 is closed by plan 187-28 on run [44033456141](https://github.com/OpenVAA/voting-advice-application/actions/runs/44033456141), the push of the rebased final tree as `ci-evidence/187-final-4` at `68a54299aa81b2a2f95fd2151031ab4e624ef01c`. Every conclusion was read at job level:
+
+- `SECRET_SCAN=success`
+- `E2E_TESTS=success` (729 passed on 4 workers)
+- `E2E_VISUAL=success` (run attempt 2, after the operator ruled attempt 1's `supabase start` port collision void)
+- `INFRA_VALIDATE=success`
+- `DEPENDENCY_AUDIT=failure`, accepted per the phase-189 todo (`.planning/todos/pending/2026-11-15-dependency-audit-third-party-advisories.md`)
+
+Every other job concluded `success`. The record is `evidence/187-28-ci-closure.md` § Task 5. This plan's status stays `stopped`, because its run 43817899191 (`ci-evidence/187-final`) was red; the closure is plan 187-28's.

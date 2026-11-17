@@ -4,6 +4,7 @@ plan: "27"
 subsystem: infra
 tags: [ci-evidence, rebase, e2e-tests, e2e-visual, readiness, hydration, drift-guard, conformance-probe, dependency-audit, main-yaml, gap-closure]
 status: stopped
+requirements-advanced: [SUPA-08, PIPE-02, PIPE-06]
 
 requires:
   - phase: 187-26
@@ -156,3 +157,15 @@ The 511 did-not-run tests are downstream of these, chiefly of `data-setup-entity
 - FOUND: .planning/todos/done/2026-11-16-drift-guard-docker-stand-in-link.md
 - FOUND commits: 527d9e866, ced5b42bb, e56db5391, b29c91405, 1f5c56781 (ancestors of HEAD)
 - FOUND remote: refs/heads/ci-evidence/187-final-3 at 2b0842fd46bf6f26dfa6dad009a13b2297197b30 (read back with `git ls-remote` in Task 8)
+
+## Closed by plan 187-28 (2026-11-17)
+
+G-03 is closed by plan 187-28 on run [44033456141](https://github.com/OpenVAA/voting-advice-application/actions/runs/44033456141), the push of the rebased final tree as `ci-evidence/187-final-4` at `68a54299aa81b2a2f95fd2151031ab4e624ef01c`. Every conclusion was read at job level:
+
+- `SECRET_SCAN=success`
+- `E2E_TESTS=success` (729 passed on 4 workers)
+- `E2E_VISUAL=success` (run attempt 2, after the operator ruled attempt 1's `supabase start` port collision void)
+- `INFRA_VALIDATE=success`
+- `DEPENDENCY_AUDIT=failure`, accepted per the phase-189 todo (`.planning/todos/pending/2026-11-15-dependency-audit-third-party-advisories.md`)
+
+Every other job concluded `success`. The record is `evidence/187-28-ci-closure.md` § Task 5. This plan's status stays `stopped`, because its run 43938990256 (`ci-evidence/187-final-3`) was red; the closure is plan 187-28's.
