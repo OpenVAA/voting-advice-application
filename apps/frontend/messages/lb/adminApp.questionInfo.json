@@ -1,0 +1,41 @@
+{
+  "adminApp.questionInfo": {
+    "title": "Informatiounen iwwer d’Froen",
+    "description": "Generéiert Kontextinformatiounen zu de Froe vum Wal-Kompass, dorënner Begrëffsdefinitiounen an Informatiounssektiounen, fir de Wieler*innen ze hëllefen, d’Froe besser ze verstoen.",
+    "selectElection": "Wahl auswielen",
+    "selectQuestions": "Froen auswielen",
+    "noQuestions": "Fir dës Wahl goufe keng Aussoe fonnt",
+    "generate": {
+      "button": "Informatiounen iwwer d’Froe generéieren",
+      "buttonLoading": "Gëtt generéiert…",
+      "allQuestions": "All d’Aussoen",
+      "selectedQuestions": "Ausgewielte Froen"
+    },
+    "options": {
+      "heading": "Optioune fir d’Generéierung",
+      "whatToGenerate": "Wat soll generéiert ginn:",
+      "terms": "Begrëffsdefinitiounen",
+      "infoSections": "Informatiounssektiounen"
+    },
+    "sectionTopics": {
+      "label": "Theme vun de Sektiounen (optional)",
+      "help": "Lëscht vun Theme fir d’Informatiounssektiounen, mat Komma getrennt. Loosst d’Feld eidel, fir d’Standardthemen ze benotzen.",
+      "placeholder": "Hannergrond, Aktuell Situatioun, Wichteg Akteuren"
+    },
+    "customInstructions": {
+      "label": "Eegen Instruktiounen (optional)",
+      "help": "Zousätzlech Uweisunge fir de LLM, wéi den Inhalt generéiert soll ginn.",
+      "placeholder": "De Fokus op d’lokal Gouvernance an op Aspekter vun der Gemengepolitik leeën"
+    },
+    "questionContext": {
+      "label": "Kontext vun de Froen (optional)",
+      "help": "Kontext iwwer d’Wahl oder d’Themegebitt, fir dem LLM ze hëllefen, méi relevanten Inhalt ze generéieren.",
+      "placeholder": "Finnesch Gemengewahlen 2025"
+    },
+    "validation": {
+      "noElection": "Wielt wgl. eng Wahl aus",
+      "noQuestions": "Wielt wgl. op d’mannst eng Fro aus",
+      "noOperations": "Wielt wgl. op d’mannst eng Optioun fir d’Generéierung aus"
+    }
+  }
+}

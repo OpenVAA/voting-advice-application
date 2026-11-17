@@ -1,0 +1,20 @@
+{
+  "adminApp.login": {
+    "title": "Umeldung fir d’Administratioun",
+    "appTitle": "Wal-Kompass",
+    "appSubtitle": "Administratioun",
+    "instructions": "Gitt Är Umeldungsdaten an.",
+    "email": "E-Mail",
+    "password": "Passwuert",
+    "button": "Umellen",
+    "forgotPassword": "Passwuert vergiess?",
+    "errors": {
+      "invalidCredentials": "Ongëlteg E-Mail oder Passwuert",
+      "genericError": "Beim Umellen ass e Feeler opgetrueden. Probéiert wgl. nach eng Kéier.",
+      "unauthorized": "Dir braucht Administrateursrechter fir op dëse Beräich zouzegräifen",
+      "sessionExpired": "Är Sessioun ass ofgelaf, mellt Iech wgl. nach eng Kéier un",
+      "unknown": "En onbekannte Feeler ass opgetrueden",
+      "linkFailed": "Dëse Link kann net méi benotzt ginn. E Link funktionéiert eemol, an nëmmen deen neiste Link, deen Dir ugefrot hutt, funktionéiert. Frot wgl. en neien un, op déiselwecht Manéier wéi virdrun."
+    }
+  }
+}

@@ -13,7 +13,7 @@ import type { HasAnswers } from '@openvaa/core';
 import type { Answer } from '@openvaa/data';
 import type { LLMProvider } from '@openvaa/llm';
 
-// Mock LLM Provider for new API
+// Mock LLM provider
 const mockLLMProvider = {
   config: {
     provider: 'openai' as const,
@@ -143,6 +143,16 @@ describe('handleQuestion', () => {
     const types = results.map((r) => r.condensationType);
     expect(types).toContain(CONDENSATION_TYPE.LikertPros);
     expect(types).toContain(CONDENSATION_TYPE.LikertCons);
+
+    // The count and type assertions above still pass when `Condenser.run()` returns no arguments, so check the content too.
+    // The plan these fixtures build ends in MAP, whose output is a list of lists: the result must still be flat.
+    const argumentsPerRun = results.map((run) => run.data.arguments);
+    expect(argumentsPerRun.every((args) => args.every((argument) => !Array.isArray(argument)))).toBe(true);
+    expect(argumentsPerRun.map((args) => args.map((argument) => argument.text))).toEqual([
+      ['Test argument 1', 'Test argument 2'],
+      ['Test argument 1', 'Test argument 2']
+    ]);
+    expect(argumentsPerRun.flat().every((argument) => argument.text.trim().length > 0)).toBe(true);
   });
 
   test('It should condense arguments for a categorical question', async () => {
@@ -217,6 +227,16 @@ describe('handleQuestion', () => {
 
     // Check that all condensation results are of type PROS
     expect(results.every((r) => r.condensationType === CONDENSATION_TYPE.CategoricalPros)).toBe(true);
+
+    // Per-cluster content assertions, as in the likert test above.
+    const argumentsPerRun = results.map((run) => run.data.arguments);
+    expect(argumentsPerRun.every((args) => args.every((argument) => !Array.isArray(argument)))).toBe(true);
+    expect(argumentsPerRun.map((args) => args.map((argument) => argument.text))).toEqual([
+      ['Test argument 1', 'Test argument 2'],
+      ['Test argument 1', 'Test argument 2'],
+      ['Test argument 1', 'Test argument 2']
+    ]);
+    expect(argumentsPerRun.flat().every((argument) => argument.text.trim().length > 0)).toBe(true);
   });
 
   test('It should condense arguments for a boolean question', async () => {
@@ -272,6 +292,15 @@ describe('handleQuestion', () => {
     const types = results.map((r) => r.condensationType);
     expect(types).toContain(CONDENSATION_TYPE.BooleanPros);
     expect(types).toContain(CONDENSATION_TYPE.BooleanCons);
+
+    // Per-cluster content assertions, as in the likert test above.
+    const argumentsPerRun = results.map((run) => run.data.arguments);
+    expect(argumentsPerRun.every((args) => args.every((argument) => !Array.isArray(argument)))).toBe(true);
+    expect(argumentsPerRun.map((args) => args.map((argument) => argument.text))).toEqual([
+      ['Test argument 1', 'Test argument 2'],
+      ['Test argument 1', 'Test argument 2']
+    ]);
+    expect(argumentsPerRun.flat().every((argument) => argument.text.trim().length > 0)).toBe(true);
   });
 
   test('It should throw an error if invalid prompt IDs are provided', async () => {

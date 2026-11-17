@@ -438,8 +438,7 @@ export class DataRoot extends Updatable {
     constituencyId?: Id;
   }): Array<NominationVariant[TEntity]> {
     const collection = this.children[this.getNominationCollectionName(entityType)] as
-      | MappedCollection<NominationVariant[TEntity]>
-      | undefined;
+      MappedCollection<NominationVariant[TEntity]> | undefined;
     return collection
       ? [...collection.values()].filter(
           (n) =>
@@ -592,7 +591,7 @@ export class DataRoot extends Updatable {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Provide all data at once. All existing data is reset.
+   * Provide all data at once. An object whose id a collection already holds is replaced, and nothing else of the existing data is removed.
    */
   provideFullData(data: FullVaaData): void {
     const { elections, constituencies, questions, entities, nominations } = data;
@@ -606,7 +605,7 @@ export class DataRoot extends Updatable {
   }
 
   /**
-   * Provide the constituency and group data to the `DataRoot`. Existing data will be reset, along with any dependent collections.
+   * Provide the constituency and group data to the `DataRoot`. An object whose id its collection already holds is replaced, and nothing else of the existing data is removed.
    */
   provideConstituencyData({
     groups,
@@ -622,14 +621,14 @@ export class DataRoot extends Updatable {
   }
 
   /**
-   * Provide election data to the `DataRoot`. Existing data will be reset, along with any dependent collections.
+   * Provide election data to the `DataRoot`. An election whose id the collection already holds is replaced, and nothing else of the existing data is removed.
    */
   provideElectionData(data: Readonly<Array<ElectionData>>): void {
     this.provideData('elections', data, (args) => new Election(args));
   }
 
   /**
-   * Provide the data for all entities to the `DataRoot`. Existing data will be reset, along with any dependent collections.
+   * Provide entity data to the `DataRoot`. An entity whose id its collection already holds is replaced, and nothing else of the existing data is removed.
    * @param data - The data for all entities. Two formats are supported: a single array of `AnyEntityVariantData` with the `type` specified for each, or a structured object with these `EntityType`s as keys and the actual data without them.
    * @param options - Additional options for data provision.
    */
@@ -662,7 +661,7 @@ export class DataRoot extends Updatable {
   }
 
   /**
-   * Provide the data for all nominations to the `DataRoot`. Existing data will be reset, along with any dependent collections.
+   * Provide nomination data to the `DataRoot`. A nomination whose id its collection already holds is replaced, and nothing else of the existing data is removed.
    * @param data - The data for all nominations. Two formats are supported: a single array of `AnyNominationVariantData` with the `electionId` and `constituencyId` specified for each, or a structured object with these `Id`s as keys and the actual data without them.
    * @param options - Additional options for data provision.
    * @returns The created nominations because they’re needed by some nomination initializers.
@@ -703,7 +702,7 @@ export class DataRoot extends Updatable {
   }
 
   /**
-   * Provide question and question category data to the `DataRoot`. Existing data will be reset, along with any dependent collections.
+   * Provide question and question category data to the `DataRoot`. An object whose id its collection already holds is replaced, and nothing else of the existing data is removed.
    */
   provideQuestionData({
     categories,

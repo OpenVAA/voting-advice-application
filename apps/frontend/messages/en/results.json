@@ -1,0 +1,111 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "No alliances",
+            "numShown=1": "1 alliance",
+            "numShown=*": "{numShown} alliances"
+          }
+        }
+      ],
+      "summary": {
+        "template": "{candidates} across {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
+            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "match": {
+              "numCandidates=0, numCandidatesPlural=*": "No candidates",
+              "numCandidates=*, numCandidatesPlural=one": "1 candidate",
+              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} candidates"
+            }
+          }
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
+            "selectors": ["numParties", "numPartiesPlural"],
+            "match": {
+              "numParties=0, numPartiesPlural=*": "no parties",
+              "numParties=*, numPartiesPlural=one": "1 party",
+              "numParties=*, numPartiesPlural=*": "{numParties} parties"
+            }
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "No candidates",
+            "numShown=1": "1 candidate",
+            "numShown=*": "{numShown} candidates"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "No factions",
+            "numShown=1": "1 faction",
+            "numShown=*": "{numShown} factions"
+          }
+        }
+      ]
+    },
+    "inConstituency": "in constituency",
+    "ingress": {
+      "answerMinQuestions": "If you want to find the candidates and parties that agree with you the most, {questionsLink} first.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=1": "answer at least one question",
+            "numQuestions=*": "answer at least {numQuestions} questions"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "There are no candidates or parties in your constituency who have responded to the Election Compass",
+        "content": "You can review the questions if you wish, but results cannot be displayed."
+      },
+      "someNominations": {
+        "title": "Some election candidates or parties have not responded to the Election Compass",
+        "content": "There are no candidate or party responses available for all elections in your constituency. The results will only display elections for which responses are available."
+      },
+      "noNominationsForElection": "not available"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "No parties",
+            "numShown=1": "1 party",
+            "numShown=*": "{numShown} parties"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Select an election first",
+    "title": {
+      "browse": "Browse candidates and parties",
+      "results": "Results"
+    }
+  }
+}

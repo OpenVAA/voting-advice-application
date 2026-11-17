@@ -1,0 +1,28 @@
+{
+  "adminApp.argumentCondensation": {
+    "title": "Zesummefaassung vun Argumenter",
+    "description": "Fasst d’Argumenter zu de Wahlfroen zesummen a verwalt se.",
+    "jobs": {
+      "noActiveJobs": "Keng aktiv Aufgaben",
+      "startProcess": "Start eng Zesummefaassung vun Argumenter, fir de Verlaf an Echtzäit ze verfollegen"
+    },
+    "generate": {
+      "allQuestions": "Argumenter fir all Aussoe generéieren",
+      "button": "Argumenter generéieren",
+      "buttonLoading": "Gëtt generéiert…",
+      "error": "Beim Generéiere vun den Argumenter ass e Feeler opgetrueden",
+      "mayTakeTime": "Dëse Prozess kann e puer Minutten daueren",
+      "noElectionsAvailable": "Momentan si keng Wahlen disponibel. Iwwerpréift wgl. d’Konfiguratioun vun Ären Donnéeën.",
+      "noElectionSelected": "Wielt wgl. als éischt eng Wahl aus",
+      "noQuestionsForElection": "Fir déi ausgewielte Wahl goufe keng Aussoe fonnt.",
+      "noQuestionSelected": "Wielt wgl. op d’mannst eng Fro aus",
+      "selectElection": "Wahl auswielen",
+      "selectElectionPlaceholder": "Wielt eng Wahl aus…",
+      "selectedQuestions": "Argumenter nëmme fir déi ausgewielte Froe generéieren",
+      "questionType": "Auswiel vun de Froen",
+      "selectAll": "All auswielen",
+      "unselectAll": "All deselektéieren",
+      "errorLoadingQuestions": "Feeler beim Luede vun de Froen: {error}"
+    }
+  }
+}
