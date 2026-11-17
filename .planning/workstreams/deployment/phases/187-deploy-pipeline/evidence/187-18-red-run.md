@@ -180,3 +180,15 @@ HOSTED_WRITE=none
 `RULING_BASH_E=fix-now-and-re-observe`. The operator ruled that the `bash -e` defect is fixed before 187-19, by a gap plan of this phase. That plan fixes the pattern in `deploy.yml`, `destroy.yml` and `infra-plan.yml`, rebuilds both evidence commits and re-proves the red build locally (plan 187-12 Tasks 2 and 3). It then pushes a new red branch under a new attempt and observes `WRONG_SUBJECT_JOB=success`, both refusal codes and `RED_BUILD_LINE=failed=build`. 187-18 stays open until then. Its red run of 44042442257 is not re-run.
 
 The orchestrator confirmed the cause from the run log of job 133900001691. The step ran under `shell: /usr/bin/bash -e {0}` and ended `Process completed with exit code 1` 0.26 s after it started. `infra-plan.yml` declares no `shell:` and no `defaults:`.
+
+## Closed by plan 187-29 (2026-11-17)
+
+Plan 187-29 captured every status the steps of `deploy.yml`, `destroy.yml` and `infra-plan.yml` read in an `||` list, so the runner's `bash -e` no longer ends a step before its diagnosis. It then pushed a rebuilt red commit, `26ecadd36d5cf2dbc17fd1f3739708d42c9be09a`, to a new branch, `deploy-evidence/187-red-2`, and observed there the five lines that § Not shown, against the plan's verify, lists. They are recorded, with every step of both runs, in `evidence/187-29-red-rerun.md` § Task 7 and checked by that plan's verify. Plan 187-18's Task 3 verify is not run on them, because its `token_subject` literal names the consumed branch.
+
+- The `deploy.yml` run, https://github.com/OpenVAA/voting-advice-application/actions/runs/44088753181: the build step failed at the frontend build and printed `failed=build` and `build_exit=1`, so the value observed for `RED_BUILD_LINE` is `failed=build`. Every later stage was skipped, the alert was published with `alert_stage=build`, and the run concluded `failure`.
+- The `infra-plan.yml` run, https://github.com/OpenVAA/voting-advice-application/actions/runs/44088753527: the value observed for `WRONG_SUBJECT_JOB` is `success`. The job printed `token_subject` as `repo:OpenVAA/voting-advice-application:ref:refs/heads/deploy-evidence/187-red-2`, and `deploy_role_error` and `plan_role_error` each as `AccessDenied`.
+- `/api/health` served `712947a1bd44a735f66ee8f51610f4748d76cd30` before and after, so nothing hosted was written.
+
+Run 44042442257 and run 44042442267 were not re-run: each still reads `run_attempt` 1. `deploy-evidence/187-red` still points at `3250ba0e8e964f8c87c03459f812bd935637272b`.
+
+What stays open here is the operator's: the `RED_ALERT_MAIL=` and `RED_ALERT_MAIL_UTC=` lines for the alert of run 44042442257, message `0d08cd58-15d0-5afa-995e-ae2e0c34d217`, and, after that reply, plan 187-18's SUMMARY, with status `stopped` at Task 3 and its five lines closed by plan 187-29.

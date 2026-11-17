@@ -155,3 +155,138 @@ READY_TO_PUSH=yes
 - `RED2_TRIGGERS`: `git show 26ecadd36:.github/workflows/<w>.yml`, push branches. `deploy.yml`: `deploy/staging`, `deploy-evidence/**`, `!deploy-evidence/destroy-staging`; `infra-plan.yml`: `deploy-evidence/**`; `destroy.yml`: `deploy-evidence/destroy-staging` only. So the push starts one `deploy.yml` run and one `infra-plan.yml` run, and no `destroy.yml` run.
 - `SERVED_BUILD_BEFORE` (12:59:50Z): `curl -sS -m 30 https://staging.openvaa.org/api/health` exit 0, HTTP 200, body `{"status":"ok","build":"712947a1bd44a735f66ee8f51610f4748d76cd30"}`, the same build 187-18 read before its push.
 - `NO_RUN_ACTIVE`: `gh run list --status <s>` repository-wide for `queued`, `waiting`, `in_progress`, `requested` and `pending`, each exit 0, each listing nothing.
+
+## Task 7: the push and both runs
+
+Read 2026-11-17T13:06Z to 13:10Z by the plan executor at HEAD `a71cd9cf9`. Every read is a GET (`gh api`, `gh run list`, `gh run view --log --job <id>`, `curl`) or a local git read. Each status was written to its own file under `tmp/187-29/t7/` on the line after its command and read from there; every one is 0. The executor pushed nothing, approved nothing and re-ran nothing. Step conclusions come from `gh api repos/OpenVAA/voting-advice-application/actions/jobs/<id>`, log lines from `gh run view --log --job <id>`. No line copied here holds an address, a login, an account id or a role session id from a log.
+
+### The push
+
+Attempt `20261117T130145Z.a71cd9cf9` of key `187-29-6`. The orchestrator stored the operator's reply with `attempt.sh put 187-29-6`. This executor read the stored file, which holds `OPERATOR_REPLY=received attempt=20261117T130145Z.a71cd9cf9 plan=187-29 task=6` and `answer_push=approve`, and ran `attempt.sh bound 187-29-6 OPERATOR_REPLY plan=187-29 task=6` (exit 0) and `attempt.sh has 187-29-6 '^answer_push=approve$'` (exit 0). By the orchestrator's record, the four pre-push checks each exited 0 at top level between 13:01Z and 13:02Z, and the orchestrator then ran `git push origin 26ecadd36d5cf2dbc17fd1f3739708d42c9be09a:refs/heads/deploy-evidence/187-red-2`, exit 0, `* [new branch]`, at 13:02:04Z.
+
+```
+RED_PUSH_ATTEMPT=20261117T130145Z.a71cd9cf9
+RED_PUSHED=yes
+RED_PUSHED_COMMIT=26ecadd36d5cf2dbc17fd1f3739708d42c9be09a
+RED_PUSHED_AT=2026-11-17T13:02:04Z
+```
+
+- Read back by this executor: `git ls-remote origin refs/heads/deploy-evidence/187-red-2 refs/heads/deploy-evidence/187-red` exit 0, listing `26ecadd36d5cf2dbc17fd1f3739708d42c9be09a` for `deploy-evidence/187-red-2` and `3250ba0e8e964f8c87c03459f812bd935637272b` for `deploy-evidence/187-red`, so the consumed branch is untouched.
+- `gh api repos/OpenVAA/voting-advice-application/activity?ref=refs/heads/deploy-evidence/187-red-2` lists one entry, a `branch_creation` from the zero id to `26ecadd36d5c`, stamped 13:02:15Z by GitHub; `RED_PUSHED_AT` is the push command's own time from the orchestrator. The same read for `deploy-evidence/187-red` lists only its `branch_creation` of 07:55:24Z.
+- `gh run list --branch deploy-evidence/187-red-2` lists two runs, both `push` of `26ecadd36d5c`: `Deploy staging` 44088753181 and `Infrastructure plan` 44088753527. No `destroy.yml` run.
+
+### The `deploy.yml` run
+
+```
+RED_RUN_ID=44088753181
+RED_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44088753181
+RED_RUN_HEAD=26ecadd36d5cf2dbc17fd1f3739708d42c9be09a
+RED_RUN_WORKFLOW=.github/workflows/deploy.yml
+CHECKS_JOB=success
+CHECKS_RAN_ERREXIT_TESTS=yes
+GATE_WAITED=yes
+GATE_WAITED_AT=2026-11-17T13:03:27Z
+GATE_REVIEW=approved
+DEPLOY_JOB_STARTED=2026-11-17T13:04:18Z
+DEPLOY_JOB_COMPLETED=2026-11-17T13:05:31Z
+STEP=Set up job conclusion=success
+STEP=Checkout source code conclusion=success
+STEP=Assume the deploy role conclusion=success
+STEP=Build and push the image conclusion=failure
+STEP=Drop the build credentials conclusion=skipped
+STEP=Setup Node.js 24.21.0 conclusion=skipped
+STEP=Setup Yarn 4.18 conclusion=skipped
+STEP=Install psql conclusion=skipped
+STEP=Setup Terraform 1.16.5 conclusion=skipped
+STEP=Assume the deploy role for the plan conclusion=skipped
+STEP=Initialise the staging AWS root conclusion=skipped
+STEP=Plan the staging AWS root with the built digest conclusion=skipped
+STEP=Show the plan conclusion=skipped
+STEP=Drop the plan credentials conclusion=skipped
+STEP=Link a work directory to the Supabase project conclusion=skipped
+STEP=Push the migrations conclusion=skipped
+STEP=Deploy the functions conclusion=skipped
+STEP=Assume the deploy role again for the apply conclusion=skipped
+STEP=Apply the saved plan conclusion=skipped
+STEP=Check the rollout is stable conclusion=skipped
+STEP=Drop the rollout credentials conclusion=skipped
+STEP=Install Playwright's Chromium conclusion=skipped
+STEP=Run the deployed smoke entry conclusion=skipped
+STEP=Read the served build again conclusion=skipped
+STEP=Remove the plan, the smoke output and the step files conclusion=success
+STEP=Assume the deploy role again for the alert conclusion=success
+STEP=Alert the operator conclusion=success
+STEP=Post Assume the deploy role again for the alert conclusion=success
+STEP=Post Assume the deploy role conclusion=success
+STEP=Post Checkout source code conclusion=success
+STEP=Complete job conclusion=success
+OIDC_ASSUME=success
+RED_BUILD_STEP=failure
+RED_BUILD_LINE=failed=build
+RED_BUILD_EXIT_LINE=build_exit=1
+RED_LATER_STAGES=skipped
+ALERT_STEP=success
+ALERT_STAGE=build
+ALERT_MESSAGE_ID=38c955f1-9a60-59f4-9ba2-3687c939f19d
+ALERT_STEP_UTC=2026-11-17T13:05:28Z to 13:05:29Z
+ALERT_PUBLISHED_UTC=2026-11-17T13:05:29Z
+RED_RUN_CONCLUSION=failure
+```
+
+- **The run.** `actions/runs/44088753181`: `path` `.github/workflows/deploy.yml`, `completed`, `failure`, `run_attempt` 1, head `26ecadd36d5cf2dbc17fd1f3739708d42c9be09a`, event `push`, branch `deploy-evidence/187-red-2`, created 13:02:17Z.
+- **`checks`** (job 134058043594, 13:02:20Z to 13:03:26Z): every step `success`: checkout, Terraform 1.16.5, formatting, `Validate the staging AWS root`, Node.js 24.21.0, Yarn 4.18, `Unit tests of the infrastructure scripts`.
+- **`CHECKS_RAN_ERREXIT_TESTS`.** That job's `Unit tests of the infrastructure scripts` log prints `✓ scripts/workflow-errexit.test.ts (44 tests)`, then `Test Files 13 passed (13)` and `Tests 369 passed (369)`: the counts of the local run (`INFRA_TESTS_PASSED` above), now on the runner's bash and GNU tools.
+- **The gate.** The deploy job was created at 13:03:26Z, when `checks` completed. The deployment GitHub made for `staging` on `deploy-evidence/187-red-2` read `waiting` at 13:03:27Z and 13:03:28Z, then `queued` at 13:04:14Z, `in_progress` at 13:04:18Z and `failure` at 13:05:32Z (`gh api .../deployments/<id>/statuses`). The orchestrator read `actions/runs/44088753181/pending_deployments` listing `staging` at 13:03:35Z with `checks` `success` and `deploy` `waiting`; at this executor's read, after the run completed, it lists nothing, as it should. `actions/runs/44088753181/approvals` lists one entry: `approved`, for the environment `staging`, by a reviewer of type `User`, with no comment. The deploy job started at 13:04:18Z, after the approval.
+- **The assume.** Step 3, `Assume the deploy role`, logged `Authenticated as assumedRoleId <id>:deploy-44088753181`, and step 26 the same for the session `deploy-alert-44088753181`.
+- **The build.** Step 4, `Build and push the image`, 13:04:23Z to 13:05:27Z, under `shell: /usr/bin/bash -e {0}`, its script listing showing `build_exit=0` and `infra/scripts/build-push-image.sh --repository-url "$url" > "$RUNNER_TEMP/build-push.txt" || build_exit=$?`. Inside `docker buildx build`, `#16 [shared 2/2] RUN yarn build`: the frontend's build printed `[UNLOADABLE_DEPENDENCY] Could not load src/lib/does-not-exist-187-red`, turbo printed `Tasks: 13 successful, 14 total` and `Failed: @openvaa/frontend#build`, and the build ended `ERROR: failed to build: failed to solve: process "/bin/sh -c yarn build" did not complete successfully: exit code: 1`. Then, in order, the step printed `failed=build` (13:05:27.048Z), `build_exit=1`, `##[error]build-push-image.sh exited 1.` and `##[error]Process completed with exit code 1.` So the script's own output and the step's diagnosis now reach the log, where run 44042442257 printed neither. There was no image push, because the push follows the build in `build-push-image.sh`.
+- **Later stages.** Steps 5 to 24, from `Drop the build credentials` to `Read the served build again`, all `skipped`, including the plan, the migrations, the functions, the apply, the stable check, the smoke and the served-build read. Step 25, the `always()` cleanup, `success`.
+- **The alert.** Step 26 assumed the role again, and step 27, `Alert the operator`, printed `alert_stage=build` at 13:05:28.26Z and `alert_message_id=38c955f1-9a60-59f4-9ba2-3687c939f19d` at 13:05:29.38Z, with no `alert_error=` line. By the step's script its subject is `openvaa staging deploy failed at build`, and its body names the commit `26ecadd36d5cf2dbc17fd1f3739708d42c9be09a`, the trigger `push of deploy-evidence/187-red-2` and the run URL above. Whether its mail arrived is the operator's to record.
+
+### The `infra-plan.yml` run of the same head
+
+```
+INFRA_PLAN_RUN_ID=44088753527
+INFRA_PLAN_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44088753527
+INFRA_PLAN_RUN_CONCLUSION=success
+INFRA_CHECKS_JOB=success
+EXAMPLE_PLANS_RAN=aws,dns-mail,supabase
+INFRA_PLAN_JOB=skipped
+WRONG_SUBJECT_JOB=success
+WRONG_SUBJECT_STEP=Ask STS for the deploy role and the plan role with the branch subject conclusion=success
+token_subject=repo:OpenVAA/voting-advice-application:ref:refs/heads/deploy-evidence/187-red-2
+deploy_role_assume_status=254
+deploy_role_error=AccessDenied
+plan_role_assume_status=254
+plan_role_error=AccessDenied
+```
+
+- **The run.** `actions/runs/44088753527`: `path` `.github/workflows/infra-plan.yml`, `completed`, `success`, `run_attempt` 1, head `26ecadd36d5cf2dbc17fd1f3739708d42c9be09a`, event `push`, branch `deploy-evidence/187-red-2`.
+- **`checks`** (job 134058043708, 13:02:20Z to 13:03:46Z): every step `success`. `Test every Terraform module that has tests` printed `Success! 33 passed, 0 failed.` and `Success! 11 passed, 0 failed.`. `Plan the example roots with mock providers` printed `tests/plan.tftest.hcl... pass` and `Success! 1 passed, 0 failed.` three times, then `planned 3 example roots: infra/envs/example/aws infra/envs/example/dns-mail infra/envs/example/supabase`.
+- **`plan`** (job 134058046144): `skipped`, with no steps, as on a push.
+- **`wrong-subject`** (job 134058044110, 13:02:20Z to 13:02:27Z): `Set up job`, `Ask STS for the deploy role and the plan role with the branch subject` and `Complete job`, each `success`. The step ran under `shell: /usr/bin/bash -e {0}`, past the token's `read`, to both STS calls, and printed the five lines above as they are written here, then `Both roles refused the subject repo:OpenVAA/voting-advice-application:ref:refs/heads/deploy-evidence/187-red-2.` Both codes are `AccessDenied`, the code the step requires, and neither is the step's fallback `none`; the status 254 of each is the AWS CLI's status for a refused service call. No `::error::` line.
+
+### Nothing hosted written, nothing re-run
+
+```
+SERVED_BUILD_AFTER=712947a1bd44a735f66ee8f51610f4748d76cd30
+HOSTED_WRITE=none
+NO_RERUN=yes
+```
+
+- `SERVED_BUILD_AFTER` (13:08:17Z): `curl -sS -m 30 https://staging.openvaa.org/api/health` exit 0, HTTP 200, `{"status":"ok","build":"712947a1bd44a735f66ee8f51610f4748d76cd30"}`, equal to `SERVED_BUILD_BEFORE`. The orchestrator read the same body at about 13:06Z. No plan, migrations, functions or apply step ran (all `skipped`).
+- `NO_RERUN`: `run_attempt` of `gh api .../actions/runs/<id>` reads `1` for 44088753181, 44088753527, 44042442257 and 44042442267, each exit 0. `gh run list --branch deploy-evidence/187-red` still lists only 44042442257 and 44042442267, both `completed` `failure`. Repository-wide, `gh run list --status <s>` for `queued`, `waiting`, `in_progress`, `requested` and `pending` each exit 0 and list nothing.
+
+### Runbook rows (2026-11-17)
+
+RUNBOOK_ROWS_ADDED=yes
+
+- `infra/envs/staging/aws/README.md` § Observations: one row for run 44088753181, red at the build with `failed=build` and `build_exit=1` printed, the alert published with `alert_stage=build`, every later stage skipped and nothing deployed.
+- `infra/bootstrap/README.md` § Observations: one row for the `wrong-subject` job of run 44088753527, both roles refusing the branch subject with `AccessDenied`. In § Not yet observed, the row "A workflow can assume the plan role, and a token with a wrong subject is refused by both roles" is narrowed to "A workflow can assume the plan role", checked by "The plan role on a pull request".
+- Both files: `prettier --write`, then `prettier --check` exit 0. The bootstrap runbook's § Not yet observed table was re-padded by the shorter row; with runs of spaces and dashes collapsed, its other rows are unchanged.
+
+### The pointer in 187-18's evidence
+
+T7_HEAD_AT_START=a71cd9cf9122fa687379f071c4bf6fbde6232c2d
+POINTER_APPENDED_TO_187_18=yes
+
+`## Closed by plan 187-29 (2026-11-17)` is appended to `evidence/187-18-red-run.md`, after its last line, with no existing line changed. The operator's mail lines for this run's alert, and for run 44042442257's, are not written here: they await the operator.
