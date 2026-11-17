@@ -124,3 +124,34 @@ GREEN_DIFF_VS_FINAL_4=.github/workflows/deploy.yml,.github/workflows/destroy.yml
 GREEN_DIFF_VS_FINAL_4_TOUCHES_APP_OR_TF=no
 
 `GREEN_DIFF_VS_FINAL_4` is `git diff --name-only 68a54299aa81b2a2f95fd2151031ab4e624ef01c <GREEN_COMMIT>`: Task 3's `FIX_PATHS` and the two runbooks plan 187-18 changed. The same diff limited to `apps packages tests` and to `'*.tf' '*.tfvars' '*.hcl'` lists nothing, so the source tree that plan 187-28's closing E2E run covered is unchanged.
+
+## Task 5: readiness
+
+Read 2026-11-17T12:59:44Z to 13:00Z by the plan executor at HEAD `70c0c6150`. Every read is a GET or a local git read: nothing was pushed, no setting changed, no run started or approved. Each status was written to its own file under `tmp/187-29/t5/` on the line after its command and read from there; every one is 0.
+
+READ_AT=2026-11-17T12:59:44Z
+ENV_READ_BACK_OK=yes
+STEP9_APPLIED=yes
+RED_COMMIT_TO_PUSH=26ecadd36d5cf2dbc17fd1f3739708d42c9be09a
+RED_TREE_PROVEN=yes
+RED2_BRANCH=deploy-evidence/187-red-2
+BRANCH_POLICY_ADMITS_RED2=yes
+RED_BRANCH_ABSENT=yes
+OLD_RED_BRANCH_TIP=3250ba0e8e964f8c87c03459f812bd935637272b
+RUN_44042442257_ATTEMPTS=1
+RUN_44042442267_ATTEMPTS=1
+RED2_TRIGGERS=deploy.yml,infra-plan.yml
+SERVED_BUILD_BEFORE=712947a1bd44a735f66ee8f51610f4748d76cd30
+NO_RUN_ACTIVE=yes
+READY_TO_PUSH=yes
+
+- `ENV_READ_BACK_OK` (12:59:44Z): `gh api repos/OpenVAA/voting-advice-application/environments/<E>` and `.../environments/<E>/deployment-branch-policies` for `staging` and `staging-destroy`, each exit 0, read as types and names only. Both: `can_admins_bypass: false`; one `required_reviewers` rule with one reviewer of type `User`, `prevent_self_review: false`, no wait timer; a `branch_policy` rule; `deployment_branch_policy` `custom_branch_policies: true`, `protected_branches: false`; branch policies exactly `deploy-evidence/*:branch,deploy/staging:branch`. That is what 187-18 read at 07:50Z. The two environment responses were deleted after the types were read.
+- `STEP9_APPLIED`: `evidence/187-16-bootstrap-apply.md` records `STEP9_RESULT=applied`, and `git diff --quiet 1e10dff7f HEAD -- infra/bootstrap infra/modules/github-oidc ':!infra/bootstrap/README.md'` exit 0.
+- `RED_COMMIT_TO_PUSH` is the current `RED_COMMIT` of `evidence/187-12-evidence-commits.md` and `git rev-parse refs/evidence/187/red`.
+- `RED_TREE_PROVEN`: in a temporary index under the session scratch directory, removed afterwards, `git read-tree HEAD`, `git rm -r --cached --quiet .planning` and `git write-tree`, each exit 0, printed `cdefe3565e672afc732dad52d44515f56e7c6168`, which is `refs/evidence/187/green^{tree}`; the real index untouched (`git diff --cached --quiet` exit 0). `git diff-tree -r --name-only refs/evidence/187/green refs/evidence/187/red` prints only `apps/frontend/src/routes/+layout.ts`, and `git for-each-ref --contains refs/evidence/187/red` prints only `refs/evidence/187/red`.
+- `BRANCH_POLICY_ADMITS_RED2`: `deploy-evidence/187-red-2` matches `deploy-evidence/*` with no further `/`, and is not `deploy-evidence/destroy-staging`.
+- `RED_BRANCH_ABSENT`: `git ls-remote origin refs/heads/deploy-evidence/187-red-2` exit 0, 0 bytes. `OLD_RED_BRANCH_TIP`: `git ls-remote origin refs/heads/deploy-evidence/187-red` exit 0, still `3250ba0e8`, so the consumed branch is untouched.
+- `RUN_*_ATTEMPTS`: `run_attempt` of `gh api repos/OpenVAA/voting-advice-application/actions/runs/<id>`, each exit 0 and `1`.
+- `RED2_TRIGGERS`: `git show 26ecadd36:.github/workflows/<w>.yml`, push branches. `deploy.yml`: `deploy/staging`, `deploy-evidence/**`, `!deploy-evidence/destroy-staging`; `infra-plan.yml`: `deploy-evidence/**`; `destroy.yml`: `deploy-evidence/destroy-staging` only. So the push starts one `deploy.yml` run and one `infra-plan.yml` run, and no `destroy.yml` run.
+- `SERVED_BUILD_BEFORE` (12:59:50Z): `curl -sS -m 30 https://staging.openvaa.org/api/health` exit 0, HTTP 200, body `{"status":"ok","build":"712947a1bd44a735f66ee8f51610f4748d76cd30"}`, the same build 187-18 read before its push.
+- `NO_RUN_ACTIVE`: `gh run list --status <s>` repository-wide for `queued`, `waiting`, `in_progress`, `requested` and `pending`, each exit 0, each listing nothing.
