@@ -17,6 +17,10 @@ name: "Deploy staging"
 # workflow and does not start this one. A dispatch must pick the `deploy/staging` ref, because the environment admits
 # no other branch for it.
 #
+# A step reads a command's status as `cmd || name=$?`, after `name=0`, because a `run:` step that names no `shell:`
+# runs under `bash -e`: that shell ends the step at a failing command that is not in an `||` list, so a status read
+# on the next line would never run, while every command whose status the step does not read still ends the step.
+#
 # The repository's default token may write, so the top-level permissions are empty and every job names its own.
 
 on:
@@ -120,8 +124,8 @@ jobs:
             echo "::error::infra/envs/staging/aws/terraform.tfvars has no registry_url."
             exit 1
           fi
-          infra/scripts/build-push-image.sh --repository-url "$url" > "$RUNNER_TEMP/build-push.txt"
-          build_exit=$?
+          build_exit=0
+          infra/scripts/build-push-image.sh --repository-url "$url" > "$RUNNER_TEMP/build-push.txt" || build_exit=$?
           cat "$RUNNER_TEMP/build-push.txt"
           echo "build_exit=$build_exit"
           if [ "$build_exit" -ne 0 ] && [ "$build_exit" -ne 3 ]; then
@@ -167,14 +171,14 @@ jobs:
         id: psql
         run: |
           set -uo pipefail
-          sudo apt-get update
-          update_exit=$?
+          update_exit=0
+          sudo apt-get update || update_exit=$?
           if [ "$update_exit" -ne 0 ]; then
             echo "::error::apt-get update exited $update_exit."
             exit 1
           fi
-          sudo apt-get install -y --no-install-recommends postgresql-client
-          install_exit=$?
+          install_exit=0
+          sudo apt-get install -y --no-install-recommends postgresql-client || install_exit=$?
           if [ "$install_exit" -ne 0 ]; then
             echo "::error::apt-get install postgresql-client exited $install_exit."
             exit 1
@@ -208,8 +212,8 @@ jobs:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws plan -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan"
-          plan_exit=$?
+          plan_exit=0
+          terraform -chdir=infra/envs/staging/aws plan -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan" || plan_exit=$?
           echo "plan_exit=$plan_exit"
           if [ "$plan_exit" -ne 0 ]; then
             echo "::error::terraform plan exited $plan_exit."
@@ -220,8 +224,8 @@ jobs:
         id: show
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt"
-          show_exit=$?
+          show_exit=0
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt" || show_exit=$?
           if [ "$show_exit" -ne 0 ]; then
             echo "::error::terraform show exited $show_exit."
             exit 1
@@ -270,9 +274,9 @@ jobs:
             echo "::error::The work directory holds $((links)) links, not 3."
             exit 1
           fi
+          link_exit=0
           node_modules/.bin/supabase link --project-ref "$ref" --workdir "$workdir" --agent no --output-format text \
-            > "$RUNNER_TEMP/supabase-link.log" 2>&1
-          link_exit=$?
+            > "$RUNNER_TEMP/supabase-link.log" 2>&1 || link_exit=$?
           echo "link_exit=$link_exit"
           if [ "$link_exit" -ne 0 ]; then
             cat "$RUNNER_TEMP/supabase-link.log"
@@ -322,9 +326,9 @@ jobs:
           fi
           export PGUSER="postgres.$REF"
           unset PGHOSTADDR PGSERVICE
+          push_exit=0
           infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF" \
-            --log-dir "$RUNNER_TEMP/push-migrations"
-          push_exit=$?
+            --log-dir "$RUNNER_TEMP/push-migrations" || push_exit=$?
           echo "push_exit=$push_exit"
           if [ "$push_exit" -ne 0 ]; then
             echo "::error::push-migrations.sh exited $push_exit."
@@ -343,28 +347,28 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           set -uo pipefail
+          deploy_exit=0
           node_modules/.bin/supabase functions deploy --project-ref "$REF" --workdir "$WORKDIR" --agent no --output-format text \
-            > "$RUNNER_TEMP/functions-deploy.log" 2>&1
-          deploy_exit=$?
+            > "$RUNNER_TEMP/functions-deploy.log" 2>&1 || deploy_exit=$?
           echo "functions_deploy_exit=$deploy_exit"
           if [ "$deploy_exit" -ne 0 ]; then
             cat "$RUNNER_TEMP/functions-deploy.log"
             echo "::error::supabase functions deploy exited $deploy_exit."
             exit 1
           fi
+          curl_exit=0
           curl -sS --max-time 20 -K - -o "$RUNNER_TEMP/functions.json" -w '%{http_code}' \
             "https://api.supabase.com/v1/projects/$REF/functions" > "$RUNNER_TEMP/functions-http.txt" \
-            <<< "header = \"Authorization: Bearer $SUPABASE_ACCESS_TOKEN\""
-          curl_exit=$?
+            <<< "header = \"Authorization: Bearer $SUPABASE_ACCESS_TOKEN\"" || curl_exit=$?
           http=$(cat "$RUNNER_TEMP/functions-http.txt")
           echo "functions_list_http=$http"
           if [ "$curl_exit" -ne 0 ] || [ "$http" != 200 ]; then
             echo "::error::The function list could not be read: curl exited $curl_exit with HTTP status $http."
             exit 1
           fi
+          jq_exit=0
           jq -r 'sort_by(.slug)[] | "\(.slug) \(.status) \(.verify_jwt)"' "$RUNNER_TEMP/functions.json" \
-            > "$RUNNER_TEMP/functions.txt"
-          jq_exit=$?
+            > "$RUNNER_TEMP/functions.txt" || jq_exit=$?
           if [ "$jq_exit" -ne 0 ]; then
             echo "::error::The function list is not the expected JSON."
             exit 1
@@ -415,8 +419,8 @@ jobs:
         id: apply
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/tfplan"
-          apply_exit=$?
+          apply_exit=0
+          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/tfplan" || apply_exit=$?
           echo "apply_exit=$apply_exit"
           if [ "$apply_exit" -ne 0 ]; then
             echo "::error::terraform apply exited $apply_exit."
@@ -435,18 +439,18 @@ jobs:
             echo "::error::infra/envs/staging/aws/terraform.tfvars has no task_floor."
             exit 1
           fi
-          applied=$(terraform -chdir=infra/envs/staging/aws output -raw task_definition_arn)
-          applied_exit=$?
-          cluster=$(terraform -chdir=infra/envs/staging/aws output -raw cluster_name)
-          cluster_exit=$?
-          service=$(terraform -chdir=infra/envs/staging/aws output -raw service_name)
-          service_exit=$?
+          applied_exit=0
+          applied=$(terraform -chdir=infra/envs/staging/aws output -raw task_definition_arn) || applied_exit=$?
+          cluster_exit=0
+          cluster=$(terraform -chdir=infra/envs/staging/aws output -raw cluster_name) || cluster_exit=$?
+          service_exit=0
+          service=$(terraform -chdir=infra/envs/staging/aws output -raw service_name) || service_exit=$?
           if [ "$applied_exit" -ne 0 ] || [ "$cluster_exit" -ne 0 ] || [ "$service_exit" -ne 0 ]; then
             echo "::error::The outputs task_definition_arn, cluster_name and service_name could not all be read."
             exit 1
           fi
-          aws ecs describe-services --cluster "$cluster" --services "$service" --output json > "$RUNNER_TEMP/service.json"
-          describe_exit=$?
+          describe_exit=0
+          aws ecs describe-services --cluster "$cluster" --services "$service" --output json > "$RUNNER_TEMP/service.json" || describe_exit=$?
           echo "stable_describe_exit=$describe_exit"
           if [ "$describe_exit" -ne 0 ]; then
             echo "::error::aws ecs describe-services exited $describe_exit."
@@ -495,9 +499,9 @@ jobs:
           SMOKE_CONTESTANT_PASSWORD: ${{ secrets.SMOKE_CONTESTANT_PASSWORD }}
         run: |
           set -uo pipefail
+          smoke_exit=0
           env -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN \
-            yarn test:e2e:deployed --output "$RUNNER_TEMP/smoke-output"
-          smoke_exit=$?
+            yarn test:e2e:deployed --output "$RUNNER_TEMP/smoke-output" || smoke_exit=$?
           echo "smoke_exit=$smoke_exit"
           if [ "$smoke_exit" -ne 0 ]; then
             echo "::error::yarn test:e2e:deployed exited $smoke_exit."
@@ -510,8 +514,8 @@ jobs:
         id: served-build
         run: |
           set -uo pipefail
-          curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" https://staging.openvaa.org/api/health
-          curl_exit=$?
+          curl_exit=0
+          curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" https://staging.openvaa.org/api/health || curl_exit=$?
           if [ "$curl_exit" -ne 0 ]; then
             echo "served_build_after_smoke="
             echo "::error::Reading /api/health exited $curl_exit."
@@ -617,12 +621,12 @@ jobs:
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           message=$(printf 'The staging deploy failed at %s.\n\nCommit: %s\nTrigger: %s of %s\nRun: %s\n' \
             "$stage" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$GITHUB_REF_NAME" "$run_url")
+          publish_exit=0
           aws sns publish \
             --topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments \
             --subject "openvaa staging deploy failed at $stage" \
             --message "$message" \
-            --query MessageId --output text > "$RUNNER_TEMP/alert.txt" 2> "$RUNNER_TEMP/alert.err"
-          publish_exit=$?
+            --query MessageId --output text > "$RUNNER_TEMP/alert.txt" 2> "$RUNNER_TEMP/alert.err" || publish_exit=$?
           message_id=$(cat "$RUNNER_TEMP/alert.txt")
           error_code=$(sed -n 's/.*An error occurred (\([A-Za-z.]*\)).*/\1/p' "$RUNNER_TEMP/alert.err")
           rm -f "$RUNNER_TEMP/alert.txt" "$RUNNER_TEMP/alert.err"

@@ -16,8 +16,10 @@ import {
   constants,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   symlinkSync,
   writeFileSync
 } from 'node:fs';
@@ -26,6 +28,7 @@ import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { jobSteps, loadWorkflow, workflowJobs } from './workflowGuards';
+import type { WorkflowStep } from './workflowGuards';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '../..');
@@ -115,18 +118,140 @@ type RunnerShellResult = {
  * @throws Naming the file, the job and the step when the step or its script is absent.
  */
 function stepScript(file: string, jobId: string, stepName: string): string {
-  const { doc } = loadWorkflow(join(WORKFLOWS, file));
-  const job = workflowJobs(doc).find(([id]) => id === jobId)?.[1];
-  const step = job ? jobSteps(job).find((candidate) => candidate.name === stepName) : undefined;
-  if (!step || typeof step.run !== 'string') {
-    throw new Error(`${file} has no job ${jobId} with a run step named ${JSON.stringify(stepName)}`);
-  }
-  return step.run;
+  const { run } = findStep(file, jobId, stepName);
+  if (typeof run !== 'string')
+    throw new Error(`${file} job ${jobId} step ${JSON.stringify(stepName)} has no run script`);
+  return run;
 }
 
 /** A stub's file text: the absolute `bash` as its interpreter, then its body. */
 function stubText(body: string): string {
   return `#!${BASH}\n${body}\n`;
+}
+
+/** A stub that prints `stub <name> failed` to standard error and exits 1. */
+function failingStub(name: string): string {
+  return `echo "stub ${name} failed" >&2\nexit 1`;
+}
+
+/**
+ * A stub with a local utility's name that fails, printing `stub <name> failed`, when one of its arguments contains
+ * `text`, and otherwise runs the real utility by the path resolved for `utils/`.
+ */
+function selectiveStub(name: (typeof LOCAL_UTILITIES)[number], text: string): string {
+  return [
+    'for argument in "$@"; do',
+    '  case "$argument" in',
+    `    *'${text}'*) echo "stub ${name} failed" >&2; exit 1 ;;`,
+    '  esac',
+    'done',
+    `exec '${UTILITY_PATHS[name]}' "$@"`
+  ].join('\n');
+}
+
+/** The variables the harness sets itself, which a case never replaces with a stand-in. */
+const HARNESS_VARIABLES = new Set([
+  'PATH',
+  'HOME',
+  'RUNNER_TEMP',
+  'GITHUB_WORKSPACE',
+  'GITHUB_OUTPUT',
+  'GITHUB_ENV',
+  'GITHUB_STEP_SUMMARY'
+]);
+
+/**
+ * A stand-in value for every key of a step's `env:`, and for every upper-case variable its script reads as `$NAME` or
+ * `${NAME}` that the harness does not set, because the scripts run with `-u`.
+ */
+function standInEnv(step: WorkflowStep, script: string): Record<string, string> {
+  const names = new Set(isRecord(step.env) ? Object.keys(step.env) : []);
+  for (const [, name] of script.matchAll(/\$\{?([A-Z_][A-Z0-9_]*)/g)) names.add(name);
+  return Object.fromEntries([...names].filter((name) => !HARNESS_VARIABLES.has(name)).map((name) => [name, 'standin']));
+}
+
+/** The three pipeline workflows. */
+const PIPELINE_WORKFLOWS = ['deploy.yml', 'destroy.yml', 'infra-plan.yml'] as const;
+
+/** One step of one of the three pipeline workflows, with where it stands. */
+type PipelineStep = { file: string; jobId: string; name: string; step: WorkflowStep; script: string };
+
+/** The steps of the pipeline workflows whose `run` reads `$?`, found in the parsed workflows. */
+function statusReadingSteps(): Array<PipelineStep> {
+  return PIPELINE_WORKFLOWS.flatMap((file) =>
+    workflowJobs(loadWorkflow(join(WORKFLOWS, file)).doc).flatMap(([jobId, job]) =>
+      jobSteps(job).flatMap((step) =>
+        typeof step.run === 'string' && step.run.includes('$?')
+          ? [{ file, jobId, name: String(step.name), step, script: step.run }]
+          : []
+      )
+    )
+  );
+}
+
+/** The commands a sweep case replaces with a stub that fails: each reaches the network, a package or privileges. */
+const SWEEP_STUBS = [
+  'terraform',
+  'aws',
+  'curl',
+  'sudo',
+  'apt-get',
+  'yarn',
+  'psql',
+  'docker',
+  'gh',
+  'git',
+  'node',
+  'npx',
+  'supabase'
+] as const;
+
+/**
+ * The working directory of a sweep case: a failing stub at every `infra/scripts/<name>.sh` and `node_modules/.bin/<name>`
+ * the script names, and a copy of every other file of this repository under `infra/` or `apps/` it names.
+ */
+function sweepFiles(script: string): Record<string, WorkspaceFile> {
+  const files: Record<string, WorkspaceFile> = {};
+  for (const [path] of script.matchAll(/(?:infra\/scripts\/[A-Za-z0-9_-]+\.sh|node_modules\/\.bin\/[A-Za-z0-9_-]+)/g)) {
+    files[path] = { content: failingStub(path), executable: true };
+  }
+  for (const [match] of script.matchAll(/(?:infra|apps)\/[A-Za-z0-9_./-]+/g)) {
+    const path = match.replace(/\.+$/, '');
+    if (path in files || !isRepositoryFile(path)) continue;
+    files[path] = { content: readFileSync(join(REPO_ROOT, path), 'utf8') };
+  }
+  return files;
+}
+
+/** Whether a relative path names a file of this repository. */
+function isRepositoryFile(path: string): boolean {
+  try {
+    return statSync(join(REPO_ROOT, path)).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/** The step named `name` of job `jobId` in `file`, from the status-reading steps or the parsed workflow. */
+function pipelineStep(file: string, jobId: string, name: string): PipelineStep {
+  return { file, jobId, name, step: findStep(file, jobId, name), script: stepScript(file, jobId, name) };
+}
+
+/** The parsed step; throws naming the file, the job and the step when it is absent. */
+function findStep(file: string, jobId: string, name: string): WorkflowStep {
+  const job = workflowJobs(loadWorkflow(join(WORKFLOWS, file)).doc).find(([id]) => id === jobId)?.[1];
+  const step = job ? jobSteps(job).find((candidate) => candidate.name === name) : undefined;
+  if (!step) throw new Error(`${file} has no job ${jobId} with a step named ${JSON.stringify(name)}`);
+  return step;
+}
+
+/** `script` with `+e` added to its first `set -uo pipefail` line, which turns errexit off for the copy. */
+function withErrexitOff(script: string): string {
+  return mutateAll(script, /^([ \t]*)set -uo pipefail$/m, '$1set +e -uo pipefail');
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /**
@@ -263,5 +388,180 @@ describe('the wrong-subject step of infra-plan.yml under bash -e', () => {
     const run = runUnderRunnerShell(mutateAll(script, STATUS_CAPTURE, ''), { stubs: { curl, aws: refusingAws }, env });
     for (const line of refusalLines) expect(lines(run.stdout)).not.toContain(line);
     expect(run.status).not.toBe(0);
+  });
+});
+
+describe('every status-reading step of the pipeline workflows under bash -e', () => {
+  const population = statusReadingSteps();
+
+  it('finds status-reading steps in the three workflows', () => {
+    expect(population.length).toBeGreaterThan(0);
+  });
+
+  for (const { file, jobId, name, step, script } of population) {
+    it(`${file} ${jobId} ${name}`, () => {
+      const run = runUnderRunnerShell(script, {
+        stubs: Object.fromEntries(SWEEP_STUBS.map((stub) => [stub, failingStub(stub)])),
+        files: sweepFiles(script),
+        env: standInEnv(step, script)
+      });
+      expect(lines(run.stdout).filter((line) => line.startsWith('::error::'))).not.toEqual([]);
+      expect(run.status).not.toBe(0);
+    });
+  }
+});
+
+describe('the build step of deploy.yml under bash -e', () => {
+  const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Build and push the image');
+  const tfvars = 'infra/envs/staging/aws/terraform.tfvars';
+  const digest = `sha256:${'0123456789abcdef'.repeat(4)}`;
+
+  function runWithBuildScript(body: string): RunnerShellResult {
+    return runUnderRunnerShell(script, {
+      files: {
+        [tfvars]: { content: readFileSync(join(REPO_ROOT, tfvars), 'utf8') },
+        'infra/scripts/build-push-image.sh': { content: body, executable: true }
+      },
+      env: standInEnv(step, script)
+    });
+  }
+
+  it('prints failed=build and its own error line and exits 1 when the build fails', () => {
+    const run = runWithBuildScript('echo failed=build\nexit 1');
+    for (const line of ['failed=build', 'build_exit=1', '::error::build-push-image.sh exited 1.']) {
+      expect(lines(run.stdout)).toContain(line);
+    }
+    expect(run.status).toBe(1);
+  });
+
+  it('goes on to the digest when the registry already holds the image, status 3', () => {
+    const run = runWithBuildScript(`echo 'tag_exists=yes image_digest=${digest}'\nexit 3`);
+    expect(lines(run.stdout)).toContain('build_exit=3');
+    expect(lines(run.stdout)).toContain(`digest=${digest}`);
+    expect(lines(run.githubOutput)).toContain(`digest=${digest}`);
+    expect(run.status).toBe(0);
+  });
+});
+
+describe('the plan step of infra-plan.yml under bash -e', () => {
+  const { step, script } = pipelineStep('infra-plan.yml', 'plan', 'Plan the staging AWS root');
+
+  it('accepts plan status 2, a plan with changes', () => {
+    const run = runUnderRunnerShell(script, { stubs: { terraform: 'exit 2' }, env: standInEnv(step, script) });
+    expect(lines(run.stdout)).toContain('plan_exit=2');
+    expect(run.status).toBe(0);
+  });
+
+  it('fails with its own error line on plan status 1', () => {
+    const run = runUnderRunnerShell(script, { stubs: { terraform: 'exit 1' }, env: standInEnv(step, script) });
+    expect(lines(run.stdout)).toContain('::error::terraform plan exited 1.');
+    expect(run.status).toBe(1);
+  });
+});
+
+describe('the Supabase-root step of destroy.yml under bash -e', () => {
+  const { step, script } = pipelineStep(
+    'destroy.yml',
+    'plan-destroy',
+    "Show the Supabase root's state is out of reach"
+  );
+  const refusingAws = [
+    "echo 'An error occurred (403) when calling the HeadObject operation: Forbidden' >&2",
+    'exit 254'
+  ].join('\n');
+
+  it('passes on the two expected refusals', () => {
+    const run = runUnderRunnerShell(script, {
+      stubs: {
+        terraform: "echo 'Error refreshing state: AccessDenied: Access Denied, status code: 403'\nexit 1",
+        aws: refusingAws
+      },
+      env: standInEnv(step, script)
+    });
+    for (const line of ['supabase_root_init_status=1', 'supabase_state_head_status=254', 'supabase_root_refused=yes']) {
+      expect(lines(run.stdout)).toContain(line);
+    }
+    expect(run.status).toBe(0);
+  });
+
+  it('fails when the init of the Supabase root succeeds', () => {
+    const run = runUnderRunnerShell(script, {
+      stubs: { terraform: 'exit 0', aws: refusingAws },
+      env: standInEnv(step, script)
+    });
+    expect(lines(run.stdout)).toContain('supabase_root_refused=no');
+    expect(run.status).toBe(1);
+  });
+});
+
+describe('a command whose status a step does not read still ends the step under bash -e', () => {
+  describe('the functions step of deploy.yml, when config.toml cannot be read', () => {
+    const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Deploy the functions');
+    const config = 'apps/supabase/supabase/config.toml';
+    const functions = readdirSync(join(REPO_ROOT, 'apps/supabase/supabase/functions'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('_'))
+      .map((entry) => entry.name);
+    const list = JSON.stringify(functions.map((slug) => ({ slug, status: 'ACTIVE', verify_jwt: true })));
+    const options = {
+      stubs: {
+        curl: [
+          'out=',
+          'while [ "$#" -gt 0 ]; do',
+          '  if [ "$1" = -o ]; then out="$2"; shift; fi',
+          '  shift',
+          'done',
+          `printf '%s' '${list}' > "$out"`,
+          'printf 200'
+        ].join('\n'),
+        awk: selectiveStub('awk', 'config.toml')
+      },
+      files: {
+        [config]: { content: readFileSync(join(REPO_ROOT, config), 'utf8') },
+        'node_modules/.bin/supabase': { content: 'exit 0', executable: true },
+        ...Object.fromEntries(
+          functions.map((slug) => [`apps/supabase/supabase/functions/${slug}/.keep`, { content: '' }])
+        )
+      },
+      env: standInEnv(step, script)
+    };
+
+    it('holds three function directories', () => {
+      expect(functions).toHaveLength(3);
+    });
+
+    it('stops at the failed read instead of taking verify_jwt as true', () => {
+      const run = runUnderRunnerShell(script, options);
+      expect(lines(run.stdout).filter((line) => line.startsWith('function='))).toEqual([]);
+      expect(run.status).not.toBe(0);
+    });
+
+    it('would go on with verify_jwt taken as true if errexit were off, the control', () => {
+      const run = runUnderRunnerShell(withErrexitOff(script), options);
+      expect(lines(run.stdout).filter((line) => line.startsWith('function='))).not.toEqual([]);
+    });
+  });
+
+  describe('the plan print of deploy.yml, when the printed plan cannot be read', () => {
+    const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Show the plan');
+    const heading = '### Plan of infra/envs/staging/aws';
+    const options = {
+      stubs: {
+        terraform: "echo 'Plan: 0 to add, 1 to change, 0 to destroy.'\nexit 0",
+        cat: selectiveStub('cat', 'tfplan.txt')
+      },
+      env: standInEnv(step, script)
+    };
+
+    it('stops at the failed print and writes no plan to the step summary', () => {
+      const run = runUnderRunnerShell(script, options);
+      expect(run.stepSummary).not.toContain(heading);
+      expect(run.status).not.toBe(0);
+    });
+
+    it('would write the plan heading and exit 0 if errexit were off, the control', () => {
+      const run = runUnderRunnerShell(withErrexitOff(script), options);
+      expect(run.stepSummary).toContain(heading);
+      expect(run.status).toBe(0);
+    });
   });
 });

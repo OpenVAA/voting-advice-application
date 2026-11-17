@@ -25,3 +25,40 @@ WRONG_SUBJECT_CONTROL_RED=yes
 WRONG_SUBJECT_LOCAL_LINES=token_subject,deploy_role_assume_status,deploy_role_error,plan_role_assume_status,plan_role_error
 
 `WRONG_SUBJECT_CONTROL_RED=yes` is the accepting-role case: the step exits 1 with its own `::error::A role did not refuse the subject ... with AccessDenied.` line. The capture-removed case exits non-zero and prints none of the five lines, which is the runner's failure reproduced on the fixed step.
+
+## Task 2: every status-reading step
+
+The population, read from the parsed workflows at Task 1's commit `79c173257` by the population gate of this task's verify, which printed `29 1 0`: 29 status-reading steps (12 in `deploy.yml`, 13 in `destroy.yml`, 4 in `infra-plan.yml`), 1 of them with every read captured in an `||` list (the wrong-subject step), and 0 steps that turn errexit off. The 29 steps held 42 `$?` reads.
+
+STATUS_READING_STEPS_AT_START=29
+STATUS_READS_CAPTURED_AT_START=1
+
+Red first, on the unchanged steps (`vitest run --config infra/vitest.config.ts workflow-errexit`, exit 1, 34 of 44 cases failed): 28 sweep cases and the six behaviour cases failed. The wrong-subject sweep case, the population case, the three wrong-subject cases, the function-directory count, the two unread-status cases and their two `+e` controls passed.
+
+ERREXIT_SWEEP_RED_AT_START=28
+
+- The 28 sweep cases red at start, each exiting non-zero with no `::error::` line:
+  - `deploy.yml` `deploy`: Build and push the image; Install psql; Plan the staging AWS root with the built digest; Show the plan; Link a work directory to the Supabase project; Push the migrations; Deploy the functions; Apply the saved plan; Check the rollout is stable; Run the deployed smoke entry; Read the served build again; Alert the operator.
+  - `destroy.yml` `plan-destroy`: Show the Supabase root's state is out of reach; List the state of the staging AWS root; Plan the destroy of the staging AWS root; Export the saved plan for the guard; Check the plan destroys the stack and nothing else; Show the plan.
+  - `destroy.yml` `apply-destroy`: List the state of the staging AWS root; Plan the destroy of the staging AWS root; Export the saved plan for the guard; Check the plan destroys the stack and nothing else; Show the plan; Apply the saved destroy plan; Show the state of the staging AWS root is empty.
+  - `infra-plan.yml` `plan`: Read the digest the service runs; Plan the staging AWS root; Show the plan.
+
+The fix: the 36 remaining reads (18 in `deploy.yml`, 15 in `destroy.yml`, 3 in `infra-plan.yml`) were each rewritten as `name=0` on the line before the command (before its first line when it continues over several) and ` || name=$?` on its last line, with the next-line read removed. Each workflow's header comment gained one sentence on why. No set line changed, and no `set +e`, `shell:` key or `defaults:` block was added. The scripts under `infra/scripts/` are unchanged.
+
+Green (`vitest run --config infra/vitest.config.ts workflow`, exit 0, 6 files, 205 tests passed, among them the five existing workflow test files with no assertion edited):
+
+ERREXIT_SWEEP_GREEN=29
+STATUS_READING_STEPS=29
+STATUS_READS_CAPTURED=29
+STEPS_WITH_ERREXIT_OFF=0
+BUILD_FAILURE_LOCAL_LINE=failed=build
+BUILD_STATUS_3_CONTINUES=yes
+PR_PLAN_STATUS_2_ACCEPTED=yes
+SUPABASE_ROOT_REFUSAL_PASSES=yes
+UNREAD_STATUS_ENDS_STEP=yes
+
+- `BUILD_FAILURE_LOCAL_LINE`: the build step, with the real staging AWS tfvars and a build script that prints `failed=build` and exits 1, printed `failed=build`, `build_exit=1` and `::error::build-push-image.sh exited 1.` and exited 1.
+- `BUILD_STATUS_3_CONTINUES`: with a build script that prints `tag_exists=yes image_digest=sha256:<64 hex>` and exits 3, it printed `build_exit=3` and `digest=sha256:<64 hex>`, wrote that digest to `GITHUB_OUTPUT` and exited 0.
+- `PR_PLAN_STATUS_2_ACCEPTED`: the pull-request plan step exited 0 with `plan_exit=2` on plan status 2, and exited 1 with `::error::terraform plan exited 1.` on status 1.
+- `SUPABASE_ROOT_REFUSAL_PASSES`: the destroy plan job's Supabase-root step printed `supabase_root_init_status=1`, `supabase_state_head_status=254` and `supabase_root_refused=yes` and exited 0 on the two refusals, and printed `supabase_root_refused=no` and exited 1 when the init succeeded.
+- `UNREAD_STATUS_ENDS_STEP`: the functions step, with `awk` failing on `config.toml`, exited non-zero with no `function=` line; its `+e` control printed `function=` lines with `verify_jwt` taken as true. The deploy job's plan print, with `cat` failing on `tfplan.txt`, exited non-zero with no plan heading in `GITHUB_STEP_SUMMARY`; its `+e` control exited 0 with the heading written.

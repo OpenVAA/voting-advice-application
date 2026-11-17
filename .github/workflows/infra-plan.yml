@@ -6,6 +6,10 @@ name: "Infrastructure plan"
 # A push to a `deploy-evidence/**` branch also runs this workflow. For a push GitHub takes the workflow file from the
 # pushed commit, so the run can be observed before the file is on the default branch.
 #
+# A step reads a command's status as `cmd || name=$?`, after `name=0`, because a `run:` step that names no `shell:`
+# runs under `bash -e`: that shell ends the step at a failing command that is not in an `||` list, so a status read
+# on the next line would never run, while every command whose status the step does not read still ends the step.
+#
 # The repository's default token may write, so the top-level permissions are empty and every job names its own.
 
 on:
@@ -163,8 +167,8 @@ jobs:
         id: digest
         run: |
           set -uo pipefail
-          infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend > "$RUNNER_TEMP/running-digest.txt"
-          status=$?
+          status=0
+          infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend > "$RUNNER_TEMP/running-digest.txt" || status=$?
           cat "$RUNNER_TEMP/running-digest.txt"
           if [ "$status" -ne 0 ]; then
             echo "::error::running-image-digest.sh exited $status, so the plan has no digest to pass."
@@ -188,8 +192,8 @@ jobs:
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws plan -lock=false -input=false -no-color -detailed-exitcode -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan"
-          plan_exit=$?
+          plan_exit=0
+          terraform -chdir=infra/envs/staging/aws plan -lock=false -input=false -no-color -detailed-exitcode -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan" || plan_exit=$?
           echo "plan_exit=$plan_exit"
           if [ "$plan_exit" -ne 0 ] && [ "$plan_exit" -ne 2 ]; then
             echo "::error::terraform plan exited $plan_exit."
@@ -199,8 +203,8 @@ jobs:
       - name: "Show the plan"
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt"
-          show_exit=$?
+          show_exit=0
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt" || show_exit=$?
           if [ "$show_exit" -ne 0 ]; then
             echo "::error::terraform show exited $show_exit."
             exit 1

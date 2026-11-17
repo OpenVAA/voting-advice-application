@@ -24,6 +24,10 @@ name: "Destroy staging AWS"
 # A cancelled or timed-out apply can leave the state lock held; `terraform force-unlock` from the operator's shell
 # releases it.
 #
+# A step reads a command's status as `cmd || name=$?`, after `name=0`, because a `run:` step that names no `shell:`
+# runs under `bash -e`: that shell ends the step at a failing command that is not in an `||` list, so a status read
+# on the next line would never run, while every command whose status the step does not read still ends the step.
+#
 # The repository's default token may write, so the top-level permissions are empty and every job names its own.
 
 on:
@@ -85,17 +89,17 @@ jobs:
         id: supabase-root-refused
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/supabase init -input=false -no-color > "$RUNNER_TEMP/supabase-init.log" 2>&1
-          init_status=$?
+          init_status=0
+          terraform -chdir=infra/envs/staging/supabase init -input=false -no-color > "$RUNNER_TEMP/supabase-init.log" 2>&1 || init_status=$?
           echo "supabase_root_init_status=$init_status"
           init_refused=no
           if grep -q 'Error refreshing state' "$RUNNER_TEMP/supabase-init.log" \
             && grep -qE 'AccessDenied|403' "$RUNNER_TEMP/supabase-init.log"; then
             init_refused=yes
           fi
+          head_status=0
           aws s3api head-object --bucket openvaa-tfstate-471112560111 --key hand/staging/supabase/terraform.tfstate > /dev/null \
-            2> "$RUNNER_TEMP/supabase-head.err"
-          head_status=$?
+            2> "$RUNNER_TEMP/supabase-head.err" || head_status=$?
           echo "supabase_state_head_status=$head_status"
           head_refused=no
           if grep -qE 'Forbidden|AccessDenied|403' "$RUNNER_TEMP/supabase-head.err"; then
@@ -118,8 +122,8 @@ jobs:
         id: state
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state.txt"
-          state_exit=$?
+          state_exit=0
+          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state.txt" || state_exit=$?
           echo "state_list_exit=$state_exit"
           if [ "$state_exit" -ne 0 ]; then
             echo "::error::terraform state list exited $state_exit."
@@ -137,9 +141,9 @@ jobs:
           TF_VAR_alert_email: destroy-plan@example.invalid
         run: |
           set -uo pipefail
+          plan_exit=0
           terraform -chdir=infra/envs/staging/aws plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/destroy.tfplan" \
-            > "$RUNNER_TEMP/destroy-plan.log" 2>&1
-          plan_exit=$?
+            > "$RUNNER_TEMP/destroy-plan.log" 2>&1 || plan_exit=$?
           echo "plan_exit=$plan_exit"
           if [ "$plan_exit" -ne 0 ]; then
             cat "$RUNNER_TEMP/destroy-plan.log"
@@ -153,8 +157,8 @@ jobs:
         run: |
           set -uo pipefail
           umask 077
-          terraform -chdir=infra/envs/staging/aws show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json"
-          export_exit=$?
+          export_exit=0
+          terraform -chdir=infra/envs/staging/aws show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json" || export_exit=$?
           echo "export_exit=$export_exit"
           if [ "$export_exit" -ne 0 ]; then
             echo "::error::terraform show -json exited $export_exit."
@@ -165,8 +169,8 @@ jobs:
         id: guard
         run: |
           set -uo pipefail
-          infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt"
-          guard_exit=$?
+          guard_exit=0
+          infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt" || guard_exit=$?
           echo "guard_exit=$guard_exit"
           if [ "$guard_exit" -ne 0 ]; then
             echo "::error::check-destroy-plan.sh exited $guard_exit; the plan is not the destroy of the staging AWS stack."
@@ -177,8 +181,8 @@ jobs:
         id: show
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt"
-          show_exit=$?
+          show_exit=0
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt" || show_exit=$?
           if [ "$show_exit" -ne 0 ]; then
             echo "::error::terraform show exited $show_exit."
             exit 1
@@ -243,8 +247,8 @@ jobs:
         id: state
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state.txt"
-          state_exit=$?
+          state_exit=0
+          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state.txt" || state_exit=$?
           echo "state_list_exit=$state_exit"
           if [ "$state_exit" -ne 0 ]; then
             echo "::error::terraform state list exited $state_exit."
@@ -262,9 +266,9 @@ jobs:
           TF_VAR_alert_email: destroy-plan@example.invalid
         run: |
           set -uo pipefail
+          plan_exit=0
           terraform -chdir=infra/envs/staging/aws plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/destroy.tfplan" \
-            > "$RUNNER_TEMP/destroy-plan.log" 2>&1
-          plan_exit=$?
+            > "$RUNNER_TEMP/destroy-plan.log" 2>&1 || plan_exit=$?
           echo "plan_exit=$plan_exit"
           if [ "$plan_exit" -ne 0 ]; then
             cat "$RUNNER_TEMP/destroy-plan.log"
@@ -278,8 +282,8 @@ jobs:
         run: |
           set -uo pipefail
           umask 077
-          terraform -chdir=infra/envs/staging/aws show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json"
-          export_exit=$?
+          export_exit=0
+          terraform -chdir=infra/envs/staging/aws show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json" || export_exit=$?
           echo "export_exit=$export_exit"
           if [ "$export_exit" -ne 0 ]; then
             echo "::error::terraform show -json exited $export_exit."
@@ -290,8 +294,8 @@ jobs:
         id: guard
         run: |
           set -uo pipefail
-          infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt"
-          guard_exit=$?
+          guard_exit=0
+          infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt" || guard_exit=$?
           echo "guard_exit=$guard_exit"
           if [ "$guard_exit" -ne 0 ]; then
             echo "::error::check-destroy-plan.sh exited $guard_exit; the plan is not the destroy of the staging AWS stack."
@@ -302,8 +306,8 @@ jobs:
         id: show
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt"
-          show_exit=$?
+          show_exit=0
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt" || show_exit=$?
           if [ "$show_exit" -ne 0 ]; then
             echo "::error::terraform show exited $show_exit."
             exit 1
@@ -321,8 +325,8 @@ jobs:
         id: apply
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/destroy.tfplan"
-          apply_exit=$?
+          apply_exit=0
+          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/destroy.tfplan" || apply_exit=$?
           echo "apply_exit=$apply_exit"
           if [ "$apply_exit" -ne 0 ]; then
             echo "::error::terraform apply exited $apply_exit."
@@ -333,14 +337,14 @@ jobs:
         id: state-after
         run: |
           set -uo pipefail
-          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state-after.txt"
-          state_exit=$?
+          state_exit=0
+          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state-after.txt" || state_exit=$?
           if [ "$state_exit" -ne 0 ]; then
             echo "::error::terraform state list exited $state_exit."
             exit 1
           fi
-          count=$(awk 'NF { n++ } END { print n + 0 }' "$RUNNER_TEMP/state-after.txt")
-          count_exit=$?
+          count_exit=0
+          count=$(awk 'NF { n++ } END { print n + 0 }' "$RUNNER_TEMP/state-after.txt") || count_exit=$?
           echo "destroy_state_after=$count"
           if [ "$count_exit" -ne 0 ] || [ -z "$count" ]; then
             echo "::error::The state list after the destroy could not be counted."
