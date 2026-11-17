@@ -660,7 +660,7 @@ Plans:
 - [x] 187-28-PLAN.md — wave 12 — Gap closure after the CI measurement and the rebase onto `fix/v2.16-ci-e2e`: every gate on the rebased tree, the evidence chain again, the closing full E2E run on the functions env template, the `ci-evidence/187-final-4` push, and the run read job by job; on green, 187-15, 187-26 and 187-27 closed.
 
 **Wave 13** *(needs the operator; gap closure)*
-- [ ] 187-29-PLAN.md — wave 13 — Gap closure of plan 18's red run: every status-reading step of the three workflows turns errexit off before it reads `$?`, proven under `bash -e` with stub commands and locked by a shared rule; the evidence commits rebuilt and the red build re-proven locally; a new red push as `deploy-evidence/187-red-2` showing `failed=build`, both roles refusing the branch subject, and nothing hosted written.
+- [ ] 187-29-PLAN.md — wave 13 — Gap closure of plan 18's red run: every status read of the three workflows is captured as `cmd || name=$?`, so the runner's `bash -e` lets each step reach its diagnosis and still ends a step at any other failing command, proven under `bash -e` with stub commands and locked by a shared rule; the evidence commits rebuilt and the red build re-proven locally; a new red push as `deploy-evidence/187-red-2` showing `failed=build`, both roles refusing the branch subject, and nothing hosted written.
 
 **Wave 14** *(needs the operator)*
 - [ ] 187-18-PLAN.md — wave 14 — H8: the red run from a broken build, its alert, and the wrong-subject refusal. (stopped at Task 3; its run 44042442257 executed; the five lines the runner's `bash -e` hid are closed by 187-29; closes on the operator's alert-mail lines)
