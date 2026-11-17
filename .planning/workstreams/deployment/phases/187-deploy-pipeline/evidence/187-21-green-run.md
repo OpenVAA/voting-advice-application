@@ -2,15 +2,17 @@
 
 ## Task 1: readiness, read-only (2026-11-17)
 
+The lines of this section were superseded on 2026-11-17 by plan 187-30, because attempt 2 records them again for the rebuilt commit.
+
 Recorded 2026-11-17 (UTC) by the plan executor of plan 187-21, from HEAD `619505b3685c71ba315b587f2eb852415cb80f2b`, between 14:50Z and 14:58Z. Nothing was pushed, no workflow was started, and no hosted service or GitHub setting was written. The remote reads were `gh api` GETs (the `staging` environment's secret names, the repository's workflow runs), one `git ls-remote origin`, one GET of `https://staging.openvaa.org/api/health`, and, with `AWS_PROFILE=openvaa-admin`, `aws sts get-caller-identity` and `infra/scripts/running-image-digest.sh`, which only reads. Every status was read on its own line, never through a pipe.
 
 ### The commit
 
 ```
-GREEN_COMMIT=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499
-GREEN_REBUILT=no
-GREEN_TREE_OK=yes
-E2E_TREE_COVERS_GREEN=yes
+GREEN_COMMIT_SUPERSEDED=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499
+GREEN_REBUILT_SUPERSEDED=no
+GREEN_TREE_OK_SUPERSEDED=yes
+E2E_TREE_COVERS_GREEN_SUPERSEDED=yes
 ```
 
 - **`GREEN_COMMIT=`.** `git rev-parse refs/evidence/187/green` prints `0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499`, the commit plan 187-19 rebuilt and pushed as `pr-evidence/187-head` (`PR_HEAD_PUSHED=` of `evidence/187-19-pr-plan.md`). Its tree is `fe42deb049d9dcbb43dc53aeecd17855862cc2dd`, and `git ls-tree refs/evidence/187/green -- .planning` lists nothing.
@@ -20,8 +22,8 @@ E2E_TREE_COVERS_GREEN=yes
 ### The contestant
 
 ```
-CONTESTANT_READY=yes
-ENV_STAGING_SECRET_NAMES=ALERT_EMAIL,SMOKE_CONTESTANT_EMAIL,SMOKE_CONTESTANT_PASSWORD,SUPABASE_ACCESS_TOKEN,SUPABASE_DB_PASSWORD
+CONTESTANT_READY_SUPERSEDED=yes
+ENV_STAGING_SECRET_NAMES_SUPERSEDED=ALERT_EMAIL,SMOKE_CONTESTANT_EMAIL,SMOKE_CONTESTANT_PASSWORD,SUPABASE_ACCESS_TOKEN,SUPABASE_DB_PASSWORD
 ```
 
 - `gh api repos/OpenVAA/voting-advice-application/environments/staging/secrets --jq '[.secrets[].name]|sort|join(",")'` exit 0, the five names above; no value was read. `evidence/187-17-smoke-contestant.md` holds `CONTESTANT_SECRETS_PRESENT=yes` (Task 3, 2026-11-15) and records the hosted contestant's full deployed smoke run green (`GREEN_SMOKE_EXIT=0`, `GREEN_VERDICT_EXIT=0`, `CREDENTIAL_LEAK_CHECK=clean`). The names are unchanged since then.
@@ -29,10 +31,10 @@ ENV_STAGING_SECRET_NAMES=ALERT_EMAIL,SMOKE_CONTESTANT_EMAIL,SMOKE_CONTESTANT_PAS
 ### The expected plan
 
 ```
-PR_PLAN_AS_EXPECTED=yes
-RUNNING_TASK_DEFINITION_BEFORE=arn:aws:ecs:eu-north-1:471112560111:task-definition/openvaa-staging-frontend:6
-RUNNING_IMAGE_REFERENCE_BEFORE=tag
-RUNNING_IMAGE_DIGEST_BEFORE=sha256:bab8fa75c6094a2cecab07282826bffa4d9746bf7ee56fc7231b8283ea937bea
+PR_PLAN_AS_EXPECTED_SUPERSEDED=yes
+RUNNING_TASK_DEFINITION_BEFORE_SUPERSEDED=arn:aws:ecs:eu-north-1:471112560111:task-definition/openvaa-staging-frontend:6
+RUNNING_IMAGE_REFERENCE_BEFORE_SUPERSEDED=tag
+RUNNING_IMAGE_DIGEST_BEFORE_SUPERSEDED=sha256:bab8fa75c6094a2cecab07282826bffa4d9746bf7ee56fc7231b8283ea937bea
 ```
 
 - **`PR_PLAN_AS_EXPECTED=yes`.** `evidence/187-19-pr-plan.md` holds `PR_PLAN_SUMMARY=Plan: 1 to add, 1 to change, 1 to destroy.`, `PR_PLAN_MATCHES_EXPECTED=yes`, `PR_PLAN_SUBSCRIPTION_UNCHANGED=yes` and `PR_PLAN_IN_SUMMARY=yes`, made from this same commit (`PR_HEAD_PUSHED=0a73bb6df…`) at 14:34Z today: `module.frontend.aws_ecs_task_definition.app` replaced and `module.frontend.aws_ecs_service.app` updated in place, nothing else.
@@ -41,12 +43,12 @@ RUNNING_IMAGE_DIGEST_BEFORE=sha256:bab8fa75c6094a2cecab07282826bffa4d9746bf7ee56
 ### The migrations
 
 ```
-MIGRATIONS_AT_COMMIT=00001_initial_schema.sql,00002_claim_excludes_identity_provider_accounts.sql,00003_address_confirmation_request.sql,00004_user_entities_pending_email_taken.sql,00005_invitation_link_bounds.sql,00006_nomination_write_guards.sql,00007_nomination_write_kept_constituency.sql,00008_bulk_import_key_quoting.sql,00009_contestant_app_public_config_bounded.sql,00010_claim_grant_key_conflict_target.sql,00011_invitation_email_target_open_rows.sql,00012_bulk_import_constituency_links.sql,00013_nomination_constituency_rule.sql,00014_set_entity_nominations_constituency_once.sql,00015_answers_lock_entity_rows.sql,00016_answers_lock_nominations_storage.sql,00017_user_can_reads_grants.sql,00018_identity_entity_find_or_create.sql,00019_address_holds_open_invitation.sql,00020_identity_metadata_written_under_lock.sql,00021_email_holds_global_or_account_grant.sql,00022_grants_reaching_a_project.sql
-EXPECTED_PENDING=00002,00003,00004,00005,00006,00007,00008,00009,00010,00011,00012,00013,00014,00015,00016,00017,00018,00019,00020,00021,00022
-MIGRATIONS_PENDING_COUNT=21
-MIGRATIONS_ON_STAGING=00001
-MIGRATION_00001_BLOB=2b07ce7c378db9c59b09165762b2b0bf0af351cf
-MIGRATIONS_PENDING_MATCH_187_27=21
+MIGRATIONS_AT_COMMIT_SUPERSEDED=00001_initial_schema.sql,00002_claim_excludes_identity_provider_accounts.sql,00003_address_confirmation_request.sql,00004_user_entities_pending_email_taken.sql,00005_invitation_link_bounds.sql,00006_nomination_write_guards.sql,00007_nomination_write_kept_constituency.sql,00008_bulk_import_key_quoting.sql,00009_contestant_app_public_config_bounded.sql,00010_claim_grant_key_conflict_target.sql,00011_invitation_email_target_open_rows.sql,00012_bulk_import_constituency_links.sql,00013_nomination_constituency_rule.sql,00014_set_entity_nominations_constituency_once.sql,00015_answers_lock_entity_rows.sql,00016_answers_lock_nominations_storage.sql,00017_user_can_reads_grants.sql,00018_identity_entity_find_or_create.sql,00019_address_holds_open_invitation.sql,00020_identity_metadata_written_under_lock.sql,00021_email_holds_global_or_account_grant.sql,00022_grants_reaching_a_project.sql
+EXPECTED_PENDING_SUPERSEDED=00002,00003,00004,00005,00006,00007,00008,00009,00010,00011,00012,00013,00014,00015,00016,00017,00018,00019,00020,00021,00022
+MIGRATIONS_PENDING_COUNT_SUPERSEDED=21
+MIGRATIONS_ON_STAGING_SUPERSEDED=00001
+MIGRATION_00001_BLOB_SUPERSEDED=2b07ce7c378db9c59b09165762b2b0bf0af351cf
+MIGRATIONS_PENDING_MATCH_187_27_SUPERSEDED=21
 ```
 
 - **`MIGRATIONS_AT_COMMIT=`.** `git ls-tree --name-only refs/evidence/187/green apps/supabase/supabase/migrations/` exit 0, 22 files.
@@ -57,9 +59,9 @@ MIGRATIONS_PENDING_MATCH_187_27=21
 ### For the reviewer of Task 2 (from the records of plan 187-27, not re-read on hosted services)
 
 ```
-STAGING_SETTINGS_HAND_APPLY=needed-before:187-21
-STAGING_SETTINGS_HAND_APPLY_RECORDED=no
-MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no
+STAGING_SETTINGS_HAND_APPLY_SUPERSEDED=needed-before:187-21
+STAGING_SETTINGS_HAND_APPLY_RECORDED_SUPERSEDED=no
+MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED_SUPERSEDED=no
 ```
 
 - **`STAGING_SETTINGS_HAND_APPLY=needed-before:187-21`, `STAGING_SETTINGS_HAND_APPLY_RECORDED=no`.** `deferred-items.md` (2026-11-16, plan 187-27) and `evidence/187-27-ci-closure.md` § Task 2 require the operator to apply Step 18 of `infra/envs/staging/supabase/README.md` (`R=staging`) in the same sitting as this deploy, immediately before its approval: `mailer_otp_length` 6 to 10, and the redirect paths from `/api/auth/callback` to `/auth/confirm`. The functions this run deploys issue a sign-in link only when `/auth/confirm` is admitted, and `deploy.yml` sets no auth setting. The last row of that runbook's Observations is dated 2026-11-15, so no such apply is recorded yet. Without it the run can still be green (the smoke signs in with a password and mails nothing), but staging's mailed links would be refused after the deploy until the apply.
@@ -68,9 +70,9 @@ MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no
 ### The branch, the served build, the runs
 
 ```
-GREEN_BRANCH_ABSENT=yes
-SERVED_BUILD_BEFORE=712947a1bd44a735f66ee8f51610f4748d76cd30
-NO_RUN_ACTIVE=yes
+GREEN_BRANCH_ABSENT_SUPERSEDED=yes
+SERVED_BUILD_BEFORE_SUPERSEDED=712947a1bd44a735f66ee8f51610f4748d76cd30
+NO_RUN_ACTIVE_SUPERSEDED=yes
 ```
 
 - **`GREEN_BRANCH_ABSENT=yes`.** `git ls-remote origin refs/heads/deploy-evidence/187-green` exit 0, 0 bytes.
@@ -110,13 +112,15 @@ MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no
 
 ## Task 3: the push and the run (2026-11-17)
 
+The lines of this section were superseded on 2026-11-17 by plan 187-30, because attempt 2 records them again for the rebuilt commit.
+
 ### The push
 
 ```
-GREEN_PUSHED=yes
-GREEN_PUSHED_SHA=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499
-GREEN_RUN_ID=44165083175
-GREEN_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44165083175
+GREEN_PUSHED_SUPERSEDED=yes
+GREEN_PUSHED_SHA_SUPERSEDED=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499
+GREEN_RUN_ID_SUPERSEDED=44165083175
+GREEN_RUN_URL_SUPERSEDED=https://github.com/OpenVAA/voting-advice-application/actions/runs/44165083175
 ```
 
 - The orchestrator pushed at top level after the binding above: `git push origin 0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499:refs/heads/deploy-evidence/187-green` exit 0, and `git ls-remote origin refs/heads/deploy-evidence/187-green` read it back at that SHA. `git ls-remote` had printed nothing before the push, and no deploy run was active.
@@ -125,13 +129,101 @@ GREEN_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/
 ### The checks job and the gate
 
 ```
-CHECKS_JOB=success
-CHECKS_JOB_ID=134328857709
-DEPLOY_JOB_ID=134329653364
-GATE_WAITED=yes
-GATE_ENVIRONMENT=staging
-GATE_WAIT_TIMER=0
+CHECKS_JOB_SUPERSEDED=success
+CHECKS_JOB_ID_SUPERSEDED=134328857709
+DEPLOY_JOB_ID_SUPERSEDED=134329653364
+GATE_WAITED_SUPERSEDED=yes
+GATE_ENVIRONMENT_SUPERSEDED=staging
+GATE_WAIT_TIMER_SUPERSEDED=0
 ```
 
 - **`CHECKS_JOB=success`.** `gh api repos/OpenVAA/voting-advice-application/actions/jobs/134328857709` exit 0: `success`, 20:02:50Z to 20:04:03Z (73 s). Steps, each `success`: Set up job (4 s), Checkout source code (8 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (1 s), Validate the staging AWS root (9 s), Setup Node.js 24.21.0 (4 s), Setup Yarn 4.18 (28 s), Unit tests of the infrastructure scripts (13 s), and the post and complete steps (0 s).
 - **`GATE_WAITED=yes`.** At 20:04:10Z `gh run view 44165083175` read the run `waiting` and its `deploy` job (id `134329653364`, created 20:04:03Z) `waiting`. `gh api repos/OpenVAA/voting-advice-application/actions/runs/44165083175/pending_deployments` (a GET) exit 0: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing.
+
+## Task 3, attempt 1: approved, red at the plan step (2026-11-17)
+
+Recorded read-only on 2026-11-17 (UTC) by plan 187-30, which fixed the cause. The reads were `gh api` GETs of run `44165083175`, of its approvals (each entry's `state` and environment names only, no user) and of the deploy job `134329653364`; `gh run view 44165083175 --log --job 134329653364` to a file; `gh run list --branch deploy-evidence/187-green`; one GET of `https://staging.openvaa.org/api/health` (HTTP 200); and, with `AWS_PROFILE=openvaa-admin`, `infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend` (exit 0), which only reads. Each status was read on its own line; the outputs are under `tmp/187-30/a1/` (ignored). Nothing was pushed, approved or re-run.
+
+```
+A1_ATTEMPT=20261117T145717Z.6854e9d6f
+A1_RUN_ID=44165083175
+A1_RUN_HEAD=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499
+A1_RUN_ATTEMPT=1
+A1_RUN_CONCLUSION=failure
+A1_GATE_REVIEW=approved
+A1_GATE_ENVIRONMENT=staging
+A1_DEPLOY_STEPS=33
+A1_STEP=Set up job conclusion=success seconds=1
+A1_STEP=Checkout source code conclusion=success seconds=2
+A1_STEP=Assume the deploy role conclusion=success seconds=1
+A1_STEP=Build and push the image conclusion=success seconds=185
+A1_STEP=Drop the build credentials conclusion=success seconds=0
+A1_STEP=Setup Node.js 24.21.0 conclusion=success seconds=5
+A1_STEP=Setup Yarn 4.18 conclusion=success seconds=23
+A1_STEP=Install psql conclusion=success seconds=19
+A1_STEP=Setup Terraform 1.16.5 conclusion=success seconds=1
+A1_STEP=Assume the deploy role for the plan conclusion=success seconds=1
+A1_STEP=Initialise the staging AWS root conclusion=success seconds=8
+A1_STEP=Plan the staging AWS root with the built digest conclusion=failure seconds=1
+A1_STEP=Show the plan conclusion=skipped seconds=0
+A1_STEP=Drop the plan credentials conclusion=skipped seconds=0
+A1_STEP=Link a work directory to the Supabase project conclusion=skipped seconds=0
+A1_STEP=Push the migrations conclusion=skipped seconds=0
+A1_STEP=Deploy the functions conclusion=skipped seconds=0
+A1_STEP=Assume the deploy role again for the apply conclusion=skipped seconds=0
+A1_STEP=Apply the saved plan conclusion=skipped seconds=0
+A1_STEP=Check the rollout is stable conclusion=skipped seconds=0
+A1_STEP=Drop the rollout credentials conclusion=skipped seconds=0
+A1_STEP=Install Playwright's Chromium conclusion=skipped seconds=0
+A1_STEP=Run the deployed smoke entry conclusion=skipped seconds=0
+A1_STEP=Read the served build again conclusion=skipped seconds=0
+A1_STEP=Remove the plan, the smoke output and the step files conclusion=success seconds=0
+A1_STEP=Assume the deploy role again for the alert conclusion=success seconds=1
+A1_STEP=Alert the operator conclusion=success seconds=1
+A1_STEP=Post Assume the deploy role again for the alert conclusion=success seconds=0
+A1_STEP=Post Assume the deploy role for the plan conclusion=success seconds=0
+A1_STEP=Post Setup Node.js 24.21.0 conclusion=skipped seconds=0
+A1_STEP=Post Assume the deploy role conclusion=success seconds=0
+A1_STEP=Post Checkout source code conclusion=success seconds=1
+A1_STEP=Complete job conclusion=success seconds=0
+A1_JOB_MINUTES=4.2
+A1_BUILD_EXIT_LINE=build_exit=0
+A1_BUILD_DIGEST=sha256:da3001d2c059fea66e200cf67f47ebcac7772e215e02bea91ef286c6cb2fe9a7
+A1_INIT_WARNED=yes
+A1_FAILED_STEP=Plan the staging AWS root with the built digest
+A1_FAILED_STEP_SECONDS=1
+A1_PLAN_EXIT_LINE=plan_exit=1
+A1_LATER_STAGES=skipped
+A1_ALERT_STEP=Alert the operator conclusion=success
+A1_ALERT_STAGE=plan
+A1_ALERT_MESSAGE_ID=233a4f1d-5df1-5a81-a89a-2c6b9dc54eae
+A1_INFRA_PLAN_RUN_ID=44165083297
+A1_INFRA_PLAN_RUN_CONCLUSION=success
+A1_SERVED_BUILD_AFTER=712947a1bd44a735f66ee8f51610f4748d76cd30
+A1_RUNNING_TASK_DEFINITION_AFTER=arn:aws:ecs:eu-north-1:471112560111:task-definition/openvaa-staging-frontend:6
+A1_RUNNING_IMAGE_REFERENCE_AFTER=tag
+A1_RUNNING_IMAGE_DIGEST_AFTER=sha256:bab8fa75c6094a2cecab07282826bffa4d9746bf7ee56fc7231b8283ea937bea
+A1_HOSTED_UNCHANGED=yes
+A1_MIGRATIONS_PUSHED=none
+A1_FUNCTIONS_DEPLOYED=none
+A1_APPLIED=no
+A1_HOSTED_WRITES=ecr-image,alert
+A1_CAUSE=lock-without-linux_arm64
+```
+
+The log lines, as printed, without their timestamps:
+
+```
+Warning: Provider lock file not updated
+Error: Required plugins are not installed
+  - registry.terraform.io/hashicorp/aws: the cached package for registry.terraform.io/hashicorp/aws 6.68.0 (in .terraform/providers) does not match any of the checksums recorded in the dependency lock file
+  - registry.terraform.io/hashicorp/random: the cached package for registry.terraform.io/hashicorp/random 3.9.1 (in .terraform/providers) does not match any of the checksums recorded in the dependency lock file
+plan_exit=1
+alert_stage=plan
+```
+
+- **The cause.** The deploy job runs on `ubuntu-24.04-arm`, and `infra/envs/staging/aws/.terraform.lock.hcl` held `h1:` hashes for linux_amd64, darwin_arm64 and darwin_amd64 only. `init -lockfile=readonly` installed the linux_arm64 packages, checked against the `zh:` hashes, but could not record their `h1:` hashes, and the plan then refused both providers. The fix (every root lock written for linux_amd64, linux_arm64, darwin_arm64 and darwin_amd64, guarded by the rules `arm-lock` and `lock-platforms`) and its proofs, the failure reproduced on linux/arm64 and the fixed lock green there, are in `evidence/187-30-arm64-lock.md`.
+- **Not re-run.** Run `44165083175` was not re-run, and no job of it. `A1_RUN_ATTEMPT=1` above is its only attempt.
+- **What the run wrote.** The build step pushed the image tagged with commit `0a73bb6df` (`image_tag=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499`, digest `A1_BUILD_DIGEST`) to the registry, where it stays; no task definition names it, since the apply that would register one was skipped and the running task definition is still `openvaa-staging-frontend:6` at the digest it ran before. The alert step published one alert with `alert_stage=plan`. Every step from `Show the plan` to `Read the served build again` was skipped, so no migration was pushed, no function deployed and nothing applied.
+- **The migrations.** The 21 migrations `00002` to `00022` are still pending on the persistent project; staging holds `00001` alone.
+- **Still open.** Whether the hosted `postgres` role holds UPDATE on `auth.users` for the SECURITY DEFINER functions of `00018` and `00020` is still unchecked, as accepted in § Task 2 above; this attempt pushed no migration, so it neither raised nor settled the question.
