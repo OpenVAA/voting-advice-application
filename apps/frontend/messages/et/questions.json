@@ -1,0 +1,78 @@
+{
+  "questions": {
+    "additionalActions": "Rohkem toiminguid selle küsimuse kohta",
+    "answers": {
+      "bothHaventAnswered": "Sina ja {entity} pole sellele küsimusele vastanud",
+      "entityHasntAnswered": "{entity} ei ole sellele küsimusele vastanud",
+      "youHaventAnswered": "Sa ei ole sellele küsimusele vastanud",
+      "yourAnswer": "Sina"
+    },
+    "arguments": {
+      "con": "Vastu",
+      "pro": "Poolt",
+      "proCategory": "Poolt: {option}",
+      "title": "Argumendid"
+    },
+    "category": {
+      "numQuestions": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=-1": "",
+            "numQuestions=1": "1 küsimus",
+            "numQuestions=*": "{numQuestions} küsimust"
+          }
+        }
+      ],
+      "skip": "Jäta see teema vahele"
+    },
+    "infoDescription": "Taustainfo selle küsimuse kohta",
+    "intro": {
+      "ingress": {
+        "withCategorySelection": [
+          {
+            "declarations": ["input minQuestions", "input numCategories"],
+            "selectors": ["minQuestions"],
+            "match": {
+              "minQuestions=0": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. ",
+              "minQuestions=1": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. ",
+              "minQuestions=*": "Küsimused on jagatud {numCategories} teemaks. Võid vastata kõigile või valida ainult osa. Vali siiski piisavalt teemasid, et neis oleks vähemalt {minQuestions} küsimust."
+            }
+          }
+        ],
+        "withoutCategorySelection": [
+          {
+            "declarations": ["input numCategories", "input numQuestions"],
+            "selectors": ["numCategories"],
+            "match": {
+              "numCategories=0": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. ",
+              "numCategories=1": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. ",
+              "numCategories=*": "Vasta järgmisena {numQuestions} küsimusele poliitika ja väärtuste kohta. Need on jagatud {numCategories} teemaks."
+            }
+          }
+        ]
+      },
+      "start": "Vasta {numQuestions} küsimusele"
+    },
+    "multiChoice": {
+      "selectExact": [
+        {
+          "declarations": ["input count", "local countPlural = count: plural"],
+          "selectors": ["countPlural"],
+          "match": {
+            "countPlural=one": "Vali 1 valik.",
+            "countPlural=*": "Vali {count} valikut."
+          }
+        }
+      ],
+      "selectRange": "Vali {min}–{max} valikut."
+    },
+    "next": "Järgmine",
+    "previous": "Eelmine",
+    "remove": "Kustuta vastus",
+    "skip": "Jäta vahele",
+    "skipToResults": "Hüppa tulemusteni",
+    "title": "Sinu arvamused"
+  }
+}

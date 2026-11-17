@@ -1,0 +1,40 @@
+{
+  "contestantApp.identityProvider": {
+    "alreadyRegistered": {
+      "none": "You have already registered, but we don’t have an email address for you yet.",
+      "pending": "You have already registered. We have sent a confirmation link to the address below. Until you open it, sign in with Bank ID.",
+      "proved": "You have already registered. Please use your email address to sign in next time."
+    },
+    "awaitingConfirmation": "Awaiting confirmation",
+    "emailIntro": "Enter the email address you want to sign in with next time. We’ll send a confirmation link to it. You can continue right away. Until you open the link, sign in with Bank ID.",
+    "emailInUse": "This email address is already used by another account. Enter a different address, or sign in with that address instead.",
+    "emailTakenNotice": "The address you entered earlier is now used by another account, so it could not be added to yours. Enter a different address.",
+    "error": {
+      "cancelled": {
+        "content": "You cancelled the identification, and nothing was saved. You can identify yourself again whenever you are ready.",
+        "support": "If you need help, {contactSupportLink}.",
+        "title": "Identification cancelled"
+      },
+      "noRetry": {
+        "content": "We’re sorry, this is a problem on our side, and trying again will not help. Please contact support.",
+        "title": "Registration is not possible right now"
+      },
+      "retry": {
+        "content": "We’re sorry, the identification could not be completed. Please try again.",
+        "support": "If the problem persists, {contactSupportLink}.",
+        "title": "Identification did not succeed"
+      },
+      "tryAgain": "Try again"
+    },
+    "heroEmoji": "👍",
+    "identified": "You have identified yourself.",
+    "nameIntro": "Enter your party’s name to continue.",
+    "nameRequired": "Enter your party’s name in {language}.",
+    "saveFailed": "We couldn’t save your details. Please try again. If the problem persists, please contact support.",
+    "signInEmail": "Your sign-in email address",
+    "title": {
+      "alreadyRegistered": "You have already registered",
+      "complete": "Complete your registration"
+    }
+  }
+}

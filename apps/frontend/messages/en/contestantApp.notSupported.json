@@ -1,0 +1,7 @@
+{
+  "contestantApp.notSupported": {
+    "content": "{contestantAppName}: this Election Compass version does not support this service.",
+    "heroEmoji": "🐣",
+    "title": "{contestantAppName}: not available"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "entityList": {
+    "controls": {
+      "noFilterResults": "Aucun résultat pour ces filtres. Vous pouvez les modifier.",
+      "noSearchResults": "Aucun résultat pour cette recherche. Vous pouvez la modifier.",
+      "searchPlaceholder": "Rechercher par nom",
+      "showingNumResults": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=1": "Affichage de 1 résultat",
+            "numShown=*": "Affichage de {numShown} résultats"
+          }
+        }
+      ]
+    },
+    "showMore": "Afficher plus"
+  }
+}

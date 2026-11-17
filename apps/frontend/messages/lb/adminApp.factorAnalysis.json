@@ -1,0 +1,22 @@
+{
+  "adminApp.factorAnalysis": {
+    "title": "Faktoranalys",
+    "description": "Analyséiert a verwalt d’Faktore vun de Wahlfroen.",
+    "compute": {
+      "title": "Faktore berechnen",
+      "description": "Berechent déi latent Faktoren aus den Äntwerte vun de Kandidat*innen an de Parteien.",
+      "selectElections": "Wielt d’Wahlen, fir déi d’Faktore berechent solle ginn.",
+      "button": "Faktore berechnen",
+      "buttonLoading": "Faktore gi berechent…",
+      "mayTakeTime": "Dat kann eng Zäit daueren.",
+      "noElections": "Keng Wahlen disponibel",
+      "candidates": "Kandidat*innen",
+      "parties": {
+        "some": "an {count} Parteien",
+        "none": "a keng Parteien"
+      },
+      "haveAnswered": "hu geäntwert",
+      "error": "D’Faktore konnten net berechent ginn"
+    }
+  }
+}

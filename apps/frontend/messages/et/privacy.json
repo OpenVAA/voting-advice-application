@@ -1,0 +1,58 @@
+{
+  "privacy": {
+    "analytics": {
+      "content": {
+        "free": "See rakendus kogub kasutusandmeid sinult eraldi küsimata. Need hõlmavad sinu vastuseid küsimustele, rakenduses veedetud aega ja vaadatud tulemusi. Iga sündmus, mis paljastab vastuse või eelistuse, saadetakse eraldi, ilma tunnuseta, mis oleks ühine mõne teise sündmusega, nii et sinu vastuseid ei saa omavahel ega vaadatud lehtedega siduda. Andmed saadetakse selle saidi enda serveri kaudu, mis ei edasta sinu võrguaadressi ega brauseri tunnusandmeid. Sinu seadmesse ei salvestata selle kohta midagi.",
+        "gated": "Kasutusandmeid kogutakse ainult siis, kui sa sellega nõustud. Need hõlmavad sinu vastuseid küsimustele, rakenduses veedetud aega ja vaadatud tulemusi. Ühe külastuse sündmused seotakse kõige enam tunnusega, mida hoitakse ainult lehe mälus ja mis kaob, kui leht uuesti laaditakse või suletakse. Andmed saadetakse selle saidi enda serveri kaudu, mis ei edasta sinu võrguaadressi ega brauseri tunnusandmeid. Sinu seadmesse ei salvestata selle kohta midagi peale sinu valiku. Selles brauseris tehtud valik kehtib kõigi selles avatud rakenduse osade kohta ja sa saad seda privaatsuslehel muuta."
+      },
+      "gpc": "Kui sinu brauser saadab Global Privacy Control signaali, ei koguta midagi, isegi mitte lehevaatamiste arvu, ja sinult ei küsita. Signaali meelespidamiseks ei salvestata midagi.",
+      "pageviews": "Lehevaatamisi loendatakse ka siis, kui muid kasutusandmeid ei koguta: mis tüüpi leht avati, mis keeles ja kui kauaks. Need andmed ei sisalda aga näiteks seda, millise erakonna või kandidaadi andmeid vaadati. Loendusel ei ole tunnust.",
+      "title": "Analüütika"
+    },
+    "cookies": {
+      "content": "Rakendus ei kasuta küpsiseid sinu andmete salvestamiseks. Sinu vastused ja eelistused salvestatakse sinu brauseri kohalikku salvestuskohta (local storage) parema kasutuskogemuse tagamiseks ja see salvestatud koopia jääb sinu seadmesse. Kui kasutusandmeid kogutakse, võidakse nende osana saata ka sinu vastused, nagu on kirjeldatud jaotises Analüütika.",
+      "title": "Küpsised"
+    },
+    "dataCollection": {
+      "info": "Kasutusandmed saadetakse selle saidi enda serveri kaudu analüütikateenusele, mida avaldaja kasutab. Selleks ei kasutata küpsiseid."
+    },
+    "dataConsentInfoButton": "Lisateave kasutusandmete kogumise kohta",
+    "dataConsentIntro": {
+      "denied": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Oled keelanud oma andmete kogumise {formattedConsentDate}. Saad oma valikut allpool muuta."
+          }
+        }
+      ],
+      "granted": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Oled lubanud oma andmete kogumise {formattedConsentDate}. Saad oma valikut allpool muuta."
+          }
+        }
+      ],
+      "indetermined": "Saad anda nõusoleku andmete kogumiseks või selle keelata, valides ühe allolevatest valikutest."
+    },
+    "dataConsentLabel": {
+      "denied": "Ma ei soovi, et minu andmeid kogutakse",
+      "granted": "Jah, luban andmete kogumise"
+    },
+    "title": "Privaatsus",
+    "trackingOptOut": {
+      "label": "Ära kogu kasutusandmeid selle kohta, kuidas ma rakendust kasutan"
+    },
+    "usageData": {
+      "content": "Rakenduse kasutamist mõõdetakse samal viisil valijate rakenduses, kandidaatide ja erakondade rakenduses ning haldusvaates. Kasutustingimustega nõustudes lubad koguda kasutusandmeid selle kohta, kuidas sa kandidaatide ja erakondade rakendust kasutad, kui sa ei märgi tingimuste all olevat kasti. Lehevaatamisi loendatakse ilma tunnuseta, nagu privaatsuslehel kirjeldatud. Sinu valik kehtib kõigi selles brauseris avatud rakenduse osade kohta ja sa saad seda hiljem privaatsuslehel muuta.",
+      "title": "Kasutusandmed"
+    }
+  }
+}

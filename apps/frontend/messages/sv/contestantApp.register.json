@@ -1,0 +1,59 @@
+{
+  "contestantApp.register": {
+    "code": "Registreringskod",
+    "codeFormat": "Koden ser ut så här: ABCD-EFGH-JKMN. Stora och små bokstäver behandlas lika.",
+    "codeRequired": "Ange din registreringskod.",
+    "codeUnconfirmed": "Vi kunde inte bekräfta din registreringskod.",
+    "didYouAlreadyRegister": "Har du redan registrerat dig?",
+    "emailEntry": {
+      "ingress": "Ange den e-postadress du vill använda. Vi skickar en inloggningslänk till den, och det är den adressen du sedan loggar in med.",
+      "mismatch": "E-postadresserna matchar inte.",
+      "title": "Ange din e-postadress"
+    },
+    "emailInfo": "Ange din e-postadress så skickar vi en länk som du kan logga in med.",
+    "enterCode": "Ange registreringskoden som du har fått.",
+    "heroEmoji": "🖋️",
+    "identityProvider": {
+      "intro": {
+        "both": "Identifiera dig med bank-id för att registrera dig som kandidat eller för att registrera ett parti.",
+        "candidate": "För att registrera dig som kandidat identifierar du dig med bank-id. Din kandidatprofil skapas med namnet i din identifiering.",
+        "organization": "För att registrera ett parti identifierar du dig med bank-id och anger sedan partiets namn. En administratör bekräftar partiet innan det visas för väljarna."
+      },
+      "redirectInfo": "Du skickas vidare till bank-id-tjänsten. När du har identifierat dig kommer du tillbaka till den här applikationen.",
+      "types": {
+        "candidate": "Mig själv som kandidat",
+        "legend": "Vad vill du registrera?",
+        "organization": "Ett parti eller en valmansförening",
+        "required": "Välj vad du vill registrera."
+      }
+    },
+    "modes": {
+      "code": "Med en registreringskod",
+      "email": "Med min e-postadress",
+      "identityProvider": "Med bank-id",
+      "legend": "Hur vill du registrera dig?",
+      "required": "Välj hur du vill registrera dig."
+    },
+    "passwordValidation": {
+      "commonPatterns": "Innehåller vanliga sekvenser eller mönster",
+      "length": "Minst {minPasswordLength} tecken",
+      "lowercase": "Liten bokstav",
+      "number": "Nummer",
+      "repetition": "Innehåller upprepning av tecken",
+      "symbol": "Specialtecken (såsom !?%#€)",
+      "uppercase": "Stor bokstav",
+      "username": "Undvik att använda ditt namn i lösenordet"
+    },
+    "register": "Registrera",
+    "registeredNotice": {
+      "content": "Logga in med din e-postadress och ditt lösenord istället eller kontrollera din e-post för bekräftelselänken.",
+      "title": "Det verkar som att du redan är registrerad"
+    },
+    "signIn": {
+      "failed": "Vi kunde inte logga in dig med det lösenordet. Försök igen eller använd en länk nedan för att ställa in ett lösenord.",
+      "ingress": "Det verkar som att du redan har registrerat dig. Ange ditt lösenord för att logga in.",
+      "title": "Logga in med ditt lösenord"
+    },
+    "title": "Registrering"
+  }
+}

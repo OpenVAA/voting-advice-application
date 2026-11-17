@@ -1,0 +1,111 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Ei vaaliliittoja",
+            "numShown=1": "1 vaaliliitto",
+            "numShown=*": "{numShown} vaaliliittoa"
+          }
+        }
+      ],
+      "summary": {
+        "template": "{candidates} yhteensä {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
+            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "match": {
+              "numCandidates=0, numCandidatesPlural=*": "Ei ehdokkaita",
+              "numCandidates=*, numCandidatesPlural=one": "1 ehdokas",
+              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} ehdokasta"
+            }
+          }
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
+            "selectors": ["numParties", "numPartiesPlural"],
+            "match": {
+              "numParties=0, numPartiesPlural=*": "ei puoluetta",
+              "numParties=*, numPartiesPlural=one": "1 puolueesta",
+              "numParties=*, numPartiesPlural=*": "{numParties} puolueesta"
+            }
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Ei ehdokkaita",
+            "numShown=1": "1 ehdokas",
+            "numShown=*": "{numShown} ehdokasta"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Ei ryhmittymiä",
+            "numShown=1": "1 ryhmittymä",
+            "numShown=*": "{numShown} ryhmittymää"
+          }
+        }
+      ]
+    },
+    "inConstituency": "vaalipiirissä",
+    "ingress": {
+      "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat ehdokkaat ja puolueet, {questionsLink} ensin.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=1": "vastaa ainakin yhteen kysymykseen",
+            "numQuestions=*": "vastaa ainakin {numQuestions} kysymykseen"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
+        "content": "Voit halutessasi tutustua kysymyksiin, mutta tuloksia ei voida näyttää."
+      },
+      "someNominations": {
+        "title": "Joidenkin vaalien ehdokkaat tai puolueet eivät ole vastanneet vaalikoneeseen",
+        "content": "Vaalipiirissäsi ei ole ehdokkaiden tai puolueiden vastauksia kaikkien vaalien osalta. Tuloksissa näytetään vain ne vaalit, joihin vastauksia on saatavilla."
+      },
+      "noNominationsForElection": "ei saatavilla"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Ei puolueita",
+            "numShown=1": "1 puolue",
+            "numShown=*": "{numShown} puoluetta"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Valitse vaali ensin",
+    "title": {
+      "browse": "Selaa ehdokkaita ja puolueita",
+      "results": "Tuloksesi"
+    }
+  }
+}

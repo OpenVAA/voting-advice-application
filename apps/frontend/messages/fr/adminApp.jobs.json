@@ -1,0 +1,47 @@
+{
+  "adminApp.jobs": {
+    "title": "Panneau de contrôle d’administration",
+    "emergencyCleanup": "Nettoyage d’urgence",
+    "features": {
+      "ArgumentCondensation": {
+        "title": "Synthèse des arguments"
+      },
+      "QuestionInfoGeneration": {
+        "title": "Génération d’informations sur les questions"
+      }
+    },
+    "confirmAbortAll": "Êtes-vous sûr·e de vouloir interrompre TOUTES les tâches en cours ?",
+    "authRequired": "Authentification requise",
+    "abortAllFailed": "Échec du nettoyage d’urgence. Consultez la console pour plus de détails.",
+    "systemHealth": "État du système",
+    "activeJobs": "Tâches actives",
+    "successfulJobs": "Tâches réussies",
+    "failedJobs": "Tâches échouées",
+    "abortedJobs": "Tâches interrompues",
+    "abortingInfo": "Interruption demandée. En attente de l’arrêt du traitement et de son nettoyage en toute sécurité.",
+    "abortJob": "Interrompre la tâche",
+    "pastJobs": "Tâches passées",
+    "hidePastJobs": "Masquer les tâches passées",
+    "showPastJobs": "Afficher les tâches passées",
+    "pastJobsDescription": "Tâches passées",
+    "noActiveJobs": "Aucune tâche active",
+    "noPastJobs": "Aucune tâche passée",
+    "started": "Début",
+    "messages": "Messages",
+    "notAvailable": "N/D",
+    "confirmAbortJob": "Êtes-vous sûr·e de vouloir interrompre cette tâche ({feature}) ?",
+    "abortJobFailed": "Échec de l’interruption de la tâche. Consultez la console pour plus de détails.",
+    "alreadyRunning": "Une tâche est déjà en cours. Veuillez attendre qu’elle se termine.",
+    "progress": "Progression",
+    "warningsAndErrors": "Avertissements et erreurs",
+    "noWarningsOrErrors": "Aucun avertissement ni erreur",
+    "infoMessages": "Messages d’information",
+    "noInfoMessages": "Aucun message d’information",
+    "author": "Auteur·rice",
+    "duration": "Durée",
+    "aborting": "Interruption…",
+    "hideMessages": "Masquer les messages",
+    "showMessages": "Afficher les messages",
+    "id": "ID"
+  }
+}
