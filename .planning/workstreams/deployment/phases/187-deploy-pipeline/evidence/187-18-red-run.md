@@ -192,3 +192,12 @@ Plan 187-29 captured every status the steps of `deploy.yml`, `destroy.yml` and `
 Run 44042442257 and run 44042442267 were not re-run: each still reads `run_attempt` 1. `deploy-evidence/187-red` still points at `3250ba0e8e964f8c87c03459f812bd935637272b`.
 
 What stays open here is the operator's: the `RED_ALERT_MAIL=` and `RED_ALERT_MAIL_UTC=` lines for the alert of run 44042442257, message `0d08cd58-15d0-5afa-995e-ae2e0c34d217`, and, after that reply, plan 187-18's SUMMARY, with status `stopped` at Task 3 and its five lines closed by plan 187-29.
+
+## Operator's alert mail (2026-11-17)
+
+```
+RED_ALERT_MAIL=arrived
+RED_ALERT_MAIL_UTC=2026-11-17T09:00Z
+```
+
+The operator reported the mail for run 44042442257's alert as received at 11:00 Finnish time (EET, UTC+2), and pasted its body. That body reads "The staging deploy failed at build.", names commit `3250ba0e8e964f8c87c03459f812bd935637272b`, trigger "push of deploy-evidence/187-red" and the run's URL. The time is the operator's to the hour. The run's `Alert the operator` step completed at 2026-11-17T09:00:21Z (jobs API, GET). No address and no subscription identifier is recorded here.

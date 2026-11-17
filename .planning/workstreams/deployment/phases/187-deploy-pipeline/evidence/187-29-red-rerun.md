@@ -290,3 +290,12 @@ T7_HEAD_AT_START=a71cd9cf9122fa687379f071c4bf6fbde6232c2d
 POINTER_APPENDED_TO_187_18=yes
 
 `## Closed by plan 187-29 (2026-11-17)` is appended to `evidence/187-18-red-run.md`, after its last line, with no existing line changed. The operator's mail lines for this run's alert, and for run 44042442257's, are not written here: they await the operator.
+
+## Operator's alert mail (2026-11-17)
+
+```
+RED2_ALERT_MAIL=arrived
+RED2_ALERT_MAIL_UTC=2026-11-17T13:05Z
+```
+
+The operator reported the mail for run 44088753181's alert as received at 15:00 Finnish time (EET, UTC+2), and pasted its body. That body reads "The staging deploy failed at build.", names commit `26ecadd36d5cf2dbc17fd1f3739708d42c9be09a`, trigger "push of deploy-evidence/187-red-2" and the run's URL. The operator gave the hour. The minute is the run's `Alert the operator` step completion, 2026-11-17T13:05:29Z (jobs API, GET). No address and no subscription identifier is recorded here.
