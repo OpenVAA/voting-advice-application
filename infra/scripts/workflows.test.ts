@@ -15,11 +15,15 @@
  *   that does not exist would prove nothing.
  * - **environments** — `staging` is named by `deploy.yml` alone and `staging-destroy` by `destroy.yml` alone, and
  *   `infra-plan.yml` names none, since an environment's name is the subject the deploy role trusts.
+ * - **arm-lock** — every root a job on an ARM runner initialises has a lock whose every provider carries one `h1:` hash
+ *   per platform of `LOCK_PLATFORMS`. `init -lockfile=readonly` on that runner installs packages whose `h1:` hashes it
+ *   cannot record, and the plan then refuses them. A hash does not name its platform, so the rule counts them. A job
+ *   that initialises Terraform on a runner, or in a root, that the rule cannot read as a literal is a violation.
  *
  * Each rule is shown red on a mutated in-memory copy, so that its green result on the real files means something.
  */
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -43,6 +47,13 @@ const EXPECTED_ENVIRONMENTS: Record<string, Array<string>> = {
 };
 /** A literal IAM role ARN. */
 const ROLE_ARN = /arn:aws:iam::\d{12}:role\/[\w+=,.@/-]+/g;
+/**
+ * The platforms every provider lock is written for. Each lock is written by `terraform providers lock` with one
+ * `-platform=` flag for each, in this order.
+ */
+const LOCK_PLATFORMS = ['linux_amd64', 'linux_arm64', 'darwin_arm64', 'darwin_amd64'] as const;
+/** A root path the rules can read as a literal. */
+const READABLE_ROOT = /^[A-Za-z0-9_./-]+$/;
 /** Shell words that may stand before a command on its line. */
 const COMMAND_PREFIXES = new Set(['if', 'then', 'else', 'elif', 'do', '!', 'time', 'exec', 'env']);
 
@@ -112,9 +123,14 @@ function terraformCommands(script: string): Array<Array<string>> {
   return commands;
 }
 
+/** The subcommand of a Terraform command's words: the first word after `terraform` that does not begin with `-`. */
+function terraformSubcommand(words: Array<string>): string | undefined {
+  return words.slice(1).find((word) => !word.startsWith('-'));
+}
+
 /** Whether a Terraform command's words change infrastructure: `apply`, `destroy` or `plan -destroy`. */
 function isMutating(words: Array<string>): boolean {
-  const subcommand = words.slice(1).find((word) => !word.startsWith('-'));
+  const subcommand = terraformSubcommand(words);
   if (subcommand === 'apply' || subcommand === 'destroy') return true;
   return subcommand === 'plan' && words.includes('-destroy');
 }
@@ -219,6 +235,105 @@ function environmentViolations(files: Array<WorkflowFile>): Array<string> {
       ? []
       : [`environments: ${name} names ${JSON.stringify(actual)}, not ${JSON.stringify(expected)}`];
   });
+}
+
+/** One provider block of a dependency lock: its address, the version it selects and its hashes by scheme. */
+type LockProvider = { address: string; version: string; h1: Array<string>; zh: Array<string> };
+
+/** The provider blocks of a `.terraform.lock.hcl` text; throws when a block holds no `hashes` list. */
+function lockProviders(text: string): Array<LockProvider> {
+  return [...text.matchAll(/^provider "([^"]+)" \{\n([\s\S]*?)^\}/gm)].map(([, address, body]) => {
+    const version = /^\s*version\s*=\s*"([^"]*)"/m.exec(body)?.[1] ?? '';
+    const list = /^\s*hashes\s*=\s*\[([\s\S]*?)\]/m.exec(body)?.[1];
+    if (list === undefined) throw new Error(`the lock's provider ${address} holds no hashes list`);
+    const hashes = [...list.matchAll(/"([^"]+)"/g)].map(([, hash]) => hash);
+    return {
+      address,
+      version,
+      h1: hashes.filter((hash) => hash.startsWith('h1:')),
+      zh: hashes.filter((hash) => hash.startsWith('zh:'))
+    };
+  });
+}
+
+/** A `terraform init` of a workflow job: where it stands, the job's `runs-on` as parsed, and the root it initialises. */
+type TerraformInit = { name: string; jobId: string; runsOn: unknown; root: string | undefined; words: Array<string> };
+
+/** The `working-directory` of a `defaults.run` mapping, when it is a string. */
+function defaultWorkingDirectory(owner: Record<string, unknown>): string | undefined {
+  const defaults = owner.defaults;
+  if (!isRecord(defaults) || !isRecord(defaults.run)) return undefined;
+  const directory = defaults.run['working-directory'];
+  return typeof directory === 'string' ? directory : undefined;
+}
+
+/**
+ * Every `terraform init` of a `run:` step of every job of every workflow. The root is the value of its `-chdir=` word
+ * with the quotes removed; else the step's `working-directory`; else the job's, then the workflow's,
+ * `defaults.run.working-directory`; else undefined.
+ */
+function terraformInits(files: Array<WorkflowFile>): Array<TerraformInit> {
+  return files.flatMap(({ name, text }) => {
+    const doc = parseWorkflow(text);
+    return workflowJobs(doc).flatMap(([jobId, job]) =>
+      jobSteps(job).flatMap((step) => {
+        if (typeof step.run !== 'string') return [];
+        const stepDirectory = typeof step['working-directory'] === 'string' ? step['working-directory'] : undefined;
+        return terraformCommands(step.run)
+          .filter((words) => terraformSubcommand(words) === 'init')
+          .map((words) => {
+            const chdir = words.find((word) => word.startsWith('-chdir='));
+            const root =
+              chdir !== undefined
+                ? chdir.slice('-chdir='.length).replace(/["']/g, '')
+                : (stepDirectory ?? defaultWorkingDirectory(job) ?? defaultWorkingDirectory(doc));
+            return { name, jobId, runsOn: job['runs-on'], root: root?.replace(/\/+$/, ''), words };
+          });
+      })
+    );
+  });
+}
+
+/** The labels of a job's `runs-on`, or undefined when it is not a literal string, list of strings or `labels` mapping. */
+function runnerLabels(runsOn: unknown): Array<string> | undefined {
+  const value = isRecord(runsOn) ? runsOn.labels : runsOn;
+  const labels = typeof value === 'string' ? [value] : value;
+  if (!Array.isArray(labels) || labels.length === 0) return undefined;
+  if (!labels.every((label): label is string => typeof label === 'string' && !label.includes('${{'))) return undefined;
+  return labels;
+}
+
+/** Whether a runner label names an ARM runner. */
+function isArmLabel(label: string): boolean {
+  return label.endsWith('-arm') || label.toLowerCase() === 'arm64';
+}
+
+/** The text of `<root>/.terraform.lock.hcl` in the repository, or undefined when it has none. */
+function readRepoLock(root: string): string | undefined {
+  const path = join(REPO_ROOT, root, '.terraform.lock.hcl');
+  return existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+}
+
+/** The violations of arm-lock, each lock read through `readLock(root)`. */
+function armLockViolations(files: Array<WorkflowFile>, readLock: (root: string) => string | undefined): Array<string> {
+  const violations = terraformInits(files).flatMap(({ name, jobId, runsOn, root, words }) => {
+    const at = `arm-lock: ${name} job ${jobId}`;
+    const labels = runnerLabels(runsOn);
+    if (labels === undefined) return [`${at} runs on a runner the rule cannot read: ${JSON.stringify(runsOn)}`];
+    if (!labels.some(isArmLabel)) return [];
+    if (root === undefined || !READABLE_ROOT.test(root)) {
+      return [`${at} initialises a root the rule cannot read: ${words.join(' ')}`];
+    }
+    const text = readLock(root);
+    if (text === undefined) return [`${at} initialises ${root}, which has no .terraform.lock.hcl`];
+    return lockProviders(text)
+      .filter(({ h1 }) => h1.length !== LOCK_PLATFORMS.length)
+      .map(
+        ({ address, version, h1 }) =>
+          `${at} initialises ${root}, whose lock holds ${h1.length} h1 hashes of ${LOCK_PLATFORMS.length} for ${address} ${version}`
+      );
+  });
+  return [...new Set(violations)];
 }
 
 const FILES = workflowFiles();
@@ -413,5 +528,60 @@ describe('environments: staging in deploy.yml only, staging-destroy in destroy.y
     }
   ])('reports a red copy in which $fault', ({ name, pattern, replacement }) => {
     expect(environmentViolations(withMutation(FILES, name, pattern, replacement))).toHaveLength(1);
+  });
+});
+
+describe('arm-lock: every root a job on an ARM runner initialises has an h1 hash for each lock platform', () => {
+  const STAGING_AWS_LOCK = readRepoLock(APPLY_ROOT) ?? '';
+
+  it('finds the deploy job of deploy.yml initialising the staging AWS root on ubuntu-24.04-arm, so the rule is not vacuous', () => {
+    expect(terraformInits(FILES)).toContainEqual(
+      expect.objectContaining({ name: 'deploy.yml', jobId: 'deploy', runsOn: 'ubuntu-24.04-arm', root: APPLY_ROOT })
+    );
+  });
+
+  it('reads the provider blocks of the staging AWS lock, and throws on a block with no hashes list', () => {
+    expect(lockProviders(STAGING_AWS_LOCK).map(({ address }) => address)).toEqual([
+      'registry.terraform.io/hashicorp/aws',
+      'registry.terraform.io/hashicorp/random'
+    ]);
+    expect(() => lockProviders('provider "registry.terraform.io/hashicorp/aws" {\n  version = "6.68.0"\n}\n')).toThrow(
+      /holds no hashes list/
+    );
+  });
+
+  it('finds no violation in the real files', () => {
+    expect(armLockViolations(FILES, readRepoLock)).toEqual([]);
+  });
+
+  it('reports a red copy of the staging AWS lock with one h1 hash removed', () => {
+    const mutated = STAGING_AWS_LOCK.replace(/^\s*"h1:[^\n]*\n/m, '');
+    expect(mutated).not.toBe(STAGING_AWS_LOCK);
+    const [aws] = lockProviders(STAGING_AWS_LOCK);
+    const violations = armLockViolations(FILES, (root) => (root === APPLY_ROOT ? mutated : readRepoLock(root)));
+    expect(violations).toContain(
+      `arm-lock: deploy.yml job deploy initialises ${APPLY_ROOT}, whose lock holds ${aws.h1.length - 1} h1 hashes of ${LOCK_PLATFORMS.length} for ${aws.address} ${aws.version}`
+    );
+  });
+
+  it('reports a red copy of infra-plan.yml whose checks job runs on ubuntu-24.04-arm, naming a root it cannot read', () => {
+    const files = withMutation(FILES, 'infra-plan.yml', 'runs-on: ubuntu-24.04\n', 'runs-on: ubuntu-24.04-arm\n');
+    const violations = armLockViolations(files, readRepoLock).filter((v) => v.startsWith('arm-lock: infra-plan.yml '));
+    expect(violations).toContainEqual(
+      expect.stringMatching(
+        /^arm-lock: infra-plan\.yml job checks initialises a root the rule cannot read: .*-chdir="\$root"/
+      )
+    );
+  });
+
+  it('reports a red copy of deploy.yml whose deploy job runs on a runner it cannot read', () => {
+    const files = withMutation(FILES, 'deploy.yml', 'runs-on: ubuntu-24.04-arm', 'runs-on: ${{ vars.DEPLOY_RUNNER }}');
+    expect(armLockViolations(files, readRepoLock)).toEqual([
+      'arm-lock: deploy.yml job deploy runs on a runner the rule cannot read: "${{ vars.DEPLOY_RUNNER }}"'
+    ]);
+  });
+
+  it('finds no violation in the "$root" inits of infra-plan.yml on ubuntu-24.04, as in the real file', () => {
+    expect(armLockViolations([workflowFile(FILES, 'infra-plan.yml')], readRepoLock)).toEqual([]);
   });
 });
