@@ -19,6 +19,10 @@
  *   per platform of `LOCK_PLATFORMS`. `init -lockfile=readonly` on that runner installs packages whose `h1:` hashes it
  *   cannot record, and the plan then refuses them. A hash does not name its platform, so the rule counts them. A job
  *   that initialises Terraform on a runner, or in a root, that the rule cannot read as a literal is a violation.
+ * - **lock-platforms** — every root lock under `infra/` carries one `h1:` hash per platform of `LOCK_PLATFORMS` for
+ *   each provider, and locks that select the same provider version carry the same hashes, so a lock written for other
+ *   platforms differs from its siblings. The module directories are left out: their locks are written by the module
+ *   tests and are not tracked.
  *
  * Each rule is shown red on a mutated in-memory copy, so that its green result on the real files means something.
  */
@@ -34,6 +38,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '../..');
 const WORKFLOW_DIR = join(REPO_ROOT, '.github', 'workflows');
 const BOOTSTRAP_TFVARS = join(REPO_ROOT, 'infra', 'bootstrap', 'terraform.tfvars');
+const LOCK_FILE = '.terraform.lock.hcl';
 
 /** The one root a workflow may apply or destroy. */
 const APPLY_ROOT = 'infra/envs/staging/aws';
@@ -310,7 +315,7 @@ function isArmLabel(label: string): boolean {
 
 /** The text of `<root>/.terraform.lock.hcl` in the repository, or undefined when it has none. */
 function readRepoLock(root: string): string | undefined {
-  const path = join(REPO_ROOT, root, '.terraform.lock.hcl');
+  const path = join(REPO_ROOT, root, LOCK_FILE);
   return existsSync(path) ? readFileSync(path, 'utf8') : undefined;
 }
 
@@ -325,7 +330,7 @@ function armLockViolations(files: Array<WorkflowFile>, readLock: (root: string) 
       return [`${at} initialises a root the rule cannot read: ${words.join(' ')}`];
     }
     const text = readLock(root);
-    if (text === undefined) return [`${at} initialises ${root}, which has no .terraform.lock.hcl`];
+    if (text === undefined) return [`${at} initialises ${root}, which has no ${LOCK_FILE}`];
     return lockProviders(text)
       .filter(({ h1 }) => h1.length !== LOCK_PLATFORMS.length)
       .map(
@@ -334,6 +339,53 @@ function armLockViolations(files: Array<WorkflowFile>, readLock: (root: string) 
       );
   });
   return [...new Set(violations)];
+}
+
+/** A root lock: its path from the repository root and its text. */
+type RootLock = { path: string; text: string };
+
+/** Every `.terraform.lock.hcl` under `infra/`, outside `infra/modules/` and every `.terraform` directory, by path. */
+function rootLockFiles(): Array<RootLock> {
+  const found: Array<RootLock> = [];
+  function walk(directory: string): void {
+    for (const entry of readdirSync(join(REPO_ROOT, directory), { withFileTypes: true })) {
+      const path = `${directory}/${entry.name}`;
+      if (entry.isDirectory()) {
+        if (entry.name !== '.terraform' && path !== 'infra/modules') walk(path);
+      } else if (entry.name === LOCK_FILE) {
+        found.push({ path, text: readFileSync(join(REPO_ROOT, path), 'utf8') });
+      }
+    }
+  }
+  walk('infra');
+  return found.sort((a, b) => a.path.localeCompare(b.path));
+}
+
+/** The violations of lock-platforms across `locks`. */
+function lockPlatformViolations(locks: Array<RootLock>): Array<string> {
+  const violations: Array<string> = [];
+  const listsByProvider = new Map<string, Map<string, Array<string>>>();
+  for (const { path, text } of locks) {
+    for (const { address, version, h1, zh } of lockProviders(text)) {
+      if (h1.length !== LOCK_PLATFORMS.length) {
+        violations.push(
+          `lock-platforms: ${path} holds ${h1.length} h1 hashes of ${LOCK_PLATFORMS.length} for ${address} ${version}`
+        );
+      }
+      const provider = `${address} ${version}`;
+      const lists = listsByProvider.get(provider) ?? new Map<string, Array<string>>();
+      const list = JSON.stringify([...h1, ...zh].sort());
+      lists.set(list, [...(lists.get(list) ?? []), path]);
+      listsByProvider.set(provider, lists);
+    }
+  }
+  for (const [provider, lists] of listsByProvider) {
+    if (lists.size > 1) {
+      const groups = [...lists.values()].map((paths) => `[${paths.join(', ')}]`).join(' and ');
+      violations.push(`lock-platforms: ${provider} has different hashes in ${groups}`);
+    }
+  }
+  return violations;
 }
 
 const FILES = workflowFiles();
@@ -583,5 +635,49 @@ describe('arm-lock: every root a job on an ARM runner initialises has an h1 hash
 
   it('finds no violation in the "$root" inits of infra-plan.yml on ubuntu-24.04, as in the real file', () => {
     expect(armLockViolations([workflowFile(FILES, 'infra-plan.yml')], readRepoLock)).toEqual([]);
+  });
+});
+
+describe('lock-platforms: every root lock has an h1 hash for each lock platform, the same across roots', () => {
+  const LOCKS = rootLockFiles();
+  function lockAt(path: string): RootLock {
+    const found = LOCKS.find((lock) => lock.path === path);
+    if (!found) throw new Error(`no root lock at ${path}`);
+    return found;
+  }
+  function withLock(path: string, text: string): Array<RootLock> {
+    if (text === lockAt(path).text) throw new Error(`the mutation of ${path} changed nothing`);
+    return LOCKS.map((lock) => (lock.path === path ? { path, text } : lock));
+  }
+
+  it('finds the root locks under infra/, the staging AWS root among them and none under infra/modules/', () => {
+    const paths = LOCKS.map(({ path }) => path);
+    expect(paths).toContain(`${APPLY_ROOT}/${LOCK_FILE}`);
+    expect(paths.filter((path) => path.startsWith('infra/modules/'))).toEqual([]);
+    expect(paths.filter((path) => path.includes('/.terraform/'))).toEqual([]);
+  });
+
+  it('finds no violation in the real files', () => {
+    expect(lockPlatformViolations(LOCKS)).toEqual([]);
+  });
+
+  it('reports a red copy of the bootstrap lock with one h1 hash removed', () => {
+    const path = `infra/bootstrap/${LOCK_FILE}`;
+    const violations = lockPlatformViolations(withLock(path, lockAt(path).text.replace(/^\s*"h1:[^\n]*\n/m, '')));
+    expect(violations).toContainEqual(expect.stringMatching(new RegExp(`^lock-platforms: ${path} holds `)));
+  });
+
+  it('reports a red copy of the example AWS lock with one h1 hash replaced by another, its count unchanged', () => {
+    const path = `infra/envs/example/aws/${LOCK_FILE}`;
+    const mutated = lockAt(path).text.replace(/"h1:[A-Za-z0-9+/]{43}="/, `"h1:${'A'.repeat(43)}="`);
+    const violations = lockPlatformViolations(withLock(path, mutated));
+    expect(violations).toContainEqual(
+      expect.stringMatching(
+        /^lock-platforms: registry\.terraform\.io\/hashicorp\/aws 6\.68\.0 has different hashes in /
+      )
+    );
+    expect(violations.filter((violation) => violation.includes(' holds '))).toEqual(
+      lockPlatformViolations(LOCKS).filter((violation) => violation.includes(' holds '))
+    );
   });
 });
