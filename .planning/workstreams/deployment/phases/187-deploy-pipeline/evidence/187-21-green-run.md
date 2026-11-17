@@ -76,3 +76,62 @@ NO_RUN_ACTIVE=yes
 - **`GREEN_BRANCH_ABSENT=yes`.** `git ls-remote origin refs/heads/deploy-evidence/187-green` exit 0, 0 bytes.
 - **`SERVED_BUILD_BEFORE=`.** `curl -sS --max-time 20 https://staging.openvaa.org/api/health` exit 0, HTTP 200, body `{"status":"ok","build":"712947a1bd44a735f66ee8f51610f4748d76cd30"}`.
 - **`NO_RUN_ACTIVE=yes`.** `gh run list --workflow deploy.yml` exit 0 lists two runs, `44088753181` (`deploy-evidence/187-red-2`) and `44042442257` (`deploy-evidence/187-red`), both `completed` `failure`. `destroy.yml` is not on the default branch, so `gh run list --workflow destroy.yml` answers 404; among the latest 100 runs of the repository (`actions/runs?per_page=100`, exit 0) none has the path `destroy.yml`, and none of any workflow is other than `completed`. The status-filtered counts are 0 for `in_progress`, `queued`, `waiting`, `requested` and `pending`; `action_required` counts 25, all `claude.yml` runs of 2026-11-14 pull-request review events, and 0 of `deploy.yml` or `destroy.yml`.
+
+## Task 2: the operator's approval (2026-11-17)
+
+The operator approved the push in the main session. The orchestrator bound the reply under key `187-21-2`, attempt id `20261117T145717Z.6854e9d6f`: `bash "$A" put 187-21-2`, `bash "$A" bound 187-21-2 OPERATOR_REPLY plan=187-21 task=2` and `bash "$A" has 187-21-2 '^answer_push=approve$'` each exited 0. The plan executor of Task 3 re-ran `bound` and `has` (both read-only) before recording anything below; both exited 0.
+
+### Step 18 of the staging Supabase runbook, applied by hand before the approval
+
+```
+STAGING_SETTINGS_HAND_APPLY_RECORDED=yes
+s18_plan_sha256=ba79191c11b6f7cbe211c05b11012ab2fd0bd02e37f9047cf602bae950185d97
+s18_sha_matches=yes
+s18_apply_exit=0
+s18_apply="Apply complete! Resources: 0 added, 1 changed, 0 destroyed."
+s18_second_plan_exit=0
+s18_second_plan="No changes. Your infrastructure matches the configuration."
+s18_auth_http=200
+s18_auth.mailer_otp_length=10
+s18_auth.uri_allow_list="https://staging.openvaa.org/auth/confirm,https://staging.openvaa.org/*/auth/confirm"
+```
+
+- In the same sitting, immediately before approving, the operator applied Step 18 of `infra/envs/staging/supabase/README.md` with `R=staging` (ref `cofbsatfrdysyphajsky`) and pasted the record into the main session; the lines above are copied from it. The change was the single update in place of `module.supabase.supabase_settings.this`: `mailer_otp_length` 6 to 10, and `uri_allow_list` from the two `/api/auth/callback` paths to the two `/auth/confirm` paths. The go-ahead named the plan file's sha256, and the applied file matched it.
+- Two earlier attempts in that sitting failed, and neither applied anything. Attempt 1's plan exited 1 with 401 `Invalid access token` on `supabase_project.this`; a stale plan file from an earlier sitting was found and removed unapplied, and the token was read again. Attempt 2's plan exited 0 with the same one update, but its apply exited 1 with `Error: Project Services Unhealthy` ("services did not become active within timeout"); the plan file was removed, the read-back still showed `mailer_otp_length=6` and the old `uri_allow_list`, and all eight services the provider waits on then read `ACTIVE_HEALTHY`. That the failure was transient is unconfirmed.
+- The record is a dated 2026-11-17 row of that runbook's Observations, formatted with Prettier.
+
+### Open item, accepted as non-blocking
+
+```
+MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no
+```
+
+- Still open: whether the hosted `postgres` role holds UPDATE on `auth.users`, which the SECURITY DEFINER functions of `00018_identity_entity_find_or_create.sql` and `00020_identity_metadata_written_under_lock.sql` need at call time. The push creates them without exercising the privilege. The operator accepted it as non-blocking for this run, because staging configures no identity provider, so nothing staging runs calls either function.
+
+## Task 3: the push and the run (2026-11-17)
+
+### The push
+
+```
+GREEN_PUSHED=yes
+GREEN_PUSHED_SHA=0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499
+GREEN_RUN_ID=44165083175
+GREEN_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44165083175
+```
+
+- The orchestrator pushed at top level after the binding above: `git push origin 0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499:refs/heads/deploy-evidence/187-green` exit 0, and `git ls-remote origin refs/heads/deploy-evidence/187-green` read it back at that SHA. `git ls-remote` had printed nothing before the push, and no deploy run was active.
+- `gh run view 44165083175 --json ...` exit 0: event `push`, head branch `deploy-evidence/187-green`, head SHA `0a73bb6dfd7a06c904f40f0bfa0454d9b7fbc499`. At 20:03Z its `checks` job (id `134328857709`) was in progress, its first six steps `success`.
+
+### The checks job and the gate
+
+```
+CHECKS_JOB=success
+CHECKS_JOB_ID=134328857709
+DEPLOY_JOB_ID=134329653364
+GATE_WAITED=yes
+GATE_ENVIRONMENT=staging
+GATE_WAIT_TIMER=0
+```
+
+- **`CHECKS_JOB=success`.** `gh api repos/OpenVAA/voting-advice-application/actions/jobs/134328857709` exit 0: `success`, 20:02:50Z to 20:04:03Z (73 s). Steps, each `success`: Set up job (4 s), Checkout source code (8 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (1 s), Validate the staging AWS root (9 s), Setup Node.js 24.21.0 (4 s), Setup Yarn 4.18 (28 s), Unit tests of the infrastructure scripts (13 s), and the post and complete steps (0 s).
+- **`GATE_WAITED=yes`.** At 20:04:10Z `gh run view 44165083175` read the run `waiting` and its `deploy` job (id `134329653364`, created 20:04:03Z) `waiting`. `gh api repos/OpenVAA/voting-advice-application/actions/runs/44165083175/pending_deployments` (a GET) exit 0: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing.
