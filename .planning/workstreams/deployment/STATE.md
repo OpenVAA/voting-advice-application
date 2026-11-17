@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 18
+current_plan: 19
 status: executing
-stopped_at: Stopped 187-27-PLAN.md at Task 8 (e2e-tests and e2e-visual red on run 43938990256)
-last_updated: "2026-11-16T20:52:48.000Z"
+stopped_at: Completed 187-28-PLAN.md (G-03 closed on run 44033456141)
+last_updated: "2026-11-17T07:37:06.868Z"
 last_activity: 2026-11-15
 last_activity_desc: Phase 187 execution started
-state_head: 1f5c56781f5983110fa703f621c6f376b046f870
+state_head: 36f89c1a2bacb7fd5d496220c919dc8ea505dc03
 progress:
   total_phases: 10
   completed_phases: 6
-  total_plans: 184
-  completed_plans: 156
+  total_plans: 185
+  completed_plans: 157
   percent: 60
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 18 of 25
+Plan: 19 of 25
 Status: Ready to execute
 Last activity: 2026-11-15 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████░░░░] 60% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 18
+**Current Plan:** 19
 
 From 184 on, the numeric order is the dependency order.
 
@@ -170,6 +170,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P16 | 11h05min | 3 tasks | 3 files |
 | Phase 187 P26 | 100min | 7 tasks | 11 files |
 | Phase 187 P27 | 140min | 8 tasks | 20 files |
+| Phase 187 P28 | 8h15min | 5 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -351,6 +352,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: Drift guard (operator ruling push-now-fix-in-follow-up): link the docker stand-in in checkDriftLinkedGuard.test.ts to an existing binary before the milestone's final evidence push (todo 2026-11-16-drift-guard-docker-stand-in-link.md)
 - [Phase 187]: 187-27 stops at Task 8: run 43938990256 on ci-evidence/187-final-3 held this plan's fixes (cand-home and the terms gate passed; drift guard linked, ced5b42bb; probe updated, e56db5391), but e2e-visual is red on candidate-portrait baselines shifted by the -gsd base-template row of db9e314b2 (cause confirmed) and e2e-tests is red on seven CI-only 10 s readiness timeouts in -gsd-owned specs, 511 did not run (cause unconfirmed); 187-15 and 187-26 stay open
 - [Phase 187]: Next step (operator rulings, 2026-11-16): the -gsd-owned failures are fixed in the -gsd worktree on a new branch on top of ship/v2.16-12-planning, then the -infra stack is rebased onto it; the work starts by measuring CI (worker count and warm-up experiments on ci-evidence/* branches), because only the runner reproduces the timeouts
+- [Phase 187]: 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4, 68a54299a): every job success at job level except dependency-audit (17 rows, all the phase-189 todo's); e2e-tests 729/729 on 4 workers; e2e-visual green on attempt 2 after the operator ruled attempt 1's supabase start port collision (54326) void ('void + rerun'). Plans 187-15, 187-26 and 187-27 closed by pointer; SUPA-08, PIPE-02, PIPE-06 advanced
+- [Phase 187]: 187-28: the fix tip moved to -gsd cecf649d8 (trace comment line break joined) after Task 1's first attempt stopped on lint:check; the red archive build's out-of-memory at yarn install was ruled void and made once more
 
 ### Pending Todos
 
@@ -364,6 +367,10 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 - `2026-10-18-pg-delta-migration-authoring-after-freeze` (181.1 D-01)
 - `2026-10-18-native-per-worktree-stack-and-cli-bump-spike` (181.1 D-05, D-06, D-08)
+
+Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
+
+- `2026-11-17-local-supabase-ports-in-ephemeral-range` (run 44033456141 attempt 1: `supabase start` found host port 54326 bound on the runner)
 
 ### Blockers/Concerns
 
@@ -392,9 +399,9 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 - [Phase 183] The CI `secret-scan` job concluded failure on the pushed tree. It is attributed to two accepted dummy URI test inputs, but nobody has read the job log. The `dependency-audit` CI failure is also undiagnosed.
 - [Phase 183] `183-VALIDATION.md` is still draft; the Nyquist audit (`/gsd-validate-phase 183 --ws deployment`) has not run.
 - [Phase 183] 23 info review findings (IN-01 to IN-23) remain open in `183-REVIEW-DISPOSITION.md`. The lock files of the four Supabase-provider directories still record `constraints = "~> 1.11"` while the roots pin `= 1.11.0`.
-- 187-15 stopped: secret-scan red on run 43817899191 (ci-evidence/187-final) - two unverified URI fixtures at tests/tests/utils/deployedTarget.test.ts:603,604 (phase 186); fix needs a new plan + new evidence push. Same run also red: 3 push-migrations --confirmed-ref unit tests and every mailed-link E2E spec (awaitLinkWitness timeout), CI-only, cause unconfirmed
-- 187-26: e2e-tests red on run 43839245785 (3 CI-only contestant readiness timeouts: contestant-email-registration.spec.ts:186, contestantAxeScan cand-home (dark), contestant-terms-gate-phone.spec.ts:28; cause unconfirmed). G-03 and plan 187-15 stay open; 187-18 must not start until a new plan's run is green
-- 187-27: e2e-visual and e2e-tests red on run 43938990256 (e2e-visual: Voter Results desktop and mobile portraits shifted by db9e314b2's base-template row, cause confirmed; e2e-tests: 7 CI-only readiness timeouts, 511 did not run, cause unconfirmed; both -gsd-owned). G-03 and plans 187-15 and 187-26 stay open; 187-18 must not start until a run after the -gsd fixes and the rebase is green
+- 187-15 stopped: secret-scan red on run 43817899191 (ci-evidence/187-final) - two unverified URI fixtures at tests/tests/utils/deployedTarget.test.ts:603,604 (phase 186); fix needs a new plan + new evidence push. Same run also red: 3 push-migrations --confirmed-ref unit tests and every mailed-link E2E spec (awaitLinkWitness timeout), CI-only, cause unconfirmed RESOLVED 2026-11-17 by 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4); plan closed by pointer.
+- 187-26: e2e-tests red on run 43839245785 (3 CI-only contestant readiness timeouts: contestant-email-registration.spec.ts:186, contestantAxeScan cand-home (dark), contestant-terms-gate-phone.spec.ts:28; cause unconfirmed). G-03 and plan 187-15 stay open; 187-18 must not start until a new plan's run is green RESOLVED 2026-11-17 by 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4); plan closed by pointer.
+- 187-27: e2e-visual and e2e-tests red on run 43938990256 (e2e-visual: Voter Results desktop and mobile portraits shifted by db9e314b2's base-template row, cause confirmed; e2e-tests: 7 CI-only readiness timeouts, 511 did not run, cause unconfirmed; both -gsd-owned). G-03 and plans 187-15 and 187-26 stay open; 187-18 must not start until a run after the -gsd fixes and the rebase is green RESOLVED 2026-11-17 by 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4); plan closed by pointer.
 
 ### Roadmap Evolution
 
@@ -410,6 +417,6 @@ Filed by phase 181.1 on 2026-10-18, under `.planning/todos/pending/`, for after 
 
 ## Session Continuity
 
-Last session: 2026-11-16T20:52:46.000Z
-**Stopped At:** Stopped 187-27-PLAN.md at Task 8 (e2e-tests and e2e-visual red on run 43938990256)
+Last session: 2026-11-17T07:37:05.718Z
+**Stopped At:** Completed 187-28-PLAN.md (G-03 closed on run 44033456141)
 **Resume File:** None
