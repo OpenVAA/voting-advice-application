@@ -96,3 +96,31 @@ The E2E rule's targeted proof (CLAUDE.md, ruling of 2026-11-09): no spec, fixtur
 E2E_PROJECTS_AFFECTED=none
 E2E_PROJECT_DELTAS=none
 E2E_SUMMED_DELTAS=0
+
+## Task 4: the evidence commits
+
+HELPERS_COPIED=yes
+
+`tmp/187-28/commits/make-commits.sh`, `tmp/187-28/build-archive.sh` and `tmp/187-28/scan.sh` were copied with their mode to the same paths under `tmp/187-29/`, with `tmp/187-28` and the earlier session's scratch directory rewritten to `tmp/187-29` and this executor's session scratch directory; each copy passes `bash -n`. The commits, the builds and their lines are in `evidence/187-12-evidence-commits.md` § Re-run 2026-11-17 (plan 187-29).
+
+DB_STOPPED_FOR_BUILDS=yes
+
+The scan of the red range (`bash tmp/187-29/scan.sh red 340a200708c28fb7ed078d452138712f3400c789 refs/evidence/187/red`, in the background, exit 0). It fetched from this checkout's own path only, into a plain repository that it removed afterwards, and ran trufflehog 3.97.9 with `main.yaml`'s extra arguments. The `--github-actions` run printed `"chunks": 4191`, `"verified_secrets": 0` and `"unverified_secrets": 0` and kept no annotation; the `--json` run's selection of location fields is empty, and its raw output was deleted with its mode-700 directory.
+
+RED_SCAN_HEAD=26ecadd36d5cf2dbc17fd1f3739708d42c9be09a
+RED_SCAN_BASE=340a200708c28fb7ed078d452138712f3400c789
+RED_SCAN_EXIT=0
+RED_SCAN_RESULTS=0
+RED_SCAN_COVERS_GREEN=yes
+
+`RED_SCAN_COVERS_GREEN`: `git diff-tree -r --name-only refs/evidence/187/green refs/evidence/187/red` prints only `apps/frontend/src/routes/+layout.ts`, so the red range holds the green tree.
+
+BUILDER_CACHE_PRUNED=yes
+DB_STARTED_AFTER=yes
+
+`yarn db:start` exit 0; `supabase_db_openvaa-local` (healthy) and `supabase_edge_runtime_openvaa-local` Up afterwards.
+
+GREEN_DIFF_VS_FINAL_4=.github/workflows/deploy.yml,.github/workflows/destroy.yml,.github/workflows/infra-plan.yml,infra/README.md,infra/bootstrap/README.md,infra/envs/staging/aws/README.md,infra/scripts/infra-plan-workflow.test.ts,infra/scripts/workflow-errexit.test.ts,infra/scripts/workflowGuards.ts
+GREEN_DIFF_VS_FINAL_4_TOUCHES_APP_OR_TF=no
+
+`GREEN_DIFF_VS_FINAL_4` is `git diff --name-only 68a54299aa81b2a2f95fd2151031ab4e624ef01c <GREEN_COMMIT>`: Task 3's `FIX_PATHS` and the two runbooks plan 187-18 changed. The same diff limited to `apps packages tests` and to `'*.tf' '*.tfvars' '*.hcl'` lists nothing, so the source tree that plan 187-28's closing E2E run covered is unchanged.
