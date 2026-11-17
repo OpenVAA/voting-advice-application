@@ -100,14 +100,15 @@ created: "2026-11-15"
 | 187-26-T1..T7 | 26 | 10 | SUPA-08, PIPE-02, PIPE-06 | T-187-67 to T-187-73 | the developer's functions env never read and always restored; findings by location only; push only while the standing conditions hold | local scan + unit + E2E + manual (H4b) + CI | lines in `187-26-ci-closure.md`; job-level conclusions | ✅ | ⬜ |
 | 187-27-T1..T8 | 27 | 11 | SUPA-08, PIPE-02, PIPE-06 | T-187-74 to T-187-83 | the developer's functions env never read and always restored; no hosted read or write; throttle and negative-control mutations never committed; push only while the standing conditions hold | gates + db + local scan + throttled E2E controls + full E2E + manual (H4b) + CI | lines in `187-27-ci-closure.md`; job-level conclusions | ✅ | ⬜ |
 | 187-28-T1..T5 | 28 | 12 | SUPA-08, PIPE-02, PIPE-06 | T-187-84 to T-187-89 | the developer's functions env never read and always restored; no file outside .planning/ changed; findings by location only; no CI job re-run; push only while the standing conditions hold | gates + local scan + full E2E + manual (H4b) + CI | lines in `187-28-ci-closure.md`; job-level conclusions | ✅ | ⬜ |
-| 187-18-T1..T3 | 18 | 13 | PIPE-09, PIPE-01, PIPE-04, INFRA-16, INFRA-19, PIPE-02 | T-187-47, T-187-48, T-187-49 | no hosted write; branch subject refused | manual (H8) + run | lines in `187-18-red-run.md`; alert mail human-check | ✅ | ⬜ |
-| 187-19-T1..T3 | 19 | 14 | PIPE-02, INFRA-19, PIPE-01, SUPA-08 | T-187-50, T-187-51 | no artifact; pr-evidence names trigger no push | manual (H5) + run | lines in `187-19-pr-plan.md` | ✅ | ⬜ |
-| 187-20-T1..T3 | 20 | 15 | PIPE-03 | T-187-52 | fork job skipped, no assume step | manual (H6) + run | lines in `187-20-fork-pr.md` | ✅ | ⬜ |
-| 187-21-T1..T3 | 21 | 15 | PIPE-09, PIPE-04, PIPE-05, PIPE-06, PIPE-07, PIPE-10, SUPA-08 | T-187-53, T-187-54, T-187-55 | covered tree; migrations listed before approval | manual (H4, H7) + run | lines in `187-21-green-run.md` | ✅ | ⬜ |
-| 187-22-T1..T3 | 22 | 16 | PIPE-10, PIPE-05, PIPE-04 | T-187-56, T-187-57 | `main` not admitted; image reused | manual (H4) + run | lines in `187-22-deploy-staging.md` | ✅ | ⬜ |
-| 187-23-T1..T3 | 23 | 17 | PIPE-08, PIPE-04 | T-187-58, T-187-59 | Supabase root refused; apply rejected | manual + run | lines in `187-23-destroy-plan.md` | ✅ | ⬜ |
-| 187-24-T1..T3 | 24 | 18 | PIPE-08 | T-187-60, T-187-61, T-187-62 | other roots unchanged | manual (H10) + run | lines in `187-24-destroy.md` (on or after 2026-11-23) | ✅ | ⬜ |
-| 187-25-T1..T3 | 25 | 19 | PIPE-08, PIPE-06, INFRA-16, PIPE-01 | T-187-63, T-187-64, T-187-65 | Supabase untouched before redeploy; subscription confirmed | manual (H10) + run | lines in `187-25-redeploy.md` | ✅ | ⬜ |
+| 187-29-T1..T7 | 29 | 13 | PIPE-09, PIPE-01, INFRA-16, INFRA-19, PIPE-04, PIPE-02, PIPE-05, PIPE-06, PIPE-07, PIPE-08 | T-187-90 to T-187-96 | every status-reading step runs under bash -e to its own diagnosis; the harness reaches no host command or credential; the wrong-subject pass condition unchanged; no hosted write; nothing re-run | unit (red first) + lint + gates + local build + local scan + manual (H8) + run | `vitest ... workflow-errexit`; lines in `187-29-red-rerun.md` | ✅ | ⬜ |
+| 187-18-T1..T3 | 18 | 14 | PIPE-09, PIPE-01, PIPE-04, INFRA-16, INFRA-19, PIPE-02 | T-187-47, T-187-48, T-187-49 | no hosted write; branch subject refused | manual (H8) + run | lines in `187-18-red-run.md`; alert mail human-check | ✅ | ⬜ |
+| 187-19-T1..T3 | 19 | 15 | PIPE-02, INFRA-19, PIPE-01, SUPA-08 | T-187-50, T-187-51 | no artifact; pr-evidence names trigger no push | manual (H5) + run | lines in `187-19-pr-plan.md` | ✅ | ⬜ |
+| 187-20-T1..T3 | 20 | 16 | PIPE-03 | T-187-52 | fork job skipped, no assume step | manual (H6) + run | lines in `187-20-fork-pr.md` | ✅ | ⬜ |
+| 187-21-T1..T3 | 21 | 16 | PIPE-09, PIPE-04, PIPE-05, PIPE-06, PIPE-07, PIPE-10, SUPA-08 | T-187-53, T-187-54, T-187-55 | covered tree; migrations listed before approval | manual (H4, H7) + run | lines in `187-21-green-run.md` | ✅ | ⬜ |
+| 187-22-T1..T3 | 22 | 17 | PIPE-10, PIPE-05, PIPE-04 | T-187-56, T-187-57 | `main` not admitted; image reused | manual (H4) + run | lines in `187-22-deploy-staging.md` | ✅ | ⬜ |
+| 187-23-T1..T3 | 23 | 18 | PIPE-08, PIPE-04 | T-187-58, T-187-59 | Supabase root refused; apply rejected | manual + run | lines in `187-23-destroy-plan.md` | ✅ | ⬜ |
+| 187-24-T1..T3 | 24 | 19 | PIPE-08 | T-187-60, T-187-61, T-187-62 | other roots unchanged | manual (H10) + run | lines in `187-24-destroy.md` (on or after 2026-11-23) | ✅ | ⬜ |
+| 187-25-T1..T3 | 25 | 20 | PIPE-08, PIPE-06, INFRA-16, PIPE-01 | T-187-63, T-187-64, T-187-65 | Supabase untouched before redeploy; subscription confirmed | manual (H10) + run | lines in `187-25-redeploy.md` | ✅ | ⬜ |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -123,7 +124,7 @@ Every outward action in `187-DISCUSSION-POINTS.md` section H (H1–H10) is an op
 | H4b `ci-evidence/187-final`, `ci-evidence/187-final-2`, `ci-evidence/187-final-3` and `ci-evidence/187-final-4` (secret-scan, infra-validate, dependency-audit, the module validation, the E2E jobs) | 187-15, 187-26, 187-27, 187-28 | job-level conclusions |
 | H1 bootstrap hand apply | 187-16 | Step 9 `s9` lines pasted by the operator |
 | H9 plan 186-08's sitting | 187-17 | 186-08's own evidence |
-| H8 red run and its alert mail | 187-18 | run steps; mail arrival as an end-of-phase human check |
+| H8 red run and its alert mail | 187-18, 187-29 (the re-run on `deploy-evidence/187-red-2`) | run steps; mail arrival as an end-of-phase human check |
 | H5 draft pull request plan | 187-19 | the plan job's log and summary |
 | H6 fork pull request | 187-20 | the plan job skipped |
 | H4/H7 green run, then `deploy/staging` | 187-21, 187-22 | stage-by-stage step conclusions |
