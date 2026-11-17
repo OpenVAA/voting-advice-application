@@ -1,0 +1,267 @@
+/**
+ * Status-reading steps of the pipeline workflows, run the way a GitHub-hosted runner runs a `run:` step that names no
+ * `shell:`: as `bash -e <script file>`, against stub commands.
+ *
+ * Under `bash -e` a command that fails ends the step unless it stands in an `||` list, so a step that reads a status
+ * with `$?` on the line after its command would end before it prints its own diagnosis. These cases take each step's
+ * script from the parsed workflow and run it in a temporary root whose `PATH` holds only stub commands and links to
+ * local file utilities, with an environment built from nothing, so no host credential and no network command reaches
+ * the script.
+ */
+
+import { spawnSync } from 'node:child_process';
+import {
+  accessSync,
+  chmodSync,
+  constants,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { delimiter, dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { jobSteps, loadWorkflow, workflowJobs } from './workflowGuards';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(HERE, '../..');
+const WORKFLOWS = join(REPO_ROOT, '.github', 'workflows');
+
+/** The local utilities a step's script may reach through `utils/`. Each reads or writes local files only. */
+const LOCAL_UTILITIES = [
+  'sed',
+  'cat',
+  'grep',
+  'awk',
+  'find',
+  'rm',
+  'mkdir',
+  'ln',
+  'wc',
+  'sort',
+  'basename',
+  'base64',
+  'jq',
+  'env',
+  'tr',
+  'head',
+  'cut'
+] as const;
+
+/** The absolute path of `bash`, from the test process's own `PATH`. */
+const BASH = findOnPath('bash');
+
+/** The absolute path of each local utility, resolved once with `command -v`. */
+const UTILITY_PATHS: Record<string, string> = Object.fromEntries(
+  LOCAL_UTILITIES.map((name) => [name, resolveUtility(name)])
+);
+
+/** The first executable `name` on the test process's `PATH`; throws naming it when there is none. */
+function findOnPath(name: string): string {
+  for (const directory of (process.env.PATH ?? '').split(delimiter)) {
+    if (!directory) continue;
+    const candidate = join(directory, name);
+    try {
+      accessSync(candidate, constants.X_OK);
+      return candidate;
+    } catch {
+      // not in this directory
+    }
+  }
+  throw new Error(`${name} is not on the test process's PATH`);
+}
+
+/** The absolute path `command -v` gives for a utility; throws naming the utility when it cannot be resolved. */
+function resolveUtility(name: string): string {
+  const result = spawnSync(BASH, ['-c', 'command -v "$1"', '_', name], {
+    encoding: 'utf8',
+    env: { PATH: process.env.PATH ?? '' }
+  });
+  const path = result.stdout.trim();
+  if (result.status !== 0 || !path.startsWith('/')) throw new Error(`the utility ${name} could not be resolved`);
+  return path;
+}
+
+/** A file put into the case's working directory; an executable one is a stub, run by the absolute `bash`. */
+type WorkspaceFile = { content: string; executable?: boolean };
+
+/** What one run of a step's script gets: stub commands by name, files of its working directory, its variables. */
+type RunnerShellOptions = {
+  stubs?: Record<string, string>;
+  files?: Record<string, WorkspaceFile>;
+  env?: Record<string, string>;
+};
+
+/** The outcome of one run, plus what the step wrote to the runner's files. */
+type RunnerShellResult = {
+  status: number | null;
+  stdout: string;
+  stderr: string;
+  githubOutput: string;
+  stepSummary: string;
+};
+
+/**
+ * The `run` string of one step of a workflow under `.github/workflows/`.
+ *
+ * @param file - The workflow's file name, such as `infra-plan.yml`.
+ * @param jobId - The job's id.
+ * @param stepName - The step's name.
+ * @returns The step's script.
+ * @throws Naming the file, the job and the step when the step or its script is absent.
+ */
+function stepScript(file: string, jobId: string, stepName: string): string {
+  const { doc } = loadWorkflow(join(WORKFLOWS, file));
+  const job = workflowJobs(doc).find(([id]) => id === jobId)?.[1];
+  const step = job ? jobSteps(job).find((candidate) => candidate.name === stepName) : undefined;
+  if (!step || typeof step.run !== 'string') {
+    throw new Error(`${file} has no job ${jobId} with a run step named ${JSON.stringify(stepName)}`);
+  }
+  return step.run;
+}
+
+/** A stub's file text: the absolute `bash` as its interpreter, then its body. */
+function stubText(body: string): string {
+  return `#!${BASH}\n${body}\n`;
+}
+
+/**
+ * Run a step's script as a GitHub-hosted runner runs a `run:` step with no `shell:`, as `bash -e <file>`.
+ *
+ * The run gets a temporary root holding `ws/` (its working directory and `GITHUB_WORKSPACE`), `runner-temp/`
+ * (`RUNNER_TEMP`, which also holds `GITHUB_OUTPUT`, `GITHUB_ENV` and `GITHUB_STEP_SUMMARY`), `stubs/` and `utils/`. Its
+ * `PATH` names those last two only, and its environment holds nothing else of the host's. The root is removed when the
+ * run ends.
+ *
+ * @param script - The step's script.
+ * @param options - The stubs, the working directory's files and the case's own variables.
+ * @returns The exit status, both output streams, and the contents of `GITHUB_OUTPUT` and `GITHUB_STEP_SUMMARY`.
+ */
+function runUnderRunnerShell(script: string, options: RunnerShellOptions = {}): RunnerShellResult {
+  const root = mkdtempSync(join(tmpdir(), 'workflow-errexit-'));
+  try {
+    const ws = join(root, 'ws');
+    const runnerTemp = join(root, 'runner-temp');
+    const stubs = join(root, 'stubs');
+    const utils = join(root, 'utils');
+    for (const directory of [ws, runnerTemp, stubs, utils]) mkdirSync(directory);
+    for (const [name, path] of Object.entries(UTILITY_PATHS)) symlinkSync(path, join(utils, name));
+    for (const [name, body] of Object.entries(options.stubs ?? {})) {
+      writeFileSync(join(stubs, name), stubText(body));
+      chmodSync(join(stubs, name), 0o755);
+    }
+    for (const [relative, file] of Object.entries(options.files ?? {})) {
+      const target = join(ws, relative);
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, file.executable ? stubText(file.content) : file.content);
+      if (file.executable) chmodSync(target, 0o755);
+    }
+    const githubOutput = join(runnerTemp, 'github-output');
+    const githubEnv = join(runnerTemp, 'github-env');
+    const stepSummary = join(runnerTemp, 'step-summary');
+    for (const file of [githubOutput, githubEnv, stepSummary]) writeFileSync(file, '');
+    const scriptFile = join(root, 'step.sh');
+    writeFileSync(scriptFile, script);
+
+    const result = spawnSync(BASH, ['-e', scriptFile], {
+      cwd: ws,
+      encoding: 'utf8',
+      timeout: 30_000,
+      env: {
+        PATH: `${stubs}:${utils}`,
+        HOME: root,
+        RUNNER_TEMP: runnerTemp,
+        GITHUB_WORKSPACE: ws,
+        GITHUB_OUTPUT: githubOutput,
+        GITHUB_ENV: githubEnv,
+        GITHUB_STEP_SUMMARY: stepSummary,
+        ...options.env
+      }
+    });
+    return {
+      status: result.status,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      githubOutput: readFileSync(githubOutput, 'utf8'),
+      stepSummary: readFileSync(stepSummary, 'utf8')
+    };
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+/** `source` with every match of `pattern` replaced; throws when nothing matched, so a copy is never the original. */
+function mutateAll(source: string, pattern: RegExp, replacement: string): string {
+  const mutated = source.replace(pattern, replacement);
+  if (mutated === source) throw new Error(`the mutation found nothing to replace: ${String(pattern)}`);
+  return mutated;
+}
+
+/** Every ` || <name>=$?` capture of a script. */
+const STATUS_CAPTURE = / \|\| [A-Za-z_][A-Za-z0-9_]*=\$\?/g;
+
+/** The lines a run printed to standard output. */
+function lines(output: string): Array<string> {
+  return output.split('\n');
+}
+
+describe('the wrong-subject step of infra-plan.yml under bash -e', () => {
+  const script = stepScript(
+    'infra-plan.yml',
+    'wrong-subject',
+    'Ask STS for the deploy role and the plan role with the branch subject'
+  );
+  const subject = 'repo:OpenVAA/voting-advice-application:ref:refs/heads/deploy-evidence/harness';
+  const token = [
+    Buffer.from('{"alg":"RS256"}').toString('base64url'),
+    Buffer.from(JSON.stringify({ sub: subject })).toString('base64url'),
+    'signature'
+  ].join('.');
+  const curl = [
+    'out=',
+    'while [ "$#" -gt 0 ]; do',
+    '  if [ "$1" = -o ]; then out="$2"; shift; fi',
+    '  shift',
+    'done',
+    `printf '%s' '{"value":"${token}"}' > "$out"`
+  ].join('\n');
+  const refusingAws = [
+    "echo 'An error occurred (AccessDenied) when calling the AssumeRoleWithWebIdentity operation: Not authorized to perform sts:AssumeRoleWithWebIdentity' >&2",
+    'exit 254'
+  ].join('\n');
+  const env = {
+    DEPLOY_ROLE_ARN: 'arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy',
+    PLAN_ROLE_ARN: 'arn:aws:iam::000000000000:role/harness-plan',
+    ACTIONS_ID_TOKEN_REQUEST_URL: 'https://token.invalid/?a=b',
+    ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'harness'
+  };
+  const refusalLines = [
+    `token_subject=${subject}`,
+    'deploy_role_assume_status=254',
+    'deploy_role_error=AccessDenied',
+    'plan_role_assume_status=254',
+    'plan_role_error=AccessDenied'
+  ];
+
+  it('prints the subject and both refusals and exits 0 when both roles refuse with AccessDenied', () => {
+    const run = runUnderRunnerShell(script, { stubs: { curl, aws: refusingAws }, env });
+    for (const line of refusalLines) expect(lines(run.stdout)).toContain(line);
+    expect(run.status).toBe(0);
+  });
+
+  it('exits 1 with its own error line when a role accepts the subject', () => {
+    const run = runUnderRunnerShell(script, { stubs: { curl, aws: 'exit 0' }, env });
+    expect(lines(run.stdout).some((line) => line.startsWith('::error::A role did not refuse'))).toBe(true);
+    expect(run.status).toBe(1);
+  });
+
+  it('is red under bash -e when its statuses are not read in an || list', () => {
+    const run = runUnderRunnerShell(mutateAll(script, STATUS_CAPTURE, ''), { stubs: { curl, aws: refusingAws }, env });
+    for (const line of refusalLines) expect(lines(run.stdout)).not.toContain(line);
+    expect(run.status).not.toBe(0);
+  });
+});

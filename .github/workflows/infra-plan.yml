@@ -244,43 +244,43 @@ jobs:
             echo "::error::The repository variable AWS_PLAN_ROLE_ARN is not set."
             exit 1
           fi
-          curl -sS --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" -o "$response" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com"
-          curl_status=$?
+          curl_status=0
+          curl -sS --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" -o "$response" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" || curl_status=$?
           if [ "$curl_status" -ne 0 ]; then
             echo "::error::The OIDC token request exited $curl_status."
             exit 1
           fi
-          jq -j .value "$response" > "$token_file"
-          jq_status=$?
+          jq_status=0
+          jq -j .value "$response" > "$token_file" || jq_status=$?
           rm -f "$response"
           if [ "$jq_status" -ne 0 ] || [ ! -s "$token_file" ]; then
             echo "::error::The OIDC token response held no token."
             exit 1
           fi
           echo "::add-mask::$(cat "$token_file")"
-          IFS=. read -r _ payload _ < "$token_file"
+          IFS=. read -r _ payload _ < "$token_file" || [ -n "$payload" ]
           payload="${payload//-/+}"
           payload="${payload//_//}"
           case $(( ${#payload} % 4 )) in
             2) payload="$payload==" ;;
             3) payload="$payload=" ;;
           esac
-          base64 -d <<< "$payload" > "$claims_file"
-          decode_status=$?
-          subject=$(jq -r .sub "$claims_file")
-          subject_status=$?
+          decode_status=0
+          base64 -d <<< "$payload" > "$claims_file" || decode_status=$?
+          subject_status=0
+          subject=$(jq -r .sub "$claims_file") || subject_status=$?
           if [ "$decode_status" -ne 0 ] || [ "$subject_status" -ne 0 ]; then
             echo "::error::The token's claims could not be read."
             exit 1
           fi
+          deploy_status=0
           aws sts assume-role-with-web-identity --region eu-north-1 --role-arn "$DEPLOY_ROLE_ARN" \
             --role-session-name wrong-subject-deploy --web-identity-token "file://$token_file" \
-            > /dev/null 2> "$RUNNER_TEMP/assume-deploy.err"
-          deploy_status=$?
+            > /dev/null 2> "$RUNNER_TEMP/assume-deploy.err" || deploy_status=$?
+          plan_status=0
           aws sts assume-role-with-web-identity --region eu-north-1 --role-arn "$PLAN_ROLE_ARN" \
             --role-session-name wrong-subject-plan --web-identity-token "file://$token_file" \
-            > /dev/null 2> "$RUNNER_TEMP/assume-plan.err"
-          plan_status=$?
+            > /dev/null 2> "$RUNNER_TEMP/assume-plan.err" || plan_status=$?
           cleanup
           deploy_code=$(sed -n 's/.*An error occurred (\([A-Za-z]*\)).*/\1/p' "$RUNNER_TEMP/assume-deploy.err")
           deploy_code="${deploy_code%%$'\n'*}"
