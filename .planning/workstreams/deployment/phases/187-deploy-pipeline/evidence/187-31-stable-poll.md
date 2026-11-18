@@ -89,3 +89,32 @@ E2E_SUMMED_DELTAS=0
 - Then `vitest run --config infra/vitest.config.ts --reporter=verbose` exit 0 (`tmp/187-31/gates/infra-vitest.status`).
 - `TF_FILES_CHANGED`, `OTHER_WORKFLOWS_CHANGED` and `FIX_PATHS` are from `git diff --name-only d4e3dbadc1e1fa8bdb45f6280f31de9e0979ff5f HEAD` once this task's commit lands; `FIX_PATHS` names the four fix paths.
 - E2E (CLAUDE.md, ruling of 2026-11-09): no spec, fixture, route or helper changed, and no project's tests drive `.github/workflows/deploy.yml`, `infra/scripts/` or `infra/README.md`, so no targeted run was due and none was made; the phase's one full run is its final plan's or its verification's.
+
+## Task 4: the evidence commits
+
+```
+HELPERS_COPIED=yes
+DB_STOPPED_FOR_BUILDS=yes
+BUILDER_CACHE_PRUNED=yes
+DB_STARTED_AFTER=yes
+E2E_TREE_SHA=450632a5c933ccb806506b83a5c29bca31cdc672
+E2E_TREE_UNCHANGED=yes
+GREEN_DIFF_VS_ATTEMPT_3=.github/workflows/deploy.yml,infra/README.md,infra/scripts/deploy-workflow.test.ts,infra/scripts/workflow-errexit.test.ts
+GREEN_DIFF_VS_ATTEMPT_3_IS_FIX=yes
+GREEN_MIGRATIONS_UNCHANGED_SINCE_ATTEMPT_3=yes
+```
+
+- **The helpers.** `tmp/187-19/commits/make-commits.sh` and `tmp/187-19/build-archive.sh` copied with `cp -p` to `tmp/187-31/commits/make-commits.sh` and `tmp/187-31/build-archive.sh`, `tmp/187-19` rewritten to `tmp/187-31`; the session scratch directory is this executor's own and the same one. Each passes `bash -n`.
+- **The stack.** `yarn db:stop` exit 0 before the builds (`tmp/187-31/commits/db-stop.status`); after the builds, `docker builder prune -af` exit 0 and `yarn db:start` exit 0 (`db-start.status`), with `supabase_db_openvaa-local` and `supabase_edge_runtime_openvaa-local` Up afterwards.
+- **The commits and builds.** Green `331b5db28058a1f8bc4ef88a3841080a4610efa2` (tree `8bce93f99…`, parent `origin/main` `340a20070…`) builds, exit 0 in 99 s; red `f4a44055385254628b71f38018c637e1856e13a4` fails at `shared 2/2 RUN yarn build` on `Failed: @openvaa/frontend#build`, naming `does-not-exist-187-red`, on the first attempt. The record is `evidence/187-12-evidence-commits.md` § Re-run 2026-11-18 (plan 187-31).
+- **The E2E-tree gate.** `E2E_TREE_SHA=` is the current line of `evidence/187-13-closing-e2e.md`; `git diff --quiet 450632a5c..HEAD -- apps packages tests` exit 0.
+- **Against attempt 3.** `git diff --name-only 9d6a55ca3 <green>` names the four paths of `FIX_PATHS` of Task 3 and nothing else; `git diff --quiet 9d6a55ca3 <green> -- apps/supabase/supabase/migrations` exit 0, so attempt 4 expects no pending migration.
+- Nothing was pushed and no remote was read in this task.
+
+## Hand-off to plan 187-21
+
+```
+READY_FOR_187_21_ATTEMPT_4=yes
+```
+
+Plan 187-21 now runs Tasks 1 to 3 again as attempt 4, under a new attempt of key `187-21-2`, pushing `GREEN_COMMIT=` of `evidence/187-12-evidence-commits.md` § Re-run 2026-11-18 (plan 187-31), `331b5db28…`, to `deploy-evidence/187-green-4`, with the expectations of its execution rules' note of 2026-11-18.
