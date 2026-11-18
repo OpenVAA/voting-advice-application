@@ -35,8 +35,8 @@
 # chunked case's 413 then comes from the declared-length check, and the line cannot tell the two apart.
 #
 # Usage:
-#   infra/scripts/relay-refusals.sh --base-url https://staging.openvaa.org --probe p188c01s20261118T120000Z
-#   infra/scripts/relay-refusals.sh --base-url http://localhost:5274 --probe p188c01l20261118T120000Z
+#   infra/scripts/relay-refusals.sh --base-url https://staging.openvaa.org --probe refusals-s-20261118T120000Z
+#   infra/scripts/relay-refusals.sh --base-url http://localhost:5274 --probe refusals-l-20261118T120000Z
 #   infra/scripts/relay-refusals.sh --self-test
 #
 #   --base-url <origin>     REQUIRED. https://staging.openvaa.org, or http://localhost:<port> or
