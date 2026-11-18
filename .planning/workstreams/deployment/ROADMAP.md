@@ -612,7 +612,7 @@ Notes:
   5. A guarded destroy path removes the AWS stack, and it is seen unable to reach the Supabase root.
 
 **Research flag**: Standard pattern, no research phase. OIDC, plan and apply, and environment gating are well documented, and the repository-specific items carry the risk. Added by rulings after the research: the named-branch trigger (PIPE-10) and the failure alerts (INFRA-16).
-**Plans**: 27/31 plans executed in 20 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 20 (plans 14 to 29) are the outward actions, each behind an operator checkpoint. Plans 26 (wave 10), 27 (wave 11), 28 (wave 12), 29 (wave 13), 30 (wave 14) and 31 (wave 15) are gap closures: plan 26 of plan 15's CI run; plan 27 of plan 26's run, after the branch was rebased onto the -gsd stream on 2026-11-16; plan 28 of plan 27's run, after the CI measurement and the rebase onto `fix/v2.16-ci-e2e` on 2026-11-17; plan 29 of plan 18's red run 44042442257, whose build line and wrong-subject refusal the runner's `bash -e` hid (operator ruling `RULING_BASH_E=fix-now-and-re-observe`, 2026-11-17); and plan 30 (wave 14) of plan 21's green run 44165083175, whose deploy job's ARM runner found no linux_arm64 hash in the staging AWS root's lock. Plan 18 closed after plan 29, on the operator's alert-mail lines. Plans 24 and 25 run on or after 2026-11-23.
+**Plans**: 28/31 plans executed in 20 waves. Waves 1 to 7 (plans 01 to 13) run without the operator: the deploy-role policies, the trust and lock changes, the image by digest, the archive build context, `--confirmed-ref`, the running-digest helper, the example mock plans, the three workflows with their guard tests and actionlint, the documentation, the gates, the locally proven green and red evidence commits and the one closing local E2E run. Waves 8 to 20 (plans 14 to 29) are the outward actions, each behind an operator checkpoint. Plans 26 (wave 10), 27 (wave 11), 28 (wave 12), 29 (wave 13), 30 (wave 14) and 31 (wave 15) are gap closures: plan 26 of plan 15's CI run; plan 27 of plan 26's run, after the branch was rebased onto the -gsd stream on 2026-11-16; plan 28 of plan 27's run, after the CI measurement and the rebase onto `fix/v2.16-ci-e2e` on 2026-11-17; plan 29 of plan 18's red run 44042442257, whose build line and wrong-subject refusal the runner's `bash -e` hid (operator ruling `RULING_BASH_E=fix-now-and-re-observe`, 2026-11-17); and plan 30 (wave 14) of plan 21's green run 44165083175, whose deploy job's ARM runner found no linux_arm64 hash in the staging AWS root's lock. Plan 18 closed after plan 29, on the operator's alert-mail lines. Plans 24 and 25 run on or after 2026-11-23.
 
 Plans:
 
@@ -676,7 +676,7 @@ Plans:
 - [x] 187-21-PLAN.md — wave 16 — H4, H7: the first green pipeline deploy, every stage in order.
 
 **Wave 17** *(needs the operator)*
-- [ ] 187-22-PLAN.md — wave 17 — The first deploy from `deploy/staging`, reusing the built image.
+- [x] 187-22-PLAN.md — wave 17 — The first deploy from `deploy/staging`, reusing the built image.
 
 **Wave 18** *(needs the operator)*
 - [ ] 187-23-PLAN.md — wave 18 — The destroy path up to its apply: the Supabase root refused, the apply job rejected.
@@ -822,6 +822,6 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 184. Hosted Supabase Measurement and Conformance Probe | 25/25 | Complete    | 2026-11-12 |
 | 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
-| 187. Deploy Pipeline | 27/31 | In Progress | - |
+| 187. Deploy Pipeline | 28/31 | In Progress | - |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 0/TBD | Not started | - |
 | 189. Documentation and Closure | 0/TBD | Not started | - |
