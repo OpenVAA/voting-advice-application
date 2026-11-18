@@ -111,3 +111,25 @@ DESTROY_PLAN_RESOURCES_OUTSIDE_MODULE=0
 - **`SUPABASE_ROOT_REFUSED=yes`** from the step's own `supabase_root_refused=yes`. The step prints that line only after `init` of `infra/envs/staging/supabase` exited non-zero (1) with `Error refreshing state` and `AccessDenied` or `403` in its output, and `aws s3api head-object` of the key `hand/staging/supabase/terraform.tfstate` exited non-zero (254) with `Forbidden`, `AccessDenied` or `403`; otherwise it prints `=no` and fails. The step concluded `success`. The two outputs were removed in the step and never printed.
 - **The guard.** `infra/scripts/check-destroy-plan.sh` printed the five counts and `destroy_guard=pass`: 40 planned deletes, 40 managed resources in the state list, none outside `module.frontend`, no action other than `delete`, no state resource left unplanned. `destroy_planned` equals `destroy_state_resources`, and both equal Task 1's `STATE_MANAGED_BEFORE=40`.
 - **`DESTROY_PLAN_SUMMARY=`** from the shown plan's line `Plan: 0 to add, 0 to change, 40 to destroy.`, printed by "Show the plan" after the guard passed, as Task 1 predicted. The plan shows 40 `# … will be destroyed` headers, every one under `module.frontend.` (`DESTROY_PLAN_RESOURCES_OUTSIDE_MODULE=0`), and no header of any other action. Its "Changes to Outputs" set the root's outputs to `null`; the one sensitive output prints as `(sensitive value)`.
+
+### apply-destroy waited, was rejected, ran nothing; the run's conclusion (10:31:28Z to 10:31:57Z)
+
+```
+APPLY_JOB_WAITED=yes
+APPLY_JOB_WAIT_ENVIRONMENT=staging-destroy
+APPLY_JOB_REVIEW=rejected
+APPLY_JOB_STEPS_RUN=0
+APPLY_JOB_RUNNER_ASSIGNED=no
+APPLY_JOB_LOG=none
+APPLY_JOB_CONCLUSION=failure
+DESTROY_RUN_STATUS=completed
+DESTROY_RUN_CONCLUSION=failure
+DESTROY_RUN_ATTEMPT=1
+DESTROY_ARTIFACTS=0
+```
+
+- **`APPLY_JOB_WAITED=yes`, `APPLY_JOB_REVIEW=rejected`.** `apply-destroy` (job `134739441207`) was created at 10:31:28Z, a second after `plan-destroy` ended, and was completed at 10:31:56Z. The poll was once a minute, so no poll saw it in `waiting`: the one between, at 10:31:23Z, still showed `plan-destroy` in progress, and the next, at 10:32:25Z, showed the run completed. What shows it waited at its own review: `actions/runs/44285713407/approvals` (GET, exit 0) now holds two reviews, both for environment `staging-destroy` by the environment's one reviewer, `approved` (the plan job's, above) and, newest first, `rejected`; and the job's check run (GET `check-runs/134739441207`, exit 0) carries the one annotation, at level `failure`, `The deployment was rejected or didn't satisfy other protection rules.` The operator rejected it in the web interface; the plan executor made no POST.
+- **`APPLY_JOB_STEPS_RUN=0`.** `actions/runs/44285713407/jobs` (GET, exit 0) lists `apply-destroy` with 0 steps and an empty `runner_name`, so no runner took it (`APPLY_JOB_RUNNER_ASSIGNED=no`), and its log GET answered HTTP 404, `BlobNotFound` (`APPLY_JOB_LOG=none`). None of its steps, so not its plan, its apply or its state check, ran.
+- **`DESTROY_RUN_CONCLUSION=failure`.** `actions/runs/44285713407` (GET, exit 0): `completed`, `failure`, attempt 1, updated 10:31:57Z. As the plan's assumption expected, a rejected review fails the waiting job without running any of its steps, and the run concludes `failure`. The run was not re-run.
+- **`DESTROY_ARTIFACTS=0`.** `actions/runs/44285713407/artifacts` (GET, exit 0): `total_count` 0.
+- **The `infra-plan.yml` run.** `44285713394` (`gh run view`, exit 0): `completed`, `success`; `checks` and `wrong-subject` `success`, the credentialed `plan` `skipped`, as Task 1 predicted for a push.
