@@ -137,7 +137,7 @@ Each is run on a real project, recorded with its date, and acted on.
       observation, not a pipeline gate (E2).
 - [x] **OBS-07**: A read of more than 1000 rows is not truncated, and `anon` runs with an 8 s statement timeout.
 - [x] **OBS-08**: A frontend started from the template's variables alone reads from Supabase.
-- [ ] **OBS-09**: The per-caller limit on the anonymous invitation operations is decided after OBS-04: built in
+- [x] **OBS-09**: The per-caller limit on the anonymous invitation operations is decided after OBS-04: built in
       this milestone if the measurement supports a design, otherwise deferred with the measurement and a date
       (A3).
 - [x] **OBS-10**: The feedback rate limit buckets by client on the hosted project with `behind_cloudflare` set
@@ -310,7 +310,7 @@ closes; those are not listed against the earlier phase here.
 | OBS-06 | Phase 185 | Complete |
 | OBS-07 | Phase 184 | Complete |
 | OBS-08 | Phase 185 | Complete |
-| OBS-09 | Phase 188 | Pending |
+| OBS-09 | Phase 188 | Complete |
 | OBS-10 | Phase 185 | Complete |
 | OBS-11 | Phase 188 | Pending |
 | RELAY-01 | Phase 182 | Complete |

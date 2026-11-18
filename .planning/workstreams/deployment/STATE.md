@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 188-01-PLAN.md
-last_updated: "2026-11-18T17:59:17.489Z"
+stopped_at: Completed 188-04-PLAN.md
+last_updated: "2026-11-18T18:10:49.954Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: aea1ccf4aa91773190dbc07d251ca7ff4b83c744
+state_head: 88956829b947cf5a15c7681e965e6653d387e071
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 169
+  completed_plans: 170
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 2 of 20
+Plan: 3 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 2
+**Current Plan:** 3
 
 From 184 on, the numeric order is the dependency order.
 
@@ -177,6 +177,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P24 | 122 min | 3 tasks | 2 files |
 | Phase 187 P25 | about 2 h | 3 tasks | 3 files |
 | Phase 188 P01 | 8 min | 1 tasks | 12 files |
+| Phase 188 P04 | 9min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -367,6 +368,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-25: both bootstrap not-yet-observed rows checked by the first pipeline deploy from nothing (deploy-role permissions; edge tag aws:ResourceTag test) moved to Observations
 - [Phase 187]: closed 2026-11-18, verified 12/12 (31 plans); PIPE-01 to PIPE-10, INFRA-16, INFRA-19 and SUPA-08 complete. The verifier's reading that the deploy role's two environments (staging, staging-destroy) satisfy "one GitHub Environment" is written as a suggested override only; the acceptance is the operator's. Full Key Decisions in PROJECT.md
 - [Phase 188]: ANALYTICS_FLUSH_INTERVAL_MS is read last and sits last in ANALYTICS_ENV; a valid interval is kept when another variable forces provider none
+- [Phase 188]: invitation_caller_take returns 0 when admitted or untrusted, else the whole seconds left in the caller's 10-minute window (at least 1); 30 takes per caller per project
+- [Phase 188]: No partial index for deleting ended caller: throttle rows; one can be appended later
 
 ### Pending Todos
 
@@ -427,6 +430,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T17:59:15.890Z
-**Stopped At:** Completed 188-01-PLAN.md
+Last session: 2026-11-18T18:10:48.559Z
+**Stopped At:** Completed 188-04-PLAN.md
 **Resume File:** None
