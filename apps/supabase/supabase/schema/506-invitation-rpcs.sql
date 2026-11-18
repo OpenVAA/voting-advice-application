@@ -611,15 +611,16 @@ service_role;
 --------------------------------------------------------------------------------
 -- invitation_throttle: the windowed counters of the invitation helpers
 --
--- One row per key, in one of six forms:
+-- One row per key, in one of seven forms:
 -- - `link:<project id>:<sha256 hex of the address>` counts the sign-in and recovery mails to one address in one project, one a minute.
 -- - `link-address:<sha256 hex of the address>` counts the sign-in and recovery mails to one address in every project together, twenty a day.
 -- - `code-bind:<invitation id>` counts the addresses one open code row is bound to, five a day.
 -- - `code:<project id>:<code hash>` counts claimant look-ups of one used code, which are password attempts.
 -- - `confirm:<user id>` counts one signed-in account's address-confirmation requests, whatever project they name.
 -- - `confirm-address:<sha256 hex of the address>` counts the address-confirmation mails to one address, whatever project their requests name.
+-- - `caller:<project id>:<address, or the /64 of an IPv6 address>` counts the invitation operations from one caller in one project, thirty per ten minutes, taken by `invitation_caller_take` from the address the Edge Function passes.
 --
--- No key holds an address in clear. A `link:` or `link-address:` key is taken only for an address a mail would go to, a `code-bind:` key only for an open code row, which also bounds how many addresses a code holder can make a mail go to, a `code:` key only for a code that names a claimed row, and a `confirm:` key only for an account the service role read from a signed-in caller's own token that registered in the project the request names, whose count also bounds the `confirm-address:` keys that account's requests can take; so a caller cannot fill the table with keys of its own making, and no key is derived from a request header.
+-- Only a `caller:` key holds an address in clear, and only while its window runs: each take of `invitation_caller_take` deletes the `caller:` rows whose window has ended. A `link:` or `link-address:` key is taken only for an address a mail would go to, a `code-bind:` key only for an open code row, which also bounds how many addresses a code holder can make a mail go to, a `code:` key only for a code that names a claimed row, and a `confirm:` key only for an account the service role read from a signed-in caller's own token that registered in the project the request names, whose count also bounds the `confirm-address:` keys that account's requests can take; so a caller cannot fill the table with keys of its own making. A `caller:` key is the one key derived from a request header: it is taken only from an address Cloudflare names, which a caller cannot choose, and only for a project that exists.
 --
 -- Only the SECURITY DEFINER functions of this file read or write it: row-level security is enabled with no policy and every API role's privileges are revoked.
 --------------------------------------------------------------------------------

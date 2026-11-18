@@ -1301,6 +1301,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      invitation_caller_take: { Args: { p_address: string; p_project_id: string }; Returns: number };
       invitation_code_claimant_email: { Args: { p_code: string; p_project_id: string }; Returns: string };
       invitation_code_status: { Args: { p_code: string; p_project_id: string }; Returns: string };
       invitation_link_release: { Args: { p_code?: string; p_email: string; p_project_id: string }; Returns: undefined };

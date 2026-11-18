@@ -333,19 +333,24 @@ email address or a code. It is not a content table: no `name`, no `external_id`,
 
 - Schema `private` (not exposed via PostgREST); a single row
 - singleton: boolean PK DEFAULT true CHECK (singleton)
-- behind_cloudflare: boolean NOT NULL DEFAULT false -- `check_feedback_rate_limit` trusts `cf-connecting-ip` only when true; a missing row reads as false. Operator statement: `UPDATE private.deployment_settings SET behind_cloudflare = true;` (only when every request reaches the API through Cloudflare; hosted Supabase does). seed.sql sets it true for the local stack
+- behind_cloudflare: boolean NOT NULL DEFAULT false -- `check_feedback_rate_limit` trusts `cf-connecting-ip`, and `invitation_caller_take` the address passed to it, only when true; a missing row reads as false. Operator statement: `UPDATE private.deployment_settings SET behind_cloudflare = true;` (only when every request reaches the API through Cloudflare; hosted Supabase does). seed.sql sets it true for the local stack
 - RLS enabled; REVOKE ALL from public, anon, authenticated, service_role; only the owner reads it
 
 **invitation_throttle** (506-invitation-rpcs.sql)
 
 - Schema `private`
-- key: text PK -- one of six forms: `link:<project id>:<sha256 hex of the address>` (sign-in and
+- key: text PK -- one of seven forms: `link:<project id>:<sha256 hex of the address>` (sign-in and
   recovery mails to one address in one project, one a minute), `link-address:<sha256 hex of the
   address>` (the same mails to one address in every project, twenty a day), `code-bind:<invitation
   id>` (the addresses one open code row is bound to, five a day), `code:<project id>:<code hash>`
   (claimant look-ups of one used code by the code sign-in), `confirm:<user id>` (one account's address-confirmation requests, whatever project
   they name) and `confirm-address:<sha256 hex of the address>` (address-confirmation mails to one
-  address, whatever project). No key holds an address in clear, and none is derived from a request header
+  address, whatever project) and `caller:<project id>:<address, or the /64 of an IPv6 address>`
+  (the invitation operations from one caller in one project, thirty per ten minutes, taken by
+  `invitation_caller_take` from the address the Edge Function passes). Only a `caller:` key holds an
+  address in clear, and only while its window runs, because each take deletes the `caller:` rows whose
+  window has ended; it is the one key derived from a request header, `cf-connecting-ip`, trusted only
+  when `deployment_settings.behind_cloudflare` is true
 - count: integer NOT NULL DEFAULT 1 -- takes in the current window
 - window_start: timestamptz NOT NULL DEFAULT now()
 - RLS enabled with no policy; REVOKE ALL from public, anon, authenticated, service_role. Only the
@@ -475,6 +480,7 @@ Derived from `pg_proc` on the applied database on 2026-10-07; the rows of `recov
 | recovery_link_request(p_project_id uuid, p_email text) -> jsonb | 506 | SECURITY DEFINER | service_role only | `{email, mail}` with `mail` `recovery` (the confirmed address of a holder of a grant that reaches the project: `private.email_holds_grant_in_project`) or `sign-in` (an address with an open, allowed invitation and no such user), or NULL. A non-NULL answer has taken the address's 60-second slot, the one `invitation_link_request` takes |
 | identity_entity_find_or_create(p_user_id uuid, p_project_id uuid, p_entity_type entity_type, p_first_name text, p_last_name text, p_identity_metadata jsonb DEFAULT '{}') -> jsonb | 506 | SECURITY DEFINER | service_role only | `{result, entity_id, registered_entities}` for the one user it is given. Takes `pg_advisory_xact_lock(hashtext('identity-entity:' \|\| p_user_id::text))`, then reads the user's `registered_entities` record for the project and the type: `found` (the recorded id) when the user's `(entity, <type>, <id>, editor)` grant and the row in the project both exist; `gone` (a null id, nothing created) when either is gone; `created` when there is no record, after inserting a confirmed candidate with the names or a nameless unconfirmed organization, the editor grant and the record (`jsonb_set` on `raw_app_meta_data`), in one transaction. `registered_entities` is the whole record after the call. On every answer, under the lock, `p_identity_metadata` is merged into `raw_app_meta_data`: each key given a string set, each given a null removed. 22023 for a null argument, a type other than candidate and organization, an unknown user and identity metadata that is not an object of strings and nulls or that names `registered_entities`; 22000 for a malformed record; nothing written on a refusal |
 | invitation_code_claimant_email(p_project_id uuid, p_code text) -> text | 506 | SECURITY DEFINER | service_role only | The claimant's address for a used code, or NULL; NULL from the eleventh answer inside fifteen minutes |
+| invitation_caller_take(p_project_id uuid, p_address text) -> integer | 506 | SECURITY DEFINER | service_role only | 0 when admitted or not trusted; else seconds until the caller's window ends. Thirty takes per caller per project per ten minutes under `caller:<project id>:<IPv4 host or IPv6 /64>`; an untrusted, absent or unparseable address and an unknown project write no row; each take deletes the `caller:` rows whose window has ended |
 | invitation_link_witness_open() -> uuid | 506 | SECURITY DEFINER | service_role only | Opens a witness record; deletes records opened more than a day ago |
 | invitation_link_witness(p_id uuid, p_outcome text DEFAULT NULL) -> text | 506 | SECURITY DEFINER | service_role only | Reads a record's outcome (`sent`, `not-sent`, NULL while open); with `p_outcome` first completes an open record by UPDATE |
 | private.invitation_mode_allowed(p_invitation public.invitations) -> boolean | 506 | invoker, STABLE | no API role | The registration-mode condition: true for a row that is not judged (project scope, faction, alliance), else `private.registration_mode_allowed` for the row's project, target type and mode. Asked by `invitation_code_status`, `invitation_link_request`, `recovery_link_request` and `claim_invitations` of open rows |
