@@ -82,3 +82,32 @@ PLAN_JOB_STARTED_BY_REVIEW=yes
 ```
 
 - **`PLAN_JOB_REVIEW=approved`.** `actions/runs/44285713407/approvals` (GET, exit 0) holds one review: `approved`, environment `staging-destroy`, by the environment's one reviewer, no comment. The operator gave it in the web interface; the plan executor made no POST. At the next poll, 10:30:47Z, `gh run view` (exit 0) showed `plan-destroy` `in_progress` with its first step started.
+
+### The plan job's lines (10:30:45Z to 10:31:27Z)
+
+`plan-destroy` (job `134737738434`) concluded `success` at 10:31:27Z: every one of its twelve steps `success`, then the post steps. Its log was read with `gh run view 44285713407 --log --job 134737738434` (exit 0, 1,846 lines). The lines below are the step outputs exactly as printed; none holds an address, a key or a token.
+
+```
+OIDC_ASSUME_DESTROY_ENV=success
+supabase_root_init_status=1
+supabase_state_head_status=254
+SUPABASE_ROOT_REFUSED=yes
+state_list_exit=0
+plan_exit=0
+export_exit=0
+destroy_planned=40
+destroy_state_resources=40
+destroy_outside_module=0
+destroy_other_actions=0
+destroy_unmatched=0
+destroy_guard=pass
+guard_exit=0
+DESTROY_PLAN_SUMMARY=0 to add, 0 to change, 40 to destroy
+DESTROY_PLAN_RESOURCES_SHOWN=40
+DESTROY_PLAN_RESOURCES_OUTSIDE_MODULE=0
+```
+
+- **`OIDC_ASSUME_DESTROY_ENV=success`.** The step "Assume the deploy role" concluded `success`; it printed `Assuming role with OIDC` and `Authenticated as assumedRoleId …:destroy-plan-44285713407`, the session name the workflow sets. The deploy role trusts only the subjects of `infra/bootstrap/terraform.tfvars`'s `deploy_subjects`, `…:environment:staging` and `…:environment:staging-destroy`, and this job runs in `staging-destroy` and no other, so its token carried the `environment:staging-destroy` subject.
+- **`SUPABASE_ROOT_REFUSED=yes`** from the step's own `supabase_root_refused=yes`. The step prints that line only after `init` of `infra/envs/staging/supabase` exited non-zero (1) with `Error refreshing state` and `AccessDenied` or `403` in its output, and `aws s3api head-object` of the key `hand/staging/supabase/terraform.tfstate` exited non-zero (254) with `Forbidden`, `AccessDenied` or `403`; otherwise it prints `=no` and fails. The step concluded `success`. The two outputs were removed in the step and never printed.
+- **The guard.** `infra/scripts/check-destroy-plan.sh` printed the five counts and `destroy_guard=pass`: 40 planned deletes, 40 managed resources in the state list, none outside `module.frontend`, no action other than `delete`, no state resource left unplanned. `destroy_planned` equals `destroy_state_resources`, and both equal Task 1's `STATE_MANAGED_BEFORE=40`.
+- **`DESTROY_PLAN_SUMMARY=`** from the shown plan's line `Plan: 0 to add, 0 to change, 40 to destroy.`, printed by "Show the plan" after the guard passed, as Task 1 predicted. The plan shows 40 `# … will be destroyed` headers, every one under `module.frontend.` (`DESTROY_PLAN_RESOURCES_OUTSIDE_MODULE=0`), and no header of any other action. Its "Changes to Outputs" set the root's outputs to `null`; the one sensitive output prints as `(sensitive value)`.
