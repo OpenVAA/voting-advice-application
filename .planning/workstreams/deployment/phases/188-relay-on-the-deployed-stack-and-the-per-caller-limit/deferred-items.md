@@ -17,3 +17,11 @@
 - Once deployed behind Cloudflare, the `cf-connecting-ip` the function sees for a code sign-in is likely the ECS task's egress address. All code sign-ins through that screen would then share one bucket of 30 per 10 minutes per task, and 30 form submissions by anyone would refuse everyone's code sign-in for the rest of the window. The server reports the refusal as invalid credentials. This is UNCONFIRMED on a hosted project: what the hosted function sees for a server request has not been measured.
 - 188-05 built what E-02 and E-03 decided (four operations in the take). It documented the risk as a pre-launch risk in the authentication docs' Known residuals and did not change the design.
 - Options, for the operator: (a) take `code-sign-in` out of the caller take, as was done for `confirm-address`; (b) have the frontend server forward the browser's address under a server secret that the function verifies; (c) keep it, and measure on the hosted project at 188-10/E-06. Any of these can be done before plan 188-10's push.
+
+## From 188-03
+
+### 1. `terraform validate` of `infra/modules/frontend-service` alone fails at HEAD, before this plan's change
+
+- `terraform -chdir=infra/modules/frontend-service validate` prints `Error: Provider configuration not present` for the first `provider = aws.us_east_1` resource, because the module declares `configuration_aliases = [aws.us_east_1]` and a module validated as a root has no such configuration. Measured on a `git archive HEAD` copy of the module at 137fe3487 (before 188-03): the same error, naming `aws_acm_certificate.viewer`.
+- 188-03's Task 1 `<verify>` chains this command first, so it cannot exit 0 as written. 188-03 validated the module through both AWS roots instead (`validate` of a root validates its module calls) and through the module's own `terraform test`, which plans and applies every resource against the mock providers.
+- Open: a later plan whose `<verify>` validates the module directly should validate a root instead, or the module could gain a test-only root. Not changed here.
