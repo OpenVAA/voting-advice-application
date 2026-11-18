@@ -91,6 +91,16 @@ variable "task_ceiling" {
   type        = number
 }
 
+variable "relay_rate_limit" {
+  description = "Opt-in rate rule on /api/usage at the CDN, as limit requests per window_seconds per viewer address. Null, the default, creates no web ACL; what switching it on needs and costs is stated on the frontend-service module's variable of the same name."
+  type = object({
+    limit          = number
+    window_seconds = number
+  })
+  default  = null
+  nullable = true
+}
+
 variable "stop_timeout_seconds" {
   description = "Seconds between the stop signal and the kill of the container. The bound it must meet, relative to SHUTDOWN_TIMEOUT, is stated on the frontend-service module's variable of the same name."
   type        = number

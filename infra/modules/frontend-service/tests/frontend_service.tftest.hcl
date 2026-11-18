@@ -798,6 +798,45 @@ run "relay_rate_limit_on" {
   }
 }
 
+run "relay_rate_limit_refuses_a_window" {
+  command = plan
+
+  variables {
+    relay_rate_limit = {
+      limit          = 300
+      window_seconds = 90
+    }
+  }
+
+  expect_failures = [var.relay_rate_limit]
+}
+
+run "relay_rate_limit_refuses_below_ten" {
+  command = plan
+
+  variables {
+    relay_rate_limit = {
+      limit          = 9
+      window_seconds = 300
+    }
+  }
+
+  expect_failures = [var.relay_rate_limit]
+}
+
+run "relay_rate_limit_refuses_a_fraction" {
+  command = plan
+
+  variables {
+    relay_rate_limit = {
+      limit          = 100.5
+      window_seconds = 300
+    }
+  }
+
+  expect_failures = [var.relay_rate_limit]
+}
+
 run "price_class_refuses_an_unknown_class" {
   command = plan
 
