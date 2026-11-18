@@ -133,3 +133,30 @@ DESTROY_ARTIFACTS=0
 - **`DESTROY_RUN_CONCLUSION=failure`.** `actions/runs/44285713407` (GET, exit 0): `completed`, `failure`, attempt 1, updated 10:31:57Z. As the plan's assumption expected, a rejected review fails the waiting job without running any of its steps, and the run concludes `failure`. The run was not re-run.
 - **`DESTROY_ARTIFACTS=0`.** `actions/runs/44285713407/artifacts` (GET, exit 0): `total_count` 0.
 - **The `infra-plan.yml` run.** `44285713394` (`gh run view`, exit 0): `completed`, `success`; `checks` and `wrong-subject` `success`, the credentialed `plan` `skipped`, as Task 1 predicted for a push.
+
+### The stack afterwards, read-only (10:34Z)
+
+One GET of `https://staging.openvaa.org/api/health`, and, with `AWS_PROFILE=openvaa-admin` (`aws sts get-caller-identity` exit 0: the session was still valid; the executor did not sign in), `infra/scripts/running-image-digest.sh`, one `aws ecs describe-services` and one `terraform -chdir=infra/envs/staging/aws state list`, all of which only read.
+
+```
+READ_AFTER_AT=2026-11-18T10:34:12Z
+SERVED_BUILD_AFTER=331b5db28058a1f8bc4ef88a3841080a4610efa2
+RUNNING_TASK_DEFINITION_AFTER=arn:aws:ecs:eu-north-1:471112560111:task-definition/openvaa-staging-frontend:8
+RUNNING_IMAGE_REFERENCE_AFTER=digest
+RUNNING_IMAGE_DIGEST_AFTER=sha256:b4a14b890f132c8c2c1150ad3a2355f389fba7304e7b7c1ce0d8804152c195d4
+RUNNING_DEPLOYMENTS_AFTER=1
+RUNNING_ROLLOUT_STATE_AFTER=COMPLETED
+STATE_ADDRESSES_AFTER=46
+STATE_MANAGED_AFTER=40
+STATE_OUTSIDE_MODULE_AFTER=0
+STATE_LIST_UNCHANGED=yes
+STACK_INTACT=yes
+NO_RUN_ACTIVE_AFTER=yes
+DEPLOY_RUN_FOR_BRANCH_AFTER=none
+```
+
+- **`SERVED_BUILD_AFTER=`.** `/api/health` exit 0, HTTP 200, body `{"status":"ok","build":"331b5db28058a1f8bc4ef88a3841080a4610efa2"}`, equal to `SERVED_BUILD_BEFORE`.
+- **The running image.** `running-image-digest.sh` exit 0; its output is byte-identical to Task 1's (`cmp` exit 0): task definition `:8`, reference `digest`, the same digest. `describe-services` exit 0: one deployment, `PRIMARY`, `COMPLETED`, task definition `:8`, 1 of 1 running.
+- **The state.** `state list` exit 0: 46 addresses, every one under `module.frontend.`, 40 of them managed; the list is byte-identical to Task 1's (`cmp` exit 0, `STATE_LIST_UNCHANGED=yes`).
+- **`STACK_INTACT=yes`.** `SERVED_BUILD_AFTER` equals `SERVED_BUILD_BEFORE`, and the running image and the state are the ones Task 1 read.
+- **`NO_RUN_ACTIVE_AFTER=yes`, `DEPLOY_RUN_FOR_BRANCH_AFTER=none`.** `actions/runs?status=in_progress` and `?status=waiting` exit 0, `total_count` 0 each; `gh run list --branch deploy-evidence/destroy-staging --workflow deploy.yml` exit 0 printed `[]`. `git ls-remote` (exit 0) names `deploy-evidence/destroy-staging` and `deploy/staging` both at `331b5db28058a1f8bc4ef88a3841080a4610efa2`. The destroy branch stays, as the plan's artifact list says; its next push starts a destroy run that waits at `plan-destroy`'s review.
