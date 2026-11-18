@@ -7,8 +7,10 @@ import type {
   WithOptional
 } from '../../../internal';
 
-export interface FactionNominationData
-  extends NominationData<typeof ENTITY_TYPE.Faction, typeof ENTITY_TYPE.Organization> {
+export interface FactionNominationData extends NominationData<
+  typeof ENTITY_TYPE.Faction,
+  typeof ENTITY_TYPE.Organization
+> {
   // From HasId
   // - id: Id;
   //

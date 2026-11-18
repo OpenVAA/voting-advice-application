@@ -31,10 +31,10 @@ import type {
  * Simple, non-enumerated questions inherit directly from this class, but enumerated questions inherit from `ChoiceQuestion` via either of its two subclasses `SingleChoiceQuestion` or `MultipleChoiceQuestion`.
  */
 export abstract class Question<
-    // We need to inelegantly provide `TType` twice because inferring it from `TData` leads to typing issues
-    TType extends QuestionType,
-    TData extends QuestionData<TType> = QuestionData<TType>
-  >
+  // We need to inelegantly provide `TType` twice because inferring it from `TData` leads to typing issues
+  TType extends QuestionType,
+  TData extends QuestionData<TType> = QuestionData<TType>
+>
   extends QuestionAndCategoryBase<TData>
   implements DataAccessor<QuestionData<TType>>, MatchableQuestion
 {
@@ -75,6 +75,13 @@ export abstract class Question<
    */
   get normalizedDimensions(): number | undefined {
     return 1;
+  }
+
+  /**
+   * An optional flag indicating whether the question is required. Note that it is up to the consumer to enforce this, it has no effect within the data layer.
+   */
+  get required(): boolean {
+    return this.data.required ?? false;
   }
 
   //////////////////////////////////////////////////////////////////////////////

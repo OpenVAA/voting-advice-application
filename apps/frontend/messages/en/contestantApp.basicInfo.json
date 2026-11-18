@@ -1,0 +1,26 @@
+{
+  "contestantApp.basicInfo": {
+    "colorInfo": "Shown behind your party’s abbreviation where it has no logo, and on the party symbol beside your candidates. Type a hex code such as #2546a8 or use the picker, or leave the field empty for no colour. The colour may be adjusted automatically to keep it readable; the preview shows the result.",
+    "editableInfos": {
+      "description": "This information will appear in your profile.",
+      "title": "Your Profile"
+    },
+    "error": {
+      "invalidQuestion": "Question type or answer type is invalid for question {questionId}"
+    },
+    "instructions": {
+      "candidate": "Fill in first your basic details and, if you wish, upload a photo. You'll be asked for your political opinions thereafter.",
+      "organization": "Fill in first your party’s basic details and, if you wish, upload a logo. You’ll be asked for the party’s political opinions thereafter."
+    },
+    "instructionsNoQuestions": {
+      "candidate": "Fill in your basic details and, if you wish, upload a photo.",
+      "organization": "Fill in your party’s basic details and, if you wish, upload a logo."
+    },
+    "logoInfo": "A square image works best: the logo is shown in a small square, and anything outside it is cropped.",
+    "removeImage": "Remove portrait",
+    "removeLogo": "Remove logo",
+    "requiredInfo": "You must fill in the fields marked with this icon for your profile to be shown in the Election Compass. However, you can save your answers so far and continue filling them in later.",
+    "shortNameInfo": "A short form of the name, such as an acronym. It is shown where there is little room, for example beside your candidates. Optional.",
+    "title": "Basic Information"
+  }
+}

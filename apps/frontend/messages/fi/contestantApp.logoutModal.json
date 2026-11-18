@@ -1,0 +1,29 @@
+{
+  "contestantApp.logoutModal": {
+    "continue": "Jatka tietojen syöttämistä",
+    "ingress": "Oletko varma, että haluat kirjautua ulos? Sinut kirjataan automaattisesti ulos {timeLeft} sekunnin kuluttua.",
+    "itemsLeft": [
+      {
+        "declarations": ["input infoQuestionsLeft", "input opinionQuestionsLeft"],
+        "selectors": ["infoQuestionsLeft", "opinionQuestionsLeft"],
+        "match": {
+          "infoQuestionsLeft=1, opinionQuestionsLeft=1": "Täytettävänä on vielä perustieto ja yksi mielipide.",
+          "infoQuestionsLeft=1, opinionQuestionsLeft=*": "Täytettävänä on vielä perustieto ja {opinionQuestionsLeft} mielipidettä.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=1": "Täytettävänä on vielä {infoQuestionsLeft} perustietoa ja yksi mielipide.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=*": "Täytettävänä on vielä {infoQuestionsLeft} perustietoa ja {opinionQuestionsLeft} mielipidettä."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": ["input opinionQuestionsLeft"],
+        "selectors": ["opinionQuestionsLeft"],
+        "match": {
+          "opinionQuestionsLeft=1": "Täytettävä on vielä yksi mielipide.",
+          "opinionQuestionsLeft=*": "Täytettävä on vielä {opinionQuestionsLeft} mielipidettä."
+        }
+      }
+    ],
+    "title": "Osa tiedoistasi puuttuu"
+  }
+}

@@ -15,7 +15,6 @@ The main pipeline uses map-reduce, although you can configure your own pipelines
 - `@openvaa/data`: Definitions for VAA data types. Especially entities with answers used in getting data for the condensation process. Shared between this and other vaa modules.
 - `@openvaa/core`: Definitions for Controller type and questions. Also includes default implementation for Controller.
 - `@openvaa/llm`: LLM provider class built on Vercel AI SDK. Handles LLM interactions with cost tracking and validation retries.
-- `js-yaml`: YAML parsing for reading prompt configuration files.
 
 ## Example
 

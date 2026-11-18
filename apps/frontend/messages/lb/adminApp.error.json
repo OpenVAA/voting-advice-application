@@ -1,0 +1,7 @@
+{
+  "adminApp.error": {
+    "unauthorized": "Dir sidd net berechtegt, op dëse Beräich zouzegräifen",
+    "unauthorizedDescription": "Äre Kont gouf authentifizéiert, mee Dir hutt net déi néideg Administrateursrechter.",
+    "unauthorizedContact": "Dëse Beräich ass nëmme fir Systemadministrateuren. Wann Dir mengt, datt Dir Zougang sollt hunn, kontaktéiert wgl. de Systemadministrateur."
+  }
+}

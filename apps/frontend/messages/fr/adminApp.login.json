@@ -1,0 +1,20 @@
+{
+  "adminApp.login": {
+    "title": "Connexion à l’administration",
+    "appTitle": "Boussole électorale",
+    "appSubtitle": "Administration",
+    "instructions": "Saisissez vos identifiants de connexion.",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "button": "Se connecter",
+    "forgotPassword": "Mot de passe oublié ?",
+    "errors": {
+      "invalidCredentials": "E-mail ou mot de passe non valide",
+      "genericError": "Une erreur s’est produite lors de la connexion. Veuillez réessayer.",
+      "unauthorized": "Vous devez disposer des droits d’administration pour accéder à cet espace",
+      "sessionExpired": "Votre session a expiré, veuillez vous reconnecter",
+      "unknown": "Une erreur inconnue s’est produite",
+      "linkFailed": "Ce lien ne peut plus être utilisé. Un lien ne fonctionne qu’une seule fois, et seul le dernier lien que vous avez demandé fonctionne. Veuillez en demander un nouveau de la même manière qu’auparavant."
+    }
+  }
+}
