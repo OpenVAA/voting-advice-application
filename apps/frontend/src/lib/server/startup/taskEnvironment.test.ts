@@ -35,7 +35,8 @@ const ANALYTICS_NAMES: ReadonlyArray<string> = [
   'ANALYTICS_CONSENT_MODE',
   'ANALYTICS_VISIT_ID_MODE',
   'ANALYTICS_POSTHOG_KEY',
-  'ANALYTICS_POSTHOG_HOST'
+  'ANALYTICS_POSTHOG_HOST',
+  'ANALYTICS_FLUSH_INTERVAL_MS'
 ];
 
 /** The runbook whose environment section lists every name of the list, relative to the repository root. */
@@ -245,7 +246,8 @@ const SOUND_ENTRIES: ReadonlyArray<FixtureEntry> = [
   entry('ANALYTICS_CONSENT_MODE', 'value', false),
   entry('ANALYTICS_VISIT_ID_MODE', 'value', false),
   entry('ANALYTICS_POSTHOG_KEY', 'parameter', false),
-  entry('ANALYTICS_POSTHOG_HOST', 'value', false)
+  entry('ANALYTICS_POSTHOG_HOST', 'value', false),
+  entry('ANALYTICS_FLUSH_INTERVAL_MS', 'value', false)
 ];
 
 /** A fixture env example listing every sound entry, alternating live and commented lines. */

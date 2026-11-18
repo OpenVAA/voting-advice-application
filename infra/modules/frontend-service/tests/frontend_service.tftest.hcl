@@ -125,20 +125,21 @@ variables {
   parameter_path     = "/openvaa/test/frontend"
   alert_email        = "alerts@example.org"
   environment_values = {
-    PUBLIC_SUPABASE_URL     = "https://example.supabase.co"
-    PUBLIC_PROJECT_ID       = "00000000-0000-0000-0000-000000000001"
-    ORIGIN                  = "https://test.example.org"
-    ADDRESS_HEADER          = "x-forwarded-for"
-    XFF_DEPTH               = "2"
-    KEEP_ALIVE_TIMEOUT      = "65"
-    HEADERS_TIMEOUT         = "66"
-    SHUTDOWN_TIMEOUT        = "25"
-    PUBLIC_LOG_LEVEL        = "warn"
-    ANALYTICS_PROVIDER      = "none"
-    ANALYTICS_CONSENT_MODE  = "gated"
-    ANALYTICS_VISIT_ID_MODE = "memory"
-    ANALYTICS_POSTHOG_HOST  = "https://eu.i.posthog.com"
-    DEPLOYMENT_DIAGNOSTICS  = "false"
+    PUBLIC_SUPABASE_URL         = "https://example.supabase.co"
+    PUBLIC_PROJECT_ID           = "00000000-0000-0000-0000-000000000001"
+    ORIGIN                      = "https://test.example.org"
+    ADDRESS_HEADER              = "x-forwarded-for"
+    XFF_DEPTH                   = "2"
+    KEEP_ALIVE_TIMEOUT          = "65"
+    HEADERS_TIMEOUT             = "66"
+    SHUTDOWN_TIMEOUT            = "25"
+    PUBLIC_LOG_LEVEL            = "warn"
+    ANALYTICS_PROVIDER          = "none"
+    ANALYTICS_CONSENT_MODE      = "gated"
+    ANALYTICS_VISIT_ID_MODE     = "memory"
+    ANALYTICS_POSTHOG_HOST      = "https://eu.i.posthog.com"
+    ANALYTICS_FLUSH_INTERVAL_MS = "2000"
+    DEPLOYMENT_DIAGNOSTICS      = "false"
   }
 }
 
@@ -183,7 +184,7 @@ run "environment_split" {
   }
 
   assert {
-    condition     = length(output.task_environment_names) == 16
+    condition     = length(output.task_environment_names) == 17
     error_message = "With nothing omitted, the task must receive every entry of the list."
   }
 }
@@ -201,7 +202,7 @@ run "omit_removes_an_entry" {
   }
 
   assert {
-    condition     = !contains(output.task_environment_names, "ORIGIN") && length(output.task_environment_names) == 15
+    condition     = !contains(output.task_environment_names, "ORIGIN") && length(output.task_environment_names) == 16
     error_message = "An omitted name must be the only one missing from the task's names."
   }
 }
@@ -277,19 +278,20 @@ run "omitted_value_needs_no_value" {
   variables {
     omit_environment = ["ORIGIN"]
     environment_values = {
-      PUBLIC_SUPABASE_URL     = "https://example.supabase.co"
-      PUBLIC_PROJECT_ID       = "00000000-0000-0000-0000-000000000001"
-      ADDRESS_HEADER          = "x-forwarded-for"
-      XFF_DEPTH               = "2"
-      KEEP_ALIVE_TIMEOUT      = "65"
-      HEADERS_TIMEOUT         = "66"
-      SHUTDOWN_TIMEOUT        = "25"
-      PUBLIC_LOG_LEVEL        = "warn"
-      ANALYTICS_PROVIDER      = "none"
-      ANALYTICS_CONSENT_MODE  = "gated"
-      ANALYTICS_VISIT_ID_MODE = "memory"
-      ANALYTICS_POSTHOG_HOST  = "https://eu.i.posthog.com"
-      DEPLOYMENT_DIAGNOSTICS  = "false"
+      PUBLIC_SUPABASE_URL         = "https://example.supabase.co"
+      PUBLIC_PROJECT_ID           = "00000000-0000-0000-0000-000000000001"
+      ADDRESS_HEADER              = "x-forwarded-for"
+      XFF_DEPTH                   = "2"
+      KEEP_ALIVE_TIMEOUT          = "65"
+      HEADERS_TIMEOUT             = "66"
+      SHUTDOWN_TIMEOUT            = "25"
+      PUBLIC_LOG_LEVEL            = "warn"
+      ANALYTICS_PROVIDER          = "none"
+      ANALYTICS_CONSENT_MODE      = "gated"
+      ANALYTICS_VISIT_ID_MODE     = "memory"
+      ANALYTICS_POSTHOG_HOST      = "https://eu.i.posthog.com"
+      ANALYTICS_FLUSH_INTERVAL_MS = "2000"
+      DEPLOYMENT_DIAGNOSTICS      = "false"
     }
   }
 

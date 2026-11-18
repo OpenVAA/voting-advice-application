@@ -85,6 +85,12 @@
       "description": "The PostHog host events are forwarded to, an https origin; unset means the PostHog EU cloud."
     },
     {
+      "name": "ANALYTICS_FLUSH_INTERVAL_MS",
+      "source": "value",
+      "required": false,
+      "description": "How often the server hands queued analytics events to the provider, in milliseconds, an integer from 500 to 600000; unset means 2000. An invalid value refuses start and names the variable. A long interval is for observing the shutdown flush and the full queue only."
+    },
+    {
       "name": "ANALYTICS_POSTHOG_KEY",
       "source": "parameter",
       "required": false,
