@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 25
+current_plan: 26
 status: executing
 stopped_at: Completed 187-18-PLAN.md (stopped at Task 3; closed by 187-29; RED_ALERT_MAIL=arrived)
-last_updated: "2026-11-18T10:10:39.698Z"
+last_updated: "2026-11-18T10:36:33.643Z"
 last_activity: 2026-11-17
 last_activity_desc: Phase 187 execution started
-state_head: e39efb5854ca0496ac9b88ea28bfe09fdab732d4
+state_head: cc47ac1fa000e9dc3b5cf8713b9823806efc10df
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 188
-  completed_plans: 165
+  completed_plans: 166
   percent: 60
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 25 of 29
+Plan: 26 of 29
 Status: Ready to execute
 Last activity: 2026-11-17 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████░░░░] 60% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 25
+**Current Plan:** 26
 
 From 184 on, the numeric order is the dependency order.
 
