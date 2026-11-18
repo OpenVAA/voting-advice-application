@@ -27,3 +27,9 @@ Out-of-scope discoveries made while executing phase 187 plans. They are recorded
 - **What was seen:** once in this plan's thirteen wrapper starts (`tests/e2e-runs/187-27-delay-a11y-head-20261116T183057Z`), Vite's forced dependency re-optimisation failed with `[UNRESOLVED_ENTRY] Cannot resolve entry module ../../node_modules/@openvaa/data/dist/index.js` while the watcher's tsup rebuild of `@openvaa/data` (a turbo cache miss) was cleaning that `dist`. The frontend exited 1, the wrapper exited 5, and Playwright never started.
 - **Why it is deferred:** the race is in the dev stack's own start and not in anything this plan changes. A fix (an optimiser that waits for the watcher's first build, or a watcher that does not clean an output Vite is reading) belongs to that tooling's owner. Until then a wrapper exit 5 with this line in `devserver.log` is a failed start, not a test result.
 - **Evidence:** `evidence/187-27-ci-closure.md` § Task 3, resumed.
+
+## 2026-11-18 (plan 187-21, attempt 4): a split Observations row in the staging AWS runbook
+
+- **Where:** `infra/envs/staging/aws/README.md` § Observations, the row dated 2026-11-17 for run 44088753181 (written by plan 187-29, `e7ed9022c`).
+- **What was seen (cause UNCONFIRMED):** the row appears to hold a code span with `|` characters in it, which the Markdown table reads as cell separators, so the row renders as four cells and its code spans are shifted (`` an ` `` … `` `list: `` …). Prettier accepts the file as it is, so `prettier --check` does not catch it.
+- **Why it is deferred:** the row predates this plan, and this plan adds only its own row. A fix rewrites the 2026-11-17 row's text so that no `|` stands inside it (for instance by naming the `||` list in words, as this plan's evidence does).
