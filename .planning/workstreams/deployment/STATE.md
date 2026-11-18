@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 8
+current_plan: 9
 status: executing
-stopped_at: Completed 188-20-PLAN.md
-last_updated: "2026-11-18T19:40:08.440Z"
+stopped_at: Completed 188-03-PLAN.md
+last_updated: "2026-11-18T19:47:20.754Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: ca108f89edb3bf0634c1b1b76cace4a58c64257e
+state_head: e1ba5f816dc1d7473e4dd146e20276a88ce0ab68
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 175
+  completed_plans: 176
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 8 of 20
+Plan: 9 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 8
+**Current Plan:** 9
 
 From 184 on, the numeric order is the dependency order.
 
@@ -183,6 +183,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P06 | 11min | 2 tasks | 5 files |
 | Phase 188 P07 | 23min | 3 tasks | 8 files |
 | Phase 188 P20 | 15 min | 2 tasks | 5 files |
+| Phase 188 P03 | 10min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -385,6 +386,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-07: a load-check journey file is { base, routeId, locale, requests }; journey-from-trace.mjs replays reads only (GET/HEAD and /rest/v1/rpc/ POSTs with bodies from --resources), never a header, cookie or write
 - [Phase 188]: 188-07: the load-check figure is the rate of the highest step with page p95 < 1000 ms, relay p95 < 300 ms and errors < 1 %, read from k6 2.4.0's per-step sub-metric values; a local dry run needs the dev server bound to 127.0.0.1 for host.docker.internal
 - [Phase 188]: 188-20: createQueue's in-flight guard covers the timer only; flush() and the shutdown flush are neither skipped nor made to wait, so a hung provider holds at most the cap plus one taken batch
+- [Phase 188]: 188-03: relay_rate_limit's upper bound is the provider's own 2000000000 (IntBetween(10, 2000000000) on rate_based_statement.limit)
+- [Phase 188]: 188-03: a root's terraform test cannot reference a module's resources, so the example root's no-web-ACL assertion reads module outputs relay_web_acl_arn and distribution_web_acl_id
 
 ### Pending Todos
 
@@ -446,6 +449,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T19:40:07.001Z
-**Stopped At:** Completed 188-20-PLAN.md
+Last session: 2026-11-18T19:47:19.277Z
+**Stopped At:** Completed 188-03-PLAN.md
 **Resume File:** None
