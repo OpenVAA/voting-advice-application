@@ -72,3 +72,13 @@ PLAN_JOB_WAIT_ENVIRONMENT=staging-destroy
 - **`DESTROY_BRANCH_PUSHED=yes`.** `git ls-remote origin refs/heads/deploy-evidence/destroy-staging` exit 0 printed `331b5db28058a1f8bc4ef88a3841080a4610efa2`, `DESTROY_COMMIT` of Task 1.
 - **`DEPLOY_RUN_FOR_BRANCH=none`.** `gh run list --branch deploy-evidence/destroy-staging --workflow deploy.yml` exit 0 printed `[]`. `gh run list --branch deploy-evidence/destroy-staging` (every workflow, exit 0) lists two runs, both `push`: "Destroy staging AWS" `44285713407` and "Infrastructure plan" `44285713394`, the one other workflow Task 1 predicted (`ALSO_STARTED_BY_PUSH=infra-plan.yml`). So `deploy.yml`'s negative pattern held.
 - **`PLAN_JOB_WAITED=yes`.** `gh run view 44285713407` exit 0 at 10:29Z: run `waiting`, one job, `plan-destroy`, `waiting`, started 10:28:19Z, no step run. `actions/runs/44285713407/pending_deployments` (GET, exit 0) names one pending deployment, environment `staging-destroy`, wait timer 0, one `User` reviewer. `apply-destroy` is not yet listed, as a job that `needs` a waiting one is not.
+
+### plan-destroy approved (10:30Z)
+
+```
+PLAN_JOB_REVIEW=approved
+PLAN_JOB_REVIEW_ENVIRONMENT=staging-destroy
+PLAN_JOB_STARTED_BY_REVIEW=yes
+```
+
+- **`PLAN_JOB_REVIEW=approved`.** `actions/runs/44285713407/approvals` (GET, exit 0) holds one review: `approved`, environment `staging-destroy`, by the environment's one reviewer, no comment. The operator gave it in the web interface; the plan executor made no POST. At the next poll, 10:30:47Z, `gh run view` (exit 0) showed `plan-destroy` `in_progress` with its first step started.
