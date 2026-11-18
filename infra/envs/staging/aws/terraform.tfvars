@@ -22,6 +22,9 @@ task_floor         = 1
 task_ceiling       = 2
 log_retention_days = 90
 
+# SHUTDOWN_TIMEOUT 25, plus the 10-second analytics forward, plus 5.
+stop_timeout_seconds = 40
+
 # One line per entry of task-environment.json whose source is "value".
 environment_values = {
   PUBLIC_SUPABASE_URL = "https://cofbsatfrdysyphajsky.supabase.co"

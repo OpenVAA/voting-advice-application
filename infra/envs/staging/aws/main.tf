@@ -83,6 +83,7 @@ module "frontend" {
   task_memory             = var.task_memory
   task_floor              = var.task_floor
   task_ceiling            = var.task_ceiling
+  stop_timeout_seconds    = var.stop_timeout_seconds
   scheduled_floor_changes = var.scheduled_floor_changes
   log_retention_days      = var.log_retention_days
   debug_ingress_cidrs     = var.debug_ingress_cidrs

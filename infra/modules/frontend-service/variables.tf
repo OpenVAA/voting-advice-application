@@ -132,7 +132,7 @@ variable "deregistration_delay_seconds" {
 }
 
 variable "stop_timeout_seconds" {
-  description = "Seconds between the stop signal and the kill of the container. The server's SHUTDOWN_TIMEOUT must be lower, so that it exits by itself."
+  description = "Seconds between the stop signal and the kill of the container. It must exceed the server's SHUTDOWN_TIMEOUT by at least the analytics forward timeout of 10 seconds plus a margin of 5, so that the shutdown flush of a queue of up to one slice reaches a responsive PostHog before the kill. The flush sends its slices one after another, so a full queue against an unresponsive PostHog can still be cut off."
   type        = number
   default     = 30
 

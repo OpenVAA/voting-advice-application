@@ -91,6 +91,12 @@ variable "task_ceiling" {
   type        = number
 }
 
+variable "stop_timeout_seconds" {
+  description = "Seconds between the stop signal and the kill of the container. The bound it must meet, relative to SHUTDOWN_TIMEOUT, is stated on the frontend-service module's variable of the same name."
+  type        = number
+  default     = 30
+}
+
 variable "scheduled_floor_changes" {
   description = "Timed changes of the scaling bounds, one scheduled action each. Given on the command line for a timed observation, or written in terraform.tfvars ahead of a known peak."
   type = list(object({
