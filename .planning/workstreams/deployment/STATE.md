@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 187
 current_phase_name: Deploy Pipeline
-current_plan: 25
+current_plan: 26
 status: executing
-stopped_at: Completed 187-24-PLAN.md
-last_updated: "2026-11-18T14:06:11.849Z"
+stopped_at: Completed 187-25-PLAN.md
+last_updated: "2026-11-18T16:08:09.355Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 187 execution started
-state_head: 74be4c09bb3c184c4214b87309427eb40017d7db
+state_head: 49b1db4c76ebe53242bb0a771b22a19bc0c4447c
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 188
-  completed_plans: 167
+  completed_plans: 168
   percent: 60
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 afte
 Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
 
 Phase: 187 (Deploy Pipeline) — EXECUTING
-Plan: 25 of 31
+Plan: 26 of 31
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 187 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████░░░░] 60% (3 of 9 roadmap phases, 181.1 ins
 ## Progress
 
 **Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 25
+**Current Plan:** 26
 
 From 184 on, the numeric order is the dependency order.
 
@@ -174,6 +174,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P29 | 55min | 7 tasks | 12 files |
 | Phase 187 P18 | 6h30min | 3 tasks | 3 files |
 | Phase 187 P24 | 122 min | 3 tasks | 2 files |
+| Phase 187 P25 | about 2 h | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -360,6 +361,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-29: pipeline steps capture every read status as name=0 then cmd || name=$?, errexit left on; red run re-observed on deploy-evidence/187-red-2 (run 44088753181 failed=build printed; run 44088753527 wrong-subject success, both roles AccessDenied); old runs not re-run
 - [Phase 187]: 187-18: stopped at Task 3; run 44042442257 red at the build with the alert published (mail arrived 09:00Z) and nothing deployed; the five lines the runner's bash -e hid (failed=build, wrong-subject success, token_subject, both AccessDenied codes) closed by 187-29 on deploy-evidence/187-red-2; requirements advanced, not complete
 - [Phase 187]: 187-24: the real destroy ran as a re-run (attempt 2) of 187-23's destroy run, behind both staging-destroy reviews; nothing was pushed
+- [Phase 187]: 187-25: the redeploy from nothing was a re-run (attempt 2) of 187-22's run 44276384977; the tag exists, so the same digest was deployed and nothing was pushed
+- [Phase 187]: 187-25: both bootstrap not-yet-observed rows checked by the first pipeline deploy from nothing (deploy-role permissions; edge tag aws:ResourceTag test) moved to Observations
 
 ### Pending Todos
 
@@ -423,6 +426,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T14:06:10.639Z
-**Stopped At:** Completed 187-24-PLAN.md
+Last session: 2026-11-18T16:08:06.101Z
+**Stopped At:** Completed 187-25-PLAN.md
 **Resume File:** None
