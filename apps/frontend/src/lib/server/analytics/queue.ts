@@ -3,6 +3,8 @@
  *
  * The relay puts events in and returns at once; the queue hands them to the provider later, on its own timer, so no request ever waits for a provider. The queue has a cap: while a provider is slow or down, events beyond the cap are dropped and only their number is reported, so a flood cannot grow the server's memory without bound.
  *
+ * A timer tick is skipped while the timer's previous flush is still running, so a provider that hangs holds at most one taken batch besides the queue: the events held never exceed twice the cap.
+ *
  * ## Shutdown
  *
  * `registerShutdownFlush` flushes the queue once when the process emits `sveltekit:shutdown`. adapter-node emits that event before the process exits; the Vite dev server does not, so in development whatever is still queued when the server stops is lost.
@@ -46,7 +48,7 @@ export type ShutdownTarget = { once(event: string, listener: () => void): unknow
 /**
  * Create a queue in front of a provider, with its own flush timer. Each call makes a new queue that shares nothing with any other.
  *
- * The timer does not keep the process alive.
+ * The timer does not keep the process alive. A tick is skipped while the timer's previous flush is still running, which bounds the events held to the cap plus one taken batch; a `flush` called directly, as at shutdown, runs regardless.
  *
  * @param options.provider - Where the queued events go.
  * @param options.maxSize - The most events held at once; default 1000.
@@ -93,7 +95,13 @@ export function createQueue({
     }
   }
 
-  const timer = setInterval(() => void flush(), flushIntervalMs);
+  let inFlight: Promise<void> | undefined;
+  const timer = setInterval(() => {
+    if (inFlight) return;
+    inFlight = flush().finally(() => {
+      inFlight = undefined;
+    });
+  }, flushIntervalMs);
   timer.unref();
 
   return {
