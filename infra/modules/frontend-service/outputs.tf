@@ -48,6 +48,11 @@ output "task_definition_arn" {
   value       = aws_ecs_task_definition.app.arn
 }
 
+output "container_stop_timeout_seconds" {
+  description = "Seconds the task definition gives its container between the stop signal and the kill, as written in the container definition."
+  value       = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout
+}
+
 output "task_environment_names" {
   description = "Names of the variables the task receives, as values and from the parameter store, after omit_environment."
   value       = [for v in local.kept : v.name]

@@ -137,4 +137,9 @@ run "example_root_plans_production_shaped" {
     condition     = length(module.frontend.public_subnet_ids) == 2
     error_message = "The public subnets must be two, one per availability zone."
   }
+
+  assert {
+    condition     = module.frontend.container_stop_timeout_seconds == 40
+    error_message = "The container definition's stopTimeout must be 40, from stop_timeout_seconds in terraform.tfvars."
+  }
 }
