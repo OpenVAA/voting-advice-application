@@ -157,6 +157,21 @@ MAIN_AT_END=340a200708c28fb7ed078d452138712f3400c789
 - **From the workstation.** `/api/health` at 15:57:25Z: `curl` exit 0, HTTP 200, body `{"status":"ok","build":"331b5db28058a1f8bc4ef88a3841080a4610efa2"}`. `git ls-remote origin` exit 0: `deploy/staging` at `331b5db28…`, `main` at `340a20070…`, as before; nothing was pushed.
 - **Runner warnings, not acted on.** The same kinds of `##[warning]` lines as plan 187-22's run (Yarn's peer-dependency and disabled build-script notes, the Node 20 deprecation of `threeal/setup-yarn-action`, and the Yarn cache unavailable because GitHub's cache service answered 400 and then "Our services aren't available right now"). No `##[error]` line (`grep -c` 0). No step failed.
 
-### The subscription — blocked at an authentication gate
+### The subscription
 
-At 15:57:11Z, with `AWS_PROFILE=openvaa-admin` and the key variables unset, `aws sts get-caller-identity` exit 255 and the subscription read `aws sns list-subscriptions-by-topic --topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments --query 'Subscriptions[].{SubscriptionArn:SubscriptionArn,Protocol:Protocol}'` exit 255, both `Error when retrieving token from sso: Token has expired and refresh failed`. The admin profile's session has expired; the executor does not sign in. Nothing was read from the topic. The read is repeated, under the same account check and the same query, once the operator has signed in again (`aws sso login --profile openvaa-admin`).
+```
+SUBSCRIPTION_READ_AT=2026-11-18T16:04:27Z
+SUBSCRIPTION_COUNT=1
+SUBSCRIPTION_PROTOCOL=email
+SUBSCRIPTION_ARN=arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments:cb4d2018-8028-451a-be4f-2d4a21f373a4
+SUBSCRIPTION_CONFIRMED=yes
+```
+
+- **A first read blocked at an authentication gate.** At 15:57:11Z, with `AWS_PROFILE=openvaa-admin` and the key variables unset, `aws sts get-caller-identity` exit 255 and the subscription read exit 255, both `Error when retrieving token from sso: Token has expired and refresh failed`. The executor did not sign in and read nothing from the topic; the run record above was committed and the gate returned to the orchestrator. The operator signed in again in their own terminal, and the orchestrator read the account `471112560111` at top level.
+- **`SUBSCRIPTION_CONFIRMED=yes`.** At 16:04:27Z, same profile, key variables unset: `aws sts get-caller-identity --query Account` exit 0, `471112560111`. `aws sns list-subscriptions-by-topic --topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments --region eu-north-1 --query 'Subscriptions[].{SubscriptionArn:SubscriptionArn,Protocol:Protocol}'` exit 0: one subscription, protocol `email`, whose `SubscriptionArn` is a full subscription ARN under the new topic, not `PendingConfirmation`. The operator had clicked the confirmation link in the mail while the run proceeded, so the poll's first read, at its first minute of the 30-minute bound, already found it confirmed; no second read was needed. Only `SubscriptionArn` and `Protocol` were read; the endpoint was not queried and no address is in this file. Both alerts, the workflow's alert step and the deployment-failed event rule, publish to this topic again.
+
+### The records
+
+- `infra/envs/staging/aws/README.md` § Observations: a 2026-11-18 row for the redeploy from nothing, with its counts, minutes and the confirmed subscription.
+- `infra/bootstrap/README.md`: the § Not yet observed rows "The deploy role's policies hold every call a pipeline plan, apply and destroy of the AWS root makes" and "A distribution or certificate created with the root's tags passes the edge tag calls' `aws:ResourceTag` test" (whose checker is "The first pipeline deploy from nothing, after the real destroy", this run) moved to § Observations as two 2026-11-18 rows: the deploy role's policies of Step 9 held every call of the plan and apply of run 44270824581 (plan 187-21), the destroy of run 44285713407 attempt 2 (plan 187-24) and the create of this run, with no refused call in their logs; and the distribution and both certificates were created with the root's tags. The created resources' `tags_all` in the plan carry `Project=openvaa`, `Root=aws`, `Environment=staging` and `ManagedBy=terraform`.
+- Both runbooks pass `prettier --check`.
