@@ -277,7 +277,10 @@ SET
 
 SELECT
   is (
-    public.invitation_caller_take ('00000000-0000-4000-8000-0000000000c1', '198.51.100.7'),
+    public.invitation_caller_take (
+      '00000000-0000-4000-8000-0000000000c1',
+      '198.51.100.7'
+    ),
     0,
     'ICL: a take for an id that names no project is admitted'
   );
