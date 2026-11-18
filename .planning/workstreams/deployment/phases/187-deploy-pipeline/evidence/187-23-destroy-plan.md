@@ -48,3 +48,27 @@ REBUILD_REQUIRED=no
 - **`STATE_ADDRESSES_BEFORE=46`, `STATE_MANAGED_BEFORE=40`.** `terraform state list` exit 0 with the admin profile: 46 addresses, every one under `module.frontend.` (`STATE_OUTSIDE_MODULE_BEFORE=0`), six of them data sources (`module.frontend.data.…`), which `infra/scripts/check-destroy-plan.sh` does not count. So, if the state does not change before the run, its guard is expected to print 40 as the state's managed resources, and the plan to read `0 to add, 0 to change, 40 to destroy`. This is a prediction for Task 3, not one of its lines.
 - **`NO_RUN_ACTIVE=yes`.** The status-filtered counts of `actions/runs` are 0 for `queued`, `in_progress`, `waiting`, `requested` and `pending`. `action_required` counts 25, every one `completed` (none other than `completed`). Among the latest 100 runs none is other than `completed` and none has a `destroy` path; the latest is plan 187-22's `44276384977`, `completed` `success`. `destroy.yml` shares the concurrency group `staging-aws` with `deploy.yml` and cancels nothing, so with no run in the group the destroy run starts at once.
 - **`DESTROY_TREE_EQUALS_HEAD_OUTSIDE_PLANNING=no`, recorded and not acted on; `DESTROY_INPUTS_EQUAL_HEAD=yes`; `REBUILD_REQUIRED=no`.** `git diff --quiet 331b5db28 HEAD -- . ':!.planning'` exit 1; `--name-only` names `infra/envs/staging/aws/README.md` alone (69 insertions, 68 deletions: plan 187-21 Task 3's Observations row, commit `db50c2dda`, and Prettier's re-widening of the table around it). Everything the destroy run reads is identical: `git diff --quiet 331b5db28 HEAD --` of `.github/workflows/destroy.yml`, `deploy.yml`, `infra-plan.yml`, `infra/scripts`, `infra/modules` and `infra/envs/staging/supabase` exit 0, and of `infra/envs/staging/aws` without its README exit 0; Terraform reads no Markdown. This plan's rules ask for no tree equality: Task 1 takes `DESTROY_COMMIT=` from plan 187-22's `BRANCH_COMMIT=`, and Task 3 pushes that commit. The tree rule and its rebuild belong to plan 187-21's execution rules. A rebuild would give a different commit, one that staging does not serve and `deploy/staging` does not hold; plans 187-24 and 187-25 start their runs by re-running this plan's destroy run and plan 187-22's deploy run, so keeping `331b5db28` keeps the three commits the same. No rebuild was made.
+
+## Task 3 — The push, the plan job observed, the apply job rejected (2026-11-18)
+
+The binding was checked at top level before the push and again by the plan executor before any read of the run: `attempt.sh bound 187-23-2 OPERATOR_REPLY plan=187-23 task=2` exit 0 and `attempt.sh has 187-23-2 '^answer_push=approve$'` exit 0, attempt `20261118T101555Z.3c8a4fc08`. The orchestrator made the one push, `git push origin 331b5db28058a1f8bc4ef88a3841080a4610efa2:refs/heads/deploy-evidence/destroy-staging` (exit 0). The plan executor pushed nothing, approved and rejected nothing, and made no POST to `pending_deployments`; both reviews are the operator's, in the web interface. Every status below was read on its own line; the outputs are under `tmp/187-23/t3/` (ignored).
+
+### The push and the waiting plan job (10:28Z to 10:29Z)
+
+```
+DESTROY_BRANCH_PUSHED=yes
+DESTROY_BRANCH_TIP=331b5db28058a1f8bc4ef88a3841080a4610efa2
+DEPLOY_RUN_FOR_BRANCH=none
+DESTROY_RUN_ID=44285713407
+DESTROY_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44285713407
+DESTROY_RUN_CREATED=2026-11-18T10:28:18Z
+DESTROY_RUN_EVENT=push
+DESTROY_RUN_HEAD=331b5db28058a1f8bc4ef88a3841080a4610efa2
+INFRA_PLAN_RUN_ID=44285713394
+PLAN_JOB_WAITED=yes
+PLAN_JOB_WAIT_ENVIRONMENT=staging-destroy
+```
+
+- **`DESTROY_BRANCH_PUSHED=yes`.** `git ls-remote origin refs/heads/deploy-evidence/destroy-staging` exit 0 printed `331b5db28058a1f8bc4ef88a3841080a4610efa2`, `DESTROY_COMMIT` of Task 1.
+- **`DEPLOY_RUN_FOR_BRANCH=none`.** `gh run list --branch deploy-evidence/destroy-staging --workflow deploy.yml` exit 0 printed `[]`. `gh run list --branch deploy-evidence/destroy-staging` (every workflow, exit 0) lists two runs, both `push`: "Destroy staging AWS" `44285713407` and "Infrastructure plan" `44285713394`, the one other workflow Task 1 predicted (`ALSO_STARTED_BY_PUSH=infra-plan.yml`). So `deploy.yml`'s negative pattern held.
+- **`PLAN_JOB_WAITED=yes`.** `gh run view 44285713407` exit 0 at 10:29Z: run `waiting`, one job, `plan-destroy`, `waiting`, started 10:28:19Z, no step run. `actions/runs/44285713407/pending_deployments` (GET, exit 0) names one pending deployment, environment `staging-destroy`, wait timer 0, one `User` reviewer. `apply-destroy` is not yet listed, as a job that `needs` a waiting one is not.
