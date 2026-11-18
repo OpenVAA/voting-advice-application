@@ -22,6 +22,17 @@ on which the stack ran whole and unchanged: if `envs/staging/aws` is destroyed o
 the window starts again on the UTC day after that apply. The days before it (2026-11-13 and 2026-11-14) hold
 the first stack, the destroyed interval and the re-apply's part-day, and never enter the mean.
 
+**The window moved (2026-11-18, operator ruling `COST_WINDOW_RULING=literal`).** Plan 187-21 re-applied
+`envs/staging/aws` through the pipeline twice on 2026-11-18, each time replacing the task definition: attempt 3
+(run 44258126898, apply about 07:29Z, `:6` to `:7`) and attempt 4 (run 44270824581, `:7` to `:8`, rollout
+completed 09:05:53Z). Plan 187-22's run 44276384977 applied with no changes and is not a re-apply. The operator
+kept the rule as written, so it is not argued that a task-definition swap with the same task size leaves the
+cost unchanged: the window now begins on `COST_WINDOW_START=2026-11-19`, after the last re-apply
+(`REAPPLY_UTC=2026-11-18T09:05Z`). A seven-day window, 2026-11-19 to 2026-11-25, can be read on or after
+**2026-11-27**. The 2026-11-15 start and the 2026-11-23 read date above are superseded. Plan 187-24's floor of
+2026-11-23 stands, and its precondition (this read recorded first) moves its earliest day to 2026-11-27. Any
+further destroy or re-apply of the root before the read moves the window again.
+
 **The method.** `infra/envs/staging/aws/README.md` Step 18, items 1 to 5 and 7, as written:
 
 - Item 3: `aws ce get-cost-and-usage --region us-east-1`, daily, `UnblendedCost`, filtered by `Root=aws`, over
