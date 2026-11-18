@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Completed 188-05-PLAN.md
-last_updated: "2026-11-18T19:00:40.430Z"
+stopped_at: Completed 188-06-PLAN.md
+last_updated: "2026-11-18T19:14:47.041Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 7dcf7cc2d1231265be48047bb29de65c6d94d6bf
+state_head: a566a0c9219226cd7e3889eddc1a2163795d1032
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 172
+  completed_plans: 173
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 5 of 20
+Plan: 6 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 5
+**Current Plan:** 6
 
 From 184 on, the numeric order is the dependency order.
 
@@ -180,6 +180,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P04 | 9min | 2 tasks | 11 files |
 | Phase 188 P02 | 6min | 2 tasks | 9 files |
 | Phase 188 P05 | 46min | 2 tasks | 12 files |
+| Phase 188 P06 | 11min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -376,6 +377,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-02: the example root takes the same stop_timeout_seconds = 40 as staging (SHUTDOWN_TIMEOUT 25 + 10-second forward + 5)
 - [Phase 188]: 188-05: the caller take fails closed (500 internal on an RPC error); confirm-address stays outside it
 - [Phase 188]: 188-05: code-sign-in stays inside the take per E-02, though it is called from the frontend server; recorded as a pre-launch risk for an operator decision before 188-10
+- [Phase 188]: 188-06: relay-refusals.sh sends every C-01 case with a valid envelope and its own suffixed question id, so a 403/400 comes only from the origin or envelope rule and a wrongly accepted request would show at the provider
+- [Phase 188]: 188-06: posthog-read.sh accepts only https://eu.posthog.com outside its self-test; the key reaches curl through a 077 header file; output is ph_* named counts only, ph_query_status=<n> or ph_result=unexpected_shape on failure
+- [Phase 188]: 188-06: the HogQL of posthog-read.sh (property names, persons subquery, anonymize_ips field) is assumption A10 and is checked against the real project by 188-09 Task 3 before any capture
 
 ### Pending Todos
 
@@ -437,6 +441,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T19:00:38.930Z
-**Stopped At:** Completed 188-05-PLAN.md
+Last session: 2026-11-18T19:14:45.657Z
+**Stopped At:** Completed 188-06-PLAN.md
 **Resume File:** None
