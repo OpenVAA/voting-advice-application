@@ -41,6 +41,8 @@ services:
         sync: false
       - key: ANALYTICS_POSTHOG_HOST # the https origin of the PostHog ingest host
         value: https://eu.i.posthog.com
+      - key: ANALYTICS_FLUSH_INTERVAL_MS # how often queued events are handed to the provider, in milliseconds: 500 to 600000
+        value: '2000'
 
       - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
         value: https://<INSTANCE_NAME>-frontend.onrender.com
