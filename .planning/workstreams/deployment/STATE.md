@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 7
+current_plan: 8
 status: executing
-stopped_at: Completed 188-07-PLAN.md
-last_updated: "2026-11-18T19:34:21.648Z"
+stopped_at: Completed 188-20-PLAN.md
+last_updated: "2026-11-18T19:40:08.440Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: eec22108bdf16b295a32efa9982968bb81059061
+state_head: ca108f89edb3bf0634c1b1b76cace4a58c64257e
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 174
+  completed_plans: 175
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 7 of 20
+Plan: 8 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 7
+**Current Plan:** 8
 
 From 184 on, the numeric order is the dependency order.
 
@@ -182,6 +182,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P05 | 46min | 2 tasks | 12 files |
 | Phase 188 P06 | 11min | 2 tasks | 5 files |
 | Phase 188 P07 | 23min | 3 tasks | 8 files |
+| Phase 188 P20 | 15 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -383,6 +384,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-06: the HogQL of posthog-read.sh (property names, persons subquery, anonymize_ips field) is assumption A10 and is checked against the real project by 188-09 Task 3 before any capture
 - [Phase 188]: 188-07: a load-check journey file is { base, routeId, locale, requests }; journey-from-trace.mjs replays reads only (GET/HEAD and /rest/v1/rpc/ POSTs with bodies from --resources), never a header, cookie or write
 - [Phase 188]: 188-07: the load-check figure is the rate of the highest step with page p95 < 1000 ms, relay p95 < 300 ms and errors < 1 %, read from k6 2.4.0's per-step sub-metric values; a local dry run needs the dev server bound to 127.0.0.1 for host.docker.internal
+- [Phase 188]: 188-20: createQueue's in-flight guard covers the timer only; flush() and the shutdown flush are neither skipped nor made to wait, so a hung provider holds at most the cap plus one taken batch
 
 ### Pending Todos
 
@@ -444,6 +446,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T19:34:20.297Z
-**Stopped At:** Completed 188-07-PLAN.md
+Last session: 2026-11-18T19:40:07.001Z
+**Stopped At:** Completed 188-20-PLAN.md
 **Resume File:** None
