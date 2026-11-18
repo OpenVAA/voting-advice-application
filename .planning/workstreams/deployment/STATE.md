@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 26
+current_plan: 2
 status: executing
-stopped_at: Phase 187 complete, ready to execute Phase 188
-last_updated: "2026-11-18T17:47:21.118Z"
+stopped_at: Completed 188-01-PLAN.md
+last_updated: "2026-11-18T17:59:17.489Z"
 last_activity: 2026-11-18
-last_activity_desc: Phase 187 complete, transitioned to Phase 188
-state_head: 8af8aea8305460b98a165c90c76a383f762cdd6f
+last_activity_desc: Phase 188 execution started
+state_head: aea1ccf4aa91773190dbc07d251ca7ff4b83c744
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 168
+  completed_plans: 169
   percent: 70
 ---
 
@@ -33,17 +33,17 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — READY TO EXECUTE
-Plan: Not started
+Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
+Plan: 2 of 20
 Status: Ready to execute
-Last activity: 2026-11-18 — Phase 187 complete, transitioned to Phase 188
+Last activity: 2026-11-18 — Phase 188 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([███████░░░] 70%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** Not started (phase 188)
+**Current Plan:** 2
 
 From 184 on, the numeric order is the dependency order.
 
@@ -176,6 +176,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P18 | 6h30min | 3 tasks | 3 files |
 | Phase 187 P24 | 122 min | 3 tasks | 2 files |
 | Phase 187 P25 | about 2 h | 3 tasks | 3 files |
+| Phase 188 P01 | 8 min | 1 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -365,6 +366,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-25: the redeploy from nothing was a re-run (attempt 2) of 187-22's run 44276384977; the tag exists, so the same digest was deployed and nothing was pushed
 - [Phase 187]: 187-25: both bootstrap not-yet-observed rows checked by the first pipeline deploy from nothing (deploy-role permissions; edge tag aws:ResourceTag test) moved to Observations
 - [Phase 187]: closed 2026-11-18, verified 12/12 (31 plans); PIPE-01 to PIPE-10, INFRA-16, INFRA-19 and SUPA-08 complete. The verifier's reading that the deploy role's two environments (staging, staging-destroy) satisfy "one GitHub Environment" is written as a suggested override only; the acceptance is the operator's. Full Key Decisions in PROJECT.md
+- [Phase 188]: ANALYTICS_FLUSH_INTERVAL_MS is read last and sits last in ANALYTICS_ENV; a valid interval is kept when another variable forces provider none
 
 ### Pending Todos
 
@@ -425,6 +427,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T17:45:00Z
-**Stopped At:** Phase 187 complete, ready to execute Phase 188
+Last session: 2026-11-18T17:59:15.890Z
+**Stopped At:** Completed 188-01-PLAN.md
 **Resume File:** None
