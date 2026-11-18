@@ -467,7 +467,10 @@ describe('account-access flow conformance', () => {
       expect(take).toBeGreaterThan(CODE.indexOf('parseAccountAccessRequest(body)'));
       expect(take).toBeGreaterThan(CODE.indexOf('admitWitness(parsed,'));
       expect(take).toBeLessThan(CODE.indexOf('request.operation ==='));
-      const between = CODE.slice(CODE.indexOf('admitWitness(parsed,'), CODE.indexOf("if (request.operation !== 'confirm-address') {"));
+      const between = CODE.slice(
+        CODE.indexOf('admitWitness(parsed,'),
+        CODE.indexOf("if (request.operation !== 'confirm-address') {")
+      );
       expect(between).not.toContain('return ');
     });
 

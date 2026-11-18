@@ -9,6 +9,8 @@
  * - `code-sign-in` with `code` and `password`: answers `{ result: 'signed-in', access_token, refresh_token }` or `{ result: 'invalid-credentials' }`.
  * - `confirm-address` with `email`, optionally `locale`, and the caller's own access token in `Authorization`: answers `{ result: 'sent' }`, `{ result: 'in-use' }` or `{ result: 'refused' }`, or 401 `{ error: 'unauthenticated' }` without a token the auth service accepts. It does its work before it answers. For an account whose app metadata names an identity provider and whose address is still the placeholder, it takes the account's and the address's slot, asks the auth service for the two links of a change of address, verifies the current address's link itself and mails the typed address's link. The typed address becomes the account's only when that link is opened and is never written to the account; the one admin update that carries an address puts the account's own placeholder back when verifying the current address's link completed the change alone, which the auth service does only with its secure change of address off.
  *
+ * Before any of the four anonymous operations, `check-code`, `request-link`, `request-recovery` and `code-sign-in`, the caller's address from `cf-connecting-ip` takes a slot of the per-caller limit, one bucket per caller per project across the four. A caller over the limit is answered HTTP 429 `{ error: 'too-many-requests' }` with `Retry-After`, the same for each of them, and a take that fails is answered 500 `{ error: 'internal' }`. The database trusts the address only on a deployment behind Cloudflare and otherwise admits every call. `confirm-address`, answered only to a signed-in account, takes no caller slot.
+ *
  * A `witness` names a completion record the service role opened, which the request's background work completes; it is a test instrument and is kept only on a request whose bearer is the service role's key.
  *
  * No answer depends on whether an address, a code or an account exists, except the three words of the code check and the `in-use` answer of `confirm-address`, which a signed-in caller gets about the address they typed for their own account, behind the account's and the address's slot. The project comes from the request; the function serves any project of the deployment and reads none from its environment. A request names no page, path or URL: every mailed link is built from SITE_URL, the locale and the token, and, for a recovery request that names an app from the closed set, the path the function takes for that app from its own constant map.
@@ -42,8 +44,10 @@ import {
   INVALID_CREDENTIALS_BODY,
   METHOD_NOT_ALLOWED_BODY,
   parseAccountAccessRequest,
-  signedInBody
+  signedInBody,
+  TOO_MANY_REQUESTS_BODY
 } from './contract.ts';
+import { callerAddress, retryAfterSeconds } from './callerLimit.ts';
 import {
   createExpiringPositive,
   isSignUpClosed,
@@ -91,11 +95,16 @@ const SMTP_TIMEOUT_MS = 10000;
 const signUpClosedMemory = createExpiringPositive(SIGN_UP_CHECK_TTL_MS, () => Date.now());
 const redirectAdmittedMemory = createExpiringPositive(REDIRECT_CHECK_TTL_MS, () => Date.now());
 
-function answer(body: unknown, status: number): Response {
+function answer(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    headers: { ...corsHeaders, 'Content-Type': 'application/json', ...extraHeaders }
   });
+}
+
+/** The answer to a caller over the per-caller limit, with the seconds until its window ends. */
+function tooManyRequests(seconds: number): Response {
+  return answer(TOO_MANY_REQUESTS_BODY, 429, { 'Retry-After': String(seconds) });
 }
 
 /** The one place that writes a log line. A caller passes a fixed message and, at most, the name and code of a failure. */
@@ -439,6 +448,20 @@ Deno.serve(async (req) => {
   const authorization = req.headers.get('Authorization');
   // A completion witness is a test instrument, kept only on a request made with the service role's key.
   const request = admitWitness(parsed, authorization, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
+
+  // The take comes before any anonymous operation, so that a refused caller causes no work and every one of them answers alike.
+  if (request.operation !== 'confirm-address') {
+    const { data: retryAfter, error } = await createAdminClient().rpc('invitation_caller_take', {
+      p_project_id: request.projectId,
+      p_address: callerAddress(req.headers)
+    });
+    if (error) {
+      log('the caller limit could not be read', describeFailure(error));
+      return answer(INTERNAL_ERROR_BODY, 500);
+    }
+    const seconds = retryAfterSeconds(retryAfter);
+    if (seconds !== null) return tooManyRequests(seconds);
+  }
 
   if (request.operation === 'request-link') {
     // The answer is built before any work and returned without waiting for any of it, so neither its body nor its timing says anything about the address or the code.
