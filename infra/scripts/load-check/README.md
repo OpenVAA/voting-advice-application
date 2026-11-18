@@ -113,19 +113,25 @@ As read on 2026-11-15:
 
 ## Recording a journey
 
-Record one voter run on staging with a Playwright trace, then extract its requests:
+Record one voter run on staging with a Playwright trace, unzip the trace, then extract its requests:
 
 ```bash
-unzip -p <trace.zip> '*.network' \
+unzip -q <trace.zip> -d <trace dir>
+cat <trace dir>/*.network \
   | node infra/scripts/load-check/journey-from-trace.mjs \
       --base https://staging.openvaa.org \
       --supabase https://<project ref>.supabase.co \
+      --resources <trace dir>/resources \
+      --route-id '/(voters)' --locale en \
       > <journey.json>
 ```
 
-It keeps only the requests to those two origins, drops the paths listed above, and copies the method, the URL with its
-query and, for a POST to `/rest/v1/rpc/`, the body; never a header or a cookie. It prints `journey_requests=<n>` on
-standard error and exits 1 when the trace yields no request. Read the file before committing it.
+It keeps a GET or HEAD to either origin and a POST to the Supabase origin's `/rest/v1/rpc/`, drops the paths listed
+above, every other origin and every other method (no write is replayed), and orders the requests by their start time.
+Of each it copies the method, the URL with its query and, for an RPC, the body, which a trace stores as a resource read
+from `--resources`; never a header, a cookie or a response. It prints `journey_requests=<n>` on standard error, and
+exits 1 when the trace yields no request or an RPC body could not be read (`journey_bodies_missing=<n>`). `--route-id`
+and `--locale` are those of the relay batches the load script posts. Read the file before committing it.
 
 ## Running it
 
