@@ -303,3 +303,39 @@ NO_RUN_ACTIVE=yes
 - **`GREEN_BRANCH_ABSENT=yes`.** `git ls-remote origin refs/heads/deploy-evidence/187-green-2 refs/heads/deploy-evidence/187-green` exit 0 printed one line only, `deploy-evidence/187-green` at `0a73bb6df…` (attempt 1's head, the head of run 44165083175, left as it is); `deploy-evidence/187-green-2` is absent.
 - **`SERVED_BUILD_BEFORE=`.** `curl -sS --max-time 20 https://staging.openvaa.org/api/health` exit 0, HTTP 200, body `{"status":"ok","build":"712947a1bd44a735f66ee8f51610f4748d76cd30"}`, unchanged since attempt 1.
 - **`NO_RUN_ACTIVE=yes`.** `gh run list --workflow deploy.yml` exit 0 lists three runs, `44165083175` (`deploy-evidence/187-green`), `44088753181` (`deploy-evidence/187-red-2`) and `44042442257` (`deploy-evidence/187-red`), each `completed` `failure`. `destroy.yml` is not on the default branch, so `gh run list --workflow destroy.yml` answers 404; among the latest 100 runs of the repository (`actions/runs?per_page=100`, exit 0) none has the path `destroy.yml`, and none is other than `completed`. The status-filtered counts are 0 for `in_progress`, `queued`, `waiting`, `requested` and `pending`; `action_required` counts 25, none of `deploy.yml` or `destroy.yml`.
+
+## Task 3, attempt 2 (2026-11-18)
+
+Recorded 2026-11-18 (UTC) by the plan executor of plan 187-21, attempt 2, from HEAD `3fed1eac0`. The executor pushed nothing, started or re-ran no workflow, approved no review and wrote no hosted service or GitHub setting; its remote reads were `gh run view`, `gh api` GETs and `git ls-remote origin`. Every status was read on its own line, never through a pipe.
+
+### The binding and the push
+
+```
+GREEN_ATTEMPT_ID=20261117T214942Z.3fed1eac0
+GREEN_PUSHED=yes
+GREEN_PUSHED_SHA=9d6a55ca36ea56a5d3883ad95a10b4619c2472ad
+GREEN_PUSHED_BRANCH=deploy-evidence/187-green-2
+GREEN_RUN_ID=44250710034
+GREEN_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44250710034
+GREEN_INFRA_PLAN_RUN_ID=44250709928
+SUPABASE_LOCK_CONSTRAINTS_CONFIRMED=no
+```
+
+- **The binding.** The orchestrator opened attempt `20261117T214942Z.3fed1eac0` of key `187-21-2` and stored the operator's reply; `put`, `bash "$A" bound 187-21-2 OPERATOR_REPLY plan=187-21 task=2` and `bash "$A" has 187-21-2 '^answer_push=approve$'` each exited 0 at top level. The executor ran `bound` and `has` again before reading the run (both read-only): exit 0 and exit 0.
+- **`GREEN_PUSHED=yes`.** The orchestrator pushed at top level after the binding: `git push origin 9d6a55ca36ea56a5d3883ad95a10b4619c2472ad:refs/heads/deploy-evidence/187-green-2` exit 0. Before the push `git ls-remote` printed nothing for the branch and no deploy run was active. The executor read it back: `git ls-remote origin refs/heads/deploy-evidence/187-green-2` exit 0, `9d6a55ca36ea56a5d3883ad95a10b4619c2472ad`, equal to `GREEN_COMMIT=` of § Task 1, attempt 2.
+- **The run.** `gh run view 44250710034 --json ...` exit 0 at 06:22Z: event `push`, head branch `deploy-evidence/187-green-2`, head SHA `9d6a55ca36ea56a5d3883ad95a10b4619c2472ad`, created 06:21:17Z, `in_progress`, its `checks` job (id `134620417679`) started 06:21:19Z. The same push started `infra-plan.yml` run `44250709928`.
+- **`SUPABASE_LOCK_CONSTRAINTS_CONFIRMED=no` (open).** The stored reply notes that the operator gave no separate answer on the Supabase lock `constraints` line (§ Task 1, attempt 2, "A note for the reviewer"), so it stays provisionally accepted by the orchestrator and is an open confirmation. This run does not read those locks.
+
+### The checks job and the gate
+
+```
+CHECKS_JOB=success
+CHECKS_JOB_ID=134620417679
+DEPLOY_JOB_ID=134620946555
+GATE_WAITED=yes
+GATE_ENVIRONMENT=staging
+GATE_WAIT_TIMER=0
+```
+
+- **`CHECKS_JOB=success`.** `gh api repos/OpenVAA/voting-advice-application/actions/jobs/134620417679` exit 0: `success`, 06:21:19Z to 06:22:37Z (78 s). Steps, each `success`: Set up job (1 s), Checkout source code (3 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (0 s), Validate the staging AWS root (12 s), Setup Node.js 24.21.0 (5 s), Setup Yarn 4.18 (40 s), Unit tests of the infrastructure scripts (13 s), and the post and complete steps (0 s).
+- **`GATE_WAITED=yes`.** A background watcher read the run `waiting` at 06:22:51Z, and at 06:22:58Z `gh run view 44250710034` read the run `waiting` and its `deploy` job (id `134620946555`, started 06:22:37Z) `waiting`. `gh api repos/OpenVAA/voting-advice-application/actions/runs/44250710034/pending_deployments` (a GET) exit 0: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing.
