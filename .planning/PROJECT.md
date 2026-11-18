@@ -345,6 +345,19 @@ Known infrastructure issue: local imgproxy Docker container crashes intermittent
 - ✓ Staging zone (INFRA-18) — a Route 53 hosted zone answers `staging.openvaa.org`, delegated from Cloudflare (recorded in `infra/envs/staging/dns-mail/DELEGATION.md`); the SES identity is verified with DKIM, SPF and DMARC published — v2.17 (Phase 183)
 - ✓ Hosted settings parity guard (SUPA-11) — the hosted Supabase project is imported into its own Terraform root (`prevent_destroy`, settings applied, second plan empty), and a `lint:check` guard fails when the security-relevant keys of `config.toml` and the HCL disagree (seen red once per kind of finding) — v2.17 (Phase 183)
 - ✓ Tests never reach a production project (SUPA-09) — the deployed smoke entry (`yarn test:e2e:deployed`) takes its expected ref and project id only from the committed staging tfvars and refuses any other target, a wrong SHA or a set service-role key (each negative control seen red); green against `https://staging.openvaa.org` with a voter walk and a contestant sign-in — v2.17 (Phase 186)
+- ✓ Keyless pipeline access to AWS (PIPE-01) — GitHub Actions assumes a read-only plan role and a deploy role through OIDC, with no stored keys; the deploy trust is pinned by `repository_id` and `repository_owner_id` and names the `staging` and `staging-destroy` environments; a token with the wrong subject was seen refused by both roles (run 44088753527) — v2.17 (Phase 187)
+- ✓ Terraform checked and planned on pull requests (PIPE-02) — `infra-plan.yml` formats, validates and tests every root and prints the staging plan in the run's step summary (run 44104573552) — v2.17 (Phase 187)
+- ✓ Fork pull requests get no credentials (PIPE-03) — the credentialed `plan` and `wrong-subject` jobs show as skipped on a fork PR (run 44124810789); no `pull_request_target` anywhere — v2.17 (Phase 187)
+- ✓ Gated, serialised applies (PIPE-04) — every hosted write is in one job behind the `staging` GitHub Environment; `concurrency: staging-aws` with `cancel-in-progress: false`, shared with the destroy workflow — v2.17 (Phase 187)
+- ✓ Built once, deployed by digest (PIPE-05) — the image is built and pushed once and the plan takes `-var image_digest`; the running ECS task's digest equals the build's — v2.17 (Phase 187)
+- ✓ Fixed deploy order (PIPE-06) — migrations, functions, frontend rollout, then a bounded wait until the service is stable on the applied task definition — v2.17 (Phase 187)
+- ✓ Smoke run gates the pipeline (PIPE-07) — the deployed smoke entry of phase 186 is the last stage and a failure ends the run red; `DEV_SEED_ALLOW_REMOTE` appears in no workflow. A red smoke stage is code- and test-guarded but was not observed — v2.17 (Phase 187)
+- ✓ Guarded destroy (PIPE-08) — `destroy.yml` runs under its own environment with no secret, refuses unless the Supabase root is unreachable, and applies only a plan whose deletes equal the state's managed resources; seen destroying 40 of 40 (run 44285713407), followed by a redeploy from nothing — v2.17 (Phase 187)
+- ✓ Green and red runs recorded (PIPE-09) — green run 44270824581; red run 44088753181 from a deliberately broken build (`failed=build`, nothing hosted written) — v2.17 (Phase 187)
+- ✓ Branch-driven deploys (PIPE-10) — a push to `deploy/staging`, a manual dispatch or a `deploy-evidence/**` push deploys staging; the deploy workflow has no `main` trigger (unit-test asserted; a real push to `main` is not observable before merge) — v2.17 (Phase 187)
+- ✓ Operator alerts (INFRA-16) — a failed or cancelled deploy publishes to the deployment topic naming the stage; seen firing at build, plan, migrations and stable, with mail arriving; the rollout-rollback rule's firing is phase 185's — v2.17 (Phase 187)
+- ✓ Forkable `example` environment (INFRA-19) — the three `example` roots are validated and planned with mock providers on every pull request and no workflow can apply them — v2.17 (Phase 187)
+- ✓ Secrets only in the pipeline and in state (SUPA-08) — the `staging` environment holds the Supabase access token, database password and alert address, `staging-destroy` holds none; no plan is uploaded as an artifact; the state bucket is encrypted, versioned and blocks public access — v2.17 (Phase 187)
 
 ### Active
 
@@ -568,6 +581,11 @@ Each major initiative is a separate milestone, executed in order:
 | v2.17: The hosted project is created by hand and imported | The persistent project (`openvaa-staging`, eu-north-1) is never created by Terraform: an `import` block and `prevent_destroy` bind it, and every step is rehearsed on a throwaway project first. Both auth hooks are on before their functions exist, so the migrations are pushed before anyone signs in | — Pending (phase 184 push) |
 | v2.17: INFRA-15 accepted on the console alert | The budget mail was not received (the address was unconfirmed); the operator ruled accept-console-alert rather than hold the phase on mail delivery | ⚠️ Revisit (mail delivery not observed) |
 | v2.17: Plan-role limits deferred to phase 184 | Review WR-01 option (a) keeps `ReadOnlyAccess` with explicit denies; WR-04 keeps A-08 (a PR job can hold or delete the pipeline lock); numeric GitHub id claims, a workflow pin and the Environment branch policy wait until the PR and deploy workflows exist | ⚠️ Revisit (phase 184) |
+| v2.17: Plan-role limits settled in phase 187 | The deploy and plan trusts are pinned by `repository_id` and `repository_owner_id`; the plan role holds no lock permission (pull-request plans run `-lock=false`), so a PR job can no longer hold or delete the pipeline lock; the Environments' branch rules admit only `deploy/staging` and `deploy-evidence/*` | ✓ Good (v2.17, Phase 187) |
+| v2.17: Two GitHub Environments, the destroy one without secrets | The deploy role trusts `staging` (holds the Supabase secrets) and `staging-destroy` (holds none), so the destroy path cannot reach the Supabase root; the destroy guard passes only a plan of managed deletes under `module.frontend` equal in number to the state's resources | ✓ Good (v2.17, Phase 187; the verifier's override of "one GitHub Environment" awaits the operator) |
+| v2.17: One `staging` approval per deploy (WR-06) | The single approval is given before the plan and the pending migrations are in view; the reviewer reads the commit's migrations diff first. Recorded under Accepted risks in `infra/README.md` | ⚠️ Revisit (accepted risk) |
+| v2.17: No expression inside a workflow `run:` script | A shared workflow guard rejects every `${{ }}` in `run:` (secrets, event text and step outputs alike); values reach scripts through `env`. Pipeline steps capture each read status as `name=0` then `cmd \|\| name=$?`, so `bash -e` cannot hide the lines that explain a failure | ✓ Good (v2.17, Phase 187) |
+| v2.17: Hosted CI evidence through dedicated branches | Deploys are observed on `deploy-evidence/**` pushes and full CI on `ci-evidence/**` pushes, never on `main`; the deploy workflow has no `main` trigger | ✓ Good (v2.17, Phase 187) |
 
 ## Evolution
 
@@ -587,6 +605,8 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
+
+_Last updated: 2026-11-18 after Phase 187 (Deploy Pipeline; workstream `deployment`, milestone v2.17) — PIPE-01 to PIPE-10, INFRA-16, INFRA-19 and SUPA-08 moved to Validated, five v2.17 Key Decisions added. 31 plans, verified 12/12 with no override written (the two-environment reading awaits the operator). Only additions; the v2.16 sections are untouched._
 
 _Last updated: 2026-11-15 after Phase 186 (Deployed Smoke Entry; workstream `deployment`, milestone v2.17) — SUPA-09 moved to Validated. Verified 48/48 with one override (HTML reporter removed by review fix CR-01), UAT 4/4, security `threats_open: 0`. Only additions; the v2.16 sections are untouched._
 

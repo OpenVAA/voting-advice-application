@@ -23,27 +23,27 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-10-26 after Phase 183, by additions only)
+See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 after Phase 187, by additions only)
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 187 — Deploy Pipeline
+**Current focus:** Phase 188 — Relay on the Deployed Stack, and the Per-Caller Limit
 
 ## Current Position
 
-Phases 181, 181.1, 182 and 183 are complete; phase 184 is next and has no plan yet.
+Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 — Relay on the Deployed Stack, and the Per-Caller Limit
 Plan: Not started
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 187 complete, transitioned to Phase 188
 
-Progress: [███████░░░] 70% (3 of 9 roadmap phases, 181.1 inserted besides; 82/82 plans of the planned phases)
+Progress: [██████████████████░░] 168/188 plans (89%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
-**Phases Complete:** 3 of 9 (181, 182, 183), and the inserted 181.1
-**Current Plan:** 26
+**Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
+**Current Plan:** Not started (phase 188)
 
 From 184 on, the numeric order is the dependency order.
 
@@ -364,6 +364,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 187]: 187-24: the real destroy ran as a re-run (attempt 2) of 187-23's destroy run, behind both staging-destroy reviews; nothing was pushed
 - [Phase 187]: 187-25: the redeploy from nothing was a re-run (attempt 2) of 187-22's run 44276384977; the tag exists, so the same digest was deployed and nothing was pushed
 - [Phase 187]: 187-25: both bootstrap not-yet-observed rows checked by the first pipeline deploy from nothing (deploy-role permissions; edge tag aws:ResourceTag test) moved to Observations
+- [Phase 187]: closed 2026-11-18, verified 12/12 (31 plans); PIPE-01 to PIPE-10, INFRA-16, INFRA-19 and SUPA-08 complete. The verifier's reading that the deploy role's two environments (staging, staging-destroy) satisfy "one GitHub Environment" is written as a suggested override only; the acceptance is the operator's. Full Key Decisions in PROJECT.md
 
 ### Pending Todos
 
@@ -384,10 +385,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ### Blockers/Concerns
 
-- **[Phase 187 — 14/25 plans done, rest operator-gated, 2026-11-15]** Plans 187-01..14 executed (01..13 local only; closing E2E 548/0/0/0, `E2E_TREE_SHA=54e79823b`). Code review: 187-REVIEW.md (1 critical, 10 warnings, 8 info); 187-REVIEW-FIX.md fixed 14 (incl. CR-01 tag-scope of CloudFront/ACM). R-01 (= WR-06) RESOLVED by the operator 2026-11-15 (`d55a94b7a`): one `staging` approval is kept, recorded under Accepted risks in `infra/README.md` (the reviewer reads the commit's migrations diff before approving; the approval stays blind to the plan and to migrations pending from other commits); plans 187-09/-11/-12 and 187-18..25 need no revision. 187-14 done: both GitHub Environments, their secrets and variables read back (`evidence/187-14-environments.md`, admin bypass off, branch rules deploy/staging + deploy-evidence/*). Next: plan 187-15 (first push). The 187 decisions (and the three research amendments) are unreviewed ★ recommendations. Phase 188 is discussed/researched/planned but must not execute before 187-21/22 and 186-08 are complete.
-
-- **[Phase 186 — OPEN OPERATOR CHECKPOINT, 2026-11-15]** Plans 186-01 to 186-07 complete; full local E2E green (548/0/0/0). Code review (186-REVIEW.md: 1 critical — credentials in the HTML report and error-context.md — 2 warnings, 4 info) fixed in 186-REVIEW-FIX.md except IN-04 (deferred to 187); closing gate re-run green on the fixed tree: run `186-close-rerun-20261115T002900Z`, `E2E_TREE_SHA=ee85b83a3`. Re-run 186-08 Task 1 (read-only readiness) before the sitting: its committed record names the superseded tree `ac3d8d42b`. Plan 186-08 Task 1 (read-only readiness) done at `48775c8c5`; Task 2 `checkpoint:human-action` attempt `186-08-2`, id `20261114T234949Z.48775c8c5`, awaits the operator's approval of the one hosted write (contestant user + editor grant on `smoke_cand_0000` + terms acceptance on `cofbsatfrdysyphajsky`) and the keychain item `openvaa-staging-smoke-contestant`. Question and reply fields: `tmp/183-evidence/186-08-2.20261114T234949Z.48775c8c5.txt`. Also decide whether the sitting's run sets `PLAYWRIGHT_NO_COPY_PROMPT=1` (Playwright writes an aria snapshot to `error-context.md` on a failed test). Phase 186 cannot be verified until Task 3 runs. SUPA-09 stays Pending.
-
 - Phase 181: the baseline freeze waits for a cutover commit agreed with the v2.16 session (SUPA-10, C1). The rest of the phase does not wait.
 - Phase 182: the legal position needs a qualified reviewer. Six readings of the operator's notes of 2026-10-11 are written into the context files and listed in `v2.17-181-183-DISCUSSION-POINTS.md`; the operator has not yet confirmed them.
 - Phase 181: the freeze also waits for one schema change of phase 182 (ruling 182-12).
@@ -406,12 +403,13 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 - [Phase 183] SMTP is not applied on staging (`smtp` is null). When phase 184 sets it, the planning shell needs `TF_VAR_smtp_user` and `TF_VAR_smtp_password`; the first SMTP enablement is untried.
 - [Phase 183] Operator deferrals to phase 184 (SECURITY T-183-09/10/11): WR-04, decision A-08 kept, so a PR job can hold or delete the pipeline lock; the WR-01 remainder, `ReadOnlyAccess` still reads S3 objects, SSM String parameters, Lambda and ECS environments and CloudFormation templates; the WR-03 remainder, numeric GitHub id claims (confirm AWS support for them first), pinning the plan trust to a workflow, and the staging Environment's deployment branch policy.
 - [Phase 183] No CI run of `infra-validate` exists on the final tree; the last observed runs were at 18fdcd6ca. A `ci-evidence/**` push would observe one.
-- [Phase 183] The CI `secret-scan` job concluded failure on the pushed tree. It is attributed to two accepted dummy URI test inputs, but nobody has read the job log. The `dependency-audit` CI failure is also undiagnosed.
+- [Phase 187] `dependency-audit` stays red in CI on third-party advisories (17 rows on run 44033456141; none from this workstream's lockfile change); accepted by the operator and filed for phase 189 (`2026-11-15-dependency-audit-third-party-advisories.md`). `secret-scan` was green (0 results) on that run.
 - [Phase 183] `183-VALIDATION.md` is still draft; the Nyquist audit (`/gsd-validate-phase 183 --ws deployment`) has not run.
 - [Phase 183] 23 info review findings (IN-01 to IN-23) remain open in `183-REVIEW-DISPOSITION.md`. The lock files of the four Supabase-provider directories still record `constraints = "~> 1.11"` while the roots pin `= 1.11.0`.
-- 187-15 stopped: secret-scan red on run 43817899191 (ci-evidence/187-final) - two unverified URI fixtures at tests/tests/utils/deployedTarget.test.ts:603,604 (phase 186); fix needs a new plan + new evidence push. Same run also red: 3 push-migrations --confirmed-ref unit tests and every mailed-link E2E spec (awaitLinkWitness timeout), CI-only, cause unconfirmed RESOLVED 2026-11-17 by 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4); plan closed by pointer.
-- 187-26: e2e-tests red on run 43839245785 (3 CI-only contestant readiness timeouts: contestant-email-registration.spec.ts:186, contestantAxeScan cand-home (dark), contestant-terms-gate-phone.spec.ts:28; cause unconfirmed). G-03 and plan 187-15 stay open; 187-18 must not start until a new plan's run is green RESOLVED 2026-11-17 by 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4); plan closed by pointer.
-- 187-27: e2e-visual and e2e-tests red on run 43938990256 (e2e-visual: Voter Results desktop and mobile portraits shifted by db9e314b2's base-template row, cause confirmed; e2e-tests: 7 CI-only readiness timeouts, 511 did not run, cause unconfirmed; both -gsd-owned). G-03 and plans 187-15 and 187-26 stay open; 187-18 must not start until a run after the -gsd fixes and the rebase is green RESOLVED 2026-11-17 by 187-28: G-03 closed on run 44033456141 (ci-evidence/187-final-4); plan closed by pointer.
+- [Phase 187] The verifier's suggested override for PIPE-01 ("one GitHub Environment" read as the two environments staging and staging-destroy) awaits the operator's acceptance; it does not change the phase status.
+- [Phase 187] A red smoke stage was not observed (code- and test-guarded only); the observed red is at build. A real push to `main` cannot be observed before the deploy workflow is merged.
+- [Phase 187] The full `main.yaml` CI last ran on `ci-evidence/187-final-4`; plans 187-29 to 187-31 changed workflows and scripts after it, covered only by the workflows' own `checks` jobs.
+- [Phase 187] `infra/envs/staging/aws/README.md` § Observations has one split table row (a `|` inside a code span; `deferred-items.md`), left open on purpose.
 
 ### Roadmap Evolution
 
@@ -427,6 +425,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T16:08:06.101Z
+Last session: 2026-11-18T17:45:00Z
 **Stopped At:** Phase 187 complete, ready to execute Phase 188
 **Resume File:** None
