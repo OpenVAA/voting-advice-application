@@ -34,7 +34,7 @@ planned: "2026-11-15"
 | RELAY-09 | WAF off: no ACL; on: shape; bounds refuse | terraform test | `terraform -chdir=infra/modules/frontend-service test` | ✅ (new runs) |
 | RELAY-09 | Refusal script parses its flags, prints named lines | unit + local run | `yarn test:unit:infra relay-refusals` | ❌ Wave 0 |
 | RELAY-09 | Deployed refusals, full queue, WAF plan | manual-only (H9, H10) | named lines | — |
-| OBS-09 | RPC: 30 then refused, trust and skip rules, /64, project check, grants | pgTAP | `yarn workspace @openvaa/supabase test:db` | ❌ Wave 0 (`48-…test.sql`) |
+| OBS-09 | RPC: 30 then refused, trust and skip rules, /64, project check, grants | pgTAP | `yarn workspace @openvaa/supabase test:db` | ❌ Wave 0 (`59-…test.sql`) |
 | OBS-09 | Census pins updated | pgTAP | same | ✅ (edit 07, 39) |
 | OBS-09 | Header read, 429 body, take precedes branches, no address in logs | unit (vitest) | `yarn workspace @openvaa/supabase test:unit account-access` | ❌ Wave 0 (`callerLimit.test.ts`); ✅ edit `flowConformance`, `contract` |
 | OBS-09 | Schema and migrations build the same database | script | `yarn check:schema-equivalence` | ✅ |
@@ -48,7 +48,7 @@ planned: "2026-11-15"
 - **Phase gate:** `yarn test:unit` (stack running) and one full E2E run green, then the deployed smoke run after each staging rollout.
 
 ### Wave 0 Gaps
-- [ ] `apps/supabase/supabase/tests/database/48-invitation-caller-limit.test.sql`: covers OBS-09.
+- [ ] `apps/supabase/supabase/tests/database/59-invitation-caller-limit.test.sql`: covers OBS-09.
 - [ ] `apps/supabase/supabase/functions/account-access/callerLimit.test.ts`: covers OBS-09.
 - [ ] `infra/scripts/relay-refusals.test.ts`: covers RELAY-09's script.
 - [ ] `infra/scripts/load-check.test.ts`: covers OBS-11's script and wrapper.

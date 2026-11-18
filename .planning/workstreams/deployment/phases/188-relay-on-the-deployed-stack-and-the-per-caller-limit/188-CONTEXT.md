@@ -1,7 +1,7 @@
 # Phase 188: Relay on the Deployed Stack, and the Per-Caller Limit - Context
 
 **Gathered:** 2026-11-15
-**Status:** Ready for planning (recommendations, unreviewed by the operator; needs `/gsd-plan-phase --research-phase`)
+**Status:** Ready for execution (the operator's 2026-11-17 fill overruled A-02 only; every other decision is its ★ option)
 
 <domain>
 ## Phase Boundary
@@ -15,11 +15,11 @@ Out of scope: a project-wide cap on the invitation operations (roadmap); the seq
 <decisions>
 ## Implementation Decisions
 
-Every answer below is the unreviewed ★ RECOMMENDED option of `188-DISCUSSION-POINTS.md`. The operator was away and may overrule any of them there before execution; CONTEXT.md is then rewritten from the fill. Decisions marked **provisional — research** take the research step's answer where it contradicts them, and the plan says so.
+Every answer below is the ★ RECOMMENDED option of `188-DISCUSSION-POINTS.md`, except A-02, which the operator overruled in the fill. The operator was away and may overrule any of them there before execution; CONTEXT.md is then rewritten from the fill. Decisions marked **provisional — research** take the research step's answer where it contradicts them, and the plan says so.
 
 ### Inputs and sequencing
 - **A-01** The PostHog key already stored at `/openvaa/staging/frontend/ANALYTICS_POSTHOG_KEY` (185-11, 2026-11-12, `answer_posthog_kind=real`) is kept, after the operator confirms it is a Cloud EU project dedicated to staging that they own. The phase never handles its value. The first capture also proves the region. — **Reversibility:** costly — a different project means an overwrite of the parameter, a forced deployment and a stale 185 record.
-- **A-02 (provisional — research)** A Product analytics billing limit at the lowest amount PostHog accepts (ideally $0, stopping at the 1M free events), other products off; the operator sets it, the phase records amount and date. Research settles whether a limit needs a paid plan and what the free plan does past 1M. — **Reversibility:** reversible — a UI setting.
+- **A-02 (operator overrule, 2026-11-17 fill)** A Product analytics billing limit of a small positive amount (about $10 a month), every other product off or at the lowest amount; the operator sets it in the UI, the phase records the amount, the currency, the date and a text read of the setting. The load check itself stays on provider `log` (D-03). On the free plan, where a limit may need a paid plan or a card, the operator decides whether to upgrade; the record quotes the billing page either way. — **Reversibility:** reversible — a UI setting.
 - **A-03** Local plans run now; every deployed observation waits for 187's first green pipeline run, which brings this phase's image to staging. Transient observations are hand applies with `-var image_digest=<running digest>` and `environment_overrides` (185-15 pattern), each restored. — **Reversibility:** costly — an all-hand path would leave hand state for the first pipeline run to reconcile.
 - **A-04** Events are read back with an operator-created, read-only, project-scoped personal API key from the keychain, via HogQL on the EU app host, in an approved sitting; reads print named lines only.
 
@@ -55,7 +55,7 @@ Every answer below is the unreviewed ★ RECOMMENDED option of `188-DISCUSSION-P
 - **E-04** The address is the key (feedback-limit precedent); the take deletes `caller:` rows whose window has ended. The privacy docs name it. — **Reversibility:** costly — what is stored about callers is a privacy statement the docs make.
 - **E-05** HTTP 429 with `Retry-After`, the same body for every operation; the frontend shows its existing function-failure error; no new strings.
 - **E-06** Seen on the hosted function: `check-code` with unknown codes from the workstation until the 31st answers 429; at the same minute from AWS CloudShell answered normally; after the window the workstation is answered again. Locally: pgTAP with `behind_cloudflare` set inside the test transaction, a Deno unit test of the header read.
-- **E-07** Migration and function reach the hosted project through 187's pipeline steps (the first appended migration there). The todo `2026-10-07-174-…` closes with the evidence; its sequential-scan item moves to a new todo.
+- **E-07** Migration and function reach the hosted project through 187's pipeline steps (migration `00023`, the first appended after the `00002`–`00022` that 187-21 pushed). The todo `2026-10-07-174-…` closes with the evidence; its sequential-scan item moves to a new todo.
 
 ### Records and gates
 - **F-01** Raw evidence in `188-*/evidence/`; dated Observations rows in `infra/envs/staging/aws/README.md` (capacity, WAF cost, PostHog checks) and `infra/envs/staging/supabase/README.md` (the limit); the load method beside its script.
