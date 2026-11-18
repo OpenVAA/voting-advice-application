@@ -36,7 +36,7 @@
     {
       "number": "187",
       "name": "Deploy Pipeline",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "188",
@@ -52,7 +52,7 @@
   "next": {
     "command": "/gsd-progress --next",
     "label": "Advance to the next step",
-    "reason": "Phase 8 of 10 · 60% · executing"
+    "reason": "Phase 9 of 10 · 70% · executing"
   },
-  "updated_at": "2026-11-18T16:07:51.650Z"
+  "updated_at": "2026-11-18T16:19:14.665Z"
 }

@@ -61,7 +61,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       does not fit; no permission depends on an inline user policy. [F1]
 - [x] **INFRA-18**: A Route 53 hosted zone serves `staging.openvaa.org`, and the records the operator must
       change at the current DNS host are documented. [F1]
-- [ ] **INFRA-19**: An `example` environment that a forker copies is validated and planned in CI and is never
+- [x] **INFRA-19**: An `example` environment that a forker copies is validated and planned in CI and is never
       applied. It carries the production-shaped settings as variables. [A1]
 
 ### SUPA — Supabase project provisioning
@@ -80,7 +80,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       database, and a check after deploy fails if a seed user or a local URL is present.
 - [x] **SUPA-07**: A conformance probe reads what the hosted project serves and fails by name. Each of its checks
       is seen failing once against a deliberately broken throwaway project.
-- [ ] **SUPA-08**: The access token, database password and service-role key exist only in the pipeline's
+- [x] **SUPA-08**: The access token, database password and service-role key exist only in the pipeline's
       environment and in Terraform state. The state bucket is encrypted, versioned and closed to the public, and
       no plan is uploaded as an artifact (C7).
 - [x] **SUPA-09**: Tests run against a dedicated hosted project and never against a production one.
@@ -103,21 +103,21 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [x] **PIPE-01**: GitHub Actions reaches AWS without stored keys, through OIDC, with a read-only plan role and a
       deploy role bound to this repository and one GitHub Environment. A token with the wrong subject is seen
       refused.
-- [ ] **PIPE-02**: On a pull request the Terraform is formatted, validated and planned, and the plan can be read
+- [x] **PIPE-02**: On a pull request the Terraform is formatted, validated and planned, and the plan can be read
       in the run.
-- [ ] **PIPE-03**: A pull request from a fork gets no cloud credentials, and its credentialed jobs skip visibly.
-- [ ] **PIPE-04**: An apply runs only behind a GitHub Environment gate, and applies are serialised and never
+- [x] **PIPE-03**: A pull request from a fork gets no cloud credentials, and its credentialed jobs skip visibly.
+- [x] **PIPE-04**: An apply runs only behind a GitHub Environment gate, and applies are serialised and never
       cancelled mid-run.
-- [ ] **PIPE-05**: The image is built once, pushed, and deployed by digest.
+- [x] **PIPE-05**: The image is built once, pushed, and deployed by digest.
 - [x] **PIPE-06**: A deploy runs in a fixed order: migrations, functions, frontend rollout, wait until stable.
-- [ ] **PIPE-07**: A smoke run against the deployed URL fails the pipeline when it fails. It proves the build
+- [x] **PIPE-07**: A smoke run against the deployed URL fails the pipeline when it fails. It proves the build
       SHA and the project id, renders a voter page from hosted data, goes from questions to results, and signs
       one contestant in. It is read-mostly: no setup or teardown project, and `DEV_SEED_ALLOW_REMOTE` appears in
       no workflow (E1). The local gate suite and its preflight are unchanged.
 - [x] **PIPE-08**: A guarded destroy path removes the AWS stack and cannot reach the Supabase root.
-- [ ] **PIPE-09**: One green run and one red run of the pipeline are observed and recorded, the red one from a
+- [x] **PIPE-09**: One green run and one red run of the pipeline are observed and recorded, the red one from a
       deliberately broken build.
-- [ ] **PIPE-10**: A push to a named per-environment branch deploys that environment; a manual dispatch and a
+- [x] **PIPE-10**: A push to a named per-environment branch deploys that environment; a manual dispatch and a
       `deploy-evidence/**` push also apply. A push to `main` does not deploy. [E3, F1]
 
 ### OBS — Hosted-behaviour observations
@@ -277,7 +277,7 @@ closes; those are not listed against the earlier phase here.
 | INFRA-16 | Phase 187 | Complete |
 | INFRA-17 | Phase 183 | Complete |
 | INFRA-18 | Phase 183 | Complete |
-| INFRA-19 | Phase 187 | Pending |
+| INFRA-19 | Phase 187 | Complete |
 | SUPA-01 | Phase 184 | Complete |
 | SUPA-02 | Phase 184 | Complete |
 | SUPA-03 | Phase 184 | Complete |
@@ -285,7 +285,7 @@ closes; those are not listed against the earlier phase here.
 | SUPA-05 | Phase 184 | Complete |
 | SUPA-06 | Phase 184 | Complete |
 | SUPA-07 | Phase 184 | Complete |
-| SUPA-08 | Phase 187 | Pending |
+| SUPA-08 | Phase 187 | Complete |
 | SUPA-09 | Phase 186 | Complete |
 | SUPA-10 | Phase 181 | Complete |
 | SUPA-11 | Phase 183 | Complete |
@@ -293,15 +293,15 @@ closes; those are not listed against the earlier phase here.
 | SUPA-13 | Phase 184 | Complete |
 | SUPA-14 | Phase 184 | Complete |
 | PIPE-01 | Phase 187 | Complete |
-| PIPE-02 | Phase 187 | Pending |
-| PIPE-03 | Phase 187 | Pending |
-| PIPE-04 | Phase 187 | Pending |
-| PIPE-05 | Phase 187 | Pending |
+| PIPE-02 | Phase 187 | Complete |
+| PIPE-03 | Phase 187 | Complete |
+| PIPE-04 | Phase 187 | Complete |
+| PIPE-05 | Phase 187 | Complete |
 | PIPE-06 | Phase 187 | Complete |
-| PIPE-07 | Phase 187 | Pending |
+| PIPE-07 | Phase 187 | Complete |
 | PIPE-08 | Phase 187 | Complete |
-| PIPE-09 | Phase 187 | Pending |
-| PIPE-10 | Phase 187 | Pending |
+| PIPE-09 | Phase 187 | Complete |
+| PIPE-10 | Phase 187 | Complete |
 | OBS-01 | Phase 184 | Complete |
 | OBS-02 | Phase 184 | Complete |
 | OBS-03 | Phase 184 | Complete |
