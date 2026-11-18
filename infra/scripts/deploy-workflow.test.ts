@@ -75,6 +75,57 @@ function mutate(source: string, pattern: string | RegExp, replacement: string): 
   return mutated;
 }
 
+/** The bodies of the `while` and `for` loops of a script, each from its `; do` line to its matching `done`. */
+function loopBodies(script: string): Array<string> {
+  const bodies: Array<string> = [];
+  const open: Array<Array<string>> = [];
+  for (const line of script.split('\n')) {
+    for (const body of open) body.push(line);
+    if (/^\s*(while|for)\b.*; do\s*$/.test(line)) open.push([line]);
+    else if (/^\s*done\b/.test(line) && open.length > 0) bodies.push((open.pop() as Array<string>).join('\n'));
+  }
+  return bodies;
+}
+
+/** The number of a script's line of exactly `name=<digits>`, after indentation, or undefined when it has none. */
+function literalNumber(script: string, name: string): number | undefined {
+  const match = new RegExp(`^[ \\t]*${name}=([0-9]+)$`, 'm').exec(script);
+  return match ? Number(match[1]) : undefined;
+}
+
+/**
+ * The violations of the rule `rollout-poll` by the script of the stable step.
+ *
+ * The step reads the rollout in a loop, sleeping `interval` seconds between reads, for at most `polls` reads, both
+ * set on lines of their own. The limit `polls × interval` is at least 600 s, longer than ECS's circuit breaker takes
+ * to fail a rollout of one desired task, and at most half the job's `timeout-minutes`, so that the rest of the job
+ * keeps the other half.
+ *
+ * @param script - The stable step's script.
+ * @param timeoutMinutes - The deploy job's `timeout-minutes`.
+ * @returns One message per violation, each beginning `rollout-poll: `; empty when the step holds the rule.
+ */
+function rolloutPollViolations(script: string, timeoutMinutes: number): Array<string> {
+  const violations: Array<string> = [];
+  const polls = literalNumber(script, 'polls');
+  const interval = literalNumber(script, 'interval');
+  if (polls === undefined) violations.push('rollout-poll: no line polls=<digits>');
+  else if (polls < 2) violations.push(`rollout-poll: polls=${polls} reads the rollout once`);
+  if (interval === undefined) violations.push('rollout-poll: no line interval=<digits>');
+  else if (interval < 1) violations.push(`rollout-poll: interval=${interval} reads back to back`);
+  if (polls !== undefined && interval !== undefined) {
+    const limit = polls * interval;
+    if (limit < 600) violations.push(`rollout-poll: the limit of ${limit} s is below 600 s`);
+    if (limit > timeoutMinutes * 30)
+      violations.push(`rollout-poll: the limit of ${limit} s is above half the job's ${timeoutMinutes} minutes`);
+  }
+  const reading = loopBodies(script).filter((body) => body.includes('aws ecs describe-services'));
+  if (reading.length === 0) violations.push('rollout-poll: no aws ecs describe-services inside a while or for loop');
+  else if (!reading.some((body) => body.includes('sleep "$interval"')))
+    violations.push('rollout-poll: no sleep "$interval" inside the loop that reads the service');
+  return violations;
+}
+
 describe('deploy.yml and the shared rules', () => {
   it('finds no violation of the shared rules', () => {
     expect(sharedViolations(doc, text)).toEqual([]);
@@ -225,6 +276,8 @@ describe('the stages of the deploy job', () => {
     expect(script).toContain('[ "$rollout_state" != COMPLETED ]');
     expect(script).toContain('[ "$running" -ge "$floor" ]');
     for (const line of [
+      'stable_poll=',
+      'stable_describe_exit=',
       'stable_task_definition_matches=',
       'stable_rollout_state=',
       'stable_running=',
@@ -232,6 +285,11 @@ describe('the stages of the deploy job', () => {
     ]) {
       expect(script).toContain(`echo "${line}`);
     }
+  });
+
+  it("reads the rollout in a loop with a sleep, its limit between 600 s and half the job's timeout", () => {
+    const timeout = Number(jobOf(doc, 'deploy')['timeout-minutes']);
+    expect(rolloutPollViolations(runOf(stepWithId(steps, 'stable')), timeout)).toEqual([]);
   });
 
   it('runs the deployed smoke entry with the commit and the contestant secrets and nothing privileged', () => {
@@ -538,6 +596,31 @@ describe('the deploy-specific guards are red on a faulty copy', () => {
     expect(Object.keys(env).filter((key) => key.startsWith('SUPABASE_') || key.startsWith('PG'))).toEqual([
       'PGPASSWORD'
     ]);
+  });
+
+  /** The `rollout-poll` violations of the stable step of a workflow text. */
+  function rolloutPoll(source: string): Array<string> {
+    const parsed = parseWorkflow(source);
+    const script = runOf(stepWithId(stepsOf(parsed, 'deploy'), 'stable'));
+    return rolloutPollViolations(script, Number(jobOf(parsed, 'deploy')['timeout-minutes']));
+  }
+
+  it('sees the stable step read the rollout once', () => {
+    expect(rolloutPoll(mutate(text, /^( *)polls=60$/m, '$1polls=1'))).toContain(
+      'rollout-poll: polls=1 reads the rollout once'
+    );
+  });
+
+  it('sees the stable step read the rollout back to back, with no sleep', () => {
+    expect(rolloutPoll(mutate(text, /^ *sleep "\$interval"\n/m, ''))).toContain(
+      'rollout-poll: no sleep "$interval" inside the loop that reads the service'
+    );
+  });
+
+  it("sees a limit above half the job's timeout", () => {
+    expect(rolloutPoll(mutate(text, /^( *)polls=60$/m, '$1polls=200'))).toContain(
+      "rollout-poll: the limit of 3000 s is above half the job's 60 minutes"
+    );
   });
 
   it('sees a pull-request trigger', () => {

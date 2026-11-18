@@ -565,3 +565,132 @@ describe('a command whose status a step does not read still ends the step under 
     });
   });
 });
+
+describe('the stable step of deploy.yml under bash -e', () => {
+  const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Check the rollout is stable');
+  const tfvars = 'infra/envs/staging/aws/terraform.tfvars';
+  const applied = 'arn:aws:ecs:eu-north-1:000000000000:task-definition/harness-frontend:2';
+  const other = 'arn:aws:ecs:eu-north-1:000000000000:task-definition/harness-frontend:1';
+  const stubs = {
+    terraform: [
+      'case "$*" in',
+      `  *'output -raw task_definition_arn') printf '%s' '${applied}' ;;`,
+      "  *'output -raw cluster_name') printf '%s' harness ;;",
+      "  *'output -raw service_name') printf '%s' harness-frontend ;;",
+      '  *) echo "stub terraform failed" >&2; exit 1 ;;',
+      'esac'
+    ].join('\n'),
+    aws: [
+      'n=1',
+      'if [ -f "$HOME/aws-calls" ]; then read -r n < "$HOME/aws-calls"; n=$((n + 1)); fi',
+      'echo "$n" > "$HOME/aws-calls"',
+      'echo "stub aws $n" >&2',
+      'if [ -f "describe/$n.json" ]; then cat "describe/$n.json"; else cat describe/last.json; fi'
+    ].join('\n'),
+    sleep: 'echo "stub sleep $*" >&2'
+  };
+
+  /** One `describe-services` answer: a service of one desired task whose only deployment is the primary one. */
+  function answer(taskDefinition: string, rolloutState: string, runningCount: number): string {
+    return JSON.stringify({
+      services: [{ desiredCount: 1, deployments: [{ status: 'PRIMARY', taskDefinition, rolloutState, runningCount }] }]
+    });
+  }
+
+  /** The step's literal `name=<digits>` line; throws naming it when the script has none. */
+  function literalNumber(name: string): number {
+    const match = new RegExp(`^[ \\t]*${name}=([0-9]+)$`, 'm').exec(script);
+    if (!match) throw new Error(`the stable step has no line ${name}=<digits>`);
+    return Number(match[1]);
+  }
+
+  /** A run in which the n-th `describe-services` call gets the n-th answer, and every later call the last one. */
+  function runWithAnswers(answers: Array<string>): RunnerShellResult {
+    return runUnderRunnerShell(script, {
+      stubs,
+      files: {
+        [tfvars]: { content: readFileSync(join(REPO_ROOT, tfvars), 'utf8') },
+        ...Object.fromEntries(answers.map((content, index) => [`describe/${index + 1}.json`, { content }])),
+        'describe/last.json': { content: answers[answers.length - 1] }
+      },
+      env: standInEnv(step, script)
+    });
+  }
+
+  /** The `stable_poll=` lines of a run. */
+  function polls(run: RunnerShellResult): Array<string> {
+    return lines(run.stdout).filter((line) => line.startsWith('stable_poll='));
+  }
+
+  /** The lines the `sleep` stub wrote. */
+  function sleeps(run: RunnerShellResult): Array<string> {
+    return lines(run.stderr).filter((line) => line.startsWith('stub sleep'));
+  }
+
+  /** The error lines of a run. */
+  function errors(run: RunnerShellResult): Array<string> {
+    return lines(run.stdout).filter((line) => line.startsWith('::error::'));
+  }
+
+  const mismatch = '::error::The primary deployment does not run the applied task definition';
+
+  it('reads again while the rollout is IN_PROGRESS and passes once it is COMPLETED at the floor', () => {
+    const run = runWithAnswers([
+      answer(applied, 'IN_PROGRESS', 1),
+      answer(applied, 'IN_PROGRESS', 1),
+      answer(applied, 'COMPLETED', 1)
+    ]);
+    expect(run.status).toBe(0);
+    const interval = literalNumber('interval');
+    expect(polls(run)).toEqual(['stable_poll=1', 'stable_poll=2', 'stable_poll=3']);
+    expect(
+      lines(run.stdout)
+        .filter((line) => line.startsWith('stable_rollout_state='))
+        .at(-1)
+    ).toBe('stable_rollout_state=COMPLETED');
+    expect(sleeps(run)).toEqual([`stub sleep ${interval}`, `stub sleep ${interval}`]);
+    expect(errors(run)).toEqual([]);
+  });
+
+  it('fails with its error line when the rollout goes from IN_PROGRESS to FAILED', () => {
+    const run = runWithAnswers([answer(applied, 'IN_PROGRESS', 1), answer(applied, 'FAILED', 0)]);
+    expect(polls(run)).toEqual(['stable_poll=1', 'stable_poll=2']);
+    expect(sleeps(run)).toHaveLength(1);
+    expect(lines(run.stdout)).toContain('stable_rollout_state=FAILED');
+    expect(errors(run).some((line) => line.startsWith(mismatch))).toBe(true);
+    expect(run.status).toBe(1);
+  });
+
+  it('fails with its own error line at the last read when the rollout stays IN_PROGRESS', () => {
+    const limit = literalNumber('polls');
+    const run = runWithAnswers([answer(applied, 'IN_PROGRESS', 1)]);
+    expect(polls(run)).toHaveLength(limit);
+    expect(polls(run).at(-1)).toBe(`stable_poll=${limit}`);
+    expect(lines(run.stderr).filter((line) => line.startsWith('stub aws'))).toHaveLength(limit);
+    expect(sleeps(run)).toHaveLength(limit - 1);
+    expect(
+      errors(run).some((line) =>
+        line.startsWith("::error::The primary deployment's rollout is still IN_PROGRESS after")
+      )
+    ).toBe(true);
+    expect(run.status).toBe(1);
+  }, 30_000);
+
+  it('fails at the first read, without waiting, when the primary deployment runs another task definition', () => {
+    const run = runWithAnswers([answer(other, 'IN_PROGRESS', 1)]);
+    expect(polls(run)).toEqual(['stable_poll=1']);
+    expect(sleeps(run)).toEqual([]);
+    expect(lines(run.stdout)).toContain('stable_task_definition_matches=no');
+    expect(errors(run).some((line) => line.startsWith(mismatch))).toBe(true);
+    expect(run.status).toBe(1);
+  });
+
+  it('fails at the first read, without waiting, when a completed rollout runs fewer tasks than the floor', () => {
+    const run = runWithAnswers([answer(applied, 'COMPLETED', 0)]);
+    expect(polls(run)).toEqual(['stable_poll=1']);
+    expect(sleeps(run)).toEqual([]);
+    expect(lines(run.stdout)).toContain('stable_running=0');
+    expect(errors(run).some((line) => line.startsWith(mismatch))).toBe(true);
+    expect(run.status).toBe(1);
+  });
+});

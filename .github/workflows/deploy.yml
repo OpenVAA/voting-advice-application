@@ -5,11 +5,11 @@ name: "Deploy staging"
 #      tests of the infrastructure scripts;
 #   2. job deploy, in the `staging` environment, which waits for its reviewer: builds and pushes the commit's image
 #      and takes its digest; plans the staging AWS root with that digest into a saved plan and prints it; pushes the
-#      migrations to the Supabase project and deploys its functions; applies the saved plan; checks that the service's
-#      primary deployment runs the task definition just applied; runs the deployed smoke entry against
-#      https://staging.openvaa.org; and reads /api/health again to confirm the commit is still the one served. A failed
-#      step stops every later one but the cleanup and the alert. When a step fails or the run is cancelled, the last
-#      step mails the operator through the deployment topic, naming the stage.
+#      migrations to the Supabase project and deploys its functions; applies the saved plan; waits until the service's
+#      primary deployment, on the task definition just applied, has completed its rollout; runs the deployed smoke entry
+#      against https://staging.openvaa.org; and reads /api/health again to confirm the commit is still the one
+#      served. A failed step stops every later one but the cleanup and the alert. When a step fails or the run is
+#      cancelled, the last step mails the operator through the deployment topic, naming the stage.
 #
 # A push to `deploy/staging` and a push to a `deploy-evidence/*` branch both deploy and apply. The environment's
 # branch policy matches one path segment only, so an evidence branch name holds no further `/`: a nested name would
@@ -427,13 +427,19 @@ jobs:
             exit 1
           fi
 
-      # The apply waits for a steady state and the circuit breaker fails it on a broken rollout. This step reads the
-      # service again and fails unless its primary deployment runs the task definition the apply wrote, has completed
-      # its rollout and runs at least the floor of tasks.
+      # The apply waits for a steady state, and ECS marks the deployment's rollout COMPLETED some seconds after it. So
+      # this step reads the service up to `polls` times, `interval` seconds apart, and passes once the primary
+      # deployment runs the task definition the apply wrote, has completed its rollout and runs at least the floor of
+      # tasks. It fails at once when the primary deployment runs another task definition, when its rollout is FAILED or
+      # in any other state, or when a completed rollout runs fewer tasks than the floor, and at the last read when the
+      # rollout is still IN_PROGRESS. The limit outlasts the circuit breaker's three failed tasks for one desired task,
+      # and stays within half the job's timeout and the hour of the credentials assumed before the apply.
       - name: "Check the rollout is stable"
         id: stable
         run: |
           set -uo pipefail
+          polls=60
+          interval=15
           floor=$(sed -n 's/^task_floor *= *\([0-9][0-9]*\)$/\1/p' infra/envs/staging/aws/terraform.tfvars)
           if [ -z "$floor" ]; then
             echo "::error::infra/envs/staging/aws/terraform.tfvars has no task_floor."
@@ -449,31 +455,45 @@ jobs:
             echo "::error::The outputs task_definition_arn, cluster_name and service_name could not all be read."
             exit 1
           fi
-          describe_exit=0
-          aws ecs describe-services --cluster "$cluster" --services "$service" --output json > "$RUNNER_TEMP/service.json" || describe_exit=$?
-          echo "stable_describe_exit=$describe_exit"
-          if [ "$describe_exit" -ne 0 ]; then
-            echo "::error::aws ecs describe-services exited $describe_exit."
-            exit 1
-          fi
           primary='[.services[0].deployments[] | select(.status == "PRIMARY")][0]'
-          primary_task_definition=$(jq -r "$primary.taskDefinition // \"\"" "$RUNNER_TEMP/service.json")
-          rollout_state=$(jq -r "$primary.rolloutState // \"\"" "$RUNNER_TEMP/service.json")
-          running=$(jq -r "$primary.runningCount // 0" "$RUNNER_TEMP/service.json")
-          desired=$(jq -r '.services[0].desiredCount // 0' "$RUNNER_TEMP/service.json")
-          if [ -n "$primary_task_definition" ] && [ "$primary_task_definition" = "$applied" ]; then
-            matches=yes
-          else
-            matches=no
-          fi
-          echo "stable_task_definition_matches=$matches"
-          echo "stable_rollout_state=$rollout_state"
-          echo "stable_running=$running"
-          echo "stable_desired=$desired"
-          if [ "$matches" != yes ] || [ "$rollout_state" != COMPLETED ] || ! [ "$running" -ge "$floor" ] 2> /dev/null; then
-            echo "::error::The primary deployment does not run the applied task definition with a completed rollout and at least $floor running tasks."
-            exit 1
-          fi
+          poll=1
+          while [ "$poll" -le "$polls" ]; do
+            echo "stable_poll=$poll"
+            describe_exit=0
+            aws ecs describe-services --cluster "$cluster" --services "$service" --output json > "$RUNNER_TEMP/service.json" || describe_exit=$?
+            echo "stable_describe_exit=$describe_exit"
+            if [ "$describe_exit" -ne 0 ]; then
+              echo "::error::aws ecs describe-services exited $describe_exit."
+              exit 1
+            fi
+            primary_task_definition=$(jq -r "$primary.taskDefinition // \"\"" "$RUNNER_TEMP/service.json")
+            rollout_state=$(jq -r "$primary.rolloutState // \"\"" "$RUNNER_TEMP/service.json")
+            running=$(jq -r "$primary.runningCount // 0" "$RUNNER_TEMP/service.json")
+            desired=$(jq -r '.services[0].desiredCount // 0' "$RUNNER_TEMP/service.json")
+            if [ -n "$primary_task_definition" ] && [ "$primary_task_definition" = "$applied" ]; then
+              matches=yes
+            else
+              matches=no
+            fi
+            echo "stable_task_definition_matches=$matches"
+            echo "stable_rollout_state=$rollout_state"
+            echo "stable_running=$running"
+            echo "stable_desired=$desired"
+            if [ "$matches" = yes ] && [ "$rollout_state" = IN_PROGRESS ]; then
+              if [ "$poll" -lt "$polls" ]; then
+                sleep "$interval"
+              fi
+              poll=$((poll + 1))
+              continue
+            fi
+            if [ "$matches" != yes ] || [ "$rollout_state" != COMPLETED ] || ! [ "$running" -ge "$floor" ] 2> /dev/null; then
+              echo "::error::The primary deployment does not run the applied task definition with a completed rollout and at least $floor running tasks."
+              exit 1
+            fi
+            exit 0
+          done
+          echo "::error::The primary deployment's rollout is still IN_PROGRESS after $polls reads, $interval s apart."
+          exit 1
 
       - name: "Drop the rollout credentials"
         id: drop-rollout-credentials
