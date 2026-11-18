@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 9
+current_plan: 10
 status: executing
-stopped_at: Completed 188-03-PLAN.md
-last_updated: "2026-11-18T19:47:20.754Z"
+stopped_at: Completed 188-08-PLAN.md
+last_updated: "2026-11-18T20:16:20.531Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: e1ba5f816dc1d7473e4dd146e20276a88ce0ab68
+state_head: 161d017ba71aadf0bb0442f6e30dfc233dfc3570
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 176
+  completed_plans: 177
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 9 of 20
+Plan: 10 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 9
+**Current Plan:** 10
 
 From 184 on, the numeric order is the dependency order.
 
@@ -184,6 +184,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P07 | 23min | 3 tasks | 8 files |
 | Phase 188 P20 | 15 min | 2 tasks | 5 files |
 | Phase 188 P03 | 10min | 3 tasks | 10 files |
+| Phase 188 P08 | 27min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -388,6 +389,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-20: createQueue's in-flight guard covers the timer only; flush() and the shutdown flush are neither skipped nor made to wait, so a hung provider holds at most the cap plus one taken batch
 - [Phase 188]: 188-03: relay_rate_limit's upper bound is the provider's own 2000000000 (IntBetween(10, 2000000000) on rate_based_statement.limit)
 - [Phase 188]: 188-03: a root's terraform test cannot reference a module's resources, so the example root's no-web-ACL assertion reads module outputs relay_web_acl_arn and distribution_web_acl_id
+- [Phase 188]: Phase 188 local half closed: E2E_TREE_SHA=9789bbcf6fc51885748972b84d8631a0e9c36f2b, full suite 729/729 green (tests/e2e-runs/188-close-20261118T195528Z), no project delta against 187-28-close; plans 188-10 to 188-19 diff apps/, packages/ and tests/ against it
 
 ### Pending Todos
 
@@ -449,6 +451,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T19:47:19.277Z
-**Stopped At:** Completed 188-03-PLAN.md
+Last session: 2026-11-18T20:16:19.104Z
+**Stopped At:** Completed 188-08-PLAN.md
 **Resume File:** None
