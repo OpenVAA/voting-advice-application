@@ -114,7 +114,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       SHA and the project id, renders a voter page from hosted data, goes from questions to results, and signs
       one contestant in. It is read-mostly: no setup or teardown project, and `DEV_SEED_ALLOW_REMOTE` appears in
       no workflow (E1). The local gate suite and its preflight are unchanged.
-- [ ] **PIPE-08**: A guarded destroy path removes the AWS stack and cannot reach the Supabase root.
+- [x] **PIPE-08**: A guarded destroy path removes the AWS stack and cannot reach the Supabase root.
 - [ ] **PIPE-09**: One green run and one red run of the pipeline are observed and recorded, the red one from a
       deliberately broken build.
 - [ ] **PIPE-10**: A push to a named per-environment branch deploys that environment; a manual dispatch and a
@@ -299,7 +299,7 @@ closes; those are not listed against the earlier phase here.
 | PIPE-05 | Phase 187 | Pending |
 | PIPE-06 | Phase 187 | Pending |
 | PIPE-07 | Phase 187 | Pending |
-| PIPE-08 | Phase 187 | Pending |
+| PIPE-08 | Phase 187 | Complete |
 | PIPE-09 | Phase 187 | Pending |
 | PIPE-10 | Phase 187 | Pending |
 | OBS-01 | Phase 184 | Complete |
