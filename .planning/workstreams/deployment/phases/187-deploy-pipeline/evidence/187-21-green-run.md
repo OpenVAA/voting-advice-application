@@ -863,3 +863,41 @@ NO_RUN_ACTIVE=yes
 ### Carried (not repeated)
 
 - § Task 2's `STAGING_SETTINGS_HAND_APPLY_RECORDED=yes` (the Step 18 hand apply) stands. `MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no` stays open and live, outside this attempt's scope, as the execution rules' note of 2026-11-18 says. The operator's `answer_constraints=ok` of attempt 3 stands and is not asked again. `A2_RUNNING_IMAGE_READ_STILL=owed` stays as it is.
+
+## Task 3, attempt 4 (2026-11-18)
+
+Recorded 2026-11-18 (UTC) by the plan executor of plan 187-21, attempt 4. The executor pushed nothing, started or re-ran no workflow, approved no review and wrote no hosted service or GitHub setting; its remote reads were `gh run view`, `gh api` GETs and `git ls-remote origin`. Every status was read on its own line, never through a pipe; the outputs are under `tmp/187-21/a4/` (ignored).
+
+### The binding and the push
+
+```
+GREEN_ATTEMPT_ID=20261118T083012Z.e49b8f86e
+SUPABASE_LOCK_CONSTRAINTS_CONFIRMED=yes
+GREEN_PUSHED=yes
+GREEN_PUSHED_SHA=331b5db28058a1f8bc4ef88a3841080a4610efa2
+GREEN_PUSHED_BRANCH=deploy-evidence/187-green-4
+GREEN_RUN_ID=44270824581
+GREEN_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44270824581
+GREEN_INFRA_PLAN_RUN_ID=44270824411
+GREEN_INFRA_PLAN_RUN_CONCLUSION=success
+```
+
+- **The binding.** The orchestrator opened attempt `20261118T083012Z.e49b8f86e` of key `187-21-2` and stored the operator's reply; `put`, `bash "$A" bound 187-21-2 OPERATOR_REPLY plan=187-21 task=2` and `bash "$A" has 187-21-2 '^answer_push=approve$'` each exited 0 at top level. The executor ran `bash "$A" id 187-21-2` (prints the attempt id above), `bound` and `has '^answer_push=approve$'` again at 08:53Z before recording anything (all read-only): exit 0 each.
+- **`SUPABASE_LOCK_CONSTRAINTS_CONFIRMED=yes`.** Carried from attempt 3: its stored reply held `answer_constraints=ok`, which the execution rules' note of 2026-11-18 says stands and is not asked again. This attempt's reply does not repeat it (`has '^answer_constraints=ok$'` exit 1 for attempt 4, as expected).
+- **The orchestrator's checks before the push.** Task 1's verify exit 0; the green ref `331b5db28…` with a tree equal to HEAD's outside `.planning/`; the E2E-tree gate exit 0; `git ls-remote` showing `deploy-evidence/187-green-4` absent; no deploy run active.
+- **`GREEN_PUSHED=yes`.** The orchestrator pushed at top level after the binding: `git push origin 331b5db28058a1f8bc4ef88a3841080a4610efa2:refs/heads/deploy-evidence/187-green-4` exit 0. The executor read it back: `git ls-remote origin refs/heads/deploy-evidence/187-green-4` exit 0, `331b5db28058a1f8bc4ef88a3841080a4610efa2`, equal to `GREEN_COMMIT=` of § Task 1, attempt 4.
+- **The run.** `gh run view 44270824581 --json ...` exit 0 at 08:53Z: event `push`, head branch `deploy-evidence/187-green-4`, head SHA `331b5db28058a1f8bc4ef88a3841080a4610efa2`, created 08:53:05Z, attempt 1, `in_progress`, its `checks` job (id `134686697505`) started 08:53:07Z. The same push started `infra-plan.yml` run `44270824411`, read `completed` `success` at 08:54Z.
+
+### The checks job and the gate
+
+```
+CHECKS_JOB=success
+CHECKS_JOB_ID=134686697505
+DEPLOY_JOB_ID=134687271397
+GATE_WAITED=yes
+GATE_ENVIRONMENT=staging
+GATE_WAIT_TIMER=0
+```
+
+- **`CHECKS_JOB=success`.** `gh api repos/OpenVAA/voting-advice-application/actions/jobs/134686697505` exit 0: `success` on `ubuntu-24.04`, 08:53:07Z to 08:54:16Z (69 s). Steps, each `success`: Set up job (1 s), Checkout source code (2 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (0 s), Validate the staging AWS root (12 s), Setup Node.js 24.21.0 (5 s), Setup Yarn 4.18 (31 s), Unit tests of the infrastructure scripts (14 s), and the post and complete steps (0 s).
+- **`GATE_WAITED=yes`.** A background watcher read the run `waiting` at 08:54:23Z, the `checks` job `completed` `success` and the `deploy` job (id `134687271397`, created 08:54:16Z) `waiting`. `gh api repos/OpenVAA/voting-advice-application/actions/runs/44270824581/pending_deployments` (a GET) exit 0 at 08:54:40Z: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing. A second background watcher reads the deploy job every 60 s, for up to 90 minutes, until it leaves `waiting`.
