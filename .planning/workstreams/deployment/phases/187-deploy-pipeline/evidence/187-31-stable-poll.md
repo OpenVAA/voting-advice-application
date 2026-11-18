@@ -41,3 +41,51 @@ STABLE_CASE_LITERALS_REPLACED=none
 - **The bound.** 60 reads, 15 s apart, a limit of 900 s, within `rollout-poll`'s 600 s to 1800 s (half of the deploy job's `timeout-minutes: 60`).
 - **The literals.** The existing case keeps every assertion it had, `[ "$rollout_state" != COMPLETED ]` among them, and adds `echo "stable_poll=` and `echo "stable_describe_exit=`; no literal had to be replaced.
 - **TypeScript.** `deploy-workflow.test.ts` still has exactly the one standalone strict `tsc` error it had at HEAD (TS2638, in "has no switch, input or variable that skips the contestant spec"), left unfixed; `workflow-errexit.test.ts` has none.
+
+## Task 3: the README, the survey and the gates
+
+### The README
+
+- `infra/README.md` § The deploy pipeline, item 6 "Stable check": the step reads the service up to 60 times, 15 s apart, until the primary deployment on the task definition just applied has `rolloutState` `COMPLETED` with at least `task_floor` tasks running; another task definition, `FAILED` or another state, or fewer tasks fail it at once, and a rollout still `IN_PROGRESS` at the last read fails it.
+- § Reading a red run, the `stable` row: one `stable_poll=<n>` line opens each read's lines, the last read's lines say why it failed, and `still IN_PROGRESS after 60 reads` means the rollout neither completed nor failed within the bound.
+- § Guards, the "Workflow guards" row: names the rule `rollout-poll` of `deploy-workflow.test.ts`. `prettier --write` realigned the § Reading a red run table's column widths, so the diff touches each row of that table; `prettier --check` exit 0.
+
+### The survey of single reads
+
+Every workflow under `.github/workflows/` was read for a step that reads a hosted state after a command that changed it (an `aws` call, `terraform state` or `output`, a `curl` of a deployed URL, a Management API list, a drift check). One line per read:
+
+```
+SINGLE_READ=deploy.yml | deploy | Check the rollout is stable | reads the ECS service's primary deployment (describe-services) and the outputs task_definition_arn, cluster_name, service_name | after terraform apply of the saved plan | waits_on_transition=yes | ECS marks the rollout COMPLETED some seconds after the steady state the apply waits for; fixed in Task 2 by the bounded poll
+SINGLE_READ=deploy.yml | deploy | Deploy the functions | reads the Management API's function list | after supabase functions deploy | waits_on_transition=no | the deploy call has answered for each function before the list is read; attempt 3 read all three ACTIVE
+SINGLE_READ=deploy.yml | deploy | Push the migrations | reads the migration history and the schema diff (check-drift.sh inside push-migrations.sh) | after the migrations push | waits_on_transition=no | the push has finished and committed before the drift check reads the database
+SINGLE_READ=deploy.yml | deploy | Read the served build again | reads https://staging.openvaa.org/api/health | after the completed rollout and the smoke run | waits_on_transition=no | it follows the stable step's completed rollout and the smoke run's own reads of the served build
+SINGLE_READ=destroy.yml | apply-destroy | Show the state of the staging AWS root is empty | reads terraform state list | after terraform apply of the saved destroy plan | waits_on_transition=no | Terraform's own state, which the apply writes before it exits
+SINGLE_READ=destroy.yml | plan-destroy | Show the Supabase root's state is out of reach | reads an init of the Supabase root and a head-object of its state key | after no write; it expects two refusals | waits_on_transition=no | a refusal of the deploy role, which no transition changes
+SINGLE_READ_FIX_NEEDED_ELSEWHERE=no
+```
+
+- `infra-plan.yml` and `main.yaml` read no hosted service state after a write: `infra-plan.yml` validates, tests and plans (`-lock=false`, no apply), reads the digest the service runs before its plan and after no write of its own, and asks STS for refusals; `main.yaml` drives a local Supabase stack only. `claude.yml`, `claude-code-review.yml`, `claude-solve-issue.yml`, `docs.yml` and `release.yml` touch no staging state: `claude.yml`'s `gh api` permission read follows no write of its own, and `docs.yml` (the Pages deploy) and `release.yml` (the changesets action) read back nothing they publish. `destroy.yml`'s two `List the state of the staging AWS root` steps read Terraform's state before any write of their job. No other workflow file changes.
+
+### The gates
+
+```
+GATES_HEAD=d6100b0a6e773b14e823e1ad97ca03be352c8be5
+lint:check exit=0
+format:check exit=0
+typecheck exit=0
+test:unit exit=0
+lint:workflows exit=0
+INFRA_TESTS_PASSED=13 files, 389 tests: bootstrap-tfvars.test.ts,build-push-image.test.ts,check-destroy-plan.test.ts,deploy-workflow.test.ts,destroy-workflow.test.ts,infra-plan-workflow.test.ts,main-e2e-workflow.test.ts,probe-hosted.test.ts,push-migrations.test.ts,request-loop.test.ts,running-image-digest.test.ts,workflow-errexit.test.ts,workflows.test.ts
+TF_FILES_CHANGED=0
+OTHER_WORKFLOWS_CHANGED=0
+FIX_PATHS=.github/workflows/deploy.yml,infra/README.md,infra/scripts/deploy-workflow.test.ts,infra/scripts/workflow-errexit.test.ts
+FIX_TOUCHES_APPS_PACKAGES_TESTS=no
+E2E_PROJECTS_AFFECTED=none
+E2E_PROJECT_DELTAS=none
+E2E_SUMMED_DELTAS=0
+```
+
+- The gates ran through `tmp/187-31/gates/run-gates.sh`, plan 187-30's runner with `tmp/187-30` rewritten to `tmp/187-31` (`bash -n` exit 0), on HEAD `d6100b0a6` with `infra/README.md` changed in the working tree, `TURBO_CACHE_DIR=tmp/187-31/turbo-cache`; each status was read from its own `.status` file under `tmp/187-31/gates/out/`. `lint:workflows` printed `actionlint found nothing in 3 workflows`, with shellcheck, on the image already present locally (no pull).
+- Then `vitest run --config infra/vitest.config.ts --reporter=verbose` exit 0 (`tmp/187-31/gates/infra-vitest.status`).
+- `TF_FILES_CHANGED`, `OTHER_WORKFLOWS_CHANGED` and `FIX_PATHS` are from `git diff --name-only d4e3dbadc1e1fa8bdb45f6280f31de9e0979ff5f HEAD` once this task's commit lands; `FIX_PATHS` names the four fix paths.
+- E2E (CLAUDE.md, ruling of 2026-11-09): no spec, fixture, route or helper changed, and no project's tests drive `.github/workflows/deploy.yml`, `infra/scripts/` or `infra/README.md`, so no targeted run was due and none was made; the phase's one full run is its final plan's or its verification's.
