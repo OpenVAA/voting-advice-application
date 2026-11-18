@@ -84,6 +84,16 @@ output "distribution_domain_name" {
   value       = aws_cloudfront_distribution.this.domain_name
 }
 
+output "relay_web_acl_arn" {
+  description = "ARN of the relay rate rule's web ACL, aws_wafv2_web_acl.relay; null when relay_rate_limit is unset and no web ACL exists."
+  value       = one(aws_wafv2_web_acl.relay[*].arn)
+}
+
+output "distribution_web_acl_id" {
+  description = "The web ACL the distribution names; null when it names none."
+  value       = aws_cloudfront_distribution.this.web_acl_id
+}
+
 output "viewer_certificate_arn" {
   description = "ARN of the viewer certificate, in us-east-1."
   value       = aws_acm_certificate_validation.viewer.certificate_arn

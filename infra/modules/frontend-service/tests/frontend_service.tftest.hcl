@@ -745,6 +745,11 @@ run "relay_rate_limit_off" {
     condition     = aws_cloudfront_distribution.this.web_acl_id == null
     error_message = "With relay_rate_limit unset the distribution must name no web ACL."
   }
+
+  assert {
+    condition     = output.relay_web_acl_arn == null && output.distribution_web_acl_id == null
+    error_message = "With relay_rate_limit unset both web ACL outputs must be null."
+  }
 }
 
 run "relay_rate_limit_on" {
@@ -795,6 +800,11 @@ run "relay_rate_limit_on" {
   assert {
     condition     = aws_cloudfront_distribution.this.web_acl_id == aws_wafv2_web_acl.relay[0].arn
     error_message = "The distribution must name the web ACL."
+  }
+
+  assert {
+    condition     = output.relay_web_acl_arn == aws_wafv2_web_acl.relay[0].arn && output.distribution_web_acl_id == aws_wafv2_web_acl.relay[0].arn
+    error_message = "With relay_rate_limit set both web ACL outputs must be the web ACL's ARN."
   }
 }
 
