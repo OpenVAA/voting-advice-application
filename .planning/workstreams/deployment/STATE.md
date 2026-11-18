@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 188-04-PLAN.md
-last_updated: "2026-11-18T18:10:49.954Z"
+stopped_at: Completed 188-02-PLAN.md
+last_updated: "2026-11-18T18:16:59.595Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 88956829b947cf5a15c7681e965e6653d387e071
+state_head: 827344d84b983dcb2d14065028868e72f06ca9fa
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 170
+  completed_plans: 171
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 3 of 20
+Plan: 4 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 3
+**Current Plan:** 4
 
 From 184 on, the numeric order is the dependency order.
 
@@ -178,6 +178,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 187 P25 | about 2 h | 3 tasks | 3 files |
 | Phase 188 P01 | 8 min | 1 tasks | 12 files |
 | Phase 188 P04 | 9min | 2 tasks | 11 files |
+| Phase 188 P02 | 6min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -370,6 +371,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: ANALYTICS_FLUSH_INTERVAL_MS is read last and sits last in ANALYTICS_ENV; a valid interval is kept when another variable forces provider none
 - [Phase 188]: invitation_caller_take returns 0 when admitted or untrusted, else the whole seconds left in the caller's 10-minute window (at least 1); 30 takes per caller per project
 - [Phase 188]: No partial index for deleting ended caller: throttle rows; one can be appended later
+- [Phase 188]: 188-02: the example root's stop-timeout assertion reads a new module output, container_stop_timeout_seconds, decoded from the task definition's container definition, since a root test cannot reference a module's resources
+- [Phase 188]: 188-02: the example root takes the same stop_timeout_seconds = 40 as staging (SHUTDOWN_TIMEOUT 25 + 10-second forward + 5)
 
 ### Pending Todos
 
@@ -430,6 +433,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T18:10:48.559Z
-**Stopped At:** Completed 188-04-PLAN.md
+Last session: 2026-11-18T18:16:55.052Z
+**Stopped At:** Completed 188-02-PLAN.md
 **Resume File:** None
