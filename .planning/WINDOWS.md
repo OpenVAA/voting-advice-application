@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 251
+open_count: 252
 waived_count: 1
 fixed_count: 42
-total_count: 294
-last_updated: 2026-11-16T16:56:45.658Z
+total_count: 295
+last_updated: 2026-11-18T19:00:50.746Z
 ---
 
 # Broken Windows Ledger
@@ -309,6 +309,7 @@ last_updated: 2026-11-16T16:56:45.658Z
 | 292 | 185 | stub | infra/envs/staging/aws/README.md |  | The runbook's Steps 7 to 18 are not written yet (the flow overview names them); the next runbook plan writes them | fixed |  | 2026-11-12T17:54:27.466Z | 2026-11-12T18:32:17.955Z |
 | 293 | 187 | deviation | .planning/workstreams/deployment/phases/187-deploy-pipeline/evidence/187-16-bootstrap-apply.md |  | 187-16 Step 9 applied with s9c_uncovered_count=16 where the plan requires 0 (must_haves contains s9c_uncovered_count=0 unmet; Task 3 verify fails on that line); applied on the operator's ruling: 7 Application Auto Scaling, 8 dns-mail root reads, 1 sso:GetRoleCredentials | open |  | 2026-11-16T07:09:19.203Z |  |
 | 294 | 187 | unrun-verify | infra/bootstrap/README.md |  | Step 9 item 4's revised jq (Application Auto Scaling mapping, sso:GetRoleCredentials left out) tested on a synthetic trail only; not rerun against the 2026-11-14 CloudTrail history | open |  | 2026-11-16T07:09:19.314Z |  |
+| 295 | 188 | deviation | apps/frontend/src/routes/contestant/register/sign-in/+page.server.ts |  | code-sign-in is called from the frontend server, so its per-caller bucket is likely the server's address; operator decision before 188-10 (188 deferred-items.md 2) | open |  | 2026-11-18T19:00:50.746Z |  |
 
 ````json
 [
@@ -3858,6 +3859,19 @@ last_updated: 2026-11-16T16:56:45.658Z
     "status": "open",
     "reason": "",
     "recorded_at": "2026-11-16T07:09:19.314Z",
+    "resolved_at": null,
+    "milestone": "v2.16"
+  },
+  {
+    "id": 295,
+    "kind": "deviation",
+    "phase": "188",
+    "file": "apps/frontend/src/routes/contestant/register/sign-in/+page.server.ts",
+    "line": null,
+    "description": "code-sign-in is called from the frontend server, so its per-caller bucket is likely the server's address; operator decision before 188-10 (188 deferred-items.md 2)",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-18T19:00:50.746Z",
     "resolved_at": null,
     "milestone": "v2.16"
   }

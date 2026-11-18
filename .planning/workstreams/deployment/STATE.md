@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 188-02-PLAN.md
-last_updated: "2026-11-18T18:16:59.595Z"
+stopped_at: Completed 188-05-PLAN.md
+last_updated: "2026-11-18T19:00:40.430Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 827344d84b983dcb2d14065028868e72f06ca9fa
+state_head: 7dcf7cc2d1231265be48047bb29de65c6d94d6bf
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 171
+  completed_plans: 172
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 4 of 20
+Plan: 5 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 4
+**Current Plan:** 5
 
 From 184 on, the numeric order is the dependency order.
 
@@ -179,6 +179,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P01 | 8 min | 1 tasks | 12 files |
 | Phase 188 P04 | 9min | 2 tasks | 11 files |
 | Phase 188 P02 | 6min | 2 tasks | 9 files |
+| Phase 188 P05 | 46min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -373,6 +374,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: No partial index for deleting ended caller: throttle rows; one can be appended later
 - [Phase 188]: 188-02: the example root's stop-timeout assertion reads a new module output, container_stop_timeout_seconds, decoded from the task definition's container definition, since a root test cannot reference a module's resources
 - [Phase 188]: 188-02: the example root takes the same stop_timeout_seconds = 40 as staging (SHUTDOWN_TIMEOUT 25 + 10-second forward + 5)
+- [Phase 188]: 188-05: the caller take fails closed (500 internal on an RPC error); confirm-address stays outside it
+- [Phase 188]: 188-05: code-sign-in stays inside the take per E-02, though it is called from the frontend server; recorded as a pre-launch risk for an operator decision before 188-10
 
 ### Pending Todos
 
@@ -411,13 +414,14 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 - [Phase 183] SMTP is not applied on staging (`smtp` is null). When phase 184 sets it, the planning shell needs `TF_VAR_smtp_user` and `TF_VAR_smtp_password`; the first SMTP enablement is untried.
 - [Phase 183] Operator deferrals to phase 184 (SECURITY T-183-09/10/11): WR-04, decision A-08 kept, so a PR job can hold or delete the pipeline lock; the WR-01 remainder, `ReadOnlyAccess` still reads S3 objects, SSM String parameters, Lambda and ECS environments and CloudFormation templates; the WR-03 remainder, numeric GitHub id claims (confirm AWS support for them first), pinning the plan trust to a workflow, and the staging Environment's deployment branch policy.
 - [Phase 183] No CI run of `infra-validate` exists on the final tree; the last observed runs were at 18fdcd6ca. A `ci-evidence/**` push would observe one.
-- [Phase 187] `dependency-audit` stays red in CI on third-party advisories (17 rows on run 44033456141; none from this workstream's lockfile change); accepted by the operator and filed for phase 189 (`2026-11-15-dependency-audit-third-party-advisories.md`). `secret-scan` was green (0 results) on that run.
+- [Phase 187] `dependency-audit` stays red in CI on third-party advisories (17 rows on run 44033456141; from this workstream's lockfile change); accepted by the operator and filed for phase 189 (`2026-11-15-dependency-audit-third-party-advisories.md`). `secret-scan` was green (0 results) on that run.
 - [Phase 183] `183-VALIDATION.md` is still draft; the Nyquist audit (`/gsd-validate-phase 183 --ws deployment`) has not run.
 - [Phase 183] 23 info review findings (IN-01 to IN-23) remain open in `183-REVIEW-DISPOSITION.md`. The lock files of the four Supabase-provider directories still record `constraints = "~> 1.11"` while the roots pin `= 1.11.0`.
 - [Phase 187] The verifier's suggested override for PIPE-01 ("one GitHub Environment" read as the two environments staging and staging-destroy) awaits the operator's acceptance; it does not change the phase status.
 - [Phase 187] A red smoke stage was not observed (code- and test-guarded only); the observed red is at build. A real push to `main` cannot be observed before the deploy workflow is merged.
 - [Phase 187] The full `main.yaml` CI last ran on `ci-evidence/187-final-4`; plans 187-29 to 187-31 changed workflows and scripts after it, covered only by the workflows' own `checks` jobs.
 - [Phase 187] `infra/envs/staging/aws/README.md` § Observations has one split table row (a `|` inside a code span; `deferred-items.md`), left open on purpose.
+- Before 188-10: code-sign-in reaches account-access from the frontend server, so its per-caller bucket is likely the server's address (188 deferred-items.md 2); operator to choose exclude / forward under a server secret / keep and measure
 
 ### Roadmap Evolution
 
@@ -433,6 +437,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-18T18:16:55.052Z
-**Stopped At:** Completed 188-02-PLAN.md
+Last session: 2026-11-18T19:00:38.930Z
+**Stopped At:** Completed 188-05-PLAN.md
 **Resume File:** None
