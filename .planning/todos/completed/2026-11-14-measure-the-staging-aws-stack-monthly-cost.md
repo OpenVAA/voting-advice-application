@@ -47,3 +47,10 @@ inventory, with the difference and its likely reasons (the inventory's LCU and l
 about 0.001 LCU-hours an hour and under 0.01 GB of logs a day were observed), and the runbook's "Not yet
 observed" rows for Step 18 items 3 and 5 move to "Observations". Evidence:
 `.planning/workstreams/deployment/phases/185-aws-frontend-stack-first-apply-by-hand/evidence/185-22-cost.md`.
+
+**Done (2026-11-18, operator ruling `COST_WINDOW_RULING=short-window`).** The operator replaced the literal
+rule: the read was made on 2026-11-18 over the whole, unchanged days Cost Explorer holds complete, 2026-11-15
+and 2026-11-16 (no state write between 2026-11-14T18:12Z and 2026-11-18T07:31Z). `COST_MEASURED_USD_MONTH=36.96`
+by `Root=aws`, `COST_MEASURED_WITH_UNTAGGED_IPV4_USD_MONTH=44.26` with the load balancer's two untagged public
+IPv4 addresses, against the inventory's 50.78. Recorded in `185-22-cost.md`; Step 18 items 3 and 5 moved to the
+runbook's Observations. Plan 187-24's 2026-11-23 floor is lifted with the seven-day window it came from.
