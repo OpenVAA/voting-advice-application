@@ -777,3 +777,89 @@ A3_EVENT=2026-11-18T07:31:38.717Z (service openvaa-staging-frontend) has reached
 - **Run `44258126898` is not re-run.** The fix is plan 187-31: the stable step reads the rollout again while it is `IN_PROGRESS`, within a bound.
 - **Staging's new state.** The persistent project holds `00001` to `00022`, none pending; the three functions are those of `9d6a55ca3`; the service runs task definition `:7` by digest and serves `9d6a55ca3`.
 - **Still open.** The call-time privilege question of § Task 2 (`MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no` there) is still open, and it is now live: `00018` and `00020` are pushed, so their SECURITY DEFINER functions exist on the persistent project, and whether the hosted `postgres` role holds the privileges they need is still unread. Bank authentication is not configured on staging, which configures no identity provider, so nothing staging runs calls the functions of `00018` and `00020`.
+
+## Task 1, attempt 4 (2026-11-18)
+
+Recorded 2026-11-18 (UTC) by the plan executor of plan 187-21, attempt 4, from HEAD `04ef26389f3eab1d90e648469e1a5e8e06cf530f`, at 08:27Z to 08:29Z, after plan 187-31 (`READY_FOR_187_21_ATTEMPT_4=yes` in `evidence/187-31-stable-poll.md`). Nothing was pushed, no workflow was started or re-run, no review was approved, and no hosted service or GitHub setting was written. The remote reads were `gh api` GETs (the `staging` environment's secret names and dates, no value; the repository's workflow runs), `gh run list`, one `git ls-remote origin`, one GET of `https://staging.openvaa.org/api/health`, and, with `AWS_PROFILE=openvaa-admin` (the session was valid; the executor did not sign in), `aws sts get-caller-identity`, `infra/scripts/running-image-digest.sh` and one `aws ecs describe-services`, all of which only read. Every status was read on its own line, never through a pipe; the outputs are under `tmp/187-21/a4/` (ignored).
+
+### The commit
+
+```
+GREEN_COMMIT=331b5db28058a1f8bc4ef88a3841080a4610efa2
+GREEN_REBUILT=no
+GREEN_TREE_OK=yes
+E2E_TREE_COVERS_GREEN=yes
+GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
+GREEN_DIFF_VS_A3=.github/workflows/deploy.yml,infra/README.md,infra/scripts/deploy-workflow.test.ts,infra/scripts/workflow-errexit.test.ts
+```
+
+- **`GREEN_COMMIT=`.** `git rev-parse refs/evidence/187/green` prints `331b5db28058a1f8bc4ef88a3841080a4610efa2`, the commit plan 187-31 rebuilt (`GREEN_COMMIT=` of `evidence/187-12-evidence-commits.md` § Re-run 2026-11-18 (plan 187-31)); its tree is `8bce93f9922d4cf4c9b780d0652fe3c3b2fcecd5`, its one parent `340a20070…` is `origin/main`, and `git ls-tree refs/evidence/187/green -- .planning` lists nothing.
+- **`GREEN_TREE_OK=yes`, `GREEN_REBUILT=no`.** `git diff --quiet refs/evidence/187/green HEAD -- . ':!.planning'` exit 0, so this plan's own rule did not rebuild once more.
+- **`E2E_TREE_COVERS_GREEN=yes`.** `E2E_TREE_SHA=450632a5c933ccb806506b83a5c29bca31cdc672` is still the current line of `evidence/187-13-closing-e2e.md` (§ Re-run 2026-11-16, plan 187-28); `git diff --quiet 450632a5c..HEAD -- apps packages tests` exit 0 and `git diff --quiet 450632a5c refs/evidence/187/green -- apps packages tests` exit 0.
+- **`GREEN_DIFF_VS_A3=`.** `git diff --name-only 9d6a55ca3 refs/evidence/187/green` exit 0 names the four paths of plan 187-31's fix (`FIX_PATHS=` there) and nothing else.
+
+### The contestant and the token
+
+```
+CONTESTANT_READY=yes
+ENV_STAGING_SECRET_NAMES=ALERT_EMAIL,SMOKE_CONTESTANT_EMAIL,SMOKE_CONTESTANT_PASSWORD,SUPABASE_ACCESS_TOKEN,SUPABASE_DB_PASSWORD
+SUPABASE_ACCESS_TOKEN_SECRET_UPDATED=2026-11-18T07:19:41Z
+```
+
+- `gh api repos/OpenVAA/voting-advice-application/environments/staging/secrets` exit 0, the five names above; no value was read. The two contestant secrets are dated 2026-11-15 as before, and `evidence/187-17-smoke-contestant.md` still holds `CONTESTANT_SECRETS_PRESENT=yes`.
+- **`SUPABASE_ACCESS_TOKEN_SECRET_UPDATED=`.** Unchanged since attempt 3, whose link step accepted it (`A3_SUPABASE_TOKEN_ACCEPTED=yes`). Only the date was read.
+
+### The expected plan
+
+```
+PR_PLAN_AS_EXPECTED=yes
+EXPECTED_PLAN=Plan: 1 to add, 1 to change, 1 to destroy.
+RUNNING_TASK_DEFINITION_BEFORE=arn:aws:ecs:eu-north-1:471112560111:task-definition/openvaa-staging-frontend:7
+RUNNING_IMAGE_REFERENCE_BEFORE=digest
+RUNNING_IMAGE_DIGEST_BEFORE=sha256:ccfaa5863a168dfd3d0a4f40257ede398255cb18c899419f68aa23a18b5638a3
+RUNNING_IMAGE_DIGEST_BEFORE_EQUALS_A3_BUILD=yes
+RUNNING_IMAGE_READ_BEFORE=made
+RUNNING_DEPLOYMENTS_BEFORE=1
+RUNNING_ROLLOUT_STATE_BEFORE=COMPLETED
+```
+
+- **The running state.** `aws sts get-caller-identity --query Account` exit 0 (`471112560111`). `infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend` exit 0 printed task definition `:7`, reference `digest` and digest `sha256:ccfaa586…`, equal to `A3_BUILD_DIGEST=`, as the execution rules' note of 2026-11-18 expects. `aws ecs describe-services` exit 0: one deployment, `PRIMARY`, `rolloutState` `COMPLETED`, task definition `:7`, 1 of 1 running, `updatedAt` `2026-11-18T07:31:38.687Z`, as § Attempt 3, settled read-only recorded it. No deploy run has run since attempt 3 (below).
+- **`PR_PLAN_AS_EXPECTED=yes`.** Read from attempt 3's plan and the running state, as the note says, not from 187-19's plan alone (made against `:6` by tag): attempt 3's plan was `A3_PLAN_SUMMARY=Plan: 1 to add, 1 to change, 1 to destroy.` with `A3_PLAN_AS_EXPECTED=yes`, and was applied. The green commit is a new commit and so a new tag, so the build is a new one (`build_exit=0`, not 3) with a new digest; the plan then replaces `module.frontend.aws_ecs_task_definition.app` again, its image changing from `…@sha256:ccfaa586…` to the new digest, and updates `module.frontend.aws_ecs_service.app` in place: `Plan: 1 to add, 1 to change, 1 to destroy.` The four changed paths touch no Terraform file (`TF_FILES_CHANGED=0` of plan 187-31).
+
+### The migrations
+
+```
+MIGRATIONS_AT_COMMIT=00001_initial_schema.sql,00002_claim_excludes_identity_provider_accounts.sql,00003_address_confirmation_request.sql,00004_user_entities_pending_email_taken.sql,00005_invitation_link_bounds.sql,00006_nomination_write_guards.sql,00007_nomination_write_kept_constituency.sql,00008_bulk_import_key_quoting.sql,00009_contestant_app_public_config_bounded.sql,00010_claim_grant_key_conflict_target.sql,00011_invitation_email_target_open_rows.sql,00012_bulk_import_constituency_links.sql,00013_nomination_constituency_rule.sql,00014_set_entity_nominations_constituency_once.sql,00015_answers_lock_entity_rows.sql,00016_answers_lock_nominations_storage.sql,00017_user_can_reads_grants.sql,00018_identity_entity_find_or_create.sql,00019_address_holds_open_invitation.sql,00020_identity_metadata_written_under_lock.sql,00021_email_holds_global_or_account_grant.sql,00022_grants_reaching_a_project.sql
+MIGRATIONS_ON_STAGING=00001..00022
+EXPECTED_PENDING=none
+MIGRATIONS_PENDING_COUNT=0
+MIGRATIONS_UNCHANGED_SINCE_A3=yes
+MIGRATION_00001_BLOB=2b07ce7c378db9c59b09165762b2b0bf0af351cf
+```
+
+- **`MIGRATIONS_AT_COMMIT=`.** `git ls-tree --name-only refs/evidence/187/green apps/supabase/supabase/migrations/` exit 0, 22 files; the `00001` blob is unchanged.
+- **`MIGRATIONS_UNCHANGED_SINCE_A3=yes`.** `git diff --quiet 9d6a55ca3 refs/evidence/187/green -- apps/supabase/supabase/migrations` exit 0: the migrations are those attempt 3 pushed.
+- **`MIGRATIONS_ON_STAGING=00001..00022`.** Read as Task 1 read it before, from the records, not on the hosted project: attempt 3's drift check, the last write of the persistent project's history, read `history: database: 00001` to `00022`, `history: holds`, `schema: holds`, `drift_status=0` (`A3_DRIFT_HISTORY_DATABASE=00001..00022`; the same line is in the saved job log `tmp/187-21/a3/deploy-job.log`, read again now). No deploy run has run since (below), and the staging Supabase runbook's Observations record no later push (its last row is dated 2026-11-17, the Step 18 hand apply).
+- **`EXPECTED_PENDING=none`.** Every version at the commit is on the persistent project. In the run, expect `push_up_to_date=yes`, no `push_pending=` line and `drift_status=0`; no migration is pushed.
+
+### The branch, the served build, the runs
+
+```
+GREEN_BRANCH=deploy-evidence/187-green-4
+GREEN_BRANCH_ABSENT=yes
+SERVED_BUILD_BEFORE=9d6a55ca36ea56a5d3883ad95a10b4619c2472ad
+NO_RUN_ACTIVE=yes
+```
+
+- **`GREEN_BRANCH_ABSENT=yes`.** `git ls-remote origin refs/heads/deploy-evidence/187-green-4` exit 0, 0 bytes. The name holds no further `/` and is not `deploy-evidence/destroy-staging`. `grep -n deploy-evidence .github/workflows/*.yml`, and the `on:` blocks of every workflow, read again: only `deploy.yml` (`deploy-evidence/**`, less `!deploy-evidence/destroy-staging`) and `infra-plan.yml` (`deploy-evidence/**`) start on it; `destroy.yml` starts only on `deploy-evidence/destroy-staging`, `main.yaml` on `main` and `ci-evidence/**`, `docs.yml` and `release.yml` on `main`, and the three `claude*` workflows on no push.
+- **`SERVED_BUILD_BEFORE=`.** `curl -sS --max-time 20 https://staging.openvaa.org/api/health` exit 0 at 08:27Z, HTTP 200, body `{"status":"ok","build":"9d6a55ca36ea56a5d3883ad95a10b4619c2472ad"}`.
+- **`NO_RUN_ACTIVE=yes`.** `gh run list --workflow deploy.yml` exit 0 lists five runs, `44258126898`, `44250710034`, `44165083175`, `44088753181` and `44042442257`, each `completed` `failure`, none since attempt 3. `destroy.yml` is not on the default branch, so `gh run list --workflow destroy.yml` answers 404; among the latest 100 runs of the repository (`actions/runs?per_page=100`, exit 0) none has a `destroy` path and none is other than `completed`. The status-filtered counts are 0 for `in_progress`, `queued`, `waiting`, `requested` and `pending`; `action_required` counts 25, all `claude.yml`, and 0 of `deploy.yml` or `destroy.yml`.
+
+### Expected in the run (attempt 4)
+
+- The build: `build_exit=0`, a new digest. The plan: `Plan: 1 to add, 1 to change, 1 to destroy.`, the task definition replaced with the new image. The migrations: `push_up_to_date=yes`, `drift_status=0`. The functions: the three deployed from the green commit, each `ACTIVE`. The stable step: `stable_poll=<n>` before each read's lines, the last read `stable_rollout_state=COMPLETED`. Then the smoke run and the served-build re-read; the alert step skipped.
+- The hosted writes: a new image, the three functions, the task definition replaced and the service rolled onto it; no migration.
+
+### Carried (not repeated)
+
+- § Task 2's `STAGING_SETTINGS_HAND_APPLY_RECORDED=yes` (the Step 18 hand apply) stands. `MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no` stays open and live, outside this attempt's scope, as the execution rules' note of 2026-11-18 says. The operator's `answer_constraints=ok` of attempt 3 stands and is not asked again. `A2_RUNNING_IMAGE_READ_STILL=owed` stays as it is.
