@@ -189,6 +189,26 @@ variable "price_class" {
   }
 }
 
+variable "relay_rate_limit" {
+  description = "Requests per window_seconds per viewer address that /api/usage admits before CloudFront answers 429. Null, the default, creates no web ACL. Switching it on needs wafv2 actions on the deploy role first, and costs about 6 US dollars a month plus 0.60 per million requests, every request to the distribution being inspected."
+  type = object({
+    limit          = number
+    window_seconds = number
+  })
+  default  = null
+  nullable = true
+
+  validation {
+    condition = var.relay_rate_limit == null ? true : (
+      contains([60, 120, 300, 600], var.relay_rate_limit.window_seconds)
+      && var.relay_rate_limit.limit >= 10
+      && var.relay_rate_limit.limit <= 2000000000
+      && floor(var.relay_rate_limit.limit) == var.relay_rate_limit.limit
+    )
+    error_message = "relay_rate_limit needs window_seconds of 60, 120, 300 or 600 and an integer limit from 10 to 2000000000."
+  }
+}
+
 variable "task_ceiling" {
   description = "Most tasks the service's scaling may run. Not below task_floor."
   type        = number

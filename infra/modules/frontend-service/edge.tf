@@ -68,6 +68,7 @@ resource "aws_cloudfront_distribution" "this" {
   aliases             = [var.domain]
   price_class         = var.price_class
   wait_for_deployment = true
+  web_acl_id          = one(aws_wafv2_web_acl.relay[*].arn)
 
   # CloudFront replaces a header of the same name sent by the viewer with this value, so a viewer
   # cannot supply the secret itself.

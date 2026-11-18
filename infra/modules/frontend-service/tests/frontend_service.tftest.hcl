@@ -104,6 +104,12 @@ mock_provider "aws" {
       certificate_arn = "arn:aws:acm:us-east-1:000000000000:certificate/00000000-0000-0000-0000-000000000001"
     }
   }
+
+  mock_resource "aws_wafv2_web_acl" {
+    defaults = {
+      arn = "arn:aws:wafv2:us-east-1:000000000000:global/webacl/openvaa-test-relay/00000000-0000-0000-0000-000000000000"
+    }
+  }
 }
 
 override_data {
@@ -724,6 +730,71 @@ run "cdn" {
   assert {
     condition     = output.url == "https://test.example.org"
     error_message = "The site's address must be https://<domain>."
+  }
+}
+
+run "relay_rate_limit_off" {
+  command = apply
+
+  assert {
+    condition     = length(aws_wafv2_web_acl.relay) == 0
+    error_message = "With relay_rate_limit unset the module must create no web ACL."
+  }
+
+  assert {
+    condition     = aws_cloudfront_distribution.this.web_acl_id == null
+    error_message = "With relay_rate_limit unset the distribution must name no web ACL."
+  }
+}
+
+run "relay_rate_limit_on" {
+  command = apply
+
+  variables {
+    relay_rate_limit = {
+      limit          = 300
+      window_seconds = 300
+    }
+  }
+
+  assert {
+    condition = (
+      length(aws_wafv2_web_acl.relay) == 1
+      && aws_wafv2_web_acl.relay[0].scope == "CLOUDFRONT"
+      && aws_wafv2_web_acl.relay[0].name == "openvaa-test-relay"
+      && length(aws_wafv2_web_acl.relay[0].default_action[0].allow) == 1
+      && length(aws_wafv2_web_acl.relay[0].rule) == 1
+    )
+    error_message = "With relay_rate_limit set the module must create one CLOUDFRONT web ACL that allows by default and has one rule."
+  }
+
+  assert {
+    condition = (
+      one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].limit == 300
+      && one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].evaluation_window_sec == 300
+      && one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].aggregate_key_type == "IP"
+    )
+    error_message = "The rule must count requests per source address with the given limit and window."
+  }
+
+  assert {
+    condition = (
+      one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement[0].search_string == "/api/usage"
+      && one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement[0].positional_constraint == "STARTS_WITH"
+      && length(one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement[0].field_to_match[0].uri_path) == 1
+      && [for t in one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement[0].text_transformation : t.type] == ["NORMALIZE_PATH"]
+    )
+    error_message = "The rule must count only requests whose normalised path starts /api/usage."
+  }
+
+  assert {
+    condition     = one(aws_wafv2_web_acl.relay[0].rule).action[0].block[0].custom_response[0].response_code == 429
+    error_message = "The rule must block with 429."
+  }
+
+  assert {
+    condition     = aws_cloudfront_distribution.this.web_acl_id == aws_wafv2_web_acl.relay[0].arn
+    error_message = "The distribution must name the web ACL."
   }
 }
 
