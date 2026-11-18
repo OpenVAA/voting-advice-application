@@ -1,10 +1,11 @@
 /**
  * The load check, without Docker and without traffic: the wrapper's refusals through its own self-test, the figure on
- * synthetic summaries of the shape k6 2.4.0 writes, and the k6 script read as text.
+ * synthetic summaries of the shape k6 2.4.0 writes, the k6 script read as text, and the journey extractor on synthetic
+ * trace lines.
  */
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,6 +16,7 @@ const REPO_ROOT = resolve(HERE, '../..');
 const WRAPPER = join(HERE, 'load-check.sh');
 const FIGURE = join(HERE, 'load-check', 'figure.mjs');
 const K6_SCRIPT = join(HERE, 'load-check', 'voter-journey.js');
+const EXTRACTOR = join(HERE, 'load-check', 'journey-from-trace.mjs');
 
 const STRIPPED_ENV = {
   PATH: process.env.PATH ?? '',
@@ -202,5 +204,133 @@ describe('voter-journey.js', () => {
   it('refuses Supabase Auth and Edge Function paths', () => {
     expect(text).toContain("'/auth/v1/'");
     expect(text).toContain("'/functions/v1/'");
+  });
+});
+
+const BASE = 'https://staging.openvaa.org';
+const SUPABASE = 'https://abcdefghijklmnop.supabase.co';
+const FAKE_KEY = 'fixture-fake-anon-key-0123456789';
+const FAKE_COOKIE = 'sb-fixture-auth-token=fixture-cookie-value';
+
+/** One trace line: a resource snapshot of one request, with the headers and cookies a browser sends. */
+function snapshot(
+  monotonicTime: number,
+  method: string,
+  url: string,
+  postData?: { text?: string; _sha1?: string }
+): string {
+  return JSON.stringify({
+    type: 'resource-snapshot',
+    snapshot: {
+      _monotonicTime: monotonicTime,
+      startedDateTime: new Date(Date.UTC(2026, 10, 18, 12, 0, 0, monotonicTime)).toISOString(),
+      request: {
+        method,
+        url,
+        httpVersion: 'HTTP/2.0',
+        cookies: [{ name: 'sb-fixture-auth-token', value: 'fixture-cookie-value' }],
+        headers: [
+          { name: 'cookie', value: FAKE_COOKIE },
+          { name: 'apikey', value: FAKE_KEY },
+          { name: 'authorization', value: `Bearer ${FAKE_KEY}` },
+          { name: 'user-agent', value: 'fixture-agent' }
+        ],
+        queryString: [],
+        ...(postData ? { postData: { mimeType: 'application/json', ...postData } } : {})
+      },
+      response: { status: 200, headers: [{ name: 'set-cookie', value: FAKE_COOKIE }] }
+    }
+  });
+}
+
+const RPC_BODY = '{"_project_id":"00000000-0000-0000-0000-000000000001"}';
+
+/** The lines of one recorded voter run, written out of start order as a trace writes them on each response's end. */
+const TRACE_LINES = [
+  JSON.stringify({ type: 'context-options', options: {} }),
+  snapshot(20, 'GET', `${SUPABASE}/rest/v1/elections?select=id,name&project_id=eq.1`),
+  snapshot(10, 'GET', `${BASE}/`),
+  snapshot(15, 'GET', `${BASE}/_app/immutable/entry/start.js`),
+  snapshot(30, 'POST', `${SUPABASE}/rest/v1/rpc/get_nominations`, { text: RPC_BODY }),
+  snapshot(35, 'POST', `${SUPABASE}/auth/v1/token?grant_type=password`, { text: '{"password":"x"}' }),
+  snapshot(36, 'POST', `${SUPABASE}/functions/v1/account-access`, { text: '{"op":"check-code"}' }),
+  snapshot(37, 'POST', `${BASE}/api/usage`, { text: '{"routeId":"/(voters)"}' }),
+  snapshot(38, 'GET', 'https://example.org/tracker.js'),
+  snapshot(39, 'GET', `wss://abcdefghijklmnop.supabase.co/realtime/v1/websocket?apikey=${FAKE_KEY}`),
+  snapshot(40, 'POST', `${SUPABASE}/rest/v1/feedback`, { text: '{"rating":5}' }),
+  snapshot(41, 'OPTIONS', `${SUPABASE}/rest/v1/elections`),
+  snapshot(50, 'GET', `${BASE}/questions`),
+  ''
+];
+
+function extract(lines: Array<string>, ...extra: Array<string>): Run {
+  return run('node', [EXTRACTOR, '--base', BASE, '--supabase', SUPABASE, ...extra], lines.join('\n'));
+}
+
+describe('journey-from-trace.mjs', () => {
+  it('keeps the base-host pages and the Supabase reads, in request order', () => {
+    const { status, stdout, stderr } = extract(TRACE_LINES);
+    expect(status).toBe(0);
+    const journey = JSON.parse(stdout);
+    expect(journey.base).toBe(BASE);
+    expect(journey.routeId).toBe('/(voters)');
+    expect(journey.locale).toBe('en');
+    expect(journey.requests).toEqual([
+      { method: 'GET', url: `${BASE}/`, kind: 'page' },
+      { method: 'GET', url: `${SUPABASE}/rest/v1/elections?select=id,name&project_id=eq.1`, kind: 'data' },
+      { method: 'POST', url: `${SUPABASE}/rest/v1/rpc/get_nominations`, kind: 'data', body: RPC_BODY },
+      { method: 'GET', url: `${BASE}/questions`, kind: 'page' }
+    ]);
+    expect(stderr).toMatch(/^journey_requests=4$/m);
+  });
+
+  it('copies no header, cookie or key, and drops the relay posts', () => {
+    const { stdout } = extract(TRACE_LINES);
+    expect(stdout).not.toContain(FAKE_KEY);
+    expect(stdout).not.toContain('fixture-cookie-value');
+    expect(stdout).not.toContain('fixture-agent');
+    expect(stdout.toLowerCase()).not.toContain('authorization');
+    expect(stdout.toLowerCase()).not.toContain('cookie');
+    expect(stdout).not.toContain('headers');
+    expect(stdout).not.toContain('/api/usage');
+    expect(stdout).not.toContain('/auth/v1/');
+    expect(stdout).not.toContain('/functions/v1/');
+    expect(stdout).not.toContain('/_app/immutable/');
+    expect(stdout).not.toContain('example.org');
+  });
+
+  it('takes the route id and the locale from its flags', () => {
+    const { stdout } = extract(TRACE_LINES, '--route-id', '/(voters)/(located)/questions', '--locale', 'fi');
+    const journey = JSON.parse(stdout);
+    expect(journey.routeId).toBe('/(voters)/(located)/questions');
+    expect(journey.locale).toBe('fi');
+  });
+
+  it('reads an RPC body a trace stores as a resource', () => {
+    const resources = join(scratch, 'resources');
+    mkdirSync(resources, { recursive: true });
+    writeFileSync(join(resources, 'abc123.json'), RPC_BODY);
+    const lines = [snapshot(1, 'POST', `${SUPABASE}/rest/v1/rpc/get_nominations`, { _sha1: 'abc123.json' })];
+    const withResources = extract(lines, '--resources', resources);
+    expect(withResources.status).toBe(0);
+    expect(JSON.parse(withResources.stdout).requests[0].body).toBe(RPC_BODY);
+    const without = extract(lines);
+    expect(without.status).toBe(1);
+    expect(without.stderr).toMatch(/^journey_bodies_missing=1$/m);
+  });
+
+  it('exits 1 with journey_requests=0 on a trace that yields no request', () => {
+    const { status, stdout, stderr } = extract([
+      snapshot(1, 'GET', `${BASE}/_app/immutable/entry/start.js`),
+      snapshot(2, 'POST', `${SUPABASE}/auth/v1/token`, { text: '{}' })
+    ]);
+    expect(status).toBe(1);
+    expect(stdout).toBe('');
+    expect(stderr).toMatch(/^journey_requests=0$/m);
+  });
+
+  it('exits 2 without --base or --supabase', () => {
+    expect(run('node', [EXTRACTOR, '--base', BASE], '').status).toBe(2);
+    expect(run('node', [EXTRACTOR, '--supabase', SUPABASE], '').status).toBe(2);
   });
 });
