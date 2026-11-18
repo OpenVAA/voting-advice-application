@@ -461,3 +461,112 @@ alert_stage=migrations
 - **The cause, a DIAGNOSIS, UNCONFIRMED (`A2_CAUSE_STATUS=diagnosis-unconfirmed`).** The `staging` environment secret `SUPABASE_ACCESS_TOKEN` holds a token Supabase rejects with 401. The secret was last written `2026-11-15T19:33:29Z` (`A2_SUPABASE_ACCESS_TOKEN_SECRET_UPDATED=`, from the secrets list GET; its `created_at` is the same). On 2026-11-17, in the Step 18 sitting, the operator's own local token was rejected with the same 401 `Invalid access token`, and a token read again worked (§ Task 2). The likely cause is that the token stored in the GitHub secret is an old or revoked one. That the secret's value is the token rejected on 2026-11-17 is not established: the value cannot be read, and the executor made no Management API call.
 - **The remedy (`A2_CODE_FIX=none`).** No code fix applies: the link step, its arguments and the workflow did what they should. The operator updates the `staging` environment secret `SUPABASE_ACCESS_TOKEN` with a valid personal access token; a later attempt is then a new attempt of key `187-21-2` with a new push. Run `44250710034` is not re-run.
 - **Still open.** `MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no` of § Task 2 stays open, as accepted there; this attempt pushed no migration, so it neither raised nor settled the question. The Supabase lock `constraints` confirmation (`SUPABASE_LOCK_CONSTRAINTS_CONFIRMED_SUPERSEDED=no` above) stays open for the next attempt's approval.
+
+## Task 1, attempt 3 (2026-11-18)
+
+Recorded 2026-11-18 (UTC) by the plan executor of plan 187-21, attempt 3, from HEAD `8915ec66e895e7557b8f8b46bd6165571538a390`, at 07:21Z to 07:23Z. Attempt 3 reuses Task 1 attempt 2's commit; the lines are read again here because attempt 2's were superseded. The orchestrator had pushed before this section was written (§ Task 3, attempt 3), so the two reads that must precede a push, the branch's absence and no active run, are the orchestrator's reads before its push, confirmed afterwards by the reads named below. The executor pushed nothing, approved nothing, and wrote no hosted service or GitHub setting; its remote reads were `gh api` GETs (the `staging` environment's secret names and dates, no value; the repository's workflow runs), `git ls-remote origin` and one GET of `https://staging.openvaa.org/api/health`. Every status was read on its own line, never through a pipe.
+
+### The commit
+
+```
+GREEN_COMMIT=9d6a55ca36ea56a5d3883ad95a10b4619c2472ad
+GREEN_REBUILT=no
+GREEN_TREE_OK=yes
+E2E_TREE_COVERS_GREEN=yes
+GREEN_PARENT=340a200708c28fb7ed078d452138712f3400c789
+```
+
+- **`GREEN_COMMIT=`.** `git rev-parse refs/evidence/187/green` prints `9d6a55ca36ea56a5d3883ad95a10b4619c2472ad`, attempt 2's commit; its tree is `986dd2c11429bec0a578ba809444d8c76ec4c1f3`, its one parent `340a20070…` is still `origin/main`, and `git ls-tree refs/evidence/187/green -- .planning` lists nothing.
+- **`GREEN_TREE_OK=yes`, `GREEN_REBUILT=no`.** `git diff --quiet refs/evidence/187/green HEAD -- . ':!.planning'` exit 0. The commits since attempt 2's Task 1 HEAD `dd5878fb3` touch `.planning/` only (`git diff --name-only dd5878fb3 HEAD -- . ':!.planning'` exit 0, empty).
+- **`E2E_TREE_COVERS_GREEN=yes`.** `E2E_TREE_SHA=450632a5c933ccb806506b83a5c29bca31cdc672` is still the current line of `evidence/187-13-closing-e2e.md`; `git diff --quiet 450632a5c..HEAD -- apps packages tests` exit 0 and `git diff --quiet 450632a5c… refs/evidence/187/green -- apps packages tests` exit 0.
+
+### The contestant and the token
+
+```
+CONTESTANT_READY=yes
+ENV_STAGING_SECRET_NAMES=ALERT_EMAIL,SMOKE_CONTESTANT_EMAIL,SMOKE_CONTESTANT_PASSWORD,SUPABASE_ACCESS_TOKEN,SUPABASE_DB_PASSWORD
+SUPABASE_ACCESS_TOKEN_SECRET_UPDATED=2026-11-18T07:19:41Z
+```
+
+- `gh api repos/OpenVAA/voting-advice-application/environments/staging/secrets` exit 0, the five names above; no value was read. The two contestant secrets are dated 2026-11-15 as before, and `evidence/187-17-smoke-contestant.md` still holds `CONTESTANT_SECRETS_PRESENT=yes`.
+- **`SUPABASE_ACCESS_TOKEN_SECRET_UPDATED=`.** The operator updated the secret after attempt 2's red link step (`A2_CAUSE=supabase-access-token-rejected`): `updated_at` now reads `2026-11-18T07:19:41Z` (it read `2026-11-15T19:33:29Z` for attempt 2), its `created_at` unchanged. Only the date was read.
+
+### The expected plan
+
+```
+PR_PLAN_AS_EXPECTED=yes
+EXPECTED_PLAN=Plan: 1 to add, 1 to change, 1 to destroy.
+RUNNING_IMAGE_READ_BEFORE=owed
+```
+
+- **`PR_PLAN_AS_EXPECTED=yes`.** `evidence/187-19-pr-plan.md` holds `PR_PLAN_SUMMARY=Plan: 1 to add, 1 to change, 1 to destroy.` with `PR_PLAN_MATCHES_EXPECTED=yes`, and attempt 2's run made that same plan from this same commit at 06:34Z today (`A2_PLAN_SUMMARY=`, `A2_PLAN_AS_EXPECTED=yes`) and applied nothing (`A2_APPLIED=no`); no deploy run has run since (below).
+- **`RUNNING_IMAGE_READ_BEFORE=owed`.** With `AWS_PROFILE=openvaa-admin`, `aws sts get-caller-identity` exit 255, `Token has expired and refresh failed`; the executor did not sign in, so `infra/scripts/running-image-digest.sh` was not run. The state the plan is made on is attested by attempt 2's own plan (above) and the unchanged served build (below).
+
+### The migrations
+
+```
+MIGRATIONS_AT_COMMIT=00001_initial_schema.sql,00002_claim_excludes_identity_provider_accounts.sql,00003_address_confirmation_request.sql,00004_user_entities_pending_email_taken.sql,00005_invitation_link_bounds.sql,00006_nomination_write_guards.sql,00007_nomination_write_kept_constituency.sql,00008_bulk_import_key_quoting.sql,00009_contestant_app_public_config_bounded.sql,00010_claim_grant_key_conflict_target.sql,00011_invitation_email_target_open_rows.sql,00012_bulk_import_constituency_links.sql,00013_nomination_constituency_rule.sql,00014_set_entity_nominations_constituency_once.sql,00015_answers_lock_entity_rows.sql,00016_answers_lock_nominations_storage.sql,00017_user_can_reads_grants.sql,00018_identity_entity_find_or_create.sql,00019_address_holds_open_invitation.sql,00020_identity_metadata_written_under_lock.sql,00021_email_holds_global_or_account_grant.sql,00022_grants_reaching_a_project.sql
+EXPECTED_PENDING=00002,00003,00004,00005,00006,00007,00008,00009,00010,00011,00012,00013,00014,00015,00016,00017,00018,00019,00020,00021,00022
+MIGRATIONS_PENDING_COUNT=21
+MIGRATIONS_ON_STAGING=00001
+MIGRATION_00001_BLOB=2b07ce7c378db9c59b09165762b2b0bf0af351cf
+MIGRATIONS_UNCHANGED_SINCE_ATTEMPT_1=yes
+MIGRATIONS_PENDING_MATCH_187_27=21
+```
+
+- `git ls-tree --name-only refs/evidence/187/green apps/supabase/supabase/migrations/` exit 0, 22 files; `git diff --quiet 0a73bb6df refs/evidence/187/green -- apps/supabase/supabase/migrations` exit 0; the `00001` blob is the one staging's version was pushed from. Attempts 1 and 2 pushed no migration (`A1_MIGRATIONS_PUSHED=none`, `A2_MIGRATIONS_PUSHED=none`), so the persistent project still holds `00001` alone and this run's migrations step is expected to push the 21 versions above, one-way, under the one `staging` approval.
+
+### The branch, the served build, the runs
+
+```
+GREEN_BRANCH=deploy-evidence/187-green-3
+GREEN_BRANCH_ABSENT=yes
+SERVED_BUILD_BEFORE=712947a1bd44a735f66ee8f51610f4748d76cd30
+NO_RUN_ACTIVE=yes
+```
+
+- **`GREEN_BRANCH_ABSENT=yes`.** The orchestrator's `git ls-remote origin refs/heads/deploy-evidence/187-green-3` printed nothing before its push. The name holds no further `/` and is not `deploy-evidence/destroy-staging`; `grep -n deploy-evidence .github/workflows/*.yml` shows that only `deploy.yml` (`deploy-evidence/**`, less `!deploy-evidence/destroy-staging`) and `infra-plan.yml` (`deploy-evidence/**`) start on it, `destroy.yml` only on `deploy-evidence/destroy-staging`.
+- **`SERVED_BUILD_BEFORE=`.** `curl -sS --max-time 20 https://staging.openvaa.org/api/health` exit 0 at 07:21Z, while the run's `checks` job ran and before any gated step, HTTP 200, body `{"status":"ok","build":"712947a1bd44a735f66ee8f51610f4748d76cd30"}`.
+- **`NO_RUN_ACTIVE=yes`.** The orchestrator found no deploy run active before its push. Afterwards, `actions/runs?per_page=100` (exit 0) lists one run that is not `completed`, this attempt's `44258126898` of `deploy.yml`, and none with a `destroy` path; `gh run list --workflow deploy.yml` (exit 0) lists the four earlier runs `44250710034`, `44165083175`, `44088753181` and `44042442257`, each `completed` `failure`.
+
+### Carried (not repeated)
+
+- § Task 2's `STAGING_SETTINGS_HAND_APPLY_RECORDED=yes` (the Step 18 hand apply) and `MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no` stay the current lines and are not written again.
+
+## Task 3, attempt 3 (2026-11-18)
+
+Recorded 2026-11-18 (UTC) by the plan executor of plan 187-21, attempt 3. The executor pushed nothing, started or re-ran no workflow, approved no review and wrote no hosted service or GitHub setting; its remote reads were `gh run view`, `gh api` GETs and `git ls-remote origin`. Every status was read on its own line, never through a pipe.
+
+### The binding and the push
+
+```
+GREEN_ATTEMPT_ID=20261118T072017Z.8915ec66e
+SUPABASE_LOCK_CONSTRAINTS_CONFIRMED=yes
+GREEN_PUSHED=yes
+GREEN_PUSHED_SHA=9d6a55ca36ea56a5d3883ad95a10b4619c2472ad
+GREEN_PUSHED_BRANCH=deploy-evidence/187-green-3
+GREEN_RUN_ID=44258126898
+GREEN_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44258126898
+GREEN_INFRA_PLAN_RUN_ID=44258126878
+GREEN_INFRA_PLAN_RUN_CONCLUSION=success
+```
+
+- **The binding.** The orchestrator opened attempt `20261118T072017Z.8915ec66e` of key `187-21-2` right after the operator's reply, which was given for attempt 3 as the orchestrator described it, and stored the reply; `put`, `bash "$A" bound 187-21-2 OPERATOR_REPLY plan=187-21 task=2` and `bash "$A" has 187-21-2 '^answer_push=approve$'` each exited 0 at top level. The executor ran `bash "$A" id 187-21-2` (prints the attempt id above), `bound`, `has '^answer_push=approve$'` and `has '^answer_constraints=ok$'` again before recording anything (all read-only): exit 0 each.
+- **`SUPABASE_LOCK_CONSTRAINTS_CONFIRMED=yes`.** The stored reply holds `answer_constraints=ok`: the operator confirms the Supabase lock `constraints` line rewrite of plan 187-30 (`constraints = "~> 1.11"` to `constraints = "1.11.0, ~> 1.11"` in the three Supabase root locks), which attempt 2 left open (`SUPABASE_LOCK_CONSTRAINTS_CONFIRMED_SUPERSEDED=no`).
+- **The orchestrator's checks before the push.** The green ref `9d6a55ca3…` and its tree equal to HEAD's outside `.planning/`; the E2E-tree gate exit 0; `git ls-remote` showing `deploy-evidence/187-green-3` absent; no deploy run active; only `deploy.yml` and `infra-plan.yml` triggered on `deploy-evidence/**`.
+- **`GREEN_PUSHED=yes`.** The orchestrator pushed at top level after the binding: `git push origin 9d6a55ca36ea56a5d3883ad95a10b4619c2472ad:refs/heads/deploy-evidence/187-green-3` exit 0. The executor read it back: `git ls-remote origin refs/heads/deploy-evidence/187-green-3` exit 0, `9d6a55ca36ea56a5d3883ad95a10b4619c2472ad`, equal to `GREEN_COMMIT=` of § Task 1, attempt 3.
+- **The run.** `gh run view 44258126898 --json ...` exit 0 at 07:21Z: event `push`, head branch `deploy-evidence/187-green-3`, head SHA `9d6a55ca36ea56a5d3883ad95a10b4619c2472ad`, created 07:20:37Z, `in_progress`, its `checks` job (id `134644636892`) started 07:20:41Z. The same push started `infra-plan.yml` run `44258126878`, read `completed` `success` at 07:23Z.
+
+### The checks job and the gate
+
+```
+CHECKS_JOB=success
+CHECKS_JOB_ID=134644636892
+DEPLOY_JOB_ID=134645147625
+GATE_WAITED=yes
+GATE_ENVIRONMENT=staging
+GATE_WAIT_TIMER=0
+```
+
+- **`CHECKS_JOB=success`.** `gh api repos/OpenVAA/voting-advice-application/actions/jobs/134644636892` exit 0: `success` on `ubuntu-24.04`, 07:20:41Z to 07:21:50Z (69 s). Steps, each `success`: Set up job (4 s), Checkout source code (7 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (0 s), Validate the staging AWS root (9 s), Setup Node.js 24.21.0 (5 s), Setup Yarn 4.18 (27 s), Unit tests of the infrastructure scripts (13 s), and the post and complete steps (0 s).
+- **`GATE_WAITED=yes`.** A background watcher read the run `waiting` at 07:22:02Z, and at 07:22:12Z `gh run view 44258126898` read the run `waiting` and its `deploy` job (id `134645147625`, created 07:21:50Z) `waiting`. `gh api repos/OpenVAA/voting-advice-application/actions/runs/44258126898/pending_deployments` (a GET) exit 0: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing.
