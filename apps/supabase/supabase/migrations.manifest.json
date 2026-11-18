@@ -92,6 +92,10 @@
     {
       "file": "00022_grants_reaching_a_project.sql",
       "sha256": "6b2613cb26c1a690fb7250181681c94e95ca0425a1b2de4db6b6e7d820f0a018"
+    },
+    {
+      "file": "00023_invitation_caller_limit.sql",
+      "sha256": "0ac3b60099b4ed1b660d19c3209a009bf4491a39e866121978fc1f49be89747b"
     }
   ]
 }
