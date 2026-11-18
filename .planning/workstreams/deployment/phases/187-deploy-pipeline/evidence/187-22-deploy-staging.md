@@ -38,3 +38,37 @@ REBUILD_WOULD_CHANGE_COMMIT=yes
 - **`MAIN_ADMITTED=no`.** Fresh GETs, each exit 0: `staging` and `staging-destroy` both hold `custom_branch_policies=true`, `protected_branches=false`, and exactly the two `branch` rules `deploy-evidence/*` and `deploy/staging`, as `evidence/187-14-environments.md` § Task 3 recorded them. Matching `main` against each rule with the shell's glob (`[[ main == <rule> ]]`) matches none.
 - **`GREEN_TREE_EQUALS_HEAD_OUTSIDE_PLANNING=no`, recorded and not acted on.** `git diff --quiet 331b5db28 HEAD -- . ':!.planning'` exit 1; `--name-only` names `infra/envs/staging/aws/README.md` alone, the runbook's observation row for run 44270824581 that plan 187-21 Task 3 added (commit `db50c2dda`) after the green commit was built. This plan's rules do not ask for that equality: Task 1 takes `BRANCH_COMMIT=` from plan 187-21's `GREEN_COMMIT=`, Task 3 pushes `<BRANCH_COMMIT>:refs/heads/deploy/staging`, and Task 1's verify compares `SERVED_BUILD_BEFORE=` with `BRANCH_COMMIT=`. The tree rule and its rebuild belong to plan 187-21's execution rules. No rebuild was made.
 - **`REBUILD_WOULD_CHANGE_COMMIT=yes`.** The evidence commits are built from HEAD's tree without `.planning/` on `origin/main`, so a rebuild now would carry the README row: a different tree and therefore a different commit. That commit has no image in the registry and is not the one staging serves, so its run would build a new image (`build_exit=0`, not 3), its plan would replace the task definition, and `SERVED_BUILD_BEFORE=` would differ from `BRANCH_COMMIT=`. Task 1's verify, and Task 3's `BUILD_EXIT=3`, `BUILD_TAG_EXISTS=yes`, `BUILD_DIGEST_SAME=yes`, `PLAN_NO_CHANGES=yes` and `APPLY_NO_CHANGES=yes`, would then all fail. The difference is one Markdown row under `infra/`, outside `apps packages tests`, and `.dockerignore` excludes `infra` from the image's build context; the only change a rebuild would bring is the commit id itself.
+
+## Task 3 — The push and the second run of the same commit (2026-11-18)
+
+Recorded 2026-11-18 (UTC) by the plan executor of plan 187-22. The executor pushed nothing, started or re-ran no workflow, approved no review and wrote no hosted service or GitHub setting; its remote reads were `gh run view`, `gh api` GETs and `git ls-remote origin`. Every status was read on its own line, never through a pipe; the outputs are under `tmp/187-22/t3/` (ignored).
+
+### The binding and the push
+
+```
+DEPLOY_STAGING_ATTEMPT_ID=20261118T091540Z.c76e378df
+DEPLOY_STAGING_PUSHED=yes
+DEPLOY_STAGING_PUSHED_SHA=331b5db28058a1f8bc4ef88a3841080a4610efa2
+STAGING_RUN_ID=44276384977
+STAGING_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44276384977
+MAIN_PUSHED=no
+```
+
+- **The binding.** The orchestrator opened attempt `20261118T091540Z.c76e378df` of key `187-22-2` and stored the operator's reply, given after the orchestrator recommended pushing `331b5db28` as it stands, without a rebuild (§ Task 1's `REBUILD_WOULD_CHANGE_COMMIT=yes`); `put`, `bash "$A" bound 187-22-2 OPERATOR_REPLY plan=187-22 task=2` and `bash "$A" has 187-22-2 '^answer_push=approve$'` each exited 0 at top level. The executor ran `bound` and `has '^answer_push=approve$'` again at 09:30Z before recording anything (both read-only): exit 0 each.
+- **The orchestrator's checks before the push.** Task 1's verify exit 0; `git ls-remote` showing `deploy/staging` absent; no deploy run active.
+- **`DEPLOY_STAGING_PUSHED=yes`.** The orchestrator pushed at top level after the binding: `git push origin 331b5db28058a1f8bc4ef88a3841080a4610efa2:refs/heads/deploy/staging` exit 0. The executor read it back: `git ls-remote origin refs/heads/deploy/staging` exit 0, `331b5db28058a1f8bc4ef88a3841080a4610efa2`, equal to `BRANCH_COMMIT=` of § Task 1. No push to `main` was made (`MAIN_PUSHED=no`).
+- **The run.** `gh run view 44276384977 --json ...` exit 0: event `push`, head branch `deploy/staging`, head SHA `331b5db28058a1f8bc4ef88a3841080a4610efa2`, created 09:29:26Z, attempt 1, its `checks` job (id `134705501754`) started 09:29:29Z. `actions/runs?head_sha=331b5db28…` (a GET, exit 0) lists this run as the only one the push started: `infra-plan.yml` has no `deploy/staging` trigger (`grep -n 'deploy/staging' .github/workflows/*.yml` names only `deploy.yml`'s `push.branches` and two comments), so, unlike plan 187-21's evidence branches, no plan run accompanies it.
+
+### The checks job and the gate
+
+```
+CHECKS_JOB=success
+CHECKS_JOB_ID=134705501754
+DEPLOY_JOB_ID=134706135937
+GATE_WAITED=yes
+GATE_ENVIRONMENT=staging
+GATE_WAIT_TIMER=0
+```
+
+- **`CHECKS_JOB=success`.** `gh api repos/OpenVAA/voting-advice-application/actions/jobs/134705501754` exit 0: `success` on `ubuntu-24.04`, 09:29:29Z to 09:30:37Z (68 s). Steps, each `success`: Set up job (4 s), Checkout source code (5 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (0 s), Validate the staging AWS root (10 s), Setup Node.js 24.21.0 (4 s), Setup Yarn 4.18 (27 s), Unit tests of the infrastructure scripts (13 s), and the post and complete steps (0 s).
+- **`GATE_WAITED=yes`.** A background watcher read the run `waiting` at 09:30:52Z, and at 09:31:06Z `gh run view 44276384977` read the run `waiting`, the `checks` job `completed` `success` and the `deploy` job (id `134706135937`, created 09:30:38Z) `waiting`. `gh api repos/OpenVAA/voting-advice-application/actions/runs/44276384977/pending_deployments` (a GET) exit 0: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing. A second background watcher reads the deploy job every 60 s, for up to 90 minutes, until it leaves `waiting`.
