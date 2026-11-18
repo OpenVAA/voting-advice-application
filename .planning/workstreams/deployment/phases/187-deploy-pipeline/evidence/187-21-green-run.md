@@ -105,7 +105,7 @@ s18_auth.uri_allow_list="https://staging.openvaa.org/auth/confirm,https://stagin
 ### Open item, accepted as non-blocking
 
 ```
-MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no
+MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED_SUPERSEDED=no
 ```
 
 - Still open: whether the hosted `postgres` role holds UPDATE on `auth.users`, which the SECURITY DEFINER functions of `00018_identity_entity_find_or_create.sql` and `00020_identity_metadata_written_under_lock.sql` need at call time. The push creates them without exercising the privilege. The operator accepted it as non-blocking for this run, because staging configures no identity provider, so nothing staging runs calls either function.
@@ -901,3 +901,14 @@ GATE_WAIT_TIMER=0
 
 - **`CHECKS_JOB=success`.** `gh api repos/OpenVAA/voting-advice-application/actions/jobs/134686697505` exit 0: `success` on `ubuntu-24.04`, 08:53:07Z to 08:54:16Z (69 s). Steps, each `success`: Set up job (1 s), Checkout source code (2 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (0 s), Validate the staging AWS root (12 s), Setup Node.js 24.21.0 (5 s), Setup Yarn 4.18 (31 s), Unit tests of the infrastructure scripts (14 s), and the post and complete steps (0 s).
 - **`GATE_WAITED=yes`.** A background watcher read the run `waiting` at 08:54:23Z, the `checks` job `completed` `success` and the `deploy` job (id `134687271397`, created 08:54:16Z) `waiting`. `gh api repos/OpenVAA/voting-advice-application/actions/runs/44270824581/pending_deployments` (a GET) exit 0 at 08:54:40Z: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing. A second background watcher reads the deploy job every 60 s, for up to 90 minutes, until it leaves `waiting`.
+
+### The call-time privilege, read by the operator (2026-11-18)
+
+```
+MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=yes
+MIGRATIONS_CALLTIME_PRIVILEGE_READ_BY=operator
+MIGRATIONS_CALLTIME_PRIVILEGE_RESULT=postgres_can_update_auth_users=true
+```
+
+- On 2026-11-18 the operator ran one read-only query against staging's database (the persistent project `cofbsatfrdysyphajsky`) and reported the result as true, relayed to the executor by the orchestrator: `select has_table_privilege('postgres', 'auth.users', 'UPDATE') as postgres_can_update_auth_users;` answered `postgres_can_update_auth_users` `true`. So the hosted `postgres` role, the owner of the SECURITY DEFINER functions of `00018_identity_entity_find_or_create.sql` and `00020_identity_metadata_written_under_lock.sql`, holds UPDATE on `auth.users`, the privilege those functions need at call time. The executor did not run the query itself; the result is the operator's report.
+- This closes the open item of § Task 2: its `MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no` line is renamed `MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED_SUPERSEDED=no`, value unchanged. The mentions of the `=no` value in the prose of earlier sections record what was true when each was written.
