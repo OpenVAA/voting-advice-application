@@ -570,3 +570,172 @@ GATE_WAIT_TIMER=0
 
 - **`CHECKS_JOB=success`.** `gh api repos/OpenVAA/voting-advice-application/actions/jobs/134644636892` exit 0: `success` on `ubuntu-24.04`, 07:20:41Z to 07:21:50Z (69 s). Steps, each `success`: Set up job (4 s), Checkout source code (7 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (0 s), Validate the staging AWS root (9 s), Setup Node.js 24.21.0 (5 s), Setup Yarn 4.18 (27 s), Unit tests of the infrastructure scripts (13 s), and the post and complete steps (0 s).
 - **`GATE_WAITED=yes`.** A background watcher read the run `waiting` at 07:22:02Z, and at 07:22:12Z `gh run view 44258126898` read the run `waiting` and its `deploy` job (id `134645147625`, created 07:21:50Z) `waiting`. `gh api repos/OpenVAA/voting-advice-application/actions/runs/44258126898/pending_deployments` (a GET) exit 0: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing.
+
+### The approval and the run: red at the stable step
+
+Recorded read-only on 2026-11-18 (UTC) by the plan executor of plan 187-21, attempt 3, from HEAD `43207da3f`. The reads were `gh api` GETs of run `44258126898`, of its approvals (each entry's `state` and environment names only, no user), of the deploy job `134645147625` and of the run's artifacts; `gh run view 44258126898 --log --job 134645147625` to a file; five GETs of `https://staging.openvaa.org/api/health` between 07:32Z and 07:36Z; and `aws sts get-caller-identity` with `AWS_PROFILE=openvaa-admin` (exit 255, the session expired; the executor did not sign in). Each status was read on its own line; the outputs are under `tmp/187-21/a3/` (ignored). Nothing was pushed, approved or re-run, and no hosted service or GitHub setting was written. The run's own record is kept under `A3_` names, and the log excerpts below are indented, so that no line of a red run can satisfy a later attempt's check.
+
+```
+A3_ATTEMPT=20261118T072017Z.8915ec66e
+A3_RUN_ID=44258126898
+A3_RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44258126898
+A3_RUN_HEAD=9d6a55ca36ea56a5d3883ad95a10b4619c2472ad
+A3_RUN_BRANCH=deploy-evidence/187-green-3
+A3_RUN_ATTEMPT=1
+A3_RUN_CONCLUSION=failure
+A3_GATE_REVIEW=approved
+A3_GATE_ENVIRONMENT=staging
+A3_DEPLOY_JOB_ID=134645147625
+A3_DEPLOY_JOB_RUNNER=ubuntu-24.04-arm
+A3_DEPLOY_JOB_STARTED=2026-11-18T07:25:48Z
+A3_DEPLOY_JOB_COMPLETED=2026-11-18T07:31:19Z
+A3_DEPLOY_STEPS=34
+A3_STEP=Set up job conclusion=success seconds=2
+A3_STEP=Checkout source code conclusion=success seconds=2
+A3_STEP=Assume the deploy role conclusion=success seconds=1
+A3_STEP=Build and push the image conclusion=success seconds=3
+A3_STEP=Drop the build credentials conclusion=success seconds=0
+A3_STEP=Setup Node.js 24.21.0 conclusion=success seconds=4
+A3_STEP=Setup Yarn 4.18 conclusion=success seconds=24
+A3_STEP=Install psql conclusion=success seconds=14
+A3_STEP=Setup Terraform 1.16.5 conclusion=success seconds=1
+A3_STEP=Assume the deploy role for the plan conclusion=success seconds=1
+A3_STEP=Initialise the staging AWS root conclusion=success seconds=8
+A3_STEP=Plan the staging AWS root with the built digest conclusion=success seconds=12
+A3_STEP=Show the plan conclusion=success seconds=2
+A3_STEP=Drop the plan credentials conclusion=success seconds=0
+A3_STEP=Link a work directory to the Supabase project conclusion=success seconds=4
+A3_STEP=Push the migrations conclusion=success seconds=120
+A3_STEP=Deploy the functions conclusion=success seconds=6
+A3_STEP=Assume the deploy role again for the apply conclusion=success seconds=1
+A3_STEP=Apply the saved plan conclusion=success seconds=112
+A3_STEP=Check the rollout is stable conclusion=failure seconds=7
+A3_STEP=Drop the rollout credentials conclusion=skipped seconds=0
+A3_STEP=Install Playwright's Chromium conclusion=skipped seconds=0
+A3_STEP=Run the deployed smoke entry conclusion=skipped seconds=0
+A3_STEP=Read the served build again conclusion=skipped seconds=0
+A3_STEP=Remove the plan, the smoke output and the step files conclusion=success seconds=0
+A3_STEP=Assume the deploy role again for the alert conclusion=success seconds=2
+A3_STEP=Alert the operator conclusion=success seconds=1
+A3_STEP=Post Assume the deploy role again for the alert conclusion=success seconds=0
+A3_STEP=Post Assume the deploy role again for the apply conclusion=success seconds=0
+A3_STEP=Post Assume the deploy role for the plan conclusion=success seconds=0
+A3_STEP=Post Setup Node.js 24.21.0 conclusion=skipped seconds=0
+A3_STEP=Post Assume the deploy role conclusion=success seconds=0
+A3_STEP=Post Checkout source code conclusion=success seconds=0
+A3_STEP=Complete job conclusion=success seconds=0
+A3_JOB_MINUTES=5.5
+A3_BUILD_EXIT_LINE=build_exit=3
+A3_BUILD_TAG_EXISTS=yes
+A3_BUILD_DIGEST=sha256:ccfaa5863a168dfd3d0a4f40257ede398255cb18c899419f68aa23a18b5638a3
+A3_BUILD_DIGEST_EQUALS_A2=yes
+A3_PLAN_EXIT_LINE=plan_exit=0
+A3_PLAN_SUMMARY=Plan: 1 to add, 1 to change, 1 to destroy.
+A3_PLAN_AS_EXPECTED=yes
+A3_LINK_EXIT_LINE=link_exit=0
+A3_LINKED_REF=cofbsatfrdysyphajsky
+A3_SUPABASE_TOKEN_ACCEPTED=yes
+A3_PUSH_CONNECTION=unknown
+A3_PUSH_PENDING=00002,00003,00004,00005,00006,00007,00008,00009,00010,00011,00012,00013,00014,00015,00016,00017,00018,00019,00020,00021,00022
+A3_PUSH_PENDING_EQUALS_EXPECTED=yes
+A3_PUSH_UP_TO_DATE=no
+A3_PUSH_CONFIRMATION=environment
+A3_PUSH_STATUS=0
+A3_DRIFT_STATUS=0
+A3_DRIFT_HISTORY_DATABASE=00001..00022
+A3_PUSH_EXIT=0
+A3_FUNCTIONS_DEPLOY_EXIT=0
+A3_FUNCTIONS_LIST_HTTP=200
+A3_FUNCTION=account-access status=ACTIVE verify_jwt=false expected_verify_jwt=false
+A3_FUNCTION=identity-callback status=ACTIVE verify_jwt=false expected_verify_jwt=false
+A3_FUNCTION=send-email status=ACTIVE verify_jwt=true expected_verify_jwt=true
+A3_APPLY_LINE=Apply complete! Resources: 1 added, 1 changed, 1 destroyed.
+A3_APPLY_EXIT=0
+A3_APPLY_SERVICE_SECONDS=105
+A3_STABLE_DESCRIBE_EXIT=0
+A3_STABLE_TASK_DEFINITION_MATCHES=yes
+A3_STABLE_ROLLOUT_STATE=IN_PROGRESS
+A3_STABLE_RUNNING=1
+A3_STABLE_DESIRED=1
+A3_FAILED_STEP=Check the rollout is stable
+A3_FAILED_STEP_SECONDS=7
+A3_LATER_STAGES=skipped
+A3_SMOKE_RUN=no
+A3_ALERT_STEP=Alert the operator conclusion=success
+A3_ALERT_STAGE=stable
+A3_ALERT_MESSAGE_ID=573cd82a-2cae-551b-8518-bb5d7a2d9b2b
+A3_ARTIFACTS=0
+A3_INFRA_PLAN_RUN_ID=44258126878
+A3_INFRA_PLAN_RUN_CONCLUSION=success
+A3_SERVED_BUILD_AFTER=9d6a55ca36ea56a5d3883ad95a10b4619c2472ad
+A3_SERVED_BUILD_READS=5
+A3_RUNNING_IMAGE_READ=owed
+A2_RUNNING_IMAGE_READ_STILL=owed
+A3_HOSTED_CHANGED=yes
+A3_MIGRATIONS_PUSHED=00002..00022
+A3_MIGRATIONS_PENDING_COUNT=0
+A3_FUNCTIONS_DEPLOYED=account-access,identity-callback,send-email
+A3_APPLIED=yes
+A3_HOSTED_WRITES=migrations,functions,task-definition,service-rollout,alert
+A3_CAUSE=stable-check-read-rollout-in-progress-once
+A3_CAUSE_STATUS=diagnosis-unconfirmed
+A3_CODE_FIX=needed-new-plan
+```
+
+The log lines of the failed step, as printed, without their timestamps (indented here):
+
+```
+  stable_describe_exit=0
+  stable_task_definition_matches=yes
+  stable_rollout_state=IN_PROGRESS
+  stable_running=1
+  stable_desired=1
+  ##[error]The primary deployment does not run the applied task definition with a completed rollout and at least 1 running tasks.
+  ##[error]Process completed with exit code 1.
+```
+
+Of the build, the plan, the link, the migrations, the functions, the apply and the alert (the 21 `push_pending=` lines, `00002` to `00022`, are summed up in `A3_PUSH_PENDING=`; the apply's ten-second progress lines are left out):
+
+```
+  tag_exists=yes image_digest=sha256:ccfaa5863a168dfd3d0a4f40257ede398255cb18c899419f68aa23a18b5638a3
+  build_exit=3
+  # module.frontend.aws_ecs_service.app will be updated in-place
+  # module.frontend.aws_ecs_task_definition.app must be replaced
+  Plan: 1 to add, 1 to change, 1 to destroy.
+  plan_exit=0
+  links=3
+  link_exit=0
+  linked_ref=cofbsatfrdysyphajsky
+  push_connection=unknown
+  push_up_to_date=no
+  push_confirmation=environment
+  push_status=0
+  check-drift.sh: history: manifest: 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010 00011 00012 00013 00014 00015 00016 00017 00018 00019 00020 00021 00022
+  check-drift.sh: history: database: 00001 00002 00003 00004 00005 00006 00007 00008 00009 00010 00011 00012 00013 00014 00015 00016 00017 00018 00019 00020 00021 00022
+  check-drift.sh: history: holds
+  check-drift.sh: schema: holds
+  check-drift.sh: CLEAN -- the history equals the manifest and the diff is empty
+  drift_status=0
+  push_exit=0
+  functions_deploy_exit=0
+  functions_list_http=200
+  functions_expected=account-access identity-callback send-email
+  functions_served=account-access identity-callback send-email
+  module.frontend.aws_ecs_task_definition.app: Destruction complete after 1s
+  module.frontend.aws_ecs_task_definition.app: Creation complete after 0s [id=openvaa-staging-frontend]
+  module.frontend.aws_ecs_service.app: Modifications complete after 1m45s
+  Apply complete! Resources: 1 added, 1 changed, 1 destroyed.
+  apply_exit=0
+  alert_stage=stable
+```
+
+- **The gate.** `gh api .../actions/runs/44258126898/approvals` exit 0: one entry, `state` `approved`, environment `staging`; a poll read the deploy job `queued` at 07:25:48Z, the job's start time, after its last `waiting` read at 07:25:28Z. The deploy job ran on `ubuntu-24.04-arm` from 07:25:48Z to 07:31:19Z (331 s, `A3_JOB_MINUTES=5.5` against the 60-minute limit). `A3_RUN_ATTEMPT=1` is the run's only attempt.
+- **Steps 1 to 19 succeeded.** The build step found the image tag `9d6a55ca3…` already in the registry, pushed there by attempt 2's build, and printed its digest (`build_exit=3`, `tag_exists=yes`), which the workflow accepts; `A3_BUILD_DIGEST=` equals `A2_BUILD_DIGEST=`. The plan was the expected one (`A3_PLAN_AS_EXPECTED=yes`). The link step, red in attempt 2, linked `cofbsatfrdysyphajsky` (`link_exit=0`): the updated `SUPABASE_ACCESS_TOKEN` secret is accepted, which bears out attempt 2's diagnosis (`A2_CAUSE=supabase-access-token-rejected`). The migrations step pushed the 21 expected versions `00002` to `00022` (`A3_PUSH_PENDING_EQUALS_EXPECTED=yes`, equal to `EXPECTED_PENDING=` of § Task 1, attempt 3) under the environment's approval, `push_status=0`, and the drift check read `history: holds`, `schema: holds`, `drift_status=0`. `push_connection=unknown`: the CLI's debug log named neither path, so the pooler is attested only by the step's `PGHOST`/`PGPORT=5432` settings that the drift check used, not by the CLI. The functions step deployed the three functions, each `ACTIVE` with `verify_jwt` as configured. The apply replaced the task definition and updated the service; the service's update returned after 1m45s (`wait_for_steady_state = true` in `infra/modules/frontend-service/service.tf`).
+- **Step 20 failed.** `Check the rollout is stable` read `aws ecs describe-services` once, 0 s after the apply: the primary deployment runs the applied task definition (`stable_task_definition_matches=yes`) with `stable_running=1` of `stable_desired=1`, but its `rolloutState` was `IN_PROGRESS`, not `COMPLETED`, so the step exited 1.
+- **Steps 21 to 24 were skipped** (`A3_LATER_STAGES=skipped`): `Drop the rollout credentials`, `Install Playwright's Chromium`, `Run the deployed smoke entry` and `Read the served build again`. No smoke run was made (`A3_SMOKE_RUN=no`). The cleanup step and the alert ran: `alert_stage=stable`, one alert published (`A3_ALERT_MESSAGE_ID=`). The run uploaded no artifact (`total_count` 0). `infra-plan.yml` run `44258126878` is `completed` `success`.
+- **What the run wrote (`A3_HOSTED_WRITES=`), one-way.** Unlike attempts 1 and 2, this run changed staging: the 21 migrations are pushed and the persistent project's history now reads `00001` to `00022` (`A3_MIGRATIONS_PENDING_COUNT=0`); the three functions are deployed from the green commit; the task definition is replaced (the image by digest, per the plan) and the service rolled onto it; one alert mail. No new image was pushed (the tag existed).
+- **Staging after the run.** Five GETs of `https://staging.openvaa.org/api/health`, at 07:32:17Z, 07:33:02Z, 07:34:03Z, 07:35:03Z and 07:36:03Z, each exit 0, HTTP 200 (first read) and body `{"status":"ok","build":"9d6a55ca36ea56a5d3883ad95a10b4619c2472ad"}`: staging serves the green commit, and over those four minutes no rollback to `712947a1b…` was seen.
+- **`A3_RUNNING_IMAGE_READ=owed`, and attempt 2's read still owed.** With `AWS_PROFILE=openvaa-admin`, `aws sts get-caller-identity` exit 255 (at 07:21Z and again at 07:37Z), `Token has expired and refresh failed`; the executor did not sign in. So neither `infra/scripts/running-image-digest.sh` (expected now: reference `digest`, digest `A3_BUILD_DIGEST=`) nor a `describe-services` read of the deployment's present `rolloutState` was made. Attempt 2's owed read (`A2_RUNNING_IMAGE_READ=owed`, which expected the tag `712947a1b…`) can no longer be made as it was meant: the apply of this run has replaced that state.
+- **The cause, a DIAGNOSIS, UNCONFIRMED (`A3_CAUSE_STATUS=diagnosis-unconfirmed`).** The stable step reads the deployment once, with no wait, right after the apply, and requires `rolloutState` `COMPLETED`. Terraform's `wait_for_steady_state` returned once the service was stable, and the step then saw the primary deployment on the applied task definition with `running` equal to `desired`, but `rolloutState` still `IN_PROGRESS`. The likely cause is that ECS sets a deployment's `rolloutState` to `COMPLETED` some time after the service is stable in the sense the provider waits for, so the step's single read raced it. Not established: whether the deployment has since reached `COMPLETED` (the AWS read is owed), whether a second deployment was still listed at the read (the step prints only the primary's fields), and exactly what condition the provider's wait checks for. The served build reading the green commit for four minutes afterwards is consistent with a rollout that completed, not proof of it.
+- **The remedy (`A3_CODE_FIX=needed-new-plan`).** A fix is a code change to the stable step (for example, waiting for the primary deployment's `rolloutState` to leave `IN_PROGRESS` within a bound, failing on `FAILED` or on the bound), and so a new plan; it is not made here. Run `44258126898` is not re-run. Since staging now holds the migrations, the functions and the applied task definition, a later attempt's run would find no migration pending (`push_up_to_date=yes` expected) and a plan without the task definition's replacement unless the digest differs, so its expected lines differ from those of § Task 1, attempt 3.
+- **Still open.** `MIGRATIONS_CALLTIME_PRIVILEGE_CHECKED=no` of § Task 2 stays open, as accepted there, but is now live: `00018` and `00020` are pushed, so their SECURITY DEFINER functions exist on the persistent project; staging configures no identity provider, so nothing staging runs calls either. The smoke gate's `PASS` lines, `served_build_after_smoke=`, `RUNNING_IMAGE_REFERENCE=digest` and `RUNNING_IMAGE_DIGEST=` are not observed for this run.
