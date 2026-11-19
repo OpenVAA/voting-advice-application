@@ -4,6 +4,8 @@
 
 ### 1. A red targeted run whose cause was a host network change (`net::ERR_NETWORK_CHANGED`)
 
+- **Accepted by the operator (2026-11-19, in the 188-09 reply: "A red E2E run in 188-05 => accepted").** The red run stays on record as a failure; the green re-run on the same tree and the phase's two full runs, `188-close-20261118T195528Z` and the post-deviation re-run on d523abcd5, stand for the tree. Whether the wrapper should detect network changes stays open for the phase verifier.
+
 - **Run:** `tests/e2e-runs/188-05-contestant-identity-provider-20261118T182838Z`, wrapper exit 1, no VOID marker. 237 passed, 2 failed, 375 did not run.
 - **Failed:** `admin-account-flows` › "an invited project admin who asks for a link from the Admin App's login …" and `contestant-password-recovery` › "after a sign-out that failed with the cookies gone, Back …". Both timed out at 90 s on `getByTestId('forgot-password-submit')`, a button that stays natively disabled until the screen has mounted.
 - **Cause, from the two traces in the run's `html/data`:** at 18:31:17Z and at 18:31:35Z Chrome aborted every in-flight module request of the page with `net::ERR_NETWORK_CHANGED`. The dev server answered them, and it logged `Failed to fetch dynamically imported module …/client/nodes/*.js` 18 times, all at those two moments. The page never hydrated. Nothing under `apps/frontend` differs from the tree of the green 188-01 run. `account-access` answered every request it got.
