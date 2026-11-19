@@ -80,3 +80,137 @@ GATE_WAIT_TIMER=0
 
 - **`CHECKS_JOB=success`.** `gh api .../runs/44491292876/jobs` exit 0: `checks` `success` on `ubuntu-24.04`, 08:52:21Z to 08:53:32Z (71 s). Steps, each `success`: Set up job (4 s), Checkout source code (5 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (0 s), Validate the staging AWS root (10 s), Setup Node.js 24.21.0 (4 s), Setup Yarn 4.18 (30 s), Unit tests of the infrastructure scripts (14 s), and the post and complete steps (0 s).
 - **`GATE_WAITED=yes`.** A background watcher read the run `waiting` at 08:53:40Z, the `checks` job `completed` `success` and the `deploy` job (id `135447888765`, created 08:53:32Z, labelled `ubuntu-24.04-arm`) `waiting`. `gh api .../runs/44491292876/pending_deployments` (a GET) exit 0 at 08:54Z: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing.
+
+### The approval and the run: green
+
+Recorded read-only on 2026-11-19 (UTC) by the continuation executor of plan 188-10. The reads were `gh api` GETs of run `44491292876`, of its approvals (each entry's `state` and environment names only, no user), of the deploy job `135447888765` and of the run's artifacts; `gh run view 44491292876 --log --job 135447888765` to a file in the session scratch directory; and one GET of `https://staging.openvaa.org/api/health` at 09:07:50Z. Each status was read on its own line. Nothing was pushed, approved or re-run, and no hosted service or GitHub setting was written. The lines below are copied from the log without their timestamps; none holds an address or a token.
+
+```
+GATE_REVIEW=approved
+GATE_REVIEW_ENVIRONMENT=staging
+GATE_APPROVED_BETWEEN=2026-11-19T08:54:04Z..2026-11-19T08:56:35Z
+DEPLOY_JOB_RUNNER=ubuntu-24.04-arm
+DEPLOY_JOB_STARTED=2026-11-19T08:56:35Z
+DEPLOY_JOB_COMPLETED=2026-11-19T09:06:54Z
+DEPLOY_STEPS=33
+STEP=Set up job conclusion=success seconds=1
+STEP=Checkout source code conclusion=success seconds=2
+STEP=Assume the deploy role conclusion=success seconds=1
+STEP=Build and push the image conclusion=success seconds=192
+STEP=Drop the build credentials conclusion=success seconds=0
+STEP=Setup Node.js 24.21.0 conclusion=success seconds=5
+STEP=Setup Yarn 4.18 conclusion=success seconds=26
+STEP=Install psql conclusion=success seconds=16
+STEP=Setup Terraform 1.16.5 conclusion=success seconds=1
+STEP=Assume the deploy role for the plan conclusion=success seconds=1
+STEP=Initialise the staging AWS root conclusion=success seconds=8
+STEP=Plan the staging AWS root with the built digest conclusion=success seconds=10
+STEP=Show the plan conclusion=success seconds=3
+STEP=Drop the plan credentials conclusion=success seconds=0
+STEP=Link a work directory to the Supabase project conclusion=success seconds=4
+STEP=Push the migrations conclusion=success seconds=123
+STEP=Deploy the functions conclusion=success seconds=4
+STEP=Assume the deploy role again for the apply conclusion=success seconds=1
+STEP=Apply the saved plan conclusion=success seconds=120
+STEP=Check the rollout is stable conclusion=success seconds=55
+STEP=Drop the rollout credentials conclusion=success seconds=0
+STEP=Install Playwright's Chromium conclusion=success seconds=21
+STEP=Run the deployed smoke entry conclusion=success seconds=20
+STEP=Read the served build again conclusion=success seconds=0
+STEP=Remove the plan, the smoke output and the step files conclusion=success seconds=0
+STEP=Assume the deploy role again for the alert conclusion=skipped seconds=0
+STEP=Alert the operator conclusion=skipped seconds=1
+STEP=Post Assume the deploy role again for the apply conclusion=success seconds=0
+STEP=Post Assume the deploy role for the plan conclusion=success seconds=0
+STEP=Post Setup Node.js 24.21.0 conclusion=success seconds=0
+STEP=Post Assume the deploy role conclusion=success seconds=0
+STEP=Post Checkout source code conclusion=success seconds=0
+STEP=Complete job conclusion=success seconds=0
+RUN_JOB_MINUTES=10.3
+RUN_JOB_LIMIT_MINUTES=60
+BUILD_DIGEST=sha256:e35bde282307277ea7be9aed008b2bc5a31c0a27ff2738b9153e09bf1412182a
+build_exit=0
+BUILD_TAG=a7003b490b4ff92fc72bef5d225c593b222d6c4e
+BUILD_NEW_DIGEST=yes
+PLAN_SUMMARY=Plan: 1 to add, 1 to change, 1 to destroy.
+PLAN_IMAGE_FROM=sha256:b4a14b890f132c8c2c1150ad3a2355f389fba7304e7b7c1ce0d8804152c195d4
+PLAN_IMAGE_TO=sha256:e35bde282307277ea7be9aed008b2bc5a31c0a27ff2738b9153e09bf1412182a
+PLAN_ANALYTICS_PROVIDER=none->posthog
+PLAN_FLUSH_INTERVAL_MS=added:2000
+PLAN_STOP_TIMEOUT=30->40
+PLAN_MATCHES_EXPECTED_CHANGES=yes
+plan_exit=0
+links=3
+link_exit=0
+linked_ref=cofbsatfrdysyphajsky
+push_connection=unknown
+push_pending=00023
+push_up_to_date=no
+push_confirmation=environment
+push_status=0
+DRIFT_HISTORY_DATABASE=00001..00023
+DRIFT_HISTORY=holds
+DRIFT_SCHEMA=holds
+drift_status=0
+push_exit=0
+MIGRATIONS_PUSHED=00023
+functions_deploy_exit=0
+functions_list_http=200
+function=account-access status=ACTIVE verify_jwt=false expected_verify_jwt=false
+function=identity-callback status=ACTIVE verify_jwt=false expected_verify_jwt=false
+function=send-email status=ACTIVE verify_jwt=true expected_verify_jwt=true
+functions_expected=account-access identity-callback send-email
+functions_served=account-access identity-callback send-email
+Apply complete! Resources: 1 added, 1 changed, 1 destroyed.
+apply_exit=0
+stable_poll=1
+stable_describe_exit=0
+stable_task_definition_matches=yes
+stable_rollout_state=IN_PROGRESS
+stable_running=1
+stable_desired=1
+stable_poll=2
+stable_describe_exit=0
+stable_task_definition_matches=yes
+stable_rollout_state=IN_PROGRESS
+stable_running=1
+stable_desired=1
+stable_poll=3
+stable_describe_exit=0
+stable_task_definition_matches=yes
+stable_rollout_state=IN_PROGRESS
+stable_running=1
+stable_desired=1
+stable_poll=4
+stable_describe_exit=0
+stable_task_definition_matches=yes
+stable_rollout_state=COMPLETED
+stable_running=1
+stable_desired=1
+STABLE_POLLS_READ=4
+PASS service-role-key-absent
+PASS origin
+PASS sha
+PASS ref
+PASS project-id
+SMOKE_PASSED=2 passed (18.6s)
+smoke_exit=0
+served_build_after_smoke=a7003b490b4ff92fc72bef5d225c593b222d6c4e
+ALERT_STEP=skipped
+RUN_ARTIFACTS=0
+RUN_ATTEMPT=1
+RUN_CONCLUSION=success
+SERVED_BUILD_AFTER=a7003b490b4ff92fc72bef5d225c593b222d6c4e
+```
+
+- **The gate.** `gh api .../actions/runs/44491292876/approvals` exit 0: one entry, `state` `approved`, environment `staging`. The orchestrator relayed that the operator approved the review in the web interface; the approvals GET is this executor's own confirmation. The deploy job, `waiting` at 08:54:04Z, started at 08:56:35Z. The executor approved nothing.
+- **Every step succeeded, in the workflow's order** (`DEPLOY_STEPS=33`, one `STEP=` line each, from the job GET). The job ran on `ubuntu-24.04-arm` from 08:56:35Z to 09:06:54Z, 619 s, against the 60-minute limit. Only the two alert steps were skipped, as their `if: failure() || cancelled()` conditions require on a green job. `RUN_ATTEMPT=1` is the run's only attempt.
+- **The build.** `build_exit=0`, a new image tagged `a7003b490…` with the new digest `sha256:e35bde28…` (192 s).
+- **The plan, against `EXPECTED_CHANGES=` of § Task 1.** `Plan: 1 to add, 1 to change, 1 to destroy.`, `plan_exit=0`: `module.frontend.aws_ecs_task_definition.app` replaced from revision `:9`, its container's image changing from `…@sha256:b4a14b89…` to `…@sha256:e35bde28…`, `ANALYTICS_PROVIDER` `none` to `posthog`, `ANALYTICS_FLUSH_INTERVAL_MS` `2000` added, `stopTimeout` 30 to 40 (and the provider's normalisation of empty `mountPoints`, `systemControls`, `volumesFrom`, `hostPort` and `tags`, which the replacement carries); `module.frontend.aws_ecs_service.app` updated in place to the new revision. No web ACL or other address appears. The outputs list `ANALYTICS_FLUSH_INTERVAL_MS` added among `task_environment_names`, with `ANALYTICS_POSTHOG_KEY` already among them.
+- **The migration, before the functions.** `link_exit=0` on `cofbsatfrdysyphajsky`. The dry run printed one `push_pending=` line, `push_pending=00023` (`grep -c '^push_pending='` over the log: 1), as `EXPECTED_PENDING=00023` said; the push ran confirmed by the environment (`push_confirmation=environment`, `push_status=0`). The drift check after the push read the manifest and the database's history both `00001` to `00023`, `history: holds`, `schema: holds`, `CLEAN -- the history equals the manifest and the diff is empty`, `drift_status=0`. The step ran 09:01:06Z to 09:03:09Z (123 s); "Deploy the functions" started after it, at 09:03:09Z. `push_connection=unknown` as in 187-21: the CLI's log names neither path.
+- **The functions.** `functions_deploy_exit=0`, `functions_list_http=200`; the three functions deployed from the commit, each `ACTIVE`, `verify_jwt` as configured, the served set equal to the expected one.
+- **The apply.** `apply_exit=0`, 120 s: one task definition added, the service changed, the old revision destroyed.
+- **The stable step.** Four reads: 1 to 3 on the applied task definition with 1 of 1 running and `IN_PROGRESS`, read 4 `COMPLETED` (55 s).
+- **The smoke run.** `DEPLOYED SMOKE GATE https://staging.openvaa.org`, the five `PASS` lines, `DEPLOYED SMOKE GATE OK build=a7003b490b4ff92fc72bef5d225c593b222d6c4e ref=cofbsatfrdysyphajsky project=00000000-0000-0000-0000-000000000001`; both specs passed, `2 passed (18.6s)`, `smoke_exit=0`. `served_build_after_smoke=` equals the run's SHA.
+- **Nothing uploaded, no alert.** `gh api .../runs/44491292876/artifacts` exit 0, `total_count` 0. The alert steps were skipped.
+- **`SERVED_BUILD_AFTER=`.** `curl -sS --max-time 20 https://staging.openvaa.org/api/health` exit 0 at 09:07:50Z, HTTP 200, body `{"status":"ok","build":"a7003b490b4ff92fc72bef5d225c593b222d6c4e"}`, equal to `DEPLOY_COMMIT=`.
