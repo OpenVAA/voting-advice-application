@@ -1,0 +1,6 @@
+# workflow comment
+name: ci
+
+on:
+  push: # trailing comment
+    branches: [main]
