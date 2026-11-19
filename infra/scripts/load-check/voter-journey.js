@@ -127,6 +127,8 @@ STEPS.forEach((rate, index) => {
   thresholds[`http_req_duration{kind:page,step:${step}}`] = [`p(95)<${PAGE_P95_MS}`];
   thresholds[`http_req_duration{kind:relay,step:${step}}`] = [`p(95)<${RELAY_P95_MS}`];
   thresholds[`http_req_failed{step:${step}}`] = [`rate<${STEP_ERROR_RATE}`];
+  // k6 tags a dropped iteration with its scenario, not with the scenario's own tags.
+  thresholds[`dropped_iterations{scenario:step_${step}}`] = ['count<1'];
   thresholds[`http_req_duration{kind:data,step:${step}}`] = [`p(95)<${DATA_P95_OBSERVED_MS}`];
 });
 

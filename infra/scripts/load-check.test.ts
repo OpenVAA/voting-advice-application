@@ -50,13 +50,21 @@ function rate(failed: number, total: number): Record<string, unknown> {
   return { type: 'rate', contains: 'default', values: { passes: failed, fails: total - failed, rate: failed / total } };
 }
 
-function summary(steps: Array<{ rate: number; page: number; relay: number; failed: number }>): string {
+/** A counter sub-metric as k6 2.4.0 writes it. */
+function counter(count: number): Record<string, unknown> {
+  return { type: 'counter', contains: 'default', values: { count, rate: count / 300 } };
+}
+
+function summary(
+  steps: Array<{ rate: number; page: number; relay: number; failed: number; dropped?: number }>
+): string {
   const metrics: Record<string, unknown> = {};
   steps.forEach((step, index) => {
     const i = index + 1;
     metrics[`http_req_duration{kind:page,step:${i}}`] = trend(step.page);
     metrics[`http_req_duration{kind:relay,step:${i}}`] = trend(step.relay);
     metrics[`http_req_failed{step:${i}}`] = rate(step.failed, 1000);
+    if (step.dropped !== undefined) metrics[`dropped_iterations{scenario:step_${i}}`] = counter(step.dropped);
   });
   return JSON.stringify({
     options: {},
@@ -133,9 +141,9 @@ describe('figure.mjs', () => {
     );
     expect(status).toBe(0);
     expect(stdout.trim().split('\n')).toEqual([
-      'step=1 rate_per_min=5 page_p95_ms=220.0 relay_p95_ms=40.0 error_rate=0.0000 met=yes',
-      'step=2 rate_per_min=10 page_p95_ms=610.0 relay_p95_ms=90.0 error_rate=0.0030 met=yes',
-      'step=3 rate_per_min=20 page_p95_ms=1450.0 relay_p95_ms=120.0 error_rate=0.0040 met=no',
+      'step=1 rate_per_min=5 page_p95_ms=220.0 relay_p95_ms=40.0 error_rate=0.0000 dropped=0 met=yes',
+      'step=2 rate_per_min=10 page_p95_ms=610.0 relay_p95_ms=90.0 error_rate=0.0030 dropped=0 met=yes',
+      'step=3 rate_per_min=20 page_p95_ms=1450.0 relay_p95_ms=120.0 error_rate=0.0040 dropped=0 met=no',
       'figure_journeys_per_minute=10',
       'figure_step=2'
     ]);
@@ -149,8 +157,33 @@ describe('figure.mjs', () => {
         { rate: 10, page: 200, relay: 50, failed: 10 }
       ])
     );
-    expect(stdout).toContain('step=1 rate_per_min=5 page_p95_ms=200.0 relay_p95_ms=300.0 error_rate=0.0000 met=no');
-    expect(stdout).toContain('step=2 rate_per_min=10 page_p95_ms=200.0 relay_p95_ms=50.0 error_rate=0.0100 met=no');
+    expect(stdout).toContain(
+      'step=1 rate_per_min=5 page_p95_ms=200.0 relay_p95_ms=300.0 error_rate=0.0000 dropped=0 met=no'
+    );
+    expect(stdout).toContain(
+      'step=2 rate_per_min=10 page_p95_ms=200.0 relay_p95_ms=50.0 error_rate=0.0100 dropped=0 met=no'
+    );
+  });
+
+  it('fails a step that dropped a journey, and reads an absent dropped count as none dropped', () => {
+    const { status, stdout } = figure(
+      'dropped',
+      summary([
+        { rate: 5, page: 220, relay: 40, failed: 0, dropped: 0 },
+        { rate: 10, page: 230, relay: 45, failed: 0 },
+        { rate: 20, page: 240, relay: 50, failed: 0, dropped: 1 },
+        { rate: 40, page: 250, relay: 55, failed: 0, dropped: 0 }
+      ])
+    );
+    expect(status).toBe(0);
+    expect(stdout.trim().split('\n')).toEqual([
+      'step=1 rate_per_min=5 page_p95_ms=220.0 relay_p95_ms=40.0 error_rate=0.0000 dropped=0 met=yes',
+      'step=2 rate_per_min=10 page_p95_ms=230.0 relay_p95_ms=45.0 error_rate=0.0000 dropped=0 met=yes',
+      'step=3 rate_per_min=20 page_p95_ms=240.0 relay_p95_ms=50.0 error_rate=0.0000 dropped=1 met=no',
+      'step=4 rate_per_min=40 page_p95_ms=250.0 relay_p95_ms=55.0 error_rate=0.0000 dropped=0 met=yes',
+      'figure_journeys_per_minute=10',
+      'figure_step=2'
+    ]);
   });
 
   it('gives 0 when no step met', () => {
@@ -164,7 +197,9 @@ describe('figure.mjs', () => {
     const content = JSON.parse(summary([{ rate: 5, page: 200, relay: 40, failed: 0 }]));
     content.load_check.steps.push(10);
     const { stdout } = figure('aborted', JSON.stringify(content));
-    expect(stdout).toContain('step=2 rate_per_min=10 page_p95_ms=none relay_p95_ms=none error_rate=none met=no');
+    expect(stdout).toContain(
+      'step=2 rate_per_min=10 page_p95_ms=none relay_p95_ms=none error_rate=none dropped=0 met=no'
+    );
     expect(stdout).toMatch(/^figure_journeys_per_minute=5$/m);
   });
 
@@ -179,8 +214,12 @@ describe('figure.mjs', () => {
       ])
     );
     expect(status).toBe(0);
-    expect(stdout).toContain('step=2 rate_per_min=10 page_p95_ms=1200.0 relay_p95_ms=60.0 error_rate=0.0000 met=no');
-    expect(stdout).toContain('step=4 rate_per_min=40 page_p95_ms=500.0 relay_p95_ms=80.0 error_rate=0.0000 met=yes');
+    expect(stdout).toContain(
+      'step=2 rate_per_min=10 page_p95_ms=1200.0 relay_p95_ms=60.0 error_rate=0.0000 dropped=0 met=no'
+    );
+    expect(stdout).toContain(
+      'step=4 rate_per_min=40 page_p95_ms=500.0 relay_p95_ms=80.0 error_rate=0.0000 dropped=0 met=yes'
+    );
     expect(stdout).toMatch(/^figure_journeys_per_minute=5$/m);
     expect(stdout).toMatch(/^figure_step=1$/m);
   });
@@ -228,6 +267,11 @@ describe('voter-journey.js', () => {
     expect(text).toMatch(/const PAGE_P95_MS = 1000;/);
     expect(text).toMatch(/const RELAY_P95_MS = 300;/);
     expect(text).toMatch(/const STEP_ERROR_RATE = 0\.01;/);
+  });
+
+  it('fails a step that dropped an iteration, on the scenario tag k6 gives the drop', () => {
+    expect(text).toContain("thresholds[`dropped_iterations{scenario:step_${step}}`] = ['count<1'];");
+    expect(text).toContain('scenarios[`step_${step}`]');
   });
 
   it('keeps the per-step p95 of the data requests under a bound no step reaches', () => {

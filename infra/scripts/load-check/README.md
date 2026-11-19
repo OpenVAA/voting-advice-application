@@ -61,6 +61,11 @@ Per step, each a k6 threshold on that step's sub-metric:
 | page p95 < 1000 ms | `http_req_duration{kind:page,step:<i>}`  |
 | relay p95 < 300 ms | `http_req_duration{kind:relay,step:<i>}` |
 | errors < 1 %       | `http_req_failed{step:<i>}`              |
+| no dropped journey | `dropped_iterations{scenario:step_<i>}`  |
+
+A dropped journey is one the arrival rate called for that k6 did not start, because every virtual user was busy. It
+fails no request, so a step short of users would otherwise pass at a lower real rate than its label; a step with one
+dropped journey is not met. k6 tags `dropped_iterations` with the scenario's name, `step_<i>`, not with `step`.
 
 Over the whole run, `http_req_failed` above 5 % aborts the run once it has held for a minute (`abortOnFail`,
 `delayAbortEval: '1m'`). k6 then exits 99, as it does when any threshold was crossed, which is expected at a step above
@@ -71,7 +76,7 @@ the capacity. The steps after an abort have no values and are not met.
 `figure.mjs` reads `summary.json` and prints, per step,
 
 ```
-step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> met=yes|no
+step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> dropped=<n> met=yes|no
 ```
 
 and then `figure_journeys_per_minute=<r>` and `figure_step=<i>`: the rate of the highest step that met every threshold

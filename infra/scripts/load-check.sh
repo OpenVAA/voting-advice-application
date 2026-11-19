@@ -7,7 +7,7 @@
 # per minute, held for --step-seconds; the steps run one after the other. k6 writes its summary to <out>/summary.json,
 # and the script then prints:
 #   k6_exit=<n>
-#   step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> met=yes|no     (one line per step)
+#   step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> dropped=<n> met=yes|no   (one per step)
 #   figure_journeys_per_minute=<rate of the highest step that met every threshold with every step below it, or 0>
 #   figure_step=<i or none>
 # k6 exits 99 when a threshold was crossed, which is expected at a step above the capacity, and also when the run was
