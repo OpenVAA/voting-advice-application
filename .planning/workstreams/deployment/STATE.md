@@ -437,6 +437,11 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 - `2026-11-17-local-supabase-ports-in-ephemeral-range` (run 44033456141 attempt 1: `supabase start` found host port 54326 bound on the runner)
 
+Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
+
+- `2026-11-19-deployed-voter-smoke-fails-when-track-events-is-on` (188-12: the consent prompt covers an answer control, so the deployed voter smoke and the pipeline's smoke stage are red while `trackEvents` is on)
+- `2026-11-19-check-whether-candidate-and-party-images-can-be-cached-or-served-via-a-cdn` (operator, for the end of v2.17: 188-18 measured about 30 MB of portraits per journey from Supabase storage)
+
 ### Blockers/Concerns
 
 - Phase 181: the baseline freeze waits for a cutover commit agreed with the v2.16 session (SUPA-10, C1). The rest of the phase does not wait.
