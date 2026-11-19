@@ -34,29 +34,58 @@ EXPECTED_ON=create module.frontend.aws_wafv2_web_acl.relay[0]; update module.fro
   - The on plan, with the digest and `-var 'relay_rate_limit={limit=300,window_seconds=300}'`, must read exactly the two changes of `EXPECTED_ON=` and `Plan: 1 to add, 1 to change, 0 to destroy.`: the web ACL created, in scope `CLOUDFRONT`, through the `us-east-1` provider, its rule a rate rule of limit 300 over 300 seconds on the source address, scoped down to paths starting `/api/usage` after `NORMALIZE_PATH`, blocking with 429; and the distribution updated in place with `web_acl_id` the one argument whose before and after differ (after unknown until the ACL exists, so read from the union of `before` and `after` keys and `after_unknown`, as 188-15 read the service's `task_definition`). Any other address, a replace of the distribution, or any change to the task definition, the service or the scaling is a stop.
   - Neither plan is applied. Both are saved with `-out` under the session's `$L` only, read with `terraform show -json` through `jq` selecting addresses, actions and the rule's named arguments, and removed at the end; no plan output is copied here.
 
-## Task 3 — Stopped: the first rule-on plan failed (2026-11-19, attempt 20261119T155002Z.8a7a4188d)
 
-Recorded 2026-11-19 (UTC) by the continuation executor of plan 188-17, from 16:06Z. Key `188-17-2`, attempt `20261119T155002Z.8a7a4188d`. Before the first plan, `bash "$A" bound 188-17-2 OPERATOR_REPLY plan=188-17 task=2` exit 0 and `bash "$A" has 188-17-2 '^answer_sitting=approve$'` exit 0. Every command ran under `caffeinate -i` with `AWS_PROFILE=openvaa-admin` after the account check (exit 0, match exit 0), `TF_VAR_alert_email` checked with `test -n` only (exit 0), and `TF_DATA_DIR` at a fresh directory under the session scratch directory against the root's S3 backend (`init -lockfile=readonly` exit 0). Plans were saved under `$L` (`mktemp -d "${TMPDIR}/openvaa-aws.XXXXXX"`, mode 700) and read through `jq` only. No `apply` was run.
+## Task 3 — The rule off reads no change, the rule on reads one ACL, and the cost on record (2026-11-19)
 
-The task stopped at its step (2): the first plan with the rule on exited 1. This section records what was read up to the stop, and the steps that did not depend on a plan. It is not Task 3's record. The lines Task 3's verify checks are left out on purpose, so the verify fails until a sitting completes.
+Recorded 2026-11-19 (UTC) by the continuation executor of plan 188-17, in two sittings under key `188-17-2`:
+- **Sitting one**, attempt `20261119T155002Z.8a7a4188d`, 16:06Z to 16:11Z: the unset plan, a failed rule-on plan and one re-run.
+- **Sitting two**, attempt `20261119T161248Z.1e8f5cedf`, 16:38Z to 16:39Z: the one further rule-on plan the operator approved after sitting one stopped.
+
+Before each sitting's first plan, `bash "$A" bound 188-17-2 OPERATOR_REPLY plan=188-17 task=2` exit 0 and `bash "$A" has 188-17-2 '^answer_sitting=approve$'` exit 0 were read for that sitting's attempt.
+
+Every command ran under `caffeinate -i` with `AWS_PROFILE=openvaa-admin` after the account check (exit 0, match exit 0). `TF_VAR_alert_email` was checked with `test -n` only (exit 0). `TF_DATA_DIR` was a fresh directory under the session scratch directory, against the root's S3 backend (`init -lockfile=readonly` exit 0), so the operator's `.terraform/` was not touched. Plans were saved under `$L` (`mktemp -d "${TMPDIR}/openvaa-aws.XXXXXX"`, mode 700) and read with `terraform show -json` through `jq`, which selected addresses, actions and the rule's named arguments. No plan output is copied here. No `apply` was run. Each status was read on its own line.
 
 ```
-T3_PRE_PLAN_ACTIVE_RUNS=0 (16:07:34Z)
-T3_DIGEST=sha256:e35bde282307277ea7be9aed008b2bc5a31c0a27ff2738b9153e09bf1412182a
-T3_UNSET_PLAN_EXIT=0
-T3_UNSET_PLAN_LINE=No changes. Your infrastructure matches the configuration.
-T3_UNSET_CHANGES=none
-T3_ON_PLAN_1_EXIT=1 (16:07:49Z..16:09:43Z)
-T3_ON_PLAN_1_CAUSE=unknown: the log was removed with $L before it was read
-T3_ON_PLAN_1_ACL_PROVIDER_CONFIG_KEY=aws.us_east_1
-T3_ON_PLAN_2_ACTIVE_RUNS=0 (16:10:28Z)
-T3_ON_PLAN_2_EXIT=0 (16:10:28Z..16:10:42Z)
-T3_ON_PLAN_2_LINE=Plan: 1 to add, 1 to change, 0 to destroy.
-T3_ON_PLAN_2_CHANGES=not read: the plan file was removed before its JSON was read
-T3_PLAN_FILES_LEFT=0
-T3_APPLIED=no
-T3_DISTRIBUTION_WEB_ACL_AFTER=none (16:11:08Z)
-T3_CLOUDFRONT_WEB_ACLS_AFTER=0
+UNSET_PRE_PLAN_ACTIVE_RUNS=0
+UNSET_DIGEST=sha256:e35bde282307277ea7be9aed008b2bc5a31c0a27ff2738b9153e09bf1412182a
+UNSET_PLAN_ATTEMPT=20261119T155002Z.8a7a4188d
+UNSET_PLAN_AT=2026-11-19T16:07:34Z..2026-11-19T16:07:49Z
+UNSET_PLAN_EXIT=0
+UNSET_PLAN_LINE=No changes.
+UNSET_PLAN_LINE_FULL=No changes. Your infrastructure matches the configuration.
+UNSET_CHANGES=none
+ON_PLAN_ATTEMPT=20261119T161248Z.1e8f5cedf
+ON_PRE_PLAN_ACTIVE_RUNS=0
+ON_DIGEST=sha256:e35bde282307277ea7be9aed008b2bc5a31c0a27ff2738b9153e09bf1412182a
+ON_PLAN_AT=2026-11-19T16:39:01Z..2026-11-19T16:39:08Z
+ON_PLAN_EXIT=0
+ON_PLAN_LINE=Plan: 1 to add, 1 to change, 0 to destroy.
+ON_PLAN_ERRORED=false
+ON_CHANGE=update module.frontend.aws_cloudfront_distribution.this
+ON_CHANGE=create module.frontend.aws_wafv2_web_acl.relay[0]
+ON_DISTRIBUTION_ACTIONS=update
+ON_DISTRIBUTION_CHANGED=web_acl_id
+ON_DISTRIBUTION_REPLACE_PATHS=0
+ON_ACL_NAME=openvaa-staging-relay
+ON_ACL_SCOPE=CLOUDFRONT
+ON_ACL_PROVIDER=aws.us_east_1
+ON_ACL_DEFAULT_ACTION=allow
+ON_ACL_RULE_COUNT=1
+ON_RULE_NAME=relay-rate
+ON_RULE_ACTION=block
+ON_RULE_LIMIT=300
+ON_RULE_WINDOW=300
+ON_RULE_AGGREGATE=IP
+ON_RULE_SCOPE_DOWN=/api/usage
+ON_RULE_POSITIONAL=STARTS_WITH
+ON_RULE_FIELD=uri_path
+ON_RULE_TRANSFORMATION=NORMALIZE_PATH
+ON_RULE_RESPONSE=429
+PLAN_FILES_REMOVED=yes
+PLAN_JSON_LEFT=0
+APPLIED=no
+DISTRIBUTION_WEB_ACL_AFTER=none
+CLOUDFRONT_WEB_ACLS_AFTER=0
 DEPLOY_ROLE_WAFV2_ACTIONS=0
 CF_REQUESTS_30D=3888
 WAF_COST_READ_ON=2026-11-19
@@ -66,22 +95,41 @@ WAF_USD_PER_MILLION=0.60
 WAF_INSPECTED=every request to the distribution
 WAF_COST_ESTIMATE_USD_MONTH=6.00
 FLAT_RATE_ALTERNATIVE=CloudFront flat-rate Free plan, 0 USD a month per distribution with no overage charges, including CloudFront, AWS WAF and DDoS protection, subscribed in the CloudFront console; not adopted
+EXTRA_PLANS=2 (a failed rule-on plan and its re-run, both in sitting one; see Deviations below)
 ```
 
-- **`T3_UNSET_PLAN_LINE=`.** A plan with `-var "image_digest=$DIGEST"` alone, where the digest is the one `running-image-digest.sh` read (exit 0) on `:20`. Plan exit 0, `show -json` exit 0, and no change other than `no-op` and `read`. This matches `EXPECTED_UNSET=`. The live stack equals the configuration with `relay_rate_limit` unset, and the hand applies of 188-12 to 188-15 are all restored. This is RELAY-09's "off by default changes nothing", read against real state (188-03's D4).
-- **`T3_ON_PLAN_1_EXIT=1`.** The first plan with the rule on (the digest, plus `-var 'relay_rate_limit={limit=300,window_seconds=300}'`) exited 1 after about 114 seconds. The unset plan took about 15. The script removed `$L`, the plan log with it, without first reading the log's diagnostics, so the cause is not known.
-  - `terraform show -json` of the saved file exited 0. Terraform 1.16.5 saves an errored plan to `-out`. The file's `resource_changes` gave no change line, and its configuration names the ACL's provider `aws.us_east_1`.
-  - Both of that plan's files were removed with `$L`.
-  - A stale state lock from this run is ruled out: the next plan took the lock and finished.
-- **`T3_ON_PLAN_2_EXIT=0`.** One identical re-run was made only to read the first one's error, which made it a third plan beyond the approved two. No run was active (0) when it started. Its plan file and log were both removed before its JSON was read, so only the `Plan:` line is on record.
-  - The line equals the expected `Plan: 1 to add, 1 to change, 0 to destroy.`
-  - Not read: the change lines, the distribution's changed key, and the rule's arguments.
-  - The first plan's failure did not recur. That makes it consistent with a transient read failure, but the cause is unconfirmed.
-- **`T3_DISTRIBUTION_WEB_ACL_AFTER=none`.** `aws cloudfront get-distribution-config --id E3V7BYRXOVAFII` exit 0, `WebACLId` empty. `aws wafv2 list-web-acls --scope CLOUDFRONT --region us-east-1` exit 0, 0 ACLs. `find "$TMPDIR" -maxdepth 2 -path '*openvaa-aws.*' -name '*.tfplan'` counts 0. The one `openvaa-aws.*` directory left in `$TMPDIR` is empty and dates from 2026-11-18T01:35Z, before this plan.
-- **`DEPLOY_ROLE_WAFV2_ACTIONS=0`.** `aws iam list-attached-role-policies --role-name openvaa-staging-deploy` exit 0 lists 11 attached policies, and `list-role-policies` exit 0 lists no inline policy. The `get-policy` and `get-policy-version` GETs of each default version all exited 0. In the `Allow` statements there are 0 actions starting `wafv2:`, 0 matching `waf*` or `*`, and no `NotAction` statement.
-- **`CF_REQUESTS_30D=3888`.** `aws cloudwatch get-metric-statistics --region us-east-1 --namespace AWS/CloudFront --metric-name Requests`, dimensions `DistributionId=E3V7BYRXOVAFII` and `Region=Global`, `Sum` over one 30-day period from 2026-10-20T16:00Z to 2026-11-19T16:00Z, exit 0: 3888. The daily sums over 2026-10-20 to 2026-11-19 have one datapoint, 1118 on 2026-11-18.
+- **`UNSET_PLAN_LINE=No changes.`** The unset plan was made in sitting one, under attempt `20261119T155002Z.8a7a4188d`, and was not re-planned in sitting two.
+  - It used `-var "image_digest=$DIGEST"` alone, where the digest is the one `running-image-digest.sh` read (exit 0) on `:20`.
+  - Before it, the five status counts of `actions/runs` read 0, and no `deploy.yml` or `destroy.yml` run was other than `completed`.
+  - Plan exit 0, `show -json` exit 0, and no change other than `no-op` and `read`. This matches `EXPECTED_UNSET=`.
+  - What it shows: with `relay_rate_limit` unset, the live stack equals the configuration. A null `web_acl_id` leaves the distribution as it is (188-03's D4, read against real state), and every hand apply of 188-12 to 188-15 is restored.
+- **`ON_PLAN_LINE=Plan: 1 to add, 1 to change, 0 to destroy.`** Made in sitting two with the same digest and `-var 'relay_rate_limit={limit=300,window_seconds=300}'`, after the pipeline check (0 runs active at 16:38:56Z). Plan exit 0, `show -json` exit 0, plan not errored. The two `ON_CHANGE=` lines are exactly `EXPECTED_ON=`.
+  - **`ON_DISTRIBUTION_CHANGED=web_acl_id`.** Among the union of the distribution's `before` and `after` keys, the one that differs, or is unknown in `after`, is `web_acl_id`. Before it is empty, and after it is unknown until the ACL exists. The action is `update` with no `replace_paths`, so the distribution changes in place.
+  - **The planned ACL.** Named `openvaa-staging-relay`, scope `CLOUDFRONT`, through the `aws.us_east_1` provider, default action `allow`, one rule. The rule is `relay-rate`, action `block` with custom response 429. It is a rate-based statement with limit 300 over a 300-second window on the source address (`IP`). Its scope-down is a byte match of `uri_path` against `/api/usage`, `STARTS_WITH`, after one `NORMALIZE_PATH` transformation at priority 0.
+  - No other address appears: nothing in the task definition, the service, the scaling or the network.
+- **`PLAN_FILES_REMOVED=yes`, `PLAN_JSON_LEFT=0`, `APPLIED=no`.**
+  - Every plan file, plan JSON and log was removed with its `$L`. Sitting two's script removed them only after its reads, and on a failure it would first have kept the redacted `Error:` diagnostics (it did not fail, so none exist).
+  - Counted afterwards, with exit 0 each: `.tfplan` files under `$TMPDIR/openvaa-aws.*` 0, plan JSONs under those directories and the session scratch directory 0. The one `openvaa-aws.*` directory in `$TMPDIR` is empty and dates from 2026-11-18T01:35Z, before this plan.
+  - No `apply` command was run.
+- **`DISTRIBUTION_WEB_ACL_AFTER=none`.** At 16:39:30Z, `aws cloudfront get-distribution-config --id E3V7BYRXOVAFII` exit 0, `WebACLId` empty, and `aws wafv2 list-web-acls --scope CLOUDFRONT --region us-east-1` exit 0, 0 ACLs. The same reads at 16:11:08Z, after sitting one, gave the same.
+- **`DEPLOY_ROLE_WAFV2_ACTIONS=0`.** `aws iam list-attached-role-policies --role-name openvaa-staging-deploy` exit 0 lists 11 attached policies, and `list-role-policies` exit 0 lists no inline policy. The `get-policy` and `get-policy-version` GETs of each default version all exited 0. In the `Allow` statements there are 0 actions starting `wafv2:`, 0 matching `waf*` or `*`, and no `NotAction` statement. This is what the variable's description says: switching the rule on needs `wafv2` actions on the deploy role first.
+- **`CF_REQUESTS_30D=3888`.** `aws cloudwatch get-metric-statistics --region us-east-1 --namespace AWS/CloudFront --metric-name Requests`, dimensions `DistributionId=E3V7BYRXOVAFII` and `Region=Global`, `Sum` over one 30-day period from 2026-10-20T16:00Z to 2026-11-19T16:00Z, exit 0: 3888. The daily sums over 2026-10-20 to 2026-11-19 have one datapoint, 1118 on 2026-11-18, so the distribution's traffic falls in its last two days.
 - **The cost, read on 2026-11-19.**
-  - **Sources.** `aws pricing get-products --service-code awswaf` (us-east-1 endpoint, exit 0, publication date 2026-09-14), location `Any`: `Global-WebACLV2` 5.00 USD a month per web ACL, `Global-RuleV2` 1.00 USD a month per rule (both prorated hourly), and `Global-RequestV2-Tier1` 0.60 USD per million requests processed. The WAF pricing page (`https://aws.amazon.com/waf/pricing/`, HTTP 200, read 16:10:40Z) says: "You will be charged for each web ACL that you create and each rule that you create per web ACL. In addition, you will be charged for the number of web requests processed by the web ACL." Its worked example uses 5.00, 1.00 and 0.60 per million. A web ACL on a distribution processes every request to it.
+  - **Sources.** `aws pricing get-products --service-code awswaf` (us-east-1 endpoint, exit 0, publication date 2026-09-14), location `Any`: `Global-WebACLV2` 5.00 USD a month per web ACL, `Global-RuleV2` 1.00 USD a month per rule (both prorated hourly), and `Global-RequestV2-Tier1` 0.60 USD per million requests processed. The WAF pricing page (`https://aws.amazon.com/waf/pricing/`, HTTP 200, read 16:10:40Z) says: "You will be charged for each web ACL that you create and each rule that you create per web ACL. In addition, you will be charged for the number of web requests processed by the web ACL." Its worked examples use 5.00, 1.00 and 0.60 per million. A web ACL on a distribution processes every request to the distribution, not only those to `/api/usage`.
   - **Estimate.** 6.00 plus 0.60 × 3888 / 1,000,000 = 6.0023, so 6.00 USD a month at staging's traffic.
-  - **Alternative.** The CloudFront pricing page (`https://aws.amazon.com/cloudfront/pricing/`, HTTP 200) offers flat-rate plans that "include … AWS WAF and DDoS protection" for a monthly price "with no overage charges". The Free plan is "$0/month" per distribution, and "Plans can be configured through the CloudFront Console". Its request allowance was not in the text this read extracted. The research's 1M requests a month (page read 2026-11-15) is not re-confirmed here.
-- **Not done.** The `ON_*` change lines and rule arguments, `PLAN_FILES_REMOVED=` and `APPLIED=` for a complete sitting, and the runbook's Observations row. All wait for one more rule-on plan, which the operator has not approved.
+  - **Alternative.** The CloudFront pricing page (`https://aws.amazon.com/cloudfront/pricing/`, HTTP 200) offers flat-rate plans that "include … AWS WAF and DDoS protection" for a monthly price "with no overage charges". The Free plan is "$0/month" per distribution, and "Plans can be configured through the CloudFront Console". Its request allowance was not in the text this read extracted. The research's 1M requests a month (page read 2026-11-15) is not re-confirmed here. Not adopted.
+  - The pages were read with `curl` and the Price List API, because WebFetch was not available to the executor.
+
+### Deviations
+
+- **A failed rule-on plan, its cause unread.** In sitting one, the first rule-on plan, with the same arguments as `ON_PLAN_*`, exited 1 after about 114 seconds (16:07:49Z to 16:09:43Z). The unset plan had taken about 15.
+  - The script removed `$L`, the log with it, before reading the diagnostics, so the cause is not known.
+  - `terraform show -json` of the saved file exited 0 with no change line. Terraform 1.16.5 saves an errored plan to `-out`.
+  - A stale state lock is ruled out, because each later plan took the lock and finished.
+- **One extra plan, beyond the approved two.** To read that error, the executor made one identical rule-on plan at 16:10:28Z, with 0 runs active.
+  - It exited 0 in 14 seconds with `Plan: 1 to add, 1 to change, 0 to destroy.`.
+  - Its plan file was removed before its JSON was read, so only the `Plan:` line was taken from it.
+  - The failure did not recur, which is consistent with a transient read failure but not confirmed.
+  - Both plans were removed with their `$L`. The task stopped there and was reported.
+  - The operator then approved one further rule-on plan, under attempt `20261119T161248Z.1e8f5cedf`, with the script fixed to keep redacted diagnostics on a failure and to read the JSON before removing anything. That plan is the `ON_*` record above.
+- **In all, four plans were made:** one unset and three rule-on. None was applied, and none is left.
