@@ -138,3 +138,55 @@ TRACE_COMPLETE=yes
 ```
 
 - **`TRACE_PRIVACY_ZERO_COUNTS=present`.** This plan's prohibition requires plan 188-11's zero counts before the phase closes. All nine are among the checked lines: `B03_IP_PRESENT=0`, `B03_GEOIP_PRESENT=0`, `B03_USER_AGENT_PRESENT=0`, `B03_URL_PRESENT=0`, `B03_REFERRER_PRESENT=0`, `B03_HOST_PRESENT=0`, `B03_PERSON_PROFILE_EVENTS=0`, `B03_PERSONS=0` and `B03_PAGEVIEW_SESSION_ID_PRESENT=0`. They are counts over one consenting journey (item 4 above).
+
+## Task 2 — The operator's answer (2026-11-19)
+
+The orchestrator opened attempt `20261119T182037Z.9ce39a692` of key `188-19-2` and stored the reply. Before Task 3 the plan executor read `bash "$A" bound 188-19-2 OPERATOR_REPLY plan=188-19 task=2` (exit 0) and `bash "$A" has 188-19-2` for each answer: `^answer_attempt=20261119T182037Z.9ce39a692$`, `^answer_read_item=revoked$`, `^answer_settled_on=2026-11-19$` and `^answer_final_plan=approve$`, each exit 0.
+
+```
+ATTEMPT=20261119T182037Z.9ce39a692
+ANSWER_READ_ITEM=revoked
+ANSWER_SETTLED_ON=2026-11-19
+ANSWER_FINAL_PLAN=approve
+```
+
+## Task 3 — The final plan reads no change, and the key's fate on record (2026-11-19)
+
+Recorded 2026-11-19 (UTC) by the continuation executor of plan 188-19, 18:30:41Z to 18:31:09Z, from HEAD `9ce39a692`. One script ran under `caffeinate -i`, and `pmset -g log` has no sleep or wake entry in that window. It used `AWS_PROFILE=openvaa-admin` after the account check (exit 0, account match). `TF_VAR_alert_email` was checked with `test -n` only (exit 0), and no `TF_VAR_relay_rate_limit`, `TF_VAR_environment_overrides` or `TF_VAR_image_digest` was in its environment (count 0). `TF_DATA_DIR` was a fresh directory under the session scratch directory, against the root's S3 backend, and was removed afterwards, so the operator's `.terraform/` was not touched. The plan was saved under a mode-700 `mktemp -d` directory, read, and removed with that directory. No plan output is copied here, and nothing was applied. Each status was read on its own line.
+
+```
+FINAL_PRE_PLAN_ACTIVE_RUNS=0
+FINAL_SSO_REFRESH_INIT_EXIT=0
+FINAL_SSO_REFRESH_STS_EXIT=0
+FINAL_PLAN_DIGEST=sha256:e35bde282307277ea7be9aed008b2bc5a31c0a27ff2738b9153e09bf1412182a
+FINAL_PLAN_VARS=image_digest only
+FINAL_PLAN_AT=2026-11-19T18:30:51Z..2026-11-19T18:30:58Z
+FINAL_PLAN_EXIT=0
+FINAL_PLAN_LINE=No changes.
+FINAL_PLAN_LINE_FULL=No changes. Your infrastructure matches the configuration.
+FINAL_PLAN_JSON_RESOURCE_CHANGES=0
+FINAL_PLAN_JSON_OUTPUT_CHANGES=0
+FINAL_PLAN_REMOVED=yes
+FINAL_PLAN_FILES_LEFT=0
+FINAL_APPLIED=no
+READ_KEY=revoked
+READ_KEY_SETTLED_ON=2026-11-19
+READ_KEY_KEYCHAIN_ITEM=absent
+READ_KEY_POSTHOG_SIDE=revoked by the operator's answer
+PHASE_188_DEPLOYED_HALF=complete
+```
+
+- **`FINAL_PRE_PLAN_ACTIVE_RUNS=0`.** The status-filtered counts of `actions/runs` for `queued`, `in_progress`, `waiting`, `requested` and `pending` sum to 0, and each GET exited 0. They were read in the same script, right before the plan.
+- **The SSO refresh.** `terraform init -input=false -lockfile=readonly` of `infra/envs/staging/aws` exited 0, so the S3 backend refreshed the session. `aws sts get-caller-identity` after it exited 0.
+- **`FINAL_PLAN_DIGEST=`.** `infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend` exited 0. The digest is `FINAL_DIGEST=` of Task 1 and `BUILD_DIGEST=` of 188-10. It was the plan's only `-var`.
+- **`FINAL_PLAN_EXIT=0`, `FINAL_PLAN_LINE=No changes.`.** `terraform plan -input=false -detailed-exitcode -var "image_digest=$DIGEST" -out <dir>/final.tfplan` exited 0. With `-detailed-exitcode`, 0 means no changes and 2 would mean changes. The first summary line of its output is `No changes. Your infrastructure matches the configuration.` A second reading agrees: `terraform show -json` of the saved plan (exit 0), read with `jq`, counts 0 resource changes other than `no-op` or `read` and 0 output changes. So nothing of the phase's hand work remains on the stack, and staging is as its tfvars say.
+- **`FINAL_PLAN_REMOVED=yes`, `FINAL_PLAN_FILES_LEFT=0`.** The plan file, its JSON, the plan and init logs, and the data directory were deleted. A `find` of the session scratch directory and of `$TMPDIR` for `*.tfplan` and the plan JSON finds none from this plan. A wider search for `tfplan*` and `*plan*.json` finds only files from other work, none of them from phase 188: PR-review `merge-plan.json` files, and `openvaa-bootstrap.T5fcmB/s9a-plan.json`, a Terraform plan JSON of 2026-11-16 (phase 187). They were left in place, and the last is reported to the orchestrator. One empty `openvaa-aws.*` directory of 2026-11-18 is also left, not from this plan.
+- **`READ_KEY=revoked`, `READ_KEY_SETTLED_ON=2026-11-19`.** The operator answered `answer_read_item=revoked` on 2026-11-19. The local half: the orchestrator read `security find-generic-password -s openvaa-staging-posthog-read`, which exited 44 (item not found), and the executor read it again here, also exit 44, so `READ_KEY_KEYCHAIN_ITEM=absent`. The PostHog side, the personal `phx_` key scoped to project 347462 that replaced the `phs_` key in 188-09, rests on the operator's answer. Nothing here can read PostHog's key list without a key. Phase 189 needs a new read key if it is to read events. Research open question 3 is settled.
+- **`PHASE_188_DEPLOYED_HALF=complete`.** Staging ends the phase as its tfvars say:
+  - PostHog is on (B-01);
+  - no hand state is left (A-03);
+  - no web ACL (C-04);
+  - every success criterion is traced (Task 1);
+  - the read key is settled.
+
+  The four requirements stay unticked in REQUIREMENTS.md until the phase verifier closes them, with the open items of Task 1.
