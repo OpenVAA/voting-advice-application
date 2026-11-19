@@ -9,7 +9,8 @@
  *
  *   step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> met=yes|no
  *
- * and then the figure, the arrival rate of the highest step that met every threshold, in journeys per minute:
+ * and then the figure, in journeys per minute: the arrival rate of the highest step that met every threshold with every
+ * step below it, so the first step that did not meet them ends the figure:
  *
  *   figure_journeys_per_minute=<r, or 0 when no step met>
  *   figure_step=<i, or none>
@@ -22,9 +23,10 @@
  *   metrics["http_req_duration{kind:relay,step:<i>}"].values["p(95)"]
  *   metrics["http_req_failed{step:<i>}"].values.rate
  *
- * and the step rates from `load_check.steps`.
+ * and the step rates from `load_check.steps`, which must rise strictly.
  *
- * Exit codes: 0 when the lines were printed; 1 when the summary is unreadable or holds no step; 2 on a usage error.
+ * Exit codes: 0 when the lines were printed; 1 when the summary is unreadable, holds no step or holds steps that do not
+ * rise strictly; 2 on a usage error.
  */
 
 import { readFileSync } from 'node:fs';
@@ -59,6 +61,11 @@ function valueOf(metrics, name, field) {
 export function computeFigure(summary) {
   const rates = summary?.load_check?.steps;
   if (!Array.isArray(rates) || rates.length === 0) throw new Error('the summary holds no load_check.steps');
+  rates.forEach((rate, index) => {
+    if (typeof rate !== 'number' || !Number.isFinite(rate) || rate <= 0)
+      throw new Error(`load_check.steps holds ${String(rate)}, not a positive rate`);
+    if (index > 0 && rate <= rates[index - 1]) throw new Error('load_check.steps do not rise strictly');
+  });
   const metrics = summary.metrics ?? {};
   const steps = rates.map((rate, index) => {
     const step = index + 1;
@@ -74,7 +81,8 @@ export function computeFigure(summary) {
       errorRate < STEP_ERROR_RATE;
     return { step, rate, pageP95, relayP95, errorRate, met };
   });
-  const highest = steps.filter((entry) => entry.met).at(-1);
+  const firstUnmet = steps.findIndex((entry) => !entry.met);
+  const highest = (firstUnmet === -1 ? steps : steps.slice(0, firstUnmet)).at(-1);
   return { steps, figure: highest?.rate ?? 0, figureStep: highest?.step };
 }
 

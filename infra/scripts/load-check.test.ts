@@ -82,6 +82,8 @@ describe('load-check.sh', () => {
       'staging-without-confirm-target-is-refused',
       'confirm-target-that-differs-is-refused',
       'step-above-max-rate-is-refused',
+      'steps-that-fall-are-refused',
+      'repeated-step-is-refused',
       'foreign-host-in-journey-is-refused',
       'existing-out-is-refused',
       'base-url-outside-allowlist-is-refused',
@@ -166,6 +168,51 @@ describe('figure.mjs', () => {
     expect(stdout).toMatch(/^figure_journeys_per_minute=5$/m);
   });
 
+  it('ends the figure at the first step that did not meet the thresholds, though a higher step met them', () => {
+    const { status, stdout } = figure(
+      'failed-middle-step',
+      summary([
+        { rate: 5, page: 220, relay: 40, failed: 0 },
+        { rate: 10, page: 1200, relay: 60, failed: 0 },
+        { rate: 20, page: 400, relay: 70, failed: 0 },
+        { rate: 40, page: 500, relay: 80, failed: 0 }
+      ])
+    );
+    expect(status).toBe(0);
+    expect(stdout).toContain('step=2 rate_per_min=10 page_p95_ms=1200.0 relay_p95_ms=60.0 error_rate=0.0000 met=no');
+    expect(stdout).toContain('step=4 rate_per_min=40 page_p95_ms=500.0 relay_p95_ms=80.0 error_rate=0.0000 met=yes');
+    expect(stdout).toMatch(/^figure_journeys_per_minute=5$/m);
+    expect(stdout).toMatch(/^figure_step=1$/m);
+  });
+
+  it('gives 0 when the first step did not meet the thresholds, whatever the steps above it did', () => {
+    const { stdout } = figure(
+      'failed-first-step',
+      summary([
+        { rate: 5, page: 220, relay: 400, failed: 0 },
+        { rate: 10, page: 220, relay: 40, failed: 0 }
+      ])
+    );
+    expect(stdout).toMatch(/^figure_journeys_per_minute=0$/m);
+    expect(stdout).toMatch(/^figure_step=none$/m);
+  });
+
+  it.each([
+    ['falling', [20, 10]],
+    ['repeated', [5, 10, 10]],
+    ['zero', [0, 5]],
+    ['not numbers', ['5', '10']]
+  ])('exits 1 on steps that do not rise strictly: %s', (name, steps) => {
+    const content = JSON.parse(summary(steps.map(() => ({ rate: 1, page: 200, relay: 40, failed: 0 })))) as {
+      load_check: { steps: Array<unknown> };
+    };
+    content.load_check.steps = steps;
+    const { status, stdout, stderr } = figure(`unordered-${name.replace(/ /g, '-')}`, JSON.stringify(content));
+    expect(status).toBe(1);
+    expect(stdout).toBe('');
+    expect(stderr).toMatch(/^figure\.mjs: load_check\.steps /m);
+  });
+
   it('exits 1 on a summary without load_check', () => {
     expect(figure('no-steps', JSON.stringify({ metrics: {} })).status).toBe(1);
   });
@@ -198,6 +245,10 @@ describe('voter-journey.js', () => {
   it('writes its summary with handleSummary', () => {
     expect(text).toMatch(/export function handleSummary\(/);
     expect(text).toContain("'/out/summary.json'");
+  });
+
+  it('refuses steps that do not rise strictly', () => {
+    expect(text).toContain("fail('STEPS does not rise strictly')");
   });
 
   it('holds no literal key', () => {

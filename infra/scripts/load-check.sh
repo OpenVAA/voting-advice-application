@@ -8,7 +8,7 @@
 # and the script then prints:
 #   k6_exit=<n>
 #   step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> met=yes|no     (one line per step)
-#   figure_journeys_per_minute=<rate of the highest step that met every threshold, or 0>
+#   figure_journeys_per_minute=<rate of the highest step that met every threshold with every step below it, or 0>
 #   figure_step=<i or none>
 # k6 exits 99 when a threshold was crossed, which is expected at a step above the capacity, and also when the run was
 # aborted at errors above 5 % for a minute. The method is written in `infra/scripts/load-check/README.md`.
@@ -16,7 +16,7 @@
 # What it refuses, each with exit 2 before anything is run:
 #   - a base URL that is neither https://staging.openvaa.org nor http://host.docker.internal:<port>;
 #   - the staging URL without --confirm-target, or with a --confirm-target that is not the base URL;
-#   - a step above --max-rate;
+#   - steps that do not rise strictly, or a step above --max-rate;
 #   - a journey whose base is not the base URL, or that holds a request to any host but the base host and one
 #     <ref>.supabase.co host, a page request off the base host, a data request off the Supabase host, or a request to
 #     /auth/v1/, /functions/v1/, /api/usage or /_app/immutable/;
@@ -116,7 +116,7 @@ if (supabaseOrigins.size > 1) stop("the journey holds requests to more than one 
 '
 
 check_arguments() {
-  local rate_re='^[1-9][0-9]*$' local_re='^http://host\.docker\.internal:[1-9][0-9]{0,4}$' step reason key_present=no
+  local rate_re='^[1-9][0-9]*$' local_re='^http://host\.docker\.internal:[1-9][0-9]{0,4}$' step previous="" reason key_present=no
 
   [ -n "$BASE_URL" ] || usage_error "--base-url is required"
   if [ "$BASE_URL" = "$STAGING_URL" ]; then
@@ -138,6 +138,8 @@ check_arguments() {
   for step in ${STEPS//,/ }; do
     [[ "$step" =~ $rate_re ]] || usage_error "--steps holds $step, not a positive whole number"
     [ "$step" -le "$MAX_RATE" ] || usage_error "--steps holds $step, above --max-rate $MAX_RATE"
+    [ -z "$previous" ] || [ "$step" -gt "$previous" ] || usage_error "--steps must rise strictly; $step follows $previous"
+    previous="$step"
   done
 
   [ -n "$OUT" ] || usage_error "--out is required"
@@ -293,6 +295,10 @@ STUB
     --steps 1 --max-rate 5 --out "$ST/runs/b"
   st_refused "step-above-max-rate-is-refused" "above --max-rate" \
     --base-url "$local_url" --journey "$ST/local.json" --steps 1,6 --max-rate 5 --out "$ST/runs/c"
+  st_refused "steps-that-fall-are-refused" "--steps must rise strictly" \
+    --base-url "$local_url" --journey "$ST/local.json" --steps 20,10 --max-rate 50 --out "$ST/runs/c2"
+  st_refused "repeated-step-is-refused" "--steps must rise strictly" \
+    --base-url "$local_url" --journey "$ST/local.json" --steps 5,10,10 --max-rate 50 --out "$ST/runs/c3"
   st_refused "foreign-host-in-journey-is-refused" "neither the base host nor a Supabase host" \
     --base-url "$local_url" --journey "$ST/foreign.json" --steps 1 --max-rate 5 --out "$ST/runs/d"
   mkdir "$ST/runs/existing"

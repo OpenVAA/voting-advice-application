@@ -8,7 +8,8 @@
  * can be read per step. The method, and how the figure is read from the summary, are in `README.md` beside this file.
  *
  * Inputs, from the environment only:
- *   STEPS              Comma-separated arrival rates, in journeys per minute, one per step, e.g. `5,10,20`.
+ *   STEPS              Comma-separated arrival rates, in journeys per minute, one per step, rising strictly, e.g.
+ *                      `5,10,20`.
  *   STEP_SECONDS       The length of every step, in seconds.
  *   BASE_URL           The origin the pages and the relay posts are requested from.
  *   JOURNEY            The path of the journey file inside the container.
@@ -51,10 +52,14 @@ function parseSteps(value) {
     .map((entry) => entry.trim())
     .filter((entry) => entry !== '');
   if (steps.length === 0) fail('STEPS is empty');
-  return steps.map((entry) => {
+  const rates = steps.map((entry) => {
     if (!/^[1-9][0-9]*$/.test(entry)) fail(`STEPS holds ${entry}, not a positive whole number`);
     return Number(entry);
   });
+  rates.forEach((rate, index) => {
+    if (index > 0 && rate <= rates[index - 1]) fail('STEPS does not rise strictly');
+  });
+  return rates;
 }
 
 function parseOrigin(url) {

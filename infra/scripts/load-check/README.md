@@ -50,7 +50,7 @@ discarded.
 ## Steps, thresholds and the abort
 
 The run is a list of steps, each an arrival rate in journeys per minute held for 5 minutes (`--step-seconds 300`, the
-default). Each step is one `constant-arrival-rate` scenario that starts when the one before it ends, tagged
+default). The rates rise strictly; the wrapper refuses any other list. Each step is one `constant-arrival-rate` scenario that starts when the one before it ends, tagged
 `step: <index from 1>`; arrival rate is an open model, so a slower answer does not slow the arrivals. The stack is
 measured as configured, at its own task floor and ceiling.
 
@@ -74,8 +74,9 @@ the capacity. The steps after an abort have no values and are not met.
 step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> met=yes|no
 ```
 
-and then `figure_journeys_per_minute=<r>` and `figure_step=<i>`: the rate of the highest step that met every threshold,
-or `0` and `none` when no step did. The values are read from `metrics["<sub-metric>"].values["p(95)"]` and
+and then `figure_journeys_per_minute=<r>` and `figure_step=<i>`: the rate of the highest step that met every threshold
+with every step below it, so the first step that did not meet them ends the figure, or `0` and `none` when the first
+step did not. The values are read from `metrics["<sub-metric>"].values["p(95)"]` and
 `metrics["http_req_failed{step:<i>}"].values.rate`, and the step rates from the `load_check` member the script adds to
 k6's summary. The figure is recorded with the date, the commit the stack served (`build` of `/api/health`), the task
 count and the task CPU during that step, and the resource that bound the next step: the task's CPU or memory, the
