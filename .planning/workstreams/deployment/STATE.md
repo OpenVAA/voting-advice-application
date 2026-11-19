@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 17
+current_plan: 18
 status: executing
-stopped_at: Completed 188-14-PLAN.md
-last_updated: "2026-11-19T15:11:25.160Z"
+stopped_at: Completed 188-15-PLAN.md
+last_updated: "2026-11-19T15:46:38.753Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 9092837b7fbd09be6912507180f060ed1b338469
+state_head: 902191882eb7e21dc2d8fb5dc462e21f935638d7
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 184
+  completed_plans: 185
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 17 of 20
+Plan: 18 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 17
+**Current Plan:** 18
 
 From 184 on, the numeric order is the dependency order.
 
@@ -192,6 +192,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P12 | about 3 h | 3 tasks | 2 files |
 | Phase 188 P13 | 35min | 3 tasks | 2 files |
 | Phase 188 P14 | 25min | 3 tasks | 2 files |
+| Phase 188 P15 | 40 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -409,6 +410,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-13: the full-queue memory baseline is the minutes the one task ran alone (8.887 %), not the literal five-minute window whose rollout minute read 14.99 %; rise 0.634 points
 - [Phase 188]: 188-14: a services-stable waiter that returns non-zero across a host suspend is void; read the service state, rerun the waiter and keep long waits under caffeinate -i
 - [Phase 188]: 188-14: fail-open observed on staging: with ANALYTICS_POSTHOG_HOST unresolvable the smoke run was green, the relay answered 204 in 0.26 s and the forward failure was logged as transport ENOTFOUND only; restored to :18
+- [Phase 188]: 188-15: no rebuild is proved by the same digest on the new revision, an unchanged registry image count and newest image, and the same newest deploy.yml run
+- [Phase 188]: 188-15: provider none silenced PostHog from the rollout's COMPLETED to the restore; a control window under posthog read 11, so the zero is a reading
 
 ### Pending Todos
 
@@ -470,6 +473,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-19T15:11:23.571Z
-**Stopped At:** Completed 188-14-PLAN.md
+Last session: 2026-11-19T15:46:37.236Z
+**Stopped At:** Completed 188-15-PLAN.md
 **Resume File:** None

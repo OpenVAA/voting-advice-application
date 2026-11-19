@@ -707,7 +707,7 @@ Notes:
   4. The per-caller limit on the anonymous invitation operations is decided from the header record of OBS-04. It is either built and seen limiting one caller without limiting another, or deferred with the measurement and a date.
 
 **Research flag**: Needs `/gsd-plan-phase --research-phase`. Topics from `research/SUMMARY.md`: PostHog's price for anonymous events and the billing limit, and the cost of a WAF rule. Added by ruling A2 after the research, and so not researched: the tool and the method of the load check (OBS-11).
-**Plans**: 16/20 plans executed in 14 waves. Every plan first checks that 187-21, 187-22 and 186-08 are complete (a literal `test -f` of their SUMMARY.md files), because those plans need `apps/`, `packages/` and `tests/` unchanged and 187's first green deploy would carry this phase's migration. Waves 1 to 4 (plans 01 to 08 and 20) run without the operator: the flush interval and the overlap fix, the stop timeout, the WAF variable, the per-caller limit's migration and function, the refusal and read scripts, the load-check method, and the closing gates with the phase's one full local E2E run. Waves 5 to 14 (plans 09 to 19) are the outward actions, each behind an operator checkpoint; 187's destroy-path plans 187-23 to 187-25 must not run between plans 188-10 and 188-19.
+**Plans**: 17/20 plans executed in 14 waves. Every plan first checks that 187-21, 187-22 and 186-08 are complete (a literal `test -f` of their SUMMARY.md files), because those plans need `apps/`, `packages/` and `tests/` unchanged and 187's first green deploy would carry this phase's migration. Waves 1 to 4 (plans 01 to 08 and 20) run without the operator: the flush interval and the overlap fix, the stop timeout, the WAF variable, the per-caller limit's migration and function, the refusal and read scripts, the load-check method, and the closing gates with the phase's one full local E2E run. Waves 5 to 14 (plans 09 to 19) are the outward actions, each behind an operator checkpoint; 187's destroy-path plans 187-23 to 187-25 must not run between plans 188-10 and 188-19.
 
 Plans:
 **Wave 1**
@@ -747,7 +747,7 @@ Plans:
 - [x] 188-14-PLAN.md — wave 10 — The site green while PostHog is unreachable; restored.
 
 **Wave 11** *(needs the operator)*
-- [ ] 188-15-PLAN.md — wave 11 — Provider `none` by hand apply of the same digest, zero events; restored.
+- [x] 188-15-PLAN.md — wave 11 — Provider `none` by hand apply of the same digest, zero events; restored.
 
 **Wave 12** *(needs the operator)*
 - [ ] 188-17-PLAN.md — wave 12 — The WAF rule planned on and costed; off reads no change.
@@ -823,5 +823,5 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 185. AWS Frontend Stack, First Apply by Hand | 22/22 | Complete    | 2026-11-14 |
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
 | 187. Deploy Pipeline | 31/31 | Complete    | 2026-11-18 |
-| 188. Relay on the Deployed Stack, and the Per-Caller Limit | 16/20 | In Progress | - |
+| 188. Relay on the Deployed Stack, and the Per-Caller Limit | 17/20 | In Progress | - |
 | 189. Documentation and Closure | 0/TBD | Not started | - |
