@@ -3,6 +3,11 @@
 # except a viewer address that sends more than the limit to /api/usage within the window, and answers
 # that address 429 until its count falls back under the limit.
 
+locals {
+  # The relay's path after decoding and normalisation, behind at most one leading segment.
+  relay_path_pattern = "^/([^/]+/)?api/usage(/|$)"
+}
+
 # A web ACL for CloudFront is made in us-east-1 only, like the viewer certificate.
 resource "aws_wafv2_web_acl" "relay" {
   count    = var.relay_rate_limit == null ? 0 : 1
@@ -33,12 +38,15 @@ resource "aws_wafv2_web_acl" "relay" {
         evaluation_window_sec = var.relay_rate_limit.window_seconds
         aggregate_key_type    = "IP"
 
-        # Only requests whose normalised path starts /api/usage are counted, and only they are
-        # blocked; the rest of the site never meets the rule.
+        # Only requests to the relay are counted, and only they are blocked; the rest of the site
+        # never meets the rule. The application serves the relay at /api/usage and, because its
+        # reroute hook strips one leading locale segment, at /<locale>/api/usage too, and it
+        # percent-decodes the path before it matches a route. So the path is decoded and
+        # normalised first, and then matched as /api/usage, behind at most one segment of any
+        # name, ending there or at a slash.
         scope_down_statement {
-          byte_match_statement {
-            search_string         = "/api/usage"
-            positional_constraint = "STARTS_WITH"
+          regex_match_statement {
+            regex_string = local.relay_path_pattern
 
             field_to_match {
               uri_path {}
@@ -46,6 +54,11 @@ resource "aws_wafv2_web_acl" "relay" {
 
             text_transformation {
               priority = 0
+              type     = "URL_DECODE"
+            }
+
+            text_transformation {
+              priority = 1
               type     = "NORMALIZE_PATH"
             }
           }
