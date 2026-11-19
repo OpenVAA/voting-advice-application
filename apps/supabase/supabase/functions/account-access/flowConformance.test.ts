@@ -1,5 +1,5 @@
 /**
- * Source-level conformance of the account-access handler: the per-caller limit taken before any anonymous operation, the uniform answer of each of its two link operations, the address confirmation and its caller, the calls that create a user or mint a token, the rule that the one admin update carrying an address puts the account's placeholder back, the link's origin, the bounded memory of the deployment checks, and what a log line may hold.
+ * Source-level conformance of the account-access handler: the per-caller limit taken before every operation it limits, the uniform answer of each of its two link operations, the address confirmation and its caller, the calls that create a user or mint a token, the rule that the one admin update carrying an address puts the account's placeholder back, the link's origin, the bounded memory of the deployment checks, and what a log line may hold.
  *
  * The handler answers two operations before it does their work, `request-link` and `request-recovery`. Four properties are asserted for each by name, so a failure says which branch broke, and four more are asserted of the two together. The address confirmation answers after its work, to the caller its own access token names.
  *
@@ -448,7 +448,7 @@ describe('account-access flow conformance', () => {
   describe('the per-caller limit', () => {
     /** The block of the handler that takes the caller's slot, from its condition to its closing brace. */
     function takeBlock(): string {
-      const start = CODE.indexOf("if (request.operation !== 'confirm-address') {");
+      const start = CODE.indexOf('if (takesCallerSlot(request.operation)) {');
       expect(start, 'the block of the caller take was not found in the handler').toBeGreaterThan(-1);
       const end = CODE.indexOf('\n  }\n', start);
       expect(end).toBeGreaterThan(start);
@@ -469,15 +469,17 @@ describe('account-access flow conformance', () => {
       expect(take).toBeLessThan(CODE.indexOf('request.operation ==='));
       const between = CODE.slice(
         CODE.indexOf('admitWitness(parsed,'),
-        CODE.indexOf("if (request.operation !== 'confirm-address') {")
+        CODE.indexOf('if (takesCallerSlot(request.operation)) {')
       );
       expect(between).not.toContain('return ');
     });
 
-    it('is taken for the four anonymous operations, each of whose branches comes after it, and not for confirm-address', () => {
+    it('is taken for the operations takesCallerSlot names, each branch coming after it, and asked in no branch of code-sign-in or confirm-address', () => {
       const block = takeBlock();
       expect(block).toContain("createAdminClient().rpc('invitation_caller_take', {");
-      expect(count(CODE, 'request.operation !== ')).toBe(1);
+      expect(CODE).toContain("import { callerAddress, retryAfterSeconds, takesCallerSlot } from './callerLimit.ts';");
+      expect(count(CODE, 'takesCallerSlot(')).toBe(1);
+      expect(CODE).not.toContain('request.operation !== ');
       const blockStart = CODE.indexOf(block);
       for (const operation of ['request-link', 'request-recovery', 'confirm-address']) {
         expect(CODE.indexOf(`if (request.operation === '${operation}') {`), operation).toBeGreaterThan(blockStart);
@@ -487,6 +489,7 @@ describe('account-access flow conformance', () => {
       );
       expect(CODE.indexOf('return await checkCode(request);')).toBeGreaterThan(blockStart);
       expect(branchOf('confirm-address')).not.toContain('invitation_caller_take');
+      expect(functionBody('codeSignIn')).not.toContain('invitation_caller_take');
     });
 
     it('passes the request’s project and the address callerAddress reads, and stores the address nowhere', () => {

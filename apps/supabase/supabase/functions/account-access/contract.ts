@@ -122,7 +122,7 @@ export const ADDRESS_REFUSED_BODY = Object.freeze({ result: 'refused' } as const
 /** The answer to an address confirmation without the access token of a signed-in account. */
 export const UNAUTHENTICATED_BODY = Object.freeze({ error: 'unauthenticated' } as const);
 
-/** The answer, for each of the four anonymous operations alike, when the caller has made more requests than the per-caller limit admits. It goes out with HTTP 429 and a `Retry-After` before any work of the operation. */
+/** The answer, for each operation the per-caller limit takes a slot for alike, when the caller has made more requests than the limit admits. It goes out with HTTP 429 and a `Retry-After` before any work of the operation. */
 export const TOO_MANY_REQUESTS_BODY = Object.freeze({ error: 'too-many-requests' } as const);
 
 /**

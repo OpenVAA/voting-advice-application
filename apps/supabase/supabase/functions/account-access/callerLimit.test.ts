@@ -1,9 +1,45 @@
 /**
- * The per-caller limit's two pure reads: which header names the caller, and which answers of the database are a wait.
+ * The per-caller limit's three pure parts: which operations take a slot, which header names the caller, and which answers of the database are a wait.
  */
 
 import { describe, expect, it } from 'vitest';
-import { CALLER_ADDRESS_HEADER, callerAddress, retryAfterSeconds } from './callerLimit.ts';
+import {
+  CALLER_ADDRESS_HEADER,
+  CALLER_LIMITED_OPERATIONS,
+  callerAddress,
+  retryAfterSeconds,
+  takesCallerSlot
+} from './callerLimit.ts';
+import type { AccountAccessRequest } from './contract.ts';
+
+describe('CALLER_LIMITED_OPERATIONS', () => {
+  it('is the three operations a browser calls anonymously', () => {
+    expect([...CALLER_LIMITED_OPERATIONS]).toEqual(['check-code', 'request-link', 'request-recovery']);
+  });
+
+  it('cannot be changed by a caller of the module', () => {
+    expect(Object.isFrozen(CALLER_LIMITED_OPERATIONS)).toBe(true);
+  });
+});
+
+describe('takesCallerSlot', () => {
+  it.each(['check-code', 'request-link', 'request-recovery'] as const)('is true for %s', (operation) => {
+    expect(takesCallerSlot(operation)).toBe(true);
+  });
+
+  it('is false for code-sign-in, which the frontend server calls', () => {
+    expect(takesCallerSlot('code-sign-in')).toBe(false);
+  });
+
+  it('is false for confirm-address, which is answered only to a signed-in account', () => {
+    expect(takesCallerSlot('confirm-address')).toBe(false);
+  });
+
+  it('is false for a name no operation has', () => {
+    expect(takesCallerSlot('sign-in' as AccountAccessRequest['operation'])).toBe(false);
+    expect(takesCallerSlot('' as AccountAccessRequest['operation'])).toBe(false);
+  });
+});
 
 describe('CALLER_ADDRESS_HEADER', () => {
   it('is the header Cloudflare sets to the connecting client', () => {

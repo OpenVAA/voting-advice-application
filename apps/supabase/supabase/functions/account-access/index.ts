@@ -9,7 +9,7 @@
  * - `code-sign-in` with `code` and `password`: answers `{ result: 'signed-in', access_token, refresh_token }` or `{ result: 'invalid-credentials' }`.
  * - `confirm-address` with `email`, optionally `locale`, and the caller's own access token in `Authorization`: answers `{ result: 'sent' }`, `{ result: 'in-use' }` or `{ result: 'refused' }`, or 401 `{ error: 'unauthenticated' }` without a token the auth service accepts. It does its work before it answers. For an account whose app metadata names an identity provider and whose address is still the placeholder, it takes the account's and the address's slot, asks the auth service for the two links of a change of address, verifies the current address's link itself and mails the typed address's link. The typed address becomes the account's only when that link is opened and is never written to the account; the one admin update that carries an address puts the account's own placeholder back when verifying the current address's link completed the change alone, which the auth service does only with its secure change of address off.
  *
- * Before any of the four anonymous operations, `check-code`, `request-link`, `request-recovery` and `code-sign-in`, the caller's address from `cf-connecting-ip` takes a slot of the per-caller limit, one bucket per caller per project across the four. A caller over the limit is answered HTTP 429 `{ error: 'too-many-requests' }` with `Retry-After`, the same for each of them, and a take that fails is answered 500 `{ error: 'internal' }`. The database trusts the address only on a deployment behind Cloudflare and otherwise admits every call. `confirm-address`, answered only to a signed-in account, takes no caller slot.
+ * Before any work of the three operations a browser calls anonymously, `check-code`, `request-link` and `request-recovery`, the caller's address from `cf-connecting-ip` takes a slot of the per-caller limit, one bucket per caller per project across the three. A caller over the limit is answered HTTP 429 `{ error: 'too-many-requests' }` with `Retry-After`, the same for each of them, and a take that fails is answered 500 `{ error: 'internal' }`. The database trusts the address only on a deployment behind Cloudflare and otherwise admits every call. `code-sign-in` and `confirm-address` take no caller slot: the frontend server calls `code-sign-in`, so the address would be the server's, and `confirm-address` is answered only to a signed-in account.
  *
  * A `witness` names a completion record the service role opened, which the request's background work completes; it is a test instrument and is kept only on a request whose bearer is the service role's key.
  *
@@ -47,7 +47,7 @@ import {
   signedInBody,
   TOO_MANY_REQUESTS_BODY
 } from './contract.ts';
-import { callerAddress, retryAfterSeconds } from './callerLimit.ts';
+import { callerAddress, retryAfterSeconds, takesCallerSlot } from './callerLimit.ts';
 import {
   createExpiringPositive,
   isSignUpClosed,
@@ -449,8 +449,8 @@ Deno.serve(async (req) => {
   // A completion witness is a test instrument, kept only on a request made with the service role's key.
   const request = admitWitness(parsed, authorization, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
-  // The take comes before any anonymous operation, so that a refused caller causes no work and every one of them answers alike.
-  if (request.operation !== 'confirm-address') {
+  // The take comes before the work of every operation it limits, so that a refused caller causes no work and every one of them answers alike.
+  if (takesCallerSlot(request.operation)) {
     const { data: retryAfter, error } = await createAdminClient().rpc('invitation_caller_take', {
       p_project_id: request.projectId,
       p_address: callerAddress(req.headers)
