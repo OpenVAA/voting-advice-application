@@ -6,7 +6,7 @@ severity: major
 source: Phase 188, plan 188-12 (evidence/188-12-shutdown-flush.md; runs tests/e2e-runs/188-12-obs-20261119T104646Z and 188-12-restore-20261119T105211Z)
 owner: a later deployment or testing phase
 files:
-  - tests/tests/specs/smoke/voter.smoke.ts
+  - tests/tests/deployed/voter.smoke.ts
   - apps/frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.svelte
   - apps/frontend/src/lib/contexts/app/tracking/gates.ts
 ---
