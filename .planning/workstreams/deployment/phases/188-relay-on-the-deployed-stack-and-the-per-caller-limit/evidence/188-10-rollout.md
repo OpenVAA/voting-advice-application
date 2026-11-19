@@ -47,3 +47,36 @@ DEPLOY_REBUILT_FROM_HEAD=8665ff699
 DEPLOY_DIFF_FROM_REFUSED=infra/scripts/posthog-read.sh, infra/scripts/posthog-read.test.ts only
 DEPLOY_OTHER_KEY_SHAPES=infra/modules/github-oidc/tests/github_oidc.tftest.hcl (an AKIAFAKE fixture, byte-identical in the served 331b5db28) and .yarn/releases (minified, served before)
 The approval of attempt 20261119T081947Z.5e7c655af named the refused commit; the rebuilt commit is approved under a new attempt of 188-10-2.
+
+## Task 3 — The push, the run and the gate (2026-11-19)
+
+Recorded 2026-11-19 (UTC) by the continuation executor of plan 188-10, from 08:50Z. The executor pushed nothing, started or re-ran no workflow, approved no review and wrote no hosted service or GitHub setting; its remote reads were `gh run view`, `gh api` GETs (the run, its jobs, its pending deployments) and `git ls-remote origin`. Every status was read on its own line, never through a pipe; the outputs are in the session scratch directory.
+
+### The binding and the push
+
+```
+ATTEMPT_ID=20261119T083025Z.4fa5fed3c
+DEPLOY_PUSHED=yes
+DEPLOY_PUSHED_SHA=a7003b490b4ff92fc72bef5d225c593b222d6c4e
+DEPLOY_REF_BEFORE=331b5db28058a1f8bc4ef88a3841080a4610efa2
+RUN_ID=44491292876
+RUN_URL=https://github.com/OpenVAA/voting-advice-application/actions/runs/44491292876
+```
+
+- **The binding.** The orchestrator opened attempt `20261119T083025Z.4fa5fed3c` of key `188-10-2` for the rebuilt commit and stored the operator's reply. Before recording anything, the executor ran `bash "$A" id 188-10-2` (prints the attempt id above), `bash "$A" bound 188-10-2 OPERATOR_REPLY plan=188-10 task=2` and `bash "$A" has 188-10-2 '^answer_push=approve$'`, all read-only: exit 0 each.
+- **`DEPLOY_PUSHED=yes`.** The orchestrator pushed at top level after the binding: `git push origin a7003b490b4ff92fc72bef5d225c593b222d6c4e:refs/heads/deploy/staging` exit 0, the ref moving from `331b5db28…` to `a7003b490…`. The executor read it back: `git ls-remote origin refs/heads/deploy/staging` exit 0, `a7003b490b4ff92fc72bef5d225c593b222d6c4e`, equal to `DEPLOY_COMMIT=`. The push was made once; the executor made none.
+- **The run.** `gh api .../actions/runs/44491292876` exit 0: path `.github/workflows/deploy.yml`, event `push`, head branch `deploy/staging`, head SHA `a7003b490b4ff92fc72bef5d225c593b222d6c4e`, created 08:52:17Z, attempt 1.
+
+### The checks job and the gate
+
+```
+CHECKS_JOB=success
+CHECKS_JOB_ID=135447276702
+DEPLOY_JOB_ID=135447888765
+GATE_WAITED=yes
+GATE_ENVIRONMENT=staging
+GATE_WAIT_TIMER=0
+```
+
+- **`CHECKS_JOB=success`.** `gh api .../runs/44491292876/jobs` exit 0: `checks` `success` on `ubuntu-24.04`, 08:52:21Z to 08:53:32Z (71 s). Steps, each `success`: Set up job (4 s), Checkout source code (5 s), Setup Terraform 1.16.5 (1 s), Check Terraform formatting (0 s), Validate the staging AWS root (10 s), Setup Node.js 24.21.0 (4 s), Setup Yarn 4.18 (30 s), Unit tests of the infrastructure scripts (14 s), and the post and complete steps (0 s).
+- **`GATE_WAITED=yes`.** A background watcher read the run `waiting` at 08:53:40Z, the `checks` job `completed` `success` and the `deploy` job (id `135447888765`, created 08:53:32Z, labelled `ubuntu-24.04-arm`) `waiting`. `gh api .../runs/44491292876/pending_deployments` (a GET) exit 0 at 08:54Z: one pending deployment, environment `staging`, `wait_timer` 0, a `User` reviewer. The review is left to the operator in the GitHub web interface; the executor made no POST to `pending_deployments` and approved nothing.
