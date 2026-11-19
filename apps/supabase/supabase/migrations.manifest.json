@@ -96,6 +96,10 @@
     {
       "file": "00023_invitation_caller_limit.sql",
       "sha256": "0ac3b60099b4ed1b660d19c3209a009bf4491a39e866121978fc1f49be89747b"
+    },
+    {
+      "file": "00024_invitation_caller_take_without_waits.sql",
+      "sha256": "7a0cd600aebe548dcec7a98b8e71e8c922bfc61dbaf62a7d91ebe5bd1f5d9fd7"
     }
   ]
 }
