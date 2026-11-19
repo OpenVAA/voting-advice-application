@@ -9,6 +9,8 @@ files:
   - apps/supabase/supabase/functions/account-access/index.ts
   - apps/supabase/supabase/schema/506-invitation-rpcs.sql
   - apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md
+completed: 2026-11-19
+status: completed
 ---
 
 ## Problem
@@ -30,3 +32,13 @@ A related draw, also unmeasured: the function's redirect question is a `GET /aut
 - Then key a coarse limit on it for the unknown-code paths.
 - For the scan: confirm it with `EXPLAIN` on a database holding a realistic number of users, then either compare `u.email` with the already-normalised argument so an existing index serves it (first confirm that the auth service stores addresses trimmed and lower-cased; that is assumed here, not measured), or add an expression index, or stop the grant-holder arm from running for an address with no account.
 - Until then the deployment page tells an operator to put a rate limit in front of the function at its gateway.
+
+## Closed (phase 188), 2026-11-19
+
+Closed by plan 188-16 on its record, `.planning/workstreams/deployment/phases/188-relay-on-the-deployed-stack-and-the-per-caller-limit/evidence/188-16-hosted-limit.md`.
+
+- **What was built.** Migration `00023_invitation_caller_limit.sql` adds `public.invitation_caller_take(p_project_id uuid, p_address text)`, which only `service_role` may execute. It takes a slot under a `caller:<project>:<address>` key of `private.invitation_throttle`, 30 takes per caller per project per 10 minutes, with IPv6 keyed by its /64. It trusts the address only when `private.deployment_settings.behind_cloudflare` is true; otherwise the limit is skipped, with no shared bucket. `account-access` reads `cf-connecting-ip` and takes the slot before any work of `check-code`, `request-link` and `request-recovery`, answering a refused caller with HTTP 429, `Retry-After` and `{ error: 'too-many-requests' }`. `code-sign-in` and `confirm-address` take no slot (CONTEXT E-03). The migration reached the hosted project `cofbsatfrdysyphajsky` in deploy run 44491292876 at commit `a7003b490` (188-10), before the function.
+- **R-d, the hosted caller topology.** 184-13 measured it: behind Cloudflare, every served request carries the client in `cf-connecting-ip`, and Cloudflare refuses a client-sent value. The hosted project's `behind_cloudflare` read `true` at 184-22, and none of the 22 migrations applied since writes it.
+- **R-a and R-b, seen limited on the hosted function.** AWS CloudShell got 30 answers of 200 to `check-code` and was refused with 429 at its 31st call (09:59:32Z, `Retry-After: 593`). The workstation, another caller, was answered 200 at 10:00:11Z in that same window. It was refused at its own 31st call (`Retry-After: 589`, the same body) and answered 200 again at 10:10:18Z, after its window. No address was recorded. One caller can now make at most 30 code checks, link requests and recovery requests per project in 10 minutes, so the one-a-minute mail to an eligible address is also bounded per caller.
+- **What remains.** A caller with many addresses gets one bucket per address, so the limit does not bound it. Callers who share one address, such as a carrier NAT, an office or a school, share one bucket and can deny each other for up to 10 minutes; a dedicated message for that stays deferred. A deployment not behind Cloudflare has no per-caller limit. The redirect question's `GET /auth/v1/verify` draw described above was not measured and is not covered here.
+- **Moved.** The unconfirmed sequential scan of `auth.users` in `invitation_link_request` moves to `.planning/todos/pending/2026-11-15-invitation-link-request-sequential-scan.md`.
