@@ -12,8 +12,8 @@ PROVIDER_SWITCH_COMMIT=7e6dee771fd2d21c94b2eda4add70b1ebcd120e5
 E2E_TREE_SHA=d523abcd51e725b99bd2b277dd9e0781d8ed4834
 TREE_SINCE_CLOSING_RUN=unchanged
 DEPLOY_PARENT=331b5db28058a1f8bc4ef88a3841080a4610efa2
-DEPLOY_TREE=ab6f383f558eb7f255df62f1f773bc6baccbde44
-DEPLOY_COMMIT=35da515f4ac75c90b0192eaa833dde7e79bd8fff
+DEPLOY_TREE=f637126f5a8f68fb843d8608367f983e626c1b0b
+DEPLOY_COMMIT=a7003b490b4ff92fc72bef5d225c593b222d6c4e
 DEPLOY_PATHS=3550
 DEPLOY_PLANNING_PATHS=0
 DEPLOY_TREE_OK=yes
@@ -38,3 +38,12 @@ EXPECTED_FUNCTIONS=account-access changed (the per-caller limit); identity-callb
 - **`PIPELINE_UNCHANGED_SINCE_SERVED=yes`.** `git diff --stat 331b5db28 HEAD -- .github` is empty; under `infra/scripts` only new files were added (`load-check*`, `posthog-read*`, `relay-refusals*`), none of which the pipeline calls. The stage order and record lines are those of `evidence/187-21-green-run.md`.
 - **`EXPECTED_CHANGES=`, read from the diff, not from a plan.** The new commit has no image in the registry, so the run builds and pushes one (a new digest); the task definition is replaced with that digest, `ANALYTICS_PROVIDER=posthog` in place of `none`, the new `ANALYTICS_FLUSH_INTERVAL_MS=2000` and `stopTimeout` 40 in place of the default 30; the service is updated to the new revision. `relay_rate_limit` is not set in the staging tfvars, so `aws_wafv2_web_acl.relay` has count 0 and the distribution's `web_acl_id` stays null: no web ACL. `ANALYTICS_POSTHOG_KEY` stays a secret from `/openvaa/staging/frontend/ANALYTICS_POSTHOG_KEY` (SecureString, version 1, per `evidence/188-09-posthog-setup.md`); its value was not read.
 - **The run's writes, in the pipeline's order.** (1) The image of `DEPLOY_COMMIT` pushed to `openvaa-frontend`; (2) migration `00023_invitation_caller_limit` pushed to `cofbsatfrdysyphajsky`, one-way, before (3) the three functions `account-access`, `identity-callback` and `send-email` are deployed; (4) the saved plan applied: a new task definition revision and the service updated to it; (5) the deployed smoke run against staging. From the rollout on, staging forwards events, the smoke runs' pageviews included, to PostHog project 347462.
+
+## Rebuilt deploy commit (2026-11-19)
+
+The first deploy commit, 35da515f4ac75c90b0192eaa833dde7e79bd8fff (tree ab6f383f5), was refused at the push by GitHub push protection (GH013), which matched the read script's test fixture `phx_fake000…` as a PostHog personal API key in infra/scripts/posthog-read.sh and posthog-read.test.ts. Nothing reached deploy/staging, whose tip stayed 331b5db28. Commit 8665ff699 assembles the fixture from two parts; the self-test (19 cases) and `yarn test:unit:infra posthog-read` (5 tests) stay green. The commit was rebuilt by the same temporary-index recipe on the same parent.
+DEPLOY_COMMIT_REFUSED=35da515f4ac75c90b0192eaa833dde7e79bd8fff
+DEPLOY_REBUILT_FROM_HEAD=8665ff699
+DEPLOY_DIFF_FROM_REFUSED=infra/scripts/posthog-read.sh, infra/scripts/posthog-read.test.ts only
+DEPLOY_OTHER_KEY_SHAPES=infra/modules/github-oidc/tests/github_oidc.tftest.hcl (an AKIAFAKE fixture, byte-identical in the served 331b5db28) and .yarn/releases (minified, served before)
+The approval of attempt 20261119T081947Z.5e7c655af named the refused commit; the rebuilt commit is approved under a new attempt of 188-10-2.
