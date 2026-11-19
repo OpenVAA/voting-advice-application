@@ -183,6 +183,11 @@ describe('voter-journey.js', () => {
     expect(text).toMatch(/const STEP_ERROR_RATE = 0\.01;/);
   });
 
+  it('keeps the per-step p95 of the data requests under a bound no step reaches', () => {
+    expect(text).toContain('http_req_duration{kind:data,step:${step}}');
+    expect(text).toMatch(/const DATA_P95_OBSERVED_MS = 3600000;/);
+  });
+
   it('aborts the run on the global error rate after a minute', () => {
     expect(text).toMatch(/const ABORT_ERROR_RATE = 0\.05;/);
     expect(text).toContain('abortOnFail: true');

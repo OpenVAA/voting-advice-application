@@ -30,6 +30,11 @@ const STEP_ERROR_RATE = 0.01;
 /** The error rate over the whole run that aborts it, once it has held for `ABORT_DELAY`. */
 const ABORT_ERROR_RATE = 0.05;
 const ABORT_DELAY = '1m';
+/**
+ * The bound of the data requests' per-step p95, in milliseconds: never reached, so it fails no step. It makes k6 keep
+ * that sub-metric in the summary, where it shows whether the Supabase project slowed at a step.
+ */
+const DATA_P95_OBSERVED_MS = 3600000;
 /** The relay path, the same as `RELAY_PATH` of the frontend. */
 const RELAY_PATH = '/api/usage';
 /** Paths no journey may request: Supabase Auth, Edge Functions (`account-access` among them), and the relay itself. */
@@ -117,6 +122,7 @@ STEPS.forEach((rate, index) => {
   thresholds[`http_req_duration{kind:page,step:${step}}`] = [`p(95)<${PAGE_P95_MS}`];
   thresholds[`http_req_duration{kind:relay,step:${step}}`] = [`p(95)<${RELAY_P95_MS}`];
   thresholds[`http_req_failed{step:${step}}`] = [`rate<${STEP_ERROR_RATE}`];
+  thresholds[`http_req_duration{kind:data,step:${step}}`] = [`p(95)<${DATA_P95_OBSERVED_MS}`];
 });
 
 export const options = {
