@@ -15,6 +15,7 @@ import {
   admitWitness,
   BAD_REQUEST_BODY,
   codeStatusBody,
+  CORS_HEADERS,
   INTERNAL_ERROR_BODY,
   INVALID_CREDENTIALS_BODY,
   METHOD_NOT_ALLOWED_BODY,
@@ -486,6 +487,32 @@ describe('the answers are a closed set', () => {
     } as never);
     expect(body).toEqual({ result: 'signed-in', access_token: 'access', refresh_token: 'refresh' });
     expect(Object.keys(body).sort()).toEqual(['access_token', 'refresh_token', 'result']);
+  });
+});
+
+describe('CORS_HEADERS', () => {
+  it('lets a cross-origin browser read Retry-After, the one header beyond the safelist an answer carries', () => {
+    expect(CORS_HEADERS['Access-Control-Expose-Headers']).toBe('Retry-After');
+  });
+
+  it('admits every origin and the headers the browser client sends', () => {
+    expect(CORS_HEADERS['Access-Control-Allow-Origin']).toBe('*');
+    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toBe('authorization, x-client-info, apikey, content-type');
+    expect(Object.keys(CORS_HEADERS).sort()).toEqual([
+      'Access-Control-Allow-Headers',
+      'Access-Control-Allow-Origin',
+      'Access-Control-Expose-Headers'
+    ]);
+  });
+
+  it('reaches the browser through the Headers of a Response', () => {
+    const headers = new Response(null, { status: 429, headers: { ...CORS_HEADERS, 'Retry-After': '42' } }).headers;
+    expect(headers.get('access-control-expose-headers')).toBe('Retry-After');
+    expect(headers.get('retry-after')).toBe('42');
+  });
+
+  it('cannot be changed by a caller of the module', () => {
+    expect(Object.isFrozen(CORS_HEADERS)).toBe(true);
   });
 });
 

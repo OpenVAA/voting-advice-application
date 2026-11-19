@@ -784,12 +784,28 @@ run "relay_rate_limit_on" {
 
   assert {
     condition = (
-      one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement[0].search_string == "/api/usage"
-      && one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement[0].positional_constraint == "STARTS_WITH"
-      && length(one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement[0].field_to_match[0].uri_path) == 1
-      && [for t in one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement[0].text_transformation : t.type] == ["NORMALIZE_PATH"]
+      length(one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].byte_match_statement) == 0
+      && length(one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].regex_match_statement[0].field_to_match[0].uri_path) == 1
+      && [for t in one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].regex_match_statement[0].text_transformation : [t.priority, t.type]] == [[0, "URL_DECODE"], [1, "NORMALIZE_PATH"]]
     )
-    error_message = "The rule must count only requests whose normalised path starts /api/usage."
+    error_message = "The rule must match the URI path after URL_DECODE and then NORMALIZE_PATH."
+  }
+
+  # The paths are given as WAF sees them after its two transformations: decoded and normalised.
+  assert {
+    condition = alltrue([
+      for path in ["/api/usage", "/api/usage/", "/fi/api/usage", "/en/api/usage", "/lb/api/usage", "/FI/api/usage", "/fi/api/usage/"] :
+      can(regex(one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].regex_match_statement[0].regex_string, path))
+    ])
+    error_message = "The rule must count the relay at /api/usage and behind a locale segment."
+  }
+
+  assert {
+    condition = !anytrue([
+      for path in ["/", "/fi", "/fi/questions", "/api/health", "/api/usages", "/api/usage-other", "/fi/sv/api/usage", "/x/api/usagex", "/questions/api"] :
+      can(regex(one(aws_wafv2_web_acl.relay[0].rule).statement[0].rate_based_statement[0].scope_down_statement[0].regex_match_statement[0].regex_string, path))
+    ])
+    error_message = "The rule must not count a path that is not the relay."
   }
 
   assert {

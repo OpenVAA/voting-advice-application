@@ -50,13 +50,21 @@ function rate(failed: number, total: number): Record<string, unknown> {
   return { type: 'rate', contains: 'default', values: { passes: failed, fails: total - failed, rate: failed / total } };
 }
 
-function summary(steps: Array<{ rate: number; page: number; relay: number; failed: number }>): string {
+/** A counter sub-metric as k6 2.4.0 writes it. */
+function counter(count: number): Record<string, unknown> {
+  return { type: 'counter', contains: 'default', values: { count, rate: count / 300 } };
+}
+
+function summary(
+  steps: Array<{ rate: number; page: number; relay: number; failed: number; dropped?: number }>
+): string {
   const metrics: Record<string, unknown> = {};
   steps.forEach((step, index) => {
     const i = index + 1;
     metrics[`http_req_duration{kind:page,step:${i}}`] = trend(step.page);
     metrics[`http_req_duration{kind:relay,step:${i}}`] = trend(step.relay);
     metrics[`http_req_failed{step:${i}}`] = rate(step.failed, 1000);
+    if (step.dropped !== undefined) metrics[`dropped_iterations{scenario:step_${i}}`] = counter(step.dropped);
   });
   return JSON.stringify({
     options: {},
@@ -82,9 +90,13 @@ describe('load-check.sh', () => {
       'staging-without-confirm-target-is-refused',
       'confirm-target-that-differs-is-refused',
       'step-above-max-rate-is-refused',
+      'steps-that-fall-are-refused',
+      'repeated-step-is-refused',
       'foreign-host-in-journey-is-refused',
       'existing-out-is-refused',
       'base-url-outside-allowlist-is-refused',
+      'asset-off-base-host-is-refused',
+      'unknown-kind-is-refused',
       'auth-path-in-journey-is-refused',
       'function-path-in-journey-is-refused',
       'valid-run-uses-pinned-image',
@@ -131,9 +143,9 @@ describe('figure.mjs', () => {
     );
     expect(status).toBe(0);
     expect(stdout.trim().split('\n')).toEqual([
-      'step=1 rate_per_min=5 page_p95_ms=220.0 relay_p95_ms=40.0 error_rate=0.0000 met=yes',
-      'step=2 rate_per_min=10 page_p95_ms=610.0 relay_p95_ms=90.0 error_rate=0.0030 met=yes',
-      'step=3 rate_per_min=20 page_p95_ms=1450.0 relay_p95_ms=120.0 error_rate=0.0040 met=no',
+      'step=1 rate_per_min=5 page_p95_ms=220.0 relay_p95_ms=40.0 error_rate=0.0000 dropped=0 met=yes',
+      'step=2 rate_per_min=10 page_p95_ms=610.0 relay_p95_ms=90.0 error_rate=0.0030 dropped=0 met=yes',
+      'step=3 rate_per_min=20 page_p95_ms=1450.0 relay_p95_ms=120.0 error_rate=0.0040 dropped=0 met=no',
       'figure_journeys_per_minute=10',
       'figure_step=2'
     ]);
@@ -147,8 +159,33 @@ describe('figure.mjs', () => {
         { rate: 10, page: 200, relay: 50, failed: 10 }
       ])
     );
-    expect(stdout).toContain('step=1 rate_per_min=5 page_p95_ms=200.0 relay_p95_ms=300.0 error_rate=0.0000 met=no');
-    expect(stdout).toContain('step=2 rate_per_min=10 page_p95_ms=200.0 relay_p95_ms=50.0 error_rate=0.0100 met=no');
+    expect(stdout).toContain(
+      'step=1 rate_per_min=5 page_p95_ms=200.0 relay_p95_ms=300.0 error_rate=0.0000 dropped=0 met=no'
+    );
+    expect(stdout).toContain(
+      'step=2 rate_per_min=10 page_p95_ms=200.0 relay_p95_ms=50.0 error_rate=0.0100 dropped=0 met=no'
+    );
+  });
+
+  it('fails a step that dropped a journey, and reads an absent dropped count as none dropped', () => {
+    const { status, stdout } = figure(
+      'dropped',
+      summary([
+        { rate: 5, page: 220, relay: 40, failed: 0, dropped: 0 },
+        { rate: 10, page: 230, relay: 45, failed: 0 },
+        { rate: 20, page: 240, relay: 50, failed: 0, dropped: 1 },
+        { rate: 40, page: 250, relay: 55, failed: 0, dropped: 0 }
+      ])
+    );
+    expect(status).toBe(0);
+    expect(stdout.trim().split('\n')).toEqual([
+      'step=1 rate_per_min=5 page_p95_ms=220.0 relay_p95_ms=40.0 error_rate=0.0000 dropped=0 met=yes',
+      'step=2 rate_per_min=10 page_p95_ms=230.0 relay_p95_ms=45.0 error_rate=0.0000 dropped=0 met=yes',
+      'step=3 rate_per_min=20 page_p95_ms=240.0 relay_p95_ms=50.0 error_rate=0.0000 dropped=1 met=no',
+      'step=4 rate_per_min=40 page_p95_ms=250.0 relay_p95_ms=55.0 error_rate=0.0000 dropped=0 met=yes',
+      'figure_journeys_per_minute=10',
+      'figure_step=2'
+    ]);
   });
 
   it('gives 0 when no step met', () => {
@@ -162,8 +199,59 @@ describe('figure.mjs', () => {
     const content = JSON.parse(summary([{ rate: 5, page: 200, relay: 40, failed: 0 }]));
     content.load_check.steps.push(10);
     const { stdout } = figure('aborted', JSON.stringify(content));
-    expect(stdout).toContain('step=2 rate_per_min=10 page_p95_ms=none relay_p95_ms=none error_rate=none met=no');
+    expect(stdout).toContain(
+      'step=2 rate_per_min=10 page_p95_ms=none relay_p95_ms=none error_rate=none dropped=0 met=no'
+    );
     expect(stdout).toMatch(/^figure_journeys_per_minute=5$/m);
+  });
+
+  it('ends the figure at the first step that did not meet the thresholds, though a higher step met them', () => {
+    const { status, stdout } = figure(
+      'failed-middle-step',
+      summary([
+        { rate: 5, page: 220, relay: 40, failed: 0 },
+        { rate: 10, page: 1200, relay: 60, failed: 0 },
+        { rate: 20, page: 400, relay: 70, failed: 0 },
+        { rate: 40, page: 500, relay: 80, failed: 0 }
+      ])
+    );
+    expect(status).toBe(0);
+    expect(stdout).toContain(
+      'step=2 rate_per_min=10 page_p95_ms=1200.0 relay_p95_ms=60.0 error_rate=0.0000 dropped=0 met=no'
+    );
+    expect(stdout).toContain(
+      'step=4 rate_per_min=40 page_p95_ms=500.0 relay_p95_ms=80.0 error_rate=0.0000 dropped=0 met=yes'
+    );
+    expect(stdout).toMatch(/^figure_journeys_per_minute=5$/m);
+    expect(stdout).toMatch(/^figure_step=1$/m);
+  });
+
+  it('gives 0 when the first step did not meet the thresholds, whatever the steps above it did', () => {
+    const { stdout } = figure(
+      'failed-first-step',
+      summary([
+        { rate: 5, page: 220, relay: 400, failed: 0 },
+        { rate: 10, page: 220, relay: 40, failed: 0 }
+      ])
+    );
+    expect(stdout).toMatch(/^figure_journeys_per_minute=0$/m);
+    expect(stdout).toMatch(/^figure_step=none$/m);
+  });
+
+  it.each([
+    ['falling', [20, 10]],
+    ['repeated', [5, 10, 10]],
+    ['zero', [0, 5]],
+    ['not numbers', ['5', '10']]
+  ])('exits 1 on steps that do not rise strictly: %s', (name, steps) => {
+    const content = JSON.parse(summary(steps.map(() => ({ rate: 1, page: 200, relay: 40, failed: 0 })))) as {
+      load_check: { steps: Array<unknown> };
+    };
+    content.load_check.steps = steps;
+    const { status, stdout, stderr } = figure(`unordered-${name.replace(/ /g, '-')}`, JSON.stringify(content));
+    expect(status).toBe(1);
+    expect(stdout).toBe('');
+    expect(stderr).toMatch(/^figure\.mjs: load_check\.steps /m);
   });
 
   it('exits 1 on a summary without load_check', () => {
@@ -183,6 +271,16 @@ describe('voter-journey.js', () => {
     expect(text).toMatch(/const STEP_ERROR_RATE = 0\.01;/);
   });
 
+  it('fails a step that dropped an iteration, on the scenario tag k6 gives the drop', () => {
+    expect(text).toContain("thresholds[`dropped_iterations{scenario:step_${step}}`] = ['count<1'];");
+    expect(text).toContain('scenarios[`step_${step}`]');
+  });
+
+  it('keeps the per-step p95 of the data requests under a bound no step reaches', () => {
+    expect(text).toContain('http_req_duration{kind:data,step:${step}}');
+    expect(text).toMatch(/const DATA_P95_OBSERVED_MS = 3600000;/);
+  });
+
   it('aborts the run on the global error rate after a minute', () => {
     expect(text).toMatch(/const ABORT_ERROR_RATE = 0\.05;/);
     expect(text).toContain('abortOnFail: true');
@@ -195,10 +293,22 @@ describe('voter-journey.js', () => {
     expect(text).toContain("'/out/summary.json'");
   });
 
+  it('refuses steps that do not rise strictly', () => {
+    expect(text).toContain("fail('STEPS does not rise strictly')");
+  });
+
   it('holds no literal key', () => {
     expect(text).toContain('__ENV.SUPABASE_ANON_KEY');
     expect(text).not.toMatch(/eyJ[A-Za-z0-9_-]{10,}/);
     expect(text).not.toMatch(/sb_(publishable|secret)_[A-Za-z0-9_-]+/);
+  });
+
+  it('accepts asset requests on the base origin and posts a relay batch after page requests only', () => {
+    expect(text).toContain("if (entry.kind === 'page' || entry.kind === 'asset') {");
+    expect(text).toMatch(
+      /send\(entry\);\s*if \(entry\.kind === 'page'\) \{\s*http\.post\(`\$\{BASE_URL\}\$\{RELAY_PATH\}`/
+    );
+    expect(text).toContain('tags: { kind: entry.kind }');
   });
 
   it('refuses Supabase Auth and Edge Function paths', () => {
@@ -217,12 +327,14 @@ function snapshot(
   monotonicTime: number,
   method: string,
   url: string,
-  postData?: { text?: string; _sha1?: string }
+  postData?: { text?: string; _sha1?: string; _file?: string },
+  resourceType?: string
 ): string {
   return JSON.stringify({
     type: 'resource-snapshot',
     snapshot: {
       _monotonicTime: monotonicTime,
+      ...(resourceType ? { _resourceType: resourceType } : {}),
       startedDateTime: new Date(Date.UTC(2026, 10, 18, 12, 0, 0, monotonicTime)).toISOString(),
       request: {
         method,
@@ -299,6 +411,47 @@ describe('journey-from-trace.mjs', () => {
     expect(stdout).not.toContain('example.org');
   });
 
+  it('tags a document navigation as a page and every other base-origin read as an asset', () => {
+    const { status, stdout } = extract([
+      snapshot(1, 'GET', `${BASE}/`, undefined, 'document'),
+      snapshot(2, 'GET', `${BASE}/fonts/inter.css`, undefined, 'stylesheet'),
+      snapshot(3, 'GET', `${BASE}/fonts/inter-latin-400-normal.woff2`, undefined, 'font'),
+      snapshot(4, 'GET', `${BASE}/results/__data.json?x-sveltekit-invalidated=01`, undefined, 'fetch'),
+      snapshot(5, 'GET', `${BASE}/api/health`, undefined, 'fetch'),
+      snapshot(6, 'GET', `${BASE}/questions?electionId=1`, undefined, 'document'),
+      snapshot(7, 'GET', `${BASE}/elections`, undefined, 'fetch')
+    ]);
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout).requests.map((entry: { kind: string }) => entry.kind)).toEqual([
+      'page',
+      'asset',
+      'asset',
+      'asset',
+      'asset',
+      'page',
+      'asset'
+    ]);
+  });
+
+  it('without a resource type, tags a path with no file extension and outside /api/ as a page', () => {
+    const { stdout } = extract([
+      snapshot(1, 'GET', `${BASE}/`),
+      snapshot(2, 'GET', `${BASE}/fonts/inter.css`),
+      snapshot(3, 'GET', `${BASE}/fonts/inter-latin-700-normal.woff2`),
+      snapshot(4, 'GET', `${BASE}/constituencies?electionId=1`),
+      snapshot(5, 'GET', `${BASE}/api/health`),
+      snapshot(6, 'HEAD', `${BASE}/favicon.png`)
+    ]);
+    expect(JSON.parse(stdout).requests.map((entry: { kind: string }) => entry.kind)).toEqual([
+      'page',
+      'asset',
+      'asset',
+      'page',
+      'asset',
+      'asset'
+    ]);
+  });
+
   it('takes the route id and the locale from its flags', () => {
     const { stdout } = extract(TRACE_LINES, '--route-id', '/(voters)/(located)/questions', '--locale', 'fi');
     const journey = JSON.parse(stdout);
@@ -319,6 +472,33 @@ describe('journey-from-trace.mjs', () => {
     expect(without.stderr).toMatch(/^journey_bodies_missing=1$/m);
   });
 
+  it('reads an RPC body stored as a resource file beside an empty text', () => {
+    const resources = join(scratch, 'resources');
+    mkdirSync(resources, { recursive: true });
+    writeFileSync(join(resources, 'def456.json'), RPC_BODY);
+    const lines = [
+      snapshot(1, 'POST', `${SUPABASE}/rest/v1/rpc/get_questions`, { text: '', _file: 'resources/def456.json' })
+    ];
+    const withResources = extract(lines, '--resources', resources);
+    expect(withResources.status).toBe(0);
+    expect(JSON.parse(withResources.stdout).requests[0].body).toBe(RPC_BODY);
+    const without = extract(lines);
+    expect(without.status).toBe(1);
+    expect(without.stderr).toMatch(/^journey_bodies_missing=1$/m);
+  });
+
+  it('refuses a resource file outside the resources directory', () => {
+    const resources = join(scratch, 'resources');
+    mkdirSync(resources, { recursive: true });
+    writeFileSync(join(scratch, 'outside.json'), RPC_BODY);
+    for (const name of ['resources/../outside.json', '../outside.json', 'other/outside.json']) {
+      const lines = [snapshot(1, 'POST', `${SUPABASE}/rest/v1/rpc/get_questions`, { text: '', _file: name })];
+      const { status, stderr } = extract(lines, '--resources', resources);
+      expect(status).toBe(1);
+      expect(stderr).toMatch(/^journey_bodies_missing=1$/m);
+    }
+  });
+
   it('exits 1 with journey_requests=0 on a trace that yields no request', () => {
     const { status, stdout, stderr } = extract([
       snapshot(1, 'GET', `${BASE}/_app/immutable/entry/start.js`),
@@ -332,5 +512,34 @@ describe('journey-from-trace.mjs', () => {
   it('exits 2 without --base or --supabase', () => {
     expect(run('node', [EXTRACTOR, '--base', BASE], '').status).toBe(2);
     expect(run('node', [EXTRACTOR, '--supabase', SUPABASE], '').status).toBe(2);
+  });
+});
+
+type JourneyFile = { base: string; requests: Array<{ url: string; kind: string }> };
+
+describe('the committed journeys', () => {
+  it.each(['staging-journey.json', 'local-journey.json'])(
+    '%s tags its base-origin reads by the extractor rule for a trace without a resource type',
+    (name) => {
+      const journey = JSON.parse(readFileSync(join(HERE, 'load-check', name), 'utf8')) as JourneyFile;
+      const base = new URL(journey.base).origin;
+      for (const entry of journey.requests) {
+        const url = new URL(entry.url);
+        if (url.origin !== base) {
+          expect(entry.kind, entry.url).toBe('data');
+          continue;
+        }
+        const navigation = !url.pathname.startsWith('/api/') && !(url.pathname.split('/').at(-1) ?? '').includes('.');
+        expect(entry.kind, entry.url).toBe(navigation ? 'page' : 'asset');
+      }
+    }
+  );
+
+  it('the staging journey holds its five navigations as its only pages', () => {
+    const journey = JSON.parse(readFileSync(join(HERE, 'load-check', 'staging-journey.json'), 'utf8')) as JourneyFile;
+    expect(
+      journey.requests.filter((entry) => entry.kind === 'page').map((entry) => new URL(entry.url).pathname)
+    ).toEqual(['/', '/intro', '/elections', '/constituencies', '/questions']);
+    expect(journey.requests.filter((entry) => entry.kind === 'asset')).toHaveLength(9);
   });
 });

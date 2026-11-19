@@ -680,9 +680,9 @@ FROM
 --
 -- Returns 0 when the take is admitted, and otherwise the whole seconds until the caller's window ends, at least 1: thirty takes per caller per project per ten minutes. A refused take is counted, as every take of invitation_throttle_take is.
 --
--- The caller is p_address, the address the Edge Function read from `cf-connecting-ip`, keyed as `caller:<project id>:<caller>`, where the caller is the host of an IPv4 address and the /64 of an IPv6 address, so a mask in the header cannot widen a key. The address is trusted only when `private.deployment_settings.behind_cloudflare` is true, because only behind Cloudflare is `cf-connecting-ip` the connecting client rather than a value the client chose. An untrusted, absent, blank or unparseable address, and an id that names no project, are admitted with no row written: such takes would otherwise all share one bucket, so one caller could spend everyone's slots, or fill the table with keys of its own making.
+-- The caller is p_address, the address the Edge Function read from `cf-connecting-ip`, keyed as `caller:<project id>:<caller>`, where the caller is the host of an IPv4 address, the IPv4 host of an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`), and the /64 of any other IPv6 address, so a mask in the header cannot widen a key. The address is trusted only when `private.deployment_settings.behind_cloudflare` is true, because only behind Cloudflare is `cf-connecting-ip` the connecting client rather than a value the client chose. An untrusted, absent, blank or unparseable address, and an id that names no project, are admitted with no row written: such takes would otherwise all share one bucket, so one caller could spend everyone's slots, or fill the table with keys of its own making.
 --
--- Each take first deletes every `caller:` row whose window has ended, so an address is held in clear only while its window runs.
+-- After its own take, each take deletes the other `caller:` rows whose window has ended, so an address is held in clear only while its window runs. The take holds its key's advisory lock until the transaction ends, so the cleanup must wait for nothing: it leaves out its own key and skips a row another transaction has locked rather than wait for it. A row skipped is deleted by a later take.
 --
 -- SECURITY DEFINER because the throttle table is the owner's alone. It checks nothing about its caller, so only the service role may execute it.
 --------------------------------------------------------------------------------
@@ -695,6 +695,7 @@ DECLARE
   v_inet inet;
   v_caller text;
   v_key text;
+  v_admitted boolean;
   v_start timestamptz;
 BEGIN
   -- A missing settings row reads as false, so the address is then not trusted.
@@ -710,8 +711,10 @@ BEGIN
       RETURN 0;
   END;
 
-  v_caller := CASE family(v_inet)
-    WHEN 6 THEN network(set_masklen(v_inet, 64))::text
+  v_caller := CASE
+    WHEN family(v_inet) = 6 AND set_masklen(v_inet, 128) <<= '::ffff:0:0/96'::inet
+      THEN host('0.0.0.0'::inet + (v_inet - '::ffff:0:0'::inet))
+    WHEN family(v_inet) = 6 THEN network(set_masklen(v_inet, 64))::text
     ELSE host(v_inet)
   END;
 
@@ -719,11 +722,20 @@ BEGIN
     RETURN 0;
   END IF;
 
-  DELETE FROM private.invitation_throttle t
-  WHERE t.key LIKE 'caller:%' AND t.window_start + v_window <= now();
-
   v_key := 'caller:' || p_project_id::text || ':' || v_caller;
-  IF private.invitation_throttle_take(v_key, v_max, v_window) THEN
+  v_admitted := private.invitation_throttle_take(v_key, v_max, v_window);
+
+  DELETE FROM private.invitation_throttle t
+  WHERE t.key IN (
+    SELECT x.key
+    FROM private.invitation_throttle x
+    WHERE x.key LIKE 'caller:%'
+      AND x.key <> v_key
+      AND x.window_start + v_window <= now()
+    FOR UPDATE SKIP LOCKED
+  );
+
+  IF v_admitted THEN
     RETURN 0;
   END IF;
 

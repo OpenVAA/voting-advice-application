@@ -9,7 +9,7 @@ arrival rate of voter journeys, in **journeys per minute**, at which the stack s
 | `voter-journey.js`       | The k6 2.4.0 script: replays the journey at stepped arrival rates and writes the summary.                          |
 | `figure.mjs`             | Reads the summary and prints one line per step and the figure.                                                     |
 | `journey-from-trace.mjs` | Turns a Playwright trace of a voter run into a journey file.                                                       |
-| `local-journey.json`     | A two-page journey against a local dev server, for a dry run of the method.                                        |
+| `local-journey.json`     | A one-page journey and one asset request against a local dev server, for a dry run of the method.                  |
 
 ## The tool
 
@@ -35,14 +35,15 @@ A journey file is one JSON object:
 }
 ```
 
-`requests` holds the requests a browser made during one recorded voter run, in their order: the server-rendered pages
-and other requests to the staging host (`kind: page`), and the reads to the project's Supabase host (`kind: data`), with
-the body for a POST to `/rest/v1/rpc/`. It holds no immutable asset (`/_app/immutable/`), no Supabase Auth call
+`requests` holds the requests a browser made during one recorded voter run, in their order: the server-rendered pages,
+the document navigations to the staging host (`kind: page`), the other requests to it, such as fonts and stylesheets
+(`kind: asset`), and the reads to the project's Supabase host (`kind: data`), with the body for a POST to
+`/rest/v1/rpc/`. It holds no immutable asset (`/_app/immutable/`), no Supabase Auth call
 (`/auth/v1/`), no Edge Function call (`/functions/v1/`, `account-access` among them), no relay post, and no header or
 cookie. The Supabase Auth limits would be load-tested instead of the stack, and the voter journey is anonymous.
 
-One iteration replays every request of the file in its order, and after each page request posts one relay batch to
-`/api/usage`: `Content-Type: application/json`, `Sec-Fetch-Site: same-origin`, one valid `answer` event whose visit id
+One iteration replays every request of the file in its order, and after each page request, and no asset request,
+posts one relay batch to `/api/usage`: `Content-Type: application/json`, `Sec-Fetch-Site: same-origin`, one valid `answer` event whose visit id
 is stamped with the current time, under the journey's route id and locale. The requests to the Supabase host carry
 `apikey` and `Authorization: Bearer` with the anon key; no other request carries a credential. Response bodies are
 discarded.
@@ -50,7 +51,7 @@ discarded.
 ## Steps, thresholds and the abort
 
 The run is a list of steps, each an arrival rate in journeys per minute held for 5 minutes (`--step-seconds 300`, the
-default). Each step is one `constant-arrival-rate` scenario that starts when the one before it ends, tagged
+default). The rates rise strictly; the wrapper refuses any other list. Each step is one `constant-arrival-rate` scenario that starts when the one before it ends, tagged
 `step: <index from 1>`; arrival rate is an open model, so a slower answer does not slow the arrivals. The stack is
 measured as configured, at its own task floor and ceiling.
 
@@ -61,6 +62,11 @@ Per step, each a k6 threshold on that step's sub-metric:
 | page p95 < 1000 ms | `http_req_duration{kind:page,step:<i>}`  |
 | relay p95 < 300 ms | `http_req_duration{kind:relay,step:<i>}` |
 | errors < 1 %       | `http_req_failed{step:<i>}`              |
+| no dropped journey | `dropped_iterations{scenario:step_<i>}`  |
+
+A dropped journey is one the arrival rate called for that k6 did not start, because every virtual user was busy. It
+fails no request, so a step short of users would otherwise pass at a lower real rate than its label; a step with one
+dropped journey is not met. k6 tags `dropped_iterations` with the scenario's name, `step_<i>`, not with `step`.
 
 Over the whole run, `http_req_failed` above 5 % aborts the run once it has held for a minute (`abortOnFail`,
 `delayAbortEval: '1m'`). k6 then exits 99, as it does when any threshold was crossed, which is expected at a step above
@@ -71,11 +77,12 @@ the capacity. The steps after an abort have no values and are not met.
 `figure.mjs` reads `summary.json` and prints, per step,
 
 ```
-step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> met=yes|no
+step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> dropped=<n> met=yes|no
 ```
 
-and then `figure_journeys_per_minute=<r>` and `figure_step=<i>`: the rate of the highest step that met every threshold,
-or `0` and `none` when no step did. The values are read from `metrics["<sub-metric>"].values["p(95)"]` and
+and then `figure_journeys_per_minute=<r>` and `figure_step=<i>`: the rate of the highest step that met every threshold
+with every step below it, so the first step that did not meet them ends the figure, or `0` and `none` when the first
+step did not. The values are read from `metrics["<sub-metric>"].values["p(95)"]` and
 `metrics["http_req_failed{step:<i>}"].values.rate`, and the step rates from the `load_check` member the script adds to
 k6's summary. The figure is recorded with the date, the commit the stack served (`build` of `/api/health`), the task
 count and the task CPU during that step, and the resource that bound the next step: the task's CPU or memory, the
@@ -128,6 +135,10 @@ cat <trace dir>/*.network \
 
 It keeps a GET or HEAD to either origin and a POST to the Supabase origin's `/rest/v1/rpc/`, drops the paths listed
 above, every other origin and every other method (no write is replayed), and orders the requests by their start time.
+A request to the base origin is a `page` when the trace's `_resourceType` is `document`, and an `asset` otherwise; for
+a trace without that field, a path whose last segment has no file extension and that is not under `/api/` is a `page`.
+The base-origin requests of the committed `staging-journey.json` are tagged by the second rule: its five navigations
+are pages, and its font and stylesheet requests assets.
 Of each it copies the method, the URL with its query and, for an RPC, the body, which a trace stores as a resource read
 from `--resources`; never a header, a cookie or a response. It prints `journey_requests=<n>` on standard error, and
 exits 1 when the trace yields no request or an RPC body could not be read (`journey_bodies_missing=<n>`). `--route-id`

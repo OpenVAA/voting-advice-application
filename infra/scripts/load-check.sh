@@ -7,8 +7,8 @@
 # per minute, held for --step-seconds; the steps run one after the other. k6 writes its summary to <out>/summary.json,
 # and the script then prints:
 #   k6_exit=<n>
-#   step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> met=yes|no     (one line per step)
-#   figure_journeys_per_minute=<rate of the highest step that met every threshold, or 0>
+#   step=<i> rate_per_min=<r> page_p95_ms=<x> relay_p95_ms=<y> error_rate=<e> dropped=<n> met=yes|no   (one per step)
+#   figure_journeys_per_minute=<rate of the highest step that met every threshold with every step below it, or 0>
 #   figure_step=<i or none>
 # k6 exits 99 when a threshold was crossed, which is expected at a step above the capacity, and also when the run was
 # aborted at errors above 5 % for a minute. The method is written in `infra/scripts/load-check/README.md`.
@@ -16,9 +16,9 @@
 # What it refuses, each with exit 2 before anything is run:
 #   - a base URL that is neither https://staging.openvaa.org nor http://host.docker.internal:<port>;
 #   - the staging URL without --confirm-target, or with a --confirm-target that is not the base URL;
-#   - a step above --max-rate;
+#   - steps that do not rise strictly, or a step above --max-rate;
 #   - a journey whose base is not the base URL, or that holds a request to any host but the base host and one
-#     <ref>.supabase.co host, a page request off the base host, a data request off the Supabase host, or a request to
+#     <ref>.supabase.co host, a page or asset request off the base host, a data request off the Supabase host, or a request to
 #     /auth/v1/, /functions/v1/, /api/usage or /_app/immutable/;
 #   - a journey with a data request when SUPABASE_ANON_KEY is empty;
 #   - an --out that already exists.
@@ -34,7 +34,8 @@
 #   infra/scripts/load-check.sh --self-test
 #
 #   --base-url <url>        REQUIRED. https://staging.openvaa.org or http://host.docker.internal:<port>.
-#   --journey <file>        REQUIRED. The journey file: { base, routeId, locale, requests: [{ method, url, kind, body? }] }.
+#   --journey <file>        REQUIRED. The journey file: { base, routeId, locale, requests: [{ method, url, kind, body? }] },
+#                           kind being page, asset or data.
 #   --steps <list>          REQUIRED. Comma-separated arrival rates in journeys per minute, e.g. 5,10,20.
 #   --step-seconds <n>      OPTIONAL. The length of each step in seconds. Default: 300.
 #   --max-rate <n>          REQUIRED. The highest rate a step may have.
@@ -107,16 +108,16 @@ journey.requests.forEach((entry, index) => {
   const onSupabase = url.protocol === "https:" && url.port === "" && supabaseHost.test(url.hostname);
   if (!onBase && !onSupabase) stop(`request ${index} is to a host that is neither the base host nor a Supabase host`);
   if (onSupabase) supabaseOrigins.add(url.origin);
-  if (entry.kind === "page" && !onBase) stop(`page request ${index} is not on the base host`);
+  if ((entry.kind === "page" || entry.kind === "asset") && !onBase) stop(`${entry.kind} request ${index} is not on the base host`);
   if (entry.kind === "data" && !onSupabase) stop(`data request ${index} is not on the Supabase host`);
-  if (entry.kind !== "page" && entry.kind !== "data") stop(`request ${index} has kind ${entry.kind}`);
+  if (!["page", "asset", "data"].includes(entry.kind)) stop(`request ${index} has kind ${entry.kind}`);
   if (entry.kind === "data" && keyPresent !== "yes") stop("the journey holds a data request and SUPABASE_ANON_KEY is empty");
 });
 if (supabaseOrigins.size > 1) stop("the journey holds requests to more than one Supabase host");
 '
 
 check_arguments() {
-  local rate_re='^[1-9][0-9]*$' local_re='^http://host\.docker\.internal:[1-9][0-9]{0,4}$' step reason key_present=no
+  local rate_re='^[1-9][0-9]*$' local_re='^http://host\.docker\.internal:[1-9][0-9]{0,4}$' step previous="" reason key_present=no
 
   [ -n "$BASE_URL" ] || usage_error "--base-url is required"
   if [ "$BASE_URL" = "$STAGING_URL" ]; then
@@ -138,6 +139,8 @@ check_arguments() {
   for step in ${STEPS//,/ }; do
     [[ "$step" =~ $rate_re ]] || usage_error "--steps holds $step, not a positive whole number"
     [ "$step" -le "$MAX_RATE" ] || usage_error "--steps holds $step, above --max-rate $MAX_RATE"
+    [ -z "$previous" ] || [ "$step" -gt "$previous" ] || usage_error "--steps must rise strictly; $step follows $previous"
+    previous="$step"
   done
 
   [ -n "$OUT" ] || usage_error "--out is required"
@@ -283,6 +286,11 @@ STUB
   st_journey "$ST/two-supabase.json" "$local_url" \
     "{ \"method\": \"GET\", \"url\": \"$supabase/rest/v1/elections\", \"kind\": \"data\" }" \
     '{ "method": "GET", "url": "https://qrstuvwxyzabcdef.supabase.co/rest/v1/elections", "kind": "data" }'
+  st_journey "$ST/asset-off-base.json" "$local_url" \
+    '{ "method": "GET", "url": "http://host.docker.internal:5275/", "kind": "page" }' \
+    "{ \"method\": \"GET\", \"url\": \"$supabase/storage/v1/object/public/x.png\", \"kind\": \"asset\" }"
+  st_journey "$ST/unknown-kind.json" "$local_url" \
+    '{ "method": "GET", "url": "http://host.docker.internal:5275/", "kind": "font" }'
   st_journey "$ST/data.json" "$local_url" \
     "{ \"method\": \"GET\", \"url\": \"$supabase/rest/v1/elections\", \"kind\": \"data\" }"
 
@@ -293,6 +301,10 @@ STUB
     --steps 1 --max-rate 5 --out "$ST/runs/b"
   st_refused "step-above-max-rate-is-refused" "above --max-rate" \
     --base-url "$local_url" --journey "$ST/local.json" --steps 1,6 --max-rate 5 --out "$ST/runs/c"
+  st_refused "steps-that-fall-are-refused" "--steps must rise strictly" \
+    --base-url "$local_url" --journey "$ST/local.json" --steps 20,10 --max-rate 50 --out "$ST/runs/c2"
+  st_refused "repeated-step-is-refused" "--steps must rise strictly" \
+    --base-url "$local_url" --journey "$ST/local.json" --steps 5,10,10 --max-rate 50 --out "$ST/runs/c3"
   st_refused "foreign-host-in-journey-is-refused" "neither the base host nor a Supabase host" \
     --base-url "$local_url" --journey "$ST/foreign.json" --steps 1 --max-rate 5 --out "$ST/runs/d"
   mkdir "$ST/runs/existing"
@@ -308,6 +320,10 @@ STUB
     --base-url "$local_url" --journey "$ST/auth.json" --steps 1 --max-rate 5 --out "$ST/runs/h"
   SUPABASE_ANON_KEY=st-fake-key st_refused "function-path-in-journey-is-refused" "asks a refused path" \
     --base-url "$local_url" --journey "$ST/function.json" --steps 1 --max-rate 5 --out "$ST/runs/i"
+  st_refused "asset-off-base-host-is-refused" "asset request 1 is not on the base host" \
+    --base-url "$local_url" --journey "$ST/asset-off-base.json" --steps 1 --max-rate 5 --out "$ST/runs/l"
+  st_refused "unknown-kind-is-refused" "has kind font" \
+    --base-url "$local_url" --journey "$ST/unknown-kind.json" --steps 1 --max-rate 5 --out "$ST/runs/m"
   SUPABASE_ANON_KEY=st-fake-key st_refused "second-supabase-host-is-refused" "more than one Supabase host" \
     --base-url "$local_url" --journey "$ST/two-supabase.json" --steps 1 --max-rate 5 --out "$ST/runs/j"
   SUPABASE_ANON_KEY="" st_refused "data-request-without-key-is-refused" "SUPABASE_ANON_KEY is empty" \

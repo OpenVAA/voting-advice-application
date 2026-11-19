@@ -2,13 +2,15 @@
  * The voter-journey load script, for k6 2.4.0. It is run by `infra/scripts/load-check.sh`, never by Node: `k6/http`
  * resolves only inside k6.
  *
- * One iteration is one journey: every request of the journey file in its order, and after each page request one relay
- * post of a valid batch. The run is a series of steps, one `constant-arrival-rate` scenario each, started one after the
+ * One iteration is one journey: every request of the journey file in its order, and after each page request, a document
+ * navigation, one relay post of a valid batch. An asset request (a font, a stylesheet, an `/api/` read) is sent with no
+ * relay post and counts toward no page threshold. The run is a series of steps, one `constant-arrival-rate` scenario each, started one after the
  * other and tagged `step: <index from 1>`, so every request carries the step it was made in and the thresholds below
  * can be read per step. The method, and how the figure is read from the summary, are in `README.md` beside this file.
  *
  * Inputs, from the environment only:
- *   STEPS              Comma-separated arrival rates, in journeys per minute, one per step, e.g. `5,10,20`.
+ *   STEPS              Comma-separated arrival rates, in journeys per minute, one per step, rising strictly, e.g.
+ *                      `5,10,20`.
  *   STEP_SECONDS       The length of every step, in seconds.
  *   BASE_URL           The origin the pages and the relay posts are requested from.
  *   JOURNEY            The path of the journey file inside the container.
@@ -30,6 +32,11 @@ const STEP_ERROR_RATE = 0.01;
 /** The error rate over the whole run that aborts it, once it has held for `ABORT_DELAY`. */
 const ABORT_ERROR_RATE = 0.05;
 const ABORT_DELAY = '1m';
+/**
+ * The bound of the data requests' per-step p95, in milliseconds: never reached, so it fails no step. It makes k6 keep
+ * that sub-metric in the summary, where it shows whether the Supabase project slowed at a step.
+ */
+const DATA_P95_OBSERVED_MS = 3600000;
 /** The relay path, the same as `RELAY_PATH` of the frontend. */
 const RELAY_PATH = '/api/usage';
 /** Paths no journey may request: Supabase Auth, Edge Functions (`account-access` among them), and the relay itself. */
@@ -46,10 +53,14 @@ function parseSteps(value) {
     .map((entry) => entry.trim())
     .filter((entry) => entry !== '');
   if (steps.length === 0) fail('STEPS is empty');
-  return steps.map((entry) => {
+  const rates = steps.map((entry) => {
     if (!/^[1-9][0-9]*$/.test(entry)) fail(`STEPS holds ${entry}, not a positive whole number`);
     return Number(entry);
   });
+  rates.forEach((rate, index) => {
+    if (index > 0 && rate <= rates[index - 1]) fail('STEPS does not rise strictly');
+  });
+  return rates;
 }
 
 function parseOrigin(url) {
@@ -74,14 +85,14 @@ if (!Array.isArray(JOURNEY.requests) || JOURNEY.requests.length === 0) fail('the
 const REQUESTS = JOURNEY.requests.map((entry, index) => {
   const { origin, host, path } = parseOrigin(entry.url);
   if (REFUSED_PATHS.some((refused) => path.startsWith(refused))) fail(`request ${index} asks a refused path`);
-  if (entry.kind === 'page') {
-    if (origin !== BASE.origin) fail(`page request ${index} is not on the base origin`);
+  if (entry.kind === 'page' || entry.kind === 'asset') {
+    if (origin !== BASE.origin) fail(`${entry.kind} request ${index} is not on the base origin`);
   } else if (entry.kind === 'data') {
     if (!origin.startsWith('https://') || !SUPABASE_HOST.test(host))
       fail(`data request ${index} is not on a Supabase host`);
     if (ANON_KEY === '') fail('the journey holds a data request and SUPABASE_ANON_KEY is empty');
   } else {
-    fail(`request ${index} has kind ${entry.kind}, not page or data`);
+    fail(`request ${index} has kind ${entry.kind}, not page, asset or data`);
   }
   if (!['GET', 'HEAD', 'POST'].includes(entry.method)) fail(`request ${index} has method ${entry.method}`);
   return { method: entry.method, url: entry.url, kind: entry.kind, body: entry.body ?? null };
@@ -117,6 +128,9 @@ STEPS.forEach((rate, index) => {
   thresholds[`http_req_duration{kind:page,step:${step}}`] = [`p(95)<${PAGE_P95_MS}`];
   thresholds[`http_req_duration{kind:relay,step:${step}}`] = [`p(95)<${RELAY_P95_MS}`];
   thresholds[`http_req_failed{step:${step}}`] = [`rate<${STEP_ERROR_RATE}`];
+  // k6 tags a dropped iteration with its scenario, not with the scenario's own tags.
+  thresholds[`dropped_iterations{scenario:step_${step}}`] = ['count<1'];
+  thresholds[`http_req_duration{kind:data,step:${step}}`] = [`p(95)<${DATA_P95_OBSERVED_MS}`];
 });
 
 export const options = {

@@ -639,11 +639,14 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       and its cooldown spent before the address's slots are asked, so what the code holder can observe
       does not depend on whether the typed address is invited or holds a grant. An unknown code is defended by its 60 bits alone; nothing counts
       those look-ups. The keys on a caller are `confirm:<user id>`, below, and
-      `caller:<project id>:<address, or the /64 of an IPv6 address>`, which `invitation_caller_take`
+      `caller:<project id>:<address, the IPv4 address of an IPv4-mapped one, or the /64 of another IPv6
+      address>`, which `invitation_caller_take`
       takes for the address the Edge Function read from `cf-connecting-ip`: thirty invitation operations
       per caller per project per ten minutes, trusted only when `deployment_settings.behind_cloudflare`
       is true, no row for an untrusted, absent or unparseable address or an unknown project, and each
-      take deletes the `caller:` rows whose window has ended. Service role only;
+      take, after its own slot, deletes the other `caller:` rows whose window has ended, skipping rows
+      another transaction has locked (`FOR UPDATE SKIP LOCKED`), so two takes never wait on each other
+      (migration `00024`). Service role only;
       `59-invitation-caller-limit.test.sql` pins it.
     - **`address_confirmation_request(p_project_id, p_user_id, p_email)`** decides whether one
       address-confirmation mail may go to an address for a signed-in account. Neither slot is per
