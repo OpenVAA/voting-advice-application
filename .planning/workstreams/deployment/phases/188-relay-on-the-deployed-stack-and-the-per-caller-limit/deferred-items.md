@@ -11,7 +11,12 @@
 - **Next run:** `tests/e2e-runs/188-05-contestant-identity-provider-r2-20261118T183748Z`, same tree, wrapper exit 0: 614 passed, 0 failed, 0 flaky, 0 `Failed to fetch` lines. That run is evidence about the tree. It does not explain the first run.
 - **Open:** the wrapper's void detection covers host suspend only. A network change that aborts browser requests leaves a red run with no marker, which under the CLAUDE.md rules is a failure. Whether the wrapper should detect such a change (for example by grepping the run's traces for `ERR_NETWORK_CHANGED`), or the host's cause should be found and removed, is for the phase verifier or the operator to decide.
 
-### 2. `code-sign-in` is called from the frontend server, so its per-caller bucket is likely the server's address (decision needed before 188-10)
+### 2. `code-sign-in` is called from the frontend server, so its per-caller bucket is likely the server's address — RESOLVED (option a)
+
+- **Resolved 2026-11-19, option (a), by the operator** (188-CONTEXT.md E-03, commit 6e0aafd67). `code-sign-in` takes no caller slot. The take covers `check-code`, `request-link` and `request-recovery` only. The take is guarded by `takesCallerSlot` over `CALLER_LIMITED_OPERATIONS` in `functions/account-access/callerLimit.ts` (commit 2ee346c83), and the docs now state the residual as it stands (commit c7dc1f32b). The record, gates and E2E runs are in `188-08-SUMMARY.md` § Deviation: code-sign-in outside the caller take. A code sign-in is still bounded by the per-code budget of `invitation_code_claimant_email` (10 per 15 minutes per used code) and by the auth service's per-address sign-in limit. The shared auth sign-in budget (authentication docs' Known residuals, the item before it) stays open as a pre-launch risk.
+
+The original record follows.
+
 
 - `apps/frontend/src/routes/contestant/register/sign-in/+page.server.ts` calls `invitationCodeLogin` → `signInWithInvitationCode` → `account-access` `code-sign-in` from the frontend server. 188-DISCUSSION-POINTS.md records the premise "The browser, directly … The frontend server is not in the path" for all four operations. From the code, that premise is false for `code-sign-in`.
 - Once deployed behind Cloudflare, the `cf-connecting-ip` the function sees for a code sign-in is likely the ECS task's egress address. All code sign-ins through that screen would then share one bucket of 30 per 10 minutes per task, and 30 form submissions by anyone would refuse everyone's code sign-in for the rest of the window. The server reports the refusal as invalid credentials. This is UNCONFIRMED on a hosted project: what the hosted function sees for a server request has not been measured.
