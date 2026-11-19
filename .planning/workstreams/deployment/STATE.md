@@ -7,10 +7,10 @@ current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
 current_plan: 14
 status: executing
 stopped_at: Completed 188-16-PLAN.md
-last_updated: "2026-11-19T10:12:50.565Z"
+last_updated: "2026-11-19T10:55:08.962Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 8b8db3515080b177e533acbbca4d973a362536a6
+state_head: 7fa3890b28f60628365d3793e47c341ee1cabf2c
 progress:
   total_phases: 10
   completed_phases: 7
@@ -447,6 +447,7 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 - [Phase 187] The full `main.yaml` CI last ran on `ci-evidence/187-final-4`; plans 187-29 to 187-31 changed workflows and scripts after it, covered only by the workflows' own `checks` jobs.
 - [Phase 187] `infra/envs/staging/aws/README.md` § Observations has one split table row (a `|` inside a code span; `deferred-items.md`), left open on purpose.
 - Before 188-10: code-sign-in reaches account-access from the frontend server, so its per-caller bucket is likely the server's address (188 deferred-items.md 2); operator to choose exclude / forward under a server secret / keep and measure
+- 188-12 halted (2026-11-19): every deployed smoke run is red since staging analytics.trackEvents=true (09:30:36Z): voter.smoke.ts does not answer the 'Collecting Usage Data' consent prompt, which intercepts the answer click. Blocks every later rollout of phase 188, the pipeline's smoke stage included. Fix the spec (answer the prompt) or set trackEvents=false, then re-run 188-12 Task 3 under a new attempt of 188-12-2. Staging restored (:12, flush 2000, ceiling 2).
 
 ### Roadmap Evolution
 
