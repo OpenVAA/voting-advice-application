@@ -41,3 +41,86 @@ HEALTH_STATUS=200
 `bash infra/scripts/posthog-read.sh --self-test` exited 0 with `self_test summary cases=19 failed=0`.
 
 READ_SCRIPT_SELF_TEST=pass
+
+## Task 3 — the operator's inputs and the read-back
+
+**Attempt:** `20261118T201819Z.465a2d4ef`. `bash "$A" bound 188-09-2 OPERATOR_REPLY plan=188-09 task=2` exited 0
+(re-run 2026-11-19 before the reads). The reply was given on 2026-11-18; its `note:` clarifications of 2026-11-19
+override the raw answers where they differ.
+
+### G1 — the project (A-01)
+
+PH_REGION=eu
+PH_DEDICATED=yes
+PH_OWNER=yes
+PH_PROJECT=347462
+
+### G2 — the plan and the billing limit (A-02)
+
+The raw answer was `answer_billing_limit=0 to 20`; the clarification of 2026-11-19 reads "the Product analytics
+billing limit set is 20 USD". The plan asked for about 10; 20 is the operator's setting.
+
+PH_PLAN=paid
+BILLING_UPGRADE=not-needed
+BILLING_LIMIT=20
+BILLING_CURRENCY=USD
+BILLING_SETTING_TEXT=multiple product limits shown; Product analytics limit 20 USD (operator reading)
+BILLING_OTHER_PRODUCTS=operator-set
+BILLING_TEXT=none found
+BILLING_SET_ON=2026-11-18
+BILLING_LIMIT_RECORDED=yes
+
+note: the billing page carries no sentence about what happens at the limit; the operator found none (`answer_billing_text=none found`), recorded verbatim.
+note: other products: "other products are not all off or at their lowest (0 USD); some are higher, a deliberate operator choice" (operator clarification, 2026-11-19). Raw answer: `low or lowest`. This overrules A-02's "every other product off or at the lowest amount", recorded in 188-CONTEXT.md A-02.
+
+### G3 — addresses and GeoIP (B-02)
+
+`answer_ip_discard=on` (to be read back through the API as `ph_anonymize_ips=true`; see the read-back below).
+
+GEOIP_TRANSFORMATION=off
+
+note: the project offers no GeoIP transformation (operator, 2026-11-19).
+
+### G5 — the Supabase plan (D-06)
+
+SUPABASE_PLAN=pro
+SUPABASE_STEP_CAP=40
+SUPABASE_NOTICE_NEEDED=no
+
+Pro is neither Team nor Enterprise, so no two weeks' notice of heavy load testing is needed. The cap is the plan's
+40 journeys per minute.
+
+### The fill
+
+FILL=unchanged
+
+The fill stands as CONTEXT.md records it: A-02 overruled on 2026-11-17, and the operator's 2026-11-19 clarification
+on other products' levels added to A-02. No other decision is overruled.
+
+### G4 — the read key and the read-back (A-04)
+
+`answer_read_item=stored as project api key, not user`. The plan expected a personal API key.
+
+Read at 2026-11-19T06:48:26Z, the key taken from keychain item `openvaa-staging-posthog-read` into the one command's
+environment and never printed:
+
+`POSTHOG_PERSONAL_API_KEY=… bash infra/scripts/posthog-read.sh --project 347462 --mode settings` exited 1, stderr empty:
+
+```
+ph_query_status=401
+```
+
+A prefix-only check of the stored value, which printed no character of the key beyond the format marker, found that it
+begins `phs_`, PostHog's project secret API key format. A personal API key begins `phx_`. PostHog answered 401
+(authentication), not a HogQL error, so no query text is at fault and `posthog-read.sh` is unchanged.
+
+PH_READ_KEY_KIND=project
+READ_MODE_settings_EXIT=1
+READ_MODE_settings_STATUS=401
+
+The other three modes (`window-count`, `probe-count`, `privacy`) were not run: they go to the same API with the same
+key, and the plan stops on an authentication failure rather than retrying it. `PH_ANONYMIZE_IPS` is not yet read back.
+
+**Open:** the operator creates a personal API key with query read and project read scoped to project 347462, and
+stores it with `security add-generic-password -U -s openvaa-staging-posthog-read -a posthog -w`. The four reads then
+run again.
