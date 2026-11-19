@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 11
+current_plan: 12
 status: executing
-stopped_at: Completed 188-09-PLAN.md
-last_updated: "2026-11-19T08:12:55.100Z"
+stopped_at: Completed 188-10-PLAN.md
+last_updated: "2026-11-19T09:13:50.929Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 20acd51747a3abdac8efc3bce135013bfebbd226
+state_head: f38d4b2c0be3db9600677bd65f7f09ba1ba27180
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 178
+  completed_plans: 179
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 11 of 20
+Plan: 12 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 11
+**Current Plan:** 12
 
 From 184 on, the numeric order is the dependency order.
 
@@ -186,6 +186,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P03 | 10min | 3 tasks | 10 files |
 | Phase 188 P08 | 27min | 2 tasks | 4 files |
 | Phase 188 P09 | 8 min | 3 tasks | 1 files |
+| Phase 188 P10 | 3h10m | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -393,6 +394,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: Phase 188 local half closed: E2E_TREE_SHA=9789bbcf6fc51885748972b84d8631a0e9c36f2b, full suite 729/729 green (tests/e2e-runs/188-close-20261118T195528Z), no project delta against 187-28-close; plans 188-10 to 188-19 diff apps/, packages/ and tests/ against it
 - [Phase 188]: 188-09: the PostHog Product analytics limit is 20 USD (operator's setting; plan asked about 10); other products left above lowest by operator overrule (A-02), so BILLING_OTHER_PRODUCTS=operator-set fails the plan's enum check by design
 - [Phase 188]: 188-09: posthog-read.sh reads with a personal API key (phx_, query+project read, project 347462); the project secret key first stored got 401; ph_anonymize_ips=true and all four modes answer 0
+- [Phase 188]: 188-10: phase 188 deployed to staging by run 44491292876 (green); DEPLOY_COMMIT=a7003b490 is the expected SHA of later smoke runs; migration 00023 on the hosted project, drift 0; PostHog on with the key from the parameter store
+- [Phase 188]: 188-10: the first deploy commit was refused by push protection over the posthog-read fixture key; the fixture is now assembled from two parts (8665ff699) and the commit rebuilt
 
 ### Pending Todos
 
@@ -454,6 +457,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-19T08:12:53.531Z
-**Stopped At:** Completed 188-09-PLAN.md
+Last session: 2026-11-19T09:13:49.525Z
+**Stopped At:** Completed 188-10-PLAN.md
 **Resume File:** None
