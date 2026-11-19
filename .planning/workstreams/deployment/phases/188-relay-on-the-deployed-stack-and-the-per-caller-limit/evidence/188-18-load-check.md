@@ -136,3 +136,23 @@ Written before any approval is asked; Task 3 runs it only after `bound 188-18-2`
 ## Plan Task 1 verify
 
 Run verbatim, the plan's automated verify exits 1 at its node check, `if(!Array.isArray(j)||j.length===0)process.exit(1)`. The check was written for a journey that is a bare array; since 188-07 a journey file is one object `{ base, routeId, locale, requests }`, and `load-check.sh` refuses any other shape ("the journey is not an object"). Every other check passes: the six `grep -qx` lines, `JOURNEY_REQUESTS` above 0, the token and header-name grep, and `prettier --check`. The same node check applied to `j.requests` (every entry's keys `kind,method,url` or `body,kind,method,url`, the list not empty) exits 0. The verify was not edited.
+
+## Task 3, sitting one — stopped before any plan: the AWS SSO session had expired (2026-11-19, attempt 20261119T165213Z.1312f24e7)
+
+Recorded 2026-11-19 (UTC) by the continuation executor of plan 188-18. `bash "$A" bound 188-18-2 OPERATOR_REPLY plan=188-18 task=2` exit 0 and `bash "$A" has 188-18-2 '^answer_load=approve$'` exit 0 were read at 17:13:31Z. The pinned k6 image was pulled by its digest (exit 0, `Image is up to date`, the scratch `DOCKER_CONFIG` of 188-07) and `k6 version` read `k6 v2.4.0`. The anon key was confirmed readable from staging's served env block by its length and class only (208 characters, a JWT), never printed.
+
+```
+SITTING1_PRE_PLAN_ACTIVE_RUNS=0
+SITTING1_ACCOUNT_READ_EXIT=0
+SITTING1_INIT_EXIT=1
+SITTING1_INIT_ERROR=failed to refresh cached credentials, refresh cached SSO token failed (SSO OIDC CreateToken, HTTP 400)
+SITTING1_PLAN_EXIT=1
+SITTING1_ROLE_CREDENTIALS_EXPIRE=2026-11-19T17:38:50Z
+SITTING1_HOSTED_WRITES=none
+SITTING1_PLAN_FILES_LEFT=0
+```
+
+- At 17:15:45Z, under `caffeinate -i`, the account check passed on the AWS CLI's cached role credentials, but `terraform init -lockfile=readonly` of the staging root exited 1: the S3 backend could not refresh the SSO token of session `openvaa` (`CreateToken` answered 400). The plan therefore exited 1 without a saved plan, and `show -json` had nothing to read. `find` of the session scratch directory finds no `tfplan*` and no plan JSON.
+- The cached role credentials expire at 17:38:50Z, before a sitting of about an hour could end, so the sitting was not continued on them: an override left on the stack could not have been restored.
+- Nothing was planned, applied or loaded; staging is still `:20`, provider `posthog`. The pre-plan read of the pipeline counts 0 active runs. A second read failed on the first try because the run-count script read `gh` from outside the checkout; it was fixed and read 0 again.
+- The sitting needs a new SSO login (`aws sso login --sso-session openvaa`) before it runs again; whether it runs under this attempt or a new one is the orchestrator's call.
