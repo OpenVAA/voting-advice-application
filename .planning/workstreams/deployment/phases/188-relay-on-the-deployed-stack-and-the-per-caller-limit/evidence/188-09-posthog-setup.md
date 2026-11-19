@@ -99,28 +99,78 @@ on other products' levels added to A-02. No other decision is overruled.
 
 ### G4 — the read key and the read-back (A-04)
 
-`answer_read_item=stored as project api key, not user`. The plan expected a personal API key.
+note (2026-11-19, superseded): the first read, at 2026-11-19T06:48:26Z, ran with keychain item
+`openvaa-staging-posthog-read` holding a project secret API key (prefix `phs_`, `answer_read_item=stored as project api
+key, not user`). `--mode settings` exited 1 with `ph_query_status=401` (authentication, not a HogQL error), and the
+other three modes were not run. The operator then replaced the item with a personal API key: query read and project
+read, scoped to project 347462.
 
-Read at 2026-11-19T06:48:26Z, the key taken from keychain item `openvaa-staging-posthog-read` into the one command's
-environment and never printed:
+#### The read-back with the personal key (2026-11-19)
 
-`POSTHOG_PERSONAL_API_KEY=… bash infra/scripts/posthog-read.sh --project 347462 --mode settings` exited 1, stderr empty:
+`bash "$A" bound 188-09-2 OPERATOR_REPLY plan=188-09 task=2` exited 0 again before these reads (attempt
+`20261118T201819Z.465a2d4ef`). A prefix-only check of the replaced item, which printed no character of the key, found
+the personal API key format `phx_`.
+
+PH_READ_KEY_KIND=personal
+
+Each read took the key from the keychain into the one command's environment; it was never printed. Window:
+`--since 2026-11-19T07:09:48Z --until 2026-11-19T08:09:48Z` (the last hour); the settings read ran at
+2026-11-19T08:09:36Z. Every read's stderr was empty.
+
+`posthog-read.sh --project 347462 --mode settings` exited 0:
 
 ```
-ph_query_status=401
+ph_anonymize_ips=true
 ```
 
-A prefix-only check of the stored value, which printed no character of the key beyond the format marker, found that it
-begins `phs_`, PostHog's project secret API key format. A personal API key begins `phx_`. PostHog answered 401
-(authentication), not a HogQL error, so no query text is at fault and `posthog-read.sh` is unchanged.
+`--mode window-count` exited 0:
 
-PH_READ_KEY_KIND=project
-READ_MODE_settings_EXIT=1
-READ_MODE_settings_STATUS=401
+```
+ph_window_events=0
+```
 
-The other three modes (`window-count`, `probe-count`, `privacy`) were not run: they go to the same API with the same
-key, and the plan stops on an authentication failure rather than retrying it. `PH_ANONYMIZE_IPS` is not yet read back.
+`--mode probe-count --probe p188none` exited 0:
 
-**Open:** the operator creates a personal API key with query read and project read scoped to project 347462, and
-stores it with `security add-generic-password -U -s openvaa-staging-posthog-read -a posthog -w`. The four reads then
-run again.
+```
+ph_probe_events=0
+```
+
+`--mode privacy` exited 0:
+
+```
+ph_events=0
+ph_ip_present=0
+ph_geoip_present=0
+ph_user_agent_present=0
+ph_url_present=0
+ph_referrer_present=0
+ph_host_present=0
+ph_person_profile_events=0
+ph_persons=0
+ph_pageviews=0
+ph_pageview_session_id_present=0
+ph_other_events=0
+ph_other_session_id_present=0
+```
+
+Every count is 0, as expected: staging sends nothing (`STAGING_PROVIDER_TFVARS=none`). No HogQL error and no
+`ph_result=unexpected_shape` was returned, so `posthog-read.sh` is unchanged.
+
+PH_ANONYMIZE_IPS=true
+READ_MODE_settings_EXIT=0
+READ_MODE_window-count_EXIT=0
+READ_MODE_window-count_COUNT=0
+READ_MODE_probe-count_EXIT=0
+READ_MODE_probe-count_COUNT=0
+READ_MODE_privacy_EXIT=0
+READ_MODE_privacy_EVENTS=0
+
+### The plan's Task 3 verify (2026-11-19)
+
+Run verbatim, it exits 1 at one check only: `^BILLING_OTHER_PRODUCTS=(off|lowest)$`, because the record holds
+`BILLING_OTHER_PRODUCTS=operator-set` under the operator's 2026-11-19 overrule recorded in 188-CONTEXT.md A-02. The
+verify is not edited. Every other check passes when run one by one: the eleven `grep -qx` lines, `PH_PROJECT`,
+`SUPABASE_PLAN`, `SUPABASE_STEP_CAP`, `BILLING_SET_ON`, `BILLING_SETTING_TEXT`, `BILLING_TEXT`, the amount branch of
+the billing check (`BILLING_LIMIT=20`, not zero, `BILLING_CURRENCY=USD`, `BILLING_UPGRADE=not-needed`), and
+`yarn test:unit:infra posthog-read` (exit 0, 5 tests). `posthog-read.sh --self-test` exits 0 with
+`self_test summary cases=19 failed=0`.
