@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 12
+current_plan: 13
 status: executing
-stopped_at: Completed 188-10-PLAN.md
-last_updated: "2026-11-19T09:13:50.929Z"
+stopped_at: Completed 188-11-PLAN.md
+last_updated: "2026-11-19T09:47:50.844Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: f38d4b2c0be3db9600677bd65f7f09ba1ba27180
+state_head: 7f4032f3eb4802d0c3bf76ea15738ed7142d1648
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 179
+  completed_plans: 180
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 12 of 20
+Plan: 13 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 12
+**Current Plan:** 13
 
 From 184 on, the numeric order is the dependency order.
 
@@ -187,6 +187,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P08 | 27min | 2 tasks | 4 files |
 | Phase 188 P09 | 8 min | 3 tasks | 1 files |
 | Phase 188 P10 | 3h10m | 3 tasks | 6 files |
+| Phase 188 P11 | 32min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -396,6 +397,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-09: posthog-read.sh reads with a personal API key (phx_, query+project read, project 347462); the project secret key first stored got 401; ph_anonymize_ips=true and all four modes answer 0
 - [Phase 188]: 188-10: phase 188 deployed to staging by run 44491292876 (green); DEPLOY_COMMIT=a7003b490 is the expected SHA of later smoke runs; migration 00023 on the hosted project, drift 0; PostHog on with the key from the parameter store
 - [Phase 188]: 188-10: the first deploy commit was refused by push protection over the posthog-read fixture key; the fixture is now assembled from two parts (8665ff699) and the commit rebuilt
+- [Phase 188]: 188-11: B-03 judged on the second, consenting journey; the first ran with staging analytics.trackEvents=false and sent pageviews only
+- [Phase 188]: 188-11: PostHog reads the top-level distinct_id when both placements are set (capture docs, read 2026-11-19); the properties duplicate is inert
 
 ### Pending Todos
 
@@ -457,6 +460,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-19T09:13:49.525Z
-**Stopped At:** Completed 188-10-PLAN.md
+Last session: 2026-11-19T09:47:49.297Z
+**Stopped At:** Completed 188-11-PLAN.md
 **Resume File:** None
