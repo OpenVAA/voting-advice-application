@@ -214,3 +214,33 @@ SERVED_BUILD_AFTER=a7003b490b4ff92fc72bef5d225c593b222d6c4e
 - **The smoke run.** `DEPLOYED SMOKE GATE https://staging.openvaa.org`, the five `PASS` lines, `DEPLOYED SMOKE GATE OK build=a7003b490b4ff92fc72bef5d225c593b222d6c4e ref=cofbsatfrdysyphajsky project=00000000-0000-0000-0000-000000000001`; both specs passed, `2 passed (18.6s)`, `smoke_exit=0`. `served_build_after_smoke=` equals the run's SHA.
 - **Nothing uploaded, no alert.** `gh api .../runs/44491292876/artifacts` exit 0, `total_count` 0. The alert steps were skipped.
 - **`SERVED_BUILD_AFTER=`.** `curl -sS --max-time 20 https://staging.openvaa.org/api/health` exit 0 at 09:07:50Z, HTTP 200, body `{"status":"ok","build":"a7003b490b4ff92fc72bef5d225c593b222d6c4e"}`, equal to `DEPLOY_COMMIT=`.
+
+### The stack read back from the workstation
+
+Recorded read-only on 2026-11-19 (UTC), about 09:20Z, by the continuation executor of plan 188-10, after the operator signed in to AWS SSO again (the first attempt at 09:07Z found the session expired, `aws sts get-caller-identity` exit 255; the executor did not sign in). With `AWS_PROFILE=openvaa-admin` and `AWS_REGION=eu-north-1`: `aws sts get-caller-identity --query Account` exit 0, account match exit 0 (`471112560111`); `infra/scripts/running-image-digest.sh`; one `aws ecs describe-task-definition` whose `--query` selects the two analytics values, the stop timeout, the environment's names, the secrets' names and the one `valueFrom` path; `aws ecs list-tasks`, `describe-tasks` and `describe-services` (status fields only); and `aws logs describe-log-streams` and `filter-log-events` of the new task's stream. No secret value was read. Each status was read on its own line.
+
+```
+RUNNING_TASK_DEFINITION_AFTER=arn:aws:ecs:eu-north-1:471112560111:task-definition/openvaa-staging-frontend:10
+RUNNING_IMAGE_REFERENCE=digest
+RUNNING_IMAGE_DIGEST=sha256:e35bde282307277ea7be9aed008b2bc5a31c0a27ff2738b9153e09bf1412182a
+RUNNING_IMAGE_DIGEST_EQUALS_BUILD=yes
+TD_ANALYTICS_PROVIDER=posthog
+TD_FLUSH_INTERVAL_MS=2000
+TD_STOP_TIMEOUT=40
+TD_POSTHOG_KEY_SOURCE=parameter
+TD_POSTHOG_KEY_IN_ENVIRONMENT=0
+TD_SECRET_NAMES=PUBLIC_SUPABASE_ANON_KEY,ANALYTICS_POSTHOG_KEY
+RUNNING_TASK=f4d78070320843b4a4e14e0f0f4aff48
+RUNNING_TASK_STATUS=RUNNING HEALTHY
+RUNNING_DEPLOYMENTS_AFTER=1
+RUNNING_ROLLOUT_STATE_AFTER=COMPLETED
+NEW_TASK_LOG_EVENTS=1
+STARTUP_PROBLEMS=0
+HOSTED_WRITES=image,migration-00023,functions,task-definition,service-rollout
+```
+
+- **`RUNNING_IMAGE_DIGEST=`.** `running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend` exit 0: task definition `:10`, reference `digest`, digest `sha256:e35bde28…`, equal to `BUILD_DIGEST=`.
+- **The task definition `:10`.** `describe-task-definition` exit 0: `ANALYTICS_PROVIDER` `posthog`, `ANALYTICS_FLUSH_INTERVAL_MS` `2000`, `stopTimeout` 40. `ANALYTICS_POSTHOG_KEY` is among the secrets, its `valueFrom` `arn:aws:ssm:eu-north-1:471112560111:parameter/openvaa/staging/frontend/ANALYTICS_POSTHOG_KEY`, and absent from the environment (`length(environment[?name=='ANALYTICS_POSTHOG_KEY'])` 0): `TD_POSTHOG_KEY_SOURCE=parameter`. The environment's 15 names hold no other key.
+- **The rollout.** `describe-services` exit 0: one deployment, `PRIMARY`, `COMPLETED`, task definition `:10`, 1 of 1 running. `list-tasks` exit 0 names one running task, `f4d78070…`, which `describe-tasks` exit 0 reads `RUNNING`, `HEALTHY`, on `:10`, started 09:04:29Z.
+- **`STARTUP_PROBLEMS=0`.** The task's stream `frontend/frontend/f4d78070320843b4a4e14e0f0f4aff48` (exit 0) holds one event, `Listening on http://0.0.0.0:3000`. `filter-log-events` with the pattern `"Required environment variables are not set"`, the start-up refusal's message, counts 0 in that stream and 0 in the whole log group since 08:56Z; `?Error ?error ?refus` counts 0 in the stream.
+- **What the run wrote (`HOSTED_WRITES=`).** A new image tagged with the deploy commit; migration `00023_invitation_caller_limit` on `cofbsatfrdysyphajsky`, one-way; the three functions deployed from the commit; the task definition replaced by digest with PostHog on, and the service rolled onto it. No alert mail.
