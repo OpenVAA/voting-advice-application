@@ -11,7 +11,10 @@
  *
  * It reads JSON lines on standard input and keeps the `resource-snapshot` lines whose request it can replay:
  *
- *   - a GET or HEAD to the base origin, as `kind: page`;
+ *   - a GET or HEAD to the base origin, as `kind: page` when it is a document navigation and as `kind: asset` otherwise
+ *     (a font, a stylesheet, an image, a fetch of an `/api/` endpoint): the trace's `_resourceType` decides when it is
+ *     present, `document` being a navigation; without it, a path whose last segment has no file extension and that is
+ *     not under `/api/` is a navigation;
  *   - a GET or HEAD to the Supabase origin, as `kind: data`;
  *   - a POST to the Supabase origin's `/rest/v1/rpc/`, as `kind: data`, with the request body text.
  *
@@ -33,10 +36,12 @@
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const DROPPED_PATHS = ['/_app/immutable/', '/auth/v1/', '/functions/v1/', '/api/usage'];
 const READ_METHODS = ['GET', 'HEAD'];
 const RPC_PATH = '/rest/v1/rpc/';
+const API_PATH = '/api/';
 
 function usage(message) {
   process.stderr.write(`journey-from-trace.mjs: ${message}\n`);
@@ -93,7 +98,8 @@ function requestOf(line) {
     started: Number.isFinite(started) ? started : 0,
     method: request.method.toUpperCase(),
     url: request.url,
-    postData: request.postData
+    postData: request.postData,
+    resourceType: typeof snapshot._resourceType === 'string' ? snapshot._resourceType : undefined
   };
 }
 
@@ -108,13 +114,28 @@ function entryOf(request, flags) {
   if (DROPPED_PATHS.some((path) => url.pathname.startsWith(path))) return undefined;
   const target = { method: request.method, url: request.url };
   if (url.origin === flags.base) {
-    return READ_METHODS.includes(request.method) ? { ...target, kind: 'page' } : undefined;
+    if (!READ_METHODS.includes(request.method)) return undefined;
+    return { ...target, kind: isNavigation(request.resourceType, url.pathname) ? 'page' : 'asset' };
   }
   if (url.origin !== flags.supabase) return undefined;
   if (READ_METHODS.includes(request.method)) return { ...target, kind: 'data' };
   if (request.method !== 'POST' || !url.pathname.startsWith(RPC_PATH)) return undefined;
   const body = bodyOf(request.postData, flags.resources);
   return body === undefined ? null : { ...target, kind: 'data', body };
+}
+
+/**
+ * Whether a request to the base origin is a document navigation: by the trace's resource type when it holds one, and
+ * otherwise by a path whose last segment has no file extension and that is not under `/api/`.
+ *
+ * @param {string | undefined} resourceType - The trace's `_resourceType` of the request, if it holds one.
+ * @param {string} pathname - The request's path.
+ * @returns {boolean}
+ */
+export function isNavigation(resourceType, pathname) {
+  if (resourceType !== undefined) return resourceType === 'document';
+  const last = pathname.split('/').at(-1) ?? '';
+  return !pathname.startsWith(API_PATH) && !last.includes('.');
 }
 
 /** The body text of an RPC, `undefined` when it cannot be read. A body the trace stored as a resource wins over `text`. */
@@ -172,4 +193,5 @@ function main(args) {
   process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
 }
 
-main(process.argv.slice(2));
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href)
+  main(process.argv.slice(2));

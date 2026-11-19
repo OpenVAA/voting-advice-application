@@ -95,6 +95,8 @@ describe('load-check.sh', () => {
       'foreign-host-in-journey-is-refused',
       'existing-out-is-refused',
       'base-url-outside-allowlist-is-refused',
+      'asset-off-base-host-is-refused',
+      'unknown-kind-is-refused',
       'auth-path-in-journey-is-refused',
       'function-path-in-journey-is-refused',
       'valid-run-uses-pinned-image',
@@ -301,6 +303,14 @@ describe('voter-journey.js', () => {
     expect(text).not.toMatch(/sb_(publishable|secret)_[A-Za-z0-9_-]+/);
   });
 
+  it('accepts asset requests on the base origin and posts a relay batch after page requests only', () => {
+    expect(text).toContain("if (entry.kind === 'page' || entry.kind === 'asset') {");
+    expect(text).toMatch(
+      /send\(entry\);\s*if \(entry\.kind === 'page'\) \{\s*http\.post\(`\$\{BASE_URL\}\$\{RELAY_PATH\}`/
+    );
+    expect(text).toContain('tags: { kind: entry.kind }');
+  });
+
   it('refuses Supabase Auth and Edge Function paths', () => {
     expect(text).toContain("'/auth/v1/'");
     expect(text).toContain("'/functions/v1/'");
@@ -317,12 +327,14 @@ function snapshot(
   monotonicTime: number,
   method: string,
   url: string,
-  postData?: { text?: string; _sha1?: string; _file?: string }
+  postData?: { text?: string; _sha1?: string; _file?: string },
+  resourceType?: string
 ): string {
   return JSON.stringify({
     type: 'resource-snapshot',
     snapshot: {
       _monotonicTime: monotonicTime,
+      ...(resourceType ? { _resourceType: resourceType } : {}),
       startedDateTime: new Date(Date.UTC(2026, 10, 18, 12, 0, 0, monotonicTime)).toISOString(),
       request: {
         method,
@@ -399,6 +411,47 @@ describe('journey-from-trace.mjs', () => {
     expect(stdout).not.toContain('example.org');
   });
 
+  it('tags a document navigation as a page and every other base-origin read as an asset', () => {
+    const { status, stdout } = extract([
+      snapshot(1, 'GET', `${BASE}/`, undefined, 'document'),
+      snapshot(2, 'GET', `${BASE}/fonts/inter.css`, undefined, 'stylesheet'),
+      snapshot(3, 'GET', `${BASE}/fonts/inter-latin-400-normal.woff2`, undefined, 'font'),
+      snapshot(4, 'GET', `${BASE}/results/__data.json?x-sveltekit-invalidated=01`, undefined, 'fetch'),
+      snapshot(5, 'GET', `${BASE}/api/health`, undefined, 'fetch'),
+      snapshot(6, 'GET', `${BASE}/questions?electionId=1`, undefined, 'document'),
+      snapshot(7, 'GET', `${BASE}/elections`, undefined, 'fetch')
+    ]);
+    expect(status).toBe(0);
+    expect(JSON.parse(stdout).requests.map((entry: { kind: string }) => entry.kind)).toEqual([
+      'page',
+      'asset',
+      'asset',
+      'asset',
+      'asset',
+      'page',
+      'asset'
+    ]);
+  });
+
+  it('without a resource type, tags a path with no file extension and outside /api/ as a page', () => {
+    const { stdout } = extract([
+      snapshot(1, 'GET', `${BASE}/`),
+      snapshot(2, 'GET', `${BASE}/fonts/inter.css`),
+      snapshot(3, 'GET', `${BASE}/fonts/inter-latin-700-normal.woff2`),
+      snapshot(4, 'GET', `${BASE}/constituencies?electionId=1`),
+      snapshot(5, 'GET', `${BASE}/api/health`),
+      snapshot(6, 'HEAD', `${BASE}/favicon.png`)
+    ]);
+    expect(JSON.parse(stdout).requests.map((entry: { kind: string }) => entry.kind)).toEqual([
+      'page',
+      'asset',
+      'asset',
+      'page',
+      'asset',
+      'asset'
+    ]);
+  });
+
   it('takes the route id and the locale from its flags', () => {
     const { stdout } = extract(TRACE_LINES, '--route-id', '/(voters)/(located)/questions', '--locale', 'fi');
     const journey = JSON.parse(stdout);
@@ -459,5 +512,34 @@ describe('journey-from-trace.mjs', () => {
   it('exits 2 without --base or --supabase', () => {
     expect(run('node', [EXTRACTOR, '--base', BASE], '').status).toBe(2);
     expect(run('node', [EXTRACTOR, '--supabase', SUPABASE], '').status).toBe(2);
+  });
+});
+
+type JourneyFile = { base: string; requests: Array<{ url: string; kind: string }> };
+
+describe('the committed journeys', () => {
+  it.each(['staging-journey.json', 'local-journey.json'])(
+    '%s tags its base-origin reads by the extractor rule for a trace without a resource type',
+    (name) => {
+      const journey = JSON.parse(readFileSync(join(HERE, 'load-check', name), 'utf8')) as JourneyFile;
+      const base = new URL(journey.base).origin;
+      for (const entry of journey.requests) {
+        const url = new URL(entry.url);
+        if (url.origin !== base) {
+          expect(entry.kind, entry.url).toBe('data');
+          continue;
+        }
+        const navigation = !url.pathname.startsWith('/api/') && !(url.pathname.split('/').at(-1) ?? '').includes('.');
+        expect(entry.kind, entry.url).toBe(navigation ? 'page' : 'asset');
+      }
+    }
+  );
+
+  it('the staging journey holds its five navigations as its only pages', () => {
+    const journey = JSON.parse(readFileSync(join(HERE, 'load-check', 'staging-journey.json'), 'utf8')) as JourneyFile;
+    expect(
+      journey.requests.filter((entry) => entry.kind === 'page').map((entry) => new URL(entry.url).pathname)
+    ).toEqual(['/', '/intro', '/elections', '/constituencies', '/questions']);
+    expect(journey.requests.filter((entry) => entry.kind === 'asset')).toHaveLength(9);
   });
 });

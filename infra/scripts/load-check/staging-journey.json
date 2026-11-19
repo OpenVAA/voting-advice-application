@@ -11,17 +11,17 @@
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter.css",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter-latin-400-normal.woff2",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter-latin-700-normal.woff2",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",
@@ -36,17 +36,17 @@
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter.css",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter-latin-400-normal.woff2",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter-latin-700-normal.woff2",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",
@@ -91,17 +91,17 @@
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter.css",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter-latin-400-normal.woff2",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",
       "url": "https://staging.openvaa.org/fonts/inter-latin-700-normal.woff2",
-      "kind": "page"
+      "kind": "asset"
     },
     {
       "method": "GET",

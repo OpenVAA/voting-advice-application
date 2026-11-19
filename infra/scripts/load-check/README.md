@@ -9,7 +9,7 @@ arrival rate of voter journeys, in **journeys per minute**, at which the stack s
 | `voter-journey.js`       | The k6 2.4.0 script: replays the journey at stepped arrival rates and writes the summary.                          |
 | `figure.mjs`             | Reads the summary and prints one line per step and the figure.                                                     |
 | `journey-from-trace.mjs` | Turns a Playwright trace of a voter run into a journey file.                                                       |
-| `local-journey.json`     | A two-page journey against a local dev server, for a dry run of the method.                                        |
+| `local-journey.json`     | A one-page journey and one asset request against a local dev server, for a dry run of the method.                  |
 
 ## The tool
 
@@ -35,14 +35,15 @@ A journey file is one JSON object:
 }
 ```
 
-`requests` holds the requests a browser made during one recorded voter run, in their order: the server-rendered pages
-and other requests to the staging host (`kind: page`), and the reads to the project's Supabase host (`kind: data`), with
-the body for a POST to `/rest/v1/rpc/`. It holds no immutable asset (`/_app/immutable/`), no Supabase Auth call
+`requests` holds the requests a browser made during one recorded voter run, in their order: the server-rendered pages,
+the document navigations to the staging host (`kind: page`), the other requests to it, such as fonts and stylesheets
+(`kind: asset`), and the reads to the project's Supabase host (`kind: data`), with the body for a POST to
+`/rest/v1/rpc/`. It holds no immutable asset (`/_app/immutable/`), no Supabase Auth call
 (`/auth/v1/`), no Edge Function call (`/functions/v1/`, `account-access` among them), no relay post, and no header or
 cookie. The Supabase Auth limits would be load-tested instead of the stack, and the voter journey is anonymous.
 
-One iteration replays every request of the file in its order, and after each page request posts one relay batch to
-`/api/usage`: `Content-Type: application/json`, `Sec-Fetch-Site: same-origin`, one valid `answer` event whose visit id
+One iteration replays every request of the file in its order, and after each page request, and no asset request,
+posts one relay batch to `/api/usage`: `Content-Type: application/json`, `Sec-Fetch-Site: same-origin`, one valid `answer` event whose visit id
 is stamped with the current time, under the journey's route id and locale. The requests to the Supabase host carry
 `apikey` and `Authorization: Bearer` with the anon key; no other request carries a credential. Response bodies are
 discarded.
@@ -134,6 +135,10 @@ cat <trace dir>/*.network \
 
 It keeps a GET or HEAD to either origin and a POST to the Supabase origin's `/rest/v1/rpc/`, drops the paths listed
 above, every other origin and every other method (no write is replayed), and orders the requests by their start time.
+A request to the base origin is a `page` when the trace's `_resourceType` is `document`, and an `asset` otherwise; for
+a trace without that field, a path whose last segment has no file extension and that is not under `/api/` is a `page`.
+The base-origin requests of the committed `staging-journey.json` are tagged by the second rule: its five navigations
+are pages, and its font and stylesheet requests assets.
 Of each it copies the method, the URL with its query and, for an RPC, the body, which a trace stores as a resource read
 from `--resources`; never a header, a cookie or a response. It prints `journey_requests=<n>` on standard error, and
 exits 1 when the trace yields no request or an RPC body could not be read (`journey_bodies_missing=<n>`). `--route-id`
