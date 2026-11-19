@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 15
+current_plan: 16
 status: executing
-stopped_at: Completed 188-12-PLAN.md
-last_updated: "2026-11-19T13:14:26.612Z"
+stopped_at: Completed 188-13-PLAN.md
+last_updated: "2026-11-19T13:51:53.978Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: d74d5c51b6bb31e4ca5840e96b3912f8e8c580ff
+state_head: 1c33ea358b5b8ef561ab7518b3dd0aaf450091d2
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 182
+  completed_plans: 183
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 15 of 20
+Plan: 16 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 15
+**Current Plan:** 16
 
 From 184 on, the numeric order is the dependency order.
 
@@ -190,6 +190,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P11 | 32min | 3 tasks | 2 files |
 | Phase 188 P16 | 59min | 3 tasks | 4 files |
 | Phase 188 P12 | about 3 h | 3 tasks | 2 files |
+| Phase 188 P13 | 35min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -404,6 +405,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-16: the hosted per-caller limit seen refusing CloudShell at its 31st check-code while the workstation was answered in the same window (39 s later), then refusing the workstation at its own 31st and releasing it after its window; todo 2026-10-07-174 closed, its scan item moved
 - [Phase 188]: 188-12: the first run was halted after the observation apply, because the deployed voter smoke was red with staging's trackEvents=true. Staging was restored at once. The operator set trackEvents back to false, and the second attempt observed B-04 (7 of 7 at PostHog).
 - [Phase 188]: 188-12: the analytics queue timer starts on the task's first /api/usage request, not at startedAt. The tick-free window is bounded by startedAt+600 s and the end of the smoke run plus 600 s.
+- [Phase 188]: 188-13: the full-queue memory baseline is the minutes the one task ran alone (8.887 %), not the literal five-minute window whose rollout minute read 14.99 %; rise 0.634 points
 
 ### Pending Todos
 
@@ -465,6 +467,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-19T13:14:25.007Z
-**Stopped At:** Completed 188-12-PLAN.md
+Last session: 2026-11-19T13:51:52.457Z
+**Stopped At:** Completed 188-13-PLAN.md
 **Resume File:** None
