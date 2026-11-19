@@ -49,6 +49,7 @@ SEV_RANK = {"blocking": 0, "should-fix": 1, "consider": 2}
 SEV_TITLE = {"blocking": "Blocking", "should-fix": "Should-fix", "consider": "Consider"}
 LIMIT = 65536
 BUDGET = 20000  # well under LIMIT: GitHub task-list checkboxes stop toggling reliably in long comments
+CONT_OVERHEAD = 200  # a continuation's marker and "part i of n" heading
 
 
 def load(path, default=None):
@@ -110,7 +111,9 @@ def slice_summary(body):
         items = []
         for l in lines[1:]:
             if not l.startswith(("- ", "* ")) or re.match(r"[-*] \*{0,2}(Files|Reading order)\b", l, re.I): break
-            items.append(l[2:].strip().rstrip("."))
+            item = l[2:].strip().rstrip(".;,")
+            if len(item) > 1 and item[0].isupper() and item[1].islower(): item = item[0].lower() + item[1:]
+            items.append(item)
         first = f"{first} {'; '.join(items)}." if items else first.rstrip(":") + "."
     return first
 
@@ -331,7 +334,7 @@ def main():
         repeat = " (continued)" if c["heading"] in seen and c["heading"] != last else ""
         piece = ("" if c["heading"] == last else f"{c['heading']}{repeat}\n\n") + c["text"]
         if cur and len(piece) + 8 > room:
-            parts.append(cur); cur, room, last = [], budget, None
+            parts.append(cur); cur, room, last = [], budget - CONT_OVERHEAD, None
             piece = f"{c['heading']}{' (continued)' if c['heading'] in seen else ''}\n\n" + c["text"]
         cur.append(piece); room -= len(piece) + 8
         seen.add(c["heading"]); last = c["heading"]
