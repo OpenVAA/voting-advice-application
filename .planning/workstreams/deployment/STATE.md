@@ -5,17 +5,17 @@ milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytic
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
 current_plan: 20
-status: executing
-stopped_at: Completed 188-18-PLAN.md
-last_updated: "2026-11-19T18:10:15.012Z"
+status: verifying
+stopped_at: Completed 188-19-PLAN.md
+last_updated: "2026-11-19T18:34:12.850Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 65dd017e40e3a70075fd95295c0723f412cfd908
+state_head: 802b3e9c6330d942879bbc818b06d9f14feadf94
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 187
+  completed_plans: 188
   percent: 70
 ---
 
@@ -35,7 +35,7 @@ Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is 
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
 Plan: 20 of 20
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-11-18 — Phase 188 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([███████░░░] 70%); 7 of 9 roadmap phases complete, 181.1 inserted besides
@@ -195,6 +195,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P15 | 40 min | 3 tasks | 2 files |
 | Phase 188 P17 | 50 min | 3 tasks | 2 files |
 | Phase 188 P18 | 80 min | 3 tasks | 7 files |
+| Phase 188 P19 | 20min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -419,6 +420,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-18: the voter-journey capacity figure is 40 journeys a minute on staging (2026-11-19, a7003b490, 1 task, CPU 44.86 %), a lower bound: no step failed (LOAD_BOUND=none-reached) and 40 is the hosted plan's step cap
 - [Phase 188]: 188-18: the figure rests on a pageview-only journey (trackEvents=false); a deployment with trackEvents on carries more relay load per journey
 - [Phase 188]: 188-18: voter-journey.js keeps the data requests' per-step p95 through an observe-only threshold, for the bound rule
+- [Phase 188]: 188-19: staging ends phase 188 on :22 (a7003b490 by digest, posthog, flush 2000, stop 40, 1..2, no web ACL); a final plan with the running digest only reads No changes.
+- [Phase 188]: 188-19: the personal PostHog read key is revoked (operator, 2026-11-19; keychain item absent); phase 189 needs a new read key to read events
 
 ### Pending Todos
 
@@ -485,6 +488,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-19T18:10:12.286Z
-**Stopped At:** Completed 188-18-PLAN.md
+Last session: 2026-11-19T18:34:11.148Z
+**Stopped At:** Completed 188-19-PLAN.md
 **Resume File:** None
