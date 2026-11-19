@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 13
+current_plan: 14
 status: executing
-stopped_at: Completed 188-11-PLAN.md
-last_updated: "2026-11-19T09:47:50.844Z"
+stopped_at: Completed 188-16-PLAN.md
+last_updated: "2026-11-19T10:12:50.565Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 7f4032f3eb4802d0c3bf76ea15738ed7142d1648
+state_head: 8b8db3515080b177e533acbbca4d973a362536a6
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 180
+  completed_plans: 181
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 13 of 20
+Plan: 14 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 13
+**Current Plan:** 14
 
 From 184 on, the numeric order is the dependency order.
 
@@ -188,6 +188,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P09 | 8 min | 3 tasks | 1 files |
 | Phase 188 P10 | 3h10m | 3 tasks | 6 files |
 | Phase 188 P11 | 32min | 3 tasks | 2 files |
+| Phase 188 P16 | 59min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -399,6 +400,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-10: the first deploy commit was refused by push protection over the posthog-read fixture key; the fixture is now assembled from two parts (8665ff699) and the commit rebuilt
 - [Phase 188]: 188-11: B-03 judged on the second, consenting journey; the first ran with staging analytics.trackEvents=false and sent pageviews only
 - [Phase 188]: 188-11: PostHog reads the top-level distinct_id when both placements are set (capture docs, read 2026-11-19); the properties duplicate is inert
+- [Phase 188]: 188-16: the hosted per-caller limit seen refusing CloudShell at its 31st check-code while the workstation was answered in the same window (39 s later), then refusing the workstation at its own 31st and releasing it after its window; todo 2026-10-07-174 closed, its scan item moved
 
 ### Pending Todos
 
@@ -460,6 +462,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-19T09:47:49.297Z
-**Stopped At:** Completed 188-11-PLAN.md
+Last session: 2026-11-19T10:12:48.953Z
+**Stopped At:** Completed 188-16-PLAN.md
 **Resume File:** None
