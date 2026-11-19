@@ -125,6 +125,13 @@ export const UNAUTHENTICATED_BODY = Object.freeze({ error: 'unauthenticated' } a
 /** The answer, for each operation the per-caller limit takes a slot for alike, when the caller has made more requests than the limit admits. It goes out with HTTP 429 and a `Retry-After` before any work of the operation. */
 export const TOO_MANY_REQUESTS_BODY = Object.freeze({ error: 'too-many-requests' } as const);
 
+/** The CORS headers of every answer. `Retry-After` is exposed because it is not a CORS-safelisted response header, and every caller of the three limited operations is a cross-origin browser. */
+export const CORS_HEADERS = Object.freeze({
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Expose-Headers': 'Retry-After'
+} as const);
+
 /**
  * The status and body of an address confirmation's outcome.
  *

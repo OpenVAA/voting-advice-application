@@ -40,6 +40,7 @@ import {
   admitWitness,
   BAD_REQUEST_BODY,
   codeStatusBody,
+  CORS_HEADERS,
   INTERNAL_ERROR_BODY,
   INVALID_CREDENTIALS_BODY,
   METHOD_NOT_ALLOWED_BODY,
@@ -72,11 +73,6 @@ import type { LinkIssueDeps, LogDetail, OutgoingMail } from './linkIssue.ts';
 /** The background-task hook of the edge runtime: the promise is kept alive after the response has been returned. */
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
-const corsHeaders = Object.freeze({
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-});
-
 const LOG_PREFIX = 'account-access:';
 
 /** The key the sign-up answer is remembered under. There is one auth service per deployment, so one key. */
@@ -98,7 +94,7 @@ const redirectAdmittedMemory = createExpiringPositive(REDIRECT_CHECK_TTL_MS, () 
 function answer(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json', ...extraHeaders }
+    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json', ...extraHeaders }
   });
 }
 
@@ -433,7 +429,7 @@ async function codeSignIn(request: CodeSignInRequest): Promise<Response> {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 200, headers: corsHeaders });
+    return new Response('ok', { status: 200, headers: CORS_HEADERS });
   }
   if (req.method !== 'POST') return answer(METHOD_NOT_ALLOWED_BODY, 405);
 

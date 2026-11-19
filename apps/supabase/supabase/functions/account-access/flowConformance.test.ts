@@ -520,8 +520,15 @@ describe('account-access flow conformance', () => {
         "return answer(TOO_MANY_REQUESTS_BODY, 429, { 'Retry-After': String(seconds) });"
       );
       expect(functionBody('answer')).toContain(
-        "headers: { ...corsHeaders, 'Content-Type': 'application/json', ...extraHeaders }"
+        "headers: { ...CORS_HEADERS, 'Content-Type': 'application/json', ...extraHeaders }"
       );
+    });
+
+    it('sends every answer, the 429 and the preflight among them, with the CORS headers that expose Retry-After', () => {
+      expect(CODE).not.toContain("'Access-Control-");
+      expect(count(CODE, 'new Response(')).toBe(2);
+      expect(functionBody('answer')).toContain('...CORS_HEADERS');
+      expect(CODE).toContain("return new Response('ok', { status: 200, headers: CORS_HEADERS });");
     });
 
     it('writes no log line that holds the caller’s address or the request’s headers', () => {
