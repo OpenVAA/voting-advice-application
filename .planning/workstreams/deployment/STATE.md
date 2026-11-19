@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 188
 current_phase_name: Relay on the Deployed Stack, and the Per-Caller Limit
-current_plan: 18
+current_plan: 19
 status: executing
-stopped_at: Completed 188-15-PLAN.md
-last_updated: "2026-11-19T15:46:38.753Z"
+stopped_at: Completed 188-17-PLAN.md
+last_updated: "2026-11-19T16:42:19.241Z"
 last_activity: 2026-11-18
 last_activity_desc: Phase 188 execution started
-state_head: 902191882eb7e21dc2d8fb5dc462e21f935638d7
+state_head: 71b2fa973845fc634de1658521b2b47293fdfc11
 progress:
   total_phases: 10
   completed_phases: 7
   total_plans: 188
-  completed_plans: 185
+  completed_plans: 186
   percent: 70
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 188 (Relay on the Deployed Stack, and the Per-Caller Limit) — EXECUTING
-Plan: 18 of 20
+Plan: 19 of 20
 Status: Ready to execute
 Last activity: 2026-11-18 — Phase 188 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 18
+**Current Plan:** 19
 
 From 184 on, the numeric order is the dependency order.
 
@@ -193,6 +193,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P13 | 35min | 3 tasks | 2 files |
 | Phase 188 P14 | 25min | 3 tasks | 2 files |
 | Phase 188 P15 | 40 min | 3 tasks | 2 files |
+| Phase 188 P17 | 50 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -412,6 +413,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-14: fail-open observed on staging: with ANALYTICS_POSTHOG_HOST unresolvable the smoke run was green, the relay answered 204 in 0.26 s and the forward failure was logged as transport ENOTFOUND only; restored to :18
 - [Phase 188]: 188-15: no rebuild is proved by the same digest on the new revision, an unchanged registry image count and newest image, and the same newest deploy.yml run
 - [Phase 188]: 188-15: provider none silenced PostHog from the rollout's COMPLETED to the restore; a control window under posthog read 11, so the zero is a reading
+- [Phase 188]: 188-17: the WAF rule's distribution change is read from the union of before and after keys plus after_unknown, because web_acl_id is unknown until the ACL exists
+- [Phase 188]: 188-17: a saved-plan script reads the plan JSON and keeps redacted Error: diagnostics before removing anything, and counts plan files and JSONs left
 
 ### Pending Todos
 
@@ -473,6 +476,6 @@ Filed by plan 187-28 on 2026-11-17, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-19T15:46:37.236Z
-**Stopped At:** Completed 188-15-PLAN.md
+Last session: 2026-11-19T16:42:17.539Z
+**Stopped At:** Completed 188-17-PLAN.md
 **Resume File:** None
