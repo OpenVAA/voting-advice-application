@@ -20,13 +20,13 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (32);
+  plan (34);
 
 SELECT
   create_test_data ();
 
 -- =====================================================================
--- 1. Trusted IPv4: thirty takes admitted, the thirty-first refused, another address admitted
+-- 1. Trusted IPv4: thirty takes admitted, the thirty-first refused, the same address admitted in another project, another address admitted
 -- =====================================================================
 SELECT
   reset_role ();
@@ -63,6 +63,27 @@ SELECT
   ok (
     public.invitation_caller_take (test_id ('project_a'), '198.51.100.7') BETWEEN 1 AND 600,
     'ICL: the thirty-first take is refused with the seconds until the window ends, between 1 and 600'
+  );
+
+SELECT
+  is (
+    public.invitation_caller_take (test_id ('project_b'), '198.51.100.7'),
+    0,
+    'ICL: the address refused in one project is admitted in another, so the bucket is per project'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        count
+      FROM
+        private.invitation_throttle
+      WHERE
+        key = 'caller:' || test_id ('project_b')::text || ':198.51.100.7'
+    ),
+    1,
+    'ICL: the take in the other project is counted under that project''s own key'
   );
 
 SELECT
