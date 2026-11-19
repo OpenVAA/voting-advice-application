@@ -290,10 +290,10 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      six that `anon` can execute (`contestant_app_public_config`, `project_open_for_voters`,
      `storage_path_can`, `storage_path_is_public`, `user_can`, `user_has_account_grant`); for
      `authenticated`, eleven: the same six plus `claim_invitations`, `get_entity_basic_data`,
-     `get_entity_nominations`, `get_nomination_parent_options` and `get_user_project_grants`; and thirteen that `service_role` can
+     `get_entity_nominations`, `get_nomination_parent_options` and `get_user_project_grants`; and fourteen that `service_role` can
      execute and neither API role can (`address_confirmation_release`, `address_confirmation_request`,
      `address_holds_open_invitation`, `delete_storage_object`,
-     `identity_entity_find_or_create`, the six `invitation_*` helpers, `recovery_link_request`, `resolve_email_variables`).
+     `identity_entity_find_or_create`, the seven `invitation_*` helpers, `recovery_link_request`, `resolve_email_variables`).
      `identity_entity_find_or_create(p_user_id, p_project_id, p_entity_type, p_first_name, p_last_name, p_identity_metadata)` serialises
      an identity provider's first sign-ins of one user with `pg_advisory_xact_lock` keyed on
      `hashtext('identity-entity:' || p_user_id)`, reads the user's `registered_entities` record inside that lock,
@@ -638,7 +638,13 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       used code per 15 minutes, which only the code sign-in takes. With an open code the row is bound
       and its cooldown spent before the address's slots are asked, so what the code holder can observe
       does not depend on whether the typed address is invited or holds a grant. An unknown code is defended by its 60 bits alone; nothing counts
-      those look-ups. The one key on a caller is `confirm:<user id>`, below.
+      those look-ups. The keys on a caller are `confirm:<user id>`, below, and
+      `caller:<project id>:<address, or the /64 of an IPv6 address>`, which `invitation_caller_take`
+      takes for the address the Edge Function read from `cf-connecting-ip`: thirty invitation operations
+      per caller per project per ten minutes, trusted only when `deployment_settings.behind_cloudflare`
+      is true, no row for an untrusted, absent or unparseable address or an unknown project, and each
+      take deletes the `caller:` rows whose window has ended. Service role only;
+      `59-invitation-caller-limit.test.sql` pins it.
     - **`address_confirmation_request(p_project_id, p_user_id, p_email)`** decides whether one
       address-confirmation mail may go to an address for a signed-in account. Neither slot is per
       project: a project the request names freely would hand a caller a fresh budget per project id. It

@@ -20,6 +20,7 @@ import {
   METHOD_NOT_ALLOWED_BODY,
   parseAccountAccessRequest,
   signedInBody,
+  TOO_MANY_REQUESTS_BODY,
   UNAUTHENTICATED_BODY
 } from './contract.ts';
 import type { AddressConfirmationOutcome, CodeStatus } from './contract.ts';
@@ -424,7 +425,7 @@ describe('the answers are a closed set', () => {
     expect(ACCEPTED_BODY).toEqual({ accepted: true });
   });
 
-  it('gives the request-recovery operation no answer of its own: the module exports the nine fixed bodies and no tenth', () => {
+  it('gives the request-recovery operation no answer of its own: the module exports the ten fixed bodies and no eleventh', () => {
     const bodies = Object.keys(contract).filter((name) => name.endsWith('_BODY'));
     expect(bodies.sort()).toEqual([
       'ACCEPTED_BODY',
@@ -435,16 +436,22 @@ describe('the answers are a closed set', () => {
       'INTERNAL_ERROR_BODY',
       'INVALID_CREDENTIALS_BODY',
       'METHOD_NOT_ALLOWED_BODY',
+      'TOO_MANY_REQUESTS_BODY',
       'UNAUTHENTICATED_BODY'
     ]);
     expect(parseAccountAccessRequest(REQUEST_RECOVERY)?.operation).toBe('request-recovery');
   });
 
-  it('holds the four fixed failure bodies', () => {
+  it('holds the five fixed failure bodies', () => {
     expect(BAD_REQUEST_BODY).toEqual({ error: 'bad-request' });
     expect(METHOD_NOT_ALLOWED_BODY).toEqual({ error: 'method-not-allowed' });
     expect(INTERNAL_ERROR_BODY).toEqual({ error: 'internal' });
     expect(INVALID_CREDENTIALS_BODY).toEqual({ result: 'invalid-credentials' });
+    expect(TOO_MANY_REQUESTS_BODY).toEqual({ error: 'too-many-requests' });
+  });
+
+  it('answers a caller over the per-caller limit with a body of exactly one key, the same for every operation it limits', () => {
+    expect(Object.keys(TOO_MANY_REQUESTS_BODY)).toEqual(['error']);
   });
 
   it('holds the four bodies of the address confirmation', () => {
@@ -464,7 +471,8 @@ describe('the answers are a closed set', () => {
       ADDRESS_SENT_BODY,
       ADDRESS_IN_USE_BODY,
       ADDRESS_REFUSED_BODY,
-      UNAUTHENTICATED_BODY
+      UNAUTHENTICATED_BODY,
+      TOO_MANY_REQUESTS_BODY
     ]) {
       expect(Object.isFrozen(body)).toBe(true);
     }

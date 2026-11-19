@@ -17,8 +17,8 @@ import type { ProviderDeps } from './provider.type';
 const HOST = 'https://posthog.example';
 const KEY = 'phc_test_key';
 
-/** The modes every configuration of this file holds; the factory does not read them. */
-const MODES = { consentMode: 'gated', visitIdMode: 'memory' } as const;
+/** The settings every configuration of this file holds besides the provider; the factory does not read them. */
+const SETTINGS = { consentMode: 'gated', visitIdMode: 'memory', flushIntervalMs: 2000 } as const;
 
 /**
  * Stand-in dependencies that record what a provider does with them.
@@ -73,12 +73,12 @@ afterEach(() => {
 
 describe('createProvider', () => {
   it('returns the none provider for none', () => {
-    expect(createProvider({ provider: 'none', ...MODES }, recordingDeps().deps).name).toBe('none');
+    expect(createProvider({ provider: 'none', ...SETTINGS }, recordingDeps().deps).name).toBe('none');
   });
 
   it('returns the log provider for log, writing through the given stream', async () => {
     const { deps, lines } = recordingDeps();
-    const provider = createProvider({ provider: 'log', ...MODES }, deps);
+    const provider = createProvider({ provider: 'log', ...SETTINGS }, deps);
     expect(provider.name).toBe('log');
     await provider.capture([eventOf('menu_open')]);
     expect(lines).toHaveLength(1);
@@ -86,7 +86,7 @@ describe('createProvider', () => {
 
   it('returns the PostHog provider for posthog with a key, sending through the given fetch', async () => {
     const { deps, bodies } = recordingDeps();
-    const provider = createProvider({ provider: 'posthog', ...MODES, posthog: { host: HOST, key: KEY } }, deps);
+    const provider = createProvider({ provider: 'posthog', ...SETTINGS, posthog: { host: HOST, key: KEY } }, deps);
     expect(provider.name).toBe('posthog');
     await provider.capture([eventOf('menu_open')]);
     expect(bodies).toHaveLength(1);
@@ -94,11 +94,11 @@ describe('createProvider', () => {
   });
 
   it('returns the none provider for posthog with no PostHog settings', () => {
-    expect(createProvider({ provider: 'posthog', ...MODES }, recordingDeps().deps).name).toBe('none');
+    expect(createProvider({ provider: 'posthog', ...SETTINGS }, recordingDeps().deps).name).toBe('none');
   });
 
   it('returns the none provider for a configuration it does not recognise', () => {
-    const unknown = { provider: 'matomo', ...MODES } as unknown as AnalyticsConfig;
+    const unknown = { provider: 'matomo', ...SETTINGS } as unknown as AnalyticsConfig;
     expect(createProvider(unknown, recordingDeps().deps).name).toBe('none');
   });
 });
@@ -106,14 +106,14 @@ describe('createProvider', () => {
 describe.each(EVENT_NAMES.map((name) => [name]))('the event %s', (name) => {
   it('passes through the log provider as a line named by the event', async () => {
     const { deps, lines } = recordingDeps();
-    await createProvider({ provider: 'log', ...MODES }, deps).capture([eventOf(name)]);
+    await createProvider({ provider: 'log', ...SETTINGS }, deps).capture([eventOf(name)]);
     expect(lines).toHaveLength(1);
     expect(JSON.parse(lines[0]).msg).toBe(name);
   });
 
   it('passes through the PostHog provider as an item named by the event, with no person profile and no location', async () => {
     const { deps, bodies } = recordingDeps();
-    await createProvider({ provider: 'posthog', ...MODES, posthog: { host: HOST, key: KEY } }, deps).capture([
+    await createProvider({ provider: 'posthog', ...SETTINGS, posthog: { host: HOST, key: KEY } }, deps).capture([
       eventOf(name)
     ]);
     expect(bodies).toHaveLength(1);

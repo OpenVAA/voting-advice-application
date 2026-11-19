@@ -107,7 +107,7 @@ Before it issues a link the function asks the auth service whether public sign-u
 
 **The function's refusal does not protect the claim.** It stops the legitimate flow on a misconfigured project and makes the mistake visible. `claim_invitations` runs in the database, has no guard on the auth service's sign-up setting and does not ask the function, so on a project whose dashboard still allows public sign-up a visitor can sign up with an invited address and claim its invitations. Only the dashboard setting prevents that.
 
-Both refusals are held by unit tests of the function's modules, with injected answers; no test runs the served function against an auth service that fails either check, and the local stack is configured to pass both. [What this does not protect against](/developers-guide/backend/authentication#what-this-does-not-protect-against) lists what else an operator accepts with the invitation model: unlimited anonymous code checks, one sign-in mail per minute to any eligible address, and limits that do not use the caller's identity. A deployment that needs a bound on either puts a rate limit in front of the function at its gateway.
+Both refusals are held by unit tests of the function's modules, with injected answers; no test runs the served function against an auth service that fails either check, and the local stack is configured to pass both. [What this does not protect against](/developers-guide/backend/authentication#what-this-does-not-protect-against) lists what else an operator accepts with the invitation model: one sign-in mail per minute to any eligible address, and a per-caller limit that holds only behind Cloudflare and lets callers who share an address share one bucket. The per-caller limit is described in [The per-caller limit of account-access](#the-per-caller-limit-of-account-access).
 
 ## Feedback rate limit and Cloudflare
 
@@ -129,6 +129,14 @@ SET
 **Hosted Supabase must set it.** On hosted Supabase the last `x-forwarded-for` hop can be a platform-internal address shared by many voters, so with the setting left `false` those voters share one bucket and the sixth submission among them in five minutes is refused.
 
 The local development stack turns the setting on in `apps/supabase/supabase/seed.sql`, so that the E2E suite can give each feedback submission its own bucket.
+
+## The per-caller limit of account-access
+
+Three operations of the `account-access` function, `check-code`, `request-link` and `request-recovery`, count every request against one bucket per caller per project: 30 requests in 10 minutes, across the three together. The function takes the caller's slot before it does any work of the operation. A caller over the limit is answered HTTP 429 with `{ "error": "too-many-requests" }` and a `Retry-After` header that gives the seconds until the window ends, the same for each of the three operations. A failure to read the limit is answered 500 `{ "error": "internal" }`, so the limit is never skipped silently. The address confirmation, `confirm-address`, is answered only to a signed-in account and has slots of its own, so it is not counted. The code sign-in, `code-sign-in`, is not counted either: the frontend server calls it, so its caller would be the server's address and every user's code sign-in would share one bucket; see [Known residuals](/developers-guide/backend/authentication#sign-in-and-mailed-links).
+
+The caller is the `cf-connecting-ip` header. The function reads no other header for it. The database trusts the header under the same `behind_cloudflare` setting as the feedback limit above: only when the setting is `true` and the header is present and is an address. Otherwise, with the setting `false` or the header missing, there is no per-caller limit, and the three operations are answered as if it did not exist. An IPv4 address is one bucket, and an IPv6 address counts by its /64, so a caller cannot widen its key by sending a mask. The precondition of the feedback limit holds here too: every request has to reach the functions through Cloudflare, as on hosted Supabase.
+
+**What is stored.** The caller's address is stored in clear, as part of a key of `private.invitation_throttle` (`caller:<project id>:<address>`), with a count and the start of its window. It is kept only while its 10-minute window runs: each take first deletes the keys whose window has ended. No log line of the function holds the address, and no answer returns it.
 
 ## Testing a production build locally
 

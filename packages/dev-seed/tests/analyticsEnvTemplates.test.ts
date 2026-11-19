@@ -1,9 +1,9 @@
 /**
- * The three environment templates name the five analytics variables the frontend server reads at start.
+ * The three environment templates name the six analytics variables the frontend server reads at start.
  *
  * - `.env.example` sets the provider to `log`, so a local stack and the CI gate suite, both built from this file, see analytics events as structured server lines. The code default stays `none`. The PostHog key appears only as a commented line with no value: CI copies this file to `.env`, and a tracked key would be a leaked secret.
- * - `render.example.yaml` declares all five, and the key entry uses `sync: false` with no `value:`, so the secret is entered in the Render dashboard only.
- * - `docker-compose.dev.yml` passes all five through with a default, the provider defaulting to `none` as in the code.
+ * - `render.example.yaml` declares all six, and the key entry uses `sync: false` with no `value:`, so the secret is entered in the Render dashboard only.
+ * - `docker-compose.dev.yml` passes all six through with a default, the provider defaulting to `none` as in the code.
  * - No template names a `PUBLIC_ANALYTICS` variable: the analytics configuration is private to the server, and the browser receives only the projection the root load returns.
  *
  * It lives in this package because `yarn test:unit` runs per workspace and this package already reads repository-root files from its tests.
@@ -23,7 +23,8 @@ const ANALYTICS_VARIABLES: Array<string> = [
   'ANALYTICS_CONSENT_MODE',
   'ANALYTICS_VISIT_ID_MODE',
   'ANALYTICS_POSTHOG_KEY',
-  'ANALYTICS_POSTHOG_HOST'
+  'ANALYTICS_POSTHOG_HOST',
+  'ANALYTICS_FLUSH_INTERVAL_MS'
 ];
 
 const TEMPLATES: Array<string> = ['.env.example', 'render.example.yaml', 'docker-compose.dev.yml'];

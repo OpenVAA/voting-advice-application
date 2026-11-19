@@ -35,6 +35,9 @@ task_floor         = 2
 task_ceiling       = 4
 log_retention_days = 90
 
+# SHUTDOWN_TIMEOUT 25, plus the 10-second analytics forward, plus 5.
+stop_timeout_seconds = 40
+
 # One line per entry of task-environment.json whose source is "value".
 environment_values = {
   # A stand-in. Replace with the API URL of your Supabase project.
@@ -45,14 +48,15 @@ environment_values = {
   ADDRESS_HEADER = "x-forwarded-for"
   # Two proxies stand in front of the server, CloudFront and then the load balancer, and each appends
   # the address it received the request from.
-  XFF_DEPTH               = "2"
-  KEEP_ALIVE_TIMEOUT      = "65"
-  HEADERS_TIMEOUT         = "66"
-  SHUTDOWN_TIMEOUT        = "25"
-  PUBLIC_LOG_LEVEL        = "warn"
-  ANALYTICS_PROVIDER      = "none"
-  ANALYTICS_CONSENT_MODE  = "gated"
-  ANALYTICS_VISIT_ID_MODE = "memory"
-  ANALYTICS_POSTHOG_HOST  = "https://eu.i.posthog.com"
-  DEPLOYMENT_DIAGNOSTICS  = "false"
+  XFF_DEPTH                   = "2"
+  KEEP_ALIVE_TIMEOUT          = "65"
+  HEADERS_TIMEOUT             = "66"
+  SHUTDOWN_TIMEOUT            = "25"
+  PUBLIC_LOG_LEVEL            = "warn"
+  ANALYTICS_PROVIDER          = "none"
+  ANALYTICS_CONSENT_MODE      = "gated"
+  ANALYTICS_VISIT_ID_MODE     = "memory"
+  ANALYTICS_POSTHOG_HOST      = "https://eu.i.posthog.com"
+  ANALYTICS_FLUSH_INTERVAL_MS = "2000"
+  DEPLOYMENT_DIAGNOSTICS      = "false"
 }

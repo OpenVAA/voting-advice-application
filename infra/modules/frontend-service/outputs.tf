@@ -48,6 +48,11 @@ output "task_definition_arn" {
   value       = aws_ecs_task_definition.app.arn
 }
 
+output "container_stop_timeout_seconds" {
+  description = "Seconds the task definition gives its container between the stop signal and the kill, as written in the container definition."
+  value       = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout
+}
+
 output "task_environment_names" {
   description = "Names of the variables the task receives, as values and from the parameter store, after omit_environment."
   value       = [for v in local.kept : v.name]
@@ -77,6 +82,16 @@ output "distribution_id" {
 output "distribution_domain_name" {
   description = "CloudFront's own name for the distribution, the target of the site's records."
   value       = aws_cloudfront_distribution.this.domain_name
+}
+
+output "relay_web_acl_arn" {
+  description = "ARN of the relay rate rule's web ACL, aws_wafv2_web_acl.relay; null when relay_rate_limit is unset and no web ACL exists."
+  value       = one(aws_wafv2_web_acl.relay[*].arn)
+}
+
+output "distribution_web_acl_id" {
+  description = "The web ACL the distribution names; null when it names none."
+  value       = aws_cloudfront_distribution.this.web_acl_id
 }
 
 output "viewer_certificate_arn" {

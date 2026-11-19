@@ -425,8 +425,8 @@ SELECT
         AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
         AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
     ),
-    'address_confirmation_release,address_confirmation_request,address_holds_open_invitation,delete_storage_object,identity_entity_find_or_create,invitation_code_claimant_email,invitation_code_status,invitation_link_release,invitation_link_request,invitation_link_witness,invitation_link_witness_open,recovery_link_request,resolve_email_variables',
-    'census: the SECURITY DEFINER functions in public that service_role can execute and neither anon nor authenticated can are exactly the thirteen listed'
+    'address_confirmation_release,address_confirmation_request,address_holds_open_invitation,delete_storage_object,identity_entity_find_or_create,invitation_caller_take,invitation_code_claimant_email,invitation_code_status,invitation_link_release,invitation_link_request,invitation_link_witness,invitation_link_witness_open,recovery_link_request,resolve_email_variables',
+    'census: the SECURITY DEFINER functions in public that service_role can execute and neither anon nor authenticated can are exactly the fourteen listed'
   );
 
 -- =====================================================================

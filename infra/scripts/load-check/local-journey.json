@@ -1,0 +1,9 @@
+{
+  "base": "http://host.docker.internal:5275",
+  "routeId": "/(voters)",
+  "locale": "en",
+  "requests": [
+    { "method": "GET", "url": "http://host.docker.internal:5275/", "kind": "page" },
+    { "method": "GET", "url": "http://host.docker.internal:5275/api/health", "kind": "page" }
+  ]
+}

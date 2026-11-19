@@ -132,7 +132,7 @@ variable "deregistration_delay_seconds" {
 }
 
 variable "stop_timeout_seconds" {
-  description = "Seconds between the stop signal and the kill of the container. The server's SHUTDOWN_TIMEOUT must be lower, so that it exits by itself."
+  description = "Seconds between the stop signal and the kill of the container. It must exceed the server's SHUTDOWN_TIMEOUT by at least the analytics forward timeout of 10 seconds plus a margin of 5, so that the shutdown flush of a queue of up to one slice reaches a responsive PostHog before the kill. The flush sends its slices one after another, so a full queue against an unresponsive PostHog can still be cut off."
   type        = number
   default     = 30
 
@@ -186,6 +186,26 @@ variable "price_class" {
   validation {
     condition     = contains(["PriceClass_100", "PriceClass_200", "PriceClass_All"], var.price_class)
     error_message = "price_class must be PriceClass_100, PriceClass_200 or PriceClass_All."
+  }
+}
+
+variable "relay_rate_limit" {
+  description = "Requests per window_seconds per viewer address that /api/usage admits before CloudFront answers 429. Null, the default, creates no web ACL. Switching it on needs wafv2 actions on the deploy role first, and costs about 6 US dollars a month plus 0.60 per million requests, every request to the distribution being inspected."
+  type = object({
+    limit          = number
+    window_seconds = number
+  })
+  default  = null
+  nullable = true
+
+  validation {
+    condition = var.relay_rate_limit == null ? true : (
+      contains([60, 120, 300, 600], var.relay_rate_limit.window_seconds)
+      && var.relay_rate_limit.limit >= 10
+      && var.relay_rate_limit.limit <= 2000000000
+      && floor(var.relay_rate_limit.limit) == var.relay_rate_limit.limit
+    )
+    error_message = "relay_rate_limit needs window_seconds of 60, 120, 300 or 600 and an integer limit from 10 to 2000000000."
   }
 }
 

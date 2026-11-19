@@ -4803,8 +4803,8 @@ SELECT
           OR p.proname = 'recovery_link_request'
         )
     ),
-    'invitation_code_claimant_email false/false/true, invitation_code_status false/false/true, invitation_link_release false/false/true, invitation_link_request false/false/true, invitation_link_witness false/false/true, invitation_link_witness_open false/false/true, recovery_link_request false/false/true',
-    'the seven helpers, each with one signature, are executable by service_role and by neither anon nor authenticated'
+    'invitation_caller_take false/false/true, invitation_code_claimant_email false/false/true, invitation_code_status false/false/true, invitation_link_release false/false/true, invitation_link_request false/false/true, invitation_link_witness false/false/true, invitation_link_witness_open false/false/true, recovery_link_request false/false/true',
+    'the eight helpers, each with one signature, are executable by service_role and by neither anon nor authenticated'
   );
 
 SELECT
@@ -4856,8 +4856,8 @@ SELECT
           AND p.proname IN ('invitation_throttle_take', 'user_password_set')
         )
     ),
-    '11 true',
-    'each of the eleven functions is SECURITY DEFINER with an empty pinned search_path'
+    '12 true',
+    'each of the twelve functions is SECURITY DEFINER with an empty pinned search_path'
   );
 
 SELECT

@@ -12,10 +12,11 @@
 -- - address_confirmation_release() - give back the address's slot of a confirmation that mailed nothing
 -- - address_holds_open_invitation() - whether an open invitation of a project holds an address
 -- - invitation_code_claimant_email() - the claimant's address of a used code, under an attempt limit
+-- - invitation_caller_take() - count one invitation operation against the limit of the address it came from
 -- - invitation_link_witness_open(), invitation_link_witness() - whether the background work of one link request has ended
 -- - claim_invitations() - turn the caller's open invitations into grants
 --
--- The six `invitation_*` functions, recovery_link_request, the two `address_confirmation_*` functions and address_holds_open_invitation are the service role's: an Edge Function calls them with values a visitor typed, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
+-- The seven `invitation_*` functions, recovery_link_request, the two `address_confirmation_*` functions and address_holds_open_invitation are the service role's: an Edge Function calls them with values a visitor typed, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
 --
 -- Depends on:
 -- - 102-entities.sql (the four entity tables)
@@ -610,15 +611,16 @@ service_role;
 --------------------------------------------------------------------------------
 -- invitation_throttle: the windowed counters of the invitation helpers
 --
--- One row per key, in one of six forms:
+-- One row per key, in one of seven forms:
 -- - `link:<project id>:<sha256 hex of the address>` counts the sign-in and recovery mails to one address in one project, one a minute.
 -- - `link-address:<sha256 hex of the address>` counts the sign-in and recovery mails to one address in every project together, twenty a day.
 -- - `code-bind:<invitation id>` counts the addresses one open code row is bound to, five a day.
 -- - `code:<project id>:<code hash>` counts claimant look-ups of one used code, which are password attempts.
 -- - `confirm:<user id>` counts one signed-in account's address-confirmation requests, whatever project they name.
 -- - `confirm-address:<sha256 hex of the address>` counts the address-confirmation mails to one address, whatever project their requests name.
+-- - `caller:<project id>:<address, or the /64 of an IPv6 address>` counts the invitation operations from one caller in one project, thirty per ten minutes, taken by `invitation_caller_take` from the address the Edge Function passes.
 --
--- No key holds an address in clear. A `link:` or `link-address:` key is taken only for an address a mail would go to, a `code-bind:` key only for an open code row, which also bounds how many addresses a code holder can make a mail go to, a `code:` key only for a code that names a claimed row, and a `confirm:` key only for an account the service role read from a signed-in caller's own token that registered in the project the request names, whose count also bounds the `confirm-address:` keys that account's requests can take; so a caller cannot fill the table with keys of its own making, and no key is derived from a request header.
+-- Only a `caller:` key holds an address in clear, and only while its window runs: each take of `invitation_caller_take` deletes the `caller:` rows whose window has ended. A `link:` or `link-address:` key is taken only for an address a mail would go to, a `code-bind:` key only for an open code row, which also bounds how many addresses a code holder can make a mail go to, a `code:` key only for a code that names a claimed row, and a `confirm:` key only for an account the service role read from a signed-in caller's own token that registered in the project the request names, whose count also bounds the `confirm-address:` keys that account's requests can take; so a caller cannot fill the table with keys of its own making. A `caller:` key is the one key derived from a request header: it is taken only from an address Cloudflare names, which a caller cannot choose, and only for a project that exists.
 --
 -- Only the SECURITY DEFINER functions of this file read or write it: row-level security is enabled with no policy and every API role's privileges are revoked.
 --------------------------------------------------------------------------------
@@ -672,6 +674,73 @@ FROM
   anon,
   authenticated,
   service_role;
+
+--------------------------------------------------------------------------------
+-- invitation_caller_take: count one invitation operation against the caller's limit in a project
+--
+-- Returns 0 when the take is admitted, and otherwise the whole seconds until the caller's window ends, at least 1: thirty takes per caller per project per ten minutes. A refused take is counted, as every take of invitation_throttle_take is.
+--
+-- The caller is p_address, the address the Edge Function read from `cf-connecting-ip`, keyed as `caller:<project id>:<caller>`, where the caller is the host of an IPv4 address and the /64 of an IPv6 address, so a mask in the header cannot widen a key. The address is trusted only when `private.deployment_settings.behind_cloudflare` is true, because only behind Cloudflare is `cf-connecting-ip` the connecting client rather than a value the client chose. An untrusted, absent, blank or unparseable address, and an id that names no project, are admitted with no row written: such takes would otherwise all share one bucket, so one caller could spend everyone's slots, or fill the table with keys of its own making.
+--
+-- Each take first deletes every `caller:` row whose window has ended, so an address is held in clear only while its window runs.
+--
+-- SECURITY DEFINER because the throttle table is the owner's alone. It checks nothing about its caller, so only the service role may execute it.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.invitation_caller_take (p_project_id uuid, p_address text) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_max constant integer := 30;
+  v_window constant interval := interval '10 minutes';
+  v_inet inet;
+  v_caller text;
+  v_key text;
+  v_start timestamptz;
+BEGIN
+  -- A missing settings row reads as false, so the address is then not trusted.
+  IF NOT COALESCE((SELECT s.behind_cloudflare FROM private.deployment_settings s), false)
+     OR NULLIF(btrim(p_address), '') IS NULL THEN
+    RETURN 0;
+  END IF;
+
+  BEGIN
+    v_inet := btrim(p_address)::inet;
+  EXCEPTION
+    WHEN invalid_text_representation THEN
+      RETURN 0;
+  END;
+
+  v_caller := CASE family(v_inet)
+    WHEN 6 THEN network(set_masklen(v_inet, 64))::text
+    ELSE host(v_inet)
+  END;
+
+  IF NOT EXISTS (SELECT 1 FROM public.projects p WHERE p.id = p_project_id) THEN
+    RETURN 0;
+  END IF;
+
+  DELETE FROM private.invitation_throttle t
+  WHERE t.key LIKE 'caller:%' AND t.window_start + v_window <= now();
+
+  v_key := 'caller:' || p_project_id::text || ':' || v_caller;
+  IF private.invitation_throttle_take(v_key, v_max, v_window) THEN
+    RETURN 0;
+  END IF;
+
+  SELECT t.window_start INTO v_start FROM private.invitation_throttle t WHERE t.key = v_key;
+  RETURN GREATEST(1, ceil(extract(epoch FROM (v_start + v_window - now())))::integer);
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.invitation_caller_take (uuid, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.invitation_caller_take (uuid, text) TO service_role;
 
 --------------------------------------------------------------------------------
 -- cleanup_invitation_throttle_on_delete: a deleted invitation leaves no throttle key
