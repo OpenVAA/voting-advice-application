@@ -20,8 +20,8 @@
  * method, so no write is replayed. Of a kept request it copies the method, the URL with its query and, for an RPC, the
  * body; never a header, a cookie or a response. The requests are ordered by their start time.
  *
- * An RPC body a trace stores as a resource (`postData._sha1`) is read from `--resources <dir>`, the `resources`
- * directory of the unzipped trace.
+ * An RPC body a trace stores as a resource (`postData._file` as `resources/<name>`, beside an empty `text`, or
+ * `postData._sha1`) is read from `--resources <dir>`, the `resources` directory of the unzipped trace.
  *
  * It writes the journey, `{ base, routeId, locale, requests }`, as JSON on standard output, and
  * `journey_requests=<n>` on standard error. `--route-id` (default `/(voters)`) and `--locale` (default `en`) are the
@@ -117,14 +117,32 @@ function entryOf(request, flags) {
   return body === undefined ? null : { ...target, kind: 'data', body };
 }
 
+/** The body text of an RPC, `undefined` when it cannot be read. A body the trace stored as a resource wins over `text`. */
 function bodyOf(postData, resources) {
-  if (typeof postData?.text === 'string') return postData.text;
-  if (typeof postData?._sha1 !== 'string' || resources === undefined || postData._sha1.includes('/')) return undefined;
+  const name = resourceNameOf(postData);
+  if (name === undefined) return typeof postData?.text === 'string' ? postData.text : undefined;
+  if (name === null || resources === undefined) return undefined;
   try {
-    return readFileSync(join(resources, postData._sha1), 'utf8');
+    return readFileSync(join(resources, name), 'utf8');
   } catch {
     return undefined;
   }
+}
+
+/**
+ * The file name, inside the resources directory, of a body the trace stored as a resource: `_file` as
+ * `resources/<name>`, or `_sha1` as `<name>`. `undefined` when the body is not stored as a resource, `null` when the
+ * stored name would reach outside the resources directory.
+ */
+function resourceNameOf(postData) {
+  if (typeof postData?._file === 'string') {
+    const match = /^resources\/([^/]+)$/.exec(postData._file);
+    return match && match[1] !== '..' && match[1] !== '.' ? match[1] : null;
+  }
+  if (typeof postData?._sha1 === 'string') {
+    return postData._sha1.includes('/') || postData._sha1 === '..' || postData._sha1 === '.' ? null : postData._sha1;
+  }
+  return undefined;
 }
 
 function main(args) {

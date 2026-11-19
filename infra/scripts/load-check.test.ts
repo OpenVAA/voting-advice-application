@@ -217,7 +217,7 @@ function snapshot(
   monotonicTime: number,
   method: string,
   url: string,
-  postData?: { text?: string; _sha1?: string }
+  postData?: { text?: string; _sha1?: string; _file?: string }
 ): string {
   return JSON.stringify({
     type: 'resource-snapshot',
@@ -317,6 +317,33 @@ describe('journey-from-trace.mjs', () => {
     const without = extract(lines);
     expect(without.status).toBe(1);
     expect(without.stderr).toMatch(/^journey_bodies_missing=1$/m);
+  });
+
+  it('reads an RPC body stored as a resource file beside an empty text', () => {
+    const resources = join(scratch, 'resources');
+    mkdirSync(resources, { recursive: true });
+    writeFileSync(join(resources, 'def456.json'), RPC_BODY);
+    const lines = [
+      snapshot(1, 'POST', `${SUPABASE}/rest/v1/rpc/get_questions`, { text: '', _file: 'resources/def456.json' })
+    ];
+    const withResources = extract(lines, '--resources', resources);
+    expect(withResources.status).toBe(0);
+    expect(JSON.parse(withResources.stdout).requests[0].body).toBe(RPC_BODY);
+    const without = extract(lines);
+    expect(without.status).toBe(1);
+    expect(without.stderr).toMatch(/^journey_bodies_missing=1$/m);
+  });
+
+  it('refuses a resource file outside the resources directory', () => {
+    const resources = join(scratch, 'resources');
+    mkdirSync(resources, { recursive: true });
+    writeFileSync(join(scratch, 'outside.json'), RPC_BODY);
+    for (const name of ['resources/../outside.json', '../outside.json', 'other/outside.json']) {
+      const lines = [snapshot(1, 'POST', `${SUPABASE}/rest/v1/rpc/get_questions`, { text: '', _file: name })];
+      const { status, stderr } = extract(lines, '--resources', resources);
+      expect(status).toBe(1);
+      expect(stderr).toMatch(/^journey_bodies_missing=1$/m);
+    }
   });
 
   it('exits 1 with journey_requests=0 on a trace that yields no request', () => {
