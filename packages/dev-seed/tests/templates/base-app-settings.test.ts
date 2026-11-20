@@ -96,13 +96,13 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
     });
   });
 
-  it('access block enables candidate/voter/admin apps, not under maintenance, answers unlocked', () => {
+  it('access block enables candidate/voter/admin apps, not under maintenance, contestant editing open', () => {
     expect(BASE_APP_SETTINGS.access).toEqual({
       contestantApp: true,
       voterApp: true,
       adminApp: true,
       underMaintenance: false,
-      answersLocked: false
+      contestantEditing: 'open'
     });
   });
 

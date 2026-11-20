@@ -65,7 +65,7 @@ describe('SupabaseAdminClient.updateAppSettings', () => {
   it('clears contestantApp.servedEntityTypes before merging a payload that names it', async () => {
     const settings = {
       contestantApp: { servedEntityTypes: { organization: { registrationModes: ['email'] } } },
-      access: { answersLocked: false }
+      access: { contestantEditing: 'open' }
     };
 
     await new SupabaseAdminClient('http://localhost', 'key', PROJECT_ID).updateAppSettings(settings);

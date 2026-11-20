@@ -14,16 +14,31 @@
  * ⚠ The invariant asserted here is MEMBERSHIP of the `&&` chain, never terminal position, never the whole string, never the link count. Every link after a failing one is equally aborted, so guards may be appended to the chain freely, and an assertion on position or length reddens a correct append. That over-specified shape has already had to be removed from a sibling spec in this directory once; do not reintroduce it here.
  *
  * ⚠ This spec deliberately asserts nothing about `.env.example`'s CONTENTS. That is the guard's own job, and duplicating it here would create a second opinion about the pairing contract — which is the failure mode the pairs themselves demonstrate.
+ *
+ * It does assert one property of the DERIVATION, which reads source and not the template: that a variable the frontend server and the Edge Functions read under one name is derived as a same-name pair, with `IDENTITY_CALLBACK_SERVER_SECRET` as the case.
  */
 
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** `packages/dev-seed/tests` → repo root. */
 const REPO_ROOT = resolve(HERE, '../../..');
+
+/** The part of `scripts/assert-env-pair-registry.mjs` this spec calls. */
+interface EnvPairRegistryModule {
+  derivePairs: () => {
+    pairs: Array<{ name: string; kind: 'prefixed' | 'same-name'; deno: string; frontend: string }>;
+  } | null;
+}
+
+function loadRegistry(): Promise<EnvPairRegistryModule> {
+  return import(
+    pathToFileURL(resolve(REPO_ROOT, 'scripts/assert-env-pair-registry.mjs')).href
+  ) as Promise<EnvPairRegistryModule>;
+}
 
 const ROOT_PACKAGE_JSON = JSON.parse(readFileSync(resolve(REPO_ROOT, 'package.json'), 'utf8')) as {
   scripts: Record<string, string>;
@@ -55,5 +70,33 @@ describe('the cross-runtime env-pair registry guard is wired so it actually runs
     expect(ROOT_PACKAGE_JSON.scripts['check:env-pairs-agree']).toBe('node scripts/assert-env-pairs-agree.mjs');
     expect(ROOT_PACKAGE_JSON.scripts['lint:check']).not.toContain('env-pairs-agree');
     expect(ROOT_PACKAGE_JSON.scripts['lint:check']).not.toContain('assert-env-pairs-agree');
+  });
+});
+
+describe('the registry guard derives same-name pairs', () => {
+  it('derives IDENTITY_CALLBACK_SERVER_SECRET, read by identity-callback and the frontend server, as a same-name pair', async () => {
+    const { derivePairs } = await loadRegistry();
+    const derived = derivePairs();
+    expect(derived).not.toBeNull();
+    expect(derived?.pairs).toContainEqual(
+      expect.objectContaining({
+        name: 'IDENTITY_CALLBACK_SERVER_SECRET',
+        kind: 'same-name',
+        deno: 'IDENTITY_CALLBACK_SERVER_SECRET',
+        frontend: 'IDENTITY_CALLBACK_SERVER_SECRET'
+      })
+    );
+  });
+
+  it('keeps a prefixed pair prefixed', async () => {
+    const { derivePairs } = await loadRegistry();
+    expect(derivePairs()?.pairs).toContainEqual(
+      expect.objectContaining({
+        name: 'SUPABASE_URL',
+        kind: 'prefixed',
+        deno: 'SUPABASE_URL',
+        frontend: 'PUBLIC_SUPABASE_URL'
+      })
+    );
   });
 });
