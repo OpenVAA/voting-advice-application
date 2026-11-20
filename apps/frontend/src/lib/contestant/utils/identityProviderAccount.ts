@@ -20,12 +20,16 @@ import { isCanonicalUuid } from '$lib/utils/uuid';
 export const PLACEHOLDER_EMAIL_DOMAIN = 'bank-auth.placeholder';
 
 /**
- * The address state of an account.
- * - `none`: an identity-provider account that holds only its placeholder and has no address pending.
- * - `pending`: an identity-provider account that holds only its placeholder, with an address pending proof.
- * - `proved`: any other account, whose address is its holder's own.
+ * The address state of an account, with what each state carries.
+ * - `proved`: any account whose address is its holder's own, which is every account an identity provider did not make.
+ * - `pending`: an identity-provider account that holds only its placeholder, with `email` pending proof by the link mailed to it.
+ * - `none`: an identity-provider account that holds only its placeholder and has no address it can still prove. `pendingTaken` is `true` when it was waiting to prove an address that has since become another account's.
  */
-export type AddressState = 'none' | 'pending' | 'proved';
+export type AddressState =
+  { state: 'proved' } | { state: 'pending'; email: string } | { state: 'none'; pendingTaken: boolean };
+
+/** The name of an address state, as {@link addressStateOf} tells it from the verified user alone. */
+export type AddressStateName = AddressState['state'];
 
 /** The facts of the verified user the address state is told from. */
 export interface AddressFacts {
@@ -54,13 +58,13 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 /**
- * The address state of an account.
+ * The name of an account's address state.
  *
  * An account whose app metadata names no identity provider is `proved`, and so is an identity-provider account on an address that is not a placeholder. An identity-provider account on its placeholder, or on no address at all, is `pending` when an address is pending and `none` otherwise.
  * @param facts - The facts of the verified user.
- * @returns The account's address state.
+ * @returns The name of the account's address state.
  */
-export function addressStateOf({ email, newEmail, identityProvider }: AddressFacts): AddressState {
+export function addressStateOf({ email, newEmail, identityProvider }: AddressFacts): AddressStateName {
   const holdsOnlyPlaceholder = !isNonEmptyString(email) || isPlaceholderAddress(email);
   if (!isNonEmptyString(identityProvider) || !holdsOnlyPlaceholder) return 'proved';
   return isNonEmptyString(newEmail) ? 'pending' : 'none';

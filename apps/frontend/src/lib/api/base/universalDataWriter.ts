@@ -1,8 +1,10 @@
+import { log } from '@openvaa/app-shared';
 import { resolveRoute } from '$app/paths';
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
 import type { GrantClaim } from '$lib/auth/roles';
 import type { JobInfo } from '$lib/server/admin/jobs/jobStore.type';
+import type { IdentityProviderRegistrationResult } from '$lib/server/contestant/identityProviderRegistration';
 import type { DataApiActionResult } from './actionResult.type';
 import type {
   AbortJobOptions,
@@ -20,6 +22,7 @@ import type {
   InvitationClaimResult,
   InvitationCodeStatus,
   NominationParentOption,
+  RegisterIdentityProviderAccountOptions,
   RequestAddressConfirmationOptions,
   RequestPasswordRecoveryOptions,
   RequestSignInLinkOptions,
@@ -68,6 +71,19 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
   requestAddressConfirmation(opts: RequestAddressConfirmationOptions): Promise<AddressConfirmationResult> {
     return this._requestAddressConfirmation(opts);
+  }
+
+  async registerIdentityProviderAccount(
+    opts: RegisterIdentityProviderAccountOptions
+  ): Promise<IdentityProviderRegistrationResult | undefined> {
+    try {
+      const reply = await this.post({ url: UNIVERSAL_API_ROUTES.identityProviderRegistration, body: opts });
+      const result = typeof reply === 'object' && reply !== null ? (reply as { result?: unknown }).result : undefined;
+      return typeof result === 'string' ? (result as IdentityProviderRegistrationResult) : undefined;
+    } catch (error) {
+      log.error('The identity-provider registration request failed', { err: error });
+      return undefined;
+    }
   }
 
   signInWithInvitationCode(opts: { code: string; password: string }): DWReturnType<DataApiActionResult> {

@@ -78,6 +78,12 @@ export type ContestantContext = AppContext &
      */
     checkInvitationCode: (opts: { code: string }) => ReturnType<DataWriter['checkInvitationCode']>;
     /**
+     * Post one intent of the signed-in identity-provider account to the endpoint it saves its details through: `save` its party's names and the address it gives, `resend` the link of the address awaiting proof, or `acknowledge` the notice shown after the identity provider found the account. A stable function, safe to destructure.
+     * @param opts - The intent and what it carries.
+     * @returns A `Promise` resolving to the endpoint's result, or to `undefined` when it gave none. It never rejects.
+     */
+    registerIdentityProviderAccount: DataWriter['registerIdentityProviderAccount'];
+    /**
      * Logout the user and redirect to the login page. It asks nothing: the caller holds what the user answered. After a successful sign-out, a page that guards unsaved edits discards them.
      * @param options - `reason`: why the session ends, which the login page receives as its `errorMessage` and the login screen states, for a logout the user did not press for, such as `loggedOutAutomatically` at the end of a logout count. A logout the user pressed for carries none. Overlapping calls are one logout, which carries the first call's reason.
      * @returns A `Promise` resolving when the edits are discarded and the redirection is complete, and rejecting when the sign-out failed, having shown nothing itself: nothing is discarded, reset or navigated, and `logoutFailed` is true for the contestant layout to show.

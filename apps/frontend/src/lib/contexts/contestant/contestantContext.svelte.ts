@@ -471,6 +471,12 @@ export class ContestantContextProvider implements ContestantContext {
     return prepareDataWriter().checkInvitationCode(...args);
   };
 
+  registerIdentityProviderAccount = (
+    ...args: Parameters<DataWriter['registerIdentityProviderAccount']>
+  ): ReturnType<DataWriter['registerIdentityProviderAccount']> => {
+    return prepareDataWriter().registerIdentityProviderAccount(...args);
+  };
+
   ////////////////////////////////////////////////////////////////////
   // The entry flow (arrow fields — survive detach). Each forwards to the holder `#entryFlow`, which writes the flow whole; see the class JSDoc.
   ////////////////////////////////////////////////////////////////////

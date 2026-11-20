@@ -1,43 +1,15 @@
-import { log } from '@openvaa/app-shared';
-import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import { ResendCountdown } from '$lib/dynamic-components/emailSentPanel';
-import type { IdentityProviderRegistrationResult } from '$lib/server/contestant/identityProviderRegistration';
-
-/**
- * Post one intent to the endpoint an identity-provider account saves its details through: `save`, `resend` or `acknowledge`, with what the intent carries.
- *
- * Never rejects: a failed request and an answer without a result are logged without their content and answered `undefined`.
- *
- * @param body - The intent and what it carries.
- * @returns The endpoint's result, or `undefined` when it gave none.
- */
-export async function postIdentityProviderRegistration(
-  body: Record<string, unknown>
-): Promise<IdentityProviderRegistrationResult | undefined> {
-  try {
-    const response = await fetch(UNIVERSAL_API_ROUTES.identityProviderRegistration, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    const reply: unknown = await response.json();
-    const result = typeof reply === 'object' && reply !== null ? (reply as { result?: unknown }).result : undefined;
-    return typeof result === 'string' ? (result as IdentityProviderRegistrationResult) : undefined;
-  } catch (error) {
-    log.error('The identity-provider registration request failed', { err: error });
-    return undefined;
-  }
-}
+import type { DataWriter } from '$lib/api/base/dataWriter.type';
 
 /**
  * "Send again" for an address awaiting its confirmation link: the request that mails the link once more, and the count of {@link ResendCountdown} that follows it.
  *
  * A press while the count runs or while a request is in flight does nothing. Otherwise the status says at once that a new email was asked for, the endpoint is asked to mail the pending address's link again, and the count runs from the request's settlement. What the endpoint answers is not shown: the count follows every request, so a refused one reads the same as a sent one.
  *
- * One instance per screen, started and stopped with it:
+ * One instance per screen, given the context's registration call and started and stopped with the screen:
  *
  * ```ts
- * const resend = new PendingAddressResend();
+ * const resend = new PendingAddressResend(contestantCtx.registerIdentityProviderAccount);
  * onMount(() => {
  *   resend.start();
  *   return () => resend.stop();
@@ -53,6 +25,14 @@ export class PendingAddressResend {
   #settledAt = $state<number>();
   #requesting = $state(false);
   readonly #countdown = new ResendCountdown(() => this.#settledAt);
+  readonly #register: DataWriter['registerIdentityProviderAccount'];
+
+  /**
+   * @param register - The call that posts an intent to the identity-provider registration endpoint, the context's `registerIdentityProviderAccount`.
+   */
+  constructor(register: DataWriter['registerIdentityProviderAccount']) {
+    this.#register = register;
+  }
 
   /** How many whole seconds are left before the link can be asked for again. */
   get secondsLeft(): number {
@@ -89,7 +69,7 @@ export class PendingAddressResend {
     if (this.unavailable) return;
     this.#countdown.markRequested();
     this.#requesting = true;
-    await postIdentityProviderRegistration({ intent: 'resend' });
+    await this.#register({ intent: 'resend' });
     this.#settledAt = Date.now();
     this.#requesting = false;
   }

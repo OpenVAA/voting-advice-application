@@ -18,6 +18,7 @@ import type {
   JobMessage,
   PastJobQueryParams
 } from '$lib/server/admin/jobs/jobStore.type';
+import type { IdentityProviderRegistrationResult } from '$lib/server/contestant/identityProviderRegistration';
 import type { DataApiActionResult } from './actionResult.type';
 import type { AdapterType } from './adapterType.type';
 
@@ -60,6 +61,16 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @returns A `Promise` resolving to an {@link AddressConfirmationResult}. A refused session, any other answer and a failed call all resolve to `refused`.
    */
   requestAddressConfirmation: (opts: RequestAddressConfirmationOptions) => Promise<AddressConfirmationResult>;
+  /**
+   * Post, as the signed-in user, one intent to the endpoint an identity-provider account saves its details through: `save` the identity's own party's names and the address the user typed, `resend` the link of the address awaiting proof, or `acknowledge` the notice shown once after the identity provider found the account. The call carries the session of the client it is made on.
+   *
+   * Never rejects: a failed request and an answer without a result are logged without their content and resolve to `undefined`.
+   * @param opts - The intent and what it carries.
+   * @returns A `Promise` resolving to the endpoint's result, or to `undefined` when it gave none.
+   */
+  registerIdentityProviderAccount: (
+    opts: RegisterIdentityProviderAccountOptions
+  ) => Promise<IdentityProviderRegistrationResult | undefined>;
   /**
    * Sign in the user who claimed an invitation code, with that code and their password, in the project this adapter serves. The session is established on this adapter's own client, so on the server its cookies are written to the response of the request that client belongs to. No token is returned.
    * @param code - The code as typed.
@@ -279,22 +290,22 @@ export interface BasicUserData extends WithUserSettings {
    */
   passwordSet: boolean;
   /**
-   * The state of the account's address, told by `addressStateOf` from the verified user's address, pending address and the identity provider its `app_metadata` names. `none` and `pending` belong to an account an identity provider made that holds only its placeholder address; every other account is `proved`. A pending address that is now another account's reads as `none`, with `pendingEmailTaken` set.
+   * The state of the account's address, told by `addressStateOf` from the verified user's address, pending address and the identity provider its `app_metadata` names. `none` and `pending` belong to an account an identity provider made that holds only its placeholder address; every other account is `proved`. A `pending` state carries the address awaiting proof, shown to its own owner. A pending address that has since become another account's, as the user-level read answers it for the caller alone, reads as `none` with `pendingTaken` set. When that cannot be read, the read of the user's data fails instead.
    */
-  addressState: AddressState;
-  /**
-   * The address awaiting proof by the link mailed to it, shown to its own owner. Set only in the state `pending`, `null` otherwise.
-   */
-  pendingEmail: string | null;
+  address: AddressState;
   /**
    * Whether the organization the identity registered through the identity provider in this project, named by the record `identity-callback` keeps in the account's `app_metadata`, is among the entities the user edits and has no name with text in the adapter's default locale. `false` for every other organization the user edits, whatever its name.
    */
   ownOrganizationUnnamed: boolean;
-  /**
-   * Whether the address the account was waiting to prove has since become another account's, as the user-level read answers it for the caller alone. Only an account that was `pending` reads `true`, and it then reads `addressState` as `none` and `pendingEmail` as `null`. It is always a boolean: when it cannot be read, the read of the user's data fails instead.
-   */
-  pendingEmailTaken: boolean;
 }
+
+/**
+ * One intent posted by `registerIdentityProviderAccount`, with what it carries. A `save` carries the names of the identity's own party, the address the user typed, or both.
+ */
+export type RegisterIdentityProviderAccountOptions =
+  | { intent: 'save'; name?: LocalizedString; shortName?: LocalizedString; email?: string }
+  | { intent: 'resend' }
+  | { intent: 'acknowledge' };
 
 /**
  * The coarse role of a signed-in user, derived from the grant shapes in their access token: `'admin'` when it carries a grant that opens the Admin App, otherwise `'contestant'` when it carries one that opens the Contestant App. An admin grant is tested first, so a user holding both is an `'admin'`.

@@ -16,7 +16,7 @@ The view cannot be put aside: only a rerun load that reads an address or a name 
 
 ### Dynamic component
 
-Accesses `ContestantContext`: `user`, `answersLocked`, `logout` and `t`. Reads `arrival` from the page's data. Posts to `UNIVERSAL_API_ROUTES.identityProviderRegistration`.
+Accesses `ContestantContext`: `user`, `answersLocked`, `logout`, `registerIdentityProviderAccount` and `t`. Reads `arrival` from the page's data.
 
 ### Properties
 
@@ -50,16 +50,15 @@ None.
   import { Input } from '$lib/components/input';
   import { hasDefaultLocaleName } from '$lib/contestant/utils/identityProviderAccount';
   import { requiredNameLocale } from '$lib/contestant/utils/nameRule';
-  import {
-    PendingAddressResend,
-    postIdentityProviderRegistration
-  } from '$lib/contestant/utils/pendingAddressResend.svelte';
+  import { PendingAddressResend } from '$lib/contestant/utils/pendingAddressResend.svelte';
   import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
   import { EmailSentResend } from '$lib/dynamic-components/emailSentPanel';
   import { assertTranslationKey } from '$lib/i18n/utils';
   import { getUUID } from '$lib/utils/components';
   import { isBlankText } from '$lib/utils/localizedText';
   import type { LocalizedString } from '@openvaa/app-shared';
+  import type { RegisterIdentityProviderAccountOptions } from '$lib/api/base/dataWriter.type';
+  import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -67,7 +66,7 @@ None.
 
   // user and answersLocked are reactive accessors: read via contestantCtx.X in each tracking scope, never destructured.
   const contestantCtx = getContestantContext();
-  const { logout, t } = contestantCtx;
+  const { logout, registerIdentityProviderAccount, t } = contestantCtx;
 
   ////////////////////////////////////////////////////////////////////
   // What the view asks for
@@ -79,7 +78,8 @@ None.
     return value === 'created' || value === 'existing' ? value : null;
   });
 
-  const addressState = $derived(contestantCtx.user?.addressState ?? 'none');
+  const address = $derived<AddressState>(contestantCtx.user?.address ?? { state: 'none', pendingTaken: false });
+  const addressState = $derived(address.state);
   const returning = $derived(arrival === 'existing');
 
   /** Whether the user chose to give another address in place of the one awaiting its link. */
@@ -92,9 +92,9 @@ None.
   const shownAddress = $derived.by((): { label: string; address: string } | undefined => {
     if (hasForm) return undefined;
     const user = contestantCtx.user;
-    if (addressState === 'pending' && user?.pendingEmail)
-      return { label: t('contestantApp.identityProvider.awaitingConfirmation'), address: user.pendingEmail };
-    if (addressState === 'proved' && user?.email)
+    if (address.state === 'pending')
+      return { label: t('contestantApp.identityProvider.awaitingConfirmation'), address: address.email };
+    if (address.state === 'proved' && user?.email)
       return { label: t('contestantApp.identityProvider.signInEmail'), address: user.email };
     return undefined;
   });
@@ -109,8 +109,7 @@ None.
   );
 
   const lead = $derived.by(() => {
-    if (addressState === 'none' && contestantCtx.user?.pendingEmailTaken)
-      return t('contestantApp.identityProvider.emailTakenNotice');
+    if (address.state === 'none' && address.pendingTaken) return t('contestantApp.identityProvider.emailTakenNotice');
     if (asksName && addressState !== 'none') return t('contestantApp.identityProvider.nameIntro');
     if (addressState === 'pending') return t('contestantApp.identityProvider.alreadyRegistered.pending');
     if (addressState === 'proved') return t('contestantApp.identityProvider.alreadyRegistered.proved');
@@ -195,7 +194,7 @@ None.
     // The main button is natively disabled while the save runs, and a browser may drop the focus of a button that becomes disabled.
     const focused = document.activeElement;
     status = 'saving';
-    const body: Record<string, unknown> = { intent: 'save' };
+    const body: RegisterIdentityProviderAccountOptions = { intent: 'save' };
     if (asksName) {
       body.name = filledEntries(name);
       const short = filledEntries(shortName);
@@ -203,7 +202,7 @@ None.
     }
     if (asksEmail) body.email = email;
 
-    const result = await postIdentityProviderRegistration(body);
+    const result = await registerIdentityProviderAccount(body);
     if (result === 'saved') {
       await rerun();
       status = 'idle';
@@ -220,7 +219,7 @@ None.
     if (status === 'saving') return;
     const focused = document.activeElement;
     status = 'saving';
-    if ((await postIdentityProviderRegistration({ intent: 'acknowledge' })) === 'acknowledged') {
+    if ((await registerIdentityProviderAccount({ intent: 'acknowledge' })) === 'acknowledged') {
       await rerun();
       status = 'idle';
     } else {
@@ -250,7 +249,7 @@ None.
   ////////////////////////////////////////////////////////////////////
 
   /** The request for the link and the count of `RESEND_WAIT_SECONDS` that runs from its settlement. */
-  const resend = new PendingAddressResend();
+  const resend = new PendingAddressResend(registerIdentityProviderAccount);
 
   const resendStatus = $derived(
     resend.status === 'requested'

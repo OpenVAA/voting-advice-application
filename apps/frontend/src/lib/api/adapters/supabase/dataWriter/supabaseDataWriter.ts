@@ -79,6 +79,7 @@ import type {
   UserRole
 } from '$lib/api/base/dataWriter.type';
 import type { GrantClaim } from '$lib/auth/roles';
+import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
 import type { SupabaseAdapterConfig } from '../supabaseAdapter.type';
 import type { EntityNominationRow } from '../utils/entityNominations';
 import type { NominationParentOptionRow } from '../utils/nominationParentOptions';
@@ -640,8 +641,12 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       newEmail: user.new_email,
       identityProvider: user.app_metadata?.identity_provider
     });
-    const pendingEmailTaken = stated === 'pending' && pendingTaken;
-    const addressState = pendingEmailTaken ? 'none' : stated;
+    const address: AddressState =
+      stated === 'proved'
+        ? { state: 'proved' }
+        : stated === 'pending' && !pendingTaken && user.new_email
+          ? { state: 'pending', email: user.new_email }
+          : { state: 'none', pendingTaken: stated === 'pending' && pendingTaken };
     // A placeholder address is an identifier derived from the provider's persistent id, so it is never handed on as the account's address.
     const email = isPlaceholderAddress(user.email) ? '' : (user.email ?? '');
 
@@ -654,10 +659,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       role,
       termsOfUseAccepted,
       passwordSet,
-      addressState,
-      pendingEmail: addressState === 'pending' ? (user.new_email ?? null) : null,
+      address,
       ownOrganizationUnnamed,
-      pendingEmailTaken,
       settings: { language }
     };
   }

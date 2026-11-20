@@ -194,12 +194,12 @@ export async function handleIdentityProviderRegistration(
     const user = await deps.getBasicUserData();
 
     if (intent.intent === 'resend') {
-      if (user.addressState !== 'pending' || !user.pendingEmail) return reply(200, failed);
-      const outcome = await deps.requestAddressConfirmation({ email: user.pendingEmail, locale: deps.locale });
+      if (user.address.state !== 'pending') return reply(200, failed);
+      const outcome = await deps.requestAddressConfirmation({ email: user.address.email, locale: deps.locale });
       return reply(200, outcome === 'sent' ? sent : failed);
     }
 
-    if (intent.email !== undefined && user.addressState === 'proved') return reply(200, failed);
+    if (intent.email !== undefined && user.address.state === 'proved') return reply(200, failed);
     if (intent.name !== undefined && !(await saveNames(deps, verified.appMetadata, intent.name, intent.shortName)))
       return reply(200, failed);
     if (intent.email !== undefined) {

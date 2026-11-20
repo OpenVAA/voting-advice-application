@@ -28,10 +28,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
   import { Input } from '$lib/components/input';
   import { PasswordSetter } from '$lib/components/passwordSetter';
   import SuccessMessage from '$lib/components/successMessage/SuccessMessage.svelte';
-  import {
-    PendingAddressResend,
-    postIdentityProviderRegistration
-  } from '$lib/contestant/utils/pendingAddressResend.svelte';
+  import { PendingAddressResend } from '$lib/contestant/utils/pendingAddressResend.svelte';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { EmailSentResend } from '$lib/dynamic-components/emailSentPanel';
@@ -42,7 +39,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
   ////////////////////////////////////////////////////////////////////
 
   const contestantCtx = getContestantContext();
-  const { getRoute, setPassword, t } = contestantCtx;
+  const { getRoute, registerIdentityProviderAccount, setPassword, t } = contestantCtx;
   const { pageStyles } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -85,9 +82,13 @@ The signed-in user's own settings page: the account's address, which cannot be e
   ////////////////////////////////////////////////////////////////////
 
   // user is a reactive accessor: read via contestantCtx.user in each tracking scope, never destructured.
-  const addressPending = $derived(contestantCtx.user?.addressState === 'pending' && !!contestantCtx.user.pendingEmail);
+  /** The address awaiting its link, or `undefined` when none is. */
+  const pendingEmail = $derived(
+    contestantCtx.user?.address.state === 'pending' ? contestantCtx.user.address.email : undefined
+  );
+  const addressPending = $derived(pendingEmail !== undefined);
 
-  const resend = new PendingAddressResend();
+  const resend = new PendingAddressResend(registerIdentityProviderAccount);
   const resendStatus = $derived(
     resend.status === 'requested'
       ? t('contestantApp.emailSent.resendRequested')
@@ -117,7 +118,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
     emailStatus = 'idle';
     if (!emailEntry?.validate()) return;
     emailStatus = 'saving';
-    const result = await postIdentityProviderRegistration({ intent: 'save', email: newEmail });
+    const result = await registerIdentityProviderAccount({ intent: 'save', email: newEmail });
     if (result === 'saved') {
       try {
         await invalidateAll();
@@ -164,7 +165,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
       info={addressPending
         ? t('contestantApp.settings.emailPendingInfo')
         : t('contestantApp.settings.emailDescription')}
-      value={addressPending ? contestantCtx.user?.pendingEmail : contestantCtx.user?.email}
+      value={pendingEmail ?? contestantCtx.user?.email}
       onShadedBg
       locked
       data-testid="settings-email" />
@@ -227,7 +228,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
         <PasswordSetter
           bind:password
           bind:this={passwordSetterRef}
-          username={contestantCtx.user?.addressState === 'proved' ? contestantCtx.user.email : undefined}
+          username={contestantCtx.user?.address.state === 'proved' ? contestantCtx.user.email : undefined}
           onShadedBg
           onValidityChange={({ valid, errorMessage }) => {
             isNewPasswordValid = valid;
