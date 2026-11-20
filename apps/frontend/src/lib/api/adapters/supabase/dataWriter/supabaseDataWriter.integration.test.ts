@@ -19,7 +19,7 @@
  *
  * Every refusal asserts the rejection and the unchanged state separately, so a write that silently did nothing and a write that was refused cannot be mistaken for each other.
  *
- * Gating: `describe.skipIf(!process.env.SUPABASE_URL)`. The file skips where no local Supabase is declared, which includes the default unit run and every CI job. No CI job runs it. A run that is meant to execute it sets `CONTESTANT_WRITER_INTEGRATION_REQUIRED=1`, which makes the file throw at import when `SUPABASE_URL` is unset, so it cannot skip silently.
+ * Gating: `describe.skipIf(!process.env.SUPABASE_URL)`. The file skips where no local Supabase is declared, which includes the default unit run. The CI job `dev-seed-integration` in `.github/workflows/main.yaml` runs it against the stack it starts. A run that is meant to execute it sets `CONTESTANT_WRITER_INTEGRATION_REQUIRED=1`, which makes the file throw at import when `SUPABASE_URL` is unset, so it cannot skip silently.
  *
  * To run it, with the local stack up: `SUPABASE_URL=… SUPABASE_ANON_KEY=… SUPABASE_SERVICE_ROLE_KEY=… CONTESTANT_WRITER_INTEGRATION_REQUIRED=1 yarn workspace @openvaa/frontend vitest run supabaseDataWriter.integration`.
  *
