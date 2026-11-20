@@ -59,7 +59,9 @@ also the three user-level accessors derived from page data: `user`, `entities` a
 `homeRoute`, the built route "home" leads to from the current page: that entity's home when the
 route params name one, the app root otherwise. They sit beside `userData`, which stays a stable
 reference; read them as `contestantCtx.X`. Two more on the contestant context: `nominationsLocked`,
-which follows the app setting `access.nominationsLocked` as `answersLocked` follows its own key, and
+which, like `answersLocked`, is derived from the one app setting `access.contestantEditing`
+(`getContestantEditing` of `@openvaa/app-shared`): `answersLocked` while it is `locked`,
+`nominationsLocked` while it is `nominationsLocked` or `locked`, and
 `questionsReady`, which is `true` once the question lists were rolled up for a loaded entity with a
 selected election — the fact that tells an empty list that means "no questions" from one that means
 "not loaded yet". The lists themselves are scoped to the loaded entity's type and are empty while no
