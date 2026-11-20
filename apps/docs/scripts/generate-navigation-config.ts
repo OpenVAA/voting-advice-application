@@ -429,8 +429,8 @@ function buildSection(sectionName: string, routes: Array<RouteInfo>): Navigation
 }
 
 /**
- * Build children for a subsection. A subsection with a page of its own lists that page first, as an Overview child,
- * because an item with children renders in the nav as a disclosure with no link.
+ * Build children for a subsection.
+ * A subsection with a page of its own lists that page first, as an Overview child, because an item with children renders in the nav as a disclosure with no link.
  */
 function buildSubsectionChildren(
   parentPath: string,
