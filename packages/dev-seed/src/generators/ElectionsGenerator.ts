@@ -43,8 +43,8 @@ export class ElectionsGenerator {
         project_id: projectId,
         name: { en: faker.lorem.words({ min: 2, max: 4 }) },
         short_name: { en: `E${i + 1}` },
-        // The default election type admits every row the generators and a template's `fixed[]` rows can express: the parent-less candidate nominations of NominationsGenerator's `count` branch, and organization, alliance and faction nominations beside them.
-        election_type: 'organization_list_and_independents',
+        // The default nomination shape admits every row the generators and a template's `fixed[]` rows can express: the parent-less candidate nominations of NominationsGenerator's `count` branch, and organization, alliance and faction nominations beside them.
+        nomination_shape: 'organization_list_and_independents',
         election_date: faker.date.future({ years: 1, refDate }).toISOString().slice(0, 10),
         sort_order: i,
         multiple_rounds: false,

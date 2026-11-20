@@ -104,7 +104,7 @@ const TABLE_COLUMNS = {
     'custom_data',
     'election_date',
     'election_start_date',
-    'election_type',
+    'nomination_shape',
     'external_id',
     'id',
     'image',

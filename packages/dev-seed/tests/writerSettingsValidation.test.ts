@@ -101,7 +101,10 @@ describe('Writer validates app_settings with StoredSettingsSchema before it writ
       {
         ...ENTITY_ROWS,
         app_settings: [
-          { external_id: 'settings-1', settings: { contestantApp: { registrationModes: { candidate: ['emial'] } } } }
+          {
+            external_id: 'settings-1',
+            settings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['emial'] } } } }
+          }
         ]
       },
       'seed_',
@@ -109,7 +112,7 @@ describe('Writer validates app_settings with StoredSettingsSchema before it writ
     );
 
     await expect(write).rejects.toThrow('typo-template');
-    await expect(write).rejects.toThrow('contestantApp.registrationModes.candidate.0');
+    await expect(write).rejects.toThrow('contestantApp.servedEntityTypes.candidate.registrationModes.0');
     await expect(write).rejects.toThrow('nothing was written');
     expectNothingWritten();
   });
