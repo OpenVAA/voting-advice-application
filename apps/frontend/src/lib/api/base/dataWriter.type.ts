@@ -175,7 +175,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   getEntityUserData: <TNominations extends boolean | undefined>(
     opts: GetEntityUserDataOptions<TNominations>
-  ) => DWReturnType<ContestantUserData<TNominations> | undefined, TType>;
+  ) => DWReturnType<EntityUserData<TNominations> | undefined, TType>;
 
   /**
    * List the entities one of an entity's nominations may be placed under, in the project this adapter serves: the organizations for a candidate, the alliances for an organization. The entity is one the signed-in user edits.
@@ -601,7 +601,7 @@ export type NominationParentOption = {
  * The data of one entity the signed-in user edits. The user-level data is not part of it: it is read once by `getBasicUserData`.
  * @typeParam TNominations - Whether to include the `nominations` property, defaulting to `false`.
  */
-export type ContestantUserData<TNominations extends boolean | undefined = undefined> = {
+export type EntityUserData<TNominations extends boolean | undefined = undefined> = {
   /**
    * The data for the entity the `User` edits, of either served type. Its `name` and `shortName` are translated to one locale.
    */

@@ -173,8 +173,8 @@ vi.mock('../utils/inheritContextMembers', () => ({
 }));
 
 // The user data store is constructed in a field initializer. The stub answers its three reads from the box, so construction reaches neither the data writer nor the persisted state.
-vi.mock('./contestantUserDataState.svelte', () => ({
-  contestantUserDataState: () => ({
+vi.mock('./entityUserDataState.svelte', () => ({
+  entityUserDataState: () => ({
     get current() {
       return world.userData;
     },

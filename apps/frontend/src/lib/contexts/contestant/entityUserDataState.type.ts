@@ -1,9 +1,9 @@
 import type { LocalizedAnswer, ServedEntityType } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type {
-  ContestantUserData,
   EditableEntityProperty,
   EditablePropsOf,
+  EntityUserData,
   LocalizedEntityData,
   LocalizedEntityNames
 } from '$lib/api/base/dataWriter.type';
@@ -27,19 +27,19 @@ export type SaveUserDataResult =
 /**
  * An extended reactive object that holds all data owned by the user. When reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. Dedicated methods are provided for loading, saving, setting or resetting data.
  *
- * NB. Before using the object, its `init` method must be called with the initial `ContestantUserData`.
+ * NB. Before using the object, its `init` method must be called with the initial `EntityUserData`.
  */
-export type ContestantUserDataState = {
+export type EntityUserDataState = {
   /**
    * The effective user data, including any unsaved edits. An unsaved image, colour, first name or last name is shown on `entity`. An unsaved name or short name of an organization is shown in `localizedNames`, by locale, while `entity.name` and `entity.shortName` stay the saved ones in one locale. The value is a plain copy, safe to hand to an input.
    */
-  readonly current: ContestantUserData<true> | undefined;
+  readonly current: EntityUserData<true> | undefined;
   /**
-   * Initialize the store with the full `ContestantUserData`. The unsaved answers shown are the ones the signed-in user left for the entity the data names: loading another entity brings up that entity's own draft and drops the unsaved properties, while loading the same entity again keeps both. The drafts any other user left in the browser are removed first, so an editor is never shown, and never saves, unsaved answers someone else typed.
+   * Initialize the store with the full `EntityUserData`. The unsaved answers shown are the ones the signed-in user left for the entity the data names: loading another entity brings up that entity's own draft and drops the unsaved properties, while loading the same entity again keeps both. The drafts any other user left in the browser are removed first, so an editor is never shown, and never saves, unsaved answers someone else typed.
    * @param data - The entity's data.
    * @param userId - The id of the signed-in user.
    */
-  init: (data: ContestantUserData<true>, userId: Id) => void;
+  init: (data: EntityUserData<true>, userId: Id) => void;
   /**
    * Empty the store of the entity it holds: the saved data and the unsaved properties are dropped, and `current` becomes `undefined`. The entity's persisted unsaved answers are left in the browser, so a later `init` for the same entity shows them again. Call this when the user leaves the entity without logging out.
    */

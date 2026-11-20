@@ -16,7 +16,7 @@ import type { ContestantLoginError } from '$lib/contestant/utils/loginError';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
 import type { QuestionBlocks } from '../utils/questionBlockState.type';
-import type { ContestantUserDataState } from './contestantUserDataState.type';
+import type { EntityUserDataState } from './entityUserDataState.type';
 
 export type ContestantContext = AppContext &
   AuthContext & {
@@ -130,9 +130,9 @@ export type ContestantContext = AppContext &
     /**
      * An extended reactive object that holds all data owned by the user.
      *
-     * NB. Before using the object, its `init` method must be called with the initial `ContestantUserData`.
+     * NB. Before using the object, its `init` method must be called with the initial `EntityUserData`.
      */
-    userData: ContestantUserDataState;
+    userData: EntityUserDataState;
     /**
      * The signed-in user, as the load of the protected tree read it, or `undefined` on a page outside that tree.
      *

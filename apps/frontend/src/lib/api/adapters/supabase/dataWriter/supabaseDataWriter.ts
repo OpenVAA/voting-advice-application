@@ -50,13 +50,13 @@ import type {
   AddressConfirmationResult,
   BasicUserData,
   CandidateEditableProps,
-  ContestantUserData,
   DesiredNomination,
   DWReturnType,
   EditableEntityColor,
   EditableEntityProperty,
   EditablePropsOf,
   EntityNomination,
+  EntityUserData,
   GetEntityUserDataOptions,
   GetNominationParentOptionsOptions,
   GetUserEntitiesOptions,
@@ -489,7 +489,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     id,
     loadNominations,
     locale
-  }: GetEntityUserDataOptions<TNominations>): DWReturnType<ContestantUserData<TNominations> | undefined> {
+  }: GetEntityUserDataOptions<TNominations>): DWReturnType<EntityUserData<TNominations> | undefined> {
     const served = servedEntityType(type);
     const table = ENTITY_TABLES[served];
 
@@ -560,7 +560,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       nominations = rows.map((row) => entityNominationOf(row, effectiveLocale, this.defaultLocale));
     }
 
-    return { entity, ...(localizedNames && { localizedNames }), nominations } as ContestantUserData<TNominations>;
+    return { entity, ...(localizedNames && { localizedNames }), nominations } as EntityUserData<TNominations>;
   }
 
   ////////////////////////////////////////////////////////////////////

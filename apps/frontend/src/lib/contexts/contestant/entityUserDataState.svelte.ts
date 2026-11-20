@@ -9,10 +9,10 @@ import type { Id } from '@openvaa/core';
 import type { Colors } from '@openvaa/data';
 import type {
   CandidateEditableProps,
-  ContestantUserData,
   EditableEntityColor,
   EditableEntityProperty,
   EditablePropsOf,
+  EntityUserData,
   LocalizedAnswers,
   LocalizedEntityData,
   LocalizedEntityNames,
@@ -23,7 +23,7 @@ import type {
 } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import type { PersistedState } from '../utils/persistedState.svelte';
-import type { ContestantUserDataState, SaveUserDataResult } from './contestantUserDataState.type';
+import type { EntityUserDataState, SaveUserDataResult } from './entityUserDataState.type';
 
 export { EDITED_ANSWERS_KEY_STEM } from './contestantDrafts';
 
@@ -103,13 +103,13 @@ function writeOptionsOf({
  * A Svelte 5 class implementation of the composite user-data store of the entity the user edits.
  * Holds all data owned by the user; when reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. The edited `Answer`s are stored in `localStorage` for persistence, under a key that names the entity, so each entity keeps its own draft (the persistence + version bridge is INHERITED from `localStorageState`/`PersistedStateImpl` — this class does NOT own a `#version`; the `{ version, data }` payload lives in `persistedState.svelte.ts`). The edited properties are held in memory alone: a name staged in one session is never restored into a later one, where the entity may have been confirmed since.
  *
- * The public surface is the TYPE `ContestantUserDataState` that this class `implements`, which is why the class itself is named `ContestantUserDataStateImpl` (the same suffix as `AnswerStateImpl`) — a class sharing the type's name would clash with it — and the consumer entry point is the `contestantUserDataState(...)` factory.
+ * The public surface is the TYPE `EntityUserDataState` that this class `implements`, which is why the class itself is named `EntityUserDataStateImpl` (the same suffix as `AnswerStateImpl`) — a class sharing the type's name would clash with it — and the consumer entry point is the `entityUserDataState(...)` factory.
  *
  * The public methods are ARROW-FUNCTION FIELDS so they survive being held as `userData.X` on the contestant context and called detached. The reactive members (`current`/`hasUnsaved`/`savedEntityData`/`savedLocalizedNames`/`unsavedQuestionIds`/ `unsavedProperties`) are prototype getters read in-place (this store is NOT spread by any consumer, so prototype getters are safe).
  *
- * @internal Construct via the `contestantUserDataState(...)` factory at component init. The constructor installs an `$effect` (reacting to `answersLocked` to clear unsaved edits), so constructing outside an effect context throws `effect_orphan`.
+ * @internal Construct via the `entityUserDataState(...)` factory at component init. The constructor installs an `$effect` (reacting to `answersLocked` to clear unsaved edits), so constructing outside an effect context throws `effect_orphan`.
  */
-class ContestantUserDataStateImpl implements ContestantUserDataState {
+class EntityUserDataStateImpl implements EntityUserDataState {
   #answersLocked: () => boolean;
   // A getter, not an instance: the store builds a writer for each backend call and holds none between them.
   #dataWriter: () => UniversalDataWriter;
@@ -120,7 +120,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
   ////////////////////////////////////////////////////////////////////
 
   // An internal $state for holding the user data loaded from the backend
-  #savedData = $state<ContestantUserData<true> | undefined>(undefined);
+  #savedData = $state<EntityUserData<true> | undefined>(undefined);
 
   // The persisted edited answers of the loaded entity. A handle's key is fixed when it is constructed, so loading another entity replaces the handle; it is held raw so that the derived values below follow the replacement.
   #draft = $state.raw<EntityDraft | undefined>(undefined);
@@ -160,7 +160,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
           : undefined,
         nominations
       })
-    ) as ContestantUserData<true>;
+    ) as EntityUserData<true>;
   });
 
   constructor({
@@ -280,7 +280,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
 
   #hasUnsaved = $derived(this.#unsavedQuestionIds.length > 0 || this.#unsavedProperties.length > 0);
 
-  get current(): ContestantUserData<true> | undefined {
+  get current(): EntityUserData<true> | undefined {
     return this.#current;
   }
 
@@ -308,7 +308,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
   // Exported methods
   ////////////////////////////////////////////////////////////////////
 
-  init = (data: ContestantUserData<true>, userId: Id): void => {
+  init = (data: EntityUserData<true>, userId: Id): void => {
     // The drafts another user left in this browser are removed before any is restored, and so is a draft under a key that names no user.
     removePersistedByPrefix('localStorage', `${EDITED_ANSWERS_KEY_STEM}-`, `${EDITED_ANSWERS_KEY_STEM}-${userId}-`);
     this.#userId = userId;
@@ -483,7 +483,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
  * @param dataWriter - A getter returning a `UniversalDataWriter` built for the call that is about to be made.
  * @param locale - The current locale string, used for translating some data when it's fetched.
  */
-export function contestantUserDataState({
+export function entityUserDataState({
   answersLocked,
   dataWriter,
   locale
@@ -491,8 +491,8 @@ export function contestantUserDataState({
   answersLocked: () => boolean;
   dataWriter: () => UniversalDataWriter;
   locale: () => string;
-}): ContestantUserDataState {
-  return new ContestantUserDataStateImpl({ answersLocked, dataWriter, locale });
+}): EntityUserDataState {
+  return new EntityUserDataStateImpl({ answersLocked, dataWriter, locale });
 }
 
 /**
@@ -512,7 +512,7 @@ function givenProperties(properties: StagedProps): Array<EditableEntityProperty>
  * @param edit - The edited properties.
  * @returns The properties of the edit that differ from the saved ones. A property that is the same as the saved one is left out.
  */
-function changedProperties(saved: ContestantUserData<true>, edit: StagedProps): StagedProps {
+function changedProperties(saved: EntityUserData<true>, edit: StagedProps): StagedProps {
   const { entity, localizedNames } = saved;
   const changed: StagedProps = {};
   if (edit.image !== undefined && (edit.image !== null || entity.image)) changed.image = edit.image;

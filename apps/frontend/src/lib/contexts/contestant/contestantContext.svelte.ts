@@ -11,7 +11,7 @@ import { hasNomination, requiredInfoQuestionsOf, taskStateOf, unansweredQuestion
 import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
 import { isNameEditable, isRequiredNameMissing } from '$lib/contestant/utils/nameRule';
 import { contestantHomeRoute } from '$lib/routes';
-import { contestantUserDataState } from './contestantUserDataState.svelte';
+import { entityUserDataState } from './entityUserDataState.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
@@ -137,7 +137,7 @@ export class ContestantContextProvider implements ContestantContext {
   #homeRoute = $derived(this.#getRoute.current(contestantHomeRoute(page.params)));
 
   // userData composite producer — declared AFTER #answersLocked + #locale because the getter-thunks read them. The thunks are lazy, so this is safe.
-  #userData = contestantUserDataState({
+  #userData = entityUserDataState({
     answersLocked: () => this.#answersLocked,
     dataWriter: prepareDataWriter,
     locale: () => this.#locale

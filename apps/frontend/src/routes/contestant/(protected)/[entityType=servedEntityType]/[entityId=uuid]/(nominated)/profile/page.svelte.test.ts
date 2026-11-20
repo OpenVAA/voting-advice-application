@@ -18,7 +18,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { hasNomination, taskStateOf } from '$lib/contestant/tasks/taskState';
-import type { ContestantUserData, EntityNomination, UserEntity } from '$lib/api/base/dataWriter.type';
+import type { EntityNomination, EntityUserData, UserEntity } from '$lib/api/base/dataWriter.type';
 
 /** A question as the page and `QuestionInput` read one. */
 type FakeQuestion = {
@@ -40,7 +40,7 @@ function answeredByAnyValue(answer?: { value?: unknown } | null): boolean {
 type Box = {
   selectedEntity: UserEntity | undefined;
   answersLocked: boolean;
-  current: ContestantUserData<true> | undefined;
+  current: EntityUserData<true> | undefined;
   hasUnsaved: boolean;
   infoQuestions: Array<FakeQuestion>;
   unansweredRequiredInfoQuestions: Array<FakeQuestion>;
@@ -249,11 +249,11 @@ const CANDIDATE: UserEntity = {
 const PARTY: UserEntity = { type: 'organization', id: ENTITY_ID, name: 'Esimerkkipuolue', confirmed: false };
 
 /** The user data of a candidate, as the store hands it out. */
-function candidateData(names: { firstName: string; lastName: string } = CANDIDATE_NAMES): ContestantUserData<true> {
+function candidateData(names: { firstName: string; lastName: string } = CANDIDATE_NAMES): EntityUserData<true> {
   return {
     entity: { type: 'candidate', id: ENTITY_ID, ...names, answers: {} },
     nominations: []
-  } as unknown as ContestantUserData<true>;
+  } as unknown as EntityUserData<true>;
 }
 const CANDIDATE_NAMES = { firstName: 'Ada', lastName: 'Alpha' };
 
@@ -266,12 +266,12 @@ function partyData({
   name?: Record<string, string> | null;
   shortName?: Record<string, string> | null;
   color?: { normal: string; dark?: string };
-} = {}): ContestantUserData<true> {
+} = {}): EntityUserData<true> {
   return {
     entity: { type: 'organization', id: ENTITY_ID, name: 'Esimerkkipuolue', answers: {}, ...(color && { color }) },
     localizedNames: { name, shortName },
     nominations: []
-  } as unknown as ContestantUserData<true>;
+  } as unknown as EntityUserData<true>;
 }
 
 /** A nomination of the entity, as the store hands one out. */
@@ -491,7 +491,7 @@ describe('profile page — whether the entity’s data is loaded', () => {
 });
 
 describe('profile page — nothing of the entity’s nominations', () => {
-  const CASES: Array<[string, UserEntity, ContestantUserData<true>, string]> = [
+  const CASES: Array<[string, UserEntity, EntityUserData<true>, string]> = [
     [
       'a candidate with a nomination',
       CANDIDATE,
@@ -692,9 +692,9 @@ describe('profile page — removing the image', () => {
   const STORED_IMAGE = { url: 'https://example.test/portrait.png' };
 
   /** The user data of a candidate whose portrait is stored. */
-  function candidateWithImage(): ContestantUserData<true> {
+  function candidateWithImage(): EntityUserData<true> {
     const data = candidateData();
-    return { ...data, entity: { ...data.entity, image: STORED_IMAGE } } as unknown as ContestantUserData<true>;
+    return { ...data, entity: { ...data.entity, image: STORED_IMAGE } } as unknown as EntityUserData<true>;
   }
 
   function removeOf(target: HTMLElement): HTMLButtonElement {
@@ -721,7 +721,7 @@ describe('profile page — removing the image', () => {
     const target = render({ selectedEntity: CANDIDATE, current: candidateWithImage() });
     setProperty.mockImplementation((_type: string, _property: 'image', image: null) => {
       const current = box.current!;
-      box = { ...box, current: { ...current, entity: { ...current.entity, image } } as ContestantUserData<true> };
+      box = { ...box, current: { ...current, entity: { ...current.entity, image } } as EntityUserData<true> };
     });
 
     removeOf(target).click();
@@ -738,7 +738,7 @@ describe('profile page — removing the image', () => {
     const data = partyData();
     const target = render({
       selectedEntity: PARTY,
-      current: { ...data, entity: { ...data.entity, image: STORED_IMAGE } } as unknown as ContestantUserData<true>
+      current: { ...data, entity: { ...data.entity, image: STORED_IMAGE } } as unknown as EntityUserData<true>
     });
 
     const remove = removeOf(target);
@@ -1128,9 +1128,9 @@ describe('profile page — the label of the Save button and where a stored save 
   };
 
   /** The candidate's data as the store hands it out, holding `answers`: the saved ones with the draft. */
-  function candidateDataWith(answers: Record<string, { value: unknown }>): ContestantUserData<true> {
+  function candidateDataWith(answers: Record<string, { value: unknown }>): EntityUserData<true> {
     const data = candidateData();
-    return { ...data, entity: { ...data.entity, answers } } as unknown as ContestantUserData<true>;
+    return { ...data, entity: { ...data.entity, answers } } as unknown as EntityUserData<true>;
   }
 
   /** The store's data once the draft holds an answer to the required info question. */

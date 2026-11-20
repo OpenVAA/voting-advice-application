@@ -10,9 +10,9 @@ import type {
   AbortJobOptions,
   AddressConfirmationResult,
   BasicUserData,
-  ContestantUserData,
   DataWriter,
   DWReturnType,
+  EntityUserData,
   GetActiveJobsOptions,
   GetEntityUserDataOptions,
   GetJobProgressOptions,
@@ -155,7 +155,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
   getEntityUserData<TNominations extends boolean | undefined>(
     opts: GetEntityUserDataOptions<TNominations>
-  ): DWReturnType<ContestantUserData<TNominations> | undefined> {
+  ): DWReturnType<EntityUserData<TNominations> | undefined> {
     return this._getEntityUserData(opts);
   }
 
@@ -263,7 +263,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   protected abstract _getUserEntities(opts: GetUserEntitiesOptions): DWReturnType<Array<UserEntity>>;
   protected abstract _getEntityUserData<TNominations extends boolean | undefined>(
     opts: GetEntityUserDataOptions<TNominations>
-  ): DWReturnType<ContestantUserData<TNominations> | undefined>;
+  ): DWReturnType<EntityUserData<TNominations> | undefined>;
   protected abstract _setAnswers(opts: SetAnswersOptions & { overwrite: boolean }): DWReturnType<SetAnswersResult>;
   protected abstract _updateEntityProperties(opts: SetPropertiesOptions): DWReturnType<UpdateEntityPropertiesResult>;
   protected abstract _setEntityNominations(opts: SetEntityNominationsOptions): DWReturnType<SetEntityNominationsResult>;

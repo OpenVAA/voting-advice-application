@@ -2,11 +2,11 @@ import { getLocalized } from '@openvaa/app-shared';
 import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
-import { contestantUserDataState, EDITED_ANSWERS_KEY_STEM, editedAnswersKey } from './contestantUserDataState.svelte';
+import { EDITED_ANSWERS_KEY_STEM, editedAnswersKey, entityUserDataState } from './entityUserDataState.svelte';
 import { localStorageState } from '../utils/persistedState.svelte';
 import type {
   CandidateEditableProps,
-  ContestantUserData,
+  EntityUserData,
   LocalizedAnswers,
   LocalizedCandidateData,
   LocalizedEntityNames,
@@ -18,7 +18,7 @@ import type {
   UpdateEntityPropertiesResult
 } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
-import type { ContestantUserDataState } from './contestantUserDataState.type';
+import type { EntityUserDataState } from './entityUserDataState.type';
 
 // The store reaches its writer through the getter it is constructed with — here a fake, so no browser guard is crossed — but `localStorageWritable` only persists when `browser` is `true`.
 // The default app-environment stub sets `browser = false`, so override it here.
@@ -30,9 +30,9 @@ vi.mock('$app/environment', () => ({
 }));
 
 /**
- * Build a minimal `ContestantUserData<true>` for the store's `init`.
+ * Build a minimal `EntityUserData<true>` for the store's `init`.
  */
-function makeUserData(overrides?: Partial<LocalizedCandidateData>): ContestantUserData<true> {
+function makeUserData(overrides?: Partial<LocalizedCandidateData>): EntityUserData<true> {
   return {
     entity: {
       type: 'candidate',
@@ -50,12 +50,12 @@ function makeUserData(overrides?: Partial<LocalizedCandidateData>): ContestantUs
 const ORGANIZATION_NAMES: LocalizedEntityNames = { name: { en: 'Org', fi: 'Järjestö' }, shortName: null };
 
 /**
- * Build a minimal `ContestantUserData<true>` whose entity is an organization.
+ * Build a minimal `EntityUserData<true>` whose entity is an organization.
  */
 function makeOrganizationUserData(
   overrides?: Partial<LocalizedOrganizationData>,
   localizedNames: LocalizedEntityNames = ORGANIZATION_NAMES
-): ContestantUserData<true> {
+): EntityUserData<true> {
   return {
     ...makeUserData(),
     entity: { type: 'organization', id: 'org-1', name: 'Org', answers: {}, ...overrides },
@@ -159,7 +159,7 @@ function makeFakeWriter() {
 const USER_A = '0a0a0a0a-0000-4000-8000-00000000000a';
 const USER_B = '0b0b0b0b-0000-4000-8000-00000000000b';
 
-describe('contestantUserDataState.save()', () => {
+describe('entityUserDataState.save()', () => {
   let cleanup: (() => void) | undefined;
 
   beforeEach(() => {
@@ -176,11 +176,11 @@ describe('contestantUserDataState.save()', () => {
   /**
    * Create the store inside an `$effect.root` so its `$state`/`$derived`/`$effect` settle, returning the store handle plus the writer spies.
    */
-  function setup(userData: ContestantUserData<true>) {
+  function setup(userData: EntityUserData<true>) {
     const fake = makeFakeWriter();
-    let store!: ContestantUserDataState;
+    let store!: EntityUserDataState;
     cleanup = $effect.root(() => {
-      store = contestantUserDataState({
+      store = entityUserDataState({
         answersLocked: () => false,
         dataWriter: () => fake.writer,
         locale: () => 'en'
@@ -347,7 +347,7 @@ describe('contestantUserDataState.save()', () => {
   });
 });
 
-describe('contestantUserDataState, an entity of either served type', () => {
+describe('entityUserDataState, an entity of either served type', () => {
   let cleanup: (() => void) | undefined;
 
   beforeEach(() => {
@@ -364,11 +364,11 @@ describe('contestantUserDataState, an entity of either served type', () => {
   /**
    * Create the store inside an `$effect.root` and load `userData` into it.
    */
-  function setup(userData: ContestantUserData<true>) {
+  function setup(userData: EntityUserData<true>) {
     const fake = makeFakeWriter();
-    let store!: ContestantUserDataState;
+    let store!: EntityUserDataState;
     cleanup = $effect.root(() => {
-      store = contestantUserDataState({
+      store = entityUserDataState({
         answersLocked: () => false,
         dataWriter: () => fake.writer,
         locale: () => 'fi'
@@ -456,7 +456,7 @@ describe('contestantUserDataState, an entity of either served type', () => {
   });
 });
 
-describe('contestantUserDataState, a draft for each entity', () => {
+describe('entityUserDataState, a draft for each entity', () => {
   const CANDIDATE_A = { type: 'candidate', id: 'cand-1' } as const;
   const ORGANIZATION_B = { type: 'organization', id: 'org-1' } as const;
   const KEY_A = editedAnswersKey(CANDIDATE_A, USER_A);
@@ -480,10 +480,10 @@ describe('contestantUserDataState, a draft for each entity', () => {
    */
   function setup({ answersLocked = () => false }: { answersLocked?: () => boolean } = {}) {
     const fake = makeFakeWriter();
-    let store!: ContestantUserDataState;
+    let store!: EntityUserDataState;
     cleanups.push(
       $effect.root(() => {
-        store = contestantUserDataState({
+        store = entityUserDataState({
           answersLocked,
           dataWriter: () => fake.writer,
           locale: () => 'en'
@@ -870,7 +870,7 @@ describe('contestantUserDataState, a draft for each entity', () => {
 
   it("a reload still in flight when B is loaded does not store A's data over B's", async () => {
     const { store, getEntityUserData } = setup();
-    const reloadCall = deferred<ContestantUserData<true>>();
+    const reloadCall = deferred<EntityUserData<true>>();
     getEntityUserData.mockImplementationOnce(() => reloadCall.promise);
 
     store.init(makeUserData(), USER_A);
@@ -888,7 +888,7 @@ describe('contestantUserDataState, a draft for each entity', () => {
   });
 });
 
-describe('contestantUserDataState, staged properties', () => {
+describe('entityUserDataState, staged properties', () => {
   const KEY_ORGANIZATION = editedAnswersKey({ type: 'organization', id: 'org-1' }, USER_A);
 
   let cleanups: Array<() => void> = [];
@@ -910,12 +910,12 @@ describe('contestantUserDataState, staged properties', () => {
   function setup({
     userData,
     answersLocked = () => false
-  }: { userData?: ContestantUserData<true>; answersLocked?: () => boolean } = {}) {
+  }: { userData?: EntityUserData<true>; answersLocked?: () => boolean } = {}) {
     const fake = makeFakeWriter();
-    let store!: ContestantUserDataState;
+    let store!: EntityUserDataState;
     cleanups.push(
       $effect.root(() => {
-        store = contestantUserDataState({
+        store = entityUserDataState({
           answersLocked,
           dataWriter: () => fake.writer,
           locale: () => 'fi'
@@ -930,7 +930,7 @@ describe('contestantUserDataState, staged properties', () => {
   /**
    * An organization stored with a name in two locales, a short name and a pair of colours.
    */
-  function makeStyledOrganization(): ContestantUserData<true> {
+  function makeStyledOrganization(): EntityUserData<true> {
     return makeOrganizationUserData(
       { shortName: 'ORG', color: { normal: '#2546A8', dark: '#ffffff' } },
       { name: { en: 'Org', fi: 'Järjestö' }, shortName: { en: 'ORG' } }
@@ -1216,7 +1216,7 @@ describe('contestantUserDataState, staged properties', () => {
   /**
    * Stage one of each property an organization has, with an answer.
    */
-  function stageEverything(store: ContestantUserDataState): void {
+  function stageEverything(store: EntityUserDataState): void {
     store.setAnswer('q1', { value: 3 });
     store.setProperty('organization', 'name', { en: 'New' });
     store.setProperty('organization', 'shortName', { en: 'NEW' });
