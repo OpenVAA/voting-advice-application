@@ -50,42 +50,6 @@ export interface WriterOptions {
   allowRemote?: boolean;
 }
 
-/**
- * What every question reference of an `app_settings` row stands for while the row is parsed before the first write: the questions have no ids yet, and the schema reads a question reference as any string.
- */
-const QUESTION_ID_PLACEHOLDER = '00000000-0000-0000-0000-000000000000';
-
-/**
- * A question external id → id map that answers {@link QUESTION_ID_PLACEHOLDER} for every external id, so that a row's question references can be resolved before any question is written.
- */
-class PlaceholderQuestionIds extends Map<string, string> {
-  override get(): string {
-    return QUESTION_ID_PLACEHOLDER;
-  }
-}
-
-/**
- * The message a refused `app_settings` row fails the write with: the template, the row and every refused path with the schema's reason.
- *
- * @param templateName - the template's name or path, when the caller gave it.
- * @param row - the refused row.
- * @param issues - the schema's issues for the row.
- * @returns the message.
- */
-function settingsRefusal(
-  templateName: string | undefined,
-  row: Record<string, unknown>,
-  issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }>
-): string {
-  const template = templateName ? `Template '${templateName}'` : 'The template';
-  const rowName = typeof row.external_id === 'string' ? ` '${row.external_id}'` : '';
-  const refused = issues.map((issue) => `${issue.path.map(String).join('.') || '(root)'}: ${issue.message}`).join('; ');
-  return (
-    `${template} writes app_settings row${rowName} with settings the shared StoredSettingsSchema refuses, ` +
-    `so nothing was written: ${refused}. Correct the template; the application reads the stored settings with this schema.`
-  );
-}
-
 export class Writer {
   private client: SupabaseAdminClient;
   private logger: (msg: string) => void;
@@ -176,7 +140,7 @@ export class Writer {
       const settings = row.settings;
       if (!settings || typeof settings !== 'object' || Array.isArray(settings)) continue;
       const parsed = StoredSettingsSchema.safeParse(
-        resolveAppSettingsExternalIds(settings as Record<string, unknown>, new PlaceholderQuestionIds())
+        resolveAppSettingsExternalIds(settings as Record<string, unknown>, { get: () => QUESTION_ID_PLACEHOLDER })
       );
       if (!parsed.success) throw new Error(settingsRefusal(options.templateName, row, parsed.error.issues));
     }
@@ -302,4 +266,31 @@ export class Writer {
     }
     return uploaded;
   }
+}
+
+/**
+ * What every question reference of an `app_settings` row stands for while the row is parsed before the first write: the questions have no ids yet, and the schema reads a question reference as any string.
+ */
+const QUESTION_ID_PLACEHOLDER = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * The message a refused `app_settings` row fails the write with: the template, the row and every refused path with the schema's reason.
+ *
+ * @param templateName - the template's name or path, when the caller gave it.
+ * @param row - the refused row.
+ * @param issues - the schema's issues for the row.
+ * @returns the message.
+ */
+function settingsRefusal(
+  templateName: string | undefined,
+  row: Record<string, unknown>,
+  issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }>
+): string {
+  const template = templateName ? `Template '${templateName}'` : 'The template';
+  const rowName = typeof row.external_id === 'string' ? ` '${row.external_id}'` : '';
+  const refused = issues.map((issue) => `${issue.path.map(String).join('.') || '(root)'}: ${issue.message}`).join('; ');
+  return (
+    `${template} writes app_settings row${rowName} with settings the shared StoredSettingsSchema refuses, ` +
+    `so nothing was written: ${refused}. Correct the template; the application reads the stored settings with this schema.`
+  );
 }
