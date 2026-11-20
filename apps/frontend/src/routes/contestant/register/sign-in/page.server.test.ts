@@ -25,6 +25,7 @@ const {
   createDataWriter,
   createSupabaseAnonClient,
   getAppSettings,
+  getProjectGrants,
   invitationCodeLogin,
   signInWithInvitationCode,
   withdrawLogoutCount
@@ -34,6 +35,7 @@ const {
   createDataWriter: vi.fn(),
   createSupabaseAnonClient: vi.fn(),
   getAppSettings: vi.fn(),
+  getProjectGrants: vi.fn(),
   invitationCodeLogin: vi.fn(),
   signInWithInvitationCode: vi.fn(),
   withdrawLogoutCount: vi.fn()
@@ -81,6 +83,7 @@ type HandedOver = {
     auth: unknown;
     getSession: unknown;
     claimInvitations: () => Promise<unknown>;
+    getProjectGrants: () => Promise<unknown>;
     signInWithInvitationCode: (credentials: { code: string; password: string }) => Promise<boolean>;
   };
   code: unknown;
@@ -144,7 +147,8 @@ beforeEach(() => {
   createDataProvider.mockReturnValue({ getAppSettings });
   getAppSettings.mockResolvedValue(settingsFor(['code']));
   invitationCodeLogin.mockResolvedValue({ ok: true });
-  createDataWriter.mockReturnValue({ claimInvitations, signInWithInvitationCode });
+  createDataWriter.mockReturnValue({ claimInvitations, getProjectGrants, signInWithInvitationCode });
+  getProjectGrants.mockResolvedValue([]);
   claimInvitations.mockResolvedValue({ claimed: [], skipped: [], passwordSet: true });
   signInWithInvitationCode.mockResolvedValue({ type: 'success' });
 });
@@ -294,6 +298,16 @@ describe('the one call of the code sign-in helper', () => {
     await context.claimInvitations();
     expect(createDataWriter, 'one writer serves the sign-in and the claim').toHaveBeenCalledTimes(1);
     expect(claimInvitations).toHaveBeenCalledTimes(1);
+  });
+
+  it('hands over a read of the grants that reach this project, on the same writer as the code sign-in', async () => {
+    const event = makeEvent();
+    await signIn(event).catch(() => undefined);
+    const { context } = handedOver();
+    await context.signInWithInvitationCode({ code: 'c', password: 'p' });
+    await context.getProjectGrants();
+    expect(createDataWriter, 'one writer serves the sign-in and the read of the grants').toHaveBeenCalledTimes(1);
+    expect(getProjectGrants).toHaveBeenCalledTimes(1);
   });
 
   it('is made before a writer is built or anything is asked of the session', async () => {

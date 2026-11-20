@@ -16,9 +16,10 @@ import { CONTESTANT_GRANTS } from '$lib/auth';
 import { buildRoute } from '$lib/routes';
 import { actions } from './+page.server';
 
-const { claimInvitations, createDataWriter, passwordLogin, withdrawLogoutCount } = vi.hoisted(() => ({
+const { claimInvitations, createDataWriter, getProjectGrants, passwordLogin, withdrawLogoutCount } = vi.hoisted(() => ({
   claimInvitations: vi.fn(),
   createDataWriter: vi.fn(),
+  getProjectGrants: vi.fn(),
   passwordLogin: vi.fn(),
   withdrawLogoutCount: vi.fn()
 }));
@@ -74,7 +75,12 @@ function makeEvent({
 
 /** What the helper was handed on its one call. */
 function handedOver(): {
-  context: { auth: unknown; getSession: unknown; claimInvitations: () => unknown };
+  context: {
+    auth: unknown;
+    getSession: unknown;
+    claimInvitations: () => unknown;
+    getProjectGrants: () => unknown;
+  };
   email: unknown;
   password: unknown;
   allowedGrants: unknown;
@@ -86,8 +92,9 @@ function handedOver(): {
 
 beforeEach(() => {
   passwordLogin.mockResolvedValue({ ok: true });
-  createDataWriter.mockReturnValue({ claimInvitations });
+  createDataWriter.mockReturnValue({ claimInvitations, getProjectGrants });
   claimInvitations.mockResolvedValue({ claimed: [], skipped: [] });
+  getProjectGrants.mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -126,6 +133,16 @@ describe('the one call of the sign-in helper', () => {
     expect(createDataWriter).toHaveBeenCalledTimes(1);
     expect(createDataWriter).toHaveBeenCalledWith({ fetch: event.fetch, locals: event.locals });
     expect(claimInvitations).toHaveBeenCalledTimes(1);
+  });
+
+  it('hands over a read of the grants that reach this project, on the same writer as the claim', async () => {
+    const event = makeEvent();
+    await signIn(event).catch(() => undefined);
+    const { context } = handedOver();
+    await context.claimInvitations();
+    await context.getProjectGrants();
+    expect(createDataWriter, 'one writer serves the claim and the read of the grants').toHaveBeenCalledTimes(1);
+    expect(getProjectGrants).toHaveBeenCalledTimes(1);
   });
 
   it('is made before anything else is asked of the request', async () => {
