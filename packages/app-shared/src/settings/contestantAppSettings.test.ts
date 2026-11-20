@@ -1,11 +1,16 @@
 import { describe, expect, test } from 'vitest';
 import {
   canonicalMembersOf,
+  CONTESTANT_EDITING,
+  CONTESTANT_EDITING_VALUES,
   getContestantAppNameKey,
+  getContestantEditing,
   getEffectiveRegistrationModes,
   getServedEntityTypes,
   isRegistrationModeAllowed,
   isRegistrationModeAllowedForAnyType,
+  isRegistrationModeServed,
+  isRegistrationModeServedForAnyType,
   REGISTRATION_MODE,
   REGISTRATION_MODES,
   SERVED_ENTITY_TYPES
@@ -113,6 +118,31 @@ describe('getEffectiveRegistrationModes', () => {
   });
 });
 
+describe('isRegistrationModeServed', () => {
+  test('answers from the served rows alone, whatever contestant editing is', () => {
+    const contestantApp = { servedEntityTypes: { candidate: { registrationModes: ['email'] } } } as const;
+    for (const contestantEditing of CONTESTANT_EDITING_VALUES) {
+      const input = { access: { contestantEditing }, contestantApp } satisfies ContestantAppSettingsInput;
+      expect(isRegistrationModeServed(input, 'candidate', REGISTRATION_MODE.Email)).toBe(true);
+      expect(isRegistrationModeServed(input, 'candidate', REGISTRATION_MODE.Code)).toBe(false);
+      expect(isRegistrationModeServed(input, 'organization', REGISTRATION_MODE.Email)).toBe(false);
+    }
+  });
+});
+
+describe('isRegistrationModeServedForAnyType', () => {
+  test('is true while contestant editing is locked when one served row lists the mode, and false when none does', () => {
+    const input = {
+      access: { contestantEditing: 'locked' },
+      contestantApp: {
+        servedEntityTypes: { candidate: { registrationModes: [] }, organization: { registrationModes: ['code'] } }
+      }
+    } satisfies ContestantAppSettingsInput;
+    expect(isRegistrationModeServedForAnyType(input, 'code')).toBe(true);
+    expect(isRegistrationModeServedForAnyType(input, 'email')).toBe(false);
+  });
+});
+
 describe('isRegistrationModeAllowed', () => {
   test('is true when the type is served and its row lists the mode', () => {
     const input = {
@@ -132,6 +162,39 @@ describe('isRegistrationModeAllowed', () => {
   test('is false for every cell when nothing is declared', () => {
     for (const type of SERVED_ENTITY_TYPES)
       for (const mode of REGISTRATION_MODES) expect(isRegistrationModeAllowed({}, type, mode)).toBe(false);
+  });
+
+  test('is false for every cell while contestant editing is locked, and unchanged while only nominations are', () => {
+    const served = {
+      candidate: { registrationModes: [...REGISTRATION_MODES] },
+      organization: { registrationModes: [...REGISTRATION_MODES] }
+    };
+    function settings(contestantEditing: (typeof CONTESTANT_EDITING_VALUES)[number]): ContestantAppSettingsInput {
+      return { access: { contestantEditing }, contestantApp: { servedEntityTypes: served } };
+    }
+    for (const type of SERVED_ENTITY_TYPES)
+      for (const mode of REGISTRATION_MODES) {
+        expect(isRegistrationModeAllowed(settings(CONTESTANT_EDITING.Locked), type, mode)).toBe(false);
+        expect(isRegistrationModeAllowed(settings(CONTESTANT_EDITING.NominationsLocked), type, mode)).toBe(true);
+        expect(isRegistrationModeAllowed(settings(CONTESTANT_EDITING.Open), type, mode)).toBe(true);
+      }
+  });
+});
+
+describe('getContestantEditing', () => {
+  test('is the stored value', () => {
+    for (const value of CONTESTANT_EDITING_VALUES)
+      expect(getContestantEditing({ access: { contestantEditing: value } })).toBe(value);
+  });
+
+  test('is `open` when nothing is stored', () => {
+    expect(getContestantEditing({})).toBe(CONTESTANT_EDITING.Open);
+    expect(getContestantEditing({ access: null })).toBe(CONTESTANT_EDITING.Open);
+    expect(getContestantEditing(undefined)).toBe(CONTESTANT_EDITING.Open);
+  });
+
+  test('is `open` in the shipped defaults', () => {
+    expect(getContestantEditing(dynamicSettings)).toBe(CONTESTANT_EDITING.Open);
   });
 });
 
@@ -153,6 +216,18 @@ describe('isRegistrationModeAllowedForAnyType', () => {
     expect(
       isRegistrationModeAllowedForAnyType(
         { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['email'] } } } },
+        'code'
+      )
+    ).toBe(false);
+  });
+
+  test('is false while contestant editing is locked', () => {
+    expect(
+      isRegistrationModeAllowedForAnyType(
+        {
+          access: { contestantEditing: 'locked' },
+          contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['code'] } } }
+        },
         'code'
       )
     ).toBe(false);

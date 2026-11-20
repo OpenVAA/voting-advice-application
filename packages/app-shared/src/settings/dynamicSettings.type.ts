@@ -1,7 +1,7 @@
 import type { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 import type { LocalizedString } from '../data/localized.type';
-import type { RegistrationMode, ServedEntityType } from './contestantAppSettings';
+import type { ContestantEditing, RegistrationMode, ServedEntityType } from './contestantAppSettings';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
@@ -279,7 +279,7 @@ export type DynamicSettings = {
    */
   access: {
     /**
-     * If `true`, the Contestant App can be accessed.
+     * If `true`, the Contestant App can be accessed. While it is `false`, entity invitations are not honoured and the identity provider registers no one.
      */
     contestantApp: boolean;
     /**
@@ -295,13 +295,10 @@ export type DynamicSettings = {
      */
     underMaintenance?: boolean;
     /**
-     * If `true`, an entity's own users, of every served entity type, can change nothing of the entity: its answers, profile, images and nominations. Project editors and admins still can.
+     * How far an entity's own users may edit the entity: `open`, everything; `nominationsLocked`, everything but its nominations; `locked`, nothing of it (its answers, profile, images and nominations), and no contestant may register. Project editors and admins are bound by none of these. The database enforces the value from this same stored key, so the app only reads it to say so.
+     * @default 'open'
      */
-    answersLocked?: boolean;
-    /**
-     * If `true`, an entity's own users can no longer add or change that entity's nominations, and nothing else is barred. `answersLocked` implies this lock. Project editors and admins are not barred. The database enforces the lock from this same stored key, so the app only reads it to say so.
-     */
-    nominationsLocked?: boolean;
+    contestantEditing?: ContestantEditing;
   };
   /**
    * Settings related to important notifications shown to users.
