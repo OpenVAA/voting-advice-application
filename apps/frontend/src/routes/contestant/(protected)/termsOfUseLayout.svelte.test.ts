@@ -176,6 +176,13 @@ async function acceptAndSubmit(target: HTMLElement): Promise<void> {
   await settle();
 }
 
+/** The text of an element as a screen reader reads it: without its `aria-hidden` parts. */
+function textReadOut(element: Element): string {
+  const copy = element.cloneNode(true) as Element;
+  copy.querySelectorAll('[aria-hidden="true"]').forEach((hidden) => hidden.remove());
+  return copy.textContent?.trim() ?? '';
+}
+
 describe('contestant protected layout — a gated load', () => {
   it('renders the terms-of-use gate with the box unticked and Continue disabled until it is ticked', () => {
     const target = render(gatedData());
@@ -213,7 +220,7 @@ describe('contestant protected layout — accepting the terms of use', () => {
     expect(acceptTermsOfUse).toHaveBeenCalledTimes(1);
     const alert = target.querySelector('[data-testid="tou-save-error"]');
     expect(alert, 'a failed acceptance must surface the save-failed message').not.toBeNull();
-    expect(alert?.textContent?.trim()).toBe('contestantApp.error.saveFailed');
+    expect(alert && textReadOut(alert)).toBe('contestantApp.error.saveFailed');
     expect(alert?.getAttribute('role')).toBe('alert');
     expect(target.querySelector('[data-testid="terms-of-use-submit"]')).not.toBeNull();
     expect(invalidateAll).not.toHaveBeenCalled();
