@@ -11,6 +11,7 @@
  *   - `createServiceRoleClient(url, key, options?)` — the one guarded supabase-js service-role client construction; refuses a non-local host unless opted out. The `SupabaseAdminClient` constructor and the E2E specs that need a raw client use it.
  *   - `TEST_PROJECT_ID` — bootstrap project UUID from seed.sql.
  *   - `E2E_PROJECT_ID` — the fixed project the E2E suite owns; deliberately not the bootstrap project.
+ *   - `E2E_ACCOUNT_ID` — the account the E2E project belongs to, apart from the default account.
  *   - `resolveE2eProjectId()` — reads the `E2E_PROJECT_ID` override, falling back to that constant; throws on a value colliding with the bootstrap project or on a non-canonical uuid.
  *   - `buildCtx(template)` — fresh ctx factory with seeded faker.
  *   - `validateTemplate(input)` — zod v4 validator with field-path errors.
@@ -80,6 +81,7 @@ export { runPipeline, TOPO_ORDER } from './pipeline';
 export { resolveAppSettingsExternalIds, settingsContainsExternalIdRefs } from './resolveAppSettingsExternalIds';
 export {
   createServiceRoleClient,
+  E2E_ACCOUNT_ID,
   E2E_PROJECT_ID,
   resolveE2eProjectId,
   SupabaseAdminClient,

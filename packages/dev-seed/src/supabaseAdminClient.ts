@@ -38,13 +38,20 @@ export const TEST_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
  */
 export const E2E_PROJECT_ID = '00000000-0000-0000-0000-0000000000e2';
 
+/**
+ * The account the E2E project belongs to.
+ *
+ * Distinct from the default account for the reason {@link E2E_PROJECT_ID} is distinct from the default project: an account grant the suite writes on its project's account must not reach the default project. {@link SupabaseAdminClient.ensureProject} creates the row and attaches the E2E project to it.
+ */
+export const E2E_ACCOUNT_ID = '00000000-0000-0000-0000-0000000000e2';
+
 /** Canonical 8-4-4-4-12 lower-case hexadecimal uuid. */
 const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /**
- * The account row every project created by {@link SupabaseAdminClient.ensureProject} is attached to.
+ * The account row every project created by {@link SupabaseAdminClient.ensureProject} is attached to, except the E2E project, which belongs to {@link E2E_ACCOUNT_ID}.
  *
- * `seed.sql` inserts it unconditionally, so it is present in any database migrations have run against, and reusing it is what keeps project creation from needing an account-creation path.
+ * `seed.sql` inserts it unconditionally, so it is present in any database migrations have run against.
  */
 const DEFAULT_ACCOUNT_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -294,6 +301,28 @@ const LINK_LOOKUP_ERRORS: Record<JsonbRefTable, (id: string, m: string) => strin
   constituencies: (id, m) => `linkQuestionScopes: failed to find constituency ${id}: ${m}`
 };
 
+/** A table {@link SupabaseAdminClient.resolveExternalId} reads a row id from. */
+type ExternalIdTable = JsonbRefTable | 'candidates' | 'organizations';
+
+/**
+ * The failure message of an `external_id` lookup: prefixed by the caller when one is named, else the table's `LINK_LOOKUP_ERRORS` message.
+ */
+function lookupErrorMessage({
+  table,
+  externalId,
+  caller,
+  message
+}: {
+  table: ExternalIdTable;
+  externalId: string;
+  caller?: string;
+  message: string;
+}): string {
+  if (caller !== undefined) return `${caller}: failed to find ${table} row ${externalId}: ${message}`;
+  if (table === 'elections' || table === 'constituencies') return LINK_LOOKUP_ERRORS[table](externalId, message);
+  return `resolveExternalId: failed to find ${table} row ${externalId}: ${message}`;
+}
+
 /**
  * Build a supabase-js client with the service-role key, behind the locality guard.
  *
@@ -355,17 +384,13 @@ export class SupabaseAdminClient {
    * @throws Error if the RPC call fails
    */
   async bulkImport(data: Record<string, Array<unknown>>): Promise<Record<string, unknown>> {
-    // Non-column fields to strip (handled separately). `NON_COLUMN_FIELDS` and `COLLECTION_NON_COLUMNS` were declared inline here; they now live in `./template/permittedKeys` with the same contents and a one-line reason beside each entry, so the strip decision and the permission decision are one declaration. The stripping behaviour below is unchanged.
+    // `NON_COLUMN_FIELDS` and `COLLECTION_NON_COLUMNS` (`./template/permittedKeys`) declare what is stripped, beside the permission decision.
     //
     // ⚠ `elections.constituencyGroups` / `.constituency_groups` and `constituency_groups.constituencies` are stripped here, but `LINK_SENTINELS` is the authority for whether they are PERMITTED. See the note on `COLLECTION_NON_COLUMN_LIST` in `./template/permittedKeys`.
     //
     // An election's constituency groups and a constituency group's constituencies, under any key form `LINK_SENTINELS` accepts, are sent as the item's `bulk_import` link key (`importLinkFor`), so `bulk_import` writes both join tables before it writes a nomination.
 
-    // The four ENTITY tables plus `nominations`, all of which carry `confirmed boolean NOT NULL DEFAULT false`. Every entity and every nomination is visible today, so a seeded row has to carry the confirmed value or it vanishes from the voter app the moment 162-08 makes the column a term of public read. An explicit value from a template is honoured exactly as the publication default honours one, so a template can still seed an unconfirmed row as a negative control.
-    //
-    // ⚠ `nominations` JOINED THIS SET IN 162-12, AND ITS DEFAULT IS THE OPPOSITE OF THE OLD BEHAVIOUR. The column was `unconfirmed boolean DEFAULT false`, so every seeded nomination was EFFECTIVELY CONFIRMED without saying so; D-11c flips it to `confirmed boolean NOT NULL DEFAULT false`, so a seeded nomination that says nothing is now INVISIBLE to the voter application. This one line is what keeps that from happening, and it is the reason no template file was edited: thirty templates would each have grown a line the next new template would forget. The property is asserted over a real rebuilt database in both directions -- more than 250 rows seeded, zero unconfirmed -- and was observed RED against the commit that flipped the column before this line was added.
-    //
-    // ⚠ DECLARED AS ITS OWN SET, and as of 162-16 it is the only such set. It once sat beside a sibling set of ten tables that stamped the retired per-row publication column, and the two were kept apart deliberately: a single set governing two columns would have silently written `confirmed` onto six tables that do not have it. That sibling went with its column; this one is the replacement and stands alone.
+    // The four entity tables and `nominations` carry `confirmed boolean NOT NULL DEFAULT false`, and `confirmed` is a term of public read, so a seeded row that states nothing is given `confirmed: true`; an explicit value from a template is kept, so a template can seed an unconfirmed control.
     //
     // For `candidates`, as for the other three entity tables, this default is the whole entity-side condition of public read: a row that is confirmed, reached by a confirmed nomination and in a project open for voters is visible to the voter app's anon client. A template that must keep an entity hidden states `confirmed: false` on the row, as `e2e/base` does for its `ca-aa-hidden` and `ca-aa-unregistered` controls.
     //
@@ -612,19 +637,20 @@ export class SupabaseAdminClient {
   /**
    * Resolve one `external_id` to its row UUID within this project.
    *
-   * @param table - The table to look in; also selects the failure message.
+   * @param table - The table to look in.
    * @param externalId - The `external_id` to resolve.
+   * @param caller - Name of the public method making the call; it prefixes the error text. Without one, a scoping-link table's error is its greppable `LINK_LOOKUP_ERRORS` message.
    * @returns The row's UUID.
-   * @throws Error if the lookup fails, with the greppable message verbatim.
+   * @throws Error if the lookup fails.
    */
-  private async resolveExternalId(table: JsonbRefTable, externalId: string): Promise<string> {
+  protected async resolveExternalId(table: ExternalIdTable, externalId: string, caller?: string): Promise<string> {
     const { data: row, error } = await this.client
       .from(table)
       .select('id')
       .eq('external_id', externalId)
       .eq('project_id', this.projectId)
       .single();
-    if (error) throw new Error(LINK_LOOKUP_ERRORS[table](externalId, error.message));
+    if (error) throw new Error(lookupErrorMessage({ table, externalId, caller, message: error.message }));
     return row.id;
   }
 
@@ -669,24 +695,34 @@ export class SupabaseAdminClient {
    *
    * Order matters: `app_settings.project_id` is a foreign key to `public.projects`, so the project row is written first.
    *
-   * No `accounts` row is created. `seed.sql` inserts the default account unconditionally, and this attaches to it.
+   * A project is attached to the default account, which `seed.sql` inserts unconditionally, except {@link E2E_PROJECT_ID}: that project is attached to {@link E2E_ACCOUNT_ID}, whose `accounts` row this creates, so an account grant on the suite's account stops at the suite's project. The attachment is written by an unconditional update as well, so an E2E project created on the default account is moved to its own.
    *
    * @param projectId - The project to ensure. Defaults to this client's configured project.
    * @throws Error if either write fails, naming which of the two it was.
    */
   async ensureProject(projectId?: string): Promise<void> {
     const id = projectId ?? this.projectId;
+    const accountId = id === E2E_PROJECT_ID ? E2E_ACCOUNT_ID : DEFAULT_ACCOUNT_ID;
+
+    if (accountId === E2E_ACCOUNT_ID) await this.ensureE2eAccount(id);
 
     const { error: projectError } = await this.client.from('projects').upsert(
       {
         id,
-        account_id: DEFAULT_ACCOUNT_ID,
+        account_id: accountId,
         name: `Project ${id}`,
         default_locale: 'en'
       },
       { onConflict: 'id', ignoreDuplicates: true }
     );
     if (projectError) throw new Error(`ensureProject: failed to upsert the projects row: ${projectError.message}`);
+
+    if (accountId === E2E_ACCOUNT_ID) {
+      const { error: accountError } = await this.client.from('projects').update({ account_id: accountId }).eq('id', id);
+      if (accountError) {
+        throw new Error(`ensureProject: failed to attach the project to its account: ${accountError.message}`);
+      }
+    }
 
     // Open the project to voters, as a SEPARATE unconditional update rather than as a column on the upsert above.
     //
@@ -704,6 +740,19 @@ export class SupabaseAdminClient {
     if (settingsError) {
       throw new Error(`ensureProject: failed to upsert the app_settings row: ${settingsError.message}`);
     }
+  }
+
+  /**
+   * Create the E2E account's `accounts` row if it is not already there.
+   *
+   * @param projectId - The project being ensured; it names the failure.
+   * @throws Error if the write fails.
+   */
+  private async ensureE2eAccount(projectId: string): Promise<void> {
+    const { error } = await this.client
+      .from('accounts')
+      .upsert({ id: E2E_ACCOUNT_ID, name: 'E2E Account' }, { onConflict: 'id', ignoreDuplicates: true });
+    if (error) throw new Error(`ensureProject: failed to upsert the accounts row of ${projectId}: ${error.message}`);
   }
 
   /**

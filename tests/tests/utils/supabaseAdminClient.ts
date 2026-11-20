@@ -781,30 +781,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       ? ENTITY_GRANT_TABLES[target.entityType]
       : undefined;
     if (!table) throw new Error(`${caller}: entity type '${target.entityType}' cannot be granted to an editor`);
-    return this.rowIdByExternalId(table, target.externalId, caller);
-  }
-
-  /**
-   * The id of an election, a constituency, a candidate or an organization of this client's project, by its `external_id`.
-   *
-   * @param table - The table the row is read from.
-   * @param externalId - The row's `external_id`.
-   * @param caller - Name of the public method making the call; it prefixes the error text.
-   * @throws Error if no such row exists in this project.
-   */
-  private async rowIdByExternalId(
-    table: 'elections' | 'constituencies' | 'candidates' | 'organizations',
-    externalId: string,
-    caller: string
-  ): Promise<string> {
-    const { data: row, error } = await this.client
-      .from(table)
-      .select('id')
-      .eq('external_id', externalId)
-      .eq('project_id', this.projectId)
-      .single();
-    if (error) throw new Error(`${caller}: failed to find ${table} row ${externalId}: ${error.message}`);
-    return row.id as string;
+    return this.resolveExternalId(table, target.externalId, caller);
   }
 
   /**
@@ -836,11 +813,11 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }): Promise<InvitationNominationSeed> {
     const caller = 'invitationNomination';
     const [electionId, constituencyId, parentId] = await Promise.all([
-      this.rowIdByExternalId('elections', election, caller),
-      this.rowIdByExternalId('constituencies', constituency, caller),
+      this.resolveExternalId('elections', election, caller),
+      this.resolveExternalId('constituencies', constituency, caller),
       parentOrganization === undefined
         ? Promise.resolve(undefined)
-        : this.rowIdByExternalId('organizations', parentOrganization, caller)
+        : this.resolveExternalId('organizations', parentOrganization, caller)
     ]);
     return {
       election_id: electionId,
