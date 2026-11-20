@@ -25,13 +25,13 @@
 # The script automatically:
 #   1. Neutralises the environment -- unsets the three EPERM07_ forcing knobs and CI -- and records the resulting retry/worker posture as evidence
 #   2. Records provenance: UTC start timestamp, git HEAD, working-tree cleanliness
-#   3. Holds a sleep assertion for the life of the run where `caffeinate` exists (macOS), so that an idle host is not put to sleep under the suite, and records in env-posture.txt whether it does. Then starts the host-suspend heartbeat: a background loop that sleeps a fixed interval and compares the wall-clock time that passed with that interval. A process that is not scheduled does not see time pass, so a gap far beyond the interval means the host was suspended (a laptop asleep, a paused virtual machine), and every deadline Playwright measures on the wall clock has been running through it. On such a gap the run ends as VOID: the marker file VOID-host-suspend.txt is written into the run directory, Playwright is stopped through the teardown of step 9, and the wrapper exits 8. Every beat is recorded in heartbeat.log, one line each: the wall clock in epoch milliseconds, then the milliseconds by which the beat was late. Beside it a second background loop records the host's state into host-state.log every HOST_STATE_INTERVAL_S seconds until the end of teardown: the load averages, the memory the kernel counts as available, the swap in use and the processes using the most CPU. It is a record only and decides nothing
+#   3. Holds a sleep assertion for the life of the run where `caffeinate` exists (macOS), so that an idle host is not put to sleep under the suite, and records in env-posture.txt whether it does. Then starts the host-suspend heartbeat: a background loop that sleeps a fixed interval and compares the wall-clock time that passed with that interval. A process that is not scheduled does not see time pass, so a gap far beyond the interval means the host was suspended (a laptop asleep, a paused virtual machine), and every deadline Playwright measures on the wall clock has been running through it. On such a gap the run ends as VOID: the marker file VOID-host-suspend.txt is written into the run directory, Playwright is stopped through the teardown of step 9, and the wrapper exits 8. Every beat is recorded in heartbeat.log, one line each: the wall clock in epoch milliseconds, then the milliseconds by which the beat was late. The host's load averages and the processes using the most CPU are recorded in env-posture.txt at the start of the run and again at the start of teardown, and copied into the void marker beside the macOS sleep log of the gap; they decide nothing
 #   4. Prepares the database: `yarn db:reset` (which starts Supabase first) -- unless --no-db-reset is given, in which case it only runs `yarn db:start` and leaves the existing data in place. The command's output lands in the run directory as db-reset.log or db-start.log, without the stack's status and so without its keys
 #   5. POLLS REST + Storage for readiness and asserts the `public-assets` bucket is listed -- `db:status` passing is NOT readiness -- then prepares the identity provider's test environment, starts the mock OIDC issuer and serves `identity-callback` with that environment (see "The identity provider's environment" below)
 #   6. ASSERTS $FRONTEND_PORT has no listener, then spawns the frontend dev server -- root `yarn dev` without its `yarn db:start`, so the stack's status and keys are never printed into the log -- with its stdout+stderr redirected into the run directory as devserver.log, and waits for the port to accept connections. It refuses to adopt a foreign listener, and at teardown it kills only processes in its own spawned process group. The dev server is given the identity provider's test environment and trusts the mock issuer's committed certificate through NODE_EXTRA_CA_CERTS
 #   7. Runs Playwright, in a process group of its own, with per-run JSON and HTML reporter output
 #   8. Captures the served-application preflight verdict by counting its fixed failure headline in the captured stdout
-#   9. Tears down FROM A TRAP: stops the heartbeat, stops Playwright if it is still running, tears the dev server down, asserts the port has no listener, stops the function server, the JWKS server and the mock issuer, restores the shared stack's edge runtime, stops the host-state recorder and releases the sleep assertion
+#   9. Tears down FROM A TRAP: stops the heartbeat, stops Playwright if it is still running, tears the dev server down, asserts the port has no listener, stops the function server, the JWKS server and the mock issuer, restores the shared stack's edge runtime, and releases the sleep assertion
 #   10. Records the UTC end timestamp and the wrapper's own exit status (wrapper-exit)
 #
 # The identity provider's environment, described in full in tests/README.md § The identity provider's environment. From the committed test keys and the mock issuer's constants, every run prepares, outside the repository, the Edge file, the dev server's environment and the JWKS document; the Edge file's PUBLIC_PROJECT_ID is the one `send-email` reads.
@@ -53,7 +53,7 @@
 #   5    the dev server never started listening, or the port was already occupied before the spawn (this wrapper SPAWNS AND OWNS its server; adopting a foreign one is not evidence).
 #   6    the run produced one or more preflight failures, or produced no preflight SUCCESS line at all (an unconfirmed run is not evidence either way).
 #   7    the wrapper's preflight literals do not match tests/tests/support/preflight.ts, so its preflight verdict cannot be trusted.
-#   8    the run is VOID: the host was suspended while it ran. Neither a pass nor a test failure, whatever Playwright had reported by then, and it overrides every other status in this table. The run directory holds VOID-host-suspend.txt, which records the gap; the run is made again under a new run directory, not diagnosed.
+#   8    the run is VOID: the wrapper was not scheduled for SUSPEND_THRESHOLD_MS or more while it ran, as a rule because the host was suspended. Neither a pass nor a test failure, whatever Playwright had reported by then, and it overrides every other status in this table. The run directory holds VOID-host-suspend.txt, which records the gap, the host's state on either side of it and, on macOS, the sleep log inside it; the run is made again under a new run directory, and its test failures are not diagnosed.
 #   9    the identity provider's environment could not be prepared -- the E2E project id did not resolve, the key server had no address to bind to, or the edge runtime did not reach it, among the rest -- or the shared stack could not be restored afterwards (restore.txt names the check that failed). It overrides 0 and 1: a run whose stack was not put back is not evidence of a green suite, and a preparation failure is not a test failure. Status 8 still overrides it.
 #   130  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: a caller counting consecutive green runs must record an abort as an abort, not as a green.
 
@@ -81,10 +81,8 @@ HEARTBEAT_INTERVAL_S=2
 SUSPEND_THRESHOLD_MS=3000
 VOID_MARKER='VOID-host-suspend.txt'
 HEARTBEAT_LOG='heartbeat.log'
-# The host-state recorder samples every HOST_STATE_INTERVAL_S seconds and lists the HOST_STATE_TOP processes using the most CPU in each sample.
-HOST_STATE_INTERVAL_S=5
-HOST_STATE_TOP=10
-HOST_STATE_LOG='host-state.log'
+# A snapshot of the host's state lists the HOST_SNAPSHOT_TOP processes using the most CPU.
+HOST_SNAPSHOT_TOP=10
 # How long Playwright gets to shut down on SIGINT -- close its browsers, write its reports -- before its process group is killed.
 PW_STOP_GRACE_S=15
 
@@ -95,7 +93,7 @@ WATCH=true
 SELF_TEST=false
 DEV_PID=""
 HEARTBEAT_PID=""
-HOST_STATE_PID=""
+HOST_AT_START=""
 SLEEP_ASSERTION_PID=""
 PW_PID=""
 TEE_PID=""
@@ -167,10 +165,12 @@ heartbeat_void_if_late() {
     return 0
   fi
   {
-    echo "VOID -- the host was suspended during this run."
-    echo "The run is evidence about the tree in neither direction. Do not diagnose it: make the run again under a new run directory."
+    echo "VOID -- the wrapper was not scheduled for $(((HB_LATE_MS + 500) / 1000)) s during this run."
+    echo "The run is evidence about the tree in neither direction: make it again under a new run directory. A suspended host is the usual cause; the host's state on either side of the gap and the sleep log inside it, appended at teardown, tell a sleep from a stall of an awake host."
     echo "last_beat_before_gap_utc=$(utc_of_ms "$HB_LAST_MS")"
     echo "first_beat_after_gap_utc=$(utc_of_ms "$HB_NOW_MS")"
+    echo "last_beat_before_gap_ms=$HB_LAST_MS"
+    echo "first_beat_after_gap_ms=$HB_NOW_MS"
     echo "gap_ms=$HB_LATE_MS"
     echo "heartbeat_interval_s=$HEARTBEAT_INTERVAL_S"
     echo "suspend_threshold_ms=$SUSPEND_THRESHOLD_MS"
@@ -212,43 +212,35 @@ suspend_heartbeat() {
   done
 }
 
-# --- host-state recorder ------------------------------------------------------------
+# --- host state ---------------------------------------------------------------------
 
-# The 1-, 5- and 15-minute load averages as `1/5/15`. Separators first, decimals second: Linux prints `load average: 1.20, 1.30, 1.40`, so the `, ` separators become spaces before any remaining comma -- a decimal comma under a comma-decimal locale, as macOS prints `1,20 1,30 1,40` -- is turned into a point.
-load_averages() {
-  uptime | sed 's/.*load averages*:[[:space:]]*//' | sed -E 's/,[[:space:]]+/ /g' | tr -s ' ' | tr ',' '.' | awk '{print $1"/"$2"/"$3}'
+# A snapshot of the host, as lines env-posture.txt and the void marker carry: `host_<label>_utc=` and `host_<label>_uptime=` (the load averages are in it), then the HOST_SNAPSHOT_TOP processes using the most CPU as `#   <%cpu> <pid> <command>` comment lines. The executable alone is listed, never its arguments, which can hold secrets of other processes on the host.
+host_snapshot() {
+  echo "host_${1}_utc=$(date -u +%FT%TZ)"
+  echo "host_${1}_uptime=$(uptime 2> /dev/null | sed 's/^ *//')"
+  echo "# host_${1}_top_cpu, as %cpu pid command:"
+  { LC_ALL=C ps -Ao pcpu=,pid=,comm= 2> /dev/null | LC_ALL=C sort -rn | head -n "$HOST_SNAPSHOT_TOP" | cut -c1-200 | sed 's/^ */#   /'; } || true
 }
 
-# The memory the kernel counts as available, in percent of the total, and the swap in use: `kern.memorystatus_level` and `vm.swapusage` on macOS, MemAvailable and SwapTotal less SwapFree from /proc/meminfo on Linux, `unknown` where neither answers.
-memory_state() {
-  local level swap
-  level="$(sysctl -n kern.memorystatus_level 2> /dev/null)"
-  swap="$(sysctl -n vm.swapusage 2> /dev/null | sed -n 's/.*used = \([^ ]*\).*/\1/p' | tr ',' '.')"
-  if [ -z "$level" ] && [ -r /proc/meminfo ]; then
-    level="$(awk '/^MemTotal:/ { t = $2 } /^MemAvailable:/ { a = $2 } END { if (t) printf "%d", a * 100 / t }' /proc/meminfo)"
-    swap="$(awk '/^SwapTotal:/ { t = $2 } /^SwapFree:/ { f = $2 } END { if (t != "") printf "%.2fM", (t - f) / 1024 }' /proc/meminfo)"
+# The sleep log's entries inside a gap, for the void marker. $1 and $2 are the gap's bounds in epoch milliseconds. On macOS, `pmset -g log` lines open with the local time and name the event in their fourth field; the Sleep and DarkWake entries between the bounds are counted and the first few listed. A host without pmset records that it keeps no log this reads.
+host_sleep_log_in_gap() {
+  if ! command -v pmset > /dev/null 2>&1; then
+    echo "host_sleep_log=none (no pmset on this host)"
+    return 0
   fi
-  echo "memory_available_pct=${level:-unknown} swap_used=${swap:-unknown}"
-}
-
-# One sample: a line `@ <epoch ms> load=<1/5/15> memory_available_pct=<n> swap_used=<size>`, then the HOST_STATE_TOP processes using the most CPU, one `<%cpu> <pid> <command>` line each, the %CPU as ps reports it. The executable alone is listed, never its arguments, which can hold secrets of other processes on the host.
-host_state_sample() {
-  echo "@ $(now_ms) load=$(load_averages) $(memory_state)"
-  LC_ALL=C ps -Ao pcpu=,pid=,comm= 2> /dev/null | LC_ALL=C sort -rn | head -n "$HOST_STATE_TOP" | cut -c1-200 | sed 's/^ */  /'
-}
-
-# The recorder loop. Run it in a background subshell: `( host_state_recorder <owner pid> <directory> ) &`. It ends on SIGTERM, which the teardown sends, or when its owner is gone. Like the heartbeat, it waits for a backgrounded sleep, so that SIGTERM ends it at once.
-host_state_recorder() {
-  set +e
-  HS_OWNER="$1"
-  HS_SLEEPER=""
-  trap 'kill "$HS_SLEEPER" 2> /dev/null; exit 0' TERM
-  while kill -0 "$HS_OWNER" 2> /dev/null; do
-    host_state_sample >> "$2/$HOST_STATE_LOG" 2> /dev/null
-    sleep "$HOST_STATE_INTERVAL_S" &
-    HS_SLEEPER=$!
-    wait "$HS_SLEEPER"
-  done
+  local from to entries
+  from="$(date -r "$(($1 / 1000))" '+%Y-%m-%d %H:%M:%S')"
+  to="$(date -r "$(($2 / 1000 + 1))" '+%Y-%m-%d %H:%M:%S')"
+  entries="$(pmset -g log 2> /dev/null | LC_ALL=C awk -v from="$from" -v to="$to" '
+    ($4 == "Sleep" || $4 == "DarkWake") { stamp = $1 " " $2; if (stamp >= from && stamp <= to) print }
+  ')"
+  echo "host_sleep_log=pmset -g log"
+  if [ -z "$entries" ]; then
+    echo "host_sleep_entries_in_gap=0"
+  else
+    echo "host_sleep_entries_in_gap=$(printf '%s\n' "$entries" | wc -l | tr -d ' ')"
+    printf '%s\n' "$entries" | head -n 20 | cut -c1-200 | sed 's/^/#   /'
+  fi
 }
 
 # --- the key server's address ------------------------------------------------------------
@@ -942,6 +934,12 @@ cleanup() {
     kill -TERM "$HEARTBEAT_PID" 2> /dev/null
     wait "$HEARTBEAT_PID" 2> /dev/null
   fi
+  # The host's state as the run ends, taken before the stack is restored, which loads the host on its own account.
+  local host_at_end=""
+  if [ -f "$RUN_DIR/env-posture.txt" ]; then
+    host_at_end="$(host_snapshot end)"
+    echo "$host_at_end" >> "$RUN_DIR/env-posture.txt"
+  fi
   # An interrupted run must NEVER report success. `$?` at trap entry is whatever the last command returned, which is routinely 0 mid-run -- so a caller looping this script would count an aborted run as a green, and a count of consecutive green runs would be silently wrong. Force the conventional 128+SIGINT status instead.
   if [ "$INTERRUPTED" = "1" ] && [ "$status" = "0" ]; then
     status=130
@@ -1033,22 +1031,26 @@ cleanup() {
   # A suspended host voids the run whatever else happened to it: the status is 8 if and only if the marker exists.
   if [ -f "$RUN_DIR/$VOID_MARKER" ]; then
     status=8
-    local gap_ms gap_from gap_until
+    local gap_ms gap_from gap_until gap_from_ms gap_until_ms
     gap_ms="$(sed -n 's/^gap_ms=//p' "$RUN_DIR/$VOID_MARKER")"
     gap_from="$(sed -n 's/^last_beat_before_gap_utc=//p' "$RUN_DIR/$VOID_MARKER")"
     gap_until="$(sed -n 's/^first_beat_after_gap_utc=//p' "$RUN_DIR/$VOID_MARKER")"
-    echo "e2e-run.sh: VOID -- the host did not run for about $(((gap_ms + 500) / 1000)) s between $gap_from and $gap_until." >&2
-    echo "            It was suspended, so this run is evidence about the tree in neither direction:" >&2
-    echo "            do not diagnose it, make it again under a new run directory." >&2
+    gap_from_ms="$(sed -n 's/^last_beat_before_gap_ms=//p' "$RUN_DIR/$VOID_MARKER")"
+    gap_until_ms="$(sed -n 's/^first_beat_after_gap_ms=//p' "$RUN_DIR/$VOID_MARKER")"
+    {
+      echo "# The host at the start of the run and at the start of teardown, then the sleep log inside the gap."
+      echo "$HOST_AT_START"
+      echo "$host_at_end"
+      host_sleep_log_in_gap "${gap_from_ms:-0}" "${gap_until_ms:-0}"
+    } >> "$RUN_DIR/$VOID_MARKER" 2> /dev/null
+    echo "e2e-run.sh: VOID -- the wrapper was not scheduled for about $(((gap_ms + 500) / 1000)) s between $gap_from and $gap_until." >&2
+    echo "            This run is evidence about the tree in neither direction: make it again under a" >&2
+    echo "            new run directory. The marker records the host's state and sleep log around the gap." >&2
     echo "            Marker: $RUN_DIR/$VOID_MARKER" >&2
     # On a GitHub Actions runner the failed step carries the name too, so the job is not read as a red tree.
     if [ -n "${GITHUB_ACTIONS:-}" ]; then
       echo "::error title=E2E run VOID (host suspended)::The runner did not run for about $(((gap_ms + 500) / 1000)) s during the E2E run. The run is void, not a test failure: re-run the job."
     fi
-  fi
-  if [ -n "$HOST_STATE_PID" ]; then
-    kill -TERM "$HOST_STATE_PID" 2> /dev/null
-    wait "$HOST_STATE_PID" 2> /dev/null
   fi
   # The assertion is released last, so that it covers the teardown too.
   if [ -n "$SLEEP_ASSERTION_PID" ]; then
@@ -1082,11 +1084,12 @@ unset EPERM07_FORCE_BUDGET_MS EPERM07_FORCE_CPU_RATE EPERM07_NO_VT || true
 # CI matters TWICE over: with it set the config buys `retries: 3` and collapses to a single worker (`retries` and `workers` in playwright.config.ts), changing both the retry posture and the contention environment the failure actually lives in. A green produced that way proves nothing, and would itself be the "retried-until-green" the cardinal rule forbids.
 unset CI || true
 
+HOST_AT_START="$(host_snapshot start)"
 {
   echo "# Environment posture for this run."
   echo "# Written BEFORE the run; the observed_* lines are appended from results.json AFTER it,"
   echo "# so the posture is auditable rather than asserted. The heartbeat_beats and"
-  echo "# heartbeat_max_late_ms lines are appended at teardown, from heartbeat.log."
+  echo "# heartbeat_max_late_ms lines and the host_end_ snapshot are appended at teardown."
   echo "ci_env=unset"
   echo "eperm07_knobs=unset"
   echo "frontend_port=$FRONTEND_PORT"
@@ -1096,10 +1099,10 @@ unset CI || true
   echo "expected_workers=6"
   echo "heartbeat_interval_s=$HEARTBEAT_INTERVAL_S"
   echo "suspend_threshold_ms=$SUSPEND_THRESHOLD_MS"
-  # Machine capacity at run start. Recorded, never enforced: a run is not refused for a busy machine, but an outlier can then be attributed from the run directory instead of reconstructed from outside it. A run with identical code, worker count and dev-server log signatures can still take 1069s against a 627-651s baseline when the machine is loaded.
-  echo "load_at_start=$(load_averages)"
+  # Machine capacity at run start. Recorded, never enforced: a run is not refused for a busy machine, but an outlier can then be attributed from the run directory instead of reconstructed from outside it.
   echo "cpu_count=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo unknown)"
   echo "containers_running=$(docker ps -q 2>/dev/null | wc -l | tr -d ' ')"
+  echo "$HOST_AT_START"
 } > "$RUN_DIR/env-posture.txt"
 
 # --- 2. provenance ------------------------------------------------------------------
@@ -1131,11 +1134,6 @@ rm -f "$RUN_DIR/$VOID_MARKER" "$RUN_DIR/.void-marker.tmp"
 : > "$RUN_DIR/$HEARTBEAT_LOG"
 (suspend_heartbeat "$$" "$RUN_DIR") &
 HEARTBEAT_PID=$!
-
-# The host's state is recorded from here to the end of teardown, so that a slow run can be attributed to what else the host was doing.
-: > "$RUN_DIR/$HOST_STATE_LOG"
-(host_state_recorder "$$" "$RUN_DIR") &
-HOST_STATE_PID=$!
 
 # --- 4. database preparation -----------------------------------------------------------
 
