@@ -9,14 +9,15 @@
  *
  * Every request repeats all three steps, because a new link for the typed address replaces the one before it and resets what the current address's link did. So the newest mail is the one that works.
  *
- * THE ORDER IS THE CONTRACT. The caller is read from their own access token before anything else; an account that may not ask, a project the account registered no entity in, and an address on the placeholder domain, take no slot. The slot, one per account and one per address, neither of them per project, is taken before the database is asked whether an open invitation of the project holds the address and before the auth service is asked about the address, because each answer says whether the address is spoken for. A slot that was taken and then mailed nothing is given back for the address.
+ * THE ORDER IS THE CONTRACT. The caller is read from their own access token before anything else; an account that may not ask and an address on the placeholder domain take no slot, and the database takes none for a project the account registered no entity in. The slot, one per account and one per address, neither of them per project, is taken before the database is asked whether an open invitation of the project holds the address and before the auth service is asked about the address, because each answer says whether the address is spoken for. A slot that was taken and then mailed nothing is given back for the address.
  *
- * AN INVITED ADDRESS IS IN USE. An account an identity provider made claims no invitation, so an address that an open invitation of the project holds is answered `in-use`, as another account's address is: the person it was sent to signs in by email and claims it there.
+ * AN INVITED ADDRESS IS ANSWERED `invited`. An account an identity provider made claims no invitation, so an address that an open invitation of the project holds is not proved for it. When the project would honour that invitation, the answer tells the caller to sign in by email with it instead, and an admin can remove the entity the identity provider's registration made. When it would not, because the invitation's registration mode is off, the address stays reserved for the invitation and is answered `in-use`, so the caller is not sent to a sign-in that mails nothing.
  *
- * WHY THE PROJECT MUST BE THE ACCOUNT'S. The mail and the change of address are the same whatever project a request names, so a project the caller could choose freely would bound nothing. Only a project the account's registered-entities record names is answered, and the database keys neither slot on the project.
+ * WHY THE PROJECT MUST BE THE ACCOUNT'S. The mail and the change of address are the same whatever project a request names, so a project the caller could choose freely would bound nothing. `public.email_confirmation_request` takes the slot only for a project the account's identity registration names, and keys neither slot on the project; a request for any other project is answered `refused`.
  */
 
-import { isPlaceholderAddress } from '../_shared/placeholderAddress.ts';
+import { isPlainObject } from '../_shared/guards.ts';
+import { isPlaceholderEmail } from '../_shared/placeholderEmail.ts';
 import { describeFailure } from './linkIssue.ts';
 import { renderAddressConfirmationMail, resolveMailLocale } from './mailTemplates.ts';
 import { buildSignInLink, confirmPageUrl } from './signInLink.ts';
@@ -31,9 +32,10 @@ export interface CallerAccount {
   email: string | null;
   /** The identity provider the account's app metadata names, or null when it names none. */
   identityProvider: string | null;
-  /** The lower-cased ids of the projects the account's registered-entities record names. */
-  registeredProjects: ReadonlyArray<string>;
 }
+
+/** Which hold an open invitation has on an address, as `public.email_invitation_hold` answers it. */
+export type InvitationHold = 'allowed' | 'held' | 'none';
 
 /** Which of the two links of a change of address: the one for the current address, or the one for the new address. */
 export type EmailChangeKind = 'current' | 'new';
@@ -52,12 +54,12 @@ export interface AddressConfirmationDeps {
   siteUrl: string;
   /** The account a caller's access token names, or null when the auth service refuses the token. Rejects for any other failure. */
   callerAccount(token: string): Promise<CallerAccount | null>;
-  /** Take the account's slot and then the address's slot, neither of them per project, for a project the account registered in. True only when both were taken. */
+  /** Take the account's slot and then the address's slot, neither of them per project. True only when both were taken; false, with nothing taken, for a project the account's identity registration does not name. */
   takeSlot(slot: { projectId: string; userId: string; email: string }): Promise<boolean>;
   /** Give the address's slot back. The account's slot is never given back. */
   releaseSlot(slot: { email: string }): Promise<void>;
-  /** Whether an open invitation of the project, unclaimed and unexpired, holds the address as its address or as the pending address of its code. Rejects when the database cannot answer or answers something that is not a boolean. */
-  addressHoldsOpenInvitation(query: { projectId: string; email: string }): Promise<boolean>;
+  /** Which hold an open invitation of the project, unclaimed and unexpired, has on the address as its address or as the pending address of its code: `allowed` when the project would honour one such invitation, `held` when it would honour none, `none` when no such invitation holds it. Rejects when the database cannot answer or answers something else. */
+  emailInvitationHold(query: { projectId: string; email: string }): Promise<InvitationHold>;
   /** Ask the auth service for one link of a change of address. Answers `'email-exists'` when another account holds the new address. */
   generateEmailChange(
     kind: EmailChangeKind,
@@ -73,74 +75,15 @@ export interface AddressConfirmationDeps {
   log(message: string, detail?: LogDetail): void;
 }
 
-/** Write one log line. A logger that throws cannot turn an outcome into a rejection. */
-function say(deps: AddressConfirmationDeps, message: string, detail?: LogDetail): void {
-  try {
-    if (detail === undefined) deps.log(message);
-    else deps.log(message, detail);
-  } catch {
-    // Nothing can be done about a logger that fails, and the outcome does not depend on it.
-  }
-}
-
-/** A token the auth service answered, as a non-empty string. */
-function tokenOf(value: unknown): string {
-  if (typeof value !== 'string' || value === '') throw new Error('The auth service issued no token.');
-  return value;
-}
-
-/** Whether an account may ask: an identity provider made it, and its address is still the placeholder. */
-function mayAsk(account: CallerAccount): boolean {
-  return (
-    typeof account.identityProvider === 'string' &&
-    account.identityProvider !== '' &&
-    isPlaceholderAddress(account.email)
-  );
-}
-
-/** Whether the account registered an entity in the project a request names. */
-function registeredIn(account: CallerAccount, projectId: string): boolean {
-  return account.registeredProjects.includes(projectId.toLowerCase());
-}
-
-/** Give the address's slot back, logging a failure, and answer the outcome unchanged. */
-async function giveBack(
-  deps: AddressConfirmationDeps,
-  slot: { email: string },
-  outcome: AddressConfirmationOutcome
-): Promise<AddressConfirmationOutcome> {
-  try {
-    await deps.releaseSlot(slot);
-  } catch (releaseError) {
-    say(deps, 'the address slot could not be given back', describeFailure(releaseError));
-  }
-  return outcome;
-}
-
-/** Undo a change of address that the current address's link completed alone: put the placeholder back, give the address's slot back, and refuse. */
-async function undoCompletedChange(
-  deps: AddressConfirmationDeps,
-  restoration: { userId: string; email: string },
-  slot: { email: string }
-): Promise<AddressConfirmationOutcome> {
-  say(deps, 'the current address’s link completed the change of address alone; the placeholder is put back');
-  try {
-    await deps.restoreAddress(restoration);
-  } catch (error) {
-    say(deps, 'the placeholder could not be put back', describeFailure(error));
-  }
-  return giveBack(deps, slot, 'refused');
-}
-
 /**
  * Prove a typed address for the signed-in account of an identity provider.
  *
- * The order: (a) the caller read from their own token, (b) the account, the project and the typed address judged, (c) the slot, (d) whether an open invitation of the project holds the address, (e) the current address's link, (f) the new address's link, (g) the current token verified, (h) the new link mailed to the typed address. An open invitation at (d), or an answer that the address exists at (e) or (f), gives the address's slot back and is `in-use`; a verification at (g) that completed the change puts the placeholder back and is `refused`; any failure after (c), an answer at (d) that is neither true nor false included, gives the slot back and is `refused`.
+ * The order: (a) the caller read from their own token, (b) the account and the typed address judged, (c) the slot, which the database does not take for a project the account registered no entity in, (d) which hold an open invitation of the project has on the address, (e) the current address's link, (f) the new address's link, (g) the current token verified, (h) the new link mailed to the typed address. An invitation the project would honour at (d) gives the address's slot back and is `invited`, and one it would not gives it back and is `in-use`; an answer that the address exists at (e) or (f) gives it back and is `in-use`; a verification at (g) that completed the change puts the placeholder back and is `refused`; any failure after (c), an answer at (d) that is none of the three included, gives the slot back and is `refused`.
  *
  * @param request - The parsed `confirm-address` body
  * @param callerToken - The access token of the request's `Authorization` header, or null when it carried none
  * @param deps - Every effect, injected
- * @returns `'sent'`, `'in-use'`, `'refused'` or `'unauthenticated'`. Never rejects: a failure is logged by its name and code and is an outcome.
+ * @returns `'sent'`, `'in-use'`, `'invited'`, `'refused'` or `'unauthenticated'`. Never rejects: a failure is logged by its name and code and is an outcome.
  */
 export async function confirmAddress(
   request: ConfirmAddressRequest,
@@ -158,11 +101,10 @@ export async function confirmAddress(
   }
   if (account === null) return 'unauthenticated';
   if (!mayAsk(account)) return 'refused';
-  if (!registeredIn(account, request.projectId)) return 'refused';
   const currentEmail = account.email as string;
 
   const typed = request.email.trim();
-  if (isPlaceholderAddress(typed)) return 'refused';
+  if (isPlaceholderEmail(typed)) return 'refused';
 
   const locale = resolveMailLocale(request.locale);
   try {
@@ -183,9 +125,10 @@ export async function confirmAddress(
 
   const slot = { email: typed };
   try {
-    const invited = await deps.addressHoldsOpenInvitation({ projectId: request.projectId, email: typed });
-    if (invited === true) return giveBack(deps, slot, 'in-use');
-    if (invited !== false) throw new Error('The open-invitation check answered neither true nor false.');
+    const hold = await deps.emailInvitationHold({ projectId: request.projectId, email: typed });
+    if (hold === 'allowed') return giveBack(deps, slot, 'invited');
+    if (hold === 'held') return giveBack(deps, slot, 'in-use');
+    if (hold !== 'none') throw new Error('The invitation-hold check answered none of allowed, held and none.');
 
     const addresses = { currentEmail, newEmail: typed };
     const current = await deps.generateEmailChange('current', addresses);
@@ -202,15 +145,67 @@ export async function confirmAddress(
       siteUrl: deps.siteUrl,
       locale,
       tokenHash: tokenOf(next.actionLinkToken),
-      type: 'email_change'
+      type: 'email_change',
+      app: 'contestant'
     });
-    const { subject, text, html } = renderAddressConfirmationMail(locale, link);
-    await deps.sendMail({ to: typed, subject, text, html });
+    await deps.sendMail({ to: typed, ...renderAddressConfirmationMail(locale, link) });
     return 'sent';
   } catch (error) {
     say(deps, 'an address confirmation could not be issued or mailed; its slot is given back', describeFailure(error));
     return giveBack(deps, slot, 'refused');
   }
+}
+
+/** Write one log line. A logger that throws cannot turn an outcome into a rejection. */
+function say(deps: AddressConfirmationDeps, message: string, detail?: LogDetail): void {
+  try {
+    if (detail === undefined) deps.log(message);
+    else deps.log(message, detail);
+  } catch {
+    // Nothing can be done about a logger that fails, and the outcome does not depend on it.
+  }
+}
+
+/** Whether an account may ask: an identity provider made it, and its address is still the placeholder. */
+function mayAsk(account: CallerAccount): boolean {
+  return (
+    typeof account.identityProvider === 'string' && account.identityProvider !== '' && isPlaceholderEmail(account.email)
+  );
+}
+
+/** Give the address's slot back, logging a failure, and answer the outcome unchanged. */
+async function giveBack(
+  deps: AddressConfirmationDeps,
+  slot: { email: string },
+  outcome: AddressConfirmationOutcome
+): Promise<AddressConfirmationOutcome> {
+  try {
+    await deps.releaseSlot(slot);
+  } catch (releaseError) {
+    say(deps, 'the address slot could not be given back', describeFailure(releaseError));
+  }
+  return outcome;
+}
+
+/** A token the auth service answered, as a non-empty string. */
+function tokenOf(value: unknown): string {
+  if (typeof value !== 'string' || value === '') throw new Error('The auth service issued no token.');
+  return value;
+}
+
+/** Undo a change of address that the current address's link completed alone: put the placeholder back, give the address's slot back, and refuse. */
+async function undoCompletedChange(
+  deps: AddressConfirmationDeps,
+  restoration: { userId: string; email: string },
+  slot: { email: string }
+): Promise<AddressConfirmationOutcome> {
+  say(deps, 'the current address’s link completed the change of address alone; the placeholder is put back');
+  try {
+    await deps.restoreAddress(restoration);
+  } catch (error) {
+    say(deps, 'the placeholder could not be put back', describeFailure(error));
+  }
+  return giveBack(deps, slot, 'refused');
 }
 
 const BEARER = /^Bearer ([^\s]+)$/i;
@@ -245,46 +240,10 @@ export function callerTokenRefused(error: unknown): boolean {
  * @returns The own `identity_provider` key when it is a non-empty string, and null otherwise
  */
 export function identityProviderOf(appMetadata: unknown): string | null {
-  if (typeof appMetadata !== 'object' || appMetadata === null || Array.isArray(appMetadata)) return null;
-  if (!Object.prototype.hasOwnProperty.call(appMetadata, 'identity_provider')) return null;
-  const provider = (appMetadata as { identity_provider?: unknown }).identity_provider;
+  if (!isPlainObject(appMetadata) || !Object.prototype.hasOwnProperty.call(appMetadata, 'identity_provider'))
+    return null;
+  const provider = appMetadata.identity_provider;
   return typeof provider === 'string' && provider !== '' ? provider : null;
-}
-
-/**
- * The projects an account's registered-entities record names.
- *
- * @param appMetadata - The account's `app_metadata`, of any shape
- * @returns The lower-cased own keys of its own `registered_entities` object whose value is an object, and an empty list for anything else
- */
-export function registeredProjectsOf(appMetadata: unknown): Array<string> {
-  if (!isPlainObject(appMetadata) || !Object.prototype.hasOwnProperty.call(appMetadata, 'registered_entities'))
-    return [];
-  const record = (appMetadata as { registered_entities?: unknown }).registered_entities;
-  if (!isPlainObject(record)) return [];
-  return Object.keys(record)
-    .filter((projectId) => isPlainObject((record as Record<string, unknown>)[projectId]))
-    .map((projectId) => projectId.toLowerCase());
-}
-
-/** Whether a value is an object that is neither null nor an array. */
-function isPlainObject(value: unknown): value is object {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * The `token` parameter of an action link the auth service answered.
- *
- * @param actionLink - The `action_link` of a generated link, of any type
- * @returns The parameter's value, or an empty string when the value is not a URL or carries none
- */
-export function actionLinkToken(actionLink: unknown): string {
-  if (typeof actionLink !== 'string') return '';
-  try {
-    return new URL(actionLink).searchParams.get('token') ?? '';
-  } catch {
-    return '';
-  }
 }
 
 /**

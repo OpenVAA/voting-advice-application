@@ -481,7 +481,7 @@ BEGIN
 
   -- ===== Projects ===== `open_for_voters` follows the fixture's A-true / B-false polarity, so every visibility assertion has a two-directional control group.
   --
-  -- Neither project locks nominations: the lock is the app setting `access.nominationsLocked`, and the two `app_settings` rows below hold no `access` member.
+  -- Neither project locks nominations: the lock is the app setting `access.contestantEditing`, and the two `app_settings` rows below hold no `access` member.
   INSERT INTO projects (id, account_id, name, open_for_voters) VALUES
     (test_id('project_a'), test_id('account_a'), 'Project A', true),
     (test_id('project_b'), test_id('account_b'), 'Project B', false);

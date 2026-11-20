@@ -6,7 +6,7 @@
  * Two boundaries carry the whole design and both are asserted here. An empty string is unconfigured, not configured-to-empty -- an operator who writes `SITE_URL=` in a `.env` has not chosen an origin. A value that merely READS as falsy, such as `'0'` or `'false'`, is configured and is returned unchanged -- a naive truthiness test would swallow a legitimate port `0` or a legitimate `false` flag, which is the same class of bug in the opposite direction.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { requireEnv } from './envConfig';
 
 /** Run `fn`, return the Error it threw, and fail loudly if it did not throw at all. */

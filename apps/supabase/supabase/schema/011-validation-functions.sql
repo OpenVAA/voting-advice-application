@@ -8,6 +8,7 @@
 -- - validate_answer_value(jsonb, question_type, jsonb) - validate an answer value against its question type
 -- - nomination_shape_rule(nomination_shape, entity_type) - which entity types a nomination shape admits, and where a candidate needs a parent
 -- - validate_nomination() - enforce nomination tenancy, the nomination-shape rule, the constituency rule, hierarchy and parent consistency
+-- - nomination_requests_parent(jsonb) - whether a nomination's custom data asks for a parent that is not in the system
 -- - validate_nomination_parent_required() - refuse, when the transaction ends, a candidate nomination that needs a parent and has none
 -- - enforce_nomination_confirmation() - refuse or clear a nomination's confirmation the caller may not set
 -- - enforce_nomination_entity_columns() - bound the nomination columns a non-admin may write
@@ -232,7 +233,7 @@ $$;
 --------------------------------------------------------------------------------
 -- nomination_shape_rule: the nomination shape x entity type matrix, encoded once
 --
--- Answers, for one nomination shape and one entity type, one of three words:
+-- Answers, for one nomination shape and one entity type, one of the three members of `public.nomination_admission`:
 --   'admitted'        - the entity type may be nominated, with or without a parent nomination.
 --   'parent_required' - it may be nominated, and when the transaction ends its nomination must have a parent nomination or carry `requestedParentOrganization` in its custom data.
 --   'refused'         - it may not be nominated in an election of that type.
@@ -248,10 +249,10 @@ $$;
 CREATE OR REPLACE FUNCTION public.nomination_shape_rule (
   p_shape public.nomination_shape,
   p_entity_type public.entity_type
-) RETURNS text LANGUAGE sql IMMUTABLE
+) RETURNS public.nomination_admission LANGUAGE sql IMMUTABLE
 SET
   search_path = '' AS $$
-  SELECT CASE
+  SELECT (CASE
     WHEN (p_shape, p_entity_type) = ('organization_list', 'candidate') THEN 'parent_required'
     WHEN (p_shape, p_entity_type) = ('organization_list', 'organization') THEN 'admitted'
     WHEN (p_shape, p_entity_type) = ('organization_list', 'faction') THEN 'admitted'
@@ -271,7 +272,7 @@ SET
     WHEN (p_shape, p_entity_type) = ('organization_only', 'organization') THEN 'admitted'
     WHEN (p_shape, p_entity_type) = ('organization_only', 'faction') THEN 'refused'
     WHEN (p_shape, p_entity_type) = ('organization_only', 'alliance') THEN 'admitted'
-  END;
+  END)::public.nomination_admission;
 $$;
 
 --------------------------------------------------------------------------------
@@ -311,7 +312,7 @@ DECLARE
   p_child_type public.entity_type;
   p_faction_organization_id uuid;
   p_nomination_shape public.nomination_shape;
-  p_shape_rule text;
+  p_shape_rule public.nomination_admission;
   p_contest_judged boolean;
 BEGIN
   -- Derive entity_type from the FK columns
@@ -453,15 +454,34 @@ END;
 $$ LANGUAGE plpgsql;
 
 --------------------------------------------------------------------------------
+-- nomination_requests_parent: whether a nomination asks for a parent that is not in the system
+--
+-- True when the custom data carries `requestedParentOrganization` as a string holding something other than white space. Such a nomination has no parent nomination yet: it waits for a parent an admin must resolve, a party for a candidate and an alliance for an organization. Any other value, an absent key and a NULL argument answer false.
+--
+-- `validate_nomination_parent_required` and `enforce_nomination_confirmation` ask it, so the two read the request alike.
+--
+-- Reads no table, so it is IMMUTABLE and not SECURITY DEFINER. It lives in `public` because this file is applied before the `private` schema exists.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.nomination_requests_parent (p_custom_data jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    jsonb_typeof(p_custom_data -> 'requestedParentOrganization') = 'string'
+    AND (p_custom_data ->> 'requestedParentOrganization') ~ '[^[:space:]]',
+    false
+  );
+$$;
+
+--------------------------------------------------------------------------------
 -- validate_nomination_parent_required: a candidate that needs a parent has one when the transaction ends
 --
--- The function of the constraint trigger `nominations_parent_required` (104-nominations.sql). Where `nomination_shape_rule` answers 'parent_required' for a candidate, the candidate's nomination must have a parent nomination or carry `requestedParentOrganization` in its custom data as a string that is not blank. A refusal is `Nomination parent required: ...` with SQLSTATE 23514.
+-- The function of the constraint trigger of the same name (104-nominations.sql). Where `nomination_shape_rule` answers 'parent_required' for a candidate, the candidate's nomination must have a parent nomination or ask for one, as `nomination_requests_parent` answers. A refusal is `Nomination parent required: ...` with SQLSTATE 23514.
 --
 -- It runs at the end of the transaction and not at the statement, so a writer may insert the candidate's row, then its party's row, then point the first at the second: only a row that is still without a parent when the transaction ends is refused.
 --
 -- It reads the row again by its id and never judges the row the queued event carries. The event carries the row as that statement wrote it, so judging it would refuse the three-statement order above. A row that is gone by then is not judged at all.
 --
--- A function that must report the refusal inside its own call forces the constraint and puts it back before it returns: `SET CONSTRAINTS public.nominations_parent_required IMMEDIATE;` and then `SET CONSTRAINTS public.nominations_parent_required DEFERRED;`. While the constraint is immediate, a candidate's row without a parent is refused at its own statement, so the second statement is not optional.
+-- A function that must report the refusal inside its own call forces the constraint and puts it back before it returns: `SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE;` and then `SET CONSTRAINTS public.validate_nomination_parent_required DEFERRED;`. While the constraint is immediate, a candidate's row without a parent is refused at its own statement, so the second statement is not optional.
 --
 -- SECURITY DEFINER with an empty search_path, as `validate_nomination` is: the re-read must find the row whatever row-level security the writer carries. The rule binds every writer, and the function reads no role.
 --------------------------------------------------------------------------------
@@ -484,10 +504,7 @@ BEGIN
   IF NOT FOUND
      OR v_candidate_id IS NULL
      OR v_parent_nomination_id IS NOT NULL
-     OR (
-       jsonb_typeof(v_custom_data -> 'requestedParentOrganization') = 'string'
-       AND (v_custom_data ->> 'requestedParentOrganization') ~ '[^[:space:]]'
-     ) THEN
+     OR public.nomination_requests_parent(v_custom_data) THEN
     RETURN NULL;
   END IF;
 
@@ -510,7 +527,7 @@ $$ LANGUAGE plpgsql;
 --
 -- Editing a nomination turns its confirmation off. The system sets the flag, so this is a trigger rather than a policy: a policy can refuse a row but cannot rewrite one. Three rules, in order:
 --
---   1. On either verb, a row being confirmed while its custom_data carries `requestedParentOrganization` as a string that is not blank is refused. A nomination with a NULL parent either stands on its own or waits for a parent that is not in the system yet, a party for a candidate and an alliance for an organization, and that key is the only difference. Confirming such a row would publish as standing on its own a nominee that asked for a parent.
+--   1. On either verb, a row being confirmed while `nomination_requests_parent` holds for its custom_data is refused. A nomination with a NULL parent either stands on its own or waits for a parent that is not in the system yet, a party for a candidate and an alliance for an organization, and that key is the only difference. Confirming such a row would publish as standing on its own a nominee that asked for a parent.
 --   2. On UPDATE, when the caller's effective database role is `authenticated` and the caller does not hold `nomination.confirm` on the row's project, an attempt to turn the flag on is refused by name, and any other edit has the flag forced off. The refusal is explicit so a client never believes an ignored request succeeded.
 --   3. Otherwise the supplied value stands. That makes an admin's edit-and-confirm a single statement, and keeps a service-role re-seed from unconfirming every row it touches.
 --
@@ -526,9 +543,8 @@ CREATE OR REPLACE FUNCTION public.enforce_nomination_confirmation () RETURNS TRI
 BEGIN
   -- Rule 1: the free-text branch can never be confirmed, on either verb.
   IF NEW.confirmed
-     AND jsonb_typeof(NEW.custom_data -> 'requestedParentOrganization') = 'string'
-     AND (NEW.custom_data ->> 'requestedParentOrganization') ~ '[^[:space:]]' THEN
-    RAISE EXCEPTION 'Nomination % cannot be confirmed while custom_data carries "requestedParentOrganization" (%): an admin must resolve the requested party first, or confirming would publish as an independent a candidate who asked for a party',
+     AND public.nomination_requests_parent(NEW.custom_data) THEN
+    RAISE EXCEPTION 'Nomination % cannot be confirmed while custom_data carries "requestedParentOrganization" (%): an admin must resolve the requested parent first, or confirming would publish as standing on its own a nominee who asked for a parent',
       COALESCE(NEW.id::text, '(new)'),
       NEW.custom_data ->> 'requestedParentOrganization';
   END IF;

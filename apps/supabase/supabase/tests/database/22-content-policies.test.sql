@@ -2,7 +2,7 @@
 --
 -- This file asserts the seventeen `user_can` policies on `questions`, `question_categories`, `app_settings`, `feedback` and `admin_jobs`, and the two ungated `feedback` INSERT policies. No E2E spec reaches `admin_jobs` or `feedback` under row-level security (the only `admin_jobs` caller is a service-role teardown client, and nothing reads or deletes `feedback`), so for those two tables this file is the whole evidence. Every `user_can` policy carries a pair: one caller who may and one who may not, differing in exactly the permission under test.
 --
--- The settings permissions are split by table: `project.edit_project_settings` governs `projects` and is admin-only, `project.edit_app_settings` governs `app_settings` and a project EDITOR holds it too. One key of `app_settings.settings` is read by a policy, the nominations lock `access.nominationsLocked`, and section 3b shows the editor setting it. The two are granted to the same roles everywhere except the project editor, so the split is observable only against an identity holding one and not the other. None of the eight identities of `create_test_data ()` does: they are two project admins, three candidates, one organization, one account admin and one super admin.
+-- The settings permissions are split by table: `project.edit_project_settings` governs `projects` and is admin-only, `project.edit_app_settings` governs `app_settings` and a project EDITOR holds it too. One key of `app_settings.settings` is read by policies, contestant editing `access.contestantEditing`, and section 3b shows the editor setting it. The two are granted to the same roles everywhere except the project editor, so the split is observable only against an identity holding one and not the other. None of the eight identities of `create_test_data ()` does: they are two project admins, three candidates, one organization, one account admin and one super admin.
 --
 -- That separating identity is an `auth.users` row plus one `grants` row, inserted as `postgres` inside this transaction and rolled back with it, so `create_test_data ()` and every other suite's fixture stay unchanged. `17-project-structure-authority.test.sql` creates the same kind of identity for the same reason.
 --
@@ -311,7 +311,7 @@ SELECT
 -- =====================================================================
 -- Section 3b: the one settings key a policy reads, set by the project editor
 --
--- `access.nominationsLocked` is the nominations lock, and the entity-user policies on `nominations` read it through `private.project_nominations_locked`. It is a member of `app_settings.settings`, so its authority is `project.edit_app_settings`: the editor of sections 2 and 3, who cannot write the `projects` row, turns the lock on and off. Both directions are asserted on the same nomination under the same entity user, so the editor's write is what decides each.
+-- `access.contestantEditing` is contestant editing, and the entity-user policies on `nominations` read it through `private.project_contestant_editing`: they write only while it is `open`. It is a member of `app_settings.settings`, so its authority is `project.edit_app_settings`: the editor of sections 2 and 3, who cannot write the `projects` row, turns the lock on and off. Both directions are asserted on the same nomination under the same entity user, so the editor's write is what decides each.
 --
 -- The editor's statement sets the one key and keeps whatever else the stored object holds.
 -- =====================================================================
@@ -326,7 +326,7 @@ SELECT
   is (
     t22_affected (
       format(
-        $$UPDATE app_settings SET settings = jsonb_set(settings, '{access}', COALESCE(settings -> 'access', '{}'::jsonb) || '{"nominationsLocked":true}'::jsonb) WHERE project_id = '%s'$$,
+        $$UPDATE app_settings SET settings = jsonb_set(settings, '{access}', COALESCE(settings -> 'access', '{}'::jsonb) || '{"contestantEditing":"nominationsLocked"}'::jsonb) WHERE project_id = '%s'$$,
         test_id ('project_a')
       )
     ),
@@ -364,7 +364,7 @@ SELECT
   is (
     t22_affected (
       format(
-        $$UPDATE app_settings SET settings = jsonb_set(settings, '{access}', COALESCE(settings -> 'access', '{}'::jsonb) || '{"nominationsLocked":false}'::jsonb) WHERE project_id = '%s'$$,
+        $$UPDATE app_settings SET settings = jsonb_set(settings, '{access}', COALESCE(settings -> 'access', '{}'::jsonb) || '{"contestantEditing":"open"}'::jsonb) WHERE project_id = '%s'$$,
         test_id ('project_a')
       )
     ),

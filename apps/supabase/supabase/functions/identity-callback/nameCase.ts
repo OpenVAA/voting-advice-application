@@ -1,7 +1,7 @@
 /**
  * The smart casing of a name the identity provider sends: a name written all in capitals is stored name-cased, and any other name as it was sent.
  *
- * The Edge copy of the frontend's `apps/frontend/src/lib/utils/text/smartNameCase.ts` and `toNameCase.ts`. Supabase deploys each function directory on its own, so the function cannot import the frontend's module; `nameCase.test.ts` runs both over one table of names and asserts they answer alike, so the copy cannot drift from the original without a test failing.
+ * Providers commonly send names as they appear in a population register, in capitals. Such a name is stored with each word, and each part of a dashed word, capitalised and the rest lower-cased, so `MATTI-PEKKA VIRTANEN` is stored as `Matti-Pekka Virtanen`. A name holding any lower-case letter was written in the case its holder chose and is never changed.
  *
  * Pure functions with no Deno imports, no URL imports and no reference to the Deno global, so the module can be imported by both the Edge Function and vitest.
  */

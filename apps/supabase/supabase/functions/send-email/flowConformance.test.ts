@@ -147,7 +147,7 @@ describe('send-email flow conformance', () => {
   it('sends the HTML part with escaped variables and never as a caller-chosen sender (162-REVIEW WR-02)', () => {
     expect(INDEX_SOURCE).toContain('html: rendered.html');
     expect(INDEX_SOURCE).toContain('renderTemplateHtml(template.body, vars)');
-    expect(INDEX_SOURCE).toContain("const senderAddress = requireEnv('SMTP_FROM'");
+    expect(INDEX_SOURCE).toContain('const senderAddress = configuredSender(smtp);');
     expect(INDEX_SOURCE).toContain("JSON.stringify({ error: 'Invalid from' })");
     // THE SENDER ACTUALLY USED, POSITIVELY (162-REVIEW WR-06). The negative half of this test used to be `not.toMatch(/from\s*\|\|\s*requireEnv/)` alone -- ONE historical spelling of the defect WR-02 fixed. `from ?? senderAddress`, `from || senderAddress` and `from: body.from` at the `transport.sendMail` call all passed it, and nothing asserted the property that actually holds: the envelope sender is the configured one at the one line that decides it.
     expect(CODE_ONLY).toMatch(/await transport\.sendMail\(\{\s*from: senderAddress,/);
