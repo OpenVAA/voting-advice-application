@@ -27,7 +27,7 @@ function memoryClient(state: { users: Array<string>; invitations: Array<string> 
       state.invitations = state.invitations.filter((address) => !removed.includes(address));
       return removed.length;
     },
-    async unregisterCandidate(email: string): Promise<void> {
+    async unregisterUser(email: string): Promise<void> {
       state.users = state.users.filter((address) => address !== email);
       state.invitations = state.invitations.filter((address) => address !== email);
     }

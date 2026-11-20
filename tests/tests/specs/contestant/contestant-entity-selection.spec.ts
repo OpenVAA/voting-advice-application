@@ -42,10 +42,10 @@ import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import {
   NO_ENTITY_STORAGE_STATE,
-  TEST_CANDIDATE_PASSWORD,
   TEST_LOGOUT_ENTITY_EMAIL,
   TEST_MULTI_ENTITY_EMAIL,
   TEST_NO_ENTITY_EMAIL,
+  TEST_PASSWORD,
   TEST_SELECTION_CANDIDATE_B_EXTERNAL_ID,
   TEST_SELECTION_ORGANIZATION_EXTERNAL_ID
 } from '../../utils/testCredentials';
@@ -322,7 +322,7 @@ test.describe('contestant entity selection', () => {
       'contestantEntityPages' | 'contestantEntitySelectionPage' | 'contestantLoginPage' | 'selectionEntities'
     >): Promise<void> {
       await contestantLoginPage.goToPage();
-      await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+      await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
       await contestantEntitySelectionPage.expectShown();
       await contestantEntitySelectionPage.pick(selectionEntities.candidateB.name);
       await contestantEntityPages.expectOnHome(selectionEntities.candidateB);
@@ -341,7 +341,7 @@ test.describe('contestant entity selection', () => {
     >): Promise<void> {
       const { differingQuestionId, organization } = selectionEntities;
       await contestantLoginPage.goToPage();
-      await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+      await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
       await contestantEntityPages.expectOnHome(organization);
       await contestantEntityPages.openQuestion(organization, differingQuestionId);
       await contestantQuestionPage.selectChoice(UNSAVED_CHOICE_INDEX);
@@ -365,7 +365,7 @@ test.describe('contestant entity selection', () => {
       }) => {
         await test.step('a user signs in through the login form and opens the settings page', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(selectionEntities.organization);
           await contestantSettingsPage.open();
         });
@@ -393,7 +393,7 @@ test.describe('contestant entity selection', () => {
       }) => {
         await test.step('a user signs in through the login form and opens the settings page', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(selectionEntities.organization);
           await contestantSettingsPage.open();
         });
@@ -429,7 +429,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user signs in through the login form, and goes from the home to the settings page by a link', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await contestantEntityPages.followLinkInsideTheApp(
             buildRoute({ route: 'ContestantAppSettings', locale: 'en' })
@@ -465,7 +465,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user signs in, and goes from the home to the profile inside the application', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -824,7 +824,7 @@ test.describe('contestant entity selection', () => {
         await test.step('in the same tab, with no new document, a sign-in leads on to the settings page the link asked for', async () => {
           await contestantLoginPage.followSignInInsideTheApp();
           await contestantLoginPage.expectSignInShown();
-          await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantLoginPage.expectLedToSettings();
         });
 
@@ -1061,7 +1061,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in, opens the profile and edits the name', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1188,7 +1188,7 @@ test.describe('contestant entity selection', () => {
         await test.step('a sign-in through the login form in the second tab, and the deadline passes', async () => {
           await otherTabLogin.followSignInInsideTheApp();
           await otherTabLogin.expectSignInShown();
-          await otherTabLogin.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await otherTabLogin.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
           await otherTabSelection.expectShown();
           await otherTabLogout.dropLogoutDeadline();
         });
@@ -1259,7 +1259,7 @@ test.describe('contestant entity selection', () => {
         await test.step('a sign-in through the login form withdraws the count, and the deadline passes', async () => {
           await otherTabLogin.followSignInInsideTheApp();
           await otherTabLogin.expectSignInShown();
-          await otherTabLogin.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await otherTabLogin.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
           await otherTabSettings.expectShown();
           await otherTabLogout.expectNoLogoutDeadline();
           await otherTabLogout.dropLogoutDeadline();
@@ -1622,7 +1622,7 @@ test.describe('contestant entity selection', () => {
           await contestantLoginPage.expectEntryShown();
           await contestantLoginPage.followSignInInsideTheApp();
           await contestantLoginPage.expectSignInShown();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await contestantEntityPages.clickHomeProfileEntry();
           await contestantEntityPages.expectOnProfile(organization);
@@ -1676,7 +1676,7 @@ test.describe('contestant entity selection', () => {
         await test.step('a user signs in on a page whose script has loaded, and opens the profile', async () => {
           await contestantLoginPage.goToPage();
           await contestantLoginPage.signInScriptLoaded();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await contestantEntityPages.clickHomeProfileEntry();
           await contestantEntityPages.expectOnProfile(organization);
@@ -1703,7 +1703,7 @@ test.describe('contestant entity selection', () => {
         });
 
         await test.step('signing in again shows no message, and no native question was raised', async () => {
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.expectNoFailureMessage();
           await headerLogout.expectStillSignedIn();
@@ -1721,7 +1721,7 @@ test.describe('contestant entity selection', () => {
           await contestantLoginPage.expectEntryShown();
           await contestantLoginPage.followSignInInsideTheApp();
           await contestantLoginPage.expectSignInShown();
-          await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_MULTI_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntitySelectionPage.expectShown();
         });
 
@@ -1758,7 +1758,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in and opens the profile', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1787,7 +1787,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in and opens the profile', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1813,7 +1813,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step("a user with tasks left signs in and opens the profile, with the page's clock five minutes behind the server's", async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClockBehindTheServer();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1842,7 +1842,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in and opens the profile', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await contestantEntityPages.clickHomeProfileEntry();
           await contestantEntityPages.expectOnProfile(organization);
@@ -1870,7 +1870,7 @@ test.describe('contestant entity selection', () => {
 
         await test.step('a user with tasks left signs in and opens the profile', async () => {
           await contestantLoginPage.goToPage();
-          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+          await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
           await contestantEntityPages.expectOnHome(organization);
           await headerLogout.installClock();
           await contestantEntityPages.clickHomeProfileEntry();
@@ -1937,7 +1937,7 @@ test.describe('contestant entity selection', () => {
         const adminLoginPage = createAdminLoginPage(page);
 
         await contestantLoginPage.goToPage();
-        await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+        await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
         await contestantEntityPages.expectOnHome(selectionEntities.organization);
 
         await headerLogout.failSignOut();
@@ -1983,7 +1983,7 @@ test.describe('contestant entity selection', () => {
       { tag: '@entity-selection' },
       async ({ contestantEntityPages, contestantLoginPage, headerLogout, selectionEntities }) => {
         await contestantLoginPage.goToPage();
-        await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+        await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
         await contestantEntityPages.expectOnHome(selectionEntities.organization);
 
         await headerLogout.endSessionWithNoSignal();
@@ -2049,7 +2049,7 @@ test.describe('contestant entity selection', () => {
 
           await test.step("an editor of one organization signs in and lands on the organization's home", async () => {
             await contestantLoginPage.goToPage();
-            await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_CANDIDATE_PASSWORD);
+            await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
             await contestantEntityPages.expectOnHome(organization);
             await contestantEntityPages.expectHomeHeadingNames(organization);
           });

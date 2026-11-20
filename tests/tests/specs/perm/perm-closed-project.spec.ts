@@ -27,7 +27,7 @@ import { declareEntryScans } from '../../utils/entryAxeScan';
 import { messageOf, messagesOf } from '../../utils/messages';
 import { PHONE_VIEWPORTS, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
@@ -137,7 +137,7 @@ test.describe('a project that is not open for voters', () => {
   test('a candidate can log in and reach the candidate home on a closed project', async ({ page }) => {
     const loginPage = createContestantLoginPage(page);
     await loginPage.goToPage();
-    await loginPage.login(CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
+    await loginPage.login(CANDIDATE_EMAIL, TEST_PASSWORD);
     await expect(page).not.toHaveURL(/\/contestant\/login/);
     await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible();
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();

@@ -23,12 +23,12 @@
  *   - `public updateAppSettings(partialSettings)` — see usage-policy note above
  *
  * Added by this subclass:
- *   - Auth helpers: `listAllUsers` and `findAuthUser` (private), `insertTermsOfUseAcceptance` (protected)
+ *   - Auth helpers: `listAllUsers`, `findAuthUser`, `insertGrant` and `removeUser` (private), `insertTermsOfUseAcceptance` (protected)
  *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`, `countRowsByPrefix`
  *   - Identity lookups through candidate-editor grants: `candidateIdsForUser`, `userIdForCandidate`
  *   - Entity grants: `grantEntity`, `revokeEntityGrant`, `entityGrantCountForUser`
  *   - Account and global grants: `grantAccount`, `grantGlobal`, and the account a project belongs to, `accountIdOfProject`
- *   - Auth actions: `setPassword`, `acceptTermsOfUse`, `forceRegister`, `forceRegisterUser`, `forceRegisterAdmin`, `unregisterCandidate`, `deleteAllTestUsers`
+ *   - Auth actions: `setPassword`, `acceptTermsOfUse`, `forceRegister`, `forceRegisterUser`, `forceRegisterAdmin`, `unregisterUser`
  *   - Invitations: `inviteByEmail` (seed one and ask the `account-access` function for a link), `invitationNomination` (a nomination an invitation states, resolved from external ids), `removeInvitations`, `releaseLinkSlot`, and the completion witness of a link request, `openLinkWitness` and `awaitLinkWitness`. Seeding itself is the inherited `createInvitations`
  *   - Reads of the auth users by prefix or address: `hasAuthUser`, `grantRowsForUser`, `countUsersByEmailPrefix`, `removeUsersByEmailPrefix`. Every read of the auth users in this file, these and the lookups behind the auth actions, pages through all of them and fails when the listing fails
  *
@@ -59,8 +59,7 @@ import { requestLink } from './accountAccessClient';
 import { TIMEOUTS } from '../helpers/timeouts';
 import type { FindDataResult, InvitationNominationSeed, SeededInvitation } from '@openvaa/dev-seed';
 // Direct import, the same shape `buildRoute.ts` uses. Type-only: the constant is consumed as `typeof ADMIN_GRANTS` below, which is a compile-time read of the application's own declaration and needs no runtime binding.
-import type { ADMIN_GRANTS } from '../../../apps/frontend/src/lib/auth/roles';
-import type { GrantSpec } from './authApi';
+import type { ADMIN_GRANTS, GrantClaim } from '../../../apps/frontend/src/lib/auth/roles';
 
 // Re-exports for backward-compat with existing E2E imports.
 // `tests/seed-test-data.ts` + all tests/tests/**/*.spec.ts files may import
@@ -94,9 +93,6 @@ const AUTH_USERS_PAGE_SIZE = 200;
 
 /** The outcome a finished completion witness reads: whether the request's background work handed a mail over. */
 export type LinkWitnessOutcome = 'sent' | 'not-sent';
-
-/** One row of `public.grants` as its four specification columns: the shape the access token's `grants` claim states a grant in. */
-export type GrantRow = GrantSpec;
 
 /** An auth user as the listing returns it, narrowed to the fields this file reads. */
 interface AuthUserRow {
@@ -243,7 +239,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @returns The user's rows of `public.grants`, in no particular order.
    * @throws Error if no auth user holds the address, or if a read fails.
    */
-  async grantRowsForUser(email: string): Promise<Array<GrantRow>> {
+  async grantRowsForUser(email: string): Promise<Array<GrantClaim>> {
     const user = await this.findAuthUser(email, 'grantRowsForUser');
     if (!user) throw new Error(`grantRowsForUser: no user found with email ${email}`);
     const { data, error } = await this.client
@@ -251,7 +247,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       .select('scope, target_type, target_id, role')
       .eq('user_id', user.id);
     if (error) throw new Error(`grantRowsForUser: ${error.message}`);
-    return (data ?? []) as Array<GrantRow>;
+    return (data ?? []) as Array<GrantClaim>;
   }
 
   /**
@@ -282,12 +278,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
       user.email?.toLowerCase().startsWith(prefix.toLowerCase())
     );
     for (const user of users) {
-      // The invitations go before the user, for the reasons `unregisterCandidate` gives.
-      await this.removeInvitations({ emails: user.email ? [user.email] : [], claimedByUserIds: [user.id] });
-      const { error: grantError } = await this.client.from('grants').delete().eq('user_id', user.id);
-      if (grantError) throw new Error(`removeUsersByEmailPrefix: delete grants failed: ${grantError.message}`);
-      const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
-      if (deleteError) throw new Error(`removeUsersByEmailPrefix: deleteUser failed: ${deleteError.message}`);
+      await this.removeUser(user, 'removeUsersByEmailPrefix');
     }
     return users.length;
   }
@@ -919,14 +910,11 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     entityId: string,
     caller: string
   ): Promise<void> {
-    const { error } = await this.client.from('grants').insert({
-      user_id: userId,
-      scope: 'entity',
-      target_type: entityType,
-      target_id: entityId,
-      role: 'editor'
-    });
-    if (error) throw new Error(`${caller}: insert grant failed: ${error.message}`);
+    await this.insertGrant(
+      userId,
+      { scope: 'entity', target_type: entityType, target_id: entityId, role: 'editor' },
+      caller
+    );
   }
 
   /**
@@ -952,22 +940,15 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * @param email - Email address of the auth user whose grant is removed.
    * @param target - The entity's type and external id.
+   * @returns How many grant rows were removed.
    * @throws Error if the users cannot be listed, if the entity is not found or if the delete fails.
    */
-  async revokeEntityGrant(email: string, target: EntityGrantTarget): Promise<void> {
+  async revokeEntityGrant(email: string, target: EntityGrantTarget): Promise<number> {
     const user = await this.findAuthUser(email, 'revokeEntityGrant');
-    if (!user) return;
+    if (!user) return 0;
 
     const entityId = await this.entityIdForGrantTarget(target, 'revokeEntityGrant');
-    const { error } = await this.client
-      .from('grants')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('scope', 'entity')
-      .eq('target_type', target.entityType)
-      .eq('target_id', entityId)
-      .eq('role', 'editor');
-    if (error) throw new Error(`revokeEntityGrant: delete grant failed: ${error.message}`);
+    return this.revokeEntityGrantById(user.id, target.entityType, entityId);
   }
 
   /**
@@ -1024,10 +1005,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    */
   async grantAccount(email: string, accountId: string, role: 'admin' | 'editor'): Promise<void> {
     const userId = await this.userIdForEmail(email, 'grantAccount');
-    const { error } = await this.client
-      .from('grants')
-      .insert({ user_id: userId, scope: 'account', target_type: null, target_id: accountId, role });
-    if (error) throw new Error(`grantAccount: insert grant failed: ${error.message}`);
+    await this.insertGrant(userId, { scope: 'account', target_type: null, target_id: accountId, role }, 'grantAccount');
   }
 
   /**
@@ -1041,10 +1019,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    */
   async grantGlobal(email: string, role: 'admin' | 'editor'): Promise<void> {
     const userId = await this.userIdForEmail(email, 'grantGlobal');
-    const { error } = await this.client
-      .from('grants')
-      .insert({ user_id: userId, scope: 'global', target_type: null, target_id: null, role });
-    if (error) throw new Error(`grantGlobal: insert grant failed: ${error.message}`);
+    await this.insertGrant(userId, { scope: 'global', target_type: null, target_id: null, role }, 'grantGlobal');
   }
 
   /**
@@ -1165,23 +1140,21 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Create an auth user, write the user's entity-editor grants, and record the user's acceptance of the terms of use of this client's project.
+   * Create an auth user, then write what the caller gives the user: its grants and, where the caller records it, its acceptance of the terms of use.
    *
-   * The one mechanism behind {@link forceRegister} and {@link forceRegisterUser}. Every step after the account exists runs inside a compensating `auth.admin.deleteUser` rollback, so a failure never leaves a user without its intended grants: an orphan auth user would surface as "User already exists" on every later run and need manual cleanup.
+   * The one mechanism behind {@link forceRegister}, {@link forceRegisterUser} and {@link forceRegisterAdmin}. Every write after the account exists runs inside a compensating `auth.admin.deleteUser` rollback, so a failure never leaves a user without its intended grants: an orphan auth user would surface as "User already exists" on every later run and need manual cleanup.
    *
    * @param caller - Name of the public method making the call; it prefixes the error text.
    * @param email - Email address for the new auth user.
    * @param password - Password for the new auth user.
-   * @param entityGrants - The entities the user is made the editor of, each through {@link grantEntity}'s code path.
-   * @param acceptTermsOfUse - Whether to record the user's acceptance of the terms of use.
+   * @param writeGrants - Writes the new user's rows, given the user's id.
    * @throws Error if any step fails. On a failure after the account exists the account is rolled back and the original cause is re-thrown.
    */
   private async registerWithGrants(
     caller: string,
     email: string,
     password: string,
-    entityGrants: ReadonlyArray<EntityGrantTarget>,
-    acceptTermsOfUse: boolean
+    writeGrants: (userId: string) => Promise<void>
   ): Promise<void> {
     // 1. Create auth user with confirmed email
     const { data: createData, error: createError } = await this.client.auth.admin.createUser({
@@ -1193,15 +1166,8 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     const user = createData.user;
 
     try {
-      // 2. Write the entity-editor grants, each the only link from the identity to that entity.
-      for (const target of entityGrants) {
-        await this.grantEntityToUser(user.id, target, caller);
-      }
-
-      // 3. Record the user's acceptance of the terms of use of this client's project, unless the caller opted out. The row belongs to the auth user, so the rollback below removes it with the user.
-      if (acceptTermsOfUse) {
-        await this.insertTermsOfUseAcceptance(user.id, caller);
-      }
+      // 2. Write the caller's rows. Each belongs to the auth user, so the rollback below removes it with the user.
+      await writeGrants(user.id);
     } catch (mutationErr) {
       // reason: compensating rollback on partial failure prevents orphan auth users that cascade as "User already exists" errors across subsequent test runs. The rollback failure (if any) is logged but not re-thrown — we always re-throw the original mutationErr so the caller sees the real cause.
       await this.client.auth.admin.deleteUser(user.id).then(
@@ -1232,12 +1198,13 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     password: string,
     options: { acceptTermsOfUse?: boolean } = {}
   ): Promise<void> {
-    await this.registerWithGrants(
-      'forceRegister',
-      email,
-      password,
-      [{ entityType: 'candidate', externalId: candidateExternalId }],
-      options.acceptTermsOfUse !== false
+    await this.registerWithGrants('forceRegister', email, password, (userId) =>
+      this.writeEditorGrantsAndAcceptance({
+        userId,
+        entityGrants: [{ entityType: 'candidate', externalId: candidateExternalId }],
+        acceptTermsOfUse: options.acceptTermsOfUse !== false,
+        caller: 'forceRegister'
+      })
     );
   }
 
@@ -1258,13 +1225,44 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     password: string,
     options: { entityGrants?: ReadonlyArray<EntityGrantTarget>; acceptTermsOfUse?: boolean } = {}
   ): Promise<void> {
-    await this.registerWithGrants(
-      'forceRegisterUser',
-      email,
-      password,
-      options.entityGrants ?? [],
-      options.acceptTermsOfUse !== false
+    await this.registerWithGrants('forceRegisterUser', email, password, (userId) =>
+      this.writeEditorGrantsAndAcceptance({
+        userId,
+        entityGrants: options.entityGrants ?? [],
+        acceptTermsOfUse: options.acceptTermsOfUse !== false,
+        caller: 'forceRegisterUser'
+      })
     );
+  }
+
+  /**
+   * Write a new user's entity-editor grants, each the only link from the identity to that entity, then record the user's acceptance of the terms of use of this client's project unless the caller opted out.
+   *
+   * The rows {@link forceRegister} and {@link forceRegisterUser} give the user they create.
+   *
+   * @param args.userId - The new auth user.
+   * @param args.entityGrants - The entities the user is made the editor of, each through {@link grantEntity}'s code path.
+   * @param args.acceptTermsOfUse - Whether to record the user's acceptance of the terms of use.
+   * @param args.caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if a grant or the acceptance cannot be written.
+   */
+  private async writeEditorGrantsAndAcceptance({
+    userId,
+    entityGrants,
+    acceptTermsOfUse,
+    caller
+  }: {
+    userId: string;
+    entityGrants: ReadonlyArray<EntityGrantTarget>;
+    acceptTermsOfUse: boolean;
+    caller: string;
+  }): Promise<void> {
+    for (const target of entityGrants) {
+      await this.grantEntityToUser(userId, target, caller);
+    }
+    if (acceptTermsOfUse) {
+      await this.insertTermsOfUseAcceptance(userId, caller);
+    }
   }
 
   /**
@@ -1272,46 +1270,25 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * The sibling of {@link forceRegister}, minus its candidate lookup — an admin identity is one account plus one grant row and nothing else (see `tests/tests/utils/adminCredentials.ts` for why the seed structurally cannot express it).
    *
-   * Exactly two mutations. The second is wrapped in the SAME compensating rollback shape `forceRegister` uses, and for the same reason rather than as defensive style: a failure between minting the account and writing the grant leaves an orphan `auth.users` row that surfaces as "User already exists" on every subsequent run and needs manual cleanup.
+   * Exactly two mutations, through the same {@link registerWithGrants} as `forceRegister`, so a failed grant insert rolls the account back.
    *
    * The shape is `TEST_ADMIN_GRANT` — a member of the application's own `ADMIN_GRANTS`, checked at compile time by that constant's declaration, not a pair picked here. The target is `TEST_PROJECT_ID`, because the RLS predicate guarding `admin_jobs` is `user_can('project', X, …)` and a project grant reaches only its own project. An admin scoped anywhere else logs in fine and then fails the job insert for a reason that has nothing to do with what a test is measuring.
    *
-   * Removal is `unregisterCandidate(email)`, which is misnamed for this use but correct for it: it deletes the grant rows by `user_id` and the auth user itself, and reads or writes no candidate row.
+   * Removal is `unregisterUser(email)`.
    *
    * @param email - Email address for the new admin auth user.
    * @param password - Password for the new admin auth user.
    * @throws Error if account creation or the grant insert fails. On a grant-insert failure the account is rolled back and the ORIGINAL cause is re-thrown.
    */
   async forceRegisterAdmin(email: string, password: string): Promise<void> {
-    // 1. Create auth user with confirmed email.
-    const { data: createData, error: createError } = await this.client.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true
-    });
-    if (createError) throw new Error(`forceRegisterAdmin: createUser failed: ${createError.message}`);
-    const user = createData.user;
-
-    try {
-      // 2. Write the project-scoped admin grant. `target_type` is null on every non-entity row — the table's CHECK constraint requires exactly that — and `custom_access_token_hook` reads this row on every token issue to build the JWT's `grants` claim.
-      const { error: grantError } = await this.client.from('grants').insert({
-        user_id: user.id,
-        scope: TEST_ADMIN_GRANT.scope,
-        target_type: null,
-        target_id: this.projectId,
-        role: TEST_ADMIN_GRANT.role
-      });
-      if (grantError) throw new Error(`forceRegisterAdmin: insert grant failed: ${grantError.message}`);
-    } catch (mutationErr) {
-      // reason: compensating rollback on partial failure prevents orphan auth users that cascade as "User already exists" errors across subsequent test runs. The rollback failure (if any) is logged but not re-thrown — we always re-throw the original mutationErr so the caller sees the real cause.
-      await this.client.auth.admin.deleteUser(user.id).then(
-        () => {},
-        (rollbackErr) => {
-          console.error('[forceRegisterAdmin] rollback (auth.admin.deleteUser) failed:', rollbackErr);
-        }
-      );
-      throw mutationErr;
-    }
+    // `target_type` is null on every non-entity row — the table's CHECK constraint requires exactly that — and `custom_access_token_hook` reads this row on every token issue to build the JWT's `grants` claim.
+    await this.registerWithGrants('forceRegisterAdmin', email, password, (userId) =>
+      this.insertGrant(
+        userId,
+        { scope: TEST_ADMIN_GRANT.scope, target_type: null, target_id: this.projectId, role: TEST_ADMIN_GRANT.role },
+        'forceRegisterAdmin'
+      )
+    );
   }
 
   /**
@@ -1351,9 +1328,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Delete the bank-auth candidate the identity-callback Edge Function created for a given placeholder email, with the grants naming it.
    *
-   * The bank-auth self-registration flow creates a fresh `candidates` row with no `external_id`, so `runTeardown`'s prefix delete misses it. The row is found through the candidate-editor grant held by the auth user the Edge Function created under the identity-derived placeholder email (`${sub}@bank-auth.placeholder`). Without this delete the bank-auth candidate rows would accumulate across repeated runs, because `unregisterCandidate` removes the user's grants and the auth user but never a candidate row.
+   * The bank-auth self-registration flow creates a fresh `candidates` row with no `external_id`, so `runTeardown`'s prefix delete misses it. The row is found through the candidate-editor grant held by the auth user the Edge Function created under the identity-derived placeholder email (`${sub}@bank-auth.placeholder`). Without this delete the bank-auth candidate rows would accumulate across repeated runs, because `unregisterUser` removes the user's grants and the auth user but never a candidate row.
    *
-   * Call it BEFORE `unregisterCandidate`: the grant it reads the candidate through is deleted with the auth user. Idempotent — a no-op when no user or candidate matches.
+   * Call it BEFORE `unregisterUser`: the grant it reads the candidate through is deleted with the auth user. Idempotent — a no-op when no user or candidate matches.
    *
    * @param placeholderEmail - The `${sub}@bank-auth.placeholder` address the bank-auth auth user was created with.
    * @throws Error if the users cannot be listed, or if the lookup or a delete fails.
@@ -1404,70 +1381,56 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Unregister a candidate: delete the user's invitations in this client's project, the user's grants and the auth user.
+   * Unregister a user: delete the user's invitations in this client's project, the user's grants and the auth user.
    *
-   * If the user doesn't exist (already unregistered), only the invitations addressed to the email are deleted. The candidate rows themselves are left in place. The user's terms-of-use acceptances go with the auth user, by the cascade on `terms_of_use_acceptances.user_id`.
+   * If the user doesn't exist (already unregistered), only the invitations addressed to the email are deleted. No entity row is touched. The user's terms-of-use acceptances go with the auth user, by the cascade on `terms_of_use_acceptances.user_id`.
    *
    * A failed listing of the users throws before anything is deleted: "no such user" is concluded only from a complete read, so a call that returns has removed the user if one held the address.
    *
-   * @param email - Email address of the candidate to unregister
+   * @param email - Email address of the user to unregister
    * @throws Error if the users cannot be listed, or if deleting the invitations, the grants or the auth user fails.
    */
-  async unregisterCandidate(email: string): Promise<void> {
-    // 1. Find auth user by email
-    const user = await this.findAuthUser(email, 'unregisterCandidate');
-
-    // The invitations go before the user, and when no user exists too. An open earlier invitation for the address and a target collides with a new one; the leftover checks count every invitation on the reserved rows, claimed or not; and an open row left for the address is claimed by the next user created with that address. Before the user, because a code row the user claimed names the user only by `claimed_by`, which the user's deletion sets to null.
-    await this.removeInvitations({ emails: [email], claimedByUserIds: user ? [user.id] : [] });
-
-    if (!user) return; // Already unregistered
-
-    // 2. Delete the identity's grants. Step 3 deletes the auth user and `grants.user_id` is `ON DELETE CASCADE`, so this is belt-and-braces rather than the load-bearing step — it is kept explicit so every removal path in this file reads the same way and none of them depends on remembering which constraint does the work.
-    const { error: grantError } = await this.client.from('grants').delete().eq('user_id', user.id);
-    if (grantError) throw new Error(`unregisterCandidate: delete grants failed: ${grantError.message}`);
-
-    // 3. Delete auth user
-    const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
-    if (deleteError) throw new Error(`unregisterCandidate: deleteUser failed: ${deleteError.message}`);
+  async unregisterUser(email: string): Promise<void> {
+    const user = await this.findAuthUser(email, 'unregisterUser');
+    if (user) {
+      await this.removeUser(user, 'unregisterUser');
+      return;
+    }
+    // No user: an open invitation left for the address is still claimed by the next user created with it, so it goes too.
+    await this.removeInvitations({ emails: [email], claimedByUserIds: [] });
   }
 
   /**
-   * Delete all test auth users (emails containing 'openvaa.org' or 'test').
+   * Delete a user's invitations in this client's project, the user's grants and the auth user, stopping at the first failure.
    *
-   * Used during teardown to clean up auth state. For each user, deletes the user's invitations in this client's project, the user's grants and the auth user, in the order `unregisterCandidate` uses and for the same reason.
+   * The invitations go first. An open earlier invitation for the address and a target collides with a new one; the leftover checks count every invitation on the reserved rows, claimed or not; and an open row left for the address is claimed by the next user created with that address. Before the user, because a code row the user claimed names the user only by `claimed_by`, which the user's deletion sets to null.
    *
-   * @throws Error if the users cannot be listed, before anything is deleted; or an error listing every per-user step that failed, after all users have been processed.
+   * The grants are deleted explicitly although `grants.user_id` is `ON DELETE CASCADE`, so that every removal path in this file reads the same way and none of them depends on remembering which constraint does the work.
+   *
+   * @param user - The auth user to remove.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if deleting the invitations, the grants or the auth user fails.
    */
-  async deleteAllTestUsers(): Promise<void> {
-    const users = await this.listAllUsers('deleteAllTestUsers');
+  private async removeUser(user: AuthUserRow, caller: string): Promise<void> {
+    await this.removeInvitations({ emails: user.email ? [user.email] : [], claimedByUserIds: [user.id] });
 
-    const testUsers = users.filter((u) => u.email && (u.email.includes('openvaa.org') || u.email.includes('test')));
+    const { error: grantError } = await this.client.from('grants').delete().eq('user_id', user.id);
+    if (grantError) throw new Error(`${caller}: delete grants failed: ${grantError.message}`);
 
-    // Propagate per-user step errors instead of silently swallowing them.
-    // Discarding PostgREST/admin-API errors on every step lets a teardown that fails mid-loop proceed against a corrupted state and produce confusing downstream failures. Collect errors and throw at the end with an aggregated message so partial deletions complete first.
-    const errors: Array<{ user: string; step: string; error: unknown }> = [];
+    const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
+    if (deleteError) throw new Error(`${caller}: deleteUser failed: ${deleteError.message}`);
+  }
 
-    for (const user of testUsers) {
-      // The invitations go before the user, for the reasons `unregisterCandidate` gives.
-      await this.removeInvitations({ emails: user.email ? [user.email] : [], claimedByUserIds: [user.id] }).then(
-        () => {},
-        (invitationsError: unknown) => {
-          errors.push({ user: user.id, step: 'delete-invitations', error: String(invitationsError) });
-        }
-      );
-
-      // Delete the identity's grants. The auth-user deletion below cascades to them anyway; explicit for the same symmetry reason as `unregisterCandidate`.
-      const { error: grantsError } = await this.client.from('grants').delete().eq('user_id', user.id);
-      if (grantsError) errors.push({ user: user.id, step: 'delete-grants', error: grantsError });
-
-      // Delete auth user
-      const { error: deleteError } = await this.client.auth.admin.deleteUser(user.id);
-      if (deleteError) errors.push({ user: user.id, step: 'delete-auth-user', error: deleteError });
-    }
-
-    if (errors.length > 0) {
-      // reason: collect-and-throw at end so partial deletions complete first AND the caller sees the failures (matches `unregisterCandidate`'s throw-on-error pattern in this file).
-      throw new Error(`deleteAllTestUsers: ${errors.length} failure(s) — ${JSON.stringify(errors)}`);
-    }
+  /**
+   * Insert one grant row for a user. The one place in this file that inserts a grant.
+   *
+   * @param userId - The auth user the grant is written for.
+   * @param grant - The grant's four specification columns.
+   * @param caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if the insert fails.
+   */
+  private async insertGrant(userId: string, grant: GrantClaim, caller: string): Promise<void> {
+    const { error } = await this.client.from('grants').insert({ user_id: userId, ...grant });
+    if (error) throw new Error(`${caller}: insert grant failed: ${error.message}`);
   }
 }

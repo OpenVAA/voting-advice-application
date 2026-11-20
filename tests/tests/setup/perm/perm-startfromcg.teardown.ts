@@ -22,7 +22,7 @@ teardown('delete perm-startfromcg dataset', async () => {
   await clearWrittenNominations();
 
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(CANDIDATE_EDITOR_EMAIL);
+  await client.unregisterUser(CANDIDATE_EDITOR_EMAIL);
 
   await runTeardownAsserted(PREFIX, client);
 

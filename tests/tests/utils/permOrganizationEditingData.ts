@@ -1,5 +1,4 @@
 import path from 'path';
-import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
 import { TESTS_DIR } from './testsDir';
 import type { EntityGrantTarget } from './supabaseAdminClient';
 
@@ -15,9 +14,6 @@ import type { EntityGrantTarget } from './supabaseAdminClient';
 
 /** The `external_id` prefix of every row of the dataset, and the prefix its teardown deletes. */
 export const ORGANIZATION_EDITING_PREFIX = 'e2e-perm-organization-editing-';
-
-/** The password of all three editors: the suite's shared test password. */
-export const ORGANIZATION_EDITING_PASSWORD = TEST_CANDIDATE_PASSWORD;
 
 // ---------------------------------------------------------------------------
 // The confirmed organization: visible to voters, its two names frozen.

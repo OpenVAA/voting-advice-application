@@ -16,7 +16,7 @@ import path from 'path';
 import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { TESTS_DIR } from '../../utils/testsDir';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
@@ -37,12 +37,12 @@ setup('import perm-answers-locked dataset + mint candidate session', async ({ pa
   const fullExternalId = `${PREFIX}cand-1`;
   const candidateEmail = `${fullExternalId}@test.openvaa.local`;
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(candidateEmail);
-  await client.forceRegister(fullExternalId, candidateEmail, TEST_CANDIDATE_PASSWORD);
+  await client.unregisterUser(candidateEmail);
+  await client.forceRegister(fullExternalId, candidateEmail, TEST_PASSWORD);
 
   // 3. Sign in on the contestant app's sign-in screen and save the resulting cookie-based Supabase session as Playwright storage state.
   fs.mkdirSync(path.dirname(STORAGE_STATE_PATH), { recursive: true });
-  await createContestantLoginPage(page).signInFromCold(candidateEmail, TEST_CANDIDATE_PASSWORD);
+  await createContestantLoginPage(page).signInFromCold(candidateEmail, TEST_PASSWORD);
   await expect(page).not.toHaveURL(/.*login.*/);
   await page.context().storageState({ path: STORAGE_STATE_PATH });
 });

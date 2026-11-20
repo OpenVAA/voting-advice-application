@@ -398,7 +398,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     await test.step('3. registration: seed an invitation + ask for a sign-in link + read the mailed link', async () => {
       // A retry of this walk in the same run reuses this run's address: a user an earlier attempt left behind would turn this first-time registration into a returning user's sign-in, which is not asked to set a password, and a nomination it left behind would meet the one this invitation creates. Users of earlier runs hold addresses of their own and are removed by the setup.
-      await client.unregisterCandidate(UNREGISTERED_CANDIDATE_EMAIL);
+      await client.unregisterUser(UNREGISTERED_CANDIDATE_EMAIL);
       await client.bulkDelete({ nominations: { external_ids: [UNREGISTERED_CANDIDATE_NOMINATION.externalId] } });
 
       // The invitation is seeded, and only then is the link asked for. Between the two, the seeding alone has created no account for the address and no editor of the candidate.

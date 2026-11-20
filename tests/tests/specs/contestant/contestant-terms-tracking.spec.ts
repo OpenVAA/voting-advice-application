@@ -52,7 +52,7 @@ import {
   ANALYTICS_TERMS_REFUSING_EMAIL,
   ANALYTICS_TERMS_REFUSING_EXTERNAL_ID,
   ANALYTICS_TERMS_REFUSING_STORAGE_STATE,
-  TEST_CANDIDATE_PASSWORD
+  TEST_PASSWORD
 } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import type { BrowserContext, Page, TestInfo } from '@playwright/test';
@@ -79,7 +79,7 @@ const TERMS_PENDING_IDENTITIES: ReadonlyArray<StoredSessionIdentity> = [
   {
     externalId: ANALYTICS_TERMS_GRANTING_EXTERNAL_ID,
     email: ANALYTICS_TERMS_GRANTING_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: ANALYTICS_TERMS_GRANTING_STORAGE_STATE,
     acceptTermsOfUse: false,
     settledTestId: testIds.contestant.terms.submit
@@ -87,7 +87,7 @@ const TERMS_PENDING_IDENTITIES: ReadonlyArray<StoredSessionIdentity> = [
   {
     externalId: ANALYTICS_TERMS_REFUSING_EXTERNAL_ID,
     email: ANALYTICS_TERMS_REFUSING_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: ANALYTICS_TERMS_REFUSING_STORAGE_STATE,
     acceptTermsOfUse: false,
     settledTestId: testIds.contestant.terms.submit

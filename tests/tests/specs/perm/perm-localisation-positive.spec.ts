@@ -167,7 +167,7 @@ test.describe('perm-localisation-positive', () => {
 
     // A retry of this walk in the same run reuses this run's address: a user and a claimed invitation an earlier attempt left would make this registration a returning user's sign-in. Clear both first (idempotent no-op when absent).
     // Users of earlier runs hold addresses of their own: the setup and the teardown remove them by the address's stable beginning.
-    await client.unregisterCandidate(RECIPIENT_EMAIL);
+    await client.unregisterUser(RECIPIENT_EMAIL);
 
     // Returns once the link request has handed its mail over; the invited address has its auth user by then.
     await client.inviteByEmail({

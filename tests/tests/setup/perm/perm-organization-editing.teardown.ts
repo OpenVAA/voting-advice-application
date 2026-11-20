@@ -29,10 +29,10 @@ teardown('delete perm-organization-editing dataset', async () => {
   expect(PREFIX, 'the prefix deleted here is the one the dataset is seeded under').toBe(ORGANIZATION_EDITING_PREFIX);
 
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(CONFIRMED_ORGANIZATION_EDITOR_EMAIL);
-  await client.unregisterCandidate(UNCONFIRMED_ORGANIZATION_EDITOR_EMAIL);
+  await client.unregisterUser(CONFIRMED_ORGANIZATION_EDITOR_EMAIL);
+  await client.unregisterUser(UNCONFIRMED_ORGANIZATION_EDITOR_EMAIL);
   // The candidate's editor.
-  await client.unregisterCandidate(UNCONFIRMED_CANDIDATE_EDITOR_EMAIL);
+  await client.unregisterUser(UNCONFIRMED_CANDIDATE_EDITOR_EMAIL);
 
   await runTeardownAsserted(PREFIX, client);
 

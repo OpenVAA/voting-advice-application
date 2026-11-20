@@ -1,5 +1,4 @@
 import path from 'path';
-import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
 import { TESTS_DIR } from './testsDir';
 import type { Enums } from '@openvaa/supabase-types';
 import type { EntityGrantTarget } from './supabaseAdminClient';
@@ -16,9 +15,6 @@ import type { EntityGrantTarget } from './supabaseAdminClient';
 
 /** The `external_id` prefix of every row of the dataset, and the prefix its teardown deletes. */
 export const START_FROM_CG_PREFIX = 'e2e-perm-startfromcg-';
-
-/** The password of the candidate's editor: the suite's shared test password. */
-export const START_FROM_CG_PASSWORD = TEST_CANDIDATE_PASSWORD;
 
 // ---------------------------------------------------------------------------
 // The constituency group that is chosen first, and three of the constituencies.

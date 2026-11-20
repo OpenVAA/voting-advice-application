@@ -72,7 +72,7 @@ export async function registerAndStoreSession(page: Page, identity: StoredSessio
   fs.mkdirSync(path.dirname(identity.storageStatePath), { recursive: true });
 
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(identity.email);
+  await client.unregisterUser(identity.email);
   await client.forceRegisterUser(identity.email, identity.password, {
     entityGrants,
     acceptTermsOfUse: identity.acceptTermsOfUse

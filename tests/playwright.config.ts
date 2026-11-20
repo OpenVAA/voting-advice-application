@@ -779,7 +779,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-contestant-journey',
     testMatch: /contestant-journey\.teardown\.ts/,
-    // reason: contestant-journey.teardown.ts performs no prefix delete (it only calls unregisterCandidate), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
+    // reason: contestant-journey.teardown.ts performs no prefix delete (it only calls unregisterUser), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
     retries: 0
   },
   {
@@ -812,7 +812,7 @@ const BASE_PROJECTS: Array<Project> = [
   {
     name: 'data-teardown-entity-selection',
     testMatch: /entity-selection\.teardown\.ts/,
-    // reason: entity-selection.teardown.ts performs no prefix delete (it only calls unregisterCandidate), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
+    // reason: entity-selection.teardown.ts performs no prefix delete (it only calls unregisterUser), so there is no runTeardownAsserted accounting to mask here. Set to 0 anyway for consistency with every other data-teardown-* project, so a future edit that adds a delete + runTeardownAsserted call to this file inherits the non-retrying posture by default rather than needing a new opt-in.
     retries: 0
   },
   {

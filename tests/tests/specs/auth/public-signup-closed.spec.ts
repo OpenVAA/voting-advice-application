@@ -50,7 +50,7 @@ function postAsAnon(request: APIRequestContext, route: string, data: Record<stri
 /** Removes any user an attempt created. A refusal creates none, so on a green run this deletes nothing. */
 async function removeAttemptedUsers(): Promise<void> {
   const client = new SupabaseAdminClient();
-  for (const address of attemptedAddresses.splice(0)) await client.unregisterCandidate(address);
+  for (const address of attemptedAddresses.splice(0)) await client.unregisterUser(address);
 }
 
 test.describe('public sign-up is closed', () => {

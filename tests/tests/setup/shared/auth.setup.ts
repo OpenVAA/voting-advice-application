@@ -19,7 +19,7 @@ import {
   TERMS_PENDING_STORAGE_STATE,
   TEST_CANDIDATE_EMAIL,
   TEST_CANDIDATE_EXTERNAL_ID,
-  TEST_CANDIDATE_PASSWORD,
+  TEST_PASSWORD,
   TEST_TERMS_PENDING_CANDIDATE_EMAIL,
   TEST_TERMS_PENDING_CANDIDATE_EXTERNAL_ID
 } from '../../utils/testCredentials';
@@ -35,7 +35,7 @@ setup('register + authenticate as base candidate', async ({ page }) => {
   await registerAndStoreSession(page, {
     externalId: TEST_CANDIDATE_EXTERNAL_ID,
     email: TEST_CANDIDATE_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: authFile,
     acceptTermsOfUse: true
   });
@@ -49,7 +49,7 @@ setup('register + authenticate as a user who has not accepted the terms of use',
   await registerAndStoreSession(page, {
     externalId: TEST_TERMS_PENDING_CANDIDATE_EXTERNAL_ID,
     email: TEST_TERMS_PENDING_CANDIDATE_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: TERMS_PENDING_STORAGE_STATE,
     acceptTermsOfUse: false,
     settledTestId: testIds.contestant.terms.submit

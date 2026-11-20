@@ -13,7 +13,6 @@
 import { test as setup } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import {
-  NO_NOMINATION_PASSWORD,
   NOMINATED_CANDIDATE_EDITOR_EMAIL,
   NOMINATED_CANDIDATE_GRANT,
   NOMINATED_CANDIDATE_STORAGE_STATE,
@@ -24,6 +23,7 @@ import {
   UNNOMINATED_ORGANIZATION_GRANT,
   UNNOMINATED_ORGANIZATION_STORAGE_STATE
 } from '../../utils/permNoNominationData';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import { registerAndStoreSession } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
@@ -60,7 +60,7 @@ setup(
       registerAndStoreSession(page, {
         entityGrants: [UNNOMINATED_CANDIDATE_GRANT],
         email: UNNOMINATED_CANDIDATE_EDITOR_EMAIL,
-        password: NO_NOMINATION_PASSWORD,
+        password: TEST_PASSWORD,
         storageStatePath: UNNOMINATED_CANDIDATE_STORAGE_STATE,
         acceptTermsOfUse: true,
         settledTestId: testIds.contestant.home.statusMessage
@@ -70,7 +70,7 @@ setup(
       registerAndStoreSession(page, {
         entityGrants: [UNNOMINATED_ORGANIZATION_GRANT],
         email: UNNOMINATED_ORGANIZATION_EDITOR_EMAIL,
-        password: NO_NOMINATION_PASSWORD,
+        password: TEST_PASSWORD,
         storageStatePath: UNNOMINATED_ORGANIZATION_STORAGE_STATE,
         acceptTermsOfUse: true,
         settledTestId: testIds.contestant.home.statusMessage
@@ -80,7 +80,7 @@ setup(
       registerAndStoreSession(page, {
         entityGrants: [NOMINATED_CANDIDATE_GRANT],
         email: NOMINATED_CANDIDATE_EDITOR_EMAIL,
-        password: NO_NOMINATION_PASSWORD,
+        password: TEST_PASSWORD,
         storageStatePath: NOMINATED_CANDIDATE_STORAGE_STATE,
         acceptTermsOfUse: true,
         settledTestId: testIds.contestant.home.statusMessage

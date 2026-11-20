@@ -13,12 +13,12 @@ import { runTeardownAsserted } from '../shared/assertTeardown';
 
 const PREFIX = 'e2e-perm-qvid-';
 const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-question-video.json');
-// The auth.users row minted by the setup's forceRegister. runTeardown(PREFIX) deletes the seeded candidate row but NOT the auth user; without this it leaks (the setup self-heals via unregisterCandidate, but we clean up after ourselves). Idempotent no-op when no matching auth.users row exists.
+// The auth.users row minted by the setup's forceRegister. runTeardown(PREFIX) deletes the seeded candidate row but NOT the auth user; without this it leaks (the setup self-heals via unregisterUser, but we clean up after ourselves). Idempotent no-op when no matching auth.users row exists.
 const CANDIDATE_EMAIL = `${PREFIX}ca-1-1a@test.openvaa.local`;
 
 teardown('delete perm-question-video dataset', async () => {
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(CANDIDATE_EMAIL);
+  await client.unregisterUser(CANDIDATE_EMAIL);
   await runTeardownAsserted(PREFIX, client);
 
   if (fs.existsSync(STORAGE_STATE_PATH)) fs.unlinkSync(STORAGE_STATE_PATH);

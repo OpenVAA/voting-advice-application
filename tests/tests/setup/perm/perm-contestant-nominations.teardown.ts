@@ -34,10 +34,10 @@ teardown('delete perm-contestant-nominations dataset', async () => {
   await clearWrittenNominations();
 
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(NEW_CANDIDATE_EDITOR_EMAIL);
-  await client.unregisterCandidate(NEW_ORGANIZATION_EDITOR_EMAIL);
-  await client.unregisterCandidate(EDIT_CANDIDATE_EDITOR_EMAIL);
-  await client.unregisterCandidate(EDIT_ORGANIZATION_EDITOR_EMAIL);
+  await client.unregisterUser(NEW_CANDIDATE_EDITOR_EMAIL);
+  await client.unregisterUser(NEW_ORGANIZATION_EDITOR_EMAIL);
+  await client.unregisterUser(EDIT_CANDIDATE_EDITOR_EMAIL);
+  await client.unregisterUser(EDIT_ORGANIZATION_EDITOR_EMAIL);
 
   await runTeardownAsserted(PREFIX, client);
 

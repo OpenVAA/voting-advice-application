@@ -28,7 +28,6 @@ import { declareScans } from '../../utils/contestantAxeScan';
 import {
   CONSTITUENCY_NAME,
   ELECTION_NAME,
-  NO_NOMINATION_PASSWORD,
   NOMINATED_CANDIDATE_GRANT,
   NOMINATED_CANDIDATE_STORAGE_STATE,
   OPINION_QUESTION_EXTERNAL_IDS,
@@ -45,6 +44,7 @@ import {
   WRITTEN_NOMINATION_ELECTION_SYMBOL
 } from '../../utils/permNoNominationData';
 import { PHONE_VIEWPORTS, phoneUse } from '../../utils/phoneViewports';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import type { ContestantEntityPage } from '../../fixtures/contestant/contestantEntityPages.fixture';
 import type { ContestantAxeRoute } from '../../utils/contestantAxeScan';
@@ -1094,7 +1094,7 @@ test.describe('perm-no-nomination: logging out', () => {
     }) => {
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
       await contestantLoginPage.goToPage();
-      await contestantLoginPage.login(UNNOMINATED_CANDIDATE_EDITOR_EMAIL, NO_NOMINATION_PASSWORD);
+      await contestantLoginPage.login(UNNOMINATED_CANDIDATE_EDITOR_EMAIL, TEST_PASSWORD);
       await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
       await contestantLogoutButton.clickWithoutDialog();
     });

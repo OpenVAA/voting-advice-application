@@ -1,5 +1,4 @@
 import path from 'path';
-import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
 import { TESTS_DIR } from './testsDir';
 import type { Enums } from '@openvaa/supabase-types';
 import type { EntityGrantTarget } from './supabaseAdminClient';
@@ -18,9 +17,6 @@ import type { EntityGrantTarget } from './supabaseAdminClient';
 
 /** The `external_id` prefix of every row of the dataset, and the prefix its teardown deletes. */
 export const CONTESTANT_NOMINATIONS_PREFIX = 'e2e-perm-contestant-nominations-';
-
-/** The password of all four editors: the suite's shared test password. */
-export const CONTESTANT_NOMINATIONS_PASSWORD = TEST_CANDIDATE_PASSWORD;
 
 /** An entity of the dataset that can hold a nomination: its type and its `external_id`. */
 export interface NominationEntityTarget {

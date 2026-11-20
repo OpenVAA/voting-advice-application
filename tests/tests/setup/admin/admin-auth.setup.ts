@@ -14,7 +14,7 @@ import { testIds } from '../../utils/testIds';
  *
  * The grant row this mints is what makes the identity an admin at all: `custom_access_token_hook` reads `public.grants` on every token issue and projects the rows into the JWT's `grants` claim, which is what the login action's admin gate and the protected layout's identity check then read. An account without it logs in and is bounced straight back out.
  *
- * The `unregisterCandidate` call ahead of `forceRegisterAdmin` makes re-runs idempotent: a prior run's auth user would otherwise collide as "User already exists". It is the correct removal for an admin despite its name: it deletes the grant rows by `user_id` and the account itself, and reads or writes no candidate row.
+ * The `unregisterUser` call ahead of `forceRegisterAdmin` makes re-runs idempotent: a prior run's auth user would otherwise collide as "User already exists".
  *
  * The stale-job pre-clear is the second half of that idempotency. `admin_jobs` rows are reachable by NOTHING else in the suite (see `deleteAdminJobsByAuthor`), so a run that died between the spec's write and its teardown would leave a row behind and the spec's own count assertion would then be reading someone else's history.
  */
@@ -27,7 +27,7 @@ setup('mint + authenticate as project admin', async ({ page }) => {
 
   const client = new SupabaseAdminClient();
   await client.deleteAdminJobsByAuthor(TEST_ADMIN_EMAIL);
-  await client.unregisterCandidate(TEST_ADMIN_EMAIL);
+  await client.unregisterUser(TEST_ADMIN_EMAIL);
   await client.forceRegisterAdmin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
 
   // Log in through the real form.

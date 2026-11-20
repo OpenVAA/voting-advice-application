@@ -16,7 +16,6 @@ import {
   CONFIRMED_ORGANIZATION_EDITOR_EMAIL,
   CONFIRMED_ORGANIZATION_GRANT,
   CONFIRMED_ORGANIZATION_STORAGE_STATE,
-  ORGANIZATION_EDITING_PASSWORD,
   UNCONFIRMED_CANDIDATE_EDITOR_EMAIL,
   UNCONFIRMED_CANDIDATE_GRANT,
   UNCONFIRMED_CANDIDATE_STORAGE_STATE,
@@ -24,6 +23,7 @@ import {
   UNCONFIRMED_ORGANIZATION_GRANT,
   UNCONFIRMED_ORGANIZATION_STORAGE_STATE
 } from '../../utils/permOrganizationEditingData';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import { registerAndStoreSession } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
@@ -60,7 +60,7 @@ setup(
       registerAndStoreSession(page, {
         entityGrants: [CONFIRMED_ORGANIZATION_GRANT],
         email: CONFIRMED_ORGANIZATION_EDITOR_EMAIL,
-        password: ORGANIZATION_EDITING_PASSWORD,
+        password: TEST_PASSWORD,
         storageStatePath: CONFIRMED_ORGANIZATION_STORAGE_STATE,
         acceptTermsOfUse: true,
         settledTestId: testIds.contestant.home.statusMessage
@@ -70,7 +70,7 @@ setup(
       registerAndStoreSession(page, {
         entityGrants: [UNCONFIRMED_ORGANIZATION_GRANT],
         email: UNCONFIRMED_ORGANIZATION_EDITOR_EMAIL,
-        password: ORGANIZATION_EDITING_PASSWORD,
+        password: TEST_PASSWORD,
         storageStatePath: UNCONFIRMED_ORGANIZATION_STORAGE_STATE,
         acceptTermsOfUse: true,
         settledTestId: testIds.contestant.home.statusMessage
@@ -81,7 +81,7 @@ setup(
       registerAndStoreSession(page, {
         entityGrants: [UNCONFIRMED_CANDIDATE_GRANT],
         email: UNCONFIRMED_CANDIDATE_EDITOR_EMAIL,
-        password: ORGANIZATION_EDITING_PASSWORD,
+        password: TEST_PASSWORD,
         storageStatePath: UNCONFIRMED_CANDIDATE_STORAGE_STATE,
         acceptTermsOfUse: true,
         settledTestId: testIds.contestant.home.statusMessage

@@ -13,7 +13,6 @@
 import { test as setup } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import {
-  CONTESTANT_NOMINATIONS_PASSWORD,
   EDIT_CANDIDATE_EDITOR_EMAIL,
   EDIT_CANDIDATE_GRANT,
   EDIT_CANDIDATE_STORAGE_STATE,
@@ -27,6 +26,7 @@ import {
   NEW_ORGANIZATION_GRANT,
   NEW_ORGANIZATION_STORAGE_STATE
 } from '../../utils/permContestantNominationsData';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import { registerAndStoreSession } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
@@ -81,7 +81,7 @@ setup(
         registerAndStoreSession(page, {
           entityGrants: [editor.grant],
           email: editor.email,
-          password: CONTESTANT_NOMINATIONS_PASSWORD,
+          password: TEST_PASSWORD,
           storageStatePath: editor.storageStatePath,
           acceptTermsOfUse: true,
           settledTestId: testIds.contestant.home.statusMessage

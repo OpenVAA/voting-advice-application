@@ -14,12 +14,8 @@
 
 import { test as setup } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
-import {
-  CANDIDATE_EDITOR_EMAIL,
-  CANDIDATE_GRANT,
-  CANDIDATE_STORAGE_STATE,
-  START_FROM_CG_PASSWORD
-} from '../../utils/permStartFromCgData';
+import { CANDIDATE_EDITOR_EMAIL, CANDIDATE_GRANT, CANDIDATE_STORAGE_STATE } from '../../utils/permStartFromCgData';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import { registerAndStoreSession } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
@@ -38,7 +34,7 @@ setup(
       await registerAndStoreSession(await context.newPage(), {
         entityGrants: [CANDIDATE_GRANT],
         email: CANDIDATE_EDITOR_EMAIL,
-        password: START_FROM_CG_PASSWORD,
+        password: TEST_PASSWORD,
         storageStatePath: CANDIDATE_STORAGE_STATE,
         acceptTermsOfUse: true,
         settledTestId: testIds.contestant.home.statusMessage
