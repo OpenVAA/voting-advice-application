@@ -13,7 +13,7 @@ The frontend picks the provider from `PUBLIC_IDENTITY_PROVIDER_TYPE`, and the Ed
 
 ## When it is offered
 
-Registration with the identity provider is offered for each entity type the project serves whose row of the `contestantApp.registrationModes` app setting contains `identity_provider`. `identityProviderEntityTypes(settings)` in [`registrationOffer.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/contestant/utils/registrationOffer.ts) lists those types, candidate first, and `listedRegistrationModes` lists the provider's mode exactly when that list is not empty. While `access.answersLocked` is on, nothing is listed. See [Registration](/developers-guide/contestant-app/registration#what-lists-a-registration-mode).
+Registration with the identity provider is offered for each entity type the project serves whose `registrationModes` in the `contestantApp.servedEntityTypes` app setting contain `identity_provider`. `identityProviderEntityTypes(settings)` in [`registrationOffer.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/contestant/utils/registrationOffer.ts) lists those types, candidate first, and `listedRegistrationModes` lists the provider's mode exactly when that list is not empty. While `access.answersLocked` is on, nothing is listed. See [Registration](/developers-guide/contestant-app/registration#what-lists-a-registration-mode).
 
 The setting alone decides what is offered: when it allows the mode and the identity provider is not configured, the flow fails closed at `/api/oidc/authorize`.
 

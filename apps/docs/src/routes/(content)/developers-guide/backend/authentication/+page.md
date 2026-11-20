@@ -218,11 +218,11 @@ The Contestant App loads its entity through the Supabase data writer, which call
 
 A nomination is a row of `public.nominations`: one entity, in one election, one constituency and one round, optionally under a parent nomination. An entity's own editor may write its nominations; an administrator confirms each before voters see it. The rules below bind every writer unless one says otherwise. The Contestant App's side is in [Defining nominations](/developers-guide/contestant-app/defining-nominations).
 
-### The election type
+### The nomination shape
 
-`elections.election_type` is a member of the enum `public.nomination_shape` and says which entity types the election admits as nominees. The column defaults to `organization_list_and_independents`.
+`elections.nomination_shape` is a member of the enum `public.nomination_shape` and says which entity types the election admits as nominees. The column defaults to `organization_list_and_independents`.
 
-| Election type                        | Candidate                                | Organization | Faction  | Alliance |
+| Nomination shape                     | Candidate                                | Organization | Faction  | Alliance |
 | ------------------------------------ | ---------------------------------------- | ------------ | -------- | -------- |
 | `organization_list`                  | admitted; needs a parent or a typed name | admitted     | admitted | admitted |
 | `organization_list_and_independents` | admitted                                 | admitted     | admitted | admitted |
@@ -234,11 +234,11 @@ The matrix is stated twice, once for each side, and nowhere else:
 - **In SQL**, `public.nomination_shape_rule(p_shape, p_entity_type)` in [`011-validation-functions.sql`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/schema/011-validation-functions.sql) answers `admitted`, `parent_required` or `refused`. It reads no table. A pair it does not name answers `NULL`, which every caller treats as a refusal.
 - **In TypeScript**, `isNominableInShape` and `allowedParentTypes` in [`nominationShape.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/data/src/objects/election/nominationShape.ts) of `@openvaa/data`, asked with `Election.nominationShape`. They tell the application what to offer; the database is what refuses.
 
-The two are held together by a grid over the same sixteen cells on each side: `nominationShape.test.ts` in the data package and the section on the election-type rule in `08-triggers.test.sql`. The `@openvaa/data` README compares every nomination rule of the data model with the database's, under "Nomination rules: the data model and the database".
+The two are held together by a grid over the same sixteen cells on each side: `nominationShape.test.ts` in the data package and the section on the nomination-shape rule in `08-triggers.test.sql`. The `@openvaa/data` README compares every nomination rule of the data model with the database's, under "Nomination rules: the data model and the database".
 
 Two triggers on `nominations` enforce the matrix:
 
-- **The row rule.** `validate_nomination`, before every insert and update, refuses a row whose entity type its election's type does not admit, with a message that begins `Nomination shape refused: ` and SQLSTATE `23514`. It binds every writer, the service role and `bulk_import` included. It is asked when a nomination is written: changing an election's type re-checks nothing, and a later write of a row the new type refuses is refused.
+- **The row rule.** `validate_nomination`, before every insert and update, refuses a row whose entity type its election's nomination shape does not admit, with a message that begins `Nomination shape refused: ` and SQLSTATE `23514`. It binds every writer, the service role and `bulk_import` included. It is asked when a nomination is written: changing an election's nomination shape re-checks nothing, and a later write of a row the new shape refuses is refused.
 - **The end-of-transaction rule.** The constraint trigger `nominations_parent_required` is `DEFERRABLE INITIALLY DEFERRED`. Where the matrix answers `parent_required`, a candidate's nomination must, when the transaction ends, have a parent nomination or carry `requestedParentOrganization` in its `custom_data` as a string that is not blank. A refusal begins `Nomination parent required: `, SQLSTATE `23514`. It is deferred so that a writer may insert the candidate's row, then its party's row, and then point the first at the second.
 
 ### Writing an entity's nominations
@@ -268,17 +268,17 @@ The function writes only the nominations in its reach: those of the entity that 
 
 It answers `{"inserted", "updated", "deleted", "unchanged", "parents_created"}`, each a count. A move counts once under `deleted` and once under `inserted`. A nomination whose values did not change is not written, so it keeps its confirmation; every row an entity's editor does write has its confirmation turned off.
 
-| Refusal                                                                                           | SQLSTATE | Message                                                                          |
-| ------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
-| A malformed argument or object                                                                    | `22023`  | begins `set_entity_nominations: `, naming the object as `p_nominations[<index>]` |
-| A constituency that is not one of its election's constituencies                                   | `22023`  | begins `set_entity_nominations: `, naming the object as `p_nominations[<index>]` |
-| The reach as stored is not the reach the caller read                                              | `40001`  | `set_entity_nominations: the nominations have changed since they were read`      |
-| The caller does not hold `nomination.edit` on the entity                                          | `42501`  | begins `set_entity_nominations: `                                                |
-| A row could not be written: nominations are locked, or the rows are no longer the caller's        | `42501`  | begins `set_entity_nominations: a nomination could not be written`               |
-| A nomination that is removed or moved has nominations listed under it                             | `23503`  | the foreign key on `parent_nomination_id`                                        |
-| The call would create a parent's nomination while the caller has originated ten unconfirmed ones  | `P0001`  | begins `A caller may originate at most `                                         |
-| A candidate is left with neither a parent nor a typed name where the election's type requires one | `23514`  | begins `Nomination parent required: `                                            |
-| An entity type the election's type refuses                                                        | `23514`  | begins `Nomination shape refused: `                                              |
+| Refusal                                                                                                       | SQLSTATE | Message                                                                          |
+| ------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| A malformed argument or object                                                                                | `22023`  | begins `set_entity_nominations: `, naming the object as `p_nominations[<index>]` |
+| A constituency that is not one of its election's constituencies                                               | `22023`  | begins `set_entity_nominations: `, naming the object as `p_nominations[<index>]` |
+| The reach as stored is not the reach the caller read                                                          | `40001`  | `set_entity_nominations: the nominations have changed since they were read`      |
+| The caller does not hold `nomination.edit` on the entity                                                      | `42501`  | begins `set_entity_nominations: `                                                |
+| A row could not be written: nominations are locked, or the rows are no longer the caller's                    | `42501`  | begins `set_entity_nominations: a nomination could not be written`               |
+| A nomination that is removed or moved has nominations listed under it                                         | `23503`  | the foreign key on `parent_nomination_id`                                        |
+| The call would create a parent's nomination while the caller has originated ten unconfirmed ones              | `P0001`  | begins `A caller may originate at most `                                         |
+| A candidate is left with neither a parent nor a typed name where the election's nomination shape requires one | `23514`  | begins `Nomination parent required: `                                            |
+| An entity type the election's nomination shape refuses                                                        | `23514`  | begins `Nomination shape refused: `                                              |
 
 Row-level security refuses an `UPDATE` and a `DELETE` without an error, by hiding the row. The function therefore counts the rows each statement affected and raises on a shortfall, so a caller is never answered that a locked or vanished row was saved. The frontend's data writer maps the `40001` refusal, the `23503` and the cap's `P0001` to the named refusals `changed`, `hasCandidates` and `tooManyPending`, and rejects for every other error.
 
