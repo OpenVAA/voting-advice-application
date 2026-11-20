@@ -2,6 +2,8 @@
  * Specification for the hosted-settings reference page, `developers-guide/deployment/hosted-settings` of the docs site: every hosted setting the Supabase module writes is listed on the page, by name, in backticks.
  *
  * The names are read from the module's files: every key of `hosted-settings.json` at any depth, a key whose value is `false` or an array included; the keys of the `auth_origin` and `auth_smtp` blocks of `settings.tf`; the attributes of the `auth_rate_limits` object of `variables.tf`; the keys of the `smtp_secret` settings resource of `main.tf`; and the strings of `function_secret_names` in `function-secrets.tf`. A name counts as listed only as a whole backticked token, so `mfa_totp_enroll_enabled` does not list `mfa_totp_verify_enabled` and a name in prose without backticks lists nothing. An absent page, an absent or unparsable source and a source block that cannot be found are each a problem naming the file, so the check never passes on empty input. The page's order is free; the problems list in the order the names are read from the sources.
+ *
+ * Every backticked token on the page shaped like a probe check's name, a prefix `api.`, `auth.`, `functions.`, `rows.`, `storage.` or `db.` or the name `no-seed`, is the `name` of a check of `infra/scripts/probe/checks.mjs`, so a how-to-verify cell never cites a check the probe does not run.
  */
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -156,6 +158,9 @@ const READERS: ReadonlyArray<{ key: SourceKey; read: (text: string) => SourceNam
   { key: 'functionSecretsTf', read: functionSecretNames }
 ];
 
+/** The shape of a probe check's name: a known prefix and a lower-case, hyphenated name, or `no-seed`. */
+const PROBE_CHECK_SHAPE = /^(?:(?:api|auth|functions|rows|storage|db)\.[a-z0-9]+(?:-[a-z0-9]+)*|no-seed)$/;
+
 /**
  * Every whole text in single backticks on a page.
  *
@@ -167,10 +172,10 @@ function backtickedTokens(page: string): Set<string> {
 }
 
 /**
- * List every hosted setting the reference page does not list. It reads nothing but its arguments.
+ * List every hosted setting the reference page does not list, and every probe check it cites that the registry does not define. It reads nothing but its arguments.
  *
- * @param input - The page text and the source texts, see {@link HostedSettingsReferenceInput}.
- * @returns One string per problem, each naming the setting and its file, or the file that could not be read; an empty array when the page lists every name.
+ * @param input - The page text, the source texts and the check names, see {@link HostedSettingsReferenceInput}.
+ * @returns One string per problem, each naming the setting and its file, the cited check and the registry, or the file that could not be read; an empty array when the page lists every name and cites only defined checks.
  */
 function hostedSettingsReferenceProblems(input: HostedSettingsReferenceInput): Array<string> {
   const problems: Array<string> = [];
@@ -195,6 +200,16 @@ function hostedSettingsReferenceProblems(input: HostedSettingsReferenceInput): A
       seen.add(name);
       if (!listed.has(name)) problems.push(`${name} (${path}): is not listed on the page in backticks`);
     }
+  }
+  if (input.checkNames.length === 0) {
+    problems.push(`${CHECKS_PATH}: defines no check name`);
+    return problems;
+  }
+  for (const token of listed) {
+    if (PROBE_CHECK_SHAPE.test(token) && !input.checkNames.includes(token))
+      problems.push(
+        `${token}: is cited on the page as a probe check, but ${CHECKS_PATH} defines no check of that name`
+      );
   }
   return problems;
 }
