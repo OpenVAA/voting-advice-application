@@ -40,7 +40,7 @@ export interface SetupFromTemplateOptions {
    *
    * It is a scenario mutation and not a change of the baseline: it changes the stored row for one run and touches neither the template nor `MINIMAL_BASE_APP_SETTINGS`. No teardown has to restore it, because the next `setupFromTemplate` call replaces the row. The bank-auth journey uses it to allow the `identity_provider` registration mode for candidates on a template that does not.
    *
-   * Applied with `updateAppSettings`, which calls the `merge_jsonb_column` RPC: objects merge recursively, and a list or a scalar in the overlay replaces the stored one whole. An overlay that changes a list therefore states the complete list.
+   * Applied with `updateAppSettings`, which calls the `merge_jsonb_column` RPC: objects merge recursively, and a list or a scalar in the overlay replaces the stored one whole, as does an object at a path of `SETTINGS_REPLACED_WHOLE` (today only `contestantApp.servedEntityTypes`). An overlay that changes a list or such a member therefore states it complete.
    */
   appSettingsOverride?: Record<string, unknown>;
 }
@@ -179,7 +179,7 @@ export async function setupFromTemplate(
     expect(persisted).toEqual(JSON.parse(JSON.stringify(expected)));
   }
 
-  // 3b. (Optional) Scenario-scoped app_settings overlay. Applied after the exact post-seed assertion, so that assertion compares the row with the template's settings and not with the overlaid ones. `merge_jsonb_column` merges the overlay into the row: objects recursively, a list or a scalar replacing the stored one. The next `setupFromTemplate` call replaces the row, so nothing restores it.
+  // 3b. (Optional) Scenario-scoped app_settings overlay. Applied after the exact post-seed assertion, so that assertion compares the row with the template's settings and not with the overlaid ones. `updateAppSettings` merges the overlay into the row: objects recursively, a list, a scalar or a `SETTINGS_REPLACED_WHOLE` member replacing the stored one. The next `setupFromTemplate` call replaces the row, so nothing restores it.
   if (options?.appSettingsOverride) {
     await client.updateAppSettings(options.appSettingsOverride);
   }

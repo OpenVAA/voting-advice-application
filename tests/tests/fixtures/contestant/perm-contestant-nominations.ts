@@ -6,8 +6,8 @@
  * Surface:
  *   - `test`   — Playwright test extended with the page fixtures the spec speaks in.
  *   - `expect` — re-exported from @playwright/test.
- *   - `setNominations`, `addNomination`, `clearWrittenNominations`, `setNominationsLocked`, `setAnswersLocked`, `setElectionSelectionDisallowed`, `setElectionType`, `setEntityConfirmed`, `setAnswers` — the state steps a test begins with.
- *   - `nominationsOf`, `electionTypeOf`, `entityConfirmedOf` — what the database holds, read with the service role, for a test that asserts what a step or a save stored.
+ *   - `setNominations`, `addNomination`, `clearWrittenNominations`, `setNominationsLocked`, `setAnswersLocked`, `setElectionSelectionDisallowed`, `setNominationShape`, `setEntityConfirmed`, `setAnswers` — the state steps a test begins with.
+ *   - `nominationsOf`, `nominationShapeOf`, `entityConfirmedOf` — what the database holds, read with the service role, for a test that asserts what a step or a save stored.
  *   - `deleteNominationsWithDescendants` — the delete the steps above remove nominations with, for the state steps of another dataset whose entities the application writes nominations for.
  *   - `contestantNominationsPagesOf(page)` — the entity-pages, home, nomination-editor and nominations fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
  *
@@ -15,7 +15,7 @@
  *
  * The state steps stand in for the administrator: each writes with the service role, past the rules that bind an entity's own editor, and writes only what it is given. Every test calls the step for each row or setting it reads before it opens a page, so that it passes when it is run again and when it is run alone. They are plain functions and not fixtures, so that code which is handed a page and nothing else can call them too. Each accepts the entities, elections and constituencies of the dataset and no other, and each throws under its own name when a read or a write fails.
  *
- * The rule of an election's type binds the service role too: a step that writes a nomination its election's type refuses throws with the database's refusal, and writes nothing.
+ * The rule of an election's nomination shape binds the service role too: a step that writes a nomination its election's shape refuses throws with the database's refusal, and writes nothing.
  *
  * A nomination a step writes carries an external id under the dataset's prefix. A nomination the application writes carries none: `setNominations` removes those of one entity and `clearWrittenNominations` those of every entity of the dataset. A nomination is never removed while another stands under it: the one that stands under it is removed first.
  *
@@ -38,7 +38,7 @@ import {
   NOMINATION_ENTITIES,
   OPINION_QUESTION_EXTERNAL_IDS,
   REQUIRED_INFO_QUESTION_EXTERNAL_ID,
-  SEEDED_ELECTION_TYPES,
+  SEEDED_NOMINATION_SHAPES,
   SEEDED_NOMINATIONS
 } from '../../utils/permContestantNominationsData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
@@ -46,9 +46,9 @@ import { createNavMenu } from '../shared/navMenu.fixture';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
 import type { Page } from '@playwright/test';
 import type {
-  ElectionTypeName,
   NominationContestTarget,
-  NominationEntityTarget
+  NominationEntityTarget,
+  NominationShapeName
 } from '../../utils/permContestantNominationsData';
 import type { NavMenuFixture } from '../shared/navMenu.fixture';
 import type { PageGeometryFixture } from '../shared/pageGeometry.fixture';
@@ -254,7 +254,7 @@ function assertEntityOfDataset(step: string, entity: NominationEntityTarget): vo
  * @throws If the election is not one of the dataset's.
  */
 function assertElectionOfDataset(step: string, electionExternalId: string): void {
-  if (!Object.hasOwn(SEEDED_ELECTION_TYPES, electionExternalId)) {
+  if (!Object.hasOwn(SEEDED_NOMINATION_SHAPES, electionExternalId)) {
     throw new Error(`${step}: ${electionExternalId} is not an election of the contestant-nominations dataset`);
   }
 }
@@ -341,7 +341,7 @@ export async function deleteNominationsWithDescendants(
 
 /**
  * Write nominations through the import, each whole: a member that is not given is stored as empty.
- * @throws If the import fails, which it does for a row the election's type refuses.
+ * @throws If the import fails, which it does for a row the election's nomination shape refuses.
  */
 async function importNominations(
   admin: SupabaseAdminClient,
@@ -378,7 +378,7 @@ async function importNominations(
  *
  * @param entity - An entity of the dataset.
  * @param state - The state the entity's nominations are put into.
- * @throws If the entity is not of the dataset, if a read or a write fails, or if an election's type as it is now refuses a seeded row.
+ * @throws If the entity is not of the dataset, if a read or a write fails, or if an election's nomination shape as it is now refuses a seeded row.
  */
 export async function setNominations(entity: NominationEntityTarget, state: NominationsState): Promise<void> {
   const step = 'setNominations';
@@ -424,7 +424,7 @@ export async function setNominations(entity: NominationEntityTarget, state: Nomi
  * @param entity - An entity of the dataset.
  * @param contest - The election and constituency of the dataset the nomination is in.
  * @param nomination - The row's external id, and its confirmation, symbol, parent and election round when it has them.
- * @throws If the entity, the contest or the external id is not the dataset's, if the external id is a seeded row's, if a nomination with a typed party name is to be confirmed, or if the write fails, which it does for a row the election's type refuses.
+ * @throws If the entity, the contest or the external id is not the dataset's, if the external id is a seeded row's, if a nomination with a typed party name is to be confirmed, or if the write fails, which it does for a row the election's nomination shape refuses.
  */
 export async function addNomination(
   entity: NominationEntityTarget,
@@ -533,20 +533,20 @@ export async function setElectionSelectionDisallowed(on: boolean): Promise<void>
 }
 
 /**
- * Change the type of an election of the dataset, as an administrator would. Nothing else of the election is changed.
+ * Change the nomination shape of an election of the dataset, as an administrator would. Nothing else of the election is changed.
  *
- * A nomination stored under the old type is not checked again: it stays as it is, and only a later write of it is judged by the new type. The caller puts the seeded type back in a `finally`, because every later test reads it, and the step after a flip is a full page load.
+ * A nomination stored under the old shape is not checked again: it stays as it is, and only a later write of it is judged by the new shape. The caller puts the seeded shape back in a `finally`, because every later test reads it, and the step after a flip is a full page load.
  *
  * @param electionExternalId - The `external_id` of an election of the dataset.
- * @param type - The type the election is given.
+ * @param shape - The nomination shape the election is given.
  * @throws If the election is not of the dataset, or if a read or the write fails.
  */
-export async function setElectionType(electionExternalId: string, type: ElectionTypeName): Promise<void> {
-  const step = 'setElectionType';
+export async function setNominationShape(electionExternalId: string, shape: NominationShapeName): Promise<void> {
+  const step = 'setNominationShape';
   const admin = new SupabaseAdminClient();
   const election = await electionRowOf(admin, step, electionExternalId);
-  await attempt(step, 'writing the type', () =>
-    admin.update('elections', String(election.id), { election_type: type })
+  await attempt(step, 'writing the shape', () =>
+    admin.update('elections', String(election.id), { nomination_shape: shape })
   );
 }
 
@@ -679,14 +679,14 @@ function orderKeyOf(nomination: StoredNomination): string {
 }
 
 /**
- * The type the database holds for an election of the dataset.
+ * The nomination shape the database holds for an election of the dataset.
  *
  * @param electionExternalId - The `external_id` of an election of the dataset.
  * @throws If the election is not of the dataset, or if the read fails.
  */
-export async function electionTypeOf(electionExternalId: string): Promise<string> {
-  const election = await electionRowOf(new SupabaseAdminClient(), 'electionTypeOf', electionExternalId);
-  return String(election.election_type);
+export async function nominationShapeOf(electionExternalId: string): Promise<string> {
+  const election = await electionRowOf(new SupabaseAdminClient(), 'nominationShapeOf', electionExternalId);
+  return String(election.nomination_shape);
 }
 
 /**
