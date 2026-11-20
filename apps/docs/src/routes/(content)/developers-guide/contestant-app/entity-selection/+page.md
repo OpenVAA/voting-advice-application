@@ -96,7 +96,7 @@ The home, the nominations view, the profile, the questions pages and the preview
 | Image               | Portrait.                                | Logo.                                                                  |
 | Colour              | Not offered.                             | A hex colour, typed or chosen with the colour picker.                  |
 
-**When a name is editable** is one rule for every name field of both types, `nameState` in [`nameRule.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/contestant/utils/nameRule.ts): the fields are editable while the entity is unconfirmed and `access.answersLocked` is off, and read-only otherwise. A confirmed entity's names are read-only whether or not answers are locked, and the nominations lock plays no part. The database holds the same line by itself: once an entity is confirmed it refuses a changed name or short name from the entity's own editor; see [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
+**When a name is editable** is one rule for every name field of both types, `nameState` in [`nameRule.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/contestant/utils/nameRule.ts): the fields are editable while the entity is unconfirmed and `access.contestantEditing` is not `'locked'`, and read-only otherwise. A confirmed entity's names are read-only whether or not answers are locked, and the nominations lock plays no part. The database holds the same line by itself: once an entity is confirmed it refuses a changed name or short name from the entity's own editor; see [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
 
 An entity can be confirmed while its user has the profile open. The next save of a changed name is then refused by the database. The page's other edits of that save are stored, the name fields turn read-only, and a message above the Save button says so. `ContestantUserDataState.save()` reports this outcome as `nameRefused`.
 
@@ -124,9 +124,10 @@ The editors' prompt is the one they have for any navigation. Leaving the profile
 
 ## The database functions
 
-The frontend reads the user's entities through three functions, described in full in [Which entity a user is](/developers-guide/backend/authentication#which-entity-a-user-is):
+The frontend reads the user's entities through four functions, described in full in [Which entity a user is](/developers-guide/backend/authentication#which-entity-a-user-is):
 
-- `get_user_entities(p_project_id)` lists the entities the caller edits, as one JSON object with an `entities` array, beside `password_set`, which says whether the caller's own account holds a password.
+- `get_user_entities(p_project_id)` lists the entities the caller edits, as one JSON object with an `entities` array and, for a caller who registered a party through the identity provider, its id under `organization`.
+- `get_caller_account_state()` answers two facts about the caller's own account: `password_set`, whether it holds a password, and `pending_email_taken`, whether the address awaiting confirmation on it is now another account's.
 - `get_entity_user_data(p_project_id, p_entity_type, p_entity_id)` returns the editable row of one of them, or no row.
 - `get_entity_nominations(p_project_id, p_entity_type, p_entity_id)` returns the nominations of one of them as a JSON array, empty for an entity with none, or `NULL` for an entity the caller does not edit.
 

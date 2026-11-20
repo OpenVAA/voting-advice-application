@@ -35,10 +35,10 @@ Neither load reads a `url` property or `route`. A layout load that read the addr
 
 Four predicates in [`$lib/contestant/nominations`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/contestant/nominations/editorFacts.ts) state the conditions once:
 
-- `nominationsEditableOf(locks)`: neither `access.nominationsLocked` nor `access.answersLocked` is on.
+- `nominationsEditableOf(locks)`: `access.contestantEditing` is `'open'`.
 - `admissibleElectionsOf(elections, entityType)`: the elections whose nomination shape admits the entity's type, asked of `isNominableInShape` of `@openvaa/data`.
 - `nominationEntryOfferedOf({ locks, elections, entityType })`: the editor lets the entity in, the first predicate and at least one election of the second. The home's nomination task asks it.
-- `inReachNominationsOf({ nominations, elections, entityType })`: the nominations the editor manages, which are those at their election's current round in an election that admits the entity's type. A nomination outside the reach is listed on the nominations view, has no card in the editor and is left as it is by a save.
+- `writableNominationsOf(nominations)`: the nominations the editor manages, those `get_entity_nominations` marks `writable`: at their election's current round, in an election that admits the entity's type, as the database's `private.nomination_writable` answers. A nomination that is not writable is listed on the nominations view, has no card in the editor and is left as it is by a save.
 
 No page, load or component writes one of these conditions out.
 
@@ -58,8 +58,8 @@ Which step an address leads to is decided by the shared ordering module [`select
 For an entity that already has nominations the steps start from them:
 
 - The election step checks the elections the entity is nominated in.
-- The constituency step selects the constituency of the entity's one nomination in each chosen election.
-- A chosen election in which the entity holds several nominations has no constituency to choose. Its nominations are kept as they are stored, each with a card on the details step. The application gives an entity one constituency for each election; an entity that stands in several is seeded by an administrator.
+- The constituency step selects the constituencies of the entity's nominations in each chosen election.
+- The database allows several nominations of one entity in one election: it refuses only a second nomination of the entity under the same parent at the same contest (the uniqueness key `nominations_entity_parent_contest_key`) and what `validate_nomination` refuses. The editor offers one constituency per election for a new nomination. An election in which the entity already holds several nominations has no constituency to choose (`constituencyChoiceOf`): those nominations are kept as they are stored, each with a card on the details step.
 
 Under `elections.startFromConstituencyGroup` the constituency picked from the group is resolved, for each election, to the constituency that election is held in (`constituenciesStoodFor`).
 
@@ -76,7 +76,7 @@ The details step holds the draft. Its arithmetic is the pure module [`nomination
 | `desiredSetOf(cards, listed)`                                | The set of nominations handed to the writer, each chosen entity named by its own type. Call it only after `validateCards` answered nothing. |
 | `draftFactsOf(cards, hadNomination)`                         | What the main button's label is decided from.                                                                                               |
 
-**Every nomination in the editor's reach has a card**, whatever the steps before chose. The selection never merges, moves or drops a stored nomination by itself:
+**Every nomination the editor manages has a card**, whatever the steps before chose. The selection never merges, moves or drops a stored nomination by itself:
 
 - A stored nomination whose election is chosen is kept.
 - A stored nomination whose election is not chosen says that it is about to be removed, and can be kept.
@@ -119,19 +119,18 @@ The main button's label is asked of `nominationsSaveAction(contestantCtx.taskSta
 
 The message is always the page's own text, never the text the write was refused with. Nothing of a save that was not stored is in the database.
 
-**Nothing is read again before the write, and the database checks the write against the read.** The write carries the nominations the cards were built on, each with the time it was last updated, and `set_entity_nominations` refuses it with `40001` when the nominations in its reach are no longer those. A nomination an administrator added, moved, edited, confirmed or removed while the editor was open is therefore never deleted or written over by a save: the save is refused as `changed`, and the cards are built again.
+**Nothing is read again before the write, and the database checks the write against the read.** The write carries the nominations the cards were built on, each with the time it was last updated, and `set_entity_nominations` refuses it with `40001` when its writable nominations are no longer those (`p_expected_versions`). A nomination an administrator added, moved, edited, confirmed or removed while the editor was open is therefore never deleted or written over by a save: the save is refused as `changed`, and the cards are built again.
 
 Leaving the details step with changes that are not saved asks first, through the browser's own confirm. Cancel and the main button do not ask.
 
 ## What the database enforces
 
-| Rule                                                    | Enforced by the database                                                                                                                                                                                                                                                                  | Enforced by the pages alone                                                                                     |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| The nominations lock, `access.nominationsLocked`        | Yes: the entity insert, update and delete policies on `nominations` each refuse while it is on                                                                                                                                                                                            | The guard and the view also read it                                                                             |
-| The answers lock, `access.answersLocked`                | Yes: the entity insert, update and delete policies on `nominations` refuse an entity's own editor while it is on, and `set_entity_nominations` refuses it with `42501` and `set_entity_nominations: answers are locked in this project`; a project editor and a project admin still write | The guard closes the editor and the view shows a note                                                           |
-| Which entity type an election admits                    | Yes: `validate_nomination` on every write                                                                                                                                                                                                                                                 | The editor offers only admissible elections                                                                     |
-| A candidate needs a parent in a closed-list election    | Yes: when the transaction ends                                                                                                                                                                                                                                                            | The card's group is required                                                                                    |
-| A linked party or alliance is one of the listed options | **No**: `set_entity_nominations` checks that the named parent is of the right type and does not hold it to the options                                                                                                                                                                    | The selector lists the project's confirmed organizations for a candidate, and its alliances for an organization |
+| Rule                                                    | Enforced by the database                                                                                                                                                                                                                                                                            | Enforced by the pages alone                                                                                     |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Contestant editing, `access.contestantEditing`          | Yes: the entity insert, update and delete policies on `nominations` admit a write only while it is `'open'`, and `set_entity_nominations` refuses an entity's own editor under `'nominationsLocked'` and `'locked'` with `42501`, naming the lock; a project editor and a project admin still write | The guard closes the editor and the view shows a note                                                           |
+| Which entity type an election admits                    | Yes: `validate_nomination` on every write                                                                                                                                                                                                                                                           | The editor offers only admissible elections                                                                     |
+| A candidate needs a parent in a closed-list election    | Yes: when the transaction ends                                                                                                                                                                                                                                                                      | The card's group is required                                                                                    |
+| A linked party or alliance is one of the listed options | **No**: `set_entity_nominations` checks that the named parent is of the right type and does not hold it to the options                                                                                                                                                                              | The selector lists the project's confirmed organizations for a candidate, and its alliances for an organization |
 
 The pages are guidance; the policies, the triggers and `set_entity_nominations` are the permission. Do not rely on the guard to keep a write out.
 
@@ -140,7 +139,7 @@ The pages are guidance; the policies, the triggers and `set_entity_nominations` 
 1. **One write.** The editor calls `setEntityNominations` once per save, with the whole set. A stored nomination the set leaves out is removed, so a set built from a partial list deletes nominations.
 2. **The layout loads read no URL.** The facts load and the guard read `parent` and the entity params. A tracked read of the address reruns them between steps.
 3. **The entity-level load is not given a dependency key.** A changed nomination reaches the view, the task state and the guard when `invalidateAll()` reruns it.
-4. **No rule is written twice.** "Editable", "admissible" and "in reach" are the three predicates above; which entity may be nominated and which parent it may name are `isNominableInShape` and `allowedParentTypes`; the order of the steps is the shared ordering module.
+4. **No rule is written twice.** "Editable", "admissible", "writable" and "entry offered" are the four predicates above; which entity may be nominated and which parent it may name are `isNominableInShape` and `allowedParentTypes`; the order of the steps is the shared ordering module.
 5. **No page branches on the entity's type.** What differs between a candidate and a party is read from the descriptor of the entity's type.
 6. **The target is read after the save**, from the state as it stands then.
 
