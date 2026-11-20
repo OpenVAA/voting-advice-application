@@ -6,7 +6,7 @@
  * Surface:
  *   - `test`   — Playwright test extended with the page fixtures the spec speaks in.
  *   - `expect` — re-exported from @playwright/test.
- *   - `setOrganizationState`, `setCandidateState`, `setAnswersLocked` — the state steps a test begins with.
+ *   - `setOrganizationState`, `setCandidateState`, `setContestantEditing` — the state steps a test begins with.
  *   - `completeAnswers(target)` — the state step that answers what an entity's preview waits for.
  *   - `groupTitleNaming(name)` — a pattern for the menu's group title of an entity with that name.
  *   - `organizationEditingPagesOf(page)` — the profile, preview and no-questions page fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
@@ -34,6 +34,7 @@ import {
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import { createOrganizationDetail } from '../voter/organizationDetail.fixture';
+import type { ContestantEditing } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
 import type { NavMenuFixture } from '../shared/navMenu.fixture';
@@ -196,11 +197,11 @@ export async function setCandidateState(externalId: string, state: CandidateStat
 }
 
 /**
- * Lock or unlock the answers of every entity of the suite's project, as an administrator would: the one setting `access.answersLocked` is written and no other.
- * @param on - Whether answers are locked.
+ * Set how far the entities of the suite's project may edit their own data, as an administrator would: the one setting `access.contestantEditing` is written and no other. `'locked'` locks the answers, the profile and the nominations.
+ * @param editing - The value written.
  */
-export async function setAnswersLocked(on: boolean): Promise<void> {
-  await new SupabaseAdminClient().updateAppSettings({ access: { answersLocked: on } });
+export async function setContestantEditing(editing: ContestantEditing): Promise<void> {
+  await new SupabaseAdminClient().updateAppSettings({ access: { contestantEditing: editing } });
 }
 
 /** The table that holds the rows of each entity type a state step writes. */

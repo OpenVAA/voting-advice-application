@@ -2,10 +2,10 @@
  * The identity-callback Edge Function, called directly (no browser, no live identity provider).
  *
  * Each test builds a synthetic JWE-encrypted Idura id_token (fixed test keys, kid test-enc-1/test-sig-1) with `buildTestIdToken`'s defaults: the issuer `MOCK_ISSUER` and the audience `MOCK_AUDIENCE` of the mock OIDC issuer (tests/tests/support/mockOidcIssuer.ts), so this spec and the browser specs are served by one `identity-callback` environment. It POSTs the token with a project and an entity type as the frontend server does, with the run's server secret in the credential header, and asserts the function's closed answer and what it wrote:
- * 1. A new identity gets an account, a confirmed candidate with the token's names, one editor grant and a record of the candidate in `app_metadata`, which holds the provider, the match property and the match value and neither `hetu` nor `birthdate`.
+ * 1. A new identity gets an account, a confirmed candidate with the token's names, one editor grant and a registration of the candidate, and an `app_metadata` that holds the provider, the match property and the match value and neither a record of registrations, `hetu` nor `birthdate`.
  * 2. The same identity is found again, and the two claims an older account still holds are removed.
- * 3. The same identity registers an organization beside the candidate: unconfirmed, nameless, its own grant and record entry.
- * 4. A record whose grant is gone answers `no_entity` and creates nothing.
+ * 3. The same identity registers an organization beside the candidate: unconfirmed, nameless, its own grant and registration, which the account's own session reads back through `get_user_entities`.
+ * 4. A registration whose grant is gone answers `no_entity` and creates nothing.
  * 5. A type the project does not allow is refused before any account is created.
  * 6. A token the function cannot decrypt or verify, and a body without a token, get the one result each.
  * 7. A call without the server's secret, and a call with another secret, are refused before anything is read, and create no account.
@@ -19,6 +19,7 @@
 import { createServiceRoleClient } from '@openvaa/dev-seed';
 import { expect, test } from '@playwright/test';
 import * as jose from 'jose';
+import { userEntities, verifyTokenHash } from '../../utils/authApi';
 import { buildTestIdToken } from '../../utils/buildTestIdToken';
 import { supabaseAnonKey } from '../../utils/supabaseAnonKey';
 import { getTestKeys } from '../../utils/testKeys';
@@ -183,6 +184,20 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     return data.user.app_metadata ?? {};
   }
 
+  /**
+   * The organization the account registered in a project, as the account's own session reads it from `get_user_entities`: the registrations are rows no API role can read, the service role included, so they are read through the session the function's sign-in token opens. The token is spent by the read.
+   *
+   * @param token - The sign-in token of a successful answer.
+   * @param projectId - The project.
+   * @returns The id, or undefined when the answer names none.
+   */
+  async function registeredOrganizationOf(token: unknown, projectId: string): Promise<unknown> {
+    const session = await verifyTokenHash({ tokenHash: String(token), type: 'magiclink' });
+    const answer = await userEntities({ accessToken: session.accessToken, projectId });
+    expect(answer.status).toBe(200);
+    return (answer.body as Record<string, unknown> | null)?.organization;
+  }
+
   /** The grants the account holds, without their ids. */
   async function grantsOf(id: string): Promise<Array<Record<string, unknown>>> {
     const { data, error } = await adminClient
@@ -267,9 +282,10 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(metadata.identity_provider).toBe('idura-ftn');
     expect(metadata.identity_match_prop).toBe('sub');
     expect(metadata.identity_match_value).toBe(TEST_IDENTITY.sub);
-    expect(metadata.registered_entities).toEqual({ [OPEN_PROJECT_ID]: { candidate: candidateId } });
+    expect(metadata.registered_entities).toBeUndefined();
     expect(metadata.hetu).toBeUndefined();
     expect(metadata.birthdate).toBeUndefined();
+    expect(await registeredOrganizationOf(answer.body.token, OPEN_PROJECT_ID)).toBeUndefined();
   });
 
   test('refuses a token encrypted for a key the function does not hold, with the invalid-token result alone', async () => {
@@ -313,7 +329,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     ]);
 
     const metadata = await metadataOf(userId);
-    expect(metadata.registered_entities).toEqual({ [OPEN_PROJECT_ID]: { candidate: candidateId } });
+    expect(metadata.registered_entities).toBeUndefined();
     expect(metadata.hetu).toBeUndefined();
     expect(metadata.birthdate).toBeUndefined();
   });
@@ -336,10 +352,8 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
       { scope: 'entity', target_type: 'organization', target_id: organizationId, role: 'editor' }
     ]);
 
-    const metadata = await metadataOf(userId);
-    expect(metadata.registered_entities).toEqual({
-      [OPEN_PROJECT_ID]: { candidate: candidateId, organization: organizationId }
-    });
+    expect((await metadataOf(userId)).registered_entities).toBeUndefined();
+    expect(await registeredOrganizationOf(answer.body.token, OPEN_PROJECT_ID)).toBe(organizationId);
   });
 
   test('answers no_entity and creates nothing when the grant on the recorded candidate is gone', async () => {
