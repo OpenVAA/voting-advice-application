@@ -10,6 +10,8 @@ files:
   - apps/docs/src/routes/(content)/developers-guide/deployment/+page.md
   - render.example.yaml
 related_phase: 162.1
+completed: 2026-11-21
+status: completed
 ---
 
 # Document the Supabase API limits a hosted deployment must set
@@ -45,3 +47,11 @@ the way code does.**
 - The deployment guide (`developers-guide/deployment`) has a "Supabase project settings" section naming both
   values, where to set them, and the verification query above.
 - `render.example.yaml` or its surrounding docs point to that section.
+
+## Closed (phase 189), 2026-11-21
+
+Closed by plan 189-18. Both values now reach a hosted project from the repository, and the conformance probe checks each.
+
+- **What was built.** Max rows: `infra/modules/supabase/hosted-settings.json` sets `max_rows` to 50000 in its `api` group, which the Supabase module sends to the project, so the dashboard step is gone. The probe's `api.max-rows` check compares the served value with it, and `developers-guide/deployment/hosted-settings` lists the row with that check (plans 189-08 and 189-12). Anon statement timeout: `apps/supabase/supabase/schema/001-role-settings.sql` still sets `statement_timeout = '8s'` on `anon`, and the probe's `db.anon-timeout` check reads the role's setting from the catalog and fails when it is absent or differs, which is the verification query this todo asked for. Both checks passed on the persistent project on 2026-11-20 (`.planning/workstreams/deployment/phases/189-documentation-and-closure/evidence/189-05-staging-reads.md`). The done-when item about `render.example.yaml` is void: the file was removed by the operator's 2026-11-20 ruling (F-01, plan 189-01; `.planning/workstreams/deployment/phases/189-documentation-and-closure/189-01-SUMMARY.md`).
+- **What remains.** The hosted-settings page has no row for the anon `statement_timeout` or its `db.anon-timeout` check, and no page of the developers' guide names the timeout. The value and its check are in place; only the reference row is missing.
+- **Moved.** To `.planning/workstreams/deployment/phases/189-documentation-and-closure/deferred-items.md` (row of 189-18).

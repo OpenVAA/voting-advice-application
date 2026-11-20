@@ -2,6 +2,9 @@
 title: Deployment guide must document the production auth redirect allowlist
 priority: high
 source: Phase 158 plan 06 checkpoint answer (a), 2026-09-02
+created: 2026-09-02
+completed: 2026-11-21
+status: completed
 ---
 
 Phase 158 plan 06 moved the candidate auth callback from
@@ -45,6 +48,16 @@ the old path are dead after this move and should be removed once the new code is
 
 ## Update 2026-10-07 (Phase 174, plan 174-10)
 
-The paths above are the callback's as they were at Phase 158. On the tree at the close of Phase 174 the route is `/api/auth/callback`, and the local allowlist in `config.toml` admits it with and without one locale segment (`http://localhost:5173/api/auth/callback` and `http://localhost:5173/*/api/auth/callback`). The production list therefore needs `<INSTANCE_ORIGIN>/api/auth/callback` and `<INSTANCE_ORIGIN>/*/api/auth/callback`, the single-segment mid-path form this todo anticipated, and none of the entries listed above.
+The paths above are the callback's as they were at Phase 158. On the current tree the route is the confirm page, `/auth/confirm`, and the local allowlist in `config.toml` admits it with and without one locale segment (`http://localhost:5173/auth/confirm` and `http://localhost:5173/*/auth/confirm`). The production list therefore needs `<INSTANCE_ORIGIN>/auth/confirm` and `<INSTANCE_ORIGIN>/*/auth/confirm`, the single-segment mid-path form this todo anticipated, and none of the entries listed above.
+
+(corrected 2026-11-21, phase 189: the route is the confirm page; this paragraph named `/api/auth/callback`, the route at the close of Phase 174)
 
 The deployment page now carries the step (`apps/docs/src/routes/(content)/developers-guide/deployment/+page.md`, § 2 item 3 and § The sign-in link of an invitation). What remains is doing it on a hosted project and observing the result, which is filed as `2026-10-07-174-hosted-project-auth-settings-allowlist-and-function-variables.md`. `account-access` asks the auth service whether its callback URL is admitted and mails no link when it is not, so a missing entry now shows as a log line of that function rather than as a broken link.
+
+## Closed (phase 189), 2026-11-21
+
+Closed by plan 189-18.
+
+- **What was built.** The production half of the allowlist is now in this repository. The Supabase module writes it: `infra/modules/supabase/hosted-settings.json` declares `redirect_callback_paths` (`/auth/confirm` and `/*/auth/confirm`), and `infra/modules/supabase/settings.tf` builds `uri_allow_list` from them, each prefixed by the project's `public_origin`. No wildcard but the single-segment mid-path form is written. Staging applied it on 2026-11-17 (Step 18 of `infra/envs/staging/supabase/README.md` § Observations): `uri_allow_list` went from the two `/api/auth/callback` paths to `https://staging.openvaa.org/auth/confirm,https://staging.openvaa.org/*/auth/confirm`, and the plan after it read `No changes`. The conformance probe's `auth.redirects` check compares the served list with the module's, and passed on the persistent project on 2026-11-20 (`.planning/workstreams/deployment/phases/189-documentation-and-closure/evidence/189-05-staging-reads.md`). The allowlist's five cases, with `/auth/v1/verify` answering 303, were observed on a throwaway hosted project in phase 184 (`.planning/workstreams/deployment/phases/184-hosted-supabase-measurement-and-conformance-probe/evidence/184-16-throwaway-mail-redirects-slot.md`). The deployment guide carries the step (`apps/docs/src/routes/(content)/developers-guide/deployment/+page.md` § The sign-in link of an invitation, which names `uri_allow_list` and the `redirect_callback_paths` it is written from), and `developers-guide/deployment/hosted-settings` lists `redirect_callback_paths` and `uri_allow_list` with their check (plans 189-08 and 189-12). The old entries this todo asked to remove were replaced by the same apply.
+- **What remains.** None.
+- **Moved.** None.
