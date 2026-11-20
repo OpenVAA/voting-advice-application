@@ -7,7 +7,7 @@ Its Log out is the shared `LogoutButton`.
 
 ### Dynamic component
 
-Accesses `ContestantContext`: `acceptTermsOfUse`, `logout`, `setDataConsent` and `analyticsGate`.
+Accesses `ContestantContext`: `acceptTermsOfUse`, `logout`, `setDataConsent` and `analyticsPolicy`.
 
 ### Properties
 
@@ -29,7 +29,7 @@ None.
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeroEmoji } from '$lib/components/heroEmoji';
-  import { shouldShowContestantOptOut } from '$lib/contexts/app/tracking/gates';
+  import { shouldShowContestantOptOut } from '$lib/contexts/app/tracking/sendPolicy';
   import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
   import { LogoutButton } from '$lib/dynamic-components/logoutButton';
 
@@ -46,10 +46,10 @@ None.
 
   let status = $state<ActionStatus>('idle');
   let termsAccepted = $state(false);
-  // analyticsGate is a reactive handle: read via ctx.analyticsGate.current, never destructure.
-  const showOptOut = $derived(shouldShowContestantOptOut(ctx.analyticsGate.current));
-  // A refusal the Contestant App already stored in this browser starts the box ticked, so accepting the terms never turns it into a grant. On a Contestant route the gate reads the Contestant App's own choice.
-  let optOut = $state(ctx.analyticsGate.current.consent === 'denied');
+  // analyticsPolicy is a reactive handle: read via ctx.analyticsPolicy.current, never destructure.
+  const showOptOut = $derived(shouldShowContestantOptOut(ctx.analyticsPolicy.current));
+  // A refusal the Contestant App already stored in this browser starts the box ticked, so accepting the terms never turns it into a grant. On a Contestant route the send policy reads the Contestant App's own choice.
+  let optOut = $state(ctx.analyticsPolicy.current.consent === 'denied');
 
   async function handleSubmit() {
     if (!termsAccepted) return;

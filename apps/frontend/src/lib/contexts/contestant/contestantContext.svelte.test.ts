@@ -109,20 +109,20 @@ function resetWorld(): void {
 }
 resetWorld();
 
-// The app context's tracking members, one reference each for the whole file, so that a case can compare what the provider holds with what the app context forwards. `analyticsGate` is a `{ current }` handle whose getter reads the box's `gateInput` on every access, the way the app context's handle reads its producer's gate input; a case that changes the input puts a getter over a `$state` in the box.
+// The app context's tracking members, one reference each for the whole file, so that a case can compare what the provider holds with what the app context forwards. `analyticsPolicy` is a `{ current }` handle whose getter reads the box's `policyInput` on every access, the way the app context's handle reads its producer's send-policy input; a case that changes the input puts a getter over a `$state` in the box.
 const { tracking } = vi.hoisted(() => {
   const box = {
-    gateInput: undefined as unknown,
+    policyInput: undefined as unknown,
     startPageview: () => undefined,
     track: () => undefined,
     submitAllEvents: () => undefined,
     resetAllEvents: () => undefined,
     setPageVisible: (_visible: boolean) => undefined,
-    analyticsGate: undefined as unknown as { readonly current: unknown }
+    analyticsPolicy: undefined as unknown as { readonly current: unknown }
   };
-  box.analyticsGate = {
+  box.analyticsPolicy = {
     get current() {
-      return box.gateInput;
+      return box.policyInput;
     }
   };
   return { tracking: box };
@@ -151,7 +151,7 @@ vi.mock('../app', () => ({
     submitAllEvents: tracking.submitAllEvents,
     resetAllEvents: tracking.resetAllEvents,
     setPageVisible: tracking.setPageVisible,
-    analyticsGate: tracking.analyticsGate
+    analyticsPolicy: tracking.analyticsPolicy
   })
 }));
 
@@ -422,17 +422,17 @@ describe('contestantContext — the tracking members of the app context', () => 
     cleanup?.();
     cleanup = undefined;
     resetWorld();
-    Object.defineProperty(tracking, 'gateInput', { value: undefined, writable: true, configurable: true });
+    Object.defineProperty(tracking, 'policyInput', { value: undefined, writable: true, configurable: true });
   });
 
-  it('holds `setPageVisible` and `analyticsGate` as the references the app context forwards', async () => {
+  it('holds `setPageVisible` and `analyticsPolicy` as the references the app context forwards', async () => {
     const built = await construct();
     cleanup = built.cleanup;
 
     expect(typeof built.provider.setPageVisible).toBe('function');
     expect(built.provider.setPageVisible).toBe(tracking.setPageVisible);
-    expect(built.provider.analyticsGate).toBe(tracking.analyticsGate);
-    const descriptor = Object.getOwnPropertyDescriptor(built.provider.analyticsGate, 'current');
+    expect(built.provider.analyticsPolicy).toBe(tracking.analyticsPolicy);
+    const descriptor = Object.getOwnPropertyDescriptor(built.provider.analyticsPolicy, 'current');
     expect(typeof descriptor?.get).toBe('function');
   });
 
@@ -444,7 +444,7 @@ describe('contestantContext — the tracking members of the app context', () => 
     expect(Object.keys(built.provider).filter((key) => /tracking/i.test(key))).toEqual([]);
   });
 
-  it('reads `analyticsGate.current` through to a change of the gate input, for a consumer reading it in an effect', async () => {
+  it('reads `analyticsPolicy.current` through to a change of the send-policy input, for a consumer reading it in an effect', async () => {
     const inactive = {
       projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
       globalPrivacyControl: false,
@@ -452,20 +452,20 @@ describe('contestantContext — the tracking members of the app context', () => 
       consent: undefined
     };
     const active = { ...inactive, projection: { ...inactive.projection, active: true } };
-    let gateInput = $state.raw<typeof inactive>(inactive);
-    Object.defineProperty(tracking, 'gateInput', { get: () => gateInput, configurable: true });
+    let policyInput = $state.raw<typeof inactive>(inactive);
+    Object.defineProperty(tracking, 'policyInput', { get: () => policyInput, configurable: true });
     const { ContestantContextProvider } = await import('./contestantContext.svelte');
     const seen: Array<unknown> = [];
     cleanup = $effect.root(() => {
       const provider = new ContestantContextProvider();
       $effect(() => {
-        seen.push(provider.analyticsGate.current);
+        seen.push(provider.analyticsPolicy.current);
       });
     });
     flushSync();
     expect(seen).toEqual([inactive]);
 
-    gateInput = active;
+    policyInput = active;
     flushSync();
     expect(seen).toEqual([inactive, active]);
   });

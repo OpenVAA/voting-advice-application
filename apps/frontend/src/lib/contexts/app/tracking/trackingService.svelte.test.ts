@@ -23,7 +23,7 @@ async function importTracking(browser: boolean) {
   // Imported after the producer, so these are the module instances the producer holds. `vi.resetModules()` also gives the producer a fresh Svelte runtime, so a `$state` of this file is not a dependency it can track; a `SvelteMap` of that same runtime is.
   const { getVisitId } = await import('./visitId');
   const { SvelteMap } = await import('svelte/reactivity');
-  /** A `{ current }` handle whose changes reach the producer's `$derived` gate. */
+  /** A `{ current }` handle whose changes reach the producer's `$derived` send-policy input. */
   function reactiveHandle<TValue>(value: TValue): { current: TValue } {
     const store = new SvelteMap<'current', TValue>([['current', value]]);
     return {
@@ -348,7 +348,7 @@ describe('trackingService (pure-rune producer)', () => {
           userPreferences: contestantOnly('granted'),
           routeId: () => VOTER_ROUTE
         });
-        expect(svc.gate.current.consent).toBeUndefined();
+        expect(svc.analyticsPolicy.current.consent).toBeUndefined();
         svc.startPageview(HOME, {});
         svc.track('answer_delete', { questionId: QUESTION_ID });
         svc.submitAllEvents();
@@ -361,7 +361,7 @@ describe('trackingService (pure-rune producer)', () => {
       const { trackingService } = await importTracking(true);
       const cleanup = $effect.root(() => {
         const svc = trackingService({ ...inputs(), userPreferences: contestantOnly('granted') });
-        expect(svc.gate.current.consent).toBeUndefined();
+        expect(svc.analyticsPolicy.current.consent).toBeUndefined();
       });
       cleanup();
     });
@@ -377,7 +377,7 @@ describe('trackingService (pure-rune producer)', () => {
           } as UserPreferences),
           routeId: () => CONTESTANT_ROUTE
         });
-        expect(svc.gate.current.consent).toBe('granted');
+        expect(svc.analyticsPolicy.current.consent).toBe('granted');
         svc.startPageview(HOME, {});
         svc.track('menu_open');
         svc.submitAllEvents();
@@ -398,11 +398,11 @@ describe('trackingService (pure-rune producer)', () => {
           } as UserPreferences),
           routeId: () => route.current
         });
-        expect(svc.gate.current.consent).toBe('granted');
+        expect(svc.analyticsPolicy.current.consent).toBe('granted');
         route.current = VOTER_ROUTE;
-        expect(svc.gate.current.consent).toBe('denied');
+        expect(svc.analyticsPolicy.current.consent).toBe('denied');
         route.current = null;
-        expect(svc.gate.current.consent).toBe('denied');
+        expect(svc.analyticsPolicy.current.consent).toBe('denied');
       });
       cleanup();
     });
@@ -410,7 +410,7 @@ describe('trackingService (pure-rune producer)', () => {
 
   describe('consentPreferenceKey', () => {
     it('picks contestantDataConsent on Contestant App routes only', async () => {
-      const { consentPreferenceKey } = await import('./gates');
+      const { consentPreferenceKey } = await import('./sendPolicy');
       expect(consentPreferenceKey('/contestant')).toBe('contestantDataConsent');
       expect(consentPreferenceKey('/contestant/(protected)/questions')).toBe('contestantDataConsent');
       expect(consentPreferenceKey('/contestants')).toBe('dataCollection');
@@ -427,7 +427,7 @@ describe('trackingService (pure-rune producer)', () => {
     const cleanup = $effect.root(() => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       const spread = { ...svc };
-      expect(spread.gate?.current.projection.active).toBe(true);
+      expect(spread.analyticsPolicy?.current.projection.active).toBe(true);
       expect(spread.visitId?.current).toBe(getVisitId());
       expect(typeof spread.track).toBe('function');
       expect(typeof spread.setPageVisible).toBe('function');
@@ -447,7 +447,7 @@ describe('trackingService (pure-rune producer)', () => {
         'submitAllEvents',
         'resetAllEvents',
         'setPageVisible',
-        'gate',
+        'analyticsPolicy',
         'visitId'
       ];
       expect(Object.keys(svc).sort()).toEqual([...expected].sort());

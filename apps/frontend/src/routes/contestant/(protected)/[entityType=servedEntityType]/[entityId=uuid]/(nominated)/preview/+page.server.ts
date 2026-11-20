@@ -18,7 +18,7 @@ import { redirect } from '@sveltejs/kit';
 import { createDataProvider } from '$lib/api/dataProvider';
 import { getLocale } from '$lib/paraglide/runtime';
 import { buildRoute } from '$lib/routes';
-import { isPreviewOpen } from '$lib/server/contestant/previewGate';
+import { isPreviewOpen } from '$lib/server/contestant/previewOpen';
 
 export async function load({ fetch, locals, params, parent }) {
   const parentData = await parent();

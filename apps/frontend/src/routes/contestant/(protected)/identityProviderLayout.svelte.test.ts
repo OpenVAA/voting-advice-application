@@ -28,7 +28,7 @@ const { box, context, navigating } = vi.hoisted(() => {
     appSettings: { analytics: { trackEvents: false } },
     answersLocked: false,
     // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
-    analyticsGate: {
+    analyticsPolicy: {
       current: {
         projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
         globalPrivacyControl: false,

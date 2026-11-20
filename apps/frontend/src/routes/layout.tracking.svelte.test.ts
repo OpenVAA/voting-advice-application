@@ -167,7 +167,7 @@ beforeEach(() => {
     submitAllEvents: service.submitAllEvents,
     resetAllEvents: service.resetAllEvents,
     setPageVisible: service.setPageVisible,
-    analyticsGate: service.gate
+    analyticsPolicy: service.analyticsPolicy
   };
 
   const target = document.createElement('div');

@@ -53,7 +53,7 @@ const { stubs, dataRootHolder, initialDataRoot, trackingLog } = vi.hoisted(() =>
       },
       // tracking producer: own-enumerable handle objects + arrow-field methods, the producer's whole surface.
       //
-      // The stand-in records what appContext does with it: `track` / `resetAllEvents` / `submitAllEvents` keep a stand-in buffer and a call log, and `gate` reads the projection handle appContext passes in, so a case can check the order of the consent writes and the projection fallback. `visitId` is on the stand-in because the producer has it; appContext must withhold it, which the forward case below asserts.
+      // The stand-in records what appContext does with it: `track` / `resetAllEvents` / `submitAllEvents` keep a stand-in buffer and a call log, and `analyticsPolicy` reads the projection handle appContext passes in, so a case can check the order of the consent writes and the projection fallback. `visitId` is on the stand-in because the producer has it; appContext must withhold it, which the forward case below asserts.
       tracking: {
         startPageview: (_routeId: string | null, _params: Readonly<Record<string, string | undefined>> | null) => {},
         track: (name: string, _data?: unknown) => {
@@ -69,7 +69,7 @@ const { stubs, dataRootHolder, initialDataRoot, trackingLog } = vi.hoisted(() =>
           trackingLog.buffer.length = 0;
         },
         setPageVisible: (_visible: boolean) => {},
-        gate: {
+        analyticsPolicy: {
           get current() {
             return {
               projection: trackingLog.input?.projection.current,
@@ -195,13 +195,13 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     // forwarded dataCtx members
     'dataRoot',
     'setDataRoot',
-    // forwarded tracking members — the five consumer-facing functions and the producer's `gate` under the name `analyticsGate`. The producer's `visitId` is withheld, and its `gate` is not forwarded under its own name; the tracking-forward case below asserts both.
+    // forwarded tracking members — the five consumer-facing functions and the producer's `analyticsPolicy` handle. The producer's `visitId` is withheld; the tracking-forward case below asserts it.
     'startPageview',
     'track',
     'submitAllEvents',
     'resetAllEvents',
     'setPageVisible',
-    'analyticsGate'
+    'analyticsPolicy'
   ] as const;
 
   // Test 1 — own-enumerability: `Object.keys(spread)` is a superset of the AppContext member list. A per-key loop names any missing member in the failure.
@@ -255,14 +255,13 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
   });
 
   describe('tracking wiring', () => {
-    it('forwards exactly the consumer-facing tracking members, by reference, and the gate as analyticsGate', () => {
+    it('forwards exactly the consumer-facing tracking members, by reference, and the send-policy handle', () => {
       const instance = setup();
       const keys = Object.keys(instance);
       expect(keys).not.toContain('visitId');
-      expect(keys).not.toContain('gate');
       // No send handler of any name: the only `send*` member of the context is its own `sendFeedback`.
       expect(keys.filter((key) => key.startsWith('send'))).toEqual(['sendFeedback']);
-      expect(instance.analyticsGate).toBe(stubs.tracking.gate);
+      expect(instance.analyticsPolicy).toBe(stubs.tracking.analyticsPolicy);
       expect(instance.setPageVisible).toBe(stubs.tracking.setPageVisible);
       expect(instance.startPageview).toBe(stubs.tracking.startPageview);
       expect(instance.resetAllEvents).toBe(stubs.tracking.resetAllEvents);
@@ -271,7 +270,7 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     it('falls back to INACTIVE_PROJECTION when page.data has no analytics member', () => {
       const instance = setup();
       expect(trackingLog.input?.projection.current).toEqual(INACTIVE_PROJECTION);
-      expect(instance.analyticsGate.current.projection).toEqual(INACTIVE_PROJECTION);
+      expect(instance.analyticsPolicy.current.projection).toEqual(INACTIVE_PROJECTION);
       expect(typeof trackingLog.input?.locale()).toBe('string');
     });
 

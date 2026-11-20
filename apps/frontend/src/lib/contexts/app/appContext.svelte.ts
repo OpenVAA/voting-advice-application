@@ -13,7 +13,7 @@ import { createGetRoute } from './getRoute.svelte';
 import { popupState } from './popup';
 import { surveyLink } from './survey.svelte';
 import { trackingService } from './tracking';
-import { consentPreferenceKey } from './tracking/gates';
+import { consentPreferenceKey } from './tracking/sendPolicy';
 import { getComponentContext } from '../component';
 import { getDataContext } from '../data';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
@@ -35,7 +35,7 @@ const CONTEXT_KEY = Symbol();
  * Constructed via `new AppContextProvider()` inside `initAppContext()`, at component-init time — the constructor runs `$effect`, which requires it.
  *
  * ── Spread safety: explicit forwarding, never an instance spread ─────────────
- * This context NEVER spreads an upstream context into itself. Every forwarded member is an EXPLICIT OWN-ENUMERABLE instance property installed in the constructor — explicit getter forwarding, never instance spread — by three mechanisms: a SELECTIVE `Object.assign` value copy for the two stable componentCtx members and for the six tracking members (five consumer-facing functions and the gate handle); `inheritContextMembers`, the shared descriptor-preserving forwarder also used by the three downstream orchestrators, for the WHOLE dataCtx surface; and `Object.defineProperty(…)` / handle-object fields for this context's own reactive members.
+ * This context NEVER spreads an upstream context into itself. Every forwarded member is an EXPLICIT OWN-ENUMERABLE instance property installed in the constructor — explicit getter forwarding, never instance spread — by three mechanisms: a SELECTIVE `Object.assign` value copy for the two stable componentCtx members and for the six tracking members (five consumer-facing functions and the send-policy handle); `inheritContextMembers`, the shared descriptor-preserving forwarder also used by the three downstream orchestrators, for the WHOLE dataCtx surface; and `Object.defineProperty(…)` / handle-object fields for this context's own reactive members.
  *
  * ── The DECISIVE downstream-spread constraint ────────────────────────────────
  * `contestantContext.svelte.ts`, `adminContext.svelte.ts` and `voterContext.svelte.ts` ALL do `{ ...appContext }`. `{ ...instance }` copies only OWN-ENUMERABLE properties; Svelte 5 compiles bare `$state`/`$derived` class fields AND prototype `get` accessors to PRIVATE backing + PROTOTYPE accessors, which object spread silently drops (proven headlessly by `appContext.spread.svelte.test.ts`). Therefore EVERY member this context exposes is installed as an OWN-ENUMERABLE instance property — never a bare `$state`/`$derived` field, never a prototype getter. This is the load-bearing discipline of this file: a prototype getter here would silently drop the member from the three downstream spreads.
@@ -134,13 +134,13 @@ export class AppContextProvider implements AppContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
 
-  // Forwarded tracking members — a SELECTIVE forward of six of the producer's seven own-enumerable members (five arrow fields and the `{ current }` gate handle, renamed `analyticsGate`, all copied by reference; see the forwarding block for the one that is deliberately withheld). The producer's own exact seven-member surface stays locked by a dedicated case in `tracking/trackingService.svelte.test.ts`.
+  // Forwarded tracking members — a SELECTIVE forward of six of the producer's seven own-enumerable members (five arrow fields and the `{ current }` send-policy handle `analyticsPolicy`, all copied by reference; see the forwarding block for the one that is deliberately withheld). The producer's own exact seven-member surface stays locked by a dedicated case in `tracking/trackingService.svelte.test.ts`.
   readonly startPageview!: AppContext['startPageview'];
   readonly track!: AppContext['track'];
   readonly submitAllEvents!: AppContext['submitAllEvents'];
   readonly resetAllEvents!: AppContext['resetAllEvents'];
   readonly setPageVisible!: AppContext['setPageVisible'];
-  readonly analyticsGate!: AppContext['analyticsGate'];
+  readonly analyticsPolicy!: AppContext['analyticsPolicy'];
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias -- the own-enumerable reactive handle getters below use `get current ` / defineProperty getters with their own `this`; `self` captures the instance so they reach the private `$state` backings (the spread-safe class pattern documented at the top of this file).
@@ -230,7 +230,7 @@ export class AppContextProvider implements AppContext {
         return self.#appSettingsValue;
       }
     };
-    // What the server tells the browser about analytics, from the root layout's data. The getter re-reads `page.data` so the tracking producer's gate stays reactive; with no `analytics` member nothing is kept, so the inactive projection stands in.
+    // What the server tells the browser about analytics, from the root layout's data. The getter re-reads `page.data` so the tracking producer's send-policy input stays reactive; with no `analytics` member nothing is kept, so the inactive projection stands in.
     const projectionHandle = {
       get current(): AnalyticsProjection {
         return (page.data?.analytics as AnalyticsProjection | undefined) ?? INACTIVE_PROJECTION;
@@ -265,7 +265,7 @@ export class AppContextProvider implements AppContext {
     // dataCtx — WHOLESALE forward of its two own-enumerable members: `dataRoot` (re-installed as a live forwarding accessor over the source's bare reactive accessor) and the `setDataRoot` arrow-field writer (copied by reference).
     inheritContextMembers(this, this.#dataCtx);
 
-    // tracking — EXPLICIT SELECTIVE forward, deliberately NOT wholesale. The producer exposes seven own-enumerable members; these SIX are forwarded by reference: `startPageview`, `track`, `submitAllEvents`, `resetAllEvents`, `setPageVisible`, and the producer's `gate` handle under the name `analyticsGate`, so that layouts and components evaluate the gate functions against the one gate input the producer sends under. All six are data properties on the producer (five arrow fields and a `{ current }` handle object), so a value copy is the same thing `inheritContextMembers` would install for them — no accessor liveness is at stake here, unlike `dataRoot` above; the handle's own getter stays live.
+    // tracking — EXPLICIT SELECTIVE forward, deliberately NOT wholesale. The producer exposes seven own-enumerable members; these SIX are forwarded by reference: `startPageview`, `track`, `submitAllEvents`, `resetAllEvents`, `setPageVisible`, and the producer's `analyticsPolicy` handle under the same name, so that layouts and components evaluate the send-policy functions against the one send-policy input the producer sends under. All six are data properties on the producer (five arrow fields and a `{ current }` handle object), so a value copy is the same thing `inheritContextMembers` would install for them — no accessor liveness is at stake here, unlike `dataRoot` above; the handle's own getter stays live.
     //
     // WITHHELD, deliberately: `visitId`. It is read producer to producer — handed to `surveyLink(...)` above STRAIGHT OFF `#tracking`, never through this public surface. Forwarding it would put the visit id on every context and every `{ ...appContext }` spread for no consumer.
     //
@@ -276,7 +276,7 @@ export class AppContextProvider implements AppContext {
       submitAllEvents: this.#tracking.submitAllEvents,
       resetAllEvents: this.#tracking.resetAllEvents,
       setPageVisible: this.#tracking.setPageVisible,
-      analyticsGate: this.#tracking.gate
+      analyticsPolicy: this.#tracking.analyticsPolicy
     });
 
     ////////////////////////////////////////////////////////////////////

@@ -10,7 +10,7 @@ Displays information about the privacy policy of the app as well as the possible
 
 ### Analytics
 
-Read from `ctx.analyticsGate.current`:
+Read from `ctx.analyticsPolicy.current`:
 
 - `projection.active`: Whether the analytics section is shown.
 - `projection.consentMode`: Which description is shown, `privacy.analytics.content.gated` or `privacy.analytics.content.free`. The page-view count and the Global Privacy Control rule are always shown with it.
@@ -23,17 +23,19 @@ Read from `ctx.analyticsGate.current`:
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
-  import { relayUsable } from '$lib/contexts/app/tracking/gates';
+  import { relayUsable } from '$lib/contexts/app/tracking/sendPolicy';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { DataConsent } from '$lib/dynamic-components/dataConsent';
   import { sanitizeHtml } from '$lib/utils/sanitize';
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
-  // analyticsGate is a reactive handle — read via ctx.analyticsGate.current, never destructure.
-  const gate = $derived(ctx.analyticsGate.current);
+  // analyticsPolicy is a reactive handle — read via ctx.analyticsPolicy.current, never destructure.
+  const policy = $derived(ctx.analyticsPolicy.current);
   // The consent control is offered only when there is a choice to make: in consent-free mode and under Global Privacy Control there is none, and the analytics text says why.
-  const showConsentControl = $derived(gate.trackEvents && gate.projection.consentMode === 'gated' && relayUsable(gate));
+  const showConsentControl = $derived(
+    policy.trackEvents && policy.projection.consentMode === 'gated' && relayUsable(policy)
+  );
 
   const { topBarSettings } = getLayoutContext();
   topBarSettings.use({
@@ -62,11 +64,11 @@ Read from `ctx.analyticsGate.current`:
     <div>
       {@html sanitizeHtml(t('dynamic.privacy.content'))}
     </div>
-    {#if gate.projection.active}
+    {#if policy.projection.active}
       <h2 class="mt-lg mb-md">{t('privacy.analytics.title')}</h2>
       <div>
         <p>
-          {gate.projection.consentMode === 'gated'
+          {policy.projection.consentMode === 'gated'
             ? t('privacy.analytics.content.gated')
             : t('privacy.analytics.content.free')}
         </p>

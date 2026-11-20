@@ -5,7 +5,7 @@
  */
 import { MAX_BATCH_BYTES, MAX_BATCH_EVENTS } from '$lib/analytics/constants';
 import { EventSchema, isSensitiveEvent } from '$lib/analytics/events.schema';
-import { mayAttachVisitId } from './gates';
+import { mayAttachVisitId } from './sendPolicy';
 import type { EventName, WireEvent } from '$lib/analytics/events.schema';
 import type { AnalyticsProjection } from '$lib/analytics/modes';
 import type { PageviewDraft, View } from './viewTracker';

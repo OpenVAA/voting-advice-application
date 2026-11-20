@@ -247,7 +247,7 @@ export class VoterContextProvider implements VoterContext {
   readonly submitAllEvents!: AppContext['submitAllEvents'];
   readonly resetAllEvents!: AppContext['resetAllEvents'];
   readonly setPageVisible!: AppContext['setPageVisible'];
-  readonly analyticsGate!: AppContext['analyticsGate'];
+  readonly analyticsPolicy!: AppContext['analyticsPolicy'];
   readonly sendFeedback!: AppContext['sendFeedback'];
   readonly setDataConsent!: AppContext['setDataConsent'];
   readonly setFeedbackStatus!: AppContext['setFeedbackStatus'];

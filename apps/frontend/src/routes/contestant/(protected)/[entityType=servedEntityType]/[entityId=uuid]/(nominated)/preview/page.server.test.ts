@@ -1,5 +1,5 @@
 /**
- * The server load of an entity's preview, driven directly with a fake request context. The helper that answers whether the preview is open is replaced, so each case sets its answer; the helper's own cases are in `$lib/server/contestant/previewGate.test.ts`.
+ * The server load of an entity's preview, driven directly with a fake request context. The helper that answers whether the preview is open is replaced, so each case sets its answer; the helper's own cases are in `$lib/server/contestant/previewOpen.test.ts`.
  *
  * What this file holds:
  *
@@ -31,7 +31,7 @@ vi.mock('$lib/paraglide/runtime', async (importOriginal) => ({
   localizeHref
 }));
 vi.mock('$lib/api/dataProvider', () => ({ createDataProvider }));
-vi.mock('$lib/server/contestant/previewGate', () => ({ isPreviewOpen }));
+vi.mock('$lib/server/contestant/previewOpen', () => ({ isPreviewOpen }));
 
 /** The generated event type names this route's own id; the erased signature below is the surface the load touches, with the locals it must leave alone. */
 type FakeEvent = {

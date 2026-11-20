@@ -41,7 +41,7 @@ const { clearEntryFlow, context, initUserData, invalidateAll, logout, setDataRoo
     userData: { init: mocks.initUserData },
     appSettings: { analytics: { trackEvents: false } },
     // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
-    analyticsGate: {
+    analyticsPolicy: {
       current: {
         projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
         globalPrivacyControl: false,

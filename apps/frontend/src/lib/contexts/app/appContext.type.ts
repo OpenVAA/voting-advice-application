@@ -6,7 +6,7 @@ import type { AppCustomization } from './appCustomization.type';
 import type { RouteBuilder } from './getRoute.svelte';
 import type { PopupState } from './popup';
 import type { TrackingService } from './tracking';
-import type { GateInput } from './tracking/gates';
+import type { SendPolicyInput } from './tracking/sendPolicy';
 import type { UserPreferences } from './userPreferences.type';
 
 /**
@@ -20,10 +20,10 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
   DataContext &
   TrackingService & {
     /**
-     * The tracking producer's gate input — the analytics projection, the Global Privacy Control signal, the `trackEvents` setting and the stored consent — so that layouts and components evaluate the gate functions of `tracking/gates.ts` against the one input the producer sends under.
-     * A reactive `{ readonly current }` handle: read it as `ctx.analyticsGate.current` inside a tracking scope, never through a destructured copy of `current`.
+     * The tracking producer's send-policy input — the analytics projection, the Global Privacy Control signal, the `trackEvents` setting and the stored consent — so that layouts and components evaluate the send-policy functions of `tracking/sendPolicy.ts` against the one input the producer sends under.
+     * A reactive `{ readonly current }` handle: read it as `ctx.analyticsPolicy.current` inside a tracking scope, never through a destructured copy of `current`.
      */
-    analyticsGate: ReactiveHandle<GateInput>;
+    analyticsPolicy: ReactiveHandle<SendPolicyInput>;
     /**
      * The current locale, exposed as a BARE reactive accessor.
      * Read directly via `ctx.locale`. MUST be read off `ctx` (never destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring Rule.

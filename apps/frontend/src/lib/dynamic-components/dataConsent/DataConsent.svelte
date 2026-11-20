@@ -29,7 +29,7 @@ Accesses `AppContext` to set and read `userPreferences`. The choice shown and ch
   import { page } from '$app/state';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
-  import { consentPreferenceKey } from '$lib/contexts/app/tracking/gates';
+  import { consentPreferenceKey } from '$lib/contexts/app/tracking/sendPolicy';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';

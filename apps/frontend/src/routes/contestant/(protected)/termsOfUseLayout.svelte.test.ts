@@ -30,7 +30,7 @@ vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({
     acceptTermsOfUse,
     userData: { init: initUserData },
     // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
-    analyticsGate: {
+    analyticsPolicy: {
       current: {
         projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
         globalPrivacyControl: false,
@@ -44,7 +44,7 @@ vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({
 vi.mock('$lib/contexts/app', () => ({
   getAppContext: () => ({
     appSettings: { analytics: { trackEvents: false } },
-    analyticsGate: {
+    analyticsPolicy: {
       current: {
         projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
         globalPrivacyControl: false,

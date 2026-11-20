@@ -15,11 +15,11 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AnalyticsProjection } from '$lib/analytics/modes';
-import type { GateInput } from '$lib/contexts/app/tracking/gates';
+import type { SendPolicyInput } from '$lib/contexts/app/tracking/sendPolicy';
 import type { ConsentStatus } from '$lib/contexts/app/userPreferences.type';
 
 const { acceptTermsOfUse, box, context, invalidateAll, setDataConsent } = vi.hoisted(() => {
-  const box = { gate: undefined as unknown as GateInput };
+  const box = { policy: undefined as unknown as SendPolicyInput };
   const acceptTermsOfUse = vi.fn();
   const invalidateAll = vi.fn();
   const setDataConsent = vi.fn();
@@ -30,11 +30,11 @@ const { acceptTermsOfUse, box, context, invalidateAll, setDataConsent } = vi.hoi
     acceptTermsOfUse,
     setDataConsent,
     get appSettings() {
-      return { analytics: { trackEvents: box.gate.trackEvents } };
+      return { analytics: { trackEvents: box.policy.trackEvents } };
     },
-    analyticsGate: {
+    analyticsPolicy: {
       get current() {
-        return box.gate;
+        return box.policy;
       }
     }
   };
@@ -79,10 +79,10 @@ const TermsOfUseGate = (await import('./TermsOfUseGate.svelte')).default;
 
 const OPT_OUT = '[data-testid="terms-tracking-opt-out"]';
 
-/** A gate input with tracking on in gated mode, a provider configured, no Global Privacy Control and no stored choice, changed by `overrides`. */
-function gateInput(
-  overrides: Partial<Omit<GateInput, 'projection'>> & { projection?: Partial<AnalyticsProjection> } = {}
-): GateInput {
+/** A send-policy input with tracking on in gated mode, a provider configured, no Global Privacy Control and no stored choice, changed by `overrides`. */
+function policyInput(
+  overrides: Partial<Omit<SendPolicyInput, 'projection'>> & { projection?: Partial<AnalyticsProjection> } = {}
+): SendPolicyInput {
   const { projection, ...rest } = overrides;
   return {
     projection: { active: true, consentMode: 'gated', visitIdMode: 'memory', ...projection },
@@ -96,7 +96,7 @@ function gateInput(
 let teardown: Array<() => void> = [];
 
 beforeEach(() => {
-  box.gate = gateInput();
+  box.policy = policyInput();
   acceptTermsOfUse.mockResolvedValue({ type: 'success' });
   invalidateAll.mockResolvedValue(undefined);
 });
@@ -177,14 +177,14 @@ describe('TermsOfUseGate — the tracking opt-out', () => {
   it.each<ConsentStatus>(['granted', 'indetermined'])(
     'offers the box unticked when the stored choice is %s',
     (consent) => {
-      box.gate = gateInput({ consent });
+      box.policy = policyInput({ consent });
 
       expect(optOutOf(render())?.checked).toBe(false);
     }
   );
 
   it('offers the box ticked when this browser holds denied, so accepting writes denied again', async () => {
-    box.gate = gateInput({ consent: 'denied' });
+    box.policy = policyInput({ consent: 'denied' });
     const target = render();
 
     expect(optOutOf(target)?.checked).toBe(true);
@@ -196,12 +196,12 @@ describe('TermsOfUseGate — the tracking opt-out', () => {
   });
 
   it.each([
-    { name: 'trackEvents is off', input: () => gateInput({ trackEvents: false }) },
-    { name: 'the consent mode is free', input: () => gateInput({ projection: { consentMode: 'free' } }) },
-    { name: 'Global Privacy Control is set', input: () => gateInput({ globalPrivacyControl: true }) },
-    { name: 'no provider is configured', input: () => gateInput({ projection: { active: false } }) }
+    { name: 'trackEvents is off', input: () => policyInput({ trackEvents: false }) },
+    { name: 'the consent mode is free', input: () => policyInput({ projection: { consentMode: 'free' } }) },
+    { name: 'Global Privacy Control is set', input: () => policyInput({ globalPrivacyControl: true }) },
+    { name: 'no provider is configured', input: () => policyInput({ projection: { active: false } }) }
   ])('shows no box and writes nothing on acceptance when $name', async ({ input }) => {
-    box.gate = input();
+    box.policy = input();
     const target = render();
 
     expect(optOutOf(target)).toBeNull();

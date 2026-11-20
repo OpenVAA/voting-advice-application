@@ -5,9 +5,9 @@ import type { TrackingEventData, TrackingEventName } from './trackingEvent.type'
  *
  * This is the ONE tracking-service type: the producer (`trackingService.svelte.ts`) implements it directly and `appContext` forwards it.
  *
- * CONSUMER-FACING SURFACE — deliberately narrower than the producer. The producer owns two further handle members: the gate input, which `appContext` forwards under its own name `analyticsGate`, and the survey link's session id, which is read only producer to producer — `appContext` passes it into the survey-link producer and forwards it onto NO context. Both are therefore ABSENT from this type; see the selective forward in `appContext.svelte.ts`.
+ * CONSUMER-FACING SURFACE — deliberately narrower than the producer. The producer owns two further handle members: the send-policy input, `analyticsPolicy`, which `appContext` forwards under the same name, and the survey link's session id, which is read only producer to producer — `appContext` passes it into the survey-link producer and forwards it onto NO context. Both are therefore ABSENT from this type; see the selective forward in `appContext.svelte.ts`.
  *
- * Every event goes into one buffer, and `submitAllEvents` sends the view's pageview and the buffered events the gates allow as one batch to the relay.
+ * Every event goes into one buffer, and `submitAllEvents` sends the view's pageview and the buffered events the send policy allows as one batch to the relay.
  */
 export type TrackingService = {
   /**
@@ -23,7 +23,7 @@ export type TrackingService = {
    */
   track: <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>) => void;
   /**
-   * Flush: send the current view's pageview, when it has not been sent, and the buffered events the gates allow, in one request to the relay. The buffer is empty afterwards; events the gates did not allow are discarded.
+   * Flush: send the current view's pageview, when it has not been sent, and the buffered events the send policy allows, in one request to the relay. The buffer is empty afterwards; events the send policy did not allow are discarded.
    */
   submitAllEvents: () => void;
   /**
