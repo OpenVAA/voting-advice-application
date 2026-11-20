@@ -80,3 +80,73 @@ exits 0: 26 of 26 turbo tasks; dev-seed 1308 passed; frontend 8435 passed and 33
 skipped whole). This plan adds and removes no test.
 
 B03_TEST_UNIT_EXIT=0
+
+## Task 3 — targeted E2E runs after the last code commit
+
+The runs were made one after another on HEAD `4f6ab8f8e`, the commit of Task 2 and this plan's last
+code commit. The tree was clean outside `.planning/`, and every run's `head` file holds
+`4f6ab8f8e21924842cb6200acf2e872ac68d7890`. Each run was
+`caffeinate -i tests/scripts/e2e-run.sh --run-dir <dir> --no-db-reset --project <p>` and served
+port 5273. None was void: there is no `VOID-host-suspend.txt`, and `heartbeat_max_late_ms` was
+25, 121 and 38. Each `restore.txt` ends `restore: ok`. The totals include each project's setup
+chain. The target project's own count is the number of `expected` tests with that `projectName` in
+the run's `results.json`, counted the same way as in the baseline's `results.json`. Titles were
+compared per project against the baseline (`suite > … > spec` paths): 0 only in the baseline and 0
+only in the run, for each of the three projects.
+
+E2E_TREE_SHA=4f6ab8f8e21924842cb6200acf2e872ac68d7890
+E2E_BASELINE_RUN=tests/e2e-runs/188-close3-20261119T213204Z
+E2E_BASELINE_BANK_AUTH=12
+E2E_BASELINE_CIP=42
+E2E_BASELINE_VOTER_JOURNEY=2
+
+### bank-auth
+
+E2E_BANK_AUTH_RUN_DIR=tests/e2e-runs/189-02-bank-auth-20261120T100056Z
+E2E_BANK_AUTH_EXIT=0
+E2E_BANK_AUTH_TOTAL_PASSED=14
+E2E_BANK_AUTH_FAILED=0
+E2E_BANK_AUTH_FLAKY=0
+E2E_BANK_AUTH_DID_NOT_RUN=0
+E2E_BANK_AUTH_PASSED=12
+E2E_BANK_AUTH_VERDICT_EXIT=0
+
+Setup chain: `data-setup-base` 1 and `data-teardown-base` 1.
+
+### contestant-identity-provider
+
+E2E_CIP_RUN_DIR=tests/e2e-runs/189-02-contestant-identity-provider-20261120T100212Z
+E2E_CIP_EXIT=0
+E2E_CIP_TOTAL_PASSED=614
+E2E_CIP_FAILED=0
+E2E_CIP_FLAKY=0
+E2E_CIP_DID_NOT_RUN=0
+E2E_CIP_PASSED=42
+E2E_CIP_VERDICT_EXIT=0
+
+`--project=contestant-identity-provider` pulls in the whole serial chain through
+`data-setup-identity-provider` (1 passed), so the run has 614 tests.
+
+### voter-journey
+
+E2E_VOTER_JOURNEY_RUN_DIR=tests/e2e-runs/189-02-voter-journey-20261120T102018Z
+E2E_VOTER_JOURNEY_EXIT=0
+E2E_VOTER_JOURNEY_TOTAL_PASSED=4
+E2E_VOTER_JOURNEY_FAILED=0
+E2E_VOTER_JOURNEY_FLAKY=0
+E2E_VOTER_JOURNEY_DID_NOT_RUN=0
+E2E_VOTER_JOURNEY_PASSED=2
+E2E_VOTER_JOURNEY_VERDICT_EXIT=0
+
+Setup chain: `data-setup-base` 1 and `data-teardown-base` 1.
+
+### Deltas against the last full run
+
+| Project | Baseline | This plan | Delta |
+|---------|----------|-----------|-------|
+| bank-auth | 12 | 12 | 0 |
+| contestant-identity-provider | 42 | 42 | 0 |
+| voter-journey | 2 | 2 | 0 |
+
+E2E_TITLE_CHANGES=0
+E2E_TARGETED_DELTA=0
