@@ -67,7 +67,7 @@ function localsWith({
   session,
   verifiedUser,
   userCan = { data: true, error: null },
-  passwordFact = { data: { entities: [], password_set: true, pending_email_taken: false }, error: null },
+  passwordFact = { data: { password_set: true, pending_email_taken: false }, error: null },
   rpc
 }: {
   session: { user: Record<string, unknown>; access_token: string; expires_at: number } | null;
@@ -93,9 +93,10 @@ function localsWith({
           : { data: { user: null }, error: { message: 'invalid JWT: unable to parse or verify signature' } }
       )
     },
-    // The two RPCs the decision reaches, answered by name. `get_user_entities` is the identity read's own call, for the caller's password fact; it defaults to the answer for a user who has a password. Every other name is the database's `user_can` for this caller on the deployment's project, which defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly, and a case that passes `rpc` records those calls on it.
+    // The RPCs the decision reaches, answered by name. `get_caller_account_state` and `get_user_entities` are the identity read's own calls, the first for the caller's password fact; it defaults to the answer for a user who has a password, and the second answers no entity and no registered organization. Every other name is the database's `user_can` for this caller on the deployment's project, which defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly, and a case that passes `rpc` records those calls on it.
     rpc: vi.fn(async (name: string, args?: unknown) => {
-      if (name === 'get_user_entities') return passwordFact;
+      if (name === 'get_caller_account_state') return passwordFact;
+      if (name === 'get_user_entities') return { data: { entities: [] }, error: null };
       return rpc ? rpc(name, args) : userCan;
     })
   };
@@ -249,7 +250,7 @@ describe('requireAdminIdentity — the one decision, in its three shapes', () =>
   // The identity read makes one more call than the session and the token: the caller's password fact. When that read fails or answers no boolean, the identity read fails whole, so there is no user to decide on.
   it.each([
     ['fails', { data: null, error: { message: 'boom' } }],
-    ['answers no boolean', { data: { entities: [] }, error: null }]
+    ['answers no boolean', { data: {}, error: null }]
   ])(
     'yields the forbidden verdict for a verified admin when the read of the password fact %s',
     async (_label, passwordFact) => {

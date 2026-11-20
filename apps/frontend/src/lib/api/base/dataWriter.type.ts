@@ -180,7 +180,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   ) => DWReturnType<Array<NominationParentOption> | undefined, TType>;
 
   ////////////////////////////////////////////////////////////////////
-  // Setting data owned by the user NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the updated `LocalizedAnswers` map for synchronization — or {@link UNVERIFIED_ANSWERS}, when the write succeeded but its read-back could not be validated — while the property setter (`updateEntityProperties`) returns the properties it wrote and no others, or says that a changed name was refused, and the nominations setter (`setEntityNominations`) returns the counts of what it stored, or says which of four named refusals it met.
+  // Setting data owned by the user NB. The answer setters (`updateAnswers`/`overwriteAnswers`) return only the updated `LocalizedAnswers` map for synchronization — or {@link UNVERIFIED_ANSWERS}, when the write succeeded but its read-back could not be validated — while the property setter (`updateEntityProperties`) returns the properties it wrote and no others, or says that a changed name was refused, and the nominations setter (`setEntityNominations`) returns the counts of what it stored, or says which of five named refusals it met.
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -216,9 +216,9 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
    * @param nominations - Every nomination the entity is to have, see {@link DesiredNomination}. A stored nomination that is left out is removed.
-   * @param readFrom - The entity's nominations in the write's reach as they were read when `nominations` was computed, each with its `updatedAt`.
-   * @returns A `Promise` resolving to a {@link SetEntityNominationsResult}, or a `Response` containing one: the counts of what was stored, or the refused result naming its reason when the backend refuses the write because the nominations have changed since `readFrom` was read, because a removed nomination has others listed under it, because the caller holds too many unconfirmed parent nominations or because the project's answers are locked, in which case nothing of the call was stored.
-   * @throws An error if the target has no id, if `nominations` or `readFrom` is not a list, or if the write fails for any reason other than the four named refusals.
+   * @param readFrom - The entity's writable nominations as they were read when `nominations` was computed, each with its `updatedAt`.
+   * @returns A `Promise` resolving to a {@link SetEntityNominationsResult}, or a `Response` containing one: the counts of what was stored, or the refused result naming its reason when the backend refuses the write because the nominations have changed since `readFrom` was read, because a removed nomination has others listed under it, because the caller holds too many unconfirmed parent nominations or because the project's answers or nominations are locked, in which case nothing of the call was stored.
+   * @throws An error if the target has no id, if `nominations` or `readFrom` is not a list, or if the write fails for any reason other than the five named refusals.
    */
   setEntityNominations: (opts: SetEntityNominationsOptions) => DWReturnType<SetEntityNominationsResult, TType>;
 
@@ -287,7 +287,11 @@ export interface BasicUserData extends WithUserSettings {
    */
   pendingEmail: string | null;
   /**
-   * Whether the organization the identity registered through the identity provider in this project, named by the record `identity-callback` keeps in the account's `app_metadata`, is among the entities the user edits and has no name with text in the adapter's default locale. `false` for every other organization the user edits, whatever its name.
+   * The id of the organization the identity registered through the identity provider in this project, as the user-level read answers it, whether or not the user still edits it. `null` when the identity registered none.
+   */
+  ownOrganizationId: Id | null;
+  /**
+   * Whether the organization `ownOrganizationId` names is among the entities the user edits and has no name with text in the adapter's default locale. `false` for every other organization the user edits, whatever its name.
    */
   ownOrganizationUnnamed: boolean;
   /**
@@ -347,10 +351,6 @@ export type InvitationClaimResult = {
    * The promises this claim left open.
    */
   skipped: Array<SkippedInvitation>;
-  /**
-   * Whether the user has a password. A user created by a sign-in link has none until they set one.
-   */
-  passwordSet: boolean;
 };
 
 /**
@@ -501,6 +501,10 @@ export type EntityNomination = {
    */
   updatedAt: string;
   /**
+   * Whether a write of the entity's nominations may change the nomination, as the database decides: it is at its election's current round, in an election that admits the entity's type. The nomination editor manages these nominations alone; every other one is shown where nominations are listed and is left as it is by a save.
+   */
+  writable: boolean;
+  /**
    * The entity the nomination is nominated under. Left out for a nomination with no parent.
    */
   parent?: EntityNominationParent;
@@ -552,11 +556,12 @@ export type DesiredNomination = {
  *   - `changed`: the entity's nominations are no longer those the set was computed from: one was created, moved, edited or removed since they were read.
  *   - `hasCandidates`: a nomination the write removes, or moves to another constituency, has other nominations listed under it.
  *   - `tooManyPending`: the write would create a parent's nomination while the caller already holds the most unconfirmed ones a caller may.
- *   - `answersLocked`: the project's answers are locked, and the caller may not edit the project's nominations.
+ *   - `answersLocked`: the project's `access.contestantEditing` is `locked`, and the caller may not edit the project's nominations.
+ *   - `nominationsLocked`: the project's `access.contestantEditing` is `nominationsLocked`, and the caller may not edit the project's nominations.
  */
 export type SetEntityNominationsResult =
   | { type: 'saved'; inserted: number; updated: number; deleted: number; unchanged: number; parentsCreated: number }
-  | { type: 'refused'; reason: 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' };
+  | { type: 'refused'; reason: 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' | 'nominationsLocked' };
 
 /**
  * An election and a constituency of it: the place a nomination is for.
@@ -685,9 +690,9 @@ export type SetPropertiesOptions = WithTargetEntity &
 export type SetEntityNominationsOptions = WithTargetEntity & {
   nominations: ReadonlyArray<DesiredNomination>;
   /**
-   * The entity's nominations that the write may change, as they were read when `nominations` was computed from them: every one of them, and no other. The write is refused as `changed` when the stored ones differ, so that a nomination created, moved or edited since the read is neither removed nor written back.
+   * The entity's writable nominations, as they were read when `nominations` was computed from them: every one of them. Only those whose `writable` is `true` are handed to the database. The write is refused as `changed` when the stored ones differ, so that a nomination created, moved or edited since the read is neither removed nor written back.
    */
-  readFrom: ReadonlyArray<Pick<EntityNomination, 'id' | 'updatedAt'>>;
+  readFrom: ReadonlyArray<Pick<EntityNomination, 'id' | 'updatedAt' | 'writable'>>;
 };
 
 /**
@@ -730,9 +735,10 @@ export type RequestAddressConfirmationOptions = { email: string; locale: string 
  * What a request for an address to be proved comes to.
  * - `sent`: a link was mailed to the address.
  * - `in-use`: the address is another account's.
+ * - `invited`: an open invitation of the project is addressed to it, with nothing mailed. The person is to sign in by email with that invitation instead.
  * - `refused`: anything else, with nothing mailed.
  */
-export type AddressConfirmationResult = 'sent' | 'in-use' | 'refused';
+export type AddressConfirmationResult = 'sent' | 'in-use' | 'invited' | 'refused';
 
 export type GetEntityUserDataOptions<TNominations extends boolean | undefined> = {
   /**

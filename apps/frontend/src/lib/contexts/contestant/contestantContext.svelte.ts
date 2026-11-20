@@ -1,4 +1,4 @@
-import { log } from '@openvaa/app-shared';
+import { CONTESTANT_EDITING, getContestantEditing, log } from '@openvaa/app-shared';
 import { DEFAULT_NOMINATION_SHAPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, onMount, setContext } from 'svelte';
@@ -148,9 +148,11 @@ export class ContestantContextProvider implements ContestantContext {
   // User data, authentication and the two locks
   ////////////////////////////////////////////////////////////////////
 
-  #answersLocked = $derived(!!this.#appSettings.access.answersLocked);
+  #contestantEditing = $derived(getContestantEditing(this.#appSettings));
 
-  #nominationsLocked = $derived(!!this.#appSettings.access.nominationsLocked);
+  #answersLocked = $derived(this.#contestantEditing === CONTESTANT_EDITING.Locked);
+
+  #nominationsLocked = $derived(this.#contestantEditing !== CONTESTANT_EDITING.Open);
 
   // The user-level data, beside the store that holds the entity being edited. All four derive from `page`, so they need no push from a layout, are right on the server and on first paint, and are empty on pages outside the protected tree, whose page data holds neither key.
   #user = $derived(page.data.user ?? undefined);

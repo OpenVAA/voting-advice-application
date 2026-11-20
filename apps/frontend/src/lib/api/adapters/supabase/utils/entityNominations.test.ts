@@ -15,6 +15,7 @@ const nominationWithParent = {
   confirmed: true,
   custom_data: { requestedParentOrganization: 'A party' },
   updated_at: '2026-10-01T12:00:00.123456+00:00',
+  writable: true,
   parent: { entity_type: 'organization', entity_id: 'org-1', name: { en: 'The Party' }, short_name: { en: 'TP' } }
 };
 
@@ -30,6 +31,7 @@ const nominationWithoutParent = {
   confirmed: false,
   custom_data: null,
   updated_at: '2026-10-02T08:30:00+00:00',
+  writable: false,
   parent: null
 };
 
@@ -141,6 +143,17 @@ describe('parseEntityNominations', () => {
     );
     expect(() => parseEntityNominations([{ ...nominationWithParent, confirmed: null }])).toThrow(
       /did not match its schema at: 0\.confirmed$/
+    );
+  });
+
+  it('keeps whether each nomination is writable as the function states it, and throws for one that is not a boolean', () => {
+    expect(parseEntityNominations([nominationWithParent, nominationWithoutParent])?.map((row) => row.writable)).toEqual(
+      [true, false]
+    );
+    const { writable: _writable, ...withoutWritable } = nominationWithParent;
+    expect(() => parseEntityNominations([withoutWritable])).toThrow(/did not match its schema at: 0\.writable$/);
+    expect(() => parseEntityNominations([{ ...nominationWithParent, writable: 'true' }])).toThrow(
+      /did not match its schema at: 0\.writable$/
     );
   });
 

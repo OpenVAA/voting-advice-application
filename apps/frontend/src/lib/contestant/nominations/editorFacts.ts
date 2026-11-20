@@ -1,5 +1,5 @@
 /**
- * The facts the nomination editor rests on: whether nominations may be edited, which elections admit an entity, which of an entity's nominations the editor manages, and what the selection of elections and constituencies starts from for an entity that has nominations.
+ * The facts the nomination editor rests on: whether nominations may be edited, which elections admit an entity, which of an entity's nominations the editor manages, as the database marks them writable, and what the selection of elections and constituencies starts from for an entity that has nominations.
  *
  * CALLER CONTRACT: every function takes values the caller has already read. Inside a reactive scope the caller reads the context's accessors and the data root's elections in its own tracking scope and hands the values over; this module is never given a context or a data root. Every function is pure and returns a list of its own, holding the objects it was given.
  *
@@ -26,20 +26,10 @@ export type ElectionShapeFacts = {
   nominationShape: NominationShape;
 };
 
-/** The members of an election that say whether one of its nominations is in the editor's reach. An `Election` of the data root holds them. */
-export type ElectionReachFacts = ElectionShapeFacts & {
-  /** The election's id. */
-  id: Id;
-  /** The election's current round. */
-  round: number;
-};
-
-/** The members of a nomination that say whether it is in the editor's reach. */
-export type NominationReachFacts = {
-  /** The id of the election the nomination is in. */
-  electionId: Id;
-  /** The round of the election the nomination is for. */
-  electionRound: number;
+/** The member of a nomination that says whether the editor manages it. */
+export type NominationWritableFacts = {
+  /** Whether a write of the entity's nominations may change the nomination, as the database decides. */
+  writable: boolean;
 };
 
 /** The members of a nomination that say where it stands. */
@@ -108,30 +98,19 @@ export function admissibleElectionsOf<TElection extends ElectionShapeFacts>(
 }
 
 /**
- * The nominations of an entity that the editor manages: those at their election's current round, in an election that admits the entity's type. Every other nomination is shown where nominations are listed, has no card in the editor and is left as it is by a save.
+ * The nominations of an entity that the editor manages: those the database marks writable, which are at their election's current round, in an election that admits the entity's type. Every other nomination is shown where nominations are listed, has no card in the editor and is left as it is by a save.
  * @param nominations - The entity's nominations, as the caller has read them.
- * @param elections - The elections the caller has read. A nomination in an election that is not among them is not in reach.
- * @param entityType - The type of the entity the nominations are of.
- * @returns The nominations in reach, in the order given.
+ * @returns The writable nominations, in the order given.
  */
-export function inReachNominationsOf<TNomination extends NominationReachFacts>({
-  nominations,
-  elections,
-  entityType
-}: {
-  nominations: ReadonlyArray<TNomination>;
-  elections: ReadonlyArray<ElectionReachFacts>;
-  entityType: EntityType;
-}): Array<TNomination> {
-  const currentRounds = new Map(
-    admissibleElectionsOf(elections, entityType).map((election) => [election.id, election.round])
-  );
-  return nominations.filter((nomination) => currentRounds.get(nomination.electionId) === nomination.electionRound);
+export function writableNominationsOf<TNomination extends NominationWritableFacts>(
+  nominations: ReadonlyArray<TNomination>
+): Array<TNomination> {
+  return nominations.filter((nomination) => nomination.writable);
 }
 
 /**
  * What the selection of elections and constituencies starts from for an entity that has nominations: each election it is nominated in, once, and the constituency it is nominated in there where it holds exactly one nomination in the election.
- * @param nominations - The entity's nominations in the editor's reach, as the caller has read them. No other nomination is to be handed over: every one given is read.
+ * @param nominations - The entity's writable nominations, as the caller has read them. No other nomination is to be handed over: every one given is read.
  * @returns Fresh objects, in the order the elections are first met. Empty for an entity with no nomination.
  */
 export function startingSelectionOf(nominations: ReadonlyArray<NominationContestFacts>): Array<StartingElection> {
@@ -146,10 +125,11 @@ export function startingSelectionOf(nominations: ReadonlyArray<NominationContest
   );
 }
 
+// TODO: Let an entity add a further constituency in an election. The database allows several nominations of one entity in one election, but the editor offers one constituency per election for a new nomination.
 /**
  * Which of the chosen elections a constituency is chosen for. An election in which the entity holds several nominations has none to choose: those nominations are kept as they are stored, each in its own constituency.
  * @param chosenElectionIds - The ids of the chosen elections.
- * @param nominations - The entity's nominations in the editor's reach, as the caller has read them.
+ * @param nominations - The entity's writable nominations, as the caller has read them.
  * @returns A fresh object. Each chosen id is in exactly one of its two lists, once, in the order given; an election that is not chosen is in neither.
  */
 export function constituencyChoiceOf({

@@ -23,8 +23,8 @@ afterEach(() => {
 
 describe('readAnswersLocked', () => {
   it.each([
-    ['locked', { access: { answersLocked: true } }, true],
-    ['open', { access: { answersLocked: false } }, false],
+    ['locked', { access: { contestantEditing: 'locked' } }, true],
+    ['open', { access: { contestantEditing: 'open' } }, false],
     ['silent on the lock', { access: {} }, false],
     ['empty', {}, false]
   ])('answers whether answers are locked for settings that are %s', async (_kind, settings, locked) => {

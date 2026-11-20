@@ -14,7 +14,7 @@ const ParentSchema = z.object({
 /**
  * One element of the answer of the `get_entity_nominations` RPC, in the database's own column names.
  *
- * Every member is always stated; a column that holds nothing is a JSON null. `updated_at` is never null: a write of the entity's nominations is checked against it. The two names and the custom data are kept as JSON and read by whoever maps the row. Unknown members are dropped rather than refused, in an element and in its parent, so a fact added to the answer later does not fail the read.
+ * Every member is always stated; a column that holds nothing is a JSON null. `updated_at` is never null: a write of the entity's nominations is checked against it. `writable` says whether a write of the entity's nominations may change the nomination, as `private.nomination_writable` decides: it is at its election's current round, in an election whose nomination shape admits the entity's type. The two names and the custom data are kept as JSON and read by whoever maps the row. Unknown members are dropped rather than refused, in an element and in its parent, so a fact added to the answer later does not fail the read.
  */
 export const EntityNominationRowSchema = z.object({
   id: z.string().min(1),
@@ -27,6 +27,7 @@ export const EntityNominationRowSchema = z.object({
   confirmed: z.boolean(),
   custom_data: z.json(),
   updated_at: z.string().min(1),
+  writable: z.boolean(),
   parent: ParentSchema.nullable()
 });
 

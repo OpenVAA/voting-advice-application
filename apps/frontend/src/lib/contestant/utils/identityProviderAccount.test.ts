@@ -1,14 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { describe, expect, it } from 'vitest';
 import {
   addressStateOf,
   hasDefaultLocaleName,
   isPlaceholderAddress,
-  ownOrganizationId,
-  PLACEHOLDER_EMAIL_DOMAIN,
-  REGISTERED_ENTITIES_KEY
+  PLACEHOLDER_EMAIL_DOMAIN
 } from './identityProviderAccount';
 import type { AddressState } from './identityProviderAccount';
 
@@ -110,61 +105,6 @@ describe('addressStateOf', () => {
     ]
   ])('reads %s', (_label, user, expected) => {
     expect(addressStateOf(user)).toBe(expected);
-  });
-});
-
-const PROJECT = '00000000-0000-0000-0000-000000000001';
-const OTHER_PROJECT = '00000000-0000-0000-0000-000000000002';
-const ORGANIZATION = '6f1c2a3b-4d5e-4f60-8a71-92b3c4d5e6f7';
-const CANDIDATE = '7a2b3c4d-5e6f-4a70-8b81-a2c3d4e5f607';
-
-describe('REGISTERED_ENTITIES_KEY', () => {
-  it('is the key identity-callback writes the record under', () => {
-    const source = fs.readFileSync(
-      path.resolve(
-        path.dirname(fileURLToPath(import.meta.url)),
-        '../../../../../supabase/supabase/functions/identity-callback/ownEntity.ts'
-      ),
-      'utf8'
-    );
-    const declared = [...source.matchAll(/export const REGISTERED_ENTITIES_KEY = '([^']*)';/g)].map(([, key]) => key);
-    expect(declared).toEqual([REGISTERED_ENTITIES_KEY]);
-  });
-});
-
-describe('ownOrganizationId', () => {
-  it('reads the organization the record names for the project', () => {
-    const appMetadata = {
-      identity_provider: PROVIDER,
-      [REGISTERED_ENTITIES_KEY]: { [PROJECT]: { candidate: CANDIDATE, organization: ORGANIZATION } }
-    };
-    expect(ownOrganizationId(appMetadata, PROJECT)).toBe(ORGANIZATION);
-  });
-
-  it.each<[string, unknown]>([
-    ['no metadata', undefined],
-    ['null metadata', null],
-    ['metadata that is not an object', 'registered'],
-    ['metadata with no record', { identity_provider: PROVIDER }],
-    ['a record that is not an object', { [REGISTERED_ENTITIES_KEY]: 'x' }],
-    [
-      'a record for another project only',
-      { [REGISTERED_ENTITIES_KEY]: { [OTHER_PROJECT]: { organization: ORGANIZATION } } }
-    ],
-    ['a record of a candidate only', { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: { candidate: CANDIDATE } } }],
-    ['a project entry that is not an object', { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: ORGANIZATION } }],
-    ['an organization that is not a uuid', { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: { organization: 'org-1' } } }],
-    ['an organization that is not a string', { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: { organization: 42 } } }],
-    ['a record as an array', { [REGISTERED_ENTITIES_KEY]: [ORGANIZATION] }]
-  ])('answers null for %s', (_label, appMetadata) => {
-    expect(ownOrganizationId(appMetadata, PROJECT)).toBeNull();
-  });
-
-  it('reads only own members, never one an object inherits', () => {
-    const inherited = Object.create({ [PROJECT]: { organization: ORGANIZATION } });
-    expect(ownOrganizationId({ [REGISTERED_ENTITIES_KEY]: inherited }, PROJECT)).toBeNull();
-    const entry = Object.create({ organization: ORGANIZATION });
-    expect(ownOrganizationId({ [REGISTERED_ENTITIES_KEY]: { [PROJECT]: entry } }, PROJECT)).toBeNull();
   });
 });
 

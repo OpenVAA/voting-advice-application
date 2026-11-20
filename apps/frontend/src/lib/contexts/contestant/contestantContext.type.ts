@@ -202,11 +202,11 @@ export type ContestantContext = AppContext &
     clearEntryFlow: () => void;
 
     /**
-     * Whether the answers can be edited.
+     * Whether an entity's own users are barred from changing anything of it: the app setting `access.contestantEditing` is `locked`, which the database enforces. A reactive accessor: read `ctx.answersLocked`, never destructure.
      */
     answersLocked: boolean;
     /**
-     * Whether an entity's own users are barred from adding or changing its nominations. A reactive accessor over the app setting `access.nominationsLocked`, which the database enforces: read `ctx.nominationsLocked`, never destructure.
+     * Whether an entity's own users are barred from adding or changing its nominations: the app setting `access.contestantEditing` is `nominationsLocked` or `locked`, which the database enforces. A reactive accessor: read `ctx.nominationsLocked`, never destructure.
      */
     nominationsLocked: boolean;
     /**

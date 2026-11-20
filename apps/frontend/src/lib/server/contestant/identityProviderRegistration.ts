@@ -1,5 +1,5 @@
 import { log } from '@openvaa/app-shared';
-import { hasDefaultLocaleName, ownOrganizationId } from '$lib/contestant/utils/identityProviderAccount';
+import { hasDefaultLocaleName } from '$lib/contestant/utils/identityProviderAccount';
 import type { LocalizedString } from '@openvaa/app-shared';
 import type {
   AddressConfirmationResult,
@@ -15,7 +15,7 @@ import type {
  *
  * The one server endpoint behind the identity provider's success view and the settings page. A request names one intent:
  *
- * - `save` — the names of the organization the identity registered, an address to prove, or both. The names are written to that organization alone, found by the record `identity-callback` keeps in the account's `app_metadata` and never by an id the request names, and only while the organization is unconfirmed, the project's answers are not locked and the name has text in the default locale. The address is handed to the address-confirmation operation of `account-access`, which mails it a link; it becomes the account's address only when that link is opened, and the request is refused unless the account has no proved address yet. The names are saved before the address is asked for, so a later failure leaves them saved. A save that succeeds clears the arrival marker.
+ * - `save` — the names of the organization the identity registered, an address to prove, or both. The names are written to that organization alone, found by the user-level read's `ownOrganizationId`, which the database answers from the identity's registration, and never by an id the request names, and only while the organization is unconfirmed, the project's answers are not locked and the name has text in the default locale. The address is handed to the address-confirmation operation of `account-access`, which mails it a link unless the address is another account's (`in-use`) or an open invitation is addressed to it (`invited`); it becomes the account's address only when that link is opened, and the request is refused unless the account has no proved address yet. The names are saved before the address is asked for, so a later failure leaves them saved. A save that succeeds clears the arrival marker.
  * - `resend` — the link for the pending address, mailed again.
  * - `acknowledge` — the arrival marker cleared, and nothing else.
  *
@@ -30,6 +30,7 @@ import type {
 export const IDENTITY_PROVIDER_REGISTRATION_RESULT = Object.freeze({
   saved: 'saved',
   inUse: 'in-use',
+  invited: 'invited',
   failed: 'failed',
   sent: 'sent',
   acknowledged: 'acknowledged'
@@ -47,16 +48,14 @@ export type IdentityProviderRegistrationReply = {
 
 /** The verified user, as far as the handler reads it. */
 export type VerifiedRegistrationUser = {
-  /** The user's `app_metadata`, which holds the record of the entity the identity registered. */
-  appMetadata: unknown;
+  /** The user's id. */
+  id: string;
 };
 
 /** The effects and facts of one request. */
 export interface IdentityProviderRegistrationDeps {
   /** The endpoint's own origin, which a request's `Origin` header must equal. */
   origin: string;
-  /** The project the application serves. */
-  projectId: string;
   /** The locale a name must have text in. */
   defaultLocale: string;
   /** The locale a confirmation mail is written in. */
@@ -65,7 +64,7 @@ export interface IdentityProviderRegistrationDeps {
   supportedLocales: ReadonlyArray<string>;
   /** The verified user, or `null` when no one is signed in. */
   getVerifiedUser: () => Promise<VerifiedRegistrationUser | null>;
-  /** Whether the project's answers are locked, which closes the names to their editor. */
+  /** Whether the project's answers are locked, its `access.contestantEditing` being `locked`, which closes the names to their editor. */
   getAnswersLocked: () => Promise<boolean>;
   /** The user-level data of the signed-in user. */
   getBasicUserData: () => Promise<BasicUserData>;
@@ -164,11 +163,11 @@ function isSameOriginJson(request: Request, origin: string): boolean {
  */
 async function saveNames(
   deps: IdentityProviderRegistrationDeps,
-  appMetadata: unknown,
+  user: BasicUserData,
   name: LocalizedString,
   shortName: LocalizedString | null | undefined
 ): Promise<boolean> {
-  const ownId = ownOrganizationId(appMetadata, deps.projectId);
+  const ownId = user.ownOrganizationId;
   if (ownId === null || !hasDefaultLocaleName(name, deps.defaultLocale)) return false;
   if (await deps.getAnswersLocked()) return false;
   const own = (await deps.getUserEntities()).find((entity) => entity.type === 'organization' && entity.id === ownId);
@@ -192,7 +191,7 @@ export async function handleIdentityProviderRegistration(
   request: Request,
   deps: IdentityProviderRegistrationDeps
 ): Promise<IdentityProviderRegistrationReply> {
-  const { saved, inUse, failed, sent, acknowledged } = IDENTITY_PROVIDER_REGISTRATION_RESULT;
+  const { saved, inUse, invited, failed, sent, acknowledged } = IDENTITY_PROVIDER_REGISTRATION_RESULT;
   try {
     const verified = await deps.getVerifiedUser();
     if (!verified) return reply(401, failed);
@@ -215,11 +214,12 @@ export async function handleIdentityProviderRegistration(
     }
 
     if (intent.email !== undefined && user.addressState === 'proved') return reply(200, failed);
-    if (intent.name !== undefined && !(await saveNames(deps, verified.appMetadata, intent.name, intent.shortName)))
+    if (intent.name !== undefined && !(await saveNames(deps, user, intent.name, intent.shortName)))
       return reply(200, failed);
     if (intent.email !== undefined) {
       const outcome = await deps.requestAddressConfirmation({ email: intent.email, locale: deps.locale });
       if (outcome === 'in-use') return reply(200, inUse);
+      if (outcome === 'invited') return reply(200, invited);
       if (outcome !== 'sent') return reply(200, failed);
     }
     deps.deleteArrivalMarker();

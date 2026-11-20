@@ -53,6 +53,7 @@ function nomination(
     confirmed: false,
     customData: null,
     updatedAt: '2026-10-01T12:00:00+00:00',
+    writable: true,
     ...members
   };
 }

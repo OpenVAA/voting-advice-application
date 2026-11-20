@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  parseAddressConfirmationAnswer,
   parseCodeSignIn,
   parseInvitationClaim,
   parseInvitationCodeStatus,
@@ -23,25 +24,29 @@ function messageOf(run: () => unknown): string {
 }
 
 describe('parseInvitationClaim', () => {
-  it('narrows a well-formed answer to the grants written, the promises left open and the password state', () => {
+  it('narrows a well-formed answer to the grants written and the promises left open', () => {
     const claim = parseInvitationClaim({
       claimed: [projectEditor],
-      skipped: [{ ...candidateEditor, reason: 'candidate_has_editor' }],
-      password_set: false
+      skipped: [{ ...candidateEditor, reason: 'candidate_has_editor' }]
     });
 
     expect(claim).toStrictEqual({
       claimed: [projectEditor],
-      skipped: [{ ...candidateEditor, reason: 'candidate_has_editor' }],
-      passwordSet: false
+      skipped: [{ ...candidateEditor, reason: 'candidate_has_editor' }]
+    });
+  });
+
+  it('drops a member the schema does not know', () => {
+    expect(parseInvitationClaim({ claimed: [], skipped: [], password_set: true })).toStrictEqual({
+      claimed: [],
+      skipped: []
     });
   });
 
   it('narrows an answer that claimed and skipped nothing', () => {
-    expect(parseInvitationClaim({ claimed: [], skipped: [], password_set: true })).toStrictEqual({
+    expect(parseInvitationClaim({ claimed: [], skipped: [] })).toStrictEqual({
       claimed: [],
-      skipped: [],
-      passwordSet: true
+      skipped: []
     });
   });
 
@@ -51,8 +56,7 @@ describe('parseInvitationClaim', () => {
       skipped: [
         { ...candidateEditor, reason: 'candidate_has_editor' },
         { ...candidateEditor, reason: 'target_not_in_project' }
-      ],
-      password_set: true
+      ]
     });
 
     expect(claim.skipped.map((item) => item.reason)).toEqual(['candidate_has_editor', 'target_not_in_project']);
@@ -61,8 +65,7 @@ describe('parseInvitationClaim', () => {
   it('reads a skipped item with a reason it does not know as `other`, so a reason added to the database does not fail the claim', () => {
     const claim = parseInvitationClaim({
       claimed: [projectEditor],
-      skipped: [{ ...candidateEditor, reason: 'some-other-reason' }],
-      password_set: true
+      skipped: [{ ...candidateEditor, reason: 'some-other-reason' }]
     });
 
     expect(claim.claimed).toEqual([projectEditor]);
@@ -77,16 +80,13 @@ describe('parseInvitationClaim', () => {
     expect(() =>
       parseInvitationClaim({
         claimed: [],
-        skipped: [{ ...candidateEditor, reason }],
-        password_set: true
+        skipped: [{ ...candidateEditor, reason }]
       })
     ).toThrow(/^The answer of claim_invitations did not match its schema at: skipped\.0\.reason$/);
   });
 
-  it('throws for an answer without the password state', () => {
-    expect(() => parseInvitationClaim({ claimed: [], skipped: [] })).toThrow(
-      /did not match its schema at: password_set$/
-    );
+  it('throws for an answer without the promises left open', () => {
+    expect(() => parseInvitationClaim({ claimed: [] })).toThrow(/did not match its schema at: skipped$/);
   });
 
   it('throws for null', () => {
@@ -99,8 +99,7 @@ describe('parseInvitationClaim', () => {
     const message = messageOf(() =>
       parseInvitationClaim({
         claimed: [{ ...projectEditor, scope: { secret: SECRET } }],
-        skipped: [],
-        password_set: true
+        skipped: []
       })
     );
 
@@ -210,5 +209,19 @@ describe('parseCodeSignIn', () => {
 
     expect(message).toContain('refresh_token');
     expect(message).not.toContain(SECRET);
+  });
+});
+
+describe('parseAddressConfirmationAnswer', () => {
+  it.each(['sent', 'in-use', 'invited', 'refused'] as const)('reads the result %s', (result) => {
+    expect(parseAddressConfirmationAnswer({ result })).toBe(result);
+  });
+
+  it.each([
+    ['a fifth result word', { result: 'mailed' }],
+    ['no result', {}],
+    ['null', null]
+  ])('reads %s as refused', (_label, raw) => {
+    expect(parseAddressConfirmationAnswer(raw)).toBe('refused');
   });
 });

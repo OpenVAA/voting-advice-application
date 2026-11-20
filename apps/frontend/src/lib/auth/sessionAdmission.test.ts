@@ -25,7 +25,7 @@ const ENTITY_EDITOR: GrantClaim = { scope: 'entity', target_type: 'candidate', t
 const PROJECT_ADMIN: GrantClaim = { scope: 'project', target_type: null, target_id: 'proj-1', role: 'admin' };
 
 /** A claim that found nothing to claim, for a user who has a password. */
-const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [], passwordSet: true };
+const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [] };
 
 /**
  * Build the request-context fake an admission acts through. Every member records its call, in order.
@@ -101,7 +101,7 @@ describe('admitSession', () => {
   });
 
   it('claims, then refreshes, then reads the session, and gates on the session it read', async () => {
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const { context, calls } = contextWith({ grantsAfterRefresh: [ENTITY_EDITOR], claim });
 
     const outcome = await admit(context, CONTESTANT_GRANTS);
@@ -111,7 +111,7 @@ describe('admitSession', () => {
   });
 
   it('admits a first-time invitee whose token carries no grant until the refresh', async () => {
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: false };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const { context, signOutArguments } = contextWith({ grantsBefore: [], grantsAfterRefresh: [ENTITY_EDITOR], claim });
 
     const outcome = await admit(context, CONTESTANT_GRANTS);
@@ -139,8 +139,7 @@ describe('admitSession', () => {
   it('does not refresh when every invitation was skipped', async () => {
     const claim: InvitationClaimResult = {
       claimed: [],
-      skipped: [{ ...ENTITY_EDITOR, reason: 'candidate_has_editor' }],
-      passwordSet: true
+      skipped: [{ ...ENTITY_EDITOR, reason: 'candidate_has_editor' }]
     };
     const { context, calls } = contextWith({ claim });
 
@@ -170,7 +169,7 @@ describe('admitSession', () => {
 
   it('logs a refresh that returns an error and gates on the session as it is', async () => {
     const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const invitee = contextWith({ grantsAfterRefresh: [ENTITY_EDITOR], claim, refresh: 'returns an error' });
     const returning = contextWith({ grantsBefore: [ENTITY_EDITOR], claim, refresh: 'returns an error' });
 
@@ -188,7 +187,7 @@ describe('admitSession', () => {
 
   it('logs a refresh that throws and gates on the session as it is', async () => {
     const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const { context, calls } = contextWith({ grantsBefore: [ENTITY_EDITOR], claim, refresh: 'throws' });
 
     expect((await admit(context, CONTESTANT_GRANTS)).ok).toBe(true);
@@ -198,7 +197,7 @@ describe('admitSession', () => {
 
   // The entry point still chooses the door. A claimed project-admin grant opens the Admin App's shapes and not the Contestant App's.
   it('admits a claimed project-admin grant against the admin shapes and refuses it against the contestant shapes', async () => {
-    const claim: InvitationClaimResult = { claimed: [PROJECT_ADMIN], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [PROJECT_ADMIN], skipped: [] };
     const admin = contextWith({ grantsAfterRefresh: [PROJECT_ADMIN], claim });
     const contestant = contextWith({ grantsAfterRefresh: [PROJECT_ADMIN], claim });
 
@@ -229,7 +228,7 @@ describe('admitSession', () => {
   });
 
   it('keeps two concurrent invocations with different contexts from observing each other', async () => {
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const invitee = contextWith({ grantsAfterRefresh: [ENTITY_EDITOR], claim });
     const stranger = contextWith();
 
@@ -306,7 +305,7 @@ describe('claimAndRefresh', () => {
   });
 
   it('claims, refreshes when a grant was written, and answers with the claim', async () => {
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: false };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const { context, calls } = contextWith({ claim });
 
     expect(await claimFor(context)).toBe(claim);
@@ -316,8 +315,7 @@ describe('claimAndRefresh', () => {
   it('does not refresh when nothing was claimed, and answers with the claim', async () => {
     const skippedAll: InvitationClaimResult = {
       claimed: [],
-      skipped: [{ ...ENTITY_EDITOR, reason: 'candidate_has_editor' }],
-      passwordSet: true
+      skipped: [{ ...ENTITY_EDITOR, reason: 'candidate_has_editor' }]
     };
     const nothing = contextWith();
     const skipped = contextWith({ claim: skippedAll });
@@ -345,7 +343,7 @@ describe('claimAndRefresh', () => {
     ['throws', 'refresh endpoint unreachable']
   ] as const)('logs a refresh that %s and still answers with the claim', async (refresh, message) => {
     const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const { context, calls } = contextWith({ claim, refresh });
 
     expect(await claimFor(context)).toBe(claim);
@@ -355,7 +353,7 @@ describe('claimAndRefresh', () => {
   });
 
   it('reads no session and signs nobody out', async () => {
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const { context, calls } = contextWith({ grantsBefore: [], grantsAfterRefresh: [], claim });
 
     await claimFor(context);
@@ -365,7 +363,7 @@ describe('claimAndRefresh', () => {
   });
 
   it('acts through a context that holds the claim and the refresh alone', async () => {
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const calls = new Array<string>();
 
     const answer = await claimAndRefresh({

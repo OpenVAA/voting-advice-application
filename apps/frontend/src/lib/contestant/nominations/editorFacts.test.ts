@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   admissibleElectionsOf,
   constituencyChoiceOf,
-  inReachNominationsOf,
   nominationsEditableOf,
-  startingSelectionOf
+  startingSelectionOf,
+  writableNominationsOf
 } from './editorFacts';
 import type { NominationShape } from '@openvaa/data';
 
@@ -83,78 +83,25 @@ describe('admissibleElectionsOf', () => {
   });
 });
 
-describe('inReachNominationsOf', () => {
-  /** One nomination of an entity: the members the function reads, and an id to tell the rows apart. */
-  function nomination(id: string, election: TestElection, electionRound = election.round) {
-    return { id, electionId: election.id, electionRound };
+describe('writableNominationsOf', () => {
+  /** One nomination of an entity: the member the function reads, and an id to tell the rows apart. */
+  function nomination(id: string, writable: boolean) {
+    return { id, writable };
   }
 
-  it('holds a nomination at its election’s current round in an admissible election', () => {
-    const nominations = [nomination('a', OPEN_LIST), nomination('b', SECOND_ROUND), nomination('c', CANDIDATES_ONLY)];
+  it('holds the nominations the database marks writable, the objects given, in the order given', () => {
+    const nominations = [nomination('z', true), nomination('out', false), nomination('a', true)];
 
-    const inReach = inReachNominationsOf({ nominations, elections: ELECTIONS, entityType: 'candidate' });
+    const writable = writableNominationsOf(nominations);
 
-    expect(inReach.map((row) => row.id)).toEqual(['a', 'b', 'c']);
-    expect(inReach[0]).toBe(nominations[0]);
-    expect(inReach).not.toBe(nominations);
+    expect(writable.map((row) => row.id)).toEqual(['z', 'a']);
+    expect(writable[0]).toBe(nominations[0]);
+    expect(writable).not.toBe(nominations);
   });
 
-  it('leaves out a nomination at another round than its election’s current one', () => {
-    const nominations = [
-      nomination('first-round-row', SECOND_ROUND, 1),
-      nomination('current-row', SECOND_ROUND),
-      nomination('later-row', OPEN_LIST, 2)
-    ];
-
-    const inReach = inReachNominationsOf({ nominations, elections: ELECTIONS, entityType: 'candidate' });
-
-    expect(inReach.map((row) => row.id)).toEqual(['current-row']);
-  });
-
-  it.each([
-    ['candidate', ORGANIZATIONS_ONLY, CANDIDATES_ONLY],
-    ['organization', CANDIDATES_ONLY, ORGANIZATIONS_ONLY]
-  ] as const)(
-    'leaves out a nomination of a %s in an election that does not admit it',
-    (entityType, refusing, admitting) => {
-      const nominations = [nomination('refused', refusing), nomination('admitted', admitting)];
-
-      const inReach = inReachNominationsOf({ nominations, elections: ELECTIONS, entityType });
-
-      expect(inReach.map((row) => row.id)).toEqual(['admitted']);
-    }
-  );
-
-  it('leaves out a nomination in an election that is not among those given', () => {
-    const nominations = [nomination('known', OPEN_LIST), nomination('unknown', CLOSED_LIST)];
-
-    const inReach = inReachNominationsOf({
-      nominations,
-      elections: [OPEN_LIST, CANDIDATES_ONLY],
-      entityType: 'candidate'
-    });
-
-    expect(inReach.map((row) => row.id)).toEqual(['known']);
-  });
-
-  it('keeps the order of the nominations, and every row of one election', () => {
-    const nominations = [
-      nomination('z', OPEN_LIST),
-      nomination('a', CLOSED_LIST),
-      nomination('m', OPEN_LIST),
-      nomination('out', ORGANIZATIONS_ONLY)
-    ];
-
-    const inReach = inReachNominationsOf({ nominations, elections: ELECTIONS, entityType: 'candidate' });
-
-    expect(inReach.map((row) => row.id)).toEqual(['z', 'a', 'm']);
-  });
-
-  it('answers nothing for no nomination', () => {
-    expect(
-      inReachNominationsOf({ nominations: [nomination('a', OPEN_LIST)], elections: ELECTIONS, entityType: 'candidate' })
-    ).toHaveLength(1);
-    expect(inReachNominationsOf({ nominations: [], elections: ELECTIONS, entityType: 'candidate' })).toEqual([]);
+  it('answers nothing for no nomination, and for none that is writable', () => {
+    expect(writableNominationsOf([])).toEqual([]);
+    expect(writableNominationsOf([nomination('a', false)])).toEqual([]);
   });
 });
 
@@ -202,18 +149,6 @@ describe('startingSelectionOf', () => {
     expect(second).not.toBe(first);
     expect(second[0]).not.toBe(first[0]);
     expect(nominations).toEqual([nomination(OPEN_LIST, 'nation'), nomination(CLOSED_LIST, 'north')]);
-  });
-
-  it('reads the nominations in reach it is given: one at another round, or in an election that does not admit the entity, is not in the answer', () => {
-    const nominations = [
-      nomination(CLOSED_LIST, 'north'),
-      nomination(OPEN_LIST, 'nation', 2),
-      nomination(ORGANIZATIONS_ONLY, 'nation')
-    ];
-
-    const inReach = inReachNominationsOf({ nominations, elections: ELECTIONS, entityType: 'candidate' });
-
-    expect(startingSelectionOf(inReach)).toEqual([{ electionId: 'closed-list', constituencyId: 'north' }]);
   });
 });
 
@@ -275,7 +210,7 @@ describe('the barrel', () => {
     for (const name of [
       'nominationsEditableOf',
       'admissibleElectionsOf',
-      'inReachNominationsOf',
+      'writableNominationsOf',
       'startingSelectionOf',
       'constituencyChoiceOf',
       'buildCards',

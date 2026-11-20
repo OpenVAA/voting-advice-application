@@ -142,6 +142,7 @@ const KEY = {
   awaiting: 'contestantApp.identityProvider.awaitingConfirmation',
   signInEmail: 'contestantApp.identityProvider.signInEmail',
   emailInUse: 'contestantApp.identityProvider.emailInUse',
+  emailInvited: 'contestantApp.identityProvider.emailInvited',
   takenNotice: 'contestantApp.identityProvider.emailTakenNotice',
   nameRequired: 'contestantApp.identityProvider.nameRequired',
   saveFailed: 'contestantApp.identityProvider.saveFailed',
@@ -548,6 +549,22 @@ describe('IdentityProviderGate — Continue with a form', () => {
     const error = one(target, SEL.emailError);
     expect(error.textContent).toContain(KEY.emailInUse);
     expect(error.getAttribute('data-reason')).toBe('in-use');
+    expect(document.activeElement).toBe(one(target, SEL.email));
+    expect(invalidateAll).not.toHaveBeenCalled();
+    expect(target.querySelector(SEL.error)).toBeNull();
+    expect(attributes(target).gateState).toBe('idle');
+  });
+
+  it('tells at the address field that an open invitation is addressed to the address, to be signed in with by email, and focuses it', async () => {
+    fetchMock.mockResolvedValue(answer('invited'));
+    const target = render();
+    fillAddress(target);
+
+    await press(target, SEL.submit);
+
+    const error = one(target, SEL.emailError);
+    expect(error.textContent).toContain(KEY.emailInvited);
+    expect(error.getAttribute('data-reason')).toBe('invited');
     expect(document.activeElement).toBe(one(target, SEL.email));
     expect(invalidateAll).not.toHaveBeenCalled();
     expect(target.querySelector(SEL.error)).toBeNull();

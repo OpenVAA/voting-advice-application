@@ -29,14 +29,13 @@ const SkippedGrantSpecSchema = GrantSpecSchema.extend({
 });
 
 /**
- * The answer of the `claim_invitations` RPC: the grants it wrote, the promises it left open, and whether the caller has a password.
+ * The answer of the `claim_invitations` RPC: the grants it wrote and the promises it left open.
  *
  * Unknown members are dropped rather than refused, so a fact added to the answer later does not fail the claim.
  */
 const InvitationClaimSchema = z.object({
   claimed: z.array(GrantSpecSchema),
-  skipped: z.array(SkippedGrantSpecSchema),
-  password_set: z.boolean()
+  skipped: z.array(SkippedGrantSpecSchema)
 });
 
 /** The answer of the `check-code` operation of `account-access`. */
@@ -61,7 +60,7 @@ const CodeSignInSchema = z.discriminatedUnion('result', [
 
 /** The answer of the `confirm-address` operation of `account-access`. */
 const AddressConfirmationSchema = z.object({
-  result: z.enum(['sent', 'in-use', 'refused'])
+  result: z.enum(['sent', 'in-use', 'invited', 'refused'])
 });
 
 /** What the `code-sign-in` operation answers, once narrowed. The tokens are a session's credentials: they are handed to the auth client and to nothing else. */
@@ -70,12 +69,12 @@ export type CodeSignInAnswer = z.infer<typeof CodeSignInSchema>;
 /**
  * Narrow the answer of the `claim_invitations` RPC.
  * @param raw - The unvalidated value the RPC returned.
- * @returns The grants written, the promises left open and whether the caller has a password.
+ * @returns The grants written and the promises left open.
  * @throws Error when the value does not match the RPC's answer. A malformed answer is a failed claim, never an empty one.
  */
 export function parseInvitationClaim(raw: unknown): InvitationClaimResult {
-  const { claimed, skipped, password_set } = parseRpcAnswer(InvitationClaimSchema, raw, 'claim_invitations');
-  return { claimed, skipped, passwordSet: password_set };
+  const { claimed, skipped } = parseRpcAnswer(InvitationClaimSchema, raw, 'claim_invitations');
+  return { claimed, skipped };
 }
 
 /**
@@ -119,7 +118,7 @@ export function parseCodeSignIn(raw: unknown): CodeSignInAnswer {
 /**
  * Read the answer of the `confirm-address` operation.
  *
- * Unlike the other parsers here it never throws: any body but one of the three results is read as `refused`, because a request whose outcome is unknown has mailed nothing the caller can rely on.
+ * Unlike the other parsers here it never throws: any body but one of the four results is read as `refused`, because a request whose outcome is unknown has mailed nothing the caller can rely on.
  * @param raw - The unvalidated body the function returned.
  * @returns The result the body names, or `refused`.
  */

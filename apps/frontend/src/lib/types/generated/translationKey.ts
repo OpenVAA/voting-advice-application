@@ -367,6 +367,7 @@ export type TranslationKey =
   | 'contestantApp.identityProvider.awaitingConfirmation'
   | 'contestantApp.identityProvider.emailInUse'
   | 'contestantApp.identityProvider.emailIntro'
+  | 'contestantApp.identityProvider.emailInvited'
   | 'contestantApp.identityProvider.emailTakenNotice'
   | 'contestantApp.identityProvider.error.cancelled.content'
   | 'contestantApp.identityProvider.error.cancelled.support'

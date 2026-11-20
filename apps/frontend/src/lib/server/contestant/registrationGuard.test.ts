@@ -45,14 +45,16 @@ function makeEvent({ locale = 'en', search = '' }: { locale?: string; search?: s
   };
 }
 
-type Settings = NonNullable<ContestantAppSettingsInput> & { access?: { answersLocked?: boolean } };
+type Settings = NonNullable<ContestantAppSettingsInput>;
 
 /** Settings as a data provider returns them: a stored partial. */
 function settingsWith(
   contestantApp: NonNullable<ContestantAppSettingsInput>['contestantApp'],
   { answersLocked }: { answersLocked?: boolean } = {}
 ): Settings {
-  return answersLocked === undefined ? { contestantApp } : { contestantApp, access: { answersLocked } };
+  return answersLocked === undefined
+    ? { contestantApp }
+    : { contestantApp, access: { contestantEditing: answersLocked ? 'locked' : 'open' } };
 }
 
 const NO_MODE = settingsWith({ servedEntityTypes: { candidate: { registrationModes: [] } } });

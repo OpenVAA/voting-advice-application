@@ -54,9 +54,9 @@ function isJsonObject(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Place the four values `contestant_app_public_settings` answers at their storage paths, as a value for `StoredSettingsSchema` to validate.
+ * Place the four values `get_public_app_settings` answers at their storage paths, as a value for `StoredSettingsSchema` to validate.
  *
- * Only `access.contestantApp`, `access.answersLocked`, `contestantApp.servedEntityTypes` and `analytics.trackEvents` are copied, whatever else the answer carries. A `null` member is left out: the function answers `null` where nothing is stored, and the schema's members are optional, not nullable.
+ * Only `access.contestantApp`, `access.contestantEditing`, `contestantApp.servedEntityTypes` and `analytics.trackEvents` are copied, whatever else the answer carries. A `null` member is left out: the function answers `null` where nothing is stored, and the schema's members are optional, not nullable.
  * @param answer - The function's answer, narrowed to an object.
  * @returns The unvalidated stored settings, holding at most those four members.
  */
@@ -67,7 +67,7 @@ function storedPublicSettings(answer: Record<string, unknown>): Record<string, u
 
   const gates: Record<string, unknown> = {};
   if (access.contestantApp != null) gates.contestantApp = access.contestantApp;
-  if (access.answersLocked != null) gates.answersLocked = access.answersLocked;
+  if (access.contestantEditing != null) gates.contestantEditing = access.contestantEditing;
 
   const settings: Record<string, unknown> = {};
   if (Object.keys(gates).length > 0) settings.access = gates;
@@ -98,7 +98,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
    *
    * Preview is decided by RLS, not by a role check. `authenticated_select_app_settings` returns the row to any grant holder of the project, so a signed-in admin or candidate gets the real voter app; anon, or a signed-in user with no grant, reads zero rows and gets the maintenance page.
    *
-   * A closed project, for a caller who can read no settings row of it (anon, or a signed-in user with no grant there): the answer is the `access`, `analytics` and `contestantApp` roots, each built over the shipped defaults. Four stored values are honoured, read through `contestant_app_public_settings` and validated by `StoredSettingsSchema` like a readable row: `access.contestantApp`, the answers lock in `access.answersLocked`, the served entity types with their registration modes in `contestantApp.servedEntityTypes` and the tracking switch in `analytics.trackEvents`, which keeps its shipped default from `dynamicSettings.analytics` when nothing valid is stored. An invalid `servedEntityTypes` leaves the whole `contestantApp` root at the shipped defaults, is reported once with its path, and does not touch `access`. An RPC error or an answer that is not an object throws.
+   * A closed project, for a caller who can read no settings row of it (anon, or a signed-in user with no grant there): the answer is the `access`, `analytics` and `contestantApp` roots, each built over the shipped defaults. Four stored values are honoured, read through `get_public_app_settings` and validated by `StoredSettingsSchema` like a readable row: `access.contestantApp`, how far contestants may edit in `access.contestantEditing`, the served entity types with their registration modes in `contestantApp.servedEntityTypes` and the tracking switch in `analytics.trackEvents`, which keeps its shipped default from `dynamicSettings.analytics` when nothing valid is stored. An invalid `servedEntityTypes` leaves the whole `contestantApp` root at the shipped defaults, is reported once with its path, and does not touch `access`. An RPC error or an answer that is not an object throws.
    *
    * Limitation: nothing else that is stored is honoured for that caller. `access.underMaintenance`, `contestantApp.questions` and every other stored setting stay at their shipped defaults on the sign-in pages of a closed project.
    *
@@ -118,13 +118,12 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       if (rpcError) throw new Error(`getAppSettings: ${rpcError.message}`);
       if (open === true) return {};
       if (open === false) {
-        const { data: publicSettings, error: settingsError } = await this.supabase.rpc(
-          'contestant_app_public_settings',
-          { p_project_id: this.projectId }
-        );
+        const { data: publicSettings, error: settingsError } = await this.supabase.rpc('get_public_app_settings', {
+          p_project_id: this.projectId
+        });
         if (settingsError) throw new Error(`getAppSettings: ${settingsError.message}`);
         if (!isJsonObject(publicSettings)) {
-          throw new Error('getAppSettings: contestant_app_public_settings returned a non-object');
+          throw new Error('getAppSettings: get_public_app_settings returned a non-object');
         }
 
         // The same parse a readable row gets, so repeated modes collapse, they take their canonical order and an invalid value is rejected and reported in one place.

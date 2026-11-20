@@ -1,2 +1,2 @@
 export { default as EmailEntry } from './EmailEntry.svelte';
-export type { EmailEntryProps } from './EmailEntry.type';
+export type { EmailEntryErrorReason, EmailEntryProps } from './EmailEntry.type';
