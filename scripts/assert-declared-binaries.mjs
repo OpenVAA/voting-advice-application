@@ -164,18 +164,24 @@ function readJson(filePath) {
 
 /**
  * Workspace locations, repo-root-relative, derived from the root manifest's
- * own `workspaces` globs rather than a hard-coded `apps`/`packages` pair, plus
- * `.` for the root itself. Reports are keyed on LOCATION and never on `name`:
+ * own `workspaces` entries rather than a hard-coded `apps`/`packages` pair, plus
+ * `.` for the root itself. A `<dir>/*` glob expands to each child carrying a
+ * `package.json`; a bare single-segment entry such as `scripts` is one
+ * workspace. Reports are keyed on LOCATION and never on `name`:
  * the root manifest declares no `name` and would print `undefined`.
  */
 function workspaceLocations(rootManifest) {
   const locations = ['.'];
   for (const glob of rootManifest.workspaces ?? []) {
     const segments = glob.split('/');
+    if (segments.length === 1 && !glob.includes('*')) {
+      if (existsSync(path.resolve(REPO_ROOT, glob, 'package.json'))) locations.push(glob);
+      continue;
+    }
     if (segments.length !== 2 || segments[1] !== '*') {
       violate(
         `the root manifest's workspaces glob '${glob}' is not of the '<dir>/*' form this guard knows how ` +
-          'to expand. A workspace this guard cannot enumerate is a workspace it cannot check — this fails closed.'
+          'to expand, nor a bare single-directory entry. A workspace this guard cannot enumerate is a workspace it cannot check — this fails closed.'
       );
       continue;
     }
