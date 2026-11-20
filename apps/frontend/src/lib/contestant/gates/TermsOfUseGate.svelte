@@ -20,10 +20,12 @@ None.
 
 <script lang="ts">
   import { log } from '@openvaa/app-shared';
+  import { tick } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { TermsOfUseForm, TrackingOptOut } from '$contestant/components/termsOfUse';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { shouldShowContestantOptOut } from '$lib/contexts/app/tracking/gates';
   import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
@@ -48,6 +50,8 @@ None.
 
   async function handleSubmit() {
     if (!termsAccepted) return;
+    // Continue is natively disabled while the acceptance runs, and a browser may drop the focus of a button that becomes disabled.
+    const focused = document.activeElement;
     status = 'loading';
     try {
       const result = await acceptTermsOfUse();
@@ -56,6 +60,8 @@ None.
     } catch (error) {
       log.error('Failed to record the terms-of-use acceptance', { err: error });
       status = 'error';
+      await tick();
+      if (focused instanceof HTMLElement && document.activeElement === document.body) focused.focus();
       return;
     }
     // Awaited so that Continue keeps its loading state until the page has its new data. Only the rerun load, reading the stored acceptance, removes this view. The acceptance is stored by now, so a failed rerun is not a failed save: it is logged, and Continue reruns the load again, since accepting again is harmless.
@@ -90,9 +96,12 @@ None.
     <TrackingOptOut bind:optOut />
   {/if}
   {#if status === 'error'}
-    <div role="alert" data-testid="tou-save-error" class="text-error my-md text-center">
-      {t('contestantApp.error.saveFailed')}
-    </div>
+    <ErrorMessage
+      inline
+      role="alert"
+      class="my-md"
+      message={t('contestantApp.error.saveFailed')}
+      data-testid="tou-save-error" />
   {/if}
   {#snippet primaryActions()}
     <Button

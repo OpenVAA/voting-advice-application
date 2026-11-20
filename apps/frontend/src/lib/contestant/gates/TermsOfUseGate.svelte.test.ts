@@ -8,6 +8,7 @@
  * 3. **A stored refusal is kept.** When this browser already holds `denied`, the box starts ticked, so accepting writes `denied` again.
  * 4. **The choice is written before the load is rerun.**
  * 5. **A rerun that fails after a recorded acceptance is not a failed save.** It is logged as the rerun's failure and the save-failed message is not shown.
+ * 6. **A failed acceptance gives the focus back to Continue** when the browser dropped it to the page body while Continue was disabled.
  */
 
 import { log } from '@openvaa/app-shared';
@@ -250,6 +251,29 @@ describe('TermsOfUseGate — a rerun that fails after the acceptance is recorded
     expect(logError.mock.calls[0][0]).toMatch(/rerun/);
     const submit = target.querySelector<HTMLButtonElement>('[data-testid="terms-of-use-submit"]');
     expect(submit?.textContent, 'Continue leaves its loading state').not.toContain('common.loading');
+  });
+});
+
+describe('TermsOfUseGate — the focus after a failed acceptance', () => {
+  it('moves the focus back to Continue when it fell to the page body', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    // jsdom keeps the focus on a button that becomes disabled; a browser may not, so the drop is made here by hand.
+    acceptTermsOfUse.mockImplementation(async () => {
+      (document.activeElement as HTMLElement | null)?.blur();
+      throw new Error('save failed');
+    });
+    const target = render();
+    const terms = target.querySelector<HTMLInputElement>('[data-testid="terms-checkbox"]');
+    setChecked(terms!, true);
+    const submit = target.querySelector<HTMLButtonElement>('[data-testid="terms-of-use-submit"]');
+    expect(submit, 'the Continue button should be rendered').not.toBeNull();
+
+    submit!.focus();
+    submit!.click();
+    await settle();
+
+    expect(target.querySelector('[data-testid="tou-save-error"]'), 'the failure is reported').not.toBeNull();
+    expect(document.activeElement).toBe(submit);
   });
 });
 

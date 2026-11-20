@@ -54,6 +54,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
 -->
 
 <script lang="ts">
+  import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
   import { Radio } from '$lib/components/input';
   import { getComponentContext } from '$lib/contexts/component';
@@ -146,7 +147,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
     {/each}
   </div>
   {#if error}
-    <p class="text-warning mt-sm" role="alert" id={errorId} data-testid="entity-selector-error">{error}</p>
+    <ErrorMessage inline message={error} id={errorId} role="alert" class="mt-sm" data-testid="entity-selector-error" />
   {/if}
 </fieldset>
 
