@@ -127,4 +127,22 @@ describe('a nested section with a page of its own', () => {
     expect(output).not.toContain('// New');
     expect(output).toMatch(/title: "Overview",\s+route: "\/guide\/topic",\s+fixedTitle: true/);
   });
+
+  it('puts an Overview child the config does not list yet before the children it does list', () => {
+    const current: Navigation = [
+      {
+        title: 'Guide',
+        route: '/guide',
+        children: [{ title: 'Topic', route: '/guide/topic', children: [{ title: 'deep', route: '/guide/topic/deep' }] }]
+      }
+    ];
+    const discovered = buildNavigationStructure(routes('/guide', '/guide/topic', '/guide/topic/deep'));
+
+    const [topic] = compareNavigations(current, discovered)[0].children ?? [];
+
+    expect(topic.children?.map(({ item, status }) => [item.route, status])).toEqual([
+      ['/guide/topic', 'new'],
+      ['/guide/topic/deep', 'existing']
+    ]);
+  });
 });
