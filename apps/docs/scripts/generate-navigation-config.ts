@@ -302,9 +302,11 @@ function populateChildrenMap(
 }
 
 /**
- * Build hierarchical navigation structure from flat routes list
+ * Build the hierarchical navigation structure from the flat list of discovered routes.
+ * @param routes - The discovered routes, each with the title read from its page.
+ * @returns One section per top-level route segment; the root page is left out.
  */
-function buildNavigationStructure(routes: Array<RouteInfo>): Navigation {
+export function buildNavigationStructure(routes: Array<RouteInfo>): Navigation {
   const navigation: Navigation = [];
 
   // Group routes by top-level section
