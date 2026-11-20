@@ -12,7 +12,7 @@ Takes the email address that a holder of a registration code nobody has claimed 
 
 ## Settings
 
-- `contestantApp.entityTypes`: The entity types the project serves, which decide the app's name above the heading.
+- `contestantApp.servedEntityTypes`: The entity types the project serves, which decide the app's name above the heading.
 
 -->
 

@@ -86,7 +86,9 @@ const context = {
     }),
   appSettings: {
     admin: { email: 'support@example.org' },
-    contestantApp: { entityTypes: ['candidate', 'organization'] },
+    contestantApp: {
+      servedEntityTypes: { candidate: { registrationModes: [] }, organization: { registrationModes: [] } }
+    },
     results: { cardContents: { candidate: [], organization: [] } },
     analytics: { trackEvents: false }
   },
