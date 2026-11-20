@@ -1,7 +1,7 @@
 /**
  * The registration-mode rule's truth table, read against the TypeScript accessor.
  *
- * The database asks `private.registration_mode_allowed_in` before it honours an invitation, and the screens ask `isRegistrationModeAllowed` before they offer a registration mode. The pgTAP file whose name ends `-registration-mode-matrix.test.sql` asserts the SQL function against one table of rows; this spec parses the same rows from that file as text and asserts the accessor against them, so a rule changed on one side alone fails one of the two suites.
+ * The database asks `private.registration_mode_allowed_in` before it honours an invitation, and the screens ask `isRegistrationModeAllowed` before they offer a registration mode. The database reads the stored settings as they are, while the screens read them after the Supabase data provider has parsed them with `StoredSettingsSchema`, dropping each top-level member the parse refuses, so the two readings agree only when the database refuses what the schema refuses. The pgTAP file whose name ends `-registration-mode-matrix.test.sql` asserts the SQL function against one table of rows; this spec parses the same rows from that file as text, parses each row's settings as the data provider does and asserts the accessor against them, so a rule changed on one side alone fails one of the two suites.
  *
  * It lives in this package because `yarn test:unit` needs a package to run a repository-level spec in, and this one already reads the schema tree from its tests (`rpcNullabilityGate.test.ts`, `assertKnownRowProps.test.ts`).
  *
@@ -11,9 +11,9 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isRegistrationModeAllowed } from '@openvaa/app-shared';
+import { isRegistrationModeAllowed, StoredSettingsSchema } from '@openvaa/app-shared';
 import { describe, expect, it } from 'vitest';
-import type { ContestantAppConfigInput, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
+import type { RegistrationMode, ServedEntityType, StoredSettings } from '@openvaa/app-shared';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** `packages/dev-seed/tests` → repo root. */
@@ -55,6 +55,20 @@ const rows: Array<MatrixRow> = [...tableText.matchAll(ROW_RE)].map(
   })
 );
 
+/**
+ * The stored settings as the screens read them: parsed with `StoredSettingsSchema`, and when the parse fails, parsed again without the top-level members it flagged, as `parseWithPartialPreserve` of the frontend's Supabase adapter does. Nothing parses as `{}`.
+ * @param stored - The settings of one row, as the JSON of its literal.
+ */
+function parsedAsTheScreensRead(stored: unknown): StoredSettings {
+  const parsed = StoredSettingsSchema.safeParse(stored);
+  if (parsed.success) return parsed.data;
+  if (typeof stored !== 'object' || stored === null || Array.isArray(stored)) return {};
+  const flagged = new Set(parsed.error.issues.map((issue) => issue.path[0]));
+  const kept = Object.fromEntries(Object.entries(stored).filter(([key]) => !flagged.has(key)));
+  const retried = StoredSettingsSchema.safeParse(kept);
+  return retried.success ? retried.data : {};
+}
+
 describe('the registration-mode truth table and isRegistrationModeAllowed', () => {
   it('finds exactly one truth-table file among the pgTAP files', () => {
     expect(tableFiles).toHaveLength(1);
@@ -80,7 +94,7 @@ describe('the registration-mode truth table and isRegistrationModeAllowed', () =
       .filter(
         (row) =>
           isRegistrationModeAllowed(
-            JSON.parse(row.settings) as ContestantAppConfigInput,
+            parsedAsTheScreensRead(JSON.parse(row.settings)),
             row.entityType as ServedEntityType,
             row.mode as RegistrationMode
           ) !== row.allowed
