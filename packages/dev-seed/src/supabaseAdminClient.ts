@@ -8,6 +8,7 @@
  * Bulk-import routing note: `bulk_import` RPC's `processing_order` accepts exactly 11 of 16 non-system tables. `accounts`, `projects`, `feedback`, `constituency_group_constituencies`, `election_constituency_groups` are NOT in that list. The two join tables arrive as link keys of `elections` and `constituency_groups` items, which `bulk_import` writes before any nomination and `bulkImport` below sends; callers route the other three elsewhere (writer strips accounts/projects, feedback via direct upsert). This file does not enforce the routing — it is a thin RPC wrapper.
  */
 
+import { SETTINGS_REPLACED_WHOLE } from '@openvaa/app-shared';
 import { createClient } from '@supabase/supabase-js';
 import { assertLocalSupabaseUrl } from './localSupabaseUrl';
 import { importLinkFor, planLinks } from './template/linkSentinels';
@@ -226,6 +227,32 @@ export interface CreateInvitationsOptions {
 function resolveFieldName(field: string): string {
   // `Object.hasOwn`, not `??`: `FIELD_MAP` is a plain object literal, so a bare index also saw inherited members and `resolveFieldName('toString')` returned `Object.prototype.toString` — a function used one line later as a column name. Same defect and same fix as `resolveCollectionName`; `field` is template-controlled data here too.
   return Object.hasOwn(FIELD_MAP, field) ? FIELD_MAP[field] : field;
+}
+
+/**
+ * The {@link SETTINGS_REPLACED_WHOLE} paths that `settings` names, each as a payload that sets only that path to `null`.
+ *
+ * `jsonb_recursive_merge` replaces a non-object base whole, so merging one of these payloads before the settings themselves makes the stored value at that path exactly the one `settings` states.
+ */
+function replacedWholeClearPayloads(settings: Record<string, unknown>): Array<Record<string, unknown>> {
+  const payloads: Array<Record<string, unknown>> = [];
+  for (const path of SETTINGS_REPLACED_WHOLE) {
+    const segments = path.split('.');
+    let node: unknown = settings;
+    let named = true;
+    for (const segment of segments) {
+      if (!node || typeof node !== 'object' || Array.isArray(node) || !Object.hasOwn(node, segment)) {
+        named = false;
+        break;
+      }
+      node = (node as Record<string, unknown>)[segment];
+    }
+    if (!named || node === undefined) continue;
+    let payload: unknown = null;
+    for (const segment of [...segments].reverse()) payload = { [segment]: payload };
+    payloads.push(payload as Record<string, unknown>);
+  }
+  return payloads;
 }
 
 /**
@@ -717,7 +744,7 @@ export class SupabaseAdminClient {
   /**
    * Deep-merge partial settings into the app_settings.settings JSONB column.
    *
-   * Uses the merge_jsonb_column RPC for recursive deep merge. Callers only need to send the settings they want to change.
+   * Uses the merge_jsonb_column RPC for recursive deep merge. Callers only need to send the settings they want to change. A member at a path of `SETTINGS_REPLACED_WHOLE` (`@openvaa/app-shared`), today only `contestantApp.servedEntityTypes`, is replaced whole instead: when `partialSettings` names it, a first merge sets that path to `null` and the second stores exactly the value given, so a served type the stored map has and the new one leaves out is dropped. The two merges are separate writes, so a failed second one leaves the member `null`.
    *
    * Baseline test-setup no longer calls this method: it lives in the `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block, and in the per-variant filesystem templates at `tests/tests/setup/templates/variant-*.ts`. Do not reintroduce
    * `updateAppSettings({ ... })` blocks into `tests/tests/setup/*.setup.ts`.
@@ -742,15 +769,15 @@ export class SupabaseAdminClient {
 
     if (fetchError) throw new Error(`updateAppSettings: failed to fetch app_settings: ${fetchError.message}`);
 
-    // Deep merge via RPC
-    const { error } = await this.client.rpc('merge_jsonb_column', {
-      p_table_name: 'app_settings',
-      p_column_name: 'settings',
-      p_row_id: row.id,
-      p_partial_data: partialSettings
-    });
-
-    if (error) throw new Error(`updateAppSettings: merge failed: ${error.message}`);
+    for (const payload of [...replacedWholeClearPayloads(partialSettings), partialSettings]) {
+      const { error } = await this.client.rpc('merge_jsonb_column', {
+        p_table_name: 'app_settings',
+        p_column_name: 'settings',
+        p_row_id: row.id,
+        p_partial_data: payload
+      });
+      if (error) throw new Error(`updateAppSettings: merge failed: ${error.message}`);
+    }
   }
 
   /**

@@ -106,20 +106,23 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
     });
   });
 
-  it('contestantApp block states the whole root: the question settings, both served entity types and both registration rows', () => {
+  it('contestantApp block states the whole root: the question settings and both served entity types with their registration modes', () => {
     expect(BASE_APP_SETTINGS.contestantApp).toEqual({
       questions: { hideHero: false, hideVideo: false },
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: ['email', 'code'], organization: ['email', 'code'] }
+      servedEntityTypes: {
+        candidate: { registrationModes: ['email', 'code'] },
+        organization: { registrationModes: ['email', 'code'] }
+      }
     });
   });
 
   it('serves organizations with the email and code modes candidates have, and differs from the minimal perm base in the served types on purpose', () => {
     const minimal = MINIMAL_BASE_APP_SETTINGS.contestantApp;
-    expect(BASE_APP_SETTINGS.contestantApp.entityTypes).toEqual(['candidate', 'organization']);
-    expect(BASE_APP_SETTINGS.contestantApp.registrationModes.organization).toEqual(['email', 'code']);
-    expect(minimal.entityTypes).toEqual(['candidate']);
-    expect(minimal.registrationModes).toEqual(BASE_APP_SETTINGS.contestantApp.registrationModes);
+    expect(Object.keys(BASE_APP_SETTINGS.contestantApp.servedEntityTypes)).toEqual(['candidate', 'organization']);
+    expect(BASE_APP_SETTINGS.contestantApp.servedEntityTypes.organization.registrationModes).toEqual(['email', 'code']);
+    expect(minimal.servedEntityTypes).toEqual({
+      candidate: BASE_APP_SETTINGS.contestantApp.servedEntityTypes.candidate
+    });
     expect(minimal.questions).toEqual(BASE_APP_SETTINGS.contestantApp.questions);
   });
 

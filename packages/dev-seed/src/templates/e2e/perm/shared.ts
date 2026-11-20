@@ -107,16 +107,14 @@ export const MINIMAL_BASE_APP_SETTINGS = {
   // Both notifications are stated off, so no perm dataset that derives from this base shows a notification modal; only perm-per-app-notifications overrides them. Each perm setup replaces the stored settings row whole with its own template's settings, so nothing carries over from the setup before it.
   notifications: { voterApp: { show: false }, contestantApp: { show: false } },
   analytics: { trackEvents: false },
-  // The whole contestant app root: candidates only are served, and the registration matrix is the E2E base dataset's, email or code for candidates and organizations alike. The organizations' row decides nothing while the type is not served.
+  // The whole contestant app root: candidates only are served, and they register by email or code, as in the E2E base dataset.
   contestantApp: {
     questions: {
       hideHero: false,
       hideVideo: false
     },
-    entityTypes: ['candidate'],
-    registrationModes: {
-      candidate: ['email', 'code'],
-      organization: ['email', 'code']
+    servedEntityTypes: {
+      candidate: { registrationModes: ['email', 'code'] }
     }
   }
   // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.

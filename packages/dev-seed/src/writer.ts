@@ -15,7 +15,7 @@
  * Rollback semantics:
  *   - `bulk_import` runs as a SINGLE PL/pgSQL transaction (SECURITY INVOKER; migration line 2738). A mid-collection FK / constraint violation aborts the RPC and nothing commits — the 10 bulk-import tables roll back atomically.
  *   - `importAnswers` and `linkJoinTables` run in SEPARATE transactions. A failure there leaves `bulk_import` rows committed. That is acceptable because generators pre-validate refs in memory, so most orphan-FK cases are caught client-side before the RPC fires.
- *   - `updateAppSettings` runs one `merge_jsonb_column` RPC per row; each is its own transaction.
+ *   - `updateAppSettings` runs one `merge_jsonb_column` RPC per row, or two for a row that names a `SETTINGS_REPLACED_WHOLE` member: first a merge that sets that path to `null`, then the row. Each RPC is its own transaction, so a failure between the two leaves that member `null`.
  *   - The settings are parsed before Pass 1, so a refused settings row writes nothing. A question reference that names no question is found only at Pass 5, once the questions are written, so it fails the write after the entity rows are committed.
  *
  * Writer is pure I/O. No generation / randomness / template merging happens here — that is the pipeline's concern.
@@ -195,6 +195,7 @@ export class Writer {
     const portraits = await this.uploadPortraits(externalIdPrefix);
 
     // Pass 5: app_settings via merge_jsonb_column.
+    // Each row is deep-merged into the stored settings, except that a row naming `contestantApp.servedEntityTypes` replaces the stored map whole (`SETTINGS_REPLACED_WHOLE`), so the project serves exactly the types the row lists.
     // Resolve {externalId: '<id>'} → UUID inside cardContents BEFORE the merge.
     // The questions-table SELECT is gated on a cheap pre-walk, so payloads without externalId references pay zero overhead.
     if (appSettingsRows && appSettingsRows.length > 0) {

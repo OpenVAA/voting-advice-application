@@ -98,7 +98,7 @@ export const permInteractiveInfoTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Interactive-info election' },
         short_name: { en: 'EL1' },
-        election_type: 'organization_list_and_independents',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
