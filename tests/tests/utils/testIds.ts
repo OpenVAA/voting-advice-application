@@ -203,12 +203,14 @@ export const testIds = {
       cardAction: 'contestant-questions-card-action',
       list: 'contestant-questions-list',
       start: 'contestant-questions-start',
+      // The overview's shortcut to the next unanswered question, shown while some but not all are answered.
+      continue: 'contestant-questions-continue',
       answerInput: 'contestant-questions-answer',
       commentInput: 'contestant-questions-comment',
       saveButton: 'contestant-questions-save',
       // The sentence beside the Save button that says why it is disabled while the question is unanswered.
       saveReason: 'contestant-questions-save-reason',
-      // testids supporting the candidate fixture library's strict locator surface. Placement:
+      // testids supporting the contestant fixture library's strict locator surface. Placement:
       //  - categoryExpander: questions overview <Expander> wrapper (un-keyed, filtered by hasText per category in fixture).
       //  - hero: figure inside the {#snippet hero()} block on the question page (parity with voter-questions-hero).
       //  - intro: the empty-state intro <div> shown when no answers exist.

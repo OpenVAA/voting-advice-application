@@ -1,7 +1,7 @@
 /**
- * Candidate journey end-to-end spec.
+ * Contestant journey end-to-end spec.
  *
- * Structure: ONE serial-describe → ONE long test('full candidate journey end-to-end', ...) → 22 named `test.step` segments, followed by short tests that sign the journey's candidate in again and go on from where the walk left it. The walk covers:
+ * Structure: ONE serial-describe → ONE long test('full contestant journey end-to-end', ...) → 22 named `test.step` segments, followed by short tests that sign the journey's candidate in again and go on from where the walk left it. The walk covers:
  *   1-2.  Public static pages (/contestant/help + /contestant/privacy) reachable while unauthenticated.
  *   3.    Seed an email invitation for the unregistered candidate that confirms it and states its one nomination unconfirmed, and ask the `account-access` function for a sign-in link — between the two, no account and no editor grant exists; then read the mailed link from Mailpit, assert its shape and move it to the run's origin.
  *   4.    Open the mailed link: the auth callback verifies it, claims the invitation and lands in the app, where a user with no password is shown the set-password view in place of the page; set initial password (PASSWORD_1).
@@ -306,28 +306,10 @@ function currentQuestionId(page: Page): string {
   );
 }
 
-/**
- * Id-scoped `question-choice` inputs for the question currently in the editor.
- * The `name="questionChoices-<id>"` conjunction with the `question-choice` testid is not expressible via getByTestId, so a raw attribute locator is used (same idiom as contestantQuestionPage.answerCurrentQuestion).
- */
-function scopedChoices(page: Page, questionId: string): Locator {
-  // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId
-  return page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
-}
-
-/**
- * Id-scoped `question-choice` inputs further filtered by native input `type`.
- * The input `type` is the render discriminant asserted by the type-specific steps: multi-choice categorical → `checkbox` (QuestionChoices.svelte multi branch), single-choice categorical / boolean / ordinal → `radio`.
- */
-function scopedChoicesByType(page: Page, questionId: string, inputType: 'checkbox' | 'radio'): Locator {
-  // eslint-disable-next-line playwright/no-restricted-locators -- testid+name+type conjunction not expressible via getByTestId
-  return page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"][type="${inputType}"]`);
-}
-
 // Start every test in this file UNAUTHENTICATED.
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test.describe('candidate journey', { tag: ['@candidate'] }, () => {
+test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   // Build the oversized PNG once per file (used by step 13's portrait upload error-path assertions). Avoids committing a 21MB binary fixture.
@@ -340,7 +322,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     fs.rmSync(OVERSIZED_PNG_PATH, { force: true });
   });
 
-  test('full candidate journey end-to-end', async ({
+  test('full contestant journey end-to-end', async ({
     page,
     emailBucket,
     invitationFlow,
@@ -810,8 +792,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       const qid = currentQuestionId(page);
 
       // Type-specific render: 4 CHECKBOX choices and ZERO radios (the categorical / likert questions render radios — the input type is the discriminant, mirroring contestantQuestionPage.answerCurrentQuestion's detection idiom).
-      await expect(scopedChoicesByType(page, qid, 'checkbox')).toHaveCount(4);
-      await expect(scopedChoicesByType(page, qid, 'radio')).toHaveCount(0);
+      await expect(contestantQuestionPage.choicesFor(qid, 'checkbox')).toHaveCount(4);
+      await expect(contestantQuestionPage.choicesFor(qid, 'radio')).toHaveCount(0);
 
       // The min/max helper text renders — it is a TYPE-SPECIFIC contract element: QuestionChoices.svelte only emits `question-choice-helper` for a multi-choice question carrying authored min/max constraints (`{#if mode === 'answer' && multiConstraints}`), so its mere presence discriminates multi-choice from the categorical/boolean radios below.
       //
@@ -821,7 +803,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(helper).toHaveText(/2.*3/);
 
       // save gating across the 2..3 window. QuestionChoices.svelte never disables unchecked boxes (its `handleToggle`); over/under-selection surfaces on the caller's Save button via `isMultiChoiceCountValid` in multiChoiceValidity.ts (valid iff the count is within [effectiveMin=2, effectiveMax=3]).
-      const boxes = scopedChoices(page, qid);
+      const boxes = contestantQuestionPage.choicesFor(qid);
       // 1 selected → below min → Save DISABLED.
       await boxes.nth(0).click();
       await expect(boxes.nth(0)).toBeChecked();
@@ -860,8 +842,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await contestantQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-4-categorical\]/);
       await expect(page).toHaveURL(contestantUrlRe('/questions', 'child'), { timeout: TIMEOUTS.slowPage });
       const catId = currentQuestionId(page);
-      await expect(scopedChoicesByType(page, catId, 'radio')).toHaveCount(3);
-      await expect(scopedChoicesByType(page, catId, 'checkbox')).toHaveCount(0);
+      await expect(contestantQuestionPage.choicesFor(catId, 'radio')).toHaveCount(3);
+      await expect(contestantQuestionPage.choicesFor(catId, 'checkbox')).toHaveCount(0);
       // Answer (first choice) + save; a single radio selection is immediately valid.
       await contestantQuestionPage.selectChoice(0);
       await contestantQuestionPage.expectContinueEnabled();
@@ -875,8 +857,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await contestantQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-5-boolean\]/);
       await expect(page).toHaveURL(contestantUrlRe('/questions', 'child'), { timeout: TIMEOUTS.slowPage });
       const boolId = currentQuestionId(page);
-      await expect(scopedChoicesByType(page, boolId, 'radio')).toHaveCount(2);
-      await expect(scopedChoicesByType(page, boolId, 'checkbox')).toHaveCount(0);
+      await expect(contestantQuestionPage.choicesFor(boolId, 'radio')).toHaveCount(2);
+      await expect(contestantQuestionPage.choicesFor(boolId, 'checkbox')).toHaveCount(0);
       // OpinionQuestionInput synthesizes boolean choices as ['no'→false, 'yes'→true], so index 0 saves the FALSY value deliberately: the overview must still show a falsy answer as answered. If it did not, the card below would render no display markup and its action would read "Answer this question", so all three assertions would fail.
       await contestantQuestionPage.selectChoice(0);
       await contestantQuestionPage.expectContinueEnabled();
@@ -935,7 +917,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await page.goto('/en/contestant/questions');
       await contestantQuestionsOverviewPage.expectCompletionMessage();
       // No partial-completion continue prompt (all questions answered).
-      await expect(page.getByTestId('contestant-questions-continue')).toHaveCount(0);
+      await contestantQuestionsOverviewPage.expectNoContinuePrompt();
     });
 
     // ============== Step 21: preview =====================================
@@ -980,7 +962,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     contestantQuestionPage
   }) => {
     await removeStoredAnswer(new SupabaseAdminClient(), OPEN_ANSWER_QUESTION_EXTERNAL_ID);
-    await contestantLoginPage.signInFromCold(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
+    await contestantLoginPage.goToPage();
+    await contestantLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
     await contestantHomePage.expectStatusMessage();
     await page.goto('/en/contestant/questions');
     await contestantQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-1-likert5\]/);
@@ -1012,7 +995,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     contestantHomePage,
     contestantProfilePage
   }) => {
-    await contestantLoginPage.signInFromCold(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
+    await contestantLoginPage.goToPage();
+    await contestantLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
     await contestantHomePage.expectStatusMessage();
     await contestantProfilePage.open();
     const portraitUrl = await contestantProfilePage.shownImageUrl();
