@@ -1,4 +1,11 @@
-import { DataRoot, isEmptyValue, NumberQuestion } from '@openvaa/data';
+import {
+  DataRoot,
+  ImageQuestion,
+  isEmptyValue,
+  MultipleTextQuestion,
+  NumberQuestion,
+  TextQuestion
+} from '@openvaa/data';
 import { describe, expect, it } from 'vitest';
 import { requiredInfoQuestionsOf, unansweredQuestionsOf } from './unanswered';
 import type { SavedAnswers } from './unanswered';
@@ -139,6 +146,60 @@ describe('unansweredQuestionsOf', () => {
       numberQuestion
     ]);
     expect(unansweredQuestionsOf([numberQuestion], { second: { value: 3 } })).toStrictEqual([]);
+  });
+
+  describe('saved answers in their stored shape', () => {
+    const root = new DataRoot();
+    const textQuestion = new TextQuestion({
+      root,
+      data: { id: 'text', type: 'text', name: 'Text', categoryId: 'category' }
+    });
+    const multipleTextQuestion = new MultipleTextQuestion({
+      root,
+      data: { id: 'multipleText', type: 'multipleText', name: 'Multiple text', categoryId: 'category' }
+    });
+    const imageQuestion = new ImageQuestion({
+      root,
+      data: { id: 'image', type: 'image', name: 'Image', categoryId: 'category' }
+    });
+
+    it.each<{
+      title: string;
+      question: TextQuestion | MultipleTextQuestion | ImageQuestion;
+      entry: SavedAnswers[string];
+    }>([
+      { title: 'a localized text', question: textQuestion, entry: { value: { en: 'A biography.' } } },
+      {
+        title: 'a localized text whose first locale is empty',
+        question: textQuestion,
+        entry: { value: { fi: '', en: 'A biography.' } }
+      },
+      {
+        title: 'a list of localized texts',
+        question: multipleTextQuestion,
+        entry: { value: [{ en: 'One' }, { en: 'Two' }] }
+      },
+      {
+        title: 'a stored image',
+        question: imageQuestion,
+        entry: { value: { path: 'project/candidates/id/image.png' } }
+      }
+    ])('counts a question whose saved value is $title as answered', ({ question, entry }) => {
+      expect(unansweredQuestionsOf([question], { [question.id]: entry })).toStrictEqual([]);
+    });
+
+    it.each<{ title: string; question: TextQuestion | ImageQuestion; entry: SavedAnswers[string] }>([
+      {
+        title: 'a localized text with no text in any locale',
+        question: textQuestion,
+        entry: { value: { en: '', fi: null } }
+      },
+      { title: 'a localized text of blanks', question: textQuestion, entry: { value: { en: '  ' } } },
+      { title: 'an empty localized text', question: textQuestion, entry: { value: {} } },
+      { title: 'a stored image with an empty path', question: imageQuestion, entry: { value: { path: '' } } }
+    ])('counts a question whose saved value is $title as unanswered', ({ question, entry }) => {
+      expect(unansweredQuestionsOf([question], { [question.id]: entry })).toStrictEqual([question]);
+    });
   });
 
   it('counts a question as unanswered when the only entry is for another question', () => {
