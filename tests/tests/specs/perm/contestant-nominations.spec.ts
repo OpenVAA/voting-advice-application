@@ -9,7 +9,7 @@
  *
  * Titles carry the prefix of the surface they are about. `dataset:` is the dataset, its identities and its state steps. `define:` is the editor for an entity with no nomination, from its entry address to the nominations the database then holds. `steps:` is which of the editor's steps an entity with no nomination meets, and in which order. `edit:` is the editor for an entity that has nominations: what it starts from, what a card shows and what a save stores. `remove:` is a card that is to be removed, kept again, or removed by the save. `button:` is what the main button of the details step says and where a press of it leads. `refused:` is a save the database did not store, and what the page shows of it. `leave:` is leaving the details step with changes that are not saved. `stale:` is a save from an editor that was opened before nominations were locked. `closing:` is a save made after answers were locked. `saved:` is where a stored save leads: to the nominations view, which lists what was stored and leads on or home, and where the user stays when reading the data again has moved them to another step. `nominations-view:` is the nominations view: what it says and offers in each of its states, and that every address of the editor leads to it while nominations cannot be edited. `entry:` is the way from the home into the editor. `holds:` is where the home's nomination task leads when it does not lead into the editor. `follow:` is the home, the nominations view and the questions after a save, with no new document loaded in between. `phone 320:` and `phone 390:` are a page of the editor, or the nominations view, at that width. `keys:` is the parent group under the keyboard. `focus:` is where focus is after a navigation inside the editor.
  *
- * Scans: thirteen states of the editor's three steps and of the nominations view, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds what the states need: an entity with no nomination, several elections of several nomination shapes, parties and alliances to stand under, and a lock or an election's nomination shape that is changed for the whole project. Each entry's `reach` sets its state through the state steps, walks to the state through the fixtures' steps — a full page load after every state step — and ends on the steps that assert the state, before the reach proof and the scan. The describe that declares a session's entries puts back, after each scan, both locks, the nomination shape of each election an entry changes, and the entity's answers and nominations. A state of the details step is scanned under one entity type: the other type's cards are the same markup with other sentences and other options, asserted by the tests above.
+ * Scans: thirteen states of the editor's three steps and of the nominations view, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds what the states need: an entity with no nomination, several elections of several nomination shapes, parties and alliances to stand under, and a lock or an election's nomination shape that is changed for the whole project. Each entry's `reach` sets its state through the state steps, walks to the state through the fixtures' steps — a full page load after every state step — and ends on the steps that assert the state, before the reach proof and the scan. The describe that declares a session's entries puts back, after each scan, the contestant-editing setting, the nomination shape of each election an entry changes, and the entity's answers and nominations. A state of the details step is scanned under one entity type: the other type's cards are the same markup with other sentences and other options, asserted by the tests above.
  *
  * Widths: the `phone 320:` and `phone 390:` tests run at that width, in English. A page's width is measured against its viewport, and a box against the box that must hold it, through the steps of `fixtures/shared/pageGeometry.fixture.ts`: an accessibility scan reports neither. A fixture hands over the boxes; the test names what must lie inside what. A phone test of a later step loads that step's own address, so that it measures its own step and reads nothing of the steps before it; the election step's test also checks an election and reads that Continue can then be pressed.
  *
@@ -25,12 +25,11 @@ import {
   nominationShapeOf,
   nominationsOf,
   setAnswers,
-  setAnswersLocked,
+  setContestantEditing,
   setElectionSelectionDisallowed,
   setEntityConfirmed,
   setNominations,
   setNominationShape,
-  setNominationsLocked,
   test
 } from '../../fixtures/contestant/perm-contestant-nominations';
 import { declareScans } from '../../utils/contestantAxeScan';
@@ -399,13 +398,12 @@ async function candidateToOpenCard(editor: ContestantNominationEditorFixture): P
 }
 
 /**
- * Put back what the reach of a scan may have changed, whether or not the scan passed: both locks, the nomination shape of each election an entry changes, and the answers and the nominations of the entity scanned.
+ * Put back what the reach of a scan may have changed, whether or not the scan passed: the contestant-editing setting, the nomination shape of each election an entry changes, and the answers and the nominations of the entity scanned.
  * @param entity - The entity the session's user edits.
  * @param nominations - The nominations the dataset seeds the entity with.
  */
 async function restoreAfterScan(entity: EntityGrantTarget, nominations: NominationsState): Promise<void> {
-  await setNominationsLocked(false);
-  await setAnswersLocked(false);
+  await setContestantEditing('open');
   for (const election of ELECTIONS_THAT_ADMIT_A_PARTY)
     await setNominationShape(election, SEEDED_NOMINATION_SHAPES[election]);
   await setAnswers(entity, NOTHING_ANSWERED);
@@ -425,7 +423,7 @@ test.describe('contestant-nominations: the dataset, its identities and its state
       contestantHomePage,
       contestantNominationsPage
     }) => {
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await setNominations(NEW_CANDIDATE_GRANT, 'none');
       await contestantEntityHomePage.open();
       await contestantEntityHomePage.expectLanded(NEW_CANDIDATE_GRANT);
@@ -441,7 +439,7 @@ test.describe('contestant-nominations: the dataset, its identities and its state
     test.use({ storageState: EDIT_ORGANIZATION_STORAGE_STATE });
 
     test("dataset: a party's seeded nominations are listed as confirmed", async ({ contestantNominationsPage }) => {
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
       await contestantNominationsPage.open(EDIT_ORGANIZATION_GRANT);
       await contestantNominationsPage.expectState({ state: 'listed', locked: false });
@@ -512,8 +510,7 @@ test.describe('contestant-nominations: defining nominations from none', () => {
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
         const openCard = { election: OPEN_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(NEW_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         try {
@@ -649,8 +646,7 @@ test.describe('contestant-nominations: defining nominations from none', () => {
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(NEW_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         try {
@@ -726,8 +722,7 @@ test.describe('contestant-nominations: defining nominations from none', () => {
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         await candidateToOpenCard(contestantNominationEditor);
 
@@ -749,8 +744,7 @@ test.describe('contestant-nominations: defining nominations from none', () => {
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(NEW_CANDIDATE_GRANT, NOTHING_ANSWERED);
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         try {
@@ -797,8 +791,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
       'steps: a party meets the election step with only the elections a party can stand in',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         await contestantNominationEditor.open(NEW_ORGANIZATION_GRANT);
         await contestantNominationEditor.expectStep('elections');
@@ -813,8 +806,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
       'steps: one admissible election with one constituency leads straight to the cards',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         try {
           // The closed-list election admits candidates alone, so one election admits a party, and it has one constituency. The step after the change is a full page load.
@@ -840,8 +832,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
       'steps: one admissible election with several constituencies shows the constituency step alone',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         try {
           // The open election admits candidates alone, so one election admits a party, and it has two constituencies. The step after the change is a full page load.
@@ -873,8 +864,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
       'steps: with no admissible election every editor address leads to the nominations view',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         try {
           // No election admits a party. Each step after the change is a full page load.
@@ -900,8 +890,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
       'steps: an address that names an unknown election or constituency leads back to the entry',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         await contestantNominationEditor.openStep(NEW_CANDIDATE_GRANT, 'details', {
           electionIds: [UNKNOWN_ELECTION_ID],
@@ -923,8 +912,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
       "steps: disallowing election selection does not choose an entity's elections",
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         try {
           // The setting implies every election for a voter. The step after the change is a full page load.
@@ -958,8 +946,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
         const listCard = { election: LIST_ELECTION_NAME.en };
         const openCard = { election: OPEN_ELECTION_NAME.en };
         const alliances = ALLIANCE_OPTIONS;
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
 
         // Both elections the party stands in are checked on arrival, and the constituency it stands in is selected.
@@ -1003,8 +990,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
       'edit: saving an untouched set writes nothing and leaves a confirmed nomination confirmed',
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
 
@@ -1033,8 +1019,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         try {
@@ -1072,8 +1057,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         try {
@@ -1137,8 +1121,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
           parentEntityExternalId: null,
           requestedParent: null
         };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         await addNomination(EDIT_ORGANIZATION_GRANT, LIST_SOUTH_CONTEST, {
@@ -1199,8 +1182,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -1279,8 +1261,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -1298,8 +1279,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -1376,8 +1356,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
         const listedWithoutGreen = LISTED_PARTIES.filter((party) => party.name !== GREEN_ORGANIZATION_NAME.en);
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -1432,8 +1411,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
           parentEntityExternalId: EDIT_ORGANIZATION_GRANT.externalId,
           requestedParent: null
         };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         await addNomination(EDIT_CANDIDATE_GRANT, LIST_NORTH_CONTEST, {
@@ -1482,7 +1460,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
     );
 
     test(
-      "edit: a nomination outside the editor's reach has no card and survives a save",
+      'edit: a nomination that is not writable has no card and survives a save',
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
@@ -1502,8 +1480,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
           parentEntityExternalId: null,
           requestedParent: null
         };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         await addNomination(EDIT_CANDIDATE_GRANT, OPEN_NATION_CONTEST, {
@@ -1588,8 +1565,7 @@ test.describe('contestant-nominations: removing nominations', () => {
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
         const removedOpenCard = { ...EDIT_ORGANIZATION_OPEN_CARD, state: 'removed' as const };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         try {
@@ -1638,8 +1614,7 @@ test.describe('contestant-nominations: removing nominations', () => {
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
 
         await contestantNominationEditor.open(EDIT_ORGANIZATION_GRANT);
@@ -1677,8 +1652,7 @@ test.describe('contestant-nominations: removing nominations', () => {
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantHomePage, contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
           await continueToDetails(contestantNominationEditor, EDIT_CANDIDATE_GRANT);
@@ -1728,8 +1702,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
 
@@ -1761,8 +1734,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: true, opinions: OPINION_QUESTION_EXTERNAL_IDS });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -1794,8 +1766,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -1829,8 +1800,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -1839,7 +1809,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
           await contestantNominationEditor.typeSymbol(listCard, CHANGED_SYMBOL);
 
           // While the editor is open, an administrator locks the nominations. The page still shows the editor.
-          await setNominationsLocked(true);
+          await setContestantEditing('nominationsLocked');
           await contestantNominationEditor.expectStep('details');
           await contestantNominationEditor.submit();
 
@@ -1860,7 +1830,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
           expect(await nominationsOf(EDIT_CANDIDATE_GRANT)).toEqual([EDIT_CANDIDATE_SEEDED_NOMINATION]);
           await contestantNominationEditor.expectNoDialog();
         } finally {
-          await setNominationsLocked(false);
+          await setContestantEditing('open');
           await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         }
       }
@@ -1871,8 +1841,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -1881,7 +1850,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
           await contestantNominationEditor.typeSymbol(listCard, CHANGED_SYMBOL);
 
           // While the editor is open, an administrator locks the answers. The page still shows the editor.
-          await setAnswersLocked(true);
+          await setContestantEditing('locked');
           await contestantNominationEditor.expectStep('details');
           await contestantNominationEditor.submit();
 
@@ -1901,7 +1870,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
           expect(await nominationsOf(EDIT_CANDIDATE_GRANT)).toEqual([EDIT_CANDIDATE_SEEDED_NOMINATION]);
           await contestantNominationEditor.expectNoDialog();
         } finally {
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         }
       }
@@ -1917,8 +1886,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
         const listCard = { election: LIST_ELECTION_NAME.en };
         const removedListCard = { ...EDIT_ORGANIZATION_LIST_CARD, state: 'removed' as const };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         // A candidate is listed under the party's nomination in the closed-list election.
@@ -1959,8 +1927,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
 
         await continueToDetails(contestantNominationEditor, EDIT_ORGANIZATION_GRANT);
@@ -1990,8 +1957,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const southCard = { election: LIST_ELECTION_NAME.en, constituency: SOUTH_CONSTITUENCY_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         await addNomination(EDIT_ORGANIZATION_GRANT, LIST_SOUTH_CONTEST, {
@@ -2039,8 +2005,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       'nominations-view: listed and editable — the sentence that they can be changed, Return under the main button, and no support button',
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, NOTHING_ANSWERED);
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
 
@@ -2063,8 +2028,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       'nominations-view: a nomination deleted from its card, after its confirmation, leaves the view',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_ORGANIZATION_GRANT, NOTHING_ANSWERED);
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         try {
@@ -2107,8 +2071,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       'nominations-view: nominations listed but no election admissible — no Edit',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         try {
           for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
@@ -2141,10 +2104,10 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       'nominations-view: under the nominations lock every editor address leads here, with the note and no Edit',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
-          await setNominationsLocked(true);
+          await setContestantEditing('nominationsLocked');
 
           // Each address of the editor, as a new document after the lock came on.
           for (const step of EDITOR_STEPS) {
@@ -2158,7 +2121,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
             await contestantNominationsPage.expectCardCount(1);
           }
         } finally {
-          await setNominationsLocked(false);
+          await setContestantEditing('open');
         }
       }
     );
@@ -2167,10 +2130,10 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       "nominations-view: under the answers lock alone every editor address leads here, and the note gives that lock's reason",
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
-          await setAnswersLocked(true);
+          await setContestantEditing('locked');
 
           // Each address of the editor, as a new document after the lock came on.
           for (const step of EDITOR_STEPS) {
@@ -2184,29 +2147,27 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
             await contestantNominationsPage.expectCardCount(1);
           }
         } finally {
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
         }
       }
     );
 
     test(
-      "nominations-view: with both locks on the note gives the nominations lock's reason",
+      "nominations-view: under the nominations lock alone the note gives the nominations lock's reason",
       { tag: '@nomination-definition' },
       async ({ contestantNominationsPage }) => {
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
-          await setNominationsLocked(true);
-          await setAnswersLocked(true);
+          await setContestantEditing('nominationsLocked');
 
-          // A full page load after both locks came on: one note, and one support button, which is the note's.
+          // A full page load after the nominations were locked: one note, and one support button, which is the note's.
           await contestantNominationsPage.open(EDIT_CANDIDATE_GRANT);
           await contestantNominationsPage.expectState({ state: 'listed', locked: true, editable: false });
           await contestantNominationsPage.expectLockedNote(true, 'nominationsLocked');
           await contestantNominationsPage.expectSupportButtons(1);
           await contestantNominationsPage.expectNoEditAction();
         } finally {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
         }
       }
     );
@@ -2215,8 +2176,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       'nominations-view: a typed party is shown on its row with the line that it was requested',
       { tag: '@nomination-definition' },
       async ({ contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         await addNomination(EDIT_CANDIDATE_GRANT, OPEN_NATION_CONTEST, {
           externalId: EDIT_CANDIDATE_TYPED_PARTY_NOMINATION_EXTERNAL_ID,
@@ -2253,8 +2213,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       'nominations-view: Add a nomination is offered below the cards while another can be added',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(EDIT_CANDIDATE_GRANT, NOTHING_ANSWERED);
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         try {
@@ -2290,8 +2249,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       "holds: with a nomination the home's nomination row leads to the nominations view",
       { tag: '@nomination-definition' },
       async ({ contestantEntityHomePage, contestantEntityPages, contestantHomePage, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
 
         await contestantEntityPages.openHome(EDIT_CANDIDATE_GRANT);
@@ -2321,8 +2279,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
         const everyTaskComplete = { nomination: 'complete', profile: 'complete', questions: 'complete' } as const;
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
         await addNomination(EDIT_CANDIDATE_GRANT, OPEN_NATION_CONTEST, {
           externalId: EDIT_CANDIDATE_OPEN_NOMINATION_EXTERNAL_ID,
@@ -2454,8 +2411,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       "nominations-view: no nomination and editable — the sentence, no support button, and a button in the home's words that opens the editor",
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
 
         await contestantNominationsPage.open(NEW_CANDIDATE_GRANT);
@@ -2483,8 +2439,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         try {
           // A full page load after the nominations lock came on.
-          await setAnswersLocked(false);
-          await setNominationsLocked(true);
+          await setContestantEditing('nominationsLocked');
           await contestantNominationsPage.open(NEW_CANDIDATE_GRANT);
           await contestantNominationsPage.expectState({ state: 'empty', locked: true, editable: false });
           await contestantNominationsPage.expectLockedNote(true, 'nominationsLocked');
@@ -2494,8 +2449,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
           await contestantNominationsPage.expectButton('return');
 
           // A full page load after the nominations lock went off and the answers lock came on.
-          await setNominationsLocked(false);
-          await setAnswersLocked(true);
+          await setContestantEditing('locked');
           await contestantNominationsPage.open(NEW_CANDIDATE_GRANT);
           await contestantNominationsPage.expectState({ state: 'empty', locked: true, editable: false });
           await contestantNominationsPage.expectLockedNote(true, 'nominationsAnswersLocked');
@@ -2505,8 +2459,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
           await contestantNominationsPage.pressButton('return');
           await contestantEntityPages.expectOnHome(NEW_CANDIDATE_GRANT);
         } finally {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
         }
       }
     );
@@ -2516,8 +2469,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       { tag: '@nomination-definition' },
       async ({ contestantEntityHomePage, contestantEntityPages, contestantHomePage, contestantNominationEditor }) => {
         const noNomination = { nomination: 'incomplete', profile: 'blocked', questions: 'blocked' } as const;
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
 
         // The home says what it said of an entity with no nomination, and its main action leads to the election step with nothing chosen.
@@ -2549,8 +2501,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         try {
           // The home as a new document after the nominations lock came on.
-          await setAnswersLocked(false);
-          await setNominationsLocked(true);
+          await setContestantEditing('nominationsLocked');
           await contestantEntityPages.openHome(NEW_CANDIDATE_GRANT);
           await contestantEntityPages.expectOnHome(NEW_CANDIDATE_GRANT);
           await contestantHomePage.expectNextStep('nomination');
@@ -2558,16 +2509,14 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
           await contestantNominationsPage.expectShown(NEW_CANDIDATE_GRANT);
 
           // The home as a new document after the nominations lock went off and the answers lock came on.
-          await setNominationsLocked(false);
-          await setAnswersLocked(true);
+          await setContestantEditing('locked');
           await contestantEntityPages.openHome(NEW_CANDIDATE_GRANT);
           await contestantEntityPages.expectOnHome(NEW_CANDIDATE_GRANT);
           await contestantHomePage.expectNextStep('nomination');
           expect(await contestantEntityHomePage.followMainAction()).toBe('nominations');
           await contestantNominationsPage.expectShown(NEW_CANDIDATE_GRANT);
         } finally {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
         }
       }
     );
@@ -2584,8 +2533,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
         navMenu
       }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setAnswers(NEW_CANDIDATE_GRANT, { requiredInfo: false, opinions: [] });
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         try {
@@ -2665,8 +2613,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
       'nominations-view: a party with no nomination reads the same in its own words',
       { tag: '@nomination-definition' },
       async ({ contestantNominationEditor, contestantNominationsPage }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
 
         await contestantNominationsPage.open(NEW_ORGANIZATION_GRANT);
@@ -2695,8 +2642,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
         contestantNominationEditor,
         contestantNominationsPage
       }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         try {
           for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
@@ -2741,8 +2687,7 @@ test.describe('contestant-nominations: the parent group under the keyboard, and 
       async ({ contestantNominationEditor }) => {
         const openCard = { election: OPEN_ELECTION_NAME.en };
         const [firstParty, secondParty] = LISTED_PARTIES;
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
         await candidateToOpenCard(contestantNominationEditor);
         await contestantNominationEditor.expectParentGroup(openCard, {
@@ -2795,8 +2740,7 @@ test.describe('contestant-nominations: the parent group under the keyboard, and 
         contestantNominationEditor,
         contestantNominationsPage
       }) => {
-        await setNominationsLocked(false);
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
         await setNominations(NEW_CANDIDATE_GRANT, 'none');
 
         // From the home through every step: each navigation inside the application leaves focus on the heading of the step it opens.
@@ -2853,8 +2797,7 @@ const NEW_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominationEditor.electionsHint,
     reach: async (page) => {
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setNominations(NEW_CANDIDATE_GRANT, 'none');
       await contestantNominationEditor.open(NEW_CANDIDATE_GRANT);
       await contestantNominationEditor.expectStep('elections');
@@ -2874,8 +2817,7 @@ const NEW_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominationEditor.constituenciesList,
     reach: async (page) => {
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setNominations(NEW_CANDIDATE_GRANT, 'none');
       await contestantNominationEditor.open(NEW_CANDIDATE_GRANT);
       await contestantNominationEditor.expectStep('elections');
@@ -2903,8 +2845,7 @@ const NEW_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
       const listCard = { election: LIST_ELECTION_NAME.en };
       const openCard = { election: OPEN_ELECTION_NAME.en };
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setAnswers(NEW_CANDIDATE_GRANT, NOTHING_ANSWERED);
       await setNominations(NEW_CANDIDATE_GRANT, 'none');
       await candidateToNewCards(contestantNominationEditor);
@@ -2939,8 +2880,7 @@ const NEW_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
       const openCard = { election: OPEN_ELECTION_NAME.en };
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setAnswers(NEW_CANDIDATE_GRANT, NOTHING_ANSWERED);
       await setNominations(NEW_CANDIDATE_GRANT, 'none');
       await candidateToOpenCard(contestantNominationEditor);
@@ -2970,8 +2910,7 @@ const EDIT_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
       const openCard = { election: OPEN_ELECTION_NAME.en };
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setAnswers(EDIT_ORGANIZATION_GRANT, NOTHING_ANSWERED);
       await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
       await continueToDetails(contestantNominationEditor, EDIT_ORGANIZATION_GRANT);
@@ -3001,8 +2940,7 @@ const EDIT_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
       const listCard = { election: LIST_ELECTION_NAME.en };
       const openCard = { election: OPEN_ELECTION_NAME.en };
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setAnswers(EDIT_ORGANIZATION_GRANT, NOTHING_ANSWERED);
       await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
       await continueToDetails(contestantNominationEditor, EDIT_ORGANIZATION_GRANT);
@@ -3031,8 +2969,7 @@ const EDIT_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
       const listCard = { election: LIST_ELECTION_NAME.en };
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setAnswers(EDIT_ORGANIZATION_GRANT, NOTHING_ANSWERED);
       await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
       // A candidate is listed under the party's nomination in the closed-list election.
@@ -3061,8 +2998,7 @@ const EDIT_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominations.list,
     reach: async (page) => {
       const { contestantNominationsPage } = contestantNominationsPagesOf(page);
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
       for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
       // A full page load: an election's nomination shape is read when a page is loaded.
@@ -3091,9 +3027,9 @@ const EDIT_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominations.lockedNote,
     reach: async (page) => {
       const { contestantNominationsPage } = contestantNominationsPagesOf(page);
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
-      await setAnswersLocked(true);
+      await setContestantEditing('locked');
       // A full page load: the lock is a setting, read when a page is loaded.
       await contestantNominationsPage.open(EDIT_CANDIDATE_GRANT);
       await contestantNominationsPage.expectShown(EDIT_CANDIDATE_GRANT);
@@ -3114,8 +3050,7 @@ const EDIT_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominations.requestedParent,
     reach: async (page) => {
       const { contestantNominationsPage } = contestantNominationsPagesOf(page);
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
       await addNomination(EDIT_CANDIDATE_GRANT, OPEN_NATION_CONTEST, {
         externalId: EDIT_CANDIDATE_TYPED_PARTY_NOMINATION_EXTERNAL_ID,
@@ -3147,8 +3082,7 @@ const EDIT_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
       const listCard = { election: LIST_ELECTION_NAME.en };
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setAnswers(EDIT_CANDIDATE_GRANT, EVERYTHING_ANSWERED);
       await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
       await continueToDetails(contestantNominationEditor, EDIT_CANDIDATE_GRANT);
@@ -3175,8 +3109,7 @@ const EDIT_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantNominationEditor } = contestantNominationsPagesOf(page);
       const listCard = { election: LIST_ELECTION_NAME.en };
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setAnswers(EDIT_CANDIDATE_GRANT, NOTHING_ANSWERED);
       await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
       await continueToDetails(contestantNominationEditor, EDIT_CANDIDATE_GRANT);
@@ -3209,8 +3142,7 @@ const NEW_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominations.empty,
     reach: async (page) => {
       const { contestantNominationsPage } = contestantNominationsPagesOf(page);
-      await setNominationsLocked(false);
-      await setAnswersLocked(false);
+      await setContestantEditing('open');
       await setNominations(NEW_ORGANIZATION_GRANT, 'none');
       for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
       // A full page load: an election's nomination shape is read when a page is loaded.
@@ -3286,8 +3218,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         `phone ${viewport.width}: the election step fits the viewport with a long election name`,
         { tag: '@nomination-definition' },
         async ({ contestantNominationEditor, pageGeometry }) => {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setNominations(NEW_CANDIDATE_GRANT, 'none');
           await contestantNominationEditor.open(NEW_CANDIDATE_GRANT);
           await contestantNominationEditor.expectStep('elections');
@@ -3312,8 +3243,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         `phone ${viewport.width}: the constituency step fits the viewport`,
         { tag: '@nomination-definition' },
         async ({ contestantNominationEditor, pageGeometry }) => {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setNominations(NEW_CANDIDATE_GRANT, 'none');
 
           // The step's own address, as a new document, with both elections chosen.
@@ -3336,8 +3266,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         async ({ contestantNominationEditor, pageGeometry }) => {
           const listCard = { election: LIST_ELECTION_NAME.en };
           const openCard = { election: OPEN_ELECTION_NAME.en };
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setNominations(NEW_CANDIDATE_GRANT, 'none');
 
           // The step's own address, as a new document, with both elections and the northern region chosen.
@@ -3385,8 +3314,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         `phone ${viewport.width}: the nominations view with "Define your nomination" fits the viewport`,
         { tag: '@nomination-definition' },
         async ({ contestantNominationsPage }) => {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setNominations(NEW_CANDIDATE_GRANT, 'none');
           await contestantNominationsPage.open(NEW_CANDIDATE_GRANT);
           await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
@@ -3402,8 +3330,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         { tag: '@nomination-definition' },
         async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage, pageGeometry }) => {
           const openCard = { election: OPEN_ELECTION_NAME.en };
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setAnswers(NEW_CANDIDATE_GRANT, NOTHING_ANSWERED);
           await setNominations(NEW_CANDIDATE_GRANT, 'none');
           try {
@@ -3480,8 +3407,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         async ({ contestantNominationEditor, pageGeometry }) => {
           const listCard = { election: LIST_ELECTION_NAME.en };
           const openCard = { election: OPEN_ELECTION_NAME.en };
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setAnswers(EDIT_ORGANIZATION_GRANT, NOTHING_ANSWERED);
           await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
           // A candidate is listed under the party's nomination in the closed-list election.
@@ -3516,8 +3442,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         `phone ${viewport.width}: the nominations view with Return fits the viewport`,
         { tag: '@nomination-definition' },
         async ({ contestantNominationsPage }) => {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setAnswers(EDIT_ORGANIZATION_GRANT, NOTHING_ANSWERED);
           await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
           await contestantNominationsPage.open(EDIT_ORGANIZATION_GRANT);
@@ -3535,8 +3460,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         `phone ${viewport.width}: nominations listed while no election admits a party fit the viewport`,
         { tag: '@nomination-definition' },
         async ({ contestantNominationsPage }) => {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
           try {
             for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
@@ -3563,10 +3487,10 @@ for (const viewport of PHONE_VIEWPORTS) {
         `phone ${viewport.width}: the nominations view under the answers lock fits the viewport, and its note holds the support button`,
         { tag: '@nomination-definition' },
         async ({ contestantNominationsPage, notEditableNote }) => {
-          await setNominationsLocked(false);
+          await setContestantEditing('open');
           await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
           try {
-            await setAnswersLocked(true);
+            await setContestantEditing('locked');
 
             // A full page load: the lock is a setting, read when a page is loaded.
             await contestantNominationsPage.open(EDIT_CANDIDATE_GRANT);
@@ -3577,7 +3501,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await notEditableNote.expectSupportButtonInsideNote();
             await contestantNominationsPage.expectFitsViewport();
           } finally {
-            await setAnswersLocked(false);
+            await setContestantEditing('open');
           }
         }
       );
@@ -3587,8 +3511,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         { tag: '@nomination-definition' },
         async ({ contestantNominationEditor, pageGeometry }) => {
           const listCard = { election: LIST_ELECTION_NAME.en };
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setAnswers(EDIT_CANDIDATE_GRANT, NOTHING_ANSWERED);
           await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
           try {
@@ -3624,8 +3547,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         `phone ${viewport.width}: the nominations view with no election to stand in fits the viewport`,
         { tag: '@nomination-definition' },
         async ({ contestantNominationsPage }) => {
-          await setNominationsLocked(false);
-          await setAnswersLocked(false);
+          await setContestantEditing('open');
           await setNominations(NEW_ORGANIZATION_GRANT, 'none');
           try {
             for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');

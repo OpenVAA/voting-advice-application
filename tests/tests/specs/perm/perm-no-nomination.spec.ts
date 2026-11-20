@@ -19,7 +19,7 @@
 import {
   noNominationPagesOf,
   setAnswers,
-  setNominationsLocked,
+  setContestantEditing,
   setNominationState,
   setOrganizationName,
   test
@@ -300,7 +300,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
       notEditableNote
     }) => {
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
@@ -319,7 +319,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
       notEditableNote
     }) => {
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await setNominationsLocked(true);
+      await setContestantEditing('nominationsLocked');
       try {
         // A full page load: the lock is a setting, read when a page is loaded.
         await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
@@ -329,7 +329,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
         await notEditableNote.expectSupportButtons(1);
         await contestantNominationsPage.expectButton('return');
       } finally {
-        await setNominationsLocked(false);
+        await setContestantEditing('open');
       }
     });
 
@@ -343,7 +343,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
         parent: null
       };
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectState({ state: 'listed', locked: false });
       await contestantNominationsPage.expectCardCount(1);
@@ -362,7 +362,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
       contestantNominationsPage
     }) => {
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantNominationsPage.openWithoutEntity();
       await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false });
@@ -372,7 +372,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
       contestantNominationsPage
     }) => {
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantNominationsPage.openInLocale(UNNOMINATED_CANDIDATE_GRANT, 'fi');
       await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectState({ state: 'listed', locked: false });
@@ -394,7 +394,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
       notEditableNote
     }) => {
       await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'none');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantNominationsPage.open(UNNOMINATED_ORGANIZATION_GRANT);
       await contestantNominationsPage.expectShown(UNNOMINATED_ORGANIZATION_GRANT);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
@@ -416,7 +416,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
       notEditableNote
     }) => {
       await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setNominationsLocked(true);
+      await setContestantEditing('nominationsLocked');
       try {
         // A full page load: the lock is a setting, read when a page is loaded.
         await contestantNominationsPage.open(NOMINATED_CANDIDATE_GRANT);
@@ -433,7 +433,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
         await notEditableNote.expectSupportButtons(1);
         await contestantNominationsPage.expectNoEditAction();
       } finally {
-        await setNominationsLocked(false);
+        await setContestantEditing('open');
       }
     });
 
@@ -442,7 +442,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
       contestantNominationsPage
     }) => {
       await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
       await contestantNominationsPage.open(NOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectState({ state: 'listed', locked: false });
@@ -804,7 +804,7 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantEntityPages, contestantHomePage } = noNominationPagesOf(page);
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
       await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
       await contestantHomePage.expectTaskList({ nomination: 'incomplete', profile: 'blocked', questions: 'blocked' });
@@ -824,7 +824,7 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantNominationsPage } = noNominationPagesOf(page);
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
@@ -845,7 +845,7 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantEntityPages, navMenu } = noNominationPagesOf(page);
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
       await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
       await navMenu.openMobileNav();
@@ -866,7 +866,7 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
       const { contestantEntityPages, contestantHomePage } = noNominationPagesOf(page);
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
       await setAnswers(UNNOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
       await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
       await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
       await contestantHomePage.expectTaskList({
@@ -897,7 +897,7 @@ const LOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     reach: async (page) => {
       const { contestantNominationsPage } = noNominationPagesOf(page);
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await setNominationsLocked(true);
+      await setContestantEditing('nominationsLocked');
       // A full page load: the lock is a setting, read when a page is loaded.
       await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
@@ -919,7 +919,7 @@ const LOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
       const { contestantNominationsPage } = noNominationPagesOf(page);
       await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
       await setAnswers(UNNOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
-      await setNominationsLocked(true);
+      await setContestantEditing('nominationsLocked');
       // A full page load: the lock is a setting, read when a page is loaded.
       await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
       await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
@@ -940,7 +940,7 @@ test.describe('perm-no-nomination: the accessibility scans', () => {
 
     // The lock is the one settings row of the suite's project: it is taken off whether or not a scan passed, after the scans that never turn it on as well.
     test.afterEach(async () => {
-      await setNominationsLocked(false);
+      await setContestantEditing('open');
     });
 
     for (const entry of UNLOCKED_SCANS) {
@@ -991,7 +991,7 @@ for (const viewport of PHONE_VIEWPORTS) {
 
       test('phone: the empty nominations view fits the viewport', async ({ contestantNominationsPage }) => {
         await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-        await setNominationsLocked(false);
+        await setContestantEditing('open');
         await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
         await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
         await contestantNominationsPage.expectEmptySentence(DEFINE_NOMINATION_SENTENCE.candidate, 'define');
@@ -1004,7 +1004,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         notEditableNote
       }) => {
         await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-        await setNominationsLocked(true);
+        await setContestantEditing('nominationsLocked');
         try {
           // A full page load: the lock is a setting, read when a page is loaded.
           await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
@@ -1013,7 +1013,7 @@ for (const viewport of PHONE_VIEWPORTS) {
           await contestantNominationsPage.expectFitsViewport();
           await notEditableNote.expectSupportButtonInsideNote();
         } finally {
-          await setNominationsLocked(false);
+          await setContestantEditing('open');
         }
       });
 
@@ -1022,7 +1022,7 @@ for (const viewport of PHONE_VIEWPORTS) {
         notEditableNote
       }) => {
         await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
-        await setNominationsLocked(true);
+        await setContestantEditing('nominationsLocked');
         try {
           // A full page load: the lock is a setting, read when a page is loaded.
           await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
@@ -1034,7 +1034,7 @@ for (const viewport of PHONE_VIEWPORTS) {
           await contestantNominationsPage.expectCardValuesInsideCard(0);
           await notEditableNote.expectSupportButtonInsideNote();
         } finally {
-          await setNominationsLocked(false);
+          await setContestantEditing('open');
         }
       });
 

@@ -840,7 +840,7 @@ test.describe('an address an open invitation holds', () => {
     await identityProviderFlow.removeInvitationsOf(invitedAddresses.splice(0));
   });
 
-  test('an identity that types an address an open invitation holds is told the address is in use, and the invitation stays open @reg-idp', async ({
+  test('an identity that types an address an open invitation holds is told to sign in with the invitation, and the invitation stays open @reg-idp', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -851,10 +851,10 @@ test.describe('an address an open invitation holds', () => {
     await identityProviderFlow.startIdentityProviderFlow(page, { entityType: 'candidate' });
     await gate.expectShown({ variant: 'new', addressState: 'none', asks: 'email' });
 
-    // The invited address is refused at the field, as another account's is.
+    // The invited address is refused at the field, with the advice to sign in with the invitation.
     await gate.giveAddress(address);
     await gate.pressContinue();
-    await gate.expectEmailInUse();
+    await gate.expectEmailInvited();
 
     // The refusal is the answer of a request that answers once its work is done: no mail went to the address, and the invitation waits for its own holder.
     await identityProviderFlow.expectNoMailFor(address);
