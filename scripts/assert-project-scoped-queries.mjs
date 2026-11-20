@@ -212,11 +212,11 @@ const NON_PROJECT_SCOPED_TABLES = {
  * holds, and the adapter asks it only when the caller can read no `app_settings` row. It takes the
  * project as a required argument, so it is held to check 4.
  *
- * `contestant_app_public_config` returns five stored settings values of one project and never a
+ * `contestant_app_public_settings` returns four stored settings values of one project and never a
  * row: whether the Contestant app is accessible, whether answers are locked, the entity types it
- * serves, its registration modes and whether usage events are tracked. The adapter asks it only when
- * the caller can read no `app_settings` row and the project is not open for voters. It takes the
- * project as a required argument, so it is held to check 4.
+ * serves with the registration modes of each, and whether usage events are tracked. The adapter
+ * asks it only when the caller can read no `app_settings` row and the project is not open for
+ * voters. It takes the project as a required argument, so it is held to check 4.
  *
  * `user_can` returns only a boolean about the caller's own grants claim, and the admin writer asks it
  * of the adapter's own project. Its target argument is `p_target_id`, not `p_project_id`, so it is
@@ -263,7 +263,7 @@ const PROJECT_SCOPED_RPCS = {
   set_entity_nominations: 'scoped-by-identity: entity type + entity id + RLS',
   merge_question_custom_data: 'scoped-by-identity: question id + RLS',
   project_open_for_voters: 'requires p_project_id',
-  contestant_app_public_config: 'requires p_project_id',
+  contestant_app_public_settings: 'requires p_project_id',
   user_can:
     'scoped-by-identity: the caller JWT grants claim, asked of the target the call names (the adapter passes its own project id)'
 };
