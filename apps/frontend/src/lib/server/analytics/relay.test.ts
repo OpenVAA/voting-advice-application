@@ -423,7 +423,7 @@ describe('relay: the events it builds', () => {
     };
     const { queued } = await call(post(batch([pageview])));
     expect(queued).toHaveLength(1);
-    expect(queued[0]).not.toHaveProperty('id');
+    expect(queued[0]).not.toHaveProperty('visitId');
     expect(queued[0].attributes).toEqual({
       routeId: VOTER_ROUTE,
       locale: 'en',
@@ -445,14 +445,14 @@ describe('relay: the events it builds', () => {
     for (const value of recorded) expect(value % PAGEVIEW_DURATION_ROUNDING_MS).toBe(0);
   });
 
-  it('never queues a pageview with an id, even when a changed client sends one', async () => {
+  it('never queues a pageview with a visit id, even when a changed client sends one', async () => {
     const { status, queued } = await call(
       post(batch([withVisitId(VALID_EVENTS.pageview), VALID_EVENTS.pageview, withVisitId(VALID_EVENTS.answer)]))
     );
     expect(status).toBe(204);
     const pageviews = queued.filter(({ name }) => name === 'pageview');
     expect(pageviews).toHaveLength(1);
-    for (const pageview of pageviews) expect(pageview).not.toHaveProperty('id');
+    for (const pageview of pageviews) expect(pageview).not.toHaveProperty('visitId');
   });
 
   it('queues the valid events of a batch with one invalid event, and logs only the count', async () => {
@@ -475,35 +475,35 @@ describe('relay: the events it builds', () => {
   });
 });
 
-describe('relay: the id rules', () => {
+describe('relay: the visit-id rules', () => {
   /** Every sample of the vocabulary, each that may carry one given the visit id. */
   const everyEvent = Object.values(VALID_EVENTS).map((event) => ('visitId' in event ? withVisitId(event) : event));
 
-  /** The names of the queued events that carry an id. */
+  /** The names of the queued events that carry a visit id. */
   function namesWithId(queued: Array<AnalyticsEvent>): Array<string> {
-    return queued.filter((event) => event.id !== undefined).map(({ name }) => name);
+    return queued.filter((event) => event.visitId !== undefined).map(({ name }) => name);
   }
 
   it('memory and gated: an answer keeps a current visit id, and so does every event but the pageview', async () => {
     const { queued } = await call(post(batch(everyEvent)));
     expect(queued).toHaveLength(everyEvent.length);
-    expect(queued.find(({ name }) => name === 'answer')?.id).toBe(VISIT_ID);
+    expect(queued.find(({ name }) => name === 'answer')?.visitId).toBe(VISIT_ID);
     expect(namesWithId(queued)).toEqual(everyEvent.map(({ name }) => name).filter((name) => name !== 'pageview'));
   });
 
-  it('visit-id mode none: no queued event has an id', async () => {
+  it('visit-id mode none: no queued event has a visit id', async () => {
     const { queued } = await call(post(batch(everyEvent)), { ...LOG_CONFIG, visitIdMode: 'none' });
     expect(queued).toHaveLength(everyEvent.length);
     expect(namesWithId(queued)).toEqual([]);
   });
 
-  it('consent mode free: every sensitive event loses its id and every other event keeps it', async () => {
+  it('consent mode free: every sensitive event loses its visit id and every other event keeps it', async () => {
     const { queued } = await call(post(batch(everyEvent)), { ...LOG_CONFIG, consentMode: 'free' });
-    expect(queued.find(({ name }) => name === 'answer')).not.toHaveProperty('id');
-    expect(queued.find(({ name }) => name === 'menu_open')?.id).toBe(VISIT_ID);
+    expect(queued.find(({ name }) => name === 'answer')).not.toHaveProperty('visitId');
+    expect(queued.find(({ name }) => name === 'menu_open')?.visitId).toBe(VISIT_ID);
     for (const event of queued) {
       const sensitive = isSensitiveEvent(event.name as EventName);
-      expect(event.id === undefined).toBe(sensitive || event.name === 'pageview');
+      expect(event.visitId === undefined).toBe(sensitive || event.name === 'pageview');
     }
   });
 
@@ -511,11 +511,11 @@ describe('relay: the id rules', () => {
     ['older than the skew allows', NOW - MAX_VISIT_ID_SKEW_MS - 1, false],
     ['newer than the skew allows', NOW + MAX_VISIT_ID_SKEW_MS + 1, false],
     ['at the edge of the skew', NOW - MAX_VISIT_ID_SKEW_MS, true]
-  ])('an id stamped %s is kept: %s', async (_, stampedAt, kept) => {
+  ])('a visit id stamped %s is kept: %s', async (_, stampedAt, kept) => {
     const id = uuidv7(stampedAt, new Uint8Array(10).fill(0x33));
     const { queued } = await call(post(batch([withVisitId(VALID_EVENTS.menu_open, id)])));
     expect(queued).toHaveLength(1);
-    expect(queued[0].id).toBe(kept ? id : undefined);
+    expect(queued[0].visitId).toBe(kept ? id : undefined);
   });
 
   it('an id that is not a UUIDv7 never reaches the queue', async () => {

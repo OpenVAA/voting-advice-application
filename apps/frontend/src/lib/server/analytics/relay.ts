@@ -175,7 +175,7 @@ function buildEvent(event: WireEvent, { config, app, routeId, locale, receivedAt
   }
   const built: AnalyticsEvent = { name: event.name, time, app, attributes: { ...event.attributes } };
   const visitId = keptVisitId(event, config, receivedAt);
-  if (visitId !== undefined) built.id = visitId;
+  if (visitId !== undefined) built.visitId = visitId;
   return built;
 }
 

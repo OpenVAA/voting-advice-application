@@ -40,7 +40,7 @@ export type PostHogBatchItem = {
  * @returns The item.
  */
 export function toPostHogBatchItem(event: AnalyticsEvent, randomId: () => string): PostHogBatchItem {
-  const visitId = event.name === PAGEVIEW ? undefined : event.id;
+  const visitId = event.name === PAGEVIEW ? undefined : event.visitId;
   const distinctId = visitId ?? randomId();
   return {
     event: event.name,

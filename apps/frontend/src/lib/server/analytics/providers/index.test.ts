@@ -59,7 +59,7 @@ function eventOf(name: EventName): AnalyticsEvent {
     app: 'voter',
     attributes: sample.attributes
   };
-  if (sample.visitId !== undefined) event.id = sample.visitId;
+  if (sample.visitId !== undefined) event.visitId = sample.visitId;
   return event;
 }
 
