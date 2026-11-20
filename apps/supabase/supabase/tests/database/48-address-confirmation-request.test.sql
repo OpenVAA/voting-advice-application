@@ -27,9 +27,8 @@ SET
   settings = settings || jsonb_build_object(
     'contestantApp',
     COALESCE(settings -> 'contestantApp', '{}'::jsonb) || '{
-      "entityTypes": ["candidate"],
-      "registrationModes": {
-        "candidate": ["email"]
+      "servedEntityTypes": {
+        "candidate": {"registrationModes": ["email"]}
       }
     }'::jsonb
   )

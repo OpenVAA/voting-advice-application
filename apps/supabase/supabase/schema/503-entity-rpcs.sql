@@ -817,7 +817,7 @@ service_role;
 --
 -- An array of more than 1000 nominations is refused before any object is read. A parent that is no entity of the entity's project, or an id that names no entity, is refused with SQLSTATE 22023 when the parent is resolved, so nothing the call wrote before it is stored.
 --
--- The reach: the function writes only the nominations of the entity that the caller can read, whose election_round is their election's current_round, in an election for whose type `nomination_shape_rule` admits the entity's type. A round that is not stored, on either side, is round 1, as the application reads it. A nomination in reach that the set does not name is deleted. Every other nomination of the entity is neither updated nor deleted, and an `id` that names one is refused. A new nomination is written at its election's current_round, read here: the argument carries no round.
+-- The reach: the function writes only the nominations of the entity that the caller can read, whose election_round is their election's current_round, in an election for whose nomination shape `nomination_shape_rule` admits the entity's type. A round that is not stored, on either side, is round 1, as the application reads it. A nomination in reach that the set does not name is deleted. Every other nomination of the entity is neither updated nor deleted, and an `id` that names one is refused. A new nomination is written at its election's current_round, read here: the argument carries no round.
 --
 -- Several nominations of one election are accepted only where each names a stored row by `id`: an object without an `id` must be the only object of its election.
 --
@@ -833,7 +833,7 @@ service_role;
 --
 -- Row-level security refuses an UPDATE and a DELETE without an error, by hiding the row: under the nominations lock such a statement affects no row. So the function reads how many rows each UPDATE and DELETE affected and raises SQLSTATE 42501 on a shortfall, and a caller is never answered that a locked or vanished row was saved. The rows in reach are read with no locking clause, because under the lock the update policy hides them from a locking read.
 --
--- Where an election's type requires a candidate's nomination to have a parent or a requested name, `nominations_parent_required` judges it when the transaction ends. The function forces that constraint as its last statement and sets it back to deferred, so the refusal (SQLSTATE 23514) is raised inside the call, and no later statement of the transaction meets the constraint immediate. PostgreSQL offers no way to read a constraint's mode, so the function cannot restore the one it found: a caller that had set the constraint immediate finds it deferred after the call, for the rest of its transaction.
+-- Where an election's nomination shape requires a candidate's nomination to have a parent or a requested name, `nominations_parent_required` judges it when the transaction ends. The function forces that constraint as its last statement and sets it back to deferred, so the refusal (SQLSTATE 23514) is raised inside the call, and no later statement of the transaction meets the constraint immediate. PostgreSQL offers no way to read a constraint's mode, so the function cannot restore the one it found: a caller that had set the constraint immediate finds it deferred after the call, for the rest of its transaction.
 --
 -- Returns `{"inserted", "updated", "deleted", "unchanged", "parents_created"}`, each a count of nominations. A move counts once under `deleted` and once under `inserted`; a nomination that is inserted and then linked counts once, under `inserted`; `parents_created` counts the nominations created for a party or an alliance.
 --
@@ -956,7 +956,7 @@ BEGIN
       OR (p_entity_type = 'organization' AND n.organization_id = p_entity_id)
     )
     AND COALESCE(n.election_round, 1) = COALESCE(e.current_round, 1)
-    AND public.nomination_shape_rule(e.election_type, p_entity_type) IN ('admitted', 'parent_required');
+    AND public.nomination_shape_rule(e.nomination_shape, p_entity_type) IN ('admitted', 'parent_required');
 
   -- The reach the set was computed from must be the reach stored: the same ids, each last updated when the caller read it.
   IF EXISTS (

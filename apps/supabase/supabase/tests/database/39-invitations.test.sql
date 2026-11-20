@@ -36,10 +36,9 @@ SET
   settings = settings || jsonb_build_object(
     'contestantApp',
     COALESCE(settings -> 'contestantApp', '{}'::jsonb) || '{
-      "entityTypes": ["candidate", "organization"],
-      "registrationModes": {
-        "candidate": ["identity_provider", "email", "code"],
-        "organization": ["identity_provider", "email", "code"]
+      "servedEntityTypes": {
+        "candidate": {"registrationModes": ["identity_provider", "email", "code"]},
+        "organization": {"registrationModes": ["identity_provider", "email", "code"]}
       }
     }'::jsonb
   )
@@ -5415,7 +5414,7 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes,candidate}',
+    '{contestantApp,servedEntityTypes,candidate,registrationModes}',
     '["identity_provider", "email"]'::jsonb
   )
 WHERE
@@ -5535,7 +5534,7 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes,candidate}',
+    '{contestantApp,servedEntityTypes,candidate,registrationModes}',
     '["identity_provider", "email", "code"]'::jsonb
   )
 WHERE
@@ -5576,7 +5575,7 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes,candidate}',
+    '{contestantApp,servedEntityTypes,candidate,registrationModes}',
     '["identity_provider", "email"]'::jsonb
   )
 WHERE
@@ -5624,7 +5623,7 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes,candidate}',
+    '{contestantApp,servedEntityTypes,candidate,registrationModes}',
     '["identity_provider", "email", "code"]'::jsonb
   )
 WHERE
@@ -5652,7 +5651,7 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes,organization}',
+    '{contestantApp,servedEntityTypes,organization,registrationModes}',
     '["identity_provider", "code"]'::jsonb
   )
 WHERE
@@ -5731,7 +5730,7 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes,organization}',
+    '{contestantApp,servedEntityTypes,organization,registrationModes}',
     '["identity_provider", "email", "code"]'::jsonb
   )
 WHERE
@@ -5772,8 +5771,8 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes}',
-    '{"candidate": [], "organization": []}'::jsonb
+    '{contestantApp,servedEntityTypes}',
+    '{"candidate": {"registrationModes": []}, "organization": {"registrationModes": []}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -5914,8 +5913,7 @@ UPDATE app_settings
 SET
   settings = '{
     "contestantApp": {
-      "entityTypes": ["candidate", "organization"],
-      "registrationModes": {"candidate": ["code"], "organization": ["email"]}
+      "servedEntityTypes": {"candidate": {"registrationModes": ["code"]}, "organization": {"registrationModes": ["email"]}}
     }
   }'::jsonb
 WHERE
@@ -6050,10 +6048,9 @@ SET
   settings = settings || jsonb_build_object(
     'contestantApp',
     COALESCE(settings -> 'contestantApp', '{}'::jsonb) || '{
-      "entityTypes": ["candidate", "organization"],
-      "registrationModes": {
-        "candidate": ["identity_provider", "email", "code"],
-        "organization": ["identity_provider", "email", "code"]
+      "servedEntityTypes": {
+        "candidate": {"registrationModes": ["identity_provider", "email", "code"]},
+        "organization": {"registrationModes": ["identity_provider", "email", "code"]}
       }
     }'::jsonb
   )
@@ -6552,7 +6549,7 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes,candidate}',
+    '{contestantApp,servedEntityTypes,candidate,registrationModes}',
     '["identity_provider", "code"]'::jsonb
   )
 WHERE
@@ -6588,7 +6585,7 @@ UPDATE app_settings
 SET
   settings = jsonb_set(
     settings,
-    '{contestantApp,registrationModes,candidate}',
+    '{contestantApp,servedEntityTypes,candidate,registrationModes}',
     '["identity_provider", "email", "code"]'::jsonb
   )
 WHERE

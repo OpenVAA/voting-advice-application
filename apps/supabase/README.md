@@ -98,10 +98,10 @@ JSON boolean `true` locks; a project without a settings row or without the key i
 id that names no project is locked. Whoever holds `project.edit_app_settings` sets it, project
 editors included.
 
-A nomination is also held to the type of its election, by two more trigger functions of that file.
-`elections.election_type` is one of four values of the enum `nomination_shape`, and
+A nomination is also held to the nomination shape of its election, by two more trigger functions of that file.
+`elections.nomination_shape` is one of four values of the enum `nomination_shape`, and
 `nomination_shape_rule(shape, entity_type)` is the one statement in SQL of which entity types each
-admits. `validate_nomination()` refuses, for every writer, a row its election's type does not admit.
+admits. `validate_nomination()` refuses, for every writer, a row its election's nomination shape does not admit.
 `validate_nomination_parent_required()`, the function of the constraint trigger
 `nominations_parent_required`, refuses at the end of the transaction a candidate's nomination in a
 closed-list election (`organization_list`) that has neither a parent nomination nor a requested
