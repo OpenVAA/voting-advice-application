@@ -23,7 +23,10 @@ const context = {
   // A key translates to itself, followed by the values of its parameters, so a link given to a sentence is rendered with it.
   t: (key: string, params: Record<string, unknown> = {}) => [key, ...Object.values(params)].join(' '),
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  appSettings: { admin: { email: 'support@example.test' }, contestantApp: { entityTypes: ['candidate'] } }
+  appSettings: {
+    admin: { email: 'support@example.test' },
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+  }
 };
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));

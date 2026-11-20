@@ -15,7 +15,7 @@ Takes an email address and asks for a mail with which to set a new password, thr
 
 ## Settings
 
-- `contestantApp.entityTypes`: The entity types the project serves, which decide the app's name above the heading.
+- `contestantApp.servedEntityTypes`: The entity types the project serves, which decide the app's name above the heading.
 
 -->
 
