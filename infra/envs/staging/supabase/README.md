@@ -118,6 +118,7 @@ Step 20 the bootstrap, twice, and the seed check
 Step 21 the first administrator: the user, the grant, the claims of a token
 Step 22 the smoke dataset, once per project; the smoke contestant, once
 Step 23 the conformance probe
+Step 24 the backups and the PITR state, read                <- nothing is restored
 ```
 
 The persistent project is created only once the rehearsal has passed: its first plan was read and
@@ -617,7 +618,8 @@ Steps 14 to 23 deploy the repository to a project. Each step is run first on the
 with `R=scratch`, and then, unchanged, on the persistent project, with `R=staging`, so that the
 persistent project gets the rehearsed commands and nothing else. The order is the deploy order: the
 migrations, the functions, the settings and the secrets, the rows, and last the check of what the
-project serves. A step that is run again later, in another sitting, is run as written here.
+project serves. Step 24, after them, only reads the project's backups. A step that is run again
+later, in another sitting, is run as written here.
 
 Every command is run from the repository root. In this part every named line begins with the
 number of its step, not of its item: Step 16 prints `s16_` lines whatever item prints them, because
@@ -1651,6 +1653,57 @@ named with the ruling. The role must bypass row-level security, or the seed chec
 
    ```bash
    test -n "$L" && rm -rf "$L" && echo "s23_logs_removed=yes"
+   ```
+
+### Step 24: The backups, read
+
+This step reads the project's list of backups and its point-in-time recovery (PITR) state from the
+Management API, with one `GET` of `/v1/projects/<ref>/database/backups`, an endpoint for which
+Supabase's API reference names the scope `database:read`. It changes nothing on the project. A
+restore is not part of it: this runbook starts no restore, neither from the API nor from the
+dashboard. It can be run with either root; the persistent project's answer, with `R=staging`, is
+the one the operations guide relies on.
+
+Secrets: `SUPABASE_ACCESS_TOKEN`, and no other.
+
+1. The read. The token is given to `curl` on its standard input, as a one-line configuration, by a
+   shell builtin, as in Step 6.
+
+   ```bash
+   echo "s24_read_at=$(date -u +%Y-%m-%dT%H:%MZ)"
+   printf 'header = "Authorization: Bearer %s"\n' \
+       "$SUPABASE_ACCESS_TOKEN" \
+     | curl -sS -K - -o "$L/s24-backups.json" \
+       -w 's24_backups_http=%{http_code}\n' \
+       "https://api.supabase.com/v1/projects/$REF/database/backups"
+   ```
+
+   If the status is not 200, paste the `s24_backups_http=` line, skip item 2 and run item 3.
+
+2. What the answer says. It prints the region, whether PITR and the WAL-G archiving are on, the number
+   of backups and how many of them are `COMPLETED`, and the times of the earliest and the latest
+   physical backup, in Unix seconds. A field the answer lacks prints `null`, which is itself the
+   observation.
+
+   ```bash
+   jq -r '"s24_region=\(.region)",
+     "s24_pitr_enabled=\(.pitr_enabled)",
+     "s24_walg_enabled=\(.walg_enabled)",
+     "s24_backups=\(.backups | if . == null then null
+       else length end)",
+     "s24_completed=\(.backups | if . == null then null
+       else map(select(.status == "COMPLETED")) | length end)",
+     "s24_earliest_unix=\(.physical_backup_data
+       .earliest_physical_backup_date_unix)",
+     "s24_latest_unix=\(.physical_backup_data
+       .latest_physical_backup_date_unix)"' \
+     "$L/s24-backups.json"
+   ```
+
+3. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s24_logs_removed=yes"
    ```
 
 ### Fault steps on the throwaway project
