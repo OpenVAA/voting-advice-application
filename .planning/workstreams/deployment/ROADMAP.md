@@ -777,7 +777,29 @@ Notes:
   5. `render.example.yaml` is fixed and documented as an untested alternative, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record.
 
 **Research flag**: Standard pattern, no research phase, once phases 184, 185 and 188 have produced the observations.
-**Plans**: TBD
+**Plans**: 20 plans
+
+Plans:
+- [ ] 189-01-PLAN.md — Render example and its mentions removed; DOCS-07 and criterion 5 amended (F-01)
+- [ ] 189-02-PLAN.md — the two frontend-URL variables removed, targeted E2E of the projects they serve (B-03)
+- [ ] 189-03-PLAN.md — orphan frontend compose file and its stage retired, production image built (F-02, F-03)
+- [ ] 189-04-PLAN.md — docs subtree pages and nav, the deployment overview kept reachable (A-02)
+- [ ] 189-05-PLAN.md — operator sitting 1: read-only probe, privilege and DMARC reads (H-01)
+- [ ] 189-06-PLAN.md — operator sitting 2: the backups read, as runbook Step 24 (E-02)
+- [ ] 189-07-PLAN.md — operator sitting 3: origin header secret rotated by runbook Step 19 (E-03)
+- [ ] 189-08-PLAN.md — hosted-settings reference and its guard (B-01, DOCS-02)
+- [ ] 189-09-PLAN.md — environment-variable reference by role and its guard (B-02, DOCS-04)
+- [ ] 189-10-PLAN.md — analytics page: catalogue guard, mechanism, provider, checklist (D-01 to D-03, DOCS-05)
+- [ ] 189-11-PLAN.md — the guide's path from an empty account to a tested instance, OpenTofu rule (DOCS-01)
+- [ ] 189-12-PLAN.md — the guide's hosted-project sections on the Terraform path (DOCS-01, C-01)
+- [ ] 189-13-PLAN.md — operations: scaling, rollback, teardown, SES, Admin job limit, cost (E-01, E-04)
+- [ ] 189-14-PLAN.md — operations: restore and secret rotation (E-02, E-03)
+- [ ] 189-15-PLAN.md — unobserved statements swept from the bootstrap and AWS runbooks, back-links (C-01, A-01)
+- [ ] 189-16-PLAN.md — unobserved statements swept from mail, Supabase, modules and the auth page (C-01)
+- [ ] 189-17-PLAN.md — identity-callback closing check; hosted-auth todo closed (G-03, G-04)
+- [ ] 189-18-PLAN.md — five absorbed todos closed on the record (G-01, G-02)
+- [ ] 189-19-PLAN.md — fold-ins: seed comment, skill citation, INFRA-13, re-targets (G-05)
+- [ ] 189-20-PLAN.md — recorded searches, closing gates and the full E2E run (C-02, H-02)
 
 Notes:
 
@@ -824,4 +846,4 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
 | 187. Deploy Pipeline | 31/31 | Complete    | 2026-11-18 |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 20/20 | Complete    | 2026-11-20 |
-| 189. Documentation and Closure | 0/TBD | Not started | - |
+| 189. Documentation and Closure | 0/20 | Not started | - |
