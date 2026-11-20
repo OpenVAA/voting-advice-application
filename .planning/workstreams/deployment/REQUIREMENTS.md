@@ -137,12 +137,12 @@ Each is run on a real project, recorded with its date, and acted on.
       observation, not a pipeline gate (E2).
 - [x] **OBS-07**: A read of more than 1000 rows is not truncated, and `anon` runs with an 8 s statement timeout.
 - [x] **OBS-08**: A frontend started from the template's variables alone reads from Supabase.
-- [ ] **OBS-09**: The per-caller limit on the anonymous invitation operations is decided after OBS-04: built in
+- [x] **OBS-09**: The per-caller limit on the anonymous invitation operations is decided after OBS-04: built in
       this milestone if the measurement supports a design, otherwise deferred with the measurement and a date
       (A3).
 - [x] **OBS-10**: The feedback rate limit buckets by client on the hosted project with `behind_cloudflare` set
       as deployed.
-- [ ] **OBS-11**: A load check of the voter journey and the relay against the deployed stack yields a recorded
+- [x] **OBS-11**: A load check of the voter journey and the relay against the deployed stack yields a recorded
       capacity figure. [A2]
 
 ### RELAY — Analytics relay
@@ -152,7 +152,7 @@ Each is run on a real project, recorded with its date, and acted on.
       survives page unload.
 - [x] **RELAY-03**: The server forwards through a provider interface chosen by configuration, with `none` as the
       default.
-- [ ] **RELAY-04**: A PostHog provider captures server-side to the EU host (configurable), with no person
+- [x] **RELAY-04**: A PostHog provider captures server-side to the EU host (configurable), with no person
       profile and no client address, in batches, flushed at shutdown, failing open.
 - [x] **RELAY-05**: No analytics identifier is written to the device or read from it. The `sessionStorage`
       session id leaves the tracking path. The stored consent choice is the only analytics-related state on the
@@ -162,7 +162,7 @@ Each is run on a real project, recorded with its date, and acted on.
 - [x] **RELAY-07**: The visitor's address and user agent stop at the relay.
 - [x] **RELAY-08**: The relay accepts only a closed vocabulary of discrete events, bounds their size, and drops
       query strings from URLs (B6).
-- [ ] **RELAY-09**: The endpoint resists abuse: same-origin requests only, a body-size cap, a bounded queue that
+- [x] **RELAY-09**: The endpoint resists abuse: same-origin requests only, a body-size cap, a bounded queue that
       drops when full, and no caller-chosen destination. A WAF rate rule exists as a Terraform variable, off by
       default (B8).
 - [x] **RELAY-10**: The provider, its key and its host are server-side deployment configuration; whether events
@@ -310,18 +310,18 @@ closes; those are not listed against the earlier phase here.
 | OBS-06 | Phase 185 | Complete |
 | OBS-07 | Phase 184 | Complete |
 | OBS-08 | Phase 185 | Complete |
-| OBS-09 | Phase 188 | Pending |
+| OBS-09 | Phase 188 | Complete |
 | OBS-10 | Phase 185 | Complete |
-| OBS-11 | Phase 188 | Pending |
+| OBS-11 | Phase 188 | Complete |
 | RELAY-01 | Phase 182 | Complete |
 | RELAY-02 | Phase 182 | Complete |
 | RELAY-03 | Phase 182 | Complete |
-| RELAY-04 | Phase 188 | Pending |
+| RELAY-04 | Phase 188 | Complete |
 | RELAY-05 | Phase 182 | Complete |
 | RELAY-06 | Phase 182 | Complete |
 | RELAY-07 | Phase 182 | Complete |
 | RELAY-08 | Phase 182 | Complete |
-| RELAY-09 | Phase 188 | Pending |
+| RELAY-09 | Phase 188 | Complete |
 | RELAY-10 | Phase 182 | Complete |
 | RELAY-11 | Phase 182 | Complete |
 | RELAY-12 | Phase 182 | Complete |
