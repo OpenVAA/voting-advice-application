@@ -13,7 +13,7 @@
  *   - The function, as an anonymous visitor calls it: `checkCode`, `askForLink`, `askForRecovery`, `askForLinkNamingUnopenedWitness`, `codeSignIn`, `answerCount`, `operationsWhoseAnswerHolds`, `expectHeadersLeaveThisProcess`.
  *   - A request a page makes, or does not make: `witnessPageRequest`, `expectNoPageRequest`.
  *   - The mail: `mailSubjects`, `expectMailCount`, `receiveSignInLink`, `signInLinkToOpen`, `recoveryLinkToOpen`, `expectNothingSent`, `expectNoMailAfter`.
- *   - The session: `signInWithLink`, `signInWithPassword`, `claim`, `claimNamingAnAddress`, `refresh`, `grantsClaimOf`, `grantsClaimOfToken`, `setFreshPassword`.
+ *   - The session: `signInWithLink`, `signInWithPassword`, `claim`, `accountState`, `claimNamingAnAddress`, `refresh`, `grantsClaimOf`, `grantsClaimOfToken`, `setFreshPassword`.
  *   - The service role's view: `grantRowsOf`, `invitationsAddressedTo`, `hasAccount`, `createUserWithPassword`, `releaseLinkSlot`.
  *   - Cleanup: `resetDedicatedRows`, `leftovers`, `removeEverythingUnderPrefix`, `leftoversUnderPrefix`.
  *
@@ -36,6 +36,7 @@ import { createEmailBucket } from './emailBucket.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { checkCode, codeSignIn, requestLink, requestRecovery } from '../../utils/accountAccessClient';
 import {
+  callerAccountState,
   claimInvitations,
   readGrantsClaim,
   refreshSession,
@@ -775,6 +776,11 @@ export function createInvitationFlow(
     /** Claim the signed-in user's invitations in the suite's project, and return the answer as received. */
     claim(session: SessionTokens): Promise<RpcAnswer> {
       return claimInvitations({ accessToken: session.accessToken, projectId });
+    },
+
+    /** The signed-in user's account state, `{ password_set, pending_email_taken }`, as received. */
+    accountState(session: SessionTokens): Promise<RpcAnswer> {
+      return callerAccountState({ accessToken: session.accessToken });
     },
 
     /** Call the claim with an address beside the project, as a caller would who tried to claim for someone else. */
