@@ -207,8 +207,9 @@ Each is run on a real project, recorded with its date, and acted on.
       determination is the deployer's and nowhere says that no consent is required (B7).
 - [ ] **DOCS-06**: An operations runbook covers election-day scaling, rollback, teardown and restore, secret
       rotation, SES, and the limit that Admin job progress is unreliable above one task (D1).
-- [ ] **DOCS-07**: `render.example.yaml` is fixed and documented as an untested alternative, and the orphan
-      compose file is retired if nothing references it (A5).
+- [ ] **DOCS-07**: The Render deployment example and its mentions are removed, and the orphan compose file
+      is retired if nothing references it (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01;
+      supersedes ruling A5).
 - [ ] **DOCS-08**: Each of the seven absorbed todos has a closure record.
 
 ## Future Requirements

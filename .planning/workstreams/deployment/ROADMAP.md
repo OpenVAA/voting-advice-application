@@ -774,7 +774,7 @@ Notes:
   2. A search of the documentation and of the repository's comments finds no statement about a hosted project that is marked unverified. Each one is replaced by a dated observation or removed.
   3. The analytics documentation gives the event catalogue, how to add a provider, the privacy mechanism and a checklist the deployer completes for their own jurisdiction. It says that the consent determination is the deployer's, and nowhere says that no consent is required.
   4. An operations runbook covers election-day scaling, rollback, teardown and restore, secret rotation, SES, and the limit that Admin job progress is unreliable above one task.
-  5. `render.example.yaml` is fixed and documented as an untested alternative, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record.
+  5. The Render deployment example and its mentions are removed, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01; supersedes ruling A5).
 
 **Research flag**: Standard pattern, no research phase, once phases 184, 185 and 188 have produced the observations.
 **Plans**: 20 plans
