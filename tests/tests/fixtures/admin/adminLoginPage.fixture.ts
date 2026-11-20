@@ -61,92 +61,6 @@ const COUNT_ID_BYTES = 16;
 /** What the data API answers when a read fails. */
 const USER_DATA_READ_FAILURE = { status: 500, json: { message: 'The read failed.' } };
 
-/** Where the header paints its illustration, and how many of the illustration's opaque pixels lie under the logo. */
-type IllustrationOverLogo = {
-  /** The address of the image the header paints, or `null` when nothing in the header paints one. */
-  image: string | null;
-  /** The width and height in pixels of the rectangle the image is painted in. */
-  painted: { width: number; height: number };
-  /** The number of the image's pixels with an alpha above 0 that are painted inside the logo's box. */
-  opaqueUnderLogo: number;
-};
-
-/**
- * Count, in the page, the opaque pixels of the image the header paints that fall under the header's logo.
- *
- * The image is the background of the header or of an element inside it. It is drawn on a canvas at the size and position the computed `background-size` and `background-position` give it inside the element's padding box, clipped to that box, and the canvas is read over the logo's box. The image is served by the application's own origin, so the canvas can be read.
- *
- * @param menuToggle - The header's menu button, which holds the logo.
- * @returns What is painted, with the count.
- */
-async function readIllustrationOverLogo(menuToggle: Locator): Promise<IllustrationOverLogo> {
-  return menuToggle.evaluate(async (toggle) => {
-    const header = toggle.closest('header');
-    const logo = toggle.querySelector(':scope > div');
-    if (!header || !logo) throw new Error('the header or its logo is missing');
-    const painter = [header, ...header.querySelectorAll('*')].find((element) =>
-      getComputedStyle(element).backgroundImage.startsWith('url(')
-    );
-    if (!painter) return { image: null, painted: { width: 0, height: 0 }, opaqueUnderLogo: 0 };
-
-    const style = getComputedStyle(painter);
-    const url = style.backgroundImage.slice(4, -1).replace(/^"|"$/g, '');
-    const image = new Image();
-    image.src = url;
-    await image.decode();
-    const naturalWidth = image.naturalWidth;
-    const naturalHeight = image.naturalHeight;
-
-    const rect = painter.getBoundingClientRect();
-    const area = {
-      x: rect.x + parseFloat(style.borderLeftWidth),
-      y: rect.y + parseFloat(style.borderTopWidth),
-      width: painter.clientWidth,
-      height: painter.clientHeight
-    };
-    const length = (value: string, reference: number) =>
-      value.endsWith('%') ? (parseFloat(value) / 100) * reference : parseFloat(value);
-    let width: number;
-    let height: number;
-    const size = style.backgroundSize.trim();
-    if (size === 'cover' || size === 'contain') {
-      const scale = (size === 'cover' ? Math.max : Math.min)(area.width / naturalWidth, area.height / naturalHeight);
-      width = naturalWidth * scale;
-      height = naturalHeight * scale;
-    } else {
-      const [sizeX, sizeY = 'auto'] = size.split(/\s+/);
-      const givenWidth = sizeX === 'auto' ? null : length(sizeX, area.width);
-      const givenHeight = sizeY === 'auto' ? null : length(sizeY, area.height);
-      width = givenWidth ?? (givenHeight === null ? naturalWidth : (naturalWidth * givenHeight) / naturalHeight);
-      height = givenHeight ?? (naturalHeight * width) / naturalWidth;
-    }
-    const [positionX = '50%', positionY = '50%'] = style.backgroundPosition.split(',')[0].trim().split(/\s+/);
-    const left = area.x + length(positionX, area.width - width);
-    const top = area.y + length(positionY, area.height - height);
-
-    const box = logo.getBoundingClientRect();
-    const x0 = Math.max(Math.floor(box.left), Math.ceil(area.x));
-    const y0 = Math.max(Math.floor(box.top), Math.ceil(area.y));
-    const x1 = Math.min(Math.ceil(box.right), Math.floor(area.x + area.width));
-    const y1 = Math.min(Math.ceil(box.bottom), Math.floor(area.y + area.height));
-    let opaqueUnderLogo = 0;
-    if (x1 > x0 && y1 > y0) {
-      const canvas = document.createElement('canvas');
-      canvas.width = x1 - x0;
-      canvas.height = y1 - y0;
-      const context = canvas.getContext('2d');
-      if (!context) throw new Error('no canvas context');
-      context.drawImage(image, left - x0, top - y0, width, height);
-      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
-      for (let alpha = 3; alpha < pixels.length; alpha += 4) if (pixels[alpha] > 0) opaqueUnderLogo += 1;
-    }
-    return { image: url, painted: { width, height }, opaqueUnderLogo };
-  });
-}
-
-/** Whether a request's address is the user data's read of the account state, the last read an administrator's user data makes. */
-const isUserDataRead = (url: URL): boolean => url.pathname.endsWith('/rest/v1/rpc/get_caller_account_state');
-
 export function createAdminLoginPage(page: Page) {
   const adminHome = buildRoute({ route: 'AdminAppHome', locale: 'en' });
   const adminLogin = buildRoute({ route: 'AdminAppLogin', locale: 'en' });
@@ -511,3 +425,91 @@ export function createAdminLoginPage(page: Page) {
 }
 
 export type AdminLoginPageFixture = ReturnType<typeof createAdminLoginPage>;
+
+/** Where the header paints its illustration, and how many of the illustration's opaque pixels lie under the logo. */
+type IllustrationOverLogo = {
+  /** The address of the image the header paints, or `null` when nothing in the header paints one. */
+  image: string | null;
+  /** The width and height in pixels of the rectangle the image is painted in. */
+  painted: { width: number; height: number };
+  /** The number of the image's pixels with an alpha above 0 that are painted inside the logo's box. */
+  opaqueUnderLogo: number;
+};
+
+/**
+ * Count, in the page, the opaque pixels of the image the header paints that fall under the header's logo.
+ *
+ * The image is the background of the header or of an element inside it. It is drawn on a canvas at the size and position the computed `background-size` and `background-position` give it inside the element's padding box, clipped to that box, and the canvas is read over the logo's box. The image is served by the application's own origin, so the canvas can be read.
+ *
+ * @param menuToggle - The header's menu button, which holds the logo.
+ * @returns What is painted, with the count.
+ */
+async function readIllustrationOverLogo(menuToggle: Locator): Promise<IllustrationOverLogo> {
+  return menuToggle.evaluate(async (toggle) => {
+    const header = toggle.closest('header');
+    const logo = toggle.querySelector(':scope > div');
+    if (!header || !logo) throw new Error('the header or its logo is missing');
+    const painter = [header, ...header.querySelectorAll('*')].find((element) =>
+      getComputedStyle(element).backgroundImage.startsWith('url(')
+    );
+    if (!painter) return { image: null, painted: { width: 0, height: 0 }, opaqueUnderLogo: 0 };
+
+    const style = getComputedStyle(painter);
+    const url = style.backgroundImage.slice(4, -1).replace(/^"|"$/g, '');
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    const naturalWidth = image.naturalWidth;
+    const naturalHeight = image.naturalHeight;
+
+    const rect = painter.getBoundingClientRect();
+    const area = {
+      x: rect.x + parseFloat(style.borderLeftWidth),
+      y: rect.y + parseFloat(style.borderTopWidth),
+      width: painter.clientWidth,
+      height: painter.clientHeight
+    };
+    const length = (value: string, reference: number) =>
+      value.endsWith('%') ? (parseFloat(value) / 100) * reference : parseFloat(value);
+    let width: number;
+    let height: number;
+    const size = style.backgroundSize.trim();
+    if (size === 'cover' || size === 'contain') {
+      const scale = (size === 'cover' ? Math.max : Math.min)(area.width / naturalWidth, area.height / naturalHeight);
+      width = naturalWidth * scale;
+      height = naturalHeight * scale;
+    } else {
+      const [sizeX, sizeY = 'auto'] = size.split(/\s+/);
+      const givenWidth = sizeX === 'auto' ? null : length(sizeX, area.width);
+      const givenHeight = sizeY === 'auto' ? null : length(sizeY, area.height);
+      width = givenWidth ?? (givenHeight === null ? naturalWidth : (naturalWidth * givenHeight) / naturalHeight);
+      height = givenHeight ?? (naturalHeight * width) / naturalWidth;
+    }
+    const [positionX = '50%', positionY = '50%'] = style.backgroundPosition.split(',')[0].trim().split(/\s+/);
+    const left = area.x + length(positionX, area.width - width);
+    const top = area.y + length(positionY, area.height - height);
+
+    const box = logo.getBoundingClientRect();
+    const x0 = Math.max(Math.floor(box.left), Math.ceil(area.x));
+    const y0 = Math.max(Math.floor(box.top), Math.ceil(area.y));
+    const x1 = Math.min(Math.ceil(box.right), Math.floor(area.x + area.width));
+    const y1 = Math.min(Math.ceil(box.bottom), Math.floor(area.y + area.height));
+    let opaqueUnderLogo = 0;
+    if (x1 > x0 && y1 > y0) {
+      const canvas = document.createElement('canvas');
+      canvas.width = x1 - x0;
+      canvas.height = y1 - y0;
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('no canvas context');
+      context.drawImage(image, left - x0, top - y0, width, height);
+      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      for (let alpha = 3; alpha < pixels.length; alpha += 4) if (pixels[alpha] > 0) opaqueUnderLogo += 1;
+    }
+    return { image: url, painted: { width, height }, opaqueUnderLogo };
+  });
+}
+
+/** Whether a request's address is the user data's read of the account state, the last read an administrator's user data makes. */
+function isUserDataRead(url: URL): boolean {
+  return url.pathname.endsWith('/rest/v1/rpc/get_caller_account_state');
+}

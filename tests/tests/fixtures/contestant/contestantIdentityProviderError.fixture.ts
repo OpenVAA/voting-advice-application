@@ -29,11 +29,6 @@ export type IdentityProviderErrorClass = 'cancelled' | 'retry' | 'noRetry';
 /** The fragment of the support section on the Help page. */
 const SUPPORT_SECTION = '#support';
 
-/** The screen's sentence for a class, in English, read from the catalogue file. */
-function englishSentence(errorClass: IdentityProviderErrorClass): string {
-  return messageOf('contestantApp.identityProvider', `error.${errorClass}.content`);
-}
-
 export function createContestantIdentityProviderErrorPage(page: Page) {
   const ids = testIds.contestant.identityProviderError;
 
@@ -134,3 +129,8 @@ export function createContestantIdentityProviderErrorPage(page: Page) {
 }
 
 export type ContestantIdentityProviderErrorPageFixture = ReturnType<typeof createContestantIdentityProviderErrorPage>;
+
+/** The screen's sentence for a class, in English, read from the catalogue file. */
+function englishSentence(errorClass: IdentityProviderErrorClass): string {
+  return messageOf('contestantApp.identityProvider', `error.${errorClass}.content`);
+}

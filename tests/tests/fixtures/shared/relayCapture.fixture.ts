@@ -120,36 +120,6 @@ export interface RelayCaptureFixture {
 }
 
 /**
- * Parse one captured body, and check each of its events against `EventSchema`.
- * @param body - The request body as sent.
- * @param index - The batch's position in the capture, for the error messages.
- * @returns The batch as sent.
- */
-function parseCapturedBatch(body: string, index: number): RelayBatch {
-  let batch: RelayBatch;
-  try {
-    batch = JSON.parse(body) as RelayBatch;
-  } catch (error) {
-    throw new Error(`relayCapture: batch ${index} is not JSON: ${JSON.stringify(body)}`, { cause: error });
-  }
-  for (const event of batch.events) {
-    const result = EventSchema.safeParse(event);
-    if (!result.success) {
-      throw new Error(
-        `relayCapture: batch ${index} holds an event outside the vocabulary: ${JSON.stringify((event as { name?: unknown }).name)}: ${result.error.message}`,
-        { cause: result.error }
-      );
-    }
-  }
-  return batch;
-}
-
-/** True when `request` is a batch sent to the relay. */
-function isRelayRequest(request: Request): boolean {
-  return request.method() === 'POST' && new URL(request.url()).pathname === RELAY_PATH;
-}
-
-/**
  * Start capturing the relay batches of `context`.
  * @param context - The browser context whose requests are captured. Attach before its first navigation.
  * @returns The capture, filled as batches are sent.
@@ -184,4 +154,34 @@ export function createRelayCapture(context: BrowserContext): RelayCaptureFixture
   };
 
   return fixture;
+}
+
+/** True when `request` is a batch sent to the relay. */
+function isRelayRequest(request: Request): boolean {
+  return request.method() === 'POST' && new URL(request.url()).pathname === RELAY_PATH;
+}
+
+/**
+ * Parse one captured body, and check each of its events against `EventSchema`.
+ * @param body - The request body as sent.
+ * @param index - The batch's position in the capture, for the error messages.
+ * @returns The batch as sent.
+ */
+function parseCapturedBatch(body: string, index: number): RelayBatch {
+  let batch: RelayBatch;
+  try {
+    batch = JSON.parse(body) as RelayBatch;
+  } catch (error) {
+    throw new Error(`relayCapture: batch ${index} is not JSON: ${JSON.stringify(body)}`, { cause: error });
+  }
+  for (const event of batch.events) {
+    const result = EventSchema.safeParse(event);
+    if (!result.success) {
+      throw new Error(
+        `relayCapture: batch ${index} holds an event outside the vocabulary: ${JSON.stringify((event as { name?: unknown }).name)}: ${result.error.message}`,
+        { cause: result.error }
+      );
+    }
+  }
+  return batch;
 }

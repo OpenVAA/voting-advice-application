@@ -100,7 +100,9 @@ export interface NativeDialogsFixture {
 
 /** The names the three selection rows are seeded with in `e2e/base`, as the application displays them. */
 const SELECTION_CANDIDATE_A_NAME = 'Switch-A Entity One';
+
 const SELECTION_CANDIDATE_B_NAME = 'Switch-B Entity Two';
+
 const SELECTION_ORGANIZATION_NAME = '[or-sel] Party Sel';
 
 /** external_id of the opinion question the two selection candidates answer differently in `e2e/base`. */
@@ -110,6 +112,7 @@ const DIFFERING_QUESTION_EXTERNAL_ID = 'test-e2e-base-qu-opin-base-1-likert5';
 const DIFFERING_QUESTION_LABEL = '[qu-opin-base-1-likert5]';
 
 const ENTITY_SELECTION_MESSAGES = messagesOf('contestantApp.entitySelection') as Record<string, string>;
+
 const COMMON_MESSAGES = messagesOf('common') as Record<string, Record<string, string>>;
 
 /**
@@ -130,30 +133,117 @@ export const SELECTION_TEXT = Object.freeze({
   })
 });
 
-function upperCaseFirst(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
+type ContestantEntitySelectionFixtures = {
+  adminClient: SupabaseAdminClient;
+  selectionEntities: SelectionEntities;
+  nativeDialogs: NativeDialogsFixture;
+  headerLogout: HeaderLogoutFixture;
+  navMenu: NavMenuFixture;
+  contestantEntitySelectionPage: ContestantEntitySelectionPageFixture;
+  contestantNothingToEditPage: ContestantNothingToEditPageFixture;
+  contestantEntityPages: ContestantEntityPagesFixture;
+  contestantHomePage: ContestantHomePageFixture;
+  contestantQuestionsOverviewPage: ContestantQuestionsOverviewPageFixture;
+  contestantQuestionPage: ContestantQuestionPageFixture;
+  contestantLoginPage: ContestantLoginPageFixture;
+  contestantSettingsPage: ContestantSettingsPageFixture;
+  contestantProfilePage: ContestantProfilePageFixture;
+  contestantNominationEditor: ContestantNominationEditorFixture;
+};
 
-/**
- * The title of the menu's entity group for `entity`: the message `contestantApp.entitySelection.current` with the type's singular and the entity's name.
- */
-export function entityGroupTitle(entity: SelectionEntity): string {
-  return ENTITY_SELECTION_MESSAGES.current
-    .replace('{entityType}', SELECTION_TEXT.typeLabel[entity.entityType])
-    .replace('{name}', entity.name);
-}
+export const test = base.extend<ContestantEntitySelectionFixtures>({
+  adminClient: async ({}, use) => {
+    await use(new SupabaseAdminClient());
+  },
 
-/**
- * The end of the key an entity's unsaved answers are stored under in `localStorage`. The key names the signed-in user between the stem and this end, and the application removes every other user's drafts when an entity is loaded, so the browser holds at most one key that ends so.
- */
-function draftKeyEnd(entity: SelectionEntity): string {
-  return `-${entity.entityType}-${entity.id}`;
-}
+  selectionEntities: async ({ adminClient }, use) => {
+    const candidate = (externalId: string) => rowId(adminClient, 'candidates', externalId);
+    await use({
+      candidateA: {
+        entityType: 'candidate',
+        id: await candidate(TEST_SELECTION_CANDIDATE_A_EXTERNAL_ID),
+        name: SELECTION_CANDIDATE_A_NAME
+      },
+      candidateB: {
+        entityType: 'candidate',
+        id: await candidate(TEST_SELECTION_CANDIDATE_B_EXTERNAL_ID),
+        name: SELECTION_CANDIDATE_B_NAME
+      },
+      organization: {
+        entityType: 'organization',
+        id: await rowId(adminClient, 'organizations', TEST_SELECTION_ORGANIZATION_EXTERNAL_ID),
+        name: SELECTION_ORGANIZATION_NAME
+      },
+      // The name is not read: the user who edits several entities never reaches this candidate.
+      baseCandidate: { entityType: 'candidate', id: await candidate(TEST_CANDIDATE_EXTERNAL_ID), name: '' },
+      differingQuestionId: await rowId(adminClient, 'questions', DIFFERING_QUESTION_EXTERNAL_ID),
+      differingQuestionLabel: DIFFERING_QUESTION_LABEL,
+      async savedAnswerValue(entity: SelectionEntity, questionId: string): Promise<unknown> {
+        const result = await adminClient.findData('candidates', { id: { $eq: entity.id } });
+        const answers = (result.type === 'success' ? result.data?.[0]?.answers : undefined) as
+          Record<string, { value?: unknown } | undefined> | undefined;
+        return answers?.[questionId]?.value;
+      }
+    });
+  },
 
-/** A pattern for a URL whose path is exactly `pathname`, with an optional trailing slash, query or fragment. */
-function exactPathRe(pathname: string): RegExp {
-  return new RegExp(`${escapeRegExp(pathname)}/?(?=[?#]|$)`);
-}
+  nativeDialogs: async ({ page }, use) => {
+    const seen: Array<string> = [];
+    let confirmAnswer: 'accept' | 'dismiss' = 'dismiss';
+    page.on('dialog', async (dialog) => {
+      seen.push(dialog.type());
+      // A `beforeunload` prompt is the browser asking whether to leave a page with unsaved edits on a reload or a typed URL. The test asked for that navigation, so it is always confirmed; only a `confirm` raised by the application is answered as the test chose.
+      if (dialog.type() === 'beforeunload' || confirmAnswer === 'accept') await dialog.accept();
+      else await dialog.dismiss();
+    });
+    await use({
+      answerConfirmWith(answer) {
+        confirmAnswer = answer;
+      },
+      types: () => [...seen],
+      clear() {
+        seen.length = 0;
+      }
+    });
+  },
+
+  headerLogout: async ({ page }, use) => {
+    await use(createHeaderLogout(page));
+  },
+  navMenu: async ({ page }, use) => {
+    await use(createNavMenu(page));
+  },
+  contestantEntitySelectionPage: async ({ page }, use) => {
+    await use(createContestantEntitySelectionPage(page));
+  },
+  contestantNothingToEditPage: async ({ page }, use) => {
+    await use(createContestantNothingToEditPage(page));
+  },
+  contestantEntityPages: async ({ page }, use) => {
+    await use(createContestantEntityPages(page));
+  },
+  contestantHomePage: async ({ page }, use) => {
+    await use(createContestantHomePage(page));
+  },
+  contestantQuestionsOverviewPage: async ({ page }, use) => {
+    await use(createContestantQuestionsOverviewPage(page));
+  },
+  contestantQuestionPage: async ({ page }, use) => {
+    await use(createContestantQuestionPage(page));
+  },
+  contestantLoginPage: async ({ page }, use) => {
+    await use(createContestantLoginPage(page));
+  },
+  contestantSettingsPage: async ({ page }, use) => {
+    await use(createContestantSettingsPage(page));
+  },
+  contestantProfilePage: async ({ page }, use) => {
+    await use(createContestantProfilePage(page));
+  },
+  contestantNominationEditor: async ({ page, adminClient }, use) => {
+    await use(createContestantNominationEditor(page, adminClient));
+  }
+});
 
 /**
  * Navigation to, and URL assertions on, the pages of one entity, and the entity's draft in browser storage.
@@ -325,116 +415,29 @@ async function rowId(client: SupabaseAdminClient, collection: string, externalId
   return id;
 }
 
-type ContestantEntitySelectionFixtures = {
-  adminClient: SupabaseAdminClient;
-  selectionEntities: SelectionEntities;
-  nativeDialogs: NativeDialogsFixture;
-  headerLogout: HeaderLogoutFixture;
-  navMenu: NavMenuFixture;
-  contestantEntitySelectionPage: ContestantEntitySelectionPageFixture;
-  contestantNothingToEditPage: ContestantNothingToEditPageFixture;
-  contestantEntityPages: ContestantEntityPagesFixture;
-  contestantHomePage: ContestantHomePageFixture;
-  contestantQuestionsOverviewPage: ContestantQuestionsOverviewPageFixture;
-  contestantQuestionPage: ContestantQuestionPageFixture;
-  contestantLoginPage: ContestantLoginPageFixture;
-  contestantSettingsPage: ContestantSettingsPageFixture;
-  contestantProfilePage: ContestantProfilePageFixture;
-  contestantNominationEditor: ContestantNominationEditorFixture;
-};
+/**
+ * The title of the menu's entity group for `entity`: the message `contestantApp.entitySelection.current` with the type's singular and the entity's name.
+ */
+export function entityGroupTitle(entity: SelectionEntity): string {
+  return ENTITY_SELECTION_MESSAGES.current
+    .replace('{entityType}', SELECTION_TEXT.typeLabel[entity.entityType])
+    .replace('{name}', entity.name);
+}
 
-export const test = base.extend<ContestantEntitySelectionFixtures>({
-  adminClient: async ({}, use) => {
-    await use(new SupabaseAdminClient());
-  },
+/**
+ * The end of the key an entity's unsaved answers are stored under in `localStorage`. The key names the signed-in user between the stem and this end, and the application removes every other user's drafts when an entity is loaded, so the browser holds at most one key that ends so.
+ */
+function draftKeyEnd(entity: SelectionEntity): string {
+  return `-${entity.entityType}-${entity.id}`;
+}
 
-  selectionEntities: async ({ adminClient }, use) => {
-    const candidate = (externalId: string) => rowId(adminClient, 'candidates', externalId);
-    await use({
-      candidateA: {
-        entityType: 'candidate',
-        id: await candidate(TEST_SELECTION_CANDIDATE_A_EXTERNAL_ID),
-        name: SELECTION_CANDIDATE_A_NAME
-      },
-      candidateB: {
-        entityType: 'candidate',
-        id: await candidate(TEST_SELECTION_CANDIDATE_B_EXTERNAL_ID),
-        name: SELECTION_CANDIDATE_B_NAME
-      },
-      organization: {
-        entityType: 'organization',
-        id: await rowId(adminClient, 'organizations', TEST_SELECTION_ORGANIZATION_EXTERNAL_ID),
-        name: SELECTION_ORGANIZATION_NAME
-      },
-      // The name is not read: the user who edits several entities never reaches this candidate.
-      baseCandidate: { entityType: 'candidate', id: await candidate(TEST_CANDIDATE_EXTERNAL_ID), name: '' },
-      differingQuestionId: await rowId(adminClient, 'questions', DIFFERING_QUESTION_EXTERNAL_ID),
-      differingQuestionLabel: DIFFERING_QUESTION_LABEL,
-      async savedAnswerValue(entity: SelectionEntity, questionId: string): Promise<unknown> {
-        const result = await adminClient.findData('candidates', { id: { $eq: entity.id } });
-        const answers = (result.type === 'success' ? result.data?.[0]?.answers : undefined) as
-          Record<string, { value?: unknown } | undefined> | undefined;
-        return answers?.[questionId]?.value;
-      }
-    });
-  },
+/** A pattern for a URL whose path is exactly `pathname`, with an optional trailing slash, query or fragment. */
+function exactPathRe(pathname: string): RegExp {
+  return new RegExp(`${escapeRegExp(pathname)}/?(?=[?#]|$)`);
+}
 
-  nativeDialogs: async ({ page }, use) => {
-    const seen: Array<string> = [];
-    let confirmAnswer: 'accept' | 'dismiss' = 'dismiss';
-    page.on('dialog', async (dialog) => {
-      seen.push(dialog.type());
-      // A `beforeunload` prompt is the browser asking whether to leave a page with unsaved edits on a reload or a typed URL. The test asked for that navigation, so it is always confirmed; only a `confirm` raised by the application is answered as the test chose.
-      if (dialog.type() === 'beforeunload' || confirmAnswer === 'accept') await dialog.accept();
-      else await dialog.dismiss();
-    });
-    await use({
-      answerConfirmWith(answer) {
-        confirmAnswer = answer;
-      },
-      types: () => [...seen],
-      clear() {
-        seen.length = 0;
-      }
-    });
-  },
-
-  headerLogout: async ({ page }, use) => {
-    await use(createHeaderLogout(page));
-  },
-  navMenu: async ({ page }, use) => {
-    await use(createNavMenu(page));
-  },
-  contestantEntitySelectionPage: async ({ page }, use) => {
-    await use(createContestantEntitySelectionPage(page));
-  },
-  contestantNothingToEditPage: async ({ page }, use) => {
-    await use(createContestantNothingToEditPage(page));
-  },
-  contestantEntityPages: async ({ page }, use) => {
-    await use(createContestantEntityPages(page));
-  },
-  contestantHomePage: async ({ page }, use) => {
-    await use(createContestantHomePage(page));
-  },
-  contestantQuestionsOverviewPage: async ({ page }, use) => {
-    await use(createContestantQuestionsOverviewPage(page));
-  },
-  contestantQuestionPage: async ({ page }, use) => {
-    await use(createContestantQuestionPage(page));
-  },
-  contestantLoginPage: async ({ page }, use) => {
-    await use(createContestantLoginPage(page));
-  },
-  contestantSettingsPage: async ({ page }, use) => {
-    await use(createContestantSettingsPage(page));
-  },
-  contestantProfilePage: async ({ page }, use) => {
-    await use(createContestantProfilePage(page));
-  },
-  contestantNominationEditor: async ({ page, adminClient }, use) => {
-    await use(createContestantNominationEditor(page, adminClient));
-  }
-});
+function upperCaseFirst(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
 
 export { expect };

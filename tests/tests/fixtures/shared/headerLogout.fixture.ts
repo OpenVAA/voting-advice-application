@@ -90,18 +90,10 @@ const CLOCK_BEHIND_THE_SERVER_MS = 5 * 60_000;
 
 /** The English messages the steps assert, read from the message source rather than copied. */
 const COMMON_MESSAGES = messagesOf('common') as Record<string, string>;
-const ERROR_MESSAGES = messagesOf('error') as Record<string, string>;
-const LOGOUT_MODAL_MESSAGES = messagesOf('contestantApp.logoutModal') as Record<string, string>;
 
-/**
- * The logout modal's sentence with its count.
- *
- * @param seconds - The seconds the sentence says are left.
- * @returns The sentence.
- */
-function ingressAt(seconds: number): string {
-  return LOGOUT_MODAL_MESSAGES.ingress.replace('{timeLeft}', String(seconds));
-}
+const ERROR_MESSAGES = messagesOf('error') as Record<string, string>;
+
+const LOGOUT_MODAL_MESSAGES = messagesOf('contestantApp.logoutModal') as Record<string, string>;
 
 /** How a held sign-out request ends: it reaches the server, or it is answered with a failure and never does. */
 type HeldSignOutOutcome = 'reachServer' | 'fail';
@@ -689,3 +681,13 @@ export function createHeaderLogout(page: Page) {
 }
 
 export type HeaderLogoutFixture = ReturnType<typeof createHeaderLogout>;
+
+/**
+ * The logout modal's sentence with its count.
+ *
+ * @param seconds - The seconds the sentence says are left.
+ * @returns The sentence.
+ */
+function ingressAt(seconds: number): string {
+  return LOGOUT_MODAL_MESSAGES.ingress.replace('{timeLeft}', String(seconds));
+}

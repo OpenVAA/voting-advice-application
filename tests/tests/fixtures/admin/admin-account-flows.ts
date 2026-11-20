@@ -39,6 +39,63 @@ import type { InvitationFlowFixture } from '../shared/invitationFlow.fixture';
 import type { AdminLoginPageFixture } from './adminLoginPage.fixture';
 import type { AdminSetPasswordGateFixture } from './adminSetPasswordGate.fixture';
 
+type AdminAccountFlowsFixtures = {
+  adminLoginPage: AdminLoginPageFixture;
+  adminForgotPasswordPage: ContestantForgotPasswordPageFixture;
+  adminEmailSentPage: ContestantEmailSentPageFixture;
+  adminPasswordResetPage: ContestantPasswordResetPageFixture;
+  adminSetPasswordGate: AdminSetPasswordGateFixture;
+  contestantForgotPasswordPage: ContestantForgotPasswordPageFixture;
+  contestantSetPasswordGate: ContestantSetPasswordGateFixture;
+  contestantLoginPage: ContestantLoginPageFixture;
+  contestantEntityHomePage: ContestantEntityHomePageFixture;
+};
+
+type AdminAccountFlowsWorkerFixtures = {
+  invitationFlow: InvitationFlowFixture;
+};
+
+export const test = base.extend<AdminAccountFlowsFixtures, AdminAccountFlowsWorkerFixtures>({
+  invitationFlow: [
+    async ({}, use) => {
+      await use(
+        createInvitationFlow(new SupabaseAdminClient(), {
+          addressPrefix: ADMIN_ACCOUNT_FLOWS_ADDRESS_PREFIX,
+          dedicatedRows: { candidate: ADMIN_FLOWS_CANDIDATE_EXTERNAL_ID }
+        })
+      );
+    },
+    { scope: 'worker' }
+  ],
+  adminLoginPage: async ({ page }, use) => {
+    await use(createAdminLoginPage(page));
+  },
+  adminForgotPasswordPage: async ({ page }, use) => {
+    await use(createAdminForgotPasswordPage(page));
+  },
+  adminEmailSentPage: async ({ page }, use) => {
+    await use(createAdminEmailSentPage(page));
+  },
+  adminPasswordResetPage: async ({ page }, use) => {
+    await use(createAdminPasswordResetPage(page));
+  },
+  adminSetPasswordGate: async ({ page }, use) => {
+    await use(createAdminSetPasswordGate(page));
+  },
+  contestantForgotPasswordPage: async ({ page }, use) => {
+    await use(createContestantForgotPasswordPage(page));
+  },
+  contestantSetPasswordGate: async ({ page }, use) => {
+    await use(createContestantSetPasswordGate(page));
+  },
+  contestantLoginPage: async ({ page }, use) => {
+    await use(createContestantLoginPage(page));
+  },
+  contestantEntityHomePage: async ({ page }, use) => {
+    await use(createContestantEntityHomePage(page, new SupabaseAdminClient()));
+  }
+});
+
 /**
  * The Admin App's forgot-password page, which renders the shared screen under its own route and root test id and leads to its own "email sent" page.
  *
@@ -124,62 +181,5 @@ export async function recoverPasswordInTheAdminApp(
   await adminLoginPage.login(email, RECOVERED_PASSWORD);
   await adminLoginPage.expectAdminHome();
 }
-
-type AdminAccountFlowsFixtures = {
-  adminLoginPage: AdminLoginPageFixture;
-  adminForgotPasswordPage: ContestantForgotPasswordPageFixture;
-  adminEmailSentPage: ContestantEmailSentPageFixture;
-  adminPasswordResetPage: ContestantPasswordResetPageFixture;
-  adminSetPasswordGate: AdminSetPasswordGateFixture;
-  contestantForgotPasswordPage: ContestantForgotPasswordPageFixture;
-  contestantSetPasswordGate: ContestantSetPasswordGateFixture;
-  contestantLoginPage: ContestantLoginPageFixture;
-  contestantEntityHomePage: ContestantEntityHomePageFixture;
-};
-
-type AdminAccountFlowsWorkerFixtures = {
-  invitationFlow: InvitationFlowFixture;
-};
-
-export const test = base.extend<AdminAccountFlowsFixtures, AdminAccountFlowsWorkerFixtures>({
-  invitationFlow: [
-    async ({}, use) => {
-      await use(
-        createInvitationFlow(new SupabaseAdminClient(), {
-          addressPrefix: ADMIN_ACCOUNT_FLOWS_ADDRESS_PREFIX,
-          dedicatedRows: { candidate: ADMIN_FLOWS_CANDIDATE_EXTERNAL_ID }
-        })
-      );
-    },
-    { scope: 'worker' }
-  ],
-  adminLoginPage: async ({ page }, use) => {
-    await use(createAdminLoginPage(page));
-  },
-  adminForgotPasswordPage: async ({ page }, use) => {
-    await use(createAdminForgotPasswordPage(page));
-  },
-  adminEmailSentPage: async ({ page }, use) => {
-    await use(createAdminEmailSentPage(page));
-  },
-  adminPasswordResetPage: async ({ page }, use) => {
-    await use(createAdminPasswordResetPage(page));
-  },
-  adminSetPasswordGate: async ({ page }, use) => {
-    await use(createAdminSetPasswordGate(page));
-  },
-  contestantForgotPasswordPage: async ({ page }, use) => {
-    await use(createContestantForgotPasswordPage(page));
-  },
-  contestantSetPasswordGate: async ({ page }, use) => {
-    await use(createContestantSetPasswordGate(page));
-  },
-  contestantLoginPage: async ({ page }, use) => {
-    await use(createContestantLoginPage(page));
-  },
-  contestantEntityHomePage: async ({ page }, use) => {
-    await use(createContestantEntityHomePage(page, new SupabaseAdminClient()));
-  }
-});
 
 export { expect };

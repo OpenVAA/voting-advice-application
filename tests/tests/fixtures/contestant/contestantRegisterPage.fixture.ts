@@ -97,14 +97,6 @@ const IDENTITY_PROVIDER_MESSAGES = (
 /** The sentence the code field shows for a code that was not confirmed, read from the message source rather than copied. */
 const CODE_UNCONFIRMED_MESSAGE = messageOf('contestantApp.register', 'codeUnconfirmed');
 
-/**
- * The title of the notice for a browser that has confirmed an address, read from the message source rather than copied. Read when a step asks for it, so that a source without the notice fails that step's assertion and not the loading of this file.
- */
-function registeredNoticeTitle(): string {
-  const notice = (messagesOf('contestantApp.register') as { registeredNotice?: { title?: unknown } }).registeredNotice;
-  return String(notice?.title);
-}
-
 /** The sentence under the email field for each reason it can be in error, read from the message source rather than copied. */
 const EMAIL_ERROR_MESSAGES: Readonly<Record<ContestantRegisterFieldReason['email'], string>> = Object.freeze({
   required: messageOf('contestantApp.login', 'emailRequired'),
@@ -685,3 +677,11 @@ export function createContestantRegisterPage(page: Page) {
 }
 
 export type ContestantRegisterPageFixture = ReturnType<typeof createContestantRegisterPage>;
+
+/**
+ * The title of the notice for a browser that has confirmed an address, read from the message source rather than copied. Read when a step asks for it, so that a source without the notice fails that step's assertion and not the loading of this file.
+ */
+function registeredNoticeTitle(): string {
+  const notice = (messagesOf('contestantApp.register') as { registeredNotice?: { title?: unknown } }).registeredNotice;
+  return String(notice?.title);
+}

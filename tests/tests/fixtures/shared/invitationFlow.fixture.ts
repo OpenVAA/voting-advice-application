@@ -137,44 +137,8 @@ export interface InvitationState {
   readonly claimed_at: string | null;
 }
 
-/** A grant as a comparable string, for sorting. */
-function grantKey(grant: GrantClaim): string {
-  return [grant.scope, grant.target_type ?? '', grant.target_id ?? '', grant.role].join('|');
-}
-
-/** The four specification columns of a grant and nothing else, in a fixed key order. */
-function toGrantClaim({ scope, target_type, target_id, role }: GrantClaim): GrantClaim {
-  return { scope, target_type, target_id, role };
-}
-
-/** Grants as a set: reduced to their four columns and sorted, so two sets compare with `toEqual`. */
-function asGrantSet(grants: ReadonlyArray<GrantClaim>): Array<GrantClaim> {
-  return grants.map(toGrantClaim).sort((a, b) => grantKey(a).localeCompare(grantKey(b)));
-}
-
-/**
- * The body of a request as a JSON object, or undefined when the request has no body or its body is anything else.
- */
-function jsonObjectOf(body: string | null): Record<string, unknown> | undefined {
-  if (body === null) return undefined;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(body);
-  } catch {
-    return undefined;
-  }
-  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-    ? (parsed as Record<string, unknown>)
-    : undefined;
-}
-
 /** The symbols a registration code is made of: Crockford's base-32 alphabet, which has no `I`, `L`, `O` or `U`. */
 const CODE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-
-/** A password the auth service's policy accepts, unique per call. */
-function freshPassword(): string {
-  return `${crypto.randomUUID()}-Aa1!`;
-}
 
 /**
  * Create the invitation flow.
@@ -924,5 +888,41 @@ export const test = base.extend<object, { invitationFlow: InvitationFlowFixture 
     { scope: 'worker' }
   ]
 });
+
+/** A password the auth service's policy accepts, unique per call. */
+function freshPassword(): string {
+  return `${crypto.randomUUID()}-Aa1!`;
+}
+
+/**
+ * The body of a request as a JSON object, or undefined when the request has no body or its body is anything else.
+ */
+function jsonObjectOf(body: string | null): Record<string, unknown> | undefined {
+  if (body === null) return undefined;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return undefined;
+  }
+  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+    ? (parsed as Record<string, unknown>)
+    : undefined;
+}
+
+/** Grants as a set: reduced to their four columns and sorted, so two sets compare with `toEqual`. */
+function asGrantSet(grants: ReadonlyArray<GrantClaim>): Array<GrantClaim> {
+  return grants.map(toGrantClaim).sort((a, b) => grantKey(a).localeCompare(grantKey(b)));
+}
+
+/** The four specification columns of a grant and nothing else, in a fixed key order. */
+function toGrantClaim({ scope, target_type, target_id, role }: GrantClaim): GrantClaim {
+  return { scope, target_type, target_id, role };
+}
+
+/** A grant as a comparable string, for sorting. */
+function grantKey(grant: GrantClaim): string {
+  return [grant.scope, grant.target_type ?? '', grant.target_id ?? '', grant.role].join('|');
+}
 
 export { expect };

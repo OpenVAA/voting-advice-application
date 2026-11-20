@@ -106,33 +106,6 @@ function materialIconPath(file: string): string {
 /** The lock, which every entry that cannot be entered leads with. */
 const LOCK_PATH = materialIconPath('lock');
 
-/**
- * The path data of the icon an entry leads with, or `null` while its drawing is not loaded.
- * @param entry - The entry's button.
- */
-function iconPathOf(entry: Locator): Promise<string | null> {
-  return entry.evaluate((element) => element.querySelector('svg path')?.getAttribute('d') ?? null);
-}
-
-/** The computed fill of the icon an entry leads with and the computed colour of its label. */
-interface EntryColours {
-  fill: string;
-  labelColour: string;
-}
-
-/**
- * Read an entry's colours in one evaluation, so that both come from the same style.
- * @param entry - The entry's button.
- */
-function coloursOf(entry: Locator): Promise<EntryColours> {
-  return entry.evaluate((element) => {
-    const icon = element.querySelector('svg');
-    const label = [...element.children].find((child) => !child.querySelector('svg'));
-    if (!icon || !label) throw new Error('the entry holds no icon or no label');
-    return { fill: getComputedStyle(icon).fill, labelColour: getComputedStyle(label).color };
-  });
-}
-
 /** The email task's label, read from the message source rather than copied; `{email}` stands for the address. */
 const EMAIL_TASK_MESSAGE = messageOf('contestantApp.home', 'emailTask');
 
@@ -424,3 +397,30 @@ export function createContestantHomePage(page: Page) {
 }
 
 export type ContestantHomePageFixture = ReturnType<typeof createContestantHomePage>;
+
+/**
+ * The path data of the icon an entry leads with, or `null` while its drawing is not loaded.
+ * @param entry - The entry's button.
+ */
+function iconPathOf(entry: Locator): Promise<string | null> {
+  return entry.evaluate((element) => element.querySelector('svg path')?.getAttribute('d') ?? null);
+}
+
+/** The computed fill of the icon an entry leads with and the computed colour of its label. */
+interface EntryColours {
+  fill: string;
+  labelColour: string;
+}
+
+/**
+ * Read an entry's colours in one evaluation, so that both come from the same style.
+ * @param entry - The entry's button.
+ */
+function coloursOf(entry: Locator): Promise<EntryColours> {
+  return entry.evaluate((element) => {
+    const icon = element.querySelector('svg');
+    const label = [...element.children].find((child) => !child.querySelector('svg'));
+    if (!icon || !label) throw new Error('the entry holds no icon or no label');
+    return { fill: getComputedStyle(icon).fill, labelColour: getComputedStyle(label).color };
+  });
+}
