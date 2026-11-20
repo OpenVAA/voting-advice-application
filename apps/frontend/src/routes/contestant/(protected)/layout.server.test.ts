@@ -164,10 +164,10 @@ function cookieHeader(cookies: Record<string, string>): Record<string, string> {
 }
 
 /** An id of a count's opening, as the page writes it. */
-const COUNT_ID = '0123456789abcdef0123456789abcdef';
+const DEADLINE_ID = '0123456789abcdef0123456789abcdef';
 
 /** The cookies of a request that carries one running logout count. */
-const COUNT_COOKIES = { [COOKIE.logoutPending]: COUNT_ID, [COOKIE.logoutDeadline]: COUNT_ID };
+const DEADLINE_COOKIES = { [COOKIE.logoutPending]: DEADLINE_ID, [COOKIE.logoutDeadline]: DEADLINE_ID };
 
 /**
  * User-level data with the given acceptance.
@@ -695,7 +695,7 @@ describe('routes/contestant/(protected)/+layout.server.ts — the logout count a
     vi.spyOn(log, 'error').mockImplementation(() => undefined);
     getBasicUserData.mockRejectedValue(new Error('No active session'));
 
-    const redirected = await redirectOf(makeEvent({ cookies: COUNT_COOKIES }));
+    const redirected = await redirectOf(makeEvent({ cookies: DEADLINE_COOKIES }));
 
     expect(redirected).toMatchObject({ status: 307, location: LOGIN_FAILED_ROUTE });
     expect(signOut).toHaveBeenCalledTimes(1);
@@ -711,7 +711,7 @@ describe('routes/contestant/(protected)/+layout.server.ts — the logout count a
     signOut.mockResolvedValue({ error: new Error('network down') });
     getSession.mockResolvedValue({ data: { session: { expires_at: 1893456000 } }, error: null });
 
-    const failed = await redirectOf(makeEvent({ cookies: COUNT_COOKIES }));
+    const failed = await redirectOf(makeEvent({ cookies: DEADLINE_COOKIES }));
 
     expect(isHttpError(failed, 503)).toBe(true);
     expect(signOut).toHaveBeenCalledTimes(1);

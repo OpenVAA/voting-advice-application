@@ -7,7 +7,7 @@
  */
 import { log } from '@openvaa/app-shared';
 import type { AnalyticsEvent } from '$lib/analytics/analyticsEvent.type';
-import type { AnalyticsProvider, ProviderDeps } from './provider.type';
+import type { AnalyticsProvider, AnalyticsProviderDeps } from './provider.type';
 
 /** The path of PostHog's batch capture endpoint, joined to the configured host. */
 const BATCH_PATH = '/batch/';
@@ -68,7 +68,7 @@ export function createPostHogProvider({
   key,
   fetch,
   randomId
-}: { host: string; key: string } & Pick<ProviderDeps, 'fetch' | 'randomId'>): AnalyticsProvider {
+}: { host: string; key: string } & Pick<AnalyticsProviderDeps, 'fetch' | 'randomId'>): AnalyticsProvider {
   const url = new URL(BATCH_PATH, host).href;
   return {
     name: 'posthog',

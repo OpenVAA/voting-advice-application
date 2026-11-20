@@ -16,7 +16,7 @@ import { ADMIN_GRANTS, passwordLogin } from '$lib/auth';
 import { LOGOUT_DEADLINE_SETTLED } from '$lib/auth/logoutDeadline';
 import { COOKIE } from '$lib/cookies';
 import { buildRoute, safeRedirectTarget } from '$lib/routes';
-import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
+import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
 import type { LoginError } from '$lib/admin/utils/loginError';
 
 /**
@@ -54,7 +54,7 @@ export const actions = {
       logLabel: 'Admin login'
     });
     if (!outcome.ok) return fail(outcome.status);
-    withdrawLogoutCount(event);
+    withdrawLogoutDeadline(event);
     // The override target stays interpolated rather than built: `buildRoute` resolves a NAMED route from the route map, and a validated `redirectTo` is an arbitrary relative path with no name. The leading `/{locale}/` is what keeps the result same-origin, so the validator above must run first and its rejection must fall through to the named home route.
     const home = buildRoute({ route: 'AdminAppHome', locale: locals.currentLocale });
     return redirect(303, redirectTo ? `/${locals.currentLocale}/${redirectTo}` : home);

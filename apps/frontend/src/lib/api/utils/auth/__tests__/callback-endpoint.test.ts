@@ -452,9 +452,9 @@ describe('GET /api/oidc/callback', () => {
     });
 
     /** An id of a count's opening, as the page writes it. */
-    const COUNT_ID = '0123456789abcdef0123456789abcdef';
+    const DEADLINE_ID = '0123456789abcdef0123456789abcdef';
     /** The cookies of a request that carries one running logout count. */
-    const COUNT_COOKIES = { [COOKIE.logoutPending]: COUNT_ID, [COOKIE.logoutDeadline]: COUNT_ID };
+    const DEADLINE_COOKIES = { [COOKIE.logoutPending]: DEADLINE_ID, [COOKIE.logoutDeadline]: DEADLINE_ID };
 
     /** The removals of the count's cookies the route made. */
     function countRemovals(event: ReturnType<typeof createEvent>) {
@@ -464,7 +464,7 @@ describe('GET /api/oidc/callback', () => {
     }
 
     it('withdraws a logout count the request carries once the session is established', async () => {
-      const event = verifiedCallback(COUNT_COOKIES);
+      const event = verifiedCallback(DEADLINE_COOKIES);
 
       await GET(event).catch(() => undefined);
 
@@ -479,7 +479,7 @@ describe('GET /api/oidc/callback', () => {
     });
 
     it("leaves a logout count in place on the provider's cancel", async () => {
-      const event = createEvent('error=access_denied', COUNT_COOKIES);
+      const event = createEvent('error=access_denied', DEADLINE_COOKIES);
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('cancelled') });
 
@@ -489,7 +489,7 @@ describe('GET /api/oidc/callback', () => {
     it('leaves a logout count in place when the session is not established', async () => {
       vi.spyOn(console, 'error').mockImplementation(() => undefined);
       verifyOtp.mockResolvedValue({ data: { session: null, user: null }, error: new Error('Token has expired') });
-      const event = verifiedCallback(COUNT_COOKIES);
+      const event = verifiedCallback(DEADLINE_COOKIES);
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('registration_failed') });
 
@@ -520,7 +520,7 @@ describe('GET /api/oidc/callback', () => {
     ])('leaves a logout count in place on %s', async (_, query, cookies, code, arrange) => {
       arrange();
       vi.spyOn(console, 'error').mockImplementation(() => undefined);
-      const event = createEvent(query, { ...cookies, ...COUNT_COOKIES });
+      const event = createEvent(query, { ...cookies, ...DEADLINE_COOKIES });
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen(code) });
 

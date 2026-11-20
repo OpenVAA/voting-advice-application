@@ -11,7 +11,7 @@ export const LOGOUT_PENDING_MAX_AGE_SECONDS = 400 * 24 * 60 * 60;
 /**
  * The value the server's request hook writes into `COOKIE.logoutPending` once it has signed out a request whose count the browser had let run out. It is not an id of a count, so the hook never acts on it, and a session signed in after it is kept; the page reads it as "discard the Contestant App's drafts" and removes it.
  */
-export const LOGOUT_DEADLINE_SETTLED = 'passed';
+export const LOGOUT_DEADLINE_SETTLED = 'settled';
 
 /**
  * The `sessionStorage` key under which a tab keeps the id of the count it wrote. It survives a reload of the same tab and is not shared with another, so a reload of the tab that held the modal removes its count and a page of another tab, which has no record of it, leaves the count alone.
@@ -30,16 +30,16 @@ export const LOGOUT_TAB_RECORD_KEY = 'logout-deadline-tab';
 export type LogoutDeadlineState = 'none' | 'counting' | 'runOut' | 'duplicated' | 'settled';
 
 /** The shape of an id of a count's opening: 32 lower-case hexadecimal characters. */
-const COUNT_ID = /^[0-9a-f]{32}$/;
+const DEADLINE_ID = /^[0-9a-f]{32}$/;
 
 /** The number of random bytes in an id of a count's opening. */
-const COUNT_ID_BYTES = 16;
+const DEADLINE_ID_BYTES = 16;
 
 /** The shape of a host name that is an IPv4 address. */
 const IPV4_ADDRESS = /^\d{1,3}(\.\d{1,3}){3}$/;
 
 /** The id of the count this document wrote and has not withdrawn: the modal it holds is still open, or the page was restored from the back-forward cache with it. */
-let ownCountId: string | undefined;
+let ownDeadlineId: string | undefined;
 
 /**
  * Every value one cookie name has in a `Cookie` header or a `document.cookie` string, in the order they appear. A browser sends one value per copy it holds, so a name may appear more than once.
@@ -73,7 +73,7 @@ export function logoutDeadlineState(
   deadlineValues: ReadonlyArray<string>
 ): LogoutDeadlineState {
   if (pendingValues.includes(LOGOUT_DEADLINE_SETTLED)) return 'settled';
-  const ids = new Set(pendingValues.filter((value) => COUNT_ID.test(value)));
+  const ids = new Set(pendingValues.filter((value) => DEADLINE_ID.test(value)));
   if (ids.size === 0) return 'none';
   if (ids.size > 1) return 'duplicated';
   return deadlineValues.length > 0 ? 'counting' : 'runOut';
@@ -113,10 +113,10 @@ export function removalDomainsOf(hostname: string): Array<string> {
  */
 export function writeLogoutDeadline(countSeconds: number): void {
   if (typeof document === 'undefined') return;
-  const id = randomCountId();
+  const id = randomDeadlineId();
   setCookie(COOKIE.logoutPending, id, LOGOUT_PENDING_MAX_AGE_SECONDS);
   setCookie(COOKIE.logoutDeadline, id, Math.ceil(countSeconds) + LOGOUT_DEADLINE_GRACE_SECONDS);
-  ownCountId = id;
+  ownDeadlineId = id;
   writeTabRecord(id);
 }
 
@@ -125,8 +125,8 @@ export function writeLogoutDeadline(countSeconds: number): void {
  */
 export function clearLogoutDeadline(): void {
   if (typeof document === 'undefined') return;
-  const id = ownCountId;
-  ownCountId = undefined;
+  const id = ownDeadlineId;
+  ownDeadlineId = undefined;
   if (id === undefined) return;
   if (readTabRecord() === id) forgetTabRecord();
   if (cookieValues(document.cookie, COOKIE.logoutPending).includes(id)) expireEveryCopy();
@@ -166,8 +166,8 @@ export function settleLogoutDeadline(discardDrafts: () => void, trigger: 'docume
       withdrawEveryCount();
       return;
     case 'counting': {
-      const id = pendingValues.find((value) => COUNT_ID.test(value));
-      if (trigger === 'document' && id !== ownCountId && id === readTabRecord()) withdrawEveryCount();
+      const id = pendingValues.find((value) => DEADLINE_ID.test(value));
+      if (trigger === 'document' && id !== ownDeadlineId && id === readTabRecord()) withdrawEveryCount();
       return;
     }
     case 'runOut':
@@ -177,14 +177,14 @@ export function settleLogoutDeadline(discardDrafts: () => void, trigger: 'docume
 }
 
 /** A random id of a count's opening, from `crypto.getRandomValues`, which needs no secure context. */
-function randomCountId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(COUNT_ID_BYTES));
+function randomDeadlineId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(DEADLINE_ID_BYTES));
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
 /** Expire every copy of both cookies, and forget this document's own count and the tab's record. */
 function withdrawEveryCount(): void {
-  ownCountId = undefined;
+  ownDeadlineId = undefined;
   forgetTabRecord();
   expireEveryCopy();
 }

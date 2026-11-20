@@ -83,7 +83,7 @@ const PAST_THE_MODAL_COUNT_MS = (MODAL_COUNT_SECONDS + 1) * 1000;
 const LOGOUT_DEADLINE_GRACE_SECONDS = 10;
 
 /** The shape of the id both cookies of the logout modal's count hold. */
-const COUNT_ID = /^[0-9a-f]{32}$/;
+const DEADLINE_ID = /^[0-9a-f]{32}$/;
 
 /** How far behind the server's clock {@link createHeaderLogout}'s `installClockBehindTheServer` puts the page's, in milliseconds: five minutes, far more than the count and its grace. */
 const CLOCK_BEHIND_THE_SERVER_MS = 5 * 60_000;
@@ -636,7 +636,7 @@ export function createHeaderLogout(page: Page) {
         .toEqual([COOKIE.logoutDeadline, COOKIE.logoutPending].sort());
       const [pending] = await contextCookiesNamed(COOKIE.logoutPending);
       const [deadline] = await contextCookiesNamed(COOKIE.logoutDeadline);
-      expect(pending.value).toMatch(COUNT_ID);
+      expect(pending.value).toMatch(DEADLINE_ID);
       expect(deadline.value).toBe(pending.value);
       const nowSeconds = Date.now() / 1000;
       expect(deadline.expires).toBeGreaterThan(nowSeconds);

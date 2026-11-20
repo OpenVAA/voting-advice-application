@@ -22,7 +22,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { createDataWriter } from '$lib/api/dataWriter';
 import { CONTESTANT_GRANTS, invitationCodeLogin } from '$lib/auth';
 import { buildRoute } from '$lib/routes';
-import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
+import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
 import { isRegistrationOffered, refuseUnlessRegistrationOffered } from '$lib/server/contestant/registrationGuard';
 
 export async function load(event) {
@@ -58,7 +58,7 @@ export const actions = {
       logLabel: 'Contestant code sign-in'
     });
     if (!outcome.ok) return fail(outcome.status, { status: outcome.status });
-    withdrawLogoutCount(event);
+    withdrawLogoutDeadline(event);
     return redirect(303, buildRoute({ route: 'ContestantAppHome', locale: locals.currentLocale }));
   }
 };

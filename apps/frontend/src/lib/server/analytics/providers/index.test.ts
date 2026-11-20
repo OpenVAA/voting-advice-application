@@ -12,7 +12,7 @@ import { createProvider } from './index';
 import type { AnalyticsEvent } from '$lib/analytics/analyticsEvent.type';
 import type { EventName } from '$lib/analytics/events.schema';
 import type { AnalyticsConfig } from '../config';
-import type { ProviderDeps } from './provider.type';
+import type { AnalyticsProviderDeps } from './provider.type';
 
 const HOST = 'https://posthog.example';
 const KEY = 'phc_test_key';
@@ -25,11 +25,11 @@ const MODES = { consentMode: 'gated', visitIdMode: 'memory' } as const;
  *
  * @returns The dependencies and what they recorded.
  */
-function recordingDeps(): { deps: ProviderDeps; lines: Array<string>; bodies: Array<string> } {
+function recordingDeps(): { deps: AnalyticsProviderDeps; lines: Array<string>; bodies: Array<string> } {
   const lines: Array<string> = [];
   const bodies: Array<string> = [];
   let n = 0;
-  const deps: ProviderDeps = {
+  const deps: AnalyticsProviderDeps = {
     fetch: (_input, init) => {
       bodies.push(String(init?.body));
       return Promise.resolve(new Response(null, { status: 200 }));

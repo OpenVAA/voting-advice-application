@@ -16,18 +16,20 @@ import { CONTESTANT_GRANTS } from '$lib/auth';
 import { buildRoute } from '$lib/routes';
 import { actions } from './+page.server';
 
-const { claimInvitations, createDataWriter, getProjectGrants, passwordLogin, withdrawLogoutCount } = vi.hoisted(() => ({
-  claimInvitations: vi.fn(),
-  createDataWriter: vi.fn(),
-  getProjectGrants: vi.fn(),
-  passwordLogin: vi.fn(),
-  withdrawLogoutCount: vi.fn()
-}));
+const { claimInvitations, createDataWriter, getProjectGrants, passwordLogin, withdrawLogoutDeadline } = vi.hoisted(
+  () => ({
+    claimInvitations: vi.fn(),
+    createDataWriter: vi.fn(),
+    getProjectGrants: vi.fn(),
+    passwordLogin: vi.fn(),
+    withdrawLogoutDeadline: vi.fn()
+  })
+);
 
 // Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
 vi.mock('$lib/auth', async (importOriginal) => ({ ...(await importOriginal<object>()), passwordLogin }));
 vi.mock('$lib/api/dataWriter', () => ({ createDataWriter }));
-vi.mock('$lib/server/auth/logoutCount', () => ({ withdrawLogoutCount }));
+vi.mock('$lib/server/auth/logoutDeadline', () => ({ withdrawLogoutDeadline }));
 
 /** What the action touches of the request. The generated event type names this route's own id and locals. */
 type FakeEvent = {
@@ -235,8 +237,8 @@ describe('the logout count', () => {
   /** The order in which the withdrawal and the helper were called. */
   function recordOrder(outcome: { ok: true } | { ok: false; status: number; reason: string }): Array<string> {
     const order: Array<string> = [];
-    withdrawLogoutCount.mockImplementation(() => {
-      order.push('withdrawLogoutCount');
+    withdrawLogoutDeadline.mockImplementation(() => {
+      order.push('withdrawLogoutDeadline');
     });
     passwordLogin.mockImplementation(async () => {
       order.push('passwordLogin');
@@ -249,9 +251,9 @@ describe('the logout count', () => {
     const order = recordOrder({ ok: true });
     const event = makeEvent();
     const redirected = await signIn(event).catch((e: unknown) => e);
-    expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-    expect(withdrawLogoutCount.mock.calls[0][0]).toBe(event);
-    expect(order).toEqual(['passwordLogin', 'withdrawLogoutCount']);
+    expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+    expect(withdrawLogoutDeadline.mock.calls[0][0]).toBe(event);
+    expect(order).toEqual(['passwordLogin', 'withdrawLogoutDeadline']);
     expect(redirected).toMatchObject({ status: 303 });
   });
 
@@ -261,7 +263,7 @@ describe('the logout count', () => {
       const order = recordOrder({ ok: false, status, reason });
       const answer = await signIn(makeEvent());
       expect(answer).toMatchObject({ status });
-      expect(withdrawLogoutCount).not.toHaveBeenCalled();
+      expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
       expect(order).toEqual(['passwordLogin']);
     }
   );

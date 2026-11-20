@@ -56,7 +56,7 @@ import type { EndRoute } from '../../utils/endableRoute';
 export type AdminLoginNoticeReason = 'loggedOutAutomatically' | 'loggedOutElsewhere';
 
 /** The number of random bytes in the id of a count, which `logout-pending` holds as 32 hexadecimal characters. */
-const COUNT_ID_BYTES = 16;
+const DEADLINE_ID_BYTES = 16;
 
 /** What the data API answers when a read fails. */
 const USER_DATA_READ_FAILURE = { status: 500, json: { message: 'The read failed.' } };
@@ -389,7 +389,7 @@ export function createAdminLoginPage(page: Page) {
       await context.addCookies([
         {
           name: COOKIE.logoutPending,
-          value: randomBytes(COUNT_ID_BYTES).toString('hex'),
+          value: randomBytes(DEADLINE_ID_BYTES).toString('hex'),
           url: new URL(page.url()).origin,
           sameSite: 'Lax'
         }

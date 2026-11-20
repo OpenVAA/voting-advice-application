@@ -5,7 +5,7 @@ import { isContestantOnly } from '$lib/auth/homeApp';
 import { claimAndRefresh } from '$lib/auth/sessionAdmission';
 import { COOKIE } from '$lib/cookies';
 import { buildRoute } from '$lib/routes';
-import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
+import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
 import type { AuthError, EmailOtpType } from '@supabase/supabase-js';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 import type { ContestantLoginError } from '$contestant/utils/loginError';
@@ -105,7 +105,7 @@ const REGISTERED_COOKIE_VALUE = '1';
  * - On both arms, a link that names the Admin App lands a user whose grants in this project, read after the claim, open the Contestant App and not the Admin App on the Contestant App's page instead, so that the link is not spent on an app that would sign the user out.
  * - `email_change`: the link the `account-access` function mails to confirm the address an account the identity provider made gave. Opened, it makes that address the account's sign-in address and answers with a session, and the user goes to the Contestant App's root, as for any other type. A verification that answers no session confirmed nothing, because the auth service still waits for the account's current address, so it is a failure and claims nothing. A failure lands where it can say what happened: a browser that holds a session goes to the Contestant App's root, whose protected layout reads the account's own pending address and, when another account now holds it, asks for another; a browser with no session goes to the login page with the notice that the address is now used by another account when the verification failed as a taken address does, and with the auth error otherwise. Nothing of the failure itself reaches the landing.
  *
- * A verification that answers no error and a session withdraws every count of the logout modal the request carries, through `withdrawLogoutCount`, right after `verifyOtp` and before anything else, so that no count a closed tab left can end the session the link has just signed in. Only then is the session known to be set, so every other path keeps both cookies: a missing or refused type, a failed verification and an `email_change` link that answered no session. A session the request held before is the caller's to end first, and a count it keeps is the request hook's to act on.
+ * A verification that answers no error and a session withdraws every count of the logout modal the request carries, through `withdrawLogoutDeadline`, right after `verifyOtp` and before anything else, so that no count a closed tab left can end the session the link has just signed in. Only then is the session known to be set, so every other path keeps both cookies: a missing or refused type, a failed verification and an `email_change` link that answered no session. A session the request held before is the caller's to end first, and a count it keeps is the request hook's to act on.
  *
  * A verified `magiclink` link, and an `email_change` link that answered a session, leave {@link COOKIE.registered} on the browser before the claim, so that the registration page can later say that this browser has registered. A `recovery` link, a failed verification and a refused type leave nothing.
  *
@@ -159,7 +159,7 @@ export async function verifyMailedLink({
   if (tokenHash && isMailedLinkType(type)) {
     const otpType: EmailOtpType = type;
     const { data, error } = await locals.supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType });
-    if (!error && data?.session) withdrawLogoutCount({ cookies, request, url });
+    if (!error && data?.session) withdrawLogoutDeadline({ cookies, request, url });
     if (otpType === 'email_change' && (error || !data?.session))
       throw redirect(303, await emailChangeFailureRoute({ error, locals, locale }));
     if (!error) {

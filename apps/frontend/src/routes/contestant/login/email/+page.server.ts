@@ -20,7 +20,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { createDataWriter } from '$lib/api/dataWriter';
 import { CONTESTANT_GRANTS, passwordLogin } from '$lib/auth';
 import { buildRoute, safeRedirectTarget } from '$lib/routes';
-import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
+import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
 
 /**
  * Returns no data. It exists so that a client-side navigation to this page sends a request the request hook sees, which sends a caller with a session to the app's home; see `appGates.ts`.
@@ -58,7 +58,7 @@ export const actions = {
       logLabel: 'Contestant sign-in'
     });
     if (!outcome.ok) return fail(outcome.status, { status: outcome.status });
-    withdrawLogoutCount(event);
+    withdrawLogoutDeadline(event);
     // The override target stays interpolated rather than built: `buildRoute` resolves a NAMED route from the route map, and a validated `redirectTo` is an arbitrary relative path with no name. The leading `/{locale}/` is what keeps the result same-origin, so the validator above must run first and its rejection must fall through to the named home route.
     const home = buildRoute({ route: 'ContestantAppHome', locale: locals.currentLocale });
     return redirect(303, redirectTo ? `/${locals.currentLocale}/${redirectTo}` : home);

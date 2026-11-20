@@ -5,9 +5,9 @@ import { createLogProvider } from './log';
 import { createNoneProvider } from './none';
 import { createPostHogProvider } from './posthog';
 import type { AnalyticsConfig } from '../config';
-import type { AnalyticsProvider, ProviderDeps } from './provider.type';
+import type { AnalyticsProvider, AnalyticsProviderDeps } from './provider.type';
 
-export type { AnalyticsProvider, ProviderDeps } from './provider.type';
+export type { AnalyticsProvider, AnalyticsProviderDeps } from './provider.type';
 
 /**
  * Create the provider the configuration names. Anything not recognised, and `posthog` without its settings, gives the provider that keeps nothing.
@@ -16,7 +16,7 @@ export type { AnalyticsProvider, ProviderDeps } from './provider.type';
  * @param deps - The output stream, the `fetch` and the random id function the provider may use; the caller supplies the real ones.
  * @returns The provider.
  */
-export function createProvider(config: AnalyticsConfig, deps: ProviderDeps): AnalyticsProvider {
+export function createProvider(config: AnalyticsConfig, deps: AnalyticsProviderDeps): AnalyticsProvider {
   switch (config.provider) {
     case 'log':
       return createLogProvider({ write: deps.write });
