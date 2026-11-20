@@ -51,7 +51,9 @@ const revert = vi.fn();
 
 const appSettings = {
   admin: { email: 'support@example.org' },
-  contestantApp: { entityTypes: ['candidate', 'organization'] },
+  contestantApp: {
+    servedEntityTypes: { candidate: { registrationModes: [] }, organization: { registrationModes: [] } }
+  },
   results: { cardContents: { candidate: [{ question: 'q1' }], organization: [{ question: 'q1' }] } }
 };
 

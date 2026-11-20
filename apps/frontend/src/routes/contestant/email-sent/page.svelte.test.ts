@@ -51,7 +51,10 @@ const context = {
   t: fakeT,
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
   resendEntryLink,
-  appSettings: { admin: { email: 'support@example.test' }, contestantApp: { entityTypes: ['candidate'] } },
+  appSettings: {
+    admin: { email: 'support@example.test' },
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+  },
   get entryFlow() {
     return heldFlow;
   }

@@ -45,7 +45,10 @@ const context = {
   t: (key: string) => key,
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
   setPassword,
-  appSettings: { admin: { email: 'support@example.test' }, contestantApp: { entityTypes: ['candidate'] } }
+  appSettings: {
+    admin: { email: 'support@example.test' },
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+  }
 };
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));

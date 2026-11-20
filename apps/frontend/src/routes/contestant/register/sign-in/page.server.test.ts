@@ -64,7 +64,7 @@ const runLoad = load as unknown as (event: Pick<FakeEvent, 'fetch' | 'locals'>) 
 function settingsFor(modes: Array<string>, { answersLocked = false }: { answersLocked?: boolean } = {}) {
   return {
     access: { answersLocked },
-    contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: modes, organization: [] } }
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: modes } } }
   };
 }
 
