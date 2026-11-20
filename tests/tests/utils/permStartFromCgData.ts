@@ -1,7 +1,7 @@
 import path from 'path';
 import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
 import { TESTS_DIR } from './testsDir';
-import type { NominationShapeName } from './permContestantNominationsData';
+import type { Enums } from '@openvaa/supabase-types';
 import type { EntityGrantTarget } from './supabaseAdminClient';
 
 /**
@@ -65,7 +65,7 @@ export const MUNICIPALITIES_ELECTION_EXTERNAL_ID = `${START_FROM_CG_PREFIX}el-2`
 export const MUNICIPALITIES_ELECTION_NAME = '[EL2] CG-2 leaves';
 
 /** The nomination shape each election is seeded with, by the election's `external_id`: what a test that changes a shape puts back. */
-export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, NominationShapeName>> = Object.freeze({
+export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, Enums<'nomination_shape'>>> = Object.freeze({
   [REGIONS_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents',
   [MUNICIPALITIES_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents'
 });

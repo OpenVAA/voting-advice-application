@@ -105,6 +105,8 @@ export const test = base.extend<OrganizationEditingFixtures>({
 
 export { expect };
 
+export { setAnswersLocked } from '../../utils/permStateSteps';
+
 /**
  * The page fixtures a scan entry's `reach` speaks in, built over the page it is handed. They are the fixtures the `test` object offers under the same names.
  * @param page - The page of the scan, already opened under the session the entry's describe sets.
@@ -193,14 +195,6 @@ export async function setCandidateState(externalId: string, state: CandidateStat
   if (state.firstName !== undefined) row.first_name = state.firstName;
   if (state.lastName !== undefined) row.last_name = state.lastName;
   if (Object.keys(row).length) await admin.update('candidates', id, row);
-}
-
-/**
- * Lock or unlock the answers of every entity of the suite's project, as an administrator would: the one setting `access.answersLocked` is written and no other.
- * @param on - Whether answers are locked.
- */
-export async function setAnswersLocked(on: boolean): Promise<void> {
-  await new SupabaseAdminClient().updateAppSettings({ access: { answersLocked: on } });
 }
 
 /** The table that holds the rows of each entity type a state step writes. */

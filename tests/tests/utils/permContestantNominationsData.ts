@@ -1,6 +1,7 @@
 import path from 'path';
 import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
 import { TESTS_DIR } from './testsDir';
+import type { Enums } from '@openvaa/supabase-types';
 import type { EntityGrantTarget } from './supabaseAdminClient';
 
 /**
@@ -37,10 +38,6 @@ export interface NominationContestTarget {
   constituencyExternalId: string;
 }
 
-/** The nomination shape of an election, as the database names it. */
-export type NominationShapeName =
-  'candidate_only' | 'organization_list' | 'organization_list_and_independents' | 'organization_only';
-
 /** The election round of every nomination of the dataset. */
 export const NOMINATION_ELECTION_ROUND = 1;
 
@@ -76,7 +73,7 @@ export const CANDIDATE_ONLY_ELECTION_NAME = Object.freeze({
 });
 
 /** The nomination shape each election is seeded with, by the election's `external_id`. */
-export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, NominationShapeName>> = Object.freeze({
+export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, Enums<'nomination_shape'>>> = Object.freeze({
   [LIST_ELECTION_EXTERNAL_ID]: 'organization_list',
   [OPEN_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents',
   [CANDIDATE_ONLY_ELECTION_EXTERNAL_ID]: 'candidate_only'
