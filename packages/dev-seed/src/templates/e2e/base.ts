@@ -892,7 +892,7 @@ export const baseTemplate: Template = {
 
   // ------------------------------------------------------------------- candidates
 
-  // CA-AA-Hidden, CA-AA-Unregistered, CA-Sel-A and CA-Sel-B are seeded unconfirmed, which is what hides them from voters; every other candidate takes the import's confirmed default. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
+  // Every candidate that states confirmed: false is hidden from voters (the negative controls CA-AA-Hidden and CA-AA-Unregistered, and the rows reserved for the selection, invitation, registration, recovery, scan and admin-flow tests); every other candidate takes the import's confirmed default. Every candidate answers every info question by default; opinion answers vary to support the matching invariants.
   //
   // Perfect-match candidate: CA-AA-Special (also exercises 4-case matrix below).
   // Worst-match candidate: CA-BA-1 (CO-Reg-N) — all base opinions at polar min.

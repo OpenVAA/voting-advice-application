@@ -164,8 +164,8 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
           `The two data-teardown projects are not guaranteed to be ordered relative to each other, so ` +
           `their runTeardownAsserted before/after row counts can race nondeterministically. ` +
           `Give one of them its own dedicated prefix — and, if it reuses a shared dev-seed ` +
-          `template, its own dedicated template registration too, built from the shared shape by a ` +
-          `factory over the prefix (see packages/dev-seed/src/templates/e2e/perm/notLocated2e2cgShape.ts).`
+          `template, its own dedicated template registration too, whose nested external_id references ` +
+          `are written against that prefix.`
       );
     }
     if (a.prefix.startsWith(b.prefix) || b.prefix.startsWith(a.prefix)) {

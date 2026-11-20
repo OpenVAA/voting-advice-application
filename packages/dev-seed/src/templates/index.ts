@@ -68,7 +68,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // localisation-positive perm template. Distinct externalIdPrefix 'e2e-perm-l10n-pos-'. Uses the 3-locale staticSettings base (en/fi/sv) directly — no runtime override. Spec exercises the langSelector visible-and-switching surface + Finnish-translation authoring on q1/q3.
   'perm-localisation-positive': permLocalizationPositiveTemplate,
 
-  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some specs additionally consume the contestantSessionMinter helper to author per-perm Playwright storage-state JSON files.
+  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some of their setups sign a candidate in and save a Playwright storage-state file for the spec.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
   // renamed from the former perm-header-show-feedback key. Keeps header.showFeedback and extends with the survey/feedback-popup result-view surfaces.
