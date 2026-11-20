@@ -27,7 +27,6 @@ const { stubs } = vi.hoisted(() => ({
     },
     tracking: {
       startPageview: (_routeId: string | null, _params: Readonly<Record<string, string | undefined>> | null) => {},
-      startEvent: (_name: string) => {},
       track: (_name: string, _data?: unknown) => {},
       submitAllEvents: () => {},
       resetAllEvents: () => {},

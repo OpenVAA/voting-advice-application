@@ -50,7 +50,7 @@
 
   // opinionQuestions + selectedQuestionBlocks are reactive context getters; access via voterCtx.X (live $state).
   const voterCtx = getVoterContext();
-  const { answers, getRoute, startEvent, t } = voterCtx;
+  const { answers, getRoute, track, t } = voterCtx;
   // appSettings/dataRoot are reactive accessors — read via voterCtx.X, never destructure.
   const appSettings = $derived(voterCtx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `voterCtx.dataRoot.<prop>` directly in the tracking scope, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule" and the stable-reference alias anti-pattern.
@@ -127,7 +127,7 @@
       // Clear any possible selected categories, although there should under normal circumstances be none
       voterCtx.selectedQuestionCategoryIds = [];
       voterCtx.firstQuestionId = question.id;
-      startEvent('question_startFrom', { questionId: question.id });
+      track('question_startFrom', { questionId: question.id });
     }
   });
 
@@ -246,15 +246,15 @@
           <div class="flex items-center justify-center">
             <QuestionExtendedInfoButton
               {question}
-              onOpen={() => startEvent('questionExtendedInfo_open')}
-              onSectionCollapse={(title) => startEvent('questionExtendedInfo_collapseSection', { title })}
-              onSectionExpand={(title) => startEvent('questionExtendedInfo_expandSection', { title })} />
+              onOpen={() => track('questionExtendedInfo_open')}
+              onSectionCollapse={(title) => track('questionExtendedInfo_collapseSection', { title })}
+              onSectionExpand={(title) => track('questionExtendedInfo_expandSection', { title })} />
           </div>
         {:else if info}
           <QuestionBasicInfo
             {info}
-            onCollapse={() => startEvent('questionInfo_collapse')}
-            onExpand={() => startEvent('questionInfo_expand')}
+            onCollapse={() => track('questionInfo_collapse')}
+            onExpand={() => track('questionInfo_expand')}
             data-testid="voter-questions-info-button" />
         {/if}
       {/if}
@@ -284,16 +284,16 @@
           separateSkip={true}
           data-testid="voter-questions-actions"
           onPrevious={() => {
-            startEvent('question_previous', { questionIndex: questionBlock?.index });
+            track('question_previous', { questionIndex: questionBlock?.index });
             handleJump(-1);
           }}
           onDelete={handleDelete}
           onNext={() => {
-            startEvent('question_next', { questionIndex: questionBlock?.index });
+            track('question_next', { questionIndex: questionBlock?.index });
             handleJump(+1);
           }}
           onSkip={() => {
-            startEvent('question_skip', { questionIndex: questionBlock?.index });
+            track('question_skip', { questionIndex: questionBlock?.index });
             handleJump(+1);
           }} />
       {/snippet}

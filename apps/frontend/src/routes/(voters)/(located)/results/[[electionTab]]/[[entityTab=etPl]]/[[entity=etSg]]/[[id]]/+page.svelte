@@ -47,11 +47,11 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
   ////////////////////////////////////////////////////////////////////
 
   // The reactive context getters (constituenciesSelectable, currentResultsEntityType, matches, selectedConstituencies, selectedElections) are read via voterCtx.X.
-  // Genuinely stable members (startEvent, t) remain destructured.
+  // Genuinely stable members (track, t) remain destructured.
   //
   // dataRoot is NOT in that set. It is a bare reactive accessor that is identity-stable behind a #version bridge, so per CLAUDE.md's Context Destructuring Rule it may be neither destructured nor bound to an intermediate $derived read alias: referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty. Read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope — the drawer derivation below does exactly that, and must keep doing it. See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
   const voterCtx = getVoterContext();
-  const { startEvent, t } = voterCtx;
+  const { track, t } = voterCtx;
   // Local aliases for template readability. Both are value-replacing, so a $derived read alias is safe and correct.
   const elections = $derived(voterCtx.selectedElections);
   const constituencies = $derived(voterCtx.selectedConstituencies);
@@ -130,9 +130,9 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
     const entityType = page.params.entity as EntityType;
     const entityId = page.params.id!;
     if (isMatch(drawerEntity)) {
-      startEvent('results_ranked_entity', { entityType, entityId, score: drawerEntity.score });
+      track('results_ranked_entity', { entityType, entityId, score: drawerEntity.score });
     } else {
-      startEvent('results_browse_entity', { entityType, entityId });
+      track('results_browse_entity', { entityType, entityId });
     }
   });
 

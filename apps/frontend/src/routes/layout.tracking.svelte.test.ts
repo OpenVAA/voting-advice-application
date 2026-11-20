@@ -163,7 +163,6 @@ beforeEach(() => {
     openFeedbackModal: { set: () => undefined },
     popupQueue: { current: undefined, shift: () => undefined },
     startPageview: service.startPageview,
-    startEvent: service.startEvent,
     track: service.track,
     submitAllEvents: service.submitAllEvents,
     resetAllEvents: service.resetAllEvents,

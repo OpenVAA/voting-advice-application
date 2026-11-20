@@ -1,4 +1,4 @@
-import type { TrackingEvent, TrackingEventData, TrackingEventName } from './trackingEvent.type';
+import type { TrackingEventData, TrackingEventName } from './trackingEvent.type';
 
 /**
  * A service provider for tracking functions.
@@ -17,14 +17,7 @@ export type TrackingService = {
    */
   startPageview: (routeId: string | null, params: Readonly<Record<string, string | undefined>> | null) => void;
   /**
-   * Buffer an analytics event, to be sent with the next flush.
-   * @param name - Event name, one of the vocabulary
-   * @param data - The event's attributes. Required when the event has a required attribute, optional when it has none.
-   * @returns The buffered event object.
-   */
-  startEvent: <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>) => TrackingEvent;
-  /**
-   * Buffer an analytics event, to be sent with the next flush, like `startEvent`. Nothing is sent by this call.
+   * Buffer an analytics event, to be sent with the next flush. Nothing is sent by this call.
    * @param name - Event name, one of the vocabulary
    * @param data - The event's attributes. Required when the event has a required attribute, optional when it has none.
    */

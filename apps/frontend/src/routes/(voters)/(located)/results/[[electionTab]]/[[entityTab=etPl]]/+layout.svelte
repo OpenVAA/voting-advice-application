@@ -31,11 +31,11 @@ When the active entity type cannot be resolved — no nominations for the active
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  // The reactive context getters (currentResultsEntityType, matches, selectedElections) are read via voterCtx.X. Genuinely stable members (startEvent, t) remain destructured.
+  // The reactive context getters (currentResultsEntityType, matches, selectedElections) are read via voterCtx.X. Genuinely stable members (track, t) remain destructured.
   //
   // dataRoot is NOT in that set, and neither is appSettings. Both are bare reactive accessors, so per CLAUDE.md's Context Destructuring Rule neither may be destructured: appSettings is value-replacing, so a destructured local stops updating, and dataRoot is identity-stable behind a #version bridge, so the destructure takes the version dependency once at init and never again. dataRoot must be read as `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias — referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty. This level reads neither, but the rule is restated here because the rule travels with the file, not with the one file that happens to break it. See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
   const voterCtx = getVoterContext();
-  const { startEvent, t } = voterCtx;
+  const { track, t } = voterCtx;
   // Local alias for template readability. `selectedElections` is value-replacing, so a $derived read alias is safe and correct.
   const elections = $derived(voterCtx.selectedElections);
 
@@ -78,7 +78,7 @@ When the active entity type cannot be resolved — no nominations for the active
     const plural = pluralForEntityType(tab.id);
     if (!plural) return;
     goto(buildListRoute(activeElectionId, plural, page), { noScroll: true });
-    startEvent('results_changeTab', { section: tab.id });
+    track('results_changeTab', { section: tab.id });
   }
 </script>
 

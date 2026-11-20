@@ -137,7 +137,7 @@ async function readStoredText(context: BrowserContext, page: Page): Promise<stri
 /**
  * Grant data-collection consent via the in-app DataConsent control (NOT seeded).
  *
- * When consent is `indetermined` the voter layout auto-opens the DataConsentPopup (a non-modal `Alert` dialog) which carries its OWN DataConsent — the canonical consent surface a voter sees. We drive the dialog's granted button (scoped to `getByRole('dialog')` to avoid the strict-mode clash with an inline copy). Clicking it runs `setDataConsent('granted')` → `startEvent('dataConsent_granted')` and closes the dialog (`onChange` → `closeAlert()`).
+ * When consent is `indetermined` the voter layout auto-opens the DataConsentPopup (a non-modal `Alert` dialog) which carries its OWN DataConsent — the canonical consent surface a voter sees. We drive the dialog's granted button (scoped to `getByRole('dialog')` to avoid the strict-mode clash with an inline copy). Clicking it runs `setDataConsent('granted')` → `track('dataConsent_granted')` and closes the dialog (`onChange` → `closeAlert()`).
  */
 async function grantConsentViaPopup(page: Page): Promise<void> {
   const dialog = page.getByRole('dialog');

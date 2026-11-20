@@ -9,7 +9,7 @@ import type { ReactiveHandle } from '../../utils/reactiveHandle.type';
 import type { UserPreferences } from '../userPreferences.type';
 import type { BufferedEvent } from './batchBuilder';
 import type { GateInput } from './gates';
-import type { TrackingEvent, TrackingEventName } from './trackingEvent.type';
+import type { TrackingEventName } from './trackingEvent.type';
 import type { TrackingDataArgument, TrackingService } from './trackingService.type';
 
 /**
@@ -18,7 +18,7 @@ import type { TrackingDataArgument, TrackingService } from './trackingService.ty
  *
  * What it does:
  *   - The view tracker (`viewTracker.ts`) holds the current view and hands out its pageview once.
- *   - The event buffer holds the events started with `startEvent` and `track` until the next flush.
+ *   - The event buffer holds the events buffered with `track` until the next flush.
  *   - `submitAllEvents` is the flush: it applies the gates (`gates.ts`), builds one body with `buildBatch` (`batchBuilder.ts`) and hands it to `sendBatch` (`relayTransport.ts`), one keepalive request to the same-origin relay. Events the gates do not allow are discarded, never kept for a later flush.
  *   - The visit id comes from `getVisitId()` (`visitId.ts`), a module variable. Nothing is written to or read from a browser store.
  *
@@ -28,7 +28,7 @@ import type { TrackingDataArgument, TrackingService } from './trackingService.ty
  *
  * SPREAD-SAFETY (this is the most spread-sensitive producer in the app layer): the members `appContext` forwards from this producer are carried on through the three downstream `{ ...appContext }` spreads. Svelte 5 compiles bare `$state`/`$derived` CLASS fields to PRIVATE backing fields + PROTOTYPE accessors, which are NOT own-enumerable and are DROPPED by `{ ...instance }` spread. To stay byte-identical at the consumer across that spread, every spread-consumed member MUST be an OWN-ENUMERABLE instance field:
  *   - `gate` / `surveySessionId` are OBJECT-LITERAL `{ current }` handle objects assigned to instance fields (the handle VALUE is copied by spread). Their getters close over `this` via a `const self = this` capture in the constructor so they read the private `$derived` backing.
- *   - `startPageview`/`startEvent`/`track`/`submitAllEvents`/`resetAllEvents`/`setPageVisible` are ARROW-FUNCTION FIELDS so they survive detach after the spread + consumer destructure.
+ *   - `startPageview`/`track`/`submitAllEvents`/`resetAllEvents`/`setPageVisible` are ARROW-FUNCTION FIELDS so they survive detach after the spread + consumer destructure.
  *
  * `#views` / `#events` are PRIVATE NON-REACTIVE bookkeeping fields (never read in a tracking scope) — NOT `$state`. They are separate, so clearing the events never loses the current view's pageview.
  *
@@ -120,17 +120,8 @@ export class TrackingServiceImpl implements TrackingService {
     this.#views.start({ routeId, locale: this.#locale(), params }, visible);
   };
 
-  startEvent = <TName extends TrackingEventName>(
-    name: TName,
-    ...[data]: TrackingDataArgument<TName>
-  ): TrackingEvent => {
-    const event: TrackingEvent = { name, data: data ?? {} };
-    this.#events.push({ name, attributes: event.data, at: this.#now() });
-    return event;
-  };
-
-  track = <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>): void => {
-    this.startEvent(name, ...data);
+  track = <TName extends TrackingEventName>(name: TName, ...[data]: TrackingDataArgument<TName>): void => {
+    this.#events.push({ name, attributes: data ?? {}, at: this.#now() });
   };
 
   setPageVisible = (visible: boolean) => {

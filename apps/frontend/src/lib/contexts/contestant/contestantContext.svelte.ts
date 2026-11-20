@@ -303,7 +303,6 @@ export class ContestantContextProvider implements ContestantContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly startPageview!: AppContext['startPageview'];
-  readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
   readonly submitAllEvents!: AppContext['submitAllEvents'];
   readonly resetAllEvents!: AppContext['resetAllEvents'];

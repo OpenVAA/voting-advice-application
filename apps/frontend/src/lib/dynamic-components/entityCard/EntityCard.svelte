@@ -83,7 +83,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   ////////////////////////////////////////////////////////////////////
 
   const ctx = getAppContext();
-  const { appType, getRoute, startEvent, t } = ctx;
+  const { appType, getRoute, track, t } = ctx;
   // appSettings/dataRoot are reactive accessors — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule".
@@ -200,7 +200,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   function handleSubcardsToggle(): void {
     showAllSubcards = !showAllSubcards;
-    if (showAllSubcards) startEvent('entityCard_expandSubcards', { length: parsed.subcards?.length ?? 0 });
+    if (showAllSubcards) track('entityCard_expandSubcards', { length: parsed.subcards?.length ?? 0 });
   }
 
   ////////////////////////////////////////////////////////////////////

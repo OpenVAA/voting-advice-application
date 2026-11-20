@@ -102,7 +102,7 @@ export class VoterContextProvider implements VoterContext {
   // Sub-state producers. Their arguments are thunks, evaluated on first read, so they may reference fields declared later.
   ////////////////////////////////////////////////////////////
 
-  #answers = answerState({ startEvent: this.#appContext.startEvent });
+  #answers = answerState({ track: this.#appContext.track });
 
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   #nominationsAndQuestions = nominationAndQuestionState({
@@ -243,7 +243,6 @@ export class VoterContextProvider implements VoterContext {
   readonly dataRoot!: AppContext['dataRoot'];
   readonly setDataRoot!: AppContext['setDataRoot'];
   readonly startPageview!: AppContext['startPageview'];
-  readonly startEvent!: AppContext['startEvent'];
   readonly track!: AppContext['track'];
   readonly submitAllEvents!: AppContext['submitAllEvents'];
   readonly resetAllEvents!: AppContext['resetAllEvents'];

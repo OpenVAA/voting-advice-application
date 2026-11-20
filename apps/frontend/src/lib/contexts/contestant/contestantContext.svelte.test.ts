@@ -113,7 +113,6 @@ const { tracking } = vi.hoisted(() => {
   const box = {
     gateInput: undefined as unknown,
     startPageview: () => undefined,
-    startEvent: () => ({}),
     track: () => undefined,
     submitAllEvents: () => undefined,
     resetAllEvents: () => undefined,
@@ -147,7 +146,6 @@ vi.mock('../app', () => ({
       }
     },
     startPageview: tracking.startPageview,
-    startEvent: tracking.startEvent,
     track: tracking.track,
     submitAllEvents: tracking.submitAllEvents,
     resetAllEvents: tracking.resetAllEvents,

@@ -53,14 +53,13 @@ const { stubs, dataRootHolder, initialDataRoot, trackingLog } = vi.hoisted(() =>
       },
       // tracking producer: own-enumerable handle objects + arrow-field methods, the producer's whole surface.
       //
-      // The stand-in records what appContext does with it: `startEvent` / `resetAllEvents` / `submitAllEvents` keep a stand-in buffer and a call log, and `gate` reads the projection handle appContext passes in, so a case can check the order of the consent writes and the projection fallback. `surveySessionId` is on the stand-in because the producer has it; appContext must withhold it, which the forward case below asserts.
+      // The stand-in records what appContext does with it: `track` / `resetAllEvents` / `submitAllEvents` keep a stand-in buffer and a call log, and `gate` reads the projection handle appContext passes in, so a case can check the order of the consent writes and the projection fallback. `surveySessionId` is on the stand-in because the producer has it; appContext must withhold it, which the forward case below asserts.
       tracking: {
         startPageview: (_routeId: string | null, _params: Readonly<Record<string, string | undefined>> | null) => {},
-        startEvent: (name: string) => {
-          trackingLog.calls.push(`startEvent:${name}`);
+        track: (name: string, _data?: unknown) => {
+          trackingLog.calls.push(`track:${name}`);
           trackingLog.buffer.push(name);
         },
-        track: (_name: string, _data?: unknown) => {},
         submitAllEvents: () => {
           trackingLog.flushed.push([...trackingLog.buffer]);
           trackingLog.buffer.length = 0;
@@ -196,9 +195,8 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     // forwarded dataCtx members
     'dataRoot',
     'setDataRoot',
-    // forwarded tracking members — the six consumer-facing functions and the producer's `gate` under the name `analyticsGate`. The producer's `surveySessionId` is withheld, and its `gate` is not forwarded under its own name; the tracking-forward case below asserts both.
+    // forwarded tracking members — the five consumer-facing functions and the producer's `gate` under the name `analyticsGate`. The producer's `surveySessionId` is withheld, and its `gate` is not forwarded under its own name; the tracking-forward case below asserts both.
     'startPageview',
-    'startEvent',
     'track',
     'submitAllEvents',
     'resetAllEvents',
@@ -284,17 +282,17 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
 
     it("setDataConsent('granted') writes the choice, clears the buffer, then starts dataConsent_granted", () => {
       const instance = setup();
-      instance.startEvent('menu_open');
+      instance.track('menu_open');
       trackingLog.calls.length = 0;
       instance.setDataConsent('granted');
       instance.submitAllEvents();
-      expect(trackingLog.calls).toEqual(['userPreferences.update', 'resetAllEvents', 'startEvent:dataConsent_granted']);
+      expect(trackingLog.calls).toEqual(['userPreferences.update', 'resetAllEvents', 'track:dataConsent_granted']);
       expect(trackingLog.flushed).toEqual([['dataConsent_granted']]);
     });
 
     it("setDataConsent('denied') writes the choice and clears the buffer", () => {
       const instance = setup();
-      instance.startEvent('menu_open');
+      instance.track('menu_open');
       trackingLog.calls.length = 0;
       instance.setDataConsent('denied');
       instance.submitAllEvents();

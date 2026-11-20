@@ -76,7 +76,7 @@ const context = {
   appType: { current: 'contestant' },
   t: (key: string) => key,
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  startEvent: () => undefined,
+  track: () => undefined,
   logout: async () => undefined,
   acceptTermsOfUse: async () => ({ type: 'success' }),
   setDataRoot: (updater: (dr: DataRoot) => void) =>
