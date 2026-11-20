@@ -578,12 +578,21 @@ jobs:
       - name: "Run E2E tests"
         run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch
 
+      # The consent-free spec needs the dev server in consent-free mode, and one run serves one mode,
+      # so no full-suite run collects it: the wrapper runs it alone, with the dev server started from
+      # the same environment. It runs after a failed suite too, so each verdict is reported.
+      - name: "Run the consent-free analytics E2E tests"
+        if: ${{ !cancelled() }}
+        run: PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci-consent-free --no-db-reset --no-watch --project analytics-consent-free
+
       - name: "Upload the E2E run directory"
         uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-run
-          path: tests/e2e-runs/ci/
+          path: |
+            tests/e2e-runs/ci/
+            tests/e2e-runs/ci-consent-free/
           retention-days: 30
 
       - name: "Stop Supabase"

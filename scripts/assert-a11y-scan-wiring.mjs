@@ -10,7 +10,7 @@
  * wiring. Phase 147's own ordering instrument
  * (`tests/e2e-runs/147/phases.mjs`) is gitignored, so it proves nothing about
  * future commits. Removing either the `contestant-a11y-scan` project or its
- * dependency edge into `data-setup-perm-1e1cg1co` drops 24 scans from the
+ * place in `PERM_CHAIN_ANCHOR` (the first perm setup's dependencies) drops 24 scans from the
  * suite; the suite then reports FEWER tests and STILL 0 failures — a green
  * that means nothing (CLAUDE.md's "did not run" == failure rule, restated as
  * a static config guard rather than a runtime one, because the tests simply
@@ -29,7 +29,7 @@
  *     to login, and the scan reports a confident, silently-wrong zero
  *     (playwright.config.ts's own docblock at this site, restated as a check).
  *   Check 3 (CSCAN-02b) — `contestant-a11y-scan` is named in
- *     `data-setup-perm-1e1cg1co`'s `dependencies` array, so the candidate scan
+ *     `PERM_CHAIN_ANCHOR`, which the first perm setup depends on, so the candidate scan
  *     runs BEFORE the perm family's `app_settings` singleton REPLACE.
  *   Check 4 (CSCAN-02 criterion 6 / CSCAN-03) — strictness parity + ordering.
  *     4a covers every file that declares an axe scan or helps declare one:
@@ -246,13 +246,15 @@ function main() {
     );
   }
 
-  // --- Check 3: contestant-a11y-scan named in data-setup-perm-1e1cg1co dependencies ---
-  const permSetupMatch = configSrc.match(/name:\s*'data-setup-perm-1e1cg1co'[\s\S]{0,900}?\}/);
-  if (!permSetupMatch) {
-    violate("tests/playwright.config.ts no longer declares a 'data-setup-perm-1e1cg1co' project.");
-  } else if (!permSetupMatch[0].includes("'contestant-a11y-scan'")) {
+  // --- Check 3: contestant-a11y-scan named in PERM_CHAIN_ANCHOR, the first perm setup's dependencies ---
+  const anchorMatch = configSrc.match(/const PERM_CHAIN_ANCHOR = \[[\s\S]*?\];/);
+  if (!anchorMatch) {
     violate(
-      "'data-setup-perm-1e1cg1co' no longer names 'contestant-a11y-scan' in its dependencies array. " +
+      'tests/playwright.config.ts no longer declares PERM_CHAIN_ANCHOR, the projects the first perm setup waits for.'
+    );
+  } else if (!anchorMatch[0].includes("'contestant-a11y-scan'")) {
+    violate(
+      "PERM_CHAIN_ANCHOR no longer names 'contestant-a11y-scan', so the first perm setup does not wait for it. " +
         'Without the explicit edge, the candidate scan is only INCIDENTALLY ordered before the perm ' +
         "family's app_settings REPLACE (via 'contestant-journey' sharing its phase) — a later edit that " +
         'reorders phases could silently run the scan against a mutated singleton (CSCAN-02).'
