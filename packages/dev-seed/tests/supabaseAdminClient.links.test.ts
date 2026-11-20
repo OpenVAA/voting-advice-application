@@ -1,7 +1,7 @@
 /**
- * The constituency links of a seed: `SupabaseAdminClient.bulkImport` sends them, `linkJoinTables` does not write them.
+ * The constituency links of a seed: `SupabaseAdminClient.bulkImport` sends them, `linkQuestionScopes` does not write them.
  *
- * `bulk_import` writes `election_constituency_groups` and `constituency_group_constituencies` itself, from the link keys `constituency_groups` of an election item and `constituencies` of a constituency-group item, before it writes any nomination. These cases hold the client to that: every key spelling `LINK_SENTINELS` accepts on those two collections reaches the RPC as the link key, holding references by external id; a row that names no link sends no link key; and `linkJoinTables` writes only the links `bulk_import` does not, the question categories' and questions' election and constituency references.
+ * `bulk_import` writes `election_constituency_groups` and `constituency_group_constituencies` itself, from the link keys `constituency_groups` of an election item and `constituencies` of a constituency-group item, before it writes any nomination. These cases hold the client to that: every key spelling `LINK_SENTINELS` accepts on those two collections reaches the RPC as the link key, holding references by external id; a row that names no link sends no link key; and `linkQuestionScopes` writes only the links `bulk_import` does not, the question categories' and questions' election and constituency references.
  *
  * Pure I/O contract: `@supabase/supabase-js` is mocked and no database is contacted.
  */
@@ -115,7 +115,7 @@ describe('SupabaseAdminClient.bulkImport sends the constituency links to bulk_im
   });
 });
 
-describe('SupabaseAdminClient.linkJoinTables writes only the links bulk_import does not', () => {
+describe('SupabaseAdminClient.linkQuestionScopes writes only the links bulk_import does not', () => {
   beforeEach(() => {
     mockState.rpcCalls = [];
     mockState.fromTables = [];
@@ -125,7 +125,7 @@ describe('SupabaseAdminClient.linkJoinTables writes only the links bulk_import d
   it('writes neither constituency join table, and still writes a question category election reference', async () => {
     const client = new SupabaseAdminClient('http://localhost', 'key', PROJECT_ID);
 
-    await client.linkJoinTables({
+    await client.linkQuestionScopes({
       elections: [{ external_id: 'el-1', _constituencyGroups: { externalId: ['cg-1'] } }],
       constituency_groups: [{ external_id: 'cg-1', _constituencies: { externalId: ['co-1'] } }],
       question_categories: [{ external_id: 'qc-1', _elections: { externalId: ['el-1'] } }]

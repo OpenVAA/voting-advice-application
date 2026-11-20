@@ -37,9 +37,9 @@
  * ## Question scoping
  *
  * - QG-Opin-EL-Reg carries `_elections: { external_id: ['test-e2e-base-el-reg'] }`
- *   so linkJoinTables (supabaseAdminClient.ts) resolves to `election_ids: [uuid(test-e2e-base-el-reg)]` on the question_categories row.
+ *   so linkQuestionScopes (supabaseAdminClient.ts) resolves to `election_ids: [uuid(test-e2e-base-el-reg)]` on the question_categories row.
  * - QG-Opin-CO-Mun-SE-SW carries `_constituencies: { external_id: [...] }`
- *   resolved by linkJoinTables to `constituency_ids: [uuid(...)]` JSONB on the question_categories row.
+ *   resolved by linkQuestionScopes to `constituency_ids: [uuid(...)]` JSONB on the question_categories row.
  * - Per-question constituency scoping (QU-Open-Filt-Mun-NE under QG-Opin-Filt-A
  *   and QU-Open-Filt-Mun-SE under QG-Opin-Filt-B) carries the same `_constituencies: { external_id: [...] }` sentinel on the question row; resolved to `questions.constituency_ids` JSONB.
  *
@@ -529,7 +529,7 @@ export const baseTemplate: Template = {
   // -------------------------------------------------------------- question_categories
 
   // 8 categories total: 1 info + 7 opinion (Base + Opt-A + Opt-B + EL-Reg scoped + CO-Mun-SE-SW scoped + Filt-A + Filt-B).
-  // Scoping refs (resolved by linkJoinTables from `_<sentinel>` shape):
+  // Scoping refs (resolved by linkQuestionScopes from `_<sentinel>` shape):
   //   - QG-Opin-EL-Reg → `_elections` sentinel → election_ids JSONB column.
   //   - QG-Opin-CO-Mun-SE-SW → `_constituencies` sentinel → constituency_ids
   //     JSONB column. Per-question (test-e2e-base-qu-open-filt-mun-ne / -se) entries in `questions` use the same `_constituencies` sentinel.

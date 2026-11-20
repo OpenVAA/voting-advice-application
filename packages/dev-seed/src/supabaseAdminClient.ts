@@ -21,7 +21,7 @@ import {
 } from './template/permittedKeys';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { LocalityGuardOptions } from './localSupabaseUrl';
-import type { LinkPlanEntry, LinkTarget } from './template/linkSentinels';
+import type { JsonbRefTable, LinkPlanEntry } from './template/linkSentinels';
 
 /**
  * Stable UUID for the default test project, from seed.sql.
@@ -270,17 +270,13 @@ function readAnswersByExternalId(row: Record<string, unknown>): Record<string, u
 }
 
 /**
- * The three `external_id`-lookup failure messages, verbatim.
+ * The two `external_id`-lookup failure messages, verbatim.
  *
- * These are the operator-facing contract: triage greps for `linkJoinTables: failed to find <noun>`. Held as three separate literals — rather than one interpolated `${noun}` — precisely so each stays greppable in the source now that one helper covers all four lookups. Changing a word here changes nothing functionally and breaks triage.
+ * These are the operator-facing contract: triage greps for `linkQuestionScopes: failed to find <noun>`. Held as separate literals — rather than one interpolated `${noun}` — so each stays greppable in the source. Changing a word here changes nothing functionally and breaks triage.
  */
-const LINK_LOOKUP_ERRORS: Record<
-  'elections' | 'constituency_groups' | 'constituencies',
-  (id: string, m: string) => string
-> = {
-  elections: (id, m) => `linkJoinTables: failed to find election ${id}: ${m}`,
-  constituency_groups: (id, m) => `linkJoinTables: failed to find constituency_group ${id}: ${m}`,
-  constituencies: (id, m) => `linkJoinTables: failed to find constituency ${id}: ${m}`
+const LINK_LOOKUP_ERRORS: Record<JsonbRefTable, (id: string, m: string) => string> = {
+  elections: (id, m) => `linkQuestionScopes: failed to find election ${id}: ${m}`,
+  constituencies: (id, m) => `linkQuestionScopes: failed to find constituency ${id}: ${m}`
 };
 
 /**
@@ -310,7 +306,7 @@ export function createServiceRoleClient(
 /**
  * Admin-client base for the dev-seed package.
  *
- * Narrow bulk-write surface: bulkImport, bulkDelete, createInvitations, importAnswers, linkJoinTables, updateAppSettings. Auth / email / legacy E2E query helpers live in the tests/ subclass.
+ * Narrow bulk-write surface: bulkImport, bulkDelete, createInvitations, importAnswers, linkQuestionScopes, updateAppSettings. Auth / email / legacy E2E query helpers live in the tests/ subclass.
  *
  * `client` and `projectId` are `protected` (not `private`) so the tests/subclass can reuse the Supabase REST client for its auth helpers without re-creating a second client.
  */
@@ -578,40 +574,23 @@ export class SupabaseAdminClient {
   }
 
   // ---------------------------------------------------------------------------
-  // M:N join table linking
+  // Question scoping
   // ---------------------------------------------------------------------------
 
   /**
-   * Populate the JSONB scoping columns of question categories and questions after bulk_import.
+   * Populate the JSONB scoping columns (`election_ids`, `constituency_ids`) of question categories and questions after bulk_import.
    *
-   * The two constituency join tables are not written here: `bulk_import` writes them from the link keys `bulkImport` sends, before any nomination, and the `join` entries of the plan are passed over.
+   * The two constituency join tables are not written here: `bulk_import` writes them from the link keys `bulkImport` sends, before any nomination.
    *
-   * ⚠ **The resolution set is NOT declared here.** It is `LINK_SENTINELS` in `./template/linkSentinels`, and this method ITERATES it via that module's pure `planLinks`. The alternative is four hard-coded blocks kept beside the const; a pair could be permitted without being handled. Now the loop that permits a `(collection, key)` pair is the loop that resolves it, so adding a pair to the const cannot leave it unresolved — and the const cannot grow silently, because `tests/template/linkSentinels.test.ts` holds it to a hand-enumerated expectation.
-   *
-   * To add a link kind, edit `LINK_SENTINELS` — not this method. A new `LinkTarget.kind` is a COMPILE error here (the `never` arm below), never a silent runtime miss.
-   *
-   * ⚠ **That guarantee covers the collection as well as the target kind, and only because the switch below is on `entry.kind` — a top-level discriminant — so the collection and the target narrow together.**
-   * Laundering `entry.collection` through `as` casts instead lets a rule such as `{ collections: ['organizations'], target: { kind: 'join', … } }` compile clean and then die as `TypeError: LINK_LOOKUP_ERRORS[table] is not a function`, MASKING the real lookup failure. The pairing itself is checked at the declaration: `LinkSentinelRule` is a union over the two target kinds.
+   * ⚠ **The resolution set is NOT declared here.** It is the `jsonb` rules of `LINK_SENTINELS` in `./template/linkSentinels`, and this method ITERATES them via that module's pure `planLinks`, so adding a `jsonb` pair to the const cannot leave it unresolved — and the const cannot grow silently, because `tests/template/linkSentinels.test.ts` holds it to a hand-enumerated expectation. To add a scoping link, edit `LINK_SENTINELS` — not this method.
    *
    * This method owns only the I/O: `external_id` → UUID lookups and the JSONB column update.
    *
    * @param data - The same dataset passed to bulkImport
    */
-  async linkJoinTables(data: Record<string, Array<unknown>>): Promise<void> {
+  async linkQuestionScopes(data: Record<string, Array<unknown>>): Promise<void> {
     for (const entry of planLinks(data as Record<string, Array<Record<string, unknown>>>)) {
-      switch (entry.kind) {
-        case 'join':
-          // Written by bulk_import from the item's link key.
-          break;
-        case 'jsonb':
-          await this.updateJsonbRefs(entry, entry.target);
-          break;
-        default: {
-          // Exhaustiveness arm: a new `LinkTarget.kind` fails to compile here rather than being silently skipped at seed time. It covers the whole ENTRY, not just its target, so the collection is exhausted with it.
-          const exhaustive: never = entry;
-          throw new Error(`linkJoinTables: unhandled link target ${JSON.stringify(exhaustive)}`);
-        }
-      }
+      await this.updateJsonbRefs(entry);
     }
   }
 
@@ -623,10 +602,7 @@ export class SupabaseAdminClient {
    * @returns The row's UUID.
    * @throws Error if the lookup fails, with the greppable message verbatim.
    */
-  private async resolveExternalId(
-    table: 'elections' | 'constituency_groups' | 'constituencies',
-    externalId: string
-  ): Promise<string> {
+  private async resolveExternalId(table: JsonbRefTable, externalId: string): Promise<string> {
     const { data: row, error } = await this.client
       .from(table)
       .select('id')
@@ -638,22 +614,19 @@ export class SupabaseAdminClient {
   }
 
   /**
-   * The `jsonb` arm: overwrite a scoping column on the declaring row.
+   * Overwrite a scoping column on the declaring row.
    *
-   * `planLinks` never emits a jsonb entry with an empty id list, so this cannot clear a column that meant "all".
+   * `planLinks` never emits an entry with an empty id list, so this cannot clear a column that meant "all".
    *
    * @param entry - The planned link.
-   * @param target - `entry.target`, narrowed to the jsonb variant.
    */
-  private async updateJsonbRefs(
-    entry: Extract<LinkPlanEntry, { kind: 'jsonb' }>,
-    target: Extract<LinkTarget, { kind: 'jsonb' }>
-  ): Promise<void> {
+  private async updateJsonbRefs(entry: LinkPlanEntry): Promise<void> {
+    const { target } = entry;
     const ids: Array<string> = [];
     for (const refExternalId of entry.refExternalIds) {
       ids.push(await this.resolveExternalId(entry.refTable, refExternalId));
     }
-    // No cast: the entry is narrowed to the `jsonb` arm, whose collection type is `JsonbParentCollection` — the two tables that carry a scoping column.
+    // No cast: the entry's collection type is `JsonbParentCollection` — the two tables that carry a scoping column.
     const { error: updateError } = await this.client
       .from(entry.collection)
       .update({ [target.column]: ids })
@@ -661,7 +634,7 @@ export class SupabaseAdminClient {
       .eq('project_id', this.projectId);
     if (updateError) {
       throw new Error(
-        `linkJoinTables: failed to update ${entry.collection} ${entry.parentExternalId} ${target.column}: ${updateError.message}`
+        `linkQuestionScopes: failed to update ${entry.collection} ${entry.parentExternalId} ${target.column}: ${updateError.message}`
       );
     }
   }

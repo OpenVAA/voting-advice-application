@@ -1,7 +1,7 @@
 /**
  * Supabase Admin Client for E2E test data management.
  *
- * Subclasses the bulk-write base from `@openvaa/dev-seed`. The base owns the bulk-write surface (bulkImport, bulkDelete, importAnswers, linkJoinTables, updateAppSettings). This subclass adds the auth/email + legacy E2E query helpers that tests/ needs but dev-seed does not — keeping the dev-seed surface narrow.
+ * Subclasses the bulk-write base from `@openvaa/dev-seed`. The base owns the bulk-write surface (bulkImport, bulkDelete, importAnswers, linkQuestionScopes, updateAppSettings). This subclass adds the auth/email + legacy E2E query helpers that tests/ needs but dev-seed does not — keeping the dev-seed surface narrow.
  *
  * `updateAppSettings` (inherited) usage policy:
  *   Baseline test-setup usage of `updateAppSettings` has migrated to the `@openvaa/dev-seed` e2e template's `app_settings.fixed[]` block.
@@ -18,7 +18,7 @@
  *   - `public bulkImport(data)`
  *   - `public bulkDelete(collections)`
  *   - `public importAnswers(data)`
- *   - `public linkJoinTables(data)` — the JSONB scoping columns of question categories and questions; the constituency join tables are written by `bulkImport`
+ *   - `public linkQuestionScopes(data)` — the JSONB scoping columns of question categories and questions; the constituency join tables are written by `bulkImport`
  *   - `public ensureProject(projectId?)` — idempotent project + `app_settings` bootstrap
  *   - `public updateAppSettings(partialSettings)` — see usage-policy note above
  *
@@ -41,7 +41,7 @@
  * await client.bulkImport({ elections: [{ external_id: 'el-1', constituency_groups: [{ external_id: 'cg-1' }] }], constituency_groups: [...] });
  * await client.importAnswers({ candidates: [{ answersByExternalId: {...} }] });
  * // writes only the JSONB scoping columns of question categories and questions
- * await client.linkJoinTables({ questions: [{ external_id: 'qu-1', _elections: { externalId: ['el-1'] } }] });
+ * await client.linkQuestionScopes({ questions: [{ external_id: 'qu-1', _elections: { externalId: ['el-1'] } }] });
  * await client.bulkDelete({ elections: { prefix: 'test-' } });
  * await client.forceRegister('cand-1', 'cand-1@example.com', 'pw');    // subclass
  * ```
