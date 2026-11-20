@@ -11,7 +11,7 @@
  *   - `qu-info-req` is a required, editable info question; `qu-opin-1` and `qu-opin-2` are opinion questions on a five-step scale with no open comment. No question and no category states an entity type, so each is asked of candidates and of organizations.
  *   - No entity is seeded with an answer.
  *
- * Settings: `MINIMAL_BASE_APP_SETTINGS`, with the `contestantApp` root restated. The Contestant App serves both entity types; `entityTypes` is a list, and a stored list replaces the default one whole, so the root is stated complete.
+ * Settings: `MINIMAL_BASE_APP_SETTINGS`, with the `contestantApp` root restated. The Contestant App serves both entity types; a stored `servedEntityTypes` replaces the default one whole, so the root is stated complete.
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-no-nomination-'`. Row external_ids are bare; nested references are prefixed. The ids are semantic slugs with hyphens, which no generator emits: a generated id is a type code, an underscore and a zero-padded number.
  */
@@ -33,7 +33,7 @@ export const permNoNominationTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL-1] Nomination Election', fi: '[EL-1] Ehdokasasetteluvaalit' },
         short_name: { en: 'EL-1' },
-        election_type: 'organization_list_and_independents',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -181,10 +181,9 @@ export const permNoNominationTemplate: Template = {
               hideHero: false,
               hideVideo: false
             },
-            entityTypes: ['candidate', 'organization'],
-            registrationModes: {
-              candidate: ['email', 'code'],
-              organization: []
+            servedEntityTypes: {
+              candidate: { registrationModes: ['email', 'code'] },
+              organization: { registrationModes: [] }
             }
           }
         }

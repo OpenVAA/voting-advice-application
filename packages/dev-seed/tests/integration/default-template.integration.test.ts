@@ -267,7 +267,7 @@ describe.skipIf(!hasSupabase)('default template integration (DX-03)', () => {
     expect(ops.uploadPortrait).toBe(rows.candidates.length);
     expect(ops.updateCandidateImage).toBe(rows.candidates.length);
 
-    // 1c. app_settings: one merge_jsonb_column RPC per row, and AT MOST one
+    // 1c. app_settings: one `updateAppSettings` call per row, and AT MOST one
     //     question-external-id lookup for the entire payload (the cheap pre-walk gate).
     expect(ops.updateAppSettings).toBe(rows.app_settings?.length ?? 0);
     expect(ops.selectQuestionExternalIds).toBeLessThanOrEqual(1);

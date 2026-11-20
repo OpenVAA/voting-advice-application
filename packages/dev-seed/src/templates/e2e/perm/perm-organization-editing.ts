@@ -10,7 +10,7 @@
  *   - `qu-opin-1` to `qu-opin-3` are addressed to organizations alone. The last, which the confirmed organization has not answered, admits an open comment beside its answer; the other two do not.
  *   - `qu-info-org` is an editable info question for organizations; `qu-info-org-locked` is an info question for organizations that its custom data locks and that nobody answers; `qu-info-cand` is an editable info question for candidates, which shows that an organization is not asked a candidate's question. None is required.
  *
- * Settings: `MINIMAL_BASE_APP_SETTINGS`, with three roots restated. The Contestant App serves both entity types; `entityTypes` is a list, and a stored list replaces the default one whole, so the root is stated complete. Candidates lacking an opinion answer are not hidden, because hiding them also removes every organization left without a visible candidate. Organizations are matched on their own answers, since neither organization has a member a voter can see.
+ * Settings: `MINIMAL_BASE_APP_SETTINGS`, with three roots restated. The Contestant App serves both entity types; a stored `servedEntityTypes` replaces the default one whole, so the root is stated complete. Candidates lacking an opinion answer are not hidden, because hiding them also removes every organization left without a visible candidate. Organizations are matched on their own answers, since neither organization has a member a voter can see.
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-organization-editing-'`. Row external_ids are bare; nested references are prefixed. The ids are semantic slugs with hyphens, which no generator emits: a generated id is a type code, an underscore and a zero-padded number.
  */
@@ -38,7 +38,7 @@ export const permOrganizationEditingTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Organization-editing election' },
         short_name: { en: 'EL1' },
-        election_type: 'organization_list_and_independents',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -247,10 +247,9 @@ export const permOrganizationEditingTemplate: Template = {
               hideHero: false,
               hideVideo: false
             },
-            entityTypes: ['candidate', 'organization'],
-            registrationModes: {
-              candidate: ['email', 'code'],
-              organization: []
+            servedEntityTypes: {
+              candidate: { registrationModes: ['email', 'code'] },
+              organization: { registrationModes: [] }
             }
           }
         }
