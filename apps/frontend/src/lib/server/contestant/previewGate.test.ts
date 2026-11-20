@@ -6,8 +6,9 @@
  * 1. **The rule.** Closed while a required info question or an opinion question is unanswered, open once both are filled; a saved `false` or `0` is an answer; an entity that is asked no opinion question is open on its required info alone.
  * 2. **What is not counted.** A question addressed to the other entity type, a question of another election and a locked required question.
  * 3. **No nomination.** Closed, and nothing is read.
- * 4. **No answer.** Question data that is an error, a nomination whose election the election data does not hold, and a failed read each give `undefined`, logged once, and nothing is thrown.
- * 5. **Nothing of one call reaches the next.** Two calls, one after the other, for two entities of two elections that share no question, in both orders.
+ * 4. **No answer.** Question data that is an error and a failed read each give `undefined`, logged once, and nothing is thrown.
+ * 5. **An id the data does not hold.** A nomination's election or constituency that the data does not hold is skipped and logged, as the Contestant App's context skips it, and the answer comes from the others.
+ * 6. **Nothing of one call reaches the next.** Two calls, one after the other, for two entities of two elections that share no question, in both orders.
  */
 
 import { log } from '@openvaa/app-shared';
@@ -234,6 +235,29 @@ describe('previewGate — an entity with no nomination', () => {
   });
 });
 
+describe('previewGate — an id the data does not hold', () => {
+  const UNKNOWN_NOMINATION = { electionId: 'election-unknown', constituencyId: 'constituency-unknown' };
+
+  it('skips and logs it, and answers from the other nominations', async () => {
+    const questions = standardQuestions();
+
+    expect(await answerFor(candidateWith({}, [UNKNOWN_NOMINATION, NOMINATION_A]), questionDataOf(questions))).toBe(
+      false
+    );
+    expect(
+      await answerFor(candidateWith(STANDARD_ANSWERS, [UNKNOWN_NOMINATION, NOMINATION_A]), questionDataOf(questions))
+    ).toBe(true);
+    expect(logError).toHaveBeenCalled();
+  });
+
+  it('asks nothing of an entity whose nominations name no election the data holds, so its preview is open', async () => {
+    const userData = candidateWith({}, [{ ...UNKNOWN_NOMINATION, constituencyId: NOMINATION_A.constituencyId }]);
+
+    expect(await answerFor(userData, questionDataOf(standardQuestions()))).toBe(true);
+    expect(logError).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('previewGate — no answer', () => {
   it('gives no answer and throws nothing when the question data is an error', async () => {
     const open = await answerFor(candidateWith(STANDARD_ANSWERS), new Error('the question read failed'));
@@ -246,15 +270,6 @@ describe('previewGate — no answer', () => {
     for (const questionData of [undefined, null, {}, { categories: [] }]) {
       expect(await answerFor(candidateWith(STANDARD_ANSWERS), questionData)).toBeUndefined();
     }
-  });
-
-  it('gives no answer and throws nothing for a nomination whose election the election data does not hold', async () => {
-    const userData = candidateWith(STANDARD_ANSWERS, [
-      { electionId: 'election-unknown', constituencyId: 'constituency-a' }
-    ]);
-
-    expect(await answerFor(userData, questionDataOf(standardQuestions()))).toBeUndefined();
-    expect(logError).toHaveBeenCalledTimes(1);
   });
 
   it('gives no answer and throws nothing when a read fails', async () => {

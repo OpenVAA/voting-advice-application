@@ -19,7 +19,7 @@ Shows one card for each nomination the entity the user edits has or is about to 
 
 The page says which of these it is in through `data-editor-state`: `loading`, `ready`, `saving` or `error`. It is shaded while it lists cards.
 
-Everything that differs between entity types is read from the descriptor of the selected entity's type. Which parent a card offers is decided by the election's nomination shape and is never written out here.
+Everything that differs between entity types is read from the descriptor of the selected entity's type, or is a text whose key the page builds from that type. Which parent a card offers is decided by the election's nomination shape and is never written out here.
 
 ### A save that is not stored
 
@@ -66,7 +66,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     validateCards
   } from '$lib/contestant/nominations';
   import { nominationsSaveAction } from '$lib/contestant/tasks';
-  import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
+  import { entityDescriptorOf, servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { EntitySelector } from '$lib/dynamic-components/entitySelector';
@@ -124,8 +124,10 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     shown = false;
   });
 
-  /** Everything that differs by entity type. */
+  /** What differs by entity type beyond a text's key. */
   const descriptor = $derived(entityDescriptorOf(contestantCtx.selectedEntity?.type));
+  /** The type whose texts the page shows: each text that differs by type alone has a key ending in it. */
+  const textType = $derived(servedEntityTypeOf(contestantCtx.selectedEntity?.type));
 
   /** The options as they were read, or `undefined` while there are none to show. */
   const readOptions = $derived(parentOptions === 'failed' ? undefined : parentOptions);
@@ -348,9 +350,9 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   function selectorOptionOf(card: EditorCard, option: ParentChoices['options'][number]): EntitySelectorOption {
     switch (option.kind) {
       case 'none':
-        return { kind: 'none', value: option.value, name: t(descriptor.parentNone) };
+        return { kind: 'none', value: option.value, name: t(`contestantApp.nominations.parent.none.${textType}`) };
       case 'other':
-        return { kind: 'other', value: option.value, name: t(descriptor.parentOther) };
+        return { kind: 'other', value: option.value, name: t(`contestantApp.nominations.parent.other.${textType}`) };
       case 'entity': {
         const entity = contestantCtx.dataRoot.getEntity(option.entityType, option.entityId);
         return {
@@ -358,7 +360,9 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
           value: option.value,
           name: entity.name,
           entity,
-          hint: isNominatedAt(card, option.entityId) ? undefined : t(descriptor.parentNotNominatedHint)
+          hint: isNominatedAt(card, option.entityId)
+            ? undefined
+            : t(`contestantApp.nominations.parent.notNominatedHint.${textType}`)
         };
       }
       case 'unlisted': {
@@ -688,15 +692,15 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
                   bind:selected={view.card.parentChoice}
                   required={view.choices.required}
                   error={parentErrorOf(view.card)}
-                  emptyMessage={t(descriptor.parentNoOptions)}
+                  emptyMessage={t(`contestantApp.nominations.parent.noOptions.${textType}`)}
                   data-testid="nomination-editor-parent">
                   {#snippet detail(option)}
                     {#if option.kind === 'other'}
                       <div class="mt-sm">
                         <Input
                           type="text"
-                          label={t(descriptor.parentOtherLabel)}
-                          info={t(descriptor.parentOtherInfo)}
+                          label={t(`contestantApp.nominations.parent.otherLabel.${textType}`)}
+                          info={t(`contestantApp.nominations.parent.otherInfo.${textType}`)}
                           required
                           {...OTHER_NAME_LIMIT}
                           autocomplete="off"
@@ -712,7 +716,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
                             role="alert"
                             id={otherErrorId}
                             data-testid="nomination-editor-other-error">
-                            {t(descriptor.parentOtherRequired)}
+                            {t(`contestantApp.nominations.error.otherRequired.${textType}`)}
                           </p>
                         {/if}
                       </div>
@@ -723,8 +727,8 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
               <div class="mt-lg">
                 <Input
                   type="text"
-                  label={t(descriptor.electionSymbolLabel)}
-                  info={t(descriptor.electionSymbolInfo)}
+                  label={t(`common.electionSymbol.${textType}`)}
+                  info={t(`contestantApp.nominations.details.symbolInfo.${textType}`)}
                   {...SYMBOL_LIMIT}
                   autocomplete="off"
                   value={view.card.electionSymbol}

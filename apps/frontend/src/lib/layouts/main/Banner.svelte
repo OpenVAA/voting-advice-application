@@ -24,7 +24,6 @@ Accesses `AppContext`, and `VoterContext`, `ContestantContext` or `AdminContext`
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { LogoutButton } from '$lib/dynamic-components/logoutButton';
-  import { contestantHomeRoute } from '$lib/routes';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -95,7 +94,14 @@ Accesses `AppContext`, and `VoterContext`, `ContestantContext` or `AdminContext`
       icon="close"
       text={topBarSettings.current.actions.returnButtonLabel || t('common.return')}
       onclick={topBarSettings.current.actions.returnButtonCallback ||
-        (() => goto(getRoute.current(appType.current === 'voter' ? 'Home' : contestantHomeRoute(page.params))))} />
+        (() =>
+          goto(
+            appType.current === 'voter'
+              ? getRoute.current('Home')
+              : contestantCtx
+                ? contestantCtx.homeRoute
+                : getRoute.current('AdminAppHome')
+          ))} />
   {/if}
 
   {#if topBarSettings.current.actions.cancel === 'show' && topBarSettings.current.actions.cancelButtonCallback}

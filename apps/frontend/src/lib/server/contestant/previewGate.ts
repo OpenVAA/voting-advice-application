@@ -3,7 +3,7 @@
  *
  * The answer is computed from rows the server read in the request it answers: the entity with its saved answers and nominations and the question data of its elections, which the caller read, and the election and constituency data, which this module reads through the request's own provider. Nothing a browser sent is trusted: the module is handed no count, no flag and no list that a request's URL or body carried.
  *
- * The rule is defined elsewhere and only called here. `hasNomination` and `previewOpenOf` of `$lib/contestant/tasks` say when a preview is open; `requiredInfoQuestionsOf` and `unansweredQuestionsOf` of the same module say which questions an entity must answer and which it has not; `rollUpQuestionCategories` of `$lib/contexts/utils/questionRollup` says which categories and questions an entity is asked. The Contestant App's context calls the same five in the browser, so the home's preview entry and this answer follow one rule.
+ * The rule is defined elsewhere and only called here. `hasNomination` and `previewOpenOf` of `$lib/contestant/tasks` say when a preview is open; `requiredInfoQuestionsOf` and `unansweredQuestionsOf` of the same module say which questions an entity must answer and which it has not; `contestsOfNominations` and `rollUpQuestionCategories` of `$lib/contexts/utils/questionRollup` say which elections and constituencies an entity's nominations name, skipping and logging an id the data does not hold, and which categories and questions the entity is asked. The Contestant App's context calls the same six in the browser, so the home's preview entry and this answer follow one rule.
  *
  * The module keeps nothing between calls. A data root holds every object it was given, so one bound outside a call would answer the next request from this request's rows: the data root, the rolled-up lists and every value derived from an entity are locals of the call that built them, and the module's top level holds imports, types and function declarations alone.
  *
@@ -13,8 +13,7 @@
 import { log } from '@openvaa/app-shared';
 import { DataRoot } from '@openvaa/data';
 import { hasNomination, previewOpenOf, requiredInfoQuestionsOf, unansweredQuestionsOf } from '$lib/contestant/tasks';
-import { rollUpQuestionCategories } from '$lib/contexts/utils/questionRollup';
-import { removeDuplicates } from '$lib/utils/removeDuplicates';
+import { contestsOfNominations, rollUpQuestionCategories } from '$lib/contexts/utils/questionRollup';
 import type { Id } from '@openvaa/core';
 import type { EntityType } from '@openvaa/data';
 import type { DPDataType } from '$lib/api/base/dataTypes';
@@ -47,10 +46,10 @@ export type PreviewGateInput = {
 /**
  * Whether the entity's preview is open: the entity has a nomination, no required info question it is asked is unanswered and no opinion question it is asked is unanswered.
  *
- * An entity with no nomination is answered at once, and nothing is read for it. For any other the election and the constituency data are read, a data root is built from them and the question data, the elections and constituencies of the entity's nominations are resolved on it, and the questions the entity is asked are rolled up for its type.
+ * An entity with no nomination is answered at once, and nothing is read for it. For any other the election and the constituency data are read, a data root is built from them and the question data, the elections and constituencies of the entity's nominations are resolved on it, skipping one it does not hold, and the questions the entity is asked are rolled up for its type.
  *
  * @param input - The request's reader and locale, and the entity and question data read in the request.
- * @returns `true` for an open preview and `false` for a closed one; `undefined` when no answer can be given, because the question data is not usable, a read failed, or a nomination names an election or a constituency the data does not hold. That case is logged once.
+ * @returns `true` for an open preview and `false` for a closed one; `undefined` when no answer can be given, because the question data is not usable or a read failed. That case is logged once.
  */
 export async function isPreviewOpen({
   dataProvider,
@@ -77,14 +76,12 @@ export async function isPreviewOpen({
     dataRoot.provideConstituencyData(constituencyData);
     dataRoot.provideQuestionData(questionData);
 
-    const { infoQuestions, opinionQuestions } = rollUpQuestionCategories({
-      dataRoot,
-      elections: removeDuplicates(nominations.map((nomination) => dataRoot.getElection(nomination.electionId))),
-      constituencies: removeDuplicates(
-        nominations.map((nomination) => dataRoot.getConstituency(nomination.constituencyId))
-      ),
-      entityType: entity.type
-    });
+    const { elections, constituencies } = contestsOfNominations({ dataRoot, nominations });
+    // An entity whose nominations name no election the data root holds is asked no question, as in the Contestant App's context: a category with no election filter would otherwise apply to it.
+    const { infoQuestions, opinionQuestions } =
+      elections.length === 0
+        ? { infoQuestions: [], opinionQuestions: [] }
+        : rollUpQuestionCategories({ dataRoot, elections, constituencies, entityType: entity.type });
 
     return previewOpenOf({
       hasNomination: true,

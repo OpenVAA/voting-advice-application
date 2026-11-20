@@ -12,13 +12,12 @@ import { hasNomination, requiredInfoQuestionsOf, taskStateOf, unansweredQuestion
 import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
 import { isNameEditable, isRequiredNameMissing } from '$lib/contestant/utils/nameRule';
 import { contestantHomeRoute } from '$lib/routes';
-import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { contestantUserDataState } from './contestantUserDataState.svelte';
 import { getAppContext } from '../app';
 import { getAuthContext } from '../auth';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
 import { prepareDataWriter } from '../utils/prepareDataWriter';
-import { rollUpQuestionCategories } from '../utils/questionRollup';
+import { contestsOfNominations, rollUpQuestionCategories } from '../utils/questionRollup';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, NominationShape, QuestionCategory } from '@openvaa/data';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -103,24 +102,6 @@ function noQuestionBlocks(): QuestionBlocksShape {
  * @internal — test seam — do not construct directly; requires effect context; use `initContestantContext()`. Calling `new ContestantContextProvider()` outside `initContestantContext()` bypasses the `CONTEXT_KEY` double-init guard and will throw `effect_orphan` outside a component `<script>` or `$effect.root`.
  * @throws When constructed outside a Svelte effect context (effect_orphan).
  */
-/**
- * The objects a data root holds for a list of ids, each looked up on its own: an id the data root does not hold is logged and left out.
- * @param ids - The ids, as the entity's nominations name them.
- * @param lookup - The data root's lookup, which throws for an id it does not hold.
- * @param label - What the objects are for, in the log line.
- * @returns The objects found, in the order of the ids.
- */
-function resolvedOf<TObject>(ids: ReadonlyArray<Id>, lookup: (id: Id) => TObject, label: string): Array<TObject> {
-  return ids.flatMap((id) => {
-    try {
-      return [lookup(id)];
-    } catch (e) {
-      log.error(`[contestantContext ${label}] A nomination names an object the data root does not hold: ${e}`);
-      return [];
-    }
-  });
-}
-
 export class ContestantContextProvider implements ContestantContext {
   ////////////////////////////////////////////////////////////
   // Inheritance from other Contexts + STABLE refs (field initializers — they run BEFORE the $derived/producer field initializers below in declaration order, so those can read them; the appContext + authContext members are reproduced via `Object.assign(this, this.#appContext)` + `Object.assign(this, this.#authContext)` in the constructor).
@@ -352,13 +333,7 @@ export class ContestantContextProvider implements ContestantContext {
         this.#nominationsNameNoElection = false;
         return;
       }
-      const elections = removeDuplicates(
-        resolvedOf(
-          current.nominations.map((n) => n.electionId),
-          (id) => dr.getElection(id),
-          'selectedElections'
-        )
-      );
+      const { elections } = contestsOfNominations({ dataRoot: dr, nominations: current.nominations });
       this.#selectedElections = elections;
       this.#nominationsNameNoElection = current.nominations.length > 0 && elections.length === 0;
     });
@@ -370,13 +345,10 @@ export class ContestantContextProvider implements ContestantContext {
         this.#selectedConstituencies = [];
         return;
       }
-      this.#selectedConstituencies = removeDuplicates(
-        resolvedOf(
-          current.nominations.map((n) => n.constituencyId),
-          (id) => dr.getConstituency(id),
-          'selectedConstituencies'
-        )
-      );
+      this.#selectedConstituencies = contestsOfNominations({
+        dataRoot: dr,
+        nominations: current.nominations
+      }).constituencies;
     });
 
     $effect(() => {
