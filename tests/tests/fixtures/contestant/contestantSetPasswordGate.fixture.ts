@@ -27,31 +27,16 @@
  * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { expectLabelInRow } from '../../utils/labelInRow';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
 import type { Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
-
-/**
- * The view's title in a locale, read from that locale's message source rather than copied.
- *
- * @param locale - A locale the application has a catalogue for.
- */
-function titleIn(locale: string): string {
-  const file = path.join(TESTS_DIR, '../../apps/frontend/messages', locale, 'contestantApp.setPassword.json');
-  const messages = (JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, Record<string, unknown>>)[
-    'contestantApp.setPassword'
-  ];
-  return String(messages.title);
-}
 
 export function createContestantSetPasswordGate(page: Page) {
   const ids = testIds.contestant.setPasswordGate;
@@ -110,7 +95,9 @@ export function createContestantSetPasswordGate(page: Page) {
      * @param locale - The locale the page was asked for in.
      */
     async expectTitle(locale: string): Promise<void> {
-      await expect(page.getByTestId(ids.container).getByRole('heading', { level: 1 })).toHaveText(titleIn(locale));
+      await expect(page.getByTestId(ids.container).getByRole('heading', { level: 1 })).toHaveText(
+        messageOf('contestantApp.setPassword', 'title', locale)
+      );
     },
 
     /**

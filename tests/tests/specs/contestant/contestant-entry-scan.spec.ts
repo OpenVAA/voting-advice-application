@@ -23,8 +23,6 @@
  */
 
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { createAuthConfirmPage } from '../../fixtures/contestant/authConfirmPage.fixture';
 import { createContestantEmailSentPage } from '../../fixtures/contestant/contestantEmailSentPage.fixture';
 import { createContestantForgotPasswordPage } from '../../fixtures/contestant/contestantForgotPasswordPage.fixture';
@@ -40,9 +38,9 @@ import {
   ENTRY_SCAN_OPEN_CODE_CANDIDATE_EXTERNAL_ID,
   ENTRY_SCAN_USED_CODE_CANDIDATE_EXTERNAL_ID
 } from '../../utils/invitationConstants';
+import { messageOf } from '../../utils/messages';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
 import type { ContestantRegisterPageFixture } from '../../fixtures/contestant/contestantRegisterPage.fixture';
 
@@ -94,14 +92,6 @@ async function openSignIn(page: Page) {
   await loginPage.openSignIn();
   await loginPage.signInScriptLoaded();
   return loginPage;
-}
-
-/** An English message, read from its catalogue file. */
-function englishMessage(file: string, wrapper: string, key: string): string {
-  const catalogue = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, `../../apps/frontend/messages/en/${file}.json`), 'utf8')
-  );
-  return catalogue[wrapper][key];
 }
 
 /**
@@ -366,19 +356,19 @@ test('menu: a signed-out visitor is offered Sign in, Register and Forgot Passwor
 
   // The four items, each the one item of its name and each a link to its screen.
   await navMenu.expectItemLeadsTo(
-    englishMessage('common', 'common', 'login'),
+    messageOf('common', 'login'),
     buildRoute({ route: 'ContestantAppLogin', locale: 'en' })
   );
   await navMenu.expectItemLeadsTo(
-    englishMessage('contestantApp.register', 'contestantApp.register', 'register'),
+    messageOf('contestantApp.register', 'register'),
     buildRoute({ route: 'ContestantAppRegister', locale: 'en' })
   );
   await navMenu.expectItemLeadsTo(
-    englishMessage('contestantApp.login', 'contestantApp.login', 'forgotPassword'),
+    messageOf('contestantApp.login', 'forgotPassword'),
     buildRoute({ route: 'ContestantAppForgotPassword', locale: 'en' })
   );
   await navMenu.expectItemLeadsTo(
-    englishMessage('contestantApp.help', 'contestantApp.help', 'title'),
+    messageOf('contestantApp.help', 'title'),
     buildRoute({ route: 'ContestantAppHelp', locale: 'en' })
   );
 

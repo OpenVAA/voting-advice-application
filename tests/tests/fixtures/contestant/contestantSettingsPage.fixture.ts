@@ -23,35 +23,21 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantHomeUrlRe, contestantSettingsUrlRe } from '../../utils/contestantEntityUrl';
+import { messageOf } from '../../utils/messages';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
-
-/**
- * Read one message of the English message source.
- * @param file - The file's name under `apps/frontend/messages/en`, without its extension; the namespace is the file's single top-level key.
- * @param key - The message's key inside the namespace.
- */
-function englishMessage(file: string, key: string): string {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, unknown>>;
-  return String(source[file][key]);
-}
 
 /** The page's sentences that a step asserts, read from the message source rather than copied. */
 const MESSAGES = Object.freeze({
-  pendingInfo: englishMessage('contestantApp.settings', 'emailPendingInfo'),
-  emailInUse: englishMessage('contestantApp.identityProvider', 'emailInUse'),
-  requested: englishMessage('contestantApp.emailSent', 'resendRequested')
+  pendingInfo: messageOf('contestantApp.settings', 'emailPendingInfo'),
+  emailInUse: messageOf('contestantApp.identityProvider', 'emailInUse'),
+  requested: messageOf('contestantApp.emailSent', 'resendRequested')
 });
 
 export function createContestantSettingsPage(page: Page) {

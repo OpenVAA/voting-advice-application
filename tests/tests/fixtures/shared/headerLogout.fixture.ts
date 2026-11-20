@@ -60,8 +60,6 @@
  * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect } from '@playwright/test';
 import { COOKIE } from '../../../../apps/frontend/src/lib/cookies/index';
 import { ROUTE } from '../../../../apps/frontend/src/lib/routes/route';
@@ -70,8 +68,8 @@ import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { DRAFT_KEY_STEM } from '../../utils/contestantDrafts';
 import { routeUntilEnded } from '../../utils/endableRoute';
+import { messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
 import type { EndRoute } from '../../utils/endableRoute';
 
@@ -90,22 +88,10 @@ const COUNT_ID = /^[0-9a-f]{32}$/;
 /** How far behind the server's clock {@link createHeaderLogout}'s `installClockBehindTheServer` puts the page's, in milliseconds: five minutes, far more than the count and its grace. */
 const CLOCK_BEHIND_THE_SERVER_MS = 5 * 60_000;
 
-/**
- * Read one English message file from the message source, rather than copying its strings.
- *
- * @param file - The file's name without `.json`, which is also its one top-level key.
- * @returns The file's messages.
- */
-function readEnglishMessages(file: string): Record<string, string> {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, string>>;
-  return source[file];
-}
-
-const COMMON_MESSAGES = readEnglishMessages('common');
-const ERROR_MESSAGES = readEnglishMessages('error');
-const LOGOUT_MODAL_MESSAGES = readEnglishMessages('contestantApp.logoutModal');
+/** The English messages the steps assert, read from the message source rather than copied. */
+const COMMON_MESSAGES = messagesOf('common') as Record<string, string>;
+const ERROR_MESSAGES = messagesOf('error') as Record<string, string>;
+const LOGOUT_MODAL_MESSAGES = messagesOf('contestantApp.logoutModal') as Record<string, string>;
 
 /**
  * The logout modal's sentence with its count.

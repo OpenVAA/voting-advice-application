@@ -17,8 +17,6 @@
  */
 
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
 import { createContestantRegisterPage } from '../../fixtures/contestant/contestantRegisterPage.fixture';
 import { createPageGeometry } from '../../fixtures/shared/pageGeometry.fixture';
@@ -26,11 +24,11 @@ import { TIMEOUTS } from '../../helpers';
 import { ADMIN_STORAGE_STATE } from '../../utils/adminCredentials';
 import { buildRoute } from '../../utils/buildRoute';
 import { declareEntryScans } from '../../utils/entryAxeScan';
+import { messageOf, messagesOf } from '../../utils/messages';
 import { PHONE_VIEWPORTS, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
 import type { ContestantRegisterPageFixture } from '../../fixtures/contestant/contestantRegisterPage.fixture';
@@ -39,17 +37,16 @@ import type { ContestantRegisterPageFixture } from '../../fixtures/contestant/co
 const CANDIDATE_EMAIL = 'e2e-perm-closed-project-cand-1@test.openvaa.local';
 
 /**
- * The English `dynamic` messages, read from the message source rather than copied, so a copy edit to a message cannot turn this spec into an assertion about a stale string.
+ * The English title of the page a closed voter app shows, read from the message source rather than copied, so a copy edit to a message cannot turn this spec into an assertion about a stale string.
  */
-const DYNAMIC_MESSAGES = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/dynamic.json'), 'utf8')
-).dynamic;
-
-const MAINTENANCE_TITLE: string = DYNAMIC_MESSAGES.voterAppNotAccessible.title;
+const MAINTENANCE_TITLE = messageOf('dynamic', 'voterAppNotAccessible.title');
 
 /** The three names the contestant app shows for itself, by the entity types the project serves. */
-const APP_NAME: { candidate: string; organization: string; candidateAndOrganization: string } =
-  DYNAMIC_MESSAGES.contestantAppName;
+const APP_NAME = messagesOf('dynamic').contestantAppName as {
+  candidate: string;
+  organization: string;
+  candidateAndOrganization: string;
+};
 
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
 const REGISTER_ROUTE = buildRoute({ route: 'ContestantAppRegister', locale: 'en' });

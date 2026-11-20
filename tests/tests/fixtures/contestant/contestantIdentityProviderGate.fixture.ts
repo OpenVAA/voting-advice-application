@@ -29,34 +29,21 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS } from '../../helpers';
 import { contestantSettingsUrlRe } from '../../utils/contestantEntityUrl';
+import { messageOf, messagesOf } from '../../utils/messages';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { createMultilingualTextField } from '../shared/multilingualTextFieldFixture.fixture';
 import type { Page } from '@playwright/test';
 
 /** The locale the party's name is required in: the project's default locale, in which the specs open every screen. */
 const NAME_LOCALE = 'en';
 
-/**
- * Read one namespace of the English message source.
- * @param file - The file's name under `apps/frontend/messages/en`, without its extension; the namespace is the file's single top-level key.
- */
-function readEnglishMessages(file: string): Record<string, unknown> {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, unknown>>;
-  return source[file];
-}
-
 /** The view's sentences that a step asserts, read from the message source rather than copied. */
-const MESSAGES = readEnglishMessages('contestantApp.identityProvider') as Record<
+const MESSAGES = messagesOf('contestantApp.identityProvider') as Record<
   'nameRequired' | 'emailInUse' | 'emailTakenNotice' | 'signInEmail' | 'awaitingConfirmation',
   string
 > & {
@@ -65,10 +52,10 @@ const MESSAGES = readEnglishMessages('contestantApp.identityProvider') as Record
 };
 
 /** The sentence the status region holds once a new email has been asked for. */
-const RESEND_REQUESTED = String(readEnglishMessages('contestantApp.emailSent').resendRequested);
+const RESEND_REQUESTED = messageOf('contestantApp.emailSent', 'resendRequested');
 
 /** The name of the default locale as the name's error names it. */
-const NAME_LOCALE_NAME = String(readEnglishMessages('lang')[NAME_LOCALE]);
+const NAME_LOCALE_NAME = messageOf('lang', NAME_LOCALE);
 
 /** What the party is called: its name and abbreviation in the default locale. */
 export interface IdentityProviderGateNames {

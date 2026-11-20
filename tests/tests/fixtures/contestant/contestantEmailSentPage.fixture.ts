@@ -31,13 +31,11 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { RESEND_WAIT_SECONDS } from '../../../../apps/frontend/src/lib/auth/entryFlow/entryFlow';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
 import { readScreenShape } from '../shared/screenShape.fixture';
 import type { Page } from '@playwright/test';
@@ -50,26 +48,13 @@ import type { ScreenShape } from '../shared/screenShape.fixture';
 export type ContestantEmailSentStatus = 'requested' | 'ready';
 
 /** The messages of the screen, read from the English message source rather than copied. */
-const EMAIL_SENT_MESSAGES = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.emailSent.json'), 'utf8')
-  ) as Record<string, Record<string, unknown>>
-)['contestantApp.emailSent'];
+const EMAIL_SENT_MESSAGES = messagesOf('contestantApp.emailSent');
 
 /** The messages shared by the screens of the app, read from the English message source rather than copied. */
-const COMMON_MESSAGES = (
-  JSON.parse(fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/common.json'), 'utf8')) as Record<
-    string,
-    Record<string, unknown>
-  >
-)['common'];
+const COMMON_MESSAGES = messagesOf('common');
 
 /** The messages shared by the screens of the Contestant App, read from the English message source rather than copied. */
-const CONTESTANT_COMMON_MESSAGES = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.common.json'), 'utf8')
-  ) as Record<string, Record<string, unknown>>
-)['contestantApp.common'];
+const CONTESTANT_COMMON_MESSAGES = messagesOf('contestantApp.common');
 
 /** The first sentence of each wording that names the address, with the address's place marked by `{email}` inside `<strong>`. */
 const INTRO_WITH_ADDRESS: Readonly<Record<'signIn' | 'recovery', string>> = Object.freeze({

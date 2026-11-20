@@ -41,32 +41,16 @@
  */
 
 import { randomBytes } from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect } from '@playwright/test';
 import { COOKIE } from '../../../../apps/frontend/src/lib/cookies/index';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { routeUntilEnded } from '../../utils/endableRoute';
 import { expectLabelInRow, expectLabelOnOneLine } from '../../utils/labelInRow';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Locator, Page } from '@playwright/test';
 import type { EndRoute } from '../../utils/endableRoute';
-
-/**
- * Read a locale's messages of one namespace from the message source, rather than copying their strings.
- *
- * @param locale - The locale, whose folder holds the file.
- * @param namespace - The file's name without `.json`, which is also its one top-level key.
- * @returns The messages under the file's one top-level key.
- */
-function readMessages(locale: string, namespace: 'common' | 'error' | 'adminApp.login'): Record<string, string> {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages', locale, `${namespace}.json`), 'utf8')
-  ) as Record<string, Record<string, string>>;
-  return source[namespace];
-}
 
 /** The reasons the login page states for a sign-out the user did not make on it: a logout count the browser let run out, and a sign-out made in another tab or window. */
 export type AdminLoginNoticeReason = 'loggedOutAutomatically' | 'loggedOutElsewhere';
@@ -275,7 +259,7 @@ export function createAdminLoginPage(page: Page) {
      * Assert that the email field is named by its label: the control's accessible name is the English text of `common.email`, read from the message source, and the label's text is visible.
      */
     async expectEmailFieldLabelled(): Promise<void> {
-      const emailText = readMessages('en', 'common').email;
+      const emailText = messageOf('common', 'email');
       await expect(emailInput).toHaveAccessibleName(emailText);
       await expect(emailLabel).toHaveText(emailText);
       await expect(emailLabel).toBeVisible();
@@ -398,7 +382,7 @@ export function createAdminLoginPage(page: Page) {
      * @param locale - The locale of the text.
      */
     async expectErrorPageSays(key: 'default' | '403', locale = 'en'): Promise<void> {
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(readMessages(locale, 'error')[key], {
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(messageOf('error', key, locale), {
         timeout: TIMEOUTS.slowPage
       });
       await expect(emailInput).toHaveCount(0);
@@ -418,7 +402,7 @@ export function createAdminLoginPage(page: Page) {
      */
     async expectLoginFormStandsWithNoMessage(): Promise<void> {
       await expect(emailInput).toBeVisible({ timeout: TIMEOUTS.slowPage });
-      await expect(page.getByRole('main')).not.toContainText(readMessages('en', 'error').loginFailed);
+      await expect(page.getByRole('main')).not.toContainText(messageOf('error', 'loginFailed'));
     },
 
     /**
@@ -449,7 +433,7 @@ export function createAdminLoginPage(page: Page) {
      * @param reason - `loggedOutAutomatically` for a logout count the browser let run out, `loggedOutElsewhere` for a sign-out made in another tab or window.
      */
     async expectSaysWhy(reason: AdminLoginNoticeReason): Promise<void> {
-      const sentence = readMessages('en', 'common')[reason];
+      const sentence = messageOf('common', reason);
       await expect(notice).toContainText(sentence, { timeout: TIMEOUTS.slowPage });
       await expect(heading).toBeFocused({ timeout: TIMEOUTS.slowPage });
       await expect(heading).toHaveAccessibleDescription(sentence);
@@ -460,15 +444,16 @@ export function createAdminLoginPage(page: Page) {
      */
     async expectSaysLinkFailed(): Promise<void> {
       await expect(page).toHaveURL((url) => url.pathname === adminLogin, { timeout: TIMEOUTS.slowPage });
-      const errors = (readMessages('en', 'adminApp.login') as unknown as { errors: Record<string, string> }).errors;
-      await expect(notice).toContainText(errors.linkFailed, { timeout: TIMEOUTS.slowPage });
+      await expect(notice).toContainText(messageOf('adminApp.login', 'errors.linkFailed'), {
+        timeout: TIMEOUTS.slowPage
+      });
     },
 
     /**
      * Assert that the login page's alert holds the sentence of a wrong address or password, as a sign-in with a password the account no longer holds is answered.
      */
     async expectSignInRefused(): Promise<void> {
-      await expect(notice).toContainText(readMessages('en', 'error').wrongEmailOrPassword, {
+      await expect(notice).toContainText(messageOf('error', 'wrongEmailOrPassword'), {
         timeout: TIMEOUTS.slowPage
       });
     },
@@ -478,7 +463,7 @@ export function createAdminLoginPage(page: Page) {
      */
     async expectSaysNotAuthorized(): Promise<void> {
       await this.expectOnLoginPage();
-      await expect(notice).toContainText(readMessages('en', 'error')['403'], { timeout: TIMEOUTS.slowPage });
+      await expect(notice).toContainText(messageOf('error', '403'), { timeout: TIMEOUTS.slowPage });
     },
 
     /**

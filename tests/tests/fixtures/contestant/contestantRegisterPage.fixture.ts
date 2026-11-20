@@ -63,14 +63,12 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { messageOf, messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
 import type { Locator, Page } from '@playwright/test';
 
@@ -85,20 +83,9 @@ export interface ContestantRegisterFieldReason {
   code: 'required' | 'unconfirmed';
 }
 
-/**
- * Read one namespace of the English message source.
- * @param file - The file's name under `apps/frontend/messages/en`, without its extension; the namespace is the file's single top-level key.
- */
-function readEnglishMessages(file: string): Record<string, unknown> {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, unknown>>;
-  return source[file];
-}
-
 /** The identity provider's panel's sentences, read from the message source rather than copied. */
 const IDENTITY_PROVIDER_MESSAGES = (
-  readEnglishMessages('contestantApp.register') as {
+  messagesOf('contestantApp.register') as {
     identityProvider: {
       intro: Record<'candidate' | 'organization' | 'both', string>;
       redirectInfo: string;
@@ -108,21 +95,20 @@ const IDENTITY_PROVIDER_MESSAGES = (
 ).identityProvider;
 
 /** The sentence the code field shows for a code that was not confirmed, read from the message source rather than copied. */
-const CODE_UNCONFIRMED_MESSAGE = String(readEnglishMessages('contestantApp.register').codeUnconfirmed);
+const CODE_UNCONFIRMED_MESSAGE = messageOf('contestantApp.register', 'codeUnconfirmed');
 
 /**
  * The title of the notice for a browser that has confirmed an address, read from the message source rather than copied. Read when a step asks for it, so that a source without the notice fails that step's assertion and not the loading of this file.
  */
 function registeredNoticeTitle(): string {
-  const notice = (readEnglishMessages('contestantApp.register') as { registeredNotice?: { title?: unknown } })
-    .registeredNotice;
+  const notice = (messagesOf('contestantApp.register') as { registeredNotice?: { title?: unknown } }).registeredNotice;
   return String(notice?.title);
 }
 
 /** The sentence under the email field for each reason it can be in error, read from the message source rather than copied. */
 const EMAIL_ERROR_MESSAGES: Readonly<Record<ContestantRegisterFieldReason['email'], string>> = Object.freeze({
-  required: (readEnglishMessages('contestantApp.login') as Record<string, string>).emailRequired,
-  invalid: (readEnglishMessages('components') as { input: { error: Record<string, string> } }).input.error.invalidEmail
+  required: messageOf('contestantApp.login', 'emailRequired'),
+  invalid: messageOf('components', 'input.error.invalidEmail')
 });
 
 export function createContestantRegisterPage(page: Page) {

@@ -21,8 +21,6 @@
  * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect, test as base } from '@playwright/test';
 import { createContestantEntitySelectionPage } from './contestantEntitySelectionPage.fixture';
 import { createContestantHomePage } from './contestantHomePage.fixture';
@@ -37,6 +35,7 @@ import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { DRAFT_KEY_STEM } from '../../utils/contestantDrafts';
+import { messagesOf } from '../../utils/messages';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import {
   TEST_CANDIDATE_EXTERNAL_ID,
@@ -45,7 +44,6 @@ import {
   TEST_SELECTION_ORGANIZATION_EXTERNAL_ID
 } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { createHeaderLogout } from '../shared/headerLogout.fixture';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import type { Page } from '@playwright/test';
@@ -110,19 +108,8 @@ const DIFFERING_QUESTION_EXTERNAL_ID = 'test-e2e-base-qu-opin-base-1-likert5';
 /** The marker the seed puts in that question's text, by which the questions overview finds its card. */
 const DIFFERING_QUESTION_LABEL = '[qu-opin-base-1-likert5]';
 
-/**
- * Read one namespace of the English message source.
- * @param file - The file's name under `apps/frontend/messages/en`, without its extension; the namespace is the file's single top-level key.
- */
-function readEnglishMessages(file: string): Record<string, unknown> {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, unknown>>;
-  return source[file];
-}
-
-const ENTITY_SELECTION_MESSAGES = readEnglishMessages('contestantApp.entitySelection') as Record<string, string>;
-const COMMON_MESSAGES = readEnglishMessages('common') as Record<string, Record<string, string>>;
+const ENTITY_SELECTION_MESSAGES = messagesOf('contestantApp.entitySelection') as Record<string, string>;
+const COMMON_MESSAGES = messagesOf('common') as Record<string, Record<string, string>>;
 
 /**
  * The English strings the selection screen and the menu show, read from the message source rather than copied.

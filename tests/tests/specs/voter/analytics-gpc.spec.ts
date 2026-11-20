@@ -23,16 +23,14 @@
  */
 
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { RELAY_PATH } from '../../../../apps/frontend/src/lib/analytics/constants';
 import { expectOnlyAllowedDeviceState } from '../../fixtures/shared/deviceStores.fixture';
 import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
 import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { walkVoterStages } from '../../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 import type { RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
@@ -47,9 +45,7 @@ const GRANTED_BUTTON = /agree to share my data/i;
 const PREFS_KEY = 'appContext-userPreferences';
 
 /** The English text of `privacy.analytics.gpc`, read from the message source rather than copied, so a copy edit cannot turn this spec into an assertion about a stale string. */
-const GPC_TEXT: string = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/privacy.json'), 'utf8')
-).privacy.analytics.gpc;
+const GPC_TEXT = messageOf('privacy', 'analytics.gpc');
 
 /** The message of the control's capture assertion, which fails when the relay forwards nothing. */
 const RELAY_INACTIVE_MESSAGE = `no request to the relay path ${RELAY_PATH} was captured without the signal: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it`;

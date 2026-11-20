@@ -24,22 +24,16 @@
  * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { contestantHomeUrlRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
+import { messageOf } from '../../utils/messages';
 import { selectSmallestValidMultiChoice } from '../../utils/multiChoice';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
 
 /** The sentence that says the question must be answered first, read from the English message source rather than copied. */
-const ANSWER_QUESTION_FIRST = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.questions.json'), 'utf8')
-  ) as Record<string, Record<string, string>>
-)['contestantApp.questions'].answerQuestionFirst;
+const ANSWER_QUESTION_FIRST = messageOf('contestantApp.questions', 'answerQuestionFirst');
 
 /** A page a save of a question can lead to, other than another question. */
 export type QuestionSaveDestination = 'home' | 'list';

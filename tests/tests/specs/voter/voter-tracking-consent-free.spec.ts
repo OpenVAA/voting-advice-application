@@ -27,8 +27,6 @@
  */
 
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { RELAY_PATH } from '../../../../apps/frontend/src/lib/analytics/constants';
 import { isUuidV7 } from '../../../../apps/frontend/src/lib/analytics/uuidv7';
 import { expectOnlyAllowedDeviceState } from '../../fixtures/shared/deviceStores.fixture';
@@ -37,16 +35,14 @@ import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
 import { TIMEOUTS } from '../../helpers';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { walkVoterStages } from '../../utils/voterNavigation';
 import type { BrowserContext, Page } from '@playwright/test';
 import type { CapturedRelayEvent, RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 
 /** The English text of `privacy.analytics.content.free`, read from the message source rather than copied, so a copy edit cannot turn this spec into an assertion about a stale string. */
-const FREE_MODE_TEXT: string = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/privacy.json'), 'utf8')
-).privacy.analytics.content.free;
+const FREE_MODE_TEXT = messageOf('privacy', 'analytics.content.free');
 
 /** The message of the mode precondition, which fails when the server is not in consent-free mode. */
 const MODE_MESSAGE =

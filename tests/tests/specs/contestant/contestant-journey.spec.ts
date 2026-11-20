@@ -77,9 +77,9 @@ import {
 } from '../../utils/contestantJourneyConstants';
 import { SIGN_IN_LINK_EMAIL_SUBJECT } from '../../utils/invitationConstants';
 import { assertSignInLinkShape, openMailedLink, runOriginFromEnv, toRunOrigin } from '../../utils/mailedLink';
+import { messageOf } from '../../utils/messages';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Locator, Page } from '@playwright/test';
 import type { ContestantQuestionPageFixture } from '../../fixtures/contestant/contestantQuestionPage.fixture';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
@@ -102,9 +102,7 @@ const JOURNEY_CANDIDATE: EntityGrantTarget = Object.freeze({
 /**
  * The name the contestant app shows when the project serves candidates and organizations, as the base dataset declares. Read from the English message source rather than copied.
  */
-const BASE_DATASET_APP_NAME: string = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/dynamic.json'), 'utf8')
-).dynamic.contestantAppName.candidateAndOrganization;
+const BASE_DATASET_APP_NAME = messageOf('dynamic', 'contestantAppName.candidateAndOrganization');
 
 // ====================================================================
 // candidate nav-menu auth-state item sets

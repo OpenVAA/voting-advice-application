@@ -57,13 +57,11 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { expectLabelInRow, expectLabelOnOneLine } from '../../utils/labelInRow';
+import { messageOf, messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { readScreenShape } from '../shared/screenShape.fixture';
 import type { Page } from '@playwright/test';
 import type { ScreenShape } from '../shared/screenShape.fixture';
@@ -73,19 +71,10 @@ export type ContestantLoginNoticeReason =
   'loginFailed' | 'authError' | 'emailTaken' | 'loggedOutAutomatically' | 'loggedOutElsewhere';
 
 /** The messages of the login and sign-in screens, read from the English message source rather than copied. */
-const LOGIN_MESSAGES = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.login.json'), 'utf8')
-  ) as Record<string, Record<string, unknown>>
-)['contestantApp.login'];
+const LOGIN_MESSAGES = messagesOf('contestantApp.login');
 
 /** The messages shared by both apps, read from the English message source rather than copied. */
-const COMMON_MESSAGES = (
-  JSON.parse(fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/common.json'), 'utf8')) as Record<
-    string,
-    Record<string, unknown>
-  >
-).common;
+const COMMON_MESSAGES = messagesOf('common');
 
 /** The sentence the login screen's notice holds for each reason. */
 const NOTICE_SENTENCE: Record<ContestantLoginNoticeReason, string> = {
@@ -97,26 +86,13 @@ const NOTICE_SENTENCE: Record<ContestantLoginNoticeReason, string> = {
 };
 
 /** The name of the password control's toggle, read from the English message source rather than copied. */
-const PASSWORD_TOGGLE_NAME = String(
-  (
-    JSON.parse(
-      fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/components.json'), 'utf8')
-    ) as Record<string, Record<string, Record<string, unknown>>>
-  ).components.passwordInput.showPassword
-);
+const PASSWORD_TOGGLE_NAME = messageOf('components', 'passwordInput.showPassword');
 
 /** The status a refused sign-in was answered with. */
 export type ContestantSignInFailureStatus = 400 | 403 | 500;
 
 /** The sentence of a sign-in refused for its address or its password, read from the English message source rather than copied. */
-const WRONG_CREDENTIALS_MESSAGE = String(
-  (
-    JSON.parse(fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/error.json'), 'utf8')) as Record<
-      string,
-      Record<string, unknown>
-    >
-  ).error.wrongEmailOrPassword
-);
+const WRONG_CREDENTIALS_MESSAGE = messageOf('error', 'wrongEmailOrPassword');
 
 /** What is typed to try the password control's toggle: a sample text that is no one's password. */
 const PASSWORD_SAMPLE_TEXT = 'sample text';
