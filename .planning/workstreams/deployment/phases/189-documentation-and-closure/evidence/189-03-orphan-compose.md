@@ -42,3 +42,34 @@ one `infra/local/check-proxy-topology.sh` reads (`grep '^CMD' ... | sed -n '$p'`
 
 CI image gate: `yarn workspace @openvaa/dev-seed test:unit tests/ciDockerImageBuildGate.test.ts`
 exit 0, `Test Files 1 passed (1)`, `Tests 7 passed (7)`.
+
+## Task 2 — the root `docker-compose.dev.yml` (F-03, the operator's note on ruling 181-12)
+
+The ROADMAP note asks, once the orphan is retired, whether the root `docker-compose.dev.yml` can
+be retired too, and whether the tests that read it are needed.
+
+Command, after Task 1: `git grep -n -F 'docker-compose.dev.yml' -- ':!.planning'` printed 18
+lines in 10 files. One is the root file's own usage comment (`docker-compose.dev.yml:3`). The
+other nine files:
+
+F03_REFERENCE=apps/docs/src/routes/(content)/developers-guide/deployment/+page.md: lines 123 and 127, the guide's production-build section, the documented way to build the production image and run it against the local Supabase stack (`docker compose -f docker-compose.dev.yml up --build`)
+F03_REFERENCE=CLAUDE.md: lines 206 and 334, the project instructions stating that the root compose is for production build testing only
+F03_REFERENCE=.env.example: line 124, the reason the production-server variables stay commented out (CI copies the file to `.env`, and Compose would pass a live ORIGIN to the root compose's production image)
+F03_REFERENCE=.github/workflows/main.yaml: line 182, the `docker-image-build` job's comment naming the root compose (`target: production`) as one of the two consumers of the image the job builds
+F03_REFERENCE=packages/dev-seed/tests/deploymentTemplates.test.ts: lines 6, 74, 75, its `describe('docker-compose.dev.yml')` block pinning that the root compose passes each server variable with a default
+F03_REFERENCE=packages/dev-seed/tests/analyticsEnvTemplates.test.ts: lines 5, 29, 78, 79, its `docker-compose.dev.yml` template entry and block pinning that the root compose passes all six analytics variables with a default
+F03_REFERENCE=packages/dev-seed/tests/localSupabaseUrl.test.ts: lines 233, 234, the root compose's `PUBLIC_SUPABASE_URL` default captured as one of the local Supabase URL sources that must agree
+F03_REFERENCE=packages/dev-seed/tests/ciDockerImageBuildGate.test.ts: line 7, the docblock naming the root compose as a consumer of the image the CI job builds
+F03_REFERENCE=scripts/fixtures/assert-test-keys-scope.input.txt: line 21, a `# @as docker-compose.dev.yml` path label in the test-key scope guard's self-test fixture (the guard scans the root compose)
+
+F03_ROOT_COMPOSE=kept
+F03_ROOT_COMPOSE_TESTS=kept
+
+The root compose is the documented way to run the production image against the local stack, and
+its tests pin the variables it passes, which the AWS task environment's guard does not cover.
+
+F03_PROXY_COMPOSE=infra/local/docker-compose.proxy.yml (different purpose, not touched)
+
+`infra/local/docker-compose.proxy.yml` runs the same production image behind a reverse proxy for
+`infra/local/check-proxy-topology.sh` (ORIGIN, ADDRESS_HEADER and XFF_DEPTH as a deployment sets
+them); it does not replace the root compose's plain local run.
