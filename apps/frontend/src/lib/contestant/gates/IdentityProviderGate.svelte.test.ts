@@ -51,6 +51,11 @@ const { box, context, invalidateAll, logout, register } = vi.hoisted(() => {
 
 vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({ getContestantContext: () => context }));
 
+vi.mock('$lib/contexts/app', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getAppContext: () => ({ track: () => undefined })
+}));
+
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({
     t: context.t,
@@ -617,7 +622,7 @@ describe('IdentityProviderGate — Send again', () => {
     expect(one(target, SEL.status).textContent?.trim()).toBe('');
   });
 
-  it('asks for the link again, announces it, and is unavailable but focused and described by its count until the count ends', async () => {
+  it('asks for the link again, announces it, and is unavailable but focused, with its count in its name, until the count ends', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
     register.mockResolvedValue('sent');
     const target = render({ user: pendingUser(), arrival: 'existing' });
@@ -630,7 +635,7 @@ describe('IdentityProviderGate — Send again', () => {
     expect(resend.getAttribute('aria-disabled')).toBe('true');
     expect(resend.tabIndex).toBe(0);
     const countdown = one(target, SEL.countdown);
-    expect(resend.getAttribute('aria-describedby')).toBe(countdown.id);
+    expect(resend.hasAttribute('aria-describedby'), 'the count is in the name alone').toBe(false);
     expect(resend.contains(countdown), 'the count is inside Send again').toBe(true);
     expect(countdown.textContent).toContain(KEY.resendIn);
     expect(countdown.textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS}`);

@@ -37,6 +37,7 @@ export const VALID_EVENTS = {
   },
   answer_resetAll: { name: 'answer_resetAll', ago: 900, visitId: SAMPLE_VISIT_ID, attributes: {} },
   dataConsent_granted: { name: 'dataConsent_granted', ago: 0, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  emailSent_resend: { name: 'emailSent_resend', ago: 0, visitId: SAMPLE_VISIT_ID, attributes: {} },
   entityCard_expandSubcards: {
     name: 'entityCard_expandSubcards',
     ago: 300,
@@ -53,6 +54,7 @@ export const VALID_EVENTS = {
   feedback_sent: { name: 'feedback_sent', ago: 50, visitId: SAMPLE_VISIT_ID, attributes: { rating: 5 } },
   filters_active: { name: 'filters_active', ago: 700, visitId: SAMPLE_VISIT_ID, attributes: { count: 2 } },
   filters_reset: { name: 'filters_reset', ago: 600, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  logout_warned: { name: 'logout_warned', ago: 200, visitId: SAMPLE_VISIT_ID, attributes: { proceeded: true } },
   maintenance_shown: { name: 'maintenance_shown', ago: 0, visitId: SAMPLE_VISIT_ID, attributes: {} },
   menu_open: { name: 'menu_open', ago: 2_000, visitId: SAMPLE_VISIT_ID, attributes: {} },
   question_next: { name: 'question_next', ago: 400, visitId: SAMPLE_VISIT_ID, attributes: { questionIndex: 3 } },
@@ -84,11 +86,17 @@ export const VALID_EVENTS = {
     attributes: { title: 'Background' }
   },
   questionExtendedInfo_open: { name: 'questionExtendedInfo_open', ago: 100, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  registration_modeChosen: {
+    name: 'registration_modeChosen',
+    ago: 100,
+    visitId: SAMPLE_VISIT_ID,
+    attributes: { mode: 'email' }
+  },
   results_browse: {
     name: 'results_browse',
     ago: 800,
     visitId: SAMPLE_VISIT_ID,
-    attributes: { election: SAMPLE_ID, entityType: 'candidate', numAnswers: 0 }
+    attributes: { electionId: SAMPLE_ID, entityType: 'candidate', numAnswers: 0 }
   },
   results_browse_entity: {
     name: 'results_browse_entity',
@@ -100,19 +108,19 @@ export const VALID_EVENTS = {
     name: 'results_changeElection',
     ago: 800,
     visitId: SAMPLE_VISIT_ID,
-    attributes: { election: SAMPLE_OTHER_ID }
+    attributes: { electionId: SAMPLE_OTHER_ID }
   },
   results_changeTab: {
     name: 'results_changeTab',
     ago: 800,
     visitId: SAMPLE_VISIT_ID,
-    attributes: { section: 'alliance' }
+    attributes: { entityType: 'alliance' }
   },
   results_ranked: {
     name: 'results_ranked',
     ago: 800,
     visitId: SAMPLE_VISIT_ID,
-    attributes: { election: SAMPLE_ID, entityType: 'candidate', numAnswers: 17 }
+    attributes: { electionId: SAMPLE_ID, entityType: 'candidate', numAnswers: 17 }
   },
   results_ranked_entity: {
     name: 'results_ranked_entity',

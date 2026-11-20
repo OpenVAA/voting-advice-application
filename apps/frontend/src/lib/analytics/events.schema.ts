@@ -9,6 +9,7 @@
  *
  * `name`, `ago` (the event's age in whole milliseconds when the batch is sent; the relay subtracts it from its own receive time) and `attributes`. Every event but the pageview may also carry `visitId`, which must be a UUIDv7. The pageview never has a `visitId` member, and its route id and locale are those of the batch it travels in.
  */
+import { REGISTRATION_MODES } from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { z } from 'zod';
 import { ID_PATTERN, MAX_EVENT_AGE_MS } from './constants';
@@ -28,6 +29,9 @@ const IdSchema = z.string().regex(ID_PATTERN);
 
 /** The four entity types, taken from the values `@openvaa/data` declares. */
 const EntityTypeSchema = z.enum(ENTITY_TYPE);
+
+/** The ways a contestant may register, taken from the values `@openvaa/app-shared` declares. */
+const RegistrationModeSchema = z.enum(REGISTRATION_MODES);
 
 /** How many answers a results event may report. */
 const NumAnswersSchema = z.number().int().min(0).max(10_000);
@@ -147,6 +151,8 @@ export const EventSchema = z.discriminatedUnion('name', [
   }),
   z.strictObject({ name: z.literal('answer_resetAll'), ...COMMON, attributes: NO_ATTRIBUTES }),
   z.strictObject({ name: z.literal('dataConsent_granted'), ...COMMON, attributes: NO_ATTRIBUTES }),
+  /** A press of "Send again" that asked for another sign-in or confirmation email. */
+  z.strictObject({ name: z.literal('emailSent_resend'), ...COMMON, attributes: NO_ATTRIBUTES }),
   z.strictObject({
     name: z.literal('entityCard_expandSubcards'),
     ...COMMON,
@@ -173,6 +179,12 @@ export const EventSchema = z.discriminatedUnion('name', [
     attributes: z.strictObject({ count: z.number().int().min(1).max(100) })
   }),
   z.strictObject({ name: z.literal('filters_reset'), ...COMMON, attributes: NO_ATTRIBUTES }),
+  /** The answer to the modal that warns before a logout: whether the logout went ahead, by its Log out or the count's end, or the user stayed. */
+  z.strictObject({
+    name: z.literal('logout_warned'),
+    ...COMMON,
+    attributes: z.strictObject({ proceeded: z.boolean() })
+  }),
   z.strictObject({ name: z.literal('maintenance_shown'), ...COMMON, attributes: NO_ATTRIBUTES }),
   z.strictObject({ name: z.literal('menu_open'), ...COMMON, attributes: NO_ATTRIBUTES }),
   z.strictObject({
@@ -208,11 +220,17 @@ export const EventSchema = z.discriminatedUnion('name', [
     attributes: z.strictObject({ title: SectionTitleSchema })
   }),
   z.strictObject({ name: z.literal('questionExtendedInfo_open'), ...COMMON, attributes: NO_ATTRIBUTES }),
+  /** A registration mode the contestant chose among several. */
+  z.strictObject({
+    name: z.literal('registration_modeChosen'),
+    ...COMMON,
+    attributes: z.strictObject({ mode: RegistrationModeSchema })
+  }),
   z.strictObject({
     name: z.literal('results_browse'),
     ...COMMON,
     attributes: z.strictObject({
-      election: IdSchema.optional(),
+      electionId: IdSchema.optional(),
       entityType: EntityTypeSchema.optional(),
       numAnswers: NumAnswersSchema
     })
@@ -225,18 +243,18 @@ export const EventSchema = z.discriminatedUnion('name', [
   z.strictObject({
     name: z.literal('results_changeElection'),
     ...COMMON,
-    attributes: z.strictObject({ election: IdSchema })
+    attributes: z.strictObject({ electionId: IdSchema })
   }),
   z.strictObject({
     name: z.literal('results_changeTab'),
     ...COMMON,
-    attributes: z.strictObject({ section: EntityTypeSchema })
+    attributes: z.strictObject({ entityType: EntityTypeSchema })
   }),
   z.strictObject({
     name: z.literal('results_ranked'),
     ...COMMON,
     attributes: z.strictObject({
-      election: IdSchema.optional(),
+      electionId: IdSchema.optional(),
       entityType: EntityTypeSchema.optional(),
       numAnswers: NumAnswersSchema
     })
@@ -275,7 +293,7 @@ export const EVENT_NAMES: ReadonlyArray<EventName> = Object.freeze(
 /**
  * The events that reveal a visitor's answer or political leaning.
  *
- * An event in this set is sensitive: it says how the visitor answered, which answer they removed or skipped, which entity they looked at in the results and how well it matched them, or that they narrowed the results by filters. A deployment that collects without consent never links such an event to the visit; the pageview is never in this set.
+ * An event in this set is sensitive: it says how the visitor answered, which answer they removed or skipped, which entity they looked at in the results and how well it matched them, or that they narrowed the results by filters. A deployment that collects without consent never links such an event to the visit; the pageview is never in this set. The events of signing up, signing in and logging out (`registration_modeChosen`, `emailSent_resend`, `logout_warned`) say how an account was reached or left and nothing of an opinion, so they are not in it.
  */
 export const SENSITIVE_EVENTS: ReadonlySet<EventName> = new Set<EventName>([
   'answer',

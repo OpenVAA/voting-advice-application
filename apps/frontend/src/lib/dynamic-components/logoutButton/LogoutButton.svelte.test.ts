@@ -36,6 +36,10 @@ const { afterNavigateCallbacks, fakePage, goto, onNavigateCallbacks } = vi.hoist
 
 vi.mock('$app/state', () => ({ page: fakePage }));
 
+const { track } = vi.hoisted(() => ({ track: vi.fn() }));
+
+vi.mock('$lib/contexts/app', () => ({ getAppContext: () => ({ track }) }));
+
 vi.mock('$app/navigation', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   goto,
@@ -174,6 +178,7 @@ afterEach(() => {
   afterNavigateCallbacks.length = 0;
   onNavigateCallbacks.length = 0;
   logout.mockClear();
+  track.mockClear();
   state.savedEntityData = undefined;
   state.answersLocked = false;
   state.tasks = [];
@@ -899,6 +904,60 @@ describe('LogoutButton — a page with a guard', () => {
 
       await passTheCount();
       expect(logout).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('what it tracks', () => {
+    it.each(CLOSES)('%s sends `logout_warned` once, with `proceeded` false', async (_name, close) => {
+      registerGuard(() => true);
+      const target = await pressLogout();
+
+      close(target);
+      flushSync();
+
+      expect(track.mock.calls).toEqual([['logout_warned', { proceeded: false }]]);
+    });
+
+    it("the modal's Log out sends `logout_warned` once, with `proceeded` true", async () => {
+      registerGuard(() => true);
+      const target = await pressLogout();
+
+      dialogButton(target, 'common.logout').click();
+      await settle();
+
+      expect(track.mock.calls).toEqual([['logout_warned', { proceeded: true }]]);
+    });
+
+    it("the count's end sends `logout_warned` once, with `proceeded` true", async () => {
+      registerGuard(() => true);
+      await pressLogout();
+
+      await passTheCount();
+
+      expect(track.mock.calls).toEqual([['logout_warned', { proceeded: true }]]);
+    });
+
+    it('a navigation that closes it sends nothing', async () => {
+      registerGuard(() => true);
+      await pressLogout();
+
+      navigate();
+
+      expect(track).not.toHaveBeenCalled();
+    });
+
+    it('opening it sends nothing', async () => {
+      registerGuard(() => true);
+      await pressLogout();
+
+      expect(track).not.toHaveBeenCalled();
+    });
+
+    it('a logout no modal asks about sends nothing', async () => {
+      nothingCounted();
+
+      expectLoggedOutAtOnce(await pressLogout());
+      expect(track).not.toHaveBeenCalled();
     });
   });
 });

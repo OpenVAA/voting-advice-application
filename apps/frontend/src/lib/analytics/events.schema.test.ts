@@ -1,6 +1,7 @@
 /**
  * The closed event vocabulary: one valid sample per name, an unknown key rejected inside and beside `attributes` for every name, at least one rejected twin per name, the payloads that must not carry free text, the bounds on every string attribute, the stripped media URL and the sensitive set.
  */
+import { REGISTRATION_MODES } from '@openvaa/app-shared';
 import { describe, expect, it } from 'vitest';
 import { MAX_EVENT_AGE_MS } from './constants';
 import { SAMPLE_ID, SAMPLE_VISIT_ID, VALID_EVENTS } from './events.fixtures';
@@ -147,6 +148,13 @@ const REJECTED_TWINS: Record<EventName, Array<{ why: string; input: unknown; pat
       path: 'attributes.consent'
     }
   ],
+  emailSent_resend: [
+    {
+      why: 'an address',
+      input: withAttributes('emailSent_resend', { email: 'first.last@example.org' }),
+      path: 'attributes.email'
+    }
+  ],
   entityCard_expandSubcards: [
     {
       why: 'a length above 1000',
@@ -199,6 +207,19 @@ const REJECTED_TWINS: Record<EventName, Array<{ why: string; input: unknown; pat
   ],
   filters_reset: [
     { why: 'an attribute', input: withAttributes('filters_reset', { count: 1 }), path: 'attributes.count' }
+  ],
+  logout_warned: [
+    { why: 'no answer', input: withoutAttribute('logout_warned', 'proceeded'), path: 'attributes.proceeded' },
+    {
+      why: 'an answer given as a string',
+      input: withAttributes('logout_warned', { proceeded: 'true' }),
+      path: 'attributes.proceeded'
+    },
+    {
+      why: 'the count of questions left',
+      input: withAttributes('logout_warned', { opinionQuestionsLeft: 3 }),
+      path: 'attributes.opinionQuestionsLeft'
+    }
   ],
   maintenance_shown: [
     {
@@ -281,11 +302,24 @@ const REJECTED_TWINS: Record<EventName, Array<{ why: string; input: unknown; pat
       path: 'attributes.title'
     }
   ],
+  registration_modeChosen: [
+    { why: 'no mode', input: withoutAttribute('registration_modeChosen', 'mode'), path: 'attributes.mode' },
+    {
+      why: 'a mode outside the registration modes',
+      input: withAttributes('registration_modeChosen', { mode: 'password' }),
+      path: 'attributes.mode'
+    },
+    {
+      why: 'a registration code',
+      input: withAttributes('registration_modeChosen', { code: 'ABCD-1234' }),
+      path: 'attributes.code'
+    }
+  ],
   results_browse: [
     {
       why: 'an election id of 65 characters',
-      input: withAttributes('results_browse', { election: overLong(64) }),
-      path: 'attributes.election'
+      input: withAttributes('results_browse', { electionId: overLong(64) }),
+      path: 'attributes.electionId'
     },
     {
       why: 'an entity type outside the four',
@@ -328,23 +362,27 @@ const REJECTED_TWINS: Record<EventName, Array<{ why: string; input: unknown; pat
   results_changeElection: [
     {
       why: 'an election id of 65 characters',
-      input: withAttributes('results_changeElection', { election: overLong(64) }),
-      path: 'attributes.election'
+      input: withAttributes('results_changeElection', { electionId: overLong(64) }),
+      path: 'attributes.electionId'
     },
-    { why: 'no election', input: withoutAttribute('results_changeElection', 'election'), path: 'attributes.election' }
+    {
+      why: 'no election',
+      input: withoutAttribute('results_changeElection', 'electionId'),
+      path: 'attributes.electionId'
+    }
   ],
   results_changeTab: [
     {
-      why: 'a section outside the entity types',
-      input: withAttributes('results_changeTab', { section: 'opinions' }),
-      path: 'attributes.section'
+      why: 'an entity type outside the entity types',
+      input: withAttributes('results_changeTab', { entityType: 'opinions' }),
+      path: 'attributes.entityType'
     }
   ],
   results_ranked: [
     {
       why: 'an election id of 65 characters',
-      input: withAttributes('results_ranked', { election: overLong(64) }),
-      path: 'attributes.election'
+      input: withAttributes('results_ranked', { electionId: overLong(64) }),
+      path: 'attributes.electionId'
     },
     {
       why: 'a negative answer count',
@@ -531,6 +569,14 @@ describe('EventSchema', () => {
     });
   });
 
+  it.each(REGISTRATION_MODES)('registration_modeChosen admits the registration mode %s', (mode) => {
+    expect(rejectedAt(withAttributes('registration_modeChosen', { mode }))).toEqual([]);
+  });
+
+  it.each([true, false])('logout_warned admits proceeded %s', (proceeded) => {
+    expect(rejectedAt(withAttributes('logout_warned', { proceeded }))).toEqual([]);
+  });
+
   describe('the members beside the attributes', () => {
     it('admits a visit id on every event but the pageview', () => {
       for (const name of EVENT_NAMES) {
@@ -584,6 +630,13 @@ describe('SENSITIVE_EVENTS', () => {
       ].sort()
     );
   });
+
+  it.each(['registration_modeChosen', 'emailSent_resend', 'logout_warned'] as const)(
+    'does not hold %s, which says how an account was reached or left and nothing of an opinion',
+    (name) => {
+      expect(isSensitiveEvent(name)).toBe(false);
+    }
+  );
 
   it('never holds the pageview', () => {
     expect(SENSITIVE_EVENTS.has('pageview')).toBe(false);

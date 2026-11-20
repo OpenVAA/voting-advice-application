@@ -7,7 +7,7 @@ The app's `logout` navigates to its login itself, and the count's end hands it t
 
 ### Dynamic component
 
-Accesses the component context for its translations, and nothing of any app's context: the app's sign-out and what is left undone come in as props.
+Accesses the component context for its translations and the app context for its tracking, and nothing of the Contestant App's or the Admin App's context: the app's sign-out and what is left undone come in as props.
 
 ### Properties
 
@@ -15,6 +15,10 @@ Accesses the component context for its translations, and nothing of any app's co
 - `warning`: What is left undone: the unanswered opinion and required info questions and whether the entity is hidden while opinion questions are unanswered. When it is set the modal opens before logging out.
 - `logoutModalTimer`: The duration in seconds a logout modal will wait before automatically logging the user out. Default: `30`
 - Any valid properties of a `Button` component
+
+### Tracking events
+
+- `logout_warned`: Sent when the modal is answered, with `proceeded` true when its Log out or the count's end starts the logout and false when Continue, its close button or Escape keeps the user in. A navigation that closes the modal sends nothing.
 
 ### Accessibility
 
@@ -40,6 +44,7 @@ With unsaved changes on the page the modal's dialog is named by the sentence say
     holdNavigationWhile,
     keepGuardedEdits
   } from '$lib/components/preventNavigation/navigationGuards';
+  import { getAppContext } from '$lib/contexts/app';
   import { getComponentContext } from '$lib/contexts/component';
   import { getUUID } from '$lib/utils/components';
   import type { LogoutButtonProps } from './LogoutButton.type';
@@ -51,6 +56,7 @@ With unsaved changes on the page the modal's dialog is named by the sentence say
   ////////////////////////////////////////////////////////////////////
 
   const { t } = getComponentContext();
+  const { track } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Handle logout and the modal
@@ -103,6 +109,7 @@ With unsaved changes on the page the modal's dialog is named by the sentence say
   async function leave(reason?: 'loggedOutAutomatically') {
     if (leaving) return;
     leaving = true;
+    if (modalOpen) track('logout_warned', { proceeded: true });
     clearLogoutDeadline();
     // The page's navigations are held until the sign-out settles.
     await holdNavigationWhile(() => (reason ? logout({ reason }) : logout())).catch((e) => {
@@ -122,7 +129,9 @@ With unsaved changes on the page the modal's dialog is named by the sentence say
   function handleClose() {
     modalOpen = false;
     clearLogoutDeadline();
-    if (!leaving && !closingForNavigation) keepGuardedEdits();
+    if (leaving || closingForNavigation) return;
+    track('logout_warned', { proceeded: false });
+    keepGuardedEdits();
   }
 </script>
 

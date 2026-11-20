@@ -85,7 +85,7 @@ Sibling tracking concerns:
 
   onMount(() => {
     track(voterCtx.resultsAvailable ? 'results_ranked' : 'results_browse', {
-      election: activeElectionId,
+      electionId: activeElectionId,
       entityType: activeEntityType,
       numAnswers: Object.keys(answers.answers).length
     });
@@ -112,7 +112,7 @@ Sibling tracking concerns:
     const { id } = details.option as Election;
     const plural = _urlPlural ?? pluralForEntityType(activeEntityType);
     goto(buildListRoute(id, plural, page));
-    track('results_changeElection', { election: id });
+    track('results_changeElection', { electionId: id });
   }
 
   function getName(e: unknown): string {

@@ -78,7 +78,7 @@ When the active entity type cannot be resolved — no nominations for the active
     const plural = pluralForEntityType(tab.id);
     if (!plural) return;
     goto(buildListRoute(activeElectionId, plural, page), { noScroll: true });
-    track('results_changeTab', { section: tab.id });
+    track('results_changeTab', { entityType: tab.id });
   }
 </script>
 
