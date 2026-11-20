@@ -1,7 +1,7 @@
 ---
 phase: 188-relay-on-the-deployed-stack-and-the-per-caller-limit
 verified: 2026-11-20T08:00:00Z
-status: human_needed
+status: passed
 score: 4/4 must-haves verified
 covered_files:
   - .planning/workstreams/deployment/phases/188-relay-on-the-deployed-stack-and-the-per-caller-limit/188-01-PLAN.md
@@ -202,3 +202,11 @@ No roadmap success criterion fails. All four are met by recorded deployed observ
 
 _Verified: 2026-11-20_
 _Verifier: Claude (gsd-verifier)_
+
+## Operator Resolution (2026-11-20)
+
+The operator resolved every human-verification item, and the status moved from `human_needed` to `passed`:
+
+- **H-4:** accepted as a dated lower bound and annotated. The Observations row in `infra/envs/staging/aws/README.md` now says the figure predates the WR-03 split of document and asset requests, and that it is to be measured again under the current method on a later rollout.
+- **H-1, H-2, H-3:** accepted without a hosted re-observation. CR-01 rests on `terraform test`. Migration 00024 rests on pgTAP and the green deploy run `44681047626` (drift check 00001–00024). Task definition `:23` rests on that run's rollout check, the deployed smoke run (2 passed) and the served-build read-back `8a6c02395`.
+- **H-5:** the listed deviations and residuals are acknowledged as accepted.
