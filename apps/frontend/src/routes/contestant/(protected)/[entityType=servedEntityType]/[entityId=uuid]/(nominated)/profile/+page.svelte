@@ -13,7 +13,7 @@ Which fields a profile has, and every text that differs between the two entity t
 ### Settings
 
 - `entities.hideIfMissingAnswers`: Affects message shown. The key read is that of the selected entity's type.
-- `access.answersLocked`: Locks every field and removes the Save button.
+- `access.contestantEditing`: `locked` locks every field and removes the Save button.
 -->
 
 <script lang="ts">

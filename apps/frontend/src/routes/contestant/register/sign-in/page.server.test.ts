@@ -63,7 +63,7 @@ const runLoad = load as unknown as (event: Pick<FakeEvent, 'fetch' | 'locals'>) 
 /** Settings of a project that serves candidates and allows them the given registration modes. */
 function settingsFor(modes: Array<string>, { answersLocked = false }: { answersLocked?: boolean } = {}) {
   return {
-    access: { answersLocked },
+    access: { contestantEditing: answersLocked ? 'locked' : 'open' },
     contestantApp: { servedEntityTypes: { candidate: { registrationModes: modes } } }
   };
 }
@@ -145,7 +145,7 @@ beforeEach(() => {
   getAppSettings.mockResolvedValue(settingsFor(['code']));
   invitationCodeLogin.mockResolvedValue({ ok: true });
   createDataWriter.mockReturnValue({ claimInvitations, signInWithInvitationCode });
-  claimInvitations.mockResolvedValue({ claimed: [], skipped: [], passwordSet: true });
+  claimInvitations.mockResolvedValue({ claimed: [], skipped: [] });
   signInWithInvitationCode.mockResolvedValue({ type: 'success' });
 });
 

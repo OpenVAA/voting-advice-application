@@ -287,7 +287,8 @@ const NOMINATION: EntityNomination = {
   electionSymbol: '77',
   confirmed: true,
   customData: null,
-  updatedAt: '2026-10-01T12:00:00+00:00'
+  updatedAt: '2026-10-01T12:00:00+00:00',
+  writable: true
 };
 
 const NOMINATIONS_SECTION = '[data-testid="contestant-profile-nominations"]';

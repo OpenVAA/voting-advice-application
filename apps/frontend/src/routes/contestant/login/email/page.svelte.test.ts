@@ -96,7 +96,7 @@ const context = {
           organization: { registrationModes: settings.organization }
         }
       },
-      access: { answersLocked: settings.answersLocked }
+      access: { contestantEditing: settings.answersLocked ? 'locked' : 'open' }
     };
   },
   get answersLocked() {

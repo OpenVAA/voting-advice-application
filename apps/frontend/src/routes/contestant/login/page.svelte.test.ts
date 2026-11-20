@@ -53,7 +53,7 @@ const context = {
           settings.entityTypes.map((entityType) => [entityType, { registrationModes: settings[entityType] }])
         )
       },
-      access: { answersLocked: settings.answersLocked, voterApp: settings.voterApp }
+      access: { contestantEditing: settings.answersLocked ? 'locked' : 'open', voterApp: settings.voterApp }
     };
   },
   get answersLocked() {
