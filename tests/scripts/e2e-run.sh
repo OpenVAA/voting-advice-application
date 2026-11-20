@@ -14,7 +14,7 @@
 #                      --project the run is the full gate suite, invoked exactly as the root `test:e2e` script does (including --grep-invert @probe).
 #   --no-db-reset      OPTIONAL. Skip the database reset; Supabase is still started (via `yarn db:start`) so the readiness poll below has something to poll. Use it to run against a database a previous run left behind -- the suite creates and owns its own project, so a reset is not a precondition of a correct run.
 #   --no-watch         OPTIONAL. Start only the frontend dev server (`yarn dev:clean && yarn workspace @openvaa/frontend dev`), not `yarn _dev:concurrent`, which adds the shared-package watcher under `concurrently --kill-others-on-fail`. The Vite process is the same one either starts, so the preflight and the project scoping are unchanged. The packages must already be built (`yarn build`); CI passes it because its build step does that and nothing changes them during the run.
-#   --self-test        Instead of an E2E run, exercise the host-suspend heartbeat on its own, in a scratch directory: it must stay silent on an awake host under CPU load, and under a hold shorter than its threshold, and it must end the run as void when it is held with SIGSTOP for longer than the threshold. Then the key server's bind decision: the loopback on macOS, the address a stubbed lookup answers on Linux, and a refusal on Linux when the lookup answers no address or the unspecified one. Then the mock issuer's stop, on scratch listeners: the one whose command line holds the issuer's entry is stopped, one whose command line holds another file, or the entry's path inside a longer path, is left running, and the teardown's stop leaves this checkout's listener running when the run started no Playwright. Needs no database, no dev server and no --run-dir. HEARTBEAT_SELF_TEST_AWAKE_S (default 15) is the length of the loaded leg and HEARTBEAT_SELF_TEST_BUSY_LOOPS (default: one per CPU) the number of busy loops it runs; the leg prints the distribution of the wake-up lateness it observed, which is the measurement the threshold rests on.
+#   --self-test        Instead of an E2E run, exercise the host-suspend heartbeat on its own, in a scratch directory: it must stay silent on an awake host under CPU load, and under a hold shorter than its threshold, and it must end the run as void when it is held with SIGSTOP for longer than the threshold. Then the key server's bind decision: the loopback on macOS, the address a stubbed lookup answers on Linux, and a refusal on Linux when the lookup answers no address or the unspecified one. Needs no database, no dev server and no --run-dir. HEARTBEAT_SELF_TEST_AWAKE_S (default 15) is the length of the loaded leg and HEARTBEAT_SELF_TEST_BUSY_LOOPS (default: one per CPU) the number of busy loops it runs; the leg prints the distribution of the wake-up lateness it observed, which is the measurement the threshold rests on.
 #
 # Prerequisites:
 #   - `yarn install` has run and Playwright browsers are installed (`yarn playwright install`)
@@ -27,20 +27,17 @@
 #   2. Records provenance: UTC start timestamp, git HEAD, working-tree cleanliness
 #   3. Holds a sleep assertion for the life of the run where `caffeinate` exists (macOS), so that an idle host is not put to sleep under the suite, and records in env-posture.txt whether it does. Then starts the host-suspend heartbeat: a background loop that sleeps a fixed interval and compares the wall-clock time that passed with that interval. A process that is not scheduled does not see time pass, so a gap far beyond the interval means the host was suspended (a laptop asleep, a paused virtual machine), and every deadline Playwright measures on the wall clock has been running through it. On such a gap the run ends as VOID: the marker file VOID-host-suspend.txt is written into the run directory, Playwright is stopped through the teardown of step 9, and the wrapper exits 8. Every beat is recorded in heartbeat.log, one line each: the wall clock in epoch milliseconds, then the milliseconds by which the beat was late. Beside it a second background loop records the host's state into host-state.log every HOST_STATE_INTERVAL_S seconds until the end of teardown: the load averages, the memory the kernel counts as available, the swap in use and the processes using the most CPU. It is a record only and decides nothing
 #   4. Prepares the database: `yarn db:reset` (which starts Supabase first) -- unless --no-db-reset is given, in which case it only runs `yarn db:start` and leaves the existing data in place. The command's output lands in the run directory as db-reset.log or db-start.log, without the stack's status and so without its keys
-#   5. POLLS REST + Storage for readiness and asserts the `public-assets` bucket is listed -- `db:status` passing is NOT readiness -- then prepares the identity provider's test environment and serves `identity-callback` with it (see "The identity provider's environment" below)
+#   5. POLLS REST + Storage for readiness and asserts the `public-assets` bucket is listed -- `db:status` passing is NOT readiness -- then prepares the identity provider's test environment, starts the mock OIDC issuer and serves `identity-callback` with that environment (see "The identity provider's environment" below)
 #   6. ASSERTS $FRONTEND_PORT has no listener, then spawns the frontend dev server -- root `yarn dev` without its `yarn db:start`, so the stack's status and keys are never printed into the log -- with its stdout+stderr redirected into the run directory as devserver.log, and waits for the port to accept connections. It refuses to adopt a foreign listener, and at teardown it kills only processes in its own spawned process group. The dev server is given the identity provider's test environment and trusts the mock issuer's committed certificate through NODE_EXTRA_CA_CERTS
 #   7. Runs Playwright, in a process group of its own, with per-run JSON and HTML reporter output
 #   8. Captures the served-application preflight verdict by counting its fixed failure headline in the captured stdout
-#   9. Tears down FROM A TRAP: stops the heartbeat, stops Playwright if it is still running, tears the dev server down, asserts the port has no listener, stops the function server and the JWKS server, stops this checkout's mock issuer when it still listens on 9443 and this run started Playwright, restores the shared stack's edge runtime, stops the host-state recorder and releases the sleep assertion
+#   9. Tears down FROM A TRAP: stops the heartbeat, stops Playwright if it is still running, tears the dev server down, asserts the port has no listener, stops the function server, the JWKS server and the mock issuer, restores the shared stack's edge runtime, stops the host-state recorder and releases the sleep assertion
 #   10. Records the UTC end timestamp and the wrapper's own exit status (wrapper-exit)
 #
-# The identity provider's environment. The identity-provider specs are part of every run, so every run prepares what they need, from the committed test keys (tests/tests/utils/testKeys.ts) and the mock issuer's constants (tests/tests/support/mockOidcIssuer.ts), into a temporary directory OUTSIDE the repository that is removed on every exit:
-#   - the Edge file for `identity-callback`: the mock's issuer and audience, the JWKS URI http://host.docker.internal:8777/jwks, the test decryption keys, the project the suite seeds as PUBLIC_PROJECT_ID, SITE_URL at this run's FRONTEND_PORT, and SMTP_HOST, SMTP_PORT and SMTP_FROM copied from the tracked functions template, so that `account-access` keeps mailing;
-#   - the dev server's environment: the Idura provider pointing at the mock issuer on 127.0.0.1:9443, the test signing and decryption keys, the client id;
-#   - IDENTITY_CALLBACK_SERVER_SECRET, one random value generated for this run alone: written into the Edge file and the dev server's environment, so that `identity-callback` answers the dev server, and into the environment Playwright runs in, so that the direct-call spec can call the function as the dev server does. It is never printed, never put on a command line and never written into the run directory;
-#   - the JWKS document, served on port 8777 to the edge runtime, which cannot reach the host's 127.0.0.1:9443 nor trust its certificate. The key server listens on one address, IDP_JWKS_BIND, never on every interface: 127.0.0.1 on macOS, where Docker Desktop forwards `host.docker.internal` to the host's loopback; on Linux, the address `getent hosts host.docker.internal` answers inside the edge-runtime container, the bridge through which the stack reaches the host. A Linux lookup that answers no address, or the unspecified one, refuses the run with status 9. The address is recorded in idp-env.txt as jwks_bind and printed (`e2e-run.sh: key server bound to <address>`). Once `identity-callback` is served, the wrapper proves the edge runtime reaches the key server: from inside that container, bash's /dev/tcp asks host.docker.internal:8777 for /jwks, and the status line must hold 200. It is recorded as jwks_reachable_from_edge and printed (`e2e-run.sh: the edge runtime reached the key server: <status line>`); any other answer refuses the run with status 9, before Playwright starts.
-# It refuses to start when port 8777 or 9443 is already held (Playwright's `webServer` entry spawns the mock issuer on 9443 itself). Playwright stops the issuer when it ends by itself, and not when the wrapper stops it, as it does on a void or interrupted run; so on every exit of a run that started Playwright, before the stack is restored and its ports checked, the wrapper stops a listener on 9443 whose command line holds this checkout's absolute path to tests/tests/support/mockOidcIssuerEntry.ts as a whole argument, with its process group. A run that exits before it starts Playwright -- refused because 9443 is already held, among the rest -- started no issuer and stops none. A listener is never matched by the port alone, since another checkout's run may hold the port: one whose command line does not hold the path is left alone. The outcome is recorded at the top of restore.txt (`mock issuer: stopped <pid>`, `mock issuer: foreign listener left (pid <pid>)`, `mock issuer: no listener on port 9443`, or `mock issuer: left alone -- this run started no Playwright`). It runs `supabase functions serve --no-verify-jwt --env-file <the Edge file>`, which REPLACES the edge-runtime container of the shared local stack for every function, and waits until that container carries the file's issuer -- read back by that one name -- and `identity-callback` answers an OPTIONS request below 500. The issuer read back is recorded in idp-env.txt; the function server's output in idp-functions.log. No key, private JWK or value of the generated environment is printed or written into the run directory.
-# The suite never reads the developer's untracked functions environment file (apps/supabase/supabase/functions/.env): what the edge runtime holds during a run is the generated file alone. Stopping the function server REMOVES the edge-runtime container, and `yarn db:start` alone does not bring it back (measured), so at its end, on every exit once the preparation began, an interrupt included, the wrapper restores the shared stack with `yarn db:stop` then `yarn db:start` (measured: about 30 s together on the development host), confirms that every function of the tree answers an OPTIONS request below 500 and that ports 8777 and 9443 are free, and writes each check into restore.txt, which ends with the line `restore: ok` only when every check held. The stack is shared with every other checkout of this project on the host, so a run restarts it once at its end.
+# The identity provider's environment, described in full in tests/README.md § The identity provider's environment. From the committed test keys and the mock issuer's constants, every run prepares, outside the repository, the Edge file, the dev server's environment and the JWKS document; the Edge file's PUBLIC_PROJECT_ID is the one `send-email` reads.
+# It serves the JWKS document on port 8777, starts the mock OIDC issuer on port 9443, and runs `supabase functions serve identity-callback --no-verify-jwt --env-file <the Edge file>`, which replaces the shared stack's edge runtime.
+# On every exit once the preparation began, the wrapper restores the stack with `yarn db:stop` then `yarn db:start` and records each check in restore.txt.
+# A preparation that fails, or a stack that is not restored, ends the run with status 9.
 # Certificate verification is never disabled: the dev server trusts the one committed certificate (tests/tests/support/mock-oidc-cert.pem) through NODE_EXTRA_CA_CERTS, and the browser contexts of the projects that navigate to the mock issuer set `ignoreHTTPSErrors`. A `yarn test:e2e` against a server started without this environment fails the identity-provider specs; it does not skip them.
 #
 # Style follows apps/supabase/benchmarks/scripts/run-benchmarks.sh (shebang form, header block, `set -euo pipefail`, script-location-relative paths, "${VAR:-default}" env defaults).
@@ -57,12 +54,12 @@
 #   6    the run produced one or more preflight failures, or produced no preflight SUCCESS line at all (an unconfirmed run is not evidence either way).
 #   7    the wrapper's preflight literals do not match tests/tests/support/preflight.ts, so its preflight verdict cannot be trusted.
 #   8    the run is VOID: the host was suspended while it ran. Neither a pass nor a test failure, whatever Playwright had reported by then, and it overrides every other status in this table. The run directory holds VOID-host-suspend.txt, which records the gap; the run is made again under a new run directory, not diagnosed.
-#   9    the identity provider's environment could not be prepared -- the key server had no address to bind to, or the edge runtime did not reach it, among the rest -- or the shared stack could not be restored afterwards (restore.txt names the check that failed). It overrides 0 and 1: a run whose stack was not put back is not evidence of a green suite, and a preparation failure is not a test failure. Status 8 still overrides it.
+#   9    the identity provider's environment could not be prepared -- the E2E project id did not resolve, the key server had no address to bind to, or the edge runtime did not reach it, among the rest -- or the shared stack could not be restored afterwards (restore.txt names the check that failed). It overrides 0 and 1: a run whose stack was not put back is not evidence of a green suite, and a preparation failure is not a test failure. Status 8 still overrides it.
 #   130  the run was INTERRUPTED (SIGINT/SIGTERM). Never 0: a caller counting consecutive green runs must record an abort as an abort, not as a green.
 
 set -euo pipefail
 
-# Auto-detect paths from script location -- cwd-independence is not optional here: the Playwright config documents the same spawn-cwd hazard at its `webServer` entry.
+# Auto-detect paths from script location -- cwd-independence is not optional here.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TESTS_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$TESTS_DIR/.." && pwd)"
@@ -101,7 +98,6 @@ HEARTBEAT_PID=""
 HOST_STATE_PID=""
 SLEEP_ASSERTION_PID=""
 PW_PID=""
-PW_STARTED=false
 TEE_PID=""
 PW_PIPE_DIR=""
 INTERRUPTED=0
@@ -111,19 +107,16 @@ IDP_JWKS_PID=""
 IDP_JWKS_BIND=""
 IDP_FN_PID=""
 EDGE_CONTAINER=""
-MOCK_ISSUER_STOP_REPORT=""
+MOCK_ISSUER_PID=""
 
 # The identity provider's test environment. The mock issuer listens on MOCK_OIDC_PORT, the port of MOCK_ISSUER in tests/tests/support/mockOidcIssuer.ts, which the preparation step checks against the generated issuer. The edge runtime fetches the JWKS document from the host on IDP_JWKS_PORT.
 IDP_JWKS_PORT=8777
 MOCK_OIDC_PORT=9443
 IDP_READY_TIMEOUT_S=180
 MOCK_CERT="$TESTS_DIR/tests/support/mock-oidc-cert.pem"
-# The mock issuer's entry, which Playwright's `webServer` entry starts: its absolute path in a listener's command line marks this checkout's issuer.
-MOCK_ISSUER_ENTRY="$TESTS_DIR/tests/support/mockOidcIssuerEntry.ts"
+# The mock issuer's entry, relative to the repository root, which the preparation step starts.
+MOCK_ISSUER_ENTRY="tests/tests/support/mockOidcIssuerEntry.ts"
 FUNCTIONS_DIR="$REPO_ROOT/apps/supabase/supabase/functions"
-
-# The project the E2E harness owns, mirrored from the committed default in packages/dev-seed/src/supabaseAdminClient.ts. Only used when E2E_PROJECT_ID is not set; the harness resolves the same fallback itself, so the two agree with no configuration.
-E2E_PROJECT_ID_DEFAULT="00000000-0000-0000-0000-0000000000e2"
 
 usage() {
   # Delimit the header block rather than hardcoding a line range: a fixed `sed -n '2,Np'` truncates the exit-code table the header tells the caller to branch on as soon as the header grows.
@@ -301,51 +294,6 @@ edge_jwks_probe() {
   docker exec "$EDGE_CONTAINER" timeout 10 bash -c 'exec 3<> "/dev/tcp/host.docker.internal/$1" && printf "GET /jwks HTTP/1.1\r\nHost: host.docker.internal\r\n\r\n" >&3 && head -n 1 <&3' probe "$IDP_JWKS_PORT" 2> /dev/null | tr -d '\r' || true
 }
 
-# --- the mock issuer's stop -----------------------------------------------------------------
-
-# Stops this checkout's mock issuer while it still listens on port $1 (MOCK_OIDC_PORT by default): each listener whose command line holds MOCK_ISSUER_ENTRY as a whole argument is sent SIGTERM with its process group, as stop_group stops the wrapper's own jobs, and SIGKILL after 30 s. A listener whose command line does not hold it belongs to someone else and is left alone. Prints one line for each listener, or one saying there is none.
-stop_own_mock_issuer() {
-  local port="${1:-$MOCK_OIDC_PORT}" holders pid command pgid own_pgid target waited
-  holders="$(lsof -nP -tiTCP:"$port" -sTCP:LISTEN 2> /dev/null)" || holders=""
-  if [ -z "$holders" ]; then
-    echo "mock issuer: no listener on port $port"
-    return 0
-  fi
-  own_pgid="$(ps -o pgid= -p "$$" 2> /dev/null | tr -d ' ')" || own_pgid=""
-  for pid in $holders; do
-    command="$(ps -o command= -p "$pid" 2> /dev/null)" || command=""
-    # The entry path is matched as a whole argument: inside a longer path it names another checkout's file.
-    case " $command " in
-      *" $MOCK_ISSUER_ENTRY "*) ;;
-      *)
-        echo "mock issuer: foreign listener left (pid $pid)"
-        continue
-        ;;
-    esac
-    pgid="$(ps -o pgid= -p "$pid" 2> /dev/null | tr -d ' ')" || pgid=""
-    # The group is signalled only when it is not the wrapper's own.
-    if [ -n "$pgid" ] && [ "$pgid" != "$own_pgid" ]; then target="-$pgid"; else target="$pid"; fi
-    kill -TERM -- "$target" 2> /dev/null || kill -TERM "$pid" 2> /dev/null
-    waited=0
-    while is_running "$pid" && [ "$waited" -lt 30 ]; do
-      sleep 1
-      waited=$((waited + 1))
-    done
-    if is_running "$pid"; then kill -KILL -- "$target" 2> /dev/null || kill -KILL "$pid" 2> /dev/null; fi
-    echo "mock issuer: stopped $pid"
-  done
-  return 0
-}
-
-# The teardown's stop of the mock issuer, on port $1 as stop_own_mock_issuer. Playwright's `webServer` entry starts the issuer, so a run that never started Playwright -- refused before step 7, as it is when port 9443 is already held -- started no issuer, and a listener on 9443 is someone else's, even one running this checkout's entry: it is left alone.
-stop_mock_issuer_after_run() {
-  if [ "$PW_STARTED" != true ]; then
-    echo "mock issuer: left alone -- this run started no Playwright"
-    return 0
-  fi
-  stop_own_mock_issuer "$@"
-}
-
 # --- heartbeat self-test --------------------------------------------------------------
 
 ST_SIGNALS=0
@@ -355,8 +303,6 @@ ST_PIDS=""
 ST_SCRATCH=""
 ST_HB=""
 ST_DIR=""
-ST_LISTENER_PID=""
-ST_LISTENER_PORT=""
 
 st_case() {
   # $1 = pass | FAIL, $2 = the case, $3 = what was observed
@@ -385,31 +331,6 @@ st_max_late() {
   LC_ALL=C awk 'BEGIN { max = "none" } { if (max == "none" || $2 > max) max = $2 } END { print max }' "$ST_DIR/$HEARTBEAT_LOG" 2> /dev/null
 }
 
-# Starts one scratch listener in a process group of its own, on a free loopback port, with $2 as the last argument of its command line; $1 names its port file in the issuer-stop directory. Sets ST_LISTENER_PID, and ST_LISTENER_PORT once the port is known (empty when it never is).
-st_listener() {
-  local waited=0
-  ST_DIR="$ST_SCRATCH/issuer-stop"
-  mkdir -p "$ST_DIR"
-  set -m
-  python3 -c '
-import socket, sys, time
-server = socket.socket()
-server.bind(("127.0.0.1", 0))
-server.listen()
-with open(sys.argv[1], "w") as port:
-    port.write(str(server.getsockname()[1]))
-time.sleep(600)
-' "$ST_DIR/$1.port" "$2" < /dev/null > /dev/null 2>&1 &
-  ST_LISTENER_PID=$!
-  set +m
-  ST_PIDS="$ST_PIDS $ST_LISTENER_PID"
-  while [ ! -s "$ST_DIR/$1.port" ] && [ "$waited" -lt 20 ]; do
-    sleep 1
-    waited=$((waited + 1))
-  done
-  ST_LISTENER_PORT="$(cat "$ST_DIR/$1.port" 2> /dev/null)"
-}
-
 st_cleanup() {
   local status=$?
   set +e
@@ -420,7 +341,7 @@ st_cleanup() {
   if [ -n "$ST_SCRATCH" ] && [ -d "$ST_SCRATCH" ]; then
     for dir in "$ST_SCRATCH"/*/; do
       [ -d "$dir" ] || continue
-      rm -f "$dir$HEARTBEAT_LOG" "$dir$VOID_MARKER" "$dir.void-marker.tmp" "${dir}own.port" "${dir}foreign.port" "${dir}nested.port" "${dir}no-playwright.port" "${dir}playwright.port"
+      rm -f "$dir$HEARTBEAT_LOG" "$dir$VOID_MARKER" "$dir.void-marker.tmp"
       rmdir "$dir"
     done
     rmdir "$ST_SCRATCH"
@@ -431,7 +352,6 @@ st_cleanup() {
 self_test() {
   set +e
   local awake_s busy hold_short_s hold_long_s settle_s i loops beats waited gap children child alive kernel bind s
-  local own_pid own_port foreign_pid foreign_port own_report foreign_report
   awake_s="${HEARTBEAT_SELF_TEST_AWAKE_S:-15}"
   busy="${HEARTBEAT_SELF_TEST_BUSY_LOOPS:-$(getconf _NPROCESSORS_ONLN 2> /dev/null || echo 4)}"
   for i in "$awake_s" "$busy"; do
@@ -601,90 +521,6 @@ self_test() {
   else
     st_case FAIL "the key server's bind address on Linux, with the unspecified address for host.docker.internal" "status $s, address '${bind}'"
   fi
-
-  # 10. The mock issuer's stop: a listener whose command line holds this checkout's issuer entry is stopped; one whose command line does not is left running, and then stopped here. Each listens on a scratch port, given to the stop as its parameter.
-  ST_DIR="$ST_SCRATCH/issuer-stop"
-  mkdir -p "$ST_DIR"
-  set -m
-  python3 -c '
-import socket, sys, time
-server = socket.socket()
-server.bind(("127.0.0.1", 0))
-server.listen()
-with open(sys.argv[1], "w") as port:
-    port.write(str(server.getsockname()[1]))
-time.sleep(600)
-' "$ST_DIR/own.port" "$MOCK_ISSUER_ENTRY" < /dev/null > /dev/null 2>&1 &
-  own_pid=$!
-  python3 -c '
-import socket, sys, time
-server = socket.socket()
-server.bind(("127.0.0.1", 0))
-server.listen()
-with open(sys.argv[1], "w") as port:
-    port.write(str(server.getsockname()[1]))
-time.sleep(600)
-' "$ST_DIR/foreign.port" "$TESTS_DIR/tests/support/anotherEntry.ts" < /dev/null > /dev/null 2>&1 &
-  foreign_pid=$!
-  set +m
-  ST_PIDS="$ST_PIDS $own_pid $foreign_pid"
-  waited=0
-  while { [ ! -s "$ST_DIR/own.port" ] || [ ! -s "$ST_DIR/foreign.port" ]; } && [ "$waited" -lt 20 ]; do
-    sleep 1
-    waited=$((waited + 1))
-  done
-  own_port="$(cat "$ST_DIR/own.port" 2> /dev/null)"
-  foreign_port="$(cat "$ST_DIR/foreign.port" 2> /dev/null)"
-  own_report="$(stop_own_mock_issuer "$own_port")"
-  foreign_report="$(stop_own_mock_issuer "$foreign_port")"
-  sleep 1
-  if [ -n "$own_port" ] && [ -n "$foreign_port" ] && ! is_running "$own_pid" && is_running "$foreign_pid" &&
-    [ "$own_report" = "mock issuer: stopped $own_pid" ] && [ "$foreign_report" = "mock issuer: foreign listener left (pid $foreign_pid)" ]; then
-    st_case pass "the mock issuer's stop, matched by command line" "this checkout's listener stopped, a foreign one on another port left running"
-  else
-    st_case FAIL "the mock issuer's stop, matched by command line" "ports '${own_port}' '${foreign_port}'; own $(is_running "$own_pid" && echo still running || echo ended), foreign $(is_running "$foreign_pid" && echo running || echo ended); reports '${own_report}' / '${foreign_report}'"
-  fi
-  kill -TERM "$own_pid" "$foreign_pid" 2> /dev/null
-  wait "$own_pid" "$foreign_pid" 2> /dev/null
-
-  # 11. The match is on the whole argument: a listener whose command line holds this checkout's entry path inside a longer path, as another checkout one directory deeper would, is left running.
-  st_listener nested "/elsewhere$MOCK_ISSUER_ENTRY"
-  own_report="$(stop_own_mock_issuer "$ST_LISTENER_PORT")"
-  sleep 1
-  if [ -n "$ST_LISTENER_PORT" ] && is_running "$ST_LISTENER_PID" && [ "$own_report" = "mock issuer: foreign listener left (pid $ST_LISTENER_PID)" ]; then
-    st_case pass "the mock issuer's stop, matched on the whole argument" "a listener with the entry path inside a longer path left running"
-  else
-    st_case FAIL "the mock issuer's stop, matched on the whole argument" "port '${ST_LISTENER_PORT}'; listener $(is_running "$ST_LISTENER_PID" && echo running || echo ended); report '${own_report}'"
-  fi
-  kill -TERM "$ST_LISTENER_PID" 2> /dev/null
-  wait "$ST_LISTENER_PID" 2> /dev/null
-
-  # 12. A run that started no Playwright, refused before step 7 as it is when port 9443 is already held, started no issuer: the teardown leaves a listener with this checkout's entry running, and says so.
-  st_listener no-playwright "$MOCK_ISSUER_ENTRY"
-  PW_STARTED=false
-  own_report="$(stop_mock_issuer_after_run "$ST_LISTENER_PORT")"
-  sleep 1
-  if [ -n "$ST_LISTENER_PORT" ] && is_running "$ST_LISTENER_PID" && [ "$own_report" = "mock issuer: left alone -- this run started no Playwright" ]; then
-    st_case pass "the teardown's issuer stop, on a run that started no Playwright" "this checkout's listener left running"
-  else
-    st_case FAIL "the teardown's issuer stop, on a run that started no Playwright" "port '${ST_LISTENER_PORT}'; listener $(is_running "$ST_LISTENER_PID" && echo running || echo ended); report '${own_report}'"
-  fi
-  kill -TERM "$ST_LISTENER_PID" 2> /dev/null
-  wait "$ST_LISTENER_PID" 2> /dev/null
-
-  # 13. A run that started Playwright: the teardown stops this checkout's listener.
-  st_listener playwright "$MOCK_ISSUER_ENTRY"
-  PW_STARTED=true
-  own_report="$(stop_mock_issuer_after_run "$ST_LISTENER_PORT")"
-  PW_STARTED=false
-  sleep 1
-  if [ -n "$ST_LISTENER_PORT" ] && ! is_running "$ST_LISTENER_PID" && [ "$own_report" = "mock issuer: stopped $ST_LISTENER_PID" ]; then
-    st_case pass "the teardown's issuer stop, on a run that started Playwright" "this checkout's listener stopped"
-  else
-    st_case FAIL "the teardown's issuer stop, on a run that started Playwright" "port '${ST_LISTENER_PORT}'; listener $(is_running "$ST_LISTENER_PID" && echo still running || echo ended); report '${own_report}'"
-  fi
-  kill -TERM "$ST_LISTENER_PID" 2> /dev/null
-  wait "$ST_LISTENER_PID" 2> /dev/null
 
   if [ "$ST_FAILED" = 0 ]; then
     echo "e2e-run.sh: self-test passed: $ST_CASES case(s)." >&2
@@ -965,6 +801,26 @@ Server((options.bind, options.port), functools.partial(Handler, directory=option
   echo "jwks_server=http://$(url_host "$IDP_JWKS_BIND"):$IDP_JWKS_PORT/jwks answered 200" >> "$RUN_DIR/idp-env.txt"
   echo "e2e-run.sh: key server bound to $IDP_JWKS_BIND"
 
+  echo "e2e-run.sh: starting the mock OIDC issuer on 127.0.0.1 port $MOCK_OIDC_PORT ..."
+  set -m
+  (
+    cd "$REPO_ROOT" &&
+      MOCK_OIDC_PORT="$MOCK_OIDC_PORT" exec npx --no-install tsx "$MOCK_ISSUER_ENTRY"
+  ) > "$RUN_DIR/mock-issuer.log" 2>&1 < /dev/null &
+  MOCK_ISSUER_PID=$!
+  set +m
+  # The issuer's certificate is self-signed, so the readiness probe does not verify it; the dev server trusts it through NODE_EXTRA_CA_CERTS.
+  waited=0
+  while :; do
+    code="$(curl -sk -o /dev/null -w '%{http_code}' --max-time 5 "$expected/.well-known/openid-configuration/jwks" 2> /dev/null)" || true
+    if [ "$code" = 200 ]; then break; fi
+    if ! is_running "$MOCK_ISSUER_PID"; then idp_fail "the mock issuer exited before answering; see $RUN_DIR/mock-issuer.log"; fi
+    if [ "$waited" -ge 30 ]; then idp_fail "the mock issuer did not answer 200 within 30 s (last status ${code:-none})"; fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  echo "mock_issuer=$expected answered 200" >> "$RUN_DIR/idp-env.txt"
+
   echo "e2e-run.sh: serving identity-callback with the generated Edge file ..."
   # From here on the shared stack's edge runtime is being replaced: every exit restores it.
   IDP_STARTED=true
@@ -1020,7 +876,6 @@ remove_identity_provider_files() {
 restore_stack() {
   local ok=true s started_s stop_s fn code tries names p
   {
-    if [ -n "$MOCK_ISSUER_STOP_REPORT" ]; then printf '%s\n' "$MOCK_ISSUER_STOP_REPORT"; fi
     echo "restore started: $(date -u +%FT%TZ)"
     if ! cd "$REPO_ROOT"; then
       echo "cd to the repository root: FAILED"
@@ -1157,10 +1012,11 @@ cleanup() {
     stop_group "$IDP_JWKS_PID"
     IDP_JWKS_PID=""
   fi
+  if [ -n "$MOCK_ISSUER_PID" ]; then
+    stop_group "$MOCK_ISSUER_PID"
+    MOCK_ISSUER_PID=""
+  fi
   remove_identity_provider_files
-  # Playwright's `webServer` issuer outlives a Playwright the teardown stopped, and would hold its port into the next run. It is stopped only when this run started Playwright.
-  MOCK_ISSUER_STOP_REPORT="$(stop_mock_issuer_after_run)"
-  printf '%s\n' "$MOCK_ISSUER_STOP_REPORT" | sed 's/^/e2e-run.sh: /'
   if [ "$IDP_STARTED" = true ]; then
     trap '' INT TERM
     echo "e2e-run.sh: restoring the shared stack's edge runtime: yarn db:stop, then yarn db:start ..."
@@ -1344,10 +1200,13 @@ if [ "$ready" != true ]; then
 fi
 echo "e2e-run.sh: Supabase ready (REST $rest_code, public-assets bucket present)"
 
-# The served application must query the SAME project the harness seeds, and `identity-callback` must create its accounts in it. The dev server reads its public environment once, at process start, so the value has to be on the spawn -- a shell prefix there wins over the repo-root .env, which deliberately carries the DEFAULT project so a plain `yarn dev` still shows a locally seeded app. Reuses read_env_var rather than adding a second reader.
-E2E_PROJECT_ID_RESOLVED="$(read_env_var E2E_PROJECT_ID)"
-if [ -z "$E2E_PROJECT_ID_RESOLVED" ]; then
-  E2E_PROJECT_ID_RESOLVED="$E2E_PROJECT_ID_DEFAULT"
+# The served application must query the SAME project the harness seeds, and the Edge file's PUBLIC_PROJECT_ID, the one `send-email` reads, names it too. The harness's own resolveE2eProjectId decides it, from E2E_PROJECT_ID in the environment or the root .env, so the wrapper and the harness cannot disagree. The dev server reads its public environment once, at process start, so the value has to be on the spawn -- a shell prefix there wins over the repo-root .env, which deliberately carries the DEFAULT project so a plain `yarn dev` still shows a locally seeded app.
+if ! E2E_PROJECT_ID_RESOLVED="$(
+  cd "$REPO_ROOT" &&
+    E2E_PROJECT_ID="$(read_env_var E2E_PROJECT_ID)" npx --no-install tsx --input-type=module -e 'import { resolveE2eProjectId } from "@openvaa/dev-seed"; console.log(resolveE2eProjectId())' 2> "$RUN_DIR/e2e-project-id.log"
+)" || [ -z "$E2E_PROJECT_ID_RESOLVED" ]; then
+  echo "e2e-run.sh: FATAL -- the E2E project id could not be resolved from E2E_PROJECT_ID; see $RUN_DIR/e2e-project-id.log" >&2
+  exit 9
 fi
 echo "e2e_project_id=$E2E_PROJECT_ID_RESOLVED" >> "$RUN_DIR/env-posture.txt"
 
@@ -1440,7 +1299,6 @@ set -m
       npx playwright "${PW_ARGS[@]}"
 ) > "$PW_PIPE_DIR/stdout" 2>&1 < /dev/null &
 PW_PID=$!
-PW_STARTED=true
 set +m
 set +e
 wait "$PW_PID"

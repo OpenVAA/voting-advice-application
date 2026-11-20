@@ -125,7 +125,7 @@ export function createContestantQuestionPage(page: Page) {
             choices: scopedChoices,
             validWhenEnabled: page.getByTestId(testIds.contestant.questions.saveButton)
           });
-          // Every box the helper ticked must actually be checked (unchanged strictness — the old code asserted this for its fixed pair).
+          // Every box the helper ticked must be checked.
           for (let i = 0; i < selected; i++) {
             await expect(scopedChoices.nth(i)).toBeChecked();
           }

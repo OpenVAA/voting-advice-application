@@ -365,9 +365,8 @@ const BASE_PROJECTS: Array<Project> = [
   //
   // THREE projects consume the candidate storageState: `visual-regression` (opt-in), and `contestant-a11y-scan` and `contestant-entry-phone` (default-on). The default-on readers are why `auth-setup` is not gated behind PLAYWRIGHT_VISUAL. `performance`, `a11y-smoke` and `bank-auth` still depend on `data-setup-base` directly, not on auth-setup.
   //
-  // WHY THIS WIRING AND NOT THE TWO THIS FILE ALREADY WARNS ABOUT. Reaching the candidate `(protected)` routes forces a dependency-graph change, and the comment at the `data-setup-identity-provider` project below shows how easily this graph is reasoned about wrongly. So the choice is MEASURED: six candidate wirings were scored against an instrument transcribed from Playwright's own phase assignment and validated at 0 mismatches over 89 projects against a real run. The two rejected shapes:
+  // WHY THIS WIRING AND NOT THE TWO THIS FILE ALREADY WARNS ABOUT. Reaching the candidate `(protected)` routes forces a dependency-graph change, and the comment at the `data-setup-identity-provider` project below shows how easily this graph is reasoned about wrongly. The scan runs in the third scheduling phase, alongside `contestant-journey` alone; the two rejected shapes fail as follows:
   //   · adding `auth-setup` to `a11y-smoke.dependencies` would make the 16 voter a11y tests depend on a candidate login and cost `a11y-smoke` its 1-setup isolation; · appending the scan to the tail of the perm serial chain would enter as the 55th scheduling phase, after 25 `test-` pre-clears, with the last `app_settings` REPLACE being a perm setup rather than `data-setup-base`.
-  // The wiring below puts the scan in the third scheduling phase alongside `contestant-journey` alone — measured, not predicted: 0 mismatches over 91 scheduled projects.
   //
   // Auth setup - registers two users on the base dataset, logs each in and saves one storageState file per user (depends on the merged base dataset being seeded): the base candidate's user at `STORAGE_STATE`, and a user who has not accepted the terms of use at `TERMS_PENDING_STORAGE_STATE` (declared in `tests/utils/testCredentials.ts`). Declared UNCONDITIONALLY: the default-on `contestant-a11y-scan` project below consumes both stored sessions, `contestant-entry-phone`, which no variable gates, reads the base candidate's session for the password-reset page, and `contestant-terms-gate-phone`, which no variable gates either, is a second reader of the session of the user who has not accepted.
   {
@@ -456,7 +455,7 @@ const BASE_PROJECTS: Array<Project> = [
   //
   // An isolated `--project=contestant-identity-provider` run therefore pulls the whole chain transitively and takes full-suite time rather than seconds. `data-setup-base` is ordered before this project transitively, so `base.setup`'s sweep of an orphaned `e2e-bankauth-` dataset from an aborted prior run still runs first.
   //
-  // The teardown removes the dataset, the entities the application made for the users the specs made, and those users. The spec's browser context ignores HTTPS errors: its authorize leg navigates the browser to the mock issuer at `https://127.0.0.1:9443/oauth2/authorize`, served with a committed self-signed localhost cert, and Chrome would otherwise reject the cert and never follow the issuer's redirect back to `/api/oidc/callback`. TEST-ONLY: the browser context of this project alone. The mock OIDC issuer is spawned in every run via the `webServer` entry below; the dev server trusts its cert through `NODE_EXTRA_CA_CERTS`, which `tests/scripts/e2e-run.sh` sets.
+  // The teardown removes the dataset, the entities the application made for the users the specs made, and those users. The spec's browser context ignores HTTPS errors: its authorize leg navigates the browser to the mock issuer at `https://127.0.0.1:9443/oauth2/authorize`, served with a committed self-signed localhost cert, and Chrome would otherwise reject the cert and never follow the issuer's redirect back to `/api/oidc/callback`. TEST-ONLY: the browser context of this project alone. `tests/scripts/e2e-run.sh` starts the mock OIDC issuer in every run, and the dev server trusts its cert through `NODE_EXTRA_CA_CERTS`, which the wrapper sets.
   {
     name: 'data-setup-identity-provider',
     testMatch: /identity-provider\.setup\.ts/,
@@ -1015,7 +1014,7 @@ const ANALYTICS_STANDALONE_PROJECTS: Array<Project> = process.env.PLAYWRIGHT_ANA
  *   - OPT-IN projects (excluded from the default run): · visual-regression (PLAYWRIGHT_VISUAL) — opt-in because its PNG baselines are Linux/x86_64 captures that only reproduce on the CI runner image, not because it is broken: it is a BLOCKING job in .github/workflows/main.yaml.
  *       · data-setup-analytics-standalone, data-teardown-analytics-standalone, analytics-default-standalone (PLAYWRIGHT_ANALYTICS_STANDALONE) — a short stand-alone form of the tail of the perm chain, for runs that must be repeated quickly and for runs in another consent mode; the config refuses them in a run that does not name its projects.
  *       · analytics-consent-free (PLAYWRIGHT_ANALYTICS_STANDALONE) — the consent-free spec, run alone with the dev server in consent-free mode, which the wrapper starts from the same environment: `PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<new run name> --project analytics-consent-free`. The wrapper resets the database first, as it does by default.
- *   - the identity-provider projects, in the default run: bank-auth (depending on `data-setup-base`) calls `identity-callback` directly; data-setup-identity-provider -> contestant-identity-provider (with data-teardown-identity-provider) walks the browser through the mock OIDC issuer the `webServer` entry spawns, at the tail of the perm chain. `tests/scripts/e2e-run.sh` serves `identity-callback` with the identity provider's test environment, gives the dev server the same environment and restores the shared stack afterwards; a server started without that environment fails these specs.
+ *   - the identity-provider projects, in the default run: bank-auth (depending on `data-setup-base`) calls `identity-callback` directly; data-setup-identity-provider -> contestant-identity-provider (with data-teardown-identity-provider) walks the browser through the mock OIDC issuer, at the tail of the perm chain. `tests/scripts/e2e-run.sh` starts that issuer, serves `identity-callback` with the identity provider's test environment, gives the dev server the same environment and restores the shared stack afterwards; a server started without that environment fails these specs.
  *   - auth-service-contract: an API-only project in the default run, with no dependency and no stored session. It observes the running auth service refuse to create a user for an unauthenticated caller.
  *   - invitation-contract: an API-only project in the default run, depending on `data-setup-base` and with no stored session. It observes the server contract of invitations on the two rows the base dataset reserves for it.
  *   - invitation-landing: a browser project in the default run, depending on `data-setup-base` and with no stored session. It shows where a claimed project-scope invitation lands its user, creates and removes its own users, and writes on no row of the dataset.
@@ -1037,7 +1036,7 @@ export default defineConfig({
 
   /* SERVED-APPLICATION GATE.
    * Asserts that whatever is listening on `use.baseURL` below is THIS checkout's Vite dev server — proven by the served application's own response, not by the listener process — and aborts the run with exit 1 before any spec body if it is not. There is no bypass: `FRONTEND_PORT` moves the target, it does not skip the check.
-   * The path resolves relative to THIS config file's directory; that is not the `webServer.command` cwd gotcha documented further down, which concerns the spawn cwd instead.
+   * The path resolves relative to THIS config file's directory.
    * `--list` deliberately does not run it, so the "no dropped specs" check stays usable without a dev server (tests/README.md); the orphan-probe guard above
    * runs at config-load time and covers that path. */
   globalSetup: './global-setup.ts',
@@ -1094,19 +1093,5 @@ export default defineConfig({
     baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
   },
 
-  projects: [...BASE_PROJECTS, ...CLOSED_PROJECT_TRIO, ...ANALYTICS_STANDALONE_PROJECTS],
-
-  // Mock OIDC issuer for the identity-provider projects, spawned in every run. Playwright manages its lifecycle (start → wait-for-port → teardown). The readiness probe hits the issuer's HTTPS JWKS endpoint; `ignoreHTTPSErrors: true` is required because the issuer's cert is self-signed (CN=127.0.0.1). The issuer is self-contained (needs no app env), so spawning it from the Playwright worker is clean — the dev server's environment that points at it is prepared by `tests/scripts/e2e-run.sh`. `reuseExistingServer` outside CI lets a hand-started issuer be reused during local iteration.
-  //
-  // `tests/scripts/visual-container.sh` sets VC_RUN_DIR. The visual project reads nothing from the issuer, and the tree that container mounts holds the host's esbuild, which cannot start `tsx` on the container's platform.
-  webServer: process.env.VC_RUN_DIR
-    ? []
-    : {
-        // Absolute path derived from TESTS_DIR (the `tests/tests` dir). The Playwright `webServer.command` is resolved relative to the config file's directory (`tests/`), so a bare `tests/tests/support/...` relative path would double into `tests/tests/tests/...` and fail to resolve (ERR_MODULE_NOT_FOUND). The absolute entry path makes the spawn cwd-independent.
-        command: `npx tsx ${path.join(TESTS_DIR, 'support/mockOidcIssuerEntry.ts')}`,
-        url: 'https://127.0.0.1:9443/.well-known/openid-configuration/jwks',
-        ignoreHTTPSErrors: true,
-        reuseExistingServer: !process.env.CI,
-        timeout: 30_000
-      }
+  projects: [...BASE_PROJECTS, ...CLOSED_PROJECT_TRIO, ...ANALYTICS_STANDALONE_PROJECTS]
 });
