@@ -9,7 +9,7 @@
 --   NEW   - a new nomination: unconfirmed, at its election's current round, the symbol trimmed.
 --   OTHER - the requested name in the custom data, merged with the keys already there.
 --   LINK  - a listed party or alliance: its nomination at the contest linked, or created when there is none.
---   REQ   - the parent a candidate needs where its election's type requires one, raised inside the call.
+--   REQ   - the parent a candidate needs where its election's nomination shape requires one, raised inside the call.
 --   SKIP  - a nomination whose values did not change is not written.
 --   EDIT  - a changed value is written and leaves the row unconfirmed.
 --   KEEP  - an object that leaves its row's parent as it is.
@@ -113,7 +113,7 @@ INSERT INTO
     id,
     project_id,
     name,
-    election_type,
+    nomination_shape,
     current_round
   )
 VALUES
@@ -482,10 +482,10 @@ VALUES
     DEFAULT
   );
 
--- The election's type is changed after its nomination is stored: nothing re-checks a stored nomination, and the new type refuses a candidate.
+-- The election's nomination shape is changed after its nomination is stored: nothing re-checks a stored nomination, and the new shape refuses a candidate.
 UPDATE elections
 SET
-  election_type = 'organization_only'
+  nomination_shape = 'organization_only'
 WHERE
   id = pg_temp.eid ('e_flipped');
 
@@ -540,7 +540,7 @@ SELECT
   is (
     ARRAY(
       SELECT
-        e.election_type::text || ' ' || e.current_round
+        e.nomination_shape::text || ' ' || e.current_round
       FROM
         elections e
       WHERE
@@ -608,7 +608,7 @@ CREATE FUNCTION pg_temp.reach_now (p_type text, p_id uuid) RETURNS jsonb LANGUAG
       OR (p_type = 'organization' AND n.organization_id = p_id)
     )
     AND COALESCE(n.election_round, 1) = COALESCE(e.current_round, 1)
-    AND public.nomination_shape_rule(e.election_type, p_type::public.entity_type) IN ('admitted', 'parent_required');
+    AND public.nomination_shape_rule(e.nomination_shape, p_type::public.entity_type) IN ('admitted', 'parent_required');
 $fn$;
 
 -- The statement that calls the function, as text: `throws_ok` runs a string, so a database without the function fails each refusal as an assertion of its own. The expected reach is read when the statement runs. `50-nomination-write-guards.test.sql` asserts what a stale one is refused with.
@@ -3157,7 +3157,7 @@ SELECT
       )
     ),
     'Nomination shape refused: %',
-    'ATOM: by the election-type rule, which the function passes through'
+    'ATOM: by the nomination-shape rule, which the function passes through'
   );
 
 SELECT
