@@ -46,3 +46,37 @@ of the four test files. Afterwards `git grep -l FRONTEND_URL -- apps/frontend/sr
 
 B03_UNIT_EXIT=0
 B03_TYPECHECK_EXIT=0
+
+## Task 2 — the env template and the root compose
+
+Deleted: the two lines from the `# Frontend configuration` block of `.env.example`, together with the
+blank line that followed them, so the banner is followed by one blank line and then
+`FRONTEND_PORT=5173`. Also deleted: the two lines from the frontend service's `environment:` map in
+`docker-compose.dev.yml`. Every other line of both files is unchanged, and the root compose is kept
+(F-03).
+
+- `grep -c '^FRONTEND_PORT=' .env.example` prints 1; `grep -c PUBLIC_PROJECT_ID docker-compose.dev.yml` prints 1
+- `docker compose -f docker-compose.dev.yml config --quiet` exits 0
+- `yarn workspace @openvaa/dev-seed test:unit tests/deploymentTemplates.test.ts tests/analyticsEnvTemplates.test.ts tests/localSupabaseUrl.test.ts`: 3 files, 100 tests passed
+
+B03_COMPOSE_CONFIG_EXIT=0
+
+`yarn lint:check` exits 0.
+
+B03_LINT_EXIT=0
+
+The first `yarn test:unit` exited 1. Two tests failed, both in `@openvaa/dev-seed`
+`tests/integration/default-template.integration.test.ts`, with
+`bulkImport failed: column "election_type" of relation "elections" does not exist`. The cause was
+the stack, not this tree. The shared `openvaa-local` stack had been started at 08:15Z from the
+`voting-advice-application-reviewfix` checkout. Its applied migration 00023 is
+`elections_nomination_shape_column` (this tree's 00023 is `invitation_caller_limit`), and its edge
+runtime mounted that checkout's `functions`. No E2E run and no dev server on 5273 was live, so under
+the standing stack authorisation the stack was put back from this checkout with `yarn db:stop`,
+`yarn db:start` and then `yarn db:reset`. Afterwards the applied migrations end
+`00023 invitation_caller_limit` and `00024 invitation_caller_take_without_waits`, and the edge
+runtime mounts this checkout's `apps/supabase/supabase/functions`. Run again, `yarn test:unit`
+exits 0: 26 of 26 turbo tasks; dev-seed 1308 passed; frontend 8435 passed and 33 skipped (1 file
+skipped whole). This plan adds and removes no test.
+
+B03_TEST_UNIT_EXIT=0
