@@ -5,7 +5,7 @@ import type { TrackingEventData, TrackingEventName } from './trackingEvent.type'
  *
  * This is the ONE tracking-service type: the producer (`trackingService.svelte.ts`) implements it directly and `appContext` forwards it.
  *
- * CONSUMER-FACING SURFACE — deliberately narrower than the producer. The producer owns two further handle members: the send-policy input, `analyticsPolicy`, which `appContext` forwards under the same name, and the survey link's session id, which is read only producer to producer — `appContext` passes it into the survey-link producer and forwards it onto NO context. Both are therefore ABSENT from this type; see the selective forward in `appContext.svelte.ts`.
+ * CONSUMER-FACING SURFACE — the producer is wider than this type, and `appContext` forwards part of it; see the forwarding block in `appContext.svelte.ts`.
  *
  * Every event goes into one buffer, and `submitAllEvents` sends the view's pageview and the buffered events the send policy allows as one batch to the relay.
  */

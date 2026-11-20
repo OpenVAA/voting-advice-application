@@ -44,7 +44,7 @@ export type TrackingServiceInputs = {
  *
  * ONE TYPE, ONE IMPLEMENTATION: this class implements `TrackingService` (`trackingService.type.ts`) directly.
  *
- * The producer surface is deliberately WIDER than the consumer-facing `TrackingService`: `analyticsPolicy` and `visitId` are own members here (a class may declare more than the type it implements). `appContext` forwards `analyticsPolicy` under the same name, and reads `visitId` producer to producer to build the survey link, forwarding it to nobody.
+ * The producer surface is deliberately WIDER than the consumer-facing `TrackingService`, and `appContext` forwards only part of it.
  *
  * SPREAD-SAFETY (this is the most spread-sensitive producer in the app layer): the members `appContext` forwards from this producer are carried on through the three downstream `{ ...appContext }` spreads. Svelte 5 compiles bare `$state`/`$derived` CLASS fields to PRIVATE backing fields + PROTOTYPE accessors, which are NOT own-enumerable and are DROPPED by `{ ...instance }` spread. To stay byte-identical at the consumer across that spread, every spread-consumed member MUST be an OWN-ENUMERABLE instance field:
  *   - `analyticsPolicy` / `visitId` are OBJECT-LITERAL `{ current }` handle objects assigned to instance fields (the handle VALUE is copied by spread). Their getters close over `this` via a `const self = this` capture in the constructor so they read the private `$derived` backing.
@@ -167,7 +167,7 @@ export class TrackingServiceImpl implements TrackingService {
 /**
  * Factory wrapper preserving the `trackingService({...})` call signature. Returns the class instance itself — its forwarded members are own-enumerable, so `appContext`'s member forward and the downstream `{ ...appContext }` spreads carry them intact.
  *
- * The return type is the IMPLEMENTATION type, not the narrower consumer-facing `TrackingService`: `appContext` holds this producer privately (`#tracking`), forwards its `analyticsPolicy` and reads its `visitId` to build the survey link, and this module's own test asserts the producer's exact own-key surface. Consumers never see this type — they see whatever `appContext` chooses to forward.
+ * The return type is the IMPLEMENTATION type, wider than the consumer-facing `TrackingService`; `appContext` holds it privately and forwards only part of it.
  */
 export function trackingService(inputs: TrackingServiceInputs): TrackingServiceImpl {
   return new TrackingServiceImpl(inputs);
