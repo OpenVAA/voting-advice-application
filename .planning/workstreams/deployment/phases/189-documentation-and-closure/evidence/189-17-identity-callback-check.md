@@ -96,3 +96,43 @@ two, so the copies are kept equal by hand.
 G04_DRIFT_GUARD=none
 
 Filed: `.planning/todos/pending/2026-11-20-189-identity-callback-claim-config-drift-guard.md`.
+
+## G-03 — the hosted-auth todo's three unobserved asks
+
+The hosted-auth todo (`2026-10-07-174-hosted-project-auth-settings-allowlist-and-function-variables.md`)
+left three asks unobserved on any hosted project: the Email OTP Length (update 2026-10-22, review fix
+A, 174 WR-03), the `identity-callback` secret checks (update 2026-10-22, plan 179-15), and the shared
+per-address sign-in budget (update 2026-10-22, 174 IN-04 / 178 IN-05). Each is settled below by a
+probe row of plan 189-05 on the persistent (staging) project, or moved with its check to
+`.planning/todos/pending/2026-11-20-189-pre-launch-auth-checks-on-the-production-project.md`.
+
+**The OTP length.** `auth.other-settings` (`infra/scripts/probe/checks.mjs:412`) compares every key
+of the `auth` block of `infra/modules/supabase/hosted-settings.json` with the Management API's served
+auth config, except the two keys checked alone (`AUTH_KEYS_CHECKED_ALONE`, checks.mjs:299:
+`disable_signup`, `mailer_autoconfirm`). `mailer_otp_length` is one of the keys it compares
+(hosted-settings.json:21, value 10; the local `[auth.email] otp_length = 10` is at config.toml:265).
+The row passed, so the served length is 10. The module writes the setting, so the dashboard's label
+no longer has to be found and read.
+
+G03_OTP_LENGTH=observed 189-05 S1_CHECK_auth.other-settings=PASS 2026-11-20 (mailer_otp_length 10 served on the persistent project)
+
+**The `identity-callback` secret.** The 2026-10-22 update asks for four observations. Only the first
+is settled by a row: a keyless POST is answered `401 {"result":"refused"}`. That is the second
+clause of `functions.identity-callback-unverified` (checks.mjs:474: POST of `{}` with no key, `401`,
+`refused-result`), and index.ts:200 refuses a request without the header before it reads the
+configured secret. The rest is moved: the secret set to one value on both sides, a POST carrying a
+wrong secret refused (index.ts:203), the unset function secret answered `500 configuration` with the
+variable named in the log, the unset frontend variable ending the sign-in on `configuration_error`,
+and the sign-in completing with both set. None of it can be observed on staging today: bank
+authentication is not wired on the AWS task, and `function-secrets.tf` sets no
+`IDENTITY_CALLBACK_SERVER_SECRET` (`.planning/todos/pending/2026-11-20-189-bank-authentication-on-the-aws-task.md`).
+
+G03_CALLBACK_SECRET=observed 189-05 S1_CHECK_functions.identity-callback-unverified=PASS 2026-11-20 (keyless POST refused 401); moved: secret on both sides, wrong-secret POST, unset-secret answers, completed sign-in
+
+**The shared sign-in budget.** No probe row reads it. Settling it means sending failing sign-ins from
+one client and a correct one from another network, which writes to the auth service's rate-limit
+state and is not a read. Moved. The fuller procedure is in
+`.planning/todos/pending/2026-10-26-179.1-deployment-measure-the-shared-sign-in-budget-on-a-hosted-project.md`,
+which stays open.
+
+G03_SIGNIN_BUDGET=moved
