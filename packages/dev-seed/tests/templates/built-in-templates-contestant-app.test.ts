@@ -23,7 +23,7 @@ const TEMPLATE_NAMES = Object.keys(BUILT_IN_TEMPLATES);
 const checked = new Set<string>();
 
 /**
- * The served entity types, with their registration modes, each dataset family declares. The E2E base dataset serves both types, the perm family keeps the single-type app, and the two differ on purpose. Three perm datasets are each a family of their own, because an organization's editor signs in on them: `perm-organization-editing`, `perm-no-nomination` and `perm-contestant-nominations` serve both types.
+ * The served entity types, with their registration modes, each dataset family declares. The E2E base dataset serves both types, the perm family keeps the single-type app, and the two differ on purpose. Three perm datasets are each a family of their own, because an organization's editor signs in on them: `perm-organization-editing`, `perm-unnominated-entities` and `perm-contestant-nominations` serve both types.
  */
 const SERVED_BY_FAMILY = {
   default: {
@@ -47,7 +47,7 @@ const SERVED_BY_FAMILY = {
       organization: { registrationModes: [] }
     }
   },
-  'perm-no-nomination': {
+  'perm-unnominated-entities': {
     title: 'serves both entity types, with email and code registration for candidates and none for organizations',
     servedEntityTypes: {
       candidate: { registrationModes: ['email', 'code'] },
@@ -71,7 +71,7 @@ function familyOf(name: string): keyof typeof SERVED_BY_FAMILY {
   return name === 'default' ||
     name === 'e2e/base' ||
     name === 'perm-organization-editing' ||
-    name === 'perm-no-nomination' ||
+    name === 'perm-unnominated-entities' ||
     name === 'perm-contestant-nominations'
     ? name
     : 'perm';

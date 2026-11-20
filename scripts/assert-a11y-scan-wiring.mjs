@@ -35,8 +35,8 @@
  *     4a covers every file that declares an axe scan or helps declare one:
  *     the two specs of the scan family (`a11y-smoke.spec.ts`,
  *     `contestant-a11y.spec.ts`), the organization-editing spec
- *     (`specs/perm/perm-organization-editing.spec.ts`), the no-nomination
- *     spec (`specs/perm/perm-no-nomination.spec.ts`), the
+ *     (`specs/perm/perm-organization-editing.spec.ts`), the unnominated-entities
+ *     spec (`specs/perm/perm-unnominated-entities.spec.ts`), the
  *     contestant-nominations specs (every file of
  *     `specs/perm/perm-contestant-nominations/`) and the closed-project
  *     spec (`specs/perm/perm-closed-project.spec.ts`), each of which scans its
@@ -68,7 +68,7 @@
  *     belongs to neither app, and the first module's reach proof requires an
  *     address inside the Contestant App. The entry-scan spec scans the same
  *     page with no session. The
- *     organization-editing spec, the no-nomination spec and the
+ *     organization-editing spec, the unnominated-entities spec and the
  *     contestant-nominations specs hold tests other than scans, so no import
  *     is required of them; what they may not do is build a gate of their own.
  *     And in `axeScan.ts` itself, the raw-key verdict
@@ -115,7 +115,14 @@ const ORGANIZATION_EDITING_SPEC = path.resolve(
   'perm',
   'perm-organization-editing.spec.ts'
 );
-const NO_NOMINATION_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'perm', 'perm-no-nomination.spec.ts');
+const UNNOMINATED_ENTITIES_SPEC = path.resolve(
+  REPO_ROOT,
+  'tests',
+  'tests',
+  'specs',
+  'perm',
+  'perm-unnominated-entities.spec.ts'
+);
 const CONTESTANT_NOMINATIONS_DIR = path.resolve(
   REPO_ROOT,
   'tests',
@@ -201,7 +208,7 @@ function main() {
   const entryAxeScanSrc = readSource(ENTRY_AXE_SCAN_UTIL);
   const themedAxeScansSrc = readSource(THEMED_AXE_SCANS_UTIL);
   const organizationEditingSrc = readSource(ORGANIZATION_EDITING_SPEC);
-  const noNominationSrc = readSource(NO_NOMINATION_SPEC);
+  const unnominatedEntitiesSrc = readSource(UNNOMINATED_ENTITIES_SPEC);
   const contestantNominationsFiles = readSourceDir(CONTESTANT_NOMINATIONS_DIR);
   const closedProjectSrc = readSource(CLOSED_PROJECT_SPEC);
   const contestantEntryScanSrc = readSource(CONTESTANT_ENTRY_SCAN_SPEC);
@@ -217,7 +224,7 @@ function main() {
     entryAxeScanSrc === null ||
     themedAxeScansSrc === null ||
     organizationEditingSrc === null ||
-    noNominationSrc === null ||
+    unnominatedEntitiesSrc === null ||
     contestantNominationsFiles === null ||
     closedProjectSrc === null ||
     contestantEntryScanSrc === null ||
@@ -300,7 +307,7 @@ function main() {
   // --- Check 4a: no file that declares a scan, or helps declare one, builds its own axe gate ---
   // `gate` names where a file must obtain the shared gate from: the import it
   // must hold and the symbol it must name. The organization-editing spec, the
-  // no-nomination spec and the contestant-nominations specs have none: each
+  // unnominated-entities spec and the contestant-nominations specs have none: each
   // holds tests other than scans, so only the prohibition binds it.
   for (const { label, src, gate } of [
     {
@@ -350,7 +357,7 @@ function main() {
       }
     },
     { label: 'specs/perm/perm-organization-editing.spec.ts', src: organizationEditingSrc, gate: null },
-    { label: 'specs/perm/perm-no-nomination.spec.ts', src: noNominationSrc, gate: null },
+    { label: 'specs/perm/perm-unnominated-entities.spec.ts', src: unnominatedEntitiesSrc, gate: null },
     ...contestantNominationsFiles.map(({ label, src }) => ({ label, src, gate: null })),
     {
       label: 'specs/perm/perm-closed-project.spec.ts',

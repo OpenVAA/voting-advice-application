@@ -154,6 +154,10 @@ nominations: three elections of three nomination shapes (`organization_list`,
 party with no nomination row, a candidate and a party with nominations, and the
 parties and alliances a nomination can stand under.
 
+**`perm-identity-provider`** (prefix `e2e-bankauth-idp-`) is the identity-provider
+specs' minimal dataset, and their setup adds the identity provider's
+registration mode for candidates.
+
 ## Authoring Custom Templates
 
 Custom templates are plain TypeScript, JavaScript, or JSON files. The
