@@ -13,7 +13,7 @@
 --   PAR   - the shape refusals of one object, in the words set_entity_nominations uses, under the invitation's label.
 --   BOUND - the nominations of one item hold at most 1000 objects, counted before any object is read.
 --   WHO   - the caller's own authority: what the project editor may confirm, what a caller without authority over the project learns, and anon.
---   REQ   - the parent a candidate needs where its election's type requires one, raised inside the call.
+--   REQ   - the parent a candidate needs where its election's nomination shape requires one, raised inside the call.
 --   MODE  - the end-of-transaction parent rule is deferred again after a call.
 --   ANS   - the keys of each item's answer.
 --
@@ -112,7 +112,7 @@ INSERT INTO
     id,
     project_id,
     name,
-    election_type,
+    nomination_shape,
     current_round
   )
 VALUES

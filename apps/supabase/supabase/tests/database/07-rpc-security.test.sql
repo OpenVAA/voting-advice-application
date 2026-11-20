@@ -374,7 +374,7 @@ SELECT
         AND p.proname NOT LIKE 'test\_%'
         AND has_function_privilege('anon', p.oid, 'EXECUTE')
     ),
-    'contestant_app_public_config,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
+    'contestant_app_public_settings,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
     'census: the SECURITY DEFINER functions in public that anon can execute are exactly the six allow-listed ones'
   );
 
@@ -398,7 +398,7 @@ SELECT
         AND p.proname NOT LIKE 'test\_%'
         AND has_function_privilege('authenticated', p.oid, 'EXECUTE')
     ),
-    'claim_invitations,contestant_app_public_config,get_entity_basic_data,get_entity_nominations,get_nomination_parent_options,get_user_project_grants,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
+    'claim_invitations,contestant_app_public_settings,get_entity_basic_data,get_entity_nominations,get_nomination_parent_options,get_user_project_grants,project_open_for_voters,storage_path_can,storage_path_is_public,user_can,user_has_account_grant',
     'census: the SECURITY DEFINER functions in public that authenticated can execute are the same six plus claim_invitations, get_entity_basic_data, get_entity_nominations, get_nomination_parent_options and get_user_project_grants'
   );
 

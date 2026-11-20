@@ -70,13 +70,13 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Default app_settings for the default project
 --
--- Candidates may register by email or code: the shipped `registrationModes` allows nothing, and without the value here a candidate invitation created on this stack could not be used. A stored `contestantApp` replaces the default one whole, so the other members restate the shipped defaults.
+-- Candidates may register by email or code: the shipped `servedEntityTypes` serves candidates with no registration mode, and without the value here a candidate invitation created on this stack could not be used. A stored `contestantApp` replaces the default one whole, so the other members restate the shipped defaults.
 INSERT INTO
   app_settings (project_id, settings)
 VALUES
   (
     '00000000-0000-0000-0000-000000000001',
-    '{"contestantApp": {"questions": {"hideHero": false, "hideVideo": false}, "entityTypes": ["candidate"], "registrationModes": {"candidate": ["email", "code"], "organization": []}}}'::jsonb
+    '{"contestantApp": {"questions": {"hideHero": false, "hideVideo": false}, "servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}}}}'::jsonb
   )
 ON CONFLICT (project_id) DO NOTHING;
 

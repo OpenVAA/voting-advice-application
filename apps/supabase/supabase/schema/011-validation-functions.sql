@@ -6,8 +6,8 @@
 -- - is_image(jsonb) - whether a JSONB value is a well-formed StoredImage object
 -- - validate_image(jsonb) - raise a rule-specific error if a JSONB value is not a well-formed StoredImage object
 -- - validate_answer_value(jsonb, question_type, jsonb) - validate an answer value against its question type
--- - nomination_shape_rule(nomination_shape, entity_type) - which entity types an election type admits, and where a candidate needs a parent
--- - validate_nomination() - enforce nomination tenancy, the election-type rule, the constituency rule, hierarchy and parent consistency
+-- - nomination_shape_rule(nomination_shape, entity_type) - which entity types a nomination shape admits, and where a candidate needs a parent
+-- - validate_nomination() - enforce nomination tenancy, the nomination-shape rule, the constituency rule, hierarchy and parent consistency
 -- - validate_nomination_parent_required() - refuse, when the transaction ends, a candidate nomination that needs a parent and has none
 -- - enforce_nomination_confirmation() - refuse or clear a nomination's confirmation the caller may not set
 -- - enforce_nomination_entity_columns() - bound the nomination columns a non-admin may write
@@ -230,14 +230,14 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- nomination_shape_rule: the election type x entity type matrix, encoded once
+-- nomination_shape_rule: the nomination shape x entity type matrix, encoded once
 --
--- Answers, for one election type and one entity type, one of three words:
+-- Answers, for one nomination shape and one entity type, one of three words:
 --   'admitted'        - the entity type may be nominated, with or without a parent nomination.
 --   'parent_required' - it may be nominated, and when the transaction ends its nomination must have a parent nomination or carry `requestedParentOrganization` in its custom data.
 --   'refused'         - it may not be nominated in an election of that type.
 --
--- The CASE below is the table: one line per cell, one block per election type, the entity types in the same order in each. A faction stands wherever a candidate may have a parent, and an alliance wherever an organization may stand.
+-- The CASE below is the table: one line per cell, one block per nomination shape, the entity types in the same order in each. A faction stands wherever a candidate may have a parent, and an alliance wherever an organization may stand.
 --
 -- A NULL argument answers NULL, and so would a pair the CASE does not name. Every caller treats NULL as a refusal, so a type added to either enum admits nothing until it is given a cell here.
 --
@@ -275,12 +275,12 @@ SET
 $$;
 
 --------------------------------------------------------------------------------
--- validate_nomination: enforce the election-type rule, hierarchy and election/constituency consistency
+-- validate_nomination: enforce the nomination-shape rule, hierarchy and election/constituency consistency
 --
--- Election-type rule:
---   The row's entity type must be one its election's type admits, as `nomination_shape_rule` answers. A refusal is `Nomination shape refused: ...` with SQLSTATE 23514.
+-- Nomination-shape rule:
+--   The row's entity type must be one its election's nomination shape admits, as `nomination_shape_rule` answers. A refusal is `Nomination shape refused: ...` with SQLSTATE 23514.
 --   It binds every writer, on INSERT and on UPDATE: an entity's own editor, an admin, the service role and the owner of the tables alike. The function reads no role.
---   It is asked when a nomination is written. Nothing re-checks the nominations an election holds when its type is changed, so a later write of a row the new type refuses is refused.
+--   It is asked when a nomination is written. Nothing re-checks the nominations an election holds when its nomination shape is changed, so a later write of a row the new shape refuses is refused.
 --   Whether a candidate that needs a parent has one is not asked here: `validate_nomination_parent_required` asks it when the transaction ends.
 --
 -- Hierarchy rules:
@@ -291,7 +291,7 @@ $$;
 --
 -- Consistency rules:
 --   The nomination's election and constituency must belong to the nomination's own project.
---   The nomination's constituency must be a constituency of its election: one a constituency group linked to the election holds. A refusal is `Nomination constituency <id> is no constituency of its election <id>` with SQLSTATE 23514. It binds every writer, as the election-type rule does, and is asked on INSERT and on an UPDATE that changes the row's election or constituency. A stored nomination whose constituency is unlinked from its election later is not judged again until it is moved, so it can still be edited where it is.
+--   The nomination's constituency must be a constituency of its election: one a constituency group linked to the election holds. A refusal is `Nomination constituency <id> is no constituency of its election <id>` with SQLSTATE 23514. It binds every writer, as the nomination-shape rule does, and is asked on INSERT and on an UPDATE that changes the row's election or constituency. A stored nomination whose constituency is unlinked from its election later is not judged again until it is moved, so it can still be edited where it is.
 --   If parent_nomination_id is set, election_id, constituency_id, and election_round must match the parent nomination. A round that is not stored is round 1 on either side.
 --   A faction's parent must be the nomination of that faction's own organization, not merely of some organization. The exception names both organization ids.
 --
@@ -310,7 +310,7 @@ DECLARE
   p_parent_organization_id uuid;
   p_child_type public.entity_type;
   p_faction_organization_id uuid;
-  p_election_type public.nomination_shape;
+  p_nomination_shape public.nomination_shape;
   p_shape_rule text;
   p_contest_judged boolean;
 BEGIN
@@ -336,21 +336,21 @@ BEGIN
       USING ERRCODE = 'check_violation';
   END IF;
 
-  -- The election-type rule: the matrix is asked with the entity type derived above, because the generated `entity_type` column is NULL in a BEFORE trigger. Only 'admitted' and 'parent_required' let the row through, so an answer of NULL is a refusal. Checked for every writer, as the tenancy rule above is, and before the return below, which would otherwise let every row without a parent pass unasked.
-  SELECT e.election_type INTO p_election_type
+  -- The nomination-shape rule: the matrix is asked with the entity type derived above, because the generated `entity_type` column is NULL in a BEFORE trigger. Only 'admitted' and 'parent_required' let the row through, so an answer of NULL is a refusal. Checked for every writer, as the tenancy rule above is, and before the return below, which would otherwise let every row without a parent pass unasked.
+  SELECT e.nomination_shape INTO p_nomination_shape
   FROM public.elections e
   WHERE e.id = NEW.election_id;
 
-  p_shape_rule := public.nomination_shape_rule(p_election_type, p_child_type);
+  p_shape_rule := public.nomination_shape_rule(p_nomination_shape, p_child_type);
 
   IF p_shape_rule IS NULL OR p_shape_rule NOT IN ('admitted', 'parent_required') THEN
-    RAISE EXCEPTION 'Nomination shape refused: % cannot be nominated in an election of type % (election %)',
+    RAISE EXCEPTION 'Nomination shape refused: % cannot be nominated in an election whose nomination shape is % (election %)',
       CASE
         WHEN p_child_type IS NULL THEN 'a row that names no entity'
         WHEN p_child_type IN ('organization', 'alliance') THEN 'an ' || p_child_type::text
         ELSE 'a ' || p_child_type::text
       END,
-      p_election_type,
+      p_nomination_shape,
       NEW.election_id
       USING ERRCODE = 'check_violation';
   END IF;
@@ -473,7 +473,7 @@ DECLARE
   v_parent_nomination_id uuid;
   v_custom_data jsonb;
   v_election_id uuid;
-  v_election_type public.nomination_shape;
+  v_nomination_shape public.nomination_shape;
 BEGIN
   -- Scalar variables, not a row of the table's type: this file is applied before the table exists, and a declaration is resolved when the function is created.
   SELECT n.candidate_id, n.parent_nomination_id, n.custom_data, n.election_id
@@ -491,11 +491,11 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  SELECT e.election_type INTO v_election_type
+  SELECT e.nomination_shape INTO v_nomination_shape
   FROM public.elections e
   WHERE e.id = v_election_id;
 
-  IF public.nomination_shape_rule(v_election_type, 'candidate') = 'parent_required' THEN
+  IF public.nomination_shape_rule(v_nomination_shape, 'candidate') = 'parent_required' THEN
     RAISE EXCEPTION 'Nomination parent required: candidate nomination % in election % has neither a parent nomination nor a requested parent organization',
       NEW.id, v_election_id
       USING ERRCODE = 'check_violation';
