@@ -1,5 +1,6 @@
-import { log } from '@openvaa/app-shared';
+import { isPlainObject, log } from '@openvaa/app-shared';
 import { hasDefaultLocaleName, ownOrganizationId } from '$lib/contestant/utils/identityProviderAccount';
+import { isJsonRequest, isSameOriginRequest } from '$lib/server/http/sameOriginJson';
 import type { LocalizedString } from '@openvaa/app-shared';
 import type {
   AddressConfirmationResult,
@@ -53,7 +54,7 @@ export type VerifiedRegistrationUser = {
 
 /** The effects and facts of one request. */
 export interface IdentityProviderRegistrationDeps {
-  /** The endpoint's own origin, which a request's `Origin` header must equal. */
+  /** The endpoint's own origin, which a request without `Sec-Fetch-Site` must name in its `Origin` header. */
   origin: string;
   /** The project the application serves. */
   projectId: string;
@@ -95,10 +96,6 @@ function reply(status: IdentityProviderRegistrationReply['status'], result: Iden
   return { status, body: { result } };
 }
 
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 /**
  * Whether a value is a name the endpoint passes on: an object of texts, each in a supported locale and no longer than {@link MAX_NAME_LENGTH}.
  * @param value - The value.
@@ -107,7 +104,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
  */
 function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>): value is LocalizedString {
   return (
-    isObject(value) &&
+    isPlainObject(value) &&
     Object.entries(value).every(
       ([locale, text]) =>
         supportedLocales.includes(locale) && typeof text === 'string' && text.length <= MAX_NAME_LENGTH
@@ -122,7 +119,7 @@ function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>):
  * @returns The intent, or `null`.
  */
 function parseIntent(body: unknown, supportedLocales: ReadonlyArray<string>): RegistrationIntent | null {
-  if (!isObject(body)) return null;
+  if (!isPlainObject(body)) return null;
   if (body.intent === 'resend' || body.intent === 'acknowledge') return { intent: body.intent };
   if (body.intent !== 'save') return null;
 
@@ -143,19 +140,6 @@ function parseIntent(body: unknown, supportedLocales: ReadonlyArray<string>): Re
     intent.email = email;
   }
   return intent.name === undefined && intent.email === undefined ? null : intent;
-}
-
-/**
- * Whether a request may be served at all: JSON, from the endpoint's own origin.
- * @param request - The request.
- * @param origin - The endpoint's own origin.
- * @returns `true` when both hold.
- */
-function isSameOriginJson(request: Request, origin: string): boolean {
-  const contentType = request.headers.get('content-type') ?? '';
-  return (
-    request.headers.get('origin') === origin && contentType.split(';')[0].trim().toLowerCase() === 'application/json'
-  );
 }
 
 /**
@@ -196,7 +180,8 @@ export async function handleIdentityProviderRegistration(
   try {
     const verified = await deps.getVerifiedUser();
     if (!verified) return reply(401, failed);
-    if (!isSameOriginJson(request, deps.origin)) return reply(403, failed);
+    if (!isSameOriginRequest(request.headers, deps.origin) || !isJsonRequest(request.headers))
+      return reply(403, failed);
 
     const intent = parseIntent(await request.json().catch(() => undefined), deps.supportedLocales);
     if (!intent) return reply(400, failed);

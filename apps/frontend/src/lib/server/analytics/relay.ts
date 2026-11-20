@@ -27,6 +27,7 @@ import {
 import { isSensitiveEvent } from '$lib/analytics/events.schema';
 import { allowedPageviewParams } from '$lib/analytics/pageviewRoutes';
 import { isUuidV7, uuidV7TimestampMs } from '$lib/analytics/uuidv7';
+import { isJsonRequest, isSameOriginRequest } from '$lib/server/http/sameOriginJson';
 import type { AnalyticsEvent } from '$lib/analytics/analyticsEvent.type';
 import type { WireEvent } from '$lib/analytics/events.schema';
 import type { AnalyticsApp } from '$lib/analytics/modes';
@@ -53,9 +54,6 @@ export type RelayDeps = {
 /** The statuses the relay answers with: 204 accepted or dropped silently, 400 not a valid batch, 403 not same-origin, 413 too large, 415 not JSON. */
 export type RelayStatus = 204 | 400 | 403 | 413 | 415;
 
-/** The only media type the relay reads. */
-const JSON_MEDIA_TYPE = 'application/json';
-
 /** The outcome of reading the body: its text, or the status to refuse it with. */
 type BodyRead = { text: string } | { status: 400 | 413 };
 
@@ -77,8 +75,8 @@ export async function relay(
 
   const { headers } = request;
   if (headers.get('sec-gpc') !== null) return 204;
-  if (!isSameOrigin(headers.get('sec-fetch-site'), headers.get('origin'), origin)) return 403;
-  if (mediaType(headers.get('content-type')) !== JSON_MEDIA_TYPE) return 415;
+  if (!isSameOriginRequest(headers, origin)) return 403;
+  if (!isJsonRequest(headers)) return 415;
   const declaredLength = headers.get('content-length');
   if (declaredLength !== null && Number(declaredLength) > MAX_BODY_BYTES) return 413;
 
@@ -105,27 +103,6 @@ export async function relay(
   const context: BuildContext = { config, app, routeId: batch.routeId, locale: batch.locale, receivedAt };
   enqueue(batch.events.map((event) => buildEvent(event, context)));
   return 204;
-}
-
-/**
- * Whether the request comes from a page of this origin: by `Sec-Fetch-Site` when the browser sent it, otherwise by `Origin`.
- *
- * @param fetchSite - The `Sec-Fetch-Site` value, or `null`.
- * @param requestOrigin - The `Origin` value, or `null`.
- * @param ownOrigin - The server's own origin.
- */
-function isSameOrigin(fetchSite: string | null, requestOrigin: string | null, ownOrigin: string): boolean {
-  if (fetchSite !== null) return fetchSite === 'same-origin';
-  return requestOrigin !== null && requestOrigin === ownOrigin;
-}
-
-/**
- * The media type of a `Content-Type` value: the part before any parameter, trimmed and in lower case.
- *
- * @param contentType - The header value, or `null`.
- */
-function mediaType(contentType: string | null): string | undefined {
-  return contentType?.split(';', 1)[0].trim().toLowerCase();
 }
 
 /**

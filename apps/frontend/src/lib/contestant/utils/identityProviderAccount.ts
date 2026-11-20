@@ -12,7 +12,9 @@
  * Tested in `identityProviderAccount.test.ts`.
  */
 
+import { isPlainObject } from '@openvaa/app-shared';
 import { isBlankText } from '$lib/utils/localizedText';
+import { isCanonicalUuid } from '$lib/utils/uuid';
 
 /** The domain of every placeholder address. Nobody receives mail for it. */
 export const PLACEHOLDER_EMAIL_DOMAIN = 'bank-auth.placeholder';
@@ -48,7 +50,7 @@ export function isPlaceholderAddress(address: unknown): boolean {
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && value.trim() !== '';
+  return typeof value === 'string' && !isBlankText(value);
 }
 
 /**
@@ -67,12 +69,6 @@ export function addressStateOf({ email, newEmail, identityProvider }: AddressFac
 /** The key of `app_metadata` under which `identity-callback` records the entity an identity registered, per project and per entity type. The test of this module holds it equal to the function's own. */
 export const REGISTERED_ENTITIES_KEY = 'registered_entities';
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 /**
  * The value of an own member of an object, or `undefined` for anything else.
  * @param value - The object, of any type.
@@ -80,20 +76,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * @returns The member's value when `value` is an object holding it as its own.
  */
 function ownMember(value: unknown, key: string): unknown {
-  return isRecord(value) && Object.hasOwn(value, key) ? value[key] : undefined;
+  return isPlainObject(value) && Object.hasOwn(value, key) ? value[key] : undefined;
 }
 
 /**
  * The organization the identity registered in a project, as the account's `app_metadata` records it.
  *
- * Only own members are read, and anything that is not a recorded uuid answers `null`: an unreadable record names no organization, so nothing is asked about one.
+ * Only own members are read, and anything that is not a recorded uuid in its canonical, lower-case form answers `null`: an unreadable record names no organization, so nothing is asked about one.
  * @param appMetadata - The verified user's `app_metadata`, of any type.
  * @param projectId - The project the application serves.
  * @returns The organization's id, or `null` when the record names none for the project.
  */
 export function ownOrganizationId(appMetadata: unknown, projectId: string): string | null {
   const recorded = ownMember(ownMember(ownMember(appMetadata, REGISTERED_ENTITIES_KEY), projectId), 'organization');
-  return typeof recorded === 'string' && UUID_PATTERN.test(recorded) ? recorded : null;
+  return isCanonicalUuid(recorded) ? recorded : null;
 }
 
 /**

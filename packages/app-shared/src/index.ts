@@ -8,6 +8,7 @@ export * from './data/isImage';
 export * from './data/isLocalized';
 export * from './data/localized.type';
 export * from './data/schemas';
+export * from './data/utils/isPlainObject';
 export * from './logging/logger';
 export * from './logging/logger.type';
 export * from './settings/contestantAppSettings';
