@@ -68,7 +68,7 @@ export class AppContextProvider implements AppContext {
   #appTypeValue = $state<AppType>(undefined);
 
   /**
-   * The effective settings: the static settings, the shipped dynamic defaults and the stored settings, merged in that order member by member at every depth, with lists and scalars replaced whole (`mergeAppSettings`). A stored value that names one member of a settings group leaves the group's other members at their shipped values.
+   * The effective settings: the static settings, the shipped dynamic defaults and the stored settings, merged in that order member by member at every depth, with lists, scalars and `contestantApp.servedEntityTypes` replaced whole (`mergeAppSettings`). A stored value that names one member of a settings group leaves the group's other members at their shipped values.
    *
    * The DB override is folded into the INITIAL `$state` value, read synchronously from `page.data.appSettingsData`. This SYNCHRONOUS FIELD INITIALIZER runs both server-side AND client-side, so the server-rendered HTML already carries the DB override — no post-hydration default→override flash (a real production bug; `$effect` does not run on the server). The constructor `$effect` below handles only post-navigation `page.data` changes. NEVER move this initial derivation into an `$effect`.
    */

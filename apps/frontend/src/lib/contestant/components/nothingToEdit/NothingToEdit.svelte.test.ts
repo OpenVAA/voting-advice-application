@@ -24,7 +24,10 @@ vi.mock('$lib/contexts/contestant', () => ({
     t: (key: string) => key,
     getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
     logout: async () => undefined,
-    appSettings: { admin: { email: 'support@example.org' }, contestantApp: { entityTypes: ['candidate'] } },
+    appSettings: {
+      admin: { email: 'support@example.org' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    },
     answersLocked: false,
     userData: { savedEntityData: undefined },
     unansweredRequiredInfoQuestions: [],

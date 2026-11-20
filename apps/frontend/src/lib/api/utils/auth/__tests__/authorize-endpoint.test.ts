@@ -84,28 +84,22 @@ const FLOW_COOKIE_OPTIONS = { httpOnly: true, secure: true, sameSite: 'lax', pat
 
 type Matrix = { candidate?: Array<RegistrationMode>; organization?: Array<RegistrationMode> };
 
-/** Settings as a data provider returns them, serving the given types with the given matrix. */
-function settingsFor(entityTypes: Array<string>, registrationModes: Matrix) {
-  return { contestantApp: { entityTypes, registrationModes } };
+/** Settings as a data provider returns them, serving the types the matrix has a row for, each with its row's modes. */
+function settingsFor(matrix: Matrix) {
+  const servedEntityTypes: { [TType in keyof Matrix]?: { registrationModes: Array<RegistrationMode> } } = {};
+  for (const [entityType, registrationModes] of Object.entries(matrix) as Array<
+    [keyof Matrix, Array<RegistrationMode>]
+  >) {
+    servedEntityTypes[entityType] = { registrationModes };
+  }
+  return { contestantApp: { servedEntityTypes } };
 }
 
-const CANDIDATES_ONLY = settingsFor(['candidate', 'organization'], {
-  candidate: ['identity_provider'],
-  organization: ['email']
-});
-const BOTH_TYPES = settingsFor(['candidate', 'organization'], {
-  candidate: ['identity_provider'],
-  organization: ['identity_provider']
-});
-const ORGANIZATIONS_ONLY = settingsFor(['candidate', 'organization'], {
-  candidate: ['email'],
-  organization: ['identity_provider']
-});
-const NONE = settingsFor(['candidate'], { candidate: ['email', 'code'] });
-const ORGANIZATION_NOT_SERVED = settingsFor(['candidate'], {
-  candidate: ['email'],
-  organization: ['identity_provider']
-});
+const CANDIDATES_ONLY = settingsFor({ candidate: ['identity_provider'], organization: ['email'] });
+const BOTH_TYPES = settingsFor({ candidate: ['identity_provider'], organization: ['identity_provider'] });
+const ORGANIZATIONS_ONLY = settingsFor({ candidate: ['email'], organization: ['identity_provider'] });
+const NONE = settingsFor({ candidate: ['email', 'code'] });
+const ORGANIZATION_NOT_SERVED = settingsFor({ candidate: ['email'] });
 
 type MockEvent = Parameters<typeof POST>[0] & {
   cookies: { set: ReturnType<typeof vi.fn> };
