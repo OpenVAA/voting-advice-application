@@ -20,7 +20,7 @@ export const CONTESTANT_NOMINATIONS_PREFIX = 'e2e-perm-contestant-nominations-';
 /** An entity of the dataset that can hold a nomination: its type and its `external_id`. */
 export interface NominationEntityTarget {
   /** The entity's type. */
-  entityType: 'candidate' | 'organization' | 'alliance';
+  entityType: Exclude<Enums<'entity_type'>, 'faction'>;
   /** The entity's `external_id`. */
   externalId: string;
 }
@@ -188,9 +188,6 @@ export const EDIT_CANDIDATE_NOMINATION_EXTERNAL_ID = `${CONTESTANT_NOMINATIONS_P
 
 /** The election symbol the nominated candidate's nomination is seeded with. */
 export const EDIT_CANDIDATE_ELECTION_SYMBOL = '34';
-
-/** `external_id` of the nomination a state step writes for the nominated candidate in the closed-list election's southern region: its second in that election. No such row is seeded. */
-export const EDIT_CANDIDATE_SECOND_NOMINATION_EXTERNAL_ID = `${CONTESTANT_NOMINATIONS_PREFIX}nom-ca-edit-list-south`;
 
 // ---------------------------------------------------------------------------
 // The party with two nominations, and its editor.

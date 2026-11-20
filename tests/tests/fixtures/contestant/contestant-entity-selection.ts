@@ -46,6 +46,7 @@ import {
 import { testIds } from '../../utils/testIds';
 import { createHeaderLogout } from '../shared/headerLogout.fixture';
 import { createNavMenu } from '../shared/navMenu.fixture';
+import type { ServedEntityType } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
 import type { HeaderLogoutFixture } from '../shared/headerLogout.fixture';
 import type { NavMenuFixture } from '../shared/navMenu.fixture';
@@ -62,7 +63,7 @@ import type { ContestantSettingsPageFixture } from './contestantSettingsPage.fix
 /** An entity a contestant edits, as the spec addresses it. */
 export interface SelectionEntity {
   /** The entity's type, as the entity segment of its URL spells it. */
-  entityType: 'candidate' | 'organization';
+  entityType: ServedEntityType;
   /** The row's id. */
   id: string;
   /** The entity's displayed name, as the base dataset seeds it. */

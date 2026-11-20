@@ -22,15 +22,7 @@
  *   - `public ensureProject(projectId?)` — idempotent project + `app_settings` bootstrap
  *   - `public updateAppSettings(partialSettings)` — see usage-policy note above
  *
- * Added by this subclass:
- *   - Auth helpers: `listAllUsers`, `findAuthUser`, `insertGrant` and `removeUser` (private), `insertTermsOfUseAcceptance` (protected)
- *   - E2E query helpers: `findData`, `query`, `update`, `getAppSettings`, `countRowsByPrefix`
- *   - Identity lookups through candidate-editor grants: `candidateIdsForUser`, `userIdForCandidate`
- *   - Entity grants: `grantEntity`, `revokeEntityGrant`, `entityGrantCountForUser`
- *   - Account and global grants: `grantAccount`, `grantGlobal`, and the account a project belongs to, `accountIdOfProject`
- *   - Auth actions: `setPassword`, `acceptTermsOfUse`, `forceRegister`, `forceRegisterUser`, `forceRegisterAdmin`, `unregisterUser`
- *   - Invitations: `inviteByEmail` (seed one and ask the `account-access` function for a link), `invitationNomination` (a nomination an invitation states, resolved from external ids), `removeInvitations`, `releaseLinkSlot`, and the completion witness of a link request, `openLinkWitness` and `awaitLinkWitness`. Seeding itself is the inherited `createInvitations`
- *   - Reads of the auth users by prefix or address: `hasAuthUser`, `grantRowsForUser`, `countUsersByEmailPrefix`, `removeUsersByEmailPrefix`. Every read of the auth users in this file, these and the lookups behind the auth actions, pages through all of them and fails when the listing fails
+ * Added by this subclass: auth, grant, invitation and query helpers for the E2E harness, each documented at its declaration.
  *
  * Existing call sites `new SupabaseAdminClient()` or `new SupabaseAdminClient(url, key, projectId)` keep the same signature — the constructor below only substitutes a different project default.
  *
@@ -57,6 +49,7 @@ import {
 import { PROPERTY_MAP, TABLE_MAP } from '@openvaa/supabase-types';
 import { requestLink } from './accountAccessClient';
 import { TIMEOUTS } from '../helpers/timeouts';
+import type { ServedEntityType } from '@openvaa/app-shared';
 import type { FindDataResult, InvitationNominationSeed, SeededInvitation } from '@openvaa/dev-seed';
 // Direct import, the same shape `buildRoute.ts` uses. Type-only: the constant is consumed as `typeof ADMIN_GRANTS` below, which is a compile-time read of the application's own declaration and needs no runtime binding.
 import type { ADMIN_GRANTS, GrantClaim } from '../../../apps/frontend/src/lib/auth/roles';
@@ -105,8 +98,8 @@ interface AuthUserRow {
  * An entity an editor grant names: its type and its `external_id` in the client's project.
  */
 export interface EntityGrantTarget {
-  /** The entity's type. Only the two types a contestant can edit are admitted. */
-  entityType: 'candidate' | 'organization';
+  /** The entity's type. Only the types a contestant can edit are admitted. */
+  entityType: ServedEntityType;
   /** The entity's `external_id`, looked up in the client's own project. */
   externalId: string;
 }
@@ -167,7 +160,7 @@ function resolveFieldName(field: string): string {
 function registeredEntityIds(
   appMetadata: Record<string, unknown> | undefined,
   projectId: string,
-  entityType: 'candidate' | 'organization'
+  entityType: ServedEntityType
 ): Array<string> {
   const record = appMetadata?.registered_entities;
   if (typeof record !== 'object' || record === null) return [];
@@ -175,6 +168,15 @@ function registeredEntityIds(
   if (typeof inProject !== 'object' || inProject === null) return [];
   const id = (inProject as Record<string, unknown>)[entityType];
   return typeof id === 'string' && id !== '' ? [id] : [];
+}
+
+/**
+ * Whether a failed insert was refused by `idx_grants_one_candidate_editor`, the unique index that admits one editor per candidate.
+ *
+ * @param error - The error the insert returned.
+ */
+function isCandidateEditorConflict(error: { code?: string; message: string }): boolean {
+  return error.code === '23505' && error.message.includes('idx_grants_one_candidate_editor');
 }
 
 export class SupabaseAdminClient extends DevSeedAdminClient {
@@ -849,7 +851,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    *
    * The grant row is the only link from an identity to an entity, which is how the contestant app finds the user's own records, and `custom_access_token_hook` projects `public.grants` into the JWT on every token issue: a caller whose claim is an empty array is denied everything, so an identity minted without this row logs in and is then refused by policies, which reads as a product defect rather than as a fixture gap.
    *
-   * A candidate admits one editor. Whether a candidate is free is decided here, at run time, against this client's project, and a candidate that already has an editor is refused by name before the insert; `idx_grants_one_candidate_editor` would refuse it too, with a message that names no candidate.
+   * A candidate admits one editor. `idx_grants_one_candidate_editor` refuses a second one, and the error names the candidate by its external id.
    *
    * @param userId - The auth user the grant is written for.
    * @param target - The entity's type and external id.
@@ -858,46 +860,55 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    */
   private async grantEntityToUser(userId: string, target: EntityGrantTarget, caller: string): Promise<void> {
     const entityId = await this.entityIdForGrantTarget(target, caller);
-
-    if (target.entityType === 'candidate') {
-      const editorId = await this.userIdForCandidate(entityId);
-      if (editorId) {
-        throw new Error(
-          `${caller}: candidate ${target.externalId} already has an editor (user ${editorId}); a candidate admits one. ` +
-            'Unregister that user first, or grant a candidate that no identity of the run edits.'
-        );
-      }
-    }
-
-    await this.insertEntityEditorGrant(userId, target.entityType, entityId, caller);
+    await this.insertEntityEditorGrant({
+      userId,
+      entityType: target.entityType,
+      entityId,
+      externalId: target.externalId,
+      caller
+    });
   }
 
   /**
    * Insert one `(entity, <type>, <id>, editor)` grant row. The one place in this file that inserts an entity grant.
    *
-   * @param userId - The auth user the grant is written for.
-   * @param entityType - The entity's type.
-   * @param entityId - The entity's id.
-   * @param caller - Name of the public method making the call; it prefixes the error text.
-   * @throws Error if the insert fails.
+   * @param args.userId - The auth user the grant is written for.
+   * @param args.entityType - The entity's type.
+   * @param args.entityId - The entity's id.
+   * @param args.externalId - The entity's `external_id`, which names it in the error when a candidate already has an editor. Without one the error names the entity's id.
+   * @param args.caller - Name of the public method making the call; it prefixes the error text.
+   * @throws Error if a candidate already has an editor, or if the insert fails.
    */
-  private async insertEntityEditorGrant(
-    userId: string,
-    entityType: EntityGrantTarget['entityType'],
-    entityId: string,
-    caller: string
-  ): Promise<void> {
-    await this.insertGrant(
-      userId,
-      { scope: 'entity', target_type: entityType, target_id: entityId, role: 'editor' },
-      caller
-    );
+  private async insertEntityEditorGrant({
+    userId,
+    entityType,
+    entityId,
+    externalId,
+    caller
+  }: {
+    userId: string;
+    entityType: ServedEntityType;
+    entityId: string;
+    externalId?: string;
+    caller: string;
+  }): Promise<void> {
+    const { error } = await this.client
+      .from('grants')
+      .insert({ user_id: userId, scope: 'entity', target_type: entityType, target_id: entityId, role: 'editor' });
+    if (!error) return;
+    if (isCandidateEditorConflict(error)) {
+      throw new Error(
+        `${caller}: candidate ${externalId ?? entityId} already has an editor; a candidate admits one. ` +
+          'Unregister that user first, or grant a candidate that no identity of the run edits.'
+      );
+    }
+    throw new Error(`${caller}: insert grant failed: ${error.message}`);
   }
 
   /**
    * Make an existing user the editor of an entity of this client's project.
    *
-   * The second half of {@link forceRegister} on its own: that method creates the user and then writes the user's first grant through the same code path this method uses. Which candidates are free is decided here, at run time, against the suite's project: a candidate that already has an editor is refused with an error naming it. An organization admits several editors.
+   * The second half of {@link forceRegister} on its own: that method creates the user and then writes the user's first grant through the same code path this method uses. A candidate that already has an editor is refused with an error naming it. An organization admits several editors.
    *
    * A grant written after the user's token was issued is not in that token. Write the grants before the user signs in when the session must carry them.
    *
@@ -939,11 +950,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @returns How many grant rows were removed.
    * @throws Error if the delete fails.
    */
-  async revokeEntityGrantById(
-    userId: string,
-    entityType: 'candidate' | 'organization',
-    entityId: string
-  ): Promise<number> {
+  async revokeEntityGrantById(userId: string, entityType: ServedEntityType, entityId: string): Promise<number> {
     const { data, error } = await this.client
       .from('grants')
       .delete()
@@ -1023,7 +1030,12 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     }
     const candidateId = candidate.id as string;
     try {
-      await this.insertEntityEditorGrant(userId, 'candidate', candidateId, 'createCandidateEditedBy');
+      await this.insertEntityEditorGrant({
+        userId,
+        entityType: 'candidate',
+        entityId: candidateId,
+        caller: 'createCandidateEditedBy'
+      });
     } catch (grantError) {
       await this.client.from('candidates').delete().eq('id', candidateId).eq('project_id', this.projectId);
       throw grantError;

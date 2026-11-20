@@ -55,6 +55,7 @@ import {
 import { assertSignInLinkShape, runOriginFromEnv, toRunOrigin } from '../../utils/mailedLink';
 import { resolveE2eProjectId, SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { supabaseServiceRoleKey } from '../../utils/supabaseServiceRoleKey';
+import type { ServedEntityType } from '@openvaa/app-shared';
 import type { SeededInvitation } from '@openvaa/dev-seed';
 import type { Page, Route } from '@playwright/test';
 import type { GrantClaim } from '../../../../apps/frontend/src/lib/auth/roles';
@@ -63,7 +64,7 @@ import type { RpcAnswer, SessionTokens } from '../../utils/authApi';
 import type { EntityGrantTarget, LinkWitnessOutcome } from '../../utils/supabaseAdminClient';
 
 /** Which of a flow's reserved dataset rows a step works on. */
-export type DedicatedTarget = 'candidate' | 'organization';
+export type DedicatedTarget = ServedEntityType;
 
 /**
  * The dataset rows reserved for one flow: for each kind of entity, the `external_id` of the row.
