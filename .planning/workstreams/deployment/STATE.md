@@ -4,13 +4,13 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189
 current_phase_name: Documentation and Closure
-current_plan: 20
+current_plan: 1
 status: executing
 stopped_at: Phase 188 complete, ready to plan Phase 189
-last_updated: "2026-11-20T09:43:16.560Z"
+last_updated: "2026-11-20T09:45:09.220Z"
 last_activity: 2026-11-20
-last_activity_desc: Phase 188 complete, transitioned to Phase 189
-state_head: dbed0a7e32f20e0fef3bfe123dbf545aed127353
+last_activity_desc: Phase 189 execution started
+state_head: 5988288b4a07ac4d6e7921ca8c9cad6e5fd6423d
 progress:
   total_phases: 10
   completed_phases: 8
@@ -27,23 +27,23 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 188 — Relay on the Deployed Stack, and the Per-Caller Limit
+**Current focus:** Phase 189 — Documentation and Closure
 
 ## Current Position
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189 (Documentation and Closure) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-11-20 — Phase 188 complete, transitioned to Phase 189
+Phase: 189 (Documentation and Closure) — EXECUTING
+Plan: 1 of 20
+Status: Executing Phase 189
+Last activity: 2026-11-20 — Phase 189 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 80%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 20
+**Current Plan:** 1
 
 From 184 on, the numeric order is the dependency order.
 
