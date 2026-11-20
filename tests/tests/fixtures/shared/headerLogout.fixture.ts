@@ -24,7 +24,8 @@
  *  - stay()          — press the logout modal's Continue, and the modal closes.
  *  - closeAsThePlatformDoes() — close the open dialog with no key pressed, as a phone's back gesture does, and the dialog closes.
  *  - logOutInModal() — press the logout modal's Log out. The caller asserts where the user ends.
- *  - pressModalClose() — press the open dialog's close button, the ✕. The caller asserts what follows.
+ *  - pressModalClose() — press the open dialog's close button, the ✕, also while it reads as unavailable. The caller asserts what follows.
+ *  - expectModalCloseUnavailable() — the open dialog's ✕ reads as unavailable, as while the modal is held open.
  *  - pressEscape()   — press Escape. The caller asserts what follows.
  *  - expectModalSaysUnsavedAlone() — the modal says that unsaved changes will be lost, and nothing more than its count.
  *  - expectModalSaysUnsavedAndWhatIsLeft() — the modal says that unsaved changes will be lost, and at least one more thing above its count.
@@ -114,7 +115,7 @@ const SEEDED_DRAFT_KEY = `${DRAFT_KEY_STEM}seeded-user-candidate-seeded-entity`;
  * Create the fixture for the header's Log out.
  *
  * @param page - The page the fixture drives.
- * @returns The fixture's steps: `expectShown`, `expectAbsent`, `press`, `installClock`, `installClockBehindTheServer`, `pressExpectingDialog`, `goBack`, `goBackAndSettle`, `goBackFromThePage`, `historyLength`, `expectLeftTheApp`, `expectDialogClosed`, `expectDialogOpen`, `advancePastModalCount`, `moveWallClockPastTheCount`, `showTabAgain`, `reloadTab`, `stay`, `closeAsThePlatformDoes`, `logOutInModal`, `pressModalClose`, `pressEscape`, `expectModalSaysUnsavedAlone`, `expectModalSaysUnsavedAndWhatIsLeft`, `expectModalNamesUnsavedAndDescribesCount`, `expectModalDescribesCount`, `expectModalDescriptionHoldsWhileCounting`, `expectNoSignOutRequest`, `expectSignOutRequested`, `expectStillSignedIn`, `expectSignedOut`, `endSessionWithNoSignal`, `dropSessionCookies`, `failSignOut`, `failSignOutAfterClearingCookies`, `restoreSignOut`, `holdSignOut`, `releaseSignOut`, `releaseSignOutAsFailure`, `expectInProgress`, `expectFailureMessage`, `expectNoFailureMessage`, `expectFailureMessagePressable`, `expectFailureMessageNamedOnce`, `closeFailureMessage`, `expectFailureMessageInsideThePhoneViewport`, `seedContestantDraft`, `expectNoContestantDraft`, `expectLogoutDeadlineSet`, `passLogoutDeadline`, `dropLogoutDeadline` and `expectNoLogoutDeadline`.
+ * @returns The fixture's steps: `expectShown`, `expectAbsent`, `press`, `installClock`, `installClockBehindTheServer`, `pressExpectingDialog`, `goBack`, `goBackAndSettle`, `goBackFromThePage`, `historyLength`, `expectLeftTheApp`, `expectDialogClosed`, `expectDialogOpen`, `advancePastModalCount`, `moveWallClockPastTheCount`, `showTabAgain`, `reloadTab`, `stay`, `closeAsThePlatformDoes`, `logOutInModal`, `pressModalClose`, `expectModalCloseUnavailable`, `pressEscape`, `expectModalSaysUnsavedAlone`, `expectModalSaysUnsavedAndWhatIsLeft`, `expectModalNamesUnsavedAndDescribesCount`, `expectModalDescribesCount`, `expectModalDescriptionHoldsWhileCounting`, `expectNoSignOutRequest`, `expectSignOutRequested`, `expectStillSignedIn`, `expectSignedOut`, `endSessionWithNoSignal`, `dropSessionCookies`, `failSignOut`, `failSignOutAfterClearingCookies`, `restoreSignOut`, `holdSignOut`, `releaseSignOut`, `releaseSignOutAsFailure`, `expectInProgress`, `expectFailureMessage`, `expectNoFailureMessage`, `expectFailureMessagePressable`, `expectFailureMessageNamedOnce`, `closeFailureMessage`, `expectFailureMessageInsideThePhoneViewport`, `seedContestantDraft`, `expectNoContestantDraft`, `expectLogoutDeadlineSet`, `passLogoutDeadline`, `dropLogoutDeadline` and `expectNoLogoutDeadline`.
  */
 export function createHeaderLogout(page: Page) {
   const button = page.getByTestId(testIds.shared.header.logout);
@@ -329,10 +330,22 @@ export function createHeaderLogout(page: Page) {
     },
 
     /**
-     * Press the open dialog's close button, the ✕, found by its accessible name. The caller asserts what follows.
+     * Press the open dialog's close button, the ✕, found by its accessible name. While the modal is held open the ✕ is `aria-disabled`, which Playwright reads as not enabled although a user can still press it, so the press skips the enabled check once the ✕ is visible. The caller asserts what follows.
      */
     async pressModalClose(): Promise<void> {
-      await dialog.getByRole('button', { name: COMMON_MESSAGES.closeDialog, exact: true }).click();
+      const close = dialog.getByRole('button', { name: COMMON_MESSAGES.closeDialog, exact: true });
+      await expect(close).toBeVisible();
+      await close.click({ force: true });
+    },
+
+    /**
+     * Assert that the open dialog's close button, the ✕, reads as unavailable, as it does while the modal is held open.
+     */
+    async expectModalCloseUnavailable(): Promise<void> {
+      await expect(dialog.getByRole('button', { name: COMMON_MESSAGES.closeDialog, exact: true })).toHaveAttribute(
+        'aria-disabled',
+        'true'
+      );
     },
 
     /**

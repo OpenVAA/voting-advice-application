@@ -658,10 +658,11 @@ test.describe('contestant entity selection', () => {
           await contestantProfilePage.expectPersonNames(UNSAVED_FIRST_NAME, SEEDED_LAST_NAME_B);
         });
 
-        await test.step("with the sign-out held, the modal's Log out is pressed, and the ✕ and three Escapes leave the modal open", async () => {
+        await test.step("with the sign-out held, the modal's Log out is pressed, the ✕ reads as unavailable, and the ✕ and three Escapes leave the modal open", async () => {
           await headerLogout.holdSignOut();
           await headerLogout.pressExpectingDialog();
           await headerLogout.logOutInModal();
+          await headerLogout.expectModalCloseUnavailable();
           await headerLogout.pressModalClose();
           await headerLogout.pressEscape();
           await headerLogout.pressEscape();
