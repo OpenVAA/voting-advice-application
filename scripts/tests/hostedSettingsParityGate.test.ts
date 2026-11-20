@@ -17,8 +17,8 @@ import { afterAll, describe, expect, it } from 'vitest';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-/** `packages/dev-seed/tests` → repo root. */
-const REPO_ROOT = resolve(HERE, '../../..');
+/** `scripts/tests` → repo root. */
+const REPO_ROOT = resolve(HERE, '../..');
 
 const GUARD_PATH = 'scripts/assert-hosted-settings-parity.mjs';
 const SETTINGS_PATH = 'infra/modules/supabase/hosted-settings.json';

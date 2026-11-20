@@ -5,8 +5,6 @@
  * - `render.example.yaml` declares all five, and the key entry uses `sync: false` with no `value:`, so the secret is entered in the Render dashboard only.
  * - `docker-compose.dev.yml` passes all five through with a default, the provider defaulting to `none` as in the code.
  * - No template names a `PUBLIC_ANALYTICS` variable: the analytics configuration is private to the server, and the browser receives only the projection the root load returns.
- *
- * It lives in this package because `yarn test:unit` runs per workspace and this package already reads repository-root files from its tests.
  */
 
 import { readFileSync } from 'node:fs';
@@ -15,8 +13,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-/** `packages/dev-seed/tests` → repo root. */
-const REPO_ROOT = resolve(HERE, '../../..');
+/** `scripts/tests` → repo root. */
+const REPO_ROOT = resolve(HERE, '../..');
 
 const ANALYTICS_VARIABLES: Array<string> = [
   'ANALYTICS_PROVIDER',

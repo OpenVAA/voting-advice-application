@@ -16,8 +16,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-/** `packages/dev-seed/tests` → repo root. */
-const REPO_ROOT = resolve(HERE, '../../..');
+/** `scripts/tests` → repo root. */
+const REPO_ROOT = resolve(HERE, '../..');
 
 const ROOT_PACKAGE_JSON = JSON.parse(readFileSync(resolve(REPO_ROOT, 'package.json'), 'utf8')) as {
   scripts: Record<string, string>;
@@ -52,26 +52,10 @@ const CHECKS = [
 const BOOTSTRAP_FILE = 'infra/scripts/bootstrap.sql';
 
 describe('the on-demand deployment checks are callable by key and stay outside lint:check', () => {
-  it('runs the schema equivalence check from `check:schema-equivalence`', () => {
-    expect(SCRIPTS['check:schema-equivalence']).toBe('bash apps/supabase/scripts/check-schema-equivalence.sh');
-  });
-
-  it('runs the migration drift check from `check:migration-drift`', () => {
-    expect(SCRIPTS['check:migration-drift']).toBe('bash infra/scripts/check-drift.sh');
-  });
-
-  it('runs the seed check from `check:seed`', () => {
-    expect(SCRIPTS['check:seed']).toBe('psql -X -f infra/scripts/check-seed.sql');
-  });
-
-  it('runs the proxy topology check from `check:proxy-topology`', () => {
-    expect(SCRIPTS['check:proxy-topology']).toBe('bash infra/local/check-proxy-topology.sh');
-  });
-
-  it.each(CHECKS)('keeps the file `$file` that `$key` names present', ({ key, command, file }) => {
+  it.each(CHECKS)('runs `$command` from `$key` and keeps the file `$file` present', ({ key, command, file }) => {
     // Wired-but-deleted: a key naming a file that is gone fails only when someone calls it, with a bare "No such file".
     expect(command).toContain(file);
-    expect(SCRIPTS[key]).toContain(file);
+    expect(SCRIPTS[key]).toBe(command);
     expect(existsSync(resolve(REPO_ROOT, file))).toBe(true);
   });
 

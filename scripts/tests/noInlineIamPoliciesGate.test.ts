@@ -16,8 +16,8 @@ import { describe, expect, it } from 'vitest';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-/** `packages/dev-seed/tests` → repo root. */
-const REPO_ROOT = resolve(HERE, '../../..');
+/** `scripts/tests` → repo root. */
+const REPO_ROOT = resolve(HERE, '../..');
 
 const GUARD_PATH = 'scripts/assert-no-inline-iam-policies.mjs';
 const FIXTURE_VIOLATIONS = 'scripts/fixtures/no-inline-iam-policies/violations';

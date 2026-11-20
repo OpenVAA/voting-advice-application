@@ -24,8 +24,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-/** `packages/dev-seed/tests` → repo root. */
-const REPO_ROOT = resolve(HERE, '../../..');
+/** `scripts/tests` → repo root. */
+const REPO_ROOT = resolve(HERE, '../..');
 const GUARD = 'scripts/assert-no-candidate-app-names.mjs';
 
 const roots = new Array<string>();

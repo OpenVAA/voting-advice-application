@@ -107,7 +107,8 @@
   "type": "module",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "scripts"
   ],
   "packageManager": "yarn@4.18.1",
   "dependenciesMeta": {

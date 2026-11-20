@@ -6,8 +6,6 @@
  * Both lists are read at run time: the fixtures from the directory, the rules from the guard's `FROZEN_RULES`. A rule added without a fixture, or a fixture left without a rule, fails here.
  *
  * The real migrations are frozen: `apps/supabase/supabase/migrations.manifest.json` lists them, the checker finds nothing wrong with them, and `--write`, which `yarn schema:regenerate` runs, refuses instead of rewriting the baseline.
- *
- * It lives in this package because `yarn test:unit` runs per workspace and this package already reads repository-root files from its tests.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -28,8 +26,8 @@ interface FreezeGuard {
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-/** `packages/dev-seed/tests` → repo root. */
-const REPO_ROOT = resolve(HERE, '../../..');
+/** `scripts/tests` → repo root. */
+const REPO_ROOT = resolve(HERE, '../..');
 const GUARD_FILE = 'scripts/assert-schema-migration-parity.mjs';
 const FIXTURE_DIR = 'scripts/fixtures/schema-migration-freeze';
 const FIXTURE_ROOT = resolve(REPO_ROOT, FIXTURE_DIR);

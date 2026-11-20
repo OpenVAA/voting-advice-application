@@ -1693,6 +1693,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/repo-gates@workspace:scripts":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/repo-gates@workspace:scripts"
+  dependencies:
+    "@types/node": "catalog:"
+    vite: "catalog:"
+    vitest: "catalog:"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/shared-config@workspace:^, @openvaa/shared-config@workspace:packages/shared-config":
   version: 0.0.0-use.local
   resolution: "@openvaa/shared-config@workspace:packages/shared-config"
