@@ -1,10 +1,10 @@
--- 55-answers-lock.test.sql: while a project's answers are locked, an entity's own editor writes nothing of its entity, and a project grant holder still does
+-- 55-answers-lock.test.sql: while a project's contestant editing is locked, an entity's own editor writes nothing of its entity, and a project grant holder still does
 --
--- The lock is the app setting `access.answersLocked`, stored in the project's `app_settings` row and read by `private.project_answers_locked`, the twin of `private.project_nominations_locked`. It binds the entity-scope write rules only:
+-- The lock is the value `locked` of the app setting `access.contestantEditing`, stored in the project's `app_settings` row and read by `private.project_contestant_editing`, whose answer `nominationsLocked` is the nominations lock 23-nominations-write.test.sql asserts. It binds the entity-scope write rules only:
 --   - the self-update policies `entity_update_own_candidates`, `_organizations`, `_factions` and `_alliances`;
 --   - the entity-scope nomination policies `entity_insert_nominations`, `entity_insert_parent_nominations`, `entity_update_nominations` and `entity_delete_nominations`;
 --   - the entity-scope write of `storage_path_can`, which the `entity_*_assets` storage policies ask;
---   - `upsert_answers` and `set_entity_nominations`, which refuse an entity's editor with SQLSTATE 42501 and `<function>: answers are locked in this project`, so the lock is told apart from a row the caller may not write.
+--   - `upsert_answers` and `set_entity_nominations`, which refuse an entity's editor with SQLSTATE 42501 and `upsert_answers: answers are locked in this project` or `set_entity_nominations: editing is locked in this project`, so the lock is told apart from a row the caller may not write.
 -- The project-scope policies do not read it, so a project editor and a project admin write the same rows, store the same objects and call the same functions while answers are locked.
 --
 -- Sections:
@@ -20,7 +20,7 @@
 --
 -- Depends on:
 -- - 00-helpers.test.sql (create_test_data, test_id, test_user_id, test_user_grants, set_test_user, reset_role)
--- - 301-auth-functions.sql (private.project_answers_locked)
+-- - 301-auth-functions.sql (private.project_contestant_editing)
 -- - 302-rls.sql (the entity self-update and nomination policies)
 -- - 400-storage.sql (storage_path_can and the storage policies)
 -- - 503-entity-rpcs.sql (upsert_answers, set_entity_nominations)
@@ -53,10 +53,10 @@ BEGIN
 END;
 $fn$;
 
--- The helper's answer for one project. A database without the helper answers NULL here, so each row of section 1 fails as an assertion of its own rather than ending the file.
+-- Whether the helper answers `locked` for one project. A database without the helper answers NULL here, so each row of section 1 fails as an assertion of its own rather than ending the file.
 CREATE FUNCTION pg_temp.answers_locked (p_project_id uuid) RETURNS boolean LANGUAGE plpgsql AS $fn$
 BEGIN
-  RETURN private.project_answers_locked(p_project_id);
+  RETURN private.project_contestant_editing(p_project_id) = 'locked';
 EXCEPTION
   WHEN undefined_function THEN
     RETURN NULL;
@@ -76,10 +76,10 @@ BEGIN
 END;
 $fn$;
 
--- Sets project A's `access.answersLocked`, keeping every other member of the row.
+-- Sets project A's `access.contestantEditing` to `locked`, or to `open`, keeping every other member of the row.
 CREATE FUNCTION pg_temp.set_answers_locked (p_locked boolean) RETURNS void LANGUAGE sql AS $fn$
   UPDATE public.app_settings
-  SET settings = jsonb_recursive_merge(settings, jsonb_build_object('access', jsonb_build_object('answersLocked', p_locked)))
+  SET settings = jsonb_recursive_merge(settings, jsonb_build_object('access', jsonb_build_object('contestantEditing', CASE WHEN p_locked THEN 'locked' ELSE 'open' END)))
   WHERE project_id = public.test_id('project_a');
 $fn$;
 
@@ -166,7 +166,7 @@ VALUES
 -- =====================================================================
 -- Section 1: which stored values lock
 --
--- Locked for a project that does not exist and for the JSON boolean `true` at `access.answersLocked`; unlocked for everything else. The string is the case a text comparison would read as locked, and the nominations lock's key the case a helper reading the wrong key would.
+-- Locked for a project that does not exist and for the JSON string `locked` at `access.contestantEditing`; unlocked for everything else. The JSON boolean is the case a reader of the lock booleans this setting replaces would read as locked, and `nominationsLocked` the case a helper that took any value but `open` for locked would.
 -- =====================================================================
 SELECT
   is (
@@ -184,33 +184,35 @@ SELECT
 
 SELECT
   is (
-    pg_temp.answers_locked_with_access ('{"answersLocked":true}'::jsonb),
+    pg_temp.answers_locked_with_access ('{"contestantEditing":"locked"}'::jsonb),
     true,
-    'ALK: the JSON boolean true locks'
+    'ALK: the JSON string "locked" locks'
   );
 
 SELECT
   is (
-    pg_temp.answers_locked_with_access ('{"answersLocked":"true"}'::jsonb),
+    pg_temp.answers_locked_with_access ('{"contestantEditing":true}'::jsonb),
     false,
-    'ALK: the string "true" is unlocked'
+    'ALK: the JSON boolean true is unlocked'
   );
 
 SELECT
   is (
-    pg_temp.answers_locked_with_access ('{"answersLocked":false}'::jsonb),
+    pg_temp.answers_locked_with_access ('{"contestantEditing":"open"}'::jsonb),
     false,
-    'ALK: the JSON boolean false is unlocked'
+    'ALK: the JSON string "open" is unlocked'
   );
 
 SELECT
   is (
-    pg_temp.answers_locked_with_access ('{"nominationsLocked":true}'::jsonb),
+    pg_temp.answers_locked_with_access (
+      '{"contestantEditing":"nominationsLocked"}'::jsonb
+    ),
     false,
-    'ALK: an access member without the key is unlocked, the nominations lock included'
+    'ALK: the nominations lock leaves answers unlocked'
   );
 
--- `storage_path_can` reads the key inline rather than through the helper, so its entity-scope write is held to the helper's reading of the same stored values: candidate B's editor writing into candidate B's own folder in project B, under each `access` member above.
+-- `storage_path_can` reads the key through `private.contestant_editing_in` rather than through `private.project_contestant_editing`, so its entity-scope write is held to the same reading of the stored values: candidate B's editor writing into candidate B's own folder in project B, under each `access` member above.
 INSERT INTO
   public.grants (user_id, scope, target_type, target_id, role)
 VALUES
@@ -245,10 +247,13 @@ SELECT
       FROM
         (
           VALUES
-            (1, '{"answersLocked":true}'::jsonb),
-            (2, '{"answersLocked":"true"}'::jsonb),
-            (3, '{"answersLocked":false}'::jsonb),
-            (4, '{"nominationsLocked":true}'::jsonb),
+            (1, '{"contestantEditing":"locked"}'::jsonb),
+            (2, '{"contestantEditing":true}'::jsonb),
+            (3, '{"contestantEditing":"open"}'::jsonb),
+            (
+              4,
+              '{"contestantEditing":"nominationsLocked"}'::jsonb
+            ),
             (5, NULL::jsonb)
         ) AS v (ord, access)
       ORDER BY
@@ -784,7 +789,7 @@ SELECT
   throws_ok (
     pg_temp.save_kept_set (),
     '42501',
-    'set_entity_nominations: answers are locked in this project',
+    'set_entity_nominations: editing is locked in this project',
     'ALK: with answers locked, set_entity_nominations refuses a candidate''s own editor with the lock''s refusal'
   );
 

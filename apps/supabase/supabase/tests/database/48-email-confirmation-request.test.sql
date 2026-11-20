@@ -1,10 +1,10 @@
--- 48-address-confirmation-request.test.sql: the slot of the address-confirmation mail
+-- 48-email-confirmation-request.test.sql: the slot of the address-confirmation mail
 --
--- `address_confirmation_request (p_project_id, p_user_id, p_email)` answers whether one confirmation mail may be sent to an address for a signed-in account. A true answer has taken two slots, neither of them per project: the caller's own, ten per fifteen minutes, and the address's, one per 60 seconds, which is not the slot the sign-in and recovery mails take. A false answer means no mail. The caller's slot is taken first, so a caller who keeps asking about addresses meets its own limit whatever the addresses are and whatever project it names. A project the user's registered-entities record does not name is answered false before any slot. `address_confirmation_release (p_email)` gives the address's slot back.
+-- `email_confirmation_request (p_project_id, p_user_id, p_email)` answers whether one confirmation mail may be sent to an address for a signed-in account. A true answer has taken two slots, neither of them per project: the caller's own, ten per fifteen minutes, and the address's, one per 60 seconds, which is not the slot the sign-in and recovery mails take. A false answer means no mail. The caller's slot is taken first, so a caller who keeps asking about addresses meets its own limit whatever the addresses are and whatever project it names. A project in which the user holds no identity registration is answered false before any slot. `email_confirmation_release (p_email)` gives the address's slot back.
 --
 -- Every assertion's description begins with `ACR: `. The function is the service role's, so every call below is made as that role; the throttle rows are read and moved by the fixture role.
 --
--- Depends on: 00-helpers.test.sql (reset_role, create_test_data, test_id, test_user_id), 506-invitation-rpcs.sql (the two functions, invitation_link_request, invitation_link_release and the throttle table).
+-- Depends on: 00-helpers.test.sql (reset_role, create_test_data, test_id, test_user_id), 506-invitation-rpcs.sql (the two functions, invitation_link_request, invitation_link_release, the throttle table and private.identity_registrations).
 BEGIN;
 
 SET
@@ -55,37 +55,39 @@ BEGIN
 END;
 $$;
 
--- Every user who asks below registered an entity in project A through an identity provider, and organization_a and candidate_b in project B as well: the function answers only for a project the user's registered-entities record names. admin_a has no record.
-UPDATE auth.users u
-SET
-  raw_app_meta_data = COALESCE(u.raw_app_meta_data, '{}'::jsonb) || jsonb_build_object(
-    'registered_entities',
-    CASE
-      WHEN u.id IN (
-        test_user_id ('organization_a'),
-        test_user_id ('candidate_b')
-      ) THEN jsonb_build_object(
-        test_id ('project_a')::text,
-        jsonb_build_object('organization', test_id ('org_a')::text),
-        test_id ('project_b')::text,
-        jsonb_build_object('organization', test_id ('org_b')::text)
-      )
-      ELSE jsonb_build_object(
-        test_id ('project_a')::text,
-        jsonb_build_object(
-          'candidate',
-          '48480000-0000-4000-8000-0000000000c1'
-        )
-      )
-    END
-  )
+-- Every user who asks below registered an entity in project A through an identity provider, and organization_a and candidate_b in project B as well: the function answers only for a project in which private.identity_registrations holds a row of the user. admin_a has no registration.
+INSERT INTO
+  private.identity_registrations (user_id, project_id, entity_type, entity_id)
+SELECT
+  u.id,
+  test_id ('project_a'),
+  'candidate'::public.entity_type,
+  '48480000-0000-4000-8000-0000000000c1'
+FROM
+  auth.users u
 WHERE
   u.id IN (
     test_user_id ('candidate_a'),
-    test_user_id ('candidate_b'),
     test_user_id ('candidate_a2'),
-    test_user_id ('admin_b'),
-    test_user_id ('organization_a')
+    test_user_id ('admin_b')
+  )
+UNION ALL
+SELECT
+  u.id,
+  r.project_id,
+  'organization'::public.entity_type,
+  r.entity_id
+FROM
+  auth.users u
+  CROSS JOIN (
+    VALUES
+      (test_id ('project_a'), test_id ('org_a')),
+      (test_id ('project_b'), test_id ('org_b'))
+  ) AS r (project_id, entity_id)
+WHERE
+  u.id IN (
+    test_user_id ('organization_a'),
+    test_user_id ('candidate_b')
   );
 
 -- =====================================================================
@@ -104,7 +106,7 @@ SELECT
         JOIN pg_namespace n ON n.oid = p.pronamespace
       WHERE
         n.nspname = 'public'
-        AND p.proname = 'address_confirmation_request'
+        AND p.proname = 'email_confirmation_request'
     ),
     'p_project_id uuid, p_user_id uuid, p_email text -> boolean true {"search_path=\"\""}',
     'ACR: the function has one signature, which takes a project, a user and an address, answers boolean, and is SECURITY DEFINER with an empty pinned search_path'
@@ -123,7 +125,7 @@ SELECT
         JOIN pg_namespace n ON n.oid = p.pronamespace
       WHERE
         n.nspname = 'public'
-        AND p.proname = 'address_confirmation_request'
+        AND p.proname = 'email_confirmation_request'
     ),
     'false/false/true',
     'ACR: service_role may execute it, and neither anon nor authenticated may'
@@ -142,7 +144,7 @@ SELECT
         JOIN pg_namespace n ON n.oid = p.pronamespace
       WHERE
         n.nspname = 'public'
-        AND p.proname = 'address_confirmation_release'
+        AND p.proname = 'email_confirmation_release'
     ),
     'p_email text -> void true {"search_path=\"\""} false/false/true',
     'ACR: the release has one signature, which takes an address and answers void, is SECURITY DEFINER with an empty pinned search_path, and is the service role''s alone'
@@ -156,7 +158,7 @@ SET
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('candidate_a'),
       'acr.first@test.example'
@@ -167,7 +169,7 @@ SELECT
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('candidate_b'),
       'acr.first@test.example'
@@ -178,7 +180,7 @@ SELECT
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_b'),
       test_user_id ('candidate_b'),
       'acr.first@test.example'
@@ -199,7 +201,7 @@ SELECT
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('candidate_b'),
       'acr.first@test.example'
@@ -209,17 +211,17 @@ SELECT
   );
 
 SELECT
-  public.address_confirmation_release ('  ACR.First@Test.Example ');
+  public.email_confirmation_release ('  ACR.First@Test.Example ');
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('candidate_b'),
       'acr.first@test.example'
     ),
     true,
-    'ACR: once address_confirmation_release gives the address''s slot back, given the address in any case and spacing, the next request answers true'
+    'ACR: once email_confirmation_release gives the address''s slot back, given the address in any case and spacing, the next request answers true'
   );
 
 -- =====================================================================
@@ -231,7 +233,7 @@ SELECT
       SELECT
         count(*) FILTER (
           WHERE
-            public.address_confirmation_request (
+            public.email_confirmation_request (
               test_id ('project_a'),
               test_user_id ('organization_a'),
               'acr.caller.' || g::text || '@test.example'
@@ -246,7 +248,7 @@ SELECT
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('organization_a'),
       'acr.caller.11@test.example'
@@ -266,14 +268,14 @@ SELECT
           SELECT
             t.count::text
           FROM
-            private.invitation_throttle t
+            private.access_throttle t
           WHERE
             t.key = 'confirm:' || test_user_id ('organization_a')::text
         ) || ' ' || (
           SELECT
             count(*)::text
           FROM
-            private.invitation_throttle t
+            private.access_throttle t
           WHERE
             t.key LIKE '%' || encode(
               sha256(convert_to('acr.caller.11@test.example', 'UTF8')),
@@ -290,7 +292,7 @@ SET
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_b'),
       test_user_id ('organization_a'),
       'acr.caller.11@test.example'
@@ -302,7 +304,7 @@ SELECT
 SELECT
   reset_role ();
 
-UPDATE private.invitation_throttle
+UPDATE private.access_throttle
 SET
   window_start = now() - interval '16 minutes'
 WHERE
@@ -313,7 +315,7 @@ SET
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('organization_a'),
       'acr.caller.12@test.example'
@@ -332,7 +334,7 @@ DO $$
 BEGIN
   PERFORM set_config(
     't48.throttle_before',
-    (SELECT count(*)::text || ' ' || COALESCE(sum(t.count), 0)::text FROM private.invitation_throttle t),
+    (SELECT count(*)::text || ' ' || COALESCE(sum(t.count), 0)::text FROM private.access_throttle t),
     true
   );
 END;
@@ -343,37 +345,37 @@ SET
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       NULL,
       test_user_id ('candidate_a2'),
       'acr.args@test.example'
-    )::text || ' ' || public.address_confirmation_request (
+    )::text || ' ' || public.email_confirmation_request (
       test_id ('project_a'),
       NULL,
       'acr.args@test.example'
-    )::text || ' ' || public.address_confirmation_request (
+    )::text || ' ' || public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('candidate_a2'),
       NULL
-    )::text || ' ' || public.address_confirmation_request (
+    )::text || ' ' || public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('candidate_a2'),
       '   '
-    )::text || ' ' || public.address_confirmation_request (
+    )::text || ' ' || public.email_confirmation_request (
       test_id ('project_b'),
       test_user_id ('candidate_a2'),
       'acr.args@test.example'
-    )::text || ' ' || public.address_confirmation_request (
+    )::text || ' ' || public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('admin_a'),
       'acr.args@test.example'
-    )::text || ' ' || public.address_confirmation_request (
+    )::text || ' ' || public.email_confirmation_request (
       test_id ('project_a'),
       '48480000-0000-4000-8000-00000000dead',
       'acr.args@test.example'
     )::text,
     'false false false false false false false',
-    'ACR: no project, no user, no address, a blank address, a project the user''s record does not name, a user with no record and a user who does not exist each answer false'
+    'ACR: no project, no user, no address, a blank address, a project the user holds no registration in, a user with no registration and a user who does not exist each answer false'
   );
 
 SELECT
@@ -385,7 +387,7 @@ SELECT
       SELECT
         count(*)::text || ' ' || COALESCE(sum(t.count), 0)::text
       FROM
-        private.invitation_throttle t
+        private.access_throttle t
     ),
     current_setting('t48.throttle_before'),
     'ACR: those seven requests wrote nothing: no key was created and no count moved'
@@ -399,7 +401,7 @@ SET
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('candidate_a2'),
       '  ACR.Case@Test.Example '
@@ -410,7 +412,7 @@ SELECT
 
 SELECT
   is (
-    public.address_confirmation_request (
+    public.email_confirmation_request (
       test_id ('project_a'),
       test_user_id ('admin_b'),
       'acr.case@test.example'
@@ -428,7 +430,7 @@ SELECT
       SELECT
         count(*)::integer
       FROM
-        private.invitation_throttle t
+        private.access_throttle t
       WHERE
         t.key = 'confirm-address:' || encode(
           sha256(convert_to('acr.case@test.example', 'UTF8')),

@@ -1,12 +1,13 @@
 -- 46-nomination-write-helpers.test.sql: the rules every writer of a nomination shares, each stated once in a private function
 --
--- A writer of nominations asks three private functions instead of holding the rules itself: `private.nomination_list_checked` bounds the array of nominations, `private.nomination_object_checked` states the shape of one nomination object and answers its normalised values, and `private.parent_nomination_resolved` finds a named parent's nomination at a contest, creating the bare row when there is none. All three run as their caller, so the policies of `public.nominations` and the cap on unconfirmed parent nominations still decide what is written. This file asserts each function on its own and, through `set_entity_nominations`, the bound; and, through both `set_entity_nominations` and `create_invitations`, the refusal of a parent, or of an invited entity that states nominations, that is no entity of the nomination's project.
+-- A writer of nominations asks four private functions instead of holding the rules itself: `private.nomination_list_checked` bounds the array of nominations, `private.nomination_object_checked` states the shape of one nomination object and answers its normalised values, and `private.parent_nomination_resolved` finds a named parent's nomination at a contest, creating the bare row when there is none, and `private.nomination_parent_target` turns a parent's kind into the parent and the custom data the row is to hold. All four run as their caller, so the policies of `public.nominations` and the cap on unconfirmed parent nominations still decide what is written. This file asserts each function on its own and, through `set_entity_nominations`, the bound; and, through both `set_entity_nominations` and `create_invitations`, the refusal of a parent, or of an invited entity that states nominations, that is no entity of the nomination's project.
 --
 -- Each assertion's description begins with the tag of the rule it pins:
---   CAT   - the three functions and `set_entity_nominations` in the catalogue, and who may execute them.
+--   CAT   - the shared functions and `set_entity_nominations` in the catalogue, and who may execute them.
 --   LIST  - the array of nominations: a JSON array of at most 1000 members, asked before any member.
 --   VAL   - one nomination object: every shape refusal by its message, and the normalised answer.
 --   RES   - a parent's nomination at a contest: found, or created bare and unconfirmed as the caller.
+--   TGT   - the parent and the custom data a nomination is to hold for each kind of parent.
 --   XPROJ - a parent, or an invited entity that states nominations, that is no entity of the nomination's project is refused by either writer, and nothing is written.
 --   ORD   - `set_entity_nominations` asks an object's shape before the checks that read rows, so an object with a fault of each kind is refused for its shape.
 --
@@ -27,7 +28,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (65);
+  plan (73);
 
 SELECT
   create_test_data ();
@@ -262,8 +263,8 @@ CREATE FUNCTION pg_temp.resolve_call (
     p_project, p_parent_type, p_parent, pg_temp.eid ('e_one'), p_constituency, 'r', 'l');
 $fn$;
 
--- The nominations in reach of an entity as the calling session reads them, each id with its updated_at: the expectation of a caller that has just read them, so that every call here is made from a read that is current.
-CREATE FUNCTION pg_temp.reach_now (p_type text, p_id uuid) RETURNS jsonb LANGUAGE sql AS $fn$
+-- The writable nominations of an entity as the calling session reads them, each id with its updated_at: the expectation of a caller that has just read them, so that every call here is made from a read that is current.
+CREATE FUNCTION pg_temp.versions_now (p_type text, p_id uuid) RETURNS jsonb LANGUAGE sql AS $fn$
   SELECT COALESCE(jsonb_object_agg(n.id, n.updated_at), '{}'::jsonb)
   FROM public.nominations n
   JOIN public.elections e ON e.id = n.election_id
@@ -275,10 +276,10 @@ CREATE FUNCTION pg_temp.reach_now (p_type text, p_id uuid) RETURNS jsonb LANGUAG
     AND public.nomination_shape_rule(e.nomination_shape, p_type::public.entity_type) IN ('admitted', 'parent_required');
 $fn$;
 
--- The call of set_entity_nominations, from a read of the reach that is current when the statement runs.
+-- The call of set_entity_nominations, from a read of the writable nominations that is current when the statement runs.
 CREATE FUNCTION pg_temp.save_call (p_type text, p_id uuid, p_nominations jsonb) RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
   SELECT format(
-    'SELECT public.set_entity_nominations(%L::public.entity_type, %L::uuid, %L::jsonb, pg_temp.reach_now(%L, %L::uuid))',
+    'SELECT public.set_entity_nominations(%L::public.entity_type, %L::uuid, %L::jsonb, pg_temp.versions_now(%L, %L::uuid))',
     p_type, p_id, p_nominations, p_type, p_id);
 $fn$;
 
@@ -472,7 +473,7 @@ SELECT
           count(*) = 1
           AND bool_and(
             NOT p.prosecdef
-            AND pg_get_function_identity_arguments(p.oid) = 'p_entity_type entity_type, p_entity_id uuid, p_nominations jsonb, p_expected_reach jsonb'
+            AND pg_get_function_identity_arguments(p.oid) = 'p_entity_type entity_type, p_entity_id uuid, p_nominations jsonb, p_expected_versions jsonb'
             AND has_function_privilege('authenticated', p.oid, 'EXECUTE')
             AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
             AND NOT EXISTS (
@@ -494,7 +495,148 @@ SELECT
       ),
       false
     ),
-    'CAT: set_entity_nominations is still the one function (type, id, nominations, expected reach), not SECURITY DEFINER, executable by authenticated and by neither anon nor PUBLIC'
+    'CAT: set_entity_nominations is still the one function (type, id, nominations, expected versions), not SECURITY DEFINER, executable by authenticated and by neither anon nor PUBLIC'
+  );
+
+SELECT
+  ok (
+    pg_temp.defined_as (
+      'private',
+      'nomination_parent_target',
+      'p_kind text, p_stored_parent uuid, p_stored_custom jsonb, p_requested_name text, OUT parent_nomination_id uuid, OUT custom_data jsonb',
+      'i',
+      'record'
+    ),
+    'CAT: private.nomination_parent_target (kind, stored parent, stored custom data, requested name) answers the parent and the custom data, is IMMUTABLE and not SECURITY DEFINER, has an empty search_path, and no parameter carries a default'
+  );
+
+SELECT
+  ok (
+    pg_temp.granted_as_written ('nomination_parent_target'),
+    'CAT: authenticated and service_role may execute private.nomination_parent_target, and neither anon nor PUBLIC may'
+  );
+
+SELECT
+  ok (
+    pg_temp.defined_as (
+      'private',
+      'nomination_writable',
+      'n nominations, e elections, p_entity_type entity_type',
+      's',
+      'boolean'
+    ),
+    'CAT: private.nomination_writable (nomination, election, entity type) returns boolean, is STABLE and not SECURITY DEFINER, has an empty search_path, and no parameter carries a default'
+  );
+
+SELECT
+  ok (
+    pg_temp.granted_as_written ('nomination_writable'),
+    'CAT: authenticated and service_role may execute private.nomination_writable, and neither anon nor PUBLIC may'
+  );
+
+-- =====================================================================
+-- TGT: the parent and the custom data for each kind of parent
+-- =====================================================================
+-- Each is asked with a stored parent and stored custom data that carry a requested name and one other key, so each answer shows what it keeps and what it drops.
+SELECT
+  is (
+    (
+      SELECT
+        jsonb_build_object(
+          'parent',
+          t.parent_nomination_id,
+          'custom_data',
+          t.custom_data
+        )
+      FROM
+        private.nomination_parent_target (
+          'keep',
+          pg_temp.eid ('org_nominated'),
+          '{"note": "kept", "requestedParentOrganization": "Old"}'::jsonb,
+          NULL
+        ) AS t
+    ),
+    jsonb_build_object(
+      'parent',
+      pg_temp.eid ('org_nominated'),
+      'custom_data',
+      '{"note": "kept", "requestedParentOrganization": "Old"}'::jsonb
+    ),
+    'TGT: keep answers the stored parent and the stored custom data'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        jsonb_build_object(
+          'parent',
+          t.parent_nomination_id,
+          'custom_data',
+          t.custom_data
+        )
+      FROM
+        private.nomination_parent_target (
+          'other',
+          pg_temp.eid ('org_nominated'),
+          '{"note": "kept", "requestedParentOrganization": "Old"}'::jsonb,
+          'New'
+        ) AS t
+    ),
+    '{"parent": null, "custom_data": {"note": "kept", "requestedParentOrganization": "New"}}'::jsonb,
+    'TGT: other answers no parent and the requested name set over the stored custom data, every other key kept'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        jsonb_agg(
+          jsonb_build_object(
+            'parent',
+            t.parent_nomination_id,
+            'custom_data',
+            t.custom_data
+          )
+          ORDER BY
+            k.ord
+        )
+      FROM
+        (
+          VALUES
+            (1, 'entity'),
+            (2, 'none')
+        ) AS k (ord, kind),
+        LATERAL private.nomination_parent_target (
+          k.kind,
+          pg_temp.eid ('org_nominated'),
+          '{"note": "kept", "requestedParentOrganization": "Old"}'::jsonb,
+          NULL
+        ) AS t
+    ),
+    '[{"parent": null, "custom_data": {"note": "kept"}}, {"parent": null, "custom_data": {"note": "kept"}}]'::jsonb,
+    'TGT: entity and none answer no parent and the stored custom data without the requested name'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        jsonb_agg(
+          jsonb_build_object('custom_data', t.custom_data)
+          ORDER BY
+            k.ord
+        )
+      FROM
+        (
+          VALUES
+            (1, 'other'),
+            (2, 'none')
+        ) AS k (ord, kind),
+        LATERAL private.nomination_parent_target (k.kind, NULL, '"text"'::jsonb, 'New') AS t
+    ),
+    '[{"custom_data": {"requestedParentOrganization": "New"}}, {"custom_data": "text"}]'::jsonb,
+    'TGT: custom data that is no object is replaced by an object for other, and kept as it is for none'
   );
 
 -- =====================================================================
@@ -636,7 +778,7 @@ SELECT
     ),
     '22023',
     'set_entity_nominations: p_nominations[0] has an election_symbol longer than 50 characters',
-    'ORD: a set whose object names an id outside the reach and a symbol over the length limit is refused for the symbol'
+    'ORD: a set whose object names an id outside the writable nominations and a symbol over the length limit is refused for the symbol'
   );
 
 SELECT

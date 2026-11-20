@@ -6,11 +6,9 @@
  * An answer is built here from one result of a closed set and carries no caught message, because a message from the token's decryption or verification would tell an unauthenticated caller which check its token failed. A token is returned only with a success.
  */
 
-import { ENTITY_TYPES } from './registrationMatrix.ts';
+import { isServedEntityType } from './registrationMatrix.ts';
+import { isPlainObject, isUuid } from '../_shared/guards.ts';
 import type { ServedEntityType } from './registrationMatrix.ts';
-
-/** An entity type a request may name: one the registration-mode rule decides about. */
-export type RequestedEntityType = ServedEntityType;
 
 /** A parsed request. */
 export interface IdentityCallbackRequest {
@@ -19,7 +17,7 @@ export interface IdentityCallbackRequest {
   /** The project the registration is for, lower-cased. */
   projectId: string;
   /** The entity type the caller asks for, or null when the body names none. */
-  entityType: RequestedEntityType | null;
+  entityType: ServedEntityType | null;
 }
 
 /**
@@ -58,29 +56,8 @@ const RESULT_STATUS: Readonly<Record<IdentityCallbackResult, number>> = Object.f
   unavailable: 503
 });
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /** The longest ID token read. An encrypted token of the supported providers is a few kilobytes. */
 const ID_TOKEN_MAX_LENGTH = 16384;
-
-function isAbsent(value: unknown): value is undefined | null {
-  return value === undefined || value === null;
-}
-
-function isRequestedEntityType(value: unknown): value is RequestedEntityType {
-  return ENTITY_TYPES.some((entityType) => entityType === value);
-}
-
-/** A value that is one of the results, against a runtime value of any kind. */
-function asResult(result: unknown): IdentityCallbackResult {
-  return typeof result === 'string' && Object.hasOwn(RESULT_STATUS, result)
-    ? (result as IdentityCallbackResult)
-    : IDENTITY_CALLBACK_RESULT.unavailable;
-}
-
-function isSuccess(result: IdentityCallbackResult): result is SuccessResult {
-  return RESULT_STATUS[result] === 200;
-}
 
 /**
  * Parse a request body.
@@ -91,16 +68,20 @@ function isSuccess(result: IdentityCallbackResult): result is SuccessResult {
  * @returns The parsed request, or null when the body is not an object, carries no ID token of one to 16384 characters, carries no project that is a uuid, or carries an entity type that is not acceptable
  */
 export function parseIdentityCallbackRequest(body: unknown): IdentityCallbackRequest | null {
-  if (typeof body !== 'object' || body === null || Array.isArray(body)) return null;
-  const { id_token: idToken, project_id: project, entity_type: entityType } = body as Record<string, unknown>;
+  if (!isPlainObject(body)) return null;
+  const { id_token: idToken, project_id: project, entity_type: entityType } = body;
 
   if (typeof idToken !== 'string' || idToken.length === 0 || idToken.length > ID_TOKEN_MAX_LENGTH) return null;
 
-  if (typeof project !== 'string' || !UUID_PATTERN.test(project)) return null;
+  if (!isUuid(project)) return null;
 
-  if (!isAbsent(entityType) && !isRequestedEntityType(entityType)) return null;
+  if (!isAbsent(entityType) && !isServedEntityType(entityType)) return null;
 
   return { idToken, projectId: project.toLowerCase(), entityType: isAbsent(entityType) ? null : entityType };
+}
+
+function isAbsent(value: unknown): value is undefined | null {
+  return value === undefined || value === null;
 }
 
 /**
@@ -127,4 +108,15 @@ export function resultBody(
   const answered = asResult(result);
   if (isSuccess(answered) && typeof token === 'string') return { result: answered, token };
   return { result: answered };
+}
+
+/** A value that is one of the results, against a runtime value of any kind. */
+function asResult(result: unknown): IdentityCallbackResult {
+  return typeof result === 'string' && Object.hasOwn(RESULT_STATUS, result)
+    ? (result as IdentityCallbackResult)
+    : IDENTITY_CALLBACK_RESULT.unavailable;
+}
+
+function isSuccess(result: IdentityCallbackResult): result is SuccessResult {
+  return RESULT_STATUS[result] === 200;
 }

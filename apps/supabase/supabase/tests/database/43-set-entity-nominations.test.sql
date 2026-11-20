@@ -13,10 +13,10 @@
 --   SKIP  - a nomination whose values did not change is not written.
 --   EDIT  - a changed value is written and leaves the row unconfirmed.
 --   KEEP  - an object that leaves its row's parent as it is.
---   DEL   - a nomination the set leaves out is deleted, and only inside the function's reach.
+--   DEL   - a nomination the set leaves out is deleted, and only among the writable nominations.
 --   MOVE  - a changed constituency is a delete and an insert.
---   U02   - several nominations of one election.
---   LOCK  - under the nominations lock every call that would write raises.
+--   U02   - several nominations of one election, bounded by the uniqueness key alone.
+--   LOCK  - under the nominations lock every call of the entity's own editor raises.
 --   ATOM  - a refused call stores nothing.
 --   CAP   - the cap on unconfirmed parent nominations a caller originates, met through the function.
 --   ENC   - white space, lengths in characters and exact comparison.
@@ -598,8 +598,8 @@ CREATE FUNCTION pg_temp.entity (p_type text, p_id uuid) RETURNS jsonb LANGUAGE s
   SELECT jsonb_build_object('kind', 'entity', 'entity_type', p_type, 'entity_id', p_id);
 $fn$;
 
--- The nominations in reach of an entity as the calling session reads them, each id with its updated_at: the expectation of a caller that has just read them, so that every call here is made from a read that is current.
-CREATE FUNCTION pg_temp.reach_now (p_type text, p_id uuid) RETURNS jsonb LANGUAGE sql AS $fn$
+-- The writable nominations of an entity as the calling session reads them, each id with its updated_at: the expectation of a caller that has just read them, so that every call here is made from a read that is current. The rule is stated here again, not read from private.nomination_writable, so a helper that answered otherwise fails the calls below.
+CREATE FUNCTION pg_temp.versions_now (p_type text, p_id uuid) RETURNS jsonb LANGUAGE sql AS $fn$
   SELECT COALESCE(jsonb_object_agg(n.id, n.updated_at), '{}'::jsonb)
   FROM public.nominations n
   JOIN public.elections e ON e.id = n.election_id
@@ -611,10 +611,10 @@ CREATE FUNCTION pg_temp.reach_now (p_type text, p_id uuid) RETURNS jsonb LANGUAG
     AND public.nomination_shape_rule(e.nomination_shape, p_type::public.entity_type) IN ('admitted', 'parent_required');
 $fn$;
 
--- The statement that calls the function, as text: `throws_ok` runs a string, so a database without the function fails each refusal as an assertion of its own. The expected reach is read when the statement runs. `50-nomination-write-guards.test.sql` asserts what a stale one is refused with.
+-- The statement that calls the function, as text: `throws_ok` runs a string, so a database without the function fails each refusal as an assertion of its own. The expected versions are read when the statement runs. `50-nomination-write-guards.test.sql` asserts what a stale one is refused with.
 CREATE FUNCTION pg_temp.call (p_type text, p_id uuid, p_nominations jsonb) RETURNS text LANGUAGE sql IMMUTABLE AS $fn$
   SELECT format(
-    'SELECT public.set_entity_nominations(%L::public.entity_type, %L::uuid, %L::jsonb, pg_temp.reach_now(%L, %L::uuid))',
+    'SELECT public.set_entity_nominations(%L::public.entity_type, %L::uuid, %L::jsonb, pg_temp.versions_now(%L, %L::uuid))',
     p_type, p_id, p_nominations, p_type, p_id);
 $fn$;
 
@@ -625,6 +625,22 @@ DECLARE
 BEGIN
   EXECUTE pg_temp.call(p_type, p_id, p_nominations) INTO v_answer;
   RETURN v_answer;
+EXCEPTION WHEN OTHERS THEN
+  RETURN jsonb_build_object('raised', SQLSTATE, 'message', SQLERRM);
+END;
+$fn$;
+
+-- What the function answers the calling session for a call that lives, as `pg_temp.save` does, with everything the call wrote undone, so the rows a later assertion reads are those before it.
+CREATE FUNCTION pg_temp.save_undone (p_type text, p_id uuid, p_nominations jsonb) RETURNS jsonb LANGUAGE plpgsql AS $fn$
+DECLARE
+  v_answer jsonb;
+BEGIN
+  BEGIN
+    EXECUTE pg_temp.call(p_type, p_id, p_nominations) INTO v_answer;
+    RAISE EXCEPTION USING ERRCODE = 'P0U02', MESSAGE = v_answer::text;
+  EXCEPTION WHEN SQLSTATE 'P0U02' THEN
+    RETURN SQLERRM::jsonb;
+  END;
 EXCEPTION WHEN OTHERS THEN
   RETURN jsonb_build_object('raised', SQLSTATE, 'message', SQLERRM);
 END;
@@ -721,11 +737,11 @@ SELECT
         WHERE
           n.nspname = 'public'
           AND p.proname = 'set_entity_nominations'
-          AND pg_get_function_identity_arguments(p.oid) = 'p_entity_type entity_type, p_entity_id uuid, p_nominations jsonb, p_expected_reach jsonb'
+          AND pg_get_function_identity_arguments(p.oid) = 'p_entity_type entity_type, p_entity_id uuid, p_nominations jsonb, p_expected_versions jsonb'
       ),
       false
     ),
-    'CAT: set_entity_nominations (type, id, nominations, expected reach) returns jsonb, is VOLATILE and not SECURITY DEFINER, has an empty search_path, and no parameter carries a default'
+    'CAT: set_entity_nominations (type, id, nominations, expected versions) returns jsonb, is VOLATILE and not SECURITY DEFINER, has an empty search_path, and no parameter carries a default'
   );
 
 SELECT
@@ -2339,7 +2355,7 @@ SELECT
 
 SELECT
   throws_ok (
-    'SET CONSTRAINTS public.nominations_parent_required IMMEDIATE; ' || pg_temp.probe (),
+    'SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE; ' || pg_temp.probe (),
     '23514',
     NULL,
     'MODE: the control of that probe: with the constraint immediate the same row is refused at its own statement'
@@ -2637,7 +2653,7 @@ SELECT
   );
 
 -- =====================================================================
--- DEL: what the set leaves out, and what the function may not reach
+-- DEL: what the set leaves out, and what the function may not write
 -- =====================================================================
 SELECT
   set_test_user (
@@ -2703,7 +2719,7 @@ SELECT
       '[]'::jsonb
     ),
     pg_temp.counts (0, 0, 1, 0, 0),
-    'DEL: an empty array is a valid set and deletes the one row left in reach'
+    'DEL: an empty array is a valid set and deletes the one writable row left'
   );
 
 SELECT
@@ -2756,7 +2772,7 @@ SELECT
       pg_temp.nid ('del_old_round'),
       pg_temp.nid ('del_flipped')
     ],
-    'DEL: both rows outside the reach are still there'
+    'DEL: both rows that are not writable are still there'
   );
 
 -- =====================================================================
@@ -2962,14 +2978,14 @@ SELECT
         )
       )
     ),
-    '22023',
-    'set_entity_nominations: p_nominations[2] is a new nomination in an election for which the set holds another object',
-    'U02: a third object without an id in that election is refused'
+    '23505',
+    'duplicate key value violates unique constraint "nominations_entity_parent_contest_key"',
+    'U02: a third object without an id at a contest the entity already holds under no parent is refused by the uniqueness key'
   );
 
 SELECT
-  throws_ok (
-    pg_temp.call (
+  is (
+    pg_temp.save_undone (
       'candidate',
       pg_temp.eid ('cand_several'),
       jsonb_build_array(
@@ -2989,14 +3005,13 @@ SELECT
         )
       )
     ),
-    '22023',
-    'set_entity_nominations: p_nominations[0] is a new nomination in an election for which the set holds another object',
-    'U02: and it is the object without an id that is named, wherever it stands'
+    pg_temp.counts (1, 0, 1, 1, 0),
+    'U02: an object without an id beside a stored row of the same election lives, wherever it stands, where the row it replaces is left out'
   );
 
 SELECT
-  throws_ok (
-    pg_temp.call (
+  is (
+    pg_temp.save_undone (
       'candidate',
       pg_temp.eid ('cand_several'),
       jsonb_build_array(
@@ -3016,9 +3031,8 @@ SELECT
         )
       )
     ),
-    '22023',
-    'set_entity_nominations: p_nominations[1] is a new nomination in an election for which the set holds another object',
-    'U02: two objects without an id in one election are refused'
+    pg_temp.counts (2, 0, 2, 0, 0),
+    'U02: two objects without an id in one election, at two constituencies, live'
   );
 
 SELECT
@@ -3213,7 +3227,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":true}}'::jsonb
+    '{"access":{"contestantEditing":"nominationsLocked"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -3241,7 +3255,7 @@ SELECT
       )
     ),
     '42501',
-    pg_temp.unwritten (),
+    'set_entity_nominations: nominations are locked in this project',
     'LOCK: with nominations locked, a set that changes a symbol only raises'
   );
 
@@ -3253,7 +3267,7 @@ SELECT
       '[]'::jsonb
     ),
     '42501',
-    pg_temp.unwritten (),
+    'set_entity_nominations: nominations are locked in this project',
     'LOCK: a set that removes a row only raises'
   );
 
@@ -3280,13 +3294,13 @@ SELECT
       )
     ),
     '42501',
-    'new row violates row-level security policy for table "nominations"',
-    'LOCK: a set with a new row raises, refused by the insert policy'
+    'set_entity_nominations: nominations are locked in this project',
+    'LOCK: a set with a new row raises'
   );
 
 SELECT
-  is (
-    pg_temp.save (
+  throws_ok (
+    pg_temp.call (
       'candidate',
       pg_temp.eid ('cand_lock'),
       jsonb_build_array(
@@ -3299,8 +3313,9 @@ SELECT
         )
       )
     ),
-    pg_temp.counts (0, 0, 0, 1, 0),
-    'LOCK: a set equal to what is stored writes nothing, and is answered'
+    '42501',
+    'set_entity_nominations: nominations are locked in this project',
+    'LOCK: even a set equal to what is stored raises, before the set is read'
   );
 
 SELECT
@@ -3323,7 +3338,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":false}}'::jsonb
+    '{"access":{"contestantEditing":"open"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');

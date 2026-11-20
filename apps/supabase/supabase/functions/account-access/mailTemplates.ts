@@ -6,7 +6,11 @@
  * The texts are fixed. The only value a caller chooses is the locale, from a closed set, and the only value inserted is the link the function built itself. An Edge Function is its own deployment unit and cannot import the application's message catalogues, so the texts live here.
  */
 
-/** The locales the three mails exist in: one per message directory of the frontend. */
+/**
+ * The locales the three mails exist in: one per message directory of the frontend, which covers every locale `staticSettings.supportedLocales` of `@openvaa/app-shared` can name.
+ *
+ * An Edge Function cannot import either, so the set is restated here and `mailTemplates.test.ts` holds it equal to the message directories and holds every supported locale of the static settings inside it.
+ */
 export const SIGN_IN_MAIL_LOCALES = ['da', 'en', 'et', 'fi', 'fr', 'lb', 'sv'] as const;
 
 /** One of the locales the three mails exist in. */
@@ -27,6 +31,8 @@ export interface SignInMailTemplate {
 
 /** A rendered mail, ready to hand to the transport. */
 export interface SignInMail {
+  /** The locale the mail was rendered in, which its html part states as its `lang` and the transport as its `Content-Language`. */
+  locale: SignInMailLocale;
   subject: string;
   text: string;
   html: string;
@@ -48,6 +54,8 @@ function template(subject: string, intro: string, linkLabel: string, once: strin
     html: `<p>${intro}</p><p><a href="${LINK_MARKER}">${linkLabel}</a></p><p>${once}</p><p>${ignore}</p>`
   });
 }
+
+// TODO: The mails should use the project's appName customisation and its translationOverrides instead of the fixed product words. Consider moving appName and similar fields into appSettings and making them available in the database, where this function can read them.
 
 /** The sign-in mail per locale. No template states a duration, a name or an address, or names a page of the application. */
 export const SIGN_IN_MAIL_TEMPLATES: Readonly<Record<SignInMailLocale, SignInMailTemplate>> = Object.freeze({
@@ -229,44 +237,12 @@ export function resolveMailLocale(input: unknown): SignInMailLocale {
     : DEFAULT_MAIL_LOCALE;
 }
 
-/** Escape the five characters HTML gives meaning to, so a value is inserted into markup as text. */
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-/**
- * Render one locale's template of a mail around a link.
- *
- * The link enters the text part as written and the html part HTML-escaped. It is inserted through a replacer function, so no character sequence in it is read as a replacement pattern.
- *
- * @param templates - The mail's templates, one per locale
- * @param locale - The locale to render; a value outside the set renders the default locale
- * @param link - The link the function built
- */
-function render(
-  templates: Readonly<Record<SignInMailLocale, SignInMailTemplate>>,
-  locale: SignInMailLocale,
-  link: string
-): SignInMail {
-  const { subject, text, html } = templates[resolveMailLocale(locale)];
-  return {
-    subject,
-    text: text.replace(LINK_MARKER, () => link),
-    html: html.replace(LINK_MARKER, () => escapeHtml(link))
-  };
-}
-
 /**
  * Render the sign-in mail for a locale.
  *
  * @param locale - The locale to render; a value outside the set renders the default locale
  * @param link - The sign-in link the function built
- * @returns The subject, the text part and the html part
+ * @returns The locale, the subject, the text part and the html part
  */
 export function renderSignInMail(locale: SignInMailLocale, link: string): SignInMail {
   return render(SIGN_IN_MAIL_TEMPLATES, locale, link);
@@ -277,7 +253,7 @@ export function renderSignInMail(locale: SignInMailLocale, link: string): SignIn
  *
  * @param locale - The locale to render; a value outside the set renders the default locale
  * @param link - The recovery link the function built
- * @returns The subject, the text part and the html part
+ * @returns The locale, the subject, the text part and the html part
  */
 export function renderRecoveryMail(locale: SignInMailLocale, link: string): SignInMail {
   return render(RECOVERY_MAIL_TEMPLATES, locale, link);
@@ -288,8 +264,42 @@ export function renderRecoveryMail(locale: SignInMailLocale, link: string): Sign
  *
  * @param locale - The locale to render; a value outside the set renders the default locale
  * @param link - The address-confirmation link the function built
- * @returns The subject, the text part and the html part
+ * @returns The locale, the subject, the text part and the html part
  */
 export function renderAddressConfirmationMail(locale: SignInMailLocale, link: string): SignInMail {
   return render(ADDRESS_CONFIRMATION_MAIL_TEMPLATES, locale, link);
+}
+
+/**
+ * Render one locale's template of a mail around a link.
+ *
+ * The link enters the text part as written and the html part HTML-escaped. It is inserted through a replacer function, so no character sequence in it is read as a replacement pattern. The html part is wrapped in an element whose `lang` is the rendered locale, so a screen reader reads it in that language.
+ *
+ * @param templates - The mail's templates, one per locale
+ * @param locale - The locale to render; a value outside the set renders the default locale
+ * @param link - The link the function built
+ */
+function render(
+  templates: Readonly<Record<SignInMailLocale, SignInMailTemplate>>,
+  locale: SignInMailLocale,
+  link: string
+): SignInMail {
+  const resolved = resolveMailLocale(locale);
+  const { subject, text, html } = templates[resolved];
+  return {
+    locale: resolved,
+    subject,
+    text: text.replace(LINK_MARKER, () => link),
+    html: `<div lang="${resolved}">${html.replace(LINK_MARKER, () => escapeHtml(link))}</div>`
+  };
+}
+
+/** Escape the five characters HTML gives meaning to, so a value is inserted into markup as text. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

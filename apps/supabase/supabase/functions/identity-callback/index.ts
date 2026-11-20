@@ -6,20 +6,20 @@
  * 1. Read the request: the ID token, the project, and the entity type asked for.
  * 2. Decrypt the token when it is a JWE, and verify its signature, audience and issuer against the configured provider.
  * 3. Read the provider's persistent subject identifier and the two name parts from the verified claims, a name sent all in capitals smart-cased.
- * 4. Decide the entity type from the project's stored registration-mode matrix, before any account or row is touched. This function is the authority on that decision: a caller's own check only selects, and a type the matrix does not allow for the identity provider's mode is refused here whoever asks.
- * 5. Find the account by the subject identifier, or create it without a password: an invite for its placeholder address.
- * 6. Find or create the entity, and write the account's identity metadata, with one call of `public.identity_entity_find_or_create`; then confirm the placeholder of an account this identity has not finished yet. The call finds the entity the account's record names for the project and type, confirmed by a live editor grant, or creates the entity, its grant and the record. A candidate is written confirmed with the provider's names; an organization unconfirmed and without a name.
+ * 4. Decide the entity type among the types `public.identity_provider_entity_types` allows for the project, before any account or row is touched. The database is the authority on that decision: a caller's own check only selects, and a type the project's registration modes do not allow for the identity provider, or any type while the project's Contestant App is switched off, is refused here whoever asks.
+ * 5. Find the account with `public.identity_account_find`, by the subject identifier or by the placeholder email, or create it without a password: an invite for its placeholder email.
+ * 6. Find or create the entity, and write the account's identity metadata, with one call of `public.identity_entity_find_or_create`; then confirm the placeholder of an account this identity has not finished yet. The call finds the entity the identity's registration record names for the project and type, confirmed by a live editor grant, or creates the entity, its grant and the record. A candidate is written confirmed with the provider's names; an organization unconfirmed and without a name.
  * 7. Generate a sign-in link for the account's current address and answer with its token.
  *
  * The entity, its grant and the record are written before the link is generated, so the session the caller obtains already carries the grant.
  *
- * SIGN-INS THAT ARRIVE TOGETHER. Several first sign-ins of one identity can reach the function at once, from tabs or retries. The invites race for the one placeholder address and all but one fail, so a failed invite is followed by a look-up of the account on the address. The entity is found or created in one transaction under a lock on the account, so the requests make one entity between them. The identity metadata is written by that call too, under the same lock, and no admin update carries `app_metadata`: the auth service writes the whole of `app_metadata` from the copy it read when the update began, so such an update could put back a record without the entry another request had just written for another project or type.
+ * SIGN-INS THAT ARRIVE TOGETHER. Several first sign-ins of one identity can reach the function at once, from tabs or retries. The invites race for the one placeholder email and all but one fail, so a failed invite is followed by a second look-up of the account. The entity is found or created in one transaction under a lock on the account, so the requests make one entity between them. The identity metadata is written by that call too, under the same lock, and no admin update carries `app_metadata`: the auth service writes the whole of `app_metadata` from the copy it read when the update began, so such an update could undo what another request had just written.
  *
  * WHY THE FUNCTION ANSWERS THE FRONTEND SERVER ALONE. The function turns a verified ID token into a sign-in token for the identity's account. It is reachable directly at its public address, so without the server's secret anyone holding a stolen or replayed ID token could present it here and sign in as its holder, bypassing the frontend's binding of the token to the browser that started the flow. A request without the header is refused before anything else is read, so an anonymous caller makes the function do no work and learns nothing about its configuration.
  *
  * POST /functions/v1/identity-callback Header: x-identity-callback-secret. Body: { id_token: string, project_id: uuid, entity_type?: 'candidate' | 'organization' }
  *
- * The project is the one the request names; the function reads none from its environment. A request that names no entity type is for the one served type whose matrix row allows the identity provider's mode; with none or several such types it is refused.
+ * The project is the one the request names; the function reads none from its environment. A request that names no entity type is for the one type the database allows; with none or several such types it is refused.
  *
  * Every answer is one result of the closed set in `requestContract.ts`, built by `resultBody` and sent with `resultStatus`: `created`, `found` and `no_entity` (200) carry the sign-in token; `refused` (401), `mode_not_allowed` (403), `invalid_token` (401), `bad_request` (400), `configuration` (500) and `unavailable` (503) carry nothing else. No caught message leaves the function.
  *
@@ -29,20 +29,22 @@
  * - IDENTITY_PROVIDER_JWKS_URI: URL to the provider's public JWKS endpoint for JWT signature verification (required; an unset value throws)
  * - IDENTITY_PROVIDER_CLIENT_ID: Expected audience in the JWT (required; verification throws when unset)
  * - IDENTITY_PROVIDER_ISSUER: Expected issuer of the JWT (required; verification throws when unset)
- * - IDENTITY_CALLBACK_SERVER_SECRET: The secret the frontend server sends in the credential header (required; read only for a request that carries the header, and an unset value then throws)
+ * - IDENTITY_CALLBACK_SERVER_SECRET: The secret the frontend server sends in the credential header (required; checked only for a request that carries the header, and an unset value then throws)
  * - SUPABASE_URL: Supabase project URL (auto-set by Supabase)
  * - SUPABASE_SERVICE_ROLE_KEY: Service role key for admin operations (auto-set by Supabase)
  */
 
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.117.2';
 import * as jose from 'npm:jose@6.2.12';
+import { actionLinkToken } from '../_shared/actionLink.ts';
 import { requireEnv } from '../_shared/envConfig.ts';
-import { placeholderAddressFor } from '../_shared/placeholderAddress.ts';
+import { placeholderEmailFor } from '../_shared/placeholderEmail.ts';
 import { identityAppMetadata } from './appMetadata.ts';
 import { extractIdentityClaims, resolveProviderConfig } from './claimConfig.ts';
 import { findOrCreateOutcome } from './ownEntity.ts';
-import { existingAccountSetup, holdsPlaceholderAddress } from './placeholderAccount.ts';
-import { resolveEntityType } from './registrationMatrix.ts';
+import { existingAccountSetup, identityAccountOf } from './placeholderAccount.ts';
+import type { IdentityAccount } from './placeholderAccount.ts';
+import { allowedEntityTypes, resolveEntityType } from './registrationMatrix.ts';
 import { IDENTITY_CALLBACK_RESULT, parseIdentityCallbackRequest, resultBody, resultStatus } from './requestContract.ts';
 import type { IdentityCallbackResult } from './requestContract.ts';
 import { presentsServerCredential, SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
@@ -61,131 +63,8 @@ const CONFIGURATION_FAILURE_CODES: ReadonlyArray<string> = [
   'ERR_ISSUER_UNCONFIGURED'
 ];
 
-/** The account fields this function reads from the auth service's admin answers. */
-interface AuthAccount {
-  id: string;
-  email?: string | null;
-  app_metadata?: Record<string, unknown> | null;
-}
-
-/**
- * The answer for one result, its body built by `resultBody` alone.
- *
- * @param result - The result.
- * @param token - The sign-in token, for a success.
- */
-function respond(result: IdentityCallbackResult, token?: string): Response {
-  return new Response(JSON.stringify(resultBody(result, token)), {
-    status: resultStatus(result),
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  });
-}
-
-/** Whether a caught error is a configuration failure, read by its `code` alone. */
-function isConfigurationFailure(error: unknown): boolean {
-  const code = (error as { code?: unknown } | null)?.code;
-  return typeof code === 'string' && CONFIGURATION_FAILURE_CODES.includes(code);
-}
-
-/** An error carrying a code and the client-reported text only: no address, no user id, no project id. */
-function failure(code: string, message: string): Error & { code: string } {
-  return Object.assign(new Error(message), { code });
-}
-
-/**
- * Determine whether a compact-serialization token is JWE (5 parts) or JWS/JWT (3 parts).
- * JWE compact serialization: header.encryptedKey.iv.ciphertext.tag (5 dot-separated parts) JWS compact serialization: header.payload.signature (3 dot-separated parts)
- */
-function isJweToken(token: string): boolean {
-  return token.split('.').length === 5;
-}
-
-/**
- * Decrypt a JWE-encrypted id_token using the private JWKS from environment.
- * Returns the inner JWT string (compact serialization).
- */
-async function decryptJweToken(jweToken: string): Promise<string> {
-  // Read through requireEnv rather than a non-null assertion so an unset value throws ERR_ENV_UNCONFIGURED naming the variable, the way the other required reads in this function do. Unchecked, `JSON.parse(undefined)` would throw a bare SyntaxError ('unexpected token u') that names neither the variable nor configuration as the cause.
-  const privateJWKSet: jose.JWK[] = JSON.parse(
-    requireEnv('IDENTITY_PROVIDER_DECRYPTION_JWKS', Deno.env.get('IDENTITY_PROVIDER_DECRYPTION_JWKS')?.trim())
-  );
-
-  const header = jose.decodeProtectedHeader(jweToken);
-  const privateKey = privateJWKSet.find((jwk: jose.JWK) => jwk.kid === header.kid);
-
-  if (!privateKey) {
-    throw new Error(`No matching decryption key found for kid=${header.kid}`);
-  }
-
-  const { plaintext } = await jose.compactDecrypt(jweToken, await jose.importJWK(privateKey, header.alg || 'RSA-OAEP'));
-
-  return new TextDecoder().decode(plaintext);
-}
-
-/**
- * Verify a signed JWT against the provider's public JWKS and return the payload.
- */
-async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
-  // Same reason as the decryption JWKS above: unchecked, an unset value would reach `new URL(undefined)` and throw a TypeError about an invalid URL rather than naming the missing variable.
-  const jwksUri = requireEnv('IDENTITY_PROVIDER_JWKS_URI', Deno.env.get('IDENTITY_PROVIDER_JWKS_URI')?.trim());
-
-  // Both claims are bound on every verification, never conditionally. The audience and the issuer are what tie a signature-valid token to THIS relying party and THIS provider; without them the check reduces to "signed by some key in the configured JWK set", which a token minted elsewhere for someone else also satisfies. A deployment that has not configured either variable fails loudly here rather than verifying for anybody. Both variables are documented in `.env.example` and in `tests/IDURA-TEST-RUNBOOK.md`.
-  // The guard sits on the path to `jose.jwtVerify` rather than beside a single environment read, so the binding is structural rather than positional -- every caller gets it, whatever route reaches this function.
-  const { audience, issuer } = requireVerifyClaimBinding(
-    Deno.env.get('IDENTITY_PROVIDER_CLIENT_ID'),
-    Deno.env.get('IDENTITY_PROVIDER_ISSUER')
-  );
-
-  const { payload } = await jose.jwtVerify(jwt, jose.createRemoteJWKSet(new URL(jwksUri)), { audience, issuer });
-
-  return payload;
-}
-
-/**
- * The first account, page by page, that a predicate accepts, or null when none does.
- *
- * @param supabaseAdmin - The service-role client.
- * @param matches - The predicate.
- * @throws {Error & { code: string }} `ERR_ACCOUNT_LOOKUP_FAILED` when a page cannot be listed.
- */
-async function findUser(
-  supabaseAdmin: SupabaseClient,
-  matches: (user: AuthAccount) => boolean
-): Promise<AuthAccount | null> {
-  let page = 1;
-  const perPage = 1000;
-
-  while (true) {
-    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
-    if (error) throw failure('ERR_ACCOUNT_LOOKUP_FAILED', `Failed to list users: ${error.message}`);
-
-    const users: Array<AuthAccount> = data?.users ?? [];
-    const matching = users.find(matches);
-    if (matching) return matching;
-
-    // A page shorter than perPage is the last one.
-    if (users.length < perPage) return null;
-    page++;
-  }
-}
-
-/** The account whose `app_metadata` holds the identity's match value, or null. */
-function findUserByIdentityMatch(
-  supabaseAdmin: SupabaseClient,
-  identityMatchValue: string
-): Promise<AuthAccount | null> {
-  return findUser(supabaseAdmin, (user) => user.app_metadata?.identity_match_value === identityMatchValue);
-}
-
-/** The account whose address is the given placeholder, compared without case, or null. */
-function findUserByPlaceholderAddress(
-  supabaseAdmin: SupabaseClient,
-  placeholderAddress: string
-): Promise<AuthAccount | null> {
-  return findUser(supabaseAdmin, (user) => holdsPlaceholderAddress(user, placeholderAddress));
-}
-
-Deno.serve(async (req: Request) => {
+/** Answer one request, along the steps of the module header. */
+async function handleRequest(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -195,11 +74,13 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // 0. The caller. A request without the header is refused before the configured secret is read; an unset secret throws and is answered as `configuration`, never as an open door.
-    const presentedCredential = req.headers.get(SERVER_CREDENTIAL_HEADER);
-    if (!presentedCredential) return respond(IDENTITY_CALLBACK_RESULT.refused);
-    const secret = requireEnv('IDENTITY_CALLBACK_SERVER_SECRET', Deno.env.get('IDENTITY_CALLBACK_SERVER_SECRET'));
-    if (!presentsServerCredential(presentedCredential, secret)) {
+    // 0. The caller. `presentsServerCredential` refuses a request without the header before it reads the configured secret; an unset secret throws and is answered as `configuration`, never as an open door.
+    if (
+      !presentsServerCredential(
+        req.headers.get(SERVER_CREDENTIAL_HEADER),
+        Deno.env.get('IDENTITY_CALLBACK_SERVER_SECRET')
+      )
+    ) {
       return respond(IDENTITY_CALLBACK_RESULT.refused);
     }
 
@@ -269,49 +150,52 @@ Deno.serve(async (req: Request) => {
 
     const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-    // 4. The entity type, decided by the project's stored matrix. A failed read throws and is answered as `unavailable`; it is never read as settings that allow something.
-    const { data: settingsRow, error: settingsError } = await supabaseAdmin
-      .from('app_settings')
-      .select('settings')
-      .eq('project_id', projectId)
-      .maybeSingle();
-    if (settingsError) throw failure('ERR_SETTINGS_READ_FAILED', `Settings read failed: ${settingsError.message}`);
+    // 4. The entity type, chosen among the types the database allows for the project. A failed read throws and is answered as `unavailable`; an answer of no type, as while the Contestant App is switched off, refuses every type.
+    const { data: allowedAnswer, error: allowedError } = await supabaseAdmin.rpc('identity_provider_entity_types', {
+      p_project_id: projectId
+    });
+    if (allowedError) {
+      throw failure('ERR_ENTITY_TYPES_READ_FAILED', `Entity types read failed: ${allowedError.message}`);
+    }
+    const allowed = allowedEntityTypes(allowedAnswer);
+    if (!allowed) throw failure('ERR_ENTITY_TYPES_READ_FAILED', 'The entity types read answered an unexpected shape.');
 
-    const decision = resolveEntityType(settingsRow?.settings ?? {}, request.entityType);
+    const decision = resolveEntityType(allowed, request.entityType);
     if ('refused' in decision) return respond(IDENTITY_CALLBACK_RESULT.mode_not_allowed);
     const entityType = decision.entityType;
 
-    // 5. The account. The placeholder address is derived from the subject identifier, which is unique per person, so one identity always has one placeholder.
-    let account = await findUserByIdentityMatch(supabaseAdmin, matchValue);
-    let initialise = false;
+    // 5. The account. The placeholder email is derived from the subject identifier, which is unique per person, so one identity always has one placeholder.
+    const placeholderEmail = placeholderEmailFor(matchValue);
+    let account = await findIdentityAccount(supabaseAdmin, matchValue, placeholderEmail);
+    let invitedNow = false;
 
     if (!account) {
-      const placeholderAddress = placeholderAddressFor(matchValue);
-
-      // An invite creates the account with no password. Its token is discarded: the token answered is minted at the end, as a magic link, which leaves the password unset when it is verified. When the invite fails, the account may still be on the address: the auth service answers `email_exists` for a confirmed account, and fails an invite that loses the race to create the account to another request for this identity.
+      // An invite creates the account with no password. Its token is discarded: the token answered is minted at the end, as a magic link, which leaves the password unset when it is verified. When the invite fails, the account may still exist: the auth service answers `email_exists` for a confirmed account, and fails an invite that loses the race to create the account to another request for this identity.
       const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin.generateLink({
         type: 'invite',
-        email: placeholderAddress,
+        email: placeholderEmail,
         options: { data: { given_name: firstName, family_name: lastName } }
       });
-      account = inviteError ? await findUserByPlaceholderAddress(supabaseAdmin, placeholderAddress) : invited?.user;
-      if (inviteError && !account) {
-        throw failure('ERR_ACCOUNT_CREATE_FAILED', `Failed to create auth user: ${inviteError.message}`);
+      if (inviteError) {
+        account = await findIdentityAccount(supabaseAdmin, matchValue, placeholderEmail);
+        if (!account) throw failure('ERR_ACCOUNT_CREATE_FAILED', `Failed to create auth user: ${inviteError.message}`);
+      } else {
+        const invitedId = invited?.user?.id;
+        if (!invitedId) throw failure('ERR_ACCOUNT_CREATE_FAILED', 'The auth service answered no user.');
+        account = { id: invitedId, email: placeholderEmail, appMetadata: null };
+        invitedNow = true;
       }
-      if (!account?.id) throw failure('ERR_ACCOUNT_CREATE_FAILED', 'The auth service answered no user.');
-
-      // An account found on the address may have been finished by another request for this identity; one of another identity is never taken over. An account that holds no match value yet is finished by this request, after the entity step.
-      const setup = inviteError
-        ? existingAccountSetup(account.app_metadata, matchValue)
-        : { kind: 'initialise' as const };
-      if (setup.kind === 'refuse') {
-        throw failure('ERR_ACCOUNT_CREATE_FAILED', 'The placeholder address belongs to another identity.');
-      }
-      initialise = setup.kind === 'initialise';
     }
+
+    // An account found may have been finished by an earlier request for this identity; one of another identity is never taken over. An account that holds no match value yet is finished by this request, after the entity step.
+    const setup = invitedNow ? { kind: 'initialise' as const } : existingAccountSetup(account.appMetadata, matchValue);
+    if (setup.kind === 'refuse') {
+      throw failure('ERR_ACCOUNT_CREATE_FAILED', 'The placeholder email belongs to another identity.');
+    }
+    const initialise = setup.kind === 'initialise';
     const userId = account.id;
 
-    // 6. The entity, found or created by one database call: it takes a lock on the account, reads the account's record inside it, and for a first sign-in writes the entity, its editor grant and the record in the same transaction, so sign-ins of one identity that arrive together make one entity, and a failed write leaves none behind. A record whose grant or row is gone answers `no_entity`, and nothing is created for it. On every answer the call also writes the identity metadata, which removes the provider's claims an older account still holds; the record is the call's own and is never part of it.
+    // 6. The entity, found or created by one database call: it takes a lock on the account, reads the identity's registration record inside it, and for a first sign-in writes the entity, its editor grant and the record in the same transaction, so sign-ins of one identity that arrive together make one entity, and a failed write leaves none behind. A record whose grant or row is gone answers `no_entity`, and nothing is created for it. On every answer the call also writes the identity metadata, which removes the provider's claims an older account still holds; the record is the call's own and is never part of it.
     const { data: entityAnswer, error: entityError } = await supabaseAdmin.rpc('identity_entity_find_or_create', {
       p_user_id: userId,
       p_project_id: projectId,
@@ -324,8 +208,10 @@ Deno.serve(async (req: Request) => {
         matchValue
       })
     });
+    // 42501: the account is bound to another identity, such as one whose match value differs only by case.
+    if (entityError?.code === '42501') return respond(IDENTITY_CALLBACK_RESULT.refused);
     if (entityError) throw failure('ERR_ENTITY_RESOLVE_FAILED', `Entity find-or-create failed: ${entityError.message}`);
-    const { result } = findOrCreateOutcome(entityAnswer, projectId, entityType);
+    const { result } = findOrCreateOutcome(entityAnswer);
 
     // The placeholder's confirmation, before the link: the only confirmation this function makes, for an account this identity has not finished yet. The update carries nothing else, so it writes no `app_metadata`.
     if (initialise) {
@@ -346,8 +232,7 @@ Deno.serve(async (req: Request) => {
     });
     if (linkError) throw failure('ERR_LINK_FAILED', `Sign-in link failed: ${linkError.message}`);
 
-    const actionLink = linkData?.properties?.action_link;
-    const token = typeof actionLink === 'string' ? new URL(actionLink).searchParams.get('token') : null;
+    const token = actionLinkToken(linkData?.properties?.action_link);
     if (!token) throw failure('ERR_LINK_FAILED', 'The sign-in link carries no token.');
 
     return respond(result, token);
@@ -358,4 +243,100 @@ Deno.serve(async (req: Request) => {
       isConfigurationFailure(e) ? IDENTITY_CALLBACK_RESULT.configuration : IDENTITY_CALLBACK_RESULT.unavailable
     );
   }
-});
+}
+
+/**
+ * The answer for one result, its body built by `resultBody` alone.
+ *
+ * @param result - The result.
+ * @param token - The sign-in token, for a success.
+ */
+function respond(result: IdentityCallbackResult, token?: string): Response {
+  return new Response(JSON.stringify(resultBody(result, token)), {
+    status: resultStatus(result),
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  });
+}
+
+/**
+ * Determine whether a compact-serialization token is JWE (5 parts) or JWS/JWT (3 parts).
+ * JWE compact serialization: header.encryptedKey.iv.ciphertext.tag (5 dot-separated parts) JWS compact serialization: header.payload.signature (3 dot-separated parts)
+ */
+function isJweToken(token: string): boolean {
+  return token.split('.').length === 5;
+}
+
+/**
+ * Decrypt a JWE-encrypted id_token using the private JWKS from environment.
+ * Returns the inner JWT string (compact serialization).
+ */
+async function decryptJweToken(jweToken: string): Promise<string> {
+  // Read through requireEnv rather than a non-null assertion so an unset value throws ERR_ENV_UNCONFIGURED naming the variable, the way the other required reads in this function do. Unchecked, `JSON.parse(undefined)` would throw a bare SyntaxError ('unexpected token u') that names neither the variable nor configuration as the cause.
+  const privateJWKSet: jose.JWK[] = JSON.parse(
+    requireEnv('IDENTITY_PROVIDER_DECRYPTION_JWKS', Deno.env.get('IDENTITY_PROVIDER_DECRYPTION_JWKS')?.trim())
+  );
+
+  const header = jose.decodeProtectedHeader(jweToken);
+  const privateKey = privateJWKSet.find((jwk: jose.JWK) => jwk.kid === header.kid);
+
+  if (!privateKey) {
+    throw new Error(`No matching decryption key found for kid=${header.kid}`);
+  }
+
+  const { plaintext } = await jose.compactDecrypt(jweToken, await jose.importJWK(privateKey, header.alg || 'RSA-OAEP'));
+
+  return new TextDecoder().decode(plaintext);
+}
+
+/** Whether a caught error is a configuration failure, read by its `code` alone. */
+function isConfigurationFailure(error: unknown): boolean {
+  const code = (error as { code?: unknown } | null)?.code;
+  return typeof code === 'string' && CONFIGURATION_FAILURE_CODES.includes(code);
+}
+
+/**
+ * Verify a signed JWT against the provider's public JWKS and return the payload.
+ */
+async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
+  // Same reason as the decryption JWKS above: unchecked, an unset value would reach `new URL(undefined)` and throw a TypeError about an invalid URL rather than naming the missing variable.
+  const jwksUri = requireEnv('IDENTITY_PROVIDER_JWKS_URI', Deno.env.get('IDENTITY_PROVIDER_JWKS_URI')?.trim());
+
+  // Both claims are bound on every verification, never conditionally. The audience and the issuer are what tie a signature-valid token to THIS relying party and THIS provider; without them the check reduces to "signed by some key in the configured JWK set", which a token minted elsewhere for someone else also satisfies. A deployment that has not configured either variable fails loudly here rather than verifying for anybody. Both variables are documented in `.env.example` and in `tests/IDURA-TEST-RUNBOOK.md`.
+  // The guard sits on the path to `jose.jwtVerify` rather than beside a single environment read, so the binding is structural rather than positional -- every caller gets it, whatever route reaches this function.
+  const { audience, issuer } = requireVerifyClaimBinding(
+    Deno.env.get('IDENTITY_PROVIDER_CLIENT_ID'),
+    Deno.env.get('IDENTITY_PROVIDER_ISSUER')
+  );
+
+  const { payload } = await jose.jwtVerify(jwt, jose.createRemoteJWKSet(new URL(jwksUri)), { audience, issuer });
+
+  return payload;
+}
+
+/** An error carrying a code and the client-reported text only: no address, no user id, no project id. */
+function failure(code: string, message: string): Error & { code: string } {
+  return Object.assign(new Error(message), { code });
+}
+
+/**
+ * The identity's account, by its match value or by its placeholder email, or null when it has none.
+ *
+ * @param supabaseAdmin - The service-role client.
+ * @param matchValue - The identity's match value.
+ * @param placeholderEmail - The identity's placeholder email.
+ * @throws {Error & { code: string }} `ERR_ACCOUNT_LOOKUP_FAILED` when the look-up fails or answers an unexpected shape.
+ */
+async function findIdentityAccount(
+  supabaseAdmin: SupabaseClient,
+  matchValue: string,
+  placeholderEmail: string
+): Promise<IdentityAccount | null> {
+  const { data, error } = await supabaseAdmin.rpc('identity_account_find', {
+    p_match_value: matchValue,
+    p_placeholder_email: placeholderEmail
+  });
+  if (error) throw failure('ERR_ACCOUNT_LOOKUP_FAILED', `Account look-up failed: ${error.message}`);
+  return identityAccountOf(data);
+}
+
+Deno.serve(handleRequest);
