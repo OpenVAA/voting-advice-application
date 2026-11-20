@@ -146,12 +146,6 @@ export const NEW_CANDIDATE_EDITOR = permEditor(
   'perm-contestant-nominations-candidate-new.json'
 );
 
-/** The entity the unnominated candidate's editor is registered on. */
-export const NEW_CANDIDATE_GRANT = NEW_CANDIDATE_EDITOR.grant;
-
-/** Where the session of the unnominated candidate's editor is stored. */
-export const NEW_CANDIDATE_STORAGE_STATE = NEW_CANDIDATE_EDITOR.storageStatePath;
-
 // ---------------------------------------------------------------------------
 // The party with no nomination row, and its editor.
 // ---------------------------------------------------------------------------
@@ -172,12 +166,6 @@ export const NEW_ORGANIZATION_EDITOR = permEditor(
   'perm-contestant-nominations-organization-new.json'
 );
 
-/** The entity the unnominated party's editor is registered on. */
-export const NEW_ORGANIZATION_GRANT = NEW_ORGANIZATION_EDITOR.grant;
-
-/** Where the session of the unnominated party's editor is stored. */
-export const NEW_ORGANIZATION_STORAGE_STATE = NEW_ORGANIZATION_EDITOR.storageStatePath;
-
 // ---------------------------------------------------------------------------
 // The candidate with a nomination under a party, and its editor.
 // ---------------------------------------------------------------------------
@@ -194,12 +182,6 @@ export const EDIT_CANDIDATE_EDITOR = permEditor(
   EDIT_CANDIDATE_EXTERNAL_ID,
   'perm-contestant-nominations-candidate-edit.json'
 );
-
-/** The entity the nominated candidate's editor is registered on. */
-export const EDIT_CANDIDATE_GRANT = EDIT_CANDIDATE_EDITOR.grant;
-
-/** Where the session of the nominated candidate's editor is stored. */
-export const EDIT_CANDIDATE_STORAGE_STATE = EDIT_CANDIDATE_EDITOR.storageStatePath;
 
 /** `external_id` of the nominated candidate's one seeded nomination. */
 export const EDIT_CANDIDATE_NOMINATION_EXTERNAL_ID = `${CONTESTANT_NOMINATIONS_PREFIX}nom-ca-edit-list-north`;
@@ -229,12 +211,6 @@ export const EDIT_ORGANIZATION_EDITOR = permEditor(
   EDIT_ORGANIZATION_EXTERNAL_ID,
   'perm-contestant-nominations-organization-edit.json'
 );
-
-/** The entity the nominated party's editor is registered on. */
-export const EDIT_ORGANIZATION_GRANT = EDIT_ORGANIZATION_EDITOR.grant;
-
-/** Where the session of the nominated party's editor is stored. */
-export const EDIT_ORGANIZATION_STORAGE_STATE = EDIT_ORGANIZATION_EDITOR.storageStatePath;
 
 /** The dataset's four editors, as its setup stores their sessions and its teardown removes them. */
 export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([
@@ -376,13 +352,13 @@ export const SEEDED_NOMINATIONS: ReadonlyArray<SeededNomination> = Object.freeze
   },
   {
     externalId: EDIT_ORGANIZATION_LIST_NOMINATION_EXTERNAL_ID,
-    entity: EDIT_ORGANIZATION_GRANT,
+    entity: EDIT_ORGANIZATION_EDITOR.grant,
     contest: LIST_NORTH_CONTEST,
     sortOrder: 3
   },
   {
     externalId: EDIT_ORGANIZATION_OPEN_NOMINATION_EXTERNAL_ID,
-    entity: EDIT_ORGANIZATION_GRANT,
+    entity: EDIT_ORGANIZATION_EDITOR.grant,
     contest: OPEN_NATION_CONTEST,
     sortOrder: 4,
     electionSymbol: EDIT_ORGANIZATION_ELECTION_SYMBOL
@@ -396,7 +372,7 @@ export const SEEDED_NOMINATIONS: ReadonlyArray<SeededNomination> = Object.freeze
   },
   {
     externalId: EDIT_CANDIDATE_NOMINATION_EXTERNAL_ID,
-    entity: EDIT_CANDIDATE_GRANT,
+    entity: EDIT_CANDIDATE_EDITOR.grant,
     contest: LIST_NORTH_CONTEST,
     sortOrder: 6,
     electionSymbol: EDIT_CANDIDATE_ELECTION_SYMBOL,
@@ -406,11 +382,11 @@ export const SEEDED_NOMINATIONS: ReadonlyArray<SeededNomination> = Object.freeze
 
 /** Every entity of the dataset that can hold a nomination. */
 export const NOMINATION_ENTITIES: ReadonlyArray<NominationEntityTarget> = Object.freeze([
-  NEW_CANDIDATE_GRANT,
-  EDIT_CANDIDATE_GRANT,
+  NEW_CANDIDATE_EDITOR.grant,
+  EDIT_CANDIDATE_EDITOR.grant,
   CHILD_CANDIDATE,
-  NEW_ORGANIZATION_GRANT,
-  EDIT_ORGANIZATION_GRANT,
+  NEW_ORGANIZATION_EDITOR.grant,
+  EDIT_ORGANIZATION_EDITOR.grant,
   GREEN_ORGANIZATION,
   LONG_ORGANIZATION,
   PENDING_ORGANIZATION,

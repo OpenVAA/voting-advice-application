@@ -58,15 +58,6 @@ export const UNNOMINATED_CANDIDATE_EDITOR = permEditor(
   'perm-no-nomination-candidate-none.json'
 );
 
-/** The entity the unnominated candidate's editor is registered on. */
-export const UNNOMINATED_CANDIDATE_GRANT = UNNOMINATED_CANDIDATE_EDITOR.grant;
-
-/** Where the session of the unnominated candidate's editor is stored. */
-export const UNNOMINATED_CANDIDATE_STORAGE_STATE = UNNOMINATED_CANDIDATE_EDITOR.storageStatePath;
-
-/** Email of the unnominated candidate's editor, which a test types into the login form. */
-export const UNNOMINATED_CANDIDATE_EDITOR_EMAIL = UNNOMINATED_CANDIDATE_EDITOR.email;
-
 /** `external_id` of the nomination a state step writes for the unnominated candidate. No such row is seeded. */
 export const UNNOMINATED_CANDIDATE_NOMINATION_EXTERNAL_ID = `${NO_NOMINATION_PREFIX}nom-ca-none`;
 
@@ -93,12 +84,6 @@ export const UNNOMINATED_ORGANIZATION_EDITOR = permEditor(
   'perm-no-nomination-organization-none.json'
 );
 
-/** The entity the unnominated organization's editor is registered on. */
-export const UNNOMINATED_ORGANIZATION_GRANT = UNNOMINATED_ORGANIZATION_EDITOR.grant;
-
-/** Where the session of the unnominated organization's editor is stored. */
-export const UNNOMINATED_ORGANIZATION_STORAGE_STATE = UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath;
-
 /** `external_id` of the nomination a state step writes for the unnominated organization. No such row is seeded. */
 export const UNNOMINATED_ORGANIZATION_NOMINATION_EXTERNAL_ID = `${NO_NOMINATION_PREFIX}nom-or-none`;
 
@@ -124,12 +109,6 @@ export const NOMINATED_CANDIDATE_EDITOR = permEditor(
   NOMINATED_CANDIDATE_EXTERNAL_ID,
   'perm-no-nomination-candidate-nominated.json'
 );
-
-/** The entity the nominated candidate's editor is registered on. */
-export const NOMINATED_CANDIDATE_GRANT = NOMINATED_CANDIDATE_EDITOR.grant;
-
-/** Where the session of the nominated candidate's editor is stored. */
-export const NOMINATED_CANDIDATE_STORAGE_STATE = NOMINATED_CANDIDATE_EDITOR.storageStatePath;
 
 /** The dataset's three editors, as its setup stores their sessions and its teardown removes them. */
 export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([

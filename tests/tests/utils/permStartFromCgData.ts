@@ -75,11 +75,5 @@ export const CANDIDATE_EXTERNAL_ID = `${START_FROM_CG_PREFIX}ca-1-1b`;
 /** The candidate's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
 export const CANDIDATE_EDITOR = permEditor('candidate', CANDIDATE_EXTERNAL_ID, 'perm-startfromcg-candidate.json');
 
-/** The entity the candidate's editor is registered on. */
-export const CANDIDATE_GRANT = CANDIDATE_EDITOR.grant;
-
-/** Where the session of the candidate's editor is stored. */
-export const CANDIDATE_STORAGE_STATE = CANDIDATE_EDITOR.storageStatePath;
-
 /** The dataset's one editor, as its setup stores the session and its teardown removes it. */
 export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([CANDIDATE_EDITOR]);

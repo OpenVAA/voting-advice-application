@@ -77,7 +77,7 @@ const OPT_OUT_SCAN: ContestantAxeRoute = {
 /** The two users, registered as editors of the dataset's two member candidates without an acceptance of the terms of use. Each session is stored only once the terms-of-use view has rendered for its user. */
 const TERMS_PENDING_IDENTITIES: ReadonlyArray<StoredSessionIdentity> = [
   {
-    externalId: ANALYTICS_TERMS_GRANTING_EXTERNAL_ID,
+    entityGrants: [{ entityType: 'candidate', externalId: ANALYTICS_TERMS_GRANTING_EXTERNAL_ID }],
     email: ANALYTICS_TERMS_GRANTING_EMAIL,
     password: TEST_PASSWORD,
     storageStatePath: ANALYTICS_TERMS_GRANTING_STORAGE_STATE,
@@ -85,7 +85,7 @@ const TERMS_PENDING_IDENTITIES: ReadonlyArray<StoredSessionIdentity> = [
     settledTestId: testIds.contestant.terms.submit
   },
   {
-    externalId: ANALYTICS_TERMS_REFUSING_EXTERNAL_ID,
+    entityGrants: [{ entityType: 'candidate', externalId: ANALYTICS_TERMS_REFUSING_EXTERNAL_ID }],
     email: ANALYTICS_TERMS_REFUSING_EMAIL,
     password: TEST_PASSWORD,
     storageStatePath: ANALYTICS_TERMS_REFUSING_STORAGE_STATE,

@@ -22,8 +22,8 @@ import { createContestantEntityHomePage } from './contestantEntityHomePage.fixtu
 import { createContestantNominationEditor } from './contestantNominationEditor.fixture';
 import { createContestantNominationsPage } from './contestantNominationsPage.fixture';
 import {
+  CANDIDATE_EDITOR,
   CANDIDATE_EXTERNAL_ID,
-  CANDIDATE_GRANT,
   FIRST_GROUP_EXTERNAL_ID,
   SEEDED_NOMINATION_SHAPES
 } from '../../utils/permStartFromCgData';
@@ -128,7 +128,7 @@ export async function removeCandidateNominations(): Promise<void> {
  * @throws If a read or the delete fails.
  */
 export async function clearWrittenNominations(): Promise<void> {
-  await clearWrittenNominationsOfEntities([CANDIDATE_GRANT]);
+  await clearWrittenNominationsOfEntities([CANDIDATE_EDITOR.grant]);
 }
 
 /**

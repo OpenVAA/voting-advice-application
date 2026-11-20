@@ -40,12 +40,6 @@ export const CONFIRMED_ORGANIZATION_EDITOR = permEditor(
   'perm-organization-editing-confirmed.json'
 );
 
-/** The entity the confirmed organization's editor is registered on. */
-export const CONFIRMED_ORGANIZATION_GRANT = CONFIRMED_ORGANIZATION_EDITOR.grant;
-
-/** Where the session of the confirmed organization's editor is stored. */
-export const CONFIRMED_ORGANIZATION_STORAGE_STATE = CONFIRMED_ORGANIZATION_EDITOR.storageStatePath;
-
 // ---------------------------------------------------------------------------
 // The unconfirmed organization: hidden from voters, its two names editable.
 // ---------------------------------------------------------------------------
@@ -64,12 +58,6 @@ export const UNCONFIRMED_ORGANIZATION_EDITOR = permEditor(
   UNCONFIRMED_ORGANIZATION_EXTERNAL_ID,
   'perm-organization-editing-unconfirmed.json'
 );
-
-/** The entity the unconfirmed organization's editor is registered on. */
-export const UNCONFIRMED_ORGANIZATION_GRANT = UNCONFIRMED_ORGANIZATION_EDITOR.grant;
-
-/** Where the session of the unconfirmed organization's editor is stored. */
-export const UNCONFIRMED_ORGANIZATION_STORAGE_STATE = UNCONFIRMED_ORGANIZATION_EDITOR.storageStatePath;
 
 // ---------------------------------------------------------------------------
 // The questions. Every opinion question is addressed to organizations alone.
@@ -110,12 +98,6 @@ export const UNCONFIRMED_CANDIDATE_EDITOR = permEditor(
   UNCONFIRMED_CANDIDATE_EXTERNAL_ID,
   'perm-organization-editing-candidate.json'
 );
-
-/** The entity the unconfirmed candidate's editor is registered on. */
-export const UNCONFIRMED_CANDIDATE_GRANT = UNCONFIRMED_CANDIDATE_EDITOR.grant;
-
-/** Where the session of the unconfirmed candidate's editor is stored. */
-export const UNCONFIRMED_CANDIDATE_STORAGE_STATE = UNCONFIRMED_CANDIDATE_EDITOR.storageStatePath;
 
 /** The dataset's three editors, as its setup stores their sessions and its teardown removes them. */
 export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([
