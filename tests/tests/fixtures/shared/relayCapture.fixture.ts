@@ -46,7 +46,7 @@ export type RelayEvent = z.input<typeof EventSchema>;
 /**
  * The member of a wire event that holds the visit id. Every read of the visit id goes through it, by `hasVisitId` and `visitIdOf`; the `satisfies` clause stops the typecheck when the vocabulary names the member differently.
  */
-export const VISIT_ID_KEY = 'id' satisfies keyof Extract<RelayEvent, { name: 'menu_open' }>;
+export const VISIT_ID_KEY = 'visitId' satisfies keyof Extract<RelayEvent, { name: 'menu_open' }>;
 
 /** True when `event` has a visit-id member at all, whatever its value. */
 export function hasVisitId(event: RelayEvent): boolean {

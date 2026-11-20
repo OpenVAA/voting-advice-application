@@ -66,7 +66,7 @@ function inputs(
   };
 }
 
-type SentEvent = { name: string; ago: number; id?: string; attributes: Record<string, unknown> };
+type SentEvent = { name: string; ago: number; visitId?: string; attributes: Record<string, unknown> };
 type SentBody = { routeId: string; locale: string; events: Array<SentEvent> };
 
 /** The parsed bodies handed to the transport. */
@@ -155,9 +155,9 @@ describe('trackingService (pure-rune producer)', () => {
       svc.submitAllEvents();
       const [body] = bodies();
       expect(body.events.map((event) => event.name)).toEqual(['pageview', 'menu_open', 'answer_delete']);
-      expect(body.events[0].id).toBeUndefined();
-      expect(body.events[1].id).toBe(getVisitId());
-      expect(body.events[2].id).toBe(getVisitId());
+      expect(body.events[0].visitId).toBeUndefined();
+      expect(body.events[1].visitId).toBe(getVisitId());
+      expect(body.events[2].visitId).toBe(getVisitId());
     });
     cleanup();
   });
@@ -173,8 +173,8 @@ describe('trackingService (pure-rune producer)', () => {
       const [body] = bodies();
       const byName = Object.fromEntries(body.events.map((event) => [event.name, event]));
       expect(Object.keys(byName)).toEqual(['pageview', 'answer_delete', 'menu_open']);
-      expect(byName.answer_delete.id).toBeUndefined();
-      expect(byName.menu_open.id).toBe(getVisitId());
+      expect(byName.answer_delete.visitId).toBeUndefined();
+      expect(byName.menu_open.visitId).toBe(getVisitId());
     });
     cleanup();
   });
@@ -189,7 +189,7 @@ describe('trackingService (pure-rune producer)', () => {
       svc.submitAllEvents();
       const [body] = bodies();
       expect(body.events).toHaveLength(3);
-      for (const event of body.events) expect(event.id).toBeUndefined();
+      for (const event of body.events) expect(event.visitId).toBeUndefined();
     });
     cleanup();
   });
@@ -259,12 +259,12 @@ describe('trackingService (pure-rune producer)', () => {
     cleanup();
   });
 
-  describe('surveySessionId', () => {
+  describe('visitId', () => {
     it('is the visit id in visit-id mode memory when events may be sent', async () => {
       const { trackingService, getVisitId } = await importTracking(true);
       const cleanup = $effect.root(() => {
         const svc = trackingService(inputs({ consent: 'granted' }));
-        expect(svc.surveySessionId.current).toBe(getVisitId());
+        expect(svc.visitId.current).toBe(getVisitId());
       });
       cleanup();
     });
@@ -279,7 +279,7 @@ describe('trackingService (pure-rune producer)', () => {
           inputs({ trackEvents: false, consent: 'granted' }),
           inputs({ consent: 'granted', projection: handle(INACTIVE_PROJECTION) })
         ];
-        for (const input of cases) expect(trackingService(input).surveySessionId.current).toBeUndefined();
+        for (const input of cases) expect(trackingService(input).visitId.current).toBeUndefined();
       });
       cleanup();
     });
@@ -288,7 +288,7 @@ describe('trackingService (pure-rune producer)', () => {
       Object.defineProperty(navigator, 'globalPrivacyControl', { value: true, configurable: true });
       const { trackingService } = await importTracking(true);
       const cleanup = $effect.root(() => {
-        expect(trackingService(inputs({ consent: 'granted' })).surveySessionId.current).toBeUndefined();
+        expect(trackingService(inputs({ consent: 'granted' })).visitId.current).toBeUndefined();
       });
       cleanup();
     });
@@ -302,7 +302,7 @@ describe('trackingService (pure-rune producer)', () => {
       svc.startPageview(HOME, {});
       svc.track('menu_open');
       svc.track('maintenance_shown');
-      expect(svc.surveySessionId.current).toBeTypeOf('string');
+      expect(svc.visitId.current).toBeTypeOf('string');
       svc.submitAllEvents();
     });
     cleanup();
@@ -428,7 +428,7 @@ describe('trackingService (pure-rune producer)', () => {
       const svc = trackingService(inputs({ consent: 'granted' }));
       const spread = { ...svc };
       expect(spread.gate?.current.projection.active).toBe(true);
-      expect(spread.surveySessionId?.current).toBe(getVisitId());
+      expect(spread.visitId?.current).toBe(getVisitId());
       expect(typeof spread.track).toBe('function');
       expect(typeof spread.setPageVisible).toBe('function');
       expect(typeof spread.submitAllEvents).toBe('function');
@@ -436,7 +436,7 @@ describe('trackingService (pure-rune producer)', () => {
     cleanup();
   });
 
-  // EXACT own-enumerable surface lock, deliberately not a superset check. `appContext` forwards an explicit list of these members and withholds `surveySessionId`, which it reads producer to producer. Add a member here on purpose, and decide explicitly whether it joins appContext's forward and the `AppContext` type.
+  // EXACT own-enumerable surface lock, deliberately not a superset check. `appContext` forwards an explicit list of these members and withholds `visitId`, which it reads producer to producer. Add a member here on purpose, and decide explicitly whether it joins appContext's forward and the `AppContext` type.
   it('exposes EXACTLY seven own-enumerable members', async () => {
     const { trackingService } = await importTracking(true);
     const cleanup = $effect.root(() => {
@@ -448,7 +448,7 @@ describe('trackingService (pure-rune producer)', () => {
         'resetAllEvents',
         'setPageVisible',
         'gate',
-        'surveySessionId'
+        'visitId'
       ];
       expect(Object.keys(svc).sort()).toEqual([...expected].sort());
     });

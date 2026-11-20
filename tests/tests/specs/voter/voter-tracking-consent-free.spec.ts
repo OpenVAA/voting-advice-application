@@ -136,7 +136,7 @@ async function expectNoConsentPrompt(page: Page): Promise<void> {
 
 /** A short description of a captured event, for failure messages. */
 function describeEvent(event: CapturedRelayEvent): string {
-  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with id ${String(visitIdOf(event))}` : ''}`;
+  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with visit id ${String(visitIdOf(event))}` : ''}`;
 }
 
 /** The captured events named `name`. */

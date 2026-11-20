@@ -110,7 +110,7 @@ function isUnder(root: string, routeId: string): boolean {
 
 /** A short description of a captured event, for failure messages. */
 function describeEvent(event: CapturedRelayEvent): string {
-  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with id ${String(visitIdOf(event))}` : ''}`;
+  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with visit id ${String(visitIdOf(event))}` : ''}`;
 }
 
 /** The captured events named `name`. */
@@ -234,7 +234,7 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
         pageviews.filter((event) => !isUnder(CONTESTANT, event.routeId)).map(describeEvent),
         `a pageview outside the Contestant App (${CONTESTANT}) was captured`
       ).toEqual([]);
-      expect(pageviews.filter(hasVisitId).map(describeEvent), 'a pageview carries an id').toEqual([]);
+      expect(pageviews.filter(hasVisitId).map(describeEvent), 'a pageview carries a visit id').toEqual([]);
     });
   });
 

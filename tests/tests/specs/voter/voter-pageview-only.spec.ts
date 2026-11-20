@@ -45,7 +45,7 @@ function pageviewCount(capture: RelayCaptureFixture): number {
 
 /** A short description of a captured event, for failure messages. */
 function describeEvent(event: CapturedRelayEvent): string {
-  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with id ${String(visitIdOf(event))}` : ''}`;
+  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with visit id ${String(visitIdOf(event))}` : ''}`;
 }
 
 /** Assert that no consent prompt and no control that grants consent is on the page. */

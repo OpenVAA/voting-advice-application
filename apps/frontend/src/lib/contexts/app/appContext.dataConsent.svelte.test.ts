@@ -39,7 +39,7 @@ const { stubs, prefsHolder, route, trackingInputs } = vi.hoisted(() => {
         resetAllEvents: vi.fn(() => {}),
         setPageVisible: (_visible: boolean) => {},
         gate: { current: {} },
-        surveySessionId: { current: undefined as string | undefined }
+        visitId: { current: undefined as string | undefined }
       },
       survey: { current: undefined as string | undefined },
       popup: { current: undefined, push: (_item: unknown) => {}, shift: () => {} },

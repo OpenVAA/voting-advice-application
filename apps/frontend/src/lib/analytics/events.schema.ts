@@ -7,7 +7,7 @@
  *
  * ## The wire shape of one event
  *
- * `name`, `ago` (the event's age in whole milliseconds when the batch is sent; the relay subtracts it from its own receive time) and `attributes`. Every event but the pageview may also carry `id`, the visit id, which must be a UUIDv7. The pageview never has an `id` member, and its route id and locale are those of the batch it travels in.
+ * `name`, `ago` (the event's age in whole milliseconds when the batch is sent; the relay subtracts it from its own receive time) and `attributes`. Every event but the pageview may also carry `visitId`, which must be a UUIDv7. The pageview never has a `visitId` member, and its route id and locale are those of the batch it travels in.
  */
 import { ENTITY_TYPE } from '@openvaa/data';
 import { z } from 'zod';
@@ -21,7 +21,7 @@ const AgeSchema = z.number().int().min(0).max(MAX_EVENT_AGE_MS);
 const VisitIdSchema = z.string().max(36).refine(isUuidV7, { message: 'Expected a UUIDv7' });
 
 /** The members every event but the pageview has beside its name and attributes. */
-const COMMON = { ago: AgeSchema, id: VisitIdSchema.optional() };
+const COMMON = { ago: AgeSchema, visitId: VisitIdSchema.optional() };
 
 /** An identifier: one to 64 letters, digits, underscores or hyphens. It admits a uuid and the first-question placeholder, and no free text. */
 const IdSchema = z.string().regex(ID_PATTERN);

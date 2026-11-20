@@ -67,7 +67,7 @@ const { stubs, prefsHolder, pushed } = vi.hoisted(() => {
             consent: undefined
           }
         },
-        surveySessionId: { current: undefined as string | undefined }
+        visitId: { current: undefined as string | undefined }
       },
       // survey-link producer: `{ readonly current }` handle.
       survey: { current: 'https://example.invalid/survey' as string | undefined },

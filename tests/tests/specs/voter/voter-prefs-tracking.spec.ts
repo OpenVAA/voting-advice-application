@@ -76,7 +76,7 @@ function visitIds(capture: RelayCaptureFixture): Array<string> {
 
 /** A short description of a captured event, for failure messages. */
 function describeEvent(event: CapturedRelayEvent): string {
-  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with id ${String(visitIdOf(event))}` : ''}`;
+  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with visit id ${String(visitIdOf(event))}` : ''}`;
 }
 
 /** Open the voter app's front page and wait for its content. */

@@ -243,7 +243,7 @@ export class AppContextProvider implements AppContext {
       locale: getLocale,
       routeId: () => page.route.id
     });
-    this.#survey = surveyLink({ appSettings: appSettingsHandle, sessionId: this.#tracking.surveySessionId });
+    this.#survey = surveyLink({ appSettings: appSettingsHandle, visitId: this.#tracking.visitId });
     this.surveyLink = this.#survey;
 
     ////////////////////////////////////////////////////////////////////
@@ -267,7 +267,7 @@ export class AppContextProvider implements AppContext {
 
     // tracking — EXPLICIT SELECTIVE forward, deliberately NOT wholesale. The producer exposes seven own-enumerable members; these SIX are forwarded by reference: `startPageview`, `track`, `submitAllEvents`, `resetAllEvents`, `setPageVisible`, and the producer's `gate` handle under the name `analyticsGate`, so that layouts and components evaluate the gate functions against the one gate input the producer sends under. All six are data properties on the producer (five arrow fields and a `{ current }` handle object), so a value copy is the same thing `inheritContextMembers` would install for them — no accessor liveness is at stake here, unlike `dataRoot` above; the handle's own getter stays live.
     //
-    // WITHHELD, deliberately: `surveySessionId`. It is read producer to producer — handed to `surveyLink(...)` above STRAIGHT OFF `#tracking`, never through this public surface. Forwarding it would put the visit id on every context and every `{ ...appContext }` spread for no consumer.
+    // WITHHELD, deliberately: `visitId`. It is read producer to producer — handed to `surveyLink(...)` above STRAIGHT OFF `#tracking`, never through this public surface. Forwarding it would put the visit id on every context and every `{ ...appContext }` spread for no consumer.
     //
     // Why a selective forward rather than hiding it on the producer: it must REMAIN on the producer (the read above), and making it private or non-enumerable would break that read plus the producer's own exact-`Object.keys` lock in `tracking/trackingService.svelte.test.ts`. That lock pins the producer's seven-member surface; because the forward below is an explicit list, a new public member on the producer does not reach this context implicitly — it has to be added here on purpose.
     Object.assign(this, {

@@ -69,7 +69,7 @@ function overLong(max: number): string {
  */
 const REJECTED_TWINS: Record<EventName, Array<{ why: string; input: unknown; path: string }>> = {
   pageview: [
-    { why: 'an id', input: withMembers('pageview', { id: SAMPLE_VISIT_ID }), path: 'id' },
+    { why: 'a visit id', input: withMembers('pageview', { visitId: SAMPLE_VISIT_ID }), path: 'visitId' },
     { why: 'a negative duration', input: withAttributes('pageview', { duration: -1 }), path: 'attributes.duration' },
     {
       why: 'a fractional duration',
@@ -534,15 +534,15 @@ describe('EventSchema', () => {
   describe('the members beside the attributes', () => {
     it('admits a visit id on every event but the pageview', () => {
       for (const name of EVENT_NAMES) {
-        const expected = name === 'pageview' ? ['id'] : [];
-        expect(rejectedAt(withMembers(name, { id: SAMPLE_VISIT_ID }))).toEqual(expected);
+        const expected = name === 'pageview' ? ['visitId'] : [];
+        expect(rejectedAt(withMembers(name, { visitId: SAMPLE_VISIT_ID }))).toEqual(expected);
       }
     });
 
     it('admits an event without a visit id', () => {
       for (const name of EVENT_NAMES) {
         const sample = structuredClone(VALID_EVENTS[name]) as Record<string, unknown>;
-        delete sample.id;
+        delete sample.visitId;
         expect(rejectedAt(sample)).toEqual([]);
       }
     });
@@ -552,8 +552,8 @@ describe('EventSchema', () => {
       ['an upper-case UUIDv7', SAMPLE_VISIT_ID.toUpperCase()],
       ['a UUIDv7 with a suffix', `${SAMPLE_VISIT_ID}x`],
       ['a number', 7]
-    ])('rejects %s as the visit id', (_, id) => {
-      expect(rejectedAt(withMembers('answer', { id }))).toContain('id');
+    ])('rejects %s as the visit id', (_, visitId) => {
+      expect(rejectedAt(withMembers('answer', { visitId }))).toContain('visitId');
     });
 
     it.each([

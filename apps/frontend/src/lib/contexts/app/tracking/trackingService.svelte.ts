@@ -3,7 +3,7 @@ import { buildBatch } from './batchBuilder';
 import {
   consentPreferenceKey,
   isGlobalPrivacyControlSet,
-  mayFillSessionId,
+  mayFillVisitId,
   maySendEvents,
   maySendPageview
 } from './gates';
@@ -44,10 +44,10 @@ export type TrackingServiceInputs = {
  *
  * ONE TYPE, ONE IMPLEMENTATION: this class implements `TrackingService` (`trackingService.type.ts`) directly.
  *
- * The producer surface is deliberately WIDER than the consumer-facing `TrackingService`: `gate` and `surveySessionId` are own members here (a class may declare more than the type it implements). `appContext` forwards `gate` under the name `analyticsGate`, and reads `surveySessionId` producer to producer to build the survey link, forwarding it to nobody.
+ * The producer surface is deliberately WIDER than the consumer-facing `TrackingService`: `gate` and `visitId` are own members here (a class may declare more than the type it implements). `appContext` forwards `gate` under the name `analyticsGate`, and reads `visitId` producer to producer to build the survey link, forwarding it to nobody.
  *
  * SPREAD-SAFETY (this is the most spread-sensitive producer in the app layer): the members `appContext` forwards from this producer are carried on through the three downstream `{ ...appContext }` spreads. Svelte 5 compiles bare `$state`/`$derived` CLASS fields to PRIVATE backing fields + PROTOTYPE accessors, which are NOT own-enumerable and are DROPPED by `{ ...instance }` spread. To stay byte-identical at the consumer across that spread, every spread-consumed member MUST be an OWN-ENUMERABLE instance field:
- *   - `gate` / `surveySessionId` are OBJECT-LITERAL `{ current }` handle objects assigned to instance fields (the handle VALUE is copied by spread). Their getters close over `this` via a `const self = this` capture in the constructor so they read the private `$derived` backing.
+ *   - `gate` / `visitId` are OBJECT-LITERAL `{ current }` handle objects assigned to instance fields (the handle VALUE is copied by spread). Their getters close over `this` via a `const self = this` capture in the constructor so they read the private `$derived` backing.
  *   - `startPageview`/`track`/`submitAllEvents`/`resetAllEvents`/`setPageVisible` are ARROW-FUNCTION FIELDS so they survive detach after the spread + consumer destructure.
  *
  * `#views` / `#events` are PRIVATE NON-REACTIVE bookkeeping fields (never read in a tracking scope) — NOT `$state`. They are separate, so clearing the events never loses the current view's pageview.
@@ -90,7 +90,7 @@ export class TrackingServiceImpl implements TrackingService {
 
   // Own-enumerable handle-object fields (spread-safe). The actual getters are installed in the constructor so they can close over `this` to reach the private `$derived` backing field.
   readonly gate!: ReactiveHandle<GateInput>;
-  readonly surveySessionId!: ReactiveHandle<string | undefined>;
+  readonly visitId!: ReactiveHandle<string | undefined>;
 
   constructor({ appSettings, userPreferences, projection, locale, routeId = () => undefined }: TrackingServiceInputs) {
     this.#appSettings = appSettings;
@@ -116,9 +116,9 @@ export class TrackingServiceImpl implements TrackingService {
         return self.#gateValue;
       }
     };
-    this.surveySessionId = {
+    this.visitId = {
       get current() {
-        return mayFillSessionId(self.#gateValue) ? getVisitId() : undefined;
+        return mayFillVisitId(self.#gateValue) ? getVisitId() : undefined;
       }
     };
   }
@@ -167,7 +167,7 @@ export class TrackingServiceImpl implements TrackingService {
 /**
  * Factory wrapper preserving the `trackingService({...})` call signature. Returns the class instance itself — its forwarded members are own-enumerable, so `appContext`'s member forward and the downstream `{ ...appContext }` spreads carry them intact.
  *
- * The return type is the IMPLEMENTATION type, not the narrower consumer-facing `TrackingService`: `appContext` holds this producer privately (`#tracking`), forwards its `gate` and reads its `surveySessionId` to build the survey link, and this module's own test asserts the producer's exact own-key surface. Consumers never see this type — they see whatever `appContext` chooses to forward.
+ * The return type is the IMPLEMENTATION type, not the narrower consumer-facing `TrackingService`: `appContext` holds this producer privately (`#tracking`), forwards its `gate` and reads its `visitId` to build the survey link, and this module's own test asserts the producer's exact own-key surface. Consumers never see this type — they see whatever `appContext` chooses to forward.
  */
 export function trackingService(inputs: TrackingServiceInputs): TrackingServiceImpl {
   return new TrackingServiceImpl(inputs);

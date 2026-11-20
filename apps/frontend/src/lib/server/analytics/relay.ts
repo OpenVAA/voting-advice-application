@@ -9,7 +9,7 @@
  *
  * ## What it keeps
  *
- * Only events rebuilt from the fields the closed vocabulary admits. The pageview is built here from the batch's route id and locale, its allowed parameters and a coarsened duration, and it never has an id. Every other event keeps its visit id only when the deployment's modes allow it and the id is a current UUIDv7, whatever the browser sent.
+ * Only events rebuilt from the fields the closed vocabulary admits. The pageview is built here from the batch's route id and locale, its allowed parameters and a coarsened duration, and it never has a visit id. Every other event keeps its visit id only when the deployment's modes allow it and the visit id is a current UUIDv7, whatever the browser sent.
  *
  * ## When it answers
  *
@@ -174,8 +174,8 @@ function buildEvent(event: WireEvent, { config, app, routeId, locale, receivedAt
     };
   }
   const built: AnalyticsEvent = { name: event.name, time, app, attributes: { ...event.attributes } };
-  const id = keptId(event, config, receivedAt);
-  if (id !== undefined) built.id = id;
+  const visitId = keptVisitId(event, config, receivedAt);
+  if (visitId !== undefined) built.id = visitId;
   return built;
 }
 
@@ -185,21 +185,21 @@ function buildEvent(event: WireEvent, { config, app, routeId, locale, receivedAt
  * @param event - An event other than the pageview.
  * @param config - The configuration, for its two modes.
  * @param receivedAt - The relay's clock.
- * @returns The id, or `undefined` when the event has none or must not keep it.
+ * @returns The visit id, or `undefined` when the event has none or must not keep it.
  */
-function keptId(
+function keptVisitId(
   event: Exclude<WireEvent, { name: 'pageview' }>,
   config: AnalyticsConfig,
   receivedAt: number
 ): string | undefined {
-  const { id } = event;
-  if (id === undefined) return undefined;
+  const { visitId } = event;
+  if (visitId === undefined) return undefined;
   if (config.visitIdMode !== 'memory') return undefined;
   if (config.consentMode === 'free' && isSensitiveEvent(event.name)) return undefined;
-  if (!isUuidV7(id)) return undefined;
-  // A negated comparison, so that a NaN timestamp removes the id too.
-  if (!(Math.abs(receivedAt - uuidV7TimestampMs(id)) <= MAX_VISIT_ID_SKEW_MS)) return undefined;
-  return id;
+  if (!isUuidV7(visitId)) return undefined;
+  // A negated comparison, so that a NaN timestamp removes the visit id too.
+  if (!(Math.abs(receivedAt - uuidV7TimestampMs(visitId)) <= MAX_VISIT_ID_SKEW_MS)) return undefined;
+  return visitId;
 }
 
 /**

@@ -77,7 +77,7 @@ export function mayAttachVisitId(input: { projection: AnalyticsProjection; sensi
   return input.projection.visitIdMode === 'memory' && (input.projection.consentMode === 'gated' || !input.sensitive);
 }
 
-/** The survey link's session id is filled only in visit-id mode `memory` and only when this visitor's events are sent. */
-export function mayFillSessionId(input: GateInput): boolean {
+/** The survey link's visit id is filled only in visit-id mode `memory` and only when this visitor's events are sent. */
+export function mayFillVisitId(input: GateInput): boolean {
   return input.projection.visitIdMode === 'memory' && maySendEvents(input);
 }
