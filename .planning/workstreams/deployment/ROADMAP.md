@@ -777,7 +777,7 @@ Notes:
   5. The Render deployment example and its mentions are removed, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01; supersedes ruling A5).
 
 **Research flag**: Standard pattern, no research phase, once phases 184, 185 and 188 have produced the observations.
-**Plans**: 11/20 plans executed
+**Plans**: 12/20 plans executed
 
 Plans:
 **Wave 1**
@@ -797,7 +797,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 189-07-PLAN.md — operator sitting 3: origin header secret rotated by runbook Step 19 (E-03)
-- [ ] 189-11-PLAN.md — the guide's path from an empty account to a tested instance, OpenTofu rule (DOCS-01)
+- [x] 189-11-PLAN.md — the guide's path from an empty account to a tested instance, OpenTofu rule (DOCS-01)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 189-12-PLAN.md — the guide's hosted-project sections on the Terraform path (DOCS-01, C-01)
@@ -859,4 +859,4 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
 | 187. Deploy Pipeline | 31/31 | Complete    | 2026-11-18 |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 20/20 | Complete    | 2026-11-20 |
-| 189. Documentation and Closure | 11/20 | In Progress | - |
+| 189. Documentation and Closure | 12/20 | In Progress | - |
