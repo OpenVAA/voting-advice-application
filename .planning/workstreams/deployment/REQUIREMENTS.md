@@ -196,7 +196,7 @@ Each is run on a real project, recorded with its date, and acted on.
 
 - [ ] **DOCS-01**: The deployment guide is rewritten around the Terraform and Supabase-as-code path, and states
       that the HCL is kept OpenTofu-compatible (A6).
-- [ ] **DOCS-02**: A settings reference lists each hosted setting, where the repository sets it, and how to
+- [x] **DOCS-02**: A settings reference lists each hosted setting, where the repository sets it, and how to
       verify it.
 - [ ] **DOCS-03**: Every "unverified" statement about a hosted project is replaced by a dated observation or
       removed.
@@ -336,7 +336,7 @@ closes; those are not listed against the earlier phase here.
 | RELAY-20 | Phase 182 | Complete |
 | RELAY-21 | Phase 182 | Complete |
 | DOCS-01 | Phase 189 | Pending |
-| DOCS-02 | Phase 189 | Pending |
+| DOCS-02 | Phase 189 | Complete |
 | DOCS-03 | Phase 189 | Pending |
 | DOCS-04 | Phase 189 | Pending |
 | DOCS-05 | Phase 189 | Pending |

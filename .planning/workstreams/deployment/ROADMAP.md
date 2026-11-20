@@ -777,7 +777,7 @@ Notes:
   5. The Render deployment example and its mentions are removed, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01; supersedes ruling A5).
 
 **Research flag**: Standard pattern, no research phase, once phases 184, 185 and 188 have produced the observations.
-**Plans**: 6/20 plans executed
+**Plans**: 7/20 plans executed
 
 Plans:
 **Wave 1**
@@ -789,7 +789,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 189-06-PLAN.md — operator sitting 2: the backups read, as runbook Step 24 (E-02)
-- [ ] 189-08-PLAN.md — hosted-settings reference and its guard (B-01, DOCS-02)
+- [x] 189-08-PLAN.md — hosted-settings reference and its guard (B-01, DOCS-02)
 - [ ] 189-09-PLAN.md — environment-variable reference by role and its guard (B-02, DOCS-04)
 - [ ] 189-10-PLAN.md — analytics page: catalogue guard, mechanism, provider, checklist (D-01 to D-03, DOCS-05)
 - [ ] 189-13-PLAN.md — operations: scaling, rollback, teardown, SES, Admin job limit, cost (E-01, E-04)
@@ -859,4 +859,4 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
 | 187. Deploy Pipeline | 31/31 | Complete    | 2026-11-18 |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 20/20 | Complete    | 2026-11-20 |
-| 189. Documentation and Closure | 6/20 | In Progress | - |
+| 189. Documentation and Closure | 7/20 | In Progress | - |
