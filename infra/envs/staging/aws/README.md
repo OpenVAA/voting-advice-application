@@ -65,7 +65,7 @@ The overview of every root, the order of first applies and the rules that hold f
 - **Every plan of this root is given the image as `-var "image_digest=$DIGEST"`, and no file names an
   image**, because the variable is required and the root's variable file is the record of how the
   stack runs, not of which build it runs. Step 5 reads the digest from the registry by the commit the
-  operator names. Every plan of a running stack, in Steps 8 to 12 and "Election day", is given the
+  operator names. Every plan of a running stack, in Steps 8 to 12, Step 19 and "Election day", is given the
   digest the service runs now, which the step's item 1 reads with
   `infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend`:
   its `s<n>_running_digest_exit=` must read 0, or the step stops before its first plan: run its last
@@ -240,13 +240,15 @@ Step 15 before the destroy: the evidence logs copied, the observation rows remov
 Step 16 the destroy, and the tag search in both regions
 Step 17 the re-apply from the same commit
 Step 18 the cost, by tag, against the priced inventory
+Step 19 the origin header secret, rotated, with its window of 403s measured
 ```
 
 Steps 1 to 6 bring the stack up. Steps 7 and 8 read the running stack and change nothing; Steps 9 to
 12 each change it for an observation and change it back. Steps 13 and 14 follow two paths from the
 stack's pages to the hosted project, Steps 15 to 17 destroy the root and apply it again, and Step 18
-reads the cost of the stack the re-apply brought up. "Election day", after Step 18, is not a step of
-this order: it is how the floor is raised for a known peak.
+reads the cost of the stack the re-apply brought up. Step 19, under "Secret rotation", changes the
+running stack for good: it replaces the origin header secret. "Election day", after it, is not a step
+of this order: it is how the floor is raised for a known peak.
 
 ## Up to the first apply
 
@@ -3650,6 +3652,339 @@ Return: every `s18_` line, in order. The record gives the measured month (`s18_m
 `s18_window_start` and `s18_window_days`, read on `s18_read_utc`) and the priced month
 (`s18_inventory_usd_month=`, with the prices' publication dates and the assumptions) side by side,
 each with its date, and never one in place of the other.
+
+## Secret rotation
+
+### Step 19: The origin header secret, rotated
+
+The load balancer forwards a request to the tasks only when it carries the origin header with the
+value CloudFront sends, and answers 403 to every other request (Step 9). That value is one
+`random_password`, `module.frontend.random_password.origin_verify`, and two resources read it: the
+listener rule that forwards, and the origin header of the distribution. This step replaces the
+password and lets Terraform update both. Nothing orders the two updates, so Terraform makes them in
+parallel: the listener rule takes the new value within seconds, while the distribution's change
+reaches the edge locations over minutes, and the apply waits until it is deployed. In between, a
+request that an edge forwards with the old value is answered 403 by the listener. **A short window of
+403s through `https://staging.openvaa.org` is therefore expected, and it is measured, not read as a
+failure**: a poller reads `/api/health` once a second from before the apply until ten minutes after
+it, as the edge location the workstation reaches sees it. Only health that is not back to 200 by then,
+or any 5xx, is a failure, and item 8 is its recovery.
+
+The load balancer admits only CloudFront's addresses, so this step does not reach its listener
+directly, and does not open it: that takes Step 9's `/32`, an apply to open it and one to close it.
+Item 7 shows that a direct request still gets no answer at all. The plan after the apply reads the
+listener rule and the distribution back from AWS, so `No changes.` there shows that both hold the new
+value, and the health read through the CDN shows that the two agree.
+
+The header value is never printed. The step compares it before and after only by its hash, held in a
+variable, and reads it into a variable once, for item 7's request with the right header.
+
+Run the step in one sitting of about 25 minutes, with `gh` signed in to the repository: item 1 reads
+that no run of the deploy or the destroy workflow is waiting or running, and the stop rule refuses the
+apply otherwise. Keep the workstation awake: item 3 holds it awake with `caffeinate -i` while the
+poller runs, but on battery a closed lid still sleeps it, and a sleep leaves a gap in the poll
+(`s19_health_max_gap_seconds`), whose window is then not a measurement. The rotation has still
+happened: record the gap, and do not run the step again for it.
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+  AWS_REGION=eu-north-1 \
+  TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-aws.XXXXXX")
+ACCOUNT=$(aws sts get-caller-identity --query Account \
+  --output text 2> "$L/account.err")
+echo "s19_account_read_exit=$?"
+test "$ACCOUNT" = 471112560111; echo "s19_account_match_exit=$?"
+T=infra/envs/staging/aws
+U=https://staging.openvaa.org
+O=origin.staging.openvaa.org
+```
+
+1. The digest the service runs, the outputs, the header value's shape and hash, and the pipeline's
+   runs:
+
+   ```bash
+   terraform -chdir="$T" init -input=false -no-color \
+     -lockfile=readonly > "$L/s19-init.log" 2>&1
+   echo "s19_init_exit=$?"
+   infra/scripts/running-image-digest.sh --cluster openvaa-staging \
+     --service openvaa-staging-frontend \
+     > "$L/s19-running.txt" 2> "$L/s19-running.err"
+   echo "s19_running_digest_exit=$?"
+   DIGEST=$(sed -n 's/^running_image_digest=//p' "$L/s19-running.txt")
+   out() { terraform -chdir="$T" output -raw "$1" 2>> "$L/out.err"; }
+   LB_DNS=$(out load_balancer_dns_name)
+   HN=$(out origin_verify_header_name)
+   test -n "$LB_DNS" && test -n "$HN"; echo "s19_outputs_read_exit=$?"
+   command -v dig > /dev/null; echo "s19_has_dig_exit=$?"
+   value_hash() {
+     out origin_verify_header_value | shasum -a 256 | cut -c1-64
+   }
+   out origin_verify_header_value | grep -Eqx '[A-Za-z0-9]{48}'
+   VB=$?; echo "s19_value_before_shape_exit=$VB"
+   H_BEFORE=$(value_hash)
+   for w in deploy destroy; do
+     gh run list --workflow "$w.yml" --limit 20 --json status \
+       --jq '[.[] | select(.status != "completed")] | length' \
+       > "$L/s19-$w-runs.txt" 2> "$L/s19-gh.err"
+     echo "s19_${w}_runs_read_exit=$?"
+     echo "s19_${w}_runs_active=$(cat "$L/s19-$w-runs.txt")"
+   done
+   changes() {
+     jq -r --arg p "$1" '.resource_changes[]
+       | select(.change.actions != ["no-op"])
+       | select(.change.actions != ["read"])
+       | "\($p)=\(.address) \(.change.actions | join("-"))"' "$2"
+   }
+   M=module.frontend
+   printf '%s\n' "$M.aws_cloudfront_distribution.this update" \
+     "$M.aws_lb_listener_rule.from_cloudfront update" \
+     "$M.random_password.origin_verify delete-create" \
+     | sed 's/^/s19_change=/' | sort > "$L/s19-expected.txt"
+   ```
+
+   Expected: every `_exit=0`, `s19_deploy_runs_active=0` and `s19_destroy_runs_active=0`. The function
+   `changes` prints each planned change of a saved plan as `<address> <actions>`.
+
+2. The plan that replaces the password, given the running digest, and its stop rule, computed:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" \
+     -replace=module.frontend.random_password.origin_verify \
+     -out="$L/tfplan" > "$L/s19-plan.log" 2>&1
+   PE=$?; echo "s19_plan_exit=$PE"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s19-plan.log" \
+     | sed 's/^/s19_plan_summary=/'
+   terraform -chdir="$T" show -json "$L/tfplan" \
+     > "$L/s19-plan.json" 2> "$L/s19-show.err"
+   SE=$?; echo "s19_show_exit=$SE"
+   changes s19_change "$L/s19-plan.json" > "$L/s19-changes.txt"
+   cat "$L/s19-changes.txt"
+   sed -E 's/(from_cloudfront) (delete-create|create-delete)$/\1 update/' \
+     "$L/s19-changes.txt" | sort > "$L/s19-changes-read.txt"
+   if test "$ACCOUNT" = 471112560111 && test "$PE" = 0 \
+     && test "$SE" = 0 && test "$VB" = 0 \
+     && test "$(cat "$L/s19-deploy-runs.txt")" = 0 \
+     && test "$(cat "$L/s19-destroy-runs.txt")" = 0 \
+     && cmp -s "$L/s19-changes-read.txt" "$L/s19-expected.txt"
+   then STOP=met; else STOP=not-met; fi
+   echo "s19_stop_rule=$STOP"
+   ```
+
+   > **The apply runs only when `s19_stop_rule=met`**: the account is the staging one, the plan and
+   > its JSON were written, the header value had its shape, no run of the deploy or the destroy
+   > workflow is waiting or running, and the plan changes exactly three resources and nothing else:
+   > `delete-create` of `module.frontend.random_password.origin_verify`, `update` of
+   > `module.frontend.aws_cloudfront_distribution.this`, and `update` of
+   > `module.frontend.aws_lb_listener_rule.from_cloudfront`, which a `delete-create` or
+   > `create-delete` of the rule also meets. The summary is expected to read
+   > `Plan: 1 to add, 2 to change, 1 to destroy.`, or `Plan: 2 to add, 1 to change, 2 to destroy.`
+   > with the rule replaced. **`s19_stop_rule=not-met` ends the step with nothing applied:** items 3
+   > and 4 do nothing; run item 9, paste the lines and stop.
+
+3. The poller, started before the apply. It writes `<UTC time> <epoch seconds> <status>` once a
+   second to `$L/s19-health.txt`, under `caffeinate -i`, until item 5 stops it or `$L` is removed:
+
+   ```bash
+   if test "$STOP" = met; then
+     ( while test -d "$L" && ! test -e "$L/s19-poll.stop"; do
+         printf '%s %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ %s')" \
+           "$(curl -sS -o /dev/null --max-time 5 -w '%{http_code}' \
+             "$U/api/health" 2> /dev/null)"
+         sleep 1
+       done ) > "$L/s19-health.txt" &
+     POLL=$!
+     caffeinate -i -w "$POLL" &
+     sleep 5
+     echo "s19_poller_first=$(head -1 "$L/s19-health.txt" \
+       | cut -d' ' -f3)"
+   fi
+   ```
+
+   Expected: `s19_poller_first=200`.
+
+4. The apply of the saved plan:
+
+   ```bash
+   if test "$STOP" = met; then
+     terraform -chdir="$T" apply -input=false -no-color \
+       "$L/tfplan" > "$L/s19-apply.log" 2>&1
+     AE=$?; AC=$(date -u +%s)
+     echo "s19_apply_exit=$AE"
+     echo "s19_apply_complete_at=$(date -u -r "$AC" +%Y-%m-%dT%H:%M:%SZ)"
+     echo "s19_apply_complete_lines=$(grep -c '^Apply complete!' \
+       "$L/s19-apply.log")"
+   else
+     echo "s19_apply_exit=not-run"
+   fi
+   rm -f "$L/tfplan"; echo "s19_plan_file_removed=yes"
+   ```
+
+   Expected: `s19_apply_exit=0` and `s19_apply_complete_lines=1`, after a few minutes: the apply
+   waits for the distribution to be deployed.
+
+5. Ten minutes after the apply completed, the poller stopped and its window read. A window is the run
+   from the first answer other than 200 to the last; the last minute of the ten decides whether
+   health recovered:
+
+   ```bash
+   if test -n "$POLL"; then
+     while test "$(date -u +%s)" -lt "$((AC + 600))"; do sleep 10; done
+     touch "$L/s19-poll.stop"; wait "$POLL" 2> /dev/null
+     awk -v ac="$AC" '
+       { n++; if (p && $2 - p > g) g = $2 - p; p = $2 }
+       $3 != "200" { if (!f) { f = $1; fe = $2 }; l = $1; le = $2; bad++ }
+       $3 == "403" { c403++ }
+       $3 ~ /^5/ { c5++ }
+       $3 != "200" && $3 != "403" && $3 !~ /^5/ { other++ }
+       $2 >= ac + 540 { last++; if ($3 != "200") lastbad++ }
+       END {
+         printf "s19_health_samples=%d\n", n
+         printf "s19_health_max_gap_seconds=%d\n", g
+         printf "s19_health_first_non200=%s\n", (f ? f : "none")
+         printf "s19_health_last_non200=%s\n", (l ? l : "none")
+         printf "s19_health_window_seconds=%d\n", (fe ? le - fe : 0)
+         printf "s19_health_non200=%d\n", bad
+         printf "s19_health_403=%d\n", c403
+         printf "s19_health_5xx=%d\n", c5
+         printf "s19_health_other=%d\n", other
+         printf "s19_health_recovered=%s\n",
+           (last > 0 && !lastbad ? "yes" : "no")
+       }' "$L/s19-health.txt" > "$L/s19-window.txt"
+     cat "$L/s19-window.txt"
+   fi
+   ```
+
+   Expected: `s19_health_5xx=0`, `s19_health_recovered=yes`, and a `s19_health_max_gap_seconds` of
+   at most 6. `s19_health_403`, `s19_health_other` (a `000` is a read that got no answer within five
+   seconds) and `s19_health_window_seconds` are the measurement, whatever they read, `0` and `none`
+   included.
+
+6. A plan of the same digest, the header value compared with the one before by its hash, and the site
+   through the CDN:
+
+   ```bash
+   terraform -chdir="$T" plan -input=false -no-color \
+     -var "image_digest=$DIGEST" -detailed-exitcode \
+     > "$L/s19-after-plan.log" 2>&1
+   AP=$?; echo "s19_after_plan_exit=$AP"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s19-after-plan.log" \
+     | sed 's/^/s19_after_plan_line=/'
+   if test "$AP" = 0; then echo "s19_after_plan_no_changes=yes"
+   else echo "s19_after_plan_no_changes=no"; fi
+   out origin_verify_header_value | grep -Eqx '[A-Za-z0-9]{48}'
+   VA=$?; echo "s19_value_after_shape_exit=$VA"
+   H_AFTER=$(value_hash)
+   if test "$VB" = 0 && test "$VA" = 0 && test "$H_AFTER" != "$H_BEFORE"
+   then echo "s19_value_changed=yes"; else echo "s19_value_changed=no"; fi
+   curl -sS --max-time 10 -o /dev/null \
+     -w 's19_cdn_health_after=%{http_code}\n' "$U/api/health" \
+     2> "$L/s19-cdn.err"
+   ```
+
+   Expected: `s19_after_plan_exit=0`, `s19_after_plan_no_changes=yes`, `s19_value_changed=yes` after
+   an apply (`no` when nothing was applied), and `s19_cdn_health_after=200`.
+
+7. Step 9's three requests to the origin, made from the workstation without its `/32`: without the
+   header, with a wrong value, and with the new value, which is read from the sensitive output into a
+   variable and handed to `curl` as a configuration on a file descriptor, so it appears on no command
+   line:
+
+   ```bash
+   LB_IP=$(dig +short "$LB_DNS" A | head -1)
+   test -n "$LB_IP"; echo "s19_lb_address_read_exit=$?"
+   curl -sS --max-time 10 --resolve "$O:443:$LB_IP" -o /dev/null \
+     -w 's19_origin_no_header=%{http_code}\n' "https://$O/api/health" \
+     2> "$L/s19-origin.err"
+   echo "s19_origin_no_header_curl_exit=$?"
+   curl -sS --max-time 10 --resolve "$O:443:$LB_IP" -o /dev/null \
+     -w 's19_origin_wrong_header=%{http_code}\n' \
+     -H "$HN: not-the-secret" "https://$O/api/health" \
+     2>> "$L/s19-origin.err"
+   echo "s19_origin_wrong_header_curl_exit=$?"
+   HV=$(out origin_verify_header_value)
+   curl -sS --max-time 10 --resolve "$O:443:$LB_IP" -o /dev/null \
+     -w 's19_origin_right_header=%{http_code}\n' \
+     -K <(printf 'header = "%s: %s"\n' "$HN" "$HV") \
+     "https://$O/api/health" 2>> "$L/s19-origin.err"
+   echo "s19_origin_right_header_curl_exit=$?"
+   unset HV
+   ```
+
+   Expected: all three `000`, each with `_curl_exit=28`: the load balancer's security group admits
+   only CloudFront's addresses, so a request from anywhere else gets no answer at all, whatever header
+   it carries. The listener's own 403 to a request without the header and to one with a wrong value is
+   Step 9's observation, made through the `/32`; this step leaves the listener and its fixed 403
+   untouched, which the stop rule ensures.
+
+8. The recovery, only when `s19_apply_exit` is not 0, or `s19_health_recovered=no`, or
+   `s19_health_5xx` is not 0, or `s19_after_plan_no_changes=no`: a plain plan of the same digest,
+   applied only when it changes the listener rule, the distribution, or both, and nothing else:
+
+   ```bash
+   W="$L/s19-window.txt"
+   if test -n "$AC" && { test "$AE" != 0 \
+       || ! grep -qx 's19_health_recovered=yes' "$W" \
+       || ! grep -qx 's19_health_5xx=0' "$W" || test "$AP" != 0; }; then
+     terraform -chdir="$T" plan -input=false -no-color \
+       -var "image_digest=$DIGEST" \
+       -out="$L/tfplan" > "$L/s19-recovery-plan.log" 2>&1
+     RE=$?; echo "s19_recovery_plan_exit=$RE"
+     grep -m1 -E '^(Plan:|No changes)' "$L/s19-recovery-plan.log" \
+       | sed 's/^/s19_recovery_plan_line=/'
+     terraform -chdir="$T" show -json "$L/tfplan" \
+       > "$L/s19-recovery.json" 2> "$L/s19-recovery-show.err"
+     RS=$?; echo "s19_recovery_show_exit=$RS"
+     changes s19_recovery_change "$L/s19-recovery.json" \
+       > "$L/s19-recovery-changes.txt"
+     cat "$L/s19-recovery-changes.txt"
+     grep -v random_password "$L/s19-expected.txt" \
+       | sed 's/^s19_change=/s19_recovery_change=/' > "$L/s19-allowed.txt"
+     sed -E 's/(from_cloudfront) (delete-create|create-delete)$/\1 update/' \
+       "$L/s19-recovery-changes.txt" > "$L/s19-recovery-read.txt"
+     if test "$RE" = 0 && test "$RS" = 0 \
+       && test -s "$L/s19-recovery-read.txt" \
+       && ! grep -vxF -f "$L/s19-allowed.txt" \
+         "$L/s19-recovery-read.txt" > /dev/null
+     then
+       echo "s19_recovery_stop_rule=met"
+       terraform -chdir="$T" apply -input=false -no-color \
+         "$L/tfplan" > "$L/s19-recovery-apply.log" 2>&1
+       echo "s19_recovery_apply_exit=$?"
+       sleep 60
+       curl -sS --max-time 10 -o /dev/null \
+         -w 's19_recovery_health=%{http_code}\n' "$U/api/health" \
+         2> "$L/s19-recovery-cdn.err"
+     elif test "$RE" = 0 && ! test -s "$L/s19-recovery-read.txt"; then
+       echo "s19_recovery_stop_rule=nothing-to-apply"
+     else
+       echo "s19_recovery_stop_rule=not-met"
+     fi
+     rm -f "$L/tfplan"
+   else
+     echo "s19_recovery=not-needed"
+   fi
+   ```
+
+   Expected: `s19_recovery=not-needed`. Any other line is a failure of the rotation, whatever the
+   recovery prints: paste the lines and stop. A recovery whose stop rule is not met applies nothing.
+
+9. Last item, also when you stop early or a command failed:
+
+   ```bash
+   test -n "$L" && touch "$L/s19-poll.stop" 2> /dev/null
+   test -n "$POLL" && wait "$POLL" 2> /dev/null
+   unset HV LB_IP H_BEFORE H_AFTER
+   rm -f "$L/tfplan"
+   test -n "$L" && rm -rf "$L" && echo "s19_logs_removed=yes"
+   ```
+
+Return: every `s19_` line, in order, the `s19_change=` lines included. The poller's file is in `$L`
+and goes with it; its first and last non-200 times, the count of 403s and the window's length are the
+record.
 
 ## Election day
 
