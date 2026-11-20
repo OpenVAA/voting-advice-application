@@ -80,7 +80,7 @@ ON CONFLICT (id) DO NOTHING;
 --
 -- The row must exist in the table the type segment names, and its own project must be the project the path claims. Without the lookup, a path could claim one entity type while carrying another type's id, and a project-scope caller could write into a path that names their project but carries another project's entity id.
 --
--- An entity-scope write is refused while the project's answers are locked (the app setting `access.answersLocked`, read as `private.project_answers_locked` reads it); a project-scope write is not, so a project editor and a project admin still store files while answers are locked. A read is not affected.
+-- An entity-scope write is refused while the project's contestant editing is `locked` (the app setting `access.contestantEditing`, read as `private.project_contestant_editing` reads it); a project-scope write is not, so a project editor and a project admin still store files while contestant editing is locked. A read is not affected.
 --
 -- SECURITY DEFINER with an empty search_path, so the type/id lookup reads the table itself rather than the rows the caller's row-level security admits; the authority answer still comes from `user_can`, which reads the caller's own rows of public.grants. `%I` quotes a table name the CASE has already restricted to ten literals, so the dynamic name is not caller-controlled.
 --------------------------------------------------------------------------------
@@ -166,12 +166,12 @@ BEGIN
   END IF;
 
   IF p_scope = 'entity' THEN
-    -- The answers lock: an entity-scope write is refused while the project's answers are locked. The setting is read here rather than through `private.project_answers_locked`, so no second definer call is nested in this one.
+    -- Contestant editing: an entity-scope write is refused while it is `locked` in the project. The setting is read through the invoker helper `private.contestant_editing_in` rather than `private.project_contestant_editing`, so no second definer call is nested in this one.
     IF p_verb = 'write' AND EXISTS (
       SELECT 1
       FROM public.app_settings s
       WHERE s.project_id = v_project_id
-        AND s.settings #> '{access,answersLocked}' = 'true'::jsonb
+        AND private.contestant_editing_in(s.settings) = 'locked'
     ) THEN
       RETURN false;
     END IF;

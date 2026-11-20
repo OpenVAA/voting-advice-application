@@ -1,15 +1,15 @@
 /**
- * The placeholder address of an identity-provider account, and the one domain the Edge Functions and the frontend agree on.
+ * The placeholder email of an identity-provider account, and the one domain the Edge Functions and the frontend agree on.
  *
- * `identity-callback` creates the address and `account-access` refuses to treat it as an address anyone owns, both through the module beside this spec; the frontend tells an account's address state by it. The frontend holds its own copy of the domain, because it cannot import an Edge Function module. This spec imports the module beside it and reads that module and the frontend's file as text, so a copy changed alone fails here.
+ * `identity-callback` creates the placeholder email and `account-access` refuses to treat it as an email address anyone owns, both through the module beside this spec; the frontend tells an account's address state by it. The frontend holds its own copy of the domain, because it cannot import an Edge Function module. This spec imports the module beside it and reads that module and the frontend's file as text, so a copy changed alone fails here.
  */
 
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { isPlaceholderAddress, PLACEHOLDER_EMAIL_DOMAIN, placeholderAddressFor } from './placeholderAddress.ts';
+import { isPlaceholderEmail, PLACEHOLDER_EMAIL_DOMAIN, placeholderEmailFor } from './placeholderEmail.ts';
 
 const COPIES = {
-  '_shared/placeholderAddress.ts': new URL('./placeholderAddress.ts', import.meta.url),
+  '_shared/placeholderEmail.ts': new URL('./placeholderEmail.ts', import.meta.url),
   'apps/frontend/src/lib/contestant/utils/identityProviderAccount.ts': new URL(
     '../../../../frontend/src/lib/contestant/utils/identityProviderAccount.ts',
     import.meta.url
@@ -38,19 +38,19 @@ const CASES: Array<[unknown, boolean]> = [
   [42, false]
 ];
 
-describe('placeholderAddressFor', () => {
+describe('placeholderEmailFor', () => {
   it('puts the match value before the placeholder domain', () => {
-    expect(placeholderAddressFor('abc')).toBe('abc@bank-auth.placeholder');
+    expect(placeholderEmailFor('abc')).toBe('abc@bank-auth.placeholder');
   });
 
   it('builds an address on the placeholder domain', () => {
-    expect(isPlaceholderAddress(placeholderAddressFor('a-persistent-subject'))).toBe(true);
+    expect(isPlaceholderEmail(placeholderEmailFor('a-persistent-subject'))).toBe(true);
   });
 });
 
-describe('isPlaceholderAddress', () => {
+describe('isPlaceholderEmail', () => {
   it.each(CASES)('answers %j with %s', (address, expected) => {
-    expect(isPlaceholderAddress(address)).toBe(expected);
+    expect(isPlaceholderEmail(address)).toBe(expected);
   });
 });
 

@@ -5,7 +5,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { issueRecoveryLink, issueSignInLink, readRecoveryEligibility } from './linkIssue.ts';
+import { isMissingFunction, issueRecoveryLink, issueSignInLink, readRecoveryEligibility } from './linkIssue.ts';
 import { RECOVERY_MAIL_TEMPLATES, SIGN_IN_MAIL_TEMPLATES } from './mailTemplates.ts';
 import type { RequestLinkRequest, RequestRecoveryRequest } from './contract.ts';
 import type { LinkIssueDeps, LinkIssueOutcome, OutgoingMail } from './linkIssue.ts';
@@ -143,7 +143,7 @@ function recoveryRequest(overrides: Partial<RequestRecoveryRequest> = {}): Reque
     email: TYPED_ADDRESS,
     locale: 'fi',
     witness: null,
-    app: null,
+    app: 'contestant',
     ...overrides
   };
 }
@@ -221,7 +221,8 @@ describe('a successful issue', () => {
     expect(mail.subject).toBe(SIGN_IN_MAIL_TEMPLATES.fi.subject);
     expect(mail.text).toContain(link);
     expect(mail.html).toContain(link.replace('&', '&amp;'));
-    expect(Object.keys(mail).sort()).toEqual(['html', 'subject', 'text', 'to']);
+    expect(Object.keys(mail).sort()).toEqual(['html', 'locale', 'subject', 'text', 'to']);
+    expect(mail.locale).toBe('fi');
   });
 
   it.each([['de'], ['__proto__'], [undefined]])('mails the default locale for the locale %j', async (locale) => {
@@ -576,7 +577,8 @@ describe('issueRecoveryLink: an address the database answers recovery for', () =
     expect(mail.text).toContain(link);
     expect(mail.html).toContain(link.replace('&', '&amp;'));
     expect(mail.text).not.toContain('magiclink');
-    expect(Object.keys(mail).sort()).toEqual(['html', 'subject', 'text', 'to']);
+    expect(Object.keys(mail).sort()).toEqual(['html', 'locale', 'subject', 'text', 'to']);
+    expect(mail.locale).toBe('fi');
   });
 
   it.each([['de'], ['__proto__'], [undefined]])(
@@ -898,5 +900,30 @@ describe('the app a recovery request was made in', () => {
     await issueSignInLink(request(), deps);
     expect(onlyMail(recorded).text).toContain(`${SITE_URL}/fi/auth/confirm?token_hash=${TOKEN_HASH}&type=magiclink`);
     expect(onlyMail(recorded).text).not.toContain('next=');
+  });
+});
+
+describe('isMissingFunction', () => {
+  it.each([[{ code: 'PGRST202', message: 'Could not find the function' }], [{ code: '42883' }]])(
+    'is true for %j, a call of a function the database does not hold',
+    (error) => {
+      expect(isMissingFunction(error)).toBe(true);
+    }
+  );
+
+  it.each([
+    [{ code: '42501' }],
+    [{ code: 'PGRST301' }],
+    [{ code: 42883 }],
+    [{}],
+    [null],
+    ['PGRST202'],
+    [new Error('x')]
+  ])('is false for %j', (error) => {
+    expect(isMissingFunction(error)).toBe(false);
+  });
+
+  it('reads no inherited code', () => {
+    expect(isMissingFunction(Object.create({ code: 'PGRST202' }))).toBe(false);
   });
 });

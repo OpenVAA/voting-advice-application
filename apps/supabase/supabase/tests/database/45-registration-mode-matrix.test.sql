@@ -1,8 +1,8 @@
 -- 45-registration-mode-matrix.test.sql: the truth table of the registration-mode rule
 --
--- WHAT IS PINNED. One rule decides whether entities of a type may register with a mode, and it is written three times: in SQL as private.registration_mode_allowed_in, which the database asks before it honours an invitation; in TypeScript as `isRegistrationModeAllowed` of @openvaa/app-shared, which the screens ask, over the settings the stored-settings schema has parsed, before they offer a mode; and in the identity-callback Edge Function, which cannot import the shared package. Each assertion below is one row of the rule's truth table: the stored settings, an entity type, a mode and the answer. packages/dev-seed/tests/registrationModeMatrixParity.test.ts and identity-callback/registrationMatrix.test.ts read the same rows from this file as text and assert the other two readings against them, so the three cannot drift apart without a suite failing.
+-- WHAT IS PINNED. One rule decides whether entities of a type may register with a mode, and it is written twice: in SQL as private.registration_mode_allowed_in, which the database asks before it honours an invitation and when it answers public.identity_provider_entity_types for the identity-callback Edge Function; and in TypeScript as `isRegistrationModeAllowed` of @openvaa/app-shared, which the screens ask, over the settings the stored-settings schema has parsed, before they offer a mode. Each assertion below is one row of the rule's truth table: the stored settings, an entity type, a mode and the answer. packages/dev-seed/tests/registrationModeMatrixParity.test.ts reads the same rows from this file as text and asserts the TypeScript reading against them, so the two cannot drift apart without a suite failing.
 --
--- WHY EVERY ASSERTION BELOW IS NON-VACUOUS. A type is served when it is a key of `contestantApp.servedEntityTypes`, and the four valid shapes that differ in their keys or their modes are each asked for both entity types, so that reading a type that is no key, or another type's modes, changes at least one answer. Every refused shape holds an entry for candidates whose modes contain `email`, which a reader that skipped the validity test would find; where the refused part is another type's entry, candidates are the type asked. The two rows with a refused sibling of the member answer true, so a reader that refused the whole root fails them, and the two rows with a `contestantApp` member the schema does not know answer false beside served types that allow candidates `email`, so a reader that read `servedEntityTypes` alone fails them.
+-- WHY EVERY ASSERTION BELOW IS NON-VACUOUS. A type is served when it is a key of `contestantApp.servedEntityTypes`, and the four valid shapes that differ in their keys or their modes are each asked for both entity types, so that reading a type that is no key, or another type's modes, changes at least one answer. Every refused shape holds an entry for candidates whose modes contain `email`, which a reader that skipped the validity test would find; where the refused part is another type's entry, candidates are the type asked. The two rows with a refused sibling of the member answer true, so a reader that refused the whole root fails them, and the two rows with a `contestantApp` member the schema does not know answer false beside served types that allow candidates `email`, so a reader that read `servedEntityTypes` alone fails them. The two rows with contestant editing `locked` ask a type and a mode its served entry allows, so a reader that skipped the lock fails them, and the three rows with another value answer true, so a reader that locked on any stored value fails them.
 --
 -- THE FORM IS FIXED. Every assertion is one call with three literals, a literal boolean and a title beginning `MATRIX`, because the unit tests find the rows by that form. This file holds nothing else: its plan is the number of rows.
 --
@@ -17,7 +17,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (34);
+  plan (39);
 
 -- =====================================================================
 -- Nothing usable is stored: the shipped default serves candidates and allows no mode
@@ -401,6 +401,64 @@ SELECT
     ),
     true,
     'MATRIX a refused root beside a valid contestantApp: a candidate may register with email'
+  );
+
+-- =====================================================================
+-- Contestant editing: `locked` closes every registration, and no other value does
+-- =====================================================================
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": "locked"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    false,
+    'MATRIX contestant editing locked: a candidate may not register with email, which its served type allows'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": "locked"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'organization',
+      'identity_provider'
+    ),
+    false,
+    'MATRIX contestant editing locked: an organization may not register with identity_provider, which its served type allows'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": "nominationsLocked"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'candidate',
+      'code'
+    ),
+    true,
+    'MATRIX only nominations locked: a candidate may register with code'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": "open"}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'organization',
+      'identity_provider'
+    ),
+    true,
+    'MATRIX contestant editing open: an organization may register with identity_provider'
+  );
+
+SELECT
+  is (
+    private.registration_mode_allowed_in (
+      '{"access": {"contestantEditing": true}, "contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}, "organization": {"registrationModes": ["identity_provider"]}}}}'::jsonb,
+      'candidate',
+      'email'
+    ),
+    true,
+    'MATRIX a contestantEditing that is no word of the setting locks nothing: a candidate may register with email'
   );
 
 SELECT

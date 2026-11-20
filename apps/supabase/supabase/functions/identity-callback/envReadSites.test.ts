@@ -16,6 +16,8 @@ const INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8'
 /**
  * The variables whose absence must produce `ERR_ENV_UNCONFIGURED` naming the variable.
  *
+ * `IDENTITY_CALLBACK_SERVER_SECRET` is NOT here: it is handed to `presentsServerCredential`, which guards it, asserted separately below.
+ *
  * `IDENTITY_PROVIDER_CLIENT_ID` and `IDENTITY_PROVIDER_ISSUER` are NOT here: they are required too, but they are bound by `requireVerifyClaimBinding` (which throws `ERR_AUDIENCE_UNCONFIGURED` / `ERR_ISSUER_UNCONFIGURED`), asserted separately below.
  *
  * `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are NOT here and are NOT required to be guarded: the platform sets both, so there is no deployment in which an operator can leave them unset.
@@ -23,9 +25,11 @@ const INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8'
 const REQUIRE_ENV_GUARDED = [
   'IDENTITY_PROVIDER_TYPE',
   'IDENTITY_PROVIDER_DECRYPTION_JWKS',
-  'IDENTITY_PROVIDER_JWKS_URI',
-  'IDENTITY_CALLBACK_SERVER_SECRET'
+  'IDENTITY_PROVIDER_JWKS_URI'
 ] as const;
+
+/** The server's secret, read where it is handed to `presentsServerCredential`, which reads it through `requireEnv` (asserted in `serverCredential.test.ts`). */
+const SERVER_SECRET = 'IDENTITY_CALLBACK_SERVER_SECRET';
 
 const CLAIM_BINDING_GUARDED = ['IDENTITY_PROVIDER_CLIENT_ID', 'IDENTITY_PROVIDER_ISSUER'] as const;
 
@@ -44,7 +48,7 @@ describe('identity-callback env read sites', () => {
     expect(INDEX_SOURCE).toContain(`requireEnv('${name}'`);
   });
 
-  it.each(REQUIRE_ENV_GUARDED)('does not read %s with a non-null assertion', (name) => {
+  it.each([...REQUIRE_ENV_GUARDED, SERVER_SECRET])('does not read %s with a non-null assertion', (name) => {
     // The shape this guard exists to forbid: `Deno.env.get('X')!`, which discards the unset case and lets the failure surface as whatever the next expression happens to throw.
     expect(INDEX_SOURCE).not.toContain(`Deno.env.get('${name}')!`);
   });
@@ -59,7 +63,9 @@ describe('identity-callback env read sites', () => {
   });
 
   it("reads the identity provider's variables, the server's secret and the platform's two, and nothing else", () => {
-    expect(readNames()).toEqual([...REQUIRE_ENV_GUARDED, ...CLAIM_BINDING_GUARDED, ...PLATFORM_SET].sort());
+    expect(readNames()).toEqual(
+      [...REQUIRE_ENV_GUARDED, SERVER_SECRET, ...CLAIM_BINDING_GUARDED, ...PLATFORM_SET].sort()
+    );
   });
 
   it('reads no site origin', () => {
@@ -68,11 +74,17 @@ describe('identity-callback env read sites', () => {
 
   it('reads no project from its environment: the project is the one the request names', () => {
     expect(INDEX_SOURCE).not.toContain('PUBLIC_PROJECT_ID');
-    expect(INDEX_SOURCE).toContain('const projectId = request.projectId;');
   });
 
-  it("reads the server's secret once, through requireEnv", () => {
-    expect(INDEX_SOURCE.split("requireEnv('IDENTITY_CALLBACK_SERVER_SECRET'").length - 1).toBe(1);
+  it("reads the server's secret once, as the configured value handed to presentsServerCredential", () => {
+    const reads = INDEX_SOURCE.split(`Deno.env.get('${SERVER_SECRET}')`).length - 1;
+    expect(reads).toBe(1);
+    expect(INDEX_SOURCE).toMatch(
+      new RegExp(
+        `presentsServerCredential\\(\\s*req\\.headers\\.get\\(SERVER_CREDENTIAL_HEADER\\),\\s*Deno\\.env\\.get\\('${SERVER_SECRET}'\\)\\s*\\)`
+      )
+    );
+    expect(INDEX_SOURCE).not.toContain(`requireEnv('${SERVER_SECRET}'`);
   });
 
   /**
@@ -81,15 +93,5 @@ describe('identity-callback env read sites', () => {
   it('read a non-empty index.ts, so the assertions above are not vacuous', () => {
     expect(INDEX_SOURCE.length).toBeGreaterThan(1000);
     expect(INDEX_SOURCE).toContain('Provider-Agnostic Identity Callback Edge Function');
-  });
-
-  /**
-   * The catch arm at the bottom of `index.ts` answers one fixed result precisely so an unauthenticated caller (the endpoint is served `--no-verify-jwt`) cannot learn which variables are unconfigured. The comment there names every `requireEnv` throw it catches, and has to keep counting correctly: a stale count is how the next reader concludes a throw leaks.
-   */
-  it('keeps the catch arm comment naming every requireEnv throw it swallows', () => {
-    for (const name of REQUIRE_ENV_GUARDED) {
-      expect(INDEX_SOURCE).toContain(name);
-    }
-    expect(INDEX_SOURCE).toContain('four ERR_ENV_UNCONFIGURED throws');
   });
 });

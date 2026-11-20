@@ -201,7 +201,7 @@ describe('extractIdentityClaims', () => {
 /**
  * The identity-key collision regression test.
  *
- * `matchValue` is not a display field: the Edge Function writes it to `app_metadata.identity_match_value` (the key `findUserByIdentityMatch` looks up) and interpolates it into `${matchValue}@bank-auth.placeholder` (the email the auth user is created with, and the address the magic link is issued to). So two people whose `matchValue` is equal are ONE Supabase account: the second to bank-authenticate is matched to the first one's user id, finds the first one's candidate row, and is handed a session for it. Under `identityMatchProp: 'birthdate'` a shared date of birth is enough.
+ * `matchValue` is not a display field: the Edge Function writes it to `app_metadata.identity_match_value` (the key `public.identity_account_find` looks up) and interpolates it into `${matchValue}@bank-auth.placeholder` (the email the auth user is created with, and the address the magic link is issued to). So two people whose `matchValue` is equal are ONE Supabase account: the second to bank-authenticate is matched to the first one's user id, finds the first one's candidate row, and is handed a session for it. Under `identityMatchProp: 'birthdate'` a shared date of birth is enough.
  *
  * Each case therefore asserts DISTINCTNESS across two payloads that differ in exactly one claim. Do not weaken either to asserting one payload's value: a single-payload check passes just as happily when every payload maps to the same key, which is the whole defect.
  */

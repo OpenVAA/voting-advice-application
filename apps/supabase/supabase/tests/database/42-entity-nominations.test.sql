@@ -17,7 +17,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (70);
+  plan (72);
 
 SELECT
   create_test_data ();
@@ -600,10 +600,12 @@ SELECT
         WHERE
           n.id = '42424242-4242-4242-4242-000000000a01'
       ),
+      'writable',
+      false,
       'parent',
       '{"entity_type":"organization","entity_id":"42424242-4242-4242-4242-0000000000b1","name":{"en":"Pending Party","fi":"Odottava puolue"},"short_name":{"en":"PP"}}'::jsonb
     ),
-    'an element is the nomination''s id, election and constituency with their localized names, round, symbol, confirmation, custom data, updated_at and parent, and nothing else'
+    'an element is the nomination''s id, election and constituency with their localized names, round, symbol, confirmation, custom data, updated_at, whether it is writable and parent, and nothing else'
   );
 
 SELECT
@@ -734,8 +736,73 @@ SELECT
       'candidate',
       test_id ('candidate_a')
     ),
-    'confirmed,constituency_id,constituency_name,custom_data,election_id,election_name,election_round,election_symbol,id,parent,updated_at',
-    'every element of a candidate''s answer holds exactly the eleven allow-listed keys'
+    'confirmed,constituency_id,constituency_name,custom_data,election_id,election_name,election_round,election_symbol,id,parent,updated_at,writable',
+    'every element of a candidate''s answer holds exactly the twelve allow-listed keys'
+  );
+
+-- `writable` is private.nomination_writable: the nomination is at its election's current round, and the election's nomination shape admits the entity's type. Election A stores no round, so round 1 is current, and its shape admits candidates.
+SELECT
+  is (
+    jsonb_build_array(
+      pg_temp.element (
+        test_id ('project_a'),
+        'candidate',
+        test_id ('candidate_a'),
+        test_id ('nomination_cand_a')
+      ) -> 'writable',
+      pg_temp.element (
+        test_id ('project_a'),
+        'candidate',
+        test_id ('candidate_a'),
+        '42424242-4242-4242-4242-000000000a01'
+      ) -> 'writable'
+    ),
+    '[true,false]'::jsonb,
+    'WRITABLE: a nomination at its election''s current round is writable, and one at round 2 of the same election is not'
+  );
+
+SELECT
+  reset_role ();
+
+UPDATE elections
+SET
+  nomination_shape = 'organization_only'
+WHERE
+  id = test_id ('election_a');
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    pg_temp.element (
+      test_id ('project_a'),
+      'candidate',
+      test_id ('candidate_a'),
+      test_id ('nomination_cand_a')
+    ) -> 'writable',
+    'false'::jsonb,
+    'WRITABLE: the same nomination is not writable once its election''s nomination shape refuses candidates'
+  );
+
+SELECT
+  reset_role ();
+
+UPDATE elections
+SET
+  nomination_shape = DEFAULT
+WHERE
+  id = test_id ('election_a');
+
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('candidate_a'),
+    '[]'::jsonb
   );
 
 SELECT
@@ -1179,8 +1246,8 @@ SELECT
       'organization',
       test_id ('org_a')
     ),
-    'confirmed,constituency_id,constituency_name,custom_data,election_id,election_name,election_round,election_symbol,id,parent,updated_at',
-    'every element of an organization''s answer holds exactly the same eleven keys'
+    'confirmed,constituency_id,constituency_name,custom_data,election_id,election_name,election_round,election_symbol,id,parent,updated_at,writable',
+    'every element of an organization''s answer holds exactly the same twelve keys'
   );
 
 SELECT

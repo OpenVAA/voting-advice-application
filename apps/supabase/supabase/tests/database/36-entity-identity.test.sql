@@ -1,6 +1,6 @@
 -- 36-entity-identity.test.sql: the caller's own entities are read from the grant table
 --
--- `get_user_entities` lists every candidate and organization the caller holds an `(entity, <type>, <id>, editor)` row on in `public.grants`, in the one project the caller names, as one jsonb object whose `entities` array holds the entries and whose `password_set` says whether the caller's own account has a password and whose `pending_email_taken` whether the address the caller's own account is changing to is already another account's. `get_entity_user_data` returns the editable row of one such entity, or no row. This file pins the list for zero, one and several grants, for mixed types, across two projects, and for a project admin, an entity-admin grant holder and a faction editor (none of which is listed); the one-entity read for the caller's own candidate and organization and for every refusal, each of which is an empty result and never a raise; that an entity is listed exactly when the read returns it, with a token older than a grant (served, read and written at once, since row-level security reads the grant table too) and with a token that outlives one (neither served nor read nor written); and that anon is refused both functions by privilege. The password section pins the fact for a stored hash, an empty string and a null, each read by its own account, and for a session with no caller. The pending-address section pins `pending_email_taken` for no pending address, one that is another account's in another case and with spaces, one that is no account's, one that is the caller's own address, a caller whose own address is another caller's pending address, and a session with no caller. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by two INVOKER RPCs; where the password fact lives: a zero-argument definer function in `private` that `authenticated` alone may execute, over a helper no API role may; and where the pending-address fact lives: another such zero-argument definer function. The last section pins the write-side rule: a candidate admits one editor, an organization several, and each refusal names its unique key.
+-- `get_user_entities` lists every candidate and organization the caller holds an `(entity, <type>, <id>, editor)` row on in `public.grants`, in the one project the caller names, as one jsonb object whose `entities` array holds the entries and whose `organization`, present only then, names the organization an identity provider registered for the caller there. `get_caller_account_state` answers the facts about the caller's own account: `password_set`, whether it has a password, and `pending_email_taken`, whether the address it is changing to is already another account's. `get_entity_user_data` returns the editable row of one such entity, or no row. This file pins the list for zero, one and several grants, for mixed types, across two projects, and for a project admin, an entity-admin grant holder and a faction editor (none of which is listed); the one-entity read for the caller's own candidate and organization and for every refusal, each of which is an empty result and never a raise; that an entity is listed exactly when the read returns it, with a token older than a grant (served, read and written at once, since row-level security reads the grant table too) and with a token that outlives one (neither served nor read nor written); and that anon is refused both functions by privilege. The password section pins the fact for a stored hash, an empty string and a null, each read by its own account, and for a session with no caller. The pending-address section pins `pending_email_taken` for no pending address, one that is another account's in another case and with spaces, one that is no account's, one that is the caller's own address, a caller whose own address is another caller's pending address, and a session with no caller. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by two INVOKER RPCs; where the password fact lives: a zero-argument definer function in `private` that `authenticated` alone may execute, over a helper no API role may; and where the pending-address fact lives: another such zero-argument definer function. The last section pins the write-side rule: a candidate admits one editor, an organization several, and each refusal names its unique key.
 --
 -- The first section pins what anon can read: no column holding an auth user id on any table anon can select, with nominations.created_by the one named exemption.
 --
@@ -17,7 +17,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (86);
+  plan (91);
 
 SELECT
   create_test_data ();
@@ -1027,8 +1027,20 @@ SELECT
 SELECT
   is (
     pg_temp.answer_keys (test_id ('project_a')),
-    ARRAY['entities', 'password_set', 'pending_email_taken'],
-    'PWD: the answer of a caller that edits an entity has exactly the top-level keys entities, password_set and pending_email_taken'
+    ARRAY['entities'],
+    'PWD: the entities answer of a caller that edits an entity and registered nothing has exactly the top-level key entities, and no fact about the account'
+  );
+
+SELECT
+  is (
+    ARRAY(
+      SELECT
+        jsonb_object_keys(public.get_caller_account_state ())
+      ORDER BY
+        1
+    ),
+    ARRAY['password_set', 'pending_email_taken'],
+    'PWD: the account state has exactly the keys password_set and pending_email_taken'
   );
 
 SELECT
@@ -1044,7 +1056,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    public.get_caller_account_state () -> 'password_set',
     'true'::jsonb,
     'PWD: password_set is true for a caller whose encrypted_password holds a hash'
   );
@@ -1061,7 +1073,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    public.get_caller_account_state () -> 'password_set',
     'false'::jsonb,
     'PWD: password_set is false for a caller whose encrypted_password is the empty string'
   );
@@ -1078,7 +1090,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    public.get_caller_account_state () -> 'password_set',
     'false'::jsonb,
     'PWD: password_set is false for a caller whose encrypted_password is null'
   );
@@ -1087,8 +1099,8 @@ SELECT
 SELECT
   is (
     pg_temp.answer_keys (test_id ('project_a')),
-    ARRAY['entities', 'password_set', 'pending_email_taken'],
-    'PWD: the answer of a caller that edits none has exactly the same three top-level keys'
+    ARRAY['entities'],
+    'PWD: the entities answer of a caller that edits none has exactly the same one top-level key'
   );
 
 SELECT
@@ -1106,8 +1118,8 @@ SELECT
 SELECT
   is (
     public.get_user_entities (test_id ('project_a')),
-    '{"entities": [], "password_set": false, "pending_email_taken": false}'::jsonb,
-    'PWD: and that row is one object holding an empty entities array and the caller''s password_set and pending_email_taken'
+    '{"entities": []}'::jsonb,
+    'PWD: and that row is one object holding an empty entities array'
   );
 
 SELECT
@@ -1122,7 +1134,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    public.get_caller_account_state () -> 'password_set',
     'true'::jsonb,
     'PWD: accounts read one after the other each get their own password_set, so the account with a hash reads true again after two that read false'
   );
@@ -1139,7 +1151,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'password_set',
+    public.get_caller_account_state () -> 'password_set',
     'null'::jsonb,
     'PWD: password_set is a JSON null, neither true nor false, where no caller is signed in'
   );
@@ -1157,9 +1169,9 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) ? 'pending_email_taken',
+    public.get_caller_account_state () ? 'pending_email_taken',
     true,
-    'PET: the answer of a caller that edits an entity carries pending_email_taken'
+    'PET: the account state of a caller that edits an entity carries pending_email_taken'
   );
 
 SELECT
@@ -1174,9 +1186,9 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) ? 'pending_email_taken',
+    public.get_caller_account_state () ? 'pending_email_taken',
     true,
-    'PET: and so does the answer of a caller that edits nothing'
+    'PET: and so does the account state of a caller that edits nothing'
   );
 
 SELECT
@@ -1191,7 +1203,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    public.get_caller_account_state () -> 'pending_email_taken',
     'false'::jsonb,
     'PET: pending_email_taken is false for a caller with no pending address'
   );
@@ -1220,7 +1232,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    public.get_caller_account_state () -> 'pending_email_taken',
     'true'::jsonb,
     'PET: pending_email_taken is true when the caller''s pending address, in another case and with spaces around it, is another account''s address'
   );
@@ -1237,7 +1249,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    public.get_caller_account_state () -> 'pending_email_taken',
     'false'::jsonb,
     'PET: pending_email_taken is false when the caller''s pending address is no account''s address'
   );
@@ -1254,7 +1266,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    public.get_caller_account_state () -> 'pending_email_taken',
     'false'::jsonb,
     'PET: pending_email_taken is false for a caller whose own address is another caller''s pending address: it speaks of the caller''s own pending address only'
   );
@@ -1277,7 +1289,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    public.get_caller_account_state () -> 'pending_email_taken',
     'false'::jsonb,
     'PET: pending_email_taken is false when the caller''s pending address is its own address: only another account''s counts'
   );
@@ -1294,7 +1306,7 @@ SELECT
 
 SELECT
   is (
-    public.get_user_entities (test_id ('project_a')) -> 'pending_email_taken',
+    public.get_caller_account_state () -> 'pending_email_taken',
     'false'::jsonb,
     'PET: pending_email_taken is false where no caller is signed in'
   );
@@ -1587,6 +1599,98 @@ SELECT
     ),
     0::bigint,
     'PWD: neither caller_password_set nor user_password_set is a public function, so PostgREST publishes neither'
+  );
+
+-- =====================================================================
+-- The organization the caller's identity registered
+-- =====================================================================
+-- As postgres. U3 edits org_a and is registered as its organization in project A, and as the registrant of candidate_a there. Only the organization of the project asked is named.
+INSERT INTO
+  private.identity_registrations (user_id, project_id, entity_type, entity_id)
+VALUES
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036a3',
+    test_id ('project_a'),
+    'organization',
+    test_id ('org_a')
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036a3',
+    test_id ('project_a'),
+    'candidate',
+    test_id ('candidate_a')
+  ),
+  (
+    'cccccccc-cccc-cccc-cccc-0000000036b3',
+    test_id ('project_b'),
+    'organization',
+    test_id ('org_b')
+  );
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036a3',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    public.get_user_entities (test_id ('project_a')) -> 'organization',
+    to_jsonb(test_id ('org_a')),
+    'ORG: the answer names the organization the caller registered in the project, and not the candidate it registered there'
+  );
+
+SELECT
+  is (
+    pg_temp.answer_keys (test_id ('project_b')),
+    ARRAY['entities'],
+    'ORG: a project the caller registered nothing in carries no organization key'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  set_test_user (
+    'authenticated',
+    'cccccccc-cccc-cccc-cccc-0000000036b3',
+    '[]'::jsonb
+  );
+
+SELECT
+  is (
+    pg_temp.answer_keys (test_id ('project_a')) || ARRAY[
+      public.get_user_entities (test_id ('project_b')) ->> 'organization'
+    ],
+    ARRAY['entities', test_id ('org_b')::text],
+    'ORG: another account''s registration is not the caller''s, and the caller''s own is named in its own project'
+  );
+
+SELECT
+  reset_role ();
+
+SELECT
+  is (
+    (
+      SELECT
+        string_agg(
+          p.proname || ':' || p.prosecdef::text || ':' || has_function_privilege('anon', p.oid, 'EXECUTE')::text || ':' || has_function_privilege('authenticated', p.oid, 'EXECUTE')::text,
+          ','
+          ORDER BY
+            p.proname
+        )
+      FROM
+        pg_proc p
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE
+        (n.nspname, p.proname) IN (
+          ('public', 'get_caller_account_state'),
+          ('private', 'caller_registered_organization')
+        )
+    ),
+    'caller_registered_organization:true:false:true,get_caller_account_state:false:false:true',
+    'ORG: the registration lookup is a definer function and the account state an invoker one, each executable by authenticated and not by anon'
   );
 
 -- =====================================================================

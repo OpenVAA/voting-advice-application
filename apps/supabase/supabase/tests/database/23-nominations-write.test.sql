@@ -228,7 +228,7 @@ SELECT
 -- =====================================================================
 -- Section 3: the entity update policy, and the nominations lock
 --
--- The lock is the app setting `access.nominationsLocked`. `private.project_nominations_locked` reads it from the project's `app_settings` row, and that function is a conjunct of the three policies through which an entity user writes this table. Each of the three carries a pair that differs in the setting alone: the update in this section, the parent insert at G4 and the entity's own insert at OWN. The admin policies do not call the function, and the control below shows it. Section 10 asserts which stored values lock.
+-- The lock is the value `nominationsLocked` of the app setting `access.contestantEditing`. `private.project_contestant_editing` reads it from the project's `app_settings` row, and its answer `open` is a conjunct of the three policies through which an entity user writes this table. Each of the three carries a pair that differs in the setting alone: the update in this section, the parent insert at G4 and the entity's own insert at OWN. The admin policies do not call the function, and the control below shows it. Section 10 asserts which stored values lock.
 --
 -- Every write of the setting merges one key into the stored object, so whatever else the row holds stays as it is.
 -- =====================================================================
@@ -256,7 +256,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":true}}'::jsonb
+    '{"access":{"contestantEditing":"nominationsLocked"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -305,7 +305,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":false}}'::jsonb
+    '{"access":{"contestantEditing":"open"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -639,7 +639,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":true}}'::jsonb
+    '{"access":{"contestantEditing":"nominationsLocked"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -688,7 +688,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":false}}'::jsonb
+    '{"access":{"contestantEditing":"open"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -1768,7 +1768,7 @@ SELECT
   throws_like (
     $$UPDATE nominations SET confirmed = true WHERE id = '12121212-1212-1212-1212-0000000000f1'::uuid$$,
     '%requestedParentOrganization%',
-    'REQ: a nomination carrying the requested-parent key CANNOT be confirmed -- confirming it would publish as an independent a candidate who asked for a party'
+    'REQ: a nomination carrying the requested-parent key CANNOT be confirmed -- confirming it would publish as standing on its own a nominee who asked for a parent'
   );
 
 SELECT
@@ -2423,7 +2423,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":true}}'::jsonb
+    '{"access":{"contestantEditing":"nominationsLocked"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -2478,7 +2478,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":false}}'::jsonb
+    '{"access":{"contestantEditing":"open"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -2544,7 +2544,7 @@ SELECT
   is (
     (
       SELECT
-        cmd || '/' || roles::text || '/' || (qual ~ 'private\.project_nominations_locked')::text || '/' || (qual !~ 'app_settings')::text
+        cmd || '/' || roles::text || '/' || (qual ~ 'private\.project_contestant_editing')::text || '/' || (qual !~ 'app_settings')::text
       FROM
         pg_policies
       WHERE
@@ -2553,7 +2553,7 @@ SELECT
         AND policyname = 'entity_delete_nominations'
     ),
     'DELETE/{authenticated}/true/true',
-    'DEL: the policy is FOR DELETE TO authenticated, and it asks the lock of private.project_nominations_locked and reads no settings row itself'
+    'DEL: the policy is FOR DELETE TO authenticated, and it asks the lock of private.project_contestant_editing and reads no settings row itself'
   );
 
 -- Rounds 61 to 64. candidate_a: an unconfirmed row, a confirmed row and the confirmed row of the lock pair. candidate_a2: a confirmed, public row. org_a: a row with candidate_a2's nomination listed under it.
@@ -2779,7 +2779,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":true}}'::jsonb
+    '{"access":{"contestantEditing":"nominationsLocked"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -2819,7 +2819,7 @@ UPDATE app_settings
 SET
   settings = jsonb_recursive_merge (
     settings,
-    '{"access":{"nominationsLocked":false}}'::jsonb
+    '{"access":{"contestantEditing":"open"}}'::jsonb
   )
 WHERE
   project_id = test_id ('project_a');
@@ -2938,11 +2938,11 @@ SELECT
 -- =====================================================================
 -- Section 10: which stored values lock
 --
--- `private.project_nominations_locked` answers locked for a project that does not exist and for the JSON boolean `true` at `access.nominationsLocked`, and unlocked for everything else: no settings row, no `access` member, no key, and a key holding any other JSON value. The string is the case a text comparison would read as locked, and the number the case a cast to boolean would.
+-- `private.project_contestant_editing` answers `locked` for a project that does not exist, the stored JSON string at `access.contestantEditing` when it is one of `open`, `nominationsLocked` and `locked`, and `open` for everything else: no settings row, no `access` member, no key, and a key holding any other JSON value. The JSON boolean is the case the lock booleans this setting replaces stored, and it is read as no value.
 --
--- `pg_temp.locked_with_access` stores its argument as project B's `access` member, or removes the member when the argument is NULL, and returns the function's answer for project B. It runs as the fixture owner and is not SECURITY DEFINER; the function it calls is, which is how it reads the row whoever asks. Project B is used because no pair above depends on its settings row.
+-- `pg_temp.editing_with_access` stores its argument as project B's `access` member, or removes the member when the argument is NULL, and returns the function's answer for project B. It runs as the fixture owner and is not SECURITY DEFINER; the function it calls is, which is how it reads the row whoever asks. Project B is used because no pair above depends on its settings row.
 -- =====================================================================
-CREATE FUNCTION pg_temp.locked_with_access (p_access jsonb) RETURNS boolean LANGUAGE plpgsql AS $fn$
+CREATE FUNCTION pg_temp.editing_with_access (p_access jsonb) RETURNS text LANGUAGE plpgsql AS $fn$
 BEGIN
   UPDATE public.app_settings
   SET settings = CASE
@@ -2950,71 +2950,75 @@ BEGIN
     ELSE jsonb_set(settings, '{access}', p_access)
   END
   WHERE project_id = public.test_id('project_b');
-  RETURN private.project_nominations_locked(public.test_id('project_b'));
+  RETURN private.project_contestant_editing(public.test_id('project_b'));
 END;
 $fn$;
 
 SELECT
   is (
-    private.project_nominations_locked ('0badc0de-0000-4000-8000-000000000023'::uuid),
-    true,
+    private.project_contestant_editing ('0badc0de-0000-4000-8000-000000000023'::uuid),
+    'locked',
     'SOURCE: an id that names no project is LOCKED -- what cannot be read never unlocks anything'
   );
 
 SELECT
   is (
-    pg_temp.locked_with_access (NULL),
-    false,
-    'SOURCE: a settings row with no access member is unlocked'
+    pg_temp.editing_with_access (NULL),
+    'open',
+    'SOURCE: a settings row with no access member is open'
   );
 
 SELECT
   is (
-    pg_temp.locked_with_access ('{"answersLocked":true}'::jsonb),
-    false,
-    'SOURCE: an access member without the key is unlocked, whatever its other members say'
+    pg_temp.editing_with_access (
+      '{"answersLocked":true,"nominationsLocked":true}'::jsonb
+    ),
+    'open',
+    'SOURCE: an access member without the key is open, whatever its other members say'
   );
 
 SELECT
   is (
-    pg_temp.locked_with_access ('{"nominationsLocked":true}'::jsonb),
-    true,
-    'SOURCE: the JSON boolean true is LOCKED -- the one stored value that locks'
+    pg_temp.editing_with_access (
+      '{"contestantEditing":"nominationsLocked"}'::jsonb
+    ),
+    'nominationsLocked',
+    'SOURCE: the JSON string "nominationsLocked" is answered as stored'
   );
 
 SELECT
   is (
-    pg_temp.locked_with_access ('{"nominationsLocked":false}'::jsonb),
-    false,
-    'SOURCE: the JSON boolean false is unlocked'
+    pg_temp.editing_with_access ('{"contestantEditing":"locked"}'::jsonb),
+    'locked',
+    'SOURCE: the JSON string "locked" is answered as stored'
   );
 
 SELECT
   is (
-    pg_temp.locked_with_access ('{"nominationsLocked":"true"}'::jsonb),
-    false,
-    'SOURCE: the STRING "true" is unlocked -- the value is compared as JSON, not as text'
+    pg_temp.editing_with_access ('{"contestantEditing":"open"}'::jsonb),
+    'open',
+    'SOURCE: the JSON string "open" is answered as stored'
   );
 
 SELECT
   is (
-    pg_temp.locked_with_access ('{"nominationsLocked":1}'::jsonb),
-    false,
-    'SOURCE: the number 1 is unlocked'
+    pg_temp.editing_with_access ('{"contestantEditing":true}'::jsonb),
+    'open',
+    'SOURCE: the JSON boolean true is open -- only the three words are read'
   );
 
 SELECT
   is (
-    pg_temp.locked_with_access ('{"nominationsLocked":null}'::jsonb),
-    false,
-    'SOURCE: a JSON null is unlocked'
+    pg_temp.editing_with_access ('{"contestantEditing":null}'::jsonb),
+    'open',
+    'SOURCE: a JSON null is open'
   );
 
 SELECT
   is (
-    pg_temp.locked_with_access ('["nominationsLocked"]'::jsonb),
-    false,
-    'SOURCE: an access member that is an array and not an object is unlocked'
+    pg_temp.editing_with_access ('["contestantEditing"]'::jsonb),
+    'open',
+    'SOURCE: an access member that is an array and not an object is open'
   );
 
 DELETE FROM app_settings
@@ -3023,9 +3027,9 @@ WHERE
 
 SELECT
   is (
-    private.project_nominations_locked (test_id ('project_b')),
-    false,
-    'SOURCE: a project with NO settings row is unlocked -- only a missing project fails closed'
+    private.project_contestant_editing (test_id ('project_b')),
+    'open',
+    'SOURCE: a project with NO settings row is open -- only a missing project fails closed'
   );
 
 -- =====================================================================

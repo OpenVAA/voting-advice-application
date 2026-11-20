@@ -6,6 +6,8 @@
  * A link proves control of an address only on a deployment whose auth service creates no account for an unproven one. The database cannot see how the auth service is configured, so the function asks the served settings and issues nothing when the answer is not a clear yes.
  */
 
+import { isPlainObject } from '../_shared/guards.ts';
+
 /** How long a positive answer to "is public sign-up closed" is believed. A deployment reopened later stops being served links within this time. */
 export const SIGN_UP_CHECK_TTL_MS = 60000;
 
@@ -19,8 +21,8 @@ export const REDIRECT_CHECK_TTL_MS = 600000;
  * @returns True only when `settings` is an object whose `disable_signup` is the boolean `true` and whose `mailer_autoconfirm` is the boolean `false`; false for a missing key, a string, null and a non-object
  */
 export function isSignUpClosed(settings: unknown): boolean {
-  if (typeof settings !== 'object' || settings === null || Array.isArray(settings)) return false;
-  const { disable_signup: disableSignup, mailer_autoconfirm: mailerAutoconfirm } = settings as Record<string, unknown>;
+  if (!isPlainObject(settings)) return false;
+  const { disable_signup: disableSignup, mailer_autoconfirm: mailerAutoconfirm } = settings;
   return disableSignup === true && mailerAutoconfirm === false;
 }
 

@@ -132,7 +132,7 @@ $$;
 -- End the cooldown of every open code row and every per-project minute slot, as if more than a minute had passed. Day-long keys are left as they are.
 CREATE FUNCTION pg_temp.t49_next_minute () RETURNS void LANGUAGE sql AS $$
   UPDATE public.invitations SET pending_email_at = pending_email_at - interval '2 minutes' WHERE pending_email_at IS NOT NULL;
-  DELETE FROM private.invitation_throttle WHERE key LIKE 'link:%';
+  DELETE FROM private.access_throttle WHERE key LIKE 'link:%';
 $$;
 
 -- =====================================================================
@@ -252,7 +252,7 @@ SELECT
             t.key
         )
       FROM
-        private.invitation_throttle t
+        private.access_throttle t
       WHERE
         t.key IN (
           'code-bind:' || (current_setting('t49.a')::jsonb -> 0 ->> 'id'),
@@ -383,7 +383,7 @@ SELECT
       SELECT
         count(*)::text
       FROM
-        private.invitation_throttle t
+        private.access_throttle t
       WHERE
         t.key LIKE 'link-address:%'
         AND t.key LIKE '%' || encode(
@@ -399,7 +399,7 @@ SELECT
 SELECT
   pg_temp.t49_next_minute ();
 
-UPDATE private.invitation_throttle
+UPDATE private.access_throttle
 SET
   count = 19
 WHERE
@@ -475,7 +475,7 @@ SELECT
       SELECT
         count(*)::text
       FROM
-        private.invitation_throttle t
+        private.access_throttle t
       WHERE
         t.key LIKE 'code:%'
     ),

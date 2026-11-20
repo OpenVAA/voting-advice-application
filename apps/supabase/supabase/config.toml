@@ -412,8 +412,10 @@ allow_dynamic_registration = false
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
-# `per_worker` (default) — enables hot reload during local development. A worker serves more than
-# one request, so a function keeps no state between requests at module level.
+# `per_worker` (default) — enables hot reload during local development. A worker serves many
+# requests, so module-level state outlives a request. Such state may hold only deployment-wide
+# facts that expire (as `account-access` does for its sign-up and redirect checks), never anything
+# about a caller.
 # `oneshot` — fallback mode if hot reload causes issues (e.g. in large repos or with symlinks).
 # The policy here is `per_worker` because a function may answer before its background work
 # finishes.

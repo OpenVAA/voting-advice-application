@@ -9,6 +9,7 @@ import * as contract from './contract.ts';
 import {
   ACCEPTED_BODY,
   ADDRESS_IN_USE_BODY,
+  ADDRESS_INVITED_BODY,
   ADDRESS_REFUSED_BODY,
   ADDRESS_SENT_BODY,
   addressConfirmationAnswer,
@@ -92,7 +93,7 @@ describe('parseAccountAccessRequest: well-formed bodies', () => {
       projectId: PROJECT,
       email: 'person@example.org',
       locale: undefined,
-      app: null,
+      app: 'contestant',
       witness: null
     });
   });
@@ -103,7 +104,7 @@ describe('parseAccountAccessRequest: well-formed bodies', () => {
       projectId: PROJECT,
       email: 'person@example.org',
       locale: 'not-a-locale',
-      app: null,
+      app: 'contestant',
       witness: WITNESS
     });
   });
@@ -121,7 +122,7 @@ describe('parseAccountAccessRequest: well-formed bodies', () => {
       projectId: PROJECT,
       email: 'person@example.org',
       locale: undefined,
-      app: null,
+      app: 'contestant',
       witness: null
     });
     expect(Object.keys(parsed ?? {}).sort()).toEqual(['app', 'email', 'locale', 'operation', 'projectId', 'witness']);
@@ -166,17 +167,24 @@ describe('parseAccountAccessRequest: well-formed bodies', () => {
 });
 
 describe('parseAccountAccessRequest: the app a recovery request was made in', () => {
-  it('names one app, the Admin App', () => {
-    expect([...contract.LINK_APPS]).toEqual(['admin']);
+  it('names two apps, the Contestant App and the Admin App', () => {
+    expect([...contract.LINK_APPS]).toEqual(['contestant', 'admin']);
   });
 
   it.each([
     ['absent', {}],
     ['null', { app: null }]
-  ])('reads an app that is %s as the Contestant App: null', (_kind, app) => {
+  ])('reads an app that is %s as the Contestant App', (_kind, app) => {
     expect(parseAccountAccessRequest({ ...REQUEST_RECOVERY, ...app })).toMatchObject({
       operation: 'request-recovery',
-      app: null
+      app: 'contestant'
+    });
+  });
+
+  it('passes the Contestant App on when the request names it', () => {
+    expect(parseAccountAccessRequest({ ...REQUEST_RECOVERY, app: 'contestant' })).toMatchObject({
+      operation: 'request-recovery',
+      app: 'contestant'
     });
   });
 
@@ -191,7 +199,7 @@ describe('parseAccountAccessRequest: the app a recovery request was made in', ()
     });
   });
 
-  it.each([['contestant'], ['/admin'], ['Admin'], [''], [1], [{}], [['admin']]])(
+  it.each([['Contestant'], ['/admin'], ['Admin'], [''], [1], [{}], [['admin']]])(
     'takes a recovery request whose app is %j for a malformed body',
     (app) => {
       expect(parseAccountAccessRequest({ ...REQUEST_RECOVERY, app })).toBeNull();
@@ -266,14 +274,15 @@ describe('parseAccountAccessRequest: the address confirmation', () => {
 });
 
 describe('the answers of the address confirmation', () => {
-  it('are four, and each outcome has its own', () => {
+  it('are five, and each outcome has its own', () => {
     expect(addressConfirmationAnswer('sent')).toEqual({ status: 200, body: { result: 'sent' } });
     expect(addressConfirmationAnswer('in-use')).toEqual({ status: 200, body: { result: 'in-use' } });
+    expect(addressConfirmationAnswer('invited')).toEqual({ status: 200, body: { result: 'invited' } });
     expect(addressConfirmationAnswer('refused')).toEqual({ status: 200, body: { result: 'refused' } });
     expect(addressConfirmationAnswer('unauthenticated')).toEqual({ status: 401, body: { error: 'unauthenticated' } });
   });
 
-  it('answer the refusal for any other runtime value, so a fifth answer cannot leave the function', () => {
+  it('answer the refusal for any other runtime value, so a sixth answer cannot leave the function', () => {
     for (const other of ['accepted', 'in_use', 'SENT', '', null, undefined, 1, { result: 'sent' }]) {
       expect(addressConfirmationAnswer(other as AddressConfirmationOutcome)).toEqual({
         status: 200,
@@ -283,7 +292,13 @@ describe('the answers of the address confirmation', () => {
   });
 
   it('carry nothing but the one word of the outcome', () => {
-    for (const body of [ADDRESS_SENT_BODY, ADDRESS_IN_USE_BODY, ADDRESS_REFUSED_BODY, UNAUTHENTICATED_BODY]) {
+    for (const body of [
+      ADDRESS_SENT_BODY,
+      ADDRESS_IN_USE_BODY,
+      ADDRESS_INVITED_BODY,
+      ADDRESS_REFUSED_BODY,
+      UNAUTHENTICATED_BODY
+    ]) {
       expect(Object.keys(body)).toHaveLength(1);
       expect(Object.isFrozen(body)).toBe(true);
     }
@@ -313,7 +328,7 @@ describe('parseAccountAccessRequest: the witness changes no answer', () => {
         projectId: PROJECT,
         email: 'person@example.org',
         locale: undefined,
-        app: null,
+        app: 'contestant',
         witness: null
       });
     }
@@ -424,10 +439,11 @@ describe('the answers are a closed set', () => {
     expect(ACCEPTED_BODY).toEqual({ accepted: true });
   });
 
-  it('gives the request-recovery operation no answer of its own: the module exports the nine fixed bodies and no tenth', () => {
+  it('gives the request-recovery operation no answer of its own: the module exports the ten fixed bodies and no eleventh', () => {
     const bodies = Object.keys(contract).filter((name) => name.endsWith('_BODY'));
     expect(bodies.sort()).toEqual([
       'ACCEPTED_BODY',
+      'ADDRESS_INVITED_BODY',
       'ADDRESS_IN_USE_BODY',
       'ADDRESS_REFUSED_BODY',
       'ADDRESS_SENT_BODY',
@@ -447,9 +463,10 @@ describe('the answers are a closed set', () => {
     expect(INVALID_CREDENTIALS_BODY).toEqual({ result: 'invalid-credentials' });
   });
 
-  it('holds the four bodies of the address confirmation', () => {
+  it('holds the five bodies of the address confirmation', () => {
     expect(ADDRESS_SENT_BODY).toEqual({ result: 'sent' });
     expect(ADDRESS_IN_USE_BODY).toEqual({ result: 'in-use' });
+    expect(ADDRESS_INVITED_BODY).toEqual({ result: 'invited' });
     expect(ADDRESS_REFUSED_BODY).toEqual({ result: 'refused' });
     expect(UNAUTHENTICATED_BODY).toEqual({ error: 'unauthenticated' });
   });
@@ -463,6 +480,7 @@ describe('the answers are a closed set', () => {
       INVALID_CREDENTIALS_BODY,
       ADDRESS_SENT_BODY,
       ADDRESS_IN_USE_BODY,
+      ADDRESS_INVITED_BODY,
       ADDRESS_REFUSED_BODY,
       UNAUTHENTICATED_BODY
     ]) {
