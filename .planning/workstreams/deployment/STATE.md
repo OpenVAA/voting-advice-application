@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189
 current_phase_name: Documentation and Closure
-current_plan: 6
+current_plan: 7
 status: executing
-stopped_at: Completed 189-05-PLAN.md
-last_updated: "2026-11-20T13:39:11.440Z"
+stopped_at: Completed 189-06-PLAN.md
+last_updated: "2026-11-20T14:34:40.530Z"
 last_activity: 2026-11-20
 last_activity_desc: Phase 189 execution started
-state_head: d341276021183819bf51435c8436fe519e8c3cf9
+state_head: 1aae01f41c1c22935873d4dd17ef992743883d38
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 208
-  completed_plans: 193
+  completed_plans: 194
   percent: 80
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189 (Documentation and Closure) — EXECUTING
-Plan: 6 of 20
+Plan: 7 of 20
 Status: Ready to execute
 Last activity: 2026-11-20 — Phase 189 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 6
+**Current Plan:** 7
 
 From 184 on, the numeric order is the dependency order.
 
@@ -202,6 +202,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189 P03 | 25min | 2 tasks | 3 files |
 | Phase 189 P04 | 41min | 3 tasks | 7 files |
 | Phase 189 P05 | 12min | 3 tasks | 3 files |
+| Phase 189 P06 | 6min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -435,6 +436,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189]: 189-03 F-03: root docker-compose.dev.yml and its tests kept: the documented local production-image run, and its tests pin the variables it passes
 - [Phase 189]: 189-04: NAV_DECISION=generator-overview (operator) — the docs nav generator lists a subsection's own page as its first child, titled Overview (fixedTitle); /developers-guide/deployment stays at its path with no redirect
 - [Phase 189]: 189-05: sitting 1 (read-only) approved and bound; probe on the persistent project status 0, 22 PASS incl. functions.verify-jwt and functions.identity-callback-unverified; postgres has UPDATE on auth.users (t); DMARC p=none on openvaa.org, p=quarantine on staging.openvaa.org
+- [Phase 189]: 189-06: the persistent project's backups read (2026-11-20 13:55Z) answered 200 with PITR off, WAL-G on, 8 backups all COMPLETED and both physical-backup times null; the nulls are recorded as printed, no cause claimed
 
 ### Pending Todos
 
@@ -501,6 +503,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-20T13:39:10.345Z
-**Stopped At:** Completed 189-05-PLAN.md
+Last session: 2026-11-20T14:34:38.913Z
+**Stopped At:** Completed 189-06-PLAN.md
 **Resume File:** None
