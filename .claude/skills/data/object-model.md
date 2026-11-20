@@ -150,7 +150,7 @@ Both selection rules above are voter-facing semantics recorded from the product 
 
 ## The nomination shape of an election
 
-`Election.nominationShape` says which entity types the election admits as nominees and which parent each may name. The data's `nominationShape` is optional; the getter answers `DEFAULT_NOMINATION_SHAPE`, `organization_list_and_independents`, where the data states none. The values are those the database stores in `elections.election_type`.
+`Election.nominationShape` says which entity types the election admits as nominees and which parent each may name. The data's `nominationShape` is optional; the getter answers `DEFAULT_NOMINATION_SHAPE`, `organization_list_and_independents`, where the data states none. The values are those the database stores in `elections.nomination_shape`.
 
 The matrix is `packages/data/src/objects/election/nominationShape.ts`, a pure module that reads no `DataRoot`:
 
