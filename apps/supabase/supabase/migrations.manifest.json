@@ -92,6 +92,14 @@
     {
       "file": "00022_grants_reaching_a_project.sql",
       "sha256": "6b2613cb26c1a690fb7250181681c94e95ca0425a1b2de4db6b6e7d820f0a018"
+    },
+    {
+      "file": "00023_elections_nomination_shape_column.sql",
+      "sha256": "ebd08b5de120a413b21c1a597f8003de27b8bb2c894d810b3cd02bb992fb4ecf"
+    },
+    {
+      "file": "00024_contestant_app_served_entity_types.sql",
+      "sha256": "8980810381bb03f41690d423e73d8d78a290ac25051ab3e5ea6d1586dcec17ac"
     }
   ]
 }

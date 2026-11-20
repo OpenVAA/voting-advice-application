@@ -17,8 +17,8 @@ import { parseIdentityCallbackRequest } from './requestContract.ts';
 
 const PGTAP_DIRECTORY = new URL('../../tests/database/', import.meta.url);
 const TABLE_FILE_SUFFIX = '-registration-mode-matrix.test.sql';
-const APP_SHARED_CONFIG = new URL(
-  '../../../../../packages/app-shared/src/settings/contestantAppConfig.ts',
+const APP_SHARED_SETTINGS = new URL(
+  '../../../../../packages/app-shared/src/settings/contestantAppSettings.ts',
   import.meta.url
 );
 
@@ -87,7 +87,7 @@ describe('the registration-mode truth table and registrationModeAllowed', () => 
 
 describe('registrationModeAllowed: arguments outside the vocabularies', () => {
   const OPEN = {
-    contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: ['identity_provider'] } }
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['identity_provider'] } } }
   };
 
   it.each([
@@ -103,9 +103,18 @@ describe('registrationModeAllowed: arguments outside the vocabularies', () => {
     expect(registrationModeAllowed(OPEN, 'candidate', 'identity_provider')).toBe(true);
   });
 
-  it('reads no inherited property as a row', () => {
+  it('reads no inherited property as a served type', () => {
     const settings = {
-      contestantApp: { entityTypes: ['candidate'], registrationModes: Object.create({ candidate: ['email'] }) }
+      contestantApp: { servedEntityTypes: Object.create({ candidate: { registrationModes: ['email'] } }) }
+    };
+    expect(registrationModeAllowed(settings, 'candidate', 'email')).toBe(false);
+  });
+
+  it('reads no inherited property as the modes of a served type', () => {
+    const settings = {
+      contestantApp: {
+        servedEntityTypes: { candidate: Object.create({ registrationModes: ['email'] }) }
+      }
     };
     expect(registrationModeAllowed(settings, 'candidate', 'email')).toBe(false);
   });
@@ -113,7 +122,7 @@ describe('registrationModeAllowed: arguments outside the vocabularies', () => {
 
 describe('the vocabularies', () => {
   it('serves the entity types the Contestant App serves, in the same order', () => {
-    const source = readFileSync(APP_SHARED_CONFIG, 'utf8');
+    const source = readFileSync(APP_SHARED_SETTINGS, 'utf8');
     const declared = source.match(/export const SERVED_ENTITY_TYPES = \[([^\]]*)\]/)?.[1];
     expect(declared?.match(/'([^']+)'/g)?.map((literal) => literal.slice(1, -1))).toEqual([...SERVED_ENTITY_TYPES]);
   });
@@ -131,11 +140,15 @@ describe('the vocabularies', () => {
   });
 });
 
-/** Settings serving the given types, with the identity provider's mode allowed for the types in `allowing`. */
+/** Settings serving the given types, each allowing email, with the identity provider's mode allowed for the served types in `allowing`. */
 function settingsWith(served: Array<string>, allowing: Array<string>): Record<string, unknown> {
-  const registrationModes: Record<string, Array<string>> = { candidate: ['email'], organization: ['email'] };
-  for (const entityType of allowing) registrationModes[entityType] = ['email', 'identity_provider'];
-  return { contestantApp: { entityTypes: served, registrationModes } };
+  const servedEntityTypes: Record<string, { registrationModes: Array<string> }> = {};
+  for (const entityType of served) {
+    servedEntityTypes[entityType] = {
+      registrationModes: allowing.includes(entityType) ? ['email', 'identity_provider'] : ['email']
+    };
+  }
+  return { contestantApp: { servedEntityTypes } };
 }
 
 describe('identityProviderEntityTypes', () => {
@@ -161,14 +174,29 @@ describe('identityProviderEntityTypes', () => {
       ['organization']
     ],
     ['both served, neither allowing', settingsWith(['candidate', 'organization'], []), []],
+    ['candidates alone served and allowing', settingsWith(['candidate'], ['candidate']), ['candidate']],
+    ['organizations alone served and allowing', settingsWith(['organization'], ['organization']), ['organization']],
+    ['no servedEntityTypes member', { contestantApp: { questions: { hideHero: true } } }, []],
     [
-      'candidates alone served, both rows allowing',
-      settingsWith(['candidate'], ['candidate', 'organization']),
-      ['candidate']
+      'a contestantApp member beside servedEntityTypes that the screens do not know',
+      {
+        contestantApp: {
+          entityTypes: ['candidate'],
+          servedEntityTypes: { candidate: { registrationModes: ['identity_provider'] } }
+        }
+      },
+      []
     ],
     [
-      'no list of entity types, the organizations row allowing',
-      { contestantApp: { registrationModes: { organization: ['identity_provider'] } } },
+      'a servedEntityTypes the database refuses',
+      {
+        contestantApp: {
+          servedEntityTypes: {
+            candidate: { registrationModes: ['identity_provider'] },
+            alliance: { registrationModes: ['identity_provider'] }
+          }
+        }
+      },
       []
     ]
   ])('lists the served types allowing the mode: %s', (_label, settings, expected) => {
@@ -191,7 +219,7 @@ describe('resolveEntityType', () => {
   const CANDIDATES_ONLY = settingsWith(['candidate', 'organization'], ['candidate']);
   const ORGANIZATIONS_ONLY = settingsWith(['candidate', 'organization'], ['organization']);
   const NEITHER = settingsWith(['candidate', 'organization'], []);
-  const CANDIDATES_SERVED = settingsWith(['candidate'], ['candidate', 'organization']);
+  const CANDIDATES_SERVED = settingsWith(['candidate'], ['candidate']);
 
   it('takes a named type that is served and allows the mode', () => {
     expect(resolveEntityType(BOTH, 'organization')).toEqual({ entityType: 'organization' });
@@ -204,7 +232,7 @@ describe('resolveEntityType', () => {
     expect(resolveEntityType(ORGANIZATIONS_ONLY, 'candidate')).toEqual({ refused: true });
   });
 
-  it('refuses a named type that is not served, whatever its row holds', () => {
+  it('refuses a named type that is not served', () => {
     expect(resolveEntityType(CANDIDATES_SERVED, 'organization')).toEqual({ refused: true });
   });
 

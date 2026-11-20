@@ -25,7 +25,7 @@ CREATE TABLE public.elections (
   -- The first day of voting.
   election_start_date date,
   -- Which of the four nomination flows the election runs: whether a candidate picks a party, whether a party nominates a list, and whether the free-text branch is reachable. An election that states none takes the list flow in which a candidate may also stand without a party. A separate axis from `subtype`.
-  election_type public.nomination_shape NOT NULL DEFAULT 'organization_list_and_independents',
+  nomination_shape public.nomination_shape NOT NULL DEFAULT 'organization_list_and_independents',
   -- Whether the election can have more than one round.
   multiple_rounds boolean DEFAULT false,
   -- The round in progress, counted from 1.

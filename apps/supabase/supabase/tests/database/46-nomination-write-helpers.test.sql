@@ -272,7 +272,7 @@ CREATE FUNCTION pg_temp.reach_now (p_type text, p_id uuid) RETURNS jsonb LANGUAG
       OR (p_type = 'organization' AND n.organization_id = p_id)
     )
     AND COALESCE(n.election_round, 1) = COALESCE(e.current_round, 1)
-    AND public.nomination_shape_rule(e.election_type, p_type::public.entity_type) IN ('admitted', 'parent_required');
+    AND public.nomination_shape_rule(e.nomination_shape, p_type::public.entity_type) IN ('admitted', 'parent_required');
 $fn$;
 
 -- The call of set_entity_nominations, from a read of the reach that is current when the statement runs.

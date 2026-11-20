@@ -1,6 +1,6 @@
 -- Auth hooks: Custom Access Token Hook and RLS helper functions
 --
--- Depends on: 300-auth-tables.sql (grants table), 106-app-settings.sql (app_settings table), auth.users (Supabase Auth)
+-- Depends on: 300-auth-tables.sql (grants table), 106-app-settings.sql (app_settings table, private.contestant_app_served_entity_types_valid), auth.users (Supabase Auth)
 --
 -- Functions:
 -- - custom_access_token_hook(jsonb) - projects public.grants into the JWT `grants` claim
@@ -38,7 +38,7 @@
 --
 -- Revoking EXECUTE is not the fix, because a policy expression runs with the querying role's privileges and would fail with `permission denied`. The helpers therefore live in `private`, which is not in PostgREST's exposed schemas (config.toml `[api] schemas`), while the API roles keep USAGE and EXECUTE so policies and SECURITY INVOKER functions, which both run as the caller, can call them. Every call site qualifies the name, so no search_path decides which function runs.
 --
--- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own rows of public.grants; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); `contestant_app_public_config` in 106-app-settings.sql (the frontend calls it, and it returns five fixed settings values and never a row: whether the Contestant app is accessible, whether answers are locked, the entity types it serves, its registration modes and whether usage events are tracked); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
+-- What stays in `public`: `user_can` (the Edge Functions call it over RPC) and `user_has_account_grant`, which answer only about the caller's own rows of public.grants; `grant_role_permissions` (the matrix, no row data); `project_open_for_voters` (the frontend calls it); `contestant_app_public_settings` in 106-app-settings.sql (the frontend calls it, and it returns four fixed settings values and never a row: whether the Contestant app is accessible, whether answers are locked, the entity types it serves with the registration modes of each, and whether usage events are tracked); and the two storage path helpers (caller-scoped or public by definition). 07-rpc-security.test.sql holds a census of every anon- and authenticated-executable SECURITY DEFINER function in `public`, so a new one has to be added there on purpose.
 --------------------------------------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS private;
 
@@ -731,7 +731,7 @@ $$;
 --
 -- p_caller_types is what pairs a row with the caller that may create it. `entity_insert_parent_nominations` passes the types of entity that stand under the row being inserted, so holding the permission on an entity of another type nominated at the contest does not answer yes. A NULL or empty array answers false.
 --
--- A row-level WITH CHECK sees only the row being inserted, so "the caller is inserting their own nomination in the same transaction" cannot be expressed here. The order of the three statements a child writes makes that moot: its own nomination with no parent, then the parent's nomination, then its own nomination pointed at the parent's. Where the election's type requires the child's nomination to have a parent, `validate_nomination_parent_required` judges the first row when the transaction ends, after the third statement has given it one.
+-- A row-level WITH CHECK sees only the row being inserted, so "the caller is inserting their own nomination in the same transaction" cannot be expressed here. The order of the three statements a child writes makes that moot: its own nomination with no parent, then the parent's nomination, then its own nomination pointed at the parent's. Where the election's nomination shape requires the child's nomination to have a parent, `validate_nomination_parent_required` judges the first row when the transaction ends, after the third statement has given it one.
 --
 -- Denies (returns false) when no row is found.
 --------------------------------------------------------------------------------
@@ -817,6 +817,14 @@ service_role;
 -- The grant above also reaches `private.feedback_client_ip` (107-feedback.sql). No policy calls it; only the SECURITY DEFINER trigger `check_feedback_rate_limit` does, so the API roles get no EXECUTE on it.
 REVOKE
 EXECUTE ON FUNCTION private.feedback_client_ip (json, boolean)
+FROM
+  anon,
+  authenticated,
+  service_role;
+
+-- The grant above also reaches `private.contestant_app_served_entity_types_valid` (106-app-settings.sql). No policy calls it; only the definer functions `contestant_app_public_settings` and `registration_mode_allowed` do, as their owner, so the API roles get no EXECUTE on it.
+REVOKE
+EXECUTE ON FUNCTION private.contestant_app_served_entity_types_valid (jsonb)
 FROM
   anon,
   authenticated,
@@ -919,13 +927,13 @@ EXECUTE ON FUNCTION private.caller_pending_email_taken () TO authenticated;
 --------------------------------------------------------------------------------
 -- registration_mode_allowed_in: may entities of this type register with this mode, under these stored settings?
 --
--- The registration-mode rule, as a function of the stored settings alone. It reads `contestantApp.entityTypes` and `contestantApp.registrationModes` of p_settings and no table:
+-- The registration-mode rule, as a function of the stored settings alone. It reads `contestantApp.servedEntityTypes` of p_settings and no table:
 -- - the entity type must be `candidate` or `organization` and the mode one of `identity_provider`, `email` and `code`;
--- - the type must be served: listed in the stored list of entity types when that list is an array naming at least one of the two types, and otherwise `candidate` alone is served;
--- - the stored matrix must be an object, the type's row in it an array, and the array must hold the mode.
--- Everything else is false: settings that are null or store nothing, a matrix or a row of another JSON type, a row for a type that is not served, and a null argument.
+-- - the stored `contestantApp.servedEntityTypes` must be one private.contestant_app_served_entity_types_valid (106-app-settings.sql) accepts, so a value the screens refuse allows no registration for any type;
+-- - the type must be a key of it, and the key's `registrationModes` must hold the mode.
+-- Everything else is false: settings that are null or store nothing, which serve the shipped default of candidates with no mode, a type that is not a key, and a null argument.
 --
--- `isRegistrationModeAllowed` in @openvaa/app-shared is the same rule for the screens. 45-registration-mode-matrix.test.sql holds one table of rows that this function is asserted against, and a unit test asserts the TypeScript accessor against the same rows.
+-- `isRegistrationModeAllowed` in @openvaa/app-shared is the same rule for the screens, read over the settings the stored-settings schema has parsed. 45-registration-mode-matrix.test.sql holds one table of rows that this function is asserted against, and a unit test asserts the TypeScript accessor against the same rows.
 --
 -- Only private.registration_mode_allowed below calls it, as its owner, so no API role holds EXECUTE: the REVOKE takes away the EXECUTE PostgreSQL gives PUBLIC on every new function, and the grant on the `private` schema above does not reach a function defined after it.
 --------------------------------------------------------------------------------
@@ -935,20 +943,13 @@ SET
   SELECT COALESCE(
     p_entity_type IN ('candidate', 'organization')
     AND p_mode IN ('identity_provider', 'email', 'code')
-    AND CASE
-      WHEN jsonb_typeof(c.entity_types) = 'array' AND (c.entity_types ? 'candidate' OR c.entity_types ? 'organization')
-        THEN c.entity_types ? p_entity_type
-      ELSE p_entity_type = 'candidate'
-    END
-    AND jsonb_typeof(c.modes) = 'object'
-    AND jsonb_typeof(c.modes -> p_entity_type) = 'array'
-    AND (c.modes -> p_entity_type) ? p_mode,
+    AND private.contestant_app_served_entity_types_valid(p_settings)
+    AND jsonb_typeof(c.modes) = 'array'
+    AND c.modes ? p_mode,
     false
   )
   FROM (
-    SELECT
-      p_settings #> '{contestantApp,entityTypes}' AS entity_types,
-      p_settings #> '{contestantApp,registrationModes}' AS modes
+    SELECT p_settings #> ARRAY['contestantApp', 'servedEntityTypes', p_entity_type, 'registrationModes'] AS modes
   ) c;
 $$;
 
