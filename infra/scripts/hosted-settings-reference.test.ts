@@ -8,6 +8,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { CHECKS } from './probe/checks.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '../..');
@@ -27,10 +28,15 @@ const SOURCE_PATHS = {
 /** The name of one source file, a key of {@link SOURCE_PATHS}. */
 type SourceKey = keyof typeof SOURCE_PATHS;
 
-/** What {@link hostedSettingsReferenceProblems} checks: the page text and the text of each source, each `undefined` when its file is absent. */
+/** The probe's check registry, relative to the repository root, whose `name` values are the checks the page may cite. */
+const CHECKS_PATH = 'infra/scripts/probe/checks.mjs';
+
+/** What {@link hostedSettingsReferenceProblems} checks: the page text, the text of each source, each `undefined` when its file is absent, and the names of the probe's checks. */
 type HostedSettingsReferenceInput = {
   /** The reference page's text. */
   page: string | undefined;
+  /** The `name` of every check of the probe's registry. */
+  checkNames: ReadonlyArray<string>;
 } & Record<SourceKey, string | undefined>;
 
 /** The names one source yields, or the problem that kept them from being read. */
@@ -277,6 +283,9 @@ const FIXTURE_NAMES: ReadonlyArray<string> = [
   'SMTP_PASS'
 ];
 
+/** The check names of a fixture registry. */
+const FIXTURE_CHECK_NAMES: ReadonlyArray<string> = ['auth.smtp', 'api.max-rows', 'no-seed'];
+
 /**
  * Build a fixture page that lists the given names in a table, one backticked name per row, in reverse order.
  *
@@ -298,21 +307,22 @@ function pageListing(names: ReadonlyArray<string>): string {
  * Check a fixture page against the fixture sources, with any of them replaced.
  *
  * @param page - The page text, or `undefined` for an absent page.
- * @param sources - Source texts to use instead of the fixture ones.
+ * @param overrides - Source texts or check names to use instead of the fixture ones.
  * @returns The problems found.
  */
 function fixtureProblems(
   page: string | undefined,
-  sources: Partial<Record<SourceKey, string | undefined>> = {}
+  overrides: Partial<Omit<HostedSettingsReferenceInput, 'page'>> = {}
 ): Array<string> {
   return hostedSettingsReferenceProblems({
     page,
+    checkNames: FIXTURE_CHECK_NAMES,
     settingsJson: FIXTURE_JSON,
     settingsTf: FIXTURE_SETTINGS_TF,
     variablesTf: FIXTURE_VARIABLES_TF,
     mainTf: FIXTURE_MAIN_TF,
     functionSecretsTf: FIXTURE_FUNCTION_SECRETS_TF,
-    ...sources
+    ...overrides
   });
 }
 
@@ -364,6 +374,24 @@ describe('hostedSettingsReferenceProblems', () => {
     const problems = fixtureProblems(pageListing([]));
     expect(problems.map((problem) => problem.split(' ')[0])).toEqual(FIXTURE_NAMES);
   });
+
+  it('names a cited probe check that the registry does not define', () => {
+    const page = `${pageListing(FIXTURE_NAMES)}\nVerify with \`auth.smtp\` and \`auth.made-up\`.\n`;
+    const problems = fixtureProblems(page);
+    expect(problems).toEqual([expect.stringContaining('auth.made-up')]);
+    expect(problems[0]).toContain(CHECKS_PATH);
+  });
+
+  it('finds nothing in a page that cites only defined probe checks', () => {
+    const page = `${pageListing(FIXTURE_NAMES)}\nVerify with \`auth.smtp\`, \`api.max-rows\` and \`no-seed\`.\n`;
+    expect(fixtureProblems(page)).toEqual([]);
+  });
+
+  it('reports a registry with no check names, naming the file', () => {
+    expect(fixtureProblems(pageListing(FIXTURE_NAMES), { checkNames: [] })).toEqual([
+      expect.stringContaining(CHECKS_PATH)
+    ]);
+  });
 });
 
 /**
@@ -378,10 +406,13 @@ function readRepositoryFile(path: string): string | undefined {
 }
 
 describe('the hosted-settings reference page in the repository', () => {
-  it('lists every hosted setting the Supabase module writes', () => {
+  it('lists every hosted setting the Supabase module writes, and cites only checks the probe defines', () => {
     const sources = Object.fromEntries(
       Object.entries(SOURCE_PATHS).map(([key, path]) => [key, readRepositoryFile(path)])
     ) as Record<SourceKey, string | undefined>;
-    expect(hostedSettingsReferenceProblems({ page: readRepositoryFile(PAGE_PATH), ...sources })).toEqual([]);
+    const checkNames = CHECKS.map(({ name }) => name);
+    expect(hostedSettingsReferenceProblems({ page: readRepositoryFile(PAGE_PATH), checkNames, ...sources })).toEqual(
+      []
+    );
   });
 });
