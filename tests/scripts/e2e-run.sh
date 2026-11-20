@@ -26,7 +26,7 @@
 #   1. Neutralises the environment -- unsets the three EPERM07_ forcing knobs and CI -- and records the resulting retry/worker posture as evidence
 #   2. Records provenance: UTC start timestamp, git HEAD, working-tree cleanliness
 #   3. Holds a sleep assertion for the life of the run where `caffeinate` exists (macOS), so that an idle host is not put to sleep under the suite, and records in env-posture.txt whether it does. Then starts the host-suspend heartbeat: a background loop that sleeps a fixed interval and compares the wall-clock time that passed with that interval. A process that is not scheduled does not see time pass, so a gap far beyond the interval means the host was suspended (a laptop asleep, a paused virtual machine), and every deadline Playwright measures on the wall clock has been running through it. On such a gap the run ends as VOID: the marker file VOID-host-suspend.txt is written into the run directory, Playwright is stopped through the teardown of step 9, and the wrapper exits 8. Every beat is recorded in heartbeat.log, one line each: the wall clock in epoch milliseconds, then the milliseconds by which the beat was late. Beside it a second background loop records the host's state into host-state.log every HOST_STATE_INTERVAL_S seconds until the end of teardown: the load averages, the memory the kernel counts as available, the swap in use and the processes using the most CPU. It is a record only and decides nothing
-#   4. Prepares the database: `yarn db:reset` (which starts Supabase first) -- unless --no-db-reset is given, in which case it only runs `yarn db:start` and leaves the existing data in place. The command's output lands in the run directory as db-reset.log or db-start.log, without the stack's status and so without its keys
+#   4. Prepares the database: `yarn db:reset` (which starts Supabase first) -- unless --no-db-reset is given, in which case it only runs `yarn db:start` and leaves the existing data in place. The command's output lands in the run directory as db-reset.log or db-start.log, without the stack's status and so without its keys. Then installs the link-request completion witness, which no migration creates, from apps/supabase/supabase/tests/fixtures/invitation-link-witness.psql (idempotent; a reset removes it), with the host's `psql` when there is one and otherwise with `psql` inside the stack's database container; its output lands in witness.log
 #   5. POLLS REST + Storage for readiness and asserts the `public-assets` bucket is listed -- `db:status` passing is NOT readiness -- then prepares the identity provider's test environment and serves `identity-callback` with it (see "The identity provider's environment" below)
 #   6. ASSERTS $FRONTEND_PORT has no listener, then spawns the frontend dev server -- root `yarn dev` without its `yarn db:start`, so the stack's status and keys are never printed into the log -- with its stdout+stderr redirected into the run directory as devserver.log, and waits for the port to accept connections. It refuses to adopt a foreign listener, and at teardown it kills only processes in its own spawned process group. The dev server is given the identity provider's test environment and trusts the mock issuer's committed certificate through NODE_EXTRA_CA_CERTS
 #   7. Runs Playwright, in a process group of its own, with per-run JSON and HTML reporter output
@@ -51,7 +51,7 @@
 #   0    the run completed and Playwright reported success; under --self-test, every case passed.
 #   1    Playwright reported failures; under --self-test, a case failed.
 #   2    usage error.
-#   3    database preparation failed -- `yarn db:reset`, or `yarn db:start` under --no-db-reset.
+#   3    database preparation failed -- `yarn db:reset`, or `yarn db:start` under --no-db-reset, or installing the link-request witness.
 #   4    the readiness poll timed out (or the service-role key it needs is unavailable).
 #   5    the dev server never started listening, or the port was already occupied before the spawn (this wrapper SPAWNS AND OWNS its server; adopting a foreign one is not evidence).
 #   6    the run produced one or more preflight failures, or produced no preflight SUCCESS line at all (an unconfirmed run is not evidence either way).
@@ -1298,6 +1298,21 @@ else
     echo "e2e-run.sh: FATAL -- yarn db:start failed; see $RUN_DIR/db-start.log" >&2
     exit 3
   fi
+fi
+
+# The link-request completion witness is a test instrument that no migration creates, so it is installed into the database after every start and reset, before any spec runs. The file is idempotent and ends by telling PostgREST to reload its schema, so the two functions are served at once. The host may have no psql; the stack's database container always does.
+WITNESS_FIXTURE="$REPO_ROOT/apps/supabase/supabase/tests/fixtures/invitation-link-witness.psql"
+SUPABASE_CONFIG_PROJECT_ID="$(grep -E '^project_id *= *' "$REPO_ROOT/apps/supabase/supabase/config.toml" | head -1 | sed -E 's/^project_id *= *"([^"]*)".*/\1/')"
+DB_CONTAINER="supabase_db_${SUPABASE_CONFIG_PROJECT_ID}"
+echo "e2e-run.sh: installing the link-request witness ..."
+if command -v psql > /dev/null 2>&1; then
+  witness_installed() { psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -v ON_ERROR_STOP=1 -f "$WITNESS_FIXTURE"; }
+else
+  witness_installed() { docker exec -i "$DB_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < "$WITNESS_FIXTURE"; }
+fi
+if ! witness_installed > "$RUN_DIR/witness.log" 2>&1; then
+  echo "e2e-run.sh: FATAL -- installing the link-request witness failed; see $RUN_DIR/witness.log" >&2
+  exit 3
 fi
 
 # --- 5. readiness poll (NOT a status check) -------------------------------------------

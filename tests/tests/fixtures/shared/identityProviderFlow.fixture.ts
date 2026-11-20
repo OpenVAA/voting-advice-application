@@ -14,7 +14,7 @@
  *   - `expectNoAccountFor`: no account exists for a minted identity.
  *   - `entitiesOf`: the candidates and organizations a minted identity's account edits in the project.
  *   - `grantSecondCandidate`: give a minted identity's account a candidate of its own, as an administrator does.
- *   - `placeholderAddressOf`: the address the application stores for an identity until the user proves one of their own.
+ *   - `placeholderEmailOf`: the address the application stores for an identity until the user proves one of their own.
  *   - `freshAddress`: an address nobody holds, under the prefix the identity-provider specs type.
  *   - `expectOwnEntityHome`: the page is the home of the candidate or the organization the application made for a minted identity.
  *   - `organizationOf`: what the organization the application made for a minted identity holds: whether it is confirmed, its name and its abbreviation.
@@ -365,7 +365,7 @@ export function createIdentityProviderFlow() {
      * @param sub - A minted `sub`.
      * @returns The placeholder address of that identity.
      */
-    placeholderAddressOf(sub: string): string {
+    placeholderEmailOf(sub: string): string {
       return `${sub}@${PLACEHOLDER_EMAIL_DOMAIN}`;
     },
 

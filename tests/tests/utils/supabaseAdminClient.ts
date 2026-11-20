@@ -161,26 +161,6 @@ function resolveFieldName(field: string): string {
   return FIELD_MAP[field] ?? field;
 }
 
-/**
- * The ids of the entities of a type that an account registered in a project through the identity provider, as the `registered_entities` record of its `app_metadata` names them: `{ "<project id>": { "<entity type>": "<entity id>" } }`. Anything else in the metadata reads as no id.
- *
- * @param appMetadata - The account's `app_metadata`.
- * @param projectId - The project.
- * @param entityType - The entity type.
- */
-function registeredEntityIds(
-  appMetadata: Record<string, unknown> | undefined,
-  projectId: string,
-  entityType: 'candidate' | 'organization'
-): Array<string> {
-  const record = appMetadata?.registered_entities;
-  if (typeof record !== 'object' || record === null) return [];
-  const inProject = (record as Record<string, unknown>)[projectId];
-  if (typeof inProject !== 'object' || inProject === null) return [];
-  const id = (inProject as Record<string, unknown>)[entityType];
-  return typeof id === 'string' && id !== '' ? [id] : [];
-}
-
 export class SupabaseAdminClient extends DevSeedAdminClient {
   /**
    * Same signature as the base constructor; the only difference is the project it falls back to.
@@ -293,9 +273,9 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
   }
 
   /**
-   * Remove, in this client's project, every candidate and organization that carries no external id and that a user whose address begins with a prefix either edits or registered, with the grants naming it.
+   * Remove, in this client's project, every candidate and organization that carries no external id and that a user whose address begins with a prefix edits, with the grants naming it.
    *
-   * The `identity-callback` Edge Function creates an identity's own entity with no external id, so no dataset's prefix teardown reaches it. The entity is found through the user's editor grants and through the record of registered entities in the user's `app_metadata`, which still names it after an administrator removed the grant. Call this before {@link removeUsersByEmailPrefix}: both go with the user. A row with an external id belongs to a dataset and is left to that dataset's teardown.
+   * The `identity-callback` Edge Function creates an identity's own entity with no external id, so no dataset's prefix teardown reaches it. The entity is found through the user's editor grants and through the database's record of registrations, which the test-only `test_identity_registrations` lists for the service role, so an entity whose grant a test removed is found too. That function exists only where the test setup installed `apps/supabase/supabase/tests/fixtures/invitation-link-witness.psql`. Call this before {@link removeUsersByEmailPrefix}: both go with the user. A row with an external id belongs to a dataset and is left to that dataset's teardown.
    *
    * @param prefix - The beginning of the addresses whose entities go. At least eight characters, as for {@link removeUsersByEmailPrefix}.
    * @returns How many entities were removed.
@@ -318,16 +298,20 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
         .eq('role', 'editor')
         .in('target_type', ['candidate', 'organization']);
       if (grantError) throw new Error(`removeOwnEntitiesOfUsersByEmailPrefix: ${grantError.message}`);
+      const { data: registrations, error: registrationError } = await this.client.rpc('test_identity_registrations', {
+        p_user_ids: [user.id]
+      });
+      if (registrationError) throw new Error(`removeOwnEntitiesOfUsersByEmailPrefix: ${registrationError.message}`);
+      const owned: Array<{ type: string; id: string }> = [
+        ...(grants ?? []).map((grant) => ({ type: String(grant.target_type), id: String(grant.target_id) })),
+        ...((registrations ?? []) as Array<{ entity_type: string; entity_id: string }>).map((registration) => ({
+          type: registration.entity_type,
+          id: registration.entity_id
+        }))
+      ];
       for (const table of ['candidates', 'organizations'] as const) {
         const targetType = table === 'candidates' ? 'candidate' : 'organization';
-        const ids = [
-          ...new Set([
-            ...(grants ?? [])
-              .filter((grant) => grant.target_type === targetType)
-              .map((grant) => String(grant.target_id)),
-            ...registeredEntityIds(user.app_metadata, this.projectId, targetType)
-          ])
-        ];
+        const ids = [...new Set(owned.filter((entity) => entity.type === targetType).map((entity) => entity.id))];
         if (ids.length === 0) continue;
         const { data: rows, error: readError } = await this.client
           .from(table)
@@ -434,7 +418,7 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * @throws Error naming the database error's code.
    */
   async releaseConfirmationSlot(email: string): Promise<void> {
-    const { error } = await this.client.rpc('address_confirmation_release', { p_email: email });
+    const { error } = await this.client.rpc('email_confirmation_release', { p_email: email });
     if (error) throw new Error(`releaseConfirmationSlot failed with database error ${error.code}`);
   }
 
@@ -505,6 +489,8 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
    * Open a completion witness for one link request.
    *
    * A link request is answered before its work is done, and the background work of two requests does not finish in the order the requests were made. A test therefore cannot conclude that no mail was sent from the answer, from elapsed time, or from a later request's mail. It opens a witness here, sends the id with the request, and waits with {@link awaitLinkWitness} for the end of THAT request's work before it looks at the mail catcher or at the accounts.
+   *
+   * The witness exists only in a database the test setup installed it in: `tests/scripts/e2e-run.sh` applies `apps/supabase/supabase/tests/fixtures/invitation-link-witness.psql` after the stack is up.
    *
    * @returns The id of a new open witness record.
    * @throws Error naming the database error's code, or if no id is returned.

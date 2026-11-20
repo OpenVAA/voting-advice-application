@@ -19,7 +19,7 @@ const PREFIX = 'e2e-bankauth-idp-';
 teardown('remove the identity-provider dataset, and the entities and users the specs made', async () => {
   const client = new SupabaseAdminClient();
   await runTeardownAsserted(PREFIX, client);
-  // The entities go first: each is found through its user's editor grant, which goes with the user.
+  // The entities go first: each is found through its user's editor grant or registration, which go with the user.
   await client.removeOwnEntitiesOfUsersByEmailPrefix(MINTED_SUB_PREFIX);
   await client.removeOwnEntitiesOfUsersByEmailPrefix(IDENTITY_PROVIDER_ADDRESS_PREFIX);
   await client.removeUsersByEmailPrefix(MINTED_SUB_PREFIX);

@@ -19,8 +19,8 @@ import {
   completeAnswers,
   groupTitleNaming,
   organizationEditingPagesOf,
-  setAnswersLocked,
   setCandidateState,
+  setContestantEditing,
   setOrganizationState,
   test
 } from '../../fixtures/contestant/perm-organization-editing';
@@ -708,7 +708,7 @@ const ANSWERS_LOCKED_SCAN: ContestantAxeRoute = {
       image: null,
       color: null
     });
-    await setAnswersLocked(true);
+    await setContestantEditing('locked');
     await contestantProfilePage.open();
     await contestantProfilePage.expectIdentity({ entityType: 'organization', nameState: 'locked-answers' });
     await contestantProfilePage.expectNameNote(false);
@@ -869,7 +869,7 @@ test.describe('perm-organization-editing: the accessibility scans', () => {
     // The lock is the one settings row of the suite's project: it is taken off again whether or not the scan passed.
     test.describe(() => {
       test.afterEach(async () => {
-        await setAnswersLocked(false);
+        await setContestantEditing('open');
       });
 
       declareScans(ANSWERS_LOCKED_SCAN);
