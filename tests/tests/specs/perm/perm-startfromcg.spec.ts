@@ -4,7 +4,7 @@
  *
  * Runtime-set mechanism: the template OMITS elections.startFromConstituencyGroup; this spec's beforeAll resolves the CG-2 UUID via SupabaseAdminClient + client.updateAppSettings.
  *
- * The contestant side: after the voter tests, one describe runs under the stored session of the editor of one seeded candidate and takes its `test` and its state steps from `fixtures/contestant/perm-startfromcg.ts`. It names the same group in the setting for its own tests and puts back what the setting held, and it begins by deleting that candidate's nominations with the service role, so that the nomination editor is open to the candidate: nothing writes the seeded nomination again, and nothing after this file reads the dataset. Its test bodies hold fixture steps alone. A test that changes an election's type puts the seeded type back in a `finally`, and the step after such a change is a full page load. When its tests have run, any nomination the application wrote for the candidate is removed, because a later setup deletes this dataset's rows by prefix before this dataset's own teardown runs.
+ * The contestant side: after the voter tests, one describe runs under the stored session of the editor of one seeded candidate and takes its `test` and its state steps from `fixtures/contestant/perm-startfromcg.ts`. It names the same group in the setting for its own tests and puts back what the setting held, and it begins by deleting that candidate's nominations with the service role, so that the nomination editor is open to the candidate: nothing writes the seeded nomination again, and nothing after this file reads the dataset. Its test bodies hold fixture steps alone. A test that changes an election's nomination shape puts the seeded shape back in a `finally`, and the step after such a change is a full page load. When its tests have run, any nomination the application wrote for the candidate is removed, because a later setup deletes this dataset's rows by prefix before this dataset's own teardown runs.
  *
  * Rigidity contract: every assertion is HARD.
  */
@@ -15,7 +15,7 @@ import {
   clearWrittenNominations,
   removeCandidateNominations,
   restoreConstituencyGroupFirst,
-  setElectionType,
+  setNominationShape,
   test as contestantTest
 } from '../../fixtures/contestant/perm-startfromcg';
 import {
@@ -28,7 +28,7 @@ import {
   ORPHAN_CONSTITUENCY_NAME,
   PARENT_CONSTITUENCY_NAME,
   REGIONS_ELECTION_NAME,
-  SEEDED_ELECTION_TYPES
+  SEEDED_NOMINATION_SHAPES
 } from '../../utils/permStartFromCgData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
@@ -187,7 +187,7 @@ contestantTest.describe('perm-startfromcg: the nomination editor of a candidate 
     async ({ contestantNominationEditor }) => {
       try {
         // The one election held in the municipality that lies in no region admits parties alone. The step after the change is a full page load.
-        await setElectionType(MUNICIPALITIES_ELECTION_EXTERNAL_ID, 'organization_only');
+        await setNominationShape(MUNICIPALITIES_ELECTION_EXTERNAL_ID, 'organization_only');
         await contestantNominationEditor.open(CANDIDATE_GRANT);
         await contestantNominationEditor.expectStep('constituencies');
         await contestantNominationEditor.expectGroupPicker(FIRST_GROUP_NAME);
@@ -212,9 +212,9 @@ contestantTest.describe('perm-startfromcg: the nomination editor of a candidate 
           }
         ]);
       } finally {
-        await setElectionType(
+        await setNominationShape(
           MUNICIPALITIES_ELECTION_EXTERNAL_ID,
-          SEEDED_ELECTION_TYPES[MUNICIPALITIES_ELECTION_EXTERNAL_ID]
+          SEEDED_NOMINATION_SHAPES[MUNICIPALITIES_ELECTION_EXTERNAL_ID]
         );
       }
     }

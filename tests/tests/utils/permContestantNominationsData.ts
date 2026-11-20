@@ -6,7 +6,7 @@ import type { EntityGrantTarget } from './supabaseAdminClient';
 /**
  * The contestant-nominations dataset as the suite names it: the rows of the `perm-contestant-nominations` template a test addresses, what they are seeded with, and the four users that edit its entities.
  *
- * The dataset is seeded by `data-setup-perm-contestant-nominations` and removed by `data-teardown-perm-contestant-nominations`. It holds three elections of three types, a candidate and a party with no nomination row, a candidate and a party with nominations, and parties and alliances a nomination can name as its parent. Each of the four editors has accepted the terms of use and edits one entity alone, so signing in lands on the entity's home. No entity is seeded with an answer.
+ * The dataset is seeded by `data-setup-perm-contestant-nominations` and removed by `data-teardown-perm-contestant-nominations`. It holds three elections of three nomination shapes, a candidate and a party with no nomination row, a candidate and a party with nominations, and parties and alliances a nomination can name as its parent. Each of the four editors has accepted the terms of use and edits one entity alone, so signing in lands on the entity's home. No entity is seeded with an answer.
  *
  * A test writes the state it reads through a state step. A nomination such a step writes carries an external id under the dataset's prefix; a nomination the application writes carries none, and a state step removes it.
  *
@@ -37,15 +37,15 @@ export interface NominationContestTarget {
   constituencyExternalId: string;
 }
 
-/** The type of an election, as the database names it. */
-export type ElectionTypeName =
+/** The nomination shape of an election, as the database names it. */
+export type NominationShapeName =
   'candidate_only' | 'organization_list' | 'organization_list_and_independents' | 'organization_only';
 
 /** The election round of every nomination of the dataset. */
 export const NOMINATION_ELECTION_ROUND = 1;
 
 // ---------------------------------------------------------------------------
-// The three elections, each of its own type.
+// The three elections, each of its own nomination shape.
 // ---------------------------------------------------------------------------
 
 /** `external_id` of the closed-list election, in which a candidate stands under a party. It is held over the two regions. */
@@ -75,8 +75,8 @@ export const CANDIDATE_ONLY_ELECTION_NAME = Object.freeze({
   fi: '[EL-CAND] Presidentinvaalit'
 });
 
-/** The type each election is seeded with, by the election's `external_id`. */
-export const SEEDED_ELECTION_TYPES: Readonly<Record<string, ElectionTypeName>> = Object.freeze({
+/** The nomination shape each election is seeded with, by the election's `external_id`. */
+export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, NominationShapeName>> = Object.freeze({
   [LIST_ELECTION_EXTERNAL_ID]: 'organization_list',
   [OPEN_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents',
   [CANDIDATE_ONLY_ELECTION_EXTERNAL_ID]: 'candidate_only'
