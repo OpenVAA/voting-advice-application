@@ -144,3 +144,19 @@ E2E was not run, by instruction: the orchestrator runs the full suite.
 _Fixed: 2026-11-19T21:31:11Z_
 _Fixer: Claude (gsd-code-fixer)_
 _Iteration: 1_
+
+## Deployed to staging
+
+Approved by the operator (attempt `20261119T215151Z.d67f6f8ef`, key `188-fix-deploy`); the staging environment review was approved in the web UI.
+
+| Item | Value |
+|---|---|
+| Deploy commit | `8a6c023958c42442dcf4ad7668633971bf1980a2` (source tree of `0b947a34b`, parent `a7003b490`) |
+| Push | `deploy/staging` `a7003b490..8a6c02395` |
+| Run | deploy.yml `44681047626`, conclusion success (checks: 436 infra unit tests passed) |
+| Image digest | `sha256:878f98f5fbe3131f0f428d8746d6ac15adc706544ff333d551b468cede6f0db3` |
+| Migrations | `push_pending=00024`; drift check: manifest and database history both 00001–00024 |
+| Functions | account-access, identity-callback, send-email served; account-access `verify_jwt=false` as expected |
+| Terraform | Plan: 1 to add, 1 to change, 1 to destroy (task definition replaced for the digest); task definition `:22` → `:23`; rollout stable |
+| Deployed smoke | 2 passed |
+| Served build after smoke | `8a6c023958c42442dcf4ad7668633971bf1980a2` |
