@@ -91,8 +91,10 @@ const context = {
   get appSettings() {
     return {
       contestantApp: {
-        entityTypes: ['candidate', 'organization'],
-        registrationModes: { candidate: settings.candidate, organization: settings.organization }
+        servedEntityTypes: {
+          candidate: { registrationModes: settings.candidate },
+          organization: { registrationModes: settings.organization }
+        }
       },
       access: { answersLocked: settings.answersLocked }
     };

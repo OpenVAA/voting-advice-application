@@ -109,7 +109,7 @@ describe('contestant/(protected)/+layout.server.ts load dependency tracking', ()
         getUserEntities: async () => [CANDIDATE]
       });
       createDataProvider.mockReturnValue({
-        getAppSettings: async () => ({ contestantApp: { entityTypes: ['candidate'] } })
+        getAppSettings: async () => ({ contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } })
       });
       const { event, eventReads, paramReads, trackedReads } = recordingEvent(`http://localhost${path}`, routeParams);
 

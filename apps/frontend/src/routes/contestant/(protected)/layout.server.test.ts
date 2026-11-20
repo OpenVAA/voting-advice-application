@@ -206,7 +206,11 @@ const ORGANIZATION: UserEntity = { type: 'organization', id: 'organization-1', n
 
 /** Settings of a project that serves the given entity types. */
 function settingsServing(entityTypes: Array<UserEntity['type']>) {
-  return { contestantApp: { entityTypes } };
+  return {
+    contestantApp: {
+      servedEntityTypes: Object.fromEntries(entityTypes.map((entityType) => [entityType, { registrationModes: [] }]))
+    }
+  };
 }
 
 /** The redirect the load throws, or `undefined` when it resolves. */

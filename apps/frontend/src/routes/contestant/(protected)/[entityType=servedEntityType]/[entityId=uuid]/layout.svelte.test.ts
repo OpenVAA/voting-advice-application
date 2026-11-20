@@ -21,7 +21,10 @@ const context = {
   logout: async () => undefined,
   setDataRoot,
   userData: { init, leaveEntity, savedEntityData: undefined },
-  appSettings: { admin: { email: 'support@example.org' }, contestantApp: { entityTypes: ['candidate'] } },
+  appSettings: {
+    admin: { email: 'support@example.org' },
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+  },
   answersLocked: false,
   tasks: [],
   unansweredRequiredInfoQuestions: [],

@@ -25,7 +25,7 @@ import { COOKIE } from '$lib/cookies';
 import { buildRoute } from '$lib/routes';
 import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
 import { constants } from '$lib/server/constants';
-import type { ContestantAppConfigInput } from '@openvaa/app-shared';
+import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 import type { OidcError } from '$contestant/utils/oidcError';
 
@@ -173,9 +173,9 @@ async function register({
   const serverSecret = constants.IDENTITY_CALLBACK_SERVER_SECRET;
   if (!serverSecret) return failed(OIDC_ERROR.configurationError);
 
-  let settings: ContestantAppConfigInput;
+  let settings: ContestantAppSettingsInput;
   try {
-    settings = (await dataProvider.getAppSettings()) as ContestantAppConfigInput;
+    settings = (await dataProvider.getAppSettings()) as ContestantAppSettingsInput;
   } catch {
     return failed(OIDC_ERROR.registrationFailed);
   }

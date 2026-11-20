@@ -31,13 +31,13 @@ const fakeFetch = vi.fn() as unknown as typeof fetch;
 const CRAFTED = '"><script>alert(1)</script>';
 
 const PROVIDER_LISTED = {
-  contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: ['identity_provider', 'email'] } }
+  contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['identity_provider', 'email'] } } }
 };
 const PROVIDER_NOT_LISTED = {
-  contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: ['email', 'code'] } }
+  contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['email', 'code'] } } }
 };
 const NOTHING_LISTED = {
-  contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: [] } }
+  contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
 };
 const PROVIDER_LOCKED = { ...PROVIDER_LISTED, access: { answersLocked: true } };
 

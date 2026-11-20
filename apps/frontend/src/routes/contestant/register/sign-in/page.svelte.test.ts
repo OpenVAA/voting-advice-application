@@ -83,7 +83,7 @@ const context = {
   sendEntryLink,
   clearEntryFlow,
   get appSettings() {
-    return { contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: modes.candidate } } };
+    return { contestantApp: { servedEntityTypes: { candidate: { registrationModes: modes.candidate } } } };
   },
   get entryFlow() {
     return heldFlow;

@@ -16,8 +16,8 @@ Lists the ways the project lets a visitor register, and leads each where it must
 
 ## Settings
 
-- `contestantApp.registrationModes`, `contestantApp.entityTypes` and `access.answersLocked`: Together they decide which modes are listed, and which entity types the identity provider's panel registers.
-- `contestantApp.entityTypes`: The entity types the project serves also decide the app's name above the heading.
+- `contestantApp.servedEntityTypes` and `access.answersLocked`: Together they decide which modes are listed, and which entity types the identity provider's panel registers.
+- `contestantApp.servedEntityTypes`: The entity types the project serves also decide the app's name above the heading.
 
 -->
 

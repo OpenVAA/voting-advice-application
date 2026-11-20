@@ -30,7 +30,7 @@ const context = {
   t: (key: string) => key,
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
   sendEntryLink,
-  appSettings: { contestantApp: { entityTypes: ['candidate'] } },
+  appSettings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } },
   get entryFlow() {
     return heldFlow;
   }

@@ -20,7 +20,7 @@ import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import { identityProviderEntityType } from '$lib/contestant/utils/registrationOffer';
 import { COOKIE } from '$lib/cookies';
 import { ROUTE } from '$lib/routes';
-import type { ContestantAppConfigInput } from '@openvaa/app-shared';
+import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { RequestEvent } from '@sveltejs/kit';
 
 /** The attributes of every cookie the flow leaves behind. `lax` lets them return with the provider's top-level redirect. */
@@ -38,9 +38,9 @@ export async function POST({ cookies, fetch, locals, request, url }: RequestEven
     const named = body && typeof body === 'object' ? (body as Record<string, unknown>).entityType : undefined;
 
     const dataProvider = createDataProvider({ fetch, client: createSupabaseAnonClient({ fetch }) });
-    let settings: ContestantAppConfigInput;
+    let settings: ContestantAppSettingsInput;
     try {
-      settings = (await dataProvider.getAppSettings()) as ContestantAppConfigInput;
+      settings = (await dataProvider.getAppSettings()) as ContestantAppSettingsInput;
     } catch (e) {
       log.error(
         `[oidc/authorize] Error reading app settings: ${(e as Error | undefined)?.message ?? 'No error message'}`,

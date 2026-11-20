@@ -14,8 +14,7 @@ Signs in a user who entered a registration code that somebody has claimed, with 
 
 ## Settings
 
-- `contestantApp.entityTypes`: The entity types the project serves, which decide the app's name above the heading.
-- `contestantApp.registrationModes`: Whether the link for a user who has not set a password is rendered.
+- `contestantApp.servedEntityTypes`: The entity types the project serves and the registration modes of each, which decide the app's name above the heading and whether the link for a user who has not set a password is rendered.
 
 -->
 

@@ -7,7 +7,7 @@ Shows a FAQ and the support block, whose button opens an email to the support ad
 ### Settings
 
 - `admin.email`: The address the support block writes to.
-- `contestantApp.entityTypes`: The entity types the project serves, which decide the app's name in the ingress.
+- `contestantApp.servedEntityTypes`: The entity types the project serves, which decide the app's name in the ingress.
 -->
 
 <script lang="ts">

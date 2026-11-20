@@ -87,7 +87,7 @@ vi.mock('$lib/utils/leaveFor', () => ({ leaveFor }));
 vi.mock('$lib/paraglide/runtime', async (importOriginal) => ({ ...(await importOriginal<object>()), localizeHref }));
 
 type FakeSettings = {
-  contestantApp: { entityTypes: Array<string>; registrationModes: Record<string, Array<RegistrationMode>> };
+  contestantApp: { servedEntityTypes: Record<string, { registrationModes: Array<RegistrationMode> }> };
   access?: { answersLocked: boolean };
 };
 
@@ -190,15 +190,17 @@ const ALL_MODES: Array<RegistrationMode> = ['identity_provider', 'email', 'code'
 
 /** Settings of a project that serves candidates and allows them the given modes. */
 function settingsFor(modes: Array<RegistrationMode>): FakeSettings {
-  return { contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: modes, organization: [] } } };
+  return { contestantApp: { servedEntityTypes: { candidate: { registrationModes: modes } } } };
 }
 
 /** Settings of a project that serves both entity types: the candidates' row holds the given modes, and the organizations' row the identity provider's mode alone. */
 function settingsForBothTypes(candidateModes: Array<RegistrationMode>): FakeSettings {
   return {
     contestantApp: {
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: candidateModes, organization: ['identity_provider'] }
+      servedEntityTypes: {
+        candidate: { registrationModes: candidateModes },
+        organization: { registrationModes: ['identity_provider'] }
+      }
     }
   };
 }
@@ -937,8 +939,10 @@ describe("the provider's types", () => {
   it('names the one type allowed, organizations, asks nothing and sends it', async () => {
     const target = renderWith({
       contestantApp: {
-        entityTypes: ['candidate', 'organization'],
-        registrationModes: { candidate: [], organization: ['identity_provider'] }
+        servedEntityTypes: {
+          candidate: { registrationModes: [] },
+          organization: { registrationModes: ['identity_provider'] }
+        }
       }
     });
     expect(one(target, FRAME).getAttribute('data-modes')).toBe('identity_provider');
