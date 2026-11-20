@@ -14,7 +14,7 @@ Lets a signed-in user set a new password, through the shared `PasswordResetScree
 
 ## Settings
 
-- `contestantApp.entityTypes`: The entity types the project serves, which decide the app's name above the heading.
+- `contestantApp.servedEntityTypes`: The entity types the project serves, which decide the app's name above the heading.
 
 -->
 

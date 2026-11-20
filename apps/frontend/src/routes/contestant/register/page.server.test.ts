@@ -28,7 +28,7 @@ const LOCALE = 'fi';
 function settingsFor(modes: Array<string>) {
   return {
     access: { answersLocked: false },
-    contestantApp: { entityTypes: ['candidate'], registrationModes: { candidate: modes, organization: [] } }
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: modes } } }
   };
 }
 

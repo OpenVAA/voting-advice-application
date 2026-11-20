@@ -49,8 +49,9 @@ const context = {
   get appSettings() {
     return {
       contestantApp: {
-        entityTypes: settings.entityTypes,
-        registrationModes: { candidate: settings.candidate, organization: settings.organization }
+        servedEntityTypes: Object.fromEntries(
+          settings.entityTypes.map((entityType) => [entityType, { registrationModes: settings[entityType] }])
+        )
       },
       access: { answersLocked: settings.answersLocked, voterApp: settings.voterApp }
     };
@@ -279,14 +280,6 @@ describe('the entries', () => {
     const target = render();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('true');
     expect(one(target, REGISTER).getAttribute('href')).toBe(REGISTER_ROUTE);
-  });
-
-  it('offers no Register for a mode of an entity type the project does not serve', () => {
-    settings.entityTypes = ['candidate'];
-    settings.candidate = [];
-    settings.organization = ['code'];
-    const target = render();
-    expect(target.querySelector(REGISTER)).toBeNull();
   });
 
   it('follows the registration modes when they change', () => {
