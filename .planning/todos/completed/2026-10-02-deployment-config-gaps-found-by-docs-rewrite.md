@@ -5,6 +5,8 @@ area: deployment
 severity: follow-up
 source: Phase 168 (docs-site rewrite), 168-04 findings F1, F2, F5, F6, filed by plan 168-08
 related_phase: 168
+completed: 2026-11-21
+status: completed
 files:
   - render.example.yaml
   - docker-compose.dev.yml
@@ -63,3 +65,15 @@ was re-checked at the 168-08 HEAD. Item 1 is the most likely to break a real dep
   exits 1.
 - A hosted project therefore needs the buckets created by hand, and no repository script does it. The Deployment page states the
   manual step. **Option:** a migration that inserts the two buckets idempotently, or a deploy script. Either is a code-phase item.
+
+## Closed (phase 189), 2026-11-21
+
+Closed by plan 189-18. Each item was re-measured on 2026-11-21: `render.example.yaml` and `apps/frontend/docker-compose.dev.yml` do not exist, and `git grep -n -E 'PUBLIC_(BROWSER|SERVER)_FRONTEND_URL' -- apps packages .env.example docker-compose.dev.yml` finds nothing.
+
+- **What was built.**
+  - **Item 1, `PUBLIC_PROJECT_ID` in the templates.** The Render template was removed rather than fixed, by the operator's 2026-11-20 ruling (F-01, plan 189-01; `.planning/workstreams/deployment/phases/189-documentation-and-closure/189-01-SUMMARY.md`). The other template, the root `docker-compose.dev.yml`, sets `PUBLIC_PROJECT_ID` (defaulting to the bootstrap project `00000000-0000-0000-0000-000000000001`), and the AWS task environment carries it. `CLAUDE.md` § Deployment was rewritten for the AWS frontend and Supabase Cloud in the same plan.
+  - **Item 2, the frontend-URL pair.** Removed: `PUBLIC_BROWSER_FRONTEND_URL` and `PUBLIC_SERVER_FRONTEND_URL` are no longer read by `constants.ts`, mocked by the auth tests, templated in `.env.example` or the root compose, or documented (plan 189-02; `.planning/workstreams/deployment/phases/189-documentation-and-closure/189-02-SUMMARY.md`). Its targeted E2E runs passed with no change against the last full run: `tests/e2e-runs/189-02-bank-auth-20261120T100056Z` (12), `189-02-contestant-identity-provider-20261120T100212Z` (42) and `189-02-voter-journey-20261120T102018Z` (2).
+  - **Item 3, the orphan compose file.** Retired: `apps/frontend/docker-compose.dev.yml` and the Dockerfile's `development` stage, which only it used, were deleted, and the production image still builds from the repository root (plan 189-03; `.planning/workstreams/deployment/phases/189-documentation-and-closure/189-03-SUMMARY.md`, `.planning/workstreams/deployment/phases/189-documentation-and-closure/evidence/189-03-orphan-compose.md`). The root compose is kept (F-03).
+  - **Item 4, the buckets.** Both buckets are created by the schema: `apps/supabase/supabase/schema/400-storage.sql` inserts `public-assets` and `private-assets` into `storage.buckets` with the values `config.toml` declares, so a hosted project gets them from the migration. The deployment guide's bucket step is gone (plan 189-11; `.planning/workstreams/deployment/phases/189-documentation-and-closure/189-11-SUMMARY.md`).
+- **What remains.** None.
+- **Moved.** None.
