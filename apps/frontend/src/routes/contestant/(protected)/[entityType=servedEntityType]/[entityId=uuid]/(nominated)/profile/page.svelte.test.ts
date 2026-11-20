@@ -28,7 +28,13 @@ type FakeQuestion = {
   type: 'text';
   required: boolean;
   customData: { locked?: boolean };
+  isAnswered: (answer?: { value?: unknown } | null) => boolean;
 };
+
+/** A fake question's `isAnswered`: any saved value answers it. */
+function answeredByAnyValue(answer?: { value?: unknown } | null): boolean {
+  return answer?.value != null && answer.value !== '';
+}
 
 /** Everything the page reads from the contestant context. */
 type Box = {
@@ -65,8 +71,7 @@ let box = $state.raw<Box>(EMPTY_BOX);
 
 const {
   setProperty,
-  setImage,
-  resetImage,
+  resetProperty,
   setAnswer,
   save,
   resetUnsaved,
@@ -80,8 +85,7 @@ const {
   getElection: vi.fn(),
   getConstituency: vi.fn(),
   setProperty: vi.fn(),
-  setImage: vi.fn(),
-  resetImage: vi.fn(),
+  resetProperty: vi.fn(),
   setAnswer: vi.fn(),
   save: vi.fn(),
   resetUnsaved: vi.fn(),
@@ -104,8 +108,7 @@ const context = {
       return box.hasUnsaved;
     },
     setProperty,
-    setImage,
-    resetImage,
+    resetProperty,
     setAnswer,
     save,
     resetUnsaved
@@ -294,6 +297,7 @@ const LOCKED_QUESTION: FakeQuestion = {
   name: 'Locked question',
   info: '',
   type: 'text',
+  isAnswered: answeredByAnyValue,
   required: false,
   customData: { locked: true }
 };
@@ -708,14 +712,14 @@ describe('profile page — removing the image', () => {
     remove.click();
     await settle();
 
-    expect(setImage).toHaveBeenCalledTimes(1);
-    expect(setImage).toHaveBeenCalledWith(null);
-    expect(resetImage).not.toHaveBeenCalled();
+    expect(setProperty).toHaveBeenCalledTimes(1);
+    expect(setProperty).toHaveBeenCalledWith('candidate', 'image', null);
+    expect(resetProperty).not.toHaveBeenCalled();
   });
 
   it('moves focus to the upload button once the image has gone with the Trash', async () => {
     const target = render({ selectedEntity: CANDIDATE, current: candidateWithImage() });
-    setImage.mockImplementation((image: null) => {
+    setProperty.mockImplementation((_type: string, _property: 'image', image: null) => {
       const current = box.current!;
       box = { ...box, current: { ...current, entity: { ...current.entity, image } } as ContestantUserData<true> };
     });
@@ -742,8 +746,8 @@ describe('profile page — removing the image', () => {
     remove.click();
     await settle();
 
-    expect(setImage).toHaveBeenCalledTimes(1);
-    expect(setImage).toHaveBeenCalledWith(null);
+    expect(setProperty).toHaveBeenCalledTimes(1);
+    expect(setProperty).toHaveBeenCalledWith('organization', 'image', null);
   });
 
   it('offers no Remove while the image field shows no image', () => {
@@ -768,7 +772,8 @@ describe('profile page — what an edit hands the store', () => {
     commit(fieldsOf(target, NAME)[0], 'Example Party');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    const [property, value] = setProperty.mock.calls[0];
+    const [type, property, value] = setProperty.mock.calls[0];
+    expect(type).toBe('organization');
     expect(property).toBe('name');
     expect(() => structuredClone(value)).not.toThrow();
     expect(value).toEqual({ fi: 'Esimerkkipuolue', en: 'Example Party' });
@@ -780,8 +785,9 @@ describe('profile page — what an edit hands the store', () => {
     commit(fieldsOf(target, SHORT_NAME)[0], 'EP');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    expect(setProperty.mock.calls[0][0]).toBe('shortName');
-    expect(setProperty.mock.calls[0][1]).toEqual({ en: 'EP' });
+    expect(setProperty.mock.calls[0][0]).toBe('organization');
+    expect(setProperty.mock.calls[0][1]).toBe('shortName');
+    expect(setProperty.mock.calls[0][2]).toEqual({ en: 'EP' });
   });
 
   it('stages nothing when the translations are expanded', () => {
@@ -800,7 +806,7 @@ describe('profile page — what an edit hands the store', () => {
     commit(inputOf(target, FIRST_NAME), 'Adah');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    expect(setProperty).toHaveBeenCalledWith('firstName', 'Adah');
+    expect(setProperty).toHaveBeenCalledWith('candidate', 'firstName', 'Adah');
   });
 
   it('stages a colour as an object holding the normal colour alone', () => {
@@ -809,8 +815,8 @@ describe('profile page — what an edit hands the store', () => {
     commit(inputOf(target, COLOR_HEX), '#2546A8');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    expect(setProperty).toHaveBeenCalledWith('color', { normal: '#2546a8' });
-    expect(Object.keys(setProperty.mock.calls[0][1])).toEqual(['normal']);
+    expect(setProperty).toHaveBeenCalledWith('organization', 'color', { normal: '#2546a8' });
+    expect(Object.keys(setProperty.mock.calls[0][2])).toEqual(['normal']);
   });
 
   it('stages null when the colour is emptied', () => {
@@ -822,7 +828,7 @@ describe('profile page — what an edit hands the store', () => {
     commit(inputOf(target, COLOR_HEX), '');
 
     expect(setProperty).toHaveBeenCalledTimes(1);
-    expect(setProperty).toHaveBeenCalledWith('color', null);
+    expect(setProperty).toHaveBeenCalledWith('organization', 'color', null);
   });
 });
 
@@ -1094,6 +1100,7 @@ describe('profile page — the label of the Save button and where a stored save 
     name: 'Required question',
     info: '',
     type: 'text',
+    isAnswered: answeredByAnyValue,
     required: true,
     customData: {}
   };
@@ -1104,6 +1111,7 @@ describe('profile page — the label of the Save button and where a stored save 
     name: 'Opinion question',
     info: '',
     type: 'text',
+    isAnswered: answeredByAnyValue,
     required: true,
     customData: {}
   };
@@ -1252,6 +1260,7 @@ describe('profile page — the note while answers are locked', () => {
     name: 'Required question',
     info: '',
     type: 'text',
+    isAnswered: answeredByAnyValue,
     required: true,
     customData: {}
   };

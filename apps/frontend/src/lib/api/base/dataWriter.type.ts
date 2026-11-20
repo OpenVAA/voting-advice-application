@@ -216,7 +216,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * Update editable properties of an entity owned by the user. The properties given are written and no others, so the call carries the properties that changed.
    * @param target.type - The type of the entity.
    * @param target.id - The id of the entity.
-   * @param properties - The properties to store. Which properties an entity has depends on its type, see {@link EditableEntityProps}.
+   * @param properties - The properties to store, of the entity's own type: {@link CandidateEditableProps} or {@link OrganizationEditableProps}.
    * @param locale - The locale the written names are translated to in the result, as `getEntityUserData` translates them.
    * @returns A `Promise` resolving to an {@link UpdateEntityPropertiesResult}, or a `Response` containing one: the properties as stored, or the name-refused result when the backend refuses a changed name because the entity has been confirmed, in which case nothing of the call was stored.
    * @throws An error if no property is given, if `properties.image` is neither `null` nor carries a file, if a property does not belong to the entity's type, if a value does not have the form its property is stored in, or if the write fails for any reason other than a refused name.
@@ -617,34 +617,49 @@ export type ContestantUserData<TNominations extends boolean | undefined = undefi
 };
 
 /**
- * The properties a write stored, in the form `getEntityUserData` gives them on the entity. A member is present only when its property was among those written.
+ * The properties a write of a candidate stored, in the form `getEntityUserData` gives them on the entity. A member is present only when its property was among those written.
  */
-export type SavedEntityProps = {
+export type SavedCandidateProps = {
   /**
-   * The stored image, or `null` when the entity has none.
+   * The stored portrait, or `null` when the candidate has none.
    */
   image?: Image | null;
   /**
-   * An organization's name, translated to one locale. Empty when no locale holds a name.
-   */
-  name?: string;
-  /**
-   * An organization's short name, translated to one locale, or `null` when it has none.
-   */
-  shortName?: string | null;
-  /**
-   * An organization's colour, or `null` when it has none.
-   */
-  color?: Colors | null;
-  /**
-   * A candidate's first name.
+   * The first name.
    */
   firstName?: string;
   /**
-   * A candidate's last name.
+   * The last name.
    */
   lastName?: string;
 };
+
+/**
+ * The properties a write of an organization stored, in the form `getEntityUserData` gives them on the entity. A member is present only when its property was among those written.
+ */
+export type SavedOrganizationProps = {
+  /**
+   * The stored logo, or `null` when the organization has none.
+   */
+  image?: Image | null;
+  /**
+   * The name, translated to one locale. Empty when no locale holds a name.
+   */
+  name?: string;
+  /**
+   * The short name, translated to one locale, or `null` when it has none.
+   */
+  shortName?: string | null;
+  /**
+   * The colour, or `null` when it has none.
+   */
+  color?: Colors | null;
+};
+
+/**
+ * The properties a write stored, of the one served type the written entity is.
+ */
+export type SavedEntityProps = SavedCandidateProps | SavedOrganizationProps;
 
 /**
  * What `updateEntityProperties` resolves to, discriminated by `type`.
@@ -682,13 +697,18 @@ export type AdminJobRecord = {
 
 export type SetAnswersOptions = WithTargetEntity & WithAnswerData;
 
-export type SetPropertiesOptions = WithTargetEntity &
-  WithEditableEntityProps & {
-    /**
-     * The locale the written names are translated to in the result. Defaults to the adapter's default locale, as in `getEntityUserData`.
-     */
-    locale?: string;
-  };
+/**
+ * What a write of an entity's properties carries: the entity, and the properties of its own type that changed.
+ */
+export type SetPropertiesOptions = (
+  | (WithTargetEntity<'candidate'> & { properties: CandidateEditableProps })
+  | (WithTargetEntity<'organization'> & { properties: OrganizationEditableProps })
+) & {
+  /**
+   * The locale the written names are translated to in the result. Defaults to the adapter's default locale, as in `getEntityUserData`.
+   */
+  locale?: string;
+};
 
 /**
  * What a write of an entity's nominations carries: the entity, every nomination it is to have, and the nominations the list was computed from. A stored nomination the list leaves out is removed, so an empty list removes them all.
@@ -762,12 +782,12 @@ export type WithTargetId = {
   id: Id;
 };
 
-export type WithTargetEntity = {
+export type WithTargetEntity<TType extends ServedEntityType = ServedEntityType> = {
   target: {
     /**
      * The type of the target entity.
      */
-    type: EntityType;
+    type: TType;
     /**
      * The id of the target entity.
      */
@@ -787,38 +807,59 @@ export type EditableEntityColor = {
 };
 
 /**
- * The properties of an entity that its editor may write, beside its answers. Which of them an entity has depends on its type: `image` belongs to both served types, `name`, `shortName` and `color` to an organization, and `firstName` and `lastName` to a candidate. A write carries the properties that changed and no others.
+ * The image an entity's editor may write: a candidate's portrait or an organization's logo.
  */
-export type EditableEntityProps = {
+type EditableImageProps = {
   /**
-   * The entity's image, a candidate's portrait or an organization's logo, with the file to upload, or `null` to remove the stored image. The database deletes the stored file once the entity no longer names it.
+   * The image with the file to upload, or `null` to remove the stored image. The database deletes the stored file once the entity no longer names it.
    */
   image?: ImageWithFile | null;
+};
+
+/**
+ * The properties of a candidate that its editor may write, beside its answers. A write carries the properties that changed and no others.
+ */
+export type CandidateEditableProps = EditableImageProps & {
   /**
-   * An organization's name by locale. Entries are trimmed and blank ones are not stored; a name with no entry left, or `null`, is stored as no name.
-   */
-  name?: LocalizedString | null;
-  /**
-   * An organization's short name by locale, normalised as `name` is, or `null` to clear it.
-   */
-  shortName?: LocalizedString | null;
-  /**
-   * An organization's colour, or `null` to clear it. A stored colour is replaced whole.
-   */
-  color?: EditableEntityColor | null;
-  /**
-   * A candidate's first name. Surrounding whitespace is not stored.
+   * The first name. Surrounding whitespace is not stored.
    */
   firstName?: string;
   /**
-   * A candidate's last name. Surrounding whitespace is not stored.
+   * The last name. Surrounding whitespace is not stored.
    */
   lastName?: string;
 };
 
-export type WithEditableEntityProps = {
-  properties: EditableEntityProps;
+/**
+ * The properties of an organization that its editor may write, beside its answers. A write carries the properties that changed and no others.
+ */
+export type OrganizationEditableProps = EditableImageProps & {
+  /**
+   * The name by locale. Entries are trimmed and blank ones are not stored; a name with no entry left, or `null`, is stored as no name.
+   */
+  name?: LocalizedString | null;
+  /**
+   * The short name by locale, normalised as `name` is, or `null` to clear it.
+   */
+  shortName?: LocalizedString | null;
+  /**
+   * The colour, or `null` to clear it. A stored colour is replaced whole.
+   */
+  color?: EditableEntityColor | null;
 };
+
+/**
+ * The editable properties of an entity of the given served type.
+ */
+export type EditablePropsOf<TType extends ServedEntityType> = {
+  candidate: CandidateEditableProps;
+  organization: OrganizationEditableProps;
+}[TType];
+
+/**
+ * The name of a property the editor of an entity of either served type may write.
+ */
+export type EditableEntityProperty = keyof CandidateEditableProps | keyof OrganizationEditableProps;
 
 export type UserSettings = {
   language?: string;

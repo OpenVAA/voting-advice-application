@@ -556,7 +556,8 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
 
         await expect(
           writer().updateEntityProperties({
-            target: { type: target().type, id: target().id },
+            // reason: the target's type is known only as either served type, and the image is a property of both.
+            target: { type: target().type as never, id: target().id },
             // reason: the public option type names a stored image, and the file-carrying shape under test is the one the profile form produces.
             properties: { image: { file } as never }
           })

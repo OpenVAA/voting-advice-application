@@ -49,11 +49,13 @@ import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   AddressConfirmationResult,
   BasicUserData,
+  CandidateEditableProps,
   ContestantUserData,
   DesiredNomination,
   DWReturnType,
   EditableEntityColor,
-  EditableEntityProps,
+  EditableEntityProperty,
+  EditablePropsOf,
   EntityNomination,
   GetEntityUserDataOptions,
   GetNominationParentOptionsOptions,
@@ -64,10 +66,12 @@ import type {
   LocalizedEntityNames,
   NominationParentChoice,
   NominationParentOption,
+  OrganizationEditableProps,
   RequestAddressConfirmationOptions,
   RequestPasswordRecoveryOptions,
   RequestSignInLinkOptions,
-  SavedEntityProps,
+  SavedCandidateProps,
+  SavedOrganizationProps,
   SetAnswersOptions,
   SetAnswersResult,
   SetEntityNominationsOptions,
@@ -117,7 +121,7 @@ type EntityTable = (typeof ENTITY_TABLES)[ServedEntityType];
 /**
  * The properties an entity's editor may write through `updateEntityProperties`, for each entity type the application serves, each with the column it is stored in.
  *
- * It is the application's side of the column grant. The database grants every signed-in caller one column list for each entity table, and that list admits columns no editor writes from the application: `subtype`, `info`, `custom_data`, `answers` and `confirmed`. This map is the narrower list: a property that is not in the target type's entry is refused by name before any request is made, so nothing a caller hands the writer can reach those columns.
+ * Each type's entry names every editable property of that type, as {@link EditablePropsOf} states them, and no other. It is also the application's side of the column grant. The database grants every signed-in caller one column list for each entity table, and that list admits columns no editor writes from the application: `subtype`, `info`, `custom_data`, `answers` and `confirmed`. This map is the narrower list: a property that is not in the target type's entry is refused by name before any request is made, so nothing a caller hands the writer past the option types can reach those columns.
  *
  * A column whose name differs from its property is read from the shared property-to-column map. `image`, `name` and `color` are stored under their own names, which that map does not hold.
  */
@@ -133,7 +137,17 @@ const ENTITY_PROPERTY_COLUMNS = {
     shortName: PROPERTY_MAP.shortName,
     color: 'color'
   }
-} as const satisfies Record<ServedEntityType, Partial<Record<keyof EditableEntityProps, string>>>;
+} as const satisfies { [TType in ServedEntityType]: Record<keyof EditablePropsOf<TType>, string> };
+
+/**
+ * The editable properties of either served type, read by name once {@link writableColumnsOf} has checked them against the target type.
+ */
+type AnyEditableProps = CandidateEditableProps & OrganizationEditableProps;
+
+/**
+ * The stored properties of either served type, collected by name as they are read back.
+ */
+type AnySavedProps = SavedCandidateProps & SavedOrganizationProps;
 
 /**
  * The served entity types whose name and short name are localized columns, read with the entity as names by locale. A candidate's name is its first and last name, which are not localized. Whether an editor may write the names is the separate fact of {@link ENTITY_PROPERTY_COLUMNS}.
@@ -187,9 +201,9 @@ function entityTableOf(type: EntityType): EntityTable {
  */
 function writableColumnsOf(
   type: ServedEntityType,
-  properties: EditableEntityProps
-): Map<keyof EditableEntityProps, string> {
-  const writable: Partial<Record<keyof EditableEntityProps, string>> = ENTITY_PROPERTY_COLUMNS[type];
+  properties: SetPropertiesOptions['properties']
+): Map<EditableEntityProperty, string> {
+  const writable: Partial<Record<EditableEntityProperty, string>> = ENTITY_PROPERTY_COLUMNS[type];
   const given = Object.entries(properties)
     .filter(([, value]) => value !== undefined)
     .map(([property]) => property);
@@ -198,9 +212,9 @@ function writableColumnsOf(
       throw new Error(
         `updateEntityProperties: the property '${property}' cannot be written for an entity of type '${type}'`
       );
-  const columns = new Map<keyof EditableEntityProps, string>();
+  const columns = new Map<EditableEntityProperty, string>();
   for (const [property, column] of Object.entries(writable))
-    if (given.includes(property)) columns.set(property as keyof EditableEntityProps, column);
+    if (given.includes(property)) columns.set(property as EditableEntityProperty, column);
   return columns;
 }
 
@@ -885,13 +899,14 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
 
   protected async _updateEntityProperties({
     target: { type, id },
-    properties,
+    properties: given,
     locale
   }: SetPropertiesOptions): DWReturnType<UpdateEntityPropertiesResult> {
     const served = servedEntityType(type);
     const table = ENTITY_TABLES[served];
     // Every given property is checked against the target type's list, and every value is brought to its stored form, before anything is sent: a refused call uploads nothing.
-    const columns = writableColumnsOf(served, properties);
+    const columns = writableColumnsOf(served, given);
+    const properties: AnyEditableProps = given;
     const updateFields: Record<string, unknown> = {};
     for (const [property, column] of columns) {
       switch (property) {
@@ -936,7 +951,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     }
 
     const effectiveLocale = locale ?? this.defaultLocale;
-    const saved: SavedEntityProps = {};
+    const saved: AnySavedProps = {};
     const localizedNames: Partial<LocalizedEntityNames> = {};
     for (const [property, column] of columns) {
       const stored = data[column];

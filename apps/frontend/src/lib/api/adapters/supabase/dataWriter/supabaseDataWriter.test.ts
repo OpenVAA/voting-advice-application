@@ -1932,14 +1932,16 @@ describe('SupabaseDataWriter', () => {
       expect(JSON.stringify(reported)).not.toContain('A plain string');
     });
 
+    // reason: a target type outside the public option types is the state under test.
+    const FACTION = { type: 'faction' as never, id: 'f-1' };
     it.each([
-      ['updateAnswers', () => writer.updateAnswers({ target: { type: 'faction', id: 'f-1' }, answers: {} })],
-      ['overwriteAnswers', () => writer.overwriteAnswers({ target: { type: 'faction', id: 'f-1' }, answers: {} })],
+      ['updateAnswers', () => writer.updateAnswers({ target: FACTION, answers: {} })],
+      ['overwriteAnswers', () => writer.overwriteAnswers({ target: FACTION, answers: {} })],
       [
         'updateEntityProperties',
         () =>
           writer.updateEntityProperties({
-            target: { type: 'faction', id: 'f-1' },
+            target: FACTION,
             // reason: the public option type names a stored image, and the file-carrying shape under test is the one the profile form produces.
             properties: { image: { file: imageFile() } as never }
           })
@@ -2706,7 +2708,7 @@ describe('SupabaseDataWriter', () => {
 
       await expect(
         // reason: a property outside the public option type is the state under test.
-        writer.updateEntityProperties({ target, properties: properties as never })
+        writer.updateEntityProperties({ target, properties } as never)
       ).rejects.toThrow(message);
       expect(uploadMock).not.toHaveBeenCalled();
       expect(mockSupabase.rpc).not.toHaveBeenCalled();
@@ -2717,14 +2719,14 @@ describe('SupabaseDataWriter', () => {
       const uploadMock = mockUpload();
 
       await expect(
+        // reason: a candidate's colour is outside the public option type, and is the state under test.
         writer.updateEntityProperties({
           target: CANDIDATE,
           properties: {
             color: { normal: '#2546a8' },
-            // reason: the public option type names a stored image, and the file-carrying shape under test is the one the profile form produces.
-            image: { file: new File(['x'], 'p.png', { type: 'image/png' }) } as never
+            image: { file: new File(['x'], 'p.png', { type: 'image/png' }) }
           }
-        })
+        } as never)
       ).rejects.toThrow(/color.*candidate/);
       expect(uploadMock).not.toHaveBeenCalled();
       expect(tablesReached(mockSupabase)).toEqual([]);
@@ -3197,7 +3199,12 @@ describe('SupabaseDataWriter', () => {
 
     it('refuses an entity type the application does not serve before any request', async () => {
       await expect(
-        writer.setEntityNominations({ readFrom: [], target: { type: 'faction', id: 'fac-1' }, nominations: [] })
+        // reason: a target type outside the public option type is the state under test.
+        writer.setEntityNominations({
+          readFrom: [],
+          target: { type: 'faction' as never, id: 'fac-1' },
+          nominations: []
+        })
       ).rejects.toThrow(/Unsupported entity type: faction/);
       expect(mockSupabase.rpc).not.toHaveBeenCalled();
     });

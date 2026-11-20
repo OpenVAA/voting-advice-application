@@ -5,13 +5,15 @@ import { UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
 import { contestantUserDataState, EDITED_ANSWERS_KEY_STEM, editedAnswersKey } from './contestantUserDataState.svelte';
 import { localStorageState } from '../utils/persistedState.svelte';
 import type {
+  CandidateEditableProps,
   ContestantUserData,
-  EditableEntityProps,
   LocalizedAnswers,
   LocalizedCandidateData,
   LocalizedEntityNames,
   LocalizedOrganizationData,
-  SavedEntityProps,
+  OrganizationEditableProps,
+  SavedCandidateProps,
+  SavedOrganizationProps,
   SetAnswersResult,
   UpdateEntityPropertiesResult
 } from '$lib/api/base/dataWriter.type';
@@ -88,7 +90,7 @@ function deferred<TValue>() {
 }
 
 /**
- * Build an edited image carrying a file, the shape the profile form hands to `setImage`.
+ * Build an edited image carrying a file, the shape the profile form stages as the `image` property.
  */
 function makeImage(): ImageWithFile {
   return { file: new File(['x'], 'p.png', { type: 'image/png' }) } as ImageWithFile;
@@ -104,10 +106,15 @@ function makeImage(): ImageWithFile {
 type FakeTarget = { target: { type: string; id?: string } };
 
 /**
+ * The editable properties of either served type, as the fake writer reads them by name.
+ */
+type AnyEditableProps = CandidateEditableProps & OrganizationEditableProps;
+
+/**
  * What the real property writer resolves to for a write the backend stores: each given property in the form an entity read gives it, and each given name as stored by locale. A name is translated as the real writer translates it: to the locale asked for, else the default one, else the first one stored.
  */
-function savedResultOf(properties: EditableEntityProps, locale = 'en'): UpdateEntityPropertiesResult {
-  const saved: SavedEntityProps = {};
+function savedResultOf(properties: AnyEditableProps, locale = 'en'): UpdateEntityPropertiesResult {
+  const saved: SavedCandidateProps & SavedOrganizationProps = {};
   const localizedNames: Partial<LocalizedEntityNames> = {};
   if (properties.image !== undefined) saved.image = properties.image;
   if (properties.name !== undefined) {
@@ -133,7 +140,7 @@ function makeFakeWriter() {
       properties,
       locale
     }: FakeTarget & {
-      properties: EditableEntityProps;
+      properties: AnyEditableProps;
       locale?: string;
     }): Promise<UpdateEntityPropertiesResult> =>
       // Mirror the real `_updateEntityProperties`: returns ONLY what was written, with no `id` / static fields.
@@ -222,7 +229,7 @@ describe('contestantUserDataState.save()', () => {
     const { store, updateAnswers, updateEntityProperties } = setup(makeUserData());
     const image = makeImage();
 
-    store.setImage(image);
+    store.setProperty('candidate', 'image', image);
     flushSync();
     await store.save();
     flushSync();
@@ -244,7 +251,7 @@ describe('contestantUserDataState.save()', () => {
 
     // Step-13 analogue: an answers + image save in one go. The property branch's partial return ({ image }) must NOT wipe the candidate's id.
     store.setAnswer('q1', { value: 3 });
-    store.setImage(makeImage());
+    store.setProperty('candidate', 'image', makeImage());
     flushSync();
     await store.save();
     flushSync();
@@ -277,7 +284,7 @@ describe('contestantUserDataState.save()', () => {
       updateAnswers.mockResolvedValue(UNVERIFIED_ANSWERS);
 
       store.setAnswer('q1', { value: 3 });
-      store.setImage(makeImage());
+      store.setProperty('candidate', 'image', makeImage());
       flushSync();
       const result = await store.save();
       flushSync();
@@ -310,7 +317,7 @@ describe('contestantUserDataState.save()', () => {
       const { store } = setup(makeUserData());
 
       store.setAnswer('q1', { value: 3 });
-      store.setImage(makeImage());
+      store.setProperty('candidate', 'image', makeImage());
       flushSync();
       const result = await store.save();
       flushSync();
@@ -328,7 +335,7 @@ describe('contestantUserDataState.save()', () => {
       // Even with the writer primed to report an unverified answers write, a properties-only save never calls it.
       updateAnswers.mockResolvedValue(UNVERIFIED_ANSWERS);
 
-      store.setImage(makeImage());
+      store.setProperty('candidate', 'image', makeImage());
       flushSync();
       const result = await store.save();
       flushSync();
@@ -376,7 +383,7 @@ describe('contestantUserDataState, an entity of either served type', () => {
     const { store, updateAnswers, updateEntityProperties } = setup(makeOrganizationUserData());
 
     store.setAnswer('q1', { value: 'text' });
-    store.setImage(makeImage());
+    store.setProperty('organization', 'image', makeImage());
     flushSync();
     const result = await store.save();
     flushSync();
@@ -587,7 +594,7 @@ describe('contestantUserDataState, a draft for each entity', () => {
     const { store } = setup();
 
     store.init(makeUserData(), USER_A);
-    store.setImage(makeImage());
+    store.setProperty('candidate', 'image', makeImage());
     flushSync();
     expect(store.unsavedProperties).toEqual(['image']);
 
@@ -607,7 +614,7 @@ describe('contestantUserDataState, a draft for each entity', () => {
 
     store.init(makeUserData(), USER_A);
     store.setAnswer('q1', { value: 3 });
-    store.setImage(image);
+    store.setProperty('candidate', 'image', image);
     flushSync();
 
     store.init(makeUserData({ firstName: 'Fresh' }), USER_A);
@@ -642,7 +649,7 @@ describe('contestantUserDataState, a draft for each entity', () => {
 
     store.init(makeUserData(), USER_A);
     store.setAnswer('q1', { value: 3 });
-    store.setImage(makeImage());
+    store.setProperty('candidate', 'image', makeImage());
     flushSync();
     const storedBefore = localStorage.getItem(KEY_A);
 
@@ -697,7 +704,7 @@ describe('contestantUserDataState, a draft for each entity', () => {
 
     store.init(makeUserData(), USER_A);
     store.setAnswer('q1', { value: 3 });
-    store.setImage(makeImage());
+    store.setProperty('candidate', 'image', makeImage());
     flushSync();
     expect(store.hasUnsaved).toBe(true);
 
@@ -756,7 +763,7 @@ describe('contestantUserDataState, a draft for each entity', () => {
     let locked = $state(false);
     const { store } = setup({ answersLocked: () => locked });
     store.init(makeUserData(), USER_A);
-    store.setImage(makeImage());
+    store.setProperty('candidate', 'image', makeImage());
     flushSync();
     expect(store.unsavedQuestionIds).toEqual([]);
     expect(store.unsavedProperties).toEqual(['image']);
@@ -821,13 +828,13 @@ describe('contestantUserDataState, a draft for each entity', () => {
 
     store.init(makeUserData(), USER_A);
     store.setAnswer('q1', { value: 3 });
-    store.setImage(makeImage());
+    store.setProperty('candidate', 'image', makeImage());
     flushSync();
     const pending = store.save();
 
     store.init(makeOrganizationUserData(), USER_A);
     store.setAnswer('q2', { value: 'for B' });
-    store.setImage(makeImage());
+    store.setProperty('organization', 'image', makeImage());
     flushSync();
     answersCall.resolve({ q1: { value: 3 } });
     const result = await pending;
@@ -935,7 +942,7 @@ describe('contestantUserDataState, staged properties', () => {
     expect(store.savedLocalizedNames).toBeUndefined();
 
     store.init(makeStyledOrganization(), USER_A);
-    store.setProperty('name', { en: 'New' });
+    store.setProperty('organization', 'name', { en: 'New' });
     flushSync();
     expect(store.current?.localizedNames?.name).toEqual({ en: 'New' });
     expect(store.savedLocalizedNames).toEqual({ name: { en: 'Org', fi: 'Järjestö' }, shortName: { en: 'ORG' } });
@@ -948,14 +955,27 @@ describe('contestantUserDataState, staged properties', () => {
   it('refuses a property before an entity is loaded', () => {
     const { store } = setup();
 
-    expect(() => store.setProperty('name', { en: 'New' })).toThrow('Cannot set a property before user data is loaded');
+    expect(() => store.setProperty('organization', 'name', { en: 'New' })).toThrow(
+      'Cannot set a property before user data is loaded'
+    );
+    expect(store.hasUnsaved).toBe(false);
+  });
+
+  it('refuses a property of a type other than the loaded entity’s, and stages nothing', () => {
+    const { store } = setup({ userData: makeUserData() });
+
+    expect(() => store.setProperty('organization', 'name', { en: 'New' })).toThrow(
+      "Cannot set a property of an entity of type 'organization' while one of type 'candidate' is loaded"
+    );
+    expect(() => store.setProperty('organization', 'image', makeImage())).toThrow(/of type 'candidate' is loaded/);
+    flushSync();
     expect(store.hasUnsaved).toBe(false);
   });
 
   it('a name that differs from the saved one is unsaved, and current shows it by locale', () => {
     const { store } = setup({ userData: makeOrganizationUserData() });
 
-    store.setProperty('name', { en: 'New', fi: 'Uusi' });
+    store.setProperty('organization', 'name', { en: 'New', fi: 'Uusi' });
     flushSync();
 
     expect(store.hasUnsaved).toBe(true);
@@ -972,11 +992,11 @@ describe('contestantUserDataState, staged properties', () => {
   ])('staging the saved name again %s leaves nothing unsaved', (_form, name) => {
     const { store } = setup({ userData: makeOrganizationUserData() });
 
-    store.setProperty('name', { en: 'New' });
+    store.setProperty('organization', 'name', { en: 'New' });
     flushSync();
     expect(store.hasUnsaved).toBe(true);
 
-    store.setProperty('name', name);
+    store.setProperty('organization', 'name', name);
     flushSync();
 
     expect(store.hasUnsaved).toBe(false);
@@ -987,7 +1007,7 @@ describe('contestantUserDataState, staged properties', () => {
   it('a staged name is stored trimmed and without its blank entries', () => {
     const { store } = setup({ userData: makeOrganizationUserData() });
 
-    store.setProperty('name', { en: '  New ', fi: '', sv: ' ' });
+    store.setProperty('organization', 'name', { en: '  New ', fi: '', sv: ' ' });
     flushSync();
 
     expect(store.current?.localizedNames?.name).toEqual({ en: 'New' });
@@ -996,7 +1016,7 @@ describe('contestantUserDataState, staged properties', () => {
   it('a name with no entry left is staged as no name', () => {
     const { store } = setup({ userData: makeOrganizationUserData() });
 
-    store.setProperty('name', { en: '', fi: ' ' });
+    store.setProperty('organization', 'name', { en: '', fi: ' ' });
     flushSync();
 
     expect(store.unsavedProperties).toEqual(['name']);
@@ -1006,18 +1026,18 @@ describe('contestantUserDataState, staged properties', () => {
   it('a short name is unsaved exactly while it differs from the saved one', () => {
     const { store } = setup({ userData: makeStyledOrganization() });
 
-    store.setProperty('shortName', { en: 'NEW' });
+    store.setProperty('organization', 'shortName', { en: 'NEW' });
     flushSync();
     expect(store.unsavedProperties).toEqual(['shortName']);
     expect(store.current?.localizedNames?.shortName).toEqual({ en: 'NEW' });
 
-    store.setProperty('shortName', { en: ' ORG', fi: '' });
+    store.setProperty('organization', 'shortName', { en: ' ORG', fi: '' });
     flushSync();
     expect(store.unsavedProperties).toEqual([]);
     expect(store.current?.localizedNames?.shortName).toEqual({ en: 'ORG' });
 
     // Clearing a stored short name is a change.
-    store.setProperty('shortName', null);
+    store.setProperty('organization', 'shortName', null);
     flushSync();
     expect(store.unsavedProperties).toEqual(['shortName']);
     expect(store.current?.localizedNames?.shortName).toBeNull();
@@ -1029,7 +1049,7 @@ describe('contestantUserDataState, staged properties', () => {
   ])('a short name of %s is not unsaved when none is stored', (_form, shortName) => {
     const { store } = setup({ userData: makeOrganizationUserData() });
 
-    store.setProperty('shortName', shortName);
+    store.setProperty('organization', 'shortName', shortName);
     flushSync();
 
     expect(store.hasUnsaved).toBe(false);
@@ -1039,23 +1059,23 @@ describe('contestantUserDataState, staged properties', () => {
     const { store } = setup({ userData: makeStyledOrganization() });
 
     // The stored pair in another letter case is the same colour: the pair stays as it is.
-    store.setProperty('color', { normal: '#2546a8' });
+    store.setProperty('organization', 'color', { normal: '#2546a8' });
     flushSync();
     expect(store.hasUnsaved).toBe(false);
     expect(store.current?.entity.color).toEqual({ normal: '#2546A8', dark: '#ffffff' });
 
-    store.setProperty('color', { normal: '#ff0000' });
+    store.setProperty('organization', 'color', { normal: '#ff0000' });
     flushSync();
     expect(store.unsavedProperties).toEqual(['color']);
     // The staged colour replaces the pair whole.
     expect(store.current?.entity.color).toEqual({ normal: '#ff0000' });
 
-    store.setProperty('color', null);
+    store.setProperty('organization', 'color', null);
     flushSync();
     expect(store.unsavedProperties).toEqual(['color']);
     expect(store.current?.entity.color).toBeNull();
 
-    store.setProperty('color', { normal: '#2546A8' });
+    store.setProperty('organization', 'color', { normal: '#2546A8' });
     flushSync();
     expect(store.hasUnsaved).toBe(false);
   });
@@ -1070,7 +1090,7 @@ describe('contestantUserDataState, staged properties', () => {
       userData: makeOrganizationUserData({ color: stored as unknown as LocalizedOrganizationData['color'] })
     });
 
-    expect(() => store.setProperty('color', { normal: '#ff0000' })).not.toThrow();
+    expect(() => store.setProperty('organization', 'color', { normal: '#ff0000' })).not.toThrow();
     flushSync();
 
     expect(store.unsavedProperties).toEqual(['color']);
@@ -1080,7 +1100,7 @@ describe('contestantUserDataState, staged properties', () => {
   it('a three-digit colour is the same colour as its six-digit form', () => {
     const { store } = setup({ userData: makeOrganizationUserData({ color: { normal: '#00aa00' } }) });
 
-    store.setProperty('color', { normal: '#0A0' });
+    store.setProperty('organization', 'color', { normal: '#0A0' });
     flushSync();
 
     expect(store.hasUnsaved).toBe(false);
@@ -1089,7 +1109,7 @@ describe('contestantUserDataState, staged properties', () => {
   it('clearing the colour is not unsaved when none is stored', () => {
     const { store } = setup({ userData: makeOrganizationUserData() });
 
-    store.setProperty('color', null);
+    store.setProperty('organization', 'color', null);
     flushSync();
 
     expect(store.hasUnsaved).toBe(false);
@@ -1098,16 +1118,16 @@ describe('contestantUserDataState, staged properties', () => {
   it("a candidate's first and last name are unsaved exactly while they differ from the saved ones", () => {
     const { store } = setup({ userData: makeUserData() });
 
-    store.setProperty('firstName', ' Ada ');
-    store.setProperty('lastName', 'Lovelace');
+    store.setProperty('candidate', 'firstName', ' Ada ');
+    store.setProperty('candidate', 'lastName', 'Lovelace');
     flushSync();
     expect([...store.unsavedProperties].sort()).toEqual(['firstName', 'lastName']);
     expect(store.current?.entity).toMatchObject({ firstName: 'Ada', lastName: 'Lovelace' });
     // A candidate has no names by locale.
     expect(store.current?.localizedNames).toBeUndefined();
 
-    store.setProperty('firstName', ' A');
-    store.setProperty('lastName', 'B ');
+    store.setProperty('candidate', 'firstName', ' A');
+    store.setProperty('candidate', 'lastName', 'B ');
     flushSync();
     expect(store.hasUnsaved).toBe(false);
     expect(store.current?.entity).toMatchObject({ firstName: 'A', lastName: 'B' });
@@ -1116,9 +1136,9 @@ describe('contestantUserDataState, staged properties', () => {
   it('resetProperty discards one staged property and leaves the others', () => {
     const { store } = setup({ userData: makeOrganizationUserData() });
 
-    store.setProperty('name', { en: 'New' });
-    store.setProperty('color', { normal: '#ff0000' });
-    store.setImage(makeImage());
+    store.setProperty('organization', 'name', { en: 'New' });
+    store.setProperty('organization', 'color', { normal: '#ff0000' });
+    store.setProperty('organization', 'image', makeImage());
     flushSync();
 
     store.resetProperty('name');
@@ -1126,19 +1146,19 @@ describe('contestantUserDataState, staged properties', () => {
     expect([...store.unsavedProperties].sort()).toEqual(['color', 'image']);
     expect(store.current?.localizedNames).toEqual(ORGANIZATION_NAMES);
 
-    store.resetImage();
+    store.resetProperty('image');
     flushSync();
     expect(store.unsavedProperties).toEqual(['color']);
   });
 
-  it('setImage(null) with no stored image stages nothing and discards an unsaved image', () => {
+  it('an image set to null with no stored image stages nothing and discards an unsaved image', () => {
     const { store } = setup({ userData: makeUserData() });
 
-    store.setImage(makeImage());
+    store.setProperty('candidate', 'image', makeImage());
     flushSync();
     expect(store.unsavedProperties).toEqual(['image']);
 
-    store.setImage(null);
+    store.setProperty('candidate', 'image', null);
     flushSync();
     expect(store.unsavedProperties).toEqual([]);
     expect(store.hasUnsaved).toBe(false);
@@ -1151,8 +1171,8 @@ describe('contestantUserDataState, staged properties', () => {
     // The control: the platform refuses to clone the proxies themselves.
     expect(() => structuredClone(name)).toThrow();
 
-    store.setProperty('name', name);
-    store.setProperty('color', color);
+    store.setProperty('organization', 'name', name);
+    store.setProperty('organization', 'color', color);
     flushSync();
 
     expect(() => structuredClone(store.current)).not.toThrow();
@@ -1172,10 +1192,10 @@ describe('contestantUserDataState, staged properties', () => {
     const { store } = setup({ userData: makeOrganizationUserData() });
 
     store.setAnswer('q1', { value: 3 });
-    store.setProperty('name', { en: 'A name that must not be stored' });
-    store.setProperty('shortName', { en: 'STAGED' });
-    store.setProperty('color', { normal: '#ff0000' });
-    store.setImage(makeImage());
+    store.setProperty('organization', 'name', { en: 'A name that must not be stored' });
+    store.setProperty('organization', 'shortName', { en: 'STAGED' });
+    store.setProperty('organization', 'color', { normal: '#ff0000' });
+    store.setProperty('organization', 'image', makeImage());
     flushSync();
     expect([...store.unsavedProperties].sort()).toEqual(['color', 'image', 'name', 'shortName']);
 
@@ -1198,10 +1218,10 @@ describe('contestantUserDataState, staged properties', () => {
    */
   function stageEverything(store: ContestantUserDataState): void {
     store.setAnswer('q1', { value: 3 });
-    store.setProperty('name', { en: 'New' });
-    store.setProperty('shortName', { en: 'NEW' });
-    store.setProperty('color', { normal: '#ff0000' });
-    store.setImage(makeImage());
+    store.setProperty('organization', 'name', { en: 'New' });
+    store.setProperty('organization', 'shortName', { en: 'NEW' });
+    store.setProperty('organization', 'color', { normal: '#ff0000' });
+    store.setProperty('organization', 'image', makeImage());
     flushSync();
     expect([...store.unsavedProperties].sort()).toEqual(['color', 'image', 'name', 'shortName']);
   }
@@ -1292,7 +1312,7 @@ describe('contestantUserDataState, staged properties', () => {
 
     it('with a staged name and nothing else, writes the name alone and stores it in both forms', async () => {
       const { store, updateAnswers, updateEntityProperties } = setup({ userData: makeOrganizationUserData() });
-      store.setProperty('name', { en: 'New', fi: 'Uusi' });
+      store.setProperty('organization', 'name', { en: 'New', fi: 'Uusi' });
       flushSync();
 
       const result = await store.save();
@@ -1328,9 +1348,9 @@ describe('contestantUserDataState, staged properties', () => {
     it('sends only the properties that are staged, so an unchanged name is never sent', async () => {
       const { store, updateEntityProperties } = setup({ userData: makeStyledOrganization() });
       // The name and the short name are handed in again as they are saved: neither is staged.
-      store.setProperty('name', { fi: 'Järjestö', en: 'Org ' });
-      store.setProperty('shortName', { en: 'ORG', sv: '' });
-      store.setProperty('color', { normal: '#ff0000' });
+      store.setProperty('organization', 'name', { fi: 'Järjestö', en: 'Org ' });
+      store.setProperty('organization', 'shortName', { en: 'ORG', sv: '' });
+      store.setProperty('organization', 'color', { normal: '#ff0000' });
       flushSync();
 
       const result = await store.save();
@@ -1360,9 +1380,9 @@ describe('contestantUserDataState, staged properties', () => {
 
     it("writes a candidate's first and last name in a call of their own, after its image", async () => {
       const { store, updateEntityProperties } = setup({ userData: makeUserData() });
-      store.setProperty('firstName', 'Ada');
-      store.setProperty('lastName', 'Lovelace');
-      store.setImage(makeImage());
+      store.setProperty('candidate', 'firstName', 'Ada');
+      store.setProperty('candidate', 'lastName', 'Lovelace');
+      store.setProperty('candidate', 'image', makeImage());
       flushSync();
 
       const result = await store.save();
@@ -1378,9 +1398,9 @@ describe('contestantUserDataState, staged properties', () => {
       const { store, updateAnswers, updateEntityProperties } = setup({ userData: makeOrganizationUserData() });
       const image = makeImage();
       store.setAnswer('q1', { value: 3 });
-      store.setProperty('name', { en: 'New' });
-      store.setProperty('color', { normal: '#ff0000' });
-      store.setImage(image);
+      store.setProperty('organization', 'name', { en: 'New' });
+      store.setProperty('organization', 'color', { normal: '#ff0000' });
+      store.setProperty('organization', 'image', image);
       flushSync();
       // The backend refuses the call that carries the name, and stores the other one.
       updateEntityProperties.mockImplementation(async ({ properties }) =>
@@ -1408,9 +1428,9 @@ describe('contestantUserDataState, staged properties', () => {
     it('a save whose name write fails after the logo and the colour were stored keeps only the name staged', async () => {
       const { store, updateEntityProperties } = setup({ userData: makeOrganizationUserData() });
       const image = makeImage();
-      store.setProperty('name', { en: 'New' });
-      store.setProperty('color', { normal: '#ff0000' });
-      store.setImage(image);
+      store.setProperty('organization', 'name', { en: 'New' });
+      store.setProperty('organization', 'color', { normal: '#ff0000' });
+      store.setProperty('organization', 'image', image);
       flushSync();
       // The call without the name is stored; the call with it fails for a reason other than a refused name.
       updateEntityProperties.mockImplementation(async ({ properties }) => {
@@ -1436,8 +1456,8 @@ describe('contestantUserDataState, staged properties', () => {
 
     it('a refused name saved alone reports the refusal and says no listed property was saved', async () => {
       const { store, updateEntityProperties } = setup({ userData: makeOrganizationUserData() });
-      store.setProperty('name', { en: 'New' });
-      store.setProperty('shortName', { en: 'NEW' });
+      store.setProperty('organization', 'name', { en: 'New' });
+      store.setProperty('organization', 'shortName', { en: 'NEW' });
       flushSync();
       updateEntityProperties.mockResolvedValue({ type: 'nameRefused' });
 
@@ -1452,8 +1472,8 @@ describe('contestantUserDataState, staged properties', () => {
     it("a candidate's refused names are discarded and its image kept", async () => {
       const { store, updateEntityProperties } = setup({ userData: makeUserData() });
       const image = makeImage();
-      store.setProperty('firstName', 'Ada');
-      store.setImage(image);
+      store.setProperty('candidate', 'firstName', 'Ada');
+      store.setProperty('candidate', 'image', image);
       flushSync();
       updateEntityProperties.mockImplementation(async ({ properties }) =>
         properties.firstName !== undefined ? { type: 'nameRefused' } : savedResultOf(properties)
@@ -1470,7 +1490,7 @@ describe('contestantUserDataState, staged properties', () => {
 
     it('rejects when a write that carries no name is refused for a name, and keeps everything staged', async () => {
       const { store, updateEntityProperties } = setup({ userData: makeOrganizationUserData() });
-      store.setProperty('color', { normal: '#ff0000' });
+      store.setProperty('organization', 'color', { normal: '#ff0000' });
       flushSync();
       updateEntityProperties.mockResolvedValue({ type: 'nameRefused' });
 
@@ -1529,12 +1549,12 @@ describe('contestantUserDataState, staged properties', () => {
       const { store, updateEntityProperties } = setup({ userData: makeOrganizationUserData() });
       const propertiesCall = deferred<UpdateEntityPropertiesResult>();
       updateEntityProperties.mockImplementationOnce(() => propertiesCall.promise);
-      store.setProperty('name', { en: 'New' });
+      store.setProperty('organization', 'name', { en: 'New' });
       flushSync();
       const pending = store.save();
 
       store.init(makeUserData(), USER_A);
-      store.setProperty('firstName', 'Ada');
+      store.setProperty('candidate', 'firstName', 'Ada');
       flushSync();
       propertiesCall.resolve(savedResultOf({ name: { en: 'New' } }));
       const result = await pending;

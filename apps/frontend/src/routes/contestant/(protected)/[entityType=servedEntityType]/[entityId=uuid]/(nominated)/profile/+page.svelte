@@ -39,7 +39,6 @@ Which fields a profile has, and every text that differs between the two entity t
   import type { LocalizedAnswer } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import type { EditableEntityProps } from '$lib/api/base/dataWriter.type';
   import type { IdentityFieldDescriptor } from '$lib/contestant/utils/entityDescriptor';
   import type { NameState } from '$lib/contestant/utils/nameRule';
 
@@ -227,34 +226,49 @@ Which fields a profile has, and every text that differs between the two entity t
    * Stage the removal of the image. The Trash goes with the image, so focus moves to the image field's upload button.
    */
   async function handleImageRemove(): Promise<void> {
-    userData.setImage(null);
+    stageImage(null);
     await tick();
     editableFields
       ?.querySelector<HTMLElement>('[data-testid="profile-image-upload"] [data-testid="input-image-upload"]')
       ?.focus();
   }
 
+  /**
+   * Stage an image of the loaded entity, of whichever type it is, or the removal of the stored one.
+   */
+  function stageImage(image: ImageWithFile | null): void {
+    const type = userData.current?.entity.type;
+    if (type) userData.setProperty(type, 'image', image);
+  }
+
   function handleImageInputChange(value: unknown): void {
     if (!value) {
-      userData.resetImage();
+      userData.resetProperty('image');
       return;
     }
     const image = value as ImageWithFile;
-    userData.setImage(image);
+    stageImage(image);
   }
 
   /**
-   * Hand an edited name field to the store, as a plain value: a multilingual `Input` emits the object it edits in place.
+   * Hand an edited name field to the store, as a plain value: a multilingual `Input` emits the object it edits in place. A field is staged only as a name of the loaded entity's own type: a candidate's first or last name as text, an organization's name or short name by locale.
    */
   function handleNameChange(property: IdentityFieldDescriptor['property'], value: unknown): void {
-    userData.setProperty(property, $state.snapshot(value) as Exclude<EditableEntityProps[typeof property], undefined>);
+    const type = userData.current?.entity.type;
+    const plain = $state.snapshot(value);
+    if (type === 'candidate' && (property === 'firstName' || property === 'lastName')) {
+      if (typeof plain === 'string') userData.setProperty(type, property, plain);
+    } else if (type === 'organization' && (property === 'name' || property === 'shortName')) {
+      if (plain === null || isLocalizedString(plain)) userData.setProperty(type, property, plain);
+    }
   }
 
   /**
-   * Hand an edited colour to the store: the one colour the user chose, or none.
+   * Hand an edited colour to the store: the one colour the user chose, or none. Only an organization has a colour.
    */
   function handleColorChange(value: unknown): void {
-    userData.setProperty('color', typeof value === 'string' ? { normal: value } : null);
+    if (userData.current?.entity.type !== 'organization') return;
+    userData.setProperty('organization', 'color', typeof value === 'string' ? { normal: value } : null);
   }
 
   function handleQuestionInputChange({ value, question }: { value: unknown; question: AnyQuestionVariant }): void {
