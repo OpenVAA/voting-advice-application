@@ -1,0 +1,14 @@
+{
+  "name": "@fixture/declared-imports",
+  "private": true,
+  "dependencies": {
+    "@openvaa/core": "workspace:^",
+    "declared-dep": "1.0.0"
+  },
+  "peerDependencies": {
+    "declared-peer": "1.0.0"
+  },
+  "devDependencies": {
+    "dev-only": "1.0.0"
+  }
+}
