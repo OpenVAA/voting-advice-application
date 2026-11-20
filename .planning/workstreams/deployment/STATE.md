@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189
 current_phase_name: Documentation and Closure
-current_plan: 10
+current_plan: 11
 status: executing
-stopped_at: Completed 189-10-PLAN.md
-last_updated: "2026-11-20T16:00:31.106Z"
+stopped_at: Completed 189-13-PLAN.md
+last_updated: "2026-11-20T16:09:42.294Z"
 last_activity: 2026-11-20
 last_activity_desc: Phase 189 execution started
-state_head: f326996dc176562c5c43917f1b1cb980ff3ce2e8
+state_head: f97c9174ce606a62e8a748044529afe281112a82
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 208
-  completed_plans: 197
+  completed_plans: 198
   percent: 80
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189 (Documentation and Closure) — EXECUTING
-Plan: 10 of 20
+Plan: 11 of 20
 Status: Ready to execute
 Last activity: 2026-11-20 — Phase 189 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 10
+**Current Plan:** 11
 
 From 184 on, the numeric order is the dependency order.
 
@@ -206,6 +206,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189 P08 | 21min | 2 tasks | 2 files |
 | Phase 189 P09 | 27min | 2 tasks | 2 files |
 | Phase 189 P10 | 20min | 3 tasks | 4 files |
+| Phase 189 P13 | 7min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -445,6 +446,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189]: 189-09: the env page states bank authentication is not wired on the AWS path (no identity-provider variable or IDENTITY_CALLBACK_SERVER_SECRET in the task environment or the function secrets)
 - [Phase 189]: 189-10: the analytics page describes the tree, where the pageview is sent whatever trackEvents and the consent choice are (gates.ts maySendPageview). Reading 1 of B7 had trackEvents off stopping it too, so that reading is not built
 - [Phase 189]: 189-10: the deployer's checklist states each item as the deployer's own determination with the repository's default and where it is changed. The feedback limit's address retention with no expiry is a pending todo
+- [Phase 189]: 189-13: the operations page links the capacity to the AWS runbook's 2026-11-19 Observations row and the load-check README, not to .planning evidence
+- [Phase 189]: 189-13: election day and Admin jobs both forbid a deploy inside their window (a push to deploy/staging applies the root; a rollout runs two tasks briefly)
 
 ### Pending Todos
 
@@ -511,6 +514,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-20T16:00:30.061Z
-**Stopped At:** Completed 189-10-PLAN.md
+Last session: 2026-11-20T16:09:41.271Z
+**Stopped At:** Completed 189-13-PLAN.md
 **Resume File:** None
