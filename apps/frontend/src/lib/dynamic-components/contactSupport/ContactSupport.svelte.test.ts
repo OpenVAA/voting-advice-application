@@ -31,7 +31,10 @@ vi.mock('$lib/contexts/app', () => {
           name in params ? String(params[name]) : match
         ),
       getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-      appSettings: { admin: { email: SUPPORT_EMAIL }, contestantApp: { entityTypes: ['candidate'] } }
+      appSettings: {
+        admin: { email: SUPPORT_EMAIL },
+        contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+      }
     })
   };
 });

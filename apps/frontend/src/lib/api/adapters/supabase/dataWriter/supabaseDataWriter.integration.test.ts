@@ -1035,7 +1035,7 @@ describe.skipIf(!hasSupabase)(
 
       ({ electionId: closedListElectionId, constituencyId: closedListConstituencyId } = await insertContest(
         'closed list',
-        { election_type: 'organization_list' }
+        { nomination_shape: 'organization_list' }
       ));
       ({ electionId: openElectionId, constituencyId: openConstituencyId } = await insertContest('open list'));
 

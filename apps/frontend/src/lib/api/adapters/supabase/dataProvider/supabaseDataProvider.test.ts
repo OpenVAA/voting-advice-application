@@ -248,21 +248,21 @@ describe('SupabaseDataProvider', () => {
   });
 
   describe('getAppSettings', () => {
-    // What `contestant_app_public_config` answers for a project that declares none of its five values, has no settings row or does not exist.
+    // What `contestant_app_public_settings` answers for a project that declares none of its four values, has no settings row or does not exist.
     const NOTHING_DECLARED = {
       access: { contestantApp: null, answersLocked: null },
       analytics: { trackEvents: null },
-      contestantApp: { entityTypes: null, registrationModes: null }
+      contestantApp: { servedEntityTypes: null }
     };
 
     /**
      * Mock a project that is closed for voters and whose settings row the caller cannot read.
-     * @param publicConfig - What `contestant_app_public_config` answers.
+     * @param publicSettings - What `contestant_app_public_settings` answers.
      */
-    function mockClosedProject(publicConfig: unknown): void {
+    function mockClosedProject(publicSettings: unknown): void {
       mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
       mockSupabase._mockRpcResponses['project_open_for_voters'] = { data: false, error: null };
-      mockSupabase._mockRpcResponses['contestant_app_public_config'] = { data: publicConfig, error: null };
+      mockSupabase._mockRpcResponses['contestant_app_public_settings'] = { data: publicSettings, error: null };
     }
 
     /**
@@ -375,14 +375,14 @@ describe('SupabaseDataProvider', () => {
     });
 
     describe('a closed project the caller can read no settings row of', () => {
-      it('asks the public configuration function for its own project', async () => {
+      it('asks the public settings function for its own project', async () => {
         mockClosedProject(NOTHING_DECLARED);
 
         await provider.getAppSettings();
 
         expect(mockSupabase.rpc).toHaveBeenCalledTimes(2);
-        expect(rpcNamesCalled()).toEqual(['project_open_for_voters', 'contestant_app_public_config']);
-        expect(mockSupabase.rpc).toHaveBeenCalledWith('contestant_app_public_config', {
+        expect(rpcNamesCalled()).toEqual(['project_open_for_voters', 'contestant_app_public_settings']);
+        expect(mockSupabase.rpc).toHaveBeenCalledWith('contestant_app_public_settings', {
           p_project_id: '00000000-0000-0000-0000-000000000001'
         });
       });
@@ -399,8 +399,7 @@ describe('SupabaseDataProvider', () => {
         });
         // The shipped values themselves, so a change to the defaults cannot make the comparison above pass on something else.
         expect(result.access?.contestantApp).toBe(true);
-        expect(result.contestantApp?.entityTypes).toEqual(['candidate']);
-        expect(result.contestantApp?.registrationModes).toEqual({ candidate: [], organization: [] });
+        expect(result.contestantApp?.servedEntityTypes).toEqual({ candidate: { registrationModes: [] } });
         expect(result.contestantApp?.questions).toEqual({ hideHero: false, hideVideo: false });
         // A null member is dropped before the parse, so an undeclared project reports nothing.
         expect(records).toHaveLength(0);
@@ -466,48 +465,43 @@ describe('SupabaseDataProvider', () => {
         expect(JSON.stringify(records[0])).not.toContain('yes');
       });
 
-      it('honours the stored gate and returns the stored lists deduplicated, in canonical order, over the shipped rows', async () => {
+      it('honours the stored gate and returns the stored modes deduplicated and in canonical order', async () => {
         mockClosedProject({
           access: { contestantApp: false },
           contestantApp: {
-            entityTypes: ['organization', 'candidate', 'candidate'],
-            registrationModes: { candidate: ['code', 'email', 'code'] }
+            servedEntityTypes: {
+              organization: { registrationModes: [] },
+              candidate: { registrationModes: ['code', 'email', 'code'] }
+            }
           }
         });
 
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
-        expect(result.contestantApp?.entityTypes).toEqual(['candidate', 'organization']);
-        expect(result.contestantApp?.registrationModes).toEqual({ candidate: ['email', 'code'], organization: [] });
+        expect(result.contestantApp?.servedEntityTypes).toEqual({
+          candidate: { registrationModes: ['email', 'code'] },
+          organization: { registrationModes: [] }
+        });
         expect(result.contestantApp?.questions).toEqual(dynamicSettings.contestantApp.questions);
         expect(records).toHaveLength(0);
       });
 
-      it('keeps the shipped entity types when only the matrix is declared, and the shipped matrix when only the types are', async () => {
+      it('replaces the shipped served entity types as a whole, so that a stored organization alone does not keep the shipped candidate', async () => {
         mockClosedProject({
           access: { contestantApp: null },
-          contestantApp: { entityTypes: null, registrationModes: { organization: ['email'] } }
+          contestantApp: { servedEntityTypes: { organization: { registrationModes: ['email'] } } }
         });
-        const matrixOnly = await provider.getAppSettings();
 
-        expect(matrixOnly.contestantApp?.entityTypes).toEqual(['candidate']);
-        expect(matrixOnly.contestantApp?.registrationModes).toEqual({ candidate: [], organization: ['email'] });
+        const result = await provider.getAppSettings();
 
-        mockClosedProject({
-          access: { contestantApp: null },
-          contestantApp: { entityTypes: ['organization'], registrationModes: null }
-        });
-        const typesOnly = await provider.getAppSettings();
-
-        expect(typesOnly.contestantApp?.entityTypes).toEqual(['organization']);
-        expect(typesOnly.contestantApp?.registrationModes).toEqual({ candidate: [], organization: [] });
+        expect(result.contestantApp?.servedEntityTypes).toEqual({ organization: { registrationModes: ['email'] } });
       });
 
       it('places the stored answers lock at its storage path, beside the stored gate', async () => {
         mockClosedProject({
           access: { contestantApp: false, answersLocked: true },
-          contestantApp: { entityTypes: null, registrationModes: null }
+          contestantApp: { servedEntityTypes: null }
         });
 
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
@@ -524,7 +518,7 @@ describe('SupabaseDataProvider', () => {
       it('honours the stored answers lock where the gate is not declared, and a stored `false` as it is', async () => {
         mockClosedProject({
           access: { contestantApp: null, answersLocked: true },
-          contestantApp: { entityTypes: null, registrationModes: null }
+          contestantApp: { servedEntityTypes: null }
         });
         const locked = await provider.getAppSettings();
 
@@ -532,7 +526,7 @@ describe('SupabaseDataProvider', () => {
 
         mockClosedProject({
           access: { contestantApp: null, answersLocked: false },
-          contestantApp: { entityTypes: null, registrationModes: null }
+          contestantApp: { servedEntityTypes: null }
         });
         const unlocked = await provider.getAppSettings();
 
@@ -542,7 +536,7 @@ describe('SupabaseDataProvider', () => {
       it('leaves an answers lock that is null out, so that the shipped one stands', async () => {
         mockClosedProject({
           access: { contestantApp: false, answersLocked: null },
-          contestantApp: { entityTypes: null, registrationModes: null }
+          contestantApp: { servedEntityTypes: null }
         });
 
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
@@ -553,11 +547,11 @@ describe('SupabaseDataProvider', () => {
         expect(records).toHaveLength(0);
       });
 
-      it('copies nothing but the five values, whatever else the answer carries', async () => {
+      it('copies nothing but the four values, whatever else the answer carries', async () => {
         // The database function returns none of the other members. The provider does not rely on that.
         mockClosedProject({
           access: { contestantApp: false, voterApp: true, underMaintenance: true, answersLocked: true },
-          contestantApp: { entityTypes: null, registrationModes: null, questions: { hideHero: true } },
+          contestantApp: { servedEntityTypes: null, questions: { hideHero: true } },
           matching: { organizationMatching: 'impute' }
         });
 
@@ -575,10 +569,15 @@ describe('SupabaseDataProvider', () => {
         expect(records).toHaveLength(0);
       });
 
-      it('falls back to the shipped contestant app root on one bad list value, keeps the stored gate and reports the path once', async () => {
+      it('falls back to the shipped contestant app root on one bad registration mode, keeps the stored gate and reports the path once', async () => {
         mockClosedProject({
           access: { contestantApp: false },
-          contestantApp: { entityTypes: ['faction'], registrationModes: { candidate: ['email'] } }
+          contestantApp: {
+            servedEntityTypes: {
+              candidate: { registrationModes: ['email'] },
+              organization: { registrationModes: ['faction'] }
+            }
+          }
         });
 
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
@@ -590,7 +589,7 @@ describe('SupabaseDataProvider', () => {
         expect(records[0].attributes).toEqual({
           column: 'app_settings.settings',
           id: undefined,
-          issues: ['contestantApp.entityTypes.0'],
+          issues: ['contestantApp.servedEntityTypes.organization.registrationModes.0'],
           rejectedKeys: [],
           preserved: true
         });
@@ -599,30 +598,24 @@ describe('SupabaseDataProvider', () => {
       });
 
       // The function answers a stored value of a shape this parse refuses as the string "invalid", without its content. The parse must refuse that answer the same way, so the shipped root applies as it would for the stored value.
-      it.each([
-        ['the entity types', { entityTypes: 'invalid', registrationModes: { candidate: ['email'] } }],
-        ['the registration matrix', { entityTypes: ['candidate'], registrationModes: 'invalid' }]
-      ])(
-        'falls back to the shipped contestant app root when the function answers %s as "invalid"',
-        async (_, contestantApp) => {
-          mockClosedProject({ access: { contestantApp: false }, contestantApp });
+      it('falls back to the shipped contestant app root when the function answers the served entity types as "invalid"', async () => {
+        mockClosedProject({ access: { contestantApp: false }, contestantApp: { servedEntityTypes: 'invalid' } });
 
-          const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
+        const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-          expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);
-          expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
-          expect(records).toHaveLength(1);
-        }
-      );
+        expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);
+        expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
+        expect(records).toHaveLength(1);
+      });
 
-      it('throws a getAppSettings error when the public configuration RPC fails', async () => {
+      it('throws a getAppSettings error when the public settings RPC fails', async () => {
         mockClosedProject(null);
-        mockSupabase._mockRpcResponses['contestant_app_public_config'] = {
+        mockSupabase._mockRpcResponses['contestant_app_public_settings'] = {
           data: null,
-          error: { message: 'config-boom' }
+          error: { message: 'settings-boom' }
         };
 
-        await expect(provider.getAppSettings()).rejects.toThrow('getAppSettings: config-boom');
+        await expect(provider.getAppSettings()).rejects.toThrow('getAppSettings: settings-boom');
       });
 
       it.each([
@@ -630,11 +623,11 @@ describe('SupabaseDataProvider', () => {
         ['a list', [NOTHING_DECLARED]],
         ['a string', 'access'],
         ['a boolean', true]
-      ])('throws, naming the function, when the public configuration RPC answers %s', async (_label, answer) => {
+      ])('throws, naming the function, when the public settings RPC answers %s', async (_label, answer) => {
         mockClosedProject(answer);
 
         await expect(provider.getAppSettings()).rejects.toThrow(
-          'getAppSettings: contestant_app_public_config returned a non-object'
+          'getAppSettings: contestant_app_public_settings returned a non-object'
         );
       });
     });
@@ -686,12 +679,15 @@ describe('SupabaseDataProvider', () => {
       expect(records).toHaveLength(0);
     });
 
-    it('drops the stored contestant app root of a readable row on one bad list value, keeps the access member and reports the path once', async () => {
+    it('drops the stored contestant app root of a readable row on one bad registration mode, keeps the access member and reports the path once', async () => {
       mockSupabase._mockResponses['app_settings'] = {
         data: {
           settings: {
             access: { contestantApp: false },
-            contestantApp: { questions: { hideHero: true }, registrationModes: { candidate: ['sms'] } }
+            contestantApp: {
+              questions: { hideHero: true },
+              servedEntityTypes: { candidate: { registrationModes: ['sms'] } }
+            }
           }
         },
         error: null
@@ -699,11 +695,11 @@ describe('SupabaseDataProvider', () => {
 
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-      // No `contestantApp` root is returned, so the merge leaves the shipped one in place, the stored `questions` beside the bad list included.
+      // No `contestantApp` root is returned, so the merge leaves the shipped one in place, the stored `questions` beside the bad mode included.
       expect(result).toEqual({ access: { contestantApp: false } });
       expect(records).toHaveLength(1);
       expect(records[0].severityText).toBe('ERROR');
-      expect(records[0].attributes?.issues).toEqual(['contestantApp.registrationModes.candidate.0']);
+      expect(records[0].attributes?.issues).toEqual(['contestantApp.servedEntityTypes.candidate.registrationModes.0']);
       expect(JSON.stringify(records[0])).not.toContain('sms');
     });
 
@@ -989,7 +985,7 @@ describe('SupabaseDataProvider', () => {
             info: null,
             sort_order: 1,
             election_date: '2024-06-01',
-            election_type: 'organization_list',
+            nomination_shape: 'organization_list',
             current_round: 1,
             multiple_rounds: false,
             color: null,
@@ -1010,7 +1006,7 @@ describe('SupabaseDataProvider', () => {
       expect(result[0].name).toBe('Election 2024');
     });
 
-    // The row's two columns disagree on purpose: `subtype` holds the kind of election and `election_type` holds the nomination shape, and only a row where they differ can tell which column fed which property.
+    // The row's two columns disagree on purpose: `subtype` holds the kind of election and `nomination_shape` holds the nomination shape, and only a row where they differ can tell which column fed which property.
     it('maps election_date to date and current_round to round, and feeds subtype from its OWN column', async () => {
       mockSupabase._mockResponses['elections'] = {
         data: [
@@ -1021,7 +1017,7 @@ describe('SupabaseDataProvider', () => {
             info: null,
             sort_order: 1,
             election_date: '2024-06-01',
-            election_type: 'organization_list',
+            nomination_shape: 'organization_list',
             current_round: 2,
             multiple_rounds: true,
             color: null,
@@ -1053,7 +1049,7 @@ describe('SupabaseDataProvider', () => {
             info: null,
             sort_order: 1,
             election_date: null,
-            election_type: 'candidate_only',
+            nomination_shape: 'candidate_only',
             current_round: 1,
             multiple_rounds: false,
             color: null,
@@ -1073,8 +1069,8 @@ describe('SupabaseDataProvider', () => {
     });
 
     it.each(Constants.public.Enums.nomination_shape)(
-      'maps election_type %s to nominationShape, whatever subtype holds',
-      async (electionType) => {
+      'maps nomination_shape %s to nominationShape, whatever subtype holds',
+      async (shape) => {
         mockSupabase._mockResponses['elections'] = {
           data: [
             {
@@ -1084,7 +1080,7 @@ describe('SupabaseDataProvider', () => {
               info: null,
               sort_order: 1,
               election_date: null,
-              election_type: electionType,
+              nomination_shape: shape,
               current_round: 1,
               multiple_rounds: false,
               color: null,
@@ -1099,7 +1095,7 @@ describe('SupabaseDataProvider', () => {
 
         const result = await provider.getElectionData();
 
-        expect(result[0].nominationShape).toBe(electionType);
+        expect(result[0].nominationShape).toBe(shape);
         expect(result[0].subtype).toBe('municipal');
       }
     );
@@ -1118,7 +1114,7 @@ describe('SupabaseDataProvider', () => {
             info: null,
             sort_order: 1,
             election_date: null,
-            election_type: 'organization_list',
+            nomination_shape: 'organization_list',
             current_round: 1,
             multiple_rounds: false,
             color: null,
@@ -1146,7 +1142,7 @@ describe('SupabaseDataProvider', () => {
             info: null,
             sort_order: 1,
             election_date: null,
-            election_type: 'organization_list',
+            nomination_shape: 'organization_list',
             current_round: 1,
             multiple_rounds: false,
             color: null,
@@ -1176,7 +1172,7 @@ describe('SupabaseDataProvider', () => {
             info: { en: 'Info EN', fi: 'Info FI' },
             sort_order: 1,
             election_date: null,
-            election_type: 'organization_list',
+            nomination_shape: 'organization_list',
             current_round: 1,
             multiple_rounds: false,
             color: null,

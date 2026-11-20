@@ -92,11 +92,18 @@ describe('mergeAppSettings', () => {
     const result = mergeInitialAppSettings(
       staticSettings,
       dynamicSettings,
-      stored({ contestantApp: { entityTypes: ['candidate', 'organization'] } })
+      stored({
+        contestantApp: {
+          servedEntityTypes: { candidate: { registrationModes: [] }, organization: { registrationModes: [] } }
+        }
+      })
     );
 
     expect(result.contestantApp.questions).toEqual(dynamicSettings.contestantApp.questions);
-    expect(result.contestantApp.entityTypes).toEqual(['candidate', 'organization']);
+    expect(result.contestantApp.servedEntityTypes).toEqual({
+      candidate: { registrationModes: [] },
+      organization: { registrationModes: [] }
+    });
   });
 
   it('keeps the shipped siblings three levels down when one nested member is stored', () => {
@@ -108,8 +115,7 @@ describe('mergeAppSettings', () => {
 
     expect(result.contestantApp).toEqual({
       questions: { hideHero: true, hideVideo: dynamicSettings.contestantApp.questions.hideVideo },
-      entityTypes: dynamicSettings.contestantApp.entityTypes,
-      registrationModes: dynamicSettings.contestantApp.registrationModes
+      servedEntityTypes: dynamicSettings.contestantApp.servedEntityTypes
     });
   });
 
@@ -117,30 +123,61 @@ describe('mergeAppSettings', () => {
     const result = mergeInitialAppSettings(
       staticSettings,
       dynamicSettings,
+      stored({ results: { sections: ['organization'] } })
+    );
+
+    expect(dynamicSettings.results.sections).toEqual(['candidate', 'organization']);
+    expect(result.results.sections).toEqual(['organization']);
+  });
+
+  it('replaces the served entity types whole, so that no shipped type survives beside the stored ones', () => {
+    const result = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
+      stored({ contestantApp: { servedEntityTypes: { organization: { registrationModes: ['email'] } } } })
+    );
+
+    expect(dynamicSettings.contestantApp.servedEntityTypes).toEqual({ candidate: { registrationModes: [] } });
+    expect(result.contestantApp.servedEntityTypes).toEqual({ organization: { registrationModes: ['email'] } });
+    expect(result.contestantApp.questions).toEqual(dynamicSettings.contestantApp.questions);
+  });
+
+  it('replaces stored served entity types whole when another stored value is merged over them', () => {
+    const both = mergeInitialAppSettings(
+      staticSettings,
+      dynamicSettings,
       stored({
-        contestantApp: { entityTypes: ['organization'], registrationModes: { candidate: ['email', 'code'] } },
-        results: { sections: ['organization'] }
+        contestantApp: {
+          servedEntityTypes: { candidate: { registrationModes: ['code'] }, organization: { registrationModes: [] } }
+        }
       })
     );
 
-    expect(dynamicSettings.contestantApp.entityTypes).toEqual(['candidate']);
-    expect(result.contestantApp.entityTypes).toEqual(['organization']);
-    expect(dynamicSettings.results.sections).toEqual(['candidate', 'organization']);
-    expect(result.results.sections).toEqual(['organization']);
-    // The matrix is an object and merges by row; each row is a list and is replaced whole.
-    expect(result.contestantApp.registrationModes).toEqual({ candidate: ['email', 'code'], organization: [] });
+    const result = mergeAppSettings(
+      both,
+      stored({ contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['email'] } } } })
+    );
+
+    expect(result.contestantApp.servedEntityTypes).toEqual({ candidate: { registrationModes: ['email'] } });
   });
 
   it('replaces a stored list with a shorter one, down to empty', () => {
     const withModes = mergeInitialAppSettings(
       staticSettings,
       dynamicSettings,
-      stored({ contestantApp: { registrationModes: { candidate: ['identity_provider', 'email', 'code'] } } })
+      stored({
+        contestantApp: {
+          servedEntityTypes: { candidate: { registrationModes: ['identity_provider', 'email', 'code'] } }
+        }
+      })
     );
 
-    const result = mergeAppSettings(withModes, stored({ contestantApp: { registrationModes: { candidate: [] } } }));
+    const result = mergeAppSettings(
+      withModes,
+      stored({ contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } })
+    );
 
-    expect(result.contestantApp.registrationModes.candidate).toEqual([]);
+    expect(result.contestantApp.servedEntityTypes.candidate?.registrationModes).toEqual([]);
   });
 
   it('lets a stored object win over a shipped null, without throwing', () => {
@@ -160,7 +197,7 @@ describe('mergeAppSettings', () => {
     const result = mergeInitialAppSettings(
       staticSettings,
       dynamicSettings,
-      stored({ contestantApp: { questions: undefined, entityTypes: undefined }, access: { voterApp: undefined } })
+      stored({ contestantApp: { questions: undefined, servedEntityTypes: undefined }, access: { voterApp: undefined } })
     );
 
     expect(result.contestantApp).toEqual(dynamicSettings.contestantApp);

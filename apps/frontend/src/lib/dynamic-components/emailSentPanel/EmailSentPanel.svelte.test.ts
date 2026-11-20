@@ -48,7 +48,10 @@ vi.mock('$lib/contexts/app', () => ({
     appType: { current: 'contestant' },
     t: fakeT,
     getRoute: { current: (route: string) => `/route/${route}` },
-    appSettings: { admin: { email: 'support@example.test' }, contestantApp: { entityTypes: ['candidate'] } }
+    appSettings: {
+      admin: { email: 'support@example.test' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    }
   })
 }));
 

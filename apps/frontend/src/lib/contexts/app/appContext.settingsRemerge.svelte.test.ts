@@ -126,9 +126,12 @@ describe('AppContextProvider — the settings recompute on a new loader payload'
   it('reads the shipped default again for a root the previous payload set and the new one omits', () => {
     const instance = setup();
 
-    load({ access: { voterApp: false }, contestantApp: { entityTypes: ['organization'] } });
+    load({
+      access: { voterApp: false },
+      contestantApp: { servedEntityTypes: { organization: { registrationModes: [] } } }
+    });
     expect(instance.appSettings.access.voterApp).toBe(false);
-    expect(instance.appSettings.contestantApp.entityTypes).toEqual(['organization']);
+    expect(instance.appSettings.contestantApp.servedEntityTypes).toEqual({ organization: { registrationModes: [] } });
 
     load({ matching: { minimumAnswers: 1 } });
     expect(instance.appSettings.access).toEqual(dynamicSettings.access);

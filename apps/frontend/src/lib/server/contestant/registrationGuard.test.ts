@@ -15,7 +15,7 @@ import { log } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildRoute } from '$lib/routes';
 import { isRegistrationOffered, refuseUnlessRegistrationOffered } from './registrationGuard';
-import type { ContestantAppConfigInput } from '@openvaa/app-shared';
+import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { RegistrationNeed } from './registrationGuard';
 
 const { ANON_CLIENT, createDataProvider, createSupabaseAnonClient, getAppSettings } = vi.hoisted(() => ({
@@ -45,50 +45,35 @@ function makeEvent({ locale = 'en', search = '' }: { locale?: string; search?: s
   };
 }
 
-type Settings = NonNullable<ContestantAppConfigInput> & { access?: { answersLocked?: boolean } };
+type Settings = NonNullable<ContestantAppSettingsInput> & { access?: { answersLocked?: boolean } };
 
 /** Settings as a data provider returns them: a stored partial. */
 function settingsWith(
-  contestantApp: NonNullable<ContestantAppConfigInput>['contestantApp'],
+  contestantApp: NonNullable<ContestantAppSettingsInput>['contestantApp'],
   { answersLocked }: { answersLocked?: boolean } = {}
 ): Settings {
   return answersLocked === undefined ? { contestantApp } : { contestantApp, access: { answersLocked } };
 }
 
-const EMPTY_MATRIX = settingsWith({
-  entityTypes: ['candidate'],
-  registrationModes: { candidate: [], organization: [] }
-});
-const CODE_ALONE = settingsWith({
-  entityTypes: ['candidate'],
-  registrationModes: { candidate: ['code'], organization: [] }
-});
-const EMAIL_ALONE = settingsWith({
-  entityTypes: ['candidate'],
-  registrationModes: { candidate: ['email'], organization: [] }
-});
+const NO_MODE = settingsWith({ servedEntityTypes: { candidate: { registrationModes: [] } } });
+const CODE_ALONE = settingsWith({ servedEntityTypes: { candidate: { registrationModes: ['code'] } } });
+const EMAIL_ALONE = settingsWith({ servedEntityTypes: { candidate: { registrationModes: ['email'] } } });
 const PROVIDER_FOR_CANDIDATES = settingsWith({
-  entityTypes: ['candidate'],
-  registrationModes: { candidate: ['identity_provider'], organization: [] }
+  servedEntityTypes: { candidate: { registrationModes: ['identity_provider'] } }
 });
 const PROVIDER_FOR_ORGANIZATIONS_ALONE = settingsWith({
-  entityTypes: ['candidate', 'organization'],
-  registrationModes: { candidate: [], organization: ['identity_provider'] }
+  servedEntityTypes: {
+    candidate: { registrationModes: [] },
+    organization: { registrationModes: ['identity_provider'] }
+  }
 });
-const CODE_FOR_ORGANIZATIONS = settingsWith({
-  entityTypes: ['organization'],
-  registrationModes: { candidate: [], organization: ['code'] }
-});
-const CODE_FOR_AN_UNSERVED_TYPE = settingsWith({
-  entityTypes: ['candidate'],
-  registrationModes: { candidate: [], organization: ['code'] }
-});
+const CODE_FOR_ORGANIZATIONS = settingsWith({ servedEntityTypes: { organization: { registrationModes: ['code'] } } });
 const EVERY_MODE_LOCKED = settingsWith(
-  { entityTypes: ['candidate'], registrationModes: { candidate: ['identity_provider', 'email', 'code'] } },
+  { servedEntityTypes: { candidate: { registrationModes: ['identity_provider', 'email', 'code'] } } },
   { answersLocked: true }
 );
 const EVERY_MODE_UNLOCKED = settingsWith(
-  { entityTypes: ['candidate'], registrationModes: { candidate: ['identity_provider', 'email', 'code'] } },
+  { servedEntityTypes: { candidate: { registrationModes: ['identity_provider', 'email', 'code'] } } },
   { answersLocked: false }
 );
 
@@ -119,10 +104,9 @@ afterEach(() => {
 
 describe('the need for any listed mode', () => {
   it.each([
-    ['an empty matrix', EMPTY_MATRIX],
+    ['a served type with no mode', NO_MODE],
     ['settings that declare nothing', {}],
-    ['every mode allowed while answers are locked', EVERY_MODE_LOCKED],
-    ['a mode listed only in the row of an entity type the project does not serve', CODE_FOR_AN_UNSERVED_TYPE]
+    ['every mode allowed while answers are locked', EVERY_MODE_LOCKED]
   ])('redirects with 303 to the login route for %s', async (_name, settings) => {
     getAppSettings.mockResolvedValue(settings);
     expect(await redirectOf(makeEvent(), 'any')).toMatchObject({ status: 303, location: LOGIN_ROUTE });
@@ -146,13 +130,12 @@ describe('the need for any listed mode', () => {
 
 describe('the need for the code mode', () => {
   it.each([
-    ['an empty matrix', EMPTY_MATRIX],
+    ['a served type with no mode', NO_MODE],
     ['settings that declare nothing', {}],
     ['the email mode alone', EMAIL_ALONE],
     ["the provider's mode for candidates", PROVIDER_FOR_CANDIDATES],
     ["the provider's mode allowed for organizations alone", PROVIDER_FOR_ORGANIZATIONS_ALONE],
-    ['every mode allowed while answers are locked', EVERY_MODE_LOCKED],
-    ['the code mode listed only in the row of an entity type the project does not serve', CODE_FOR_AN_UNSERVED_TYPE]
+    ['every mode allowed while answers are locked', EVERY_MODE_LOCKED]
   ])('redirects with 303 to the login route for %s', async (_name, settings) => {
     getAppSettings.mockResolvedValue(settings);
     expect(await redirectOf(makeEvent(), 'code')).toMatchObject({ status: 303, location: LOGIN_ROUTE });
@@ -172,7 +155,7 @@ describe('the need for the code mode', () => {
 
 describe('the redirect', () => {
   it.each(['en', 'fi'])("leads to the login route in the request's locale %s", async (locale) => {
-    getAppSettings.mockResolvedValue(EMPTY_MATRIX);
+    getAppSettings.mockResolvedValue(NO_MODE);
     const redirected = await redirectOf(makeEvent({ locale }), 'any');
     expect(redirected?.status).toBe(303);
     expect(redirected?.location).toBe(buildRoute({ route: 'ContestantAppLogin', locale }));
@@ -181,7 +164,7 @@ describe('the redirect', () => {
   it.each<RegistrationNeed>(['any', 'code'])(
     'carries no parameter, whatever the request carries, for the need %s',
     async (need) => {
-      getAppSettings.mockResolvedValue(EMPTY_MATRIX);
+      getAppSettings.mockResolvedValue(NO_MODE);
       const redirected = await redirectOf(
         makeEvent({ search: '?redirectTo=https%3A%2F%2Fevil.example&next=%2Fadmin&registrationKey=abc' }),
         need
@@ -225,7 +208,7 @@ describe('the settings read', () => {
   });
 
   it('is made once for every call, so a changed setting is read at the next request', async () => {
-    getAppSettings.mockResolvedValueOnce(CODE_ALONE).mockResolvedValueOnce(EMPTY_MATRIX);
+    getAppSettings.mockResolvedValueOnce(CODE_ALONE).mockResolvedValueOnce(NO_MODE);
     expect(await isRegistrationOffered(makeEvent(), 'code')).toBe(true);
     expect(await isRegistrationOffered(makeEvent(), 'code')).toBe(false);
     expect(getAppSettings).toHaveBeenCalledTimes(2);

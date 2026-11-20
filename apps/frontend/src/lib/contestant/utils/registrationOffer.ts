@@ -4,7 +4,7 @@ import {
   isRegistrationModeAllowedForAnyType,
   REGISTRATION_MODE
 } from '@openvaa/app-shared';
-import type { ContestantAppConfigInput, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
+import type { ContestantAppSettingsInput, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
 
 /**
  * What the Contestant App offers a visitor who is not signed in, read from the application settings.
@@ -18,7 +18,7 @@ import type { ContestantAppConfigInput, RegistrationMode, ServedEntityType } fro
  * The settings this module reads: the Contestant App's served entity types and registration modes, and the answers lock. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid, and an absent member reads as its shipped default.
  */
 export type RegistrationOfferSettings =
-  (NonNullable<ContestantAppConfigInput> & { access?: { answersLocked?: boolean | null } | null }) | null | undefined;
+  (NonNullable<ContestantAppSettingsInput> & { access?: { answersLocked?: boolean | null } | null }) | null | undefined;
 
 /**
  * The registration modes a visitor is offered, in the order they are listed: the identity provider, then email, then code, each at most once whatever order the settings store them in.
@@ -42,7 +42,7 @@ export function listedRegistrationModes(settings: RegistrationOfferSettings): Re
 }
 
 /**
- * The entity types a registration through the identity provider may create: the served types whose row of the registration matrix allows the provider's mode, in the order candidate, organization.
+ * The entity types a registration through the identity provider may create: the served types whose registration modes include the provider's mode, in the order candidate, organization.
  *
  * The registration screen asks the user to choose among them when there are several and names the one when there is one, and the endpoint that starts the provider's flow accepts a type only from this list. The provider's mode is listed by {@link listedRegistrationModes} exactly when this list is not empty.
  *
