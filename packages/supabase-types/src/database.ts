@@ -1198,6 +1198,7 @@ export type Database = {
       };
       custom_access_token_hook: { Args: { p_event: Json }; Returns: Json };
       delete_storage_object: { Args: { p_bucket: string; p_file_path: string }; Returns: undefined };
+      get_caller_account_state: { Args: Record<PropertyKey, never>; Returns: Json };
       get_entity_basic_data: {
         Args: { p_entity_id: string; p_entity_type: Database['public']['Enums']['entity_type'] };
         Returns: Json;

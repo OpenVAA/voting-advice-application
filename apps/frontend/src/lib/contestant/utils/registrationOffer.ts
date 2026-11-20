@@ -27,7 +27,7 @@ export type RegistrationOfferSettings =
  *
  * Each mode is listed when any served entity type allows it. Registering through the identity provider creates an entity of a type the user chooses among those {@link identityProviderEntityTypes} answers, and the invitation the email and code modes redeem names its own entity.
  *
- * While answers are locked nothing is listed.
+ * While answers are locked nothing is listed. The database applies the same rule: `private.registration_mode_allowed` is false while answers are locked, so an invitation is neither claimed nor answered with a link then, whichever form the address or code is typed into.
  * @param settings - The application settings to read.
  * @returns The offered modes in listing order. Empty when registration is not offered.
  */
@@ -77,7 +77,7 @@ export function identityProviderEntityType(
 /**
  * Whether the sign-in form offers to mail a sign-in link: the email mode or the identity provider's mode is allowed for at least one served entity type. An account made under either may have no password yet.
  *
- * The answers lock is not read: a user who cannot edit can still sign in.
+ * The answers lock is not read: a user who cannot edit can still sign in. A link the form requests while answers are locked reaches only an address that already holds a grant in the project, because the database answers no open invitation then.
  * @param settings - The application settings to read.
  */
 export function signInLinkOffered(settings: RegistrationOfferSettings): boolean {

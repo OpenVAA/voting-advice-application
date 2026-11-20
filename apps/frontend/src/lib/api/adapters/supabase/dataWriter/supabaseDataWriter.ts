@@ -41,7 +41,7 @@ import {
 } from '../utils/parseJsonbColumn';
 import { parseSetEntityNominationsAnswer } from '../utils/setEntityNominationsAnswer';
 import { toDataObject } from '../utils/toDataObject';
-import { parseCallerPasswordSet, parseCallerPendingEmailTaken, parseUserEntities } from '../utils/userEntities';
+import { parseCallerAccountState, parseUserEntities } from '../utils/userEntities';
 import type { LocalizedString, ServedEntityType } from '@openvaa/app-shared';
 import type { Colors, EntityType } from '@openvaa/data';
 import type { Json } from '@openvaa/supabase-types';
@@ -140,49 +140,20 @@ const ENTITY_PROPERTY_COLUMNS = {
 const LOCALIZED_NAME_TYPES: ReadonlySet<ServedEntityType> = new Set(['organization']);
 
 /**
- * How the database's refusal of a changed name begins. The text is raised by `public.enforce_entity_immutability` in `apps/supabase/supabase/schema/011-validation-functions.sql`, for every column it freezes on a confirmed entity, the short name and a candidate's first and last name included. What follows the prefix names the column, the row and both values.
+ * The SQLSTATE of each database refusal a contestant's save tells apart. Each is raised for that refusal alone, so a refusal is recognised by its code and never by its text:
+ * - `nameImmutable`: a changed name or short name of a confirmed entity, raised by `public.enforce_entity_immutability` in `apps/supabase/supabase/schema/011-validation-functions.sql`.
+ * - `answersLocked`: a write while the project's answers are locked, raised by `public.upsert_answers` and `public.set_entity_nominations` in `apps/supabase/supabase/schema/503-entity-rpcs.sql`.
+ * - `nominationsChanged`: a set of nominations computed from nominations that have changed since they were read, raised by `public.set_entity_nominations`.
+ * - `pendingParentCap`: one unconfirmed parent nomination more than a caller may originate, raised by `public.enforce_nomination_confirmation` in `011-validation-functions.sql`.
+ * - `listedUnder`: the removal or move of a nomination that other nominations are listed under, raised by `public.set_entity_nominations`.
  */
-const NAME_REFUSAL_PREFIX = 'Entity name is immutable once confirmed: column ';
-
-/**
- * The SQLSTATE of an exception a database function raises without naming a code, which is how the refusal of a changed name is raised.
- */
-const RAISED_EXCEPTION_CODE = 'P0001';
-
-/**
- * How the database's refusal of a write ends while the project's answers are locked. The text is raised by `public.upsert_answers` and `public.set_entity_nominations` in `apps/supabase/supabase/schema/503-entity-rpcs.sql`, each after its own name, for a caller who may not edit the project's entities while its `access.answersLocked` setting is on.
- */
-const ANSWERS_LOCKED_REFUSAL = 'answers are locked in this project';
-
-/**
- * The SQLSTATE of a refused privilege, which is how the refusal of a write while answers are locked is raised.
- */
-const INSUFFICIENT_PRIVILEGE_CODE = '42501';
-
-/**
- * The SQLSTATE of a foreign-key violation.
- */
-const FOREIGN_KEY_VIOLATION_CODE = '23503';
-
-/**
- * The foreign key that holds a nomination to the nomination it is listed under: `parent_nomination_id` of `public.nominations`, declared in `apps/supabase/supabase/schema/104-nominations.sql`. It takes no action on a delete, so the database refuses to remove a nomination that others are listed under, and names this key in the refusal. `public.set_entity_nominations` in `apps/supabase/supabase/schema/503-entity-rpcs.sql` meets it when it removes a nomination, and when it moves one to another constituency, which it does by removing it.
- */
-const PARENT_NOMINATION_FOREIGN_KEY = 'nominations_parent_nomination_id_fkey';
-
-/**
- * How the database's refusal of one more unconfirmed parent nomination begins. The text is raised by `public.enforce_nomination_confirmation` in `apps/supabase/supabase/schema/011-validation-functions.sql`, without naming a code, when a caller who already holds the most unconfirmed parent nominations a caller may creates another. What follows the prefix states the limit and the caller's count.
- */
-const PENDING_CAP_REFUSAL_PREFIX = 'A caller may originate at most ';
-
-/**
- * The SQLSTATE `public.set_entity_nominations` raises when the nominations a set was computed from are no longer those stored. It is also the SQLSTATE of any serialization failure, so the refusal is recognised together with its message.
- */
-const CHANGED_REFUSAL_CODE = '40001';
-
-/**
- * The whole text of that refusal, raised by `public.set_entity_nominations` in `apps/supabase/supabase/schema/503-entity-rpcs.sql`.
- */
-const CHANGED_REFUSAL_MESSAGE = 'set_entity_nominations: the nominations have changed since they were read';
+export const REFUSAL_CODES = {
+  nameImmutable: 'OV001',
+  answersLocked: 'OV002',
+  nominationsChanged: 'OV003',
+  pendingParentCap: 'OV004',
+  listedUnder: 'OV005'
+} as const;
 
 /**
  * Narrow an entity type to one the application serves.
@@ -275,39 +246,39 @@ function storedColorOf(value: EditableEntityColor | null | undefined): EditableE
 }
 
 /**
- * Whether a failed write was refused because it changes a name of a confirmed entity. The refusal is recognised by its SQLSTATE together with the start of its message, since a function that raises without a code shares the SQLSTATE with every other such function.
+ * Whether a failed write was refused because it changes a name of a confirmed entity.
  * @param error - The error the write answered with.
  * @returns `true` for that refusal and for no other failure.
  */
-function isNameRefusal(error: { code?: string; message: string }): boolean {
-  return error.code === RAISED_EXCEPTION_CODE && error.message.startsWith(NAME_REFUSAL_PREFIX);
+function isNameRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.nameImmutable;
 }
 
 /**
- * Whether a failed write was refused because the project's answers are locked. The refusal is recognised by its SQLSTATE together with the end of its message, since every refused privilege shares the SQLSTATE and the message begins with the name of the function that raised it.
+ * Whether a failed write was refused because the project's answers are locked.
  * @param error - The error the write answered with.
  * @returns `true` for that refusal and for no other failure.
  */
-function isAnswersLockedRefusal(error: { code?: string; message: string }): boolean {
-  return error.code === INSUFFICIENT_PRIVILEGE_CODE && error.message.endsWith(ANSWERS_LOCKED_REFUSAL);
+function isAnswersLockedRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.answersLocked;
 }
 
 /**
- * Whether a failed write of an entity's nominations was refused because a nomination it removes has other nominations listed under it. The refusal is recognised by its SQLSTATE together with the name of the foreign key, since every foreign key of the table shares the SQLSTATE.
+ * Whether a failed write of an entity's nominations was refused because a nomination it removes or moves has other nominations listed under it.
  * @param error - The error the write answered with.
  * @returns `true` for that refusal and for no other failure.
  */
-function isListedUnderRefusal(error: { code?: string; message: string }): boolean {
-  return error.code === FOREIGN_KEY_VIOLATION_CODE && error.message.includes(PARENT_NOMINATION_FOREIGN_KEY);
+function isListedUnderRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.listedUnder;
 }
 
 /**
- * Whether a failed write of an entity's nominations was refused because the caller holds too many unconfirmed parent nominations. The refusal is recognised by its SQLSTATE together with the start of its message, as {@link isNameRefusal} recognises its own.
+ * Whether a failed write of an entity's nominations was refused because the caller holds too many unconfirmed parent nominations.
  * @param error - The error the write answered with.
  * @returns `true` for that refusal and for no other failure.
  */
-function isPendingCapRefusal(error: { code?: string; message: string }): boolean {
-  return error.code === RAISED_EXCEPTION_CODE && error.message.startsWith(PENDING_CAP_REFUSAL_PREFIX);
+function isPendingCapRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.pendingParentCap;
 }
 
 /**
@@ -315,8 +286,8 @@ function isPendingCapRefusal(error: { code?: string; message: string }): boolean
  * @param error - The error the write answered with.
  * @returns `true` for that refusal and for no other failure.
  */
-function isChangedRefusal(error: { code?: string; message: string }): boolean {
-  return error.code === CHANGED_REFUSAL_CODE && error.message === CHANGED_REFUSAL_MESSAGE;
+function isChangedRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.nominationsChanged;
 }
 
 /**
@@ -657,14 +628,11 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       throw new Error(`getBasicUserData: could not read the terms-of-use acceptance: ${acceptanceError.message}`);
     const termsOfUseAccepted = acceptance?.accepted_at ?? null;
 
-    // Whether the account has a password, which the database answers for the caller alone. Like the acceptance read above, a failed or malformed read is thrown and never turned into a value: it is neither "has a password" nor "has none", and whoever decides on the member must not be handed a guess.
-    const { data: listed, error: passwordError } = await this.supabase.rpc('get_user_entities', {
-      p_project_id: this.projectId
-    });
-    if (passwordError) throw new Error(`getBasicUserData: could not read the password fact: ${passwordError.message}`);
-    const passwordSet = parseCallerPasswordSet(listed);
-    // The same answer says, for the caller alone, whether the address the account is changing to is now another account's. Malformed, it is thrown like the password fact.
-    const pendingTaken = parseCallerPendingEmailTaken(listed);
+    // Whether the account has a password, and whether the address it is changing to is now another account's, which the database answers for the caller alone. Like the acceptance read above, a failed or malformed read is thrown and never turned into a value: neither fact is "yes" or "no" then, and whoever decides on them must not be handed a guess.
+    const { data: accountState, error: accountStateError } = await this.supabase.rpc('get_caller_account_state');
+    if (accountStateError)
+      throw new Error(`getBasicUserData: could not read the account state: ${accountStateError.message}`);
+    const { passwordSet, pendingEmailTaken: pendingTaken } = parseCallerAccountState(accountState);
 
     // The address state, from the verified user alone: the provider its app metadata names, its address and its pending address. A pending address another account now holds can no longer be proved, so it reads as no address, and the holder is asked for one again.
     const stated = addressStateOf({
@@ -677,6 +645,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // A placeholder address is an identifier derived from the provider's persistent id, so it is never handed on as the account's address.
     const email = isPlaceholderAddress(user.email) ? '' : (user.email ?? '');
 
+    const ownOrganizationUnnamed = await this.#ownOrganizationUnnamed(user.app_metadata);
+
     return {
       id: user.id,
       email,
@@ -686,24 +656,25 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       passwordSet,
       addressState,
       pendingEmail: addressState === 'pending' ? (user.new_email ?? null) : null,
-      ownOrganizationUnnamed: this.#ownOrganizationUnnamed(user.app_metadata, listed),
+      ownOrganizationUnnamed,
       pendingEmailTaken,
       settings: { language }
     };
   }
 
   /**
-   * Whether the organization the identity registered in this project is among the listed entities and has no name with text in the default locale.
+   * Whether the organization the identity registered in this project is among the user's entities and has no name with text in the default locale.
    *
-   * The list is narrowed only when the account's record names an organization of this project, so an account with no record is never failed by it; when it is narrowed, a malformed list throws like any failed read. An organization the user edits by any other grant is not named by the record and is never asked about.
+   * The entities are read only when the account's record names an organization of this project, so an account with no record, an administrator's among them, makes no read; when they are read, a failed read or a malformed list throws like any failed read. An organization the user edits by any other grant is not named by the record and is never asked about.
    * @param appMetadata - The verified user's `app_metadata`.
-   * @param listed - The answer of `get_user_entities`.
    * @returns `true` when the own organization is listed and unnamed in the default locale.
-   * @throws Error when the record names an organization and the list does not have the expected shape.
+   * @throws Error when the record names an organization and the list cannot be read or does not have the expected shape.
    */
-  #ownOrganizationUnnamed(appMetadata: unknown, listed: Json | undefined): boolean {
+  async #ownOrganizationUnnamed(appMetadata: unknown): Promise<boolean> {
     const ownId = ownOrganizationId(appMetadata, this.projectId);
     if (ownId === null) return false;
+    const { data: listed, error } = await this.supabase.rpc('get_user_entities', { p_project_id: this.projectId });
+    if (error) throw new Error(`getBasicUserData: could not read the user's entities: ${error.message}`);
     const own = parseUserEntities(listed).find((entry) => entry.entity_type === 'organization' && entry.id === ownId);
     return own?.entity_type === 'organization' && !hasDefaultLocaleName(own.name, this.defaultLocale);
   }
@@ -1005,7 +976,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
       p_expected_reach: Object.fromEntries(readFrom.map((nomination) => [nomination.id, nomination.updatedAt]))
     });
     if (error) {
-      // Each of the four refusals is a result the caller shows in its own words. The raised text names a function, a table and a constraint, or a limit and the caller's count, and is not returned.
+      // Each of the four refusals is a result the caller shows in its own words. The raised text names a function, or a limit and the caller's count, and is not returned.
       if (isAnswersLockedRefusal(error)) return { type: 'refused', reason: 'answersLocked' };
       if (isChangedRefusal(error)) return { type: 'refused', reason: 'changed' };
       if (isListedUnderRefusal(error)) return { type: 'refused', reason: 'hasCandidates' };

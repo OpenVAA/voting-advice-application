@@ -1360,9 +1360,9 @@ SELECT
       test_id ('election_a'),
       test_id ('constituency_a')
     ),
-    'P0001',
+    'OV004',
     'A caller may originate at most 10 unconfirmed parent nominations; this caller already holds 10. An administrator must confirm or reject some before more can be created.',
-    'CAP: that refusal is a raised exception whose whole message states the cap and the number the caller holds'
+    'CAP: that refusal raises SQLSTATE OV004, the code of the cap alone, with a whole message that states the cap and the number the caller holds'
   );
 
 -- PERM: `nomination.create_parent` is a verb of its own and not a part of `nomination.edit`. Every entity editor's row of the matrix holds both, so no caller of the matrix as it stands holds the one without the other. The matrix is therefore read here with that one verb taken out of every row: `grant_role_permissions` is renamed and a function of its name answers the renamed one's set without `nomination.create_parent`. candidate_a2 holds a nomination at round 4 and created an organization's row there above; with the verb taken out the same caller is refused the next one, and with the matrix put back the same statement is admitted.

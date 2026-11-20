@@ -144,8 +144,8 @@ async function readIllustrationOverLogo(menuToggle: Locator): Promise<Illustrati
   });
 }
 
-/** Whether a request's address is the last read of the user data. */
-const isUserDataRead = (url: URL): boolean => url.pathname.endsWith('/rest/v1/rpc/get_user_entities');
+/** Whether a request's address is the user data's read of the account state, the last read an administrator's user data makes. */
+const isUserDataRead = (url: URL): boolean => url.pathname.endsWith('/rest/v1/rpc/get_caller_account_state');
 
 export function createAdminLoginPage(page: Page) {
   const adminHome = buildRoute({ route: 'AdminAppHome', locale: 'en' });
@@ -360,7 +360,7 @@ export function createAdminLoginPage(page: Page) {
     },
 
     /**
-     * From now on answer the browser's read of the user data with a failure. This is the read that `getBasicUserData` makes last, and it runs in the browser on a client-side navigation, while a document request reads on the server, out of this step's reach. {@link restoreUserDataRead} ends it.
+     * From now on answer the browser's read of the user data with a failure. This is the account-state read, the last one `getBasicUserData` makes for an administrator, and it runs in the browser on a client-side navigation, while a document request reads on the server, out of this step's reach. {@link restoreUserDataRead} ends it.
      */
     async failUserDataRead(): Promise<void> {
       userDataReadFailureEnds.push(

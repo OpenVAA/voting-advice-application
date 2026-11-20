@@ -3,7 +3,8 @@
 -- Functions:
 -- - get_nominations() - return nominations with entity data
 -- - get_entity_basic_data() - basic-data projection of an entity the caller holds nomination.read on
--- - get_user_entities() - every candidate and organization the caller holds an editor grant on in one project, as one object that also says whether the caller's account has a password
+-- - get_user_entities() - every candidate and organization the caller holds an editor grant on in one project, as one object
+-- - get_caller_account_state() - two facts about the caller's own account: whether it has a password and whether its pending address is another account's
 -- - get_entity_user_data() - the editable row of one entity the caller holds an editor grant on, or no row
 -- - get_entity_nominations() - the nominations of one entity the caller holds an editor grant on, each with its parent resolved, or NULL
 -- - get_nomination_parent_options() - the entities one entity the caller holds an editor grant on may name as its parent, or NULL
@@ -175,17 +176,13 @@ EXECUTE ON FUNCTION public.get_entity_basic_data (public.entity_type, uuid) TO a
 --
 -- Returns one jsonb object whose `entities` array holds one entry per candidate and per organization of p_project_id the caller holds an `(entity, <type>, <id>, editor)` grant on, read from public.grants through private.caller_entity_ids. Each entry carries what a card shows: `entity_type`, `id`, the names of its type (`first_name` and `last_name` for a candidate, `name` for an organization), `short_name`, `image`, `color` and `confirmed`. Candidates come first, then organizations, each by id.
 --
--- The answer is one object, not a set of rows, so a caller with no entity still gets one row, whose `entities` is an empty array. The top level holds facts about the caller; every fact about an entity sits inside `entities`.
---
--- `password_set` is a fact about the caller: whether the caller's own account holds a password, as private.caller_password_set answers it for `auth.uid()`. It is there whether or not the caller edits anything, and it never says anything about another account, because nothing passed to this function reaches it.
---
--- `pending_email_taken` is a fact about the caller too: whether the address the caller's own account is changing to is already another account's, as private.caller_pending_email_taken answers it for `auth.uid()`; false when there is no pending address. Like `password_set` it is always there, and nothing passed to this function reaches it.
+-- The answer is one object, not a set of rows, so a caller with no entity still gets one row, whose `entities` is an empty array. Facts about the caller's account are not in it: get_caller_account_state below answers them.
 --
 -- Only candidates and organizations are listed: factions and alliances have no arm. Project, account and global admins and holders of an entity-scope `admin` grant are listed with nothing, because only the editor grant makes an entity the caller's.
 --
 -- p_project_id is REQUIRED and carries no DEFAULT, because one identity may hold editor grants in several projects and only the project names which of them are asked for.
 --
--- SECURITY INVOKER: the grant lookup, the password fact and the pending-address fact are the three definer calls on the path, each answering for `auth.uid()` alone, and which rows come back is still decided by the caller's own row-level security. An entity is therefore listed exactly when get_entity_user_data returns it.
+-- SECURITY INVOKER: the grant lookup is the one definer call on the path, answering for `auth.uid()` alone, and which rows come back is still decided by the caller's own row-level security. An entity is therefore listed exactly when get_entity_user_data returns it.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.get_user_entities (p_project_id uuid) RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER
 SET
@@ -218,9 +215,7 @@ SET
         ) e
       ),
       '[]'::jsonb
-    ),
-    'password_set', private.caller_password_set(),
-    'pending_email_taken', private.caller_pending_email_taken()
+    )
   );
 $$;
 
@@ -232,6 +227,35 @@ FROM
 
 GRANT
 EXECUTE ON FUNCTION public.get_user_entities (uuid) TO authenticated;
+
+--------------------------------------------------------------------------------
+-- get_caller_account_state: two facts about the caller's own account, as ONE object
+--
+-- Returns `{"password_set", "pending_email_taken"}`, two booleans:
+-- - `password_set`: whether the caller's own account holds a password, as private.caller_password_set answers it for `auth.uid()`.
+-- - `pending_email_taken`: whether the address the caller's own account is changing to is already another account's, as private.caller_pending_email_taken answers it for `auth.uid()`; false when there is no pending address.
+--
+-- It takes no argument, so it answers for nobody else and for no project: the facts belong to the account, whatever it edits or administers. Both the Contestant App and the Admin App read them with every read of the user.
+--
+-- SECURITY INVOKER: the two facts are the definer calls on the path, each answering for `auth.uid()` alone. anon may not execute it.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_caller_account_state () RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER
+SET
+  search_path = '' AS $$
+  SELECT jsonb_build_object(
+    'password_set', private.caller_password_set(),
+    'pending_email_taken', private.caller_pending_email_taken()
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.get_caller_account_state ()
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION public.get_caller_account_state () TO authenticated;
 
 --------------------------------------------------------------------------------
 -- get_entity_user_data: the editable row of ONE entity the caller edits, or no row
@@ -484,7 +508,7 @@ EXECUTE ON FUNCTION public.get_nomination_parent_options (uuid, public.entity_ty
 --
 -- SECURITY INVOKER: the UPDATE is gated by the named table's RLS policies, so a caller can update only the answers of an entity those policies let them edit. An id that matches no row the caller may update raises the not-found exception.
 --
--- While the entity's project's answers are locked (`private.project_answers_locked`), a caller that does not hold `project.edit_entities` on the project is refused before any table is written, with SQLSTATE 42501 and `upsert_answers: answers are locked in this project`, so the lock is told apart from a row the caller may not write. The entity's project is read as the caller: an entity the caller cannot read is not judged here and meets the not-found exception.
+-- While the entity's project's answers are locked (`private.project_answers_locked`), a caller that does not hold `project.edit_entities` on the project is refused before any table is written, with SQLSTATE OV002 and `upsert_answers: answers are locked in this project`. OV002 is raised for the answers lock alone, so a client tells the lock apart from a row the caller may not write by the code. The entity's project is read as the caller: an entity the caller cannot read is not judged here and meets the not-found exception.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.upsert_answers (
   p_entity_type public.entity_type,
@@ -505,7 +529,7 @@ BEGIN
      AND private.project_answers_locked(v_project_id)
      AND NOT COALESCE(public.user_can('project', v_project_id, 'project.edit_entities'), false) THEN
     RAISE EXCEPTION 'upsert_answers: answers are locked in this project'
-      USING ERRCODE = '42501';
+      USING ERRCODE = 'OV002';
   END IF;
 
   CASE p_entity_type
@@ -799,9 +823,9 @@ service_role;
 --
 -- p_nominations states every nomination the candidate or organization named by p_entity_type and p_entity_id is to hold among the rows this function may write. The call inserts the nominations the set adds, updates the ones whose values differ, creates the nomination of a named party or alliance that has none at the contest, and deletes the ones the set leaves out. It is one statement of the caller's transaction, so either all of it is stored or none of it is.
 --
--- SECURITY INVOKER: every statement runs as the caller, so the policies of public.nominations, its column grants and its triggers stay the only gate, and a direct write of the same rows meets the same refusals. The body holds one authority question, asked through `user_can` before anything is read: a caller that does not hold `nomination.edit` on the entity is refused with SQLSTATE 42501. While the entity's project's answers are locked (`private.project_answers_locked`), a caller that does not hold `project.edit_nominations` on the project is refused next, with SQLSTATE 42501 and `set_entity_nominations: answers are locked in this project`, whatever the set would write. search_path is pinned and every name in the body is schema-qualified.
+-- SECURITY INVOKER: every statement runs as the caller, so the policies of public.nominations, its column grants and its triggers stay the only gate, and a direct write of the same rows meets the same refusals. The body holds one authority question, asked through `user_can` before anything is read: a caller that does not hold `nomination.edit` on the entity is refused with SQLSTATE 42501. While the entity's project's answers are locked (`private.project_answers_locked`), a caller that does not hold `project.edit_nominations` on the project is refused next, with SQLSTATE OV002 and `set_entity_nominations: answers are locked in this project`, whatever the set would write. search_path is pinned and every name in the body is schema-qualified.
 --
--- p_expected_reach is the reach as the caller read it, the read its set was computed from: a JSON object that maps the id of every nomination in reach to its `updated_at`, as `get_entity_nominations` states both, and `{}` for an entity with none. It is required and is refused with SQLSTATE 22023 when it is not such an object. Right after the reach is read, before any object of the set is checked, the two are compared: a nomination in reach that the expectation does not name, an id it names that is no nomination in reach, and an `updated_at` that differs from the stored one each refuse the call with SQLSTATE 40001 and `set_entity_nominations: the nominations have changed since they were read`. A set computed from an older read therefore never deletes a nomination created since, and never writes back the values of one moved, edited or confirmed since. The reach is read without a lock, so a write committed by another transaction between that read and this call's own statements is not seen by the comparison.
+-- p_expected_reach is the reach as the caller read it, the read its set was computed from: a JSON object that maps the id of every nomination in reach to its `updated_at`, as `get_entity_nominations` states both, and `{}` for an entity with none. It is required and is refused with SQLSTATE 22023 when it is not such an object. Right after the reach is read, before any object of the set is checked, the two are compared: a nomination in reach that the expectation does not name, an id it names that is no nomination in reach, and an `updated_at` that differs from the stored one each refuse the call with SQLSTATE OV003 and `set_entity_nominations: the nominations have changed since they were read`. A set computed from an older read therefore never deletes a nomination created since, and never writes back the values of one moved, edited or confirmed since. The reach is read without a lock, so a write committed by another transaction between that read and this call's own statements is not seen by the comparison.
 --
 -- p_nominations is a JSON array of objects, and an empty array is a valid set. The keys of one object:
 --   id              - a uuid: the object describes that nomination of the entity. Absent: it describes a new one.
@@ -822,7 +846,7 @@ service_role;
 -- Several nominations of one election are accepted only where each names a stored row by `id`: an object without an `id` must be the only object of its election.
 --
 -- The order of the statements:
---   1. Delete the nominations in reach that the set does not name, and the stored row of every move. A changed constituency is a delete and an insert, never an update of the row's contest, so the foreign key on `parent_nomination_id` refuses to move, as it refuses to delete, a nomination that has nominations listed under it (SQLSTATE 23503). The new row of a move carries the symbol and the parent the object states and nothing else of the old row.
+--   1. Delete the nominations in reach that the set does not name, and the stored row of every move. A changed constituency is a delete and an insert, never an update of the row's contest, so a nomination that has nominations listed under it can be neither moved nor deleted. Before the delete, `private.nominations_listed_under` is asked whether any row to be deleted has such a nomination, and the call is then refused with SQLSTATE OV005, so the foreign key on `parent_nomination_id` is not what refuses it. The new row of a move carries the symbol and the parent the object states and nothing else of the old row.
 --   2. Update each kept nomination whose symbol, parent or requested name differs from what is stored, naming only the columns that differ, and the confirmation wherever the custom data is written. A nomination whose values did not change is not written, so it keeps its confirmation and its updated_at; `enforce_nomination_confirmation` turns the confirmation of every row an entity's editor does write off.
 --   3. Insert each new nomination with no parent, and then link it.
 -- For `entity`, the parent's nomination at the contest is asked of `private.parent_nomination_resolved`, which runs as the caller and reads the row through `private.nomination_id_in_contest`, because the caller's own policies do not let it read that row. Where there is none, the parent's nomination is inserted, unconfirmed and carrying nothing but its contest, and asked for again. The caller's own row comes first because `entity_insert_parent_nominations` admits a parent's row only to a caller that already holds a nomination at that contest. Two callers that create the same parent's nomination at once are not reconciled: the second call is refused whole on the uniqueness key and succeeds when it is made again.
@@ -911,7 +935,7 @@ BEGIN
   IF private.project_answers_locked(v_project_id)
      AND NOT COALESCE(public.user_can('project', v_project_id, 'project.edit_nominations'), false) THEN
     RAISE EXCEPTION 'set_entity_nominations: answers are locked in this project'
-      USING ERRCODE = '42501';
+      USING ERRCODE = 'OV002';
   END IF;
 
   PERFORM private.nomination_list_checked(p_nominations, 'set_entity_nominations', 'p_nominations');
@@ -968,7 +992,7 @@ BEGIN
       OR (r.value ->> 'updated_at')::timestamptz IS DISTINCT FROM x.value::timestamptz
   ) THEN
     RAISE EXCEPTION 'set_entity_nominations: the nominations have changed since they were read'
-      USING ERRCODE = '40001';
+      USING ERRCODE = 'OV003';
   END IF;
 
   -- Validate every object before anything is written, and note what each one asks for.
@@ -1064,6 +1088,11 @@ BEGIN
   SELECT COALESCE(array_agg(k.id), ARRAY[]::uuid[]) INTO v_delete_ids
   FROM (SELECT r.key::uuid AS id FROM jsonb_object_keys(v_reach) AS r (key)) k
   WHERE k.id <> ALL (v_kept_ids);
+
+  IF private.nominations_listed_under(v_delete_ids) THEN
+    RAISE EXCEPTION 'set_entity_nominations: a nomination the set removes or moves has other nominations listed under it'
+      USING ERRCODE = 'OV005';
+  END IF;
 
   IF cardinality(v_delete_ids) > 0 THEN
     DELETE FROM public.nominations n

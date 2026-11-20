@@ -23,10 +23,11 @@
 -- - private.caller_unconfirmed_originated_count() - how many unconfirmed organization and alliance nominations the caller has originated
 -- - private.caller_entity_ids(uuid, entity_type) - the entities of one type, in one project, the caller holds an editor grant on; called by get_user_entities and get_entity_user_data
 -- - private.user_password_set(uuid) - whether an account holds a password; executable by no API role
--- - private.caller_password_set() - whether the caller's own account holds a password; called by get_user_entities
--- - private.caller_pending_email_taken() - whether the address the caller's own account is changing to is another account's; called by get_user_entities
+-- - private.caller_password_set() - whether the caller's own account holds a password; called by get_caller_account_state
+-- - private.caller_pending_email_taken() - whether the address the caller's own account is changing to is another account's; called by get_caller_account_state
+-- - private.nominations_listed_under(uuid[]) - whether another nomination is listed under one of the given nominations; called by set_entity_nominations
 -- - private.registration_mode_allowed_in(jsonb, text, text) - the registration-mode rule over stored settings; reads no table
--- - private.registration_mode_allowed(uuid, text, text) - the rule over one project's settings row; executable by no API role
+-- - private.registration_mode_allowed(uuid, text, text) - the rule over one project's settings row, closed while its answers are locked; executable by no API role
 -- - private.grant_reaches_project(grant_scope_type, entity_type, uuid, uuid) - whether one grant reaches a project; executable by no API role
 -- - get_user_project_grants(uuid) - the caller's own grants that reach a project, for the frontend's app-entry gates
 --
@@ -628,7 +629,7 @@ $$;
 --------------------------------------------------------------------------------
 -- project_answers_locked: are this project's answers locked?
 --
--- The lock is the app setting `access.answersLocked`, stored in the project's row of public.app_settings. While it holds, an entity's own editor writes nothing of the entity: it is a conjunct of the entity self-update policies of the four entity tables and of the four entity-scope nomination policies, `upsert_answers` and `set_entity_nominations` refuse an entity's editor with SQLSTATE 42501, and `storage_path_can` (400-storage.sql) refuses an entity-scope write, reading the same key itself. The project-scope policies do not read it, so a project editor and a project admin still write while answers are locked.
+-- The lock is the app setting `access.answersLocked`, stored in the project's row of public.app_settings. While it holds, an entity's own editor writes nothing of the entity: it is a conjunct of the entity self-update policies of the four entity tables and of the four entity-scope nomination policies, `upsert_answers` and `set_entity_nominations` refuse an entity's editor with SQLSTATE OV002, `storage_path_can` (400-storage.sql) refuses an entity-scope write, reading the same key itself, and `registration_mode_allowed` below allows no registration. The project-scope policies do not read it, so a project editor and a project admin still write while answers are locked.
 --
 -- It reads as project_nominations_locked does. A missing project reads as locked, so a missing project never unlocks anything; a project with no settings row, or a row that does not hold the key, reads as unlocked. Only the JSON boolean true locks: the value is compared as jsonb, so the string "true", a number and a JSON null are unlocked.
 --
@@ -860,11 +861,11 @@ FROM
 --------------------------------------------------------------------------------
 -- caller_password_set: does the caller's own account hold a password?
 --
--- Answers private.user_password_set for `auth.uid()`. It takes no argument, so it answers for nobody else: there is nothing a caller could pass to point it at another account. get_user_entities in 503-entity-rpcs.sql calls it for its `password_set` key.
+-- Answers private.user_password_set for `auth.uid()`. It takes no argument, so it answers for nobody else: there is nothing a caller could pass to point it at another account. get_caller_account_state in 503-entity-rpcs.sql calls it for its `password_set` key.
 --
 -- It returns null for a caller that is not signed in: with no account to read there is no fact, and null is neither "set" nor "not set".
 --
--- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_user_entities runs with its caller's rights, so the role that may call it must be able to call this one.
+-- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_caller_account_state runs with its caller's rights, so the role that may call it must be able to call this one.
 --
 -- SECURITY DEFINER because it reads auth.users, which no API role can.
 --------------------------------------------------------------------------------
@@ -888,11 +889,11 @@ EXECUTE ON FUNCTION private.caller_password_set () TO authenticated;
 --------------------------------------------------------------------------------
 -- caller_pending_email_taken: is the address the caller's account is changing to already another account's?
 --
--- True when the caller's row of auth.users, the row `auth.uid()` names, holds a non-empty pending address (`email_change`) and another row's address equals it, both compared trimmed and lower-cased. False otherwise, for a caller with no pending address, and where no caller is signed in. get_user_entities in 503-entity-rpcs.sql calls it for its `pending_email_taken` key.
+-- True when the caller's row of auth.users, the row `auth.uid()` names, holds a non-empty pending address (`email_change`) and another row's address equals it, both compared trimmed and lower-cased. False otherwise, for a caller with no pending address, and where no caller is signed in. get_caller_account_state in 503-entity-rpcs.sql calls it for its `pending_email_taken` key.
 --
 -- It answers for the caller alone. It takes no argument and reads one pending address, the caller's own, so each answer is about the one address the caller's account is changing to and never about an address the caller merely names: to ask about another address, a caller has to make it its own pending address first, which the application does only through the address-confirmation request that public.address_confirmation_request limits per account.
 --
--- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_user_entities runs with its caller's rights, so the role that may call it must be able to call this one.
+-- `authenticated` alone holds EXECUTE, stated here because the grant on the `private` schema above does not reach a function defined after it. get_caller_account_state runs with its caller's rights, so the role that may call it must be able to call this one.
 --
 -- SECURITY DEFINER because it reads auth.users, which no API role can.
 --------------------------------------------------------------------------------
@@ -923,6 +924,37 @@ FROM
 
 GRANT
 EXECUTE ON FUNCTION private.caller_pending_email_taken () TO authenticated;
+
+--------------------------------------------------------------------------------
+-- nominations_listed_under: is another nomination listed under one of these?
+--
+-- True when a nomination whose `parent_nomination_id` is one of p_ids exists and is not itself one of p_ids; false otherwise, and for a NULL or empty array. set_entity_nominations asks it before it deletes the given rows, so a delete the foreign key on `parent_nomination_id` would refuse is refused first, with a code of its own.
+--
+-- The nominations listed under a row are mostly other entities' rows, which the caller may not read, so the question cannot be asked as the caller. It says only whether such a row exists, never which, and only of the rows the caller is about to delete; the foreign key's own refusal would say as much.
+--
+-- `authenticated` alone holds EXECUTE: set_entity_nominations runs with its caller's rights, and the grant on the `private` schema above does not reach a function defined after it.
+--
+-- SECURITY DEFINER because row-level security hides other entities' nominations from the caller.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.nominations_listed_under (p_ids uuid[]) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.nominations c
+    WHERE c.parent_nomination_id = ANY (p_ids)
+      AND c.id <> ALL (p_ids)
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.nominations_listed_under (uuid[])
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.nominations_listed_under (uuid[]) TO authenticated;
 
 --------------------------------------------------------------------------------
 -- registration_mode_allowed_in: may entities of this type register with this mode, under these stored settings?
@@ -963,7 +995,7 @@ FROM
 --------------------------------------------------------------------------------
 -- registration_mode_allowed: does this project allow this registration mode for this entity type?
 --
--- Answers private.registration_mode_allowed_in for the settings of p_project_id's row in public.app_settings, and false when the project has no row. private.invitation_mode_allowed in 506-invitation-rpcs.sql calls it for an invitation's project, target type and mode.
+-- Answers private.registration_mode_allowed_in for the settings of p_project_id's row in public.app_settings, and false when the project has no row. It is false as well while the project's answers are locked (private.project_answers_locked): an entity that registered then could edit nothing, and the Contestant App offers no registration while they are. private.invitation_mode_allowed in 506-invitation-rpcs.sql calls it for an invitation's project, target type and mode, so an open invitation is neither claimed nor answered with a link while answers are locked.
 --
 -- No API role holds EXECUTE: it answers for any project, a closed one included, and only definer functions call it, as their owner.
 --
@@ -983,7 +1015,8 @@ SET
       WHERE s.project_id = p_project_id
     ),
     false
-  );
+  )
+  AND NOT private.project_answers_locked(p_project_id);
 $$;
 
 REVOKE

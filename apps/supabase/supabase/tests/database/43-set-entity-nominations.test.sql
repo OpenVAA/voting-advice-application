@@ -2843,9 +2843,9 @@ SELECT
         )
       )
     ),
-    '23503',
-    'update or delete on table "nominations" violates foreign key constraint "nominations_parent_nomination_id_fkey" on table "nominations"',
-    'MOVE: the same for an organization''s row with a candidate''s nomination under it is refused by the parent foreign key'
+    'OV005',
+    'set_entity_nominations: a nomination the set removes or moves has other nominations listed under it',
+    'MOVE: the same for an organization''s row with a candidate''s nomination under it is refused with SQLSTATE OV005 before the parent foreign key is met'
   );
 
 SELECT
@@ -2855,8 +2855,8 @@ SELECT
       pg_temp.eid ('org_with_child'),
       '[]'::jsonb
     ),
-    '23503',
-    'update or delete on table "nominations" violates foreign key constraint "nominations_parent_nomination_id_fkey" on table "nominations"',
+    'OV005',
+    'set_entity_nominations: a nomination the set removes or moves has other nominations listed under it',
     'DEL: and so is a set that leaves that row out'
   );
 
@@ -3642,9 +3642,9 @@ SELECT
         )
       )
     ),
-    'P0001',
+    'OV004',
     NULL,
-    'CAP: the parent that would be the caller''s eleventh raises through the function'
+    'CAP: the parent that would be the caller''s eleventh raises SQLSTATE OV004 through the function'
   );
 
 SELECT
