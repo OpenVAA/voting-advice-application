@@ -1,11 +1,10 @@
 import { expect, test as setup } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
+import { createAdminLoginPage } from '../../fixtures/admin/adminLoginPage.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { ADMIN_STORAGE_STATE, TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD } from '../../utils/adminCredentials';
-import { buildRoute } from '../../utils/buildRoute';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { testIds } from '../../utils/testIds';
 
 /**
  * Admin auth setup project: mints an Admin App identity and saves its storageState.
@@ -31,19 +30,9 @@ setup('mint + authenticate as project admin', async ({ page }) => {
   await client.forceRegisterAdmin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
 
   // Log in through the real form.
-  const loginRoute = buildRoute({ route: 'AdminAppLogin', locale: 'en' });
-  await page.goto(loginRoute, { waitUntil: 'domcontentloaded' });
-
-  // reason: the admin login page declares NO test id on its email input or its submit button — unlike the candidate login page, which is a large part of why the admin surface has had no coverage until now. Both selectors below are the locale-stable exception the rule names: `#email` is the id the markup itself declares, and `button[type="submit"]` is a type attribute. Neither reads any translated string, so neither can break on a locale change. The password field is addressed through the shared test id its component DOES carry.
-  // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
-  const emailInput = page.locator('#email');
-  // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
-  const submitButton = page.locator('form button[type="submit"]');
-
-  await emailInput.waitFor({ state: 'visible', timeout: 30000 });
-  await emailInput.fill(TEST_ADMIN_EMAIL);
-  await page.getByTestId(testIds.contestant.password.field).fill(TEST_ADMIN_PASSWORD);
-  await submitButton.click();
+  const login = createAdminLoginPage(page);
+  await login.goToPage();
+  await login.login(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
 
   // The login action answers 303 to the admin home; wait for the address to leave the login page.
   await expect(page).not.toHaveURL(/.*\/admin\/login.*/);

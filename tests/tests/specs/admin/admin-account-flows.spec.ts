@@ -415,8 +415,8 @@ test.describe("the Admin App's entry screens", () => {
         await forgotPasswordPage.open();
         await forgotPasswordPage.expectShown();
       },
-      marker: { testId: testIds.contestant.forgotPassword.email },
-      alsoShown: [{ testId: testIds.admin.forgotPassword.container }]
+      marker: { testId: testIds.shared.account.forgotPassword.email },
+      alsoShown: [{ testId: testIds.admin.forgotPassword.page }]
     },
     {
       // The "email sent" page after a request for an address nobody holds, in its recovery wording.
@@ -429,7 +429,7 @@ test.describe("the Admin App's entry screens", () => {
         await forgotPasswordPage.submit(address);
         await forgotPasswordPage.expectLedToEmailSent(address);
       },
-      marker: { testId: testIds.admin.emailSent.container, attribute: 'data-wording', value: 'recovery' }
+      marker: { testId: testIds.admin.emailSent.page, attribute: 'data-wording', value: 'recovery' }
     },
     {
       // The set-password view an invited admin with no password is shown on the Admin home.
@@ -461,7 +461,7 @@ test.describe("the Admin App's entry screens", () => {
         await passwordResetPage.openDirectly();
         await passwordResetPage.expectShown();
       },
-      marker: { testId: testIds.admin.passwordReset.container }
+      marker: { testId: testIds.admin.passwordReset.page }
     }
   ]);
 });

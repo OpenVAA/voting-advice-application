@@ -196,7 +196,7 @@ export function createAdminLoginPage(page: Page) {
      */
     async openNoPasswordYet(): Promise<void> {
       await page.getByTestId(testIds.admin.login.noPasswordYet).click();
-      await expect(page.getByTestId(testIds.admin.forgotPassword.container)).toBeVisible({
+      await expect(page.getByTestId(testIds.admin.forgotPassword.page)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
     },
@@ -206,7 +206,7 @@ export function createAdminLoginPage(page: Page) {
      */
     async openForgotPassword(): Promise<void> {
       await page.getByTestId(testIds.admin.login.forgotPassword).click();
-      await expect(page.getByTestId(testIds.admin.forgotPassword.container)).toBeVisible({
+      await expect(page.getByTestId(testIds.admin.forgotPassword.page)).toBeVisible({
         timeout: TIMEOUTS.slowPage
       });
     },
@@ -216,7 +216,7 @@ export function createAdminLoginPage(page: Page) {
      */
     async login(email: string, password: string): Promise<void> {
       await emailInput.fill(email);
-      await page.getByTestId(testIds.contestant.password.field).fill(password);
+      await page.getByTestId(testIds.shared.account.password.field).fill(password);
       await submitButton.click();
     },
 
@@ -225,7 +225,7 @@ export function createAdminLoginPage(page: Page) {
      */
     async fillAwaitingScript(email: string, password: string): Promise<void> {
       await emailInput.fill(email);
-      await page.getByTestId(testIds.contestant.password.field).fill(password);
+      await page.getByTestId(testIds.shared.account.password.field).fill(password);
       await expect(submitButton).toBeEnabled({ timeout: TIMEOUTS.slowPage });
     },
 
@@ -269,7 +269,7 @@ export function createAdminLoginPage(page: Page) {
      * Assert that the login page's password label is in the same row as its control.
      */
     async expectPasswordFieldInRow(): Promise<void> {
-      await expectLabelInRow(page.getByTestId(testIds.contestant.password.field));
+      await expectLabelInRow(page.getByTestId(testIds.shared.account.password.field));
     },
 
     /**
@@ -285,7 +285,7 @@ export function createAdminLoginPage(page: Page) {
      */
     async expectFieldLabelsOnOneLine(): Promise<void> {
       await expectLabelOnOneLine(emailInput);
-      await expectLabelOnOneLine(page.getByTestId(testIds.contestant.password.field));
+      await expectLabelOnOneLine(page.getByTestId(testIds.shared.account.password.field));
     },
 
     /**

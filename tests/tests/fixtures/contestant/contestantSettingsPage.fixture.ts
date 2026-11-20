@@ -42,7 +42,7 @@ const MESSAGES = Object.freeze({
 
 export function createContestantSettingsPage(page: Page) {
   const ids = testIds.contestant.settings;
-  const entryIds = testIds.contestant.emailEntry;
+  const entryIds = testIds.shared.account.emailEntry;
   const addressControl = page.getByTestId(ids.email);
 
   return {

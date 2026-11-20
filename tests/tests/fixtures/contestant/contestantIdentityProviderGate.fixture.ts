@@ -75,7 +75,7 @@ export interface IdentityProviderGateState {
 
 export function createContestantIdentityProviderGate(page: Page) {
   const ids = testIds.contestant.identityProviderGate;
-  const entryIds = testIds.contestant.emailEntry;
+  const entryIds = testIds.shared.account.emailEntry;
   const container = page.getByTestId(ids.container);
   const nameField = page.getByTestId(ids.name);
   const shortNameField = page.getByTestId(ids.shortName);

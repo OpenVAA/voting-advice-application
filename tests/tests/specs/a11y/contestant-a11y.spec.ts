@@ -241,7 +241,7 @@ const CONTESTANT_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
     name: 'contestant-password-reset',
     fixture: 'raw',
     routeId: 'ContestantAppResetPassword',
-    contentTestId: testIds.contestant.passwordReset.email,
+    contentTestId: testIds.shared.account.passwordReset.email,
     postLoginTestId: testIds.contestant.passwordReset.page,
     reach: async (page) => {
       const passwordResetPage = createContestantPasswordResetPage(page);
@@ -387,7 +387,7 @@ const PASSWORDLESS_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
     fixture: 'raw',
     routeId: 'ContestantAppHome',
     contentTestId: testIds.contestant.setPasswordGate.container,
-    postLoginTestId: testIds.contestant.passwordSetter.confirmationError,
+    postLoginTestId: testIds.shared.account.passwordSetter.confirmationError,
     reach: async (page) => {
       const setPasswordGate = createContestantSetPasswordGate(page);
       await setPasswordGate.expectShown();

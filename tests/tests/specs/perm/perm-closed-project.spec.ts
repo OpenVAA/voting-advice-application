@@ -130,7 +130,7 @@ test.describe('a project that is not open for voters', () => {
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
 
     await page.goto('/en/admin/login');
-    await expect(page.getByTestId(testIds.contestant.password.field)).toBeVisible();
+    await expect(page.getByTestId(testIds.shared.account.password.field)).toBeVisible();
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
   });
 

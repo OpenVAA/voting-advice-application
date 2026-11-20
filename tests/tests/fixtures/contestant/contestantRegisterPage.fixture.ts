@@ -113,7 +113,7 @@ const EMAIL_ERROR_MESSAGES: Readonly<Record<ContestantRegisterFieldReason['email
 
 export function createContestantRegisterPage(page: Page) {
   const ids = testIds.contestant.register;
-  const entryIds = testIds.contestant.emailEntry;
+  const entryIds = testIds.shared.account.emailEntry;
 
   /** The radio of one mode, reached through the mode's option block. */
   function modeRadio(mode: RegistrationMode): Locator {
@@ -617,7 +617,7 @@ export function createContestantRegisterPage(page: Page) {
      * Type a password into the screen's one password field.
      */
     async typePassword(password: string): Promise<void> {
-      await type(page.getByTestId(testIds.contestant.password.field), password);
+      await type(page.getByTestId(testIds.shared.account.password.field), password);
     },
 
     /**
@@ -665,7 +665,7 @@ export function createContestantRegisterPage(page: Page) {
      * The password control's `type` is not asserted: its show and hide toggle changes it. The value of the hidden field is a credential and is never read.
      */
     async expectCodeSignInInputAttributes(): Promise<void> {
-      const password = page.getByTestId(testIds.contestant.password.field);
+      const password = page.getByTestId(testIds.shared.account.password.field);
       await expect(password).toHaveAttribute('name', 'password');
       await expect(password).toHaveAttribute('autocomplete', 'current-password');
       // reason: the field is hidden, so no role reaches it, and it carries no test id: the form posts it by its name, and so does this step find it. The name is not a translated string.

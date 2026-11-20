@@ -47,8 +47,8 @@ import type { AdminSetPasswordGateFixture } from './adminSetPasswordGate.fixture
 export function createAdminForgotPasswordPage(page: Page): ContestantForgotPasswordPageFixture {
   return createContestantForgotPasswordPage(page, {
     route: 'AdminAppForgotPassword',
-    container: testIds.admin.forgotPassword.container,
-    emailSentContainer: testIds.admin.emailSent.container
+    container: testIds.admin.forgotPassword.page,
+    emailSentContainer: testIds.admin.emailSent.page
   });
 }
 
@@ -60,7 +60,7 @@ export function createAdminForgotPasswordPage(page: Page): ContestantForgotPassw
 export function createAdminEmailSentPage(page: Page): ContestantEmailSentPageFixture {
   return createContestantEmailSentPage(page, new SupabaseAdminClient(), {
     route: 'AdminAppEmailSent',
-    container: testIds.admin.emailSent.container
+    container: testIds.admin.emailSent.page
   });
 }
 
@@ -72,7 +72,7 @@ export function createAdminEmailSentPage(page: Page): ContestantEmailSentPageFix
 export function createAdminPasswordResetPage(page: Page): ContestantPasswordResetPageFixture {
   return createContestantPasswordResetPage(page, {
     route: 'AdminAppResetPassword',
-    container: testIds.admin.passwordReset.container
+    container: testIds.admin.passwordReset.page
   });
 }
 

@@ -91,7 +91,7 @@ export function createContestantEmailSentPage(
   admin: SupabaseAdminClient,
   { route = 'ContestantAppEmailSent', container = testIds.contestant.emailSent.page }: EmailSentPageOf = {}
 ) {
-  const ids = { ...testIds.contestant.emailSent, page: container };
+  const ids = { ...testIds.shared.account.emailSent, page: container };
 
   return {
     /**

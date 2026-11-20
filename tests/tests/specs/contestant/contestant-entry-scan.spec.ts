@@ -227,7 +227,7 @@ declareEntryScans([
       await registerPage.leaveConfirmation();
       await registerPage.expectMismatch();
     },
-    marker: { testId: testIds.contestant.emailEntry.confirmationError }
+    marker: { testId: testIds.shared.account.emailEntry.confirmationError }
   },
   {
     // The screen that signs in the holder of the used code, as it opens.
@@ -252,7 +252,7 @@ declareEntryScans([
       await registerPage.pressContinue();
       await createContestantEmailSentPage(page, new SupabaseAdminClient()).expectShown({ wording: 'signIn', address });
     },
-    marker: { testId: testIds.contestant.emailSent.countdown },
+    marker: { testId: testIds.shared.account.emailSent.countdown },
     alsoShown: [
       { testId: testIds.contestant.emailSent.page, attribute: 'data-wording', value: 'signIn' },
       { testId: testIds.contestant.emailSent.page, attribute: 'data-address', value: 'shown' }
@@ -269,7 +269,7 @@ declareEntryScans([
       await loginPage.followNoPasswordYet();
       await createContestantForgotPasswordPage(page).expectEmail(address);
     },
-    marker: { testId: testIds.contestant.forgotPassword.email }
+    marker: { testId: testIds.shared.account.forgotPassword.email }
   },
   {
     // The "email sent" screen after the forgot-password page, for an address nobody holds.
@@ -293,7 +293,7 @@ declareEntryScans([
       await forgotPasswordPage.open();
       await forgotPasswordPage.expectShown();
     },
-    marker: { testId: testIds.contestant.forgotPassword.email }
+    marker: { testId: testIds.shared.account.forgotPassword.email }
   },
   {
     // The identity provider's error screen after a cancel at the provider.
