@@ -245,7 +245,7 @@ On the data model's side a file is given relative to [`src/objects/`](./src/obje
 
 They differ in one respect. The database admits a faction's nomination as a candidate's parent, and `allowedParentTypes` never offers a faction: no screen lets a candidate choose a faction's list.
 
-The two statements are held together by two grids over the same sixteen cells: `election/nominationShape.test.ts` in this package, and the section on the election-type rule in `08-triggers.test.sql`. The four names of `NOMINATION_SHAPE` are held equal to the members of the generated database enum `nomination_shape` by the Supabase adapter's test in the frontend, `supabaseDataProvider.test.ts`. A change to either matrix is a change to both, and to both grids.
+The two statements are held together by two grids over the same sixteen cells: `election/nominationShape.test.ts` in this package, and the section on the nomination-shape rule in `08-triggers.test.sql`. The four names of `NOMINATION_SHAPE` are held equal to the members of the generated database enum `nomination_shape` by the Supabase adapter's test in the frontend, `supabaseDataProvider.test.ts`. A change to either matrix is a change to both, and to both grids.
 
 ## Classes
 
