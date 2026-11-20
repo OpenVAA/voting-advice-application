@@ -9,21 +9,11 @@
  */
 
 import { expect, test as teardown } from '@playwright/test';
-import fs from 'fs';
 import { clearWrittenNominations } from '../../fixtures/contestant/perm-contestant-nominations';
-import {
-  CONTESTANT_NOMINATIONS_PREFIX,
-  EDIT_CANDIDATE_EDITOR_EMAIL,
-  EDIT_CANDIDATE_STORAGE_STATE,
-  EDIT_ORGANIZATION_EDITOR_EMAIL,
-  EDIT_ORGANIZATION_STORAGE_STATE,
-  NEW_CANDIDATE_EDITOR_EMAIL,
-  NEW_CANDIDATE_STORAGE_STATE,
-  NEW_ORGANIZATION_EDITOR_EMAIL,
-  NEW_ORGANIZATION_STORAGE_STATE
-} from '../../utils/permContestantNominationsData';
+import { CONTESTANT_NOMINATIONS_PREFIX, EDITORS } from '../../utils/permContestantNominationsData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { runTeardownAsserted } from '../shared/assertTeardown';
+import { removeEditorSessions } from '../shared/registerAndStoreSession';
 
 // A plain string literal: the Playwright configuration reads it from this file's text to check that no two teardowns own overlapping prefixes.
 const PREFIX = 'e2e-perm-contestant-nominations-';
@@ -34,19 +24,7 @@ teardown('delete perm-contestant-nominations dataset', async () => {
   await clearWrittenNominations();
 
   const client = new SupabaseAdminClient();
-  await client.unregisterUser(NEW_CANDIDATE_EDITOR_EMAIL);
-  await client.unregisterUser(NEW_ORGANIZATION_EDITOR_EMAIL);
-  await client.unregisterUser(EDIT_CANDIDATE_EDITOR_EMAIL);
-  await client.unregisterUser(EDIT_ORGANIZATION_EDITOR_EMAIL);
+  await removeEditorSessions(client, EDITORS);
 
   await runTeardownAsserted(PREFIX, client);
-
-  for (const storageStatePath of [
-    NEW_CANDIDATE_STORAGE_STATE,
-    NEW_ORGANIZATION_STORAGE_STATE,
-    EDIT_CANDIDATE_STORAGE_STATE,
-    EDIT_ORGANIZATION_STORAGE_STATE
-  ]) {
-    if (fs.existsSync(storageStatePath)) fs.unlinkSync(storageStatePath);
-  }
 });

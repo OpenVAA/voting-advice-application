@@ -1,6 +1,5 @@
-import path from 'path';
-import { TESTS_DIR } from './testsDir';
-import type { EntityGrantTarget } from './supabaseAdminClient';
+import { permEditor } from '../setup/shared/registerAndStoreSession';
+import type { PermEditor } from '../setup/shared/registerAndStoreSession';
 
 /**
  * The no-nomination dataset as the suite names it: the rows of the `perm-no-nomination` template a test addresses, what they are seeded with, and the three users that edit its entities.
@@ -52,20 +51,21 @@ export const UNNOMINATED_CANDIDATE_NAME = Object.freeze({
   lastName: 'Candidate'
 });
 
-/** The entity the unnominated candidate's editor is registered on. */
-export const UNNOMINATED_CANDIDATE_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'candidate',
-  externalId: UNNOMINATED_CANDIDATE_EXTERNAL_ID
-});
-
-/** Email of the unnominated candidate's editor. */
-export const UNNOMINATED_CANDIDATE_EDITOR_EMAIL = `${UNNOMINATED_CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the unnominated candidate's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const UNNOMINATED_CANDIDATE_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-no-nomination-candidate-none.json'
+/** The unnominated candidate's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const UNNOMINATED_CANDIDATE_EDITOR = permEditor(
+  'candidate',
+  UNNOMINATED_CANDIDATE_EXTERNAL_ID,
+  'perm-no-nomination-candidate-none.json'
 );
+
+/** The entity the unnominated candidate's editor is registered on. */
+export const UNNOMINATED_CANDIDATE_GRANT = UNNOMINATED_CANDIDATE_EDITOR.grant;
+
+/** Where the session of the unnominated candidate's editor is stored. */
+export const UNNOMINATED_CANDIDATE_STORAGE_STATE = UNNOMINATED_CANDIDATE_EDITOR.storageStatePath;
+
+/** Email of the unnominated candidate's editor, which a test types into the login form. */
+export const UNNOMINATED_CANDIDATE_EDITOR_EMAIL = UNNOMINATED_CANDIDATE_EDITOR.email;
 
 /** `external_id` of the nomination a state step writes for the unnominated candidate. No such row is seeded. */
 export const UNNOMINATED_CANDIDATE_NOMINATION_EXTERNAL_ID = `${NO_NOMINATION_PREFIX}nom-ca-none`;
@@ -86,20 +86,18 @@ export const UNNOMINATED_ORGANIZATION_NAME = Object.freeze({
 /** The short name the unnominated organization is seeded with, by locale: the default locale alone. */
 export const UNNOMINATED_ORGANIZATION_SHORT_NAME = Object.freeze({ en: 'ORN' });
 
-/** The entity the unnominated organization's editor is registered on. */
-export const UNNOMINATED_ORGANIZATION_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'organization',
-  externalId: UNNOMINATED_ORGANIZATION_EXTERNAL_ID
-});
-
-/** Email of the unnominated organization's editor. */
-export const UNNOMINATED_ORGANIZATION_EDITOR_EMAIL = `${UNNOMINATED_ORGANIZATION_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the unnominated organization's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const UNNOMINATED_ORGANIZATION_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-no-nomination-organization-none.json'
+/** The unnominated organization's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const UNNOMINATED_ORGANIZATION_EDITOR = permEditor(
+  'organization',
+  UNNOMINATED_ORGANIZATION_EXTERNAL_ID,
+  'perm-no-nomination-organization-none.json'
 );
+
+/** The entity the unnominated organization's editor is registered on. */
+export const UNNOMINATED_ORGANIZATION_GRANT = UNNOMINATED_ORGANIZATION_EDITOR.grant;
+
+/** Where the session of the unnominated organization's editor is stored. */
+export const UNNOMINATED_ORGANIZATION_STORAGE_STATE = UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath;
 
 /** `external_id` of the nomination a state step writes for the unnominated organization. No such row is seeded. */
 export const UNNOMINATED_ORGANIZATION_NOMINATION_EXTERNAL_ID = `${NO_NOMINATION_PREFIX}nom-or-none`;
@@ -120,20 +118,25 @@ export const NOMINATED_CANDIDATE_NAME = Object.freeze({
   lastName: 'Candidate'
 });
 
-/** The entity the nominated candidate's editor is registered on. */
-export const NOMINATED_CANDIDATE_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'candidate',
-  externalId: NOMINATED_CANDIDATE_EXTERNAL_ID
-});
-
-/** Email of the nominated candidate's editor. */
-export const NOMINATED_CANDIDATE_EDITOR_EMAIL = `${NOMINATED_CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the nominated candidate's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const NOMINATED_CANDIDATE_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-no-nomination-candidate-nominated.json'
+/** The nominated candidate's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const NOMINATED_CANDIDATE_EDITOR = permEditor(
+  'candidate',
+  NOMINATED_CANDIDATE_EXTERNAL_ID,
+  'perm-no-nomination-candidate-nominated.json'
 );
+
+/** The entity the nominated candidate's editor is registered on. */
+export const NOMINATED_CANDIDATE_GRANT = NOMINATED_CANDIDATE_EDITOR.grant;
+
+/** Where the session of the nominated candidate's editor is stored. */
+export const NOMINATED_CANDIDATE_STORAGE_STATE = NOMINATED_CANDIDATE_EDITOR.storageStatePath;
+
+/** The dataset's three editors, as its setup stores their sessions and its teardown removes them. */
+export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([
+  UNNOMINATED_CANDIDATE_EDITOR,
+  UNNOMINATED_ORGANIZATION_EDITOR,
+  NOMINATED_CANDIDATE_EDITOR
+]);
 
 /** `external_id` of the nominated candidate's one nomination, which is seeded confirmed. */
 export const NOMINATED_CANDIDATE_NOMINATION_EXTERNAL_ID = `${NO_NOMINATION_PREFIX}nom-ca-nominated`;

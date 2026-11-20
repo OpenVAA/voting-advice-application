@@ -7,17 +7,15 @@
  *
  * What it leaves behind: the dataset's rows under `e2e-perm-startfromcg-`, the settings row replaced with the template's, one auth user holding one editor grant, and one storage-state file. The session is this dataset's own: nothing but the contestant tests of `perm-startfromcg.spec.ts` reads it. `data-teardown-perm-startfromcg` removes all of it.
  *
- * The registration runs in a browser context of its own. The session helper unregisters any user that already holds the address before it registers one, so a second run starts clean.
+ * The registration runs in a browser context of its own. The editor is the data module's `EDITORS`, which the teardown removes again. The session helper unregisters any user that already holds the address before it registers one, so a second run starts clean.
  *
  * `extraTeardownPrefix: ['test-', 'e2e-perm-']` clears the rows an earlier link of the chain may still hold while its own teardown runs.
  */
 
 import { test as setup } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
-import { CANDIDATE_EDITOR_EMAIL, CANDIDATE_GRANT, CANDIDATE_STORAGE_STATE } from '../../utils/permStartFromCgData';
-import { TEST_PASSWORD } from '../../utils/testCredentials';
-import { testIds } from '../../utils/testIds';
-import { registerAndStoreSession } from '../shared/registerAndStoreSession';
+import { EDITORS } from '../../utils/permStartFromCgData';
+import { storeEditorSessions } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
 setup(
@@ -28,19 +26,6 @@ setup(
 
     await setupFromTemplate('perm-startfromcg', { extraTeardownPrefix: ['test-', 'e2e-perm-'] });
 
-    // The session is stored once the candidate's home has rendered its status message: with one entity to edit the user is sent straight to it.
-    const context = await browser.newContext({ baseURL });
-    try {
-      await registerAndStoreSession(await context.newPage(), {
-        entityGrants: [CANDIDATE_GRANT],
-        email: CANDIDATE_EDITOR_EMAIL,
-        password: TEST_PASSWORD,
-        storageStatePath: CANDIDATE_STORAGE_STATE,
-        acceptTermsOfUse: true,
-        settledTestId: testIds.contestant.home.statusMessage
-      });
-    } finally {
-      await context.close();
-    }
+    await storeEditorSessions(browser, baseURL, EDITORS);
   }
 );

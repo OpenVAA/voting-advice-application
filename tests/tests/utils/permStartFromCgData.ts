@@ -1,7 +1,6 @@
-import path from 'path';
-import { TESTS_DIR } from './testsDir';
+import { permEditor } from '../setup/shared/registerAndStoreSession';
 import type { Enums } from '@openvaa/supabase-types';
-import type { EntityGrantTarget } from './supabaseAdminClient';
+import type { PermEditor } from '../setup/shared/registerAndStoreSession';
 
 /**
  * The start-from-constituency dataset as the suite's contestant tests name it: the rows of the `perm-startfromcg` template they address, and the one user that edits a candidate of it.
@@ -73,14 +72,14 @@ export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, Enums<'nomination
 /** `external_id` of the candidate whose editor the contestant tests sign in as. It is seeded with one nomination, in the regions' election. */
 export const CANDIDATE_EXTERNAL_ID = `${START_FROM_CG_PREFIX}ca-1-1b`;
 
+/** The candidate's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const CANDIDATE_EDITOR = permEditor('candidate', CANDIDATE_EXTERNAL_ID, 'perm-startfromcg-candidate.json');
+
 /** The entity the candidate's editor is registered on. */
-export const CANDIDATE_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'candidate',
-  externalId: CANDIDATE_EXTERNAL_ID
-});
+export const CANDIDATE_GRANT = CANDIDATE_EDITOR.grant;
 
-/** Email of the candidate's editor. */
-export const CANDIDATE_EDITOR_EMAIL = `${CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
+/** Where the session of the candidate's editor is stored. */
+export const CANDIDATE_STORAGE_STATE = CANDIDATE_EDITOR.storageStatePath;
 
-/** Where the session of the candidate's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const CANDIDATE_STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/perm-startfromcg-candidate.json');
+/** The dataset's one editor, as its setup stores the session and its teardown removes it. */
+export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([CANDIDATE_EDITOR]);

@@ -9,18 +9,10 @@
  */
 
 import { expect, test as teardown } from '@playwright/test';
-import fs from 'fs';
-import {
-  CONFIRMED_ORGANIZATION_EDITOR_EMAIL,
-  CONFIRMED_ORGANIZATION_STORAGE_STATE,
-  ORGANIZATION_EDITING_PREFIX,
-  UNCONFIRMED_CANDIDATE_EDITOR_EMAIL,
-  UNCONFIRMED_CANDIDATE_STORAGE_STATE,
-  UNCONFIRMED_ORGANIZATION_EDITOR_EMAIL,
-  UNCONFIRMED_ORGANIZATION_STORAGE_STATE
-} from '../../utils/permOrganizationEditingData';
+import { EDITORS, ORGANIZATION_EDITING_PREFIX } from '../../utils/permOrganizationEditingData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { runTeardownAsserted } from '../shared/assertTeardown';
+import { removeEditorSessions } from '../shared/registerAndStoreSession';
 
 // A plain string literal: the Playwright configuration reads it from this file's text to check that no two teardowns own overlapping prefixes.
 const PREFIX = 'e2e-perm-organization-editing-';
@@ -29,18 +21,7 @@ teardown('delete perm-organization-editing dataset', async () => {
   expect(PREFIX, 'the prefix deleted here is the one the dataset is seeded under').toBe(ORGANIZATION_EDITING_PREFIX);
 
   const client = new SupabaseAdminClient();
-  await client.unregisterUser(CONFIRMED_ORGANIZATION_EDITOR_EMAIL);
-  await client.unregisterUser(UNCONFIRMED_ORGANIZATION_EDITOR_EMAIL);
-  // The candidate's editor.
-  await client.unregisterUser(UNCONFIRMED_CANDIDATE_EDITOR_EMAIL);
+  await removeEditorSessions(client, EDITORS);
 
   await runTeardownAsserted(PREFIX, client);
-
-  for (const storageStatePath of [
-    CONFIRMED_ORGANIZATION_STORAGE_STATE,
-    UNCONFIRMED_ORGANIZATION_STORAGE_STATE,
-    UNCONFIRMED_CANDIDATE_STORAGE_STATE
-  ]) {
-    if (fs.existsSync(storageStatePath)) fs.unlinkSync(storageStatePath);
-  }
 });

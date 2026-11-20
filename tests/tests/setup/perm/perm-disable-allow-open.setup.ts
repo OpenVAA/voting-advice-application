@@ -1,19 +1,17 @@
 /**
  * perm-disable-allow-open data-setup project.
  *
- * Mints a per-perm Playwright storage state via real `forceRegister` + a real sign-in on the contestant app's sign-in screen (synthetic tokens fail server-side JWT validation). Consumed by the candidate-side describe block in perm-disable-allow-open.spec.ts. The voter-side describe block does not use storage state.
+ * Stores the seeded candidate's session through the shared session helper `registerAndStoreSession` (synthetic tokens fail server-side JWT validation). Consumed by the candidate-side describe block in perm-disable-allow-open.spec.ts. The voter-side describe block does not use storage state.
  *
  * Prefix: 'e2e-perm-no-allowopen-'.
  */
 
-import { expect, test as setup } from '@playwright/test';
-import fs from 'fs';
+import { test as setup } from '@playwright/test';
 import path from 'path';
-import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
 import { TIMEOUTS } from '../../helpers';
-import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { TESTS_DIR } from '../../utils/testsDir';
+import { registerAndStoreSession } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
 const PREFIX = 'e2e-perm-no-allowopen-';
@@ -27,13 +25,11 @@ setup('import perm-disable-allow-open dataset + mint candidate session', async (
   });
 
   const fullExternalId = `${PREFIX}cand-1`;
-  const candidateEmail = `${fullExternalId}@test.openvaa.local`;
-  const client = new SupabaseAdminClient();
-  await client.unregisterUser(candidateEmail);
-  await client.forceRegister(fullExternalId, candidateEmail, TEST_PASSWORD);
-
-  fs.mkdirSync(path.dirname(STORAGE_STATE_PATH), { recursive: true });
-  await createContestantLoginPage(page).signInFromCold(candidateEmail, TEST_PASSWORD);
-  await expect(page).not.toHaveURL(/.*login.*/);
-  await page.context().storageState({ path: STORAGE_STATE_PATH });
+  await registerAndStoreSession(page, {
+    entityGrants: [{ entityType: 'candidate', externalId: fullExternalId }],
+    email: `${fullExternalId}@test.openvaa.local`,
+    password: TEST_PASSWORD,
+    storageStatePath: STORAGE_STATE_PATH,
+    acceptTermsOfUse: true
+  });
 });

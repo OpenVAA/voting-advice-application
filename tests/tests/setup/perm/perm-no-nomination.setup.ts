@@ -5,45 +5,16 @@
  *
  * What it leaves behind: the dataset's rows under `e2e-perm-no-nomination-`, the settings row replaced with the template's, three auth users holding one editor grant each, and three storage-state files. Every session is this dataset's own: nothing but `perm-no-nomination.spec.ts` reads them, so that spec may edit and save under them. `data-teardown-perm-no-nomination` removes all of it.
  *
- * Each registration runs in a browser context of its own, because a page that is already signed in is never shown the login form. The session helper unregisters any user that already holds the address before it registers one, so a second run starts clean.
+ * Each registration runs in a browser context of its own, because a page that is already signed in is never shown the login form. The editors are the data module's `EDITORS`, which the teardown removes again. The session helper unregisters any user that already holds the address before it registers one, so a second run starts clean.
  *
  * `extraTeardownPrefix: ['test-', 'e2e-perm-']` clears the rows an earlier link of the chain may still hold while its own teardown runs.
  */
 
 import { test as setup } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
-import {
-  NOMINATED_CANDIDATE_EDITOR_EMAIL,
-  NOMINATED_CANDIDATE_GRANT,
-  NOMINATED_CANDIDATE_STORAGE_STATE,
-  UNNOMINATED_CANDIDATE_EDITOR_EMAIL,
-  UNNOMINATED_CANDIDATE_GRANT,
-  UNNOMINATED_CANDIDATE_STORAGE_STATE,
-  UNNOMINATED_ORGANIZATION_EDITOR_EMAIL,
-  UNNOMINATED_ORGANIZATION_GRANT,
-  UNNOMINATED_ORGANIZATION_STORAGE_STATE
-} from '../../utils/permNoNominationData';
-import { TEST_PASSWORD } from '../../utils/testCredentials';
-import { testIds } from '../../utils/testIds';
-import { registerAndStoreSession } from '../shared/registerAndStoreSession';
+import { EDITORS } from '../../utils/permNoNominationData';
+import { storeEditorSessions } from '../shared/registerAndStoreSession';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
-import type { Browser, Page } from '@playwright/test';
-
-/**
- * Run `action` on a page of a browser context that holds no session, and close the context afterwards.
- */
-async function inFreshContext(
-  browser: Browser,
-  baseURL: string | undefined,
-  action: (page: Page) => Promise<void>
-): Promise<void> {
-  const context = await browser.newContext({ baseURL });
-  try {
-    await action(await context.newPage());
-  } finally {
-    await context.close();
-  }
-}
 
 setup(
   'import perm-no-nomination dataset + store a session for each of its three editors',
@@ -55,36 +26,6 @@ setup(
       extraTeardownPrefix: ['test-', 'e2e-perm-']
     });
 
-    // Each session is stored once the home of the editor's one entity has rendered its status message: with one entity to edit the user is sent straight to it.
-    await inFreshContext(browser, baseURL, (page) =>
-      registerAndStoreSession(page, {
-        entityGrants: [UNNOMINATED_CANDIDATE_GRANT],
-        email: UNNOMINATED_CANDIDATE_EDITOR_EMAIL,
-        password: TEST_PASSWORD,
-        storageStatePath: UNNOMINATED_CANDIDATE_STORAGE_STATE,
-        acceptTermsOfUse: true,
-        settledTestId: testIds.contestant.home.statusMessage
-      })
-    );
-    await inFreshContext(browser, baseURL, (page) =>
-      registerAndStoreSession(page, {
-        entityGrants: [UNNOMINATED_ORGANIZATION_GRANT],
-        email: UNNOMINATED_ORGANIZATION_EDITOR_EMAIL,
-        password: TEST_PASSWORD,
-        storageStatePath: UNNOMINATED_ORGANIZATION_STORAGE_STATE,
-        acceptTermsOfUse: true,
-        settledTestId: testIds.contestant.home.statusMessage
-      })
-    );
-    await inFreshContext(browser, baseURL, (page) =>
-      registerAndStoreSession(page, {
-        entityGrants: [NOMINATED_CANDIDATE_GRANT],
-        email: NOMINATED_CANDIDATE_EDITOR_EMAIL,
-        password: TEST_PASSWORD,
-        storageStatePath: NOMINATED_CANDIDATE_STORAGE_STATE,
-        acceptTermsOfUse: true,
-        settledTestId: testIds.contestant.home.statusMessage
-      })
-    );
+    await storeEditorSessions(browser, baseURL, EDITORS);
   }
 );

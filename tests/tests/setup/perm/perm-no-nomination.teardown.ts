@@ -9,19 +9,11 @@
  */
 
 import { expect, test as teardown } from '@playwright/test';
-import fs from 'fs';
 import { clearWrittenNominations } from '../../fixtures/contestant/perm-no-nomination';
-import {
-  NO_NOMINATION_PREFIX,
-  NOMINATED_CANDIDATE_EDITOR_EMAIL,
-  NOMINATED_CANDIDATE_STORAGE_STATE,
-  UNNOMINATED_CANDIDATE_EDITOR_EMAIL,
-  UNNOMINATED_CANDIDATE_STORAGE_STATE,
-  UNNOMINATED_ORGANIZATION_EDITOR_EMAIL,
-  UNNOMINATED_ORGANIZATION_STORAGE_STATE
-} from '../../utils/permNoNominationData';
+import { EDITORS, NO_NOMINATION_PREFIX } from '../../utils/permNoNominationData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { runTeardownAsserted } from '../shared/assertTeardown';
+import { removeEditorSessions } from '../shared/registerAndStoreSession';
 
 // A plain string literal: the Playwright configuration reads it from this file's text to check that no two teardowns own overlapping prefixes.
 const PREFIX = 'e2e-perm-no-nomination-';
@@ -32,17 +24,7 @@ teardown('delete perm-no-nomination dataset', async () => {
   await clearWrittenNominations();
 
   const client = new SupabaseAdminClient();
-  await client.unregisterUser(UNNOMINATED_CANDIDATE_EDITOR_EMAIL);
-  await client.unregisterUser(UNNOMINATED_ORGANIZATION_EDITOR_EMAIL);
-  await client.unregisterUser(NOMINATED_CANDIDATE_EDITOR_EMAIL);
+  await removeEditorSessions(client, EDITORS);
 
   await runTeardownAsserted(PREFIX, client);
-
-  for (const storageStatePath of [
-    UNNOMINATED_CANDIDATE_STORAGE_STATE,
-    UNNOMINATED_ORGANIZATION_STORAGE_STATE,
-    NOMINATED_CANDIDATE_STORAGE_STATE
-  ]) {
-    if (fs.existsSync(storageStatePath)) fs.unlinkSync(storageStatePath);
-  }
 });
