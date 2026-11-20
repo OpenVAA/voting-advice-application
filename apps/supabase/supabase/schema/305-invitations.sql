@@ -1,11 +1,10 @@
--- Invitations: `public.invitations`, the code functions, the insert trigger, the table's privileges, its three policies and the cleanup triggers.
+-- Invitations: `public.invitations`, the code functions, the insert trigger, the table's privileges and its three policies. An invitation is deleted with its entity by cleanup_grants_on_delete in 300-auth-tables.sql.
 --
 -- A row promises one grant to whoever proves control of its email address or presents its code. The promise is stated in the four columns of `public.grants`, so fulfilling it is one insert of those four values and nothing is derived. A row belongs to one project and is bound to exactly one of a normalised email address and the hash of a server-generated code.
 --
 -- Depends on:
 -- - 000-enums.sql (grant_scope_type, grant_role_type, entity_type)
 -- - 100-tenancy.sql (projects)
--- - 102-entities.sql (the four entity tables the cleanup triggers sit on)
 -- - 301-auth-functions.sql (grant_role_permissions, user_can, private.entity_project_id)
 -- - auth.users and auth.uid() (Supabase Auth)
 --------------------------------------------------------------------------------
@@ -94,7 +93,7 @@ CREATE TABLE public.invitations (
   -- The promised grant, in the four columns of public.grants and with their types.
   scope public.grant_scope_type NOT NULL,
   target_type public.entity_type,
-  -- No foreign key, as on public.grants: the target is a project or a row of one of the four entity tables. cleanup_invitations_on_delete removes an invitation when its entity is deleted, and a project-scope row goes with its project through project_id.
+  -- No foreign key, as on public.grants: the target is a project or a row of one of the four entity tables. cleanup_grants_on_delete (300-auth-tables.sql) removes an invitation when its entity is deleted, and a project-scope row goes with its project through project_id.
   target_id uuid,
   role public.grant_role_type NOT NULL,
   -- The invited address, trimmed and lower-cased by the insert trigger. Null on a code row.
@@ -148,7 +147,7 @@ CREATE TABLE public.invitations (
   )
 );
 
--- One address is promised one target once while that promise is open, whatever the role. A claimed row, the row of a claimant since deleted included, does not stop a new invitation for its address and target, so a project editor is promoted by inviting the same address as a project admin. A code's index below covers every row, claimed or not, because a used code is never issued again. NULLS NOT DISTINCT because target_type is null on a project-scope row, where a plain unique index would admit the duplicate. "Open" here is unclaimed alone: an index predicate cannot read the clock, so a row that expired unclaimed still holds its address and target, although `address_holds_open_invitation` and the claim no longer count it. A new invitation for them is refused with 23505 until that row is deleted, which `admin_delete_invitations` admits for an unclaimed row to a caller who may seed its promise.
+-- One address is promised one target once while that promise is open, whatever the role. A claimed row, the row of a claimant since deleted included, does not stop a new invitation for its address and target, so a project editor is promoted by inviting the same address as a project admin. A code's index below covers every row, claimed or not, because a used code is never issued again. NULLS NOT DISTINCT because target_type is null on a project-scope row, where a plain unique index would admit the duplicate. "Open" here is unclaimed alone: an index predicate cannot read the clock, so a row that expired unclaimed still holds its address and target, although `email_invitation_hold` and the claim no longer count it. A new invitation for them is refused with 23505 until that row is deleted, which `admin_delete_invitations` admits for an unclaimed row to a caller who may seed its promise.
 CREATE UNIQUE INDEX invitations_email_target_key ON public.invitations (project_id, email, scope, target_type, target_id) NULLS NOT DISTINCT
 WHERE
   email IS NOT NULL
@@ -161,7 +160,7 @@ WHERE
 
 CREATE INDEX idx_invitations_project_id ON public.invitations (project_id);
 
--- The lookup by target, which cleanup_invitations_on_delete uses.
+-- The lookup by target, which cleanup_grants_on_delete uses.
 CREATE INDEX idx_invitations_scope_target ON public.invitations (scope, target_type, target_id);
 
 CREATE INDEX idx_invitations_created_by ON public.invitations (created_by);
@@ -377,45 +376,9 @@ CREATE POLICY "admin_delete_invitations" ON public.invitations FOR DELETE TO aut
   )
 );
 
---------------------------------------------------------------------------------
--- cleanup_invitations_on_delete: an invitation does not outlive its entity
---
--- `target_id` has no foreign key. Without these triggers an invitation would survive its entity and attach to a row that reused the id, for instance through an import. These AFTER DELETE triggers delete the invitations naming the deleted row, claimed ones included, on the four entity tables. The trigger argument carries the entity type, so one function serves all four tables and names none of them.
---
--- SECURITY DEFINER because the deleting caller may not hold the authority the invitation's DELETE policy asks, and that policy keeps claimed rows. search_path is pinned as on every definer function here. A project delete removes the project's invitations through the foreign key on `project_id`.
---------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.cleanup_invitations_on_delete () RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER
-SET
-  search_path = '' AS $$
-BEGIN
-  DELETE FROM public.invitations i
-  WHERE i.scope = 'entity'
-    AND i.target_type = TG_ARGV[0]::public.entity_type
-    AND i.target_id = OLD.id;
-  RETURN OLD;
-END;
-$$;
-
-CREATE TRIGGER cleanup_invitations_on_delete
-AFTER DELETE ON public.candidates FOR EACH ROW
-EXECUTE FUNCTION public.cleanup_invitations_on_delete ('candidate');
-
-CREATE TRIGGER cleanup_invitations_on_delete
-AFTER DELETE ON public.organizations FOR EACH ROW
-EXECUTE FUNCTION public.cleanup_invitations_on_delete ('organization');
-
-CREATE TRIGGER cleanup_invitations_on_delete
-AFTER DELETE ON public.factions FOR EACH ROW
-EXECUTE FUNCTION public.cleanup_invitations_on_delete ('faction');
-
-CREATE TRIGGER cleanup_invitations_on_delete
-AFTER DELETE ON public.alliances FOR EACH ROW
-EXECUTE FUNCTION public.cleanup_invitations_on_delete ('alliance');
-
--- Neither trigger function is an RPC. A trigger fires whatever EXECUTE its function carries, so nothing is lost by revoking it from the API roles.
+-- The trigger function is not an RPC. A trigger fires whatever EXECUTE its function carries, so nothing is lost by revoking it from the API roles.
 REVOKE
-EXECUTE ON FUNCTION public.prepare_invitation (),
-public.cleanup_invitations_on_delete ()
+EXECUTE ON FUNCTION public.prepare_invitation ()
 FROM
   PUBLIC,
   anon,

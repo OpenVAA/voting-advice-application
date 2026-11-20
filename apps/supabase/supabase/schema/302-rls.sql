@@ -535,10 +535,10 @@ FOR UPDATE
           'organization'::public.entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) <> 'locked'
   )
 WITH
   CHECK (
@@ -551,10 +551,10 @@ WITH
           'organization'::public.entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) <> 'locked'
   );
 
 CREATE POLICY "admin_update_organizations" ON public.organizations
@@ -650,7 +650,7 @@ WITH
 --
 -- Structural columns (project_id, external_id, ...) are protected by this table's column grants in 303-column-grants.sql, because row-level security cannot admit a row while withholding a column.
 --
--- The entity's own editor updates no row while its project's answers are locked (`private.project_answers_locked`, the app setting `access.answersLocked`), and a project grant holder writes through the project-scope policies, which do not read the lock. The self-update policies of the other three entity tables carry the same conjunct.
+-- The entity's own editor updates no row while its project's contestant editing is `locked` (`private.project_contestant_editing`, the app setting `access.contestantEditing`), and a project grant holder writes through the project-scope policies, which do not read the lock. The self-update policies of the other three entity tables carry the same conjunct.
 CREATE POLICY "entity_update_own_candidates" ON public.candidates
 FOR UPDATE
   TO authenticated USING (
@@ -663,10 +663,10 @@ FOR UPDATE
           'candidate'::public.entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) <> 'locked'
   )
 WITH
   CHECK (
@@ -679,10 +679,10 @@ WITH
           'candidate'::public.entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) <> 'locked'
   );
 
 CREATE POLICY "admin_update_candidates" ON public.candidates
@@ -781,10 +781,10 @@ FOR UPDATE
           'faction'::public.entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) <> 'locked'
   )
 WITH
   CHECK (
@@ -797,10 +797,10 @@ WITH
           'faction'::public.entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) <> 'locked'
   );
 
 CREATE POLICY "admin_update_factions" ON public.factions
@@ -899,10 +899,10 @@ FOR UPDATE
           'alliance'::public.entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) <> 'locked'
   )
 WITH
   CHECK (
@@ -915,10 +915,10 @@ WITH
           'alliance'::public.entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) <> 'locked'
   );
 
 CREATE POLICY "admin_update_alliances" ON public.alliances
@@ -1148,7 +1148,7 @@ WITH
     )
   );
 
--- Entity insert of its own nomination: `nomination.edit` on the row's entity, nominations and answers unlocked, created unconfirmed for an admin to confirm, and the row's entity and election both in the row's project, so a grantee cannot insert into another project's contest. `validate_nomination` checks the constituency's project.
+-- Entity insert of its own nomination: `nomination.edit` on the row's entity, contestant editing `open`, created unconfirmed for an admin to confirm, and the row's entity and election both in the row's project, so a grantee cannot insert into another project's contest. `validate_nomination` checks the constituency's project.
 --
 -- `NOT confirmed` is backed by the INSERT column grant in 303-column-grants.sql, which omits the column so the default `false` applies. The two fail differently, the grant at privilege level and this policy on the row, and 23-nominations-write.test.sql asserts them separately.
 CREATE POLICY "entity_insert_nominations" ON public.nominations FOR INSERT TO authenticated
@@ -1168,14 +1168,10 @@ WITH
           entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_nominations_locked (project_id)
-    )
-    AND NOT (
-      SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) = 'open'
     AND NOT confirmed
     AND (
       SELECT
@@ -1201,7 +1197,7 @@ WITH
 -- - Guard 1: the row nominates an organization or an alliance. A candidate's row and a faction's row are never admitted here.
 -- - Guard 2: it is created unconfirmed; the column grant is the second line of defence.
 -- - Guard 3: no nomination exists for the row's own entity at that election, constituency and round. It is asked with the row's generated `entity_type` and its organization or alliance id, so an alliance's row is checked as an organization's is. The unique key includes the parent, so it does not see an organization already nominated under an alliance; the key only settles concurrent inserts.
--- - Guard 4: the project's nominations are not locked, and its answers are not locked.
+-- - Guard 4: the project's contestant editing is `open`.
 -- - Guard 5, the pairing: the caller already holds a nomination at that contest whose entity grants `nomination.create_parent` and is of a type that stands under the row's entity: a candidate or a faction for an organization's row, an organization for an alliance's. Without the types, a candidate's editor could create an alliance's row and an organization's editor another organization's. A faction's nomination always stands under its own organization's, so the organization's row a faction's editor can create is another organization's. The types are chosen by whether the row is an alliance's and by nothing else, so this guard does not silently do guard 1's job and mask guard 1's removal.
 -- - Cap: the caller may have originated at most 10 unconfirmed organization and alliance nominations, so an editor cannot create placeholders for unrelated parties and alliances at will. `enforce_nomination_confirmation` raises the error that names the limit, because a policy refusal names only the policy.
 -- - Project agreement: the row's entity belongs to the row's project. Its argument is the coalesced entity rather than `organization_id`, so it does not silently do guard 1's job and mask guard 1's removal. It is scoped to this policy rather than the table because 07-rpc-security.test.sql inserts such a row deliberately as a negative control.
@@ -1225,14 +1221,10 @@ WITH
           election_round
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_nominations_locked (project_id)
-    )
-    AND NOT (
-      SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) = 'open'
     AND (
       SELECT
         private.caller_nominated_in_contest (
@@ -1281,7 +1273,7 @@ WITH
     )
   );
 
--- Entity update of its own nomination: `nomination.edit` on the row's entity, with the four entity foreign keys coalesced (the table's CHECK makes exactly one non-null) and the row's generated `entity_type` naming the type, and the project's nominations and answers unlocked. 23-nominations-write.test.sql asserts each conjunct in both directions, and 55-answers-lock.test.sql the answers lock.
+-- Entity update of its own nomination: `nomination.edit` on the row's entity, with the four entity foreign keys coalesced (the table's CHECK makes exactly one non-null) and the row's generated `entity_type` naming the type, and the project's contestant editing `open`. 23-nominations-write.test.sql asserts each conjunct in both directions, and 55-answers-lock.test.sql the editing setting.
 --
 -- Each lock is a conjunct rather than a permission because user_can answers whether a role may apply a permission, not whether the object's state admits it. Each is read through a SECURITY DEFINER helper because an inline sub-select over public.projects raises `infinite recursion detected in policy for relation`.
 --
@@ -1305,14 +1297,10 @@ FOR UPDATE
           entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_nominations_locked (project_id)
-    )
-    AND NOT (
-      SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) = 'open'
   )
 WITH
   CHECK (
@@ -1330,14 +1318,10 @@ WITH
           entity_type
         )
     )
-    AND NOT (
+    AND (
       SELECT
-        private.project_nominations_locked (project_id)
-    )
-    AND NOT (
-      SELECT
-        private.project_answers_locked (project_id)
-    )
+        private.project_contestant_editing (project_id)
+    ) = 'open'
     AND (
       SELECT
         private.entity_project_id (
@@ -1366,7 +1350,7 @@ CREATE POLICY "admin_delete_nominations" ON public.nominations FOR DELETE TO aut
 
 -- Entity delete of its own nomination, confirmed or not: the `USING` clause of `entity_update_nominations`.
 -- - `nomination.edit` on the row's entity, with the four entity foreign keys coalesced and the row's generated `entity_type` naming the type. A row the caller created for another entity is not the caller's own: the placeholder parent that `entity_insert_parent_nominations` admits nominates an organization the caller holds no permission on, and who created a row is not asked.
--- - The project's nominations are not locked, read through `private.project_nominations_locked`, and its answers are not locked, read through `private.project_answers_locked`, as the entity insert and update policies read them.
+-- - The project's contestant editing is `open`, read through `private.project_contestant_editing`, as the entity insert and update policies read it.
 --
 -- The foreign key on `parent_nomination_id` is ON DELETE NO ACTION, so it refuses the delete while a nomination is listed under the row, whoever asks.
 --
@@ -1386,14 +1370,10 @@ CREATE POLICY "entity_delete_nominations" ON public.nominations FOR DELETE TO au
         entity_type
       )
   )
-  AND NOT (
+  AND (
     SELECT
-      private.project_nominations_locked (project_id)
-  )
-  AND NOT (
-    SELECT
-      private.project_answers_locked (project_id)
-  )
+      private.project_contestant_editing (project_id)
+  ) = 'open'
 );
 
 -- =====================================================================
@@ -1443,7 +1423,7 @@ WITH
     )
   );
 
--- Update: `project.edit_app_settings`. The settings permissions split by table: `project.edit_project_settings` governs `projects` and is admin-only, while this permission governs `app_settings` and project editors hold it too. One key of `app_settings.settings` is read by a policy: `access.nominationsLocked` is the nominations lock, a conjunct of the entity-user policies on `nominations`. Whoever holds this permission, project editors among them, may therefore lock and unlock nominations.
+-- Update: `project.edit_app_settings`. The settings permissions split by table: `project.edit_project_settings` governs `projects` and is admin-only, while this permission governs `app_settings` and project editors hold it too. One key of `app_settings.settings` is read by policies: `access.contestantEditing`, a conjunct of the entity-user policies on `nominations` and of the entity self-update policies. Whoever holds this permission, project editors among them, may therefore lock and unlock contestant editing.
 --
 -- The two permissions have the same holders except the project editor, so only an editor tells them apart; 22-content-policies.test.sql creates one for that reason.
 CREATE POLICY "admin_update_app_settings" ON public.app_settings

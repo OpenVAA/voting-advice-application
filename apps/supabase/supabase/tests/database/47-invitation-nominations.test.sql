@@ -2778,7 +2778,7 @@ SELECT
 
 SELECT
   throws_ok (
-    'SET CONSTRAINTS public.nominations_parent_required IMMEDIATE; ' || pg_temp.probe (),
+    'SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE; ' || pg_temp.probe (),
     '23514',
     NULL,
     'MODE: the control of that probe: with the constraint immediate the same row is refused at its own statement'

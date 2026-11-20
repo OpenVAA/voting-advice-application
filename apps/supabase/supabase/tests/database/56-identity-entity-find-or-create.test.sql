@@ -1,6 +1,6 @@
 -- 56-identity-entity-find-or-create.test.sql: the entity an identity provider's user registers, found or created in one transaction
 --
--- `identity_entity_find_or_create (p_user_id, p_project_id, p_entity_type, p_first_name, p_last_name, p_identity_metadata)` answers for the one user it is given. It takes an advisory transaction lock keyed on the user, then reads the user's registered-entities record, `registered_entities` of auth.users.raw_app_meta_data, for the project and the type. With no record it creates the entity (a confirmed candidate with the given names, or a nameless unconfirmed organization), the user's editor grant on it and the record, and answers `created`. A record whose grant and row both exist answers `found` and creates nothing, so a second call makes no second entity; a record whose grant or row is gone answers `gone` and creates nothing. On every answer it also writes the identity metadata it is given into the user's app metadata under the same lock, setting each key given a string and removing each key given a null; a call that omits it writes none. The service role alone may execute it, and a null argument, a type other than candidate and organization, a user id that names no user, a malformed record and identity metadata that is not an object of strings and nulls, or that names the record, are refused with nothing written.
+-- `identity_entity_find_or_create (p_user_id, p_project_id, p_entity_type, p_first_name, p_last_name, p_identity_metadata)` answers for the one user it is given; every argument is required and none has a default. It locks the user's row of auth.users, then reads the user's row of private.identity_registrations for the project and the type. With no registration it creates the registration, the entity (a confirmed candidate with the given names, or a nameless unconfirmed organization) and the user's editor grant on it, and answers `created`. A registration whose grant and row both exist answers `found` and creates nothing, so a second call makes no second entity; a registration whose grant or row is gone answers `gone` and creates nothing. Every answer is `{"result", "entity_id"}` and carries nothing else. On every answer it also writes the identity metadata it is given into the user's app metadata under the same lock, setting each key given a string and removing each key given a null; an empty object writes nothing. An account already bound to another `identity_match_value`, one that differs only by case included, is refused before anything is written. The service role alone may execute it, and a null argument, a type other than candidate and organization, a user id that names no user, app metadata that is not an object and identity metadata that is not an object of strings and nulls are refused with nothing written.
 --
 -- Every assertion's description begins with `IEF: `. The function is the service role's, so every call below is made as that role and its answer is kept in a transaction-local setting; the rows it wrote are read back by the fixture role.
 --
@@ -8,7 +8,7 @@
 -- - 00-helpers.test.sql (create_test_data, test_id, test_user_id, set_test_user, reset_role)
 -- - 102-entities.sql (public.candidates, public.organizations)
 -- - 300-auth-tables.sql (public.grants)
--- - 506-invitation-rpcs.sql (identity_entity_find_or_create)
+-- - 506-invitation-rpcs.sql (identity_entity_find_or_create, private.identity_registrations)
 BEGIN;
 
 SET
@@ -19,12 +19,23 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (54);
+  plan (55);
 
 SELECT
   create_test_data ();
 
--- Two users an identity provider created: neither has a registered-entities record yet. The first holds the metadata members the auth service writes for every account.
+-- A user's registrations, in the shape the function answers them.
+CREATE FUNCTION t56_registrations (p_user_id uuid) RETURNS jsonb LANGUAGE sql STABLE AS $$
+  SELECT COALESCE(jsonb_object_agg(x.project_id::text, x.entries), '{}'::jsonb)
+  FROM (
+    SELECT r.project_id, jsonb_object_agg(r.entity_type::text, r.entity_id::text) AS entries
+    FROM private.identity_registrations r
+    WHERE r.user_id = p_user_id
+    GROUP BY r.project_id
+  ) x;
+$$;
+
+-- Two users an identity provider created: neither has a registration yet. The first holds the metadata members the auth service writes for every account.
 INSERT INTO
   auth.users (
     id,
@@ -68,7 +79,7 @@ VALUES
   );
 
 -- =====================================================================
--- A first sign-in as a candidate: the candidate, its grant and the record
+-- A first sign-in as a candidate: the candidate, its grant and the registration
 -- =====================================================================
 SET
   LOCAL ROLE service_role;
@@ -83,12 +94,13 @@ SELECT
           test_id('project_a'),
           'candidate',
           'Matti',
-          'Virtanen'
+          'Virtanen',
+          '{}'::jsonb
         )::text,
         true
       )
     $$,
-    'IEF: the service role finds or creates the candidate of a user with no record'
+    'IEF: the service role finds or creates the candidate of a user with no registration'
   );
 
 SELECT
@@ -98,7 +110,7 @@ SELECT
   ok (
     NULLIF(current_setting('ief.candidate', true), '')::jsonb ->> 'result' = 'created'
     AND NULLIF(current_setting('ief.candidate', true), '')::jsonb ->> 'entity_id' IS NOT NULL,
-    'IEF: a user with no record is answered created, with the id of the entity'
+    'IEF: a user with no registration is answered created, with the id of the entity'
   );
 
 SELECT
@@ -145,30 +157,34 @@ SELECT
   ok (
     (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities' -> test_id ('project_a')::text ->> 'candidate'
+        t56_registrations (u.id) -> test_id ('project_a')::text ->> 'candidate'
       FROM
         auth.users u
       WHERE
         u.id = 'cccccccc-cccc-cccc-cccc-0000000056a1'
     ) = NULLIF(current_setting('ief.candidate', true), '')::jsonb ->> 'entity_id',
-    'IEF: the user''s registered-entities record names the created candidate for the project'
+    'IEF: the user''s registrations name the created candidate for the project'
   );
 
 SELECT
   ok (
-    NULLIF(current_setting('ief.candidate', true), '')::jsonb -> 'registered_entities' = (
+    (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities'
+        array_agg(
+          k
+          ORDER BY
+            k
+        )
       FROM
-        auth.users u
-      WHERE
-        u.id = 'cccccccc-cccc-cccc-cccc-0000000056a1'
-    ),
-    'IEF: the answer carries the user''s whole registered-entities record as stored after the call'
+        jsonb_object_keys(
+          NULLIF(current_setting('ief.candidate', true), '')::jsonb
+        ) k
+    ) = ARRAY['entity_id', 'result'],
+    'IEF: the answer carries the result and the entity id and nothing else'
   );
 
 -- =====================================================================
--- A first sign-in as an organization: a nameless, unconfirmed organization, its grant and the record
+-- A first sign-in as an organization: a nameless, unconfirmed organization, its grant and the registration
 -- =====================================================================
 SET
   LOCAL ROLE service_role;
@@ -183,12 +199,13 @@ SELECT
           test_id('project_a'),
           'organization',
           'Liisa',
-          'Laine'
+          'Laine',
+          '{}'::jsonb
         )::text,
         true
       )
     $$,
-    'IEF: the service role finds or creates the organization of a user with no record'
+    'IEF: the service role finds or creates the organization of a user with no registration'
   );
 
 SELECT
@@ -198,7 +215,7 @@ SELECT
   ok (
     NULLIF(current_setting('ief.organization', true), '')::jsonb ->> 'result' = 'created'
     AND NULLIF(current_setting('ief.organization', true), '')::jsonb ->> 'entity_id' IS NOT NULL,
-    'IEF: a user with no organization record is answered created, with the id of the entity'
+    'IEF: a user with no organization registration is answered created, with the id of the entity'
   );
 
 SELECT
@@ -244,26 +261,30 @@ SELECT
   ok (
     (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities' -> test_id ('project_a')::text ->> 'organization'
+        t56_registrations (u.id) -> test_id ('project_a')::text ->> 'organization'
       FROM
         auth.users u
       WHERE
         u.id = 'cccccccc-cccc-cccc-cccc-0000000056a2'
     ) = NULLIF(current_setting('ief.organization', true), '')::jsonb ->> 'entity_id',
-    'IEF: the user''s registered-entities record names the created organization for the project'
+    'IEF: the user''s registrations name the created organization for the project'
   );
 
 SELECT
   ok (
-    NULLIF(current_setting('ief.organization', true), '')::jsonb -> 'registered_entities' = (
+    (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities'
+        array_agg(
+          k
+          ORDER BY
+            k
+        )
       FROM
-        auth.users u
-      WHERE
-        u.id = 'cccccccc-cccc-cccc-cccc-0000000056a2'
-    ),
-    'IEF: the organization''s answer carries the whole record as stored after the call'
+        jsonb_object_keys(
+          NULLIF(current_setting('ief.organization', true), '')::jsonb
+        ) k
+    ) = ARRAY['entity_id', 'result'],
+    'IEF: the organization''s answer carries the result and the entity id and nothing else'
   );
 
 -- =====================================================================
@@ -282,7 +303,8 @@ SELECT
           test_id('project_a'),
           'candidate',
           'Matti',
-          'Virtanen'
+          'Virtanen',
+          '{}'::jsonb
         )::text,
         true
       )
@@ -340,50 +362,50 @@ SELECT
   ok (
     (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities'
+        t56_registrations (u.id)
       FROM
         auth.users u
       WHERE
         u.id = 'cccccccc-cccc-cccc-cccc-0000000056a1'
-    ) = NULLIF(current_setting('ief.candidate', true), '')::jsonb -> 'registered_entities'
-    AND NULLIF(current_setting('ief.candidate_again', true), '')::jsonb -> 'registered_entities' = NULLIF(current_setting('ief.candidate', true), '')::jsonb -> 'registered_entities',
-    'IEF: and the record, stored and answered, is the one the first call wrote'
+    ) = jsonb_build_object(
+      test_id ('project_a')::text,
+      jsonb_build_object(
+        'candidate',
+        NULLIF(current_setting('ief.candidate', true), '')::jsonb ->> 'entity_id'
+      )
+    ),
+    'IEF: and the stored registrations are the one the first call wrote'
   );
 
 SELECT
   is (
     (
       SELECT
-        u.raw_app_meta_data - 'registered_entities'
+        u.raw_app_meta_data
       FROM
         auth.users u
       WHERE
         u.id = 'cccccccc-cccc-cccc-cccc-0000000056a1'
     ),
     '{"provider": "email", "providers": ["email"]}'::jsonb,
-    'IEF: no member of the user''s app metadata but the record is changed'
+    'IEF: calls with empty identity metadata leave the user''s app metadata as it was: the registration is not kept there'
   );
 
 -- =====================================================================
 -- The lock
 -- =====================================================================
+-- The calls for this user wrote nothing to its row of auth.users, so the row the fixture inserted is the one they locked: a row lock leaves the locking transaction in the row's xmax.
 SELECT
   ok (
-    EXISTS (
+    (
       SELECT
-        1
+        u.xmax::text <> '0'
       FROM
-        pg_locks l
+        auth.users u
       WHERE
-        l.locktype = 'advisory'
-        AND l.pid = pg_backend_pid()
-        AND l.granted
-        AND l.objsubid = 1
-        AND ((l.classid::bigint << 32) | l.objid::bigint) = hashtext (
-          'identity-entity:' || 'cccccccc-cccc-cccc-cccc-0000000056a1'
-        )::bigint
+        u.id = 'cccccccc-cccc-cccc-cccc-0000000056a1'
     ),
-    'IEF: after a call, this backend holds the advisory lock keyed on hashtext of identity-entity: and the user id, until its transaction ends'
+    'IEF: after a call, the user''s row of auth.users carries this transaction''s row lock'
   );
 
 SELECT
@@ -398,10 +420,10 @@ SELECT
         AND l.pid = pg_backend_pid()
         AND l.objsubid = 1
         AND ((l.classid::bigint << 32) | l.objid::bigint) = hashtext (
-          'identity-entity:' || 'cccccccc-cccc-cccc-cccc-0000000056a5'
+          'identity-entity:' || 'cccccccc-cccc-cccc-cccc-0000000056a1'
         )::bigint
     ),
-    'IEF: and holds no such lock for a user it was not called for'
+    'IEF: and the call takes no advisory lock keyed on the user'
   );
 
 -- =====================================================================
@@ -420,7 +442,8 @@ SELECT
           test_id('project_a'),
           'organization',
           'Matti',
-          'Virtanen'
+          'Virtanen',
+          '{}'::jsonb
         )::text,
         true
       )
@@ -436,7 +459,7 @@ SELECT
     NULLIF(current_setting('ief.second_type', true), '')::jsonb ->> 'result' = 'created'
     AND (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities' -> test_id ('project_a')::text
+        t56_registrations (u.id) -> test_id ('project_a')::text
       FROM
         auth.users u
       WHERE
@@ -447,11 +470,11 @@ SELECT
       'organization',
       NULLIF(current_setting('ief.second_type', true), '')::jsonb ->> 'entity_id'
     ),
-    'IEF: it answers created, and the record holds the new organization beside the candidate, which is kept'
+    'IEF: it answers created, and the registrations hold the new organization beside the candidate, which is kept'
   );
 
 -- =====================================================================
--- gone: a record whose grant or row is gone creates nothing
+-- gone: a registration whose grant or row is gone creates nothing
 -- =====================================================================
 DELETE FROM public.grants g
 WHERE
@@ -471,12 +494,13 @@ SELECT
           test_id('project_a'),
           'candidate',
           'Matti',
-          'Virtanen'
+          'Virtanen',
+          '{}'::jsonb
         )::text,
         true
       )
     $$,
-    'IEF: a call whose recorded candidate has lost its grant lives'
+    'IEF: a call whose registered candidate has lost its grant lives'
   );
 
 SELECT
@@ -486,7 +510,7 @@ SELECT
   ok (
     NULLIF(current_setting('ief.grant_gone', true), '')::jsonb ->> 'result' = 'gone'
     AND NULLIF(current_setting('ief.grant_gone', true), '')::jsonb -> 'entity_id' = 'null'::jsonb,
-    'IEF: with the grant deleted and the record kept, the call answers gone, with a null entity id'
+    'IEF: with the grant deleted and the registration kept, the call answers gone, with a null entity id'
   );
 
 SELECT
@@ -524,17 +548,24 @@ SELECT
   ok (
     (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities'
+        t56_registrations (u.id)
       FROM
         auth.users u
       WHERE
         u.id = 'cccccccc-cccc-cccc-cccc-0000000056a1'
-    ) = NULLIF(current_setting('ief.second_type', true), '')::jsonb -> 'registered_entities'
-    AND NULLIF(current_setting('ief.grant_gone', true), '')::jsonb -> 'registered_entities' = NULLIF(current_setting('ief.second_type', true), '')::jsonb -> 'registered_entities',
-    'IEF: and leaves the record, stored and answered, as it was'
+    ) = jsonb_build_object(
+      test_id ('project_a')::text,
+      jsonb_build_object(
+        'candidate',
+        NULLIF(current_setting('ief.candidate', true), '')::jsonb ->> 'entity_id',
+        'organization',
+        NULLIF(current_setting('ief.second_type', true), '')::jsonb ->> 'entity_id'
+      )
+    ),
+    'IEF: and leaves the stored registrations as they were'
   );
 
--- A user whose record names an organization of project A that is no row, and who holds the editor grant on that id: the grant is kept and the row is gone.
+-- A user whose registration names an organization of project A that is no row, and who holds the editor grant on that id: the grant is kept and the row is gone. And a user whose stored app metadata is not an object.
 INSERT INTO
   auth.users (
     id,
@@ -559,16 +590,7 @@ VALUES
     'authenticated',
     now(),
     '{}'::jsonb,
-    jsonb_build_object(
-      'registered_entities',
-      jsonb_build_object(
-        test_id ('project_a')::text,
-        jsonb_build_object(
-          'organization',
-          '56560000-0000-4000-8000-0000000000f1'
-        )
-      )
-    ),
+    '{}'::jsonb,
     now(),
     now()
   ),
@@ -581,15 +603,19 @@ VALUES
     'authenticated',
     now(),
     '{}'::jsonb,
-    jsonb_build_object(
-      'registered_entities',
-      jsonb_build_object(
-        test_id ('project_a')::text,
-        jsonb_build_object('candidate', 'not an id')
-      )
-    ),
+    '["not", "an", "object"]'::jsonb,
     now(),
     now()
+  );
+
+INSERT INTO
+  private.identity_registrations (user_id, project_id, entity_type, entity_id)
+VALUES
+  (
+    'cccccccc-cccc-cccc-cccc-0000000056a3',
+    test_id ('project_a'),
+    'organization',
+    '56560000-0000-4000-8000-0000000000f1'
   );
 
 INSERT INTO
@@ -616,12 +642,13 @@ SELECT
           test_id('project_a'),
           'organization',
           'Liisa',
-          'Laine'
+          'Laine',
+          '{}'::jsonb
         )::text,
         true
       )
     $$,
-    'IEF: a call whose recorded organization is no row of the project lives'
+    'IEF: a call whose registered organization is no row of the project lives'
   );
 
 SELECT
@@ -652,14 +679,13 @@ SELECT
   ok (
     (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities' -> test_id ('project_a')::text ->> 'organization'
+        t56_registrations (u.id) -> test_id ('project_a')::text ->> 'organization'
       FROM
         auth.users u
       WHERE
         u.id = 'cccccccc-cccc-cccc-cccc-0000000056a3'
-    ) = '56560000-0000-4000-8000-0000000000f1'
-    AND NULLIF(current_setting('ief.row_gone', true), '')::jsonb -> 'registered_entities' -> test_id ('project_a')::text ->> 'organization' = '56560000-0000-4000-8000-0000000000f1',
-    'IEF: and leaves the record, stored and answered, as it was'
+    ) = '56560000-0000-4000-8000-0000000000f1',
+    'IEF: and leaves the stored registrations as they were'
   );
 
 -- =====================================================================
@@ -724,7 +750,7 @@ SELECT
   is (
     (
       SELECT
-        u.raw_app_meta_data - 'registered_entities'
+        u.raw_app_meta_data
       FROM
         auth.users u
       WHERE
@@ -782,25 +808,24 @@ SELECT
       'identity_match_prop',
       'sub',
       'identity_match_value',
-      'ief-match-6',
-      'registered_entities',
+      'ief-match-6'
+    )
+    AND t56_registrations ('cccccccc-cccc-cccc-cccc-0000000056a6') = jsonb_build_object(
+      test_id ('project_a')::text,
       jsonb_build_object(
-        test_id ('project_a')::text,
-        jsonb_build_object(
-          'candidate',
-          NULLIF(
-            current_setting('ief.metadata_candidate', true),
-            ''
-          )::jsonb ->> 'entity_id',
-          'organization',
-          NULLIF(
-            current_setting('ief.metadata_organization', true),
-            ''
-          )::jsonb ->> 'entity_id'
-        )
+        'candidate',
+        NULLIF(
+          current_setting('ief.metadata_candidate', true),
+          ''
+        )::jsonb ->> 'entity_id',
+        'organization',
+        NULLIF(
+          current_setting('ief.metadata_organization', true),
+          ''
+        )::jsonb ->> 'entity_id'
       )
     ),
-    'IEF: the second pair''s call keeps the first pair''s entry and the identity keys: the metadata holds both entries, the identity keys and the auth service''s members, and nothing else'
+    'IEF: the second pair''s call keeps the first pair''s registration and the identity keys: the user holds both registrations, and the metadata holds the identity keys and the auth service''s members and nothing else'
   );
 
 SET
@@ -841,16 +866,27 @@ SELECT
     ) = 'signicat-ftn'
     AND (
       SELECT
-        u.raw_app_meta_data -> 'registered_entities'
+        t56_registrations (u.id)
       FROM
         auth.users u
       WHERE
         u.id = 'cccccccc-cccc-cccc-cccc-0000000056a6'
-    ) = NULLIF(
-      current_setting('ief.metadata_organization', true),
-      ''
-    )::jsonb -> 'registered_entities',
-    'IEF: a call answered found writes the identity metadata too, and leaves the record as it was'
+    ) = jsonb_build_object(
+      test_id ('project_a')::text,
+      jsonb_build_object(
+        'candidate',
+        NULLIF(
+          current_setting('ief.metadata_candidate', true),
+          ''
+        )::jsonb ->> 'entity_id',
+        'organization',
+        NULLIF(
+          current_setting('ief.metadata_organization', true),
+          ''
+        )::jsonb ->> 'entity_id'
+      )
+    ),
+    'IEF: a call answered found writes the identity metadata too, and leaves the registrations as they were'
   );
 
 -- =====================================================================
@@ -909,7 +945,8 @@ SELECT
         test_id('project_a'),
         'candidate',
         'Matti',
-        'Virtanen'
+        'Virtanen',
+        '{}'::jsonb
       )
     $$,
     '42501',
@@ -928,7 +965,8 @@ SELECT
         test_id('project_a'),
         'candidate',
         'Matti',
-        'Virtanen'
+        'Virtanen',
+        '{}'::jsonb
       )
     $$,
     '42501',
@@ -972,7 +1010,12 @@ SELECT
         )
       FROM
         auth.users u
-    ),
+    ) || '/' || (
+      SELECT
+        count(*)
+      FROM
+        private.identity_registrations
+    )::text,
     true
   );
 
@@ -982,7 +1025,7 @@ SET
 SELECT
   throws_ok (
     $$
-      SELECT public.identity_entity_find_or_create(NULL, test_id('project_a'), 'candidate', 'Matti', 'Virtanen')
+      SELECT public.identity_entity_find_or_create(NULL, test_id('project_a'), 'candidate', 'Matti', 'Virtanen', '{}'::jsonb)
     $$,
     '22023',
     'identity_entity_find_or_create: every argument is required',
@@ -992,7 +1035,7 @@ SELECT
 SELECT
   throws_ok (
     $$
-      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a5', NULL, 'candidate', 'Matti', 'Virtanen')
+      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a5', NULL, 'candidate', 'Matti', 'Virtanen', '{}'::jsonb)
     $$,
     '22023',
     'identity_entity_find_or_create: every argument is required',
@@ -1002,7 +1045,7 @@ SELECT
 SELECT
   throws_ok (
     $$
-      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a5', test_id('project_a'), NULL, 'Matti', 'Virtanen')
+      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a5', test_id('project_a'), NULL, 'Matti', 'Virtanen', '{}'::jsonb)
     $$,
     '22023',
     'identity_entity_find_or_create: every argument is required',
@@ -1012,7 +1055,7 @@ SELECT
 SELECT
   throws_ok (
     $$
-      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a5', test_id('project_a'), 'candidate', 'Matti', NULL)
+      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a5', test_id('project_a'), 'candidate', 'Matti', NULL, '{}'::jsonb)
     $$,
     '22023',
     'identity_entity_find_or_create: every argument is required',
@@ -1022,7 +1065,7 @@ SELECT
 SELECT
   throws_ok (
     $$
-      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a1', test_id('project_a'), 'faction', 'Matti', 'Virtanen')
+      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a1', test_id('project_a'), 'faction', 'Matti', 'Virtanen', '{}'::jsonb)
     $$,
     '22023',
     'identity_entity_find_or_create: the entity type must be candidate or organization',
@@ -1032,7 +1075,7 @@ SELECT
 SELECT
   throws_ok (
     $$
-      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a5', test_id('project_a'), 'candidate', 'Matti', 'Virtanen')
+      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a5', test_id('project_a'), 'candidate', 'Matti', 'Virtanen', '{}'::jsonb)
     $$,
     '22023',
     'identity_entity_find_or_create: p_user_id names no user',
@@ -1042,11 +1085,21 @@ SELECT
 SELECT
   throws_ok (
     $$
-      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a4', test_id('project_a'), 'organization', 'Liisa', 'Laine')
+      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a4', test_id('project_a'), 'organization', 'Liisa', 'Laine', '{}'::jsonb)
     $$,
     '22000',
-    'identity_entity_find_or_create: the registered-entities record is malformed',
-    'IEF: a user whose record holds an entry that is not an id is refused, and the record is not overwritten'
+    'identity_entity_find_or_create: the account''s app metadata is malformed',
+    'IEF: a user whose stored app metadata is not an object is refused, and the metadata is not overwritten'
+  );
+
+SELECT
+  throws_ok (
+    $$
+      SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a6', test_id('project_b'), 'candidate', 'Maija', 'Mäkinen', '{"identity_provider": "idura-ftn", "identity_match_prop": "sub", "identity_match_value": "IEF-Match-6", "hetu": null, "birthdate": null}'::jsonb)
+    $$,
+    '42501',
+    'identity_entity_find_or_create: the account is bound to another identity',
+    'IEF: a second identity whose match value differs from the account''s stored one only by case is refused, before its metadata is written or an entity resolved'
   );
 
 SELECT
@@ -1065,8 +1118,8 @@ SELECT
       SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a1', test_id('project_b'), 'candidate', 'Matti', 'Virtanen', '{"registered_entities": {}}'::jsonb)
     $$,
     '22023',
-    'identity_entity_find_or_create: p_identity_metadata must be an object of strings and nulls that does not name registered_entities',
-    'IEF: identity metadata naming the record is refused, so no caller replaces the record through it'
+    'identity_entity_find_or_create: p_identity_metadata must be an object of strings and nulls',
+    'IEF: identity metadata holding an object, such as a record of registrations, is refused'
   );
 
 SELECT
@@ -1075,7 +1128,7 @@ SELECT
       SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a1', test_id('project_b'), 'candidate', 'Matti', 'Virtanen', '["identity_provider"]'::jsonb)
     $$,
     '22023',
-    'identity_entity_find_or_create: p_identity_metadata must be an object of strings and nulls that does not name registered_entities',
+    'identity_entity_find_or_create: p_identity_metadata must be an object of strings and nulls',
     'IEF: identity metadata that is not an object is refused'
   );
 
@@ -1085,7 +1138,7 @@ SELECT
       SELECT public.identity_entity_find_or_create('cccccccc-cccc-cccc-cccc-0000000056a1', test_id('project_b'), 'candidate', 'Matti', 'Virtanen', '{"identity_provider": {"nested": true}}'::jsonb)
     $$,
     '22023',
-    'identity_entity_find_or_create: p_identity_metadata must be an object of strings and nulls that does not name registered_entities',
+    'identity_entity_find_or_create: p_identity_metadata must be an object of strings and nulls',
     'IEF: identity metadata holding a value that is neither a string nor a null is refused'
   );
 
@@ -1121,9 +1174,14 @@ SELECT
         )
       FROM
         auth.users u
-    ),
+    ) || '/' || (
+      SELECT
+        count(*)
+      FROM
+        private.identity_registrations
+    )::text,
     current_setting('ief.writes_before', true),
-    'IEF: the refused calls wrote no entity, no grant and no user''s metadata'
+    'IEF: the refused calls wrote no entity, no grant, no registration and no user''s metadata'
   );
 
 SELECT

@@ -6,7 +6,7 @@
 --
 -- THE DEFAULTS ARE MEASURED, NEVER READ FROM THE FILE. `col_type_is` and a grep over `100-tenancy.sql` both state what the declaration says. The assertions below insert rows inside this transaction and read the column back, which states what the database did.
 --
--- THE NOMINATIONS LOCK IS NOT A COLUMN OF `projects`. It is the app setting `access.nominationsLocked`, and 23-nominations-write.test.sql holds its cells: the three entity-user policies in both directions, and which stored values lock. This file holds one assertion about it, in section 2: no column of `projects` names nominations, so the setting has no second source to disagree with.
+-- THE NOMINATIONS LOCK IS NOT A COLUMN OF `projects`. It is the value `nominationsLocked` of the app setting `access.contestantEditing`, and 23-nominations-write.test.sql holds its cells: the three entity-user policies in both directions, and which stored values lock. This file holds one assertion about it, in section 2: no column of `projects` names nominations, so the setting has no second source to disagree with.
 --
 -- pgTAP SHIPS ITS OWN has_role(). It is a role-existence assertion returning text, and under this estate's `search_path = public, extensions` it SHADOWS ours, so an unqualified one-argument call fails with `function ok(text, unknown) does not exist` rather than as a clean failed assertion. This file calls no permission predicate, but the rule stands for anything added to it: qualify every call `public.has_role(...)`. 13-shim-parity.test.sql is the reference.
 --
@@ -110,7 +110,7 @@ SELECT
         AND table_name = 'projects'
     ),
     '0/true',
-    'No column of projects names nominations: the nominations lock is the app setting access.nominationsLocked and has no column beside it'
+    'No column of projects names nominations: the nominations lock is the app setting access.contestantEditing and has no column beside it'
   );
 
 -- =====================================================================

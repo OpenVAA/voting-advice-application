@@ -13,8 +13,8 @@ import type { SignInMailLocale } from './mailTemplates.ts';
 /** The path of the application's confirm page, after the locale segment: the page a mailed link opens, which asks the reader to continue before the token is verified. */
 const LINK_PATH = '/auth/confirm';
 
-/** The path a link a request made in an app earns names as its `next`, by app: the exact value the frontend's landing table is keyed by. A path comes from this map and never from a request. */
-export const APP_NEXT: Readonly<Record<LinkApp, string>> = Object.freeze({ admin: '/admin' });
+/** The path a link names as its `next`, by the app its request was made in: the exact value the frontend's landing table is keyed by, or null for the Contestant App, whose link names none. A path comes from this map and never from a request. */
+export const APP_NEXT: Readonly<Record<LinkApp, string | null>> = Object.freeze({ contestant: null, admin: '/admin' });
 
 /** The three types a mailed link names, in the auth service's words: one that signs in, one that signs in to set a new password, and one that completes a pending change of address. */
 export const LINK_TYPES = ['magiclink', 'recovery', 'email_change'] as const;
@@ -64,8 +64,8 @@ export function confirmPageUrl({ siteUrl, locale }: { siteUrl: string; locale: S
  * @param locale - One of the locales the sign-in mail exists in
  * @param tokenHash - The token hash the auth service issued
  * @param type - Which of the three types the link names
- * @param app - The app the request was made in, or null or absent for the Contestant App
- * @returns The confirm page URL with the two query parameters `token_hash` and `type`, and `next` after them when the request named an app, each encoded by the URL API
+ * @param app - The app the request was made in
+ * @returns The confirm page URL with the two query parameters `token_hash` and `type`, and `next` after them when {@link APP_NEXT} names a path for the app, each encoded by the URL API
  * @throws {Error} As {@link confirmPageUrl} does, and when `type` is not one of the three
  */
 export function buildSignInLink({
@@ -79,7 +79,7 @@ export function buildSignInLink({
   locale: SignInMailLocale;
   tokenHash: string;
   type: LinkType;
-  app?: LinkApp | null;
+  app: LinkApp;
 }): string {
   if (!(LINK_TYPES as ReadonlyArray<string>).includes(type)) {
     throw new Error('The link type is not one a mailed link names.');
@@ -87,7 +87,8 @@ export function buildSignInLink({
   const url = new URL(confirmPageUrl({ siteUrl, locale }));
   url.searchParams.set('token_hash', tokenHash);
   url.searchParams.set('type', type);
-  if (app) url.searchParams.set('next', APP_NEXT[app]);
+  const next = APP_NEXT[app];
+  if (typeof next === 'string') url.searchParams.set('next', next);
   return url.toString();
 }
 

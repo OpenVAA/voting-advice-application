@@ -1,8 +1,11 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import nodemailer from 'npm:nodemailer@10.0.11';
+import { isDeploymentProject } from '../_shared/deploymentProject.ts';
 import { requireEnv } from '../_shared/envConfig.ts';
+import { configuredSender, smtpTransportConfig } from '../_shared/mailTransport.ts';
 import { callerMayOnProject } from './callerAuthority.ts';
 import { renderTemplate, renderTemplateHtml } from './templateVars.ts';
+import type { SmtpEnv } from '../_shared/mailTransport.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,7 +30,8 @@ interface RecipientResult {
   body?: string;
 }
 
-Deno.serve(async (req) => {
+/** The handler of every request: the body validated, the caller's authority, the recipients' variables, and the mails rendered and sent or, on a dry run, returned. */
+async function handleRequest(req: Request): Promise<Response> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { status: 200, headers: corsHeaders });
@@ -134,12 +138,8 @@ Deno.serve(async (req) => {
     // The check sits AFTER the admin verification above rather than beside the body validation at the top, so that the difference between "wrong project" and "right project" is not an answer an unauthenticated caller can read off this endpoint. The refusal is a fixed string echoing neither the submitted nor the configured value, for the same reason the catch arm at the bottom of this file returns one.
     const configuredProjectId = requireEnv('PUBLIC_PROJECT_ID', Deno.env.get('PUBLIC_PROJECT_ID')?.trim());
 
-    // Compared case-insensitively after trimming, so a caller echoing back the configured id in a different case is not refused for a difference that does not exist.
-    if (
-      typeof project_id !== 'string' ||
-      project_id.trim() === '' ||
-      project_id.trim().toLowerCase() !== configuredProjectId.toLowerCase()
-    ) {
+    // Compared case-insensitively after trimming (isDeploymentProject, shared with account-access), so a caller echoing back the configured id in a different case is not refused for a difference that does not exist.
+    if (!isDeploymentProject(project_id, configuredProjectId)) {
       return new Response(JSON.stringify({ error: 'Invalid project_id' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -148,8 +148,8 @@ Deno.serve(async (req) => {
 
     // A caller-supplied sender is refused unless it IS the configured sender (162-REVIEW WR-02): the deployment's SMTP identity is not the caller's to spoof. Checked after the authority gate so an unauthenticated caller cannot probe the configured address, and answered with a fixed string that echoes neither value.
     if (from !== undefined && from !== null) {
-      const configuredSender = requireEnv('SMTP_FROM', Deno.env.get('SMTP_FROM'));
-      if (typeof from !== 'string' || from.trim().toLowerCase() !== configuredSender.trim().toLowerCase()) {
+      const sender = configuredSender(smtpEnv());
+      if (typeof from !== 'string' || from.trim().toLowerCase() !== sender.trim().toLowerCase()) {
         return new Response(JSON.stringify({ error: 'Invalid from' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -235,32 +235,11 @@ Deno.serve(async (req) => {
     // -------------------------------------------------------------------------
     // 6. Send emails via SMTP
     // -------------------------------------------------------------------------
-    // An unset host used to fall back to the local development mail catcher, which is the worst possible failure shape: every send reported success, so the deployment looked healthy while no recipient ever received anything (REVIEW-EDGE-02).
-    const smtpHost = requireEnv('SMTP_HOST', Deno.env.get('SMTP_HOST'));
-    // The radix is explicit because the previous call omitted it, leaving the parse of a zero-padded port up to the runtime rather than to this line.
-    const smtpPort = parseInt(requireEnv('SMTP_PORT', Deno.env.get('SMTP_PORT')), 10);
-    // These two are genuinely optional and carry no default: the credentialed and uncredentialed branches below are both deliberate, so they are NOT converted to throws.
-    const smtpUser = Deno.env.get('SMTP_USER');
-    const smtpPass = Deno.env.get('SMTP_PASS');
+    const smtp = smtpEnv();
+    const transport = nodemailer.createTransport(smtpTransportConfig(smtp));
 
-    const transportConfig: Record<string, unknown> = {
-      host: smtpHost,
-      port: smtpPort,
-      secure: false
-    };
-
-    // Add auth if credentials are provided (production SMTP)
-    if (smtpUser && smtpPass) {
-      transportConfig.auth = { user: smtpUser, pass: smtpPass };
-    } else {
-      // Local development only (Inbucket/Mailpit serve a self-signed certificate and take no credentials). Certificate verification is NOT relaxed on the credentialed path: doing so would send SMTP_USER/SMTP_PASS over a channel whose peer is unauthenticated.
-      transportConfig.tls = { rejectUnauthorized: false };
-    }
-
-    const transport = nodemailer.createTransport(transportConfig);
-
-    // The sender is ALWAYS the configured one (162-REVIEW WR-02). A caller-chosen `from` let any caller who passed the gate send as an arbitrary address through the deployment's SMTP identity; the request's `from` is now accepted only when it names the configured sender, and refused above otherwise. Required rather than guessed, as before (REVIEW-EDGE-02).
-    const senderAddress = requireEnv('SMTP_FROM', Deno.env.get('SMTP_FROM'));
+    // The sender is always the configured one: a request's `from` is accepted only when it names it, and refused above otherwise.
+    const senderAddress = configuredSender(smtp);
     const results: RecipientResult[] = [];
     let sentCount = 0;
     let failedCount = 0;
@@ -327,4 +306,18 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
-});
+}
+
+/** The five `SMTP_*` values of the environment. */
+function smtpEnv(): SmtpEnv {
+  return {
+    host: Deno.env.get('SMTP_HOST'),
+    port: Deno.env.get('SMTP_PORT'),
+    // These two are optional and carry no default: the credentialed and the uncredentialed transport are both deliberate.
+    user: Deno.env.get('SMTP_USER'),
+    pass: Deno.env.get('SMTP_PASS'),
+    sender: Deno.env.get('SMTP_FROM')
+  };
+}
+
+Deno.serve(handleRequest);

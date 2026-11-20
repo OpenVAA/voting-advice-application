@@ -1,0 +1,110 @@
+-- invitation-link-witness.psql: the completion witness of a link request, and the listing of identity registrations, two test instruments
+--
+-- Installed by test setups only, never by schema/ or a migration, so a deployment holds neither the witness table, nor its two functions, nor the listing function. The pgTAP suite applies it from database/00z-invitation-link-witness.test.sql; an E2E run applies it to the database it seeds. It is idempotent: applying it to a database that already holds it changes nothing. The file is named `.psql` so that `supabase test db`, which runs every `.sql` and `.pg` file under supabase/tests as a test, does not run it as one.
+--
+-- A link request of the `account-access` Edge Function is answered before its work is done, and the answer is the same whether or not a mail goes out. The witness is how the service role learns, for one request it chose to watch, that the work has ended and whether a mail was handed over: it opens a record, passes the id along with the request, and reads the record afterwards. Where these functions are absent, the Edge Function keeps no witness.
+--
+-- An anonymous caller can neither create nor read a record. Opening is the service role's, and completing is an UPDATE of a record that exists and is still open, never an insert, so an id that was not opened writes nothing.
+--
+-- Row-level security is enabled with no policy and every API role's privileges are revoked: only the two SECURITY DEFINER functions below read or write the table. Both are the service role's alone.
+--
+-- test_identity_registrations lists the entities private.identity_registrations names for given users, which no API role can read. The E2E teardown uses it to find an identity provider's entity whose editor grant a test removed. It is the service role's alone.
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS private.invitation_link_witness (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  opened_at timestamptz NOT NULL DEFAULT now(),
+  -- Null while the work the record watches has not ended.
+  completed_at timestamptz,
+  -- `sent` when a mail was handed over, `not-sent` when the work ended without one.
+  outcome text,
+  CONSTRAINT invitation_link_witness_outcome_check CHECK (
+    outcome IS NULL
+    OR outcome IN ('sent', 'not-sent')
+  )
+);
+
+ALTER TABLE private.invitation_link_witness ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE private.invitation_link_witness
+FROM
+  PUBLIC,
+  anon,
+  authenticated,
+  service_role;
+
+-- Opens a record and returns its id. Records opened more than a day ago are deleted first, so the table does not grow without bound.
+CREATE OR REPLACE FUNCTION public.invitation_link_witness_open () RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_id uuid;
+BEGIN
+  DELETE FROM private.invitation_link_witness w
+  WHERE w.opened_at < now() - interval '1 day';
+
+  INSERT INTO private.invitation_link_witness DEFAULT VALUES
+  RETURNING id INTO v_id;
+
+  RETURN v_id;
+END;
+$$;
+
+-- With an outcome, which must be `sent` or `not-sent` (anything else raises 22023), completes the record of that id if it exists and is still open; a completed record keeps its first outcome. In every case returns the record's outcome: null when no such record exists or it is still open.
+CREATE OR REPLACE FUNCTION public.invitation_link_witness (p_id uuid, p_outcome text DEFAULT NULL) RETURNS text LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+BEGIN
+  IF p_outcome IS NOT NULL THEN
+    IF p_outcome NOT IN ('sent', 'not-sent') THEN
+      RAISE EXCEPTION 'invitation_link_witness: p_outcome must be sent or not-sent'
+        USING ERRCODE = '22023';
+    END IF;
+
+    UPDATE private.invitation_link_witness w
+    SET completed_at = now(), outcome = p_outcome
+    WHERE w.id = p_id
+      AND w.completed_at IS NULL;
+  END IF;
+
+  RETURN (SELECT w.outcome FROM private.invitation_link_witness w WHERE w.id = p_id);
+END;
+$$;
+
+-- service_role only: published to an API role, opening would let anyone fill the table and reading would tell anyone how a watched request ended. Supabase's default privileges grant EXECUTE on every new public function to anon and authenticated, so the REVOKE names them as well as PUBLIC.
+REVOKE
+EXECUTE ON FUNCTION public.invitation_link_witness_open (),
+public.invitation_link_witness (uuid, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.invitation_link_witness_open (),
+public.invitation_link_witness (uuid, text) TO service_role;
+
+-- The entity type and the entity id of every row of private.identity_registrations whose user is one of p_user_ids, in every project. SQL, so the table, which schema/506-invitation-rpcs.sql creates, must exist when the fixture is applied.
+CREATE OR REPLACE FUNCTION public.test_identity_registrations (p_user_ids uuid[]) RETURNS TABLE (entity_type public.entity_type, entity_id uuid) LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT r.entity_type, r.entity_id
+  FROM private.identity_registrations r
+  WHERE r.user_id = ANY (p_user_ids);
+$$;
+
+-- service_role only: published to an API role, it would tell anyone which entity an identity registered.
+REVOKE
+EXECUTE ON FUNCTION public.test_identity_registrations (uuid[])
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.test_identity_registrations (uuid[]) TO service_role;
+
+COMMIT;
+
+-- PostgREST serves an RPC only once its schema cache holds it.
+NOTIFY pgrst, 'reload schema';
