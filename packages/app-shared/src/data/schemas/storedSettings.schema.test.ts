@@ -1,7 +1,7 @@
 /**
  * `StoredSettingsSchema` — the stored shape of the `app_settings.settings` JSONB column.
  *
- * Covers the `{}` case the column's `'{}'::jsonb` default and the provider's `PGRST116` branch both produce, a representative real payload (the package's own shipped `dynamicSettings`), the locale-object notification fields, one unknown-key rejection per nesting level (top level, `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp`, `contestantApp.servedEntityTypes` and `contestantApp.servedEntityTypes.candidate`), the one member of `analytics` and the stored provider member it rejects, `contestantApp.servedEntityTypes` — what parses, what it parses to, and the path each rejection names — and the two keys `access.nominationsLocked` and `entities.hideIfMissingAnswers.organization`.
+ * Covers the `{}` case the column's `'{}'::jsonb` default and the provider's `PGRST116` branch both produce, a representative real payload (the package's own shipped `dynamicSettings`), the locale-object notification fields, one unknown-key rejection per nesting level (top level, `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp`, `contestantApp.servedEntityTypes` and `contestantApp.servedEntityTypes.candidate`), the one member of `analytics` and the stored provider member it rejects, `contestantApp.servedEntityTypes` — what parses, what it parses to, and the path each rejection names — the key `access.contestantEditing` with the values it accepts and refuses, and the key `entities.hideIfMissingAnswers.organization`.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -179,10 +179,30 @@ describe('StoredSettingsSchema', () => {
   });
 });
 
-describe('StoredSettingsSchema — the nominations lock and the organization key of hideIfMissingAnswers', () => {
-  it('reads `access.nominationsLocked` and both keys of `entities.hideIfMissingAnswers` back unchanged', () => {
+describe('StoredSettingsSchema — contestant editing and the organization key of hideIfMissingAnswers', () => {
+  it.each(['open', 'nominationsLocked', 'locked'])('reads `access.contestantEditing` %s back unchanged', (value) => {
+    const stored = { access: { contestantEditing: value } };
+    const result = StoredSettingsSchema.safeParse(stored);
+    expect(result.success === false ? result.error.issues : result.data).toEqual(stored);
+  });
+
+  it.each([true, 'true', 'unlocked', null])('rejects `access.contestantEditing` %s at its path', (value) => {
+    const result = StoredSettingsSchema.safeParse({ access: { contestantEditing: value } });
+    expect(result.success).toBe(false);
+    expect(result.success === false && result.error.issues[0]?.path).toEqual(['access', 'contestantEditing']);
+  });
+
+  it('rejects the lock booleans `access.answersLocked` and `access.nominationsLocked`', () => {
+    for (const key of ['answersLocked', 'nominationsLocked']) {
+      const result = StoredSettingsSchema.safeParse({ access: { [key]: true } });
+      expect(result.success).toBe(false);
+      expect(result.success === false && result.error.issues[0]?.path).toEqual(['access']);
+    }
+  });
+
+  it('reads `access.contestantEditing` and both keys of `entities.hideIfMissingAnswers` back unchanged', () => {
     const stored = {
-      access: { nominationsLocked: true },
+      access: { contestantEditing: 'nominationsLocked' },
       entities: { hideIfMissingAnswers: { candidate: false, organization: true } }
     };
     const result = StoredSettingsSchema.safeParse(stored);

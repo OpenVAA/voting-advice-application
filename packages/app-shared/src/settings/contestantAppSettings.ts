@@ -49,15 +49,48 @@ export const REGISTRATION_MODES = [
 export type RegistrationModeMatrix = Record<ServedEntityType, Array<RegistrationMode>>;
 
 /**
+ * How far an entity's own users may edit the entity, the value of `access.contestantEditing`. Project editors and admins are bound by none of these.
+ */
+export const CONTESTANT_EDITING = {
+  /**
+   * An entity's own users may edit everything of the entity.
+   */
+  Open: 'open',
+  /**
+   * An entity's own users can no longer add or change the entity's nominations, and nothing else is barred.
+   */
+  NominationsLocked: 'nominationsLocked',
+  /**
+   * An entity's own users, of every served entity type, can change nothing of the entity: its answers, profile, images and nominations. No contestant may register.
+   */
+  Locked: 'locked'
+} as const;
+
+/**
+ * A value of `access.contestantEditing`.
+ */
+export type ContestantEditing = (typeof CONTESTANT_EDITING)[keyof typeof CONTESTANT_EDITING];
+
+/**
+ * The values of `access.contestantEditing`, from the most open to the most locked.
+ */
+export const CONTESTANT_EDITING_VALUES = [
+  CONTESTANT_EDITING.Open,
+  CONTESTANT_EDITING.NominationsLocked,
+  CONTESTANT_EDITING.Locked
+] as const;
+
+/**
  * The key, under the `dynamic.contestantAppName` message group, of the name a Contestant App gives itself.
  */
 export type ContestantAppNameKey = 'candidate' | 'organization' | 'candidateAndOrganization';
 
 /**
- * What the accessors in this module read: any value that may carry a `contestantApp` settings root. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid. The root and its `servedEntityTypes` member may be absent, and an absent member, or one with no key, reads as the shipped default. A served type whose entry has no `registrationModes` allows no registration mode.
+ * What the accessors in this module read: any value that may carry a `contestantApp` settings root and an `access` root. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid. The roots and their members may be absent, and an absent member, or a `servedEntityTypes` with no key, reads as the shipped default. A served type whose entry has no `registrationModes` allows no registration mode.
  */
 export type ContestantAppSettingsInput =
   | {
+      access?: { readonly contestantEditing?: ContestantEditing } | null;
       contestantApp?: {
         servedEntityTypes?: {
           readonly [TType in ServedEntityType]?: { readonly registrationModes?: ReadonlyArray<RegistrationMode> };
@@ -89,7 +122,38 @@ export function getEffectiveRegistrationModes(input: ContestantAppSettingsInput)
 }
 
 /**
- * Whether entities of a type may register with a mode: the project serves the type and allows the mode for it.
+ * How far an entity's own users may edit the entity: the stored `access.contestantEditing`, and `open`, the shipped default, when it is absent.
+ * @param input - The settings to read.
+ */
+export function getContestantEditing(input: ContestantAppSettingsInput): ContestantEditing {
+  return input?.access?.contestantEditing ?? CONTESTANT_EDITING.Open;
+}
+
+/**
+ * Whether the project is set up for entities of a type to register with a mode: it serves the type and allows the mode for it. The settings' other roots, `access` among them, are not read, so the answer is the configuration's alone.
+ * @param input - The settings to read.
+ * @param entityType - The entity type registering.
+ * @param mode - The registration mode asked about.
+ */
+export function isRegistrationModeServed(
+  input: ContestantAppSettingsInput,
+  entityType: ServedEntityType,
+  mode: RegistrationMode
+): boolean {
+  return getEffectiveRegistrationModes(input)[entityType]?.includes(mode) ?? false;
+}
+
+/**
+ * Whether the project is set up for entities of at least one served type to register with a mode, as `isRegistrationModeServed` answers for each.
+ * @param input - The settings to read.
+ * @param mode - The registration mode asked about.
+ */
+export function isRegistrationModeServedForAnyType(input: ContestantAppSettingsInput, mode: RegistrationMode): boolean {
+  return getServedEntityTypes(input).some((entityType) => isRegistrationModeServed(input, entityType, mode));
+}
+
+/**
+ * Whether entities of a type may register with a mode: contestant editing is not `locked`, and the mode is served for the type, as `isRegistrationModeServed` answers. The database states the same rule as `private.registration_mode_allowed_in`.
  * @param input - The settings to read.
  * @param entityType - The entity type registering.
  * @param mode - The registration mode asked about.
@@ -99,11 +163,11 @@ export function isRegistrationModeAllowed(
   entityType: ServedEntityType,
   mode: RegistrationMode
 ): boolean {
-  return getEffectiveRegistrationModes(input)[entityType]?.includes(mode) ?? false;
+  return getContestantEditing(input) !== CONTESTANT_EDITING.Locked && isRegistrationModeServed(input, entityType, mode);
 }
 
 /**
- * Whether entities of at least one served type may register with a mode.
+ * Whether entities of at least one served type may register with a mode, as `isRegistrationModeAllowed` answers for each.
  * @param input - The settings to read.
  * @param mode - The registration mode asked about.
  */
@@ -111,7 +175,7 @@ export function isRegistrationModeAllowedForAnyType(
   input: ContestantAppSettingsInput,
   mode: RegistrationMode
 ): boolean {
-  return Object.values(getEffectiveRegistrationModes(input)).some((modes) => modes.includes(mode));
+  return getServedEntityTypes(input).some((entityType) => isRegistrationModeAllowed(input, entityType, mode));
 }
 
 /**
