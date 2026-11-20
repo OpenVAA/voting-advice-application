@@ -19,7 +19,7 @@ The settings page is not among them: the account's address and its password belo
 
 Both params are guarded by a matcher, so a malformed segment is answered with SvelteKit's own 404 and never reaches a load:
 
-- `entityType` by [`servedEntityType`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/params/servedEntityType.ts), which accepts `candidate` and `organization`. It checks the vocabulary, not what the project serves: `contestantApp.entityTypes` is read by the load.
+- `entityType` by [`servedEntityType`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/params/servedEntityType.ts), which accepts `candidate` and `organization`. It checks the vocabulary, not what the project serves: `contestantApp.servedEntityTypes` is read by the load.
 - `entityId` by [`uuid`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/params/uuid.ts), which accepts the canonical textual form of a uuid.
 
 The route keys are in `ROUTE` (see [Routing](/developers-guide/frontend/routing)). `ContestantAppEntityHome` is an entity's home, and `ContestantAppHome` is the app root, `/contestant`, which carries no entity. A route built with `getRoute.current(...)` on an entity page keeps the current page's two params, so a link between the pages of one entity does not have to name it.
