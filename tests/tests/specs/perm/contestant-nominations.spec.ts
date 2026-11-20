@@ -1,15 +1,15 @@
 /**
  * @file contestant-nominations.spec.ts — perm-chain spec.
  *
- * The editor of a candidate and of a party on the entity's nominations in the Contestant App, against the `perm-contestant-nominations` dataset (seeded by the data-setup-perm-contestant-nominations project): three elections of three types, a candidate and a party with no nomination row, a candidate and a party with nominations, and the parties and alliances a nomination can stand under.
+ * The editor of a candidate and of a party on the entity's nominations in the Contestant App, against the `perm-contestant-nominations` dataset (seeded by the data-setup-perm-contestant-nominations project): three elections of three nomination shapes, a candidate and a party with no nomination row, a candidate and a party with nominations, and the parties and alliances a nomination can stand under.
  *
  * Sessions: the file runs under stored sessions, each selected by a describe — the editor of the unnominated candidate, of the unnominated party, of the nominated candidate and of the nominated party. All four sessions are this dataset's own: its setup writes them and nothing else reads them, so a test may edit and save under them. No test reads a session of the base dataset.
  *
- * Order and state: the tests run in file order in one worker, and no test depends on a test before it. Every test begins with the state steps that write, with the service role as an administrator would, the state it reads: the entity's nominations, a lock, an election's type, whether a party is confirmed. A page is opened only after its state steps, because the entity's nominations, the elections and the settings are read when a page is loaded. A test that changes a setting of the project, an election's type or an entity's confirmation puts the seeded value back in a `finally`. When the file's tests have run, the nominations the application wrote are removed: the setup of the chain's next link deletes this dataset's rows by prefix before this dataset's own teardown runs, and a row with no external id that stands under a seeded nomination would refuse that delete.
+ * Order and state: the tests run in file order in one worker, and no test depends on a test before it. Every test begins with the state steps that write, with the service role as an administrator would, the state it reads: the entity's nominations, a lock, an election's nomination shape, whether a party is confirmed. A page is opened only after its state steps, because the entity's nominations, the elections and the settings are read when a page is loaded. A test that changes a setting of the project, an election's nomination shape or an entity's confirmation puts the seeded value back in a `finally`. When the file's tests have run, the nominations the application wrote are removed: the setup of the chain's next link deletes this dataset's rows by prefix before this dataset's own teardown runs, and a row with no external id that stands under a seeded nomination would refuse that delete.
  *
  * Titles carry the prefix of the surface they are about. `dataset:` is the dataset, its identities and its state steps. `define:` is the editor for an entity with no nomination, from its entry address to the nominations the database then holds. `steps:` is which of the editor's steps an entity with no nomination meets, and in which order. `edit:` is the editor for an entity that has nominations: what it starts from, what a card shows and what a save stores. `remove:` is a card that is to be removed, kept again, or removed by the save. `button:` is what the main button of the details step says and where a press of it leads. `refused:` is a save the database did not store, and what the page shows of it. `leave:` is leaving the details step with changes that are not saved. `stale:` is a save from an editor that was opened before nominations were locked. `closing:` is a save made after answers were locked. `saved:` is where a stored save leads: to the nominations view, which lists what was stored and leads on or home, and where the user stays when reading the data again has moved them to another step. `nominations-view:` is the nominations view: what it says and offers in each of its states, and that every address of the editor leads to it while nominations cannot be edited. `entry:` is the way from the home into the editor. `holds:` is where the home's nomination task leads when it does not lead into the editor. `follow:` is the home, the nominations view and the questions after a save, with no new document loaded in between. `phone 320:` and `phone 390:` are a page of the editor, or the nominations view, at that width. `keys:` is the parent group under the keyboard. `focus:` is where focus is after a navigation inside the editor.
  *
- * Scans: thirteen states of the editor's three steps and of the nominations view, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds what the states need: an entity with no nomination, several elections of several types, parties and alliances to stand under, and a lock or an election's type that is changed for the whole project. Each entry's `reach` sets its state through the state steps, walks to the state through the fixtures' steps — a full page load after every state step — and ends on the steps that assert the state, before the reach proof and the scan. The describe that declares a session's entries puts back, after each scan, both locks, the type of each election an entry changes, and the entity's answers and nominations. A state of the details step is scanned under one entity type: the other type's cards are the same markup with other sentences and other options, asserted by the tests above.
+ * Scans: thirteen states of the editor's three steps and of the nominations view, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds what the states need: an entity with no nomination, several elections of several nomination shapes, parties and alliances to stand under, and a lock or an election's nomination shape that is changed for the whole project. Each entry's `reach` sets its state through the state steps, walks to the state through the fixtures' steps — a full page load after every state step — and ends on the steps that assert the state, before the reach proof and the scan. The describe that declares a session's entries puts back, after each scan, both locks, the nomination shape of each election an entry changes, and the entity's answers and nominations. A state of the details step is scanned under one entity type: the other type's cards are the same markup with other sentences and other options, asserted by the tests above.
  *
  * Widths: the `phone 320:` and `phone 390:` tests run at that width, in English. A page's width is measured against its viewport, and a box against the box that must hold it, through the steps of `fixtures/shared/pageGeometry.fixture.ts`: an accessibility scan reports neither. A fixture hands over the boxes; the test names what must lie inside what. A phone test of a later step loads that step's own address, so that it measures its own step and reads nothing of the steps before it; the election step's test also checks an election and reads that Continue can then be pressed.
  *
@@ -20,16 +20,16 @@ import {
   addNomination,
   clearWrittenNominations,
   contestantNominationsPagesOf,
-  electionTypeOf,
   entityConfirmedOf,
   expect,
+  nominationShapeOf,
   nominationsOf,
   setAnswers,
   setAnswersLocked,
   setElectionSelectionDisallowed,
-  setElectionType,
   setEntityConfirmed,
   setNominations,
+  setNominationShape,
   setNominationsLocked,
   test
 } from '../../fixtures/contestant/perm-contestant-nominations';
@@ -77,7 +77,7 @@ import {
   OPEN_OPINION_QUESTION_LABEL,
   OPINION_QUESTION_EXTERNAL_IDS,
   PENDING_ORGANIZATION,
-  SEEDED_ELECTION_TYPES,
+  SEEDED_NOMINATION_SHAPES,
   SHARED_OPINION_QUESTION_LABEL,
   SOUTH_CONSTITUENCY_NAME
 } from '../../utils/permContestantNominationsData';
@@ -260,7 +260,7 @@ const EDIT_CANDIDATE_SELECTION = Object.freeze({
 /** The three addresses of the editor. */
 const EDITOR_STEPS = ['elections', 'constituencies', 'details'] as const;
 
-/** Both elections that admit a party, each with the type it is given so that it admits candidates alone. */
+/** Both elections that admit a party, each with the nomination shape it is given so that it admits candidates alone. */
 const ELECTIONS_THAT_ADMIT_A_PARTY = [LIST_ELECTION_EXTERNAL_ID, OPEN_ELECTION_EXTERNAL_ID] as const;
 
 /**
@@ -399,14 +399,15 @@ async function candidateToOpenCard(editor: ContestantNominationEditorFixture): P
 }
 
 /**
- * Put back what the reach of a scan may have changed, whether or not the scan passed: both locks, the type of each election an entry changes, and the answers and the nominations of the entity scanned.
+ * Put back what the reach of a scan may have changed, whether or not the scan passed: both locks, the nomination shape of each election an entry changes, and the answers and the nominations of the entity scanned.
  * @param entity - The entity the session's user edits.
  * @param nominations - The nominations the dataset seeds the entity with.
  */
 async function restoreAfterScan(entity: EntityGrantTarget, nominations: NominationsState): Promise<void> {
   await setNominationsLocked(false);
   await setAnswersLocked(false);
-  for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setElectionType(election, SEEDED_ELECTION_TYPES[election]);
+  for (const election of ELECTIONS_THAT_ADMIT_A_PARTY)
+    await setNominationShape(election, SEEDED_NOMINATION_SHAPES[election]);
   await setAnswers(entity, NOTHING_ANSWERED);
   await setNominations(entity, nominations);
 }
@@ -463,14 +464,14 @@ test.describe('contestant-nominations: the dataset, its identities and its state
   });
 
   test('dataset: the state steps write and restore what they are given', async () => {
-    const seededType = SEEDED_ELECTION_TYPES[CANDIDATE_ONLY_ELECTION_EXTERNAL_ID];
+    const seededShape = SEEDED_NOMINATION_SHAPES[CANDIDATE_ONLY_ELECTION_EXTERNAL_ID];
     try {
-      await setElectionType(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID, 'organization_only');
-      expect(await electionTypeOf(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID)).toBe('organization_only');
+      await setNominationShape(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID, 'organization_only');
+      expect(await nominationShapeOf(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID)).toBe('organization_only');
     } finally {
-      await setElectionType(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID, seededType);
+      await setNominationShape(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID, seededShape);
     }
-    expect(await electionTypeOf(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID)).toBe(seededType);
+    expect(await nominationShapeOf(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID)).toBe(seededShape);
 
     try {
       await setEntityConfirmed(PENDING_ORGANIZATION, true);
@@ -817,7 +818,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         try {
           // The closed-list election admits candidates alone, so one election admits a party, and it has one constituency. The step after the change is a full page load.
-          await setElectionType(LIST_ELECTION_EXTERNAL_ID, 'candidate_only');
+          await setNominationShape(LIST_ELECTION_EXTERNAL_ID, 'candidate_only');
           await contestantNominationEditor.open(NEW_ORGANIZATION_GRANT);
           await contestantNominationEditor.expectStep('details');
           await contestantNominationEditor.expectCards([
@@ -830,7 +831,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
             }
           ]);
         } finally {
-          await setElectionType(LIST_ELECTION_EXTERNAL_ID, SEEDED_ELECTION_TYPES[LIST_ELECTION_EXTERNAL_ID]);
+          await setNominationShape(LIST_ELECTION_EXTERNAL_ID, SEEDED_NOMINATION_SHAPES[LIST_ELECTION_EXTERNAL_ID]);
         }
       }
     );
@@ -844,7 +845,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         try {
           // The open election admits candidates alone, so one election admits a party, and it has two constituencies. The step after the change is a full page load.
-          await setElectionType(OPEN_ELECTION_EXTERNAL_ID, 'candidate_only');
+          await setNominationShape(OPEN_ELECTION_EXTERNAL_ID, 'candidate_only');
           await contestantNominationEditor.open(NEW_ORGANIZATION_GRANT);
           await contestantNominationEditor.expectStep('constituencies');
           await contestantNominationEditor.expectConstituencyPickers([LIST_ELECTION_NAME.en]);
@@ -863,7 +864,7 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
             }
           ]);
         } finally {
-          await setElectionType(OPEN_ELECTION_EXTERNAL_ID, SEEDED_ELECTION_TYPES[OPEN_ELECTION_EXTERNAL_ID]);
+          await setNominationShape(OPEN_ELECTION_EXTERNAL_ID, SEEDED_NOMINATION_SHAPES[OPEN_ELECTION_EXTERNAL_ID]);
         }
       }
     );
@@ -877,16 +878,16 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         try {
           // No election admits a party. Each step after the change is a full page load.
-          await setElectionType(LIST_ELECTION_EXTERNAL_ID, 'candidate_only');
-          await setElectionType(OPEN_ELECTION_EXTERNAL_ID, 'candidate_only');
+          await setNominationShape(LIST_ELECTION_EXTERNAL_ID, 'candidate_only');
+          await setNominationShape(OPEN_ELECTION_EXTERNAL_ID, 'candidate_only');
           for (const step of ['elections', 'constituencies', 'details'] as const) {
             await contestantNominationEditor.openStep(NEW_ORGANIZATION_GRANT, step);
             await contestantNominationsPage.expectShown(NEW_ORGANIZATION_GRANT);
             await contestantNominationEditor.expectNoStep();
           }
         } finally {
-          await setElectionType(LIST_ELECTION_EXTERNAL_ID, SEEDED_ELECTION_TYPES[LIST_ELECTION_EXTERNAL_ID]);
-          await setElectionType(OPEN_ELECTION_EXTERNAL_ID, SEEDED_ELECTION_TYPES[OPEN_ELECTION_EXTERNAL_ID]);
+          await setNominationShape(LIST_ELECTION_EXTERNAL_ID, SEEDED_NOMINATION_SHAPES[LIST_ELECTION_EXTERNAL_ID]);
+          await setNominationShape(OPEN_ELECTION_EXTERNAL_ID, SEEDED_NOMINATION_SHAPES[OPEN_ELECTION_EXTERNAL_ID]);
         }
       }
     );
@@ -1515,7 +1516,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
         });
         try {
           // The election of the second added nomination no longer admits a candidate. The step after the change is a full page load.
-          await setElectionType(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID, 'organization_only');
+          await setNominationShape(CANDIDATE_ONLY_ELECTION_EXTERNAL_ID, 'organization_only');
 
           // The election of the other round is offered and not checked; the election that admits no candidate is not offered.
           await contestantNominationEditor.open(EDIT_CANDIDATE_GRANT);
@@ -1567,9 +1568,9 @@ test.describe('contestant-nominations: editing existing nominations', () => {
           await contestantNominationEditor.expectNoDialog();
         } finally {
           await setNominations(EDIT_CANDIDATE_GRANT, 'seeded');
-          await setElectionType(
+          await setNominationShape(
             CANDIDATE_ONLY_ELECTION_EXTERNAL_ID,
-            SEEDED_ELECTION_TYPES[CANDIDATE_ONLY_ELECTION_EXTERNAL_ID]
+            SEEDED_NOMINATION_SHAPES[CANDIDATE_ONLY_ELECTION_EXTERNAL_ID]
           );
         }
       }
@@ -2110,7 +2111,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
         await setAnswersLocked(false);
         await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
         try {
-          for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setElectionType(election, 'candidate_only');
+          for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
 
           // A full page load after the types changed: the party's nominations are listed, and nothing leads to the editor.
           await contestantNominationsPage.open(EDIT_ORGANIZATION_GRANT);
@@ -2127,7 +2128,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
           await contestantNominationEditor.expectNoStep();
         } finally {
           for (const election of ELECTIONS_THAT_ADMIT_A_PARTY)
-            await setElectionType(election, SEEDED_ELECTION_TYPES[election]);
+            await setNominationShape(election, SEEDED_NOMINATION_SHAPES[election]);
         }
       }
     );
@@ -2698,7 +2699,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
         await setAnswersLocked(false);
         await setNominations(NEW_ORGANIZATION_GRANT, 'none');
         try {
-          for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setElectionType(election, 'candidate_only');
+          for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
 
           // A full page load after the types changed: no election admits a party.
           await contestantNominationsPage.open(NEW_ORGANIZATION_GRANT);
@@ -2723,7 +2724,7 @@ test.describe('contestant-nominations: the nominations view, the way into the ed
           await contestantNominationsPage.expectButton('return');
         } finally {
           for (const election of ELECTIONS_THAT_ADMIT_A_PARTY)
-            await setElectionType(election, SEEDED_ELECTION_TYPES[election]);
+            await setNominationShape(election, SEEDED_NOMINATION_SHAPES[election]);
         }
       }
     );
@@ -3063,8 +3064,8 @@ const EDIT_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
       await setNominationsLocked(false);
       await setAnswersLocked(false);
       await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
-      for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setElectionType(election, 'candidate_only');
-      // A full page load: an election's type is read when a page is loaded.
+      for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
+      // A full page load: an election's nomination shape is read when a page is loaded.
       await contestantNominationsPage.open(EDIT_ORGANIZATION_GRANT);
       await contestantNominationsPage.expectShown(EDIT_ORGANIZATION_GRANT);
       await contestantNominationsPage.expectCardCount(2);
@@ -3211,8 +3212,8 @@ const NEW_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
       await setNominationsLocked(false);
       await setAnswersLocked(false);
       await setNominations(NEW_ORGANIZATION_GRANT, 'none');
-      for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setElectionType(election, 'candidate_only');
-      // A full page load: an election's type is read when a page is loaded.
+      for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
+      // A full page load: an election's nomination shape is read when a page is loaded.
       await contestantNominationsPage.open(NEW_ORGANIZATION_GRANT);
       await contestantNominationsPage.expectShown(NEW_ORGANIZATION_GRANT);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: false });
@@ -3538,7 +3539,7 @@ for (const viewport of PHONE_VIEWPORTS) {
           await setAnswersLocked(false);
           await setNominations(EDIT_ORGANIZATION_GRANT, 'seeded');
           try {
-            for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setElectionType(election, 'candidate_only');
+            for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
 
             // A full page load after the types changed.
             await contestantNominationsPage.open(EDIT_ORGANIZATION_GRANT);
@@ -3549,7 +3550,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await contestantNominationsPage.expectFitsViewport();
           } finally {
             for (const election of ELECTIONS_THAT_ADMIT_A_PARTY)
-              await setElectionType(election, SEEDED_ELECTION_TYPES[election]);
+              await setNominationShape(election, SEEDED_NOMINATION_SHAPES[election]);
           }
         }
       );
@@ -3627,7 +3628,7 @@ for (const viewport of PHONE_VIEWPORTS) {
           await setAnswersLocked(false);
           await setNominations(NEW_ORGANIZATION_GRANT, 'none');
           try {
-            for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setElectionType(election, 'candidate_only');
+            for (const election of ELECTIONS_THAT_ADMIT_A_PARTY) await setNominationShape(election, 'candidate_only');
 
             // A full page load after the types changed.
             await contestantNominationsPage.open(NEW_ORGANIZATION_GRANT);
@@ -3640,7 +3641,7 @@ for (const viewport of PHONE_VIEWPORTS) {
             await contestantNominationsPage.expectFitsViewport();
           } finally {
             for (const election of ELECTIONS_THAT_ADMIT_A_PARTY)
-              await setElectionType(election, SEEDED_ELECTION_TYPES[election]);
+              await setNominationShape(election, SEEDED_NOMINATION_SHAPES[election]);
           }
         }
       );

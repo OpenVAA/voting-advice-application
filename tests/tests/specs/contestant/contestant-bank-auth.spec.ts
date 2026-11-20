@@ -72,14 +72,15 @@ const CLOSED_PROJECT_ID = '00000000-0000-0000-0000-00000000ba02';
 const PROJECT_SETTINGS: Record<string, Record<string, unknown>> = {
   [OPEN_PROJECT_ID]: {
     contestantApp: {
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: ['identity_provider'], organization: ['identity_provider'] }
+      servedEntityTypes: {
+        candidate: { registrationModes: ['identity_provider'] },
+        organization: { registrationModes: ['identity_provider'] }
+      }
     }
   },
   [CLOSED_PROJECT_ID]: {
     contestantApp: {
-      entityTypes: ['candidate', 'organization'],
-      registrationModes: { candidate: ['email'], organization: [] }
+      servedEntityTypes: { candidate: { registrationModes: ['email'] }, organization: { registrationModes: [] } }
     }
   }
 };
