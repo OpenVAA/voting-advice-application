@@ -1,8 +1,7 @@
 /**
- * The three environment templates name the six analytics variables the frontend server reads at start.
+ * The two environment templates name the six analytics variables the frontend server reads at start.
  *
  * - `.env.example` sets the provider to `log`, so a local stack and the CI gate suite, both built from this file, see analytics events as structured server lines. The code default stays `none`. The PostHog key appears only as a commented line with no value: CI copies this file to `.env`, and a tracked key would be a leaked secret.
- * - `render.example.yaml` declares all six, and the key entry uses `sync: false` with no `value:`, so the secret is entered in the Render dashboard only.
  * - `docker-compose.dev.yml` passes all six through with a default, the provider defaulting to `none` as in the code.
  * - No template names a `PUBLIC_ANALYTICS` variable: the analytics configuration is private to the server, and the browser receives only the projection the root load returns.
  *
@@ -27,7 +26,7 @@ const ANALYTICS_VARIABLES: Array<string> = [
   'ANALYTICS_FLUSH_INTERVAL_MS'
 ];
 
-const TEMPLATES: Array<string> = ['.env.example', 'render.example.yaml', 'docker-compose.dev.yml'];
+const TEMPLATES: Array<string> = ['.env.example', 'docker-compose.dev.yml'];
 
 function read(path: string): string {
   return readFileSync(resolve(REPO_ROOT, path), 'utf8');
@@ -46,22 +45,6 @@ function liveLinesWithValue(text: string, name: string): Array<string> {
     const value = line.slice(line.indexOf('=') + 1).trim();
     return value.replace(/^(['"])(.*)\1$/, '$2').trim() !== '';
   });
-}
-
-/**
- * The lines of the `- key: name` entry in a Render blueprint: the key line and the lines indented deeper than its dash that follow it.
- */
-function renderEntry(text: string, name: string): Array<string> | undefined {
-  const lines = text.split('\n');
-  const start = lines.findIndex((line) => new RegExp(`^[ \\t]*- key: ${name}(?=\\s|$)`).test(line));
-  if (start === -1) return undefined;
-  const indent = lines[start].search(/\S/);
-  const entry = [lines[start]];
-  for (const line of lines.slice(start + 1)) {
-    if (line.trim() === '' || line.search(/\S/) <= indent) break;
-    entry.push(line);
-  }
-  return entry;
 }
 
 /** The Compose entries that pass `name` through, in the form `NAME: ${NAME:-default}`, as their defaults. */
@@ -89,20 +72,6 @@ describe('analytics variables in the environment templates', () => {
       expect(liveLinesWithValue('ANALYTICS_POSTHOG_KEY=phc_x\n', 'ANALYTICS_POSTHOG_KEY')).toHaveLength(1);
       expect(liveLinesWithValue('ANALYTICS_POSTHOG_KEY=""\n', 'ANALYTICS_POSTHOG_KEY')).toEqual([]);
       expect(liveLinesWithValue('# ANALYTICS_POSTHOG_KEY=phc_x\n', 'ANALYTICS_POSTHOG_KEY')).toEqual([]);
-    });
-  });
-
-  describe('render.example.yaml', () => {
-    const text = read('render.example.yaml');
-
-    it.each(ANALYTICS_VARIABLES)('declares - key: %s', (name) => {
-      expect(renderEntry(text, name)).toBeDefined();
-    });
-
-    it('declares ANALYTICS_POSTHOG_KEY with sync: false and no value', () => {
-      const entry = renderEntry(text, 'ANALYTICS_POSTHOG_KEY') ?? [];
-      expect(entry[1]?.trim()).toBe('sync: false');
-      expect(entry.some((line) => /^\s*value:/.test(line))).toBe(false);
     });
   });
 

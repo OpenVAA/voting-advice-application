@@ -2,7 +2,7 @@
 
 A production OpenVAA has two parts:
 
-- **The frontend**, a SvelteKit app built into a Node container from [`apps/frontend/Dockerfile`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/Dockerfile). The repository has a [Render](https://render.com/) Blueprint template for it, [`render.example.yaml`](https://github.com/OpenVAA/voting-advice-application/blob/main/render.example.yaml).
+- **The frontend**, a SvelteKit app built into a Node container from [`apps/frontend/Dockerfile`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/Dockerfile).
 - **The backend**, a hosted [Supabase](https://supabase.com/) project: the database, Auth, Storage and the three Edge Functions.
 
 The frontend reads its configuration at run time (see [Environment variables](/developers-guide/configuration/environmental-variables)), so the same image works in any environment once its variables are set.
@@ -34,26 +34,6 @@ Create a project in Supabase. The Supabase CLI comes with `yarn install` and run
    Supabase sets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` for the functions itself. `identity-callback` is called by the browser without a Supabase session, so it runs without JWT verification (`--no-verify-jwt`), as it does locally. `account-access` is called with the anon key and no user token. The local gateway accepts such a call; whether a hosted project's gateway does is unverified, so check it with one `check-code` request after deploying. [Edge Functions](/developers-guide/backend/edge-functions) describes each function.
 
    `account-access` mails sign-in links, and it refuses to until the project's auth settings and these variables are right; see [The sign-in link of an invitation](#the-sign-in-link-of-an-invitation).
-
-## 3. Deploy the frontend on Render
-
-1. Copy `render.example.yaml` to `render.yaml` and replace its placeholders (`<INSTANCE_NAME>`, `<INSTANCE_BRANCH>`, `<INSTANCE_DOMAIN>`), as its header comment lists. Check the values marked `# Check`, such as the plan and whether to deploy automatically.
-2. Create the service in Render from the Blueprint. It is a Docker web service built from `./apps/frontend/Dockerfile` with the repository root as the build context. The image builds the shared packages and the frontend and runs `node ./apps/frontend/build/index.js` on port 3000.
-3. Set the variables. The template declares:
-   - `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`, which you enter in Render (`sync: false`)
-   - `PUBLIC_DEBUG` and `PUBLIC_LOG_LEVEL`
-   - `PUBLIC_BROWSER_FRONTEND_URL` and `PUBLIC_SERVER_FRONTEND_URL`
-   - a commented-out environment group, `IDENTITY PROVIDER - PRODUCTION CLIENT`, for registration with bank authentication
-
-   Also add **`PUBLIC_PROJECT_ID`**, which the template does not list: the frontend's Supabase adapter throws without it. For bank authentication, the frontend needs the identity-provider variables listed under [Environment variables](/developers-guide/configuration/environmental-variables#bank-authentication-identity-provider), and for the Admin app's LLM features, `LLM_OPENAI_API_KEY`.
-
-   **Never set `SUPABASE_SERVICE_ROLE_KEY` on the frontend service.** The key bypasses row-level security. The frontend never reads it; it belongs only to the Supabase project and to local tooling.
-
-4. To use your own domain, list it under `domains` in `render.yaml` (or add it in the service's settings in Render). Then create a `CNAME` record at your DNS provider that points the domain to the service's Render URL, and verify the domain in Render.
-
-### Upgrading an older Render service
-
-Services created from an older version of the template may still mount a persistent disk at `/var/data/cache` and carry variables for a response cache (`CACHE_*`, `PUBLIC_CACHE_*`), for backend URLs (`PUBLIC_*_BACKEND_URL`) and for a backend API token. The current frontend uses none of them. Detach the disk and delete those variables; any left in place have no effect.
 
 ## Auth settings of a hosted project
 

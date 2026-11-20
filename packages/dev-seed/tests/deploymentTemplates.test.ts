@@ -1,9 +1,8 @@
 /**
- * The deployment templates name the variables a production start needs, and `identity-callback` and `account-access` declare their JWT setting.
+ * The environment templates name the variables a production start needs, and `identity-callback` and `account-access` declare their JWT setting.
  *
  * The production server refuses to start without `PUBLIC_PROJECT_ID` and `ORIGIN`, and it reads `ADDRESS_HEADER` and `XFF_DEPTH` to find the client address behind a proxy. This suite specifies where each of the four is written down:
  *
- * - `render.example.yaml` declares all four as `envVars` entries.
  * - `docker-compose.dev.yml` passes all four with a default, so an unset variable never reaches the container as an empty string by accident.
  * - `.env.example` lists the three proxy variables as commented lines only. CI copies that file to `.env` and Compose reads `.env`, so a live `ORIGIN` there would reach the production test image and make it refuse every form post.
  * - `apps/supabase/supabase/config.toml` declares `verify_jwt = false` for `identity-callback`, which verifies the identity provider's token itself.
@@ -72,18 +71,6 @@ function commentedLines(text: string, name: string): Array<string> {
 }
 
 describe('deployment templates', () => {
-  describe('render.example.yaml', () => {
-    const text = read('render.example.yaml');
-
-    it('is read and is not empty', () => {
-      expect(text.trim().length).toBeGreaterThan(0);
-    });
-
-    it.each(SERVER_VARIABLES)('declares - key: %s', (name) => {
-      expect(capture(text, new RegExp(`^[ \\t]*(- key: ${name})(?=\\s|$)`, 'gm')).length).toBeGreaterThan(0);
-    });
-  });
-
   describe('docker-compose.dev.yml', () => {
     const text = read('docker-compose.dev.yml');
     const entries = composeEnvironment(text);
