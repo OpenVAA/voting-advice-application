@@ -33,3 +33,49 @@ LAST_PROBE_ROW_DATE=2026-11-14
 FUNCTION_REDEPLOY_ROW_DATE=2026-11-19
 NO_RUN_ACTIVE=yes
 SITTING_COMMAND_READY=yes
+
+## Task 3 — the operator's sitting, recorded
+
+The operator approved the sitting and ran the block in their own terminal (attempt
+`20261120T133036Z.242ab9b76` of `189-05-2`, bound at top level with `answer_sitting=approve`). No
+AWS session was used; the probe was given the publishable key, the catalog role `postgres` through
+the session pooler (`s15_pooler_exit=0`, `s15_connection=pooler`) and no service-role key. The
+privilege query exited 0 and both `dig` reads exited 0. The probe's log directory was removed at the
+end (`s23_logs_removed=yes`). The lines below are copied from the operator's pasted reply; nothing
+was re-run.
+
+The probe's note, as printed: `key-model: issued legacy/anon, legacy/service_role,
+publishable/default, secret/default; legacy keys enabled`.
+
+S1_SITTING=approved
+S1_PROBE_EXIT=0
+S1_PROBE_PASS=22
+S1_PROBE_FAIL=0
+S1_PROBE_COULD_NOT_RUN=0
+S1_CHECK_api.max-rows=PASS
+S1_CHECK_auth.access-token-hook=PASS
+S1_CHECK_auth.send-email-hook=PASS
+S1_CHECK_auth.site-url=PASS
+S1_CHECK_auth.redirects=PASS
+S1_CHECK_auth.signup-closed=PASS
+S1_CHECK_auth.email-confirm=PASS
+S1_CHECK_auth.smtp=PASS
+S1_CHECK_auth.oauth-server=PASS
+S1_CHECK_auth.other-settings=PASS
+S1_CHECK_api.schemas=PASS
+S1_CHECK_functions.deployed=PASS
+S1_CHECK_functions.verify-jwt=PASS
+S1_CHECK_auth.public-settings=PASS
+S1_CHECK_rows.read-whole=PASS
+S1_CHECK_functions.served=PASS
+S1_CHECK_functions.identity-callback-unverified=PASS
+S1_CHECK_storage.buckets=PASS
+S1_CHECK_db.hook-functions=PASS
+S1_CHECK_db.anon-timeout=PASS
+S1_CHECK_db.postgres-major=PASS
+S1_CHECK_no-seed=PASS
+S1_POSTGRES_UPDATE_AUTH_USERS=t
+S1_DMARC_ORG_POLICY=none
+S1_DMARC_STAGING_POLICY=quarantine
+S1_DMARC_DIFFERS=yes
+S1_READ_AT=2026-11-20T13:34Z
