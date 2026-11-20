@@ -112,7 +112,7 @@ const BASE_DATASET_APP_NAME = messageOf('dynamic', 'contestantAppName.candidateA
 // NOTE: the AUTHENTICATED candidate nav items (Start / Nominations / Basic Information / Your Opinions / Preview / Settings) carry their OWN `contestant-nav-*` testids — NavItem.svelte spreads the caller's `data-testid` over its default `nav-menu-item`, so those items are invisible to the `nav-menu-item` reader and are asserted separately via `assertContestantAuthNavPresent`.
 // ====================================================================
 
-// The active-locale language item (`en`, since this walk runs on `/en`) is `disabled={loc === currentLocale}` in LanguageSelection.svelte. NavItem drops `href` and sets `aria-disabled` for a disabled link, so the current-locale item computes an EMPTY accessible name (`/^$/`) — the other languages are real links carrying their language name.
+// The active-locale language item (`en`, since this walk runs on `/en`) is `disabled={loc === currentLocale}` in LanguageSelection.svelte. NavItem drops `href` from a disabled link but keeps its link role and marks it `aria-disabled`, so the current-locale item is named by its language like the others and is told apart by being unavailable (`assertActiveLocaleItemDisabled`).
 const CONTESTANT_NAV_LOGGED_OUT: ReadonlyArray<RegExp> = Object.freeze([
   /^Close menu$/,
   /^Sign in$/,
@@ -121,7 +121,7 @@ const CONTESTANT_NAV_LOGGED_OUT: ReadonlyArray<RegExp> = Object.freeze([
   /^Support$/,
   /^Privacy$/,
   /^Send feedback$/,
-  /^$/, // active locale (English) — disabled, empty accessible name
+  /^English$/, // active locale — disabled, see assertActiveLocaleItemDisabled
   /^Suomi$/,
   /^Svenska$/
 ]);
@@ -131,10 +131,22 @@ const CONTESTANT_NAV_LOGGED_IN: ReadonlyArray<RegExp> = Object.freeze([
   /^Support$/,
   /^Privacy$/,
   /^Send feedback$/,
-  /^$/, // active locale (English) — disabled, empty accessible name
+  /^English$/, // active locale — disabled, see assertActiveLocaleItemDisabled
   /^Suomi$/,
   /^Svenska$/
 ]);
+
+/**
+ * Assert that the menu's item for the active locale, English, is an unavailable link, and that the other languages' items are available.
+ */
+async function assertActiveLocaleItemDisabled(menu: Locator): Promise<void> {
+  const languageItem = (name: string) => menu.getByTestId('nav-menu-item').filter({ hasText: name });
+  await expect(languageItem('English')).toHaveRole('link');
+  await expect(languageItem('English')).toHaveAttribute('aria-disabled', 'true');
+  await expect(languageItem('English')).not.toHaveAttribute('href');
+  await expect(languageItem('Suomi')).not.toHaveAttribute('aria-disabled');
+  await expect(languageItem('Svenska')).not.toHaveAttribute('aria-disabled');
+}
 
 /**
  * Assert the authenticated candidate nav items are present in the open drawer with every item open: the home, nominations, profile, questions and preview items, each a link into the entity the URL names, and the settings item. The profile, questions and preview items have a link target only while the entity can open their pages, so this is the menu of an entity that has a nomination and nothing left to answer.
@@ -370,6 +382,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       const navMenu = createNavMenu(page);
       await navMenu.openMobileNav();
       await navMenu.expectNavMenuItems([...CONTESTANT_NAV_LOGGED_OUT]);
+      await assertActiveLocaleItemDisabled(navMenu.menu);
       // Close the drawer so the subsequent registration flow starts clean.
       await page.keyboard.press('Escape');
     });
@@ -903,6 +916,7 @@ test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
       await navMenu.openMobileNav();
       // (a) The `nav-menu-item` set: login / register / forgot-password GONE.
       await navMenu.expectNavMenuItems([...CONTESTANT_NAV_LOGGED_IN]);
+      await assertActiveLocaleItemDisabled(navMenu.menu);
       // (b) The authenticated nav group is present (own testids), every item open: each task is complete at this point of the walk. The nominations item is the group's second, after the home item.
       await assertContestantAuthNavPresent(navMenu.menu);
       await navMenu.expectNominationsItem();
