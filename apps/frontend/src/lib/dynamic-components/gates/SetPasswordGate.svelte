@@ -14,7 +14,6 @@ Accesses the component context for its translations, and nothing of any app's co
 - `email`: The address of the signed-in account. When it is empty or absent, the label and the address are left out together.
 - `setPassword`: The app's own store of a new password for the signed-in account.
 - `logout`: The app's own sign-out, as the shared `LogoutButton` takes it. A rejection is logged and the view stays.
-- `redirectTo`: Where the Log out leaves to after a sign-out that worked, for an app whose `logout` does not navigate.
 - `onSaved`: Called once a password has been saved, before the page's loads are rerun.
 - `testId`: The test id of the view's root.
 
@@ -51,7 +50,7 @@ Accesses the component context for its translations, and nothing of any app's co
   import { getUUID } from '$lib/utils/components';
   import type { SetPasswordGateProps } from './SetPasswordGate.type';
 
-  let { email, setPassword, logout, redirectTo, onSaved, testId }: SetPasswordGateProps = $props();
+  let { email, setPassword, logout, onSaved, testId }: SetPasswordGateProps = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -134,6 +133,6 @@ Accesses the component context for its translations, and nothing of any app's co
       loading={status === 'saving'}
       loadingText={t('common.saving')}
       data-testid="set-password-submit" />
-    <LogoutButton {logout} {redirectTo} icon={undefined} data-testid="set-password-logout" />
+    <LogoutButton {logout} icon={undefined} data-testid="set-password-logout" />
   {/snippet}
 </MainContent>

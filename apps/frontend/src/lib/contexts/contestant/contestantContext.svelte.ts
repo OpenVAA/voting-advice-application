@@ -2,11 +2,10 @@ import { log } from '@openvaa/app-shared';
 import { DEFAULT_NOMINATION_SHAPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, onMount, setContext } from 'svelte';
-import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { EntryFlowHolder } from '$lib/auth/entryFlow';
 import { heardLogoutAnnouncement, listenForLogoutAnnouncements } from '$lib/auth/logoutAnnouncement';
-import { discardGuardedEdits, leaveByFullLoad, leaveUnasked } from '$lib/components/preventNavigation/navigationGuards';
+import { discardGuardedEdits, leaveTo, leaveUnasked } from '$lib/components/preventNavigation/navigationGuards';
 import { nominationEntryOfferedOf } from '$lib/contestant/nominations';
 import { hasNomination, requiredInfoQuestionsOf, taskStateOf, unansweredQuestionsOf } from '$lib/contestant/tasks';
 import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
@@ -76,7 +75,7 @@ function noQuestionBlocks(): QuestionBlocksShape {
  * NO consumer spreads `contestantContext` (`{ ...contestantContext }` / `...getContestantContext()` / `...userData` → zero hits). So its OWN members are exposed as plain PROTOTYPE GETTERS (the natural class shape) — contestantContext does NOT need the own-enumerable discipline. The own-enumerable concern applies ONLY to the INHERITED appContext + authContext members, which arrive already own-enumerable from the AppContextProvider + AuthContextProvider instances and are forwarded onto this instance rather than spread into it.
  *
  * ── logout override (LANDMINE) ───────────────────────────────────────────────
- * `logout` is declared on ContestantContext (the surface) and wraps the inherited authContext logout: it asks nothing, because its caller holds what the user answered; it signs out, lets a page's guard discard what it holds, navigates to the login page with the guards stood down, and resets. A reason it is given, such as `loggedOutAutomatically` at the end of a logout count, goes to the login page as its `errorMessage`, so the login screen says why; overlapping calls are one logout, with the first call's reason. A sign-out that fails does none of what follows it: `logoutFailed` turns true for the layout to show the message, the page and its edits stay, the promise rejects, and the next logout clears the flag when it starts. Because field initializers run BEFORE the constructor body, an arrow-FIELD `logout` would be CLOBBERED by `Object.assign(this, this.#authContext)`. So `logout` is exposed as a PROTOTYPE GETTER delegating to a private `#logout` arrow — prototype members are NOT own-enumerable, so `Object.assign` does NOT overwrite them.
+ * `logout` is declared on ContestantContext (the surface) and wraps the inherited authContext logout: it asks nothing, because its caller holds what the user answered; it signs out, lets a page's guard discard what it holds, navigates to the login page with the guards stood down, and resets. A reason it is given, such as `loggedOutAutomatically` at the end of a logout count, goes to the login page as its `errorMessage`, so the login screen says why; overlapping calls are one logout, with the first call's reason. A sign-out that fails does none of what follows it: the auth context's `logoutFailed`, forwarded here, turns true for the layout to show the message, the page and its edits stay, the promise rejects, and the next logout clears the flag when it starts. Because field initializers run BEFORE the constructor body, an arrow-FIELD `logout` would be CLOBBERED by `Object.assign(this, this.#authContext)`. So `logout` is exposed as a PROTOTYPE GETTER delegating to a private `#logout` arrow — prototype members are NOT own-enumerable, so `Object.assign` does NOT overwrite them.
  *
  * ── A sign-out the tab's client reports ──────────────────────────────────────
  * When the tab's client reports a sign-out made elsewhere and no logout of this context runs, the context lets a page's guard discard what it holds and resets, so the user's drafts are removed and none is stored again; a page that reads as signed in then goes to the login page as `logout` does, with the guards stood down. The login page carries `loggedOutElsewhere` as its `errorMessage`, so the login screen says the user was logged out in another tab or window, only when, at the client's `SIGNED_OUT` report, this document had heard another tab announce the `start` of its Log out with no `end` since, no more than `LOGOUT_IN_FLIGHT_CAP_MS` before, or its `end` no more than `LOGOUT_ANNOUNCEMENT_WINDOW_MS` before; any other such sign-out, such as one the auth client makes by itself when it finds the session gone or a refresh refused, goes to the login page with no reason. A sign-out this document makes while this context's `logout` runs changes nothing here: `logout` does what follows it. Any other sign-out this document makes, such as the Admin App's load signing out a user who is no administrator on a link from this app, resets, so the handles go before the drafts do and no edit stores them again.
@@ -164,9 +163,6 @@ export class ContestantContextProvider implements ContestantContext {
 
   // What the entry flow holds between its screens: a checked registration code, the one link request that can be repeated, both, or nothing. A field of the instance, because the server builds one context for each render and a binding of the module would be shared by every visitor it renders for. Replaced whole on every write, and written to no storage, cookie, URL or history state.
   #entryFlow = new EntryFlowHolder((request) => this.#requestLink(request));
-
-  // Whether the last logout's sign-out failed, for the contestant layout to tell the user.
-  #logoutFailed = $state(false);
 
   ////////////////////////////////////////////////////////////////////
   // Properties matching those in the VoterContext
@@ -296,10 +292,11 @@ export class ContestantContextProvider implements ContestantContext {
   readonly popupQueue!: AppContext['popupQueue'];
 
   ////////////////////////////////////////////////////////////
-  // Inherited authContext members (declared for `implements ContestantContext`; INSTALLED via `Object.assign(this, this.#authContext)` in the constructor from the own-enumerable AuthContextProvider instance). `logout` and `isAuthenticated` are NOT declared here — contestantContext exposes each through a prototype getter (below).
+  // Inherited authContext members (declared for `implements ContestantContext`; INSTALLED via `Object.assign(this, this.#authContext)` in the constructor from the own-enumerable AuthContextProvider instance). `logout`, `isAuthenticated` and `logoutFailed` are NOT declared here — contestantContext exposes each through a prototype getter (below).
   ////////////////////////////////////////////////////////////
 
   readonly setPassword!: AuthContext['setPassword'];
+  readonly clearLogoutFailure!: AuthContext['clearLogoutFailure'];
 
   constructor() {
     ////////////////////////////////////////////////////////////
@@ -312,10 +309,11 @@ export class ContestantContextProvider implements ContestantContext {
 
     // Use inheritContextMembers (NOT Object.assign) so the bare reactive accessors (appSettings / dataRoot / locale) as LIVE accessors; Object.assign would snapshot and freeze their reactivity for consumers.
     inheritContextMembers(this, this.#appContext);
-    // `isAuthenticated` is left out as well: copying it would freeze the value read at construction, so a sign-in or a sign-out that keeps this context mounted would never reach a consumer. It is forwarded live by the prototype getter below, and assigning to that getter-only accessor here would throw as `logout` does.
+    // `isAuthenticated` and `logoutFailed` are left out as well: copying either would freeze the value read at construction, so a change that keeps this context mounted would never reach a consumer. Each is forwarded live by a prototype getter below, and assigning to that getter-only accessor here would throw as `logout` does.
     const {
       logout: _inheritedLogout,
       isAuthenticated: _inheritedIsAuthenticated,
+      logoutFailed: _inheritedLogoutFailed,
       ...authContextRest
     } = this.#authContext;
     Object.assign(this, authContextRest);
@@ -529,15 +527,9 @@ export class ContestantContextProvider implements ContestantContext {
   #loggingOut: Promise<void> | undefined;
 
   #runLogout = async (reason?: ContestantLoginError): Promise<void> => {
-    this.#logoutFailed = false;
     const loginRoute = this.#loginRoute(reason);
     const addressBefore = page.url.href;
-    try {
-      await this.#authLogout();
-    } catch (e) {
-      this.#logoutFailed = true;
-      throw e;
-    }
+    await this.#authLogout();
     this.#discardGuardedEdits();
     await this.#leaveToLogin(loginRoute, addressBefore);
     this.#reset();
@@ -581,31 +573,12 @@ export class ContestantContextProvider implements ContestantContext {
   };
 
   /**
-   * Go to the login page after the session has ended, with the guards stood down. The browser always leaves: a navigation that did not move it, or that rejected, is followed by the reset and a full load of the login page.
+   * Go to the login page after the session has ended, with the guards stood down. The browser always leaves: a navigation that did not move it, or that rejected, is followed by the reset and a full load of the login page. The reset comes first because the drafts must go before the document does, and nothing after the full load runs.
    * @param loginRoute - The login page's address.
    * @param addressBefore - The address the page stood at when the session ended.
    */
-  #leaveToLogin = async (loginRoute: string, addressBefore: string): Promise<void> => {
-    await leaveUnasked(async () => {
-      let moved = false;
-      try {
-        await goto(loginRoute, { invalidateAll: true });
-        moved = page.url.href !== addressBefore;
-      } catch (e) {
-        // A rejection can come after the address changed, so the address says nothing here.
-        log.error(`Error navigating after logout: ${(e as Error)?.message}`);
-      }
-      if (!moved) {
-        // A page that did not move would go on reading as signed in, with no session behind it. The drafts must go before the document does, and nothing after the full load runs.
-        this.#reset();
-        await leaveByFullLoad(loginRoute);
-      }
-    });
-  };
-
-  clearLogoutFailure = (): void => {
-    this.#logoutFailed = false;
-  };
+  #leaveToLogin = (loginRoute: string, addressBefore: string): Promise<void> =>
+    leaveUnasked(() => leaveTo(loginRoute, addressBefore, this.#reset));
 
   /**
    * Utility for resetting all data. Note that `isAuthenticated` is not reset, because it's derived from `page.data.session`
@@ -651,9 +624,9 @@ export class ContestantContextProvider implements ContestantContext {
   get entryFlow() {
     return this.#entryFlow.flow;
   }
-  // No setter: the flag is written by the logout and `clearLogoutFailure` alone.
+  // Re-reads the auth context's live accessor on every access, so the read stays reactive. No setter: the flag is written by the auth context's logout and `clearLogoutFailure` alone.
   get logoutFailed() {
-    return this.#logoutFailed;
+    return this.#authContext.logoutFailed;
   }
   get opinionQuestionCategories() {
     return this.#opinionQuestionCategories;

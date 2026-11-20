@@ -10,7 +10,7 @@ Allow layouts to insert arbitrary content in the header and make this a static c
 
 ### Dynamic component
 
-Accesses `AppContext`, and `VoterContext`, `ContestantContext` or `AdminContext` in the app of that type. The Log out is the one shared `LogoutButton`, given the app's own sign-out: the Contestant App's with its warning of what is left undone, the Admin App's with its login to leave to.
+Accesses `AppContext`, and `VoterContext`, `ContestantContext` or `AdminContext` in the app of that type. The Log out is the one shared `LogoutButton`, given the app's own sign-out: the Contestant App's with its warning of what is left undone, the Admin App's as it is. Each app's sign-out goes to that app's login itself.
 -->
 
 <script lang="ts">
@@ -55,7 +55,7 @@ Accesses `AppContext`, and `VoterContext`, `ContestantContext` or `AdminContext`
     {#if appType.current === 'contestant' && contestantCtx}
       <LogoutButton logout={contestantCtx.logout} warning={logoutWarning} variant="icon" data-testid="header-logout" />
     {:else if appType.current === 'admin' && adminCtx}
-      <LogoutButton logout={adminCtx.logout} redirectTo="AdminAppLogin" variant="icon" data-testid="header-logout" />
+      <LogoutButton logout={adminCtx.logout} variant="icon" data-testid="header-logout" />
     {/if}
   {/if}
 

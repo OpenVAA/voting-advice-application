@@ -24,6 +24,7 @@ type FakeQuestion = {
   customData: Record<string, unknown>;
   category: { id: string };
   entityType?: EntityType;
+  isAnswered: (answer?: { value?: unknown } | null) => boolean;
 };
 
 type FakeCategory = {
@@ -194,8 +195,7 @@ vi.mock('$app/navigation', async (importOriginal) => ({
 
 // The full load is the case's: a real one never settles, so a case holds its promise and resolves it at its end, which brings the guards back up.
 const { fullLoadBox } = vi.hoisted(() => ({ fullLoadBox: { leave: vi.fn() } }));
-vi.mock('$lib/components/preventNavigation/navigationGuards', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
+vi.mock('$lib/components/preventNavigation/fullLoad', () => ({
   leaveByFullLoad: (address: string) => fullLoadBox.leave(address)
 }));
 
@@ -237,7 +237,15 @@ function makeQuestion({
   entityType?: EntityType;
   required?: boolean;
 }): FakeQuestion {
-  return { id, isMatchable: true, required, customData: {}, category: { id: categoryId }, entityType };
+  return {
+    id,
+    isMatchable: true,
+    required,
+    customData: {},
+    category: { id: categoryId },
+    entityType,
+    isAnswered: (answer) => answer?.value != null
+  };
 }
 
 /**
