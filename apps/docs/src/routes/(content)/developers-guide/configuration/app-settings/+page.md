@@ -17,7 +17,7 @@ The Supabase data provider's `getAppSettings` reads the row:
 
 - **Validation.** The stored value is checked against `StoredSettingsSchema` ([`storedSettings.schema.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/data/schemas/storedSettings.schema.ts)). Every member is optional, and the schema is strict at every level. When the value does not match, the top-level members that fail (for example a whole `results` object with one unknown key in it) are dropped and logged as an error, and the other members are kept.
 - **Notifications.** The `title` and `content` of the two notifications are stored as locale objects and returned as strings in the requested locale.
-- **No row.** Nothing creates a settings row for a project, and an anonymous visitor cannot read the row of a project that is closed for voters. When the provider reads no row, it asks `project_open_for_voters`. For an open project it returns no overrides. For a closed project it returns the shipped `access` defaults with `voterApp` set to `false`, which shows the voter app's maintenance page, together with five stored values it reads through the database function `contestant_app_public_config`: `access.contestantApp`, `access.answersLocked`, the served entity types (`contestantApp.entityTypes`), the registration matrix (`contestantApp.registrationModes`) and the tracking switch (`analytics.trackEvents`, `false` when none is stored). The five values are validated like a readable row. Nothing else that is stored is honoured for that caller: `access.underMaintenance`, `access.nominationsLocked` and every other stored setting stay at their shipped defaults.
+- **No row.** Nothing creates a settings row for a project, and an anonymous visitor cannot read the row of a project that is closed for voters. When the provider reads no row, it asks `project_open_for_voters`. For an open project it returns no overrides. For a closed project it returns the shipped `access` defaults with `voterApp` set to `false`, which shows the voter app's maintenance page, together with four stored values it reads through the database function `contestant_app_public_settings`: `access.contestantApp`, `access.answersLocked`, the served entity types with their registration modes (`contestantApp.servedEntityTypes`) and the tracking switch (`analytics.trackEvents`, `false` when none is stored). The four values are validated like a readable row. Nothing else that is stored is honoured for that caller: `access.underMaintenance`, `access.nominationsLocked` and every other stored setting stay at their shipped defaults.
 - **Who can read it.** Anonymous visitors can read the row only while the project is open for voters. Signed-in users with a grant on the project can always read it, which lets them preview a closed project.
 
 `analytics.trackEvents` is a dynamic setting like the others; it decides whether usage events other than the page-view count are collected. The analytics provider is not a setting: it is chosen by the server environment variable `ANALYTICS_PROVIDER`, so a stored row cannot name one. A stored `analytics` member that carries any other key fails validation and is dropped.
@@ -34,9 +34,10 @@ The merge (`mergeAppSettings` in [`settings.ts`](https://github.com/OpenVAA/voti
 
 - where both sides hold an object, the two are merged, so a stored `results: { showFeedbackPopup: 60 }` changes that one member and leaves the other members of `results` at their defaults;
 - a list or a scalar is **replaced whole** and never combined, so a stored `results.sections` is the complete list of sections;
+- an object at a path listed in `SETTINGS_REPLACED_WHOLE` ([`mergeSettings.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/utils/mergeSettings.ts)), today only `contestantApp.servedEntityTypes`, is **replaced whole** as well: a type key the stored map leaves out is not served;
 - a top-level key whose value is `null` or `undefined` is ignored. Below the top level `undefined` is ignored and `null` replaces the default, which is how a notification is stored as absent.
 
-Leaving a member out therefore never removes it: to switch a feature off, store the value that disables it (for example `0` for the two popup delays under `results`).
+Leaving a member out therefore never removes it, except inside a member replaced whole: to switch a feature off, store the value that disables it (for example `0` for the two popup delays under `results`).
 
 ### Editing the stored settings
 
@@ -46,66 +47,65 @@ The Admin App has no settings editor. Write the `settings` column directly, for 
 
 The table lists every key path of `DynamicSettings` with its default in `dynamicSettings.ts`. "None" means the default leaves the key unset. For what each key does, see the doc comments in the type file or the [Publishers' Guide](/publishers-guide/app-settings).
 
-| Key path                                          | Default                                    | Type and values                                                     |
-| ------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------- |
-| `survey.linkTemplate`                             | none (`survey` is unset)                   | string; `{sessionId}` becomes the visit id when events carry it     |
-| `survey.showIn`                                   | none                                       | array of `frontpage`, `entityDetails`, `navigation`, `resultsPopup` |
-| `entityDetails.contents.candidate`                | `['info', 'opinions']`                     | array of `info`, `opinions`                                         |
-| `entityDetails.contents.organization`             | `['info', 'children', 'opinions']`         | array of `info`, `opinions`, `children`                             |
-| `entityDetails.contents.alliance`                 | `['info', 'children']`                     | array of `info`, `opinions`, `children`; optional                   |
-| `entityDetails.showMissingElectionSymbol`         | `{ candidate: true, organization: false }` | boolean per entity type                                             |
-| `entityDetails.showMissingAnswers`                | `{ candidate: true, organization: true }`  | boolean per entity type                                             |
-| `header.showFeedback`                             | `true`                                     | boolean                                                             |
-| `header.showHelp`                                 | `true`                                     | boolean                                                             |
-| `headerStyle.dark.bgColor`                        | `'var(--color-base-300)'`                  | CSS colour                                                          |
-| `headerStyle.dark.overImgBgColor`                 | `'transparent'`                            | CSS colour                                                          |
-| `headerStyle.light.bgColor`                       | `'var(--color-base-300)'`                  | CSS colour                                                          |
-| `headerStyle.light.overImgBgColor`                | `'transparent'`                            | CSS colour                                                          |
-| `headerStyle.imgSize`                             | `'cover'`                                  | CSS `background-size`                                               |
-| `headerStyle.imgPosition`                         | `'center'`                                 | CSS `background-position`                                           |
-| `entities.hideIfMissingAnswers.candidate`         | `true`                                     | boolean                                                             |
-| `entities.hideIfMissingAnswers.organization`      | `false`                                    | boolean                                                             |
-| `entities.showAllNominations`                     | `true`                                     | boolean                                                             |
-| `matching.minimumAnswers`                         | `5`                                        | number                                                              |
-| `matching.organizationMatching`                   | `'impute'`                                 | `none`, `answersOnly` or `impute`                                   |
-| `questions.categoryIntros.allowSkip`              | `true`                                     | boolean                                                             |
-| `questions.categoryIntros.show`                   | `true`                                     | boolean                                                             |
-| `questions.interactiveInfo.enabled`               | `false`                                    | boolean                                                             |
-| `questions.questionsIntro.allowCategorySelection` | `true`                                     | boolean                                                             |
-| `questions.questionsIntro.show`                   | `true`                                     | boolean                                                             |
-| `questions.showCategoryTags`                      | `true`                                     | boolean                                                             |
-| `questions.showResultsLink`                       | `true`                                     | boolean                                                             |
-| `results.cardContents.candidate`                  | `['submatches']`                           | array of `submatches` or a question object                          |
-| `results.cardContents.organization`               | `['children']`                             | array of `submatches`, `children` or a question object              |
-| `results.cardContents.alliance`                   | `['children']`                             | array of `submatches`, `children` or a question object; optional    |
-| `results.sections`                                | `['candidate', 'organization']`            | array of `candidate`, `organization`, `alliance`; at least one      |
-| `results.showFeedbackPopup`                       | `180`                                      | seconds                                                             |
-| `results.showSurveyPopup`                         | `500`                                      | seconds                                                             |
-| `elections.disallowSelection`                     | `false`                                    | boolean                                                             |
-| `elections.showElectionTags`                      | `true`                                     | boolean                                                             |
-| `elections.startFromConstituencyGroup`            | none (`undefined`)                         | constituency group id                                               |
-| `access.contestantApp`                            | `true`                                     | boolean                                                             |
-| `access.voterApp`                                 | `true`                                     | boolean                                                             |
-| `access.adminApp`                                 | `true`                                     | boolean                                                             |
-| `access.underMaintenance`                         | `false`                                    | boolean                                                             |
-| `access.answersLocked`                            | `false`                                    | boolean                                                             |
-| `access.nominationsLocked`                        | `false`                                    | boolean                                                             |
-| `notifications.contestantApp`                     | `null`                                     | a notification, or `null`                                           |
-| `notifications.contestantApp.show`                | none                                       | boolean                                                             |
-| `notifications.contestantApp.title`               | none                                       | localized string                                                    |
-| `notifications.contestantApp.content`             | none                                       | localized string                                                    |
-| `notifications.contestantApp.icon`                | none                                       | icon name; `important` when unset or unknown                        |
-| `notifications.voterApp`                          | `null`                                     | a notification, or `null`                                           |
-| `notifications.voterApp.show`                     | none                                       | boolean                                                             |
-| `notifications.voterApp.title`                    | none                                       | localized string                                                    |
-| `notifications.voterApp.content`                  | none                                       | localized string                                                    |
-| `notifications.voterApp.icon`                     | none                                       | icon name                                                           |
-| `contestantApp.questions.hideVideo`               | `false`                                    | boolean                                                             |
-| `contestantApp.questions.hideHero`                | `false`                                    | boolean                                                             |
-| `contestantApp.entityTypes`                       | `['candidate']`                            | array of `candidate`, `organization`; at least one                  |
-| `contestantApp.registrationModes.candidate`       | `[]`                                       | array of `identity_provider`, `email`, `code`                       |
-| `contestantApp.registrationModes.organization`    | `[]`                                       | array of `identity_provider`, `email`, `code`                       |
-| `analytics.trackEvents`                           | `false`                                    | boolean; collect events other than the page-view count              |
+| Key path                                                   | Default                                    | Type and values                                                                        |
+| ---------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `survey.linkTemplate`                                      | none (`survey` is unset)                   | string; `{sessionId}` becomes the visit id when events carry it                        |
+| `survey.showIn`                                            | none                                       | array of `frontpage`, `entityDetails`, `navigation`, `resultsPopup`                    |
+| `entityDetails.contents.candidate`                         | `['info', 'opinions']`                     | array of `info`, `opinions`                                                            |
+| `entityDetails.contents.organization`                      | `['info', 'children', 'opinions']`         | array of `info`, `opinions`, `children`                                                |
+| `entityDetails.contents.alliance`                          | `['info', 'children']`                     | array of `info`, `opinions`, `children`; optional                                      |
+| `entityDetails.showMissingElectionSymbol`                  | `{ candidate: true, organization: false }` | boolean per entity type                                                                |
+| `entityDetails.showMissingAnswers`                         | `{ candidate: true, organization: true }`  | boolean per entity type                                                                |
+| `header.showFeedback`                                      | `true`                                     | boolean                                                                                |
+| `header.showHelp`                                          | `true`                                     | boolean                                                                                |
+| `headerStyle.dark.bgColor`                                 | `'var(--color-base-300)'`                  | CSS colour                                                                             |
+| `headerStyle.dark.overImgBgColor`                          | `'transparent'`                            | CSS colour                                                                             |
+| `headerStyle.light.bgColor`                                | `'var(--color-base-300)'`                  | CSS colour                                                                             |
+| `headerStyle.light.overImgBgColor`                         | `'transparent'`                            | CSS colour                                                                             |
+| `headerStyle.imgSize`                                      | `'cover'`                                  | CSS `background-size`                                                                  |
+| `headerStyle.imgPosition`                                  | `'center'`                                 | CSS `background-position`                                                              |
+| `entities.hideIfMissingAnswers.candidate`                  | `true`                                     | boolean                                                                                |
+| `entities.hideIfMissingAnswers.organization`               | `false`                                    | boolean                                                                                |
+| `entities.showAllNominations`                              | `true`                                     | boolean                                                                                |
+| `matching.minimumAnswers`                                  | `5`                                        | number                                                                                 |
+| `matching.organizationMatching`                            | `'impute'`                                 | `none`, `answersOnly` or `impute`                                                      |
+| `questions.categoryIntros.allowSkip`                       | `true`                                     | boolean                                                                                |
+| `questions.categoryIntros.show`                            | `true`                                     | boolean                                                                                |
+| `questions.interactiveInfo.enabled`                        | `false`                                    | boolean                                                                                |
+| `questions.questionsIntro.allowCategorySelection`          | `true`                                     | boolean                                                                                |
+| `questions.questionsIntro.show`                            | `true`                                     | boolean                                                                                |
+| `questions.showCategoryTags`                               | `true`                                     | boolean                                                                                |
+| `questions.showResultsLink`                                | `true`                                     | boolean                                                                                |
+| `results.cardContents.candidate`                           | `['submatches']`                           | array of `submatches` or a question object                                             |
+| `results.cardContents.organization`                        | `['children']`                             | array of `submatches`, `children` or a question object                                 |
+| `results.cardContents.alliance`                            | `['children']`                             | array of `submatches`, `children` or a question object; optional                       |
+| `results.sections`                                         | `['candidate', 'organization']`            | array of `candidate`, `organization`, `alliance`; at least one                         |
+| `results.showFeedbackPopup`                                | `180`                                      | seconds                                                                                |
+| `results.showSurveyPopup`                                  | `500`                                      | seconds                                                                                |
+| `elections.disallowSelection`                              | `false`                                    | boolean                                                                                |
+| `elections.showElectionTags`                               | `true`                                     | boolean                                                                                |
+| `elections.startFromConstituencyGroup`                     | none (`undefined`)                         | constituency group id                                                                  |
+| `access.contestantApp`                                     | `true`                                     | boolean                                                                                |
+| `access.voterApp`                                          | `true`                                     | boolean                                                                                |
+| `access.adminApp`                                          | `true`                                     | boolean                                                                                |
+| `access.underMaintenance`                                  | `false`                                    | boolean                                                                                |
+| `access.answersLocked`                                     | `false`                                    | boolean                                                                                |
+| `access.nominationsLocked`                                 | `false`                                    | boolean                                                                                |
+| `notifications.contestantApp`                              | `null`                                     | a notification, or `null`                                                              |
+| `notifications.contestantApp.show`                         | none                                       | boolean                                                                                |
+| `notifications.contestantApp.title`                        | none                                       | localized string                                                                       |
+| `notifications.contestantApp.content`                      | none                                       | localized string                                                                       |
+| `notifications.contestantApp.icon`                         | none                                       | icon name; `important` when unset or unknown                                           |
+| `notifications.voterApp`                                   | `null`                                     | a notification, or `null`                                                              |
+| `notifications.voterApp.show`                              | none                                       | boolean                                                                                |
+| `notifications.voterApp.title`                             | none                                       | localized string                                                                       |
+| `notifications.voterApp.content`                           | none                                       | localized string                                                                       |
+| `notifications.voterApp.icon`                              | none                                       | icon name                                                                              |
+| `contestantApp.questions.hideVideo`                        | `false`                                    | boolean                                                                                |
+| `contestantApp.questions.hideHero`                         | `false`                                    | boolean                                                                                |
+| `contestantApp.servedEntityTypes`                          | `{ candidate: { registrationModes: [] } }` | map keyed by `candidate`, `organization`; a key present means served; at least one key |
+| `contestantApp.servedEntityTypes.<type>.registrationModes` | none                                       | array of `identity_provider`, `email`, `code`                                          |
+| `analytics.trackEvents`                                    | `false`                                    | boolean; collect events other than the page-view count                                 |
 
 A question object in `results.cardContents` has `question` (the question's id), an optional `hideLabel` and an optional `format`: `default` or `tag`.
 
@@ -131,12 +131,25 @@ The voter app applies both keys when it builds its lists, in [`nominationAndQues
 
 ### The contestant app's entity types and registration modes
 
-`contestantApp.entityTypes` lists the entity types the Contestant App serves, and `contestantApp.registrationModes` is a map from entity type to the registration modes allowed for that type. By default the app serves candidates only and every row of the map is empty, so the app offers sign-in only.
+`contestantApp.servedEntityTypes` is a map from entity type to the registration modes allowed for that type. A type is served when the map has a key for it, and the map has at least one key. By default the app serves candidates only and allows them no mode, `{ candidate: { registrationModes: [] } }`, so the app offers sign-in only.
 
-- **Canonical lists.** `StoredSettingsSchema` collapses a repeated value and orders each list: `candidate`, `organization` for the types, and `identity_provider`, `email`, `code` for the modes. A list that names a value twice or out of order therefore reads the same as the canonical one.
-- **An unserved row.** A row of `contestantApp.registrationModes` for a type that `contestantApp.entityTypes` does not list is stored and ignored on read.
-- **One bad value.** An empty `entityTypes`, an unknown type, an unknown mode or an unknown row fails validation. The stored `contestantApp` group is then dropped as a whole, `contestantApp.questions` included, its shipped defaults apply and the failure is logged with the path of the offending member.
-- **Accessors, never raw keys.** Code reads the two settings through the accessors in [`contestantAppConfig.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/contestantAppConfig.ts), exported by `@openvaa/app-shared`: `getServedEntityTypes`, `getEffectiveRegistrationModes`, `isRegistrationModeAllowed`, `isRegistrationModeAllowedForAnyType`, `isAnyRegistrationAllowed` and `getContestantAppNameKey`. They apply the defaults and the unserved-row rule, and they accept merged settings, a provider's raw answer and an empty object alike.
+A stored value that serves both types, lets candidates register by email or with a code, and lets organizations only sign in:
+
+```json
+{
+  "contestantApp": {
+    "servedEntityTypes": {
+      "candidate": { "registrationModes": ["email", "code"] },
+      "organization": { "registrationModes": [] }
+    }
+  }
+}
+```
+
+- **Replaced whole.** A stored `servedEntityTypes` replaces the shipped default instead of being merged into it, so a type the stored map has no key for is not served: a map with only an `organization` key serves organizations alone.
+- **Canonical lists.** `StoredSettingsSchema` collapses a repeated mode and orders each list `identity_provider`, `email`, `code`. A list that names a mode twice or out of order therefore reads the same as the canonical one.
+- **One bad value.** An empty map, an unknown type, an unknown mode or an unknown key fails validation. The stored `contestantApp` group is then dropped as a whole, `contestantApp.questions` included, its shipped defaults apply and the failure is logged with the path of the offending member. An invalid `contestantApp.questions` is read as absent on its own and leaves the served entity types as stored.
+- **Accessors, never raw keys.** Code reads the setting through the accessors in [`contestantAppSettings.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/app-shared/src/settings/contestantAppSettings.ts), exported by `@openvaa/app-shared`: `getServedEntityTypes`, `getEffectiveRegistrationModes`, `isRegistrationModeAllowed`, `isRegistrationModeAllowedForAnyType` and `getContestantAppNameKey`. They apply the default, and they accept merged settings, a provider's raw answer and an empty object alike.
 
 ## Adding a new setting
 
