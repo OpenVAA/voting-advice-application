@@ -1,5 +1,5 @@
 /**
- * perm-no-nomination minimal-data template: the dataset on which an entity's editor signs in whether or not the entity has a nomination.
+ * perm-unnominated-entities minimal-data template: the dataset on which an entity's editor signs in whether or not the entity has a nomination.
  *
  * Topology: 1 election, 1 constituency group with 1 constituency, 2 candidates, 1 organization, 1 nomination, an info and an opinion category, 3 questions.
  *
@@ -13,15 +13,15 @@
  *
  * Settings: `MINIMAL_BASE_APP_SETTINGS`, with `EDITOR_CONTESTANT_APP_SETTINGS` as the `contestantApp` root, so the Contestant App serves both entity types.
  *
- * Prefix discipline: `externalIdPrefix: 'e2e-perm-no-nomination-'`. Row external_ids are bare; nested references are prefixed. The ids are semantic slugs with hyphens, which no generator emits: a generated id is a type code, an underscore and a zero-padded number.
+ * Prefix discipline: `externalIdPrefix: 'e2e-perm-unnominated-entities-'`. Row external_ids are bare; nested references are prefixed. The ids are semantic slugs with hyphens, which no generator emits: a generated id is a type code, an underscore and a zero-padded number.
  */
 
 import { EDITOR_CONTESTANT_APP_SETTINGS, LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
 import type { Template } from '../../../template/types';
 
-const P = 'e2e-perm-no-nomination-';
+const P = 'e2e-perm-unnominated-entities-';
 
-export const permNoNominationTemplate: Template = {
+export const permUnnominatedEntitiesTemplate: Template = {
   seed: 42,
   externalIdPrefix: P,
   generateTranslationsForAllLocales: false,
@@ -183,4 +183,4 @@ export const permNoNominationTemplate: Template = {
   }
 };
 
-export default permNoNominationTemplate;
+export default permUnnominatedEntitiesTemplate;

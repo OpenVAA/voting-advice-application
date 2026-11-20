@@ -1,7 +1,7 @@
 /**
- * @file Composition root for the no-nomination spec.
+ * @file Composition root for the unnominated-entities spec.
  *
- * Consumed by `specs/perm/perm-no-nomination.spec.ts`: the editor of a candidate and of an organization on their own entity's pages, with and without a nomination.
+ * Consumed by `specs/perm/perm-unnominated-entities.spec.ts`: the editor of a candidate and of an organization on their own entity's pages, with and without a nomination.
  *
  * Surface:
  *   - `test`   — Playwright test extended with the page fixtures the spec speaks in.
@@ -31,6 +31,7 @@ import { createContestantProfilePage } from './contestantProfilePage.fixture';
 import { createContestantQuestionPage } from './contestantQuestionPage.fixture';
 import { createContestantQuestionsOverviewPage } from './contestantQuestionsOverviewPage.fixture';
 import { createNotEditableNote } from './notEditableNote.fixture';
+import { clearWrittenNominations as clearWrittenNominationsOfEntities, questionId } from '../../utils/permStateSteps';
 import {
   CONSTITUENCY_EXTERNAL_ID,
   ELECTION_EXTERNAL_ID,
@@ -48,8 +49,7 @@ import {
   UNNOMINATED_ORGANIZATION_EXTERNAL_ID,
   UNNOMINATED_ORGANIZATION_NOMINATION_EXTERNAL_ID,
   WRITTEN_NOMINATION_ELECTION_SYMBOL
-} from '../../utils/permNoNominationData';
-import { clearWrittenNominations as clearWrittenNominationsOfEntities, questionId } from '../../utils/permStateSteps';
+} from '../../utils/permUnnominatedEntitiesData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
@@ -101,7 +101,7 @@ type NoNominationFixtures = {
   pageGeometry: PageGeometryFixture;
 };
 
-/** Playwright's `test`, extended with the page fixtures of the no-nomination spec. */
+/** Playwright's `test`, extended with the page fixtures of the unnominated-entities spec. */
 export const test = base.extend<NoNominationFixtures>({
   contestantEntityHomePage: async ({ page }, use) => {
     await use(createContestantEntityHomePage(page, new SupabaseAdminClient()));
@@ -340,7 +340,7 @@ export async function setOrganizationName(
 ): Promise<void> {
   const step = 'setOrganizationName';
   if (entity.entityType !== 'organization' || entity.externalId !== UNNOMINATED_ORGANIZATION_EXTERNAL_ID) {
-    throw new Error(`${step}: ${entity.externalId} is not the organization of the no-nomination dataset`);
+    throw new Error(`${step}: ${entity.externalId} is not the organization of the unnominated-entities dataset`);
   }
   const admin = new SupabaseAdminClient();
   await admin.update(TABLES.organization.table, await admin.entityId(entity), { name: { ...name } });
@@ -355,7 +355,7 @@ function nominationOf(
   entity: EntityGrantTarget
 ): Readonly<{ externalId: string; electionSymbol: string }> {
   if (!Object.hasOwn(NOMINATION_OF, entity.externalId)) {
-    throw new Error(`${step}: ${entity.externalId} is not an entity of the no-nomination dataset`);
+    throw new Error(`${step}: ${entity.externalId} is not an entity of the unnominated-entities dataset`);
   }
   return NOMINATION_OF[entity.externalId];
 }

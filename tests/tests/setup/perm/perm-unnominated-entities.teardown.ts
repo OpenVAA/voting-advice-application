@@ -1,7 +1,7 @@
 /**
- * perm-no-nomination data-teardown project.
+ * perm-unnominated-entities data-teardown project.
  *
- * Removes what `data-setup-perm-no-nomination` left and what the spec wrote: every nomination the application wrote for an entity of the dataset, which carries no external id and which the delete by prefix therefore does not name; the three auth users the setup registered, with their grants; every row under `e2e-perm-no-nomination-`, the nominations a state step wrote among them, with an assertion that the delete accounted for all of them and left none; and the three storage-state files.
+ * Removes what `data-setup-perm-unnominated-entities` left and what the spec wrote: every nomination the application wrote for an entity of the dataset, which carries no external id and which the delete by prefix therefore does not name; the three auth users the setup registered, with their grants; every row under `e2e-perm-unnominated-entities-`, the nominations a state step wrote among them, with an assertion that the delete accounted for all of them and left none; and the three storage-state files.
  *
  * The application's rows are removed first, each one that stands under another before the one it stands under: a nomination cannot be deleted while another stands under it, so a row left under a seeded nomination would refuse the delete by prefix.
  *
@@ -9,17 +9,17 @@
  */
 
 import { expect, test as teardown } from '@playwright/test';
-import { clearWrittenNominations } from '../../fixtures/contestant/perm-no-nomination';
-import { EDITORS, NO_NOMINATION_PREFIX } from '../../utils/permNoNominationData';
+import { clearWrittenNominations } from '../../fixtures/contestant/perm-unnominated-entities';
+import { EDITORS, UNNOMINATED_ENTITIES_PREFIX } from '../../utils/permUnnominatedEntitiesData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { runTeardownAsserted } from '../shared/assertTeardown';
 import { removeEditorSessions } from '../shared/registerAndStoreSession';
 
 // A plain string literal: the Playwright configuration reads it from this file's text to check that no two teardowns own overlapping prefixes.
-const PREFIX = 'e2e-perm-no-nomination-';
+const PREFIX = 'e2e-perm-unnominated-entities-';
 
-teardown('delete perm-no-nomination dataset', async () => {
-  expect(PREFIX, 'the prefix deleted here is the one the dataset is seeded under').toBe(NO_NOMINATION_PREFIX);
+teardown('delete perm-unnominated-entities dataset', async () => {
+  expect(PREFIX, 'the prefix deleted here is the one the dataset is seeded under').toBe(UNNOMINATED_ENTITIES_PREFIX);
 
   await clearWrittenNominations();
 

@@ -1,7 +1,7 @@
 /**
- * @file perm-no-nomination.spec.ts — perm-chain spec.
+ * @file perm-unnominated-entities.spec.ts — perm-chain spec.
  *
- * The editor of a candidate and of an organization on their own entity's pages of the Contestant App, with and without a nomination, against the `perm-no-nomination` dataset (seeded by the data-setup-perm-no-nomination project): a candidate and an organization with no nomination row, and a candidate with one.
+ * The editor of a candidate and of an organization on their own entity's pages of the Contestant App, with and without a nomination, against the `perm-unnominated-entities` dataset (seeded by the data-setup-perm-unnominated-entities project): a candidate and an organization with no nomination row, and a candidate with one.
  *
  * Sessions: the file runs under three stored sessions, each selected by a describe — the editor of the unnominated candidate, of the unnominated organization and of the nominated candidate. All three sessions are this dataset's own: its setup writes them and nothing else reads them, so a test may edit and save under them. No test reads a session of the base dataset. A test that logs out signs in first, in a browser with no stored session: logging out ends the session the button is pressed in, and a stored session is every other test's.
  *
@@ -13,7 +13,7 @@
  *
  * Widths: the `phone:` tests run at 320 and at 390 pixels wide, in English. A page's width is measured against its viewport, and a box against the box that must hold it, through the steps of `fixtures/shared/pageGeometry.fixture.ts`: an accessibility scan reports neither.
  *
- * Rigidity contract: every assertion is hard, with no soft assertion, no try/catch around an assertion and no fallback on an assertion-bearing locator. Every locator sits behind a fixture: a test body speaks in the steps of `fixtures/contestant/perm-no-nomination.ts` and holds none of its own.
+ * Rigidity contract: every assertion is hard, with no soft assertion, no try/catch around an assertion and no fallback on an assertion-bearing locator. Every locator sits behind a fixture: a test body speaks in the steps of `fixtures/contestant/perm-unnominated-entities.ts` and holds none of its own.
  */
 
 import {
@@ -23,7 +23,7 @@ import {
   setNominationState,
   setOrganizationName,
   test
-} from '../../fixtures/contestant/perm-no-nomination';
+} from '../../fixtures/contestant/perm-unnominated-entities';
 import { declareScans } from '../../utils/contestantAxeScan';
 import {
   CONSTITUENCY_NAME,
@@ -38,7 +38,7 @@ import {
   UNNOMINATED_ORGANIZATION_EDITOR,
   UNNOMINATED_ORGANIZATION_NAME,
   WRITTEN_NOMINATION_ELECTION_SYMBOL
-} from '../../utils/permNoNominationData';
+} from '../../utils/permUnnominatedEntitiesData';
 import { PHONE_VIEWPORTS, phoneUse } from '../../utils/phoneViewports';
 import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
@@ -75,7 +75,7 @@ const WRITTEN_PENDING_CARD = Object.freeze({
 const LONG_ORGANIZATION_NAME =
   '[OR-N] The Unnominated Party of the No-Nomination Dataset and of Every Constituency It Hopes to Stand In';
 
-test.describe('perm-no-nomination: the dataset and its identities', () => {
+test.describe('perm-unnominated-entities: the dataset and its identities', () => {
   test.describe("as the unnominated candidate's editor", () => {
     test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -113,7 +113,7 @@ test.describe('perm-no-nomination: the dataset and its identities', () => {
   });
 });
 
-test.describe('perm-no-nomination: the pages an entity needs a nomination for', () => {
+test.describe('perm-unnominated-entities: the pages an entity needs a nomination for', () => {
   test.describe("as the unnominated candidate's editor", () => {
     test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -195,7 +195,7 @@ test.describe('perm-no-nomination: the pages an entity needs a nomination for', 
   });
 });
 
-test.describe('perm-no-nomination: the questions of an entity that has a nomination', () => {
+test.describe('perm-unnominated-entities: the questions of an entity that has a nomination', () => {
   test.describe("as the nominated candidate's editor", () => {
     test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -223,7 +223,7 @@ test.describe('perm-no-nomination: the questions of an entity that has a nominat
   });
 });
 
-test.describe('perm-no-nomination: the preview of an entity that has a nomination', () => {
+test.describe('perm-unnominated-entities: the preview of an entity that has a nomination', () => {
   test.describe("as the nominated candidate's editor", () => {
     test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -286,7 +286,7 @@ test.describe('perm-no-nomination: the preview of an entity that has a nominatio
   });
 });
 
-test.describe('perm-no-nomination: the nominations view', () => {
+test.describe('perm-unnominated-entities: the nominations view', () => {
   test.describe("as the unnominated candidate's editor", () => {
     test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -457,7 +457,7 @@ test.describe('perm-no-nomination: the nominations view', () => {
   });
 });
 
-test.describe('perm-no-nomination: the profile of an entity that has a nomination', () => {
+test.describe('perm-unnominated-entities: the profile of an entity that has a nomination', () => {
   test.describe("as the nominated candidate's editor", () => {
     test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -473,7 +473,7 @@ test.describe('perm-no-nomination: the profile of an entity that has a nominatio
   });
 });
 
-test.describe('perm-no-nomination: the home of an entity with no nomination', () => {
+test.describe('perm-unnominated-entities: the home of an entity with no nomination', () => {
   test.describe("as the unnominated candidate's editor", () => {
     test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -541,7 +541,7 @@ test.describe('perm-no-nomination: the home of an entity with no nomination', ()
   });
 });
 
-test.describe('perm-no-nomination: the home of an entity that has a nomination', () => {
+test.describe('perm-unnominated-entities: the home of an entity that has a nomination', () => {
   test.describe("as the nominated candidate's editor", () => {
     test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -608,7 +608,7 @@ test.describe('perm-no-nomination: the home of an entity that has a nomination',
   });
 });
 
-test.describe('perm-no-nomination: the navigation menu', () => {
+test.describe('perm-unnominated-entities: the navigation menu', () => {
   test.describe("as the unnominated candidate's editor", () => {
     test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -697,7 +697,7 @@ test.describe('perm-no-nomination: the navigation menu', () => {
   });
 });
 
-test.describe('perm-no-nomination: where a save leads', () => {
+test.describe('perm-unnominated-entities: where a save leads', () => {
   test.describe("as the nominated candidate's editor", () => {
     test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -952,7 +952,7 @@ const LOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
   }
 ];
 
-test.describe('perm-no-nomination: the accessibility scans', () => {
+test.describe('perm-unnominated-entities: the accessibility scans', () => {
   test.describe("as the unnominated candidate's editor", () => {
     test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
@@ -972,7 +972,7 @@ test.describe('perm-no-nomination: the accessibility scans', () => {
 });
 
 for (const viewport of PHONE_VIEWPORTS) {
-  test.describe(`perm-no-nomination: at ${viewport.width}px wide`, () => {
+  test.describe(`perm-unnominated-entities: at ${viewport.width}px wide`, () => {
     test.use(phoneUse(viewport));
 
     test.describe("as the unnominated candidate's editor", () => {
@@ -1100,7 +1100,7 @@ for (const viewport of PHONE_VIEWPORTS) {
   });
 }
 
-test.describe('perm-no-nomination: logging out', () => {
+test.describe('perm-unnominated-entities: logging out', () => {
   test.describe("as the unnominated candidate's editor, signed in for the test alone", () => {
     // No stored session: the test signs in itself, and the session it logs out of is its own.
     test.use({ storageState: { cookies: [], origins: [] } });
