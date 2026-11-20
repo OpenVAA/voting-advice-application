@@ -1,3 +1,10 @@
+---
+title: Convert analytics setting to a dynamic setting + add e2e for consent handling and analytics events
+created: 2026-06-01
+completed: 2026-11-21
+status: completed
+---
+
 # Convert analytics setting to a dynamic setting + add e2e for consent handling and analytics events
 
 **Filed:** 2026-06-01
@@ -28,3 +35,11 @@ Closure work:
 
 - Current static settings home: `packages/app-shared/src/settings/staticSettings.ts`
 - Settings split reference: CLAUDE.md "Settings Architecture" section (StaticSettings vs DynamicSettings)
+
+## Closed (phase 189), 2026-11-21
+
+Closed by plan 189-18, on what the tree holds today.
+
+- **What was built.** Item 1: `analytics.trackEvents` is a dynamic setting, `false` by default (`packages/app-shared/src/settings/dynamicSettings.ts`), loaded from each project's stored app settings; `staticSettings.ts` no longer carries an analytics setting. While it is `false` no event but the server pageview is sent and the consent prompt is not shown. Item 2: the consent and event specs `tests/tests/specs/voter/analytics-privacy.spec.ts`, `analytics-gpc.spec.ts` and `voter-prefs-tracking.spec.ts` run in the `voter-prefs-tracking` project, behind `data-setup-perm-analytics-tracking`, whose dataset turns `trackEvents` on in the perm serial chain; `voter-tracking-consent-free.spec.ts` runs in `analytics-consent-free` (`tests/playwright.config.ts`). The last full run of phase 188 passed them with the rest of the suite (`tests/e2e-runs/188-close3-20261119T213204Z`: 729 passed, 0 failed, 0 did not run, per `.planning/workstreams/deployment/phases/188-relay-on-the-deployed-stack-and-the-per-caller-limit/188-VERIFICATION.md`). The setting, the consent modes and every event are documented on `apps/docs/src/routes/(content)/developers-guide/configuration/analytics/+page.md`.
+- **What remains.** None.
+- **Moved.** None.
