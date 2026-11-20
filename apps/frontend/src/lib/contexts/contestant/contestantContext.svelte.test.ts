@@ -51,7 +51,7 @@ type FakeUserData = {
   nominations: Array<{ electionId: string; constituencyId: string }>;
 };
 
-type FakeSettings = { access: { answersLocked?: boolean; nominationsLocked?: boolean } };
+type FakeSettings = { access: { contestantEditing?: 'open' | 'nominationsLocked' | 'locked' } };
 
 type FakePage = { data: Record<string, unknown>; params: Record<string, string>; url?: URL };
 
@@ -70,7 +70,7 @@ const EMPTY_DATA_ROOT: FakeDataRoot = {
   getConstituency: () => CONSTITUENCY
 };
 
-const UNLOCKED: FakeSettings = { access: { answersLocked: false } };
+const UNLOCKED: FakeSettings = { access: { contestantEditing: 'open' } };
 
 // `page` is whatever the box holds when it is read. A test that needs a navigation to reach the context puts a `$state` object in the box; the others leave the plain one.
 const { pageBox, world } = vi.hoisted(() => ({
@@ -361,8 +361,9 @@ describe('contestantContext — the nominations lock', () => {
 
   it.each([
     ['absent', false, { access: {} }],
-    ['false', false, { access: { nominationsLocked: false } }],
-    ['true', true, { access: { nominationsLocked: true } }]
+    ['open', false, { access: { contestantEditing: 'open' } }],
+    ['nominationsLocked', true, { access: { contestantEditing: 'nominationsLocked' } }],
+    ['locked', true, { access: { contestantEditing: 'locked' } }]
   ] as const)('with the setting %s it is %s', async (_label, expected, settings) => {
     world.settings = settings;
     const built = await construct();
@@ -371,14 +372,14 @@ describe('contestantContext — the nominations lock', () => {
     expect(built.provider.nominationsLocked).toBe(expected);
   });
 
-  it('reads its own key and not the answers lock, and the answers lock does not read it', async () => {
-    world.settings = { access: { answersLocked: true, nominationsLocked: false } };
+  it('locks nominations alone under nominationsLocked, and answers with them under locked', async () => {
+    world.settings = { access: { contestantEditing: 'locked' } };
     const answers = await construct();
-    expect(answers.provider.nominationsLocked).toBe(false);
+    expect(answers.provider.nominationsLocked).toBe(true);
     expect(answers.provider.answersLocked).toBe(true);
     answers.cleanup();
 
-    world.settings = { access: { answersLocked: false, nominationsLocked: true } };
+    world.settings = { access: { contestantEditing: 'nominationsLocked' } };
     const nominations = await construct();
     cleanup = nominations.cleanup;
     expect(nominations.provider.nominationsLocked).toBe(true);
@@ -399,11 +400,11 @@ describe('contestantContext — the nominations lock', () => {
     flushSync();
     expect(seen).toEqual([false]);
 
-    settings = { access: { nominationsLocked: true } };
+    settings = { access: { contestantEditing: 'nominationsLocked' } };
     flushSync();
     expect(seen).toEqual([false, true]);
 
-    settings = { access: { nominationsLocked: false } };
+    settings = { access: { contestantEditing: 'open' } };
     flushSync();
     expect(seen).toEqual([false, true, false]);
   });
@@ -811,7 +812,7 @@ describe('contestantContext — profileComplete and the required name fields', (
 
   it('is true for an unconfirmed organization without the required entry while answers are locked', async () => {
     loadEntity({ type: 'organization', confirmed: false, localizedNames: NAME_IN_OTHER_LOCALE });
-    world.settings = { access: { answersLocked: true } };
+    world.settings = { access: { contestantEditing: 'locked' } };
     const built = await construct();
     cleanup = built.cleanup;
 
@@ -952,7 +953,7 @@ describe('contestantContext — the task state', () => {
   });
 
   it("leads the nomination task of an entity with no nomination to the editor's entry while neither lock is on", async () => {
-    world.settings = { access: { answersLocked: false, nominationsLocked: false } };
+    world.settings = { access: { contestantEditing: 'open' } };
     openEntity({ nominations: [] });
     const built = await construct();
     cleanup = built.cleanup;
@@ -967,7 +968,7 @@ describe('contestantContext — the task state', () => {
   ])(
     'leads the nomination task of an entity with no nomination to the nominations view where the project holds %s, with neither lock on',
     async (_label, electionData) => {
-      world.settings = { access: { answersLocked: false, nominationsLocked: false } };
+      world.settings = { access: { contestantEditing: 'open' } };
       openEntity({ nominations: [], electionData });
       const built = await construct();
       cleanup = built.cleanup;
@@ -978,10 +979,9 @@ describe('contestantContext — the task state', () => {
     }
   );
 
-  it.each([
-    ['the nominations lock', { access: { answersLocked: false, nominationsLocked: true } }],
-    ['the answers lock', { access: { answersLocked: true, nominationsLocked: false } }],
-    ['both locks', { access: { answersLocked: true, nominationsLocked: true } }]
+  it.each<[string, FakeSettings]>([
+    ['the nominations lock', { access: { contestantEditing: 'nominationsLocked' } }],
+    ['the lock on everything', { access: { contestantEditing: 'locked' } }]
   ])(
     'leads the nomination task of an entity with no nomination to the nominations view under %s',
     async (_label, settings) => {
@@ -997,26 +997,26 @@ describe('contestantContext — the task state', () => {
   );
 
   it('follows a lock that comes on and goes off again under a live context, for an entity with no nomination', async () => {
-    let settings = $state.raw<FakeSettings>({ access: { answersLocked: false, nominationsLocked: false } });
+    let settings = $state.raw<FakeSettings>({ access: { contestantEditing: 'open' } });
     Object.defineProperty(world, 'settings', { get: () => settings, configurable: true });
     openEntity({ nominations: [] });
     const built = await construct();
     cleanup = built.cleanup;
     expect(built.provider.nextStep?.route).toEqual(EDITOR_ENTRY_ROUTE);
 
-    settings = { access: { answersLocked: true, nominationsLocked: false } };
+    settings = { access: { contestantEditing: 'locked' } };
     flushSync();
     expect(built.provider.nextStep?.route).toEqual(NOMINATION_TASK_ROUTE);
     expect(built.provider.tasks[0].route).toEqual(NOMINATION_TASK_ROUTE);
 
-    settings = { access: { answersLocked: false, nominationsLocked: false } };
+    settings = { access: { contestantEditing: 'open' } };
     flushSync();
     expect(built.provider.nextStep?.route).toEqual(EDITOR_ENTRY_ROUTE);
   });
 
-  it.each([
-    ['the nominations lock', { access: { answersLocked: false, nominationsLocked: true } }],
-    ['neither lock', { access: { answersLocked: false, nominationsLocked: false } }]
+  it.each<[string, FakeSettings]>([
+    ['the nominations lock', { access: { contestantEditing: 'nominationsLocked' } }],
+    ['neither lock', { access: { contestantEditing: 'open' } }]
   ])(
     'leads the nomination task of an entity that has a nomination to the nominations view under %s',
     async (_label, settings) => {
@@ -1227,6 +1227,7 @@ describe('contestantContext — the user-level accessors derived from page data'
     passwordSet: true,
     addressState: 'proved',
     pendingEmail: null,
+    ownOrganizationId: null,
     ownOrganizationUnnamed: false,
     pendingEmailTaken: false
   };
@@ -1444,7 +1445,8 @@ describe('contestantContext — the calls on the nominations of the entity the r
       electionSymbol: '6',
       confirmed: true,
       customData: null,
-      updatedAt: '2026-10-01T12:00:00+00:00'
+      updatedAt: '2026-10-01T12:00:00+00:00',
+      writable: true
     }
   ];
 

@@ -34,7 +34,7 @@ function contextWith({
   signIn = 'establishes a session',
   grantsBefore = [ENTITY_EDITOR],
   grantsAfterRefresh = grantsBefore,
-  claim = { claimed: [], skipped: [], passwordSet: true }
+  claim = { claimed: [], skipped: [] }
 }: {
   signIn?: 'establishes a session' | 'refuses' | 'throws';
   grantsBefore?: Array<GrantClaim>;
@@ -98,7 +98,7 @@ describe('invitationCodeLogin', () => {
   });
 
   it('signs in with the code and the password, once, and then runs the admission', async () => {
-    const claim: InvitationClaimResult = { claimed: [], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [], skipped: [] };
     const { context, calls, signInArguments } = contextWith({ claim });
 
     const outcome = await login(context);
@@ -114,7 +114,7 @@ describe('invitationCodeLogin', () => {
   });
 
   it('admits a user whose grant reaches the token only through the refresh after the claim', async () => {
-    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [], passwordSet: true };
+    const claim: InvitationClaimResult = { claimed: [ENTITY_EDITOR], skipped: [] };
     const { context, calls } = contextWith({ grantsBefore: [], grantsAfterRefresh: [ENTITY_EDITOR], claim });
 
     expect((await login(context)).ok).toBe(true);

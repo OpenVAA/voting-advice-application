@@ -2,6 +2,7 @@ import {
   getServedEntityTypes,
   isRegistrationModeAllowed,
   isRegistrationModeAllowedForAnyType,
+  isRegistrationModeServedForAnyType,
   REGISTRATION_MODE
 } from '@openvaa/app-shared';
 import type { ContestantAppSettingsInput, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
@@ -15,10 +16,9 @@ import type { ContestantAppSettingsInput, RegistrationMode, ServedEntityType } f
  */
 
 /**
- * The settings this module reads: the Contestant App's served entity types and registration modes, and the answers lock. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid, and an absent member reads as its shipped default.
+ * The settings this module reads: the Contestant App's served entity types and registration modes, and `access.contestantEditing`. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid, and an absent member reads as its shipped default.
  */
-export type RegistrationOfferSettings =
-  (NonNullable<ContestantAppSettingsInput> & { access?: { answersLocked?: boolean | null } | null }) | null | undefined;
+export type RegistrationOfferSettings = ContestantAppSettingsInput;
 
 /**
  * The registration modes a visitor is offered, in the order they are listed: the identity provider, then email, then code, each at most once whatever order the settings store them in.
@@ -27,12 +27,11 @@ export type RegistrationOfferSettings =
  *
  * Each mode is listed when any served entity type allows it. Registering through the identity provider creates an entity of a type the user chooses among those {@link identityProviderEntityTypes} answers, and the invitation the email and code modes redeem names its own entity.
  *
- * While answers are locked nothing is listed.
+ * While `access.contestantEditing` is `locked` nothing is listed, as `isRegistrationModeAllowed` answers.
  * @param settings - The application settings to read.
  * @returns The offered modes in listing order. Empty when registration is not offered.
  */
 export function listedRegistrationModes(settings: RegistrationOfferSettings): ReadonlyArray<RegistrationMode> {
-  if (settings?.access?.answersLocked) return [];
   const listed = new Array<RegistrationMode>();
   if (isRegistrationModeAllowedForAnyType(settings, REGISTRATION_MODE.IdentityProvider))
     listed.push(REGISTRATION_MODE.IdentityProvider);
@@ -46,12 +45,11 @@ export function listedRegistrationModes(settings: RegistrationOfferSettings): Re
  *
  * The registration screen asks the user to choose among them when there are several and names the one when there is one, and the endpoint that starts the provider's flow accepts a type only from this list. The provider's mode is listed by {@link listedRegistrationModes} exactly when this list is not empty.
  *
- * While answers are locked the list is empty.
+ * While `access.contestantEditing` is `locked` the list is empty, as `isRegistrationModeAllowed` answers.
  * @param settings - The application settings to read.
  * @returns The types in canonical order. Empty when the provider's mode registers nothing.
  */
 export function identityProviderEntityTypes(settings: RegistrationOfferSettings): ReadonlyArray<ServedEntityType> {
-  if (settings?.access?.answersLocked) return [];
   return getServedEntityTypes(settings).filter((entityType) =>
     isRegistrationModeAllowed(settings, entityType, REGISTRATION_MODE.IdentityProvider)
   );
@@ -60,7 +58,7 @@ export function identityProviderEntityTypes(settings: RegistrationOfferSettings)
 /**
  * The entity type a registration through the identity provider creates: a named type when {@link identityProviderEntityTypes} lists it, and with no type named the one type that list holds.
  *
- * The endpoint that starts the provider's flow and the callback the provider returns to both decide the type here, so a type the start refused is refused on return too, and every type is refused while answers are locked.
+ * The endpoint that starts the provider's flow and the callback the provider returns to both decide the type here, so a type the start refused is refused on return too, and every type is refused while `access.contestantEditing` is `locked`.
  * @param settings - The application settings to read.
  * @param named - The type a request or the flow's cookie names, as sent; `undefined` when none is named.
  * @returns The type, or `undefined` when the registration is refused.
@@ -75,14 +73,12 @@ export function identityProviderEntityType(
 }
 
 /**
- * Whether the sign-in form offers to mail a sign-in link: the email mode or the identity provider's mode is allowed for at least one served entity type. An account made under either may have no password yet.
- *
- * The answers lock is not read: a user who cannot edit can still sign in.
+ * Whether the sign-in form offers to mail a sign-in link: the email mode or the identity provider's mode is served for at least one entity type. An account made under either may have no password yet, and a user who cannot edit can still sign in, so `access.contestantEditing` does not close it.
  * @param settings - The application settings to read.
  */
 export function signInLinkOffered(settings: RegistrationOfferSettings): boolean {
   return (
-    isRegistrationModeAllowedForAnyType(settings, REGISTRATION_MODE.Email) ||
-    isRegistrationModeAllowedForAnyType(settings, REGISTRATION_MODE.IdentityProvider)
+    isRegistrationModeServedForAnyType(settings, REGISTRATION_MODE.Email) ||
+    isRegistrationModeServedForAnyType(settings, REGISTRATION_MODE.IdentityProvider)
   );
 }

@@ -107,10 +107,10 @@ describe('listedRegistrationModes', () => {
       },
       ['identity_provider', 'email', 'code']
     ],
-    ['a full matrix while answers are locked', { ...FULL, access: { answersLocked: true } }, []],
+    ['a full matrix while answers are locked', { ...FULL, access: { contestantEditing: 'locked' } }, []],
     [
       'a full matrix while answers are not locked',
-      { ...FULL, access: { answersLocked: false } },
+      { ...FULL, access: { contestantEditing: 'open' } },
       ['identity_provider', 'email', 'code']
     ],
     ['a full matrix with no stored lock', { ...FULL, access: null }, ['identity_provider', 'email', 'code']]
@@ -192,10 +192,10 @@ describe('identityProviderEntityTypes', () => {
       },
       []
     ],
-    ['a full matrix while answers are locked', { ...FULL, access: { answersLocked: true } }, []],
+    ['a full matrix while answers are locked', { ...FULL, access: { contestantEditing: 'locked' } }, []],
     [
       'a full matrix while answers are not locked',
-      { ...FULL, access: { answersLocked: false } },
+      { ...FULL, access: { contestantEditing: 'open' } },
       ['candidate', 'organization']
     ]
   ];
@@ -235,8 +235,18 @@ describe('identityProviderEntityType', () => {
     ['no type, with one type in the list', CANDIDATES_ALONE, undefined, 'candidate'],
     ['no type, with two types in the list', FULL, undefined, undefined],
     ['no type, with none in the list', {}, undefined, undefined],
-    ['a named type while answers are locked', { ...FULL, access: { answersLocked: true } }, 'candidate', undefined],
-    ['no type while answers are locked', { ...CANDIDATES_ALONE, access: { answersLocked: true } }, undefined, undefined]
+    [
+      'a named type while answers are locked',
+      { ...FULL, access: { contestantEditing: 'locked' } },
+      'candidate',
+      undefined
+    ],
+    [
+      'no type while answers are locked',
+      { ...CANDIDATES_ALONE, access: { contestantEditing: 'locked' } },
+      undefined,
+      undefined
+    ]
   ];
 
   it.each(CASES)('answers %s', (_name, settings, named, expected) => {
@@ -288,12 +298,12 @@ describe('signInLinkOffered', () => {
       true
     ],
     ['both the email mode and the identity provider', FULL, true],
-    ['the email mode while answers are locked', { ...FULL, access: { answersLocked: true } }, true],
+    ['the email mode while answers are locked', { ...FULL, access: { contestantEditing: 'locked' } }, true],
     [
       'the code mode alone while answers are locked',
       {
         contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['code'] } } },
-        access: { answersLocked: true }
+        access: { contestantEditing: 'locked' }
       },
       false
     ]

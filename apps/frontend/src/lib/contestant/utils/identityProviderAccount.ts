@@ -5,9 +5,9 @@
  *
  * Pure and synchronous, so a server load decides the state and no component needs to know the domain.
  *
- * THE IDENTITY'S OWN ORGANIZATION. `identity-callback` records in the account's `app_metadata`, under {@link REGISTERED_ENTITIES_KEY}, the entity the identity registered, per project and per entity type. {@link ownOrganizationId} reads the organization of one project from it, and {@link hasDefaultLocaleName} says whether a stored name has text in one locale, so the user-level read can tell whether that organization still needs a name. An organization the account edits by any other grant is never named by the record.
+ * THE IDENTITY'S OWN ORGANIZATION. The user-level read is told by the database which organization the identity registered in the project, and {@link hasDefaultLocaleName} says whether a stored name has text in one locale, so that read can tell whether that organization still needs a name.
  *
- * ONE DOMAIN, TWO COPIES. The Edge Functions' module `apps/supabase/supabase/functions/_shared/placeholderAddress.ts` holds its own copy of the domain, because the frontend cannot import an Edge Function module. `apps/supabase/supabase/functions/_shared/placeholderAddress.test.ts` holds the two equal.
+ * ONE DOMAIN, TWO COPIES. The Edge Functions' module `apps/supabase/supabase/functions/_shared/placeholderEmail.ts` holds its own copy of the domain, because the frontend cannot import an Edge Function module. `apps/supabase/supabase/functions/_shared/placeholderEmail.test.ts` holds the two equal.
  *
  * Tested in `identityProviderAccount.test.ts`.
  */
@@ -64,11 +64,6 @@ export function addressStateOf({ email, newEmail, identityProvider }: AddressFac
   return isNonEmptyString(newEmail) ? 'pending' : 'none';
 }
 
-/** The key of `app_metadata` under which `identity-callback` records the entity an identity registered, per project and per entity type. The test of this module holds it equal to the function's own. */
-export const REGISTERED_ENTITIES_KEY = 'registered_entities';
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -81,19 +76,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 function ownMember(value: unknown, key: string): unknown {
   return isRecord(value) && Object.hasOwn(value, key) ? value[key] : undefined;
-}
-
-/**
- * The organization the identity registered in a project, as the account's `app_metadata` records it.
- *
- * Only own members are read, and anything that is not a recorded uuid answers `null`: an unreadable record names no organization, so nothing is asked about one.
- * @param appMetadata - The verified user's `app_metadata`, of any type.
- * @param projectId - The project the application serves.
- * @returns The organization's id, or `null` when the record names none for the project.
- */
-export function ownOrganizationId(appMetadata: unknown, projectId: string): string | null {
-  const recorded = ownMember(ownMember(ownMember(appMetadata, REGISTERED_ENTITIES_KEY), projectId), 'organization');
-  return typeof recorded === 'string' && UUID_PATTERN.test(recorded) ? recorded : null;
 }
 
 /**
