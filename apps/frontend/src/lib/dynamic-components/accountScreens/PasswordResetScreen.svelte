@@ -32,6 +32,7 @@
   import { onMount, tick } from 'svelte';
   import { goto } from '$app/navigation';
   import { MainContent } from '$layouts/main';
+  import { AccountAddress } from '$lib/components/accountAddress';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -93,12 +94,10 @@
   {/snippet}
 
   {#if email}
-    <dl class="my-lg text-center">
-      <dt class="small-label">{t('contestantApp.nothingToEdit.signedInAs')}</dt>
-      <dd class="font-bold [overflow-wrap:anywhere] hyphens-none" translate="no" data-testid="password-reset-email">
-        {email}
-      </dd>
-    </dl>
+    <AccountAddress
+      label={t('contestantApp.nothingToEdit.signedInAs')}
+      address={email}
+      data-testid="password-reset-email" />
   {/if}
 
   <PasswordSetter id={formId} username={email} bind:password bind:this={setter} onShadedBg onsubmit={handleSubmit} />

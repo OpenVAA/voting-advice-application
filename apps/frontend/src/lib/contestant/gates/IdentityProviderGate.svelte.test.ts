@@ -69,11 +69,13 @@ vi.mock('$lib/contexts/layout', () => ({
   getLayoutContext: () => ({ video: { hasContent: false }, setRouteTitle: () => undefined })
 }));
 
+// `url` is read by the shared Log out when a sign-out starts.
 vi.mock('$app/state', () => ({
   page: {
     get data() {
       return box.pageData;
-    }
+    },
+    url: new URL('http://localhost/contestant')
   }
 }));
 

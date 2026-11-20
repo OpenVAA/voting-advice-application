@@ -134,7 +134,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
               <EntityCard entity={option.entity} variant="subcard" headerOnly action={false} />
             </div>
           {:else}
-            <span aria-hidden="true" class="[overflow-wrap:anywhere]">{option.name}</span>
+            <span aria-hidden="true" class="wrap-anywhere">{option.name}</span>
           {/if}
           {#if option.hint}
             <p class="small-info mt-xs" id={hintId} data-testid="entity-selector-option-hint">{option.hint}</p>

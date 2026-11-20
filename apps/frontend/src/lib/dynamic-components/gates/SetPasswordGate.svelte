@@ -42,6 +42,7 @@ Accesses the component context for its translations, and nothing of any app's co
   import { onMount, tick } from 'svelte';
   import { invalidateAll } from '$app/navigation';
   import { MainContent } from '$layouts/main';
+  import { AccountAddress } from '$lib/components/accountAddress';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { PasswordSetter } from '$lib/components/passwordSetter';
@@ -106,12 +107,10 @@ Accesses the component context for its translations, and nothing of any app's co
   <p class="text-center">{t('contestantApp.setPassword.why')}</p>
 
   {#if email}
-    <dl class="my-lg text-center">
-      <dt class="small-label">{t('contestantApp.nothingToEdit.signedInAs')}</dt>
-      <dd class="font-bold [overflow-wrap:anywhere] hyphens-none" translate="no" data-testid="set-password-email">
-        {email}
-      </dd>
-    </dl>
+    <AccountAddress
+      label={t('contestantApp.nothingToEdit.signedInAs')}
+      address={email}
+      data-testid="set-password-email" />
   {/if}
 
   <PasswordSetter id={formId} username={email} bind:password bind:this={setter} onsubmit={handleSubmit} />

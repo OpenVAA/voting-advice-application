@@ -3,6 +3,8 @@
 
 When events could be sent in gated mode (`shouldShowContestantOptOut`), a box for opting out of the collection of usage data is shown under the terms. It starts ticked when this browser already holds a refusal made in the Contestant App. A recorded acceptance then writes the box's choice to the Contestant App's own consent choice (`contestantDataConsent`), `denied` when ticked and `granted` when not; the voter app's choice is never touched. When the box is not shown, nothing is written.
 
+Its Log out is the shared `LogoutButton`.
+
 ### Dynamic component
 
 Accesses `ContestantContext`: `acceptTermsOfUse`, `logout`, `setDataConsent` and `analyticsGate`.
@@ -29,6 +31,7 @@ None.
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { shouldShowContestantOptOut } from '$lib/contexts/app/tracking/gates';
   import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
+  import { LogoutButton } from '$lib/dynamic-components/logoutButton';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -72,17 +75,6 @@ None.
     }
     status = 'idle';
   }
-
-  async function handleLogout() {
-    status = 'loading';
-    try {
-      await logout();
-    } catch (e) {
-      log.error(`Error logging out: ${(e as Error)?.message ?? '-'}`);
-    } finally {
-      status = 'idle';
-    }
-  }
 </script>
 
 <MainContent title={t('dynamic.contestantAppPrivacy.consent.title')}>
@@ -111,6 +103,6 @@ None.
       loading={status === 'loading'}
       onclick={handleSubmit}
       data-testid="terms-of-use-submit" />
-    <Button color="warning" text={t('common.logout')} loading={status === 'loading'} onclick={handleLogout} />
+    <LogoutButton {logout} icon={undefined} />
   {/snippet}
 </MainContent>

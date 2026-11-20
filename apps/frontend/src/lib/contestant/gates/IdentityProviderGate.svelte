@@ -14,6 +14,8 @@ Continue with a form sends nothing while a field is in error: it says what is wr
 
 The view cannot be put aside: only a rerun load that reads an address or a name removes it. Logging out is always available and asks nothing.
 
+Its Log out is the shared `LogoutButton`.
+
 ### Dynamic component
 
 Accesses `ContestantContext`: `user`, `answersLocked`, `logout`, `registerIdentityProviderAccount` and `t`. Reads `arrival` from the page's data.
@@ -43,6 +45,7 @@ None.
   import { invalidateAll } from '$app/navigation';
   import { page } from '$app/state';
   import { MainContent } from '$layouts/main';
+  import { AccountAddress } from '$lib/components/accountAddress';
   import { Button } from '$lib/components/button';
   import { EmailEntry } from '$lib/components/emailEntry';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -53,6 +56,7 @@ None.
   import { PendingAddressResend } from '$lib/contestant/utils/pendingAddressResend.svelte';
   import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
   import { EmailSentResend } from '$lib/dynamic-components/emailSentPanel';
+  import { LogoutButton } from '$lib/dynamic-components/logoutButton';
   import { assertTranslationKey } from '$lib/i18n/utils';
   import { getUUID } from '$lib/utils/components';
   import { isBlankText } from '$lib/utils/localizedText';
@@ -138,39 +142,7 @@ None.
   let nameError = $state<string>();
 
   let status = $state<'idle' | 'saving' | 'failed'>('idle');
-  let loggingOut = $state(false);
   let mounted = $state(false);
-
-  /** A name's entries that hold text, or `undefined` when none does. */
-  function filledEntries(value: LocalizedString): LocalizedString | undefined {
-    const filled = Object.fromEntries(Object.entries(value).filter(([, text]) => !isBlankText(text)));
-    return Object.keys(filled).length ? filled : undefined;
-  }
-
-  function handleNameChange(value: unknown): void {
-    name = { ...(value as LocalizedString) };
-    if (nameError && hasDefaultLocaleName(name, defaultLocale)) nameError = undefined;
-  }
-
-  function handleShortNameChange(value: unknown): void {
-    shortName = { ...(value as LocalizedString) };
-  }
-
-  /** Rerun the page's loads. Awaited so that the main button keeps its saving state until the page has its new data; only the rerun load removes this view. */
-  async function rerun(): Promise<void> {
-    try {
-      await invalidateAll();
-    } catch (error) {
-      log.error('Failed to rerun the loads after the identity-provider registration was saved', { err: error });
-    }
-  }
-
-  /** Mark the request failed and give focus back to the element that had it, when the saving state took it away. */
-  async function fail(focused: Element | null): Promise<void> {
-    status = 'failed';
-    await tick();
-    if (focused instanceof HTMLElement && document.activeElement === document.body) focused.focus();
-  }
 
   async function handleSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
@@ -227,21 +199,41 @@ None.
     }
   }
 
+  function handleNameChange(value: unknown): void {
+    name = { ...(value as LocalizedString) };
+    if (nameError && hasDefaultLocaleName(name, defaultLocale)) nameError = undefined;
+  }
+
+  function handleShortNameChange(value: unknown): void {
+    shortName = { ...(value as LocalizedString) };
+  }
+
   async function handleChangeAddress(): Promise<void> {
     switched = true;
     await tick();
     document.getElementById(`${entryId}-email`)?.focus();
   }
 
-  async function handleLogout(): Promise<void> {
-    loggingOut = true;
+  /** A name's entries that hold text, or `undefined` when none does. */
+  function filledEntries(value: LocalizedString): LocalizedString | undefined {
+    const filled = Object.fromEntries(Object.entries(value).filter(([, text]) => !isBlankText(text)));
+    return Object.keys(filled).length ? filled : undefined;
+  }
+
+  /** Rerun the page's loads. Awaited so that the main button keeps its saving state until the page has its new data; only the rerun load removes this view. */
+  async function rerun(): Promise<void> {
     try {
-      await logout();
-    } catch (e) {
-      log.error(`Error logging out: ${(e as Error)?.message ?? '-'}`);
-    } finally {
-      loggingOut = false;
+      await invalidateAll();
+    } catch (error) {
+      log.error('Failed to rerun the loads after the identity-provider registration was saved', { err: error });
     }
+  }
+
+  /** Mark the request failed and give focus back to the element that had it, when the saving state took it away. */
+  async function fail(focused: Element | null): Promise<void> {
+    status = 'failed';
+    await tick();
+    if (focused instanceof HTMLElement && document.activeElement === document.body) focused.focus();
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -283,15 +275,10 @@ None.
   <p class="text-center" data-testid="identity-provider-gate-lead">{lead}</p>
 
   {#if shownAddress}
-    <dl class="my-lg text-center">
-      <dt class="small-label">{shownAddress.label}</dt>
-      <dd
-        class="font-bold [overflow-wrap:anywhere] hyphens-none"
-        translate="no"
-        data-testid="identity-provider-gate-address">
-        {shownAddress.address}
-      </dd>
-    </dl>
+    <AccountAddress
+      label={shownAddress.label}
+      address={shownAddress.address}
+      data-testid="identity-provider-gate-address" />
   {/if}
 
   {#if hasForm}
@@ -386,11 +373,6 @@ None.
         onclick={handleContinue}
         data-testid="identity-provider-gate-submit" />
     {/if}
-    <Button
-      color="warning"
-      text={t('common.logout')}
-      loading={loggingOut}
-      onclick={handleLogout}
-      data-testid="identity-provider-gate-logout" />
+    <LogoutButton {logout} icon={undefined} data-testid="identity-provider-gate-logout" />
   {/snippet}
 </MainContent>
