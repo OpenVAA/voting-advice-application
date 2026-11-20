@@ -242,6 +242,7 @@ function nominationRow(overrides: Record<string, unknown> = {}) {
     confirmed: true,
     custom_data: { requestedParentOrganization: 'A party' },
     updated_at: '2026-10-01T12:00:00.123456+00:00',
+    writable: true,
     parent: {
       entity_type: 'organization',
       entity_id: 'org-1',
@@ -802,16 +803,22 @@ describe('SupabaseDataWriter', () => {
 
   describe('getBasicUserData', () => {
     /**
-     * Stub the one RPC the method makes, `get_user_entities`, whose answer carries the caller's password fact.
-     * @param answer - What the RPC resolves with. Defaults to the answer for a user who has a password and edits nothing.
+     * Stub the two RPCs the method makes: `get_caller_account_state`, whose answer carries the caller's password fact, and `get_user_entities`, whose answer carries the registered organization.
+     * @param answer - What `get_caller_account_state` resolves with. Defaults to the answer for a user who has a password.
+     * @param list - What `get_user_entities` resolves with. Defaults to a user who edits nothing and registered nothing.
      */
     function mockPasswordFact(
       answer: { data: unknown; error: unknown } = {
-        data: { entities: [], password_set: true, pending_email_taken: false },
+        data: { password_set: true, pending_email_taken: false },
         error: null
-      }
+      },
+      list: { data: unknown; error: unknown } = { data: { entities: [] }, error: null }
     ): void {
-      mockSupabase.rpc.mockResolvedValue(answer);
+      mockSupabase.rpc.mockImplementation((name: string) => {
+        if (name === 'get_caller_account_state') return Promise.resolve(answer);
+        if (name === 'get_user_entities') return Promise.resolve(list);
+        throw new Error(`Unexpected RPC in this test: ${name}`);
+      });
     }
 
     beforeEach(() => mockPasswordFact());
@@ -1017,7 +1024,6 @@ describe('SupabaseDataWriter', () => {
       const PROVIDER = 'idura-ftn';
       const OWN_ORGANIZATION = '6f1c2a3b-4d5e-4f60-8a71-92b3c4d5e6f7';
       const OTHER_ORGANIZATION = '8b3c4d5e-6f70-4a81-9c92-b3d4e5f60718';
-      const OTHER_PROJECT = '00000000-0000-0000-0000-000000000002';
 
       /**
        * A verified user an identity provider made.
@@ -1029,22 +1035,27 @@ describe('SupabaseDataWriter', () => {
           id: 'user-ip',
           email: PLACEHOLDER,
           user_metadata: {},
-          app_metadata: {
-            identity_provider: PROVIDER,
-            registered_entities: { [PROJECT_ID]: { organization: OWN_ORGANIZATION } }
-          },
+          app_metadata: { identity_provider: PROVIDER },
           ...overrides
         };
       }
 
       /**
-       * The answer of `get_user_entities` with the given entries and caller facts.
+       * The answers of `get_caller_account_state` and `get_user_entities` with the given caller facts and entries.
        * @param entities - The listed entries.
        * @param pendingEmailTaken - The `pending_email_taken` member.
-       * @returns The answer.
+       * @param organization - The organization the identity registered, or `null` for none.
+       * @returns The two answers, in the order `mockPasswordFact` takes them.
        */
-      function listed(entities: Array<unknown> = [], pendingEmailTaken: unknown = false) {
-        return { data: { entities, password_set: false, pending_email_taken: pendingEmailTaken }, error: null };
+      function listed(
+        entities: Array<unknown> = [],
+        pendingEmailTaken: unknown = false,
+        organization: string | null = OWN_ORGANIZATION
+      ): [{ data: unknown; error: null }, { data: unknown; error: null }] {
+        return [
+          { data: { password_set: false, pending_email_taken: pendingEmailTaken }, error: null },
+          { data: { entities, ...(organization && { organization }) }, error: null }
+        ];
       }
 
       /**
@@ -1062,13 +1073,14 @@ describe('SupabaseDataWriter', () => {
           user: { id: 'user-1', email: TYPED, new_email: 'other@example.test', user_metadata: {}, app_metadata: {} },
           grants: []
         });
-        mockPasswordFact(listed([], false));
+        mockPasswordFact(...listed([], false, null));
 
         expect(await writer.getBasicUserData()).toMatchObject({
           email: TYPED,
           username: TYPED,
           addressState: 'proved',
           pendingEmail: null,
+          ownOrganizationId: null,
           ownOrganizationUnnamed: false,
           pendingEmailTaken: false
         });
@@ -1076,7 +1088,7 @@ describe('SupabaseDataWriter', () => {
 
       it('reads a provider account on its placeholder with nothing pending as none, with no address anywhere', async () => {
         mockVerifiedSession(mockSupabase, { user: providerUser(), grants: [] });
-        mockPasswordFact(listed());
+        mockPasswordFact(...listed());
 
         const result = await writer.getBasicUserData();
         expect(result).toMatchObject({
@@ -1091,7 +1103,7 @@ describe('SupabaseDataWriter', () => {
 
       it('reads a provider account on its placeholder with an address pending as pending, with that address as the pending one alone', async () => {
         mockVerifiedSession(mockSupabase, { user: providerUser({ new_email: TYPED }), grants: [] });
-        mockPasswordFact(listed());
+        mockPasswordFact(...listed());
 
         const result = await writer.getBasicUserData();
         expect(result).toMatchObject({
@@ -1106,7 +1118,7 @@ describe('SupabaseDataWriter', () => {
 
       it('reads a pending address that is now another account’s as none, saying it is taken and naming no pending address', async () => {
         mockVerifiedSession(mockSupabase, { user: providerUser({ new_email: TYPED }), grants: [] });
-        mockPasswordFact(listed([], true));
+        mockPasswordFact(...listed([], true));
 
         expect(await writer.getBasicUserData()).toMatchObject({
           email: '',
@@ -1119,7 +1131,7 @@ describe('SupabaseDataWriter', () => {
 
       it('reads a provider account on a real address as proved, with that address in email and username', async () => {
         mockVerifiedSession(mockSupabase, { user: providerUser({ email: TYPED }), grants: [] });
-        mockPasswordFact(listed([], true));
+        mockPasswordFact(...listed([], true));
 
         expect(await writer.getBasicUserData()).toMatchObject({
           email: TYPED,
@@ -1140,7 +1152,7 @@ describe('SupabaseDataWriter', () => {
           data: { session: { user: providerUser({ new_email: 'session@example.test' }), access_token: accessToken } },
           error: null
         });
-        mockPasswordFact(listed([organizationNamed(OWN_ORGANIZATION, {})]));
+        mockPasswordFact(...listed([organizationNamed(OWN_ORGANIZATION, {})], false, null));
 
         expect(await writer.getBasicUserData()).toMatchObject({
           email: TYPED,
@@ -1157,56 +1169,71 @@ describe('SupabaseDataWriter', () => {
         ['a name in the default locale', { en: 'The Party' }, false]
       ])('says whether the own organization is unnamed when it has %s', async (_label, name, unnamed) => {
         mockVerifiedSession(mockSupabase, { user: providerUser({ new_email: TYPED }), grants: [] });
-        mockPasswordFact(listed([listedCandidate('cand-1'), organizationNamed(OWN_ORGANIZATION, name)]));
+        mockPasswordFact(...listed([listedCandidate('cand-1'), organizationNamed(OWN_ORGANIZATION, name)]));
 
         expect((await writer.getBasicUserData()).ownOrganizationUnnamed).toBe(unnamed);
       });
 
-      it.each<[string, Record<string, unknown>]>([
-        ['granted otherwise, with no record', providerUser({ app_metadata: { identity_provider: PROVIDER } })],
-        [
-          'recorded for another project',
-          providerUser({
-            app_metadata: {
-              identity_provider: PROVIDER,
-              registered_entities: { [OTHER_PROJECT]: { organization: OTHER_ORGANIZATION } }
-            }
-          })
-        ],
-        [
-          'not the one the record names',
-          providerUser({
-            app_metadata: {
-              identity_provider: PROVIDER,
-              registered_entities: { [PROJECT_ID]: { organization: OWN_ORGANIZATION } }
-            }
-          })
-        ]
-      ])('never asks about an unnamed organization %s', async (_label, user) => {
-        mockVerifiedSession(mockSupabase, { user, grants: [] });
-        mockPasswordFact(listed([organizationNamed(OTHER_ORGANIZATION, {})]));
+      it.each<[string, string | null]>([
+        ['granted otherwise, with no registration', null],
+        ['not the registered one', OWN_ORGANIZATION]
+      ])('never asks about an unnamed organization %s', async (_label, organization) => {
+        mockVerifiedSession(mockSupabase, { user: providerUser(), grants: [] });
+        mockPasswordFact(...listed([organizationNamed(OTHER_ORGANIZATION, {})], false, organization));
 
         expect((await writer.getBasicUserData()).ownOrganizationUnnamed).toBe(false);
       });
 
+      it('names the organization the answer says the identity registered, whether or not the list holds it', async () => {
+        mockVerifiedSession(mockSupabase, { user: providerUser(), grants: [] });
+        mockPasswordFact(...listed([]));
+
+        expect((await writer.getBasicUserData()).ownOrganizationId).toBe(OWN_ORGANIZATION);
+      });
+
+      it('takes no organization from the verified user’s app metadata', async () => {
+        mockVerifiedSession(mockSupabase, {
+          user: providerUser({
+            app_metadata: {
+              identity_provider: PROVIDER,
+              registered_entities: { [PROJECT_ID]: { organization: OWN_ORGANIZATION } }
+            }
+          }),
+          grants: []
+        });
+        mockPasswordFact(...listed([organizationNamed(OWN_ORGANIZATION, {})], false, null));
+
+        expect(await writer.getBasicUserData()).toMatchObject({
+          ownOrganizationId: null,
+          ownOrganizationUnnamed: false
+        });
+      });
+
+      it('rejects an answer whose registered organization is malformed', async () => {
+        mockVerifiedSession(mockSupabase, { user: providerUser(), grants: [] });
+        mockPasswordFact(undefined, { data: { entities: [], organization: 'org-1' }, error: null });
+
+        await expect(writer.getBasicUserData()).rejects.toThrow(/registered organization did not match its schema/);
+      });
+
       it('reads the own organization as named when the list does not hold it', async () => {
         mockVerifiedSession(mockSupabase, { user: providerUser(), grants: [] });
-        mockPasswordFact(listed([]));
+        mockPasswordFact(...listed([]));
 
         expect((await writer.getBasicUserData()).ownOrganizationUnnamed).toBe(false);
       });
 
       it('rejects a list it must read for the own organization when the list is malformed', async () => {
         mockVerifiedSession(mockSupabase, { user: providerUser(), grants: [] });
-        mockPasswordFact(listed([{ entity_type: 'organization', id: OWN_ORGANIZATION }]));
+        mockPasswordFact(...listed([{ entity_type: 'organization', id: OWN_ORGANIZATION }]));
 
         await expect(writer.getBasicUserData()).rejects.toThrow(/did not match its schema/);
       });
 
       it.each([
-        ['holds no pending_email_taken', { entities: [], password_set: true }],
-        ['holds a null pending_email_taken', { entities: [], password_set: true, pending_email_taken: null }],
-        ['holds a string for pending_email_taken', { entities: [], password_set: true, pending_email_taken: 'false' }]
+        ['holds no pending_email_taken', { password_set: true }],
+        ['holds a null pending_email_taken', { password_set: true, pending_email_taken: null }],
+        ['holds a string for pending_email_taken', { password_set: true, pending_email_taken: 'false' }]
       ])('rejects when the answer %s', async (_label, data) => {
         mockVerifiedSession(mockSupabase, { user: providerUser({ new_email: TYPED }), grants: [] });
         mockPasswordFact({ data, error: null });
@@ -1226,24 +1253,41 @@ describe('SupabaseDataWriter', () => {
 
       it.each([true, false])('returns passwordSet as the answer holds it: %s', async (password_set) => {
         setupSession();
-        mockPasswordFact({ data: { entities: [], password_set, pending_email_taken: false }, error: null });
+        mockPasswordFact({ data: { password_set, pending_email_taken: false }, error: null });
 
         expect((await writer.getBasicUserData()).passwordSet).toBe(password_set);
       });
 
-      it('reads the fact on every call, with one call of get_user_entities for this adapter’s project', async () => {
+      it('reads the fact on every call, with one call of get_caller_account_state and one of get_user_entities for this adapter’s project', async () => {
         setupSession();
 
         await writer.getBasicUserData();
 
-        expect(mockSupabase.rpc.mock.calls).toEqual([['get_user_entities', { p_project_id: PROJECT_ID }]]);
+        expect(mockSupabase.rpc.mock.calls).toEqual([
+          ['get_caller_account_state'],
+          ['get_user_entities', { p_project_id: PROJECT_ID }]
+        ]);
 
         await writer.getBasicUserData();
 
         expect(mockSupabase.rpc.mock.calls).toEqual([
+          ['get_caller_account_state'],
           ['get_user_entities', { p_project_id: PROJECT_ID }],
+          ['get_caller_account_state'],
           ['get_user_entities', { p_project_id: PROJECT_ID }]
         ]);
+      });
+
+      it('rejects, naming the method and the failure, when the read of the entities fails', async () => {
+        setupSession();
+        mockPasswordFact(undefined, {
+          data: null,
+          error: { message: 'permission denied for function get_user_entities' }
+        });
+
+        await expect(writer.getBasicUserData()).rejects.toThrow(
+          /^getBasicUserData: .*permission denied for function get_user_entities/
+        );
       });
 
       it('rejects, naming the method and the failure, when the read of the fact fails', async () => {
@@ -1256,9 +1300,9 @@ describe('SupabaseDataWriter', () => {
       });
 
       it.each([
-        ['holds no password_set', { entities: [] }],
-        ['holds a null password_set', { entities: [], password_set: null }],
-        ['holds a string for password_set', { entities: [], password_set: 'true' }],
+        ['holds no password_set', {}],
+        ['holds a null password_set', { password_set: null }],
+        ['holds a string for password_set', { password_set: 'true' }],
         ['is null', null]
       ])('rejects when the answer %s', async (_label, data) => {
         setupSession();
@@ -1386,6 +1430,7 @@ describe('SupabaseDataWriter', () => {
           confirmed: true,
           customData: { requestedParentOrganization: 'A party' },
           updatedAt: '2026-10-01T12:00:00.123456+00:00',
+          writable: true,
           parent: { entityType: 'organization', entityId: 'org-1', name: 'Puolue', shortName: 'P' }
         }
       ]);
@@ -1445,7 +1490,8 @@ describe('SupabaseDataWriter', () => {
           electionSymbol: '',
           confirmed: false,
           customData: null,
-          updatedAt: '2026-10-01T12:00:00.123456+00:00'
+          updatedAt: '2026-10-01T12:00:00.123456+00:00',
+          writable: true
         }
       ]);
       expect(Object.hasOwn(result?.nominations[0] ?? {}, 'parent')).toBe(false);
@@ -1749,7 +1795,8 @@ describe('SupabaseDataWriter', () => {
           electionSymbol: '',
           confirmed: true,
           customData: { requestedParentOrganization: 'A party' },
-          updatedAt: '2026-10-01T12:00:00.123456+00:00'
+          updatedAt: '2026-10-01T12:00:00.123456+00:00',
+          writable: true
         }
       ]);
     });
@@ -2352,7 +2399,7 @@ describe('SupabaseDataWriter', () => {
       const skipped = { scope: 'entity', target_type: 'candidate', target_id: 'cand-2', role: 'editor' };
 
       it('names this adapter project and passes nothing else', async () => {
-        mockSupabase.rpc.mockResolvedValue({ data: { claimed: [], skipped: [], password_set: true }, error: null });
+        mockSupabase.rpc.mockResolvedValue({ data: { claimed: [], skipped: [] }, error: null });
 
         await writer.claimInvitations();
 
@@ -2364,16 +2411,15 @@ describe('SupabaseDataWriter', () => {
         expect(mockSupabase.rpc.mock.calls[0]).toHaveLength(2);
       });
 
-      it('narrows the answer to the grants written, the promises left open and the password state', async () => {
+      it('narrows the answer to the grants written and the promises left open', async () => {
         mockSupabase.rpc.mockResolvedValue({
-          data: { claimed: [claimed], skipped: [{ ...skipped, reason: 'candidate_has_editor' }], password_set: false },
+          data: { claimed: [claimed], skipped: [{ ...skipped, reason: 'candidate_has_editor' }] },
           error: null
         });
 
         expect(await writer.claimInvitations()).toStrictEqual({
           claimed: [claimed],
-          skipped: [{ ...skipped, reason: 'candidate_has_editor' }],
-          passwordSet: false
+          skipped: [{ ...skipped, reason: 'candidate_has_editor' }]
         });
       });
 
@@ -2864,8 +2910,10 @@ describe('SupabaseDataWriter', () => {
       'A caller may originate at most 10 unconfirmed parent nominations; this caller already holds 10. An administrator must confirm or reject some before more can be created.';
     /** The whole text the database raises when the nominations a set was computed from are no longer those stored. */
     const CHANGED_REFUSAL = 'set_entity_nominations: the nominations have changed since they were read';
-    /** The whole text the database raises when the project's answers are locked. */
-    const ANSWERS_LOCKED_REFUSAL = 'set_entity_nominations: answers are locked in this project';
+    /** The whole text the database raises when the project's contestant editing is locked. */
+    const EDITING_LOCKED_REFUSAL = 'set_entity_nominations: editing is locked in this project';
+    /** The whole text the database raises when the project's nominations alone are locked. */
+    const NOMINATIONS_LOCKED_REFUSAL = 'set_entity_nominations: nominations are locked in this project';
 
     /**
      * One nomination of the kind a page hands the writer: not stored yet, under no parent.
@@ -2909,26 +2957,27 @@ describe('SupabaseDataWriter', () => {
               { election_id: 'el-1', constituency_id: 'co-1', election_symbol: '7', parent: { kind: 'none' } },
               { election_id: 'el-2', constituency_id: 'co-2', election_symbol: '', parent: { kind: 'none' } }
             ],
-            p_expected_reach: {}
+            p_expected_versions: {}
           }
         ]
       ]);
       expect(tablesReached(mockSupabase)).toEqual([]);
     });
 
-    it('states the nominations the set was computed from as the expected reach, each id with the time it was last updated', async () => {
+    it('states the writable nominations the set was computed from as the expected versions, each id with the time it was last updated', async () => {
       mockWrite({ data: COUNTS, error: null });
 
       await writer.setEntityNominations({
         target: CANDIDATE,
         nominations: [desired({ id: 'nom-1' })],
         readFrom: [
-          { id: 'nom-1', updatedAt: '2026-10-01T12:00:00.123456+00:00' },
-          { id: 'nom-2', updatedAt: '2026-10-02T08:30:00+00:00' }
+          { id: 'nom-1', updatedAt: '2026-10-01T12:00:00.123456+00:00', writable: true },
+          { id: 'nom-2', updatedAt: '2026-10-02T08:30:00+00:00', writable: true },
+          { id: 'nom-3', updatedAt: '2026-10-03T08:30:00+00:00', writable: false }
         ]
       });
 
-      expect(onlyRpcArguments(mockSupabase).p_expected_reach).toEqual({
+      expect(onlyRpcArguments(mockSupabase).p_expected_versions).toEqual({
         'nom-1': '2026-10-01T12:00:00.123456+00:00',
         'nom-2': '2026-10-02T08:30:00+00:00'
       });
@@ -3051,15 +3100,27 @@ describe('SupabaseDataWriter', () => {
       expect(JSON.stringify(result)).not.toContain('10');
     });
 
-    it('resolves to the answers-locked refusal when the database refuses the write because answers are locked, and returns none of the raised text', async () => {
+    it('resolves to the answers-locked refusal when the database refuses the write because editing is locked, and returns none of the raised text', async () => {
       mockWrite({
         data: null,
-        error: { code: '42501', message: ANSWERS_LOCKED_REFUSAL, details: null, hint: null }
+        error: { code: '42501', message: EDITING_LOCKED_REFUSAL, details: null, hint: null }
       });
 
       const result = await writer.setEntityNominations({ readFrom: [], target: CANDIDATE, nominations: [desired()] });
 
       expect(result).toEqual({ type: 'refused', reason: 'answersLocked' });
+      expect(JSON.stringify(result)).not.toContain('set_entity_nominations');
+    });
+
+    it('resolves to the nominations-locked refusal when the database refuses the write because nominations are locked, and returns none of the raised text', async () => {
+      mockWrite({
+        data: null,
+        error: { code: '42501', message: NOMINATIONS_LOCKED_REFUSAL, details: null, hint: null }
+      });
+
+      const result = await writer.setEntityNominations({ readFrom: [], target: CANDIDATE, nominations: [desired()] });
+
+      expect(result).toEqual({ type: 'refused', reason: 'nominationsLocked' });
       expect(JSON.stringify(result)).not.toContain('set_entity_nominations');
     });
 
@@ -3124,8 +3185,12 @@ describe('SupabaseDataWriter', () => {
       ['a foreign-key violation of another key', { code: '23503', message: 'violates "nominations_election_id_fkey"' }],
       ['the parent foreign key named under another code', { code: 'P0001', message: LISTED_UNDER_REFUSAL }],
       ['the parent foreign key named with no code', { message: LISTED_UNDER_REFUSAL }],
-      ['the answers lock text under another code', { code: 'P0001', message: ANSWERS_LOCKED_REFUSAL }],
-      ['the answers lock text with no code', { message: ANSWERS_LOCKED_REFUSAL }],
+      ['the editing lock text under another code', { code: 'P0001', message: EDITING_LOCKED_REFUSAL }],
+      ['the editing lock text with no code', { message: EDITING_LOCKED_REFUSAL }],
+      [
+        'the answers lock text, which only upsert_answers raises',
+        { code: '42501', message: 'upsert_answers: answers are locked in this project' }
+      ],
       ['the cap message under another code', { code: '42501', message: PENDING_CAP_REFUSAL }],
       ['the cap message with no code', { message: PENDING_CAP_REFUSAL }],
       ['the cap message quoted inside another message', { code: 'P0001', message: `Failed: ${PENDING_CAP_REFUSAL}` }],

@@ -42,6 +42,7 @@ function userWith(
     passwordSet,
     addressState,
     pendingEmail: addressState === 'pending' ? 'pending@example.test' : null,
+    ownOrganizationId: null,
     ownOrganizationUnnamed: false,
     pendingEmailTaken: false
   };

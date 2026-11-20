@@ -42,7 +42,7 @@ const ENTITY_ADMIN: GrantClaim = { scope: 'entity', target_type: 'candidate', ta
 const PROJECT_EDITOR: GrantClaim = { scope: 'project', target_type: null, target_id: 'proj-1', role: 'editor' };
 
 /** A claim that found nothing to claim, for a user who has a password. */
-const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [], passwordSet: true };
+const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [] };
 
 /**
  * Build the request-context stub the helper acts through, plus the spies needed to observe it.

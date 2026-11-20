@@ -248,21 +248,21 @@ describe('SupabaseDataProvider', () => {
   });
 
   describe('getAppSettings', () => {
-    // What `contestant_app_public_settings` answers for a project that declares none of its four values, has no settings row or does not exist.
+    // What `get_public_app_settings` answers for a project that declares none of its four values, has no settings row or does not exist.
     const NOTHING_DECLARED = {
-      access: { contestantApp: null, answersLocked: null },
+      access: { contestantApp: null, contestantEditing: null },
       analytics: { trackEvents: null },
       contestantApp: { servedEntityTypes: null }
     };
 
     /**
      * Mock a project that is closed for voters and whose settings row the caller cannot read.
-     * @param publicSettings - What `contestant_app_public_settings` answers.
+     * @param publicSettings - What `get_public_app_settings` answers.
      */
     function mockClosedProject(publicSettings: unknown): void {
       mockSupabase._mockResponses['app_settings'] = { data: null, error: null };
       mockSupabase._mockRpcResponses['project_open_for_voters'] = { data: false, error: null };
-      mockSupabase._mockRpcResponses['contestant_app_public_settings'] = { data: publicSettings, error: null };
+      mockSupabase._mockRpcResponses['get_public_app_settings'] = { data: publicSettings, error: null };
     }
 
     /**
@@ -381,8 +381,8 @@ describe('SupabaseDataProvider', () => {
         await provider.getAppSettings();
 
         expect(mockSupabase.rpc).toHaveBeenCalledTimes(2);
-        expect(rpcNamesCalled()).toEqual(['project_open_for_voters', 'contestant_app_public_settings']);
-        expect(mockSupabase.rpc).toHaveBeenCalledWith('contestant_app_public_settings', {
+        expect(rpcNamesCalled()).toEqual(['project_open_for_voters', 'get_public_app_settings']);
+        expect(mockSupabase.rpc).toHaveBeenCalledWith('get_public_app_settings', {
           p_project_id: '00000000-0000-0000-0000-000000000001'
         });
       });
@@ -498,9 +498,9 @@ describe('SupabaseDataProvider', () => {
         expect(result.contestantApp?.servedEntityTypes).toEqual({ organization: { registrationModes: ['email'] } });
       });
 
-      it('places the stored answers lock at its storage path, beside the stored gate', async () => {
+      it('places the stored contestant editing at its storage path, beside the stored gate', async () => {
         mockClosedProject({
-          access: { contestantApp: false, answersLocked: true },
+          access: { contestantApp: false, contestantEditing: 'locked' },
           contestantApp: { servedEntityTypes: null }
         });
 
@@ -509,40 +509,40 @@ describe('SupabaseDataProvider', () => {
         expect(result.access).toEqual({
           ...dynamicSettings.access,
           contestantApp: false,
-          answersLocked: true,
+          contestantEditing: 'locked',
           voterApp: false
         });
         expect(records).toHaveLength(0);
       });
 
-      it('honours the stored answers lock where the gate is not declared, and a stored `false` as it is', async () => {
+      it('honours the stored contestant editing where the gate is not declared, and a stored `open` as it is', async () => {
         mockClosedProject({
-          access: { contestantApp: null, answersLocked: true },
+          access: { contestantApp: null, contestantEditing: 'locked' },
           contestantApp: { servedEntityTypes: null }
         });
         const locked = await provider.getAppSettings();
 
-        expect(locked.access).toEqual({ ...dynamicSettings.access, answersLocked: true, voterApp: false });
+        expect(locked.access).toEqual({ ...dynamicSettings.access, contestantEditing: 'locked', voterApp: false });
 
         mockClosedProject({
-          access: { contestantApp: null, answersLocked: false },
+          access: { contestantApp: null, contestantEditing: 'open' },
           contestantApp: { servedEntityTypes: null }
         });
         const unlocked = await provider.getAppSettings();
 
-        expect(unlocked.access).toEqual({ ...dynamicSettings.access, answersLocked: false, voterApp: false });
+        expect(unlocked.access).toEqual({ ...dynamicSettings.access, contestantEditing: 'open', voterApp: false });
       });
 
-      it('leaves an answers lock that is null out, so that the shipped one stands', async () => {
+      it('leaves a contestant editing that is null out, so that the shipped one stands', async () => {
         mockClosedProject({
-          access: { contestantApp: false, answersLocked: null },
+          access: { contestantApp: false, contestantEditing: null },
           contestantApp: { servedEntityTypes: null }
         });
 
         const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
         // The shipped value itself, so a change to the defaults cannot make the comparison pass on something else.
-        expect(dynamicSettings.access.answersLocked).toBe(false);
+        expect(dynamicSettings.access.contestantEditing).toBe('open');
         expect(result.access).toEqual({ ...dynamicSettings.access, contestantApp: false, voterApp: false });
         expect(records).toHaveLength(0);
       });
@@ -550,7 +550,7 @@ describe('SupabaseDataProvider', () => {
       it('copies nothing but the four values, whatever else the answer carries', async () => {
         // The database function returns none of the other members. The provider does not rely on that.
         mockClosedProject({
-          access: { contestantApp: false, voterApp: true, underMaintenance: true, answersLocked: true },
+          access: { contestantApp: false, voterApp: true, underMaintenance: true, contestantEditing: 'locked' },
           contestantApp: { servedEntityTypes: null, questions: { hideHero: true } },
           matching: { organizationMatching: 'impute' }
         });
@@ -564,7 +564,7 @@ describe('SupabaseDataProvider', () => {
           contestantApp: false,
           voterApp: false,
           underMaintenance: false,
-          answersLocked: true
+          contestantEditing: 'locked'
         });
         expect(records).toHaveLength(0);
       });
@@ -610,7 +610,7 @@ describe('SupabaseDataProvider', () => {
 
       it('throws a getAppSettings error when the public settings RPC fails', async () => {
         mockClosedProject(null);
-        mockSupabase._mockRpcResponses['contestant_app_public_settings'] = {
+        mockSupabase._mockRpcResponses['get_public_app_settings'] = {
           data: null,
           error: { message: 'settings-boom' }
         };
@@ -627,7 +627,7 @@ describe('SupabaseDataProvider', () => {
         mockClosedProject(answer);
 
         await expect(provider.getAppSettings()).rejects.toThrow(
-          'getAppSettings: contestant_app_public_settings returned a non-object'
+          'getAppSettings: get_public_app_settings returned a non-object'
         );
       });
     });
@@ -655,15 +655,15 @@ describe('SupabaseDataProvider', () => {
       expect(mockSupabase.rpc).not.toHaveBeenCalled();
     });
 
-    it('returns a stored nominations lock of a readable row, with nothing reported', async () => {
+    it('returns a stored contestant editing of a readable row, with nothing reported', async () => {
       mockSupabase._mockResponses['app_settings'] = {
-        data: { settings: { access: { nominationsLocked: true } } },
+        data: { settings: { access: { contestantEditing: 'nominationsLocked' } } },
         error: null
       };
 
       const { result, records } = await withCapturedLogs(() => provider.getAppSettings());
 
-      expect(result).toEqual({ access: { nominationsLocked: true } });
+      expect(result).toEqual({ access: { contestantEditing: 'nominationsLocked' } });
       expect(records).toHaveLength(0);
     });
 

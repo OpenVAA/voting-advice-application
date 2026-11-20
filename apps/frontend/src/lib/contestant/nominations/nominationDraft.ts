@@ -254,7 +254,7 @@ function existingCardOf({
  * - The cards are ordered by the elections' given order, and within one election as the nominations are given.
  *
  * @param entityType - The type of the entity the nominations are of.
- * @param nominations - The entity's nominations in the editor's reach, as the caller has read them.
+ * @param nominations - The entity's writable nominations, as the caller has read them.
  * @param chosen - The chosen elections, each with its constituency.
  * @param elections - The elections the editor offers the entity, in the order the election step lists them.
  * @returns Fresh cards that share no object with the arguments or with each other.

@@ -8,7 +8,7 @@ What is shown follows from the user-level data, the answers lock and the arrival
 - With an address awaiting its link and nothing else to ask, that address, "Send again" and "Use another email address", which replaces the address by the email form in place.
 - With a proved address and nothing else to ask, that address.
 
-Continue with a form sends nothing while a field is in error: it says what is wrong at each field and moves focus to the first, the name before the address. Otherwise it saves the names and records the address, which is mailed a link to confirm it, and reruns the page's loads, so the next gate or the page the user asked for replaces this view without waiting for the link. An address another account holds is told at the address field; any other failure is told under the form, and what was typed is kept. Continue with nothing to ask clears the arrival notice and reruns the loads.
+Continue with a form sends nothing while a field is in error: it says what is wrong at each field and moves focus to the first, the name before the address. Otherwise it saves the names and records the address, which is mailed a link to confirm it, and reruns the page's loads, so the next gate or the page the user asked for replaces this view without waiting for the link. An address another account holds, and one an open invitation is addressed to, which is to be used by signing in by email with that invitation, is told at the address field; any other failure is told under the form, and what was typed is kept. Continue with nothing to ask clears the arrival notice and reruns the loads.
 
 "Send again" mails the link once more. It is available on arrival, and after a press unavailable until a count of `RESEND_WAIT_SECONDS` from the request's settlement has ended.
 
@@ -207,10 +207,17 @@ None.
     if (result === 'saved') {
       await rerun();
       status = 'idle';
-    } else if (result === 'in-use') {
+    } else if (result === 'in-use' || result === 'invited') {
       status = 'idle';
       await tick();
-      entry?.showEmailError(t('contestantApp.identityProvider.emailInUse'));
+      entry?.showEmailError(
+        t(
+          result === 'in-use'
+            ? 'contestantApp.identityProvider.emailInUse'
+            : 'contestantApp.identityProvider.emailInvited'
+        ),
+        result
+      );
     } else {
       await fail(focused);
     }
