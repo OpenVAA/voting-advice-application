@@ -55,14 +55,42 @@ When that happens the run is **void**:
 - The wrapper stops Playwright, tears down the dev server it owns as it does after any run, and exits with status **8** — never 0 and never 1, whatever Playwright had reported by then.
 - The run directory holds **`VOID-host-suspend.txt`**. Its first line says for how many seconds the wrapper was not scheduled; below it are the gap in milliseconds and the time of the last beat before it and of the first beat after it, then, appended at teardown, the host's load averages and the ten processes using the most CPU at the start of the run and at the start of teardown, and on macOS the `Sleep` and `DarkWake` entries `pmset -g log` records inside the gap (`host_sleep_entries_in_gap`). Status 8 and the marker always go together: neither occurs without the other.
 - `tests/scripts/e2e-evidence.mjs` carries the marker into `summary.json` (the `void` field) and `provenance.txt`, and `tests/scripts/determinism-batch.sh` records the run as `VOID`, stops, and exits 6.
+- `tests/scripts/e2e-evidence.mjs` also lists every test with a result that ended `failed` before the marker's last beat before the gap, in `summary.json` (the `failedBeforeGap` array) and under the `failed-before-gap:` line of `provenance.txt`.
 
-A void run is evidence in neither direction: it is not a pass, and it is not a failing tree. **Do not diagnose its test failures** — they belong to the gap, not to the code. Keep the directory and make the run again under a new `--run-dir`. The gap itself is worth one look at the marker: a sleep entry inside it confirms a suspend, while no sleep entry and a loaded host at either end point at a stall of an awake host, which is a defect to chase if it recurs rather than a reason to keep re-running. On GitHub Actions the failed step carries an error annotation titled `E2E run VOID (host suspended)`, and the remedy is to re-run the job.
+A void run is evidence in neither direction: it is not a pass, and it is not a failing tree. **Do not diagnose its other test failures** — they belong to the gap, not to the code. A failure listed in `failedBeforeGap` ended before the gap began, so the gap cannot have caused it: diagnose it like any red test, even when the re-run is green. Keep the directory and make the run again under a new `--run-dir`. The gap itself is worth one look at the marker: a sleep entry inside it confirms a suspend, while no sleep entry and a loaded host at either end point at a stall of an awake host, which is a defect to chase if it recurs rather than a reason to keep re-running. On GitHub Actions the failed step carries an error annotation titled `E2E run VOID (host suspended)`, and the remedy is to re-run the job.
 
 CPU load alone does not trip the heartbeat. Under a CPU load several times the core count a beat arrives less than 0.2 s late, and every run records its own figures: the lateness of each beat in `heartbeat.log`, and the largest of them as `heartbeat_max_late_ms` in `env-posture.txt`. The threshold is not configurable, and a suspend shorter than it goes undetected. `tests/scripts/e2e-run.sh --self-test` exercises the detector without a run: it has to stay silent under CPU load and under a hold shorter than the threshold, and it has to fire when its loop is held with `SIGSTOP` for longer.
 
 Every run also records the host's state in `env-posture.txt`, once at its start (`host_start_*`) and once at the start of teardown (`host_end_*`): the `uptime` line, with the load averages, and the ten processes using the most CPU, by executable name only. It decides nothing, but a slow run can then be attributed to what else the host was doing.
 
 The wrapper also keeps an idle host awake, because the heartbeat cannot see every sleep. A sleep transition that leaves the CPU running — a dark wake — makes no beat late, yet when it starts the page's socket to the dev server closes, and the dev server's client answers a closed socket by reloading the page. The page comes back without whatever the application keeps in memory only (the voter's category selection, for one), so the failure reads as wrong content several steps later; the line that names it is `[vite] server connection lost` in the page console, which every spec built on the voter fixture root attaches to its test result as `console.log`. Where `caffeinate` exists (macOS) the wrapper holds the display, idle, disk and system sleep assertions from before database preparation until the end of teardown, and `env-posture.txt` records that as `sleep_assertion`. An assertion prevents an idle sleep. It does not prevent the sleep that closing the lid forces, so `pmset -g log` is still the check when a red run has no marker and no other cause.
+
+### Reading a run: e2e-evidence.mjs and e2e-spec-verdict.mjs
+
+Both scripts only read a run directory's Playwright report, `results.json`, through one shared module, [`scripts/e2e-report.mjs`](./scripts/e2e-report.mjs), so they classify every test the same way: a skipped test with no result and no `skip` or `fixme` annotation **did not run**, and counts as a failure.
+
+[`scripts/e2e-evidence.mjs`](./scripts/e2e-evidence.mjs) rolls a run directory up into totals: `summary.json` (counts overall and per project, the void marker, the wrapper's status) and `provenance.txt` (the head, the command, the timestamps).
+
+[`scripts/e2e-spec-verdict.mjs`](./scripts/e2e-spec-verdict.mjs) answers, by its exit status, the questions a total cannot, and prints one `VERDICT FAIL:` line for each condition that does not hold:
+
+- `--passed <spec file base name>` and `--passed-test <title part>`: the named spec file, or every test whose title contains the text, is in the report and passed.
+- `--failed-test <title part>`, each followed by any number of `--failure-contains <text>`: a red control failed in the intended test, and for the intended reason, with every given text in the error of one and the same failed test.
+- `--skipped-baseline <file>`: the declared skips equal the lines of a baseline file; `--print-skipped` writes those lines to standard output, to make one.
+
+Whatever flags are given, the run fails on a test that did not run, on a failed test whose title matches no `--failed-test` value, on a flaky test and on a report that holds no test. There is no flag that relaxes any of these.
+
+| Exit | Meaning                                                    |
+| ---- | ---------------------------------------------------------- |
+| 0    | every condition holds                                      |
+| 1    | at least one condition fails                               |
+| 2    | the arguments are unusable                                 |
+| 3    | `results.json` is missing, cannot be parsed, or is cut off |
+
+```bash
+node tests/scripts/e2e-spec-verdict.mjs tests/e2e-runs/<name> \
+  --passed cold-entry-dataroot.spec.ts \
+  --failed-test 'the device holds only allow-listed state' --failure-contains appContext-sessionId
+```
 
 ### Preflight — every run proves it is driving this checkout
 
