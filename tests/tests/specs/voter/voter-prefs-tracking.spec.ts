@@ -34,50 +34,26 @@ import { RELAY_PATH } from '../../../../apps/frontend/src/lib/analytics/constant
 import { isUuidV7 } from '../../../../apps/frontend/src/lib/analytics/uuidv7';
 import { ROUTE } from '../../../../apps/frontend/src/lib/routes/route';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
-import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
+import {
+  CONSENT_PROMPT,
+  createRelayCapture,
+  flushTrackingBuffer,
+  flushUntil,
+  GRANTED_BUTTON,
+  hasVisitId,
+  PREFS_KEY,
+  visitIdOf
+} from '../../fixtures/shared/relayCapture.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
-import { TIMEOUTS } from '../../helpers';
+import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import { walkVoterStages } from '../../utils/voterNavigation';
 import type { BrowserContext, Page } from '@playwright/test';
 import type { CapturedRelayEvent, RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 
-/** The in-app DataConsent "granted" button accessible name (DataConsent.svelte). */
-const GRANTED_BUTTON = /agree to share my data/i;
-
 /** The message of the first assertion, which fails when the relay forwards nothing. */
 const RELAY_INACTIVE_MESSAGE = `no request to the relay path ${RELAY_PATH} was captured: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it`;
-
-/**
- * Flush the tracking buffer on the SAME document. The root layout calls `submitAllEvents()` when the document becomes hidden, so the helper overrides `document.visibilityState` with `'hidden'` and dispatches `visibilitychange`; it then removes the override, so the real value shows through again, and dispatches the event once more, which marks the page visible.
- */
-async function flushTrackingBuffer(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    Reflect.deleteProperty(document, 'visibilityState');
-    document.dispatchEvent(new Event('visibilitychange'));
-  });
-}
-
-/**
- * Flush until `arrived` holds. A flush made before the page has hydrated reaches no listener, and a batch is captured a moment after it is sent, so the helper flushes again on each poll; a flush with nothing to send sends nothing, so the repeats add no batch.
- * @param page - The page to flush.
- * @param arrived - True once the expected batch is captured.
- * @param message - The failure message when it never is.
- */
-async function flushUntil(page: Page, arrived: () => boolean, message: string): Promise<void> {
-  await expect
-    .poll(
-      async () => {
-        await flushTrackingBuffer(page);
-        return arrived();
-      },
-      { message, timeout: TIMEOUTS.slowPage }
-    )
-    .toBe(true);
-}
 
 /** True when a pageview was captured for a route whose id `matches` accepts. */
 function hasPageview(capture: RelayCaptureFixture, matches: (routeId: string) => boolean): boolean {
@@ -95,12 +71,12 @@ const isResultsRoute = (routeId: string): boolean => routeId.startsWith(ROUTE.Re
 
 /** The distinct visit ids the captured events carry, in the order first seen. */
 function visitIds(capture: RelayCaptureFixture): Array<string> {
-  return [...new Set(capture.getEvents().flatMap((event) => (event.id === undefined ? [] : [event.id])))];
+  return [...new Set(capture.getEvents().flatMap((event) => visitIdOf(event) ?? []))];
 }
 
 /** A short description of a captured event, for failure messages. */
 function describeEvent(event: CapturedRelayEvent): string {
-  return `${event.name} on ${event.routeId}${event.id === undefined ? '' : ` with id ${event.id}`}`;
+  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with id ${String(visitIdOf(event))}` : ''}`;
 }
 
 /** Open the voter app's front page and wait for its content. */
@@ -148,29 +124,10 @@ async function grantConsentViaPopup(page: Page): Promise<void> {
   await expect(dialog).toBeHidden({ timeout: TIMEOUTS.slowPage });
 }
 
-/** The accessible name of the voter app's consent prompt (`common.privacy.dataCollection.title`, the title of DataConsentPopup's Alert). */
-const CONSENT_PROMPT = /collecting usage data/i;
-
 /**
  * Whether the server runs in consent-free mode, read from the variable that sets the mode, as the server reads it (trimmed, any case). The wrapper starts the dev server and Playwright from one environment, so a run under the `ANALYTICS_CONSENT_MODE=free` prefix sets it for both. Unset, or any other value, is the default mode.
  */
 const CONSENT_FREE_MODE = process.env.ANALYTICS_CONSENT_MODE?.trim().toLowerCase() === 'free';
-
-/**
- * Wait until the root layout's post-navigation focus reset has landed on the page's focus target (`[data-focus-on-nav] ?? h1`, the selector `focusNavigationTarget` uses), the wait `voter-journey.spec.ts` makes. The reset runs in the root layout's `afterNavigate`, so on a page that is opened by its URL it shows that the page has hydrated and the voter layout has mounted, which is when the consent prompt is queued.
- */
-async function waitForNavigationFocusReset(page: Page): Promise<void> {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-          return target !== null && document.activeElement === target;
-        }),
-      { message: 'the page did not hydrate: the post-navigation focus reset never landed', timeout: TIMEOUTS.page }
-    )
-    .toBe(true);
-}
 
 /**
  * Close the voter app's consent prompt WITHOUT making a choice, and assert that no choice is stored.
@@ -205,9 +162,6 @@ async function expectNoConsentChoiceStored(page: Page): Promise<void> {
   const consent = (await readPersistedPrefs(page))?.dataCollection?.consent;
   expect([undefined, 'indetermined'], `a consent choice is stored: ${String(consent)}`).toContain(consent);
 }
-
-/** localStorage key the app persists `userPreferences` under (the `localStorageState` call in appContext.svelte.ts). */
-const PREFS_KEY = 'appContext-userPreferences';
 
 /**
  * The persisted `userPreferences` shape we round-trip. Mirrors userPreferences.type.ts (consent + feedback.status + survey.status). `date` fields are persisted alongside but the round-trip assertion targets the status/consent values.
@@ -283,7 +237,7 @@ test.describe('voter-prefs-tracking (EFLOW-08)', () => {
     const events = capture.getEvents();
     const notPageviews = events.filter((event) => event.name !== 'pageview').map((event) => event.name);
     expect(notPageviews, `non-pageview events were sent before consent: ${notPageviews.join(', ')}`).toStrictEqual([]);
-    const withId = events.filter((event) => event.id !== undefined).map(describeEvent);
+    const withId = events.filter(hasVisitId).map(describeEvent);
     expect(withId, `events with an id were sent before consent: ${withId.join(', ')}`).toStrictEqual([]);
     const pageviewCount = events.filter((event) => event.name === 'pageview').length;
     expect(pageviewCount, 'at least two pageviews were sent').toBeGreaterThanOrEqual(2);
@@ -309,12 +263,12 @@ test.describe('voter-prefs-tracking (EFLOW-08)', () => {
     expect(names, 'the answer was sent as its own event').toContain('answer');
     expect(names, 'the menu_open buffered before the grant was not sent').not.toContain('menu_open');
 
-    const answer = events.find((event) => event.name === 'answer');
-    expect(isUuidV7(answer?.id), `the answer event carries a UUIDv7 visit id, got ${String(answer?.id)}`).toBe(true);
+    const [answerVisitId] = events.filter((event) => event.name === 'answer').map(visitIdOf);
+    expect(isUuidV7(answerVisitId), `the answer event carries a UUIDv7 visit id, got ${String(answerVisitId)}`).toBe(
+      true
+    );
 
-    const pageviewsWithId = events
-      .filter((event) => event.name === 'pageview' && event.id !== undefined)
-      .map(describeEvent);
+    const pageviewsWithId = events.filter((event) => event.name === 'pageview' && hasVisitId(event)).map(describeEvent);
     expect(pageviewsWithId, `pageviews carried an id: ${pageviewsWithId.join(', ')}`).toStrictEqual([]);
   });
 

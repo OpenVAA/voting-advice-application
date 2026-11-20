@@ -38,7 +38,7 @@ import { createContestantPrivacyPage } from '../../fixtures/contestant/contestan
 import { createContestantTermsOfUsePage } from '../../fixtures/contestant/contestantTermsOfUsePage.fixture';
 import { expectOnlyAllowedDeviceState, readDeviceState } from '../../fixtures/shared/deviceStores.fixture';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
-import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
+import { createRelayCapture, flushUntil, hasVisitId, visitIdOf } from '../../fixtures/shared/relayCapture.fixture';
 import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
 import { registerAndStoreSession } from '../../setup/shared/registerAndStoreSession';
 import { assertAxeScan } from '../../utils/axeScan';
@@ -101,33 +101,6 @@ function requireBaseURL(testInfo: TestInfo): string {
   return baseURL;
 }
 
-/**
- * Reach the hidden flush point on the SAME document. The root layout sends the pending batch when the document becomes hidden, so this overrides `document.visibilityState` with `'hidden'` and dispatches `visibilitychange`; it then removes the override, so the real value shows through again, and dispatches the event once more, which marks the page visible.
- */
-async function flushTrackingBuffer(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    Reflect.deleteProperty(document, 'visibilityState');
-    document.dispatchEvent(new Event('visibilitychange'));
-  });
-}
-
-/**
- * Flush until `arrived` holds, and fail with `RELAY_MESSAGE` when it never does. A flush with nothing to send sends nothing, so the repeats add no batch.
- */
-async function flushUntil(page: Page, arrived: () => boolean): Promise<void> {
-  await expect
-    .poll(
-      async () => {
-        await flushTrackingBuffer(page);
-        return arrived();
-      },
-      { message: RELAY_MESSAGE, timeout: TIMEOUTS.slowPage }
-    )
-    .toBe(true);
-}
-
 /** True when `routeId` belongs to the route whose id is `root`, or to a route under it. */
 function isUnder(root: string, routeId: string): boolean {
   return routeId === root || routeId.startsWith(`${root}/`);
@@ -135,7 +108,7 @@ function isUnder(root: string, routeId: string): boolean {
 
 /** A short description of a captured event, for failure messages. */
 function describeEvent(event: CapturedRelayEvent): string {
-  return `${event.name} on ${event.routeId}${event.id === undefined ? '' : ` with id ${event.id}`}`;
+  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with id ${String(visitIdOf(event))}` : ''}`;
 }
 
 /** The captured events named `name`. */
@@ -245,9 +218,9 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
 
       await settleNetworkIdle(page, { timeoutMs: TIMEOUTS.slowPage });
       await openAndCloseMenu(page);
-      await flushUntil(page, () => eventsNamed(capture, 'menu_open').length > 0);
+      await flushUntil(page, () => eventsNamed(capture, 'menu_open').length > 0, RELAY_MESSAGE);
 
-      const unlinkedMenuOpens = eventsNamed(capture, 'menu_open').filter((event) => !isUuidV7(event.id));
+      const unlinkedMenuOpens = eventsNamed(capture, 'menu_open').filter((event) => !isUuidV7(visitIdOf(event)));
       expect(
         unlinkedMenuOpens.map(describeEvent),
         'a menu opening was sent without a UUIDv7 visit id after a granting acceptance'
@@ -259,10 +232,7 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
         pageviews.filter((event) => !isUnder(CONTESTANT, event.routeId)).map(describeEvent),
         `a pageview outside the Contestant App (${CONTESTANT}) was captured`
       ).toEqual([]);
-      expect(
-        pageviews.filter((event) => event.id !== undefined).map(describeEvent),
-        'a pageview carries an id'
-      ).toEqual([]);
+      expect(pageviews.filter(hasVisitId).map(describeEvent), 'a pageview carries an id').toEqual([]);
     });
   });
 
@@ -287,8 +257,10 @@ test.describe('the consent to usage data at the Contestant terms of use', () => 
       // The home's own pageview is sent at the first flush after the menu was opened, in the batch a menu opening would join if it were allowed, so its arrival is the moment to read the capture.
       await settleNetworkIdle(page, { timeoutMs: TIMEOUTS.slowPage });
       await openAndCloseMenu(page);
-      await flushUntil(page, () =>
-        eventsNamed(capture, 'pageview').some((event) => isUnder(CONTESTANT_ENTITY, event.routeId))
+      await flushUntil(
+        page,
+        () => eventsNamed(capture, 'pageview').some((event) => isUnder(CONTESTANT_ENTITY, event.routeId)),
+        RELAY_MESSAGE
       );
 
       expect(

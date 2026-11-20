@@ -21,48 +21,22 @@
 import { expect, test } from '@playwright/test';
 import { RELAY_PATH } from '../../../../apps/frontend/src/lib/analytics/constants';
 import { ROUTE } from '../../../../apps/frontend/src/lib/routes/route';
-import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
+import {
+  CONSENT_PROMPT,
+  createRelayCapture,
+  flushUntil,
+  GRANTED_BUTTON,
+  hasVisitId,
+  visitIdOf
+} from '../../fixtures/shared/relayCapture.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
 import { navigateToFirstQuestion } from '../../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 import type { CapturedRelayEvent, RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 
-/** The accessible name of the voter app's consent prompt (`common.privacy.dataCollection.title`, the title of DataConsentPopup's Alert). */
-const CONSENT_PROMPT = /collecting usage data/i;
-
-/** The accessible name of the consent control's button that grants consent. */
-const GRANTED_BUTTON = /agree to share my data/i;
-
 /** The message of the first wait and the first assertion, which fail when the relay forwards nothing. */
 const RELAY_INACTIVE_MESSAGE = `no pageview reached the relay path ${RELAY_PATH}: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it`;
-
-/**
- * Reach the hidden flush point on the SAME document. The root layout sends the pending batch when the document becomes hidden, so this overrides `document.visibilityState` with `'hidden'` and dispatches `visibilitychange`; it then removes the override, so the real value shows through again, and dispatches the event once more, which marks the page visible.
- */
-async function flushTrackingBuffer(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    Reflect.deleteProperty(document, 'visibilityState');
-    document.dispatchEvent(new Event('visibilitychange'));
-  });
-}
-
-/**
- * Flush until `arrived` holds. A flush made before the page has hydrated reaches no listener, and a batch is captured a moment after it is sent, so this flushes again on each poll; a flush with nothing to send sends nothing, so the repeats add no batch.
- */
-async function flushUntil(page: Page, arrived: () => boolean, message: string): Promise<void> {
-  await expect
-    .poll(
-      async () => {
-        await flushTrackingBuffer(page);
-        return arrived();
-      },
-      { message, timeout: TIMEOUTS.slowPage }
-    )
-    .toBe(true);
-}
 
 /** The number of pageviews captured so far. */
 function pageviewCount(capture: RelayCaptureFixture): number {
@@ -71,7 +45,7 @@ function pageviewCount(capture: RelayCaptureFixture): number {
 
 /** A short description of a captured event, for failure messages. */
 function describeEvent(event: CapturedRelayEvent): string {
-  return `${event.name} on ${event.routeId}${event.id === undefined ? '' : ` with id ${event.id}`}`;
+  return `${event.name} on ${event.routeId}${hasVisitId(event) ? ` with id ${String(visitIdOf(event))}` : ''}`;
 }
 
 /** Assert that no consent prompt and no control that grants consent is on the page. */
@@ -123,7 +97,7 @@ test.describe('with trackEvents off', () => {
     expect(events.length, RELAY_INACTIVE_MESSAGE).toBeGreaterThanOrEqual(2);
     const notPageviews = events.filter((event) => event.name !== 'pageview').map(describeEvent);
     expect(notPageviews, `events other than the pageview were sent: ${notPageviews.join(', ')}`).toStrictEqual([]);
-    const withId = events.filter((event) => event.id !== undefined).map(describeEvent);
+    const withId = events.filter(hasVisitId).map(describeEvent);
     expect(withId, `events with an id were sent: ${withId.join(', ')}`).toStrictEqual([]);
   });
 });
