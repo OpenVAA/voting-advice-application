@@ -1,4 +1,4 @@
-import { staticSettings } from '@openvaa/app-shared';
+import { CONTESTANT_EDITING, getContestantEditing, staticSettings } from '@openvaa/app-shared';
 import { json } from '@sveltejs/kit';
 import { createDataProvider } from '$lib/api/dataProvider';
 import { createDataWriter } from '$lib/api/dataWriter';
@@ -17,17 +17,16 @@ export async function POST({ request, locals, cookies, fetch, url }: RequestEven
   const writer = createDataWriter({ fetch, locals });
   const { status, body } = await handleIdentityProviderRegistration(request, {
     origin: url.origin,
-    projectId: writer.projectId,
     defaultLocale: writer.defaultLocale,
     locale: locals.currentLocale,
     supportedLocales: staticSettings.supportedLocales.map(({ code }) => code),
     getVerifiedUser: async () => {
       const { session, user } = await locals.safeGetSession();
-      return session && user ? { appMetadata: user.app_metadata } : null;
+      return session && user ? { id: user.id } : null;
     },
     // Read through this request's own provider, as the protected layout reads it. A failed read rejects, and the endpoint answers `failed` rather than write past a lock it could not read.
     getAnswersLocked: async () =>
-      (await createDataProvider({ fetch, locals }).getAppSettings()).access?.answersLocked === true,
+      getContestantEditing(await createDataProvider({ fetch, locals }).getAppSettings()) === CONTESTANT_EDITING.Locked,
     getBasicUserData: () => writer.getBasicUserData(),
     getUserEntities: () => writer.getUserEntities(),
     updateEntityProperties: (opts) => writer.updateEntityProperties(opts),

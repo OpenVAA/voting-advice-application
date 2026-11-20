@@ -39,7 +39,7 @@ Everything that differs between entity types is read from the descriptor of the 
     afterElections,
     constituenciesOf,
     EDITOR_STEP_ROUTE,
-    reachedNominationsOf,
+    managedNominationsOf,
     selectionSearch
   } from '../stepSelection';
   import type { Id } from '@openvaa/core';
@@ -114,7 +114,7 @@ Everything that differs between entity types is read from the descriptor of the 
       appSettings: contestantCtx.appSettings,
       dataRoot: contestantCtx.dataRoot,
       admissible,
-      nominations: reachedNominationsOf(contestantCtx.nominations, data.nominationFacts),
+      nominations: managedNominationsOf(contestantCtx.nominations, data.nominationFacts),
       selection: { electionIds: chosen, constituencyIds: data.nominationSelection.constituencyIds }
     });
     await goto(getRoute.current({ route: EDITOR_STEP_ROUTE[forward.step], ...selectionSearch(forward.selection) }));

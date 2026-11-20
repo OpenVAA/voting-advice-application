@@ -88,7 +88,7 @@ vi.mock('$lib/paraglide/runtime', async (importOriginal) => ({ ...(await importO
 
 type FakeSettings = {
   contestantApp: { servedEntityTypes: Record<string, { registrationModes: Array<RegistrationMode> }> };
-  access?: { answersLocked: boolean };
+  access?: { contestantEditing: 'open' | 'nominationsLocked' | 'locked' };
 };
 
 /** The settings the fake context holds. Replaced whole on every write, never changed in place. */
@@ -1059,7 +1059,7 @@ describe("the provider's types", () => {
   it('asks nothing and lists nothing for the provider while answers are locked', () => {
     const target = renderWith({
       ...settingsForBothTypes(['identity_provider', 'email']),
-      access: { answersLocked: true }
+      access: { contestantEditing: 'locked' }
     });
     expect(one(target, FRAME).getAttribute('data-modes')).toBe('');
     expect(target.querySelectorAll(PROVIDER_FORM)).toHaveLength(0);

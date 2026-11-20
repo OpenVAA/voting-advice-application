@@ -27,7 +27,7 @@ An entity with no nomination is known on the server, so its page waits for nothi
 ### Settings
 
 - `entities.hideIfMissingAnswers`: Whether the note says the entity is hidden from voters while an opinion question is unanswered. The key read is that of the selected entity's type.
-- `access.answersLocked`: Whether the note is shown, and whether the profile's and the questions' labels read "view". Read as the context's `answersLocked`.
+- `access.contestantEditing`: Whether it is `locked` decides whether the note is shown, and whether the profile's and the questions' labels read "view". Read as the context's `answersLocked`.
 
 ### Accessibility
 

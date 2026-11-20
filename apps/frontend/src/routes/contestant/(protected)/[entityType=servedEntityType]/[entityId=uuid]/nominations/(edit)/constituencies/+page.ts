@@ -3,7 +3,7 @@
  *
  * The rows are decided by `constituenciesStepOutcome` of `$lib/routes`, the shared module for the order of the selection, which `constituenciesAddressForward` asks the Contestant App's way and maps to the editor's addresses: the step is shown when a chosen election has several constituencies, or when a constituency group is chosen first. Otherwise the address forwards in one redirect: to the editor's entry when no election is chosen or implied, and to the details step when every chosen election has a single constituency. A redirect names its target by route key and passes the selection on in the editor's own search params.
  *
- * Which of the chosen elections the question is asked about is decided by `constituencyChoiceOf` over the entity's nominations in the editor's reach, which the two functions called here ask: an election in which the entity holds several nominations has no constituency to choose. When no chosen election is left to choose for, the address forwards to the details step with the chosen elections.
+ * Which of the chosen elections the question is asked about is decided by `constituencyChoiceOf` over the entity's writable nominations, which the two functions called here ask: an election in which the entity holds several nominations has no constituency to choose. When no chosen election is left to choose for, the address forwards to the details step with the chosen elections.
  *
  * While a gate is pending or the facts of the entity's nominations are not known, nothing is decided and the load returns an empty selection and an empty choice: the layout above shows its own view in the page's place.
  *

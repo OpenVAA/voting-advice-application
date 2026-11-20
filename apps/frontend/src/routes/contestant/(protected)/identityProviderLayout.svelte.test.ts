@@ -105,6 +105,7 @@ function providerUser(addressState: BasicUserData['addressState']): BasicUserDat
     passwordSet: false,
     addressState,
     pendingEmail: addressState === 'pending' ? 'waiting@example.org' : null,
+    ownOrganizationId: null,
     ownOrganizationUnnamed: false,
     pendingEmailTaken: false
   };
