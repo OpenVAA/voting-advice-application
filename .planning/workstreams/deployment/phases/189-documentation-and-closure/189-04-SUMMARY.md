@@ -44,7 +44,7 @@ key-decisions:
 patterns-established:
   - "Run Prettier on the nav config from apps/docs: the root .prettierignore lists docs, so a root-run check proves nothing"
 
-requirements-completed: [DOCS-01, DOCS-02, DOCS-05, DOCS-06]
+requirements-completed: []  # DOCS-01, DOCS-02, DOCS-05 and DOCS-06 are advanced (their pages exist and are in the nav), not met: plans 189-08, 189-10, 189-11 to 189-16 write their content
 
 coverage:
   - id: D1
@@ -139,6 +139,10 @@ NAV_DECISION=generator-overview
 ## Known Stubs
 
 The three new pages each hold only a title and an opening paragraph, by design. Later plans fill them: hosted-settings in 189-08, analytics in 189-10, operations in 189-13 and 189-14. That fill is the plan's stated output, so these are not defects.
+
+## Requirements
+
+The plan lists DOCS-01, DOCS-02, DOCS-05 and DOCS-06. This plan creates their pages and nav entries and writes none of their content, so none is marked complete in REQUIREMENTS.md. `requirements.mark-complete` was run and its change reverted, because it would have checked off four requirements whose pages hold only an opening paragraph.
 
 ## User Setup Required
 
