@@ -6,9 +6,9 @@
  * Tested in `layout.test.ts`, through the load that calls both, and whether another nomination can be added in `nominationFacts.test.ts`.
  */
 
-import { dynamicSettings, staticSettings } from '@openvaa/app-shared';
+import { CONTESTANT_EDITING, dynamicSettings, getContestantEditing, staticSettings } from '@openvaa/app-shared';
 import { DataRoot } from '@openvaa/data';
-import { admissibleElectionsOf, inReachNominationsOf, nominationsEditableOf } from '$lib/contestant/nominations';
+import { admissibleElectionsOf, nominationsEditableOf, writableNominationsOf } from '$lib/contestant/nominations';
 import { mergeInitialAppSettings } from '$lib/utils/settings';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
@@ -22,8 +22,8 @@ export type NominationFacts = {
   editable: boolean;
   /** The ids of the elections that admit the entity's type, in the order the application lists elections. */
   admissibleElectionIds: Array<Id>;
-  /** The ids of the entity's nominations the editor manages: those at their election's current round, in an election that admits the entity's type. */
-  inReachNominationIds: Array<Id>;
+  /** The ids of the entity's nominations the editor manages: those the database marks writable. */
+  writableNominationIds: Array<Id>;
   /** Whether another nomination can be added: the nominations may be edited, and an election that admits the entity's type holds no nomination of it that the editor manages. The editor chooses one constituency in each election, so an election the entity already stands in leaves nothing to add in it. */
   canAddAnother: boolean;
 };
@@ -79,16 +79,16 @@ export function nominationFactsOf({
 }): NominationFacts {
   const elections = dataRoot.elections;
   const editable = nominationsEditableOf({
-    nominationsLocked: !!appSettings.access?.nominationsLocked,
-    answersLocked: !!appSettings.access?.answersLocked
+    nominationsLocked: getContestantEditing(appSettings) !== CONTESTANT_EDITING.Open,
+    answersLocked: getContestantEditing(appSettings) === CONTESTANT_EDITING.Locked
   });
   const admissibleElectionIds = admissibleElectionsOf(elections, entityType).map((election) => election.id);
-  const inReach = inReachNominationsOf({ nominations, elections, entityType });
-  const heldElectionIds = new Set(inReach.map((nomination) => nomination.electionId));
+  const writable = writableNominationsOf(nominations);
+  const heldElectionIds = new Set(writable.map((nomination) => nomination.electionId));
   return {
     editable,
     admissibleElectionIds,
-    inReachNominationIds: inReach.map((nomination) => nomination.id),
+    writableNominationIds: writable.map((nomination) => nomination.id),
     canAddAnother: editable && admissibleElectionIds.some((electionId) => !heldElectionIds.has(electionId))
   };
 }

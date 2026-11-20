@@ -1074,6 +1074,7 @@ describe('the contestant home page — the email task of an address awaiting its
       passwordSet: false,
       addressState: 'none',
       pendingEmail: null,
+      ownOrganizationId: null,
       ownOrganizationUnnamed: false,
       pendingEmailTaken: false,
       ...overrides

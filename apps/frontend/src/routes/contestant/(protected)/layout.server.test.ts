@@ -192,6 +192,7 @@ function userWith(
     passwordSet,
     addressState,
     pendingEmail: null,
+    ownOrganizationId: null,
     ownOrganizationUnnamed: false,
     pendingEmailTaken: false
   };
@@ -490,14 +491,14 @@ describe('routes/contestant/(protected)/+layout.server.ts — the arrival marker
     getUserEntities.mockResolvedValue([ORGANIZATION]);
     getAppSettings.mockResolvedValue({
       ...settingsServing(['candidate', 'organization']),
-      access: { answersLocked: false }
+      access: { contestantEditing: 'open' }
     });
 
     expect(((await runLoad(makeEvent())) as { gate: unknown }).gate).toBe('identityProvider');
 
     getAppSettings.mockResolvedValue({
       ...settingsServing(['candidate', 'organization']),
-      access: { answersLocked: true }
+      access: { contestantEditing: 'locked' }
     });
 
     expect(await runLoad(makeEvent())).toEqual({ gate: null, user, entities: [ORGANIZATION] });

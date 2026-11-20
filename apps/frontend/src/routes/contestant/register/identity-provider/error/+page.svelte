@@ -12,7 +12,7 @@ Shown when identification through the identity provider fails. It says which of 
 
 ## Settings
 
-- `contestantApp.servedEntityTypes` and `access.answersLocked`: Together they decide, on the server, whether Try again is offered.
+- `contestantApp.servedEntityTypes` and `access.contestantEditing`: Together they decide, on the server, whether Try again is offered.
 - `contestantApp.servedEntityTypes`: The entity types the project serves also decide the app's name above the heading.
 
 -->

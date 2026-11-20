@@ -46,7 +46,7 @@ const STEP_ADDRESSES: Array<[string]> = [
 const SERVED: NominationFacts = {
   editable: true,
   admissibleElectionIds: ['election-1', 'election-2'],
-  inReachNominationIds: [],
+  writableNominationIds: [],
   canAddAnother: true
 };
 
@@ -54,8 +54,8 @@ const SERVED: NominationFacts = {
 const SERVED_ENTITIES: Array<{ title: string; facts: NominationFacts }> = [
   { title: 'no nomination', facts: SERVED },
   {
-    title: "a nomination in the editor's reach",
-    facts: { ...SERVED, inReachNominationIds: ['nomination-1'] }
+    title: 'a writable nomination',
+    facts: { ...SERVED, writableNominationIds: ['nomination-1'] }
   }
 ];
 
@@ -65,7 +65,7 @@ const TURNED_AWAY: Array<{ title: string; facts: NominationFacts }> = [
   { title: "no election admits the entity's type", facts: { ...SERVED, admissibleElectionIds: [] } },
   {
     title: 'a lock is on and the entity holds a nomination',
-    facts: { ...SERVED, editable: false, inReachNominationIds: ['nomination-1'] }
+    facts: { ...SERVED, editable: false, writableNominationIds: ['nomination-1'] }
   }
 ];
 

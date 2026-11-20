@@ -16,7 +16,7 @@
  * Every authenticated call runs on `event.locals.supabase`, the server client built over this request's session cookies.
  */
 
-import { getServedEntityTypes, log } from '@openvaa/app-shared';
+import { CONTESTANT_EDITING, getContestantEditing, getServedEntityTypes, log } from '@openvaa/app-shared';
 import { redirect } from '@sveltejs/kit';
 import { CONTESTANT_GATES } from '$contestant/gates/gates';
 import { createDataProvider } from '$lib/api/dataProvider';
@@ -73,7 +73,7 @@ export async function load(event) {
   // The settings are read once, before the gates, which read the answers lock from them; the entity list's served types come from the same read.
   // This request's own provider instance, built over the same cookie-bearing client and likewise reachable from nowhere else.
   const dataProvider = createDataProvider({ fetch, locals });
-  // A failed settings read is logged and answered with empty settings, which the accessors read as the shipped defaults: answers unlocked, the default served types.
+  // A failed settings read is logged and answered with empty settings, which the accessors read as the shipped defaults: contestant editing open, the default served types.
   const appSettings = await dataProvider.getAppSettings().catch((e): DPDataType['appSettings'] => {
     log.error(`[Contestant App protected layout] Error reading app settings: ${e?.message ?? 'No error message'}`, {
       err: e
@@ -83,7 +83,7 @@ export async function load(event) {
 
   // Stage 4: a gated user gets the gate, the user-level data and the arrival marker only.
   const arrival = arrivalOf(cookies);
-  const answersLocked = appSettings.access?.answersLocked === true;
+  const answersLocked = getContestantEditing(appSettings) === CONTESTANT_EDITING.Locked;
   const gate = firstNeededGate({ user, arrival, answersLocked }, CONTESTANT_GATES);
   if (gate !== null) return { gate, user, arrival };
 

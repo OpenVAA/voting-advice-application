@@ -71,7 +71,8 @@ const NATIONAL: EntityNomination = {
   electionSymbol: '21',
   confirmed: false,
   customData: null,
-  updatedAt: '2026-10-01T12:00:00+00:00'
+  updatedAt: '2026-10-01T12:00:00+00:00',
+  writable: true
 };
 
 const SAVED: SetEntityNominationsResult = {
@@ -242,7 +243,7 @@ async function loadedWith(nominations: Array<EntityNomination>): Promise<Loaded>
   const nominationFacts = {
     editable: true,
     admissibleElectionIds: ELECTION_DATA.map((election) => election.id),
-    inReachNominationIds: nominations.map((nomination) => nomination.id)
+    writableNominationIds: nominations.map((nomination) => nomination.id)
   };
   const event = {
     params: { entityType: PARTY.type, entityId: ENTITY_ID },
