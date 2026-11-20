@@ -210,7 +210,7 @@ Each is run on a real project, recorded with its date, and acted on.
 - [x] **DOCS-07**: The Render deployment example and its mentions are removed, and the orphan compose file
       is retired if nothing references it (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01;
       supersedes ruling A5).
-- [ ] **DOCS-08**: Each of the seven absorbed todos has a closure record.
+- [x] **DOCS-08**: Each of the seven absorbed todos has a closure record.
 
 ## Future Requirements
 
@@ -345,7 +345,7 @@ closes; those are not listed against the earlier phase here.
 | DOCS-05 | Phase 189 | Complete |
 | DOCS-06 | Phase 189 | Pending |
 | DOCS-07 | Phase 189 | Complete |
-| DOCS-08 | Phase 189 | Pending |
+| DOCS-08 | Phase 189 | Complete |
 
 **Coverage:**
 - v1 requirements: 83 total (INFRA 19, SUPA 14, PIPE 10, OBS 11, RELAY 21, DOCS 8)

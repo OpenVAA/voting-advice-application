@@ -777,7 +777,7 @@ Notes:
   5. The Render deployment example and its mentions are removed, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01; supersedes ruling A5).
 
 **Research flag**: Standard pattern, no research phase, once phases 184, 185 and 188 have produced the observations.
-**Plans**: 14/20 plans executed
+**Plans**: 15/20 plans executed
 
 Plans:
 **Wave 1**
@@ -806,7 +806,7 @@ Plans:
 **Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 189-15-PLAN.md — unobserved statements swept from the bootstrap and AWS runbooks, back-links (C-01, A-01)
 - [x] 189-17-PLAN.md — identity-callback closing check; hosted-auth todo closed (G-03, G-04)
-- [ ] 189-18-PLAN.md — five absorbed todos closed on the record (G-01, G-02)
+- [x] 189-18-PLAN.md — five absorbed todos closed on the record (G-01, G-02)
 
 **Wave 6** *(blocked on Wave 5 completion)*
 - [ ] 189-16-PLAN.md — unobserved statements swept from mail, Supabase, modules and the auth page (C-01)
@@ -859,4 +859,4 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
 | 187. Deploy Pipeline | 31/31 | Complete    | 2026-11-18 |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 20/20 | Complete    | 2026-11-20 |
-| 189. Documentation and Closure | 14/20 | In Progress | - |
+| 189. Documentation and Closure | 15/20 | In Progress | - |
