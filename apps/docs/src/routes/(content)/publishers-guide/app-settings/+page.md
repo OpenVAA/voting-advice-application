@@ -137,8 +137,10 @@ Settings related to access to the applications.
 - `voterApp`: If `true`, the Voter App can be accessed. Default: `true`.
 - `adminApp`: If `true`, the Admin App can be accessed. Default: `true`.
 - `underMaintenance`: If `true`, an under maintenance error page will be shown when attempting to access any part of the app. Default: `false`.
-- `answersLocked`: If `true`, candidates and parties can no longer edit their answers. Default: `false`.
-- `nominationsLocked`: If `true`, candidates and parties can no longer add or change their own nominations. Administrators and project editors still can. Default: `false`.
+- `contestantEditing`: What candidates and parties may still edit in the Contestant App. Administrators and project editors can always edit everything. Default: `open`.
+  - `open`: Candidates and parties edit their answers, profile and nominations.
+  - `nominationsLocked`: They can no longer add, change or remove their own nominations, and still edit their answers and profile.
+  - `locked`: They can no longer edit anything, and no way to register is offered.
 
 ### `notifications`
 
@@ -169,7 +171,7 @@ What the login page offers follows the `registrationModes` of the served types:
 
 - With nothing declared, the app is the "Candidate app" with sign-in only: the login page offers to sign in and no way to register.
 - An invitation for a candidate or a party created by an administrator works only under a mode allowed here for its entity type: an invitation sent to an email address needs `email`, and one with a registration code needs `code`. With nothing declared, such invitations cannot be used until a mode is allowed. Invitations of project editors and administrators do not depend on this setting.
-- While answers are locked (`access.answersLocked`), no way to register is offered, whatever is set here.
+- While editing is locked (`access.contestantEditing` is `locked`), no way to register is offered, whatever is set here.
 - `identity_provider` also needs the identity provider's environment variables to be set on the server, both for the app and for the `identity-callback` function; see [Bank authentication (OIDC)](/developers-guide/contestant-app/bank-authentication) for their names. The setting alone decides what the login page shows: without that configuration the page still offers registration with the identity provider, and it fails when the visitor starts identification.
 - "Register" leads to a registration page that lists the allowed modes, and only those, to choose from.
 - The sign-in page also offers to email a sign-in link when `email` or `identity_provider` is allowed for a served type, for a person who has no password yet.
