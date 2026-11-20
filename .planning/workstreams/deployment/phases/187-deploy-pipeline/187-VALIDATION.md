@@ -130,7 +130,7 @@ Every outward action in `187-DISCUSSION-POINTS.md` section H (H1–H10) is an op
 | H4/H7 green run, then `deploy/staging` | 187-21, 187-22 | stage-by-stage step conclusions |
 | plan-only destroy evidence run | 187-23 | plan job approved, apply job rejected |
 | H10 real destroy and redeploy (on or after 2026-11-23) | 187-24, 187-25 | empty state, Supabase plan `No changes`, probe, subscription confirmed |
-| A manual dispatch of `deploy.yml` | phase 189 | GitHub offers dispatch only once the workflow is on the default branch (`DISPATCH_OBSERVABLE=after-merge`, plan 187-22) |
+| A manual dispatch of `deploy.yml` | after the stream merges | GitHub offers dispatch only once the workflow is on the default branch (`DISPATCH_OBSERVABLE=after-merge`, plan 187-22). Note, 2026-11-20: re-targeted from phase 189, which closes before the merge and so cannot observe the dispatch (plan 189-19) |
 
 ---
 

@@ -2,8 +2,10 @@
 title: Clear the dependency audit's 16 new third-party advisories at high+ (dependency-audit job of main.yaml)
 priority: medium
 source: Phase 187 plan 187-15 (read 2026-11-16 on run 43817899191, `ci-evidence/187-final` at 395b71c71); carried CI debt G-03
-target: Phase 189 (Documentation and Closure)
+target: after the stream merges
 ---
+
+Note, 2026-11-20: re-targeted from phase 189 because it needs the merged default branch: the advisories to clear are the merged tree's, not this branch's.
 
 The `dependency-audit` job of `main.yaml` concluded `failure` on run
 [43817899191](https://github.com/OpenVAA/voting-advice-application/actions/runs/43817899191) (job 133134035449),

@@ -2,8 +2,10 @@
 title: Move the local Supabase ports out of Linux's ephemeral range, or check them before a CI `supabase start`
 priority: medium
 source: Phase 187 plan 187-28 (run 44033456141 attempt 1, `ci-evidence/187-final-4` at 68a54299a, read 2026-11-17)
-target: Phase 189 (Documentation and Closure), or the stream that owns `apps/supabase/supabase/config.toml` and `main.yaml`'s E2E jobs
+target: after the stream merges
 ---
+
+Note, 2026-11-20: re-targeted from phase 189 because it needs the merged default branch: the fix belongs to the stream that owns `apps/supabase/supabase/config.toml` and `main.yaml`'s E2E jobs after the merge.
 
 The local Supabase stack binds fixed host ports in the 543xx block (`apps/supabase/supabase/config.toml`): the API
 54321, the database 54322, Studio 54323, the mail server 54324 with SMTP on 54325 and POP3 on 54326, and the others
