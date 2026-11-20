@@ -204,16 +204,15 @@ export const BASE_APP_SETTINGS = {
     contestantApp: null,
     voterApp: null
   },
-  // The whole root: `entityTypes` is a list, which replaces the default whole, and the voter loaders merge the row over the static settings only. Both entity types are served, so the app names itself for candidates and parties; candidates and organizations alike register by email or code.
+  // The whole root: a stored `servedEntityTypes` replaces the default whole, and the voter loaders merge the row over the static settings only. Both entity types are served, so the app names itself for candidates and parties; candidates and organizations alike register by email or code.
   contestantApp: {
     questions: {
       hideHero: false,
       hideVideo: false
     },
-    entityTypes: ['candidate', 'organization'],
-    registrationModes: {
-      candidate: ['email', 'code'],
-      organization: ['email', 'code']
+    servedEntityTypes: {
+      candidate: { registrationModes: ['email', 'code'] },
+      organization: { registrationModes: ['email', 'code'] }
     }
   }
   // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
@@ -349,7 +348,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-el-reg',
         name: { en: '[el-reg] Regional Election' },
         short_name: { en: 'Regional' },
-        election_type: 'organization_list_and_independents',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -360,7 +359,7 @@ export const baseTemplate: Template = {
         external_id: 'test-e2e-base-el-mun',
         name: { en: '[el-mun] Municipal Election' },
         short_name: { en: 'Municipal' },
-        election_type: 'organization_list_and_independents',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 1,
         multiple_rounds: false,
