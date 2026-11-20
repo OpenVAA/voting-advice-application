@@ -9,7 +9,7 @@
  * - `nominationContests`: one election and constituency for each chosen election that takes a constituency, in the order the elections are offered.
  * - `nominationKeptElectionIds`: the ids of the chosen elections whose nominations are kept as they are stored.
  *
- * The page shows a card for every nomination of the entity in the editor's reach, whatever the address chose: the selection decides which new pairs get a card and in which state an existing card starts.
+ * The page shows a card for every writable nomination of the entity, whatever the address chose: the selection decides which new pairs get a card and in which state an existing card starts.
  */
 
 import { redirect } from '@sveltejs/kit';

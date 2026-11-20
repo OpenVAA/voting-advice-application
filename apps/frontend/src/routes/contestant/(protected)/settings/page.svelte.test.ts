@@ -115,6 +115,7 @@ const KEY = {
   resendRequested: 'contestantApp.emailSent.resendRequested',
   resendReady: 'contestantApp.emailSent.resendReady',
   emailInUse: 'contestantApp.identityProvider.emailInUse',
+  emailInvited: 'contestantApp.identityProvider.emailInvited',
   saveFailed: 'contestantApp.identityProvider.saveFailed'
 };
 
@@ -129,6 +130,7 @@ function userWith(overrides: Partial<Omit<BasicUserData, 'settings'>> = {}): Bas
     passwordSet: false,
     addressState: 'none',
     pendingEmail: null,
+    ownOrganizationId: null,
     ownOrganizationUnnamed: false,
     pendingEmailTaken: false,
     ...overrides
@@ -351,6 +353,24 @@ describe('the settings page — another address', () => {
     const error = one(target, SEL.entryEmailError);
     expect(error.getAttribute('data-reason')).toBe('in-use');
     expect(error.textContent).toContain(KEY.emailInUse);
+    expect(document.activeElement).toBe(one(target, SEL.entryEmail));
+    expect(invalidateAll).not.toHaveBeenCalled();
+    expect(target.querySelector(SEL.error)).toBeNull();
+  });
+
+  it('tells an address an open invitation is addressed to at the address field, with focus there, and reruns nothing', async () => {
+    fetchMock.mockResolvedValue(answer('invited'));
+    const target = render(PENDING_USER);
+    await press(target, SEL.change);
+
+    type(one<HTMLInputElement>(target, SEL.entryEmail), TYPED);
+    type(one<HTMLInputElement>(target, SEL.entryConfirmation), TYPED);
+    await press(target, SEL.save);
+    await settle();
+
+    const error = one(target, SEL.entryEmailError);
+    expect(error.textContent).toContain(KEY.emailInvited);
+    expect(error.getAttribute('data-reason')).toBe('invited');
     expect(document.activeElement).toBe(one(target, SEL.entryEmail));
     expect(invalidateAll).not.toHaveBeenCalled();
     expect(target.querySelector(SEL.error)).toBeNull();

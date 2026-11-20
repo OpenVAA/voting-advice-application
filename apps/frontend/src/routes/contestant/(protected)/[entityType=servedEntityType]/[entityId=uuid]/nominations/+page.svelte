@@ -46,8 +46,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
 
 ### Settings
 
-- `access.nominationsLocked`: Shows the note with the reason `nominationsLocked`. Read as the context's `nominationsLocked`.
-- `access.answersLocked`: Closes the editor as well. While it is on and the nominations lock is not, the note is shown with the reason `nominationsAnswersLocked`. Read as the context's `answersLocked`.
+- `access.contestantEditing`: Anything but `open` closes the editor. `nominationsLocked` shows the note with the reason `nominationsLocked`, and `locked` with the reason `nominationsAnswersLocked`. Read as the context's `nominationsLocked` and `answersLocked`.
 
 ### Accessibility
 
@@ -73,7 +72,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { ContactSupport } from '$lib/dynamic-components/contactSupport';
-  import { reachedNominationsOf, selectionSearch } from './(edit)/stepSelection';
+  import { managedNominationsOf, selectionSearch } from './(edit)/stepSelection';
   import type { DesiredNomination, EntityNomination, SetEntityNominationsResult } from '$lib/api/base/dataWriter.type';
   import type { NominationsViewTarget } from '$lib/contestant/tasks';
   import type { EntityDescriptor } from '$lib/contestant/utils/entityDescriptor';
@@ -122,10 +121,10 @@ Return follows it and leads to the entity's home wherever the main button leads 
     return nominations.length > 0 ? 'listed' : 'empty';
   });
 
-  /** The reason the note gives: the lock on nominations when it is on, and otherwise the lock on answers. `undefined` while neither lock is on, when no note is shown. */
+  /** The reason the note gives: the lock on answers when it is on, which closes every edit, and otherwise the lock on nominations. `undefined` while neither lock is on, when no note is shown. */
   const lockReason = $derived.by((): 'nominationsLocked' | 'nominationsAnswersLocked' | undefined => {
-    if (contestantCtx.nominationsLocked) return 'nominationsLocked';
     if (contestantCtx.answersLocked) return 'nominationsAnswersLocked';
+    if (contestantCtx.nominationsLocked) return 'nominationsLocked';
     return undefined;
   });
 
@@ -147,11 +146,11 @@ Return follows it and leads to the entity's home wherever the main button leads 
   ////////////////////////////////////////////////////////////////////
 
   /** The nominations the editor manages, as the page shows them. */
-  const inReach = $derived(reachedNominationsOf(nominations, facts));
+  const writable = $derived(managedNominationsOf(nominations, facts));
 
   /** Whether the cards of those nominations offer Edit and Delete: an entry to the editor is offered and neither lock is on, as the settings stand now. */
   const cardActionsOffered = $derived(
-    entryOffered && !contestantCtx.nominationsLocked && !contestantCtx.answersLocked && inReach.length > 0
+    entryOffered && !contestantCtx.nominationsLocked && !contestantCtx.answersLocked && writable.length > 0
   );
 
   /** Whether Add a nomination follows the cards: another can be added, and neither lock is on, as the settings stand now. */
@@ -160,21 +159,22 @@ Return follows it and leads to the entity's home wherever the main button leads 
   );
 
   /** The ids of the nominations whose cards offer Edit and Delete. */
-  const actionIds = $derived(new Set(cardActionsOffered ? inReach.map((nomination) => nomination.id) : []));
+  const actionIds = $derived(new Set(cardActionsOffered ? writable.map((nomination) => nomination.id) : []));
 
   /** Where Edit leads: the details step, with the election and the constituency of every nomination the editor manages chosen. */
   const editHref = $derived(
     getRoute.current({
       route: 'ContestantAppNominationDetails',
       ...selectionSearch({
-        electionIds: [...new Set(inReach.map((nomination) => nomination.electionId))],
-        constituencyIds: [...new Set(inReach.map((nomination) => nomination.constituencyId))]
+        electionIds: [...new Set(writable.map((nomination) => nomination.electionId))],
+        constituencyIds: [...new Set(writable.map((nomination) => nomination.constituencyId))]
       })
     })
   );
 
   /** What a confirmed delete left to say: that it was done, or why it was not. */
-  type DeleteOutcome = 'deleted' | 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' | 'failed';
+  type DeleteOutcome =
+    'deleted' | 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' | 'nominationsLocked' | 'failed';
 
   /** The message of each reason a delete was not stored: those the editor shows for a save. */
   const NOT_DELETED_MESSAGE = {
@@ -225,7 +225,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
   async function confirmDelete(nomination: EntityNomination): Promise<void> {
     if (deleting) return;
     deleting = true;
-    const readFrom = inReach;
+    const readFrom = writable;
     const desired: Array<DesiredNomination> = readFrom
       .filter((other) => other.id !== nomination.id)
       .map(({ id, electionId, constituencyId, electionSymbol }) => ({
@@ -319,6 +319,10 @@ Return follows it and leads to the entity's home wherever the main button leads 
       <p class="sr-only">{t('contestantApp.common.nominationsNotEditableAnswersLocked')}</p>
     {:else if deleteOutcome === 'answersLocked'}
       <NotEditableNote reason="nominationsAnswersLocked" class="mb-lg" />
+    {:else if deleteOutcome === 'nominationsLocked' && lockReason}
+      <p class="sr-only">{t('contestantApp.common.nominationsNotEditable')}</p>
+    {:else if deleteOutcome === 'nominationsLocked'}
+      <NotEditableNote reason="nominationsLocked" class="mb-lg" />
     {:else if deleteOutcome && deleteOutcome !== 'deleted'}
       <ErrorMessage inline message={t(NOT_DELETED_MESSAGE[deleteOutcome])} class="mb-lg" />
     {/if}

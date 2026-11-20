@@ -7,7 +7,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
 ### The address
 
 - For an account whose address is proved, the address is shown in a locked field with the sentence that says what it is used for, and the change-password form is given it as its user name.
-- For an account an identity provider made, whose typed address awaits the link mailed to it, the locked field holds that pending address with the sentence that it has not been confirmed yet and that until the link is opened the user signs in with Bank ID. Under it "Send again" mails the link once more, and "Use another email address" shows the address and its confirmation in place, with a button that saves them. A saved address replaces the pending one and is mailed a link of its own; the loads then rerun and the field shows it. An address another account holds is told at the address field; any other failure is told under the fields, and what was typed is kept. The change-password form is given no user name, so a password manager is not handed the pending address.
+- For an account an identity provider made, whose typed address awaits the link mailed to it, the locked field holds that pending address with the sentence that it has not been confirmed yet and that until the link is opened the user signs in with Bank ID. Under it "Send again" mails the link once more, and "Use another email address" shows the address and its confirmation in place, with a button that saves them. A saved address replaces the pending one and is mailed a link of its own; the loads then rerun and the field shows it. An address another account holds, and one an open invitation is addressed to, which is told to sign in by email with that invitation instead, is told at the address field; any other failure is told under the fields, and what was typed is kept. The change-password form is given no user name, so a password manager is not handed the pending address.
 - For an account with no address, the locked field is empty.
 
 ### Accessibility
@@ -127,10 +127,17 @@ The signed-in user's own settings page: the account's address, which cannot be e
       changingEmail = false;
       newEmail = '';
       emailStatus = 'idle';
-    } else if (result === 'in-use') {
+    } else if (result === 'in-use' || result === 'invited') {
       emailStatus = 'idle';
       await tick();
-      emailEntry?.showEmailError(t('contestantApp.identityProvider.emailInUse'));
+      emailEntry?.showEmailError(
+        t(
+          result === 'in-use'
+            ? 'contestantApp.identityProvider.emailInUse'
+            : 'contestantApp.identityProvider.emailInvited'
+        ),
+        result
+      );
     } else {
       emailStatus = 'failed';
     }

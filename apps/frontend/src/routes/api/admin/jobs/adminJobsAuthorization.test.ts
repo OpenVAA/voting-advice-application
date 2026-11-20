@@ -60,12 +60,13 @@ function localsWith({
           : { data: { user: null }, error: { message: 'invalid JWT: unable to parse or verify signature' } }
       )
     },
-    // The two RPCs the gate reaches, answered by name. `get_user_entities` is the identity read's own call, for the caller's password fact, answered as for a user who has a password. Every other name is the database's `user_can` for this caller on the deployment's project, which defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly.
-    rpc: vi.fn(async (name: string) =>
-      name === 'get_user_entities'
-        ? { data: { entities: [], password_set: true, pending_email_taken: false }, error: null }
-        : userCan
-    )
+    // The RPCs the gate reaches, answered by name. `get_caller_account_state` and `get_user_entities` are the identity read's own calls, answered as for a user who has a password and edits nothing. Every other name is the database's `user_can` for this caller on the deployment's project, which defaults to `true` so the cases about the SESSION and the ROLE keep measuring those; the cases about the project set it explicitly.
+    rpc: vi.fn(async (name: string) => {
+      if (name === 'get_caller_account_state')
+        return { data: { password_set: true, pending_email_taken: false }, error: null };
+      if (name === 'get_user_entities') return { data: { entities: [] }, error: null };
+      return userCan;
+    })
   };
 
   return {

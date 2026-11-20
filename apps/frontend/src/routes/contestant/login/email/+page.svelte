@@ -16,7 +16,7 @@ Signs a user in with an email address and a password, and leads a user who has n
 ## Settings
 
 - `contestantApp.servedEntityTypes`: The entity types the project serves and the registration modes of each, which decide the app's name above the heading and whether the link for a user who has not set a password is rendered.
-- `access.answersLocked`: Whether the sentence above the form says that answers are locked.
+- `access.contestantEditing`: Whether the sentence above the form says that answers are locked, which it does under `locked`.
 
 -->
 

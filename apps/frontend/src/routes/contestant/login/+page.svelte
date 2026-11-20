@@ -23,7 +23,7 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
 ## Settings
 
 - `contestantApp.servedEntityTypes`: The entity types the project serves and the registration modes of each, which decide the app's name in the heading and whether "Register" is offered, as `listedRegistrationModes` reads them.
-- `access.answersLocked`: Whether the locked sentence is shown. While it is, no registration mode is listed.
+- `access.contestantEditing`: Whether the locked sentence is shown, which it is under `locked`. While it is, no registration mode is listed.
 - `access.voterApp`: Whether a link to the voter app is shown.
 
 -->

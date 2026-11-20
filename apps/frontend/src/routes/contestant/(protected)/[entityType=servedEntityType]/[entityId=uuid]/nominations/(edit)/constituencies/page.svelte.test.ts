@@ -188,7 +188,7 @@ async function pageDataOf(world: World, { electionIds, constituencyIds }: Nomina
         admissibleElectionIds: admissibleElectionsOf(dataRootOf(world.municipalShape).elections, 'candidate').map(
           (election) => election.id
         ),
-        inReachNominationIds: nominations.map((nomination) => nomination.id)
+        writableNominationIds: nominations.map((nomination) => nomination.id)
       },
       contestantUserData: { nominations },
       appSettingsData: { elections: { startFromConstituencyGroup: world.startFromConstituencyGroup } },

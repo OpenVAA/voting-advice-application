@@ -34,19 +34,20 @@ const CONSTITUENCY_DATA = {
   ]
 };
 
-/** A nomination of the entity, at the election's first round. */
-function nomination(id: string, electionId: string, constituencyId: string, electionRound = 1): EntityNomination {
+/** A nomination of the entity, at the election's first round, writable unless stated otherwise. */
+function nomination(id: string, electionId: string, constituencyId: string, writable = true): EntityNomination {
   return {
     id,
     electionId,
     electionName: electionId,
     constituencyId,
     constituencyName: constituencyId,
-    electionRound,
+    electionRound: 1,
     electionSymbol: '',
     confirmed: true,
     customData: null,
-    updatedAt: '2026-10-01T12:00:00+00:00'
+    updatedAt: '2026-10-01T12:00:00+00:00',
+    writable
   };
 }
 
@@ -58,7 +59,7 @@ function canAddAnother({
 }: {
   entityType?: 'candidate' | 'organization';
   nominations?: Array<EntityNomination>;
-  access?: { nominationsLocked?: boolean; answersLocked?: boolean };
+  access?: { contestantEditing?: 'open' | 'nominationsLocked' | 'locked' };
 }): unknown {
   const dataRoot = new DataRoot();
   dataRoot.provideElectionData(ELECTION_DATA);
@@ -90,18 +91,17 @@ describe('nominationFactsOf — whether another nomination can be added', () => 
     expect(canAddAnother({ entityType: 'organization', nominations })).toBe(true);
   });
 
-  it("counts no nomination outside the editor's reach, as one at another round", () => {
+  it('counts no nomination that is not writable', () => {
     expect(
       canAddAnother({
-        nominations: [nomination('n-1', 'closed', 'region-1'), nomination('n-2', 'open', 'whole-country', 2)]
+        nominations: [nomination('n-1', 'closed', 'region-1'), nomination('n-2', 'open', 'whole-country', false)]
       })
     ).toBe(true);
   });
 
   it.each([
-    ['the nominations lock', { nominationsLocked: true }],
-    ['the answers lock', { answersLocked: true }],
-    ['both locks', { nominationsLocked: true, answersLocked: true }]
+    ['the nominations lock', { contestantEditing: 'nominationsLocked' as const }],
+    ['the lock on everything', { contestantEditing: 'locked' as const }]
   ])('is false under %s', (_, access) => {
     expect(canAddAnother({ access })).toBe(false);
   });

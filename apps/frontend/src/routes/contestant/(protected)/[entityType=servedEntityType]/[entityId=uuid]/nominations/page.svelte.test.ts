@@ -7,9 +7,9 @@
  * 2. **The six states.** With nominations or with none; nominations editable or not; an election that admits the entity or none. For each: the note and its reason, the sentence, what the empty sentence says of itself, the number of Contact support buttons, the main button, whether Return is rendered beside it, that no link to the editor is rendered beside it, and the two state attributes of the container.
  * 3. **The note.** Shown under either lock, one note and never two, with the reason of the lock. No state of the view holds two Contact support buttons.
  * 4. **The buttons.** A return to the entity's home, a continue to the next task, or the way into the editor for an entity with no nomination that can define one, and the loading form while the entity's tasks are not known. Return leads to the entity's home beside a main button that does not, and is not rendered while the tasks are not known.
- * 5. **Edit and Delete on a card.** Offered on each card in the editor's reach while nominations can be edited, and on no card under either lock. Edit leads to the details step with every nomination in reach chosen; Delete asks in the card, Cancel takes it back, and Confirm writes the stored set without the nomination, against the set shown, reads the data again and says what came of it.
+ * 5. **Edit and Delete on a card.** Offered on each card of a writable nomination while nominations can be edited, and on no card under either lock. Edit leads to the details step with every writable nomination chosen; Delete asks in the card, Cancel takes it back, and Confirm writes the stored set without the nomination, against the set shown, reads the data again and says what came of it.
  * 6. **Add a nomination.** Below the cards while the facts say another can be added and neither lock is on, leading to the editor's entry; never in place of the nominations.
- * 7. **What the page does not do.** It reads no data root, logs nothing but a rejected write, holds no form control, puts no control on a card outside the editor's reach, adds no dialog and gives no element a view-transition name.
+ * 7. **What the page does not do.** It reads no data root, logs nothing but a rejected write, holds no form control, puts no control on a card of a nomination that is not writable, adds no dialog and gives no element a view-transition name.
  *
  * The fake context's members are reactive behind getters over one raw state box, as the real accessors are, and its `dataRoot` throws when it is read. The page's data is a raw state too, handed over behind a getter, so that a load run again reaches the mounted page. Task states are built with the real `taskStateOf`. Messages are their keys, and a route is its name.
  */
@@ -78,7 +78,7 @@ const EMPTY_BOX: Box = {
 const EDITABLE: NominationFacts = {
   editable: true,
   admissibleElectionIds: ['election-1', 'election-2'],
-  inReachNominationIds: [],
+  writableNominationIds: [],
   canAddAnother: false
 };
 /** A lock is on. */
@@ -266,6 +266,7 @@ function nomination(overrides: Partial<EntityNomination> = {}): EntityNomination
     confirmed: true,
     customData: null,
     updatedAt: '2026-10-01T12:00:00+00:00',
+    writable: true,
     ...overrides
   };
 }
@@ -639,10 +640,10 @@ type ViewCase = {
   };
 };
 
+/** The context's two locks under each value of `access.contestantEditing`: `open`, `nominationsLocked` and `locked`. */
 const NO_LOCK = { nominationsLocked: false, answersLocked: false };
 const NOMINATIONS_LOCK = { nominationsLocked: true, answersLocked: false };
-const ANSWERS_LOCK = { nominationsLocked: false, answersLocked: true };
-const BOTH_LOCKS = { nominationsLocked: true, answersLocked: true };
+const ANSWERS_LOCK = { nominationsLocked: true, answersLocked: true };
 
 const RETURN_BUTTON = { action: 'return' as const, label: 'common.return', href: HOME };
 const CONTINUE_BUTTON = { action: 'continue' as const, label: 'common.continue', href: '/route/ContestantAppProfile' };
@@ -701,7 +702,7 @@ const VIEW_CASES: Array<ViewCase> = [
     }
   },
   {
-    title: "nominations under the answers lock alone: the note with that lock's reason",
+    title: "nominations under the lock on everything: the note with the answers lock's reason",
     entity: CANDIDATE,
     nominations: [FIRST],
     locks: ANSWERS_LOCK,
@@ -718,14 +719,14 @@ const VIEW_CASES: Array<ViewCase> = [
     }
   },
   {
-    title: 'nominations under both locks: one note, with the reason of the nominations lock',
+    title: "a party's nominations under the lock on everything: one note, with the answers lock's reason",
     entity: PARTY,
     nominations: [FIRST],
-    locks: BOTH_LOCKS,
+    locks: ANSWERS_LOCK,
     facts: NOT_EDITABLE,
     taskState: STATE.allComplete,
     expected: {
-      note: 'nominationsLocked',
+      note: 'nominationsAnswersLocked',
       sentence: DESCRIPTION.organization,
       empty: null,
       support: 1,
@@ -1093,8 +1094,8 @@ describe('the nominations page — its buttons', () => {
   });
 });
 
-/** The facts of an entity both of whose nominations are in the editor's reach, while nominations can be edited. */
-const BOTH_IN_REACH: NominationFacts = { ...EDITABLE, inReachNominationIds: [FIRST.id, SECOND.id] };
+/** The facts of an entity both of whose nominations are writable, while nominations can be edited. */
+const BOTH_WRITABLE: NominationFacts = { ...EDITABLE, writableNominationIds: [FIRST.id, SECOND.id] };
 
 /** Press a control and let the page settle: the write it starts, the re-read and what follows them. */
 async function press(root: ParentNode, selector: string): Promise<void> {
@@ -1105,10 +1106,10 @@ async function press(root: ParentNode, selector: string): Promise<void> {
 }
 
 describe('the nominations page — Edit and Delete on a card', () => {
-  it("offers Edit and Delete on each card in the editor's reach, Edit leading to the details step with every nomination in reach chosen", () => {
+  it('offers Edit and Delete on each card of a writable nomination, Edit leading to the details step with every writable nomination chosen', () => {
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-      BOTH_IN_REACH
+      BOTH_WRITABLE
     );
 
     const details = `/route/ContestantAppNominationDetails?${JSON.stringify(
@@ -1126,10 +1127,10 @@ describe('the nominations page — Edit and Delete on a card', () => {
     }
   });
 
-  it("offers neither on a card outside the editor's reach", () => {
+  it('offers neither on a card of a nomination that is not writable', () => {
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-      { ...EDITABLE, inReachNominationIds: [FIRST.id] }
+      { ...EDITABLE, writableNominationIds: [FIRST.id] }
     );
 
     const [first, second] = cardsOf(target);
@@ -1140,10 +1141,13 @@ describe('the nominations page — Edit and Delete on a card', () => {
 
   it.each([
     ['the nominations lock', { nominationsLocked: true }, NOT_EDITABLE],
-    ['the answers lock', { answersLocked: true }, NOT_EDITABLE],
-    ['both locks', { nominationsLocked: true, answersLocked: true }, NOT_EDITABLE],
-    ['the answers lock, with facts read before it came on', { answersLocked: true }, BOTH_IN_REACH],
-    ['the nominations lock, with facts read before it came on', { nominationsLocked: true }, BOTH_IN_REACH]
+    ['the lock on everything', { nominationsLocked: true, answersLocked: true }, NOT_EDITABLE],
+    [
+      'the lock on everything, with facts read before it came on',
+      { nominationsLocked: true, answersLocked: true },
+      BOTH_WRITABLE
+    ],
+    ['the nominations lock, with facts read before it came on', { nominationsLocked: true }, BOTH_WRITABLE]
   ])('offers neither on any card under %s', (_, locks, facts) => {
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext, ...locks },
@@ -1159,7 +1163,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
   it('Delete asks in the card, with Confirm and Cancel, and writes nothing; Cancel takes it back', async () => {
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-      BOTH_IN_REACH
+      BOTH_WRITABLE
     );
     const [first, second] = cardsOf(target);
 
@@ -1189,7 +1193,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
   it('Confirm writes the stored set without the nomination, against the set shown, reads the data again and says it was deleted', async () => {
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-      BOTH_IN_REACH
+      BOTH_WRITABLE
     );
     invalidateAll.mockImplementation(async () => {
       box = { ...box, nominations: [SECOND] };
@@ -1216,10 +1220,10 @@ describe('the nominations page — Edit and Delete on a card', () => {
     expect(one(target, DELETE_MESSAGE).getAttribute('data-outcome')).toBeNull();
   });
 
-  it('writes only the nominations in reach, leaving one outside it to the database', async () => {
+  it('writes only the writable nominations, leaving another to the database', async () => {
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-      { ...EDITABLE, inReachNominationIds: [SECOND.id] }
+      { ...EDITABLE, writableNominationIds: [SECOND.id] }
     );
 
     await press(cardsOf(target)[1], CARD_DELETE);
@@ -1239,7 +1243,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
       setEntityNominations.mockResolvedValue(result);
       const target = render(
         { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-        BOTH_IN_REACH
+        BOTH_WRITABLE
       );
 
       await press(cardsOf(target)[0], CARD_DELETE);
@@ -1260,7 +1264,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
     setEntityNominations.mockRejectedValue(new Error('backend text'));
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-      BOTH_IN_REACH
+      BOTH_WRITABLE
     );
 
     await press(cardsOf(target)[0], CARD_DELETE);
@@ -1276,7 +1280,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
     setEntityNominations.mockResolvedValue({ type: 'refused', reason: 'answersLocked' });
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-      BOTH_IN_REACH
+      BOTH_WRITABLE
     );
 
     await press(cardsOf(target)[0], CARD_DELETE);
@@ -1293,10 +1297,10 @@ describe('the nominations page — Edit and Delete on a card', () => {
     setEntityNominations.mockResolvedValue({ type: 'refused', reason: 'answersLocked' });
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
-      BOTH_IN_REACH
+      BOTH_WRITABLE
     );
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, answersLocked: true };
+      box = { ...box, nominationsLocked: true, answersLocked: true };
     });
 
     await press(cardsOf(target)[0], CARD_DELETE);
@@ -1310,11 +1314,33 @@ describe('the nominations page — Edit and Delete on a card', () => {
     expect(count(target, '[data-reason]')).toBe(1);
     expect(count(target, SUPPORT_BUTTON)).toBe(1);
   });
+
+  it('holds one note and one Contact support button when the data read again after the refusal says nominations are locked', async () => {
+    setEntityNominations.mockResolvedValue({ type: 'refused', reason: 'nominationsLocked' });
+    const target = render(
+      { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },
+      BOTH_WRITABLE
+    );
+    invalidateAll.mockImplementation(async () => {
+      box = { ...box, nominationsLocked: true };
+    });
+
+    await press(cardsOf(target)[0], CARD_DELETE);
+    await press(cardsOf(target)[0], DELETE_CONFIRM);
+
+    const message = one(target, DELETE_MESSAGE);
+    expect(message.getAttribute('data-outcome')).toBe('nominationsLocked');
+    expect(textOf(message)).toContain(LOCKED_SENTENCE);
+    expect(count(message, '[data-reason]')).toBe(0);
+    expect(count(target, LOCKED_NOTE)).toBe(1);
+    expect(count(target, '[data-reason]')).toBe(1);
+    expect(count(target, SUPPORT_BUTTON)).toBe(1);
+  });
 });
 
 describe('the nominations page — Add a nomination', () => {
   /** The facts of an entity that can add another nomination. */
-  const ROOM: NominationFacts = { ...BOTH_IN_REACH, canAddAnother: true };
+  const ROOM: NominationFacts = { ...BOTH_WRITABLE, canAddAnother: true };
 
   it("offers Add below the cards while another can be added, leading to the editor's entry", () => {
     const target = render(
@@ -1343,7 +1369,7 @@ describe('the nominations page — Add a nomination', () => {
 
   it.each([
     ['the nominations lock', { nominationsLocked: true }],
-    ['the answers lock', { answersLocked: true }]
+    ['the lock on everything', { nominationsLocked: true, answersLocked: true }]
   ])('offers no Add under %s, with facts read before it came on', (_, locks) => {
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext, ...locks },

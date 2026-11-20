@@ -5,7 +5,7 @@
  *
  * While a gate is pending or the facts of the entity's nominations are not known, nothing is decided and the load returns an empty selection: the layout above shows its own view in the page's place.
  *
- * The load returns `nominationSelection`, the selection the step starts from: the elections and constituencies the address names, each matched against what the entity may choose. Where the address names no election, the elections are those `startingSelectionOf` answers for the entity's nominations in the editor's reach, which `electionsStepSelection` asks: the elections the entity is nominated in, and none for an entity with no nomination. The page checks the elections of it on arrival.
+ * The load returns `nominationSelection`, the selection the step starts from: the elections and constituencies the address names, each matched against what the entity may choose. Where the address names no election, the elections are those `startingSelectionOf` answers for the entity's writable nominations, which `electionsStepSelection` asks: the elections the entity is nominated in, and none for an entity with no nomination. The page checks the elections of it on arrival.
  */
 
 import { redirect } from '@sveltejs/kit';

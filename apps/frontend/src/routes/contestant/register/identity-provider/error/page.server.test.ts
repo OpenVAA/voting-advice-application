@@ -39,7 +39,7 @@ const PROVIDER_NOT_LISTED = {
 const NOTHING_LISTED = {
   contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
 };
-const PROVIDER_LOCKED = { ...PROVIDER_LISTED, access: { answersLocked: true } };
+const PROVIDER_LOCKED = { ...PROVIDER_LISTED, access: { contestantEditing: 'locked' } };
 
 /**
  * A request for the error screen.

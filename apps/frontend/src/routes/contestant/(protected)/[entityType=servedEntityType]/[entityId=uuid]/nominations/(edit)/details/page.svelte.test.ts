@@ -3,7 +3,7 @@
  *
  * What this file holds:
  *
- * 1. **Which cards there are.** Every nomination of the entity in the editor's reach has a card, whatever the address chose: kept where its election is chosen, about to be removed where it is not, moved where its election is chosen with another constituency. A nomination outside the reach has none, and no card is built while the entity's nominations are not known.
+ * 1. **Which cards there are.** Every writable nomination of the entity has a card, whatever the address chose: kept where its election is chosen, about to be removed where it is not, moved where its election is chosen with another constituency. A nomination that is not writable has none, and no card is built while the entity's nominations are not known.
  * 2. **What a card shows.** The status row and the two notes, the previous constituency of a moved card, the stored symbol and the stored parent, and a stored name as text whatever it holds.
  * 3. **Remove and Keep.** Neither writes. A removed card says so as a status, shows no field and hands focus to its Keep; Keep restores what was typed and hands focus to its Remove.
  * 4. **The main button.** With nothing to write it calls no write and goes to the nominations view, and so does a stored save, whatever the entity's tasks; a removed card is not checked and is left out of the set that is written.
@@ -97,6 +97,7 @@ function nomination(
     confirmed: true,
     customData: null,
     updatedAt: '2026-10-01T12:00:00+00:00',
+    writable: true,
     ...rest
   };
 }
@@ -278,7 +279,8 @@ const KEYS = {
   hasCandidates: 'contestantApp.nominations.error.hasCandidates',
   tooManyPending: 'contestantApp.nominations.error.tooManyPending',
   saveFailed: 'contestantApp.nominations.error.saveFailed',
-  answersLocked: 'contestantApp.common.nominationsNotEditableAnswersLocked'
+  answersLocked: 'contestantApp.common.nominationsNotEditableAnswersLocked',
+  nominationsLocked: 'contestantApp.common.nominationsNotEditable'
 };
 
 let teardown: Array<() => void> = [];
@@ -303,11 +305,11 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
-/** What a case states: the entity, its nominations in the editor's reach and those outside it, the address's selection, and what is known of the entity's tasks. */
+/** What a case states: the entity, its writable nominations and those outside it, the address's selection, and what is known of the entity's tasks. */
 type World = {
   entity?: UserEntity;
   nominations?: Array<EntityNomination>;
-  outOfReach?: Array<EntityNomination>;
+  notWritable?: Array<EntityNomination>;
   elections: Array<string>;
   constituencies?: Array<string>;
   taskState?: TaskState;
@@ -315,11 +317,11 @@ type World = {
 
 /** The data the page is given for a world: what the step's load answers for the address, and the facts of the entity's nominations. */
 async function pageDataOf(world: World): Promise<Record<string, unknown>> {
-  const nominations = [...(world.outOfReach ?? []), ...(world.nominations ?? [])];
+  const nominations = [...(world.notWritable ?? []), ...(world.nominations ?? [])];
   const nominationFacts = {
     editable: true,
     admissibleElectionIds: ELECTION_DATA.map((election) => election.id),
-    inReachNominationIds: (world.nominations ?? []).map((row) => row.id)
+    writableNominationIds: (world.nominations ?? []).map((row) => row.id)
   };
   const search = new URLSearchParams();
   for (const id of world.elections) search.append('nominationElectionId', id);
@@ -368,7 +370,7 @@ async function renderRemovable(world: World): Promise<{ root: HTMLElement; takeA
     ...EMPTY_BOX,
     selectedEntity: world.entity ?? PARTY,
     dataRoot: dataRootOf(),
-    nominations: [...(world.outOfReach ?? []), ...(world.nominations ?? [])],
+    nominations: [...(world.notWritable ?? []), ...(world.nominations ?? [])],
     taskState: world.taskState ?? NEXT_IS_PROFILE
   };
   const target = document.createElement('div');
@@ -526,10 +528,10 @@ describe('which cards there are', () => {
     ]);
   });
 
-  it("shows no card for a nomination outside the editor's reach, and a new card for a chosen pair with no nomination", async () => {
+  it('shows no card for a nomination that is not writable, and a new card for a chosen pair with no nomination', async () => {
     const root = await render({
       nominations: [NATIONAL],
-      outOfReach: [nomination('nomination-other-round', 'regional', 'region-1', { electionRound: 2 })],
+      notWritable: [nomination('nomination-other-round', 'regional', 'region-1', { electionRound: 2 })],
       elections: ['regional', 'national'],
       constituencies: ['region-2']
     });
@@ -1065,6 +1067,25 @@ describe('a save that is not stored', () => {
     expect(textOf(message)).toContain(KEYS.answersLocked);
     expect(textOf(root)).not.toContain(KEYS.saveFailed);
     expect(one<HTMLInputElement>(cardsOf(root)[1], SYMBOL)).toBe(symbol);
+    expect(symbol.value).toBe('22');
+    expect(invalidateAll).toHaveBeenCalledTimes(1);
+    expect(goto).not.toHaveBeenCalled();
+  });
+
+  it('shows the note that nominations are locked in place of a failure when the write is refused for the nominations lock, and keeps what was typed', async () => {
+    const root = await render(STORED);
+    const symbol = one<HTMLInputElement>(cardsOf(root)[1], SYMBOL);
+    commit(symbol, '22');
+    setEntityNominations.mockResolvedValue({ type: 'refused', reason: 'nominationsLocked' });
+    rereadAs([REGIONAL, NATIONAL]);
+
+    await press(root, SUBMIT);
+
+    const message = one(root, MESSAGE);
+    expect(message.getAttribute('data-outcome')).toBe('nominationsLocked');
+    expect(one(message, '[data-reason]').getAttribute('data-reason')).toBe('nominationsLocked');
+    expect(textOf(message)).toContain(KEYS.nominationsLocked);
+    expect(textOf(root)).not.toContain(KEYS.saveFailed);
     expect(symbol.value).toBe('22');
     expect(invalidateAll).toHaveBeenCalledTimes(1);
     expect(goto).not.toHaveBeenCalled();

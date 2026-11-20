@@ -56,33 +56,33 @@ const CONSTITUENCY_DATA = {
 /** A nomination of the entity, as a case states it: where it stands. */
 type StoredNomination = { electionId: ElectionName; constituencyId: string };
 
-/** What a case states of the application: the elections it holds, those of them that admit the entity's type, the constituency group that is chosen first, if any, the entity's nominations in the editor's reach, and those it holds outside it. */
+/** What a case states of the application: the elections it holds, those of them that admit the entity's type, the constituency group that is chosen first, if any, the entity's writable nominations, and those it holds outside it. */
 type World = {
   elections: Array<ElectionName>;
   admissible?: Array<ElectionName>;
   startFromConstituencyGroup?: string;
   nominations?: Array<StoredNomination>;
-  outOfReach?: Array<StoredNomination>;
+  notWritable?: Array<StoredNomination>;
 };
 
-/** The data of a step's parent loads for an ungated user, in the world given. The entity's nominations are listed with those outside the editor's reach first, and the facts name the others. */
+/** The data of a step's parent loads for an ungated user, in the world given. The entity's nominations are listed with those that are not writable first, and the facts name the others. */
 function parentDataOf({
   elections,
   admissible = elections,
   startFromConstituencyGroup,
   nominations = [],
-  outOfReach = []
+  notWritable = []
 }: World): Record<string, unknown> {
-  const inReach = nominations.map((nomination, index) => ({ id: `nomination-${index}`, ...nomination }));
-  const others = outOfReach.map((nomination, index) => ({ id: `other-nomination-${index}`, ...nomination }));
+  const writable = nominations.map((nomination, index) => ({ id: `nomination-${index}`, ...nomination }));
+  const others = notWritable.map((nomination, index) => ({ id: `other-nomination-${index}`, ...nomination }));
   return {
     gate: null,
     nominationFacts: {
       editable: true,
       admissibleElectionIds: admissible,
-      inReachNominationIds: inReach.map((nomination) => nomination.id)
+      writableNominationIds: writable.map((nomination) => nomination.id)
     },
-    contestantUserData: { nominations: [...others, ...inReach] },
+    contestantUserData: { nominations: [...others, ...writable] },
     appSettingsData: { elections: { startFromConstituencyGroup } },
     electionData: elections.map((id) => ELECTIONS[id]),
     constituencyData: CONSTITUENCY_DATA
@@ -240,10 +240,10 @@ describe('the address of the election step, for an entity that has nominations',
       { electionId: 'regional', constituencyId: 'region-2' },
       { electionId: 'national', constituencyId: 'whole-country' }
     ],
-    outOfReach: [{ electionId: 'municipal', constituencyId: 'municipality-1a' }]
+    notWritable: [{ electionId: 'municipal', constituencyId: 'municipality-1a' }]
   };
 
-  it('is served with the elections of the nominations in reach as chosen when its address names no election', async () => {
+  it('is served with the elections of the writable nominations as chosen when its address names no election', async () => {
     const result = await electionsLoad(eventOf('elections', '', parentDataOf(WORLD)));
     expect(result).toEqual({ nominationSelection: { electionIds: ['regional', 'national'], constituencyIds: [] } });
   });
@@ -422,10 +422,10 @@ describe('the address of the constituency step, for an entity that has nominatio
     });
   });
 
-  it('reads no nomination outside the reach the facts state', async () => {
+  it('reads no nomination the facts do not name as writable', async () => {
     const world: World = {
       elections: ['national', 'regional'],
-      outOfReach: [
+      notWritable: [
         { electionId: 'regional', constituencyId: 'region-1' },
         { electionId: 'regional', constituencyId: 'region-2' }
       ]
@@ -710,7 +710,7 @@ describe('every step, while nothing can be decided', () => {
 });
 
 describe('where Continue of a selection step leads', () => {
-  /** The values a page hands over, in the world given, with the selection the page holds and the entity's nominations in the editor's reach. */
+  /** The values a page hands over, in the world given, with the selection the page holds and the entity's writable nominations. */
   function factsOf(world: World, selection: NominationSelection): StepFacts {
     const dataRoot = new DataRoot();
     dataRoot.provideElectionData(world.elections.map((id) => ELECTIONS[id]));

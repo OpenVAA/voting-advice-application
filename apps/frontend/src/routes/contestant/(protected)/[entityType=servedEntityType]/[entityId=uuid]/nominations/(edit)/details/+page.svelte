@@ -26,7 +26,7 @@ Everything that differs between entity types is read from the descriptor of the 
 Nothing is read again before a write: the cards are written as the user sees them, together with the nominations they were built on, and the database refuses the write when the stored nominations are no longer those. A nomination created, moved, edited or removed since the cards were built is therefore never removed or written back by a save. After a save that was not stored the page's data is read again, and the first of these that applies is what the user meets:
 
 1. **Nominations can no longer be edited.** Reading the data again leads to the nominations view, which says why. The page shows no message and navigates nowhere itself.
-2. **Answers are locked**, as the write was refused for (`answersLocked`), while reading the data again has not led away. The note that nominations can no longer be changed because editing has ended stands in place of a message (`data-outcome="answersLocked"`). The cards and what was typed are kept.
+2. **Answers or nominations are locked**, as the write was refused for (`answersLocked` or `nominationsLocked`), while reading the data again has not led away. The note that nominations can no longer be changed, because editing has ended or because nominations alone are locked, stands in place of a message (`data-outcome="answersLocked"` or `data-outcome="nominationsLocked"`). The cards and what was typed are kept.
 3. **The entity's nominations are no longer those the cards were built on**, as the re-read shows or as the write was refused for. The cards are built again from the nominations as they now are, what was typed is dropped, and the message says that the nominations have changed (`data-outcome="changed"`).
 4. **Candidates are listed under a nomination that was to be removed or moved** (`hasCandidates`). The cards and what was typed are kept.
 5. **The limit on nominations that wait for confirmation is reached** (`tooManyPending`). The cards and what was typed are kept.
@@ -71,7 +71,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   import { getLayoutContext } from '$lib/contexts/layout';
   import { EntitySelector } from '$lib/dynamic-components/entitySelector';
   import { CONTESTANT_NOMINATION_EDITOR } from '$lib/routes';
-  import { EDITOR_STEP_ROUTE, hasSelectionStep, reachedNominationsOf, selectionSearch } from '../stepSelection';
+  import { EDITOR_STEP_ROUTE, hasSelectionStep, managedNominationsOf, selectionSearch } from '../stepSelection';
   import type {
     EntityNomination,
     NominationContest,
@@ -101,12 +101,13 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   let parentOptions = $state.raw<ReadonlyArray<NominationParentOption> | 'failed' | undefined>(undefined);
   /** The cards. The draft is what the user has typed and chosen on them, and which of them are about to be removed. */
   let cards = $state<Array<EditorCard>>([]);
-  /** The entity's nominations in the editor's reach as they were read when the cards were built: what the draft started from. */
+  /** The entity's writable nominations as they were read when the cards were built: what the draft started from. */
   let builtOn = $state.raw<ReadonlyArray<EntityNomination>>([]);
   /** Whether a save is under way. */
   let saving = $state(false);
   /** What a press of the main button that stayed on the page says: a card is not finished, or the save was not stored for one of five reasons. */
-  type StayedOutcome = 'invalid' | 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' | 'failed';
+  type StayedOutcome =
+    'invalid' | 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' | 'nominationsLocked' | 'failed';
   /** What the last press of the main button left to say, while it did not lead on to another page. */
   let saveMessage = $state<{ outcome: StayedOutcome; text: string } | undefined>();
   /** The errors the last press of the main button found. */
@@ -181,7 +182,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     if (!entityType || !stored || !facts || !admissible.length) return;
     const key = contestsKey;
     builtFor = key;
-    const nominations = reachedNominationsOf(stored, facts);
+    const nominations = managedNominationsOf(stored, facts);
     builtOn = nominations;
     cards = buildCards({ entityType, nominations, chosen: chosenPairsOf(nominations), elections: admissible });
     reported = [];
@@ -191,7 +192,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
 
   /**
    * The chosen elections, each with a constituency, as the cards are built from them: the contests of the address, and each election whose nominations are kept as stored with the constituency of the first of them. A card of such an election stays in its own constituency whichever of them is named.
-   * @param nominations - The entity's nominations in the editor's reach.
+   * @param nominations - The entity's writable nominations.
    */
   function chosenPairsOf(nominations: ReadonlyArray<EntityNomination>): Array<NominationContest> {
     const kept = data.nominationKeptElectionIds.flatMap((electionId) => {
@@ -537,11 +538,12 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     hasCandidates: 'contestantApp.nominations.error.hasCandidates',
     tooManyPending: 'contestantApp.nominations.error.tooManyPending',
     answersLocked: 'contestantApp.common.nominationsNotEditableAnswersLocked',
+    nominationsLocked: 'contestantApp.common.nominationsNotEditable',
     failed: 'contestantApp.nominations.error.saveFailed'
   } as const;
 
   /**
-   * Why a save was not stored, decided in a fixed order after the page's data was read again: the write was refused because answers are locked, then the entity's nominations are no longer those the cards were built on, by the re-read or by the write's own refusal, then the two other refusals the write names, then anything else. Where the nominations have changed the cards are built again from them, and the read of their options is awaited.
+   * Why a save was not stored, decided in a fixed order after the page's data was read again: the write was refused because answers or nominations are locked, then the entity's nominations are no longer those the cards were built on, by the re-read or by the write's own refusal, then the two other refusals the write names, then anything else. Where the nominations have changed the cards are built again from them, and the read of their options is awaited.
    * @param result - What the write answered, or nothing for a write that was rejected.
    * @param startedFrom - The nominations the cards were built on when the main button was pressed.
    */
@@ -549,9 +551,10 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     result: SetEntityNominationsResult | undefined,
     startedFrom: ReadonlyArray<EntityNomination>
   ): Promise<keyof typeof NOT_STORED_MESSAGE> {
-    // The lock refuses the write before the nominations are compared, so the refusal says nothing of whether they have changed, and no save can be stored while it holds.
-    if (result?.type === 'refused' && result.reason === 'answersLocked') return 'answersLocked';
-    const stored = reachedNominationsOf(contestantCtx.nominations, data.nominationFacts);
+    // A lock refuses the write before the nominations are compared, so the refusal says nothing of whether they have changed, and no save can be stored while it holds.
+    if (result?.type === 'refused' && (result.reason === 'answersLocked' || result.reason === 'nominationsLocked'))
+      return result.reason;
+    const stored = managedNominationsOf(contestantCtx.nominations, data.nominationFacts);
     const refusedAsChanged = result?.type === 'refused' && result.reason === 'changed';
     if (refusedAsChanged || !sameNominations(startedFrom, stored)) {
       // The re-read has built the cards again already where it also changed what the address chose.
@@ -756,6 +759,8 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     <div role="alert" data-testid="contestant-nomination-save-message" data-outcome={saveMessage?.outcome}>
       {#if saveMessage?.outcome === 'answersLocked'}
         <NotEditableNote reason="nominationsAnswersLocked" class="mb-lg mt-md" />
+      {:else if saveMessage?.outcome === 'nominationsLocked'}
+        <NotEditableNote reason="nominationsLocked" class="mb-lg mt-md" />
       {:else if saveMessage}
         <ErrorMessage inline message={saveMessage.text} class="mb-lg mt-md" />
       {/if}

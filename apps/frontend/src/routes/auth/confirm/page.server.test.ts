@@ -37,7 +37,7 @@ const LOCALE = 'fi';
 const projectGrant = { scope: 'project', target_type: null, target_id: 'project-1', role: 'editor' };
 
 /** What a claim answers for a user who has a password and no open invitation. */
-const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [], passwordSet: true };
+const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [] };
 
 /** A session as the verification answers it; only its presence is read. */
 const SESSION = { access_token: 'access-1' };
@@ -302,7 +302,7 @@ describe('the confirm page load', () => {
 describe('the confirm page action', () => {
   it('verifies the posted token, claims, refreshes and lands a magiclink where the posted next names', async () => {
     const { locals, fetch, calls, verifyArguments } = requestWith({
-      claim: { claimed: [projectGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [projectGrant], skipped: [] }
     });
 
     const redirected = await redirectOf(() =>
@@ -509,7 +509,7 @@ describe('the confirm page in a browser that is signed in', () => {
   it('signs the held session out locally before it verifies, then claims, refreshes and lands', async () => {
     const { locals, fetch, calls, signOutArguments } = requestWith({
       heldSession: heldSessionWith([CANDIDATE_EDITOR_GRANT]),
-      claim: { claimed: [projectGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [projectGrant], skipped: [] }
     });
 
     const redirected = await redirectOf(() =>
@@ -588,7 +588,7 @@ describe('the logout count', () => {
 
   it("is withdrawn with the request's event once the verification has set the session, when no session is held", async () => {
     const { locals, fetch, calls } = requestWith({
-      claim: { claimed: [projectGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [projectGrant], skipped: [] }
     });
     recordWithdrawals(calls);
     const url = pageUrl('');
@@ -607,7 +607,7 @@ describe('the logout count', () => {
   it('is withdrawn once the verification has set the session, after the sign-out of a held session worked', async () => {
     const { locals, fetch, calls } = requestWith({
       heldSession: heldSessionWith([CANDIDATE_EDITOR_GRANT]),
-      claim: { claimed: [projectGrant], skipped: [], passwordSet: true }
+      claim: { claimed: [projectGrant], skipped: [] }
     });
     recordWithdrawals(calls);
 

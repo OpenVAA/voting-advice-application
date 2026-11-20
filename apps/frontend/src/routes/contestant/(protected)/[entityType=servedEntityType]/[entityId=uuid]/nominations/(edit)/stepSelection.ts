@@ -66,7 +66,7 @@ export type StepFacts = {
   admissible: Array<Election>;
   /** The selection, holding only ids that name something the entity may choose. */
   selection: NominationSelection;
-  /** The entity's nominations in the editor's reach. */
+  /** The entity's writable nominations. */
   nominations: ReadonlyArray<NominationContestFacts>;
 };
 
@@ -163,22 +163,22 @@ export function stepAddress({
 }
 
 /**
- * The nominations of an entity that the editor manages, among those a load read for it: those the facts name.
+ * The nominations of an entity that the editor manages, among those a load read for it: the writable ones the facts name.
  * @param nominations - The entity's nominations, as the entity-level load read them.
  * @param facts - The facts of the entity's nominations.
  * @returns A fresh list, in the order given. Empty when either is not known.
  */
-export function reachedNominationsOf<TNomination extends { id: Id }>(
+export function managedNominationsOf<TNomination extends { id: Id }>(
   nominations: ReadonlyArray<TNomination> | null | undefined,
   facts: NominationFacts | undefined
 ): Array<TNomination> {
   if (!nominations || !facts) return [];
-  const inReach = new Set(facts.inReachNominationIds);
-  return nominations.filter((nomination) => inReach.has(nomination.id));
+  const writable = new Set(facts.writableNominationIds);
+  return nominations.filter((nomination) => writable.has(nomination.id));
 }
 
 /**
- * The values a step's page load decides from: a temporary data root built from the root load's data, the elections the facts admit, the selection of the address with every id that names nothing admissible dropped, and the entity's nominations in the editor's reach.
+ * The values a step's page load decides from: a temporary data root built from the root load's data, the elections the facts admit, the selection of the address with every id that names nothing admissible dropped, and the entity's writable nominations.
  * @param parentData - The data of the step's parent loads.
  * @param url - The step's address.
  * @returns The values, or `undefined` while a gate is pending, while the facts are not known and when the root load's data could not be read: nothing is decided then.
@@ -195,7 +195,7 @@ export function stepFactsOf({ parentData, url }: { parentData: StepParentData; u
     dataRoot,
     admissible,
     selection: matchedSelection({ appSettings, dataRoot, admissible, selection: selectionOfAddress(url) }),
-    nominations: reachedNominationsOf(parentData.contestantUserData?.nominations, parentData.nominationFacts)
+    nominations: managedNominationsOf(parentData.contestantUserData?.nominations, parentData.nominationFacts)
   };
 }
 
