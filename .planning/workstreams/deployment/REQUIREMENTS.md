@@ -200,7 +200,7 @@ Each is run on a real project, recorded with its date, and acted on.
       verify it.
 - [ ] **DOCS-03**: Every "unverified" statement about a hosted project is replaced by a dated observation or
       removed.
-- [ ] **DOCS-04**: The environment-variable reference covers the proxy variables, the analytics variables and
+- [x] **DOCS-04**: The environment-variable reference covers the proxy variables, the analytics variables and
       `PUBLIC_PROJECT_ID`.
 - [ ] **DOCS-05**: The analytics documentation gives the event catalogue, how to add a provider, the privacy
       mechanism, and a checklist the deployer completes for their own jurisdiction. It says the consent
@@ -338,7 +338,7 @@ closes; those are not listed against the earlier phase here.
 | DOCS-01 | Phase 189 | Pending |
 | DOCS-02 | Phase 189 | Complete |
 | DOCS-03 | Phase 189 | Pending |
-| DOCS-04 | Phase 189 | Pending |
+| DOCS-04 | Phase 189 | Complete |
 | DOCS-05 | Phase 189 | Pending |
 | DOCS-06 | Phase 189 | Pending |
 | DOCS-07 | Phase 189 | Complete |
