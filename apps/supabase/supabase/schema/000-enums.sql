@@ -8,7 +8,7 @@
 -- - grant_role_type - grant role levels
 -- - grant_permission - the permission verbs user_can is written in
 -- - storage_verb - the read/write split storage_path_can maps to two different permissions
--- - nomination_shape - which of the four nomination flows an election runs; the type of elections.election_type
+-- - nomination_shape - which of the four nomination flows an election runs; the type of elections.nomination_shape
 CREATE TYPE public.question_type AS ENUM(
   'text',
   'number',
@@ -68,11 +68,11 @@ CREATE TYPE public.grant_permission AS ENUM(
 -- An enum rather than text: a typo in a text literal inside a policy predicate denies silently, where a typo in an enum literal fails to apply.
 CREATE TYPE public.storage_verb AS ENUM('read', 'write');
 
--- The four nomination flows an election can run. It is the type of elections.election_type, and like grant_scope_type it is named for what it means rather than for the column that holds it.
+-- The four nomination flows an election can run. It is the type of elections.nomination_shape.
 --
 -- organization_list_and_independents is a list election in which a candidate may also stand without a party.
 --
--- The members are exactly the four flows, so any other value in elections.election_type is a PostgreSQL error rather than a stored string.
+-- The members are exactly the four flows, so any other value in elections.nomination_shape is a PostgreSQL error rather than a stored string.
 CREATE TYPE public.nomination_shape AS ENUM(
   'organization_only',
   'candidate_only',

@@ -73,7 +73,7 @@ INSERT INTO
     id,
     project_id,
     name,
-    election_type,
+    nomination_shape,
     current_round
   )
 VALUES
@@ -347,7 +347,7 @@ CREATE FUNCTION pg_temp.reach_now (p_id uuid) RETURNS jsonb LANGUAGE sql AS $fn$
   JOIN public.elections e ON e.id = n.election_id
   WHERE n.candidate_id = p_id
     AND COALESCE(n.election_round, 1) = COALESCE(e.current_round, 1)
-    AND public.nomination_shape_rule(e.election_type, 'candidate') IN ('admitted', 'parent_required');
+    AND public.nomination_shape_rule(e.nomination_shape, 'candidate') IN ('admitted', 'parent_required');
 $fn$;
 
 -- The statement that calls the function, as text, so that a database without the four-argument function fails each assertion on its own.
