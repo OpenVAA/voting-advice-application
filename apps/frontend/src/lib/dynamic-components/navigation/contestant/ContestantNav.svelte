@@ -58,7 +58,7 @@
     const nomination = taskState.tasks.find((task) => task.id === 'nomination');
     const profile = taskState.tasks.find((task) => task.id === 'profile');
     const questions = taskState.tasks.find((task) => task.id === 'questions');
-    const previewClosed = !contestantCtx.previewOpen;
+    const previewClosed = !taskState.previewOpen;
     let reason: { reason: 'noNomination' | 'previewNotReady'; sentence: string } | undefined;
     if (nomination?.status === 'incomplete') {
       reason = {

@@ -355,7 +355,7 @@ Which fields a profile has, and every text that differs between the two entity t
           {t('contestantApp.common.isHiddenBecauseMissing')}
         {/if}
       </NotEditableNote>
-    {:else if contestantCtx.profileComplete}
+    {:else if contestantCtx.taskState.allComplete}
       <SuccessMessage inline message={t('contestantApp.common.fullyCompleted')} />
     {/if}
   {/snippet}

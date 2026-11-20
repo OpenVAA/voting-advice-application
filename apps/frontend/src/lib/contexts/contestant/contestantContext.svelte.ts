@@ -92,10 +92,10 @@ function noQuestionBlocks(): QuestionBlocksShape {
  * `user`, `entities`, `selectedEntity`, `homeRoute` and `nominations` are reactive accessors derived from `page.data` and `page.params`: who is signed in, what they may edit, which of those the route names, where "home" leads from the current page, and the nominations the entity-level load read for the entity on the page. `userData` holds the one entity being edited and stays a stable reference. The five follow the same contract: read `ctx.X`, never destructure.
  *
  * ── The task state ───────────────────────────────────────────────────────────
- * `taskState` is one `$derived.by` that reads its inputs in its own scope and hands their values to the pure `taskStateOf`. Whether the entity has a nomination comes from the page data, so it is right on the server and on the first frame; the counts come from the store and the question lists, and count only while the store holds the entity the route names. `tasks`, `nextStep` and `previewOpen` are that state's own members, and `profileComplete` is its `allComplete`.
+ * `taskState` is one `$derived.by` that reads its inputs in its own scope and hands their values to the pure `taskStateOf`. Whether the entity has a nomination comes from the page data, so it is right on the server and on the first frame; the counts come from the store and the question lists, and count only while the store holds the entity the route names. `tasks` is that state's own member.
  *
  * ── The entry flow ───────────────────────────────────────────────────────────
- * `entryFlow` is what the screens that lead to a mailed link keep between them: a registration code with the status its check answered, and the one link request the "email sent" screen can repeat. It is held by the private `EntryFlowHolder` `#entryFlow` of this instance, built with `#requestLink`, and nothing else. The server builds one context for each render, so a field of the instance is one visitor's alone, where a binding of the module would be every visitor's. It is written whole by `holdEntryCode`, `sendEntryLink` (which `resendEntryLink` calls) and `clearEntryFlow`, which forward to the holder, cleared by `#reset` on logout, and gone when the tab reloads. `sendEntryLink` is the one way a screen asks for a link: it resolves alike for a request that succeeded, failed or never answered, and holds nothing of an answer, so no screen can show what the server did with an address. `entryFlow` is a reactive accessor replaced whole on every write: read `ctx.entryFlow`, never destructure. The four functions and the three writer forwards beside them are stable.
+ * `entryFlow` is what the screens that lead to a mailed link keep between them: a registration code with the status its check answered, and the one link request the "email sent" screen can repeat. It is held by the private `EntryFlowHolder` `#entryFlow` of this instance, built with `#requestLink`, and nothing else. The server builds one context for each render, so a field of the instance is one visitor's alone, where a binding of the module would be every visitor's. It is written whole by `holdEntryCode`, `sendEntryLink` (which `resendEntryLink` calls) and `clearEntryFlow`, which forward to the holder, cleared by `#reset` on logout, and gone when the tab reloads. `sendEntryLink` is the one way a screen asks for a link: it resolves alike for a request that succeeded, failed or never answered, and holds nothing of an answer, so no screen can show what the server did with an address. `entryFlow` is a reactive accessor replaced whole on every write: read `ctx.entryFlow`, never destructure. The four functions and the writer forward beside them are stable.
  *
  * ── Field-init order ─────────────────────────────────────────────────────────
  * The stable refs / persisted handles / `$state` / `$derived` fields + the `#userData` composite are field initializers (run in declaration order BEFORE the constructor body). `#userData` is declared AFTER `#answersLocked` + `#locale` because its getter-thunks read them, and `#loadedEntityType` AFTER `#userData` because it reads the store. `#taskState` is declared below the unanswered lists and the name flag it reads. The 3 `$effect` blocks, the two member forwards and two `onMount`s are installed in the CONSTRUCTOR — legal because contestantContext is constructed during component init, an effect context. One `onMount` subscribes to the sign-outs the tab's client reports and the other listens for the Log out announcements of the other tabs; each stops when the layout that built the context is destroyed.
@@ -281,8 +281,6 @@ export class ContestantContextProvider implements ContestantContext {
       firstUnansweredOpinionId: unansweredOpinionQuestions[0]?.id
     });
   });
-
-  #profileComplete = $derived(this.#taskState.allComplete);
 
   ////////////////////////////////////////////////////////////
   // Inherited appContext members (declared for `implements ContestantContext`; INSTALLED via `Object.assign(this, this.#appContext)` in the constructor from the own-enumerable AppContextProvider instance). Definite-assignment `!`.
@@ -471,18 +469,6 @@ export class ContestantContextProvider implements ContestantContext {
     ...args: Parameters<DataWriter['checkInvitationCode']>
   ): ReturnType<DataWriter['checkInvitationCode']> => {
     return prepareDataWriter().checkInvitationCode(...args);
-  };
-
-  requestSignInLink = (
-    ...args: Parameters<DataWriter['requestSignInLink']>
-  ): ReturnType<DataWriter['requestSignInLink']> => {
-    return prepareDataWriter().requestSignInLink(...args);
-  };
-
-  requestPasswordRecovery = (
-    ...args: Parameters<DataWriter['requestPasswordRecovery']>
-  ): ReturnType<DataWriter['requestPasswordRecovery']> => {
-    return prepareDataWriter().requestPasswordRecovery(...args);
   };
 
   ////////////////////////////////////////////////////////////////////
@@ -705,15 +691,6 @@ export class ContestantContextProvider implements ContestantContext {
   }
   get tasks() {
     return this.#taskState.tasks;
-  }
-  get nextStep() {
-    return this.#taskState.nextStep;
-  }
-  get previewOpen() {
-    return this.#taskState.previewOpen;
-  }
-  get profileComplete() {
-    return this.#profileComplete;
   }
   get questionBlocks() {
     return this.#questionBlocks;

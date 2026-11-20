@@ -41,7 +41,6 @@ type Box = {
   opinionQuestions: Array<FakeQuestion>;
   unansweredOpinionQuestions: Array<FakeQuestion>;
   questionsReady: boolean;
-  profileComplete: boolean;
   /** The nominations the page data holds for the entity, or nothing when it holds no entity. */
   nominations: Array<EntityNomination> | undefined;
 };
@@ -59,7 +58,6 @@ const EMPTY_BOX: Box = {
   opinionQuestions: [],
   unansweredOpinionQuestions: [],
   questionsReady: false,
-  profileComplete: false,
   nominations: undefined
 };
 
@@ -135,9 +133,6 @@ const context = {
   },
   get questionsReady() {
     return box.questionsReady;
-  },
-  get profileComplete() {
-    return box.profileComplete;
   },
   get nominations() {
     return box.nominations;

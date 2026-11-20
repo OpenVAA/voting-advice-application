@@ -93,7 +93,7 @@ An entity with no nomination is known on the server, so its page waits for nothi
   const pending = $derived(!taskState.known);
 
   /** Whether every task the entity has is complete. */
-  const allComplete = $derived(contestantCtx.profileComplete);
+  const allComplete = $derived(taskState.allComplete);
 
   /** Whether the entity is asked opinion questions, as far as the task state lists them. */
   const hasQuestionsTask = $derived(taskState.tasks.some((task) => task.id === 'questions'));

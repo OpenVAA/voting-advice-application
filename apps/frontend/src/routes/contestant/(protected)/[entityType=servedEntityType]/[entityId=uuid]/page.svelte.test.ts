@@ -114,12 +114,6 @@ const context = {
   get taskState() {
     return box.taskState;
   },
-  get previewOpen() {
-    return box.taskState.previewOpen;
-  },
-  get profileComplete() {
-    return box.taskState.allComplete;
-  },
   get unansweredOpinionQuestions() {
     return box.unansweredOpinionQuestions;
   },

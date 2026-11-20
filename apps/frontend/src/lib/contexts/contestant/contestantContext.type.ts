@@ -7,13 +7,11 @@ import type {
   EntityNomination,
   NominationContest,
   NominationParentOption,
-  RequestPasswordRecoveryOptions,
-  RequestSignInLinkOptions,
   SetEntityNominationsResult,
   UserEntity
 } from '$lib/api/base/dataWriter.type';
 import type { EntryFlow, EntryHeldCode, EntryLinkRequest } from '$lib/auth/entryFlow';
-import type { NextStep, Task, TaskState } from '$lib/contestant/tasks';
+import type { Task, TaskState } from '$lib/contestant/tasks';
 import type { ContestantLoginError } from '$lib/contestant/utils/loginError';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
@@ -79,20 +77,6 @@ export type ContestantContext = AppContext &
      * @returns A `Promise` resolving to `'valid'`, `'used'` or `'unknown'`, and rejecting when the request fails.
      */
     checkInvitationCode: (opts: { code: string }) => ReturnType<DataWriter['checkInvitationCode']>;
-    /**
-     * Ask for a sign-in link to be mailed. A stable function, safe to destructure. A screen does not call it: it calls `sendEntryLink`, which keeps the request's outcome from the screen.
-     * @param opts - The locale of the mail, and an address, a registration code or both.
-     * @returns A `Promise` resolving when the request was received, which says nothing of whether a mail is sent, and rejecting when the request fails.
-     */
-    requestSignInLink: (opts: RequestSignInLinkOptions) => ReturnType<DataWriter['requestSignInLink']>;
-    /**
-     * Ask for a password-recovery link to be mailed. A stable function, safe to destructure. A screen does not call it: it calls `sendEntryLink`, which keeps the request's outcome from the screen.
-     * @param opts - The address to mail and the locale of the mail.
-     * @returns A `Promise` resolving when the request was received, which says nothing of whether the address has an account nor of whether a mail is sent, and rejecting when the request fails.
-     */
-    requestPasswordRecovery: (
-      opts: RequestPasswordRecoveryOptions
-    ) => ReturnType<DataWriter['requestPasswordRecovery']>;
     /**
      * Logout the user and redirect to the login page. It asks nothing: the caller holds what the user answered. After a successful sign-out, a page that guards unsaved edits discards them.
      * @param options - `reason`: why the session ends, which the login page receives as its `errorMessage` and the login screen states, for a logout the user did not press for, such as `loggedOutAutomatically` at the end of a logout count. A logout the user pressed for carries none. Overlapping calls are one logout, which carries the first call's reason.
@@ -239,22 +223,4 @@ export type ContestantContext = AppContext &
      * A reactive accessor: read it as `contestantCtx.tasks` inside the tracking scope and never destructure it.
      */
     tasks: ReadonlyArray<Task>;
-    /**
-     * The first incomplete task and where it leads: `taskState.nextStep`. `undefined` when no task is incomplete and while the state is not known.
-     *
-     * A reactive accessor: read it as `contestantCtx.nextStep` inside the tracking scope and never destructure it.
-     */
-    nextStep: NextStep | undefined;
-    /**
-     * Whether the entity's preview can be opened: `taskState.previewOpen`. The entity has a nomination, and no required info question and no opinion question is unanswered. False while the state is not known.
-     *
-     * A reactive accessor: read it as `contestantCtx.previewOpen` inside the tracking scope and never destructure it.
-     */
-    previewOpen: boolean;
-    /**
-     * Whether every task the entity has is complete: `taskState.allComplete`. It has a nomination, no required info question and no opinion question is unanswered and, while the entity's name can still be edited, every name field its type requires is saved. False for an entity with no nomination, and false while the state is not known: with no entity loaded, and before the entity's question lists are.
-     *
-     * A reactive accessor: read it as `contestantCtx.profileComplete` inside the tracking scope and never destructure it.
-     */
-    profileComplete: boolean;
   };
