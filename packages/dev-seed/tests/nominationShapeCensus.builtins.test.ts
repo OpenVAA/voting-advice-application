@@ -7,15 +7,18 @@
  *
  * `BUILT_IN_TEMPLATES` is walked with `Object.keys`, so a template registered later is covered without this file being touched. A floor on the number of templates and a floor on the number of nominations keep an empty registry, or a pipeline that stopped emitting, from passing.
  *
- * ## The classifier is a statement of its own
+ * ## The matrix is read from the pgTAP file
  *
- * `EXPECTED` writes out what each nomination shape does with a nomination of each entity type. It imports nothing from the application or from the schema files; only the two enums come from the generated database types, so that a member added to either is a compile error here until the matrix names it.
+ * `EXPECTED` is parsed from the cells of `public.nomination_shape_rule` that `08-triggers.test.sql` asserts, so a rule changed in the schema and its pgTAP cells is the rule this census applies.
  *
  * ## What a failure reports
  *
  * Template name, collection, the row's `external_id` and the offence.
  */
 
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Constants } from '@openvaa/supabase-types';
 import { describe, expect, it } from 'vitest';
 import { runPipeline } from '../src/pipeline';
@@ -38,33 +41,39 @@ const SHAPES: ReadonlyArray<string> = Constants.public.Enums.nomination_shape;
 /** The key of `custom_data` under which a nomination names a parent organization that has no row yet. */
 const REQUESTED_PARENT_KEY = 'requestedParentOrganization';
 
-/** The expected outcome for each of the four entity types, in each of the four nomination shapes. */
-const EXPECTED: Record<Shape, Record<EntityType, Outcome>> = {
-  organization_list: {
-    candidate: 'parentRequired',
-    organization: 'admitted',
-    faction: 'admitted',
-    alliance: 'admitted'
-  },
-  organization_list_and_independents: {
-    candidate: 'admitted',
-    organization: 'admitted',
-    faction: 'admitted',
-    alliance: 'admitted'
-  },
-  candidate_only: {
-    candidate: 'admitted',
-    organization: 'refused',
-    faction: 'refused',
-    alliance: 'refused'
-  },
-  organization_only: {
-    candidate: 'refused',
-    organization: 'admitted',
-    faction: 'refused',
-    alliance: 'admitted'
-  }
+const HERE = dirname(fileURLToPath(import.meta.url));
+/** `packages/dev-seed/tests` → repo root. */
+const REPO_ROOT = resolve(HERE, '../../..');
+const TRIGGERS_TEST_FILE = resolve(REPO_ROOT, 'apps/supabase/supabase/tests/database/08-triggers.test.sql');
+
+/** The number of cells the matrix has: every nomination shape against every entity type. */
+const MATRIX_CELL_COUNT = 16;
+
+/**
+ * One cell of the matrix as the pgTAP file asserts it: a call of the rule with a quoted shape and a quoted entity type, then the stated answer. A cell with a `NULL` argument does not match.
+ */
+const CELL_RE = /nomination_shape_rule\s*\(\s*'([^']*)'\s*,\s*'([^']*)'\s*\)\s*\$\$\s*\)\s*,\s*'([a-z_]+)'/g;
+
+/** The pgTAP answers, by the name the census gives them. */
+const OUTCOME_BY_ANSWER: Record<string, Outcome> = {
+  admitted: 'admitted',
+  parent_required: 'parentRequired',
+  refused: 'refused'
 };
+
+type Cell = { shape: string; entityType: string; outcome: Outcome | undefined };
+
+const CELLS: Array<Cell> = [...readFileSync(TRIGGERS_TEST_FILE, 'utf8').matchAll(CELL_RE)].map(
+  ([, shape, entityType, answer]) => ({ shape, entityType, outcome: OUTCOME_BY_ANSWER[answer] })
+);
+
+/** The outcome for each entity type in each nomination shape, as the pgTAP cells state it. */
+const EXPECTED = {} as Record<Shape, Record<EntityType, Outcome>>;
+for (const { shape, entityType, outcome } of CELLS) {
+  if (outcome === undefined) continue;
+  const row = (EXPECTED[shape as Shape] ??= {} as Record<EntityType, Outcome>);
+  row[entityType as EntityType] = outcome;
+}
 
 /** The `external_id` a row gives under a reference key such as `election`, when it gives one. */
 function refOf(row: Row, key: string): string | undefined {
@@ -168,6 +177,15 @@ const EMITTED: Array<{ name: string; data: Data }> = TEMPLATE_NAMES.map((name) =
 }));
 
 describe('nomination-shape census — every nomination every built-in template emits', () => {
+  it('reads every cell of the nomination-shape matrix from the pgTAP file', () => {
+    expect(CELLS).toHaveLength(MATRIX_CELL_COUNT);
+    expect(CELLS.filter((cell) => cell.outcome === undefined)).toEqual([]);
+    for (const shape of SHAPES) {
+      for (const entityType of ENTITY_TYPES)
+        expect(EXPECTED[shape as Shape]?.[entityType], `${shape} x ${entityType}`).toBeDefined();
+    }
+  });
+
   it('iterates the registry and covers at least 30 built-ins', () => {
     // A floor, not an equality: registering another template must not turn this red, and a registry that shrank to nothing must not let the zero-offence cases pass.
     expect(TEMPLATE_NAMES.length).toBeGreaterThanOrEqual(30);

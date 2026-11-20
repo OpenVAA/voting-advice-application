@@ -124,7 +124,7 @@ Which rows are judged:
 - **`create_invitations` does not ask**, so an invitation can be created while its mode is off and is honoured once the mode is on.
 - **A project that allows no mode** honours no candidate or organization invitation: a project with no settings row, a row that stores no `servedEntityTypes`, and a type the stored setting has no key for allow nothing.
 
-The Contestant App's screens list the modes through `listedRegistrationModes`, which reads the same matrix (see [Registration](/developers-guide/contestant-app/registration#what-lists-a-registration-mode)); the parity test `registrationModeMatrixParity.test.ts` of `@openvaa/dev-seed` holds the client's rule to the database's truth table. The `code-sign-in` operation, for the holder of a claimed code, does not ask the matrix: the code sign-in screen's form action asks whether the code mode is offered before it calls it.
+The Contestant App's screens list the modes through `listedRegistrationModes`, which reads the same matrix (see [Registration](/developers-guide/contestant-app/registration#what-lists-a-registration-mode)); the parity test `contestantAppSettings.matrix.test.ts` of `@openvaa/app-shared` holds the client's rule to the database's truth table. The `code-sign-in` operation, for the holder of a claimed code, does not ask the matrix: the code sign-in screen's form action asks whether the code mode is offered before it calls it.
 
 ### Asking for a sign-in link
 

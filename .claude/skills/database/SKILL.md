@@ -620,7 +620,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       nothing; `seed.sql`'s default project serves candidates alone and allows them `email` and `code`):
       a pgTAP file with projects of its own writes the setting in its setup.
       `45-registration-mode-matrix.test.sql` is the rule's truth table, and
-      `packages/dev-seed/tests/registrationModeMatrixParity.test.ts` holds the client's
+      `packages/app-shared/src/settings/contestantAppSettings.matrix.test.ts` holds the client's
       `isRegistrationModeAllowed` to the same table.
     - **`recovery_link_request(p_project_id, p_email)`** answers `{email, mail}` with `mail`
       `recovery` for a user with that confirmed address holding a grant that reaches the project

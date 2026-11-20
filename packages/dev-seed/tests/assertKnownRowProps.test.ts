@@ -20,7 +20,8 @@ import { describe, expect, it } from 'vitest';
 import negctlEntityTypeSnake from './fixtures/negctl-nominations-entity-type';
 import negctlEntityTypeCamel from './fixtures/negctl-nominations-entity-type-camel';
 import { assertKnownRowProps } from '../src/assertKnownRowProps';
-import { DENIED_BY_TABLE, deniedKeys, SKIP_COLUMNS_NOT_DENIED } from '../src/template/permittedKeys';
+import { TOPO_ORDER } from '../src/pipeline';
+import { DENIED_BY_TABLE, deniedKeys, permittedKeys, SKIP_COLUMNS_NOT_DENIED } from '../src/template/permittedKeys';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** `packages/dev-seed/tests` → repo root. */
@@ -355,6 +356,22 @@ describe('assertKnownRowProps — entity_type is denied on nominations, the othe
     for (const key of union) expect(fromSql).toContain(key);
     // And the split is the specified one: exactly one honest deny entry.
     expect([...denied].sort()).toEqual(['entity_type']);
+  });
+
+  it('the RPC exempts entity_type from the skip on every table that declares it, DENIED_BY_TABLE aside', () => {
+    // `_bulk_upsert_record` skips `entity_type` except on the tables its condition lists, and `DENIED_BY_TABLE` denies it where the RPC skips it, so the listed tables are the declaring tables less the denying ones.
+    const sql = readFileSync(SCHEMA_SQL, 'utf8');
+    const match = sql.match(/item_key\s*=\s*'entity_type'\s+AND\s+p_table_name\s+IN\s*\(([^)]*)\)/);
+    expect(match).not.toBeNull();
+    const exempted = [...(match as RegExpMatchArray)[1].matchAll(/'([a-z_]+)'/g)].map((m) => m[1]).sort();
+    expect(exempted.length).toBeGreaterThan(0);
+
+    // `entity_type` is admitted by no source but the column list, so a table admits it exactly when it declares the column.
+    const declaring = TOPO_ORDER.filter((table) => permittedKeys(table).has('entity_type'));
+    const denying = new Set<string>(Object.keys(DENIED_BY_TABLE));
+    expect(exempted).toEqual(declaring.filter((table) => !denying.has(table)).sort());
+
+    for (const table of exempted) expect(permittedKeys(table).has('entity_type'), table).toBe(true);
   });
 
   it('denies entity_type on nominations alone, the one table where the column is generated', () => {

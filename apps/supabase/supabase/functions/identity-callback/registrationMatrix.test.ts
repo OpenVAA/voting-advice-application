@@ -1,7 +1,7 @@
 /**
  * The function's copy of the registration-mode rule, read against the rule's truth table, and the entity-type decision built on it.
  *
- * The pgTAP file whose name ends `-registration-mode-matrix.test.sql` asserts the SQL function against one table of rows, and `packages/dev-seed/tests/registrationModeMatrixParity.test.ts` asserts the TypeScript accessor against the same rows. This spec parses those rows from that file as text, in the same way, and asserts the copy in `registrationMatrix.ts` against every one of them, so the copy cannot drift from either reading without a suite failing.
+ * The pgTAP file whose name ends `-registration-mode-matrix.test.sql` asserts the SQL function against one table of rows, and `packages/app-shared/src/settings/contestantAppSettings.matrix.test.ts` asserts the TypeScript accessor against the same rows. This spec parses those rows from that file as text, in the same way, and asserts the copy in `registrationMatrix.ts` against every one of them, so the copy cannot drift from either reading without a suite failing.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';

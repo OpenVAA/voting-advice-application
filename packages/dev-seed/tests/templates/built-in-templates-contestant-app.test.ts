@@ -27,10 +27,10 @@ const checked = new Set<string>();
  */
 const SERVED_BY_FAMILY = {
   default: {
-    title: 'serves both entity types and allows every registration mode for both',
+    title: 'serves both entity types, with email and code registration for both',
     servedEntityTypes: {
-      candidate: { registrationModes: ['identity_provider', 'email', 'code'] },
-      organization: { registrationModes: ['identity_provider', 'email', 'code'] }
+      candidate: { registrationModes: ['email', 'code'] },
+      organization: { registrationModes: ['email', 'code'] }
     }
   },
   'e2e/base': {
