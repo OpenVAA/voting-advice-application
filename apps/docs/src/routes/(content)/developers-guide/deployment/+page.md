@@ -234,23 +234,23 @@ Approve the run's review in GitHub. Observed on staging, 2026-11-18: the first g
 
 ## Auth settings of a hosted project
 
-Each setting below must hold the value the repository's `config.toml` holds for the local stack. `apps/supabase/supabase/config.toml` configures the local stack only: **the repository cannot set or enforce any of these on a hosted project**, and `yarn assert:auth-signup-closed` checks the local file, not your project. Set each by hand in the hosted project's dashboard, in its Authentication settings:
+The Supabase root's settings resource, `supabase_settings.this` of `infra/modules/supabase/`, writes each auth setting to the hosted project, and it is their only writer: no workflow or script pushes the local configuration to a hosted project. The values the hosted project shares with the local stack are in `infra/modules/supabase/hosted-settings.json`, and `yarn assert:hosted-settings-parity`, part of `yarn lint:check`, holds them equal to the local `apps/supabase/supabase/config.toml`. A value is changed in `hosted-settings.json` and applied, not in the dashboard. Seven of the settings carry the invitation model:
 
-| Dashboard setting                         | `config.toml` key                         | Value here                                                          |
-| ----------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------- |
-| **Allow new users to sign up**            | `[auth] enable_signup`                    | **off** (`false`)                                                   |
-| **Confirm email**                         | `[auth.email] enable_confirmations`       | **on** (`true`)                                                     |
-| **Minimum password length**               | `[auth] minimum_password_length`          | **8**                                                               |
-| **Email OTP Length**                      | `[auth.email] otp_length`                 | **10** digits, the maximum                                          |
-| **Email OTP Expiration**                  | `[auth.email] otp_expiry`                 | **3600** seconds: the lifetime of a mailed sign-in or recovery link |
-| **Send Email hook**, of the Postgres type | `[auth.hook.send_email]` `enabled`, `uri` | **enabled**, the function `public.send_email_hook`                  |
-| **Secure email change**                   | `[auth.email] double_confirm_changes`     | **on** (`true`)                                                     |
+- `disable_signup`: `true`, public sign-up off;
+- `mailer_autoconfirm`: `false`, email confirmation on;
+- `password_min_length`: `8`;
+- `mailer_otp_length`: `10` digits, the auth service's maximum;
+- `mailer_otp_exp`: `3600` seconds, the lifetime of a mailed sign-in or recovery link;
+- `hook_send_email_enabled` and `hook_send_email_uri`: the Send Email hook on, pointed at the function `public.send_email_hook`;
+- `mailer_secure_email_change_enabled`: `true`.
 
-- **The password length** is the length the Contestant App's password rule asks for. On the local stack it binds the setting of a password: a user's own `updateUser` and an administrator's `createUser` with fewer than eight characters are refused `422 weak_password`, and an account whose shorter password was set before the setting still signs in with it. A smaller value on a hosted project lets a direct call to the auth service set a password the screens would refuse.
-- **The lifetime of a mailed link** is the second bound on a link, beside its single use: whoever holds a link is signed in by it, so how long it can be used is bounded. The repository's gate pins 3600 seconds for the local file.
+[Hosted Supabase settings](/developers-guide/deployment/hosted-settings) gives every row the module sends, with where the repository sets it, its parity class and how to verify it.
+
+- **The password length** is the length the Contestant App's password rule asks for. On the local stack it binds the setting of a password: a user's own `updateUser` and an administrator's `createUser` with fewer than eight characters are refused `422 weak_password`, and an account whose shorter password was set before the setting still signs in with it. A smaller value on a hosted project would let a direct call to the auth service set a password the screens refuse, so the parity guard lets the hosted `password_min_length` be stricter than the local one, never weaker.
+- **The lifetime of a mailed link** is the second bound on a link, beside its single use: whoever holds a link is signed in by it, so how long it can be used is bounded. The repository's gate pins 3600 seconds for the local file, and the parity guard lets the hosted `mailer_otp_exp` be shorter, never longer.
 - **The one-time code's length.** Every link the `account-access` function has the auth service mint also stores a one-time code for the address, and the auth service accepts that code in the link's place for as long as the link lives. The application never uses it, but anyone can have a link sent to an invited address, so with six digits the code could be guessed within the link's hour. Ten digits, the auth service's maximum, put it out of reach. `yarn assert:auth-signup-closed` pins the local file and `yarn assert:hosted-settings-parity` holds the Terraform module's `mailer_otp_length` equal to it.
 - **Secure email change** is required by the address confirmation of an identity-provider account. The `confirm-address` operation confirms the placeholder's side of the change itself and mails only the typed address's link, which relies on the auth service asking for both confirmations. With the setting off, confirming the placeholder's side completes the change at once, without the typed address being proved; the operation then puts the placeholder back, mails nothing and answers `refused`, so no identity-provider account can prove an address on that project. `yarn assert:hosted-settings-parity` holds the Terraform module's `mailer_secure_email_change_enabled` equal to the local value.
-- **The Send Email hook** is where it is adopted: with it the auth service sends no mail of its own, and the application's mails go out through the `account-access` function alone. Without it the auth service's own one-time-code and recovery endpoints mail its default English text to any address a caller names. The function is created by the schema, executable by `supabase_auth_admin` alone; the dashboard's hook is pointed at it. See [Email](/developers-guide/backend/email#supabase-auth-sends-no-mail).
+- **The Send Email hook** is where it is adopted: with it the auth service sends no mail of its own, and the application's mails go out through the `account-access` function alone. Without it the auth service's own one-time-code and recovery endpoints mail its default English text to any address a caller names. The function is created by the schema, executable by `supabase_auth_admin` alone; the module's `hook_send_email_uri` points the hook at it while the root's `enable_send_email_hook` is `true`, as it is in each root. See [Email](/developers-guide/backend/email#supabase-auth-sends-no-mail).
 
 To read what a project serves, request its auth settings with the project's anon key:
 
@@ -258,7 +258,9 @@ To read what a project serves, request its auth settings with the project's anon
 curl -s -H "apikey: <anon key>" "<project url>/auth/v1/settings"
 ```
 
-The answer must hold `"disable_signup": true` and `"mailer_autoconfirm": false`.
+The answer must hold `"disable_signup": true` and `"mailer_autoconfirm": false`. It holds neither the other settings nor the hook. The full check is the conformance probe of [Checking the instance](#checking-the-instance), which reads every setting the module sends through the Management API: its `auth.signup-closed`, `auth.email-confirm`, `auth.other-settings` and `auth.send-email-hook` lines cover the seven above. Observed on staging, 2026-11-20: the probe passed all twenty-two checks on the persistent project ([Step 23](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#step-23-the-conformance-probe), [Observations](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#observations)).
+
+In the dashboard the two sign-up switches are "Allow new users to sign up" and "Confirm email", in the User Signups panel of Authentication, Sign In / Providers. Observed on staging, 2026-11-08/09: on a new project both are on, and Authentication, Hooks lists no hook ([Observations](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#observations)). The module's apply is what turns sign-up off and adopts the hook.
 
 **The database has no guard of its own.** A function that grants authority to a confirmed address reads `auth.users.email_confirmed_at`, and cannot tell how the address came to be confirmed. On a project that allows public sign-up, anyone can obtain a confirmed address they do not control:
 
@@ -266,8 +268,6 @@ The answer must hold `"disable_signup": true` and `"mailer_autoconfirm": false`.
 - with email confirmation on, by signing up with the address and a password of their own first. When the owner of the address later opens any link mailed to it, the address is confirmed and the password still signs in.
 
 Turning sign-up off closes both. Confirmation stays on as well, so that a sign-up switched back on by mistake does not confirm addresses without a mail.
-
-The names of the dashboard settings above are unverified against a hosted project's dashboard. The request above does not depend on a label: whatever the dashboard calls the two sign-up switches, the served settings must hold those two values. The other three settings are not in that answer; read them in the dashboard.
 
 ### The sign-in link of an invitation
 
