@@ -90,10 +90,8 @@ export const dynamicSettings: DynamicSettings = {
       hideHero: false,
       hideVideo: false
     },
-    entityTypes: ['candidate'],
-    registrationModes: {
-      candidate: [],
-      organization: []
+    servedEntityTypes: {
+      candidate: { registrationModes: [] }
     }
   },
   analytics: { trackEvents: false }

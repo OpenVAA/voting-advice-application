@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { mergeSettings } from './mergeSettings';
+import { dynamicSettings } from '../settings/dynamicSettings';
 
 describe('mergeSettings', () => {
   test('Should deep-merge nested objects without clobbering sibling keys', () => {
@@ -43,5 +44,18 @@ describe('mergeSettings', () => {
     expect(result.fn()).toBe(42);
     // Function is assigned by reference, not cloned.
     expect(result.fn).toBe(fn);
+  });
+
+  test('Should replace `contestantApp.servedEntityTypes` whole, so the target keeps no served type the source leaves out', () => {
+    const result = mergeSettings(dynamicSettings, {
+      contestantApp: { servedEntityTypes: { organization: { registrationModes: ['email'] } } }
+    });
+    expect(result.contestantApp.servedEntityTypes).toEqual({ organization: { registrationModes: ['email'] } });
+    expect(result.contestantApp.questions).toEqual(dynamicSettings.contestantApp.questions);
+  });
+
+  test('Should still merge a same-named member at another path', () => {
+    const result = mergeSettings({ servedEntityTypes: { a: 1 } }, { servedEntityTypes: { b: 2 } });
+    expect(result.servedEntityTypes).toEqual({ a: 1, b: 2 });
   });
 });

@@ -8,11 +8,16 @@ export type DeepPartial<TObject> = {
 };
 
 /**
+ * The dotted paths of the settings members whose value is one whole, so a source value replaces the target's instead of being merged into it. In `contestantApp.servedEntityTypes` a present key means a served type, so merging a stored map over the shipped one would keep serving the shipped types.
+ */
+export const SETTINGS_REPLACED_WHOLE: ReadonlyArray<string> = ['contestantApp.servedEntityTypes'];
+
+/**
  * Deep merge two plain (non-constructed) objects with settings.
  *
  * Lives in `@openvaa/app-shared` so that `@openvaa/dev-seed` and the frontend import a single source of truth. `mergeAppSettings` in `apps/frontend/src/lib/utils/settings.ts` is a separate deep merge with different semantics — do not confuse the two: it skips a nullish member at the root, skips a nested `undefined`, lets a source object replace a `null` in the target, and clones nothing, so it accepts a reactive proxy as its target. This function throws in the last two cases.
  *
- * NB. Does NOT support constructed objects (e.g. `Date`) or arrays containing functions. Arrays are replaced wholesale via `structuredClone` (NOT element-merged).
+ * NB. Does NOT support constructed objects (e.g. `Date`) or arrays containing functions. Arrays, and the objects at the paths of {@link SETTINGS_REPLACED_WHOLE}, are replaced wholesale via `structuredClone` (NOT element-merged).
  *
  * @param target - The target.
  * @param source - The source.
@@ -22,8 +27,8 @@ export function mergeSettings<TTarget extends object, TSource extends object>(
   target: TTarget,
   source: TSource
 ): TTarget & TSource {
-  const result = deepMergeRecursively({}, target);
-  return deepMergeRecursively(result, source);
+  const result = deepMergeRecursively({}, target, '');
+  return deepMergeRecursively(result, source, '');
 }
 
 /*
@@ -38,20 +43,27 @@ export function mergeSettings<TTarget extends object, TSource extends object>(
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function deepMergeRecursively<TTarget extends object, TSource extends object>(
   target: TTarget,
-  source: TSource
+  source: TSource,
+  path: string
 ): TTarget & TSource {
   for (const key in source) {
-    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+    const keyPath = path ? `${path}.${key}` : key;
+    if (
+      source[key] &&
+      typeof source[key] === 'object' &&
+      !Array.isArray(source[key]) &&
+      !SETTINGS_REPLACED_WHOLE.includes(keyPath)
+    ) {
       // If the key doesn't exist on the target, initialize it as an object
       if (!(key in target)) {
         (target as any)[key] = {};
       }
       // Recursively merge objects
-      (target as any)[key] = deepMergeRecursively((target as any)[key], source[key]);
+      (target as any)[key] = deepMergeRecursively((target as any)[key], source[key], keyPath);
     } else if (typeof source[key] === 'function') {
       (target as any)[key] = source[key];
     } else {
-      // For non-objects or arrays, overwrite the value with a deep copy
+      // For non-objects, arrays and members replaced whole, overwrite the value with a deep copy
       (target as any)[key] = structuredClone(source[key]);
     }
   }

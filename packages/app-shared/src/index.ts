@@ -10,7 +10,7 @@ export * from './data/localized.type';
 export * from './data/schemas';
 export * from './logging/logger';
 export * from './logging/logger.type';
-export * from './settings/contestantAppConfig';
+export * from './settings/contestantAppSettings';
 export * from './settings/dynamicSettings';
 export * from './settings/dynamicSettings.type';
 export * from './settings/staticSettings';
