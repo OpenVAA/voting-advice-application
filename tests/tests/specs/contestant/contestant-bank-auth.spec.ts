@@ -21,27 +21,13 @@ import { expect, test } from '@playwright/test';
 import * as jose from 'jose';
 import { buildTestIdToken } from '../../utils/buildTestIdToken';
 import { supabaseAnonKey } from '../../utils/supabaseAnonKey';
+import { supabaseServiceRoleKey } from '../../utils/supabaseServiceRoleKey';
+import { supabaseUrl } from '../../utils/supabaseUrl';
 import { getTestKeys } from '../../utils/testKeys';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
-
 /**
- * The service-role key of the stack the suite runs against, read when a hook needs it, never at module load: a throw at module load fails `playwright test --list` and every project of the run, not only this one.
- *
- * @throws Error naming the variable when it is not set.
- */
-function serviceRoleKey(): string {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (!key)
-    throw new Error(
-      'SUPABASE_SERVICE_ROLE_KEY is not set; the bank-auth tests read and remove what identity-callback created with it.'
-    );
-  return key;
-}
-
-/**
- * The secret the frontend server sends to the function, which the E2E wrapper generates for each run and gives to the function and to Playwright alike. Read when a hook needs it, for the reason above.
+ * The secret the frontend server sends to the function, which the E2E wrapper generates for each run and gives to the function and to Playwright alike. Read when a hook needs it, never at module load: a throw at module load fails `playwright test --list` and every project of the run, not only this one.
  *
  * @throws Error naming the variable when it is not set.
  */
@@ -142,7 +128,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     body: Record<string, unknown>,
     credential: string | null = secret
   ): Promise<FunctionAnswer> {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/identity-callback`, {
+    const response = await fetch(`${supabaseUrl()}/functions/v1/identity-callback`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -217,7 +203,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
 
   test.beforeAll(async () => {
     // Built through dev-seed's guarded factory, which refuses a non-local SUPABASE_URL before any service-role request is sent.
-    adminClient = createServiceRoleClient(SUPABASE_URL, serviceRoleKey());
+    adminClient = createServiceRoleClient(supabaseUrl(), supabaseServiceRoleKey());
     anonKey = supabaseAnonKey();
     secret = serverSecret();
     testKeys = await getTestKeys();
@@ -373,7 +359,7 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
   });
 
   test('should handle CORS preflight correctly', async () => {
-    const response = await fetch(`${SUPABASE_URL}/functions/v1/identity-callback`, {
+    const response = await fetch(`${supabaseUrl()}/functions/v1/identity-callback`, {
       method: 'OPTIONS',
       headers: {
         Origin: 'http://localhost:5174',

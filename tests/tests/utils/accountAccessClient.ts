@@ -8,12 +8,10 @@
 
 import { supabaseAnonKey } from './supabaseAnonKey';
 import { supabaseServiceRoleKey } from './supabaseServiceRoleKey';
-
-/** Same fallback the tests' admin client uses. */
-const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
+import { supabaseUrl } from './supabaseUrl';
 
 /** The endpoint of the function. */
-const ACCOUNT_ACCESS_URL = `${SUPABASE_URL}/functions/v1/account-access`;
+const ACCOUNT_ACCESS_URL = `${supabaseUrl()}/functions/v1/account-access`;
 
 /** What the function answered: its status and its JSON body, as received. */
 export interface AccountAccessAnswer {

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { supabaseAnonKey } from '../../utils/supabaseAnonKey';
+import { supabaseUrl } from '../../utils/supabaseUrl';
 import type { APIRequestContext, APIResponse } from '@playwright/test';
 
 /**
@@ -16,9 +17,6 @@ import type { APIRequestContext, APIResponse } from '@playwright/test';
  *
  * Rigidity contract: HARD assertions only (no expect.soft / try-catch / .catch around an expectation).
  */
-
-/** Same fallback the tests' admin client uses. */
-const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
 
 /** The error code the auth service answers with while public sign-up is off. */
 const SIGNUP_DISABLED = 'signup_disabled';
@@ -41,7 +39,7 @@ function freshAddress(): string {
  */
 function postAsAnon(request: APIRequestContext, route: string, data: Record<string, unknown>): Promise<APIResponse> {
   const key = supabaseAnonKey();
-  return request.post(`${SUPABASE_URL}/auth/v1/${route}`, {
+  return request.post(`${supabaseUrl()}/auth/v1/${route}`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
     data
   });
