@@ -19,6 +19,7 @@ import {
   NON_COLUMN_FIELDS,
   resolveCollectionName
 } from './template/permittedKeys';
+import type { Enums } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { LocalityGuardOptions } from './localSupabaseUrl';
 import type { JsonbRefTable, LinkPlanEntry } from './template/linkSentinels';
@@ -104,12 +105,10 @@ export interface FindDataResult {
 }
 
 /** The entity tables an invitation's promise can name. */
-export type InvitationTargetType = 'candidate' | 'organization' | 'faction' | 'alliance';
+export type InvitationTargetType = Enums<'entity_type'>;
 
 /** The fields every item of an invitation batch may carry, whatever its scope. */
 interface InvitationSeedCommon {
-  /** The promised role; the SQL function defaults it to `editor`. */
-  role?: 'admin' | 'editor';
   /** The invited address. An item without one gets a generated code. */
   email?: string;
   /** An ISO timestamp after which the invitation cannot be claimed. Absent means it does not expire. */
@@ -128,20 +127,13 @@ export type InvitationNominationParent =
 /** A JSON object, the one shape besides null that `create_invitations` takes for a nomination's localized and presentation columns. */
 type InvitationNominationObject = Record<string, unknown>;
 
-/**
- * One nomination of the invited entity, in the keys `create_invitations` reads. Every id is a uuid of the batch's project.
- *
- * An object with an `id` updates that nomination of the invited entity, and a column it does not state keeps its stored value; an object without one creates a nomination. `confirmed` is stated on every object.
- */
-export interface InvitationNominationSeed {
-  /** A nomination of the invited entity to update; absent creates one. */
-  id?: string;
+/** The columns of {@link InvitationNominationSeed} besides its `id` and `parent`. */
+interface InvitationNominationSeedBase {
   election_id: string;
   constituency_id: string;
   /** An integer; absent means the election's current round. */
   election_round?: number;
   election_symbol?: string | null;
-  parent: InvitationNominationParent;
   confirmed: boolean;
   name?: InvitationNominationObject | null;
   short_name?: InvitationNominationObject | null;
@@ -156,10 +148,31 @@ export interface InvitationNominationSeed {
   custom_data?: Record<string, unknown>;
 }
 
+/**
+ * One nomination of the invited entity, in the keys `create_invitations` reads. Every id is a uuid of the batch's project.
+ *
+ * An object with an `id` updates that nomination of the invited entity, and a column it does not state keeps its stored value; an object without one creates a nomination. `confirmed` is stated on every object.
+ */
+export type InvitationNominationSeed = InvitationNominationSeedBase &
+  (
+    | {
+        /** A nomination of the invited entity to update. */
+        id: string;
+        parent: InvitationNominationParent;
+      }
+    | {
+        id?: never;
+        /** A created nomination has no stored parent to keep. */
+        parent: Exclude<InvitationNominationParent, { kind: 'keep' }>;
+      }
+  );
+
 /** A promise on one entity, named by exactly one of its row id and its `external_id` in the project. */
 export type EntityInvitationSeedItem = InvitationSeedCommon & {
   /** `entity` is the SQL function's default scope. */
   scope?: 'entity';
+  /** The promised role; the SQL function defaults it to `editor`, the one role an entity-scope invitation can promise. */
+  role?: 'editor';
 } & (
     | {
         target_type: 'candidate' | 'organization';
@@ -174,11 +187,13 @@ export type EntityInvitationSeedItem = InvitationSeedCommon & {
   ) &
   ({ target_id: string; external_id?: never } | { external_id: string; target_id?: never });
 
-/** A promise on the project the batch is seeded in. */
+/** A promise on the project the batch is seeded in. The project is always the client's own, so the item names no target. */
 export type ProjectInvitationSeedItem = InvitationSeedCommon & {
   scope: 'project';
+  /** The promised role; the SQL function defaults it to `editor`. */
+  role?: Enums<'grant_role_type'>;
   target_type?: never;
-  target_id?: string;
+  target_id?: never;
   external_id?: never;
 };
 
@@ -188,10 +203,10 @@ export type InvitationSeedItem = EntityInvitationSeedItem | ProjectInvitationSee
 /** One element of the array `create_invitations` returns, in the order of the items. */
 export interface SeededInvitation {
   id: string;
-  scope: 'project' | 'entity';
+  scope: Extract<Enums<'grant_scope_type'>, 'project' | 'entity'>;
   target_type: InvitationTargetType | null;
   target_id: string;
-  role: 'admin' | 'editor';
+  role: Enums<'grant_role_type'>;
   /** The invited address, trimmed and lower-cased; null on a code invitation. */
   email: string | null;
   expires_at: string | null;

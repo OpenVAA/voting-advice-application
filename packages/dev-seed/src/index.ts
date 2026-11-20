@@ -51,7 +51,7 @@
  *   - `Fragment<TRow>` — per-entity template-fragment shape.
  *   - `Overrides` — override map shape.
  *   - `FindDataResult` — admin-client query result (consumed by the tests/subclass).
- *   - `InvitationSeedItem` (`EntityInvitationSeedItem` | `ProjectInvitationSeedItem`), `InvitationTargetType`, `InvitationNominationSeed`, `InvitationNominationParent`, `CreateInvitationsOptions`, `SeededInvitation`, `SeededInvitationNominations` — the argument, option and return shapes of `SupabaseAdminClient.createInvitations`.
+ *   - `InvitationSeedItem`, `InvitationNominationSeed`, `SeededInvitation` — the argument and return shapes of `SupabaseAdminClient.createInvitations`.
  *   - `TableName` — union of the 14 table names in TOPO_ORDER.
  *   - `LatentHooks` — swappable seam on `ctx.latent`.
  *   - `LocaleCode` — union of the `LOCALES` entries.
@@ -117,16 +117,10 @@ export type { LatentHooks } from './emitters/latent/latentTypes';
 export type { LocaleCode } from './locales';
 export type { TableName } from './pipeline';
 export type {
-  CreateInvitationsOptions,
-  EntityInvitationSeedItem,
   FindDataResult,
-  InvitationNominationParent,
   InvitationNominationSeed,
   InvitationSeedItem,
-  InvitationTargetType,
-  ProjectInvitationSeedItem,
-  SeededInvitation,
-  SeededInvitationNominations
+  SeededInvitation
 } from './supabaseAdminClient';
 export type { LinkSentinelRule, LinkTarget, SentinelPayload } from './template/linkSentinels';
 export type {
