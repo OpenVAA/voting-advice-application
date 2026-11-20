@@ -12,7 +12,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { firstNeededGate, SET_PASSWORD_GATE } from './gates';
 import type { BasicUserData } from '$lib/api/base/dataWriter.type';
-import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 import type { Gate, UserGateFacts } from './gates';
 
 /**
@@ -21,7 +21,7 @@ import type { Gate, UserGateFacts } from './gates';
  * @param addressState - The state of the account's address. Proved by default.
  * @returns The user.
  */
-function userWith(passwordSet = true, addressState: AddressState = 'proved'): BasicUserData {
+function userWith(passwordSet = true, addressState: AddressStateName = 'proved'): BasicUserData {
   const proved = addressState === 'proved';
   return {
     id: 'user-1',
@@ -31,10 +31,13 @@ function userWith(passwordSet = true, addressState: AddressState = 'proved'): Ba
     settings: {},
     termsOfUseAccepted: null,
     passwordSet,
-    addressState,
-    pendingEmail: addressState === 'pending' ? 'pending@example.test' : null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: 'pending@example.test' }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
+    ownOrganizationUnnamed: false
   };
 }
 
@@ -124,14 +127,14 @@ describe('SET_PASSWORD_GATE — needed while the account has no password, on a p
     expect(SET_PASSWORD_GATE.isNeeded({ user: userWith(false, 'proved') })).toBe(true);
   });
 
-  it.each<AddressState>(['none', 'pending'])(
+  it.each<AddressStateName>(['none', 'pending'])(
     'is not needed for an account with no password whose address is %s',
     (addressState) => {
       expect(SET_PASSWORD_GATE.isNeeded({ user: userWith(false, addressState) })).toBe(false);
     }
   );
 
-  it.each<AddressState>(['none', 'pending', 'proved'])(
+  it.each<AddressStateName>(['none', 'pending', 'proved'])(
     'is not needed for an account with a password whose address is %s',
     (addressState) => {
       expect(SET_PASSWORD_GATE.isNeeded({ user: userWith(true, addressState) })).toBe(false);
@@ -147,8 +150,8 @@ describe('SET_PASSWORD_GATE — needed while the account has no password, on a p
 
   it('asks only for exactly proved: an address state that is absent or another value does not need it', () => {
     for (const value of [undefined, null, '', 'PROVED', 'confirmed']) {
-      const user = { ...userWith(false), addressState: value } as unknown as BasicUserData;
-      expect(SET_PASSWORD_GATE.isNeeded({ user }), `addressState ${JSON.stringify(value)}`).toBe(false);
+      const user = { ...userWith(false), address: { state: value } } as unknown as BasicUserData;
+      expect(SET_PASSWORD_GATE.isNeeded({ user }), `address state ${JSON.stringify(value)}`).toBe(false);
     }
   });
 
@@ -162,7 +165,7 @@ describe('SET_PASSWORD_GATE — needed while the account has no password, on a p
     });
 
     expect(SET_PASSWORD_GATE.isNeeded({ user })).toBe(true);
-    expect(read).toEqual(['passwordSet', 'addressState']);
+    expect(read).toEqual(['passwordSet', 'address']);
   });
 
   it('is frozen, and a write to it throws', () => {

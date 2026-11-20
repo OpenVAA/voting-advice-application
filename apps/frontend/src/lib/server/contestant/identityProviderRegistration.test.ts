@@ -17,7 +17,7 @@ import {
   IDENTITY_PROVIDER_REGISTRATION_RESULT
 } from './identityProviderRegistration';
 import type { BasicUserData, UserEntity } from '$lib/api/base/dataWriter.type';
-import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 import type { IdentityProviderRegistrationDeps } from './identityProviderRegistration';
 
 const ORIGIN = 'http://localhost:5173';
@@ -41,7 +41,7 @@ const APP_METADATA = {
  * @param addressState - The state.
  * @returns The user.
  */
-function userIn(addressState: AddressState): BasicUserData {
+function userIn(addressState: AddressStateName): BasicUserData {
   return {
     id: 'user-1',
     email: addressState === 'proved' ? TYPED : '',
@@ -50,10 +50,13 @@ function userIn(addressState: AddressState): BasicUserData {
     settings: {},
     termsOfUseAccepted: null,
     passwordSet: false,
-    addressState,
-    pendingEmail: addressState === 'pending' ? PENDING : null,
-    ownOrganizationUnnamed: true,
-    pendingEmailTaken: false
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: PENDING }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
+    ownOrganizationUnnamed: true
   };
 }
 
@@ -314,7 +317,7 @@ describe('save, the names', () => {
 });
 
 describe('save, the address', () => {
-  it.each<AddressState>(['none', 'pending'])(
+  it.each<AddressStateName>(['none', 'pending'])(
     'asks for the typed address to be proved for an account whose address is %s, then clears the marker',
     async (state) => {
       const deps = depsWith({ getBasicUserData: vi.fn(async () => userIn(state)) });
@@ -419,7 +422,7 @@ describe('resend', () => {
     expect((await handleIdentityProviderRegistration(post({ intent: 'resend' }), deps)).body.result).toBe('failed');
   });
 
-  it.each<AddressState>(['none', 'proved'])('answers failed in the state %s, asking nothing', async (state) => {
+  it.each<AddressStateName>(['none', 'proved'])('answers failed in the state %s, asking nothing', async (state) => {
     const deps = depsWith({ getBasicUserData: vi.fn(async () => userIn(state)) });
 
     expect((await handleIdentityProviderRegistration(post({ intent: 'resend' }), deps)).body.result).toBe('failed');

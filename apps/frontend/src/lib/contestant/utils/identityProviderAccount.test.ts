@@ -10,7 +10,7 @@ import {
   PLACEHOLDER_EMAIL_DOMAIN,
   REGISTERED_ENTITIES_KEY
 } from './identityProviderAccount';
-import type { AddressState } from './identityProviderAccount';
+import type { AddressStateName } from './identityProviderAccount';
 
 /**
  * An account's address state, told from the verified user alone, and the placeholder address it is told by.
@@ -42,7 +42,7 @@ describe('isPlaceholderAddress', () => {
 });
 
 describe('addressStateOf', () => {
-  it.each<[string, Parameters<typeof addressStateOf>[0], AddressState]>([
+  it.each<[string, Parameters<typeof addressStateOf>[0], AddressStateName]>([
     [
       'an account no identity provider made, on a real address',
       { email: 'person@example.org', newEmail: null, identityProvider: undefined },

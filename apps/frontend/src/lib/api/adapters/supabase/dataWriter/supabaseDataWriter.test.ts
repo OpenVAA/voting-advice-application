@@ -1065,10 +1065,8 @@ describe('SupabaseDataWriter', () => {
         expect(await writer.getBasicUserData()).toMatchObject({
           email: TYPED,
           username: TYPED,
-          addressState: 'proved',
-          pendingEmail: null,
-          ownOrganizationUnnamed: false,
-          pendingEmailTaken: false
+          address: { state: 'proved' },
+          ownOrganizationUnnamed: false
         });
       });
 
@@ -1080,9 +1078,7 @@ describe('SupabaseDataWriter', () => {
         expect(result).toMatchObject({
           email: '',
           username: '',
-          addressState: 'none',
-          pendingEmail: null,
-          pendingEmailTaken: false
+          address: { state: 'none', pendingTaken: false }
         });
         expect(JSON.stringify(result)).not.toContain('bank-auth.placeholder');
       });
@@ -1095,9 +1091,7 @@ describe('SupabaseDataWriter', () => {
         expect(result).toMatchObject({
           email: '',
           username: '',
-          addressState: 'pending',
-          pendingEmail: TYPED,
-          pendingEmailTaken: false
+          address: { state: 'pending', email: TYPED }
         });
         expect(JSON.stringify(result)).not.toContain('bank-auth.placeholder');
       });
@@ -1109,9 +1103,7 @@ describe('SupabaseDataWriter', () => {
         expect(await writer.getBasicUserData()).toMatchObject({
           email: '',
           username: '',
-          addressState: 'none',
-          pendingEmail: null,
-          pendingEmailTaken: true
+          address: { state: 'none', pendingTaken: true }
         });
       });
 
@@ -1122,9 +1114,7 @@ describe('SupabaseDataWriter', () => {
         expect(await writer.getBasicUserData()).toMatchObject({
           email: TYPED,
           username: TYPED,
-          addressState: 'proved',
-          pendingEmail: null,
-          pendingEmailTaken: false
+          address: { state: 'proved' }
         });
       });
 
@@ -1142,8 +1132,7 @@ describe('SupabaseDataWriter', () => {
 
         expect(await writer.getBasicUserData()).toMatchObject({
           email: TYPED,
-          addressState: 'proved',
-          pendingEmail: null,
+          address: { state: 'proved' },
           ownOrganizationUnnamed: false
         });
       });

@@ -164,7 +164,7 @@ An entity with no nomination is known on the server, so its page waits for nothi
    * The address that awaits the link mailed to it, which the email task names, or `undefined` while there is none: the account's address is proved, or the account did not register with an identity provider.
    */
   const pendingEmail = $derived(
-    contestantCtx.user?.addressState === 'pending' ? contestantCtx.user.pendingEmail || undefined : undefined
+    contestantCtx.user?.address.state === 'pending' ? contestantCtx.user.address.email : undefined
   );
 
   /**

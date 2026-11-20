@@ -119,7 +119,7 @@ const PAGE = '[data-testid="page"]';
 
 /** Load data for a user who must set a password: the gate, the user-level data with a proved address and the arrival marker, and no entity data. */
 function gatedData(user: object = USER) {
-  return { gate: 'setPassword', user: { ...user, passwordSet: false, addressState: 'proved' }, arrival: null };
+  return { gate: 'setPassword', user: { ...user, passwordSet: false, address: { state: 'proved' } }, arrival: null };
 }
 
 /** Load data for a user past the gates. */

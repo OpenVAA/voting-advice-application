@@ -504,9 +504,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
     async () => {
       const user = await organizationEditor.getBasicUserData();
 
-      expect(user.addressState).toBe('proved');
-      expect(user.pendingEmail).toBeNull();
-      expect(user.pendingEmailTaken).toBe(false);
+      expect(user.address).toEqual({ state: 'proved' });
       expect(user.ownOrganizationUnnamed).toBe(false);
       expect(user.username).toBe(user.email);
     },

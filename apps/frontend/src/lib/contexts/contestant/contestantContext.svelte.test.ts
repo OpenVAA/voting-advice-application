@@ -1227,10 +1227,8 @@ describe('contestantContext — the user-level accessors derived from page data'
     settings: {},
     termsOfUseAccepted: '2026-10-06T00:54:12.277826+00:00',
     passwordSet: true,
-    addressState: 'proved',
-    pendingEmail: null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    address: { state: 'proved' },
+    ownOrganizationUnnamed: false
   };
   /** One id shared by an entity of each type, as the independent primary keys of the entity tables allow. */
   const SHARED_ID = '3f2b8c1e-9a4d-4e6f-8b7a-0c1d2e3f4a5b';

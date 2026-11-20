@@ -1066,16 +1066,18 @@ describe('the contestant home page — the email task of an address awaiting its
       username: '',
       termsOfUseAccepted: '2026-01-01T00:00:00Z',
       passwordSet: false,
-      addressState: 'none',
-      pendingEmail: null,
+      address: { state: 'none', pendingTaken: false },
       ownOrganizationUnnamed: false,
-      pendingEmailTaken: false,
       ...overrides
     };
   }
 
-  const PENDING_USER = userWith({ addressState: 'pending', pendingEmail: PENDING_ADDRESS });
-  const PROVED_USER = userWith({ addressState: 'proved', email: 'proved@example.org', username: 'proved@example.org' });
+  const PENDING_USER = userWith({ address: { state: 'pending', email: PENDING_ADDRESS } });
+  const PROVED_USER = userWith({
+    address: { state: 'proved' },
+    email: 'proved@example.org',
+    username: 'proved@example.org'
+  });
 
   /** The email task's label, as the fake translation function renders it for an address. */
   function emailTaskLabel(address: string): string {
@@ -1167,8 +1169,7 @@ describe('the contestant home page — the email task of an address awaiting its
 
   it.each([
     ['a proved address', PROVED_USER],
-    ['no address', userWith({ addressState: 'none' })],
-    ['a pending state with no address', userWith({ addressState: 'pending' })],
+    ['no address', userWith({ address: { state: 'none', pendingTaken: false } })],
     ['no user data', undefined]
   ] as const)('lists no email task for %s, and the nomination row first', (_, user) => {
     const target = render({ ...CANDIDATE, ...NOTHING_FILLED, user });
@@ -1181,7 +1182,11 @@ describe('the contestant home page — the email task of an address awaiting its
   });
 
   it('appears, follows the address and goes as the user-level data changes under the mounted page', () => {
-    const target = render({ ...CANDIDATE, ...NOTHING_FILLED, user: userWith({ addressState: 'none' }) });
+    const target = render({
+      ...CANDIDATE,
+      ...NOTHING_FILLED,
+      user: userWith({ address: { state: 'none', pendingTaken: false } })
+    });
     expect(target.querySelector(EMAIL_TASK)).toBeNull();
 
     box = { ...box, user: PENDING_USER };
@@ -1189,7 +1194,7 @@ describe('the contestant home page — the email task of an address awaiting its
     expect(rowsOf(target)[0]).toBe(shown(target, EMAIL_TASK));
     expect(shown(target, EMAIL_TASK).textContent?.trim()).toBe(emailTaskLabel(PENDING_ADDRESS));
 
-    box = { ...box, user: userWith({ addressState: 'pending', pendingEmail: 'another@example.org' }) };
+    box = { ...box, user: userWith({ address: { state: 'pending', email: 'another@example.org' } }) };
     flushSync();
     expect(shown(target, EMAIL_TASK).textContent?.trim()).toBe(emailTaskLabel('another@example.org'));
 

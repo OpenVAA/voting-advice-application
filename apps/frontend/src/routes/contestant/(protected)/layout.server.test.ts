@@ -26,6 +26,7 @@ import { load as entityLoad } from './[entityType=servedEntityType]/[entityId=uu
 import { load } from './+layout.server';
 import type { BasicUserData, UserEntity } from '$lib/api/base/dataWriter.type';
 import type { GrantClaim, GrantShape } from '$lib/auth';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 
 const {
   createDataProvider,
@@ -180,7 +181,7 @@ function userWith(
   termsOfUseAccepted: string | null,
   role: BasicUserData['role'] = 'contestant',
   passwordSet = true,
-  addressState: BasicUserData['addressState'] = 'proved'
+  addressState: AddressStateName = 'proved'
 ): BasicUserData {
   return {
     id: 'user-1',
@@ -190,10 +191,13 @@ function userWith(
     settings: {},
     termsOfUseAccepted,
     passwordSet,
-    addressState,
-    pendingEmail: null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: 'pending@example.test' }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
+    ownOrganizationUnnamed: false
   };
 }
 

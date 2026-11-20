@@ -16,7 +16,7 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 import { firstNeededGate, SET_PASSWORD_GATE } from '$lib/auth/gates';
 import { CONTESTANT_GATES } from './gates';
 import type { BasicUserData } from '$lib/api/base/dataWriter.type';
-import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 import type { ContestantGate, ContestantGateFacts, ContestantGateId, IdentityProviderArrival } from './gates';
 
 /**
@@ -29,7 +29,7 @@ import type { ContestantGate, ContestantGateFacts, ContestantGateId, IdentityPro
 function userWith(
   termsOfUseAccepted: string | null,
   passwordSet = true,
-  addressState: AddressState = 'proved'
+  addressState: AddressStateName = 'proved'
 ): BasicUserData {
   const proved = addressState === 'proved';
   return {
@@ -40,10 +40,13 @@ function userWith(
     settings: {},
     termsOfUseAccepted,
     passwordSet,
-    addressState,
-    pendingEmail: addressState === 'pending' ? 'pending@example.test' : null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: 'pending@example.test' }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
+    ownOrganizationUnnamed: false
   };
 }
 
@@ -137,7 +140,7 @@ describe('the set-password gate — needed while the account has no password', (
     }
   });
 
-  it.each<AddressState>(['none', 'pending'])(
+  it.each<AddressStateName>(['none', 'pending'])(
     'is not needed for an account with no password whose address is %s',
     (addressState) => {
       expect(setPassword.isNeeded(facts(userWith(ACCEPTED_AT, false, addressState)))).toBe(false);
@@ -149,7 +152,7 @@ describe('the set-password gate — needed while the account has no password', (
     expect(setPassword.isNeeded(facts(userWith(ACCEPTED_AT, false, 'proved')))).toBe(true);
   });
 
-  it.each<AddressState>(['none', 'pending', 'proved'])(
+  it.each<AddressStateName>(['none', 'pending', 'proved'])(
     'is not needed for an account with a password whose address is %s',
     (addressState) => {
       expect(setPassword.isNeeded(facts(userWith(ACCEPTED_AT, true, addressState)))).toBe(false);
@@ -158,8 +161,8 @@ describe('the set-password gate — needed while the account has no password', (
 
   it('asks only for exactly proved: an address state that is absent or another value does not need it', () => {
     for (const value of [undefined, null, '', 'PROVED', 'confirmed']) {
-      const user = { ...userWith(ACCEPTED_AT, false), addressState: value } as unknown as BasicUserData;
-      expect(setPassword.isNeeded(facts(user)), `addressState ${JSON.stringify(value)}`).toBe(false);
+      const user = { ...userWith(ACCEPTED_AT, false), address: { state: value } } as unknown as BasicUserData;
+      expect(setPassword.isNeeded(facts(user)), `address state ${JSON.stringify(value)}`).toBe(false);
     }
   });
 
@@ -173,7 +176,7 @@ describe('the set-password gate — needed while the account has no password', (
     });
 
     expect(setPassword.isNeeded(facts(user))).toBe(true);
-    expect(read).toEqual(['passwordSet', 'addressState']);
+    expect(read).toEqual(['passwordSet', 'address']);
   });
 });
 
@@ -186,12 +189,12 @@ describe('the identity-provider gate — needed while the account lacks what the
    * @param ownOrganizationUnnamed - Whether the identity's own party has no name.
    * @returns The user.
    */
-  function providerUser(addressState: AddressState, ownOrganizationUnnamed = false): BasicUserData {
+  function providerUser(addressState: AddressStateName, ownOrganizationUnnamed = false): BasicUserData {
     return { ...userWith(ACCEPTED_AT, false, addressState), ownOrganizationUnnamed };
   }
 
   // The rows of the view's variants: the address state, the marker, whether the own party has no name, and whether the gate is needed.
-  it.each<[string, AddressState, IdentityProviderArrival, boolean, boolean]>([
+  it.each<[string, AddressStateName, IdentityProviderArrival, boolean, boolean]>([
     ['V1: no address, no marker', 'none', null, false, true],
     ['V1: no address, the marker created', 'none', 'created', false, true],
     ['V2: no address, a party with no name', 'none', null, true, true],
@@ -255,7 +258,7 @@ describe('the identity-provider gate — needed while the account lacks what the
     });
 
     expect(identityProvider.isNeeded(facts(user))).toBe(true);
-    expect([...new Set(read)].sort()).toEqual(['addressState', 'ownOrganizationUnnamed']);
+    expect([...new Set(read)].sort()).toEqual(['address', 'ownOrganizationUnnamed']);
   });
 });
 
