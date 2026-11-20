@@ -25,8 +25,7 @@ const EVERY_MODE: Array<RegistrationMode> = ['identity_provider', 'email', 'code
 /** Settings that serve both entity types and allow every mode for each. */
 const FULL: NonNullable<RegistrationOfferSettings> = {
   contestantApp: {
-    entityTypes: ['candidate', 'organization'],
-    registrationModes: { candidate: EVERY_MODE, organization: EVERY_MODE }
+    servedEntityTypes: { candidate: { registrationModes: EVERY_MODE }, organization: { registrationModes: EVERY_MODE } }
   }
 };
 
@@ -40,32 +39,34 @@ describe('listedRegistrationModes', () => {
     ['null settings', null, []],
     ['settings that store nothing', {}, []],
     [
-      'a matrix whose rows are empty',
-      { contestantApp: { registrationModes: { candidate: [], organization: [] } } },
+      'a served type with no mode',
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } },
       []
     ],
     ['both types served with every mode', FULL, ['identity_provider', 'email', 'code']],
     [
       'candidates with the code mode alone',
-      { contestantApp: { registrationModes: { candidate: ['code'] } } },
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['code'] } } } },
       ['code']
     ],
     [
       'candidates with the email mode alone',
-      { contestantApp: { registrationModes: { candidate: ['email'] } } },
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['email'] } } } },
       ['email']
     ],
     [
       'the identity provider for candidates alone',
-      { contestantApp: { registrationModes: { candidate: ['identity_provider'] } } },
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['identity_provider'] } } } },
       ['identity_provider']
     ],
     [
       'the identity provider for organizations alone',
       {
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: [], organization: ['identity_provider'] }
+          servedEntityTypes: {
+            candidate: { registrationModes: [] },
+            organization: { registrationModes: ['identity_provider'] }
+          }
         }
       },
       ['identity_provider']
@@ -74,28 +75,22 @@ describe('listedRegistrationModes', () => {
       'the identity provider for organizations and a code for candidates',
       {
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: ['code'], organization: ['identity_provider'] }
+          servedEntityTypes: {
+            candidate: { registrationModes: ['code'] },
+            organization: { registrationModes: ['identity_provider'] }
+          }
         }
       },
       ['identity_provider', 'code']
     ],
     [
-      'the identity provider stored for an entity type the project does not serve',
-      {
-        contestantApp: {
-          entityTypes: ['candidate'],
-          registrationModes: { candidate: ['code'], organization: ['identity_provider'] }
-        }
-      },
-      ['code']
-    ],
-    [
       'the email and code modes for organizations alone',
       {
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: [], organization: ['code', 'email'] }
+          servedEntityTypes: {
+            candidate: { registrationModes: [] },
+            organization: { registrationModes: ['code', 'email'] }
+          }
         }
       },
       ['email', 'code']
@@ -104,24 +99,13 @@ describe('listedRegistrationModes', () => {
       'a mode stored twice and the modes stored in another order',
       {
         contestantApp: {
-          entityTypes: ['organization', 'candidate'],
-          registrationModes: {
-            candidate: ['code', 'email', 'code', 'identity_provider'],
-            organization: ['email', 'code', 'email']
+          servedEntityTypes: {
+            organization: { registrationModes: ['email', 'code', 'email'] },
+            candidate: { registrationModes: ['code', 'email', 'code', 'identity_provider'] }
           }
         }
       },
       ['identity_provider', 'email', 'code']
-    ],
-    [
-      'a row stored for an entity type the project does not serve',
-      {
-        contestantApp: {
-          entityTypes: ['candidate'],
-          registrationModes: { candidate: [], organization: ['email', 'code'] }
-        }
-      },
-      []
     ],
     ['a full matrix while answers are locked', { ...FULL, access: { answersLocked: true } }, []],
     [
@@ -169,15 +153,17 @@ describe('identityProviderEntityTypes', () => {
     ['both types served with every mode', FULL, ['candidate', 'organization']],
     [
       'the identity provider for candidates alone',
-      { contestantApp: { registrationModes: { candidate: ['identity_provider'] } } },
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['identity_provider'] } } } },
       ['candidate']
     ],
     [
       'the identity provider for organizations alone',
       {
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: ['email', 'code'], organization: ['identity_provider'] }
+          servedEntityTypes: {
+            candidate: { registrationModes: ['email', 'code'] },
+            organization: { registrationModes: ['identity_provider'] }
+          }
         }
       },
       ['organization']
@@ -186,31 +172,22 @@ describe('identityProviderEntityTypes', () => {
       'the types and the modes stored in another order',
       {
         contestantApp: {
-          entityTypes: ['organization', 'candidate'],
-          registrationModes: {
-            organization: ['code', 'identity_provider'],
-            candidate: ['identity_provider', 'identity_provider']
+          servedEntityTypes: {
+            organization: { registrationModes: ['code', 'identity_provider'] },
+            candidate: { registrationModes: ['identity_provider', 'identity_provider'] }
           }
         }
       },
       ['candidate', 'organization']
     ],
     [
-      'the identity provider stored for an entity type the project does not serve',
-      {
-        contestantApp: {
-          entityTypes: ['candidate'],
-          registrationModes: { candidate: ['email'], organization: ['identity_provider'] }
-        }
-      },
-      []
-    ],
-    [
       'every mode but the identity provider',
       {
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: ['email', 'code'], organization: ['email', 'code'] }
+          servedEntityTypes: {
+            candidate: { registrationModes: ['email', 'code'] },
+            organization: { registrationModes: ['email', 'code'] }
+          }
         }
       },
       []
@@ -248,7 +225,7 @@ describe('identityProviderEntityTypes', () => {
 
 describe('identityProviderEntityType', () => {
   const CANDIDATES_ALONE: RegistrationOfferSettings = {
-    contestantApp: { registrationModes: { candidate: ['identity_provider'] } }
+    contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['identity_provider'] } } }
   };
   const CASES: Array<[string, RegistrationOfferSettings, unknown, ServedEntityType | undefined]> = [
     ['a named type the list holds', FULL, 'organization', 'organization'],
@@ -271,48 +248,53 @@ describe('signInLinkOffered', () => {
   const CASES: Array<[string, RegistrationOfferSettings, boolean]> = [
     ['undefined settings', undefined, false],
     ['settings that store nothing', {}, false],
-    ['the code mode alone', { contestantApp: { registrationModes: { candidate: ['code'] } } }, false],
-    ['the email mode for candidates', { contestantApp: { registrationModes: { candidate: ['email'] } } }, true],
+    [
+      'the code mode alone',
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['code'] } } } },
+      false
+    ],
+    [
+      'the email mode for candidates',
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['email'] } } } },
+      true
+    ],
     [
       'the email mode for organizations alone',
       {
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: ['code'], organization: ['email'] }
+          servedEntityTypes: {
+            candidate: { registrationModes: ['code'] },
+            organization: { registrationModes: ['email'] }
+          }
         }
       },
       true
     ],
     [
       'the identity provider for candidates',
-      { contestantApp: { registrationModes: { candidate: ['identity_provider'] } } },
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['identity_provider'] } } } },
       true
     ],
     [
       'the identity provider for organizations alone',
       {
         contestantApp: {
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: { candidate: [], organization: ['identity_provider'] }
+          servedEntityTypes: {
+            candidate: { registrationModes: [] },
+            organization: { registrationModes: ['identity_provider'] }
+          }
         }
       },
       true
     ],
     ['both the email mode and the identity provider', FULL, true],
-    [
-      'the email mode stored for an entity type the project does not serve',
-      {
-        contestantApp: {
-          entityTypes: ['candidate'],
-          registrationModes: { candidate: ['code'], organization: ['email', 'identity_provider'] }
-        }
-      },
-      false
-    ],
     ['the email mode while answers are locked', { ...FULL, access: { answersLocked: true } }, true],
     [
       'the code mode alone while answers are locked',
-      { contestantApp: { registrationModes: { candidate: ['code'] } }, access: { answersLocked: true } },
+      {
+        contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['code'] } } },
+        access: { answersLocked: true }
+      },
       false
     ]
   ];
