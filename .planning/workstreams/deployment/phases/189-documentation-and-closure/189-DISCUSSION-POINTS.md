@@ -216,6 +216,7 @@ D1's ★ reads "staging runs one task". Staging autoscales to 2 (`terraform.tfva
 
   The existing template tests are extended to cover the added names. The header and the `deployment/render` page both state "untested".
 - [ ] Only the broken parts (the `fromGroup` comment and the frontend URLs). Smaller, but Render deployers would still lack the timeouts that adapter-node's drain depends on.
+- [x] NEW: Remove the whole Render deployment example and mentions from guides and everything needed only for it. The instructions are no longer maintained.
 
 ### F-02 — `apps/frontend/docker-compose.dev.yml` · provisional — research
 
