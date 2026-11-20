@@ -1,6 +1,6 @@
 ---
 name: database
-description: 'Domain expert for the OpenVAA Supabase backend: 21-table PostgreSQL schema with JSONB localization, 108 RLS policies over a single grant model (four scopes, two role levels, a 23-member permission enum and one user_can predicate), JWT claims via Access Token Hook, invitations that promise a grant ahead of time, nominations held to their election's type, written by an entity's editor through one function or stated by an admin's invitation, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, a 2603-assertion pgTAP estate, storage bucket configuration, and a frozen baseline migration followed by appended numbered migrations listed in a manifest. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer.'
+description: 'Domain expert for the OpenVAA Supabase backend: 21-table PostgreSQL schema with JSONB localization, 108 RLS policies over a single grant model (four scopes, two role levels, a 23-member permission enum and one user_can predicate), JWT claims via Access Token Hook, invitations that promise a grant ahead of time, nominations held to their election's nomination shape, written by an entity's editor through one function or stated by an admin's invitation, 3 Edge Functions, bulk import/delete RPCs with external_id-based idempotent upsert, a 2603-assertion pgTAP estate, storage bucket configuration, and a frozen baseline migration followed by appended numbered migrations listed in a manifest. Activate when working in apps/supabase/ or packages/supabase-types/, writing migrations, RLS policies, database functions, pgTAP tests, or understanding the Supabase auth and service layer.'
 targets:
   - apps/supabase/
   - packages/supabase-types/
@@ -22,7 +22,7 @@ Record_ names the command behind each. A count is a snapshot: re-run its command
   row-level security for `(SELECT auth.uid())` and projected into the JWT by the Access Token Hook for
   the frontend's app-entry gates
 - 108 RLS policies (93 in `public`, 15 in `storage`) enforcing tenant isolation
-- Nominations: an election's type (`nomination_shape`, four members) says which entity types it
+- Nominations: an election's nomination shape (`nomination_shape`, four members) says which entity types it
   admits; an entity's editor writes the entity's whole set through `set_entity_nominations`
   (Schema Conventions § 7, RLS and Auth Patterns § 9)
 - Invitations: a row of `public.invitations` promises one grant; `create_invitations` seeds, stating
@@ -124,9 +124,9 @@ treatment: `apps/supabase/README.md`.
    (candidate_id, organization_id, faction_id, alliance_id) with a CHECK constraint enforcing
    exactly one is NOT NULL. A generated `entity_type` column derives from whichever FK is set.
    `parent_nomination_id` enables hierarchy. The `validate_nomination()` trigger enforces the
-   election-type rule, parent-child type rules and election/constituency/round consistency. Source:
+   nomination-shape rule, parent-child type rules and election/constituency/round consistency. Source:
    `011-validation-functions.sql` and `104-nominations.sql`.
-   - **The election type decides who may be nominated.** `elections.election_type` is a
+   - **The nomination shape decides who may be nominated.** `elections.nomination_shape` is a
      `public.nomination_shape`: `organization_only`, `candidate_only`, `organization_list` or
      `organization_list_and_independents`, the last being the column's default.
      `public.nomination_shape_rule(shape, entity_type)` is the matrix, stated ONCE in SQL: it answers
@@ -136,9 +136,9 @@ treatment: `apps/supabase/README.md`.
      (the data skill), and `packages/data/README.md` § _Nomination rules: the data model and the
      database_ compares the two.
    - **The row rule.** `validate_nomination` refuses, on INSERT and UPDATE and for every writer (the
-     service role and `bulk_import` included), a row whose entity type its election's type does not
-     admit: `Nomination shape refused: …`, SQLSTATE `23514`. Changing an election's type re-checks
-     nothing; a later write of a row the new type refuses is refused.
+     service role and `bulk_import` included), a row whose entity type its election's nomination shape does not
+     admit: `Nomination shape refused: …`, SQLSTATE `23514`. Changing an election's nomination shape re-checks
+     nothing; a later write of a row the new shape refuses is refused.
    - **The constituency rule.** `validate_nomination` also refuses, for every writer, a row whose
      constituency no constituency group of its election holds (`election_constituency_groups` joined to
      `constituency_group_constituencies`): `Nomination constituency <id> is no constituency of its
@@ -287,7 +287,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      refuses the caller. `private` is not an exposed schema; `anon`/`authenticated` keep USAGE + EXECUTE so
      policies (which run as the caller) can still call them. Always call them qualified (`private.x(...)`).
      `07-rpc-security.test.sql` § 8c holds three censuses of the definer functions left in `public`:
-     six that `anon` can execute (`contestant_app_public_config`, `project_open_for_voters`,
+     six that `anon` can execute (`contestant_app_public_settings`, `project_open_for_voters`,
      `storage_path_can`, `storage_path_is_public`, `user_can`, `user_has_account_grant`); for
      `authenticated`, eleven: the same six plus `claim_invitations`, `get_entity_basic_data`,
      `get_entity_nominations`, `get_nomination_parent_options` and `get_user_project_grants`; and thirteen that `service_role` can
@@ -317,15 +317,16 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      in SQL. Each carries its own `REVOKE ... FROM PUBLIC, anon` and `GRANT ... TO authenticated,
      service_role`: the blanket grant of `301-auth-functions.sql` reaches only the functions defined
      before it. `46-nomination-write-helpers.test.sql` pins them.
-   - `contestant_app_public_config(project_id)` (`106-app-settings.sql`) is the one of them **no policy
+   - `contestant_app_public_settings(project_id)` (`106-app-settings.sql`) is the one of them **no policy
      reaches**. The frontend adapter calls it when the caller can read no `app_settings` row of a
      project that is closed for voters, which is the normal state while contestants register. It
      answers one `jsonb` object holding exactly `access.contestantApp`, `access.answersLocked`,
-     `contestantApp.entityTypes`, `contestantApp.registrationModes` and `analytics.trackEvents`, raw and unvalidated, and the same all-null object for a
+     `contestantApp.servedEntityTypes` and `analytics.trackEvents`, each as stored when its shape is one
+     the frontend's parse accepts and otherwise the string `"invalid"`, and the same all-null object for a
      project with no row, a project that declares nothing and an id that names no project.
      `anon_select_app_settings` is not widened by it. A later anon-readable value is added as a member
      of that object, at its storage path, never as a second function.
-     `38-contestant-app-public-config.test.sql` pins the surface.
+     `38-contestant-app-public-settings.test.sql` pins the surface.
 
 5. **Standard 5-policy pattern** for project-scoped content tables:
    - `anon_select_{table}` -- USING (`project_open_for_voters(project_id)`) TO anon
@@ -491,7 +492,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
        caller without `project.edit_nominations` on the project while its answers are locked, asked right
        after the first and before the set is read; a row that could not be written). The guards' refusals pass
        through: `23503` for a removed or moved nomination with nominations listed under it, `P0001`
-       beginning `A caller may originate at most ` for the cap, `23514` for the two election-type rules and the constituency rule.
+       beginning `A caller may originate at most ` for the cap, `23514` for the two nomination-shape rules and the constituency rule.
      - **RLS refuses an UPDATE and a DELETE silently**, so the function reads the row count of each and
        raises `42501` on a shortfall. A function that writes under invoker rights and reports success
        must do the same.
@@ -607,7 +608,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
     - **The registration-mode condition.** An open invitation for a candidate or an organization is
       honoured only under the mode its binding names (`code` for a row with a code hash, `email` for a
       row bound to an address), for its target type, as the project's stored
-      `contestantApp.registrationModes` allows. `private.invitation_mode_allowed(invitations)`
+      `contestantApp.servedEntityTypes` allows. `private.invitation_mode_allowed(invitations)`
       (`506-invitation-rpcs.sql`) states it once and asks `private.registration_mode_allowed(project,
       type, mode)`, which reads the settings row and asks the IMMUTABLE rule
       `private.registration_mode_allowed_in(settings, type, mode)` (both in `301-auth-functions.sql`;
@@ -615,9 +616,9 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       `recovery_link_request` and `claim_invitations` treat a refused row as absent (`unknown`; no
       address; neither claimed nor skipped). Project-scope, faction and alliance rows are not judged,
       claimed rows are never judged, and `create_invitations` does not ask. A project that stores no
-      matrix honours no candidate or organization invitation (the shipped default allows nothing;
-      `seed.sql`'s default project stores a matrix that allows `email` and `code` for candidates and
-      nothing for organizations): a pgTAP file with projects of its own writes a matrix in its setup.
+      `servedEntityTypes` honours no candidate or organization invitation (the shipped default allows
+      nothing; `seed.sql`'s default project serves candidates alone and allows them `email` and `code`):
+      a pgTAP file with projects of its own writes the setting in its setup.
       `45-registration-mode-matrix.test.sql` is the rule's truth table, and
       `packages/dev-seed/tests/registrationModeMatrixParity.test.ts` holds the client's
       `isRegistrationModeAllowed` to the same table.
@@ -1068,7 +1069,7 @@ scalar-subquery form, or the common-column set. Those are review items, not gate
 
 - JSONB localization storage `{"en": "...", "fi": "..."}` maps to TypeScript `LocalizedValue` -- the data skill owns the TypeScript type; this skill owns the SQL storage format and `get_localized()` function.
 - DB enums (entity_type, question_type, category_type) must stay in sync with the data package's TypeScript equivalents (ENTITY_TYPE, QUESTION_TYPE, QUESTION_CATEGORY_TYPE).
-- The nomination-shape matrix is stated twice, in `public.nomination_shape_rule` here and in `nominationShape.ts` of the data package (the data skill owns it). The four names of `NOMINATION_SHAPE` are held equal to the members of the enum `nomination_shape`, and a grid over the same sixteen cells is asserted on each side: `nominationShape.test.ts` and the election-type section of `08-triggers.test.sql`. A change to one statement changes the other in the same commit.
+- The nomination-shape matrix is stated twice, in `public.nomination_shape_rule` here and in `nominationShape.ts` of the data package (the data skill owns it). The four names of `NOMINATION_SHAPE` are held equal to the members of the enum `nomination_shape`, and a grid over the same sixteen cells is asserted on each side: `nominationShape.test.ts` and the nomination-shape section of `08-triggers.test.sql`. A change to one statement changes the other in the same commit.
 - `packages/supabase-types/` provides the bridge: `database.ts` has generated Row/Insert/Update types per table; `column-map.ts` has bidirectional COLUMN_MAP (snake_case DB -> camelCase TS) and PROPERTY_MAP (reverse). Only maps columns where names differ (e.g., sort_order -> order, first_name -> firstName). Used by frontend data adapters.
 
 ## Reference Files
@@ -1101,7 +1102,7 @@ entity link column and that column's entries in § 8's protected lists are remov
 **Updated 2026-10-06** (Phase 171, plan 171-02): `contestant_app_public_config` added. RLS and Auth
 Patterns § 4 names the six anon-executable definer functions the § 8c census holds and describes the
 new one; `schema-reference.md` and `rls-policy-map.md` carry its row, and the latter lists
-`38-contestant-app-public-config.test.sql` among the tests.
+`38-contestant-app-public-settings.test.sql` among the tests.
 
 **Updated 2026-10-06** (Phase 173, plan 173-02): the caller's entities are a list. RLS and Auth
 Patterns § 9 describes `get_user_entities` (one `jsonb` object with an `entities` array, one row even
@@ -1210,14 +1211,14 @@ The Edge Function directories, the linter's three lists and the ratified list we
 by this entry.
 
 **Updated 2026-10-11** (Phase 177, plan 177-21): nominations an entity defines. Schema Conventions § 7
-describes the election type and its four members, the matrix in `nomination_shape_rule`, the row rule,
+describes the nomination shape and its four members, the matrix in `nomination_shape_rule`, the row rule,
 the end-of-transaction rule as the schema's one constraint trigger and how a function forces it, and
 the requested-name key; § 8 lists the nomination triggers. RLS and Auth Patterns § 4 names
 `nomination_id_in_contest` and the eleven functions of the `authenticated` census; § 6 describes
 `entity_delete_nominations`, the pairing of the parent policy by caller type and the four policies
 that hold the lock; § 9 describes `get_nomination_parent_options` and `set_entity_nominations` and
 states the parent of `get_entity_nominations` with its four keys. `schema-reference.md` carries the
-`election_type` row, the nominations table's foreign-key action, `created_by` and uniqueness key, the
+`nomination_shape` row, the nominations table's foreign-key action, `created_by` and uniqueness key, the
 four nomination triggers and the rows of the new functions; `rls-policy-map.md` carries the delete
 policy, the organization editor's cell of `nomination.create_parent`, the two paragraphs on the new
 functions and four rows of its test table. The rows of the tables above for policies, pgTAP files,
@@ -1234,7 +1235,7 @@ date:
 | pgTAP assertions | 2312 in a run; 2303 planned in 43 files | the `Files=44, Tests=2312` line of the gate driver's pgTAP row on a freshly reset database; `git grep -h -E "^  plan \(" -- 'apps/supabase/supabase/tests/database/*.test.sql'`, summed |
 | lines of the pgTAP files | 46,693 | `cat` of the 44 files piped to `wc -l` |
 | definer functions of `public` that `anon` / `authenticated` can execute, trigger functions and test helpers apart | 6 / 10 | `pg_proc` where `prosecdef`, with `has_function_privilege` for the two roles, less the trigger functions and `test_grants_claim` |
-| the default of `elections.election_type` | `organization_list_and_independents` | `information_schema.columns` for the column |
+| the default of `elections.nomination_shape` | `organization_list_and_independents` | `information_schema.columns` for the column |
 | constraint triggers on `public.nominations` | 1, `nominations_parent_required`, deferrable and initially deferred | `pg_trigger` for the table, `tgdeferrable` and `tginitdeferred` |
 | permissions of the entity `editor` of an organization | seven, `nomination.create_parent` among them | `select unnest(public.grant_role_permissions('entity','editor','organization'))` |
 
