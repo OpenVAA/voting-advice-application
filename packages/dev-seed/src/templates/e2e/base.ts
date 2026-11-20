@@ -198,7 +198,7 @@ export const BASE_APP_SETTINGS = {
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
-    answersLocked: false
+    contestantEditing: 'open'
   },
   notifications: {
     contestantApp: null,

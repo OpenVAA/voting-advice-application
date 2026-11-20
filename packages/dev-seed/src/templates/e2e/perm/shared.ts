@@ -102,7 +102,7 @@ export const MINIMAL_BASE_APP_SETTINGS = {
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
-    answersLocked: false
+    contestantEditing: 'open'
   },
   // Both notifications are stated off, so no perm dataset that derives from this base shows a notification modal; only perm-per-app-notifications overrides them. Each perm setup replaces the stored settings row whole with its own template's settings, so nothing carries over from the setup before it.
   notifications: { voterApp: { show: false }, contestantApp: { show: false } },

@@ -1,7 +1,7 @@
 /**
  * perm-answers-locked minimal-data template.
  *
- * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 1 candidate, 1 opinion Likert-5 question. The under-test setting is `access.answersLocked: true`, which:
+ * Topology: 1 election, 1 CG with 1 CO, 2 organisations, 1 candidate, 1 opinion Likert-5 question. The under-test setting is `access.contestantEditing: 'locked'`, which:
  *
  *   1. surfaces the read-only login info text on /en/contestant (login page) via the `login-answers-locked-info` testid;
  *   2. renders the editingNotAllowed Warning + disables every <Input> on /en/contestant/profile + /en/contestant (protected home);
@@ -23,7 +23,7 @@ export const permAnswersLockedTemplate: Template = buildMinimal({
   opinionQuestions: 1,
   infoQuestions: 0,
   settingsOverlay: {
-    access: { answersLocked: true }
+    access: { contestantEditing: 'locked' }
   }
 });
 
