@@ -186,8 +186,8 @@ yarn dev                       # Supabase + frontend on :5173
 ## Step 6 — Walk the flow
 
 1. Make sure the project allows the identity provider: its app settings'
-   `contestantApp.registrationModes` holds `identity_provider` for `candidate`, for
-   `organization` or for both, and `contestantApp.entityTypes` serves that type.
+   `contestantApp.servedEntityTypes` serves `candidate`, `organization` or both, and
+   the `registrationModes` of that type hold `identity_provider`.
 2. Open `http://localhost:5173/contestant/register`.
 3. Choose the Bank ID option (when several are listed), choose what to register (when
    both types allow it) and press Continue → redirected to the Idura broker

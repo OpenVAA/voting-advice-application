@@ -284,7 +284,7 @@ const BASE_PROJECTS: Array<Project> = [
 
   // The identity-provider specs: the provider's flow walked in a browser against the mock issuer, each test with an identity of its own, from the registration screen through the provider and the callback to the view the account lands on.
   //
-  // DEFAULT-ON. The setup JOINS THE TAIL OF THE PERM SERIAL CHAIN (see `dependencies` below): it seeds its own dataset, under the `e2e-bankauth-idp-` prefix, whose settings REPLACE the stored row whole, and states the candidates' registration row as the identity provider, email and code. `voter-prefs-tracking` is the chain's last leaf, so that REPLACE cannot overlap any other project's. Ordering edges express ORDER, not MUTUAL EXCLUSION, and the `app_settings` JSONB singleton needs the latter — which in this config is spelled "be in the serial chain". The two cheaper-looking alternatives are both measured unsound:
+  // DEFAULT-ON. The setup JOINS THE TAIL OF THE PERM SERIAL CHAIN (see `dependencies` below): it seeds its own dataset, under the `e2e-bankauth-idp-` prefix, whose settings REPLACE the stored row whole, and states the candidates' registration modes as the identity provider, email and code. `voter-prefs-tracking` is the chain's last leaf, so that REPLACE cannot overlap any other project's. Ordering edges express ORDER, not MUTUAL EXCLUSION, and the `app_settings` JSONB singleton needs the latter — which in this config is spelled "be in the serial chain". The two cheaper-looking alternatives are both measured unsound:
   //   · `['data-setup-base']` puts this project in the SAME phase as `voter-journey` / `performance` /
   //     `a11y-smoke` (identical dependency set → identical phase, see
   //     playwright/lib/runner/tasks.js createPhasesTask), so the REPLACE lands mid-spec in a full run.
@@ -1313,7 +1313,7 @@ const BASE_PROJECTS: Array<Project> = [
     dependencies: ['data-setup-perm-no-nomination']
   },
 
-  // perm-contestant-nominations. The editor of a candidate and of a party on the entity's nominations. Its settings serve both entity types. Its setup seeds three elections of three types, a candidate and a party with no nomination row, a candidate and a party with nominations and the parties and alliances a nomination can stand under, and stores one session for each of its four editors; the spec selects a session per describe, so the project carries no `storageState` of its own. The four sessions are this dataset's own and no other project reads them. Sequential after perm-no-nomination.
+  // perm-contestant-nominations. The editor of a candidate and of a party on the entity's nominations. Its settings serve both entity types. Its setup seeds three elections of three nomination shapes, a candidate and a party with no nomination row, a candidate and a party with nominations and the parties and alliances a nomination can stand under, and stores one session for each of its four editors; the spec selects a session per describe, so the project carries no `storageState` of its own. The four sessions are this dataset's own and no other project reads them. Sequential after perm-no-nomination.
   {
     name: 'data-setup-perm-contestant-nominations',
     testMatch: /perm-contestant-nominations\.setup\.ts/,
