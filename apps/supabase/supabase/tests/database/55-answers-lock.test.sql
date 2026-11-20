@@ -994,7 +994,7 @@ SELECT
 
 UPDATE public.app_settings
 SET
-  settings = jsonb_recursive_merge(
+  settings = jsonb_recursive_merge (
     settings,
     '{"contestantApp": {"servedEntityTypes": {"candidate": {"registrationModes": ["email", "code"]}}}}'::jsonb
   )
@@ -1042,7 +1042,15 @@ VALUES
   );
 
 INSERT INTO
-  public.invitations (project_id, scope, target_type, target_id, role, email, code_hash)
+  public.invitations (
+    project_id,
+    scope,
+    target_type,
+    target_id,
+    role,
+    email,
+    code_hash
+  )
 VALUES
   (
     test_id ('project_a'),
@@ -1092,7 +1100,11 @@ SELECT
 
 SELECT
   is (
-    public.invitation_link_request (test_id ('project_a'), 'alk.coder@test.example', 'ALKC-ODE0-0001'),
+    public.invitation_link_request (
+      test_id ('project_a'),
+      'alk.coder@test.example',
+      'ALKC-ODE0-0001'
+    ),
     NULL,
     'ALK: with answers locked, an open invitation''s code earns no sign-in link'
   );
@@ -1171,7 +1183,9 @@ SELECT
 
 SELECT
   is (
-    jsonb_array_length(public.claim_invitations (test_id ('project_a')) -> 'claimed'),
+    jsonb_array_length(
+      public.claim_invitations (test_id ('project_a')) -> 'claimed'
+    ),
     1,
     'ALK: with the lock off, the holder of the address claims the invitation'
   );

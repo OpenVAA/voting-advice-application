@@ -191,8 +191,10 @@ settings in the project's row of `public.app_settings`, and both bind an entity'
   CHECK) and of the same four nomination policies, beside the nominations lock; `storage_path_can` refuses
   an entity-scope write (the six `entity_*_assets` write policies) and reads the key inline, so no second
   definer call is nested in it; and `upsert_answers` and `set_entity_nominations` refuse a caller without
-  `project.edit_entities` / `project.edit_nominations` on the project with `42501` and
+  `project.edit_entities` / `project.edit_nominations` on the project with `OV002` and
   `<function>: answers are locked in this project`, so the app can tell the lock from a row it may not write.
+  `private.registration_mode_allowed` allows no registration mode while answers are locked, so no open
+  candidate or organization invitation is valid, earns a link or is claimed.
 
 The admin and project-scope policies, which ask `project.edit_entities` / `project.edit_nominations`, read
 neither lock, and the project-scope storage write does not either: **a project editor and a project admin
@@ -295,7 +297,7 @@ literals out of the policy text; a helper holding the map would hide them from b
   `service_role` only) take and give back the slots `account-access`'s `confirm-address` spends, neither
   of them per project and taken only for a project the account's `registered_entities` record names, and `private.caller_pending_email_taken()`
   (`301-auth-functions.sql`, `authenticated` only) answers for `auth.uid()` alone whether the caller's
-  pending address is another account's; `get_user_entities` returns it as `pending_email_taken`.
+  pending address is another account's; `get_caller_account_state` returns it as `pending_email_taken`.
 
 ### The one table outside the grant model
 
@@ -544,12 +546,12 @@ These apply to every policy in the schema.
 | the requested-parent admin queue and its confirmation guard | `27-parent-nomination-queue.test.sql` |
 | level-1 (ProjectEditor) through the nomination and entity confirmation flows: edits unconfirm, confirmation refused without `nomination.confirm`, `entity.confirm` held | `32-level1-confirmation-flow.test.sql` |
 | the nominations lock as an app setting: the entity policies refused while it is on and admitted while it is off, and who may write the key | `23-nominations-write.test.sql`, `22-content-policies.test.sql` |
-| the answers lock: the stored values that lock, each entity's own editor refused on the four self-update policies, the four nomination policies, the storage write in both buckets, `upsert_answers` and `set_entity_nominations` while it is on and admitted while it is off, a project editor and a project admin admitted while it is on, and a read unaffected | `55-answers-lock.test.sql` |
+| the answers lock: the stored values that lock, each entity's own editor refused on the four self-update policies, the four nomination policies, the storage write in both buckets, `upsert_answers` and `set_entity_nominations` while it is on (`OV002`) and admitted while it is off, a project editor and a project admin admitted while it is on, a read unaffected, and an open invitation neither valid, nor earning a link, nor claimed while it is on | `55-answers-lock.test.sql` |
 | a confirmed entity's protected columns, each on each of the four entity tables, and the confirmation gate | `19-entity-immutability.test.sql` |
 | the entity type list of `questions` and `question_categories`, per table and per verb, and through `bulk_import` | `40-entity-type-list.test.sql` |
 | the stored colour of the four entity tables, each refused value beside an accepted one | `41-entity-color.test.sql` |
 | `get_entity_nominations`: the answer for a candidate and for an organization, the parent resolved where the caller's own policies refuse it, the exact key set, `NULL` for every caller without the entity's editor grant (another editor, the parent's editor, a faction's editor, project and global admins, a wrong type or project, an id that does not exist), and `anon` refused by privilege | `42-entity-nominations.test.sql` |
-| `set_entity_nominations`: the argument's refusals, a caller without `nomination.edit`, each parent kind, a row that did not change left unwritten, the reach of a delete, a move, the nominations lock raised as `42501`, a refused call storing nothing, the cap met through the function, the end-of-transaction rule raised inside the call and deferred again after it, and `anon` refused by privilege | `43-set-entity-nominations.test.sql` |
+| `set_entity_nominations`: the argument's refusals, a caller without `nomination.edit`, each parent kind, a row that did not change left unwritten, the reach of a delete, a move, the nominations lock raised as `42501`, a removed nomination with others listed under it refused as `OV005`, a refused call storing nothing, the cap met through the function (`OV004`), the end-of-transaction rule raised inside the call and deferred again after it, and `anon` refused by privilege | `43-set-entity-nominations.test.sql` |
 | the three private functions of a nomination write (their catalogue shape and EXECUTE, the bound of 1000, each shape refusal and the normalised answer, a parent's nomination found or created bare as the owner, an admin and an entity's editor), and a parent or an invited entity that is no entity of the nomination's project refused through both writers with nothing written | `46-nomination-write-helpers.test.sql` |
 | `create_invitations`' stated confirmation (no default, `NULL` refused, `true` and `false`, never an unconfirmation) and the `nominations` key: new nominations and their parents, created bare and unconfirmed, updates by `id`, nothing deleted, the shape refusals under the invitation's label, the bound, the caller's own authority, the parent rule raised inside the call, and the answer's keys | `47-invitation-nominations.test.sql` |
 | `get_nomination_parent_options`: the options for a candidate and for an organization, the exact key set, `nominated` for the asked contests, `NULL` for every caller without the entity's editor grant and for a malformed argument, and `anon` refused by privilege | `44-nomination-parent-options.test.sql` |

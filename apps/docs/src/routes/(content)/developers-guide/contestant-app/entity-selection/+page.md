@@ -126,7 +126,7 @@ The editors' prompt is the one they have for any navigation. Leaving the profile
 
 The frontend reads the user's entities through three functions, described in full in [Which entity a user is](/developers-guide/backend/authentication#which-entity-a-user-is):
 
-- `get_user_entities(p_project_id)` lists the entities the caller edits, as one JSON object with an `entities` array, beside `password_set`, which says whether the caller's own account holds a password.
+- `get_user_entities(p_project_id)` lists the entities the caller edits, as one JSON object with an `entities` array. The facts about the caller's own account, such as whether it holds a password, are `get_caller_account_state`'s.
 - `get_entity_user_data(p_project_id, p_entity_type, p_entity_id)` returns the editable row of one of them, or no row.
 - `get_entity_nominations(p_project_id, p_entity_type, p_entity_id)` returns the nominations of one of them as a JSON array, empty for an entity with none, or `NULL` for an entity the caller does not edit.
 

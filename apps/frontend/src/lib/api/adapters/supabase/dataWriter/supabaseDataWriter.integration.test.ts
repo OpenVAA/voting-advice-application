@@ -33,7 +33,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { SupabaseDataWriter } from './supabaseDataWriter';
+import { REFUSAL_CODES, SupabaseDataWriter } from './supabaseDataWriter';
 import type { Database, Json } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { DesiredNomination, LocalizedAnswers } from '$lib/api/base/dataWriter.type';
@@ -63,8 +63,6 @@ const PASSWORD = `Pw-${RUN_ID}`;
 type EntityTable = 'candidates' | 'organizations';
 type Target = { type: 'candidate' | 'organization'; table: EntityTable; id: string };
 
-/** How the refusal of a changed name on a confirmed row begins, as `enforce_entity_immutability` raises it. */
-const NAME_REFUSAL_PREFIX = 'Entity name is immutable once confirmed: column ';
 /** The names the confirmed organization is created with, which no editor's write may change. */
 const CONFIRMED_NAME = { en: `Writer integration confirmed ${RUN_ID}`, fi: `Vahvistettu ${RUN_ID}` };
 const CONFIRMED_SHORT_NAME = { en: 'WIC' };
@@ -75,10 +73,6 @@ const CONSTITUENCY_NAME = { en: `Writer integration constituency ${RUN_ID}` };
 /** The custom data the organization's nomination is created with. */
 const NOMINATION_CUSTOM_DATA = { writerIntegration: RUN_ID };
 
-/** How the refusal of one unconfirmed parent nomination too many begins, as `enforce_nomination_confirmation` raises it. */
-const PENDING_CAP_REFUSAL_PREFIX = 'A caller may originate at most ';
-/** The foreign key the database names when it refuses to remove a nomination that others are listed under. */
-const PARENT_NOMINATION_FOREIGN_KEY = 'nominations_parent_nomination_id_fkey';
 /** How the refusal of a candidate's nomination with neither a party nor a typed name begins, as `validate_nomination_parent_required` raises it. */
 const PARENT_REQUIRED_REFUSAL_PREFIX = 'Nomination parent required: ';
 /** The most unconfirmed parent nominations one caller may have originated. */
@@ -579,7 +573,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
 
   describe("an editor's writes of its own entity's names and colour", () => {
     it(
-      "the refusal a signed-in editor receives for a changed name on a confirmed row carries the trigger's code and the start of its message",
+      "the refusal a signed-in editor receives for a changed name on a confirmed row carries the trigger's own code",
       async () => {
         const { data, error } = await confirmedOrganizationClient
           .from('organizations')
@@ -589,8 +583,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
           .single();
 
         expect(data).toBeNull();
-        expect(error?.code).toBe('P0001');
-        expect(error?.message.startsWith(NAME_REFUSAL_PREFIX)).toBe(true);
+        expect(error?.code).toBe(REFUSAL_CODES.nameImmutable);
 
         expect((await storedOrganizationProperties(confirmedOrganization)).name).toEqual(CONFIRMED_NAME);
       },
@@ -1318,7 +1311,7 @@ describe.skipIf(!hasSupabase)(
           unconfirmedPartyNominationId
         ]);
 
-        // The refusal itself, through the editor's own client: the code and the foreign key the writer recognises it by.
+        // The refusal itself, through the editor's own client: the code the writer recognises it by.
         const { data, error } = await unconfirmedPartyEditor.client.rpc('set_entity_nominations', {
           p_entity_type: 'organization',
           p_entity_id: unconfirmedParty.id,
@@ -1326,8 +1319,7 @@ describe.skipIf(!hasSupabase)(
           p_expected_reach: Object.fromEntries(before.map((row) => [row.id, row.updated_at]))
         });
         expect(data).toBeNull();
-        expect(error?.code).toBe('23503');
-        expect(error?.message).toContain(PARENT_NOMINATION_FOREIGN_KEY);
+        expect(error?.code).toBe(REFUSAL_CODES.listedUnder);
       },
       HANG_GUARD_MS
     );
@@ -1357,7 +1349,7 @@ describe.skipIf(!hasSupabase)(
         expect(await storedNominations(cappedCandidate)).toEqual([]);
         expect(await storedNominations(listedParty)).toEqual(partyBefore);
 
-        // The refusal itself, through the editor's own client: the code and the start of the message the writer recognises it by.
+        // The refusal itself, through the editor's own client: the code the writer recognises it by.
         const { data, error } = await cappedCandidateEditor.client.rpc('set_entity_nominations', {
           p_entity_type: 'candidate',
           p_entity_id: cappedCandidate.id,
@@ -1372,8 +1364,7 @@ describe.skipIf(!hasSupabase)(
           p_expected_reach: {}
         });
         expect(data).toBeNull();
-        expect(error?.code).toBe('P0001');
-        expect(error?.message.startsWith(PENDING_CAP_REFUSAL_PREFIX)).toBe(true);
+        expect(error?.code).toBe(REFUSAL_CODES.pendingParentCap);
       },
       HANG_GUARD_MS
     );

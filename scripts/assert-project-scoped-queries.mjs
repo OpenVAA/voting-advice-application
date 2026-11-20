@@ -254,6 +254,7 @@ const PROJECT_SCOPED_RPCS = {
   get_nominations: 'requires p_project_id',
   get_questions: 'requires p_project_id',
   get_user_entities: 'requires p_project_id',
+  get_caller_account_state: 'scoped-by-identity: auth.uid() alone, takes no argument and reads no project row',
   get_entity_user_data: 'requires p_project_id',
   get_entity_nominations: 'requires p_project_id',
   get_nomination_parent_options: 'requires p_project_id',

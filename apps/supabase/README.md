@@ -354,16 +354,17 @@ asks `account-access` for a link and signs in, and `claim_invitations` then writ
 grants for the caller's own confirmed address. An open invitation for a candidate or an
 organization is honoured only under a registration mode the project's settings allow for that
 type: `private.invitation_mode_allowed` asks `private.registration_mode_allowed`
-(`301-auth-functions.sql`), and the functions that read an open invitation treat a refused row as
-absent.
+(`301-auth-functions.sql`), which allows no mode while the project's answers are locked, and the
+functions that read an open invitation treat a refused row as absent.
 
 The functions this schema adds for the sign-in flow, by file:
 
 - `301-auth-functions.sql`: `public.send_email_hook`, the no-op mail hook, executable by
   `supabase_auth_admin` alone; `private.caller_password_set`, whether the caller's account holds a
-  password, read by `get_user_entities` as its `password_set`; `private.user_password_set`, the same
-  for any account, executable by no API role; `private.registration_mode_allowed_in` and
-  `private.registration_mode_allowed`, the registration-mode rule.
+  password, read by `get_caller_account_state` as its `password_set`; `private.user_password_set`,
+  the same for any account, executable by no API role; `private.registration_mode_allowed_in` and
+  `private.registration_mode_allowed`, the registration-mode rule, which the second closes while the
+  project's answers are locked.
 - `506-invitation-rpcs.sql`: `public.recovery_link_request`, the service role's; and
   `private.invitation_mode_allowed` and `private.email_holds_grant_in_project`, which no API role
   can execute.

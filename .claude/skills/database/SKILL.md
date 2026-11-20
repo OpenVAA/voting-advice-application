@@ -282,7 +282,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      nomination the caller cannot read (no parent first, then the oldest, then the lowest id).
      Two more definer functions in `private` answer a fact about the caller rather than a policy
      question, and are executable by `authenticated` alone: `private.caller_password_set` and
-     `private.caller_pending_email_taken`, both read by `get_user_entities` (§ 9).
+     `private.caller_pending_email_taken`, both read by `get_caller_account_state` (§ 9).
      A SECURITY DEFINER function in `public` is a PostgREST RPC endpoint, and these answer questions RLS
      refuses the caller. `private` is not an exposed schema; `anon`/`authenticated` keep USAGE + EXECUTE so
      policies (which run as the caller) can still call them. Always call them qualified (`private.x(...)`).
@@ -379,9 +379,11 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      of the entity: it is a conjunct of the four `entity_update_own_*` policies and of the four entity-scope
      nomination policies (beside the nominations lock); `storage_path_can` refuses an entity-scope write,
      reading the key inline so no second definer call is nested in it; and `upsert_answers` and
-     `set_entity_nominations` refuse with `42501` and `<function>: answers are locked in this project` a
+     `set_entity_nominations` refuse with `OV002` and `<function>: answers are locked in this project` a
      caller that does not hold `project.edit_entities` / `project.edit_nominations` on the project, so the
-     data writer can tell the lock from a row it may not write. **Project grant holders pass it**: no
+     data writer can tell the lock from a row it may not write. The lock also closes registration:
+     `private.registration_mode_allowed` ANDs `NOT private.project_answers_locked(project)`, so no open
+     candidate or organization invitation is valid, earns a link or is claimed while it holds (§ 10). **Project grant holders pass it**: no
      admin, project-scope or storage project-scope policy reads it, so a project editor and a project admin
      keep editing answers, profiles, nominations and files while answers are locked.
      `55-answers-lock.test.sql` asserts both sides on every site. The frontend reads the same key as the
@@ -426,9 +428,13 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      array holds one entry per candidate and per organization the caller edits in that project, each
      with the card fields (`entity_type`, `id`, `first_name` and `last_name` or `name`, `short_name`,
      `image`, `color`, `confirmed`), candidates first and each type by id. A caller with no entity
-     still gets one row, with an empty array: the top level is for facts about the caller, and every
-     per-entity fact sits inside `entities`. Factions and alliances have no arm. The two facts about the
-     caller are `password_set`, whether the caller's own account holds a password, answered by
+     still gets one row, with an empty array, and `entities` is its only key. Factions and alliances
+     have no arm.
+   - `get_caller_account_state()` answers the facts about the caller's own account and reads no entity,
+     so the data writer's `getBasicUserData` asks it for every user, an administrator included, and calls
+     `get_user_entities` only when the account's `registered_entities` record names an organization of
+     the project. It is SECURITY INVOKER, takes no argument and is executable by `authenticated` alone.
+     Its two keys are `password_set`, whether the caller's own account holds a password, answered by
      `private.caller_password_set()`, and `pending_email_taken`, whether the address the caller's own
      account is changing to (`auth.users.email_change`, non-empty) is already another account's address,
      compared trimmed and lower-cased, answered by `private.caller_pending_email_taken()` (false with no
@@ -487,12 +493,22 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
        in an election whose type admits the entity's type. A nomination in reach that the set does not
        name is deleted; every other one is left alone, and an `id` that names one is refused.
      - Its own refusals are `22023` (a malformed argument or object, the message beginning
-       `set_entity_nominations: ` and naming `p_nominations[<index>]`) and `42501` (no
-       'nomination.edit' on the entity; `set_entity_nominations: answers are locked in this project` for a
-       caller without `project.edit_nominations` on the project while its answers are locked, asked right
-       after the first and before the set is read; a row that could not be written). The guards' refusals pass
-       through: `23503` for a removed or moved nomination with nominations listed under it, `P0001`
-       beginning `A caller may originate at most ` for the cap, `23514` for the two nomination-shape rules and the constituency rule.
+       `set_entity_nominations: ` and naming `p_nominations[<index>]`), `42501` (no
+       'nomination.edit' on the entity; a row that could not be written), `OV002`
+       (`set_entity_nominations: answers are locked in this project` for a caller without
+       `project.edit_nominations` on the project while its answers are locked, asked right after the
+       first and before the set is read), `OV003` (the reach as stored is not the reach read) and
+       `OV005` (a removed or moved nomination has nominations listed under it, asked of the SECURITY
+       DEFINER `private.nominations_listed_under(uuid[])` before the delete, so the parent foreign key
+       never fires). The guards' refusals pass through: `OV004` beginning `A caller may originate at
+       most ` for the cap, `23514` for the two nomination-shape rules and the constituency rule.
+     - **The refusal codes.** The five refusals the frontend tells apart carry SQLSTATEs of class `OV`,
+       which no PostgreSQL error uses: `OV001` the frozen name (`enforce_entity_immutability`), `OV002`
+       the answers lock (`upsert_answers`, `set_entity_nominations`), `OV003` the changed reach, `OV004`
+       the pending-parent cap (`enforce_nomination_confirmation`) and `OV005` listed-under. The data
+       writer exports them as `REFUSAL_CODES` and matches on the code alone, never on the message; each
+       is asserted with `throws_ok(..., 'OV00n')`. A new refusal the app must recognise takes the next
+       code.
      - **RLS refuses an UPDATE and a DELETE silently**, so the function reads the row count of each and
        raises `42501` on a shortfall. A function that writes under invoker rights and reports success
        must do the same.
@@ -514,8 +530,8 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
        runs two calls in parallel), and a move leaves behind the parent's nomination an earlier call
        created at the old contest.
      - `43-set-entity-nominations.test.sql` pins it; the frontend's one caller is the data writer's
-       `setEntityNominations`, which maps the `23503` and the cap's `P0001` to the named refusals
-       `hasCandidates` and `tooManyPending`. The call is listed as scoped by identity in
+       `setEntityNominations`, which maps `OV003`, `OV005`, `OV004` and `OV002` to the named refusals
+       `changed`, `hasCandidates`, `tooManyPending` and `answersLocked`. The call is listed as scoped by identity in
        `scripts/assert-project-scoped-queries.mjs`: the function takes no project.
    - The first two are SECURITY INVOKER, `LANGUAGE sql`, with no parameter default, refused to `anon` by
      privilege. Both resolve the caller's entities through
@@ -612,7 +628,8 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       (`506-invitation-rpcs.sql`) states it once and asks `private.registration_mode_allowed(project,
       type, mode)`, which reads the settings row and asks the IMMUTABLE rule
       `private.registration_mode_allowed_in(settings, type, mode)` (both in `301-auth-functions.sql`;
-      false for a project with no row). `invitation_code_status`, `invitation_link_request`,
+      false for a project with no row, and false while the project's answers are locked).
+      `invitation_code_status`, `invitation_link_request`,
       `recovery_link_request` and `claim_invitations` treat a refused row as absent (`unknown`; no
       address; neither claimed nor skipped). Project-scope, faction and alliance rows are not judged,
       claimed rows are never judged, and `create_invitations` does not ask. A project that stores no
@@ -1338,6 +1355,14 @@ the `app_metadata` write made after the call without the record; the bullet on `
 compensating delete are gone with the modules `candidateRecord.ts`, `organizationRecord.ts` and
 `entityGrant.ts`. `schema-reference.md`'s grant-key paragraph no longer names `writeEntityGrant`. No count
 was re-measured.
+
+**Updated 2026-11-20** (review follow-up): the refusal codes, the account state and the answers lock
+on registration. RLS and Auth Patterns § 9 states `get_caller_account_state`, `get_user_entities`
+with `entities` alone, the `OV001`–`OV005` refusal codes and `private.nominations_listed_under`; § 6
+and § 10 state that `private.registration_mode_allowed` is false while answers are locked.
+`schema-reference.md` and `rls-policy-map.md` carry the same. Migration
+`00025_refusal_codes_account_state_answers_lock_registration.sql` makes the change. No count was
+re-measured.
 
 ### What changed under the targets, and what it did to this skill
 

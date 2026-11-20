@@ -100,6 +100,10 @@
     {
       "file": "00024_contestant_app_served_entity_types.sql",
       "sha256": "8980810381bb03f41690d423e73d8d78a290ac25051ab3e5ea6d1586dcec17ac"
+    },
+    {
+      "file": "00025_refusal_codes_account_state_answers_lock_registration.sql",
+      "sha256": "3d23b9344d251b39802aa3efc3cfd8abab8618126c2566773d6eb22f5a1f5dcf"
     }
   ]
 }
