@@ -84,3 +84,4 @@ apps/supabase/supabase/migrations/
 # beside them stays in scope.
 infra/scripts/bootstrap.sql
 infra/scripts/check-seed.sql
+apps/supabase/supabase/tests/database/00z-invitation-link-witness.test.sql
