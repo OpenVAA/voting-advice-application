@@ -183,8 +183,10 @@ for (let i = 0; i < teardownPrefixDeclarations.length; i++) {
 interface DataTriadOptions {
   /** The spec project's name, and the base name of its `<name>.setup.ts` and `<name>.teardown.ts` files. */
   name: string;
-  /** The spec's file name under `tests/specs/perm`. */
-  spec?: string;
+  /** The spec project's `testMatch` under `tests/specs/perm`: by default the file `<name>.spec.ts`. */
+  specMatch?: RegExp;
+  /** The most workers the spec project uses: one when its specs share state that two files must not change at once. */
+  workers?: number;
   /** The project or projects the setup waits for. */
   after: string | Array<string>;
   storageState?: string;
@@ -192,11 +194,18 @@ interface DataTriadOptions {
 }
 
 /**
- * The three projects of one perm dataset: `data-setup-<name>`, which seeds it, `data-teardown-<name>`, which removes it, and the spec project `<name>`, which runs `spec` under `tests/specs/perm` one test at a time in Desktop Chrome after the setup.
+ * The three projects of one perm dataset: `data-setup-<name>`, which seeds it, `data-teardown-<name>`, which removes it, and the spec project `<name>`, which runs the specs `specMatch` matches under `tests/specs/perm`, each file's tests one at a time, in Desktop Chrome after the setup.
  *
  * The teardown runs with `retries: 0`: the accounting assertion in `runTeardownAsserted` is state-mutating, so a retry always observes an already-cleared prefix (0/0/0) and passes. CI's `retries: 3` would mask exactly the partial-delete class the assertion exists to catch, while a local run would still fail on the same defect.
  */
-function dataTriad({ name, spec = `${name}.spec.ts`, after, storageState, use }: DataTriadOptions): Array<Project> {
+function dataTriad({
+  name,
+  specMatch = fileMatch(`${name}.spec.ts`),
+  workers,
+  after,
+  storageState,
+  use
+}: DataTriadOptions): Array<Project> {
   const setupName = `data-setup-${name}`;
   const teardownName = `data-teardown-${name}`;
   return [
@@ -214,8 +223,9 @@ function dataTriad({ name, spec = `${name}.spec.ts`, after, storageState, use }:
     {
       name,
       testDir: './tests/specs/perm',
-      testMatch: fileMatch(spec),
+      testMatch: specMatch,
       fullyParallel: false,
+      ...(workers === undefined ? {} : { workers }),
       use: { ...devices['Desktop Chrome'], ...(storageState ? { storageState } : {}), ...use },
       dependencies: [setupName]
     }
@@ -333,8 +343,8 @@ const PERM_CHAIN: Array<Omit<DataTriadOptions, 'after'>> = [
   { name: 'perm-organization-editing' },
   // The editor of a candidate and of an organization on their own entity's pages, with and without a nomination. Its settings serve both entity types. Its setup seeds a candidate and an organization with no nomination row and a candidate with one, and stores one session for each one's editor; the spec selects a session per describe, so the project carries no `storageState` of its own. The three sessions are this dataset's own and no other project reads them.
   { name: 'perm-no-nomination' },
-  // The editor of a candidate and of a party on the entity's nominations. Its settings serve both entity types. Its setup seeds three elections of three nomination shapes, a candidate and a party with no nomination row, a candidate and a party with nominations and the parties and alliances a nomination can stand under, and stores one session for each of its four editors; the spec selects a session per describe, so the project carries no `storageState` of its own. The four sessions are this dataset's own and no other project reads them.
-  { name: 'perm-contestant-nominations', spec: 'contestant-nominations.spec.ts' }
+  // The editor of a candidate and of a party on the entity's nominations. Its settings serve both entity types. Its setup seeds three elections of three nomination shapes, a candidate and a party with no nomination row, a candidate and a party with nominations and the parties and alliances a nomination can stand under, and stores one session for each of its four editors; each spec selects a session per describe, so the project carries no `storageState` of its own. The four sessions are this dataset's own and no other project reads them. One spec per surface in `perm-contestant-nominations/`; the specs change the project's locks and its elections' nomination shapes, so they run one at a time in one worker.
+  { name: 'perm-contestant-nominations', specMatch: /perm-contestant-nominations\/.+\.spec\.ts/, workers: 1 }
 ];
 
 const PERM_CHAIN_PROJECTS = PERM_CHAIN.flatMap((entry, i) =>

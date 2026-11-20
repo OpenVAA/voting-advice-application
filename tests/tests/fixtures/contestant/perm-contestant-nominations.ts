@@ -1,16 +1,16 @@
 /**
- * @file Composition root for the contestant-nominations spec.
+ * @file Composition root for the contestant-nominations specs.
  *
- * Consumed by `specs/perm/contestant-nominations.spec.ts`: the editor of a candidate and of a party defining, changing and removing the entity's nominations, on the `perm-contestant-nominations` dataset.
+ * Consumed by the specs of `specs/perm/perm-contestant-nominations/`: the editor of a candidate and of a party defining, changing and removing the entity's nominations, on the `perm-contestant-nominations` dataset.
  *
  * Surface:
- *   - `test`   — Playwright test extended with the page fixtures the spec speaks in.
+ *   - `test`   — Playwright test extended with the page fixtures the specs speak in.
  *   - `expect` — re-exported from @playwright/test.
  *   - `startFrom`, `setNominations`, `addNomination`, `clearWrittenNominations`, `setNominationsLocked`, `setAnswersLocked`, `setElectionSelectionDisallowed`, `setNominationShape`, `setEntityConfirmed`, `setAnswers` — the state steps a test begins with.
- *   - `nominationsOf`, `nominationShapeOf`, `entityConfirmedOf` — what the database holds, read with the service role, for a test that asserts what a step or a save stored.
+ *   - `nominationsOf` — the nominations the database holds for an entity, read with the service role, for a test that asserts what a step or a save stored.
  *   - `contestantNominationsPagesOf(page)` — the entity-pages, home, nomination-editor and nominations fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
  *
- * The spec's body holds no locator: a step it needs is a method of a fixture registered here.
+ * A spec's body holds no locator: a step it needs is a method of a fixture registered here.
  *
  * The state steps stand in for the administrator: each writes with the service role, past the rules that bind an entity's own editor, and writes only what it is given. Every test calls the step for each row or setting it reads before it opens a page, so that it passes when it is run again and when it is run alone. They are plain functions and not fixtures, so that code which is handed a page and nothing else can call them too. Each accepts the entities, elections and constituencies of the dataset and no other, and each throws under its own name when a read or a write fails.
  *
@@ -90,7 +90,7 @@ type ContestantNominationsFixtures = {
   pageGeometry: PageGeometryFixture;
 };
 
-/** Playwright's `test`, extended with the page fixtures of the contestant-nominations spec. */
+/** Playwright's `test`, extended with the page fixtures of the contestant-nominations specs. */
 export const test = base.extend<ContestantNominationsFixtures>({
   contestantEntityHomePage: async ({ page }, use) => {
     await use(createContestantEntityHomePage(page, new SupabaseAdminClient()));
@@ -483,28 +483,6 @@ function orderKeyOf(nomination: StoredNomination): string {
 }
 
 /**
- * The nomination shape the database holds for an election of the dataset.
- *
- * @param electionExternalId - The `external_id` of an election of the dataset.
- * @throws If the election is not of the dataset, or if the read fails.
- */
-export async function nominationShapeOf(electionExternalId: string): Promise<string> {
-  const election = await electionRowOf(new SupabaseAdminClient(), 'nominationShapeOf', electionExternalId);
-  return String(election.nomination_shape);
-}
-
-/**
- * Whether the database holds an entity of the dataset as confirmed.
- *
- * @param entity - An entity of the dataset.
- * @throws If the entity is not of the dataset, or if the read fails.
- */
-export async function entityConfirmedOf(entity: NominationEntityTarget): Promise<boolean> {
-  const row = await entityRowOf(new SupabaseAdminClient(), 'entityConfirmedOf', entity);
-  return row.confirmed === true;
-}
-
-/**
  * The row of an entity of the dataset.
  * @throws If the entity is not of the dataset, or if its row is not found.
  */
@@ -582,15 +560,4 @@ function assertElectionOfDataset(step: string, electionExternalId: string): void
   if (!Object.hasOwn(SEEDED_NOMINATION_SHAPES, electionExternalId)) {
     throw new Error(`${step}: ${electionExternalId} is not an election of the contestant-nominations dataset`);
   }
-}
-
-/**
- * The row of an election of the dataset.
- * @throws If the election is not of the dataset, or if its row is not found.
- */
-async function electionRowOf(admin: SupabaseAdminClient, step: string, electionExternalId: string): Promise<Row> {
-  assertElectionOfDataset(step, electionExternalId);
-  const rows = await readRows(admin, step, 'elections', { external_id: { $eq: electionExternalId } });
-  if (rows.length !== 1) throw new Error(`${step}: the election ${electionExternalId} was not found`);
-  return rows[0];
 }
