@@ -15,12 +15,12 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { iduraProvider } from '$lib/api/utils/auth/providers/idura';
+import { signicatProvider } from '$lib/api/utils/auth/providers/signicat';
 import { COOKIE } from '$lib/cookies';
 import { buildRoute } from '$lib/routes';
-import { GET } from '../../../../../routes/api/oidc/callback/+server';
-import { iduraProvider } from '../providers/idura';
-import { signicatProvider } from '../providers/signicat';
-import type { IdentityProvider } from '../providers/types';
+import { GET } from './+server';
+import type { IdentityProvider } from '$lib/api/utils/auth/providers/types';
 
 const { SERVER_SECRET, mockServerConstants, mockPublicConstants } = vi.hoisted(() => ({
   SERVER_SECRET: 'test-server-secret',

@@ -15,7 +15,7 @@ import * as jose from 'jose';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { identityProviderEntityType } from '$lib/contestant/utils/registrationOffer';
 import { COOKIE } from '$lib/cookies';
-import { POST } from '../../../../../routes/api/oidc/authorize/+server';
+import { POST } from './+server';
 import type { RegistrationMode } from '@openvaa/app-shared';
 import type * as RegistrationOfferModule from '$lib/contestant/utils/registrationOffer';
 
