@@ -92,78 +92,6 @@ const MAX_EMAIL_LENGTH = 254;
 /** The longest text a name may have in one locale. */
 const MAX_NAME_LENGTH = 200;
 
-function reply(status: IdentityProviderRegistrationReply['status'], result: IdentityProviderRegistrationResult) {
-  return { status, body: { result } };
-}
-
-/**
- * Whether a value is a name the endpoint passes on: an object of texts, each in a supported locale and no longer than {@link MAX_NAME_LENGTH}.
- * @param value - The value.
- * @param supportedLocales - The locales a text may be in.
- * @returns `true` when it is.
- */
-function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>): value is LocalizedString {
-  return (
-    isPlainObject(value) &&
-    Object.entries(value).every(
-      ([locale, text]) =>
-        supportedLocales.includes(locale) && typeof text === 'string' && text.length <= MAX_NAME_LENGTH
-    )
-  );
-}
-
-/**
- * Read the request's intent. Anything else, including a member of the wrong type, a name in a locale the application does not support or longer than a name may be, or a save that carries nothing, is no intent.
- * @param body - The parsed body.
- * @param supportedLocales - The locales a name may have text in.
- * @returns The intent, or `null`.
- */
-function parseIntent(body: unknown, supportedLocales: ReadonlyArray<string>): RegistrationIntent | null {
-  if (!isPlainObject(body)) return null;
-  if (body.intent === 'resend' || body.intent === 'acknowledge') return { intent: body.intent };
-  if (body.intent !== 'save') return null;
-
-  const intent: RegistrationIntent = { intent: 'save' };
-  if (body.name !== undefined) {
-    if (!isBoundedName(body.name, supportedLocales)) return null;
-    intent.name = body.name;
-  }
-  if (body.shortName !== undefined) {
-    if (body.shortName !== null && !isBoundedName(body.shortName, supportedLocales)) return null;
-    if (intent.name === undefined) return null;
-    intent.shortName = body.shortName;
-  }
-  if (body.email !== undefined) {
-    if (typeof body.email !== 'string') return null;
-    const email = body.email.trim();
-    if (email === '' || email.length > MAX_EMAIL_LENGTH) return null;
-    intent.email = email;
-  }
-  return intent.name === undefined && intent.email === undefined ? null : intent;
-}
-
-/**
- * Save the names of the identity's own organization.
- * @returns `true` when they were stored.
- */
-async function saveNames(
-  deps: IdentityProviderRegistrationDeps,
-  appMetadata: unknown,
-  name: LocalizedString,
-  shortName: LocalizedString | null | undefined
-): Promise<boolean> {
-  const ownId = ownOrganizationId(appMetadata, deps.projectId);
-  if (ownId === null || !hasDefaultLocaleName(name, deps.defaultLocale)) return false;
-  if (await deps.getAnswersLocked()) return false;
-  const own = (await deps.getUserEntities()).find((entity) => entity.type === 'organization' && entity.id === ownId);
-  if (!own || own.confirmed !== false) return false;
-
-  const properties: SetPropertiesOptions['properties'] = { name };
-  if (shortName !== undefined) properties.shortName = shortName;
-  const saved = await deps.updateEntityProperties({ target: { type: 'organization', id: ownId }, properties });
-  return saved.type === 'saved';
-}
-
 /**
  * Serve one request of the endpoint.
  *
@@ -213,4 +141,76 @@ export async function handleIdentityProviderRegistration(
     log.error(`Identity-provider registration failed: ${e instanceof Error ? e.message : 'No error message'}`);
     return reply(200, failed);
   }
+}
+
+function reply(status: IdentityProviderRegistrationReply['status'], result: IdentityProviderRegistrationResult) {
+  return { status, body: { result } };
+}
+
+/**
+ * Read the request's intent. Anything else, including a member of the wrong type, a name in a locale the application does not support or longer than a name may be, or a save that carries nothing, is no intent.
+ * @param body - The parsed body.
+ * @param supportedLocales - The locales a name may have text in.
+ * @returns The intent, or `null`.
+ */
+function parseIntent(body: unknown, supportedLocales: ReadonlyArray<string>): RegistrationIntent | null {
+  if (!isPlainObject(body)) return null;
+  if (body.intent === 'resend' || body.intent === 'acknowledge') return { intent: body.intent };
+  if (body.intent !== 'save') return null;
+
+  const intent: RegistrationIntent = { intent: 'save' };
+  if (body.name !== undefined) {
+    if (!isBoundedName(body.name, supportedLocales)) return null;
+    intent.name = body.name;
+  }
+  if (body.shortName !== undefined) {
+    if (body.shortName !== null && !isBoundedName(body.shortName, supportedLocales)) return null;
+    if (intent.name === undefined) return null;
+    intent.shortName = body.shortName;
+  }
+  if (body.email !== undefined) {
+    if (typeof body.email !== 'string') return null;
+    const email = body.email.trim();
+    if (email === '' || email.length > MAX_EMAIL_LENGTH) return null;
+    intent.email = email;
+  }
+  return intent.name === undefined && intent.email === undefined ? null : intent;
+}
+
+/**
+ * Whether a value is a name the endpoint passes on: an object of texts, each in a supported locale and no longer than {@link MAX_NAME_LENGTH}.
+ * @param value - The value.
+ * @param supportedLocales - The locales a text may be in.
+ * @returns `true` when it is.
+ */
+function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>): value is LocalizedString {
+  return (
+    isPlainObject(value) &&
+    Object.entries(value).every(
+      ([locale, text]) =>
+        supportedLocales.includes(locale) && typeof text === 'string' && text.length <= MAX_NAME_LENGTH
+    )
+  );
+}
+
+/**
+ * Save the names of the identity's own organization.
+ * @returns `true` when they were stored.
+ */
+async function saveNames(
+  deps: IdentityProviderRegistrationDeps,
+  appMetadata: unknown,
+  name: LocalizedString,
+  shortName: LocalizedString | null | undefined
+): Promise<boolean> {
+  const ownId = ownOrganizationId(appMetadata, deps.projectId);
+  if (ownId === null || !hasDefaultLocaleName(name, deps.defaultLocale)) return false;
+  if (await deps.getAnswersLocked()) return false;
+  const own = (await deps.getUserEntities()).find((entity) => entity.type === 'organization' && entity.id === ownId);
+  if (!own || own.confirmed !== false) return false;
+
+  const properties: SetPropertiesOptions['properties'] = { name };
+  if (shortName !== undefined) properties.shortName = shortName;
+  const saved = await deps.updateEntityProperties({ target: { type: 'organization', id: ownId }, properties });
+  return saved.type === 'saved';
 }

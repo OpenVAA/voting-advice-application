@@ -171,250 +171,6 @@ export const REFUSAL_CODES = {
 } as const;
 
 /**
- * Narrow an entity type to one the application serves.
- * @param type - Any entity type.
- * @returns The same type, known to be served.
- * @throws Error naming the type when the application does not serve it.
- */
-function servedEntityType(type: EntityType): ServedEntityType {
-  const served = SERVED_ENTITY_TYPES.find((candidate) => candidate === type);
-  if (!served) throw new Error(`Unsupported entity type: ${type}`);
-  return served;
-}
-
-/**
- * The table an entity of the given type is stored in.
- * @param type - Any entity type.
- * @returns The table's name, which is also the entity's folder segment in Storage.
- * @throws Error naming the type when the application does not serve it.
- */
-function entityTableOf(type: EntityType): EntityTable {
-  return ENTITY_TABLES[servedEntityType(type)];
-}
-
-/**
- * The column each given property of an entity is stored in.
- * @param type - The served type of the target entity.
- * @param properties - The properties of a write. A member that is `undefined` is not given.
- * @returns The given properties with their columns, in the order of the type's entry in {@link ENTITY_PROPERTY_COLUMNS}.
- * @throws Error naming the property and the entity type when a given property is not one the type's editor may write.
- */
-function writableColumnsOf(
-  type: ServedEntityType,
-  properties: SetPropertiesOptions['properties']
-): Map<EditableEntityProperty, string> {
-  const writable: Partial<Record<EditableEntityProperty, string>> = ENTITY_PROPERTY_COLUMNS[type];
-  const given = Object.entries(properties)
-    .filter(([, value]) => value !== undefined)
-    .map(([property]) => property);
-  for (const property of given)
-    if (!Object.hasOwn(writable, property))
-      throw new Error(
-        `updateEntityProperties: the property '${property}' cannot be written for an entity of type '${type}'`
-      );
-  const columns = new Map<EditableEntityProperty, string>();
-  for (const [property, column] of Object.entries(writable))
-    if (given.includes(property)) columns.set(property as EditableEntityProperty, column);
-  return columns;
-}
-
-/**
- * The form a locale-keyed name is stored in.
- * @param property - The name of the property, for the error.
- * @param value - The name by locale, or `null`.
- * @returns The name with its entries trimmed and its blank entries left out, or `null` when no entry is left.
- * @throws Error naming the property when the value is neither `null` nor an object of entries.
- */
-function storedNameOf(property: string, value: LocalizedString | null | undefined): LocalizedString | null {
-  if (value != null && (typeof value !== 'object' || Array.isArray(value)))
-    throw new Error(`updateEntityProperties: the property '${property}' must be an object of texts by locale, or null`);
-  return normalizeLocalizedName(value);
-}
-
-/**
- * The form a person's name is stored in.
- * @param property - The name of the property, for the error.
- * @param value - The name.
- * @returns The name without surrounding whitespace.
- * @throws Error naming the property when the value is not text.
- */
-function storedPersonNameOf(property: string, value: string | undefined): string {
-  if (typeof value !== 'string') throw new Error(`updateEntityProperties: the property '${property}' must be text`);
-  return value.trim();
-}
-
-/**
- * The form an entity's colour is stored in: the one colour as lowercase `#rrggbb` under `normal`, and nothing else.
- * @param value - The colour, or `null` to clear it.
- * @returns The colour to store, or `null`.
- * @throws Error naming the property when the value is neither `null` nor an object holding a hex colour under `normal` alone.
- */
-function storedColorOf(value: EditableEntityColor | null | undefined): EditableEntityColor | null {
-  if (value == null) return null;
-  const normal: unknown = typeof value === 'object' ? value.normal : undefined;
-  const hex = typeof normal === 'string' && STORED_HEX_COLOR.test(normal) ? toHexColor(normal) : undefined;
-  if (!hex || Object.keys(value).length !== 1)
-    throw new Error(
-      "updateEntityProperties: the property 'color' must be null or hold a hex colour, '#' and three or six hexadecimal digits, under 'normal' alone"
-    );
-  return { normal: hex };
-}
-
-/**
- * Whether a failed write was refused because it changes a name of a confirmed entity.
- * @param error - The error the write answered with.
- * @returns `true` for that refusal and for no other failure.
- */
-function isNameRefusal(error: { code?: string }): boolean {
-  return error.code === REFUSAL_CODES.nameImmutable;
-}
-
-/**
- * Whether a failed write was refused because the project's answers are locked.
- * @param error - The error the write answered with.
- * @returns `true` for that refusal and for no other failure.
- */
-function isAnswersLockedRefusal(error: { code?: string }): boolean {
-  return error.code === REFUSAL_CODES.answersLocked;
-}
-
-/**
- * Whether a failed write of an entity's nominations was refused because a nomination it removes or moves has other nominations listed under it.
- * @param error - The error the write answered with.
- * @returns `true` for that refusal and for no other failure.
- */
-function isListedUnderRefusal(error: { code?: string }): boolean {
-  return error.code === REFUSAL_CODES.listedUnder;
-}
-
-/**
- * Whether a failed write of an entity's nominations was refused because the caller holds too many unconfirmed parent nominations.
- * @param error - The error the write answered with.
- * @returns `true` for that refusal and for no other failure.
- */
-function isPendingCapRefusal(error: { code?: string }): boolean {
-  return error.code === REFUSAL_CODES.pendingParentCap;
-}
-
-/**
- * Whether a failed write of an entity's nominations was refused because the nominations the set was computed from have changed since they were read.
- * @param error - The error the write answered with.
- * @returns `true` for that refusal and for no other failure.
- */
-function isChangedRefusal(error: { code?: string }): boolean {
-  return error.code === REFUSAL_CODES.nominationsChanged;
-}
-
-/**
- * What one nomination stands under, in the keys `public.set_entity_nominations` reads a parent in.
- * @param parent - The choice.
- * @returns The object to send. Only a parent that names an entity or a typed name carries more than its kind.
- */
-function parentArgumentOf(parent: NominationParentChoice): Record<string, string> {
-  if (parent.kind === 'entity')
-    return { kind: parent.kind, entity_type: parent.entityType, entity_id: parent.entityId };
-  if (parent.kind === 'other') return { kind: parent.kind, name: parent.name };
-  return { kind: parent.kind };
-}
-
-/**
- * One nomination an entity is to have, in the keys `public.set_entity_nominations` reads an object of its set in.
- * @param nomination - The nomination.
- * @returns The object to send. It carries an `id` only for a nomination that has one, because the function refuses an `id` that is stated and is no id.
- */
-function nominationArgumentOf(nomination: DesiredNomination): Record<string, string | Record<string, string>> {
-  return {
-    ...(nomination.id !== undefined && { id: nomination.id }),
-    election_id: nomination.electionId,
-    constituency_id: nomination.constituencyId,
-    election_symbol: nomination.electionSymbol,
-    parent: parentArgumentOf(nomination.parent)
-  };
-}
-
-/**
- * The colours an entity is shown in, from its stored colour: parsed and adjusted for contrast, as the public data's are.
- * @param stored - The unvalidated value of the entity's colour.
- * @param source - The column and row the value came from, for the failure record.
- * @returns The colours, or nothing for an entity with no colour and for a stored value that is not a colour.
- */
-function shownColorsOf(stored: Json, source: ParseSource): Colors | undefined {
-  const storedColor = colorOf(parseColorColumn(stored, source));
-  const color = storedColor ? ensureColors(storedColor) : undefined;
-  return color?.normal ? color : undefined;
-}
-
-/**
- * One entity a nomination may be placed under, as the entity data a `DataRoot` is given, from the row the options read states it in.
- * @param row - The narrowed row.
- * @param locale - The locale the entity's names are translated to.
- * @param defaultLocale - The locale a name is read in when it has no entry for `locale`.
- * @returns The option. A name no locale holds is empty, and a short name, a colour and an image that are not stored are left out.
- */
-function nominationParentOptionOf(
-  row: NominationParentOptionRow,
-  locale: string,
-  defaultLocale: string
-): NominationParentOption {
-  const names = localizeRow(row, ['name', 'short_name'], locale, defaultLocale);
-  const image = imageOf(
-    parseImageColumn(row.image, constants.PUBLIC_SUPABASE_URL, {
-      column: 'get_nomination_parent_options.image',
-      id: row.id
-    })
-  );
-  const color = shownColorsOf(row.color, { column: 'get_nomination_parent_options.color', id: row.id });
-  return {
-    entity: {
-      type: row.entity_type,
-      id: row.id,
-      name: typeof names.name === 'string' ? names.name : '',
-      ...(typeof names.short_name === 'string' && { shortName: names.short_name }),
-      ...(image && { image }),
-      ...(color && { color })
-    },
-    nominatedIn: row.nominated.map((contest) => ({
-      electionId: contest.election_id,
-      constituencyId: contest.constituency_id
-    }))
-  };
-}
-
-/**
- * One nomination of an entity in the form its editor is shown it, from the row the nominations read states it in.
- * @param row - The narrowed row.
- * @param locale - The locale the election's, the constituency's and the parent's names are translated to.
- * @param defaultLocale - The locale a name is read in when it has no entry for `locale`.
- * @returns The nomination. A name no locale holds is empty, a round that is not stored is 1, a symbol that is not stored is empty, and custom data that is not an object is `null`.
- */
-function entityNominationOf(row: EntityNominationRow, locale: string, defaultLocale: string): EntityNomination {
-  const names = localizeRow(row, ['election_name', 'constituency_name'], locale, defaultLocale);
-  const parentNames = row.parent ? localizeRow(row.parent, ['name', 'short_name'], locale, defaultLocale) : undefined;
-  const customData = row.custom_data;
-  return {
-    id: row.id,
-    electionId: row.election_id,
-    electionName: typeof names.election_name === 'string' ? names.election_name : '',
-    constituencyId: row.constituency_id,
-    constituencyName: typeof names.constituency_name === 'string' ? names.constituency_name : '',
-    electionRound: row.election_round ?? 1,
-    electionSymbol: row.election_symbol ?? '',
-    confirmed: row.confirmed,
-    customData: typeof customData === 'object' && customData !== null && !Array.isArray(customData) ? customData : null,
-    updatedAt: row.updated_at,
-    ...(row.parent &&
-      parentNames && {
-        parent: {
-          entityType: row.parent.entity_type,
-          entityId: row.parent.entity_id,
-          name: typeof parentNames.name === 'string' ? parentNames.name : '',
-          ...(typeof parentNames.short_name === 'string' && { shortName: parentNames.short_name })
-        }
-      })
-  };
-}
-
-/**
  * Supabase implementation of the DataWriter.
  * Auth methods use Supabase GoTrue via `this.supabase.auth`.
  * Cookie-based sessions are used -- the Supabase client attaches the session JWT automatically.
@@ -1037,4 +793,248 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     if (rows === null) return undefined;
     return rows.map((row) => nominationParentOptionOf(row, locale, this.defaultLocale));
   }
+}
+
+/**
+ * The colours an entity is shown in, from its stored colour: parsed and adjusted for contrast, as the public data's are.
+ * @param stored - The unvalidated value of the entity's colour.
+ * @param source - The column and row the value came from, for the failure record.
+ * @returns The colours, or nothing for an entity with no colour and for a stored value that is not a colour.
+ */
+function shownColorsOf(stored: Json, source: ParseSource): Colors | undefined {
+  const storedColor = colorOf(parseColorColumn(stored, source));
+  const color = storedColor ? ensureColors(storedColor) : undefined;
+  return color?.normal ? color : undefined;
+}
+
+/**
+ * Narrow an entity type to one the application serves.
+ * @param type - Any entity type.
+ * @returns The same type, known to be served.
+ * @throws Error naming the type when the application does not serve it.
+ */
+function servedEntityType(type: EntityType): ServedEntityType {
+  const served = SERVED_ENTITY_TYPES.find((candidate) => candidate === type);
+  if (!served) throw new Error(`Unsupported entity type: ${type}`);
+  return served;
+}
+
+/**
+ * One nomination of an entity in the form its editor is shown it, from the row the nominations read states it in.
+ * @param row - The narrowed row.
+ * @param locale - The locale the election's, the constituency's and the parent's names are translated to.
+ * @param defaultLocale - The locale a name is read in when it has no entry for `locale`.
+ * @returns The nomination. A name no locale holds is empty, a round that is not stored is 1, a symbol that is not stored is empty, and custom data that is not an object is `null`.
+ */
+function entityNominationOf(row: EntityNominationRow, locale: string, defaultLocale: string): EntityNomination {
+  const names = localizeRow(row, ['election_name', 'constituency_name'], locale, defaultLocale);
+  const parentNames = row.parent ? localizeRow(row.parent, ['name', 'short_name'], locale, defaultLocale) : undefined;
+  const customData = row.custom_data;
+  return {
+    id: row.id,
+    electionId: row.election_id,
+    electionName: typeof names.election_name === 'string' ? names.election_name : '',
+    constituencyId: row.constituency_id,
+    constituencyName: typeof names.constituency_name === 'string' ? names.constituency_name : '',
+    electionRound: row.election_round ?? 1,
+    electionSymbol: row.election_symbol ?? '',
+    confirmed: row.confirmed,
+    customData: typeof customData === 'object' && customData !== null && !Array.isArray(customData) ? customData : null,
+    updatedAt: row.updated_at,
+    ...(row.parent &&
+      parentNames && {
+        parent: {
+          entityType: row.parent.entity_type,
+          entityId: row.parent.entity_id,
+          name: typeof parentNames.name === 'string' ? parentNames.name : '',
+          ...(typeof parentNames.short_name === 'string' && { shortName: parentNames.short_name })
+        }
+      })
+  };
+}
+
+/**
+ * The table an entity of the given type is stored in.
+ * @param type - Any entity type.
+ * @returns The table's name, which is also the entity's folder segment in Storage.
+ * @throws Error naming the type when the application does not serve it.
+ */
+function entityTableOf(type: EntityType): EntityTable {
+  return ENTITY_TABLES[servedEntityType(type)];
+}
+
+/**
+ * Whether a failed write was refused because the project's answers are locked.
+ * @param error - The error the write answered with.
+ * @returns `true` for that refusal and for no other failure.
+ */
+function isAnswersLockedRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.answersLocked;
+}
+
+/**
+ * The column each given property of an entity is stored in.
+ * @param type - The served type of the target entity.
+ * @param properties - The properties of a write. A member that is `undefined` is not given.
+ * @returns The given properties with their columns, in the order of the type's entry in {@link ENTITY_PROPERTY_COLUMNS}.
+ * @throws Error naming the property and the entity type when a given property is not one the type's editor may write.
+ */
+function writableColumnsOf(
+  type: ServedEntityType,
+  properties: SetPropertiesOptions['properties']
+): Map<EditableEntityProperty, string> {
+  const writable: Partial<Record<EditableEntityProperty, string>> = ENTITY_PROPERTY_COLUMNS[type];
+  const given = Object.entries(properties)
+    .filter(([, value]) => value !== undefined)
+    .map(([property]) => property);
+  for (const property of given)
+    if (!Object.hasOwn(writable, property))
+      throw new Error(
+        `updateEntityProperties: the property '${property}' cannot be written for an entity of type '${type}'`
+      );
+  const columns = new Map<EditableEntityProperty, string>();
+  for (const [property, column] of Object.entries(writable))
+    if (given.includes(property)) columns.set(property as EditableEntityProperty, column);
+  return columns;
+}
+
+/**
+ * The form a locale-keyed name is stored in.
+ * @param property - The name of the property, for the error.
+ * @param value - The name by locale, or `null`.
+ * @returns The name with its entries trimmed and its blank entries left out, or `null` when no entry is left.
+ * @throws Error naming the property when the value is neither `null` nor an object of entries.
+ */
+function storedNameOf(property: string, value: LocalizedString | null | undefined): LocalizedString | null {
+  if (value != null && (typeof value !== 'object' || Array.isArray(value)))
+    throw new Error(`updateEntityProperties: the property '${property}' must be an object of texts by locale, or null`);
+  return normalizeLocalizedName(value);
+}
+
+/**
+ * The form an entity's colour is stored in: the one colour as lowercase `#rrggbb` under `normal`, and nothing else.
+ * @param value - The colour, or `null` to clear it.
+ * @returns The colour to store, or `null`.
+ * @throws Error naming the property when the value is neither `null` nor an object holding a hex colour under `normal` alone.
+ */
+function storedColorOf(value: EditableEntityColor | null | undefined): EditableEntityColor | null {
+  if (value == null) return null;
+  const normal: unknown = typeof value === 'object' ? value.normal : undefined;
+  const hex = typeof normal === 'string' && STORED_HEX_COLOR.test(normal) ? toHexColor(normal) : undefined;
+  if (!hex || Object.keys(value).length !== 1)
+    throw new Error(
+      "updateEntityProperties: the property 'color' must be null or hold a hex colour, '#' and three or six hexadecimal digits, under 'normal' alone"
+    );
+  return { normal: hex };
+}
+
+/**
+ * The form a person's name is stored in.
+ * @param property - The name of the property, for the error.
+ * @param value - The name.
+ * @returns The name without surrounding whitespace.
+ * @throws Error naming the property when the value is not text.
+ */
+function storedPersonNameOf(property: string, value: string | undefined): string {
+  if (typeof value !== 'string') throw new Error(`updateEntityProperties: the property '${property}' must be text`);
+  return value.trim();
+}
+
+/**
+ * Whether a failed write was refused because it changes a name of a confirmed entity.
+ * @param error - The error the write answered with.
+ * @returns `true` for that refusal and for no other failure.
+ */
+function isNameRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.nameImmutable;
+}
+
+/**
+ * One nomination an entity is to have, in the keys `public.set_entity_nominations` reads an object of its set in.
+ * @param nomination - The nomination.
+ * @returns The object to send. It carries an `id` only for a nomination that has one, because the function refuses an `id` that is stated and is no id.
+ */
+function nominationArgumentOf(nomination: DesiredNomination): Record<string, string | Record<string, string>> {
+  return {
+    ...(nomination.id !== undefined && { id: nomination.id }),
+    election_id: nomination.electionId,
+    constituency_id: nomination.constituencyId,
+    election_symbol: nomination.electionSymbol,
+    parent: parentArgumentOf(nomination.parent)
+  };
+}
+
+/**
+ * What one nomination stands under, in the keys `public.set_entity_nominations` reads a parent in.
+ * @param parent - The choice.
+ * @returns The object to send. Only a parent that names an entity or a typed name carries more than its kind.
+ */
+function parentArgumentOf(parent: NominationParentChoice): Record<string, string> {
+  if (parent.kind === 'entity')
+    return { kind: parent.kind, entity_type: parent.entityType, entity_id: parent.entityId };
+  if (parent.kind === 'other') return { kind: parent.kind, name: parent.name };
+  return { kind: parent.kind };
+}
+
+/**
+ * Whether a failed write of an entity's nominations was refused because the nominations the set was computed from have changed since they were read.
+ * @param error - The error the write answered with.
+ * @returns `true` for that refusal and for no other failure.
+ */
+function isChangedRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.nominationsChanged;
+}
+
+/**
+ * Whether a failed write of an entity's nominations was refused because a nomination it removes or moves has other nominations listed under it.
+ * @param error - The error the write answered with.
+ * @returns `true` for that refusal and for no other failure.
+ */
+function isListedUnderRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.listedUnder;
+}
+
+/**
+ * Whether a failed write of an entity's nominations was refused because the caller holds too many unconfirmed parent nominations.
+ * @param error - The error the write answered with.
+ * @returns `true` for that refusal and for no other failure.
+ */
+function isPendingCapRefusal(error: { code?: string }): boolean {
+  return error.code === REFUSAL_CODES.pendingParentCap;
+}
+
+/**
+ * One entity a nomination may be placed under, as the entity data a `DataRoot` is given, from the row the options read states it in.
+ * @param row - The narrowed row.
+ * @param locale - The locale the entity's names are translated to.
+ * @param defaultLocale - The locale a name is read in when it has no entry for `locale`.
+ * @returns The option. A name no locale holds is empty, and a short name, a colour and an image that are not stored are left out.
+ */
+function nominationParentOptionOf(
+  row: NominationParentOptionRow,
+  locale: string,
+  defaultLocale: string
+): NominationParentOption {
+  const names = localizeRow(row, ['name', 'short_name'], locale, defaultLocale);
+  const image = imageOf(
+    parseImageColumn(row.image, constants.PUBLIC_SUPABASE_URL, {
+      column: 'get_nomination_parent_options.image',
+      id: row.id
+    })
+  );
+  const color = shownColorsOf(row.color, { column: 'get_nomination_parent_options.color', id: row.id });
+  return {
+    entity: {
+      type: row.entity_type,
+      id: row.id,
+      name: typeof names.name === 'string' ? names.name : '',
+      ...(typeof names.short_name === 'string' && { shortName: names.short_name }),
+      ...(image && { image }),
+      ...(color && { color })
+    },
+    nominatedIn: row.nominated.map((contest) => ({
+      electionId: contest.election_id,
+      constituencyId: contest.constituency_id
+    }))
+  };
 }

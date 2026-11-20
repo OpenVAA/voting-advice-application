@@ -53,10 +53,6 @@ export function isPlaceholderAddress(address: unknown): boolean {
   return at > 0 && normalised.slice(at + 1) === PLACEHOLDER_EMAIL_DOMAIN;
 }
 
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === 'string' && !isBlankText(value);
-}
-
 /**
  * The name of an account's address state.
  *
@@ -70,18 +66,12 @@ export function addressStateOf({ email, newEmail, identityProvider }: AddressFac
   return isNonEmptyString(newEmail) ? 'pending' : 'none';
 }
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && !isBlankText(value);
+}
+
 /** The key of `app_metadata` under which `identity-callback` records the entity an identity registered, per project and per entity type. The test of this module holds it equal to the function's own. */
 export const REGISTERED_ENTITIES_KEY = 'registered_entities';
-
-/**
- * The value of an own member of an object, or `undefined` for anything else.
- * @param value - The object, of any type.
- * @param key - The member's name.
- * @returns The member's value when `value` is an object holding it as its own.
- */
-function ownMember(value: unknown, key: string): unknown {
-  return isPlainObject(value) && Object.hasOwn(value, key) ? value[key] : undefined;
-}
 
 /**
  * The organization the identity registered in a project, as the account's `app_metadata` records it.
@@ -94,6 +84,16 @@ function ownMember(value: unknown, key: string): unknown {
 export function ownOrganizationId(appMetadata: unknown, projectId: string): string | null {
   const recorded = ownMember(ownMember(ownMember(appMetadata, REGISTERED_ENTITIES_KEY), projectId), 'organization');
   return isCanonicalUuid(recorded) ? recorded : null;
+}
+
+/**
+ * The value of an own member of an object, or `undefined` for anything else.
+ * @param value - The object, of any type.
+ * @param key - The member's name.
+ * @returns The member's value when `value` is an object holding it as its own.
+ */
+function ownMember(value: unknown, key: string): unknown {
+  return isPlainObject(value) && Object.hasOwn(value, key) ? value[key] : undefined;
 }
 
 /**
