@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189
 current_phase_name: Documentation and Closure
-current_plan: 13
+current_plan: 14
 status: executing
-stopped_at: Completed 189-11-PLAN.md
-last_updated: "2026-11-20T21:47:36.967Z"
+stopped_at: Completed 189-12-PLAN.md
+last_updated: "2026-11-20T21:53:04.687Z"
 last_activity: 2026-11-20
 last_activity_desc: Phase 189 execution started
-state_head: c70ed1b4cdb3e0d91ca0cac95ea288c8e1a8b1c3
+state_head: 0af9fbd3bcfa1b6fa647e13e484377aa8ed43549
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 208
-  completed_plans: 200
+  completed_plans: 201
   percent: 80
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189 (Documentation and Closure) — EXECUTING
-Plan: 13 of 20
+Plan: 14 of 20
 Status: Ready to execute
 Last activity: 2026-11-20 — Phase 189 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 13
+**Current Plan:** 14
 
 From 184 on, the numeric order is the dependency order.
 
@@ -209,6 +209,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189 P13 | 7min | 2 tasks | 1 files |
 | Phase 189 P19 | 9min | 3 tasks | 7 files |
 | Phase 189 P11 | 75min | 3 tasks | 2 files |
+| Phase 189 P12 | 8 min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -454,6 +455,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189]: 189-11: on a new account the deployment guide has the deployer put the PostHog SSM parameter before bootstrap's first plan, because bootstrap's execution role reads alias/aws/ssm, which exists only after a first SecureString (bootstrap Step 8 precondition)
 - [Phase 189]: 189-11: the guide states as fact that deploy.yml, destroy.yml and the deployed smoke run name infra/envs/staging/* and the GitHub environment staging; a fork with other names changes them
 - [Phase 189]: 189-11: DOCS-01 and DOCS-03 advanced, not complete; plan 189-12 owns the hosted-project sections, including the dashboard-names sentence that still carries a recorded-search word
+- [Phase 189]: 189-12: the guide's hosted-project sections name the repository's writer of each setting (settings resource, function-secrets.tf, bootstrap.sql) and carry dated staging observations; the two sign-up switches are named by the labels observed on 2026-11-08/09
 
 ### Pending Todos
 
@@ -520,6 +522,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-20T21:47:35.796Z
-**Stopped At:** Completed 189-11-PLAN.md
+Last session: 2026-11-20T21:53:03.535Z
+**Stopped At:** Completed 189-12-PLAN.md
 **Resume File:** None
