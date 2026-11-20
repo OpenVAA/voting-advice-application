@@ -7,6 +7,9 @@ DEVSEED_TEMPLATE_TESTS_BEFORE=58
 RENDER_GREP_BEFORE=21
 DEVSEED_TEMPLATE_TESTS_AFTER=45
 DEVSEED_TEMPLATE_DELTA=-13
+RENDER_GREP_AFTER=2
+RENDER_KEPT_DEMO_LINK=apps/docs/src/routes/+page.svelte (live demo VAA, not the deployment example)
+RENDER_KEPT_FIXTURE=scripts/fixtures/assert-test-keys-scope.input.txt (path label in a guard's self-test fixture)
 
 ## How each line was measured
 
@@ -18,3 +21,6 @@ DEVSEED_TEMPLATE_DELTA=-13
 - `yarn workspace @openvaa/docs validate:links --check`: `Total findings: 0` (`github-path: 0`), exit 0.
 - `yarn eslint` and `yarn prettier --check` on the two test files and the guide: exit 0.
 - The guide's removed section carried the warning never to set `SUPABASE_SERVICE_ROLE_KEY` on the frontend service; the environment-variables page still states that the key bypasses row-level security and that nothing in the frontend reads it.
+- `RENDER_GREP_AFTER=2`: the same `git grep` after Task 2 printed two lines: `apps/docs/src/routes/+page.svelte` (`href: 'https://voting-advice-application-qu5v.onrender.com'`, the docs home's link to a live demo VAA, kept: it is a demo, not deployment instructions) and `scripts/fixtures/assert-test-keys-scope.input.txt` (`# @as render.example.yaml`, a path label inside the self-test fixture of `assert-test-keys-scope`, kept: the file is never read, and editing it would shift the line numbers its expected-violations file pins).
+- Task 2 edits: the header of `ciDockerImageBuildGate.test.ts` and the comment above the `docker-image-build` job in `.github/workflows/main.yaml` name the root compose and the AWS deploy pipeline (`infra/scripts/build-push-image.sh`, `BUILD_TARGET="production"`) in place of the template; `CLAUDE.md` § Deployment describes the AWS frontend (ECS behind CloudFront, Terraform under `infra/`, `deploy.yml` on `deploy/staging`), Supabase Cloud configured by `infra/modules/supabase`, the guide as the entry point, and keeps that `docker-compose.dev.yml` is for production build testing only.
+- A word-match search, `git grep -n -w 'Render' -- ':!.planning' ':!.yarn'`, found two more Render mentions the pattern above misses: the parenthetical "(Render's default is 100s; these jobs run for minutes)" in the job-writer comment of `condenseArguments.ts` and of `generateQuestionInfo.ts` (`apps/frontend/src/lib/server/admin/features/`). Both now read "(a gateway's timeout is far shorter than these jobs, which run for minutes)"; the ALB idle timeout is 60 s (`infra/modules/frontend-service/origin.tf`, `idle_timeout`). Every other hit of the word search is the verb ("Render a filter", "Render templates"). A case-insensitive search for Render as a host (`on|to|in|via|from render`, `render service|dashboard|blueprint|url|deploy`) finds nothing.

@@ -331,7 +331,7 @@ Both invariants were diagnosed in this codebase (spikes 031–034) and landed in
 
 ## Deployment
 
-Frontend ships as a Docker container; the backend is Supabase Cloud, so no backend service is needed on Render. `render.example.yaml` is the reference deployment: the frontend service with its `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` environment variables, and the domain. `docker-compose.dev.yml` is for production build testing only, not development.
+The frontend ships as a Docker container to AWS: an ECS service behind CloudFront, written in Terraform under `infra/` and deployed by the gated pipeline on a push to `deploy/staging` (`.github/workflows/deploy.yml`). The backend is Supabase Cloud, its hosted settings configured by the Terraform module under `infra/modules/supabase`. The deployment guide, `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md`, is the entry point, and `infra/README.md` describes the roots and the pipeline. `docker-compose.dev.yml` is for production build testing only, not development.
 
 ## Troubleshooting
 
