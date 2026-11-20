@@ -136,12 +136,13 @@ function tokenWasSetInACookie(event: ReturnType<typeof createEvent>): boolean {
 
 /** Settings serving the given types, each allowing the given modes. */
 function settingsAllowing(modes: Partial<Record<'candidate' | 'organization', Array<string>>>) {
-  return {
-    contestantApp: {
-      entityTypes: Object.keys(modes),
-      registrationModes: modes
-    }
-  };
+  const servedEntityTypes: Partial<Record<'candidate' | 'organization', { registrationModes: Array<string> }>> = {};
+  for (const [entityType, registrationModes] of Object.entries(modes) as Array<
+    ['candidate' | 'organization', Array<string>]
+  >) {
+    servedEntityTypes[entityType] = { registrationModes };
+  }
+  return { contestantApp: { servedEntityTypes } };
 }
 
 /** An answer of `identity-callback` as `functions.invoke` resolves it for a 2xx response. */
