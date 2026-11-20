@@ -465,13 +465,13 @@ export type Database = {
           custom_data: Json | null;
           election_date: string | null;
           election_start_date: string | null;
-          election_type: Database['public']['Enums']['nomination_shape'];
           external_id: string | null;
           id: string;
           image: Json | null;
           info: Json | null;
           multiple_rounds: boolean | null;
           name: Json | null;
+          nomination_shape: Database['public']['Enums']['nomination_shape'];
           project_id: string;
           short_name: Json | null;
           sort_order: number | null;
@@ -485,13 +485,13 @@ export type Database = {
           custom_data?: Json | null;
           election_date?: string | null;
           election_start_date?: string | null;
-          election_type?: Database['public']['Enums']['nomination_shape'];
           external_id?: string | null;
           id?: string;
           image?: Json | null;
           info?: Json | null;
           multiple_rounds?: boolean | null;
           name?: Json | null;
+          nomination_shape?: Database['public']['Enums']['nomination_shape'];
           project_id: string;
           short_name?: Json | null;
           sort_order?: number | null;
@@ -505,13 +505,13 @@ export type Database = {
           custom_data?: Json | null;
           election_date?: string | null;
           election_start_date?: string | null;
-          election_type?: Database['public']['Enums']['nomination_shape'];
           external_id?: string | null;
           id?: string;
           image?: Json | null;
           info?: Json | null;
           multiple_rounds?: boolean | null;
           name?: Json | null;
+          nomination_shape?: Database['public']['Enums']['nomination_shape'];
           project_id?: string;
           short_name?: Json | null;
           sort_order?: number | null;
@@ -1191,7 +1191,7 @@ export type Database = {
       bulk_delete: { Args: { p_data: Json }; Returns: Json };
       bulk_import: { Args: { p_data: Json }; Returns: Json };
       claim_invitations: { Args: { p_project_id: string }; Returns: Json };
-      contestant_app_public_config: { Args: { p_project_id: string }; Returns: Json };
+      contestant_app_public_settings: { Args: { p_project_id: string }; Returns: Json };
       create_invitations: {
         Args: { p_confirm_entity: boolean; p_invitations: Json; p_project_id: string };
         Returns: Json;

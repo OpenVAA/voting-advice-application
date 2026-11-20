@@ -12,7 +12,7 @@ import { ENTITY_TYPE, isEntityType } from '../../internal';
 import type { EntityType } from '../../internal';
 
 /**
- * The nomination shapes of an election, by the values the database stores in `elections.election_type`.
+ * The nomination shapes of an election, by the values the database stores in `elections.nomination_shape`.
  */
 export const NOMINATION_SHAPE = {
   /**
@@ -39,7 +39,7 @@ export const NOMINATION_SHAPE = {
 export type NominationShape = (typeof NOMINATION_SHAPE)[keyof typeof NOMINATION_SHAPE];
 
 /**
- * The shape of an election whose data states none. It is the default of the database's `elections.election_type` column.
+ * The shape of an election whose data states none. It is the default of the database's `elections.nomination_shape` column.
  */
 export const DEFAULT_NOMINATION_SHAPE: NominationShape = NOMINATION_SHAPE.OrganizationListAndIndependents;
 

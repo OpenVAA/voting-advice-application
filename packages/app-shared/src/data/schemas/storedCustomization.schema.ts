@@ -20,7 +20,7 @@ const LocalizedStringSchema = z.record(z.string(), z.string());
  * 3. `translationOverrides` values are locale objects in storage and plain strings in the type.
  * 4. `contestantAppFAQ[].question` and `.answer` are locale objects in storage and strings in the type.
  *
- * Every field is optional: the column is `DEFAULT '{}'::jsonb` (`apps/supabase/supabase/schema/106-app-settings.sql:19`) and the provider returns `{}` on `PGRST116`, so `{}` MUST parse.
+ * Every field is optional: the column is `DEFAULT '{}'::jsonb` (`apps/supabase/supabase/schema/106-app-settings.sql`), and `SupabaseDataProvider._getAppCustomization` reads the row with `maybeSingle` and returns `{}` when there is none, so `{}` MUST parse.
  *
  * ## Strict at every level
  *

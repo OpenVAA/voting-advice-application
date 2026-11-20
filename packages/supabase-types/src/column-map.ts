@@ -40,7 +40,7 @@ export const COLUMN_MAP = {
   // ElectionData
   election_date: 'electionDate',
   election_start_date: 'electionStartDate',
-  election_type: 'electionType',
+  nomination_shape: 'nominationShape',
   multiple_rounds: 'multipleRounds',
   current_round: 'currentRound',
 
