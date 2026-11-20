@@ -331,6 +331,96 @@ describe('trackingService (pure-rune producer)', () => {
     }
   });
 
+  describe('the consent choice of the current route', () => {
+    const CONTESTANT_ROUTE = '/contestant/(protected)';
+    const VOTER_ROUTE = '/(voters)/(located)/questions';
+
+    /** Preferences with only the Contestant App's own choice stored. */
+    function contestantOnly(consent: ConsentStatus) {
+      return handle({ contestantDataConsent: { consent, date: '2026-10-19' } } as UserPreferences);
+    }
+
+    it('on a voter route ignores a grant stored by the Contestant App, so no voter event is sent', async () => {
+      const { trackingService } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const svc = trackingService({
+          ...inputs(),
+          userPreferences: contestantOnly('granted'),
+          routeId: () => VOTER_ROUTE
+        });
+        expect(svc.gate.current.consent).toBeUndefined();
+        svc.startPageview(HOME, {});
+        svc.track('answer_delete', { questionId: QUESTION_ID });
+        svc.submitAllEvents();
+        expect(namesPerBody()).toEqual([['pageview']]);
+      });
+      cleanup();
+    });
+
+    it('with no route reads the voter choice only', async () => {
+      const { trackingService } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const svc = trackingService({ ...inputs(), userPreferences: contestantOnly('granted') });
+        expect(svc.gate.current.consent).toBeUndefined();
+      });
+      cleanup();
+    });
+
+    it('on a Contestant route reads contestantDataConsent and not the voter choice', async () => {
+      const { trackingService } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const svc = trackingService({
+          ...inputs(),
+          userPreferences: handle({
+            dataCollection: { consent: 'denied', date: '2026-10-19' },
+            contestantDataConsent: { consent: 'granted', date: '2026-10-19' }
+          } as UserPreferences),
+          routeId: () => CONTESTANT_ROUTE
+        });
+        expect(svc.gate.current.consent).toBe('granted');
+        svc.startPageview(HOME, {});
+        svc.track('menu_open');
+        svc.submitAllEvents();
+        expect(namesPerBody()).toEqual([['pageview', 'menu_open']]);
+      });
+      cleanup();
+    });
+
+    it('follows navigation between the apps', async () => {
+      const { trackingService, reactiveHandle } = await importTracking(true);
+      const cleanup = $effect.root(() => {
+        const route = reactiveHandle<string | null>(CONTESTANT_ROUTE);
+        const svc = trackingService({
+          ...inputs(),
+          userPreferences: handle({
+            dataCollection: { consent: 'denied', date: '2026-10-19' },
+            contestantDataConsent: { consent: 'granted', date: '2026-10-19' }
+          } as UserPreferences),
+          routeId: () => route.current
+        });
+        expect(svc.gate.current.consent).toBe('granted');
+        route.current = VOTER_ROUTE;
+        expect(svc.gate.current.consent).toBe('denied');
+        route.current = null;
+        expect(svc.gate.current.consent).toBe('denied');
+      });
+      cleanup();
+    });
+  });
+
+  describe('consentPreferenceKey', () => {
+    it('picks contestantDataConsent on Contestant App routes only', async () => {
+      const { consentPreferenceKey } = await import('./gates');
+      expect(consentPreferenceKey('/contestant')).toBe('contestantDataConsent');
+      expect(consentPreferenceKey('/contestant/(protected)/questions')).toBe('contestantDataConsent');
+      expect(consentPreferenceKey('/contestants')).toBe('dataCollection');
+      expect(consentPreferenceKey('/(voters)/privacy')).toBe('dataCollection');
+      expect(consentPreferenceKey('/admin/(protected)')).toBe('dataCollection');
+      expect(consentPreferenceKey(null)).toBe('dataCollection');
+      expect(consentPreferenceKey(undefined)).toBe('dataCollection');
+    });
+  });
+
   // The members `appContext` takes from this producer travel on through the three downstream `{ ...appContext }` spreads, and the forward itself is an `Object.assign`, which, like spread, copies OWN-ENUMERABLE properties only. Svelte 5 compiles bare `$state`/`$derived` CLASS fields to PROTOTYPE accessors that are not own-enumerable and would be dropped by both.
   it('reactive members and methods survive `{ ...svc }` spread', async () => {
     const { trackingService, getVisitId } = await importTracking(true);

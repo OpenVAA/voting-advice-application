@@ -3,7 +3,7 @@
  *
  * # The consent to usage data at the Contestant App's terms of use
  *
- * In the Contestant App, accepting the terms of use counts as consent to the collection of usage data, unless the user ticks the opt-out box the terms-of-use view shows under its acceptance checkbox. The choice is written to the same origin-wide store the voter app's consent prompt writes (`appContext-userPreferences`, `data.dataCollection.consent`), and the Contestant App's privacy page offers the consent control by which it can be changed.
+ * In the Contestant App, accepting the terms of use counts as consent to the collection of usage data, unless the user ticks the opt-out box the terms-of-use view shows under its acceptance checkbox. The choice is written to the Contestant App's own member of the stored preferences (`appContext-userPreferences`, `data.contestantDataConsent.consent`), apart from the voter app's `dataCollection`, and the Contestant App's privacy page offers the consent control by which it can be changed.
  *
  * This spec observes that in a browser, on the `perm-analytics-tracking` dataset, whose settings row turns `analytics.trackEvents` on:
  *  - the view shows the box unticked, passes the suite's axe scan with the box visible, and the box is reached with Tab and toggled with Space; the terms text holds the usage-data section;
@@ -149,8 +149,8 @@ function eventsNamed(capture: RelayCaptureFixture, name: string): Array<Captured
 async function readStoredConsent(context: BrowserContext, page: Page): Promise<string | undefined> {
   const { userPreferences } = await readDeviceState(context, page);
   if (userPreferences === null) return undefined;
-  const envelope = JSON.parse(userPreferences) as { data?: { dataCollection?: { consent?: string } } };
-  return envelope.data?.dataCollection?.consent;
+  const envelope = JSON.parse(userPreferences) as { data?: { contestantDataConsent?: { consent?: string } } };
+  return envelope.data?.contestantDataConsent?.consent;
 }
 
 /** Open the menu, which buffers a `menu_open` event, and close it again. */

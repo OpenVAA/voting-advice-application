@@ -13,6 +13,7 @@ import { createGetRoute } from './getRoute.svelte';
 import { popupState } from './popup';
 import { surveyLink } from './survey.svelte';
 import { trackingService } from './tracking';
+import { consentPreferenceKey } from './tracking/gates';
 import { getComponentContext } from '../component';
 import { getDataContext } from '../data';
 import { inheritContextMembers } from '../utils/inheritContextMembers';
@@ -239,7 +240,8 @@ export class AppContextProvider implements AppContext {
       appSettings: appSettingsHandle,
       userPreferences: this.#userPreferences,
       projection: projectionHandle,
-      locale: getLocale
+      locale: getLocale,
+      routeId: () => page.route.id
     });
     this.#survey = surveyLink({ appSettings: appSettingsHandle, sessionId: this.#tracking.surveySessionId });
     this.surveyLink = this.#survey;
@@ -351,9 +353,11 @@ export class AppContextProvider implements AppContext {
   };
 
   setDataConsent = (consent: UserDataCollectionConsent): void => {
+    // The Contestant App stores its choice apart from the voter app's, so a choice made in one never answers the other's.
+    const key = consentPreferenceKey(page.route.id);
     this.#userPreferences.update((d) => ({
       ...d,
-      dataCollection: { consent, date: new Date().toISOString() }
+      [key]: { consent, date: new Date().toISOString() }
     }));
     // Every change of the choice empties the event buffer, so no event buffered before the change is sent under the new choice. The current view's pageview is kept.
     this.#tracking.resetAllEvents();

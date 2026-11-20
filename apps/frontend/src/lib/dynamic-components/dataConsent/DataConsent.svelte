@@ -3,7 +3,7 @@
 
 ### Dynamic component
 
-Accesses `AppContext` to set and read `userPreferences`. The description names no analytics provider: its note is `privacy.dataCollection.info`. Whether the component is offered at all is decided by the page that renders it.
+Accesses `AppContext` to set and read `userPreferences`. The choice shown and changed is the one of the app the current route belongs to (`consentPreferenceKey`): the Contestant App's own choice on its routes, the voter app's elsewhere. The description names no analytics provider: its note is `privacy.dataCollection.info`. Whether the component is offered at all is decided by the page that renders it.
 
 ### Properties
 
@@ -26,8 +26,10 @@ Accesses `AppContext` to set and read `userPreferences`. The description names n
 -->
 
 <script lang="ts">
+  import { page } from '$app/state';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
+  import { consentPreferenceKey } from '$lib/contexts/app/tracking/gates';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
@@ -39,8 +41,9 @@ Accesses `AppContext` to set and read `userPreferences`. The description names n
 
   const ctx = getAppContext();
   const { userPreferences, setDataConsent, t } = ctx;
+  const choice = $derived(userPreferences.current[consentPreferenceKey(page.route.id)]);
   function handleChange(consent: ConsentStatus) {
-    if (consent !== userPreferences.current.dataCollection?.consent) setDataConsent(consent);
+    if (consent !== choice?.consent) setDataConsent(consent);
     onChange?.(consent);
   }
 </script>
@@ -52,27 +55,24 @@ Accesses `AppContext` to set and read `userPreferences`. The description names n
       <p>{t('privacy.dataCollection.info')}</p>
     </div>
     <p class="mt-md text-center font-bold">
-      {t(
-        assertTranslationKey(
-          `privacy.dataConsentIntro.${userPreferences.current.dataCollection?.consent ?? 'indetermined'}`
-        ),
-        { consentDate: new Date(userPreferences.current.dataCollection?.date ?? '') }
-      )}
+      {t(assertTranslationKey(`privacy.dataConsentIntro.${choice?.consent ?? 'indetermined'}`), {
+        consentDate: new Date(choice?.date ?? '')
+      })}
     </p>
   {/if}
   <Button
     onclick={() => handleChange('granted')}
     variant="main"
     iconPos="left"
-    disabled={userPreferences.current.dataCollection?.consent === 'granted'}
-    icon={userPreferences.current.dataCollection?.consent === 'granted' ? 'check' : undefined}
+    disabled={choice?.consent === 'granted'}
+    icon={choice?.consent === 'granted' ? 'check' : undefined}
     text={t('privacy.dataConsentLabel.granted')} />
   <Button
     onclick={() => handleChange('denied')}
     color="warning"
     iconPos="left"
-    disabled={userPreferences.current.dataCollection?.consent === 'denied'}
-    icon={userPreferences.current.dataCollection?.consent === 'denied' ? 'check' : undefined}
+    disabled={choice?.consent === 'denied'}
+    icon={choice?.consent === 'denied' ? 'check' : undefined}
     text={t('privacy.dataConsentLabel.denied')} />
   {#if description === 'modal'}
     <DataConsentInfoButton color="neutral" variant="normal" />

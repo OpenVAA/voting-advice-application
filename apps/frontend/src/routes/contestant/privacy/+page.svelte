@@ -8,7 +8,7 @@ Shows a registry and privacy statement
 
 Read from `contestantCtx.analyticsGate.current`:
 
-- The `DataConsent` control is shown when the contestant has a choice to make, the same condition under which the terms-of-use view offers the opt-out (`shouldShowContestantOptOut`): a provider is configured, no Global Privacy Control, `analytics.trackEvents` is on and the consent mode is `gated`. It lets the contestant change the choice made when accepting the terms.
+- The `DataConsent` control is shown when the contestant has a choice to make, the same condition under which the terms-of-use view offers the opt-out (`shouldShowContestantOptOut`): a provider is configured, no Global Privacy Control, `analytics.trackEvents` is on and the consent mode is `gated`. It lets the contestant change the choice made when accepting the terms, the Contestant App's own choice (`contestantDataConsent`), which the voter app never reads.
 -->
 
 <script lang="ts">

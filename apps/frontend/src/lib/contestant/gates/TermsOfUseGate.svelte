@@ -1,7 +1,7 @@
 <!--
 @component Show the terms of use to a signed-in user who has not accepted them for this project, with a button for accepting and continuing and another for logging out. Accepting records the acceptance and reruns the page's loads, so the page the user asked for replaces this view. A failed acceptance is reported and the form stays.
 
-When events could be sent in gated mode (`shouldShowContestantOptOut`), a box for opting out of the collection of usage data is shown under the terms. It starts ticked when this browser already holds a refusal. A recorded acceptance then writes the box's choice to the visitor's consent choice, `denied` when ticked and `granted` when not. When the box is not shown, nothing is written.
+When events could be sent in gated mode (`shouldShowContestantOptOut`), a box for opting out of the collection of usage data is shown under the terms. It starts ticked when this browser already holds a refusal made in the Contestant App. A recorded acceptance then writes the box's choice to the Contestant App's own consent choice (`contestantDataConsent`), `denied` when ticked and `granted` when not; the voter app's choice is never touched. When the box is not shown, nothing is written.
 
 ### Dynamic component
 
@@ -45,7 +45,7 @@ None.
   let termsAccepted = $state(false);
   // analyticsGate is a reactive handle: read via ctx.analyticsGate.current, never destructure.
   const showOptOut = $derived(shouldShowContestantOptOut(ctx.analyticsGate.current));
-  // A refusal already stored in this browser starts the box ticked, so accepting the terms never turns it into a grant.
+  // A refusal the Contestant App already stored in this browser starts the box ticked, so accepting the terms never turns it into a grant. On a Contestant route the gate reads the Contestant App's own choice.
   let optOut = $state(ctx.analyticsGate.current.consent === 'denied');
 
   async function handleSubmit() {

@@ -24,7 +24,7 @@
  *
  * ## Persisted-prefs scope
  *
- * `userPreferences` (userPreferences.type.ts) persists exactly: `dataCollection.consent` + `feedback.status` + `survey.status` — there is NO theme field (dark mode is OS-media-driven, not a persisted preference). The round-trip writes all three through the app's real `localStorageState` versioned envelope (`appContext-userPreferences`), reloads, and re-reads them back THROUGH the version check (proving persistence, not a raw blob echo).
+ * In the voter app, `userPreferences` (userPreferences.type.ts) persists exactly: `dataCollection.consent` + `feedback.status` + `survey.status` (the Contestant App keeps its consent apart, in `contestantDataConsent`) — there is NO theme field (dark mode is OS-media-driven, not a persisted preference). The round-trip writes all three through the app's real `localStorageState` versioned envelope (`appContext-userPreferences`), reloads, and re-reads them back THROUGH the version check (proving persistence, not a raw blob echo).
  *
  * Rigidity contract (project E2E Hard Rule): every assertion is HARD — no expect.soft, no try/catch around expect(), no .catch fallback. No one-shot `isVisible({timeout})` as a wait.
  */

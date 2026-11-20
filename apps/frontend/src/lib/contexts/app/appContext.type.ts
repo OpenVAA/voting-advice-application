@@ -102,7 +102,7 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
      */
     startSurveyPopupCountdown: (delay?: number) => void;
     /**
-     * Set the user's data consent together with the date of giving or denying the consent.
+     * Set the user's data consent together with the date of giving or denying the consent. On a Contestant App route the choice is stored as `contestantDataConsent`, elsewhere as `dataCollection` (`consentPreferenceKey`).
      * @param consent - The value for the consent
      */
     setDataConsent: (consent: UserDataCollectionConsent) => void;

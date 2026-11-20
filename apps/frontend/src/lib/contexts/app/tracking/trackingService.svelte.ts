@@ -1,6 +1,12 @@
 import { browser } from '$app/environment';
 import { buildBatch } from './batchBuilder';
-import { isGlobalPrivacyControlSet, mayFillSessionId, maySendEvents, maySendPageview } from './gates';
+import {
+  consentPreferenceKey,
+  isGlobalPrivacyControlSet,
+  mayFillSessionId,
+  maySendEvents,
+  maySendPageview
+} from './gates';
 import { sendBatch } from './relayTransport';
 import { createViewTracker } from './viewTracker';
 import { getVisitId } from './visitId';
@@ -11,6 +17,20 @@ import type { BufferedEvent } from './batchBuilder';
 import type { GateInput } from './gates';
 import type { TrackingEventName } from './trackingEvent.type';
 import type { TrackingDataArgument, TrackingService } from './trackingService.type';
+
+/**
+ * The inputs of the tracking service.
+ */
+export type TrackingServiceInputs = {
+  appSettings: ReactiveHandle<AppSettings>;
+  userPreferences: ReactiveHandle<UserPreferences>;
+  projection: ReactiveHandle<AnalyticsProjection>;
+  locale: () => string;
+  /**
+   * The id of the current route, read inside the gate's `$derived` so the gate follows navigation. It picks the consent choice the gate reads (`consentPreferenceKey`): the Contestant App's own on a Contestant route, the voter app's otherwise. Default: no route, so the voter app's choice.
+   */
+  routeId?: () => string | null | undefined;
+};
 
 /**
  * Pure-rune tracking-service producer as a Svelte 5 CLASS: a rune shell over the pure tracking modules.
@@ -43,6 +63,7 @@ export class TrackingServiceImpl implements TrackingService {
   readonly #userPreferences: ReactiveHandle<UserPreferences>;
   readonly #projection: ReactiveHandle<AnalyticsProjection>;
   readonly #locale: () => string;
+  readonly #routeId: () => string | null | undefined;
 
   /** Whether the browser sends the Global Privacy Control signal, read once at construction. */
   readonly #globalPrivacyControl: boolean;
@@ -71,21 +92,12 @@ export class TrackingServiceImpl implements TrackingService {
   readonly gate!: ReactiveHandle<GateInput>;
   readonly surveySessionId!: ReactiveHandle<string | undefined>;
 
-  constructor({
-    appSettings,
-    userPreferences,
-    projection,
-    locale
-  }: {
-    appSettings: ReactiveHandle<AppSettings>;
-    userPreferences: ReactiveHandle<UserPreferences>;
-    projection: ReactiveHandle<AnalyticsProjection>;
-    locale: () => string;
-  }) {
+  constructor({ appSettings, userPreferences, projection, locale, routeId = () => undefined }: TrackingServiceInputs) {
     this.#appSettings = appSettings;
     this.#userPreferences = userPreferences;
     this.#projection = projection;
     this.#locale = locale;
+    this.#routeId = routeId;
     this.#globalPrivacyControl = browser ? isGlobalPrivacyControlSet(navigator) : false;
 
     // Install the gate input as a `$derived` AFTER the input handles are assigned (field-init order). No `$effect`.
@@ -93,7 +105,7 @@ export class TrackingServiceImpl implements TrackingService {
       projection: this.#projection.current,
       globalPrivacyControl: this.#globalPrivacyControl,
       trackEvents: this.#appSettings.current.analytics.trackEvents,
-      consent: this.#userPreferences.current.dataCollection?.consent
+      consent: this.#userPreferences.current[consentPreferenceKey(this.#routeId())]?.consent
     });
 
     // Capture `this` so the handle-object getters reach the private backing field. The handle objects are OWN-ENUMERABLE field VALUES, so the `{ ...instance }` spread copies them intact.
@@ -157,16 +169,6 @@ export class TrackingServiceImpl implements TrackingService {
  *
  * The return type is the IMPLEMENTATION type, not the narrower consumer-facing `TrackingService`: `appContext` holds this producer privately (`#tracking`), forwards its `gate` and reads its `surveySessionId` to build the survey link, and this module's own test asserts the producer's exact own-key surface. Consumers never see this type — they see whatever `appContext` chooses to forward.
  */
-export function trackingService({
-  appSettings,
-  userPreferences,
-  projection,
-  locale
-}: {
-  appSettings: ReactiveHandle<AppSettings>;
-  userPreferences: ReactiveHandle<UserPreferences>;
-  projection: ReactiveHandle<AnalyticsProjection>;
-  locale: () => string;
-}): TrackingServiceImpl {
-  return new TrackingServiceImpl({ appSettings, userPreferences, projection, locale });
+export function trackingService(inputs: TrackingServiceInputs): TrackingServiceImpl {
+  return new TrackingServiceImpl(inputs);
 }
