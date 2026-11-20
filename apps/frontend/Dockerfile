@@ -35,13 +35,6 @@ WORKDIR /opt
 COPY --from=shared /opt/packages packages
 COPY --from=shared /opt/apps/frontend apps/frontend
 
-FROM frontend AS development
-
-WORKDIR /opt
-
-EXPOSE 5173
-CMD yarn workspace @openvaa/frontend dev --host
-
 FROM frontend AS production
 
 ARG NODE_ENV=production
