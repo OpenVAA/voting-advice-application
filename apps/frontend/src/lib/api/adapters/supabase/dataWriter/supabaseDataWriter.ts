@@ -446,7 +446,7 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     // In the browser, call the server-side logout endpoint to clear httpOnly cookies.
     // Client-side signOut alone cannot remove httpOnly cookies set by createServerClient.
     if (typeof window !== 'undefined') {
-      // reason: the endpoint is named by route key, never assembled from the current URL. Reading the locale off `window.location.pathname` returns 'contestant' for an unprefixed candidate route and yields a doubled path; a constant cannot go wrong that way. The endpoint clears cookies and returns json, so it carries no locale prefix.
+      // reason: the endpoint is named by route key, never assembled from the current URL. Reading the locale off `window.location.pathname` returns 'contestant' for an unprefixed Contestant App route and yields a doubled path; a constant cannot go wrong that way. The endpoint clears cookies and returns json, so it carries no locale prefix.
       const response = await fetch(ROUTE.AuthLogout, { method: 'POST' });
       // Whether the cookies still hold the session depends on what failed, so the failure is thrown for the caller to report, and the browser's own session is left as it is.
       if (!response.ok) throw new Error(`The logout endpoint answered ${response.status}.`);

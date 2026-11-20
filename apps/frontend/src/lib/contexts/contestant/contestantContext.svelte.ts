@@ -53,22 +53,7 @@ type QuestionBlocksShape = {
 };
 
 /**
- * The blocks of an entity that is asked no opinion question, and of no entity.
- * @returns A new, empty set of blocks.
- */
-function noQuestionBlocks(): QuestionBlocksShape {
-  return {
-    blocks: [],
-    get questions() {
-      return [];
-    },
-    getByCategory: () => undefined,
-    getByQuestion: () => undefined
-  };
-}
-
-/**
- * The candidate context (orchestrator) as a Svelte 5 CLASS (`ContestantContextProvider`).
+ * The contestant context (orchestrator) as a Svelte 5 CLASS (`ContestantContextProvider`).
  * Constructed via `new ContestantContextProvider()` inside `initContestantContext()`, at component-init time.
  *
  * ── Shape decision ──────────────────────────────────────────────────────────
@@ -84,7 +69,7 @@ function noQuestionBlocks(): QuestionBlocksShape {
  * `isAuthenticated` is a PROTOTYPE GETTER that re-reads the auth context's live accessor on every access, and it is left out of the `Object.assign` of the auth members. A copied value would be the one read at construction, so a sign-in or a sign-out that keeps this context mounted would never reach a consumer.
  *
  * ── Destructure-trap contract ────────────────────────────────────────────────
- * This context is the canonical example of the destructure trap (CLAUDE.md Context Destructuring Rule; the push-based `$state` mirrors below are what keeps it from firing). Class prototype getters preserve the contract: reads via `ctx.X` re-invoke the getter in the tracking scope, so updates after data load propagate. Do NOT regress to destructured-capture or a pull-chain.
+ * This context is the canonical example of the destructure trap (CLAUDE.md Context Destructuring Rule; the push-based `$state` mirrors below are what keeps it from firing). Class prototype getters preserve the contract: reads via `ctx.X` re-invoke the getter in the tracking scope, so updates after data load propagate.
  *
  * ── User-level data beside the entity store ──────────────────────────────────
  * `user`, `entities`, `selectedEntity`, `homeRoute` and `nominations` are reactive accessors derived from `page.data` and `page.params`: who is signed in, what they may edit, which of those the route names, where "home" leads from the current page, and the nominations the entity-level load read for the entity on the page. `userData` holds the one entity being edited and stays a stable reference. The five follow the same contract: read `ctx.X`, never destructure.
@@ -121,7 +106,7 @@ export class ContestantContextProvider implements ContestantContext {
   get #dataRoot(): AppContext['dataRoot'] {
     return this.#appContext.dataRoot;
   }
-  // The private handle the logout override delegates to (replaces the former `const { logout: _logout } = authContext`).
+  // The private handle the logout override delegates to.
   #authLogout = this.#authContext.logout;
 
   ////////////////////////////////////////////////////////////////////
@@ -172,10 +157,7 @@ export class ContestantContextProvider implements ContestantContext {
 
   #constituenciesSelectable = $derived(this.#dataRoot.elections?.some((e) => !e.singleConstituency));
 
-  // A pull-chain `$derived.by` pattern (via helper stores) does NOT propagate reactive invalidation correctly to cross-module consumers — measured by console trace: the selectedElections/opinionQuestions derivations evaluated ONCE at component-init with pre-data values and never re-ran after the protected layout `$effect` populated dataRoot + userData.
-  // Root mechanism: Svelte 5 tracks reactive reads from within a tracking scope, but a DESTRUCTURED context-object property (`const { opinionQuestions } = ctx`) captures the getter's INITIAL return value as a plain local binding — the consumer's `$effect` reading `opinionQuestions.length` thereafter has no live reactive source. The `$derived` chain did recompute internally, but downstream reads via the destructured property saw only the pre-data snapshot.
-  //
-  // So selectedElections/selectedConstituencies + the downstream question chain are push-based `$state` mirrors updated by a single `$effect`. `$state` reads through context getters propagate correctly. Consumers MUST read `ctx.X` directly rather than destructure; inline derivations take the place of a helper-store pull chain (the helpers remain for voterContext).
+  // The selected elections and constituencies, and the question lists below them, are `$state` mirrors written by one `$effect`, so a consumer that reads `ctx.X` sees every update (CLAUDE.md § Context Destructuring Rule).
   #selectedElections = $state<Array<Election>>([]);
   #selectedConstituencies = $state<Array<Constituency>>([]);
   // Whether the entity has nominations and the data root holds elections, but none of the nominations names one of them: the entity is then asked no question, as the server's gates read it, and is not left waiting for lists that never come.
@@ -684,4 +666,19 @@ export function getContestantContext(): ContestantContext {
 export function initContestantContext(): ContestantContext {
   if (hasContext(CONTEXT_KEY)) error(500, 'initContestantContext() called for a second time');
   return setContext<ContestantContext>(CONTEXT_KEY, new ContestantContextProvider());
+}
+
+/**
+ * The blocks of an entity that is asked no opinion question, and of no entity.
+ * @returns A new, empty set of blocks.
+ */
+function noQuestionBlocks(): QuestionBlocksShape {
+  return {
+    blocks: [],
+    get questions() {
+      return [];
+    },
+    getByCategory: () => undefined,
+    getByQuestion: () => undefined
+  };
 }

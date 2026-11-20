@@ -18,17 +18,6 @@ export type BufferedEvent = {
   at: number;
 };
 
-/** The UTF-8 length of a string, which is what the keepalive budget counts. */
-function byteLength(value: string): number {
-  return new TextEncoder().encode(value).length;
-}
-
-/** The event in its checked wire form, or `undefined` when it fails the vocabulary. */
-function checked(event: Record<string, unknown>): WireEvent | undefined {
-  const result = EventSchema.safeParse(event);
-  return result.success ? result.data : undefined;
-}
-
 /**
  * Build the body of one batch.
  *
@@ -84,4 +73,15 @@ export function buildBatch(input: {
   const events = [...head, ...rest];
   if (events.length === 0) return undefined;
   return JSON.stringify({ routeId: view.routeId, locale: view.locale, events });
+}
+
+/** The event in its checked wire form, or `undefined` when it fails the vocabulary. */
+function checked(event: Record<string, unknown>): WireEvent | undefined {
+  const result = EventSchema.safeParse(event);
+  return result.success ? result.data : undefined;
+}
+
+/** The UTF-8 length of a string, which is what the keepalive budget counts. */
+function byteLength(value: string): number {
+  return new TextEncoder().encode(value).length;
 }

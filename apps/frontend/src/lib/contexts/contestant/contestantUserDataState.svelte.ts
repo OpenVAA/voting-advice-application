@@ -60,67 +60,6 @@ const NAME_PROPERTIES = [
 ] as const satisfies ReadonlyArray<EditableEntityProperty>;
 
 /**
- * The names of the properties an object of editable properties holds a value for.
- * @param properties - The editable properties.
- * @returns The names, in the order the object holds them.
- */
-function givenProperties(properties: StagedProps): Array<EditableEntityProperty> {
-  return (Object.keys(properties) as Array<EditableEntityProperty>).filter(
-    (property) => properties[property] !== undefined
-  );
-}
-
-/**
- * Whether an editable property is one of the {@link NAME_PROPERTIES}.
- * @param property - The name of the property.
- */
-function isNameProperty(property: EditableEntityProperty): boolean {
-  return NAME_PROPERTIES.some((nameProperty) => nameProperty === property);
-}
-
-/**
- * The form two colours are compared in: the default-theme colour as lowercase `#rrggbb`, so that the letter case and the three-digit form of a hex colour make no difference. The colour of the dark theme is not part of it, and a colour with no default-theme colour is no colour.
- * @param color - A stored colour, a staged one, or nothing.
- * @returns The hex colour, the colour as written when it is not one, or `null` for no colour.
- */
-function comparableColor(color: Colors | EditableEntityColor | null | undefined): string | null {
-  const normal: unknown = color?.normal;
-  if (typeof normal !== 'string' || normal === '') return null;
-  return toHexColor(normal) ?? normal;
-}
-
-/**
- * The part of an edit that differs from the saved data, in the form it is saved in. A name is compared and held normalised, a colour is compared by its hex colour, a person's name is compared and held without surrounding whitespace, and the removal of an image differs only from a stored one. Every value returned is a new plain value, never the object that was handed in, except for an image, which is held as it is.
- * @param saved - The saved data of the loaded entity.
- * @param edit - The edited properties.
- * @returns The properties of the edit that differ from the saved ones. A property that is the same as the saved one is left out.
- */
-function changedProperties(saved: ContestantUserData<true>, edit: StagedProps): StagedProps {
-  const { entity, localizedNames } = saved;
-  const changed: StagedProps = {};
-  if (edit.image !== undefined && (edit.image !== null || entity.image)) changed.image = edit.image;
-  if (edit.name !== undefined) {
-    const name = normalizeLocalizedName(edit.name);
-    if (!sameLocalizedName(name, localizedNames?.name)) changed.name = name;
-  }
-  if (edit.shortName !== undefined) {
-    const shortName = normalizeLocalizedName(edit.shortName);
-    if (!sameLocalizedName(shortName, localizedNames?.shortName)) changed.shortName = shortName;
-  }
-  if (edit.color !== undefined && comparableColor(edit.color) !== comparableColor(entity.color))
-    changed.color = edit.color === null ? null : { normal: edit.color.normal };
-  if (edit.firstName !== undefined) {
-    const firstName = edit.firstName.trim();
-    if (firstName !== ('firstName' in entity ? entity.firstName : '').trim()) changed.firstName = firstName;
-  }
-  if (edit.lastName !== undefined) {
-    const lastName = edit.lastName.trim();
-    if (lastName !== ('lastName' in entity ? entity.lastName : '').trim()) changed.lastName = lastName;
-  }
-  return changed;
-}
-
-/**
  * An object of optional properties without its members that are `undefined`.
  * @param properties - The properties.
  * @returns A new object holding the members that have a value.
@@ -554,4 +493,65 @@ export function contestantUserDataState({
   locale: () => string;
 }): ContestantUserDataState {
   return new ContestantUserDataStateImpl({ answersLocked, dataWriter, locale });
+}
+
+/**
+ * The names of the properties an object of editable properties holds a value for.
+ * @param properties - The editable properties.
+ * @returns The names, in the order the object holds them.
+ */
+function givenProperties(properties: StagedProps): Array<EditableEntityProperty> {
+  return (Object.keys(properties) as Array<EditableEntityProperty>).filter(
+    (property) => properties[property] !== undefined
+  );
+}
+
+/**
+ * The part of an edit that differs from the saved data, in the form it is saved in. A name is compared and held normalised, a colour is compared by its hex colour, a person's name is compared and held without surrounding whitespace, and the removal of an image differs only from a stored one. Every value returned is a new plain value, never the object that was handed in, except for an image, which is held as it is.
+ * @param saved - The saved data of the loaded entity.
+ * @param edit - The edited properties.
+ * @returns The properties of the edit that differ from the saved ones. A property that is the same as the saved one is left out.
+ */
+function changedProperties(saved: ContestantUserData<true>, edit: StagedProps): StagedProps {
+  const { entity, localizedNames } = saved;
+  const changed: StagedProps = {};
+  if (edit.image !== undefined && (edit.image !== null || entity.image)) changed.image = edit.image;
+  if (edit.name !== undefined) {
+    const name = normalizeLocalizedName(edit.name);
+    if (!sameLocalizedName(name, localizedNames?.name)) changed.name = name;
+  }
+  if (edit.shortName !== undefined) {
+    const shortName = normalizeLocalizedName(edit.shortName);
+    if (!sameLocalizedName(shortName, localizedNames?.shortName)) changed.shortName = shortName;
+  }
+  if (edit.color !== undefined && comparableColor(edit.color) !== comparableColor(entity.color))
+    changed.color = edit.color === null ? null : { normal: edit.color.normal };
+  if (edit.firstName !== undefined) {
+    const firstName = edit.firstName.trim();
+    if (firstName !== ('firstName' in entity ? entity.firstName : '').trim()) changed.firstName = firstName;
+  }
+  if (edit.lastName !== undefined) {
+    const lastName = edit.lastName.trim();
+    if (lastName !== ('lastName' in entity ? entity.lastName : '').trim()) changed.lastName = lastName;
+  }
+  return changed;
+}
+
+/**
+ * The form two colours are compared in: the default-theme colour as lowercase `#rrggbb`, so that the letter case and the three-digit form of a hex colour make no difference. The colour of the dark theme is not part of it, and a colour with no default-theme colour is no colour.
+ * @param color - A stored colour, a staged one, or nothing.
+ * @returns The hex colour, the colour as written when it is not one, or `null` for no colour.
+ */
+function comparableColor(color: Colors | EditableEntityColor | null | undefined): string | null {
+  const normal: unknown = color?.normal;
+  if (typeof normal !== 'string' || normal === '') return null;
+  return toHexColor(normal) ?? normal;
+}
+
+/**
+ * Whether an editable property is one of the {@link NAME_PROPERTIES}.
+ * @param property - The name of the property.
+ */
+function isNameProperty(property: EditableEntityProperty): boolean {
+  return NAME_PROPERTIES.some((nameProperty) => nameProperty === property);
 }

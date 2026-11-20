@@ -33,11 +33,11 @@ export type ContestantContext = AppContext &
      */
     constituenciesSelectable: boolean | undefined;
     /**
-     * The `Election`s the `Candidate` is nominated in.
+     * The `Election`s the entity is nominated in.
      */
     selectedElections: Array<Election>;
     /**
-     * The `Constituency`s the `Candidate` is nominated in.
+     * The `Constituency`s the entity is nominated in.
      */
     selectedConstituencies: Array<Constituency>;
     /**

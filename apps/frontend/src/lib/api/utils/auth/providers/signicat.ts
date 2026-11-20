@@ -28,7 +28,7 @@ import type {
 /**
  * Signicat claim mapping for Finnish Trust Network authentication.
  *
- * Signicat returns standard OIDC claims in the id_token. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person; `extractClaims` are additional claims returned to the caller, and stored nowhere.
+ * Signicat returns standard OIDC claims in the id_token. `identityMatchProp` names the claim used to match a returning user to their existing account and MUST be unique per person; `extractClaims` are additional claims returned to the caller, and stored nowhere.
  *
  * - Identity matching: `sub` (stable OIDC subject identifier)
  * - Name claims: Standard OIDC `given_name` and `family_name`
