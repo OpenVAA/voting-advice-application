@@ -424,7 +424,8 @@ function buildSection(sectionName: string, routes: Array<RouteInfo>): Navigation
 }
 
 /**
- * Build children for a subsection
+ * Build children for a subsection. A subsection with a page of its own lists that page first, as an Overview child,
+ * because an item with children renders in the nav as a disclosure with no link.
  */
 function buildSubsectionChildren(
   parentPath: string,
@@ -433,6 +434,10 @@ function buildSubsectionChildren(
 ): Array<NavigationSection | NavigationItem> {
   const children: Array<NavigationSection | NavigationItem> = [];
   const parentDepth = parentPath.split('/').filter(Boolean).length;
+
+  if (allRoutes.some((r) => r.route === parentPath)) {
+    children.push({ title: 'Overview', route: parentPath, fixedTitle: true });
+  }
 
   // Group by immediate children and deeper descendants
   const directChildren = routes.filter((r) => {
