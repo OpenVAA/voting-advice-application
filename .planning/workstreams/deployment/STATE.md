@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189
 current_phase_name: Documentation and Closure
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 189-02-PLAN.md
-last_updated: "2026-11-20T10:23:49.280Z"
+stopped_at: Completed 189-03-PLAN.md
+last_updated: "2026-11-20T12:41:58.191Z"
 last_activity: 2026-11-20
 last_activity_desc: Phase 189 execution started
-state_head: 55f1a523cbce7e67421901b515cb03420a186c27
+state_head: 262e23ed7c0b60e85e62361a886e221f8cb85d84
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 208
-  completed_plans: 190
+  completed_plans: 191
   percent: 80
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189 (Documentation and Closure) — EXECUTING
-Plan: 3 of 20
+Plan: 4 of 20
 Status: Ready to execute
 Last activity: 2026-11-20 — Phase 189 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 3
+**Current Plan:** 4
 
 From 184 on, the numeric order is the dependency order.
 
@@ -199,6 +199,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P19 | 20min | 3 tasks | 1 files |
 | Phase 189 P01 | 5min | 3 tasks | 12 files |
 | Phase 189 P02 | 29min | 3 tasks | 8 files |
+| Phase 189 P03 | 25min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -428,6 +429,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189]: 189-01: the Render gateway timeout in two Admin job comments is removed under F-01; the docs-home demo link and the assert-test-keys-scope fixture label are the two Render mentions kept
 - [Phase 189]: 189-02: B-03 as measured - no reader or dynamic read of PUBLIC_BROWSER_FRONTEND_URL / PUBLIC_SERVER_FRONTEND_URL outside constants.ts, so both are removed from the frontend, its four auth mocks, .env.example and the root compose
 - [Phase 189]: 189-02: DOCS-04 stays Pending until 189-09 rewrites the env page (its line 97 still lists both variables)
+- [Phase 189]: 189-03 F-02: re-grep found no reference to apps/frontend/docker-compose.dev.yml or the development target, so both are retired; the production image still builds
+- [Phase 189]: 189-03 F-03: root docker-compose.dev.yml and its tests kept: the documented local production-image run, and its tests pin the variables it passes
 
 ### Pending Todos
 
@@ -494,6 +497,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-20T10:23:48.256Z
-**Stopped At:** Completed 189-02-PLAN.md
+Last session: 2026-11-20T12:41:57.131Z
+**Stopped At:** Completed 189-03-PLAN.md
 **Resume File:** None
