@@ -52,3 +52,65 @@ NAV_VALIDATE_EXIT=0
 
 The link check passes because the deployment page is still a known route with inbound links; it
 does not check that a nav item with children links to its own page.
+
+## Task 2 — the decision
+
+Offered because Task 1 recorded `NAV_OVERVIEW_KEPT=no`. The operator chose in the main session;
+the orchestrator stored the reply under attempt key `189-04-2`, attempt
+`20261120T124525Z.addfc700f`. Checked by the executor before Task 3, both exit 0:
+
+- `bash "$A" bound 189-04-2 OPERATOR_REPLY plan=189-04 task=2` (the line
+  `OPERATOR_REPLY=received attempt=20261120T124525Z.addfc700f plan=189-04 task=2`)
+- `bash "$A" has 189-04-2 '^answer_nav=generator-overview$'`
+
+`A` is `.planning/workstreams/deployment/phases/183-terraform-foundation-and-supabase-as-code/tools/attempt.sh`.
+The overview stays at `/developers-guide/deployment`, with no redirect stub and no inbound link change.
+
+## Task 3 — the generator lists a section's own page as its Overview child
+
+Docs unit tests before the change: 8 files, 37 tests, exit 0.
+
+Red first (commit `204b1a89e`): three cases in `generate-navigation-config.test.ts`, with
+`buildNavigationStructure` exported (TSDoc added) so the tests can build a discovered navigation.
+Run: 2 failed, 38 passed. The two failures were the behaviours under test: a subsection with a
+page got `deep` as its first child instead of Overview, and a config holding the Overview child
+was written with `// Removed`. The third case (a subsection with no page of its own gets no
+Overview child) passed before and after, as a guard against over-applying the change.
+
+Green (commit `c7ce359f4`): `buildSubsectionChildren` starts a subsection's children with
+`{ title: 'Overview', route: <the subsection route>, fixedTitle: true }` when `allRoutes` holds a
+page at that route. 40 passed.
+
+The first regeneration then put the new Overview child last in Deployment's children, after the
+two children the config already listed, because `compareSection` appends every child it finds
+new. A fourth case went red for that (commit `06de9125f`: 1 failed, 40 passed), and
+`compareSection` now puts a new child whose route is the section's own route first. 41 passed.
+
+Which sections the change reaches: a subsection with children and a page of its own. In this
+tree that is Deployment alone. Configuration, Backend, Frontend, Localization, Contributing and
+the other depth-2 sections have no page at their own route; `frontend/components` and
+`frontend/routing` have a page, but their only subdirectories are generated copies that route
+discovery excludes, so they stay items with no children.
+
+Regeneration (generator, then Prettier from `apps/docs`):
+
+- Run 1: exit 0, "✓ Added 1 new item(s)". `git diff --stat`: `1 file changed, 6 insertions(+)`, all
+  in the Deployment entry: `// New` and the Overview child, first. No other section changed.
+- Run 2: exit 0, "✓ No structural changes". The only change was the `// New` comment line removed.
+- Run 3: exit 0, "✓ No structural changes"; `diff` against run 2's output exit 0.
+
+The committed config is run 2's output; a run of the generator on it changes nothing.
+
+NAV_IDEMPOTENT_AFTER=yes (the run on the committed config changed nothing; the run before it only removed the `// New` marker left by the run that added the child)
+
+`git diff 3988f937c -- apps/docs/src/lib/navigation.config.ts`: the Analytics item under
+Configuration, and Deployment turned into a section with Overview (`fixedTitle: true`, route
+`/developers-guide/deployment`), Hosted Supabase settings and Operations. Nothing else.
+
+`yarn workspace @openvaa/docs validate:links --check`: exit 0, Total findings 0.
+`yarn workspace @openvaa/docs check`: 719 files, 0 errors, 0 warnings. ESLint and Prettier (from
+`apps/docs`) clean on the generator, its test and the config.
+
+NAV_DECISION=generator-overview
+DOCS_UNIT_EXIT=0
+DOCS_UNIT_DELTA=+4 (37 -> 41 tests, 8 files unchanged)

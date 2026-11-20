@@ -250,6 +250,11 @@ export const navigation: Navigation = [
         route: '/developers-guide/deployment',
         children: [
           {
+            title: 'Overview',
+            route: '/developers-guide/deployment',
+            fixedTitle: true
+          },
+          {
             title: 'Hosted Supabase settings',
             route: '/developers-guide/deployment/hosted-settings'
           },

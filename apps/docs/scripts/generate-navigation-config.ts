@@ -215,13 +215,18 @@ function compareSection(current: NavigationSection, discovered: NavigationSectio
     }
   }
 
-  // Add new children that weren't in current config
+  // Add new children that weren't in current config; a section's Overview child goes first
   for (const [, child] of discoveredChildrenMap) {
     if ('children' in child) {
       workingChildren.push({
         item: child,
         status: 'new',
         children: markAllAsNew(child.children)
+      });
+    } else if (child.route === current.route) {
+      workingChildren.unshift({
+        item: child,
+        status: 'new'
       });
     } else {
       workingChildren.push({
