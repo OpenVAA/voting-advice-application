@@ -111,7 +111,7 @@ For a parent of kind `entity`, the parent's nomination at the contest is found, 
 
 ### The registration modes
 
-An open invitation for a candidate or an organization is honoured only under the registration mode its binding names, for its target's entity type, as the project's `contestantApp.registrationModes` matrix allows it: a row bound to an address is an `email` invitation and a row that holds a code is a `code` invitation. The database enforces this, in `private.invitation_mode_allowed` ([`506-invitation-rpcs.sql`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/schema/506-invitation-rpcs.sql)), which reads the project's settings row through `private.registration_mode_allowed`. The four functions that read an open invitation ask it, and each treats a row it refuses as absent:
+An open invitation for a candidate or an organization is honoured only under the registration mode its binding names, for its target's entity type, as the project's `contestantApp.servedEntityTypes` setting allows it: a row bound to an address is an `email` invitation and a row that holds a code is a `code` invitation. The database enforces this, in `private.invitation_mode_allowed` ([`506-invitation-rpcs.sql`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/schema/506-invitation-rpcs.sql)), which reads the project's settings row through `private.registration_mode_allowed`. The four functions that read an open invitation ask it, and each treats a row it refuses as absent:
 
 - `invitation_code_status` answers `unknown` for the code;
 - `invitation_link_request` and `recovery_link_request` return no address for it;
@@ -119,10 +119,10 @@ An open invitation for a candidate or an organization is honoured only under the
 
 Which rows are judged:
 
-- **A project-scope promise, and a promise for a faction or an alliance**, is not judged: the matrix has no row for them.
+- **A project-scope promise, and a promise for a faction or an alliance**, is not judged: the setting has no key for them.
 - **A claimed row** is not judged: a finished registration stays as it is, whatever the matrix says later.
 - **`create_invitations` does not ask**, so an invitation can be created while its mode is off and is honoured once the mode is on.
-- **A project that stores no matrix** honours no candidate or organization invitation: a project with no settings row, or whose row declares no registration modes, allows nothing.
+- **A project that allows no mode** honours no candidate or organization invitation: a project with no settings row, a row that stores no `servedEntityTypes`, and a type the stored setting has no key for allow nothing.
 
 The Contestant App's screens list the modes through `listedRegistrationModes`, which reads the same matrix (see [Registration](/developers-guide/contestant-app/registration#what-lists-a-registration-mode)); the parity test `registrationModeMatrixParity.test.ts` of `@openvaa/dev-seed` holds the client's rule to the database's truth table. The `code-sign-in` operation, for the holder of a claimed code, does not ask the matrix: the code sign-in screen's form action asks whether the code mode is offered before it calls it.
 
@@ -223,4 +223,4 @@ A candidate or a party with no nomination can sign in and stays signed in. It re
 
 ## Registration with a bank identity
 
-When the project's `contestantApp.registrationModes` allows `identity_provider` for a served entity type, the registration screen lists the identity provider. The user chooses the type to register, identifies with a bank identity, and the server route `/api/oidc/callback` asks the `identity-callback` Edge Function to find or create the account and the entity, with its grant, before it signs the user in. The user then gives the address they will sign in with, which becomes the account's when the link mailed to it is opened. [Bank authentication (OIDC)](/developers-guide/contestant-app/bank-authentication) describes each step and its configuration.
+When the project's `contestantApp.servedEntityTypes` allows `identity_provider` for a served entity type, the registration screen lists the identity provider. The user chooses the type to register, identifies with a bank identity, and the server route `/api/oidc/callback` asks the `identity-callback` Edge Function to find or create the account and the entity, with its grant, before it signs the user in. The user then gives the address they will sign in with, which becomes the account's when the link mailed to it is opened. [Bank authentication (OIDC)](/developers-guide/contestant-app/bank-authentication) describes each step and its configuration.
