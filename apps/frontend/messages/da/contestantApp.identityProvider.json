@@ -8,6 +8,7 @@
     "awaitingConfirmation": "Afventer bekræftelse",
     "emailIntro": "Indtast den e-mailadresse, du vil logge ind med næste gang. Vi sender et bekræftelseslink til den. Du kan fortsætte med det samme. Indtil du åbner linket, skal du logge ind med BankID.",
     "emailInUse": "Denne e-mailadresse bruges allerede af en anden konto. Indtast en anden adresse, eller log i stedet ind med den adresse.",
+    "emailInvited": "Der er sendt en invitation til denne e-mailadresse. Log ud, og log i stedet ind via e-mail med den invitation, og kontakt support for at få fjernet den registrering, du lige har foretaget.",
     "emailTakenNotice": "Adressen, du indtastede tidligere, bruges nu af en anden konto, så den kunne ikke føjes til din. Indtast en anden adresse.",
     "error": {
       "cancelled": {
