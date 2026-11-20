@@ -168,7 +168,7 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
           {#if voterCtx.constituenciesSelectable}
             <span class="font-normal">
               {t('results.inConstituency')}
-              {activeElection?.getApplicableConstituency(constituencies)?.name || '—'}
+              {activeElection?.getMostSpecificConstituency(constituencies)?.name || '—'}
             </span>
           {/if}
         </h3>

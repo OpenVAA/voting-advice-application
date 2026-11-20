@@ -14,9 +14,9 @@ export function formatInitials({ object }: { object: Candidate }): string {
 }
 
 /**
- * Format the full name of a `Candidate` based on first and last name.
+ * Format the full name of a `Candidate` based on first and last name. Only those two are read, so a caller may pass them without a `Candidate`.
  */
-export function formatName({ object }: { object: Candidate }): string {
+export function formatName({ object }: { object: Pick<Candidate, 'firstName' | 'lastName'> }): string {
   return `${object.firstName} ${object.lastName}`;
 }
 

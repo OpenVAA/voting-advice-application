@@ -12,6 +12,7 @@
 
 import { allowedParentTypes, ENTITY_TYPE } from '@openvaa/data';
 import { admissibleElectionsOf } from './editorFacts';
+import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { EntityType, NominationShape } from '@openvaa/data';
 import type {
@@ -28,7 +29,7 @@ export const NO_PARENT_CHOICE = 'none';
 export const OTHER_PARENT_CHOICE = 'other';
 
 /** The key of a nomination's custom data that holds a typed parent name. */
-const TYPED_NAME_KEY = 'requestedParentOrganization';
+const TYPED_PARENT_NAME_KEY: keyof CustomData['Nomination'] = 'requestedParentOrganization';
 
 /** What a card's election asks of the entity's parent. */
 export type ParentRule = {
@@ -189,7 +190,7 @@ function carriesStoredParent(rule: ParentRule, parentType: EntityType, moved: bo
  * @returns The stored name, trimmed. Empty when the nomination's custom data holds none.
  */
 export function typedParentNameOf(nomination: Pick<EntityNomination, 'customData'>): string {
-  const value = nomination.customData?.[TYPED_NAME_KEY];
+  const value = nomination.customData?.[TYPED_PARENT_NAME_KEY];
   return typeof value === 'string' ? value.trim() : '';
 }
 

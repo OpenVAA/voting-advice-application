@@ -1,4 +1,4 @@
-import { Candidate, ENTITY_TYPE } from '@openvaa/data';
+import { ENTITY_TYPE } from '@openvaa/data';
 import type { CandidateData, DataRoot, OrganizationData } from '@openvaa/data';
 import type { UserEntity } from '$lib/api/base/dataWriter.type';
 
@@ -10,7 +10,9 @@ import type { UserEntity } from '$lib/api/base/dataWriter.type';
  */
 export function userEntityDisplayName(entity: UserEntity, dataRoot: DataRoot): string {
   if (entity.type === ENTITY_TYPE.Candidate)
-    return new Candidate({ data: userEntityData(entity) as CandidateData, root: dataRoot }).name;
+    return dataRoot.formatCandidateName({
+      object: { firstName: entity.firstName ?? '', lastName: entity.lastName ?? '' }
+    });
   return entity.name;
 }
 

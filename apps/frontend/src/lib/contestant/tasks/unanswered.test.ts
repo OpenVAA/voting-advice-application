@@ -1,12 +1,13 @@
+import { DataRoot, isEmptyValue, NumberQuestion } from '@openvaa/data';
 import { describe, expect, it } from 'vitest';
 import { requiredInfoQuestionsOf, unansweredQuestionsOf } from './unanswered';
 import type { SavedAnswers } from './unanswered';
 
 /**
- * The contract of the two filters in `unanswered.ts`, over plain fixtures shaped like the surface each filter reads. No question of the data model is built here, so this stays a test of the filters.
+ * The contract of the two filters in `unanswered.ts`, over plain fixtures shaped like the surface each filter reads. Whether one answer answers one question is `Question.isAnswered` of the data model, tested in `@openvaa/data`; the fixtures here answer it as a question that accepts any non-empty value, and one case uses a question of the data model.
  *
  * - `requiredInfoQuestionsOf` keeps a question that is required and not locked, and drops every other.
- * - `unansweredQuestionsOf` answers every question while there is no answers object, and otherwise the questions whose saved value is empty.
+ * - `unansweredQuestionsOf` answers every question while there is no answers object, and otherwise the questions whose own `isAnswered` refuses the saved answer.
  * - Each returns a new array, in the order given, holding the caller's own question objects, and changes nothing it was handed.
  */
 
@@ -16,7 +17,12 @@ type InfoFixture = {
   customData?: { locked?: boolean };
 };
 
-type QuestionFixture = { id: string };
+type QuestionFixture = { id: string; isAnswered: (answer: SavedAnswers[string]) => boolean };
+
+/** A question fixture that counts any non-empty saved value as an answer. */
+function question(id: string): QuestionFixture {
+  return { id, isAnswered: (answer) => !isEmptyValue(answer?.value) };
+}
 
 /** Freeze a list and each of its elements, so a filter that writes to its input throws. */
 function frozen<TItem extends object>(items: Array<TItem>): ReadonlyArray<TItem> {
@@ -82,9 +88,9 @@ describe('requiredInfoQuestionsOf', () => {
 });
 
 describe('unansweredQuestionsOf', () => {
-  const FIRST: QuestionFixture = { id: 'first' };
-  const SECOND: QuestionFixture = { id: 'second' };
-  const THIRD: QuestionFixture = { id: 'third' };
+  const FIRST = question('first');
+  const SECOND = question('second');
+  const THIRD = question('third');
   const QUESTIONS = [FIRST, SECOND, THIRD];
 
   it.each([
@@ -119,6 +125,22 @@ describe('unansweredQuestionsOf', () => {
     expect(unansweredQuestionsOf([FIRST, SECOND], { second: entry })).toStrictEqual([FIRST]);
   });
 
+  it('reads the question’s own isAnswered', () => {
+    const refusing: QuestionFixture = { id: 'second', isAnswered: () => false };
+    expect(unansweredQuestionsOf([refusing], { second: { value: 'an answer' } })).toStrictEqual([refusing]);
+  });
+
+  it('counts a saved value that is not valid for a data-model question’s type as unanswered', () => {
+    const numberQuestion = new NumberQuestion({
+      root: new DataRoot(),
+      data: { id: 'second', type: 'number', name: 'Number', categoryId: 'category' }
+    });
+    expect(unansweredQuestionsOf([numberQuestion], { second: { value: 'not a number' } })).toStrictEqual([
+      numberQuestion
+    ]);
+    expect(unansweredQuestionsOf([numberQuestion], { second: { value: 3 } })).toStrictEqual([]);
+  });
+
   it('counts a question as unanswered when the only entry is for another question', () => {
     expect(unansweredQuestionsOf([FIRST], { second: { value: 'an answer' } })).toStrictEqual([FIRST]);
   });
@@ -145,7 +167,7 @@ describe('unansweredQuestionsOf', () => {
   });
 
   it('changes nothing it was handed', () => {
-    const questions = frozen<QuestionFixture>([{ id: 'a' }, { id: 'b' }]);
+    const questions = frozen<QuestionFixture>([question('a'), question('b')]);
     const answers: SavedAnswers = Object.freeze({ a: Object.freeze({ value: 'kept' }), b: null });
     expect(unansweredQuestionsOf(questions, answers).map((q) => q.id)).toStrictEqual(['b']);
     expect(questions.map((q) => q.id)).toStrictEqual(['a', 'b']);

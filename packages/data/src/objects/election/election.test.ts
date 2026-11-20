@@ -1,6 +1,5 @@
-import { describe } from 'node:test';
-import { expect, test } from 'vitest';
-import { QUESTION_CATEGORY_TYPE } from '../../internal';
+import { describe, expect, test } from 'vitest';
+import { DataRoot, QUESTION_CATEGORY_TYPE } from '../../internal';
 import { getTestData, getTestDataRoot, NOMINATION_COUNTS, NOMINATION_COUNTS_ROUND_2 } from '../../testUtils';
 import type { Constituency } from '../../internal';
 
@@ -126,6 +125,101 @@ describe('getApplicableConstituency', () => {
   });
   test('Should throw is more than one constituency is applicable', () => {
     expect(() => election.getApplicableConstituency([constituencies[0], constituencies[1]])).toThrow();
+  });
+});
+
+describe('getApplicableConstituencies', () => {
+  const election = root.elections![0];
+  const constituencies = election.constituencyGroups[0].constituencies;
+  test('Should return every applicable constituency in the order given', () => {
+    const notThere = { id: 'NOT_THERE' } as Constituency;
+    expect(election.getApplicableConstituencies([constituencies[1], notThere, constituencies[0]])).toEqual([
+      constituencies[1],
+      constituencies[0]
+    ]);
+  });
+  test('Should return an empty array if no constituency is applicable', () => {
+    expect(election.getApplicableConstituencies([{ id: 'NOT_THERE' } as Constituency])).toEqual([]);
+    expect(election.getApplicableConstituencies([])).toEqual([]);
+  });
+  test('Should match constituencies of every group of the election', () => {
+    const fromSecondGroup = election.constituencyGroups[1].constituencies[0];
+    expect(election.getApplicableConstituencies([constituencies[0], fromSecondGroup])).toEqual([
+      constituencies[0],
+      fromSecondGroup
+    ]);
+  });
+});
+
+/**
+ * A root whose `mixed` election has a group of regions and a group of municipalities, each municipality the child of a region, and whose `paired` election has the regions and an unrelated group of districts of the same size.
+ */
+function hierarchicalRoot(): DataRoot {
+  const root = new DataRoot();
+  root.provideElectionData([
+    { id: 'mixed', name: 'Mixed', constituencyGroupIds: ['regions', 'municipalities'] },
+    { id: 'paired', name: 'Paired', constituencyGroupIds: ['regions', 'districts'] },
+    { id: 'regional', name: 'Regional', constituencyGroupIds: ['regions'] }
+  ]);
+  root.provideConstituencyData({
+    groups: [
+      { id: 'regions', constituencyIds: ['region-1', 'region-2'] },
+      { id: 'municipalities', constituencyIds: ['municipality-1a', 'municipality-1b', 'municipality-2a'] },
+      { id: 'districts', constituencyIds: ['district-x', 'district-y'] }
+    ],
+    constituencies: [
+      { id: 'region-1', name: 'Region 1' },
+      { id: 'region-2', name: 'Region 2' },
+      { id: 'municipality-1a', name: 'Municipality 1a', parentId: 'region-1' },
+      { id: 'municipality-1b', name: 'Municipality 1b', parentId: 'region-1' },
+      { id: 'municipality-2a', name: 'Municipality 2a', parentId: 'region-2' },
+      { id: 'district-x', name: 'District X' },
+      { id: 'district-y', name: 'District Y' }
+    ]
+  });
+  return root;
+}
+
+describe('getMostSpecificConstituency', () => {
+  const root = hierarchicalRoot();
+  function constituenciesOf(...ids: Array<string>): Array<Constituency> {
+    return ids.map((id) => root.getConstituency(id));
+  }
+
+  test.each([
+    ['first', ['region-1', 'municipality-1a']],
+    ['last', ['municipality-1a', 'region-1']]
+  ])('Should return the municipality given together with its parent region, the region given %s', (_, ids) => {
+    const constituencies = constituenciesOf(...ids);
+    expect(() => root.getElection('mixed').getApplicableConstituency(constituencies)).toThrow();
+    expect(root.getElection('mixed').getMostSpecificConstituency(constituencies)?.id).toBe('municipality-1a');
+  });
+
+  test('Should return the one applicable constituency', () => {
+    expect(
+      root.getElection('regional').getMostSpecificConstituency(constituenciesOf('municipality-1a', 'region-2'))?.id
+    ).toBe('region-2');
+  });
+
+  test('Should return the constituency of the smallest group among constituencies not related by parentage', () => {
+    expect(
+      root.getElection('mixed').getMostSpecificConstituency(constituenciesOf('municipality-2a', 'region-1'))?.id
+    ).toBe('region-1');
+  });
+
+  test.each([
+    [['district-x', 'region-1'], 'district-x'],
+    [['region-1', 'district-x'], 'region-1'],
+    [['region-2', 'region-1'], 'region-2']
+  ])('Should return the first of %j, whose groups are of one size', (ids, expected) => {
+    expect(root.getElection('paired').getMostSpecificConstituency(constituenciesOf(...ids))?.id).toBe(expected);
+  });
+
+  test('Should return undefined if no constituency is applicable', () => {
+    expect(
+      root.getElection('regional').getMostSpecificConstituency(constituenciesOf('municipality-1a', 'district-x'))
+    ).toBeUndefined();
+    expect(root.getElection('regional').getMostSpecificConstituency([])).toBeUndefined();
   });
 });
 

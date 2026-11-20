@@ -1,12 +1,11 @@
 import { getCustomData } from '@openvaa/app-shared';
-import { isEmptyValue } from '@openvaa/data';
 
 /**
  * Which info questions an entity is required to answer, and which questions have no saved answer.
  *
  * Both functions are plain and synchronous: they keep no state, read no reactive value and build no route, so the contestant context and a server load can both import this module and reach one answer. The caller passes lists and an answers object it has already read; inside a reactive scope, that read happens in the caller's own scope.
  *
- * The parameter types are minimal structural surfaces. A question of the data model satisfies them, and so does a plain test fixture, and each function returns the caller's own question type.
+ * The parameter types are minimal structural surfaces. A question of the data model satisfies them, and so does a test fixture that carries the members read, and each function returns the caller's own question type.
  *
  * Tested in `unanswered.test.ts`.
  */
@@ -17,9 +16,10 @@ export type RequirableQuestion = {
   readonly customData?: object;
 };
 
-/** The part of a question the unanswered filter reads. */
+/** The part of a question the unanswered filter reads: its id, and `Question.isAnswered` of the data model, which says whether a saved answer answers it. */
 export type AnswerableQuestion = {
   readonly id: string;
+  isAnswered(answer: SavedAnswers[string]): boolean;
 };
 
 /** The part of an entity's saved answers the unanswered filter reads: by question id, an entry holding a value, or nothing. */
@@ -45,7 +45,7 @@ export function requiredInfoQuestionsOf<TQuestion extends RequirableQuestion>(
 }
 
 /**
- * The questions that have no saved answer. An answer whose value is empty is no answer.
+ * The questions that have no saved answer, by the question's own `isAnswered`: an answer whose value is empty, or not valid for the question's type, is no answer. The Voter App hides an entity by the same method.
  *
  * With no answers object every question is unanswered. That is the one statement of what holds while no entity is loaded: a caller passes the loaded entity's answers, or nothing.
  * @param questions - The questions to look for answers to.
@@ -57,5 +57,5 @@ export function unansweredQuestionsOf<TQuestion extends AnswerableQuestion>(
   answers: SavedAnswers | null | undefined
 ): Array<TQuestion> {
   if (!answers) return [...questions];
-  return questions.filter((question) => isEmptyValue(answers[question.id]?.value));
+  return questions.filter((question) => !question.isAnswered(answers[question.id]));
 }
