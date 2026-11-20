@@ -134,7 +134,7 @@ declareEntryScans([
       await loginPage.expectRegisterOffered(true);
     },
     marker: { testId: testIds.contestant.login.registerLink },
-    alsoShown: [{ testId: testIds.contestant.login.page, attribute: 'data-register-offered', value: 'true' }]
+    alsoShown: [{ testId: testIds.contestant.login.page, state: { attribute: 'data-register-offered', value: 'true' } }]
   },
   {
     // The sign-in screen as it opens, with its link for a user without a password beside the Forgot password link.
@@ -158,7 +158,9 @@ declareEntryScans([
       await loginPage.expectWrongCredentials();
     },
     marker: { testId: testIds.contestant.login.errorMessage },
-    alsoShown: [{ testId: testIds.contestant.login.signInPage, attribute: 'data-sign-in-state', value: 'failed' }]
+    alsoShown: [
+      { testId: testIds.contestant.login.signInPage, state: { attribute: 'data-sign-in-state', value: 'failed' } }
+    ]
   },
   {
     // The sign-in screen after its main button was pressed with nothing typed: the email field in error, with focus on it.
@@ -182,7 +184,7 @@ declareEntryScans([
       await registerPage.expectSelectedMode(null);
     },
     marker: { testId: testIds.contestant.register.modeOption },
-    alsoShown: [{ testId: testIds.contestant.register.page, attribute: 'data-mode-selected', value: '' }]
+    alsoShown: [{ testId: testIds.contestant.register.page, state: { attribute: 'data-mode-selected', value: '' } }]
   },
   {
     // The registration screen with the email option open.
@@ -194,7 +196,7 @@ declareEntryScans([
       await registerPage.chooseMode('email');
       await registerPage.expectPanelOpen('email');
     },
-    marker: { testId: testIds.contestant.register.modePanel, attribute: 'data-mode', value: 'email' }
+    marker: { testId: testIds.contestant.register.modePanel, state: { attribute: 'data-mode', value: 'email' } }
   },
   {
     // The registration screen's code option after a code that no project holds.
@@ -204,7 +206,7 @@ declareEntryScans([
       const registerPage = await continueWithCode(page, openCodeFlow.unknownCode());
       await registerPage.expectCodeUnconfirmed();
     },
-    marker: { testId: testIds.contestant.register.codeError, attribute: 'data-reason', value: 'unconfirmed' }
+    marker: { testId: testIds.contestant.register.codeError, state: { attribute: 'data-reason', value: 'unconfirmed' } }
   },
   {
     // The screen that asks for the address of the open code, as it opens. Nothing is typed into it.
@@ -254,8 +256,8 @@ declareEntryScans([
     },
     marker: { testId: testIds.shared.account.emailSent.countdown },
     alsoShown: [
-      { testId: testIds.contestant.emailSent.page, attribute: 'data-wording', value: 'signIn' },
-      { testId: testIds.contestant.emailSent.page, attribute: 'data-address', value: 'shown' }
+      { testId: testIds.contestant.emailSent.page, state: { attribute: 'data-wording', value: 'signIn' } },
+      { testId: testIds.contestant.emailSent.page, state: { attribute: 'data-address', value: 'shown' } }
     ]
   },
   {
@@ -282,7 +284,7 @@ declareEntryScans([
       await forgotPasswordPage.submit(address);
       await forgotPasswordPage.expectLedToEmailSent(address);
     },
-    marker: { testId: testIds.contestant.emailSent.page, attribute: 'data-wording', value: 'recovery' }
+    marker: { testId: testIds.contestant.emailSent.page, state: { attribute: 'data-wording', value: 'recovery' } }
   },
   {
     // The forgot-password page as it opens.
@@ -304,7 +306,10 @@ declareEntryScans([
       await identityProviderErrorPage.open('cancelled');
       await identityProviderErrorPage.expectShown('cancelled');
     },
-    marker: { testId: testIds.contestant.identityProviderError.page, attribute: 'data-error-class', value: 'cancelled' }
+    marker: {
+      testId: testIds.contestant.identityProviderError.page,
+      state: { attribute: 'data-error-class', value: 'cancelled' }
+    }
   },
   {
     // The same screen for a code it does not know, which it shows as a failure trying again may cure.
@@ -315,7 +320,10 @@ declareEntryScans([
       await identityProviderErrorPage.open('not-a-code');
       await identityProviderErrorPage.expectShown('retry');
     },
-    marker: { testId: testIds.contestant.identityProviderError.page, attribute: 'data-error-class', value: 'retry' }
+    marker: {
+      testId: testIds.contestant.identityProviderError.page,
+      state: { attribute: 'data-error-class', value: 'retry' }
+    }
   },
   {
     // The same screen for a configuration failure, which trying again will not cure.
@@ -326,7 +334,10 @@ declareEntryScans([
       await identityProviderErrorPage.open('configuration_error');
       await identityProviderErrorPage.expectShown('noRetry');
     },
-    marker: { testId: testIds.contestant.identityProviderError.page, attribute: 'data-error-class', value: 'noRetry' }
+    marker: {
+      testId: testIds.contestant.identityProviderError.page,
+      state: { attribute: 'data-error-class', value: 'noRetry' }
+    }
   },
   {
     // The confirm page a freshly mailed sign-in link opens, in a browser with no session: Continue alone, no notice. The link is opened and never confirmed.
@@ -342,7 +353,7 @@ declareEntryScans([
       await authConfirmPage.expectShown('magiclink');
       await authConfirmPage.expectSignedInNotice(false);
     },
-    marker: { testId: testIds.auth.confirm.page, attribute: 'data-type', value: 'magiclink' },
+    marker: { testId: testIds.auth.confirm.page, state: { attribute: 'data-type', value: 'magiclink' } },
     alsoShown: [{ testId: testIds.auth.confirm.continue }]
   }
 ]);

@@ -333,7 +333,9 @@ test.describe('a project that is not open for voters', () => {
           await loginPage.expectRegisterOffered(false);
         },
         marker: { testId: testIds.contestant.login.signInLink },
-        alsoShown: [{ testId: testIds.contestant.login.page, attribute: 'data-register-offered', value: 'false' }]
+        alsoShown: [
+          { testId: testIds.contestant.login.page, state: { attribute: 'data-register-offered', value: 'false' } }
+        ]
       },
       {
         // The registration page where the code mode is the one listed: its field directly, with nothing to choose.
@@ -351,7 +353,7 @@ test.describe('a project that is not open for voters', () => {
           await registerPage.expectSingleMode('code');
         },
         marker: { testId: testIds.contestant.register.code },
-        alsoShown: [{ testId: testIds.contestant.register.page, attribute: 'data-modes', value: 'code' }]
+        alsoShown: [{ testId: testIds.contestant.register.page, state: { attribute: 'data-modes', value: 'code' } }]
       },
       {
         // The registration page with all three modes listed and the identity provider's chosen, so that its panel is the one open, asking which of the two entity types it registers with none chosen.

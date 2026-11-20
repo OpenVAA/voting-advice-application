@@ -7,7 +7,7 @@
  *   - `test`   — Playwright test extended with the page fixtures the spec speaks in.
  *   - `expect` — re-exported from @playwright/test.
  *   - `setNominationState`, `setAnswers`, `setNominationsLocked`, `setOrganizationName`, `clearWrittenNominations` — the state steps a test begins with, and the one the dataset's teardown ends with.
- *   - `noNominationPagesOf(page)` — the home, nomination-editor, nominations, entity-pages and menu fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
+ *   - `noNominationPagesOf(page)` — the home, logout-button, nomination-editor, nominations, entity-pages and menu fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
  *
  * The spec's body holds no locator: a step it needs is a method of a fixture registered here.
  *
@@ -154,11 +154,12 @@ export { setNominationsLocked } from '../../utils/permStateSteps';
 /**
  * The page fixtures a scan entry's `reach` speaks in, built over the page it is handed. They are the fixtures the `test` object offers under the same names.
  * @param page - The page of the scan, already opened under the session the entry's describe sets.
- * @returns The entity-pages, home, nomination-editor, nominations and menu fixtures of that page.
+ * @returns The entity-pages, home, logout-button, nomination-editor, nominations and menu fixtures of that page.
  */
 export function noNominationPagesOf(page: Page): {
   contestantEntityPages: ContestantEntityPagesFixture;
   contestantHomePage: ContestantHomePageFixture;
+  contestantLogoutButton: ContestantLogoutButtonFixture;
   contestantNominationEditor: ContestantNominationEditorFixture;
   contestantNominationsPage: ContestantNominationsPageFixture;
   navMenu: NavMenuFixture;
@@ -167,6 +168,7 @@ export function noNominationPagesOf(page: Page): {
   return {
     contestantEntityPages: createContestantEntityPages(page, new SupabaseAdminClient()),
     contestantHomePage: createContestantHomePage(page),
+    contestantLogoutButton: createContestantLogoutButton(page),
     // Created when it is first read, and once: creating it registers a listener for browser dialogs on the page.
     get contestantNominationEditor(): ContestantNominationEditorFixture {
       editor ??= createContestantNominationEditor(page, new SupabaseAdminClient());

@@ -48,15 +48,18 @@
  *     the view an identity the mock issuer minted arrives at, the Admin App's
  *     account-flow spec (`specs/admin/admin-account-flows.spec.ts`), which
  *     scans the Admin App's entry screens in its own project,
- *     and the two helper modules
+ *     the two helper modules
  *     specs declare their scans through: the one for the Contestant App's
  *     signed-in surfaces (`tests/tests/utils/contestantAxeScan.ts`) and the
  *     one for its screens shown with no session
- *     (`tests/tests/utils/entryAxeScan.ts`). None of the eleven constructs
+ *     (`tests/tests/utils/entryAxeScan.ts`), and the module both declare an
+ *     entry's light scan and dark twin through
+ *     (`tests/tests/utils/themedAxeScans.ts`). None of the twelve constructs
  *     its own `AxeBuilder`, calls `.withTags(` or imports the axe package:
  *     each must obtain its gate from the one shared `assertAxeScan` in
- *     `tests/tests/utils/axeScan.ts` — the voter spec and the two helper
- *     modules by importing it, `contestant-a11y.spec.ts` and the
+ *     `tests/tests/utils/axeScan.ts` — the voter spec and the shared
+ *     declaration module by importing it, the two helper modules by
+ *     importing `declareLightAndDarkScans` from that module, `contestant-a11y.spec.ts` and the
  *     identity-provider spec by importing `declareScans` from the first
  *     helper module, and the closed-project
  *     spec, the entry-scan spec and the Admin App's account-flow spec by
@@ -74,7 +77,7 @@
  *     always runs after — so a raw-key finding can never suppress the axe
  *     result on the same surface (147-ORDERING.md § Decision (B)).
  *
- * This is a plain text/regex read of the eleven source files, matching the
+ * This is a plain text/regex read of the twelve source files, matching the
  * house style of `scripts/assert-unit-test-coverage.mjs` (Node built-ins
  * only, no build step, exit 1 naming the specific problem). It is
  * deliberately NOT an AST parse: these are single-sourced, hand-authored
@@ -103,6 +106,7 @@ const A11Y_SMOKE_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'a11y
 const CONTESTANT_A11Y_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'a11y', 'contestant-a11y.spec.ts');
 const CONTESTANT_AXE_SCAN_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'contestantAxeScan.ts');
 const ENTRY_AXE_SCAN_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'entryAxeScan.ts');
+const THEMED_AXE_SCANS_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'themedAxeScans.ts');
 const ORGANIZATION_EDITING_SPEC = path.resolve(
   REPO_ROOT,
   'tests',
@@ -165,6 +169,7 @@ function main() {
   const contestantA11ySrc = readSource(CONTESTANT_A11Y_SPEC);
   const contestantAxeScanSrc = readSource(CONTESTANT_AXE_SCAN_UTIL);
   const entryAxeScanSrc = readSource(ENTRY_AXE_SCAN_UTIL);
+  const themedAxeScansSrc = readSource(THEMED_AXE_SCANS_UTIL);
   const organizationEditingSrc = readSource(ORGANIZATION_EDITING_SPEC);
   const noNominationSrc = readSource(NO_NOMINATION_SPEC);
   const contestantNominationsSrc = readSource(CONTESTANT_NOMINATIONS_SPEC);
@@ -180,6 +185,7 @@ function main() {
     contestantA11ySrc === null ||
     contestantAxeScanSrc === null ||
     entryAxeScanSrc === null ||
+    themedAxeScansSrc === null ||
     organizationEditingSrc === null ||
     noNominationSrc === null ||
     contestantNominationsSrc === null ||
@@ -291,14 +297,27 @@ function main() {
       }
     },
     {
+      label: 'tests/tests/utils/themedAxeScans.ts',
+      src: themedAxeScansSrc,
+      gate: { from: /from\s+'\.\/axeScan'/, source: "'./axeScan'", symbol: 'assertAxeScan' }
+    },
+    {
       label: 'tests/tests/utils/contestantAxeScan.ts',
       src: contestantAxeScanSrc,
-      gate: { from: /from\s+'\.\/axeScan'/, source: "'./axeScan'", symbol: 'assertAxeScan' }
+      gate: {
+        from: /from\s+'\.\/themedAxeScans'/,
+        source: "'./themedAxeScans'",
+        symbol: 'declareLightAndDarkScans'
+      }
     },
     {
       label: 'tests/tests/utils/entryAxeScan.ts',
       src: entryAxeScanSrc,
-      gate: { from: /from\s+'\.\/axeScan'/, source: "'./axeScan'", symbol: 'assertAxeScan' }
+      gate: {
+        from: /from\s+'\.\/themedAxeScans'/,
+        source: "'./themedAxeScans'",
+        symbol: 'declareLightAndDarkScans'
+      }
     },
     { label: 'specs/perm/perm-organization-editing.spec.ts', src: organizationEditingSrc, gate: null },
     { label: 'specs/perm/perm-no-nomination.spec.ts', src: noNominationSrc, gate: null },

@@ -9,7 +9,7 @@
  *
  * Titles carry the prefix of the surface they are about. `dataset:` is the dataset and its identities; `gate:` is a URL that leads to the entity's home while the entity has no nomination; `holds:` is a page that opens; `questions:` is the questions of an entity that has a nomination, whatever its profile holds; `preview:` is the preview of an entity that has a nomination, which leads to the entity's home while a required info question or an opinion question is unanswered; `nominations:` is the nominations view, which opens for an entity with and without a nomination; `profile:` is the profile, which shows nothing of the entity's nominations; `home:` is the home, which lists the entity's tasks: `home: with` for an entity that has a nomination, and the others for one that has none; `menu:` is the navigation menu, which offers the nominations view and closes, with the reason, the items whose pages the entity cannot open; `continue:` is the save of the last unanswered opinion question, which leads to what is next for the entity. The two tests of the logout button are `holds:` tests, and so are the three of where the profile's save, an answer saved while questions remain and an edit of an answered question lead. `phone:` is a page at the width of a phone, where what is asserted is that the page fits the viewport and that a card, the note and the open menu hold what they show. The scans carry the titles the scan helper gives them, `axe accessibility scan — <entry>` and its dark twin.
  *
- * Scans: six states of the home, the nominations view and the open menu of the candidate that is seeded with no nomination, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds an entity with no nomination, and because two of the states need nominations locked for the whole project. Each entry's `reach` sets its state through the state steps, opens the page afresh and asserts the state through the fixtures' steps, before the reach proof and the scan. The organization's home, menu and nominations view are the candidate's markup with other sentences, asserted by the tests above them and not scanned a second time.
+ * Scans: seven states of the home, the logout dialog over it, the nominations view and the open menu of the candidate that is seeded with no nomination, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds an entity with no nomination, and because two of the states need nominations locked for the whole project. Each entry's `reach` sets its state through the state steps, opens the page afresh and asserts the state through the fixtures' steps, before the reach proof and the scan. The organization's home, menu and nominations view are the candidate's markup with other sentences, asserted by the tests above them and not scanned a second time.
  *
  * Widths: the `phone:` tests run at 320 and at 390 pixels wide, in English. A page's width is measured against its viewport, and a box against the box that must hold it, through the steps of `fixtures/shared/pageGeometry.fixture.ts`: an accessibility scan reports neither.
  *
@@ -874,6 +874,28 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
       await contestantHomePage.expectTaskCount('questions', OPINION_QUESTION_EXTERNAL_IDS.length);
       await contestantHomePage.expectPreview('closed');
       await contestantHomePage.expectReason('previewNotReady');
+    }
+  },
+  {
+    // The logout dialog over the home of a candidate with a nomination and nothing answered: its title that says data is missing, the questions left, the sentence that the entity is hidden while they are, and the count.
+    // The dialog carries no test id, so the anchor is the home's Log out under it, and the reach's last step waits for the dialog to be open; the scan reads the document with the dialog in it.
+    // The page's clock is held still before the press, so the count never ends: its end would sign out the session every scan of this describe reads.
+    // Marker: the home's reason sentence, as on `nominated-home`.
+    name: 'nominated-home-logout-dialog',
+    fixture: 'raw',
+    routeId: 'ContestantAppHome',
+    contentTestId: testIds.contestant.home.logout,
+    postLoginTestId: testIds.contestant.home.closedReason,
+    reach: async (page) => {
+      const { contestantEntityPages, contestantHomePage, contestantLogoutButton } = noNominationPagesOf(page);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
+      await setAnswers(UNNOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+      await setNominationsLocked(false);
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantHomePage.expectReason('previewNotReady');
+      await contestantLogoutButton.holdClockStill();
+      await contestantLogoutButton.openDialog();
     }
   }
 ];

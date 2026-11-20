@@ -429,7 +429,7 @@ test.describe("the Admin App's entry screens", () => {
         await forgotPasswordPage.submit(address);
         await forgotPasswordPage.expectLedToEmailSent(address);
       },
-      marker: { testId: testIds.admin.emailSent.page, attribute: 'data-wording', value: 'recovery' }
+      marker: { testId: testIds.admin.emailSent.page, state: { attribute: 'data-wording', value: 'recovery' } }
     },
     {
       // The set-password view an invited admin with no password is shown on the Admin home.

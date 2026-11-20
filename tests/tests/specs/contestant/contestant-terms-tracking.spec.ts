@@ -42,7 +42,7 @@ import { createRelayCapture, flushUntil, hasVisitId, visitIdOf } from '../../fix
 import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
 import { registerAndStoreSession } from '../../setup/shared/registerAndStoreSession';
 import { assertAxeScan } from '../../utils/axeScan';
-import { toScanEntry } from '../../utils/contestantAxeScan';
+import { assertContestantReach } from '../../utils/contestantAxeScan';
 import { NARROW_PHONE, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import {
@@ -55,23 +55,25 @@ import {
   TEST_PASSWORD
 } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
+import { toScanEntry } from '../../utils/themedAxeScans';
 import type { BrowserContext, Page, TestInfo } from '@playwright/test';
 import type { ContestantTermsOfUsePageFixture } from '../../fixtures/contestant/contestantTermsOfUsePage.fixture';
 import type { CapturedRelayEvent, RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 import type { StoredSessionIdentity } from '../../setup/shared/registerAndStoreSession';
-import type { ContestantAxeRoute } from '../../utils/contestantAxeScan';
+import type { ThemedScanEntry } from '../../utils/themedAxeScans';
 
 /** The message of the waits for a batch, which fail when the relay forwards nothing. */
 const RELAY_MESSAGE =
   'the expected batch was not captured: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it, and in the default consent mode';
 
 /** The terms-of-use view with the opt-out box, as the suite's shared scan core scans it. Anchored on the box, so the scan waits until the box is rendered; the reach proof's marker is the view's Continue button, which only the protected layout renders for a user who has not accepted. */
-const OPT_OUT_SCAN: ContestantAxeRoute = {
+const OPT_OUT_SCAN: ThemedScanEntry = {
   name: 'contestant-terms-gate-with-opt-out',
-  fixture: 'raw',
   routeId: 'ContestantAppHome',
   contentTestId: testIds.contestant.terms.trackingOptOut,
-  postLoginTestId: testIds.contestant.terms.submit
+  // The test opens the view itself and reads it before the scan, so the scan reaches nothing more.
+  reach: async () => {},
+  proveReach: (page, label) => assertContestantReach(page, { postLoginTestId: testIds.contestant.terms.submit }, label)
 };
 
 /** The two users, registered as editors of the dataset's two member candidates without an acceptance of the terms of use. Each session is stored only once the terms-of-use view has rendered for its user. */

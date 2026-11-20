@@ -19,7 +19,7 @@
  *
  * It runs inside every entry's `settle`, i.e. BEFORE the scan — a silently-redirected scan therefore fails by name instead of reporting a confident zero about a login page. `toScanEntry` composes it onto every entry at the runner, so an entry physically cannot be added without it.
  *
- * The reach proof, `toScanEntry` and `declareScans`, which declares an entry's light scan and its dark twin, are in `tests/tests/utils/contestantAxeScan.ts`. They are the same functions for every spec that scans a surface of the Contestant App; this file holds its entry tables and the sessions they run under.
+ * The reach proof and `declareScans`, which declares an entry's light scan and its dark twin, are in `tests/tests/utils/contestantAxeScan.ts`, and `toScanEntry` and the declaration of the twin, which every family of scans shares, in `tests/tests/utils/themedAxeScans.ts`. They are the same functions for every spec that scans a surface of the Contestant App; this file holds its entry tables and the sessions they run under.
  *
  * ============================================================================
  * PARITY WITH THE VOTER HALF
@@ -65,14 +65,13 @@
  * | state | why not reached with these identities/this dataset | the lever that would reach it |
  * |---|---|---|
  * | `/contestant/questions` empty-state intro (`contestant-questions-intro`) | every `e2e/base` candidate carries answers (0 hits for `answersByExternalId: {}` across 31 declarations) | a template change, or a runtime answer wipe |
- * | logout confirmation modal | the modal appears while a counted task is incomplete, and CA-AA-1 is complete, and over an unsaved edit; no entry opens it | an entry that makes an edit and presses Log out, holding the page's clock, because a real count ending would sign out the session the project shares |
  * | the "not editable" note with its answers-locked sentence (`contestant-answers-locked-warning`) on the home, the questions list and a question page | an `app_settings` scenario owned by the `perm-answers-locked` chain | none for the component: the same note in the same slot is scanned with this sentence on a profile by `org-profile-answers-locked` in `specs/perm/perm-organization-editing.spec.ts`, and with its nominations-locked sentence on the nominations view by `no-nomination-nominations-locked` and `nominated-nominations-pending-locked` in `specs/perm/perm-no-nomination.spec.ts`; these three pages add no markup to it |
  * | `PreventNavigation` unsaved-changes modal (profile, question) | requires a dirty form plus a navigation attempt | one extra step in the entry's `reach` |
  * | error paths — portrait-upload error (the shared `input-error` node inside `profile-image-upload`), preview `notFound`, the message of a failed sign-out (`common.logoutFailed`) | failure paths, not states of a successful load | out of scope for a route-family scan; would need fault injection |
  * | the selection screen listing one entity type (no group headings) | the multi-entity user edits both types, so both groups and their headings render | a second identity with several entities of one type |
  * | the open menu over an organization's pages | every entity page scanned here is a candidate's: the project's user edits one candidate, and `contestant-nav-menu-switch` picks the first card, a candidate | an entry that picks the organization's card |
  *
- * An organization's profile and preview are scanned by `specs/perm/perm-organization-editing.spec.ts`, on that spec's own dataset and under its own sessions, through the same helpers and the same gate. The home, the nominations view and the open menu of a candidate with no nomination, the home of one with a nomination and something left to do, and the nominations view while nominations are locked are scanned in the same way by `specs/perm/perm-no-nomination.spec.ts`: no identity of `e2e/base` lacks a nomination, and this project runs before any setting is changed.
+ * An organization's profile and preview are scanned by `specs/perm/perm-organization-editing.spec.ts`, on that spec's own dataset and under its own sessions, through the same helpers and the same gate. The home, the nominations view and the open menu of a candidate with no nomination, the home of one with a nomination and something left to do, the logout dialog that home opens, and the nominations view while nominations are locked are scanned in the same way by `specs/perm/perm-no-nomination.spec.ts`: no identity of `e2e/base` lacks a nomination, and this project runs before any setting is changed.
  *
  * ### Candidate routes OUTSIDE the `(protected)` family — not scanned by this file
  *
@@ -428,7 +427,7 @@ const CONFIRM_PAGE_SIGNED_IN_ROUTES: ReadonlyArray<EntryAxeRoute> = [
     },
     marker: { testId: testIds.auth.confirm.signedIn },
     alsoShown: [
-      { testId: testIds.auth.confirm.page, attribute: 'data-type', value: 'magiclink' },
+      { testId: testIds.auth.confirm.page, state: { attribute: 'data-type', value: 'magiclink' } },
       { testId: testIds.auth.confirm.cancel }
     ]
   }
