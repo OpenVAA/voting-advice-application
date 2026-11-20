@@ -50,10 +50,9 @@ The same module holds the functions the rules are built from: `hasNomination(nom
 | Accessor      | Value                                                                                                                                                     |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `taskState`   | The whole state of the entity the route names. A page reads its parts off it, such as `contestantCtx.taskState.allComplete`.                              |
-| `tasks`       | `taskState.tasks`.                                                                                                                                        |
 | `nominations` | The entity's nominations as the entity-level load read them: an empty list for an entity with none, and `undefined` on a page whose data holds no entity. |
 
-All three are reactive accessors: read them as `contestantCtx.taskState`, never destructured. The state is replaced by a fresh object on every change, so `$derived(contestantCtx.taskState)` follows it. See [Contexts](/developers-guide/frontend/contexts).
+Both are reactive accessors: read them as `contestantCtx.taskState`, never destructured. The state is replaced by a fresh object on every change, so `$derived(contestantCtx.taskState)` follows it. See [Contexts](/developers-guide/frontend/contexts).
 
 Whether the entity has a nomination is read from the page data, so it is known on the server and on the first frame. The counts are read from the user data store and the question lists, which are loaded in the browser. The state follows a saved answer without a load, and it follows a changed nomination only when the entity-level load runs again. The nomination editor's save runs it again with `invalidateAll()`.
 

@@ -93,7 +93,7 @@ vi.mock('$lib/contexts/contestant', () => ({
     appSettings: { entities: {} },
     userData: { savedEntityData: undefined },
     answersLocked: false,
-    tasks: [],
+    taskState: { tasks: [] },
     unansweredOpinionQuestions: [],
     unansweredRequiredInfoQuestions: []
   })

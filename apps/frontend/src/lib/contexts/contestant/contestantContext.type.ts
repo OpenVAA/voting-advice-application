@@ -11,7 +11,7 @@ import type {
   UserEntity
 } from '$lib/api/base/dataWriter.type';
 import type { EntryFlow, EntryHeldCode, EntryLinkRequest } from '$lib/auth/entryFlow';
-import type { Task, TaskState } from '$lib/contestant/tasks';
+import type { TaskState } from '$lib/contestant/tasks';
 import type { ContestantLoginError } from '$lib/contestant/utils/loginError';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
@@ -217,10 +217,4 @@ export type ContestantContext = AppContext &
      * A reactive accessor replaced wholesale on every change: read it as `contestantCtx.taskState` inside the tracking scope and never destructure it.
      */
     taskState: TaskState;
-    /**
-     * The tasks of the entity the route names, in order: `taskState.tasks`. Empty on a page that names no entity the user edits. A task has no status while the facts it rests on are not loaded.
-     *
-     * A reactive accessor: read it as `contestantCtx.tasks` inside the tracking scope and never destructure it.
-     */
-    tasks: ReadonlyArray<Task>;
   };

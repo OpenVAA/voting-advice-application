@@ -154,6 +154,10 @@ describe('ownOrganizationId', () => {
     ['a record of a candidate only', { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: { candidate: CANDIDATE } } }],
     ['a project entry that is not an object', { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: ORGANIZATION } }],
     ['an organization that is not a uuid', { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: { organization: 'org-1' } } }],
+    [
+      'an organization recorded in upper case',
+      { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: { organization: ORGANIZATION.toUpperCase() } } }
+    ],
     ['an organization that is not a string', { [REGISTERED_ENTITIES_KEY]: { [PROJECT]: { organization: 42 } } }],
     ['a record as an array', { [REGISTERED_ENTITIES_KEY]: [ORGANIZATION] }]
   ])('answers null for %s', (_label, appMetadata) => {

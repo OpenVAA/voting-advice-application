@@ -96,8 +96,8 @@ const contestantCtx = {
   get answersLocked() {
     return state.answersLocked;
   },
-  get tasks() {
-    return state.tasks;
+  get taskState() {
+    return { tasks: state.tasks };
   },
   get unansweredOpinionQuestions() {
     return state.unansweredOpinionQuestions;

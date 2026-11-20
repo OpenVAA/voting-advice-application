@@ -150,6 +150,13 @@ function radioOf(root: HTMLElement, value: string): HTMLInputElement {
   return radio!;
 }
 
+/** The text of an element as a screen reader reads it: without its `aria-hidden` parts. */
+function textReadOut(element: Element): string {
+  const copy = element.cloneNode(true) as Element;
+  copy.querySelectorAll('[aria-hidden="true"]').forEach((hidden) => hidden.remove());
+  return copy.textContent?.trim() ?? '';
+}
+
 /** The one label that names the radio of the option with the given value. */
 function labelOf(root: HTMLElement, value: string): HTMLLabelElement {
   const radio = radioOf(root, value);
@@ -227,7 +234,7 @@ describe('EntitySelector — the group', () => {
     const line = root.querySelector(ERROR);
     expect(line).not.toBeNull();
     expect(line!.getAttribute('role')).toBe('alert');
-    expect(line!.textContent?.trim()).toBe('Choose a list.');
+    expect(textReadOut(line!)).toBe('Choose a list.');
     expect(line!.id).not.toBe('');
     expect(root.getAttribute('aria-invalid')).toBe('true');
     expect(root.getAttribute('aria-describedby')).toBe(line!.id);

@@ -912,7 +912,7 @@ describe('contestantContext — the task state', () => {
 
   /** The id and status of each task, in order. */
   function statuses(provider: ContestantContextProvider): Array<[string, string | undefined]> {
-    return provider.tasks.map((task) => [task.id, task.status]);
+    return provider.taskState.tasks.map((task) => [task.id, task.status]);
   }
 
   const NO_NOMINATION = [
@@ -955,7 +955,11 @@ describe('contestantContext — the task state', () => {
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.tasks[0]).toEqual({ id: 'nomination', status: 'incomplete', route: EDITOR_ENTRY_ROUTE });
+    expect(built.provider.taskState.tasks[0]).toEqual({
+      id: 'nomination',
+      status: 'incomplete',
+      route: EDITOR_ENTRY_ROUTE
+    });
     expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: EDITOR_ENTRY_ROUTE });
   });
 
@@ -971,7 +975,11 @@ describe('contestantContext — the task state', () => {
       cleanup = built.cleanup;
 
       expect(statuses(built.provider)).toEqual(NO_NOMINATION);
-      expect(built.provider.tasks[0]).toEqual({ id: 'nomination', status: 'incomplete', route: NOMINATION_TASK_ROUTE });
+      expect(built.provider.taskState.tasks[0]).toEqual({
+        id: 'nomination',
+        status: 'incomplete',
+        route: NOMINATION_TASK_ROUTE
+      });
       expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: NOMINATION_TASK_ROUTE });
     }
   );
@@ -989,7 +997,11 @@ describe('contestantContext — the task state', () => {
       cleanup = built.cleanup;
 
       expect(statuses(built.provider)).toEqual(NO_NOMINATION);
-      expect(built.provider.tasks[0]).toEqual({ id: 'nomination', status: 'incomplete', route: NOMINATION_TASK_ROUTE });
+      expect(built.provider.taskState.tasks[0]).toEqual({
+        id: 'nomination',
+        status: 'incomplete',
+        route: NOMINATION_TASK_ROUTE
+      });
       expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: NOMINATION_TASK_ROUTE });
     }
   );
@@ -1005,7 +1017,7 @@ describe('contestantContext — the task state', () => {
     settings = { access: { answersLocked: true, nominationsLocked: false } };
     flushSync();
     expect(built.provider.taskState.nextStep?.route).toEqual(NOMINATION_TASK_ROUTE);
-    expect(built.provider.tasks[0].route).toEqual(NOMINATION_TASK_ROUTE);
+    expect(built.provider.taskState.tasks[0].route).toEqual(NOMINATION_TASK_ROUTE);
 
     settings = { access: { answersLocked: false, nominationsLocked: false } };
     flushSync();
@@ -1025,7 +1037,11 @@ describe('contestantContext — the task state', () => {
       const built = await construct();
       cleanup = built.cleanup;
 
-      expect(built.provider.tasks[0]).toEqual({ id: 'nomination', status: 'complete', route: NOMINATION_TASK_ROUTE });
+      expect(built.provider.taskState.tasks[0]).toEqual({
+        id: 'nomination',
+        status: 'complete',
+        route: NOMINATION_TASK_ROUTE
+      });
     }
   );
 
@@ -1042,7 +1058,7 @@ describe('contestantContext — the task state', () => {
     expect(built.provider.opinionQuestions).toEqual([]);
     expect(built.provider.infoQuestions).toEqual([]);
     expect(statuses(built.provider)).toEqual(NO_NOMINATION);
-    expect(built.provider.tasks.every((task) => task.count === undefined)).toBe(true);
+    expect(built.provider.taskState.tasks.every((task) => task.count === undefined)).toBe(true);
     expect(built.provider.taskState.nextStep).toEqual({ task: 'nomination', route: EDITOR_ENTRY_ROUTE });
     expect(built.provider.taskState.previewOpen).toBe(false);
     expect(built.provider.taskState.allComplete).toBe(false);
@@ -1072,7 +1088,7 @@ describe('contestantContext — the task state', () => {
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.tasks).toEqual([
+    expect(built.provider.taskState.tasks).toEqual([
       { id: 'nomination', status: 'complete', route: NOMINATION_TASK_ROUTE },
       { id: 'profile', status: 'incomplete', route: { route: 'ContestantAppProfile' }, count: 1 },
       {
@@ -1195,22 +1211,10 @@ describe('contestantContext — the task state', () => {
     const built = await construct();
     cleanup = built.cleanup;
 
-    expect(built.provider.tasks).toEqual([]);
+    expect(built.provider.taskState.tasks).toEqual([]);
     expect(built.provider.taskState.nextStep).toBeUndefined();
     expect(built.provider.taskState.previewOpen).toBe(false);
     expect(built.provider.taskState.allComplete).toBe(false);
-  });
-
-  it('exposes the tasks of the state as its own member', async () => {
-    openEntity({ nominations: [NOMINATION] });
-    world.dataRoot = makeScopedDataRoot();
-    world.userData = makeUserData({ type: 'candidate' });
-    const built = await construct();
-    cleanup = built.cleanup;
-
-    const state = built.provider.taskState;
-    expect(state.tasks.length).toBe(3);
-    expect(built.provider.tasks).toBe(state.tasks);
   });
 });
 

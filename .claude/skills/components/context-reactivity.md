@@ -45,7 +45,7 @@ Getters returning `$state`- or `$derived`-backed values that change over time. `
 previously stable `{ current }` handles, now bare reactive fields). Plus: `selectedElections`,
 `selectedConstituencies`, `opinionQuestions`, `infoQuestions`, `infoQuestionCategories`,
 `opinionQuestionCategories`, `questionBlocks`, `unansweredOpinionQuestions`,
-`unansweredRequiredInfoQuestions`, `requiredInfoQuestions`, `answersLocked`, `profileComplete`,
+`unansweredRequiredInfoQuestions`, `requiredInfoQuestions`, `answersLocked`,
 `electionsSelectable`, `constituenciesSelectable`, `matches`, `nominationsAvailable`,
 `resultsAvailable`, `idTokenClaims`, `isPreregistered`, `isAuthenticated`, `preregistrationElections`,
 `preregistrationNominations`. On the contestant context also `entryFlow`, what the entry screens
@@ -63,7 +63,7 @@ which follows the app setting `access.nominationsLocked` as `answersLocked` foll
 `questionsReady`, which is `true` once the question lists were rolled up for a loaded entity with a
 selected election — the fact that tells an empty list that means "no questions" from one that means
 "not loaded yet". The lists themselves are scoped to the loaded entity's type and are empty while no
-entity is loaded. They are empty too for a loaded entity with no selected election. And five that
+entity is loaded. They are empty too for a loaded entity with no selected election. And two that
 hold the entity's tasks:
 
 - `nominations` — derived from page data: the list the entity-level load read for the entity on the
@@ -73,16 +73,18 @@ hold the entity's tasks:
   `taskStateOf` of `$lib/contestant/tasks`: whether the entity has a nomination from `nominations`,
   and the counts of unanswered questions from the store and the question lists, read only while the
   store holds the entity the route names and `questionsReady` is true.
-- `tasks` — the state's own `tasks` member: the entity's tasks in order, each with a status that is
-  `undefined` while the facts it rests on are not loaded.
-- `nextStep` — the state's own `nextStep` member: the first incomplete task and its route,
-  `undefined` when there is none and while the state is not known.
-- `previewOpen` — the state's own `previewOpen` member: false while the state is not known.
 
-`profileComplete` is the state's `allComplete`: false for an entity with no nomination and while the
-state is not known.
+The context has no member of its own for a part of the state: read each off it, as
+`contestantCtx.taskState.X`, inside the tracking scope.
 
-`taskState`, `tasks` and `nextStep` are **value-replacing**: `taskStateOf` returns a fresh object on
+- `taskState.tasks` — the entity's tasks in order, each with a status that is `undefined` while the
+  facts it rests on are not loaded.
+- `taskState.nextStep` — the first incomplete task and its route, `undefined` when there is none and
+  while the state is not known.
+- `taskState.previewOpen` — false while the state is not known.
+- `taskState.allComplete` — false for an entity with no nomination and while the state is not known.
+
+`taskState` and its members `tasks` and `nextStep` are **value-replacing**: `taskStateOf` returns a fresh object on
 every call, so the reference changes on every change and a `$derived(contestantCtx.taskState)` read
 alias follows it. `dataRoot` is not (§ 5). A value-replacing accessor is still never destructured.
 Nothing is decided from a list's length before the state's `known` member is true: an empty list
