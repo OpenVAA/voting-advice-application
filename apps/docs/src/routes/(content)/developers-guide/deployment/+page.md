@@ -190,6 +190,8 @@ curl -s "https://<your-domain>/api/health"
 
 The task receives exactly the variables of `task-environment.json`. `SUPABASE_SERVICE_ROLE_KEY` is never one of them: it bypasses row-level security, and it belongs to the bootstrap run and the Supabase project alone; `taskEnvironment.test.ts` refuses any name that contains `SERVICE_ROLE`.
 
+Bank authentication is not wired on the AWS path. The task environment carries neither the identity-provider variables nor `IDENTITY_CALLBACK_SERVER_SECRET`, and the Supabase module sets no identity-provider secret, so `identity-callback` refuses every call. A deployment that needs it adds those variables to `task-environment.json` as task-environment entries, each secret one as a `parameter` entry, and sets the same `IDENTITY_CALLBACK_SERVER_SECRET` and the provider's variables on the function, in the function secrets that `infra/modules/supabase/function-secrets.tf` writes. [Bank authentication](/developers-guide/contestant-app/bank-authentication) describes the flow and [Identity provider](/developers-guide/configuration/environmental-variables#identity-provider) the variables.
+
 ### Checking the instance
 
 Two checks, both from a workstation. The conformance probe compares what the Supabase project serves with what the repository declares for it, through the Management API, the public API with the anon key and the catalog over `psql`; it writes nothing and never takes the service-role key. With `SUPABASE_ACCESS_TOKEN`, `SUPABASE_ANON_KEY` and the connection variables of the Supabase stage set:
