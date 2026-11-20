@@ -61,6 +61,16 @@ the `/32`, expecting `000` (curl exit 28) for each. The new value is shown in bo
 from AWS, and the two are shown to agree by `s19_cdn_health_after=200`. The listener's own 403 stays
 Step 9's observation. The stop rule keeps `aws_lb_listener.https` untouched.
 
+The whole block was also run end to end under `/bin/bash` against stub commands (`aws`,
+`terraform`, `gh`, `curl`, `dig`, `caffeinate`, and a virtual clock for `date` and `sleep`), with no
+network. Seven paths gave what the step expects. With the expected plan, it applied once, printed
+`s19_value_changed=yes` and `s19_recovery=not-needed`, and removed `$L`. With an active pipeline run,
+an extra planned change, or a wrong account, it applied nothing (the account case stopped after the
+preamble). With a non-empty plan after the apply, the recovery applied a distribution-only plan,
+refused one that also changed the ECS service, and printed `nothing-to-apply` for an empty one. No
+48-character value appeared in any output. After this run, the stop rule also requires the running
+digest to be non-empty, and the apply waits, for up to ten seconds, for a first poll of 200.
+
 The sitting block is the runbook's lines in one subshell, with a trap that stops the poller and
 removes `$L` on exit. It is kept in `tmp/189-07-2.sitting-block.sh` (ignored by Git) and goes into
 the attempt file of `189-07-2` at Task 2, not here.

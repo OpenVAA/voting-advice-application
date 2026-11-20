@@ -3765,8 +3765,8 @@ O=origin.staging.openvaa.org
    cat "$L/s19-changes.txt"
    sed -E 's/(from_cloudfront) (delete-create|create-delete)$/\1 update/' \
      "$L/s19-changes.txt" | sort > "$L/s19-changes-read.txt"
-   if test "$ACCOUNT" = 471112560111 && test "$PE" = 0 \
-     && test "$SE" = 0 && test "$VB" = 0 \
+   if test "$ACCOUNT" = 471112560111 && test -n "$DIGEST" \
+     && test "$PE" = 0 && test "$SE" = 0 && test "$VB" = 0 \
      && test "$(cat "$L/s19-deploy-runs.txt")" = 0 \
      && test "$(cat "$L/s19-destroy-runs.txt")" = 0 \
      && cmp -s "$L/s19-changes-read.txt" "$L/s19-expected.txt"
@@ -3774,8 +3774,8 @@ O=origin.staging.openvaa.org
    echo "s19_stop_rule=$STOP"
    ```
 
-   > **The apply runs only when `s19_stop_rule=met`**: the account is the staging one, the plan and
-   > its JSON were written, the header value had its shape, no run of the deploy or the destroy
+   > **The apply runs only when `s19_stop_rule=met`**: the account is the staging one, the running
+   > digest was read, the plan and its JSON were written, the header value had its shape, no run of the deploy or the destroy
    > workflow is waiting or running, and the plan changes exactly three resources and nothing else:
    > `delete-create` of `module.frontend.random_password.origin_verify`, `update` of
    > `module.frontend.aws_cloudfront_distribution.this`, and `update` of
@@ -3798,18 +3798,21 @@ O=origin.staging.openvaa.org
        done ) > "$L/s19-health.txt" &
      POLL=$!
      caffeinate -i -w "$POLL" &
-     sleep 5
-     echo "s19_poller_first=$(head -1 "$L/s19-health.txt" \
-       | cut -d' ' -f3)"
+     for i in 1 2 3 4 5 6 7 8 9 10; do
+       test -s "$L/s19-health.txt" && break; sleep 1
+     done
+     FIRST=$(head -1 "$L/s19-health.txt" | cut -d' ' -f3)
+     echo "s19_poller_first=$FIRST"
    fi
    ```
 
-   Expected: `s19_poller_first=200`.
+   Expected: `s19_poller_first=200`. Item 4 applies only after a first read of 200, so that the
+   window is measured from a serving site.
 
 4. The apply of the saved plan:
 
    ```bash
-   if test "$STOP" = met; then
+   if test "$STOP" = met && test "$FIRST" = 200; then
      terraform -chdir="$T" apply -input=false -no-color \
        "$L/tfplan" > "$L/s19-apply.log" 2>&1
      AE=$?; AC=$(date -u +%s)
@@ -3831,9 +3834,13 @@ O=origin.staging.openvaa.org
    health recovered:
 
    ```bash
-   if test -n "$POLL"; then
+   if test -n "$AC"; then
      while test "$(date -u +%s)" -lt "$((AC + 600))"; do sleep 10; done
+   fi
+   if test -n "$POLL"; then
      touch "$L/s19-poll.stop"; wait "$POLL" 2> /dev/null
+   fi
+   if test -n "$AC"; then
      awk -v ac="$AC" '
        { n++; if (p && $2 - p > g) g = $2 - p; p = $2 }
        $3 != "200" { if (!f) { f = $1; fe = $2 }; l = $1; le = $2; bad++ }
