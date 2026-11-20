@@ -22,19 +22,19 @@ The SQL lives in two directories under `apps/supabase/supabase/`. `schema/` is t
 | `schema/`     | The current view of the schema. Hand-edited SQL files, numbered by concern. The Supabase CLI never reads this directory, because `config.toml` sets `schema_paths = []`.                                                                                                                                                         |
 | `migrations/` | What a database is built from: the frozen baseline `00001_initial_schema.sql`, then one appended migration per schema change, named by the next five-digit version, an underscore and a name, such as `00002_add_example.sql`. `supabase db reset` applies them in version order. A migration is never edited once it is listed. |
 
-Beside them, `migrations.manifest.json` lists every migration in version order with the sha256 of its bytes.
+Beside them, `migrations.manifest.json` lists every migration in version order with the sha256 of its bytes. Its `baseline.commit` names the commit whose `schema/` the baseline was generated from; that commit carries the tag `schema-baseline-00001`. The baseline is the only migration so far, so the next schema change is `00002`.
 
 The [`schema/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/schema) files are grouped by their number:
 
-| Files       | Contents                                                                                                             |
-| ----------- | -------------------------------------------------------------------------------------------------------------------- |
-| `000`–`011` | enum types, role settings, utility functions and validation functions                                                |
-| `100`–`108` | content tables: tenancy, elections, entities, questions, nominations, answers, app settings, feedback and admin jobs |
-| `200`       | indexes                                                                                                              |
-| `300`–`303` | auth tables, auth functions, RLS policies and column grants                                                          |
-| `400`       | storage buckets, storage policies and storage cleanup                                                                |
-| `500`–`505` | external ids, bulk operations, email helpers, entity functions, admin functions and question functions               |
-| `900`       | helper functions for the pgTAP tests                                                                                 |
+| Files       | Contents                                                                                                                     |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `000`–`011` | enum types, role settings, utility functions and validation functions                                                        |
+| `100`–`108` | content tables: tenancy, elections, entities, questions, nominations, answers, app settings, feedback and admin jobs         |
+| `200`       | indexes                                                                                                                      |
+| `300`–`305` | auth tables, auth functions, RLS policies, column grants, terms-of-use acceptances and invitations                           |
+| `400`       | storage buckets, storage policies and storage cleanup                                                                        |
+| `500`–`506` | external ids, bulk operations, email helpers, entity functions, admin functions, question functions and invitation functions |
+| `900`       | helper functions for the pgTAP tests                                                                                         |
 
 A schema change is one commit with three parts:
 
