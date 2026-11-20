@@ -47,7 +47,7 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       subnets with no NAT gateway (D2).
 - [x] **INFRA-12**: The stack is in `eu-north-1` by default, and the Supabase project's region is stated beside
       it.
-- [ ] **INFRA-13**: Every resource carries cost tags, and a monthly estimate measured on the applied stack is
+- [x] **INFRA-13**: Every resource carries cost tags, and a monthly estimate measured on the applied stack is
       documented.
 - [x] **INFRA-14**: A CDN serves the immutable build assets, and rendered HTML is never cached at the edge.
       [A2, added]
@@ -217,6 +217,9 @@ Each is run on a real project, recorded with its date, and acted on.
 Recorded, not in this roadmap.
 
 - **FUT-01**: The Admin job store moves to the database, so that job progress holds above one task (D1).
+  Note, 2026-11-20: ruling D1's "staging runs one task" is superseded by phase 185's scaling. Staging runs up
+  to two tasks (`task_floor = 1`, `task_ceiling = 2`), so the limit applies to staging too; it is documented
+  on the operations page (`developers-guide/deployment/operations`, § "Admin jobs and more than one task").
 - **FUT-02**: The deployment moves to Supabase publishable keys. Queued for right after v2.16 and v2.17 merge
   (C5; todo filed).
 - **FUT-03**: Answer events gain differential privacy, or masking of timestamp and insert order, so that they
@@ -272,7 +275,7 @@ closes; those are not listed against the earlier phase here.
 | INFRA-10 | Phase 185 | Complete |
 | INFRA-11 | Phase 185 | Complete |
 | INFRA-12 | Phase 185 | Complete |
-| INFRA-13 | Phase 185 | Pending (measured cost deferred to phase 189 todo) |
+| INFRA-13 | Phase 185 | Complete (measured 36.96 USD/month, 44.26 with untagged IPv4, read 2026-11-18 over a two-day window under the operator's short-window ruling; 185-22-cost.md; todo completed/2026-11-14-measure-the-staging-aws-stack-monthly-cost.md) |
 | INFRA-14 | Phase 185 | Complete |
 | INFRA-15 | Phase 183 | Complete |
 | INFRA-16 | Phase 187 | Complete |

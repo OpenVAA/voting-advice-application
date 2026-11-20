@@ -78,6 +78,7 @@ overrides:
     reason: "The measured figure needs seven full UTC days of Root-tagged Cost Explorer data and the first full day of the window is 2026-11-15, so no measurement could exist at close. The phase records the priced inventory (50.78 USD/month at list price, labelled an inventory) and a dated todo for phase 189 (readable from 2026-11-23). INFRA-13 is PARTIAL and stays Pending in REQUIREMENTS.md."
     accepted_by: "operator (185-22, key 185-22-2, attempt 20261114T184916Z.86218573f, COST_RULING=follow-up)"
     accepted_at: "2026-11-14T00:00:00Z"
+    note_2026_11_20: "The measurement this override deferred now exists: evidence/185-22-cost.md records COST_MEASURED_USD_MONTH=36.96 and COST_MEASURED_WITH_UNTAGGED_IPV4_USD_MONTH=44.26, read COST_MEASURED_READ_UTC=2026-11-18T11:58Z over a two-day window (COST_MEASURED_WINDOW_DAYS=2) under the operator's short-window ruling, and the todo is completed (.planning/todos/completed/2026-11-14-measure-the-staging-aws-stack-monthly-cost.md). INFRA-13 reads Complete in REQUIREMENTS.md (plan 189-19)."
 human_verification: []
 ---
 
