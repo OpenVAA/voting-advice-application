@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { canonicalMembersOf, REGISTRATION_MODES } from '../../settings/contestantAppSettings';
+import {
+  canonicalMembersOf,
+  CONTESTANT_EDITING_VALUES,
+  REGISTRATION_MODES
+} from '../../settings/contestantAppSettings';
 
 /**
  * A localised string as it is stored: an object keyed by locale. Mirrors `LocalizedString` in `../localized.type`.
@@ -155,8 +159,7 @@ export const StoredSettingsSchema = z.strictObject({
       voterApp: z.boolean().optional(),
       adminApp: z.boolean().optional(),
       underMaintenance: z.boolean().optional(),
-      answersLocked: z.boolean().optional(),
-      nominationsLocked: z.boolean().optional()
+      contestantEditing: z.enum(CONTESTANT_EDITING_VALUES).optional()
     })
     .optional(),
   notifications: z
