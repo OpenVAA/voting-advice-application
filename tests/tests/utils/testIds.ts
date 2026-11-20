@@ -4,8 +4,7 @@
  * Every `data-testid` attribute used in the application must be defined here.
  * Tests import from this file to ensure testId strings are consistent between the Svelte components and Playwright locators.
  *
- * Structure: `testIds.<app>.<page>.<element>` Naming: kebab-case for values (matches existing conventions)
- * A routed page's root is `page`, a gate view's root is `container`.
+ * Structure: `testIds.<app>.<page>.<element>`, with kebab-case values. A routed page's root is `page`, a gate view's root is `container`.
  */
 export const testIds = {
   contestant: {
