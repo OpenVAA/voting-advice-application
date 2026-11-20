@@ -1,7 +1,7 @@
 import type { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 import type { LocalizedString } from '../data/localized.type';
-import type { RegistrationModeMatrix, ServedEntityType } from './contestantAppConfig';
+import type { RegistrationMode, ServedEntityType } from './contestantAppSettings';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
@@ -253,7 +253,7 @@ export type DynamicSettings = {
      */
     showFeedbackPopup?: number;
     /**
-     * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the relevant `analytics.survey` settings are defined and if the user has not already opened the survey. A value of `0` disables the popup; a stored value that leaves this member out keeps the shipped default.
+     * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the `survey` settings are defined and if the user has not already opened the survey. A value of `0` disables the popup; a stored value that leaves this member out keeps the shipped default.
      */
     showSurveyPopup?: number;
   };
@@ -295,11 +295,11 @@ export type DynamicSettings = {
      */
     underMaintenance?: boolean;
     /**
-     * If `true`, candidates can no longer edit their answers.
+     * If `true`, an entity's own users, of every served entity type, can change nothing of the entity: its answers, profile, images and nominations. Project editors and admins still can.
      */
     answersLocked?: boolean;
     /**
-     * If `true`, an entity's own users can no longer add or change that entity's nominations. A project admin still can. The database enforces the lock from this same stored key, so the app only reads it to say so.
+     * If `true`, an entity's own users can no longer add or change that entity's nominations, and nothing else is barred. `answersLocked` implies this lock. Project editors and admins are not barred. The database enforces the lock from this same stored key, so the app only reads it to say so.
      */
     nominationsLocked?: boolean;
   };
@@ -334,13 +334,13 @@ export type DynamicSettings = {
       hideHero: boolean;
     };
     /**
-     * The entity types the Contestant App serves: `candidate`, `organization` or both, and never none. The app's name follows this list. A type named twice counts once, and the list is stored in the order `candidate`, `organization` whatever order it is written in. Read it with `getServedEntityTypes`.
+     * The entity types the Contestant App serves, each with the registration modes allowed for it. A type is served when it has a key here: `candidate`, `organization` or both, and never none. The app's name follows the served types. Read the served types with `getServedEntityTypes` and the modes with `getEffectiveRegistrationModes` and `isRegistrationModeAllowed`.
+     *
+     * A type's `registrationModes` lists any of `identity_provider`, `email` and `code`. A mode named twice counts once, and the list is read in the order `identity_provider`, `email`, `code` whatever order it is stored in. An empty list allows no registration for that type, and with every list empty the app offers sign-in only. An empty list also leaves every open invitation of that entity type unusable until `email` or `code` is allowed (an invitation bound to an address needs `email`, one bound to a code needs `code`), so a new project must set at least one of them for invitations to work. Allowing `identity_provider` also needs the identity provider's environment variables.
+     *
+     * A stored value replaces the shipped default whole: a type the stored value has no key for is not served.
      */
-    entityTypes: Array<ServedEntityType>;
-    /**
-     * The registration modes allowed for each entity type: any of `identity_provider`, `email` and `code`. An empty row allows no registration for that type, and with every row empty the app offers sign-in only. A mode named twice counts once, and each row is stored in the order `identity_provider`, `email`, `code`. A row for a type that `entityTypes` does not list is stored and ignored when read. Read it with `getEffectiveRegistrationModes` and `isRegistrationModeAllowed`. Allowing `identity_provider` also needs the identity provider's environment variables.
-     */
-    registrationModes: RegistrationModeMatrix;
+    servedEntityTypes: Partial<Record<ServedEntityType, { registrationModes: Array<RegistrationMode> }>>;
   };
   /**
    * Settings related to usage analytics.
