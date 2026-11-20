@@ -1182,22 +1182,22 @@ export type Database = {
     };
     Functions: {
       _bulk_upsert_record: { Args: { p_item: Json; p_project_id: string; p_table_name: string }; Returns: boolean };
-      address_confirmation_release: { Args: { p_email: string }; Returns: undefined };
-      address_confirmation_request: {
-        Args: { p_email: string; p_project_id: string; p_user_id: string };
-        Returns: boolean;
-      };
-      address_holds_open_invitation: { Args: { p_email: string; p_project_id: string }; Returns: boolean };
       bulk_delete: { Args: { p_data: Json }; Returns: Json };
       bulk_import: { Args: { p_data: Json }; Returns: Json };
       claim_invitations: { Args: { p_project_id: string }; Returns: Json };
-      contestant_app_public_settings: { Args: { p_project_id: string }; Returns: Json };
       create_invitations: {
         Args: { p_confirm_entity: boolean; p_invitations: Json; p_project_id: string };
         Returns: Json;
       };
       custom_access_token_hook: { Args: { p_event: Json }; Returns: Json };
       delete_storage_object: { Args: { p_bucket: string; p_file_path: string }; Returns: undefined };
+      email_confirmation_release: { Args: { p_email: string }; Returns: undefined };
+      email_confirmation_request: {
+        Args: { p_email: string; p_project_id: string; p_user_id: string };
+        Returns: boolean;
+      };
+      email_invitation_hold: { Args: { p_email: string; p_project_id: string }; Returns: string };
+      get_caller_account_state: { Args: Record<PropertyKey, never>; Returns: Json };
       get_entity_basic_data: {
         Args: { p_entity_id: string; p_entity_type: Database['public']['Enums']['entity_type'] };
         Returns: Json;
@@ -1276,6 +1276,7 @@ export type Database = {
           subtype: string;
         }[];
       };
+      get_public_app_settings: { Args: { p_project_id: string }; Returns: Json };
       get_questions: {
         Args: { p_constituency_id?: string; p_election_id?: string; p_election_round?: number; p_project_id: string };
         Returns: Json;
@@ -1290,23 +1291,23 @@ export type Database = {
         };
         Returns: Database['public']['Enums']['grant_permission'][];
       };
+      identity_account_find: { Args: { p_match_value: string; p_placeholder_email: string }; Returns: Json };
       identity_entity_find_or_create: {
         Args: {
           p_entity_type: Database['public']['Enums']['entity_type'];
           p_first_name: string;
-          p_identity_metadata?: Json;
+          p_identity_metadata: Json;
           p_last_name: string;
           p_project_id: string;
           p_user_id: string;
         };
         Returns: Json;
       };
+      identity_provider_entity_types: { Args: { p_project_id: string }; Returns: string[] };
       invitation_code_claimant_email: { Args: { p_code: string; p_project_id: string }; Returns: string };
       invitation_code_status: { Args: { p_code: string; p_project_id: string }; Returns: string };
       invitation_link_release: { Args: { p_code?: string; p_email: string; p_project_id: string }; Returns: undefined };
       invitation_link_request: { Args: { p_code?: string; p_email?: string; p_project_id: string }; Returns: string };
-      invitation_link_witness: { Args: { p_id: string; p_outcome?: string }; Returns: string };
-      invitation_link_witness_open: { Args: Record<PropertyKey, never>; Returns: string };
       is_image: { Args: { p_val: Json }; Returns: boolean };
       is_localized_string: { Args: { p_val: Json }; Returns: boolean };
       is_valid_choice_id: { Args: { p_valid_choices: Json; p_value: Json }; Returns: boolean };
@@ -1316,12 +1317,13 @@ export type Database = {
         Returns: undefined;
       };
       merge_question_custom_data: { Args: { p_patch: Json; p_question_id: string }; Returns: Json };
+      nomination_requests_parent: { Args: { p_custom_data: Json }; Returns: boolean };
       nomination_shape_rule: {
         Args: {
           p_entity_type: Database['public']['Enums']['entity_type'];
           p_shape: Database['public']['Enums']['nomination_shape'];
         };
-        Returns: string;
+        Returns: Database['public']['Enums']['nomination_admission'];
       };
       project_open_for_voters: { Args: { p_project_id: string }; Returns: boolean };
       recovery_link_request: { Args: { p_email: string; p_project_id: string }; Returns: Json };
@@ -1341,7 +1343,7 @@ export type Database = {
         Args: {
           p_entity_id: string;
           p_entity_type: Database['public']['Enums']['entity_type'];
-          p_expected_reach: Json;
+          p_expected_versions: Json;
           p_nominations: Json;
         };
         Returns: Json;
@@ -1411,6 +1413,7 @@ export type Database = {
         | 'nomination.create_parent';
       grant_role_type: 'admin' | 'editor';
       grant_scope_type: 'global' | 'account' | 'project' | 'entity';
+      nomination_admission: 'admitted' | 'parent_required' | 'refused';
       nomination_shape:
         'organization_only' | 'candidate_only' | 'organization_list' | 'organization_list_and_independents';
       question_type:
@@ -1563,6 +1566,7 @@ export const Constants = {
       ],
       grant_role_type: ['admin', 'editor'],
       grant_scope_type: ['global', 'account', 'project', 'entity'],
+      nomination_admission: ['admitted', 'parent_required', 'refused'],
       nomination_shape: [
         'organization_only',
         'candidate_only',

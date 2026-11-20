@@ -78,8 +78,7 @@ export const dynamicSettings: DynamicSettings = {
     voterApp: true,
     adminApp: true,
     underMaintenance: false,
-    answersLocked: false,
-    nominationsLocked: false
+    contestantEditing: 'open'
   },
   notifications: {
     contestantApp: null,
