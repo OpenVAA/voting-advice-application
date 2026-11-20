@@ -1,7 +1,7 @@
 <!--
 @component A modal dialog that will automatically close after a set amount of time.
 
-The count follows the wall clock: its end is the time the modal opened plus `timerDuration`, checked every second and whenever the document is shown, restored, focused or resumed again. A document that was frozen, suspended or asleep runs no timer, so on its return the count ends at once if its time has passed, rather than after the rest of it.
+The count follows the wall clock (`WallClock`): its end is the time the modal opened plus `timerDuration`, checked every second and whenever the document is shown, restored, focused or resumed again. A document that was frozen, suspended or asleep runs no timer, so on its return the count ends at once if its time has passed, rather than after the rest of it.
 
 ### Snippet Props
 
@@ -52,8 +52,9 @@ See the `<Modal>` component documentation for more information.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import { tweened } from 'svelte/motion';
+  import { WallClock } from '$lib/utils/wallClock.svelte';
   import Modal from '../Modal.svelte';
   import type { TimedModalProps } from './TimedModal.type';
 
@@ -87,13 +88,17 @@ See the `<Modal>` component documentation for more information.
   // Used for progress bar animation. Reading `timerDuration` here is the initial seed for the tweened store; the prop is also re-read inside `startTimeout()` to handle prop changes between mounts.
   // svelte-ignore state_referenced_locally
   let progressBarTimer = $state(tweened(timerDuration, { duration: 0 }));
-  /** How often the count's end is checked, in milliseconds. */
-  const CHECK_INTERVAL_MS = 1000;
+  /** The present time, read while the count runs. */
+  const clock = new WallClock();
 
   /** The count's end on the wall clock, in milliseconds since the epoch, while the modal is open. */
-  let deadline: number | undefined;
-  /** The check that runs every {@link CHECK_INTERVAL_MS}. */
-  let checkTimer: ReturnType<typeof setInterval> | undefined;
+  let deadline = $state<number | undefined>(undefined);
+
+  // End the count once its time on the wall clock has come.
+  $effect(() => {
+    if (deadline === undefined || clock.now < deadline) return;
+    untrack(() => void endCount());
+  });
 
   // Update timeLeft to an integer when progressBarTimer updates
   $effect(() => {
@@ -130,12 +135,8 @@ See the `<Modal>` component documentation for more information.
     progressBarTimer = tweened(timerDuration, { duration: durationMs });
     timeLeft = timerDuration;
     $progressBarTimer = 0;
+    clock.start();
     deadline = Date.now() + durationMs;
-    checkTimer = setInterval(checkDeadline, CHECK_INTERVAL_MS);
-    document.addEventListener('visibilitychange', checkWhenVisible);
-    document.addEventListener('resume', checkDeadline);
-    window.addEventListener('pageshow', checkDeadline);
-    window.addEventListener('focus', checkDeadline);
   }
 
   /** Stop the count and the progress bar */
@@ -144,25 +145,14 @@ See the `<Modal>` component documentation for more information.
     progressBarTimer.set($progressBarTimer, { duration: 0 });
   }
 
-  /** Forget the count's end, and stop every check of it. */
+  /** Forget the count's end, and stop reading the clock. */
   function stopChecking() {
     deadline = undefined;
-    if (checkTimer) clearInterval(checkTimer);
-    checkTimer = undefined;
-    if (typeof document === 'undefined') return;
-    document.removeEventListener('visibilitychange', checkWhenVisible);
-    document.removeEventListener('resume', checkDeadline);
-    window.removeEventListener('pageshow', checkDeadline);
-    window.removeEventListener('focus', checkDeadline);
+    clock.stop();
   }
 
-  function checkWhenVisible() {
-    if (document.visibilityState === 'visible') checkDeadline();
-  }
-
-  /** End the count once its time on the wall clock has come. The end is forgotten first, so a later check ends nothing. */
-  async function checkDeadline() {
-    if (deadline === undefined || Date.now() < deadline) return;
+  /** End the count. The end is forgotten first, so a later reading of the clock ends nothing. */
+  async function endCount() {
     stopChecking();
     if (!isOpen) return;
     try {
