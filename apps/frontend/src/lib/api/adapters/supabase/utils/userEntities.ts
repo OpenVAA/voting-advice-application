@@ -26,7 +26,7 @@ const OrganizationEntrySchema = z.object({
 /**
  * The list in the answer of the `get_user_entities` RPC: one object whose `entities` array holds one entry per entity the caller edits in the project.
  *
- * Unknown members are dropped rather than refused, at the top level and inside an entry, so a fact added to the answer later does not fail the read. The answer's `password_set` and `pending_email_taken` are such members: {@link parseCallerPasswordSet} and {@link parseCallerPendingEmailTaken} read them.
+ * Unknown members are dropped rather than refused, at the top level and inside an entry, so a fact added to the answer later does not fail the read. The answer's `organization` is such a member: {@link parseRegisteredOrganization} reads it.
  */
 export const UserEntitiesSchema = z.object({
   entities: z.array(z.discriminatedUnion('entity_type', [CandidateEntrySchema, OrganizationEntrySchema]))
@@ -52,11 +52,11 @@ export function parseUserEntities(raw: Json | undefined): Array<UserEntityEntry>
   return result.data.entities;
 }
 
-/** A member of the `get_user_entities` answer that is a fact about the caller and not about an entity. */
+/** A member of the `get_caller_account_state` answer: a fact about the caller's own account. */
 const CallerPasswordSetSchema = z.object({ password_set: z.boolean() });
 
 /**
- * Read one fact about the caller from the answer of the `get_user_entities` RPC: whether the caller's own account has a password.
+ * Read one fact about the caller from the answer of the `get_caller_account_state` RPC: whether the caller's own account has a password.
  *
  * Anything but a boolean throws. An absent, null or otherwise malformed fact is a failed read, neither "has a password" nor "has none", and answering either for it would be a guess. The message names the path the schema refused and never a stored value.
  * @param answer - The unvalidated value the RPC returned.
@@ -72,11 +72,11 @@ export function parseCallerPasswordSet(answer: unknown): boolean {
   return result.data.password_set;
 }
 
-/** The other member of the `get_user_entities` answer that is a fact about the caller. */
+/** The other member of the `get_caller_account_state` answer. */
 const CallerPendingEmailTakenSchema = z.object({ pending_email_taken: z.boolean() });
 
 /**
- * Read one fact about the caller from the answer of the `get_user_entities` RPC: whether the address the caller's own account is changing to is already another account's.
+ * Read one fact about the caller from the answer of the `get_caller_account_state` RPC: whether the address the caller's own account is changing to is already another account's.
  *
  * Anything but a boolean throws, as for {@link parseCallerPasswordSet}: an absent, null or otherwise malformed fact is a failed read and never a guess. The message names the path the schema refused and never a stored value.
  * @param answer - The unvalidated value the RPC returned.
@@ -90,4 +90,24 @@ export function parseCallerPendingEmailTaken(answer: unknown): boolean {
     throw new Error(`The caller's pending-address fact did not match its schema at: ${issues.join(', ')}`);
   }
   return result.data.pending_email_taken;
+}
+
+/** The member of the `get_user_entities` answer that names the organization the caller's identity registered. */
+const RegisteredOrganizationSchema = z.object({ organization: z.guid().optional() });
+
+/**
+ * Read the organization the caller's identity registered in the project through an identity provider from the answer of the `get_user_entities` RPC. The answer names it whether or not the caller still edits it, and has no `organization` member when the identity registered none.
+ *
+ * A member that is present but not a uuid throws, so a malformed answer is a failed read and never "registered none". The message names the path the schema refused and never a stored value.
+ * @param answer - The unvalidated value the RPC returned.
+ * @returns The organization's id, or `null` when the answer names none.
+ * @throws Error when the value is no object or its `organization` is not a uuid.
+ */
+export function parseRegisteredOrganization(answer: unknown): string | null {
+  const result = RegisteredOrganizationSchema.safeParse(answer);
+  if (!result.success) {
+    const issues = result.error.issues.map((issue) => issue.path.join('.') || '(root)');
+    throw new Error(`The caller's registered organization did not match its schema at: ${issues.join(', ')}`);
+  }
+  return result.data.organization ?? null;
 }

@@ -10,3 +10,8 @@ export type EmailEntryProps = SvelteHTMLElements['div'] & {
    */
   id?: string;
 };
+
+/**
+ * What the server answered about an address `showEmailError()` shows a message for: `in-use` for an address another account holds, `invited` for one an invitation was sent to.
+ */
+export type EmailEntryErrorReason = 'in-use' | 'invited';

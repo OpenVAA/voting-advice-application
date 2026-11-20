@@ -324,7 +324,7 @@ describe('POST /api/oidc/authorize', () => {
     it.each(['candidate', 'organization'])(
       'refuses %s with 403 mode_not_allowed while answers are locked, and sets no cookie',
       async (entityType) => {
-        getAppSettings.mockResolvedValue({ ...BOTH_TYPES, access: { answersLocked: true } });
+        getAppSettings.mockResolvedValue({ ...BOTH_TYPES, access: { contestantEditing: 'locked' } });
         const event = createMockRequestEvent({ entityType });
         const response = await POST(event);
 

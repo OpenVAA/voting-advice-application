@@ -628,7 +628,7 @@ describe('GET /api/oidc/callback', () => {
     it('refuses every type as mode_not_allowed while answers are locked, invoking nothing', async () => {
       getAppSettings.mockResolvedValue({
         ...settingsAllowing({ candidate: ['identity_provider'], organization: ['identity_provider'] }),
-        access: { answersLocked: true }
+        access: { contestantEditing: 'locked' }
       });
       vi.spyOn(console, 'error').mockImplementation(() => undefined);
       const event = verifiedCallback({ [COOKIE.oidcEntityType]: 'candidate' });

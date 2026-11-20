@@ -13,7 +13,7 @@
  *
  * 5. **An entity's editor reads its own nominations, and no one else's.** A candidate nominated under an organization's nomination reads one nomination with the organization's type, id and names, the election's and the constituency's names and its own state; the organization's editor reads the organization's one nomination, which has no parent; an entity with no nomination reads an empty list beside its entity; and another user's entity resolves to no user data, the database's function answering it with a null and no error.
  *
- * 6. **An entity's editor writes its nominations as one set, and reads the entities a nomination may be placed under.** A candidate's first save with a typed party name, a save that links a listed party with no nomination at the contest, and a repeat of the stored set come back as the writer's saved result with the function's counts. A removal of a nomination with a candidate listed under it, and a save that would create one unconfirmed parent nomination too many, come back as the writer's two named refusals, and each refusal is also read through the editor's own client: its code and what the writer recognises it by. Under the nominations lock, and for a candidate with neither a party nor a typed name in an election that requires one, the save rejects. Nothing of a refused or rejected save is stored. The parent options hold a confirmed organization with the contest it is nominated at and no unconfirmed one, an alliance for an organization, and resolve to no value for an entity the caller does not edit. One row is inserted past the writer, by the editor's own client: a candidate's nomination with no party in an election that requires one, which the database refuses when the request's transaction ends.
+ * 6. **An entity's editor writes its nominations as one set, and reads the entities a nomination may be placed under.** A candidate's first save with a typed party name, a save that links a listed party with no nomination at the contest, and a repeat of the stored set come back as the writer's saved result with the function's counts. A removal of a nomination with a candidate listed under it, and a save that would create one unconfirmed parent nomination too many, come back as the writer's two named refusals, and each refusal is also read through the editor's own client: its code and what the writer recognises it by. Under the nominations lock the save comes back as the writer's `nominationsLocked` refusal, and for a candidate with neither a party nor a typed name in an election that requires one the save rejects. Nothing of a refused or rejected save is stored. The parent options hold a confirmed organization with the contest it is nominated at and no unconfirmed one, an alliance for an organization, and resolve to no value for an entity the caller does not edit. One row is inserted past the writer, by the editor's own client: a candidate's nomination with no party in an election that requires one, which the database refuses when the request's transaction ends.
  *
  * 7. **A signed-in editor's user-level data says whether the account has a password, and what state its address is in.** An editor the file created with a password reads `passwordSet` as `true`, beside its address and the contestant role, through the read the database makes for the caller alone. The same editor, whom no identity provider made, reads its address as proved, nothing pending and no pending address taken.
  *
@@ -976,10 +976,14 @@ describe.skipIf(!hasSupabase)(
     /**
      * The nominations of an entity as a write states the read it was computed from.
      * @param target - The entity.
-     * @returns Each stored nomination's id with the time it was last updated.
+     * @returns Each stored nomination's id with the time it was last updated, as writable: every nomination of this group is at its election's current round, in an election that admits its entity.
      */
     async function readOf(target: Target) {
-      return (await storedNominations(target)).map((row) => ({ id: row.id, updatedAt: row.updated_at }));
+      return (await storedNominations(target)).map((row) => ({
+        id: row.id,
+        updatedAt: row.updated_at,
+        writable: true
+      }));
     }
 
     /**
@@ -1004,7 +1008,7 @@ describe.skipIf(!hasSupabase)(
         typeof settings.access === 'object' && settings.access !== null && !Array.isArray(settings.access)
           ? settings.access
           : {};
-      return { ...settings, access: { ...access, nominationsLocked: true } };
+      return { ...settings, access: { ...access, contestantEditing: 'nominationsLocked' } };
     }
 
     /**
@@ -1252,7 +1256,7 @@ describe.skipIf(!hasSupabase)(
 
         const result = await candidateEditor.writer.setEntityNominations({
           target: { type: 'candidate', id: candidate.id },
-          readFrom: stored.map((row) => ({ id: row.id, updatedAt: row.updated_at })),
+          readFrom: stored.map((row) => ({ id: row.id, updatedAt: row.updated_at, writable: true })),
           nominations: [
             desired(
               { electionId: closedListElectionId, constituencyId: closedListConstituencyId },
@@ -1285,7 +1289,7 @@ describe.skipIf(!hasSupabase)(
         // The read names one of the two nominations, at a time before its last update: the set leaves the other out.
         const result = await candidateEditor.writer.setEntityNominations({
           target: { type: 'candidate', id: candidate.id },
-          readFrom: [{ id: typed?.id ?? '', updatedAt: '2000-01-01T00:00:00+00:00' }],
+          readFrom: [{ id: typed?.id ?? '', updatedAt: '2000-01-01T00:00:00+00:00', writable: true }],
           nominations: [
             desired(
               { electionId: closedListElectionId, constituencyId: closedListConstituencyId },
@@ -1323,7 +1327,7 @@ describe.skipIf(!hasSupabase)(
           p_entity_type: 'organization',
           p_entity_id: unconfirmedParty.id,
           p_nominations: [],
-          p_expected_reach: Object.fromEntries(before.map((row) => [row.id, row.updated_at]))
+          p_expected_versions: Object.fromEntries(before.map((row) => [row.id, row.updated_at]))
         });
         expect(data).toBeNull();
         expect(error?.code).toBe('23503');
@@ -1369,7 +1373,7 @@ describe.skipIf(!hasSupabase)(
               parent: { kind: 'entity', entity_type: 'organization', entity_id: listedParty.id }
             }
           ],
-          p_expected_reach: {}
+          p_expected_versions: {}
         });
         expect(data).toBeNull();
         expect(error?.code).toBe('P0001');
@@ -1379,7 +1383,7 @@ describe.skipIf(!hasSupabase)(
     );
 
     it(
-      'with nominations locked a save that changes a symbol rejects and the stored symbol is what it was, and with the lock off the same save is stored',
+      'with nominations locked a save that changes a symbol is refused as nominationsLocked and the stored symbol is what it was, and with the lock off the same save is stored',
       async () => {
         const target = { type: 'candidate', id: listedCandidate.id } as const;
         const nominations = [
@@ -1395,15 +1399,13 @@ describe.skipIf(!hasSupabase)(
         try {
           await expect(
             listedCandidateEditor.writer.setEntityNominations({ target, nominations, readFrom })
-          ).rejects.toThrow(
-            /^setEntityNominations: set_entity_nominations: a nomination could not be written; nominations are locked /
-          );
+          ).resolves.toEqual({ type: 'refused', reason: 'nominationsLocked' });
           expect((await storedNominations(listedCandidate)).map((row) => row.election_symbol)).toEqual(['3']);
         } finally {
           if (originalSettings !== undefined) await writeSettings(originalSettings);
         }
 
-        // The same call with the lock off: the rejection above was the lock's.
+        // The same call with the lock off: the refusal above was the lock's.
         await expect(
           listedCandidateEditor.writer.setEntityNominations({ target, nominations, readFrom })
         ).resolves.toEqual({
@@ -1674,7 +1676,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter and the invitation contract ag
   it(
     'claims nothing for that session, whose invitation is already claimed, and reports that the user has a password',
     async () => {
-      expect(await writer.claimInvitations()).toStrictEqual({ claimed: [], skipped: [], passwordSet: true });
+      expect(await writer.claimInvitations()).toStrictEqual({ claimed: [], skipped: [] });
     },
     HANG_GUARD_MS
   );

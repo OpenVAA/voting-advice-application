@@ -49,7 +49,7 @@ type Harness = {
   /** Call the component's exported `validate()` and settle the DOM. */
   validate: () => boolean;
   /** Call the component's exported `showEmailError()` and settle the DOM. */
-  showEmailError: (message: string) => void;
+  showEmailError: (message: string, reason?: 'in-use' | 'invited') => void;
 };
 
 /** Mount the component with `email` bound to a parent. */
@@ -92,8 +92,11 @@ function render(props: Record<string, unknown> = {}): Harness {
       flushSync();
       return verdict;
     },
-    showEmailError: (message: string) => {
-      (component as unknown as { showEmailError: (message: string) => void }).showEmailError(message);
+    showEmailError: (message: string, reason: 'in-use' | 'invited' = 'in-use') => {
+      (component as unknown as { showEmailError: (message: string, reason: string) => void }).showEmailError(
+        message,
+        reason
+      );
       flushSync();
     }
   };
@@ -393,6 +396,7 @@ describe('EmailEntry', () => {
 
   describe('`showEmailError()`', () => {
     const IN_USE = 'contestantApp.identityProvider.emailInUse';
+    const INVITED = 'contestantApp.identityProvider.emailInvited';
 
     it('shows the message at the address field as an alert with the reason `in-use`, and moves focus to the field', () => {
       const { target, email, confirmation, showEmailError } = render();
@@ -400,13 +404,23 @@ describe('EmailEntry', () => {
       type(confirmation, 'someone@example.org');
       confirmation.focus();
 
-      showEmailError(IN_USE);
+      showEmailError(IN_USE, 'in-use');
 
       expect(messageOf(target, EMAIL_ERROR)).toContain(IN_USE);
       expect(target.querySelector(EMAIL_ERROR)?.getAttribute('data-reason')).toBe('in-use');
       expect(email.getAttribute('aria-invalid')).toBe('true');
       expect(email.getAttribute('aria-describedby')).toBe(`${email.id}-error`);
       expect(messageOf(target, CONFIRMATION_ERROR)).toBeUndefined();
+      expect(document.activeElement).toBe(email);
+    });
+
+    it('writes the reason it is given, `invited`, on the message', () => {
+      const { target, email, showEmailError } = render({ email: 'someone@example.org' });
+
+      showEmailError(INVITED, 'invited');
+
+      expect(messageOf(target, EMAIL_ERROR)).toContain(INVITED);
+      expect(target.querySelector(EMAIL_ERROR)?.getAttribute('data-reason')).toBe('invited');
       expect(document.activeElement).toBe(email);
     });
 
