@@ -14,6 +14,7 @@
  *  - pressContinue()           — press the view's main button. The caller asserts what follows.
  *  - expectNameError()         — the party's name is in error for its default locale: the sentence naming the language under it, and focus on that locale's field.
  *  - expectEmailInUse()        — the address field says the address belongs to another account, and has focus.
+ *  - expectEmailInvited()      — the address field says an invitation was sent to the address and tells the user to sign in with it, and has focus.
  *  - expectGone()              — the view is not rendered.
  *  - expectReturning(addressState) — the view tells a returning user that they have already registered, in its title and in the sentence for the address's state.
  *  - expectAddressTaken()      — the view's lead says that the address the user gave earlier is now used by another account.
@@ -57,7 +58,7 @@ function readEnglishMessages(file: string): Record<string, unknown> {
 
 /** The view's sentences that a step asserts, read from the message source rather than copied. */
 const MESSAGES = readEnglishMessages('contestantApp.identityProvider') as Record<
-  'nameRequired' | 'emailInUse' | 'emailTakenNotice' | 'signInEmail' | 'awaitingConfirmation',
+  'nameRequired' | 'emailInUse' | 'emailInvited' | 'emailTakenNotice' | 'signInEmail' | 'awaitingConfirmation',
   string
 > & {
   alreadyRegistered: Record<'none' | 'pending' | 'proved', string>;
@@ -166,6 +167,17 @@ export function createContestantIdentityProviderGate(page: Page) {
       await expect(error).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect(error).toHaveAttribute('data-reason', 'in-use');
       await expect(error).toContainText(MESSAGES.emailInUse);
+      await expect(page.getByTestId(entryIds.email)).toBeFocused();
+    },
+
+    /**
+     * Assert that the address field says an invitation the project honours holds the address typed: its error carries that reason and tells the user to sign in with the invitation, and focus is on the field.
+     */
+    async expectEmailInvited(): Promise<void> {
+      const error = page.getByTestId(entryIds.emailError);
+      await expect(error).toBeVisible({ timeout: TIMEOUTS.slowPage });
+      await expect(error).toHaveAttribute('data-reason', 'invited');
+      await expect(error).toContainText(MESSAGES.emailInvited);
       await expect(page.getByTestId(entryIds.email)).toBeFocused();
     },
 

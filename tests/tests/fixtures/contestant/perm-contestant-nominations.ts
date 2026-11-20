@@ -6,7 +6,7 @@
  * Surface:
  *   - `test`   — Playwright test extended with the page fixtures the spec speaks in.
  *   - `expect` — re-exported from @playwright/test.
- *   - `setNominations`, `addNomination`, `clearWrittenNominations`, `setNominationsLocked`, `setAnswersLocked`, `setElectionSelectionDisallowed`, `setNominationShape`, `setEntityConfirmed`, `setAnswers` — the state steps a test begins with.
+ *   - `setNominations`, `addNomination`, `clearWrittenNominations`, `setContestantEditing`, `setElectionSelectionDisallowed`, `setNominationShape`, `setEntityConfirmed`, `setAnswers` — the state steps a test begins with.
  *   - `nominationsOf`, `nominationShapeOf`, `entityConfirmedOf` — what the database holds, read with the service role, for a test that asserts what a step or a save stored.
  *   - `deleteNominationsWithDescendants` — the delete the steps above remove nominations with, for the state steps of another dataset whose entities the application writes nominations for.
  *   - `contestantNominationsPagesOf(page)` — the entity-pages, home, nomination-editor and nominations fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
@@ -44,6 +44,7 @@ import {
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
+import type { ContestantEditing } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
 import type {
   NominationContestTarget,
@@ -491,30 +492,16 @@ export async function clearWrittenNominations(): Promise<void> {
 }
 
 /**
- * Lock or unlock the nominations of every entity of the suite's project, as an administrator would: the one setting `access.nominationsLocked` is written and no other.
+ * Set how far the entities of the suite's project may edit their own data, as an administrator would: the one setting `access.contestantEditing` is written and no other. `'nominationsLocked'` locks the nominations alone, `'locked'` locks the answers, the profile and the nominations.
  *
- * A test that locks the nominations unlocks them in a `finally`, because the setting is the project's and every later test reads it. The step after a flip is a full page load.
+ * A test that sets anything but `'open'` sets `'open'` again in a `finally`, because the setting is the project's and every later test reads it. The step after a change is a full page load.
  *
- * @param on - Whether nominations are locked.
+ * @param editing - The value written.
  * @throws If the write fails.
  */
-export async function setNominationsLocked(on: boolean): Promise<void> {
-  await attempt('setNominationsLocked', 'writing the setting', () =>
-    new SupabaseAdminClient().updateAppSettings({ access: { nominationsLocked: on } })
-  );
-}
-
-/**
- * Lock or unlock the answers of every entity of the suite's project, as an administrator would: the one setting `access.answersLocked` is written and no other.
- *
- * A test that locks the answers unlocks them in a `finally`, because the setting is the project's and every later test reads it. The step after a flip is a full page load.
- *
- * @param on - Whether answers are locked.
- * @throws If the write fails.
- */
-export async function setAnswersLocked(on: boolean): Promise<void> {
-  await attempt('setAnswersLocked', 'writing the setting', () =>
-    new SupabaseAdminClient().updateAppSettings({ access: { answersLocked: on } })
+export async function setContestantEditing(editing: ContestantEditing): Promise<void> {
+  await attempt('setContestantEditing', 'writing the setting', () =>
+    new SupabaseAdminClient().updateAppSettings({ access: { contestantEditing: editing } })
   );
 }
 

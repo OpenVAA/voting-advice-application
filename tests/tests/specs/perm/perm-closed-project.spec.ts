@@ -9,7 +9,7 @@
  *
  * The `afterAll` reopens the project (restore layer 1 of 3; the teardown project and the next run's global setup are layers 2 and 3).
  *
- * The last describe pins the contestant app's configuration as an anonymous visitor of the closed project receives it, through `contestant_app_public_settings`. On the login screen: that it offers sign-in alone for an empty registration matrix and Register beside it for the `code` mode and for the `identity_provider` mode, for candidates and for organizations alone; that it says so while answers are locked, and then offers sign-in alone whatever the matrix allows; and that the heading names the app after the served entity types. On the registration page: that Register leads to it, that it shows the one listed mode's panel directly, and that it offers the identity provider's panel for candidates, and for a party alone without asking. For the registration addresses: that the registration page ends on the login screen where no mode is listed — an empty matrix and answers locked — and that the two screens a registration code leads to end there where the `code` mode is off. Each of those tests first replaces the served entity types whole, each with its registration modes, so nothing a test before it wrote is kept. The answers lock is written by one describe, which takes it off again when it ends. Nothing else is written back: the next setup to run replaces the settings row whole.
+ * The last describe pins the contestant app's configuration as an anonymous visitor of the closed project receives it, through `get_public_app_settings`. On the login screen: that it offers sign-in alone for an empty registration matrix and Register beside it for the `code` mode and for the `identity_provider` mode, for candidates and for organizations alone; that it says so while answers are locked, and then offers sign-in alone whatever the matrix allows; and that the heading names the app after the served entity types. On the registration page: that Register leads to it, that it shows the one listed mode's panel directly, and that it offers the identity provider's panel for candidates, and for a party alone without asking. For the registration addresses: that the registration page ends on the login screen where no mode is listed — an empty matrix and answers locked — and that the two screens a registration code leads to end there where the `code` mode is off. Each of those tests first replaces the served entity types whole, each with its registration modes, so nothing a test before it wrote is kept. The answers lock is written by one describe, which takes it off again when it ends. Nothing else is written back: the next setup to run replaces the settings row whole.
  *
  * One state of the login screen and three states of the registration page are scanned in both themes through `declareEntryScans`, which ends in `assertAxeScan`, the scan body the a11y specs share: the one listed mode's panel, the identity provider's panel asking which of the two entity types it registers, and that question after Continue with none chosen. The panel asking the type is also measured at two phone widths, 320 and 390 pixels, in English: no wider than its viewport. Last, under the same settings, every radio of the registration page, of the modes and of the entity types, draws its border, and the provider's panel names each type by its catalogue text.
  *
@@ -289,7 +289,7 @@ test.describe('a project that is not open for voters', () => {
 
     test.describe('while answers are locked', () => {
       test.afterAll(async () => {
-        await client.updateAppSettings({ access: { answersLocked: false } });
+        await client.updateAppSettings({ access: { contestantEditing: 'open' } });
       });
 
       test('the login screen says so to an anonymous visitor, offers sign-in only and refuses every registration address', async ({
@@ -301,7 +301,7 @@ test.describe('a project that is not open for voters', () => {
             servedEntityTypes: { candidate: { registrationModes: ['email', 'code'] } } satisfies ServedEntityTypes
           }
         });
-        await client.updateAppSettings({ access: { answersLocked: true } });
+        await client.updateAppSettings({ access: { contestantEditing: 'locked' } });
 
         const loginPage = createContestantLoginPage(page);
         await loginPage.openEntryDirectly();

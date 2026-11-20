@@ -137,7 +137,7 @@ test.describe('perm-answers-locked (surfaces 2 + 3 — authenticated)', () => {
     const note = createNotEditableNote(page);
 
     // The page is opened while answers can be edited, and the answer is changed from the seeded middle choice.
-    await admin.updateAppSettings({ access: { answersLocked: false } });
+    await admin.updateAppSettings({ access: { contestantEditing: 'open' } });
     try {
       await questionsOverview.goToPage();
       await questionsOverview.goToQuestion(/\[QU-OPIN-L5-1\]/);
@@ -146,13 +146,13 @@ test.describe('perm-answers-locked (surfaces 2 + 3 — authenticated)', () => {
       await questionPage.expectContinueEnabled();
 
       // Answers are locked while the page is open. The save is refused.
-      await admin.updateAppSettings({ access: { answersLocked: true } });
+      await admin.updateAppSettings({ access: { contestantEditing: 'locked' } });
       await questionPage.clickContinue();
       await note.expectNote('answersLocked');
       await questionPage.expectNoSaveFailure();
     } finally {
       // The lock is left on as the dataset sets it, whether or not the test passed.
-      await admin.updateAppSettings({ access: { answersLocked: true } });
+      await admin.updateAppSettings({ access: { contestantEditing: 'locked' } });
     }
   });
 });

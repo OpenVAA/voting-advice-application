@@ -1,5 +1,5 @@
 /**
- * The calls a signed-in visitor's own session makes: to the auth service, and to the one RPC that claims invitations.
+ * The calls a signed-in visitor's own session makes: to the auth service, and to the RPCs a signed-in user calls about their own account: the claim of invitations, the account's state and the entities the user edits.
  *
  * Every call carries the anon key, and a user's own access token where the user is the caller. None uses the service role.
  *
@@ -171,6 +171,37 @@ export async function claimInvitations({
     { ...extraArgs, p_project_id: projectId },
     accessToken
   );
+  return { status: response.status, body: await jsonOrNull(response) };
+}
+
+/**
+ * Call `get_caller_account_state` as the signed-in user: whether the user's own account holds a password, and whether the address it is changing to is another account's.
+ *
+ * Returns the answer uninterpreted.
+ *
+ * @param params.accessToken - The user's own access token.
+ */
+export async function callerAccountState({ accessToken }: { accessToken: string }): Promise<RpcAnswer> {
+  const response = await call('POST', '/rest/v1/rpc/get_caller_account_state', {}, accessToken);
+  return { status: response.status, body: await jsonOrNull(response) };
+}
+
+/**
+ * Call `get_user_entities` as the signed-in user: the entities the user edits in a project and, under `organization`, the organization the user registered there through the identity provider.
+ *
+ * Returns the answer uninterpreted.
+ *
+ * @param params.accessToken - The user's own access token.
+ * @param params.projectId - The project.
+ */
+export async function userEntities({
+  accessToken,
+  projectId
+}: {
+  accessToken: string;
+  projectId: string;
+}): Promise<RpcAnswer> {
+  const response = await call('POST', '/rest/v1/rpc/get_user_entities', { p_project_id: projectId }, accessToken);
   return { status: response.status, body: await jsonOrNull(response) };
 }
 
