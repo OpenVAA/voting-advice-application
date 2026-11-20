@@ -29,6 +29,7 @@ import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantHomeUrlRe, contestantSettingsUrlRe } from '../../utils/contestantEntityUrl';
 import { messageOf } from '../../utils/messages';
+import { expectCountInName } from '../../utils/resendCountdown';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
@@ -106,14 +107,12 @@ export function createContestantSettingsPage(page: Page) {
     },
 
     /**
-     * Assert what follows a press of "Send again": the button is marked unavailable and is described by the count of the wait in its label, and the status region says that a new email was requested.
+     * Assert what follows a press of "Send again": the button is marked unavailable, the count of the wait is shown in its label and read in its name alone (see {@link expectCountInName}), and the status region says that a new email was requested.
      */
     async expectResendRequested(): Promise<void> {
       const resend = page.getByTestId(ids.emailPendingResend);
       await expect(resend).toHaveAttribute('aria-disabled', 'true', { timeout: TIMEOUTS.slowPage });
-      const countdownId = (await page.getByTestId(ids.emailPendingCountdown).getAttribute('id')) ?? '';
-      expect(countdownId, 'the id of the count of the wait').not.toBe('');
-      await expect(resend).toHaveAttribute('aria-describedby', countdownId);
+      await expectCountInName({ resend, countdown: page.getByTestId(ids.emailPendingCountdown) });
       await expect(page.getByTestId(ids.emailPendingStatus)).toHaveText(MESSAGES.requested);
     },
 

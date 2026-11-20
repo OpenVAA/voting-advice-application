@@ -35,6 +35,7 @@ import { RESEND_WAIT_SECONDS } from '../../../../apps/frontend/src/lib/auth/entr
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { messagesOf } from '../../utils/messages';
+import { expectCountInName } from '../../utils/resendCountdown';
 import { testIds } from '../../utils/testIds';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
 import { readScreenShape } from '../shared/screenShape.fixture';
@@ -244,19 +245,13 @@ export function createContestantEmailSentPage(
     },
 
     /**
-     * Assert that the control that asks for another email is waiting: the screen states so, the control is marked unavailable, the count of the wait in its label is shown and is named as the control's description, and the control still takes focus.
+     * Assert that the control that asks for another email is waiting: the screen states so, the control is marked unavailable, the count of the wait is shown in its label and read in its name alone (see {@link expectCountInName}), and the control still takes focus.
      */
     async expectResendWaiting(): Promise<void> {
       await expect(page.getByTestId(ids.page)).toHaveAttribute('data-resend', 'waiting');
       const resend = page.getByTestId(ids.resend);
       await expect(resend).toHaveAttribute('aria-disabled', 'true');
-
-      const countdown = page.getByTestId(ids.countdown);
-      await expect(countdown).toBeVisible();
-      const countdownId = (await countdown.getAttribute('id')) ?? '';
-      expect(countdownId, 'the id of the count of the wait').not.toBe('');
-      const describedBy = ((await resend.getAttribute('aria-describedby')) ?? '').split(/\s+/);
-      expect(describedBy, 'the ids the control names as its description').toContain(countdownId);
+      await expectCountInName({ resend, countdown: page.getByTestId(ids.countdown) });
 
       await resend.focus();
       await expect(resend).toBeFocused();
