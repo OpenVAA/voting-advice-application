@@ -8,6 +8,7 @@
     "awaitingConfirmation": "Awaiting confirmation",
     "emailIntro": "Enter the email address you want to sign in with next time. We’ll send a confirmation link to it. You can continue right away. Until you open the link, sign in with Bank ID.",
     "emailInUse": "This email address is already used by another account. Enter a different address, or sign in with that address instead.",
+    "emailInvited": "An invitation has been sent to this email address. Log out and sign in by email with that invitation instead, and contact support to have the registration you have just made removed.",
     "emailTakenNotice": "The address you entered earlier is now used by another account, so it could not be added to yours. Enter a different address.",
     "error": {
       "cancelled": {
