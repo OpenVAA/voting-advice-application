@@ -777,11 +777,11 @@ Notes:
   5. The Render deployment example and its mentions are removed, the orphan compose file is retired if nothing references it, and each of the seven absorbed todos has a closure record (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01; supersedes ruling A5).
 
 **Research flag**: Standard pattern, no research phase, once phases 184, 185 and 188 have produced the observations.
-**Plans**: 20 plans
+**Plans**: 1/20 plans executed
 
 Plans:
 **Wave 1**
-- [ ] 189-01-PLAN.md — Render example and its mentions removed; DOCS-07 and criterion 5 amended (F-01)
+- [x] 189-01-PLAN.md — Render example and its mentions removed; DOCS-07 and criterion 5 amended (F-01)
 - [ ] 189-02-PLAN.md — the two frontend-URL variables removed, targeted E2E of the projects they serve (B-03)
 - [ ] 189-03-PLAN.md — orphan frontend compose file and its stage retired, production image built (F-02, F-03)
 - [ ] 189-04-PLAN.md — docs subtree pages and nav, the deployment overview kept reachable (A-02)
@@ -859,4 +859,4 @@ Phases 181, 182 and 183 can start in any order. From 184 on, the numeric order i
 | 186. Deployed Smoke Entry | 8/8 | Complete    | 2026-11-15 |
 | 187. Deploy Pipeline | 31/31 | Complete    | 2026-11-18 |
 | 188. Relay on the Deployed Stack, and the Per-Caller Limit | 20/20 | Complete    | 2026-11-20 |
-| 189. Documentation and Closure | 0/20 | Not started | - |
+| 189. Documentation and Closure | 1/20 | In Progress | - |

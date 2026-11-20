@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189
 current_phase_name: Documentation and Closure
-current_plan: 1
+current_plan: 2
 status: executing
-stopped_at: Phase 188 complete, ready to plan Phase 189
-last_updated: "2026-11-20T09:45:09.220Z"
+stopped_at: Completed 189-01-PLAN.md
+last_updated: "2026-11-20T09:51:42.335Z"
 last_activity: 2026-11-20
 last_activity_desc: Phase 189 execution started
-state_head: 5988288b4a07ac4d6e7921ca8c9cad6e5fd6423d
+state_head: c4a84d816a39f90b1cacf72f4a91ab0e1ce7db91
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 208
-  completed_plans: 188
+  completed_plans: 189
   percent: 80
 ---
 
@@ -34,8 +34,8 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189 (Documentation and Closure) — EXECUTING
-Plan: 1 of 20
-Status: Executing Phase 189
+Plan: 2 of 20
+Status: Ready to execute
 Last activity: 2026-11-20 — Phase 189 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 80%); 7 of 9 roadmap phases complete, 181.1 inserted besides
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 1
+**Current Plan:** 2
 
 From 184 on, the numeric order is the dependency order.
 
@@ -197,6 +197,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 188 P17 | 50 min | 3 tasks | 2 files |
 | Phase 188 P18 | 80 min | 3 tasks | 7 files |
 | Phase 188 P19 | 20min | 3 tasks | 1 files |
+| Phase 189 P01 | 5min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -423,6 +424,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 188]: 188-18: voter-journey.js keeps the data requests' per-step p95 through an observe-only threshold, for the bound rule
 - [Phase 188]: 188-19: staging ends phase 188 on :22 (a7003b490 by digest, posthog, flush 2000, stop 40, 1..2, no web ACL); a final plan with the running digest only reads No changes.
 - [Phase 188]: 188-19: the personal PostHog read key is revoked (operator, 2026-11-19; keychain item absent); phase 189 needs a new read key to read events
+- [Phase 189]: 189-01: the Render gateway timeout in two Admin job comments is removed under F-01; the docs-home demo link and the assert-test-keys-scope fixture label are the two Render mentions kept
 
 ### Pending Todos
 
@@ -489,6 +491,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-19T18:34:11.148Z
-**Stopped At:** Phase 188 complete, ready to plan Phase 189
+Last session: 2026-11-20T09:51:41.330Z
+**Stopped At:** Completed 189-01-PLAN.md
 **Resume File:** None
