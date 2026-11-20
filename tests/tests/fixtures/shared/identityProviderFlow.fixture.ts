@@ -64,7 +64,7 @@ import { createContestantIdentityProviderGate } from '../contestant/contestantId
 import { createContestantLogoutButton } from '../contestant/contestantLogoutButton.fixture';
 import { createContestantRegisterPage } from '../contestant/contestantRegisterPage.fixture';
 import { createContestantTermsOfUsePage } from '../contestant/contestantTermsOfUsePage.fixture';
-import type { RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
+import type { DynamicSettings, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
 import type { BrowserContext, Page } from '@playwright/test';
 import type { MockOutcome } from '../../support/mockOidcIssuer';
 
@@ -125,7 +125,7 @@ export interface OwnOrganization {
 /** The external id of the identity-provider dataset's one candidate, which no test edits; an invitation for an address is seeded on it. */
 const INVITED_CANDIDATE_EXTERNAL_ID = 'e2e-bankauth-idp-cand-1';
 
-/** The registration modes the candidates' row holds in the identity-provider dataset, with and without the provider's. */
+/** The registration modes candidates are allowed in the identity-provider dataset, with and without the provider's. */
 const CANDIDATE_MODES_WITH_PROVIDER: ReadonlyArray<RegistrationMode> = ['identity_provider', 'email', 'code'];
 const CANDIDATE_MODES_WITHOUT_PROVIDER: ReadonlyArray<RegistrationMode> = ['email', 'code'];
 
@@ -298,27 +298,23 @@ export function createIdentityProviderFlow() {
     },
 
     /**
-     * Let the identity provider's mode register exactly these entity types: the project serves candidates and organizations, the candidates' row holds the email and code modes and the provider's where candidates are named, and the organizations' row holds the provider's mode where organizations are named and nothing otherwise.
+     * Let the identity provider's mode register exactly these entity types: the project serves candidates and organizations, candidates are allowed the email and code modes and the provider's where candidates are named, and organizations the provider's mode where organizations are named and nothing otherwise.
      *
-     * The settings row is read and written back whole with these three members replaced, so nothing of an earlier matrix is left and every other setting stays as it was. The row is the project's one, so a spec that calls this runs its tests one after another in one worker, and writes the matrix back when the tests that need it are done.
+     * The served entity types are replaced whole, so nothing of an earlier matrix is left, and every other setting stays as it was. The row is the project's one, so a spec that calls this runs its tests one after another in one worker, and writes the matrix back when the tests that need it are done.
      *
      * @param types - The entity types the provider's mode registers.
      */
     async setIdentityProviderMatrix(types: ReadonlyArray<ServedEntityType>): Promise<void> {
-      const admin = new SupabaseAdminClient();
-      const settings = (await admin.getAppSettings()) ?? {};
-      const contestantApp = (settings.contestantApp ?? {}) as Record<string, unknown>;
-      await admin.replaceAppSettings({
-        ...settings,
+      await new SupabaseAdminClient().updateAppSettings({
         contestantApp: {
-          ...contestantApp,
-          entityTypes: ['candidate', 'organization'],
-          registrationModes: {
-            candidate: [
-              ...(types.includes('candidate') ? CANDIDATE_MODES_WITH_PROVIDER : CANDIDATE_MODES_WITHOUT_PROVIDER)
-            ],
-            organization: types.includes('organization') ? ['identity_provider'] : []
-          }
+          servedEntityTypes: {
+            candidate: {
+              registrationModes: [
+                ...(types.includes('candidate') ? CANDIDATE_MODES_WITH_PROVIDER : CANDIDATE_MODES_WITHOUT_PROVIDER)
+              ]
+            },
+            organization: { registrationModes: types.includes('organization') ? ['identity_provider'] : [] }
+          } satisfies DynamicSettings['contestantApp']['servedEntityTypes']
         }
       });
     },

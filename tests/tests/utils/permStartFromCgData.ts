@@ -1,7 +1,7 @@
 import path from 'path';
 import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
 import { TESTS_DIR } from './testsDir';
-import type { ElectionTypeName } from './permContestantNominationsData';
+import type { NominationShapeName } from './permContestantNominationsData';
 import type { EntityGrantTarget } from './supabaseAdminClient';
 
 /**
@@ -64,8 +64,8 @@ export const MUNICIPALITIES_ELECTION_EXTERNAL_ID = `${START_FROM_CG_PREFIX}el-2`
 /** The name the municipalities' election is seeded with. */
 export const MUNICIPALITIES_ELECTION_NAME = '[EL2] CG-2 leaves';
 
-/** The type each election is seeded with, by the election's `external_id`: what a test that changes a type puts back. */
-export const SEEDED_ELECTION_TYPES: Readonly<Record<string, ElectionTypeName>> = Object.freeze({
+/** The nomination shape each election is seeded with, by the election's `external_id`: what a test that changes a shape puts back. */
+export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, NominationShapeName>> = Object.freeze({
   [REGIONS_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents',
   [MUNICIPALITIES_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents'
 });

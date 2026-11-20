@@ -6,7 +6,7 @@
  * Surface:
  *   - `test`   — Playwright test extended with the page fixtures the contestant tests speak in.
  *   - `expect` — re-exported from @playwright/test.
- *   - `chooseConstituencyGroupFirst`, `restoreConstituencyGroupFirst`, `removeCandidateNominations`, `clearWrittenNominations`, `setElectionType` — the state steps.
+ *   - `chooseConstituencyGroupFirst`, `restoreConstituencyGroupFirst`, `removeCandidateNominations`, `clearWrittenNominations`, `setNominationShape` — the state steps.
  *
  * A contestant test's body holds no locator: a step it needs is a method of a fixture registered here.
  *
@@ -21,9 +21,13 @@ import { expect, test as base } from '@playwright/test';
 import { createContestantEntityHomePage } from './contestantEntityHomePage.fixture';
 import { createContestantNominationEditor } from './contestantNominationEditor.fixture';
 import { createContestantNominationsPage } from './contestantNominationsPage.fixture';
-import { CANDIDATE_EXTERNAL_ID, FIRST_GROUP_EXTERNAL_ID, SEEDED_ELECTION_TYPES } from '../../utils/permStartFromCgData';
+import {
+  CANDIDATE_EXTERNAL_ID,
+  FIRST_GROUP_EXTERNAL_ID,
+  SEEDED_NOMINATION_SHAPES
+} from '../../utils/permStartFromCgData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import type { ElectionTypeName } from '../../utils/permContestantNominationsData';
+import type { NominationShapeName } from '../../utils/permContestantNominationsData';
 import type { ContestantEntityHomePageFixture } from './contestantEntityHomePage.fixture';
 import type { ContestantNominationEditorFixture } from './contestantNominationEditor.fixture';
 import type { ContestantNominationsPageFixture } from './contestantNominationsPage.fixture';
@@ -174,23 +178,23 @@ export async function clearWrittenNominations(): Promise<void> {
 }
 
 /**
- * Change the type of an election of the dataset, as an administrator would. Nothing else of the election is changed.
+ * Change the nomination shape of an election of the dataset, as an administrator would. Nothing else of the election is changed.
  *
- * A nomination stored under the old type is not checked again: it stays as it is, and only a later write of it is judged by the new type. The caller puts the seeded type back in a `finally`, because every later test reads it, and the step after a flip is a full page load.
+ * A nomination stored under the old shape is not checked again: it stays as it is, and only a later write of it is judged by the new shape. The caller puts the seeded shape back in a `finally`, because every later test reads it, and the step after a flip is a full page load.
  *
  * @param electionExternalId - The `external_id` of an election of the dataset.
- * @param type - The type the election is given.
+ * @param shape - The nomination shape the election is given.
  * @throws If the election is not of the dataset, or if a read or the write fails.
  */
-export async function setElectionType(electionExternalId: string, type: ElectionTypeName): Promise<void> {
-  const step = 'setElectionType';
-  if (!Object.hasOwn(SEEDED_ELECTION_TYPES, electionExternalId)) {
+export async function setNominationShape(electionExternalId: string, shape: NominationShapeName): Promise<void> {
+  const step = 'setNominationShape';
+  if (!Object.hasOwn(SEEDED_NOMINATION_SHAPES, electionExternalId)) {
     throw new Error(`${step}: ${electionExternalId} is not an election of the start-from-constituency dataset`);
   }
   const admin = new SupabaseAdminClient();
   const elections = await readRows(admin, step, 'elections', { external_id: { $eq: electionExternalId } });
   if (elections.length !== 1) throw new Error(`${step}: the election ${electionExternalId} was not found`);
-  await attempt(step, 'writing the type', () =>
-    admin.update('elections', String(elections[0].id), { election_type: type })
+  await attempt(step, 'writing the shape', () =>
+    admin.update('elections', String(elections[0].id), { nomination_shape: shape })
   );
 }
