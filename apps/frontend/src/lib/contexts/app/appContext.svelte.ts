@@ -233,7 +233,7 @@ export class AppContextProvider implements AppContext {
     // What the server tells the browser about analytics, from the root layout's data. The getter re-reads `page.data` so the tracking producer's send-policy input stays reactive; with no `analytics` member nothing is kept, so the inactive projection stands in.
     const projectionHandle = {
       get current(): AnalyticsProjection {
-        return (page.data?.analytics as AnalyticsProjection | undefined) ?? INACTIVE_PROJECTION;
+        return page.data?.analytics ?? INACTIVE_PROJECTION;
       }
     };
     this.#tracking = trackingService({

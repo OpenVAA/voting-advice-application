@@ -1,4 +1,4 @@
-import { entityPageOf } from '$lib/routes/contestantEntityPage';
+import { entityPageOf } from '$lib/routes';
 
 /**
  * SvelteKit param matcher for an entity sub-path of the Contestant App named without an entity, used on a rest segment.
