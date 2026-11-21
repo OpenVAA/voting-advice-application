@@ -133,7 +133,7 @@ Settings related to election and constituency selection in VAAs with multiple el
 
 Settings related to access to the applications.
 
-- `contestantApp`: If `true`, the Candidate App can be accessed. Default: `true`.
+- `contestantApp`: If `true`, the Contestant App (the app candidates and parties use, named after `servedEntityTypes`; see below) can be accessed. Default: `true`.
 - `voterApp`: If `true`, the Voter App can be accessed. Default: `true`.
 - `adminApp`: If `true`, the Admin App can be accessed. Default: `true`.
 - `underMaintenance`: If `true`, an under maintenance error page will be shown when attempting to access any part of the app. Default: `false`.
@@ -146,7 +146,7 @@ Settings related to access to the applications.
 
 Settings related to important notifications shown to users. Neither notification is set by default.
 
-- `contestantApp`: The notification shown to users of the Candidate App. Defined by the properties:
+- `contestantApp`: The notification shown to users of the Contestant App. Defined by the properties:
   - `show`: If `true`, the notification will be shown the next time the user loads the app.
   - `title`: The title of the notification, in each language.
   - `content`: The content of the notification, in each language.
@@ -155,11 +155,11 @@ Settings related to important notifications shown to users. Neither notification
 
 ### `contestantApp`
 
-Settings related to the Candidate App.
+Settings related to the Contestant App.
 
-- `questions`: Settings related to the question view in the Candidate App.
-  - `hideVideo`: Whether to hide possible video content for questions in the Candidate App. Default: `false`.
-  - `hideHero`: Whether to hide possible hero content for questions in the Candidate App. Default: `false`.
+- `questions`: Settings related to the question view in the Contestant App.
+  - `hideVideo`: Whether to hide possible video content for questions in the Contestant App. Default: `false`.
+  - `hideHero`: Whether to hide possible hero content for questions in the Contestant App. Default: `false`.
 - `servedEntityTypes`: Whom the app serves, and the ways of registering allowed for each. It has a key for each type the app serves, `candidate`, `organization` (parties) or both, and there must be at least one. Under each key, `registrationModes` is a list of any of the modes below. Default: `{ "candidate": { "registrationModes": [] } }`, candidates only with no way of registering allowed.
   - `identity_provider`: The person identifies with a bank identity and an account is created for them. With it allowed for candidates, a candidate is created; with it allowed for parties, a party is created, whose name the person then enters. Where both are allowed, the registration page asks which to register. The person then gives the email address they will sign in with and confirms it by a link sent to it.
   - `email`: Registration with the email address an invitation was sent for: the person asks for a sign-in link to it.

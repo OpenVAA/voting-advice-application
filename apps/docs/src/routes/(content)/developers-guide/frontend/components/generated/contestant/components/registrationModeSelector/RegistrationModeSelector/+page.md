@@ -18,6 +18,10 @@ The radios are in no form. They choose and are never sent: the snippet holds the
 - `focusFirst`: Bindable: Function to set focus to the first radio.
 - Any valid attributes of a `<fieldset>` element. They reach the fieldset, which is rendered only with several modes.
 
+### Tracking events
+
+- `registration_modeChosen`: Sent with the chosen `mode` each time the user chooses a mode among several. Nothing is sent with a single mode.
+
 ### Accessibility
 
 - The group is a `<fieldset>` named by its `<legend>`, with native radios and no added role.

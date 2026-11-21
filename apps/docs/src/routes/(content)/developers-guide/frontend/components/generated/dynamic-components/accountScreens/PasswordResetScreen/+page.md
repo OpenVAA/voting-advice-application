@@ -6,6 +6,7 @@ The password-reset screen both apps render: it lets a signed-in user set a new p
 - The address of the account is shown as text and handed to the password form, where a password manager reads it beside the new password.
 - The main button stands outside the form and submits it, so Enter in a field does the same as a press. It can always be pressed once the screen's script has loaded: a press with a password the form does not accept saves nothing, and the field says why.
 - A saved password leaves the user signed in and leads to the app's home, with the loads rerun. A failed save is reported as an alert, and the form stays with what was typed.
+- The form, the address and the save are the shared `PasswordSaveForm`.
 - Beside the main button, the app's support link: the Contestant App's Help page, an email in any other app.
 
 ### Properties

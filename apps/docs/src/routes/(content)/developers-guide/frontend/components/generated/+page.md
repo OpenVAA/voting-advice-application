@@ -12,6 +12,10 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
   `import { AccordionSelect } from '$lib/components/accordionSelect';`
 
+- [AccountAddress](/developers-guide/frontend/components/generated/components/accountAddress/AccountAddress)
+
+  `import { AccountAddress } from '$lib/components/accountAddress';`
+
 - [Alert](/developers-guide/frontend/components/generated/components/alert/Alert)
 
   `import { Alert } from '$lib/components/alert';`
@@ -426,6 +430,10 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
   `import { PasswordResetScreen } from '$lib/dynamic-components/accountScreens';`
 
+- [PasswordSaveForm](/developers-guide/frontend/components/generated/dynamic-components/passwordSaveForm/PasswordSaveForm)
+
+  `import { PasswordSaveForm } from '$lib/dynamic-components/passwordSaveForm';`
+
 - [QuestionHeading](/developers-guide/frontend/components/generated/dynamic-components/questionHeading/QuestionHeading)
 
   `import { QuestionHeading } from '$lib/dynamic-components/questionHeading';`
@@ -490,4 +498,4 @@ It lists every component with such a docstring in `apps/frontend/src/lib/compone
 
 ---
 
-Total: 119 components
+Total: 121 components

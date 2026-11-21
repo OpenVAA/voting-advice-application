@@ -4,7 +4,7 @@ Ask a signed-in user whose account has no password to choose one: why, the addre
 
 The view cannot be put aside: it offers no way to continue without a password, and only a rerun load that reads a stored password removes it. Logging out is always available and asks nothing.
 
-Each app renders it through a wrapper of its own that reads that app's context and passes in the address, the app's `setPassword` and its sign-out. Its Log out is the shared `LogoutButton`.
+Each app renders it through a wrapper of its own that reads that app's context and passes in the address, the app's `setPassword` and its sign-out. Its Log out is the shared `LogoutButton`, and the form, the address and the save are the shared `PasswordSaveForm`.
 
 ### Dynamic component
 
@@ -15,7 +15,6 @@ Accesses the component context for its translations, and nothing of any app's co
 - `email`: The address of the signed-in account. When it is empty or absent, the label and the address are left out together.
 - `setPassword`: The app's own store of a new password for the signed-in account.
 - `logout`: The app's own sign-out, as the shared `LogoutButton` takes it. A rejection is logged and the view stays.
-- `redirectTo`: Where the Log out leaves to after a sign-out that worked, for an app whose `logout` does not navigate.
 - `onSaved`: Called once a password has been saved, before the page's loads are rerun.
 - `testId`: The test id of the view's root.
 

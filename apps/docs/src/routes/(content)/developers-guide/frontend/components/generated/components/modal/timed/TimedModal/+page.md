@@ -2,7 +2,7 @@
 
 A modal dialog that will automatically close after a set amount of time.
 
-The count follows the wall clock: its end is the time the modal opened plus `timerDuration`, checked every second and whenever the document is shown, restored, focused or resumed again. A document that was frozen, suspended or asleep runs no timer, so on its return the count ends at once if its time has passed, rather than after the rest of it.
+The count follows the wall clock (`WallClock`): its end is the time the modal opened plus `timerDuration`, checked every second and whenever the document is shown, restored, focused or resumed again. A document that was frozen, suspended or asleep runs no timer, so on its return the count ends at once if its time has passed, rather than after the rest of it.
 
 ### Snippet Props
 
