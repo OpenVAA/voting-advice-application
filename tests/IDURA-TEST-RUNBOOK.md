@@ -318,60 +318,15 @@ the repository that it removes on every exit:
 
 - **the Edge file for `identity-callback`:** `IDENTITY_PROVIDER_TYPE=idura-ftn`, the test
   decryption JWK, `IDENTITY_PROVIDER_JWKS_URI=http://host.docker.internal:8777/jwks`, the mock's
-  audience and issuer, the run's `IDENTITY_CALLBACK_SERVER_SECRET`, `PUBLIC_PROJECT_ID` set to
-  the project the suite seeds, `SITE_URL` at the run's `FRONTEND_PORT`, and the three `SMTP_*`
-  values of the tracked template `apps/supabase/supabase/functions/.env.example`;
-- **the dev server's environment** (the table under "Full-browser journey" below);
-- **Playwright's environment:** `IDENTITY_CALLBACK_SERVER_SECRET` alone, so that the spec calls
-  the function as the dev server does;
-- **the JWKS document** holding the test signing public key, served on port `8777`. The edge
-  runtime runs inside Docker, so it reaches that server as `host.docker.internal`; it can
-  neither reach the mock issuer on the host's `127.0.0.1:9443` nor trust its certificate. The
-  server listens on one address, never on every interface: `127.0.0.1` on macOS, where Docker
-  Desktop forwards `host.docker.internal` to the host's loopback, and on Linux the address
-  `host.docker.internal` resolves to inside the edge-runtime container
-  (`getent hosts host.docker.internal`), the bridge through which the stack reaches the host. A
-  Linux lookup that answers no address refuses the run with status 9.
+  audience and issuer, the run's `IDENTITY_CALLBACK_SERVER_SECRET`, `PUBLIC_PROJECT_ID` (the one `send-email`
+  reads) set to the project the suite seeds, `SITE_URL` at the run's `FRONTEND_PORT`, and the three `SMTP_*`
+  values of the tracked template `apps/supabase/supabase/functions/.env.example`.
 
-It then runs `supabase functions serve identity-callback --no-verify-jwt --env-file <the Edge file>`
-and waits until the edge-runtime container carries the file's issuer and the function answers.
-Then, before Playwright starts, it proves that the edge runtime reaches the key server: from
-inside that container, bash's `/dev/tcp` asks `host.docker.internal:8777` for `/jwks`, and the
-status line must hold `200`, or the run ends with status 9. The issuer read back from the
-container, the key server's address (`jwks_bind=`) and the probe's status line
-(`jwks_reachable_from_edge=`) are recorded in `idp-env.txt` in the run directory, and the last
-two are printed in the wrapper's output too. No key and no value of the generated environment
-is printed or kept.
-
-> **The server's secret is generated per run.** `IDENTITY_CALLBACK_SERVER_SECRET` is 32 random
-> bytes in hex, made by the generator for this run alone and written into the Edge file, the
-> dev server's environment and Playwright's. It is never printed, never put on a command line
-> and never written into the run directory, and it is removed with the temporary directory.
-
-> **A run replaces and restores the shared stack's edge runtime.** `supabase functions serve
---env-file` replaces the edge runtime's environment for **every** function, not only for
-> `identity-callback`; that is why the Edge file carries the three `SMTP_*` lines, since
-> `account-access` mails the sign-in links of the rest of the suite during the same run.
-> Stopping the function server removes the edge-runtime container, and `yarn db:start` alone
-> does not bring it back, so at its end — every way out, an interrupt included — the wrapper
-> runs `yarn db:stop` then `yarn db:start` (about 30 s on the development host), confirms that
-> every function answers and that ports 8777 and 9443 are free, and writes `restore.txt`, whose
-> last line is `restore: ok` only when every check held. Before that, it stops a listener on
-> 9443 whose command line holds this checkout's absolute path to
-> `tests/tests/support/mockOidcIssuerEntry.ts`: the mock issuer Playwright started, which
-> outlives a Playwright the wrapper stopped, as on a void or interrupted run. A listener is
-> never matched by the port alone, since another checkout's run may hold it; one whose command
-> line does not hold the path is left alone. The top of `restore.txt` says which. A run that cannot prepare the
-> environment, or cannot put the stack back, exits **9**: not a test failure, and not a green
-> run.
-
-> **The suite never reads `apps/supabase/supabase/functions/.env`.** That untracked file is
-> yours: it holds what the default local stack serves between runs — a real test tenant, for
-> instance — and nothing in it reaches a run. The reverse holds too: the committed test keys
-> and the mock's issuer belong in no non-test configuration, neither the root `.env` nor
-> `functions/.env`, nor any template, workflow or deployment file.
-> `yarn assert:test-keys-scope`, part of `yarn lint:check`, fails on a tracked file outside the
-> test tree that names them.
+Everything else the wrapper prepares and checks — the dev server's and Playwright's environment,
+the key server and its address, the mock issuer, the per-run `IDENTITY_CALLBACK_SERVER_SECRET`,
+the replaced and restored edge runtime, and the rule that a run never reads
+`apps/supabase/supabase/functions/.env` — is described once, in
+[`tests/README.md` § The identity provider's environment](./README.md#the-identity-providers-environment--prepared-served-and-put-back-by-the-wrapper).
 
 **Expected:** all `bank-auth` tests pass with the keys-configured create path **TAKEN**
 (no skipped / did-not-run). The spec asserts `identity_provider='idura-ftn'`,
@@ -422,11 +377,11 @@ Node `https` server serving exactly three routes:
   The mock serves whatever path the env var names, so the suite stays green either way, and a
   green E2E run says nothing about the real tenant's path. Treat this endpoint as testing the _mechanism_, never the provider's URL shape. Aligning it with
   Idura's real path would need this line, the `IDENTITY_PROVIDER_JWKS_URI` the wrapper gives
-  the dev server and the `webServer` readiness url in `tests/playwright.config.ts` changed
-  together, or the harness hangs waiting on a 404.
+  the dev server and the wrapper's readiness probe of the issuer in `tests/scripts/e2e-run.sh`
+  changed together, or the run is refused waiting on a 404.
 
-It is spawned **automatically**, in every run, by the Playwright `webServer` entry in
-`tests/playwright.config.ts` — you do **not** start it by hand. It binds **`127.0.0.1` only**,
+It is started **automatically**, in every run, by `tests/scripts/e2e-run.sh` — you do **not**
+start it by hand. It binds **`127.0.0.1` only**,
 on **port 9443**, over **HTTPS** with a committed self-signed localhost cert
 (`tests/tests/support/mock-oidc-cert.pem`, subject alternative names `127.0.0.1` and
 `localhost`).
@@ -479,12 +434,11 @@ the host all the `https://${IDURA_DOMAIN}/...` URLs resolve to:
 tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset --project contestant-identity-provider
 ```
 
-The wrapper serves `identity-callback` and starts the dev server with the environment above;
-Playwright starts the mock OIDC issuer (`webServer` entry → `tsx mockOidcIssuerEntry.ts`),
-waits for `https://127.0.0.1:9443/.well-known/openid-configuration/jwks` (with
-`ignoreHTTPSErrors`), runs the journey, and tears the issuer down; the wrapper then restores the
-stack. When the wrapper stops Playwright itself, on a void or interrupted run, the issuer
-outlives it, and the wrapper stops it, matched by its command line.
+The wrapper starts the mock OIDC issuer (`tsx mockOidcIssuerEntry.ts`), waits for
+`https://127.0.0.1:9443/.well-known/openid-configuration/jwks` to answer 200, serves
+`identity-callback` and starts the dev server with the environment above; Playwright runs the
+journey, and at its end the wrapper stops the issuer with its process group and restores the
+stack.
 
 > **This project is not fast on its own.** `data-setup-identity-provider`
 > depends on `voter-prefs-tracking`, the tail of the perm serial chain, so

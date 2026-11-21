@@ -104,8 +104,13 @@ export function findUnexpectedDeviceState(state: DeviceState): Array<string> {
   );
 }
 
-/** The members the stored user preferences may hold: the consent choice and the feedback and survey prompt states. */
-export const ALLOWED_PREFERENCE_MEMBERS: ReadonlyArray<string> = ['dataCollection', 'feedback', 'survey'];
+/** The members the stored user preferences may hold: the voter and admin apps' consent choice, the Contestant App's own consent choice, and the feedback and survey prompt states. */
+export const ALLOWED_PREFERENCE_MEMBERS: ReadonlyArray<string> = [
+  'dataCollection',
+  'contestantDataConsent',
+  'feedback',
+  'survey'
+];
 
 /**
  * Find every member of the stored user preferences outside {@link ALLOWED_PREFERENCE_MEMBERS}.

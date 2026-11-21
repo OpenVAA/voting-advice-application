@@ -57,13 +57,11 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { expectLabelInRow, expectLabelOnOneLine } from '../../utils/labelInRow';
+import { messageOf, messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { readScreenShape } from '../shared/screenShape.fixture';
 import type { Page } from '@playwright/test';
 import type { ScreenShape } from '../shared/screenShape.fixture';
@@ -73,19 +71,10 @@ export type ContestantLoginNoticeReason =
   'loginFailed' | 'authError' | 'emailTaken' | 'loggedOutAutomatically' | 'loggedOutElsewhere';
 
 /** The messages of the login and sign-in screens, read from the English message source rather than copied. */
-const LOGIN_MESSAGES = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.login.json'), 'utf8')
-  ) as Record<string, Record<string, unknown>>
-)['contestantApp.login'];
+const LOGIN_MESSAGES = messagesOf('contestantApp.login');
 
 /** The messages shared by both apps, read from the English message source rather than copied. */
-const COMMON_MESSAGES = (
-  JSON.parse(fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/common.json'), 'utf8')) as Record<
-    string,
-    Record<string, unknown>
-  >
-).common;
+const COMMON_MESSAGES = messagesOf('common');
 
 /** The sentence the login screen's notice holds for each reason. */
 const NOTICE_SENTENCE: Record<ContestantLoginNoticeReason, string> = {
@@ -97,26 +86,13 @@ const NOTICE_SENTENCE: Record<ContestantLoginNoticeReason, string> = {
 };
 
 /** The name of the password control's toggle, read from the English message source rather than copied. */
-const PASSWORD_TOGGLE_NAME = String(
-  (
-    JSON.parse(
-      fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/components.json'), 'utf8')
-    ) as Record<string, Record<string, Record<string, unknown>>>
-  ).components.passwordInput.showPassword
-);
+const PASSWORD_TOGGLE_NAME = messageOf('components', 'passwordInput.showPassword');
 
 /** The status a refused sign-in was answered with. */
 export type ContestantSignInFailureStatus = 400 | 403 | 500;
 
 /** The sentence of a sign-in refused for its address or its password, read from the English message source rather than copied. */
-const WRONG_CREDENTIALS_MESSAGE = String(
-  (
-    JSON.parse(fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/error.json'), 'utf8')) as Record<
-      string,
-      Record<string, unknown>
-    >
-  ).error.wrongEmailOrPassword
-);
+const WRONG_CREDENTIALS_MESSAGE = messageOf('error', 'wrongEmailOrPassword');
 
 /** What is typed to try the password control's toggle: a sample text that is no one's password. */
 const PASSWORD_SAMPLE_TEXT = 'sample text';
@@ -178,7 +154,7 @@ export function createContestantLoginPage(page: Page) {
     },
 
     async enterPassword(password: string): Promise<void> {
-      await page.getByTestId(testIds.contestant.password.field).fill(password);
+      await page.getByTestId(testIds.shared.account.password.field).fill(password);
     },
 
     async submit(): Promise<void> {
@@ -528,7 +504,7 @@ export function createContestantLoginPage(page: Page) {
       await expect(email).toHaveAttribute('type', 'email');
       await expect(email).toHaveAttribute('name', 'email');
       await expect(email).toHaveAttribute('autocomplete', 'username');
-      const password = page.getByTestId(testIds.contestant.password.field);
+      const password = page.getByTestId(testIds.shared.account.password.field);
       await expect(password).toHaveAttribute('name', 'password');
       await expect(password).toHaveAttribute('autocomplete', 'current-password');
     },
@@ -537,7 +513,7 @@ export function createContestantLoginPage(page: Page) {
      * Assert that the sign-in screen's password label is in the same row as its control.
      */
     async expectPasswordFieldInRow(): Promise<void> {
-      await expectLabelInRow(page.getByTestId(testIds.contestant.password.field));
+      await expectLabelInRow(page.getByTestId(testIds.shared.account.password.field));
     },
 
     /**
@@ -545,7 +521,7 @@ export function createContestantLoginPage(page: Page) {
      */
     async expectFieldLabelsOnOneLine(): Promise<void> {
       await expectLabelOnOneLine(page.getByTestId(ids.email));
-      await expectLabelOnOneLine(page.getByTestId(testIds.contestant.password.field));
+      await expectLabelOnOneLine(page.getByTestId(testIds.shared.account.password.field));
     },
 
     /**
@@ -556,7 +532,7 @@ export function createContestantLoginPage(page: Page) {
     async expectTypedTextAtTheBodySize(): Promise<void> {
       const bodySize = await page.evaluate(() => getComputedStyle(document.body).fontSize);
       await expect(page.getByTestId(ids.email)).toHaveCSS('font-size', bodySize);
-      await expect(page.getByTestId(testIds.contestant.password.field)).toHaveCSS('font-size', bodySize);
+      await expect(page.getByTestId(testIds.shared.account.password.field)).toHaveCSS('font-size', bodySize);
       await expect(page.getByTestId(ids.submit)).toHaveCSS('font-size', bodySize);
     },
 
@@ -567,7 +543,7 @@ export function createContestantLoginPage(page: Page) {
       const response = await page.request.get(buildRoute({ route: 'ContestantAppSignIn', locale: 'en' }));
       expect(response.ok()).toBe(true);
       const tags = (await response.text()).match(/<input\b[^>]*>/g) ?? [];
-      const control = tags.filter((tag) => tag.includes(`data-testid="${testIds.contestant.password.field}"`));
+      const control = tags.filter((tag) => tag.includes(`data-testid="${testIds.shared.account.password.field}"`));
       expect(control).toHaveLength(1);
       expect(control[0]).toContain('type="password"');
     },
@@ -578,8 +554,8 @@ export function createContestantLoginPage(page: Page) {
      * The step is for a screen whose script has loaded, and leaves a sample text in the control.
      */
     async expectPasswordTogglePair(): Promise<void> {
-      const control = page.getByTestId(testIds.contestant.password.field);
-      const toggle = page.getByTestId(testIds.contestant.password.toggle);
+      const control = page.getByTestId(testIds.shared.account.password.field);
+      const toggle = page.getByTestId(testIds.shared.account.password.toggle);
       await control.fill(PASSWORD_SAMPLE_TEXT);
       await expect(control).toHaveAttribute('type', 'password');
 
@@ -598,8 +574,8 @@ export function createContestantLoginPage(page: Page) {
      * The step is for a screen whose script has loaded, and leaves a sample text in the control.
      */
     async expectPasswordToggleFromTheKeyboard(): Promise<void> {
-      const control = page.getByTestId(testIds.contestant.password.field);
-      const toggle = page.getByTestId(testIds.contestant.password.toggle);
+      const control = page.getByTestId(testIds.shared.account.password.field);
+      const toggle = page.getByTestId(testIds.shared.account.password.toggle);
       await control.fill(PASSWORD_SAMPLE_TEXT);
       await expect(control).toHaveAttribute('type', 'password');
 

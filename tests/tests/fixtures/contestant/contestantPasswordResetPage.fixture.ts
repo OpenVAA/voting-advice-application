@@ -36,7 +36,7 @@ export function createContestantPasswordResetPage(
   page: Page,
   { route = 'ContestantAppResetPassword', container = testIds.contestant.passwordReset.page }: PasswordResetPageOf = {}
 ) {
-  const ids = { ...testIds.contestant.passwordReset, page: container };
+  const ids = { ...testIds.shared.account.passwordReset, page: container };
   const setter = createContestantPasswordSetter(page);
 
   return {

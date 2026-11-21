@@ -17,8 +17,6 @@
  */
 
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
 import { createContestantRegisterPage } from '../../fixtures/contestant/contestantRegisterPage.fixture';
 import { createPageGeometry } from '../../fixtures/shared/pageGeometry.fixture';
@@ -26,11 +24,11 @@ import { TIMEOUTS } from '../../helpers';
 import { ADMIN_STORAGE_STATE } from '../../utils/adminCredentials';
 import { buildRoute } from '../../utils/buildRoute';
 import { declareEntryScans } from '../../utils/entryAxeScan';
+import { messageOf, messagesOf } from '../../utils/messages';
 import { PHONE_VIEWPORTS, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { DynamicSettings } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
 import type { ContestantRegisterPageFixture } from '../../fixtures/contestant/contestantRegisterPage.fixture';
@@ -39,17 +37,16 @@ import type { ContestantRegisterPageFixture } from '../../fixtures/contestant/co
 const CANDIDATE_EMAIL = 'e2e-perm-closed-project-cand-1@test.openvaa.local';
 
 /**
- * The English `dynamic` messages, read from the message source rather than copied, so a copy edit to a message cannot turn this spec into an assertion about a stale string.
+ * The English title of the page a closed voter app shows, read from the message source rather than copied, so a copy edit to a message cannot turn this spec into an assertion about a stale string.
  */
-const DYNAMIC_MESSAGES = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/dynamic.json'), 'utf8')
-).dynamic;
-
-const MAINTENANCE_TITLE: string = DYNAMIC_MESSAGES.voterAppNotAccessible.title;
+const MAINTENANCE_TITLE = messageOf('dynamic', 'voterAppNotAccessible.title');
 
 /** The three names the contestant app shows for itself, by the entity types the project serves. */
-const APP_NAME: { candidate: string; organization: string; candidateAndOrganization: string } =
-  DYNAMIC_MESSAGES.contestantAppName;
+const APP_NAME = messagesOf('dynamic').contestantAppName as {
+  candidate: string;
+  organization: string;
+  candidateAndOrganization: string;
+};
 
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
 const REGISTER_ROUTE = buildRoute({ route: 'ContestantAppRegister', locale: 'en' });
@@ -133,14 +130,14 @@ test.describe('a project that is not open for voters', () => {
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
 
     await page.goto('/en/admin/login');
-    await expect(page.getByTestId(testIds.contestant.password.field)).toBeVisible();
+    await expect(page.getByTestId(testIds.shared.account.password.field)).toBeVisible();
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
   });
 
   test('a candidate can log in and reach the candidate home on a closed project', async ({ page }) => {
     const loginPage = createContestantLoginPage(page);
     await loginPage.goToPage();
-    await loginPage.login(CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
+    await loginPage.login(CANDIDATE_EMAIL, TEST_PASSWORD);
     await expect(page).not.toHaveURL(/\/contestant\/login/);
     await expect(page.getByTestId(testIds.contestant.home.statusMessage)).toBeVisible();
     await expect(page.getByTestId(testIds.shared.errorMessage)).toBeHidden();
@@ -336,7 +333,9 @@ test.describe('a project that is not open for voters', () => {
           await loginPage.expectRegisterOffered(false);
         },
         marker: { testId: testIds.contestant.login.signInLink },
-        alsoShown: [{ testId: testIds.contestant.login.page, attribute: 'data-register-offered', value: 'false' }]
+        alsoShown: [
+          { testId: testIds.contestant.login.page, state: { attribute: 'data-register-offered', value: 'false' } }
+        ]
       },
       {
         // The registration page where the code mode is the one listed: its field directly, with nothing to choose.
@@ -354,7 +353,7 @@ test.describe('a project that is not open for voters', () => {
           await registerPage.expectSingleMode('code');
         },
         marker: { testId: testIds.contestant.register.code },
-        alsoShown: [{ testId: testIds.contestant.register.page, attribute: 'data-modes', value: 'code' }]
+        alsoShown: [{ testId: testIds.contestant.register.page, state: { attribute: 'data-modes', value: 'code' } }]
       },
       {
         // The registration page with all three modes listed and the identity provider's chosen, so that its panel is the one open, asking which of the two entity types it registers with none chosen.

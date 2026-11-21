@@ -110,6 +110,7 @@ const STEP_SUB_PATH: Readonly<Record<NominationEditorStep, string>> = Object.fre
 
 /** The editor's two search params, each repeatable. */
 const ELECTION_PARAM = 'nominationElectionId';
+
 const CONSTITUENCY_PARAM = 'nominationConstituencyId';
 
 /** The selection a step's address carries. The members given by external id are read with the service role; the others are put into the address as they are, after them. */
@@ -272,28 +273,6 @@ export interface ParentTabStops {
   forward: number;
   /** With Shift+Tab, from after the group to before it. */
   backward: number;
-}
-
-/** A pattern for a text that begins with `text`, after any leading whitespace. */
-function beginsWith(text: string): RegExp {
-  return new RegExp(`^\\s*${escapeRegExp(text)}`);
-}
-
-/** A pattern for a text that ends with `text`, before any trailing whitespace. */
-function endsWith(text: string): RegExp {
-  return new RegExp(`${escapeRegExp(text)}\\s*$`);
-}
-
-/** A text with every run of whitespace as one space, and none at either end. */
-function normalized(text: string | null): string {
-  return (text ?? '').replace(/\s+/g, ' ').trim();
-}
-
-/** How a failure message names a card. */
-function describeCard(ref: EditorCardRef): string {
-  const constituency = ref.constituency === undefined ? '' : `, ${ref.constituency}`;
-  const nth = ref.nth === undefined ? '' : `, number ${ref.nth + 1} of its kind`;
-  return `the card of ${ref.election}${constituency}${nth}`;
 }
 
 /**
@@ -1243,3 +1222,25 @@ export function createContestantNominationEditor(page: Page, admin: SupabaseAdmi
 
 /** The steps of the nomination-editor fixture. */
 export type ContestantNominationEditorFixture = ReturnType<typeof createContestantNominationEditor>;
+
+/** A pattern for a text that begins with `text`, after any leading whitespace. */
+function beginsWith(text: string): RegExp {
+  return new RegExp(`^\\s*${escapeRegExp(text)}`);
+}
+
+/** How a failure message names a card. */
+function describeCard(ref: EditorCardRef): string {
+  const constituency = ref.constituency === undefined ? '' : `, ${ref.constituency}`;
+  const nth = ref.nth === undefined ? '' : `, number ${ref.nth + 1} of its kind`;
+  return `the card of ${ref.election}${constituency}${nth}`;
+}
+
+/** A text with every run of whitespace as one space, and none at either end. */
+function normalized(text: string | null): string {
+  return (text ?? '').replace(/\s+/g, ' ').trim();
+}
+
+/** A pattern for a text that ends with `text`, before any trailing whitespace. */
+function endsWith(text: string): RegExp {
+  return new RegExp(`${escapeRegExp(text)}\\s*$`);
+}

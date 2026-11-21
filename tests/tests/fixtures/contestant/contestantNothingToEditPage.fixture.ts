@@ -15,22 +15,16 @@
  * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantAppRootUrlRe } from '../../utils/contestantEntityUrl';
+import { messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
 
 /** The view's sentences that a step asserts, read from the English message source rather than copied. */
-const MESSAGES = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.nothingToEdit.json'), 'utf8')
-  ) as Record<string, Record<'nextStepsNoAddress' | 'signedInAs', string>>
-)['contestantApp.nothingToEdit'];
+const MESSAGES = messagesOf('contestantApp.nothingToEdit') as Record<'nextStepsNoAddress' | 'signedInAs', string>;
 
 export function createContestantNothingToEditPage(page: Page) {
   const container = page.getByTestId(testIds.contestant.nothingToEdit.container);

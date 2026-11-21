@@ -64,7 +64,7 @@ export type PreflightOptions = {
 /**
  * Repo-relative location of the message catalogue clause (c) derives its accepted title set from. Enumerated at runtime — the locale set grows, and hardcoding either the locales or the names is exactly what forbids.
  */
-const MESSAGES_RELATIVE_PATH = 'apps/frontend/messages';
+export const MESSAGES_RELATIVE_PATH = 'apps/frontend/messages';
 
 /**
  * Modest enough that a locally-fast server costs ~3 polls rather than a fixed quantum, small enough not to dominate the deadline.

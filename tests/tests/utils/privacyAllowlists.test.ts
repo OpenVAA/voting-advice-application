@@ -124,7 +124,12 @@ describe('findUnexpectedPreferenceMembers', () => {
   }
 
   it('lists the three members the preferences may hold', () => {
-    expect([...ALLOWED_PREFERENCE_MEMBERS]).toStrictEqual(['dataCollection', 'feedback', 'survey']);
+    expect([...ALLOWED_PREFERENCE_MEMBERS]).toStrictEqual([
+      'dataCollection',
+      'contestantDataConsent',
+      'feedback',
+      'survey'
+    ]);
   });
 
   it('accepts preferences holding only the allowed members', () => {

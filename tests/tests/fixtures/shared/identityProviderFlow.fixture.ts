@@ -127,53 +127,8 @@ const INVITED_CANDIDATE_EXTERNAL_ID = 'e2e-bankauth-idp-cand-1';
 
 /** The registration modes candidates are allowed in the identity-provider dataset, with and without the provider's. */
 const CANDIDATE_MODES_WITH_PROVIDER: ReadonlyArray<RegistrationMode> = ['identity_provider', 'email', 'code'];
+
 const CANDIDATE_MODES_WITHOUT_PROVIDER: ReadonlyArray<RegistrationMode> = ['email', 'code'];
-
-/**
- * The ids of the entities of a type in the suite's project that a user edits, read through the user's editor grants.
- *
- * @param admin - The admin client.
- * @param userId - The user whose grants are read.
- * @param entityType - The entity type.
- * @returns The ids.
- */
-async function ownEntityIdsOf(
-  admin: SupabaseAdminClient,
-  userId: string,
-  entityType: ServedEntityType
-): Promise<Array<string>> {
-  if (entityType === 'candidate') return admin.candidateIdsForUser(userId);
-  const grants = await admin.findData('grants', {
-    user_id: userId,
-    scope: 'entity',
-    target_type: 'organization',
-    role: 'editor'
-  });
-  if (grants.type !== 'success') throw new Error(`identityProviderFlow: reading the grants failed: ${grants.cause}`);
-  const grantedIds = (grants.data ?? []).map((grant) => String(grant.target_id));
-  if (grantedIds.length === 0) return [];
-  const rows = await admin.findData('organizations', { id: { $in: grantedIds } });
-  if (rows.type !== 'success') throw new Error(`identityProviderFlow: reading the organizations failed: ${rows.cause}`);
-  return (rows.data ?? []).map((row) => String(row.id));
-}
-
-/**
- * The id of the account the application made for a minted identity, found by the identity the account's metadata names, whatever address the account holds.
- */
-async function accountIdOf(admin: SupabaseAdminClient, sub: string): Promise<string> {
-  const accountId = await admin.authUserIdForIdentity(sub);
-  expect(accountId !== undefined, 'an account exists for the minted identity').toBe(true);
-  return accountId!;
-}
-
-/**
- * The id of the one entity of a type a minted identity's account edits, asserting that there is exactly one.
- */
-async function ownEntityIdOf(admin: SupabaseAdminClient, sub: string, entityType: ServedEntityType): Promise<string> {
-  const ids = await ownEntityIdsOf(admin, await accountIdOf(admin, sub), entityType);
-  expect(ids, `${entityType} entities the identity edits in the project`).toHaveLength(1);
-  return ids[0];
-}
 
 /** What a test gives when it registers an identity with the provider. */
 export interface RegisterWithIdentityProviderOptions {
@@ -683,5 +638,51 @@ export const test = base.extend<object, { identityProviderFlow: IdentityProvider
     { scope: 'worker' }
   ]
 });
+
+/**
+ * The ids of the entities of a type in the suite's project that a user edits, read through the user's editor grants.
+ *
+ * @param admin - The admin client.
+ * @param userId - The user whose grants are read.
+ * @param entityType - The entity type.
+ * @returns The ids.
+ */
+async function ownEntityIdsOf(
+  admin: SupabaseAdminClient,
+  userId: string,
+  entityType: ServedEntityType
+): Promise<Array<string>> {
+  if (entityType === 'candidate') return admin.candidateIdsForUser(userId);
+  const grants = await admin.findData('grants', {
+    user_id: userId,
+    scope: 'entity',
+    target_type: 'organization',
+    role: 'editor'
+  });
+  if (grants.type !== 'success') throw new Error(`identityProviderFlow: reading the grants failed: ${grants.cause}`);
+  const grantedIds = (grants.data ?? []).map((grant) => String(grant.target_id));
+  if (grantedIds.length === 0) return [];
+  const rows = await admin.findData('organizations', { id: { $in: grantedIds } });
+  if (rows.type !== 'success') throw new Error(`identityProviderFlow: reading the organizations failed: ${rows.cause}`);
+  return (rows.data ?? []).map((row) => String(row.id));
+}
+
+/**
+ * The id of the account the application made for a minted identity, found by the identity the account's metadata names, whatever address the account holds.
+ */
+async function accountIdOf(admin: SupabaseAdminClient, sub: string): Promise<string> {
+  const accountId = await admin.authUserIdForIdentity(sub);
+  expect(accountId !== undefined, 'an account exists for the minted identity').toBe(true);
+  return accountId!;
+}
+
+/**
+ * The id of the one entity of a type a minted identity's account edits, asserting that there is exactly one.
+ */
+async function ownEntityIdOf(admin: SupabaseAdminClient, sub: string, entityType: ServedEntityType): Promise<string> {
+  const ids = await ownEntityIdsOf(admin, await accountIdOf(admin, sub), entityType);
+  expect(ids, `${entityType} entities the identity edits in the project`).toHaveLength(1);
+  return ids[0];
+}
 
 export { expect };

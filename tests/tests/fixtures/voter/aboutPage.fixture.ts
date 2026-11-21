@@ -18,11 +18,9 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { buildRoute } from '../../utils/buildRoute';
+import { messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
 
 /** Org-matching disclosure mode (mirrors `matching.organizationMatching`). */
@@ -33,10 +31,8 @@ const ORG_MATCHING_KEY = 'about.organizationMatching.content';
 
 /** The variants of the English party-matching sentence, keyed by their selector, read from the message source rather than copied. */
 const ORG_MATCHING_VARIANTS = (
-  JSON.parse(fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/about.json'), 'utf8')) as {
-    about: { organizationMatching: { content: Array<{ match: Record<string, string> }> } };
-  }
-).about.organizationMatching.content[0].match;
+  messagesOf('about') as { organizationMatching: { content: Array<{ match: Record<string, string> }> } }
+).organizationMatching.content[0].match;
 
 /**
  * The English sentence a method reaches, reduced to the text a browser shows: the variant whose selector value is the method, otherwise the catch-all.
