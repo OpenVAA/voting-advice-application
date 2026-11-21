@@ -84,3 +84,79 @@ STEP19_WRITTEN=yes
 NO_RUN_ACTIVE=yes
 EXPECTED_CHANGES=password replaced; listener rule updated or replaced; distribution updated
 SITTING_COMMAND_READY=yes
+
+## Task 3 — the rotation recorded
+
+The operator ran the sitting block (`tmp/189-07-2.sitting-block.sh`, Step 19's items in one
+subshell) in their own terminal with the `openvaa-admin` session on 2026-11-20 and pasted its whole
+output. The orchestrator bound the reply at top level as attempt `20261120T163252Z.1971bfeb3`. The
+executor checked the binding itself on 2026-11-21:
+`attempt.sh bound 189-07-2 OPERATOR_REPLY plan=189-07 task=2` and
+`attempt.sh has 189-07-2 '^answer_sitting=approve$'` both exited 0. The paste carried no `answer_`
+lines; the attempt file's note records that the orchestrator wrote `answer_sitting=approve` from the
+operator's act of running the sitting and pasting its output, as for sittings 1 and 2. Every value
+below is copied from the `s19_` lines of that attempt file.
+
+The preamble's reads all exited 0: the account matched `471112560111`, `init`, the running digest,
+the outputs, the header value's shape before the apply, and both workflow-run reads.
+`s19_deploy_runs_active=0` and `s19_destroy_runs_active=0`. The plan and its `show -json` exited 0.
+
+R1_SITTING=approved
+R1_STOP_RULE=met
+R1_CHANGE=module.frontend.aws_cloudfront_distribution.this update
+R1_CHANGE=module.frontend.aws_lb_listener_rule.from_cloudfront update
+R1_CHANGE=module.frontend.random_password.origin_verify delete-create
+R1_PLAN_SUMMARY=Plan: 1 to add, 2 to change, 1 to destroy.
+R1_POLLER_FIRST=200
+R1_APPLY_EXIT=0
+R1_APPLY_COMPLETE_AT=2026-11-20T21:44:56Z
+R1_HEALTH_SAMPLES=594
+R1_HEALTH_MAX_GAP_SECONDS=3
+R1_HEALTH_FIRST_NON200=2026-11-20T21:44:14Z
+R1_HEALTH_LAST_NON200=2026-11-20T21:44:19Z
+R1_WINDOW_SECONDS=5
+R1_HEALTH_NON200=5
+R1_HEALTH_403=5
+R1_HEALTH_5XX=0
+R1_HEALTH_OTHER=0
+R1_HEALTH_RECOVERED=yes
+R1_AFTER_PLAN_EXIT=0
+R1_AFTER_PLAN_LINE=No changes. Your infrastructure matches the configuration.
+R1_AFTER_PLAN_NO_CHANGES=yes
+R1_VALUE_CHANGED=yes
+R1_CDN_HEALTH_AFTER=200
+R1_ORIGIN_NO_HEADER=000
+R1_ORIGIN_NO_HEADER_CURL_EXIT=28
+R1_ORIGIN_WRONG_HEADER=000
+R1_ORIGIN_WRONG_HEADER_CURL_EXIT=28
+R1_ORIGIN_RIGHT_HEADER=000
+R1_ORIGIN_RIGHT_HEADER_CURL_EXIT=28
+R1_RECOVERY=not-needed
+R1_LOGS_REMOVED=yes
+
+The plan was the one the stop rule allows, and its summary is the one research assumption A1
+expected: the listener rule's condition changed in place. `R1_WINDOW_SECONDS` is the difference of
+the first and last non-200 times, 21:44:19Z less 21:44:14Z. All five non-200 reads were 403s, and
+the longest gap between two reads was 3 seconds, so the poll had no sleep in it and the window is a
+measurement. The window closed 37 seconds before `Apply complete!`: the apply waits for the
+distribution to read `Deployed`, which comes after the edge location the workstation reaches had
+already taken the new value. Health was 200 for the rest of the ten minutes, with no 5xx.
+
+After the apply, a plan of the same digest read `No changes.`, and it refreshes the listener rule and
+the distribution from AWS, so both hold one value. The value's hash differed before and after
+(`R1_VALUE_CHANGED=yes`), and a request through the CDN answered 200
+(`R1_CDN_HEALTH_AFTER=200`), so the header CloudFront sends is the one the listener rule forwards.
+
+A deviation from the plan, recorded as observed: the three direct requests to the load balancer
+read `000` with curl exit 28 (connect timeout), not 403. Task 1 carried this to the sitting: the load
+balancer's security group admits CloudFront's managed prefix list only, so a request from the
+operator's host is refused at the network layer and never reaches the listener rule. The rule's own
+403 to a request without the header or with a wrong one could therefore not be observed from
+outside in this sitting. It stays Step 9's observation, made through Step 9's `/32`. Opening that
+`/32` takes two further applies, which H-01 (3)'s one apply and the stop rule's three changes
+exclude. The evidence that the rule enforces the new value is the 5 403s through the CDN while the
+edge still sent the old value, followed by 200 through the CDN once it sent the new one. No header
+value was printed or recorded.
+
+No push to `deploy/staging`, no destroy, and no apply other than the one the stop rule allowed. The
+recovery was not needed.
