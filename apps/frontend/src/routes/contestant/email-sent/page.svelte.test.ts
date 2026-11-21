@@ -307,7 +307,7 @@ describe('the address and the way back to it', () => {
     ['the sign-in screen', 'signIn', 'ContestantAppSignIn'],
     ['the registration page', 'register', 'ContestantAppRegister'],
     ['the forgot-password page', 'forgotPassword', 'ContestantAppForgotPassword'],
-    ['the screen that takes the address for a registration code', 'registerEmail', 'ContestantAppRegisterEmail']
+    ['the screen that takes the address for a registration code', 'registerEmail', 'ContestantAppRegisterCodeEmail']
   ] as const)('links back to %s for an address typed there', (_name, origin, route) => {
     const target = render(requestWith({ origin, wording: origin === 'forgotPassword' ? 'recovery' : 'signIn' }));
     const link = one(target, CHANGE_ADDRESS);
@@ -323,7 +323,7 @@ describe('the address and the way back to it', () => {
     flushSync();
     expect(one(target, FRAME).getAttribute('data-address')).toBe('shown');
     expect(one(target, ADDRESS_SHOWN).textContent).toBe(ADDRESS);
-    expect(one(target, CHANGE_ADDRESS).getAttribute('href')).toBe(routeOf('ContestantAppRegisterEmail'));
+    expect(one(target, CHANGE_ADDRESS).getAttribute('href')).toBe(routeOf('ContestantAppRegisterCodeEmail'));
     expect(target.innerHTML, 'the code is nowhere in the document').not.toContain('a-code');
   });
 

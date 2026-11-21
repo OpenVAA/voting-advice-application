@@ -3,7 +3,7 @@
  *
  * ## What it scans
  *
- * Eighteen states, each in the light theme and in a browser context created dark, through `declareEntryScans` and so through the one shared `assertAxeScan`: the login screen with both of its entries; the sign-in screen as it opens, with its two links to the forgot-password page, after a refused sign-in and with its email field in error; the registration screen with nothing chosen, with the email option open and after a code that names nothing; the screen that asks for the address of a valid code, as it opens and with two addresses that differ; the screen that signs in the holder of a used code; the screen that says an email was sent, in its sign-in and its recovery wording; the forgot-password page, as it opens and with the address the sign-in screen's link carried to it; the identity provider's error screen in each of its three classes, opened by its address with a code, as the callback's redirect opens it; and the confirm page a mailed sign-in link opens, in a browser with no session, which belongs to neither app but is met by the same visitor. Each state is reached in page-object steps and proved by a marker only that state renders, together with the address of its route, before the scan runs, so no scan can pass against a loading frame or against a screen a redirect led to.
+ * Twenty states, each in the light theme and in a browser context created dark, through `declareEntryScans` and so through the one shared `assertAxeScan`: the login screen with both of its entries; the sign-in screen as it opens, with its two links to the forgot-password page, after a refused sign-in and with its email field in error; the registration screen with nothing chosen, with the email option open and after a code that names nothing; the screen that asks for the address of a valid code, as it opens and with two addresses that differ; the screen that signs in the holder of a used code; the screen that says an email was sent, in its sign-in and its recovery wording; the forgot-password page, as it opens and with the address the sign-in screen's link carried to it; the identity provider's error screen in each of its three classes, opened by its address with a code, as the callback's redirect opens it; the help page; the privacy page, which in the base dataset's state, with no analytics configured, renders no usage-data section and no consent control, so neither is covered here; and the confirm page a mailed sign-in link opens, in a browser with no session, which belongs to neither app but is met by the same visitor. Each state is reached in page-object steps and proved by a marker only that state renders, together with the address of its route, before the scan runs, so no scan can pass against a loading frame or against a screen a redirect led to.
  *
  * Beside the scans, one test opens the menu on the login screen and asserts its signed-out items: Sign in, one Register item, Forgot Password? and Support, each a link to its screen, and no item that leads to a screen a registration code leads to. The menu is not scanned. Another opens the sign-in screen and asserts that its email and password controls and its sign-in button set their text at the body's size.
  *
@@ -26,8 +26,10 @@ import { expect, test } from '@playwright/test';
 import { createAuthConfirmPage } from '../../fixtures/contestant/authConfirmPage.fixture';
 import { createContestantEmailSentPage } from '../../fixtures/contestant/contestantEmailSentPage.fixture';
 import { createContestantForgotPasswordPage } from '../../fixtures/contestant/contestantForgotPasswordPage.fixture';
+import { createContestantHelpPage } from '../../fixtures/contestant/contestantHelpPage.fixture';
 import { createContestantIdentityProviderErrorPage } from '../../fixtures/contestant/contestantIdentityProviderError.fixture';
 import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
+import { createContestantPrivacyPage } from '../../fixtures/contestant/contestantPrivacyPage.fixture';
 import { createContestantRegisterPage } from '../../fixtures/contestant/contestantRegisterPage.fixture';
 import { createInvitationFlow } from '../../fixtures/shared/invitationFlow.fixture';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
@@ -211,7 +213,7 @@ declareEntryScans([
   {
     // The screen that asks for the address of the open code, as it opens. Nothing is typed into it.
     name: 'entry-email-entry',
-    routeId: 'ContestantAppRegisterEmail',
+    routeId: 'ContestantAppRegisterCodeEmail',
     reach: async (page) => {
       const registerPage = await continueWithCode(page, seededCode('open'));
       await registerPage.expectEmailEntryShown();
@@ -221,7 +223,7 @@ declareEntryScans([
   {
     // The same screen with two different addresses, after the second lost focus. Nothing is sent.
     name: 'entry-email-entry-mismatch',
-    routeId: 'ContestantAppRegisterEmail',
+    routeId: 'ContestantAppRegisterCodeEmail',
     reach: async (page) => {
       const registerPage = await continueWithCode(page, seededCode('open'));
       await registerPage.expectEmailEntryShown();
@@ -234,7 +236,7 @@ declareEntryScans([
   {
     // The screen that signs in the holder of the used code, as it opens.
     name: 'entry-code-sign-in',
-    routeId: 'ContestantAppRegisterSignIn',
+    routeId: 'ContestantAppRegisterCodeSignIn',
     reach: async (page) => {
       const registerPage = await continueWithCode(page, seededCode('used'));
       await registerPage.expectCodeSignInShown();
@@ -340,6 +342,24 @@ declareEntryScans([
     }
   },
   {
+    // The help page, as a visitor with no session opens it.
+    name: 'entry-help',
+    routeId: 'ContestantAppHelp',
+    reach: async (page) => {
+      await createContestantHelpPage(page).open();
+    },
+    marker: { testId: testIds.contestant.help.home }
+  },
+  {
+    // The privacy page, as a visitor with no session opens it. The base dataset configures no analytics, so the page renders neither its usage-data section nor the consent control in this state.
+    name: 'entry-privacy',
+    routeId: 'ContestantAppPrivacy',
+    reach: async (page) => {
+      await createContestantPrivacyPage(page).open();
+    },
+    marker: { testId: testIds.contestant.privacy.home }
+  },
+  {
     // The confirm page a freshly mailed sign-in link opens, in a browser with no session: Continue alone, no notice. The link is opened and never confirmed.
     name: 'auth-confirm-signed-out',
     routeId: 'AuthConfirm',
@@ -384,8 +404,8 @@ test('menu: a signed-out visitor is offered Sign in, Register and Forgot Passwor
   );
 
   // No item leads to either screen a registration code leads to.
-  await navMenu.expectNoItemLeadsTo(buildRoute({ route: 'ContestantAppRegisterEmail', locale: 'en' }));
-  await navMenu.expectNoItemLeadsTo(buildRoute({ route: 'ContestantAppRegisterSignIn', locale: 'en' }));
+  await navMenu.expectNoItemLeadsTo(buildRoute({ route: 'ContestantAppRegisterCodeEmail', locale: 'en' }));
+  await navMenu.expectNoItemLeadsTo(buildRoute({ route: 'ContestantAppRegisterCodeSignIn', locale: 'en' }));
 });
 
 test("sign-in screen: the typed text and the button are at the body's size", async ({ page }) => {

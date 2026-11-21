@@ -98,6 +98,7 @@ For the local stack, `yarn workspace @openvaa/supabase supabase status -o env` p
 - `LOCAL_DATA_DIR`: the directory of JSON files for the `local` data adapter. It is used only when `dataAdapter.type` in the [static settings](/developers-guide/configuration/static-settings) is `local`.
 - `PUBLIC_DEBUG`: when `true`, makes `debug` the default log level.
 - `PUBLIC_LOG_LEVEL`: the minimum log level, one of `debug`, `info`, `warn` and `error`. When it is unset, the level is `warn`, or `debug` in a dev build or when `PUBLIC_DEBUG=true`. Any other value, `silent` included, logs one error and falls back.
+- `DEPLOYMENT_DIAGNOSTICS`: a private variable, off unless it is `true`, read on each request. When it is on, `GET /api/diagnostics` reports what the server resolved for the caller's own request: the origin, the client address (or why none was resolved) and the forwarding headers it received (`host`, `x-forwarded-for`, `x-forwarded-proto`, `x-forwarded-port`, `x-forwarded-host`, `forwarded` and `via`). When it is off, the endpoint answers 404. It writes nothing to any log. Turn it on only while checking a reverse-proxy setup.
 
 ### Bank authentication (identity provider)
 

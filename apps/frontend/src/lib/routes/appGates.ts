@@ -109,8 +109,8 @@ const CONTESTANT_GATE: AppGate = Object.freeze({
     'ContestantAppLogin',
     'ContestantAppSignIn',
     'ContestantAppRegister',
-    'ContestantAppRegisterEmail',
-    'ContestantAppRegisterSignIn',
+    'ContestantAppRegisterCodeEmail',
+    'ContestantAppRegisterCodeSignIn',
     'ContestantAppIdentityProviderError'
   ] satisfies ReadonlyArray<Route>),
   whenAuthenticatedOnLogin: Object.freeze({

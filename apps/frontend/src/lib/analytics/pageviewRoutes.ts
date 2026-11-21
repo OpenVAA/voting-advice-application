@@ -80,8 +80,8 @@ export const PAGEVIEW_ROUTES: Readonly<Record<string, Readonly<Record<string, Pa
   [ROUTE.ContestantAppResetPassword]: NO_PARAMS,
   [ROUTE.ContestantAppPrivacy]: NO_PARAMS,
   [ROUTE.ContestantAppRegister]: NO_PARAMS,
-  [ROUTE.ContestantAppRegisterEmail]: NO_PARAMS,
-  [ROUTE.ContestantAppRegisterSignIn]: NO_PARAMS,
+  [ROUTE.ContestantAppRegisterCodeEmail]: NO_PARAMS,
+  [ROUTE.ContestantAppRegisterCodeSignIn]: NO_PARAMS,
   [ROUTE.ContestantAppIdentityProviderError]: NO_PARAMS,
 
   // Admin App

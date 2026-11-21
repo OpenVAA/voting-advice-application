@@ -28,7 +28,7 @@ Shown after a link was asked for by email, whichever screen asked: the sign-in s
   const addressScreenHrefs = $derived({
     signIn: getRoute.current('ContestantAppSignIn'),
     register: getRoute.current('ContestantAppRegister'),
-    registerEmail: getRoute.current('ContestantAppRegisterEmail'),
+    registerEmail: getRoute.current('ContestantAppRegisterCodeEmail'),
     forgotPassword: getRoute.current('ContestantAppForgotPassword')
   });
 

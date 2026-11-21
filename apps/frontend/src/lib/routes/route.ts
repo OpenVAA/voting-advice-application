@@ -152,6 +152,8 @@ export const ROUTE = {
   ContestantAppProfile: `${CONTESTANT_NOMINATED}/profile`,
   ContestantAppQuestion: `${CONTESTANT_NOMINATED}/questions/[questionId]`,
   ContestantAppQuestions: `${CONTESTANT_NOMINATED}/questions`,
+  /** The endpoint that starts the identity provider's flow. The registration screen posts the chosen entity type to it under the page's locale, which it asks the provider to show its screens in, and leaves for the address it answers. */
+  ContestantAppIdentityProviderAuthorize: `${API_ROOT}/oidc/authorize`,
   /** The identity provider's callback, where the provider sends the browser back after identification. The authorize endpoint gives the provider this path on its own origin. */
   ContestantAppIdentityProviderCallback: `${API_ROOT}/oidc/callback`,
   ContestantAppLogin: `${CONTESTANT}/login`,
@@ -162,9 +164,9 @@ export const ROUTE = {
   /** The registration page, which lists the ways the project lets a visitor register. It is served only where at least one is listed, and leads to the login screen otherwise. */
   ContestantAppRegister: `${CONTESTANT}/register`,
   /** The screen that takes an email address for a registration code nobody has claimed. It renders only while the entry flow holds such a code, and leads a visitor who arrives with none to the registration page. */
-  ContestantAppRegisterEmail: `${CONTESTANT}/register/email`,
+  ContestantAppRegisterCodeEmail: `${CONTESTANT}/register/code/email`,
   /** The screen that signs in the holder of a registration code somebody has claimed, with that code and a password. It renders only while the entry flow holds such a code, and leads a visitor who arrives with none to the registration page. */
-  ContestantAppRegisterSignIn: `${CONTESTANT}/register/sign-in`,
+  ContestantAppRegisterCodeSignIn: `${CONTESTANT}/register/code/sign-in`,
   /** The screen an identification failure in the identity provider's flow lands on. It shows one of three classes, chosen by its `error` parameter, and nothing else of it. */
   ContestantAppIdentityProviderError: `${CONTESTANT}/register/identity-provider/error`,
   ContestantAppResetPassword: `${CONTESTANT}/password-reset`,

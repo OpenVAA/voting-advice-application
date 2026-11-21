@@ -180,8 +180,8 @@ const TYPED_CODE = 'abcd-efgh-jkmn';
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin' }, { params: {} });
 const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppSignIn' }, { params: {} });
 const EMAIL_SENT_ROUTE = buildRoute({ route: 'ContestantAppEmailSent' }, { params: {} });
-const EMAIL_ENTRY_ROUTE = buildRoute({ route: 'ContestantAppRegisterEmail' }, { params: {} });
-const CODE_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterSignIn' }, { params: {} });
+const EMAIL_ENTRY_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeEmail' }, { params: {} });
+const CODE_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeSignIn' }, { params: {} });
 const FORGOT_PASSWORD_ROUTE = buildRoute({ route: 'ContestantAppForgotPassword' }, { params: {} });
 
 /** The identity provider's error screen for a code. */

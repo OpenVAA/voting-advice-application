@@ -30,8 +30,8 @@ const STORAGE_STATE_PATH = path.join(TESTS_DIR, '../playwright/.auth/perm-answer
 /** The registration page and the two screens a registration code leads to. The dataset allows candidates the email and the code mode, so the answers lock is the one thing that closes them. */
 const REGISTRATION_ROUTES = [
   'ContestantAppRegister',
-  'ContestantAppRegisterEmail',
-  'ContestantAppRegisterSignIn'
+  'ContestantAppRegisterCodeEmail',
+  'ContestantAppRegisterCodeSignIn'
 ] as const;
 
 /** A settled address on the contestant login page, whatever search parameters it carries. */

@@ -32,7 +32,6 @@ Lists the ways the project lets a visitor register, and leads each where it must
   import { OIDC_ERROR } from '$contestant/utils/oidcError';
   import { identityProviderEntityTypes, listedRegistrationModes } from '$contestant/utils/registrationOffer';
   import { MainContent } from '$layouts/main';
-  import { API_ROOT } from '$lib/api/base/universalApiRoutes';
   import { Button } from '$lib/components/button';
   import { EmailField } from '$lib/components/emailField';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -42,7 +41,6 @@ Lists the ways the project lets a visitor register, and leads each where it must
   import { leaveByFullLoad } from '$lib/components/preventNavigation/navigationGuards';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { localizeHref } from '$lib/paraglide/runtime';
   import { getUUID } from '$lib/utils/components';
   import type { RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
   import type { SubmitFunction } from '@sveltejs/kit';
@@ -111,9 +109,6 @@ Lists the ways the project lets a visitor register, and leads each where it must
   const emailFormId = getUUID();
   const codeFormId = getUUID();
   const providerFormId = getUUID();
-
-  /** The endpoint that starts the identity provider's flow. It is posted to under the page's locale, which it asks the provider to show its screens in. */
-  const AUTHORIZE_ENDPOINT = `${API_ROOT}/oidc/authorize`;
 
   /** The entity types the provider's panel registers, in the order they are offered. Not empty while the provider's mode is listed. */
   const providerEntityTypes = $derived(identityProviderEntityTypes(contestantCtx.appSettings));
@@ -211,7 +206,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
       return;
     }
     leaving = true;
-    const response = await fetch(localizeHref(AUTHORIZE_ENDPOINT), {
+    const response = await fetch(getRoute.current('ContestantAppIdentityProviderAuthorize'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entityType ? { entityType } : {})
@@ -269,7 +264,9 @@ Lists the ways the project lets a visitor register, and leads each where it must
     if (status === 'valid' || status === 'used') {
       // The code is held before the navigation: the screen it leads to renders only over a held code.
       holdEntryCode({ code: typed, status });
-      await goto(getRoute.current(status === 'valid' ? 'ContestantAppRegisterEmail' : 'ContestantAppRegisterSignIn'));
+      await goto(
+        getRoute.current(status === 'valid' ? 'ContestantAppRegisterCodeEmail' : 'ContestantAppRegisterCodeSignIn')
+      );
       checking = false;
       return;
     }

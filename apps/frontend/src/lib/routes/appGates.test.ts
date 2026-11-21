@@ -259,8 +259,8 @@ describe('the entry routes — every route a signed-in caller is sent away from'
         'ContestantAppIdentityProviderError',
         'ContestantAppLogin',
         'ContestantAppRegister',
-        'ContestantAppRegisterEmail',
-        'ContestantAppRegisterSignIn',
+        'ContestantAppRegisterCodeEmail',
+        'ContestantAppRegisterCodeSignIn',
         'ContestantAppSignIn'
       ].sort()
     );
