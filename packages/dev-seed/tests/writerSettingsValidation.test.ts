@@ -16,7 +16,7 @@ import { Writer } from '../src/writer';
 interface MockedAdminClient {
   bulkImport: ReturnType<typeof vi.fn>;
   importAnswers: ReturnType<typeof vi.fn>;
-  linkJoinTables: ReturnType<typeof vi.fn>;
+  linkQuestionScopes: ReturnType<typeof vi.fn>;
   updateAppSettings: ReturnType<typeof vi.fn>;
   selectQuestionExternalIds: ReturnType<typeof vi.fn>;
   selectCandidatesForPortraitUpload: ReturnType<typeof vi.fn>;
@@ -40,7 +40,7 @@ vi.mock('../src/supabaseAdminClient', () => ({
     const instance = {
       bulkImport: vi.fn(async () => ({})),
       importAnswers: vi.fn(async () => undefined),
-      linkJoinTables: vi.fn(async () => undefined),
+      linkQuestionScopes: vi.fn(async () => undefined),
       updateAppSettings: vi.fn(async () => undefined),
       selectQuestionExternalIds: vi.fn(async () => mockState.questionIds),
       selectCandidatesForPortraitUpload: vi.fn(async () => []),
@@ -64,7 +64,7 @@ function expectNothingWritten(): void {
   for (const method of [
     'bulkImport',
     'importAnswers',
-    'linkJoinTables',
+    'linkQuestionScopes',
     'uploadPortrait',
     'updateCandidateImage',
     'updateAppSettings',

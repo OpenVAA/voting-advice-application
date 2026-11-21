@@ -11,7 +11,6 @@
 
 import { defaultOverrides, defaultTemplate } from './default';
 import { baseTemplate } from './e2e/base';
-import { identityProviderTemplate } from './e2e/perm/identity-provider';
 import { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
 import { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
 import { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
@@ -30,16 +29,17 @@ import { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags
 import { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
 import { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 import { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
+import { permIdentityProviderTemplate } from './e2e/perm/perm-identity-provider';
 import { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
 import { permLocalizationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 import { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
-import { permNoNominationTemplate } from './e2e/perm/perm-no-nomination';
 import { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
 import { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
 import { permOrganizationEditingTemplate } from './e2e/perm/perm-organization-editing';
 import { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
 import { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 import { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
+import { permUnnominatedEntitiesTemplate } from './e2e/perm/perm-unnominated-entities';
 import { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
@@ -60,7 +60,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-disable-election-2co': permDisableElection2coTemplate,
   'perm-not-located-2e2cg': permNotLocated2e2cgTemplate,
   // The identity-provider specs' dataset, with its own externalIdPrefix 'e2e-bankauth-idp-'. Its setup adds the identity provider's mode for candidates through `appSettingsOverride`.
-  'identity-provider': identityProviderTemplate,
+  'perm-identity-provider': permIdentityProviderTemplate,
   // Per-app notifications perm. Distinct externalIdPrefix 'e2e-perm-notif-' for parallel safety across the wider suite.
   'perm-per-app-notifications': permPerAppNotificationsTemplate,
   // missing-nominations perm template. Distinct externalIdPrefix 'e2e-perm-missnoms-' (parallel-safe across the perm chains).
@@ -68,7 +68,7 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // localisation-positive perm template. Distinct externalIdPrefix 'e2e-perm-l10n-pos-'. Uses the 3-locale staticSettings base (en/fi/sv) directly — no runtime override. Spec exercises the langSelector visible-and-switching surface + Finnish-translation authoring on q1/q3.
   'perm-localisation-positive': permLocalizationPositiveTemplate,
 
-  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some specs additionally consume the contestantSessionMinter helper to author per-perm Playwright storage-state JSON files.
+  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some of their setups sign a candidate in and save a Playwright storage-state file for the spec.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
   // renamed from the former perm-header-show-feedback key. Keeps header.showFeedback and extends with the survey/feedback-popup result-view surfaces.
@@ -88,8 +88,8 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   // Organization-editing perm. Two organizations, one confirmed and one not, and an unconfirmed candidate, each with a nomination; every opinion question is addressed to organizations. Distinct externalIdPrefix 'e2e-perm-organization-editing-'.
   'perm-organization-editing': permOrganizationEditingTemplate,
 
-  // No-nomination perm. A candidate and an organization with no nomination row and a candidate with one, all confirmed; no question states an entity type. Distinct externalIdPrefix 'e2e-perm-no-nomination-'.
-  'perm-no-nomination': permNoNominationTemplate,
+  // Unnominated-entities perm. A candidate and an organization with no nomination row and a candidate with one, all confirmed; no question states an entity type. Distinct externalIdPrefix 'e2e-perm-unnominated-entities-'.
+  'perm-unnominated-entities': permUnnominatedEntitiesTemplate,
 
   // Contestant-nominations perm. Three elections of three nomination shapes, parties and alliances with and without a nomination, and a candidate and a party with no nomination row; opinion questions scoped to single elections. Distinct externalIdPrefix 'e2e-perm-contestant-nominations-'.
   'perm-contestant-nominations': permContestantNominationsTemplate,
@@ -119,7 +119,6 @@ export const BUILT_IN_OVERRIDES: Record<string, Overrides> = {
 // Re-exports for explicit consumer imports.
 export { defaultOverrides, defaultTemplate } from './default';
 export { BASE_APP_SETTINGS, baseTemplate } from './e2e/base';
-export { identityProviderTemplate } from './e2e/perm/identity-provider';
 export { perm1e1cg1coTemplate } from './e2e/perm/perm-1e1cg1co';
 export { perm2eAsymmetricTemplate } from './e2e/perm/perm-2e-asymmetric';
 export { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
@@ -138,14 +137,15 @@ export { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags
 export { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
 export { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 export { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
+export { permIdentityProviderTemplate } from './e2e/perm/perm-identity-provider';
 export { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
 export { permLocalizationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 export { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
-export { permNoNominationTemplate } from './e2e/perm/perm-no-nomination';
 export { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
 export { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
 export { permOrganizationEditingTemplate } from './e2e/perm/perm-organization-editing';
 export { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
 export { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 export { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
+export { permUnnominatedEntitiesTemplate } from './e2e/perm/perm-unnominated-entities';
 export { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
