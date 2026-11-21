@@ -17,7 +17,7 @@
 
 import { log } from '@openvaa/app-shared';
 import { redirect } from '@sveltejs/kit';
-import { OIDC_ERROR, oidcErrorFromFunction, oidcErrorFromProvider } from '$contestant/utils/oidcError';
+import { OIDC_ERROR, oidcErrorFromProvider } from '$contestant/utils/oidcError';
 import { identityProviderEntityType } from '$contestant/utils/registrationOffer';
 import { createDataProvider, createSupabaseAnonClient } from '$lib/api/dataProvider';
 import { formatOidcFailure } from '$lib/api/utils/auth/oidcFailure';
@@ -25,18 +25,12 @@ import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import { COOKIE, OIDC_FLOW_COOKIE_OPTIONS } from '$lib/cookies';
 import { isLocale } from '$lib/paraglide/runtime';
 import { buildRoute } from '$lib/routes';
+import { errorName, invokeIdentityCallback } from '$lib/server/auth/identityCallback';
 import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
 import { constants } from '$lib/server/constants';
 import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 import type { OidcError } from '$contestant/utils/oidcError';
-
-/** The marker each successful `result` of `identity-callback` leaves. */
-const ARRIVAL_OF_RESULT: Readonly<Record<string, 'created' | 'existing'>> = Object.freeze({
-  created: 'created',
-  found: 'existing',
-  no_entity: 'existing'
-});
 
 export async function GET(event: RequestEvent): Promise<never> {
   const { url, cookies, request, fetch, locals } = event;
@@ -114,7 +108,10 @@ export async function GET(event: RequestEvent): Promise<never> {
       cookies.delete(COOKIE.oidcNonce, { path: '/' });
     }
 
-    throw redirect(303, await register({ idToken, requestedType, cookies, request, url, fetch, locals, locale }));
+    throw redirect(
+      303,
+      await signInThroughIdentityCallback({ idToken, requestedType, cookies, request, url, fetch, locals, locale })
+    );
   } catch (e) {
     // A SvelteKit redirect is thrown as an exception, and is passed on.
     if (e && typeof e === 'object' && 'status' in e && 'location' in e) {
@@ -126,14 +123,41 @@ export async function GET(event: RequestEvent): Promise<never> {
 }
 
 /**
+ * The locale the flow lands in: the one the authorize endpoint recorded when it is a supported locale, otherwise the request's own.
+ * @param recorded - The value of the flow's locale cookie, if any.
+ * @param current - The locale this request was resolved to.
+ */
+function flowLocale(recorded: string | undefined, current: string): string {
+  return isLocale(recorded) ? recorded : current;
+}
+
+/**
+ * Clear every cookie an authorization flow leaves behind, so a rejected callback cannot be retried against the same flow state.
+ */
+function clearFlowCookies(cookies: Cookies): void {
+  cookies.delete(COOKIE.oidcState, { path: '/' });
+  cookies.delete(COOKIE.oidcNonce, { path: '/' });
+  cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
+  cookies.delete(COOKIE.oidcEntityType, { path: '/' });
+  cookies.delete(COOKIE.oidcLocale, { path: '/' });
+}
+
+/**
+ * The address of the identity provider's error screen for a code, in the request's locale. `error` is not a declared route param, so the builder puts it on the search side.
+ */
+function errorScreen(error: OidcError, locale: string | undefined): string {
+  return buildRoute({ route: 'ContestantAppIdentityProviderError', locale, error });
+}
+
+/**
  * Register the identified user through `identity-callback` and sign them in on this request's client.
  *
  * Once `verifyOtp` has set the session, the logout count the request carries is withdrawn, through `cookies`, `request` and `url`, before the arrival marker is set. A failure before that point leaves the count in place.
  *
- * Never throws: every failure is answered with the error screen's address for one closed code. The log names that code and a fixed cause for the operator: the stage that failed, or the function's closed `result` and its HTTP status, or the name of the error the invoke threw. No value of the tokens and no message the function or the auth service sent is logged.
+ * Never throws: every failure is answered with the error screen's address for one closed code. The log names that code and a fixed cause for the operator: the stage that failed, or the cause `invokeIdentityCallback` gives. No value of the tokens and no message the function or the auth service sent is logged.
  * @returns The address the browser is sent to: the Contestant App's root on success, the error screen otherwise.
  */
-async function register({
+async function signInThroughIdentityCallback({
   idToken,
   requestedType,
   cookies,
@@ -177,31 +201,17 @@ async function register({
   const entityType = identityProviderEntityType(settings, requestedType);
   if (!entityType) return failed(OIDC_ERROR.modeNotAllowed, 'entity type not allowed');
 
-  let answer: { result?: unknown; token?: unknown } | undefined;
-  let status: FunctionStatus;
-  try {
-    const { data, error } = await locals.supabase.functions.invoke('identity-callback', {
-      // The function's `SERVER_CREDENTIAL_HEADER`; its conformance test reads this line.
-      headers: { 'x-identity-callback-secret': serverSecret },
-      body: { id_token: idToken, project_id: dataProvider.projectId, entity_type: entityType }
-    });
-    answer = error ? await failedAnswerOf(error) : (data ?? undefined);
-    status = error ? failedStatusOf(error) : '2xx';
-  } catch (e) {
-    return failed(oidcErrorFromFunction(undefined), `the invoke threw ${errorName(e)}`);
-  }
-
-  const result = answer?.result;
-  const token = answer?.token;
-  const arrival =
-    typeof result === 'string' && Object.hasOwn(ARRIVAL_OF_RESULT, result) ? ARRIVAL_OF_RESULT[result] : undefined;
-  const answerCause = `function result ${String(result)}, status ${status}`;
-  if (!arrival) return failed(oidcErrorFromFunction(result), withAnswerHint(answerCause, result));
-  if (typeof token !== 'string' || token === '')
-    return failed(OIDC_ERROR.registrationFailed, `${answerCause}, with no sign-in token`);
+  const outcome = await invokeIdentityCallback({
+    supabase: locals.supabase,
+    serverSecret,
+    idToken,
+    projectId: dataProvider.projectId,
+    entityType
+  });
+  if (!outcome.ok) return failed(outcome.error, outcome.cause);
 
   try {
-    const { data, error } = await locals.supabase.auth.verifyOtp({ token_hash: token, type: 'magiclink' });
+    const { data, error } = await locals.supabase.auth.verifyOtp({ token_hash: outcome.token, type: 'magiclink' });
     if (error) return failed(OIDC_ERROR.registrationFailed, 'the sign-in token was not verified');
     if (!data.session) return failed(OIDC_ERROR.registrationFailed, 'the verified sign-in token gave no session');
   } catch (e) {
@@ -209,69 +219,6 @@ async function register({
   }
 
   withdrawLogoutDeadline({ cookies, request, url });
-  cookies.set(COOKIE.identityProviderArrival, arrival, OIDC_FLOW_COOKIE_OPTIONS);
+  cookies.set(COOKIE.identityProviderArrival, outcome.arrival, OIDC_FLOW_COOKIE_OPTIONS);
   return buildRoute({ route: 'ContestantAppHome', locale });
-}
-
-/**
- * The body of a failed `identity-callback` answer. `functions.invoke` keeps the function's response as the error's `context` when the function answered; when it was never reached there is none.
- * @param error - The error `functions.invoke` returned.
- * @returns The answer's body, or `undefined` when there is none that reads as an object.
- */
-async function failedAnswerOf(error: unknown): Promise<{ result?: unknown } | undefined> {
-  const context = (error as { context?: unknown }).context;
-  if (!(context instanceof Response)) return undefined;
-  const body: unknown = await context.json().catch(() => undefined);
-  return body && typeof body === 'object' ? (body as { result?: unknown }) : undefined;
-}
-
-/** The HTTP status of an `identity-callback` answer as the log names it: `2xx` for a successful one, `unreachable` when the function was never reached. */
-type FunctionStatus = number | '2xx' | 'unreachable';
-
-/**
- * The HTTP status of a failed `identity-callback` answer, read from the response `functions.invoke` keeps as the error's `context`.
- * @param error - The error `functions.invoke` returned.
- * @returns The status, or `unreachable` when the function never answered.
- */
-function failedStatusOf(error: unknown): FunctionStatus {
-  return (error as { context?: Response }).context?.status ?? 'unreachable';
-}
-
-/**
- * Add the operator hint a function `result` has to the log's cause. `refused` is the function's answer to a missing or mismatched credential, which the function does not log itself.
- */
-function withAnswerHint(cause: string, result: unknown): string {
-  return result === 'refused' ? `${cause}; the secret differs between the root .env and the function env` : cause;
-}
-
-/** The name of a thrown value, the only part of it the log names: never its message. */
-function errorName(thrown: unknown): string {
-  return thrown instanceof Error ? thrown.name : 'a non-error value';
-}
-
-/**
- * The locale the flow lands in: the one the authorize endpoint recorded when it is a supported locale, otherwise the request's own.
- * @param recorded - The value of the flow's locale cookie, if any.
- * @param current - The locale this request was resolved to.
- */
-function flowLocale(recorded: string | undefined, current: string): string {
-  return isLocale(recorded) ? recorded : current;
-}
-
-/**
- * The address of the identity provider's error screen for a code, in the request's locale. `error` is not a declared route param, so the builder puts it on the search side.
- */
-function errorScreen(error: OidcError, locale: string | undefined): string {
-  return buildRoute({ route: 'ContestantAppIdentityProviderError', locale, error });
-}
-
-/**
- * Clear every cookie an authorization flow leaves behind, so a rejected callback cannot be retried against the same flow state.
- */
-function clearFlowCookies(cookies: Cookies): void {
-  cookies.delete(COOKIE.oidcState, { path: '/' });
-  cookies.delete(COOKIE.oidcNonce, { path: '/' });
-  cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
-  cookies.delete(COOKIE.oidcEntityType, { path: '/' });
-  cookies.delete(COOKIE.oidcLocale, { path: '/' });
 }
