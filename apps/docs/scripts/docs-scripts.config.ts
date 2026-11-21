@@ -53,26 +53,23 @@ export const COPY_TARGETS = [
 ] as const;
 
 /**
- * Component directories for extraction. `categorySubdir` is where a directory's pages are written under the generated components route, and so where the table of contents links them.
+ * Component directories for extraction
  */
 export const COMPONENT_DIRS = [
   {
     dir: join(FRONTEND_ROOT, 'src', 'lib', 'components'),
     name: 'Static Components',
-    importPrefix: '$lib/components',
-    categorySubdir: 'components'
+    importPrefix: '$lib/components'
   },
   {
     dir: join(FRONTEND_ROOT, 'src', 'lib', 'dynamic-components'),
     name: 'Dynamic Components',
-    importPrefix: '$lib/dynamic-components',
-    categorySubdir: 'dynamic-components'
+    importPrefix: '$lib/dynamic-components'
   },
   {
     dir: join(FRONTEND_ROOT, 'src', 'lib', 'contestant', 'components'),
     name: 'Contestant App Components',
-    importPrefix: '$contestant/components',
-    categorySubdir: 'contestant/components'
+    importPrefix: '$contestant/components'
   }
 ] as const;
 

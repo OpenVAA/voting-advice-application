@@ -89,7 +89,7 @@ A confirmed entity with a confirmed nomination is visible to voters once the pro
 
 #### The nominations
 
-An entity-scope item for a candidate or an organization may state the invited entity's nominations under `nominations`, a JSON array of at most 1000 objects, one per nomination. The key is refused on a project-scope item and on an item for a faction or an alliance, and a batch may state one entity's nominations on one item only. An object takes the keys of [`set_entity_nominations`](/developers-guide/backend/authentication#writing-an-entitys-nominations) and `confirmed`, `id` and `election_round`:
+An entity-scope item for a candidate or an organization may state the invited entity's nominations under `nominations`, a JSON array of at most 1000 objects, one per nomination. The key is refused on a project-scope item and on an item for a faction or an alliance, and a batch may state one entity's nominations on one item only. An object takes the keys of [`set_entity_nominations`](/developers-guide/backend/nominations#writing-an-entitys-nominations) and `confirmed`, `id` and `election_round`:
 
 | Key                                                                                    | Meaning                                                                                                                                                       |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -140,15 +140,13 @@ The function answers `{ "accepted": true }` in every case, so its answer does no
 | a used code              | the user who claimed it still exists                                                                                                                                                                                                                                                                 | the claimant's own address, whatever was typed |
 | anything else            | never                                                                                                                                                                                                                                                                                                |                                                |
 
-In every case the address must also have its mail slots free: one mail per address per project in 60 seconds, and twenty per address a day in all projects together (see [Limits](#limits)). With an open code, the code is bound to the typed address and its 60-second wait starts before those slots are asked, so whether the typed address already has an invitation or a grant changes nothing the code's holder can see. The second arm of the first row is what lets a user who already holds a grant sign in the same way, an administrator of the project's account or a global administrator included. Binding an address to an open code means the code's promise is fulfilled only for the user who proves control of that address.
+In every case the address must also have its mail slots free; see [Limits](#limits). With an open code, the code is bound to the typed address and its 60-second wait starts before those slots are asked, so whether the typed address already has an invitation or a grant changes nothing the code's holder can see. The second arm of the first row is what lets a user who already holds a grant sign in the same way, an administrator of the project's account or a global administrator included. Binding an address to an open code means the code's promise is fulfilled only for the user who proves control of that address.
 
 For an address that has no account the function creates the user, without a password, before it issues the link.
 
 ### The mail
 
-The function mails a fixed text in one of seven locales: `da`, `en`, `et`, `fi`, `fr`, `lb` and `sv`. The request's `locale` chooses among them, and any other value, or none, gives `en`. The caller supplies no text, subject or sender.
-
-The link is `<SITE_URL>/<locale>/auth/confirm?token_hash=…&type=magiclink`, which opens the confirm page; the token is verified only when Continue is pressed there. Its origin is the function's `SITE_URL` and nothing from the request. The type is `magiclink` for a first-time and for a returning user alike. The token works once, and issuing a later link for the same address makes an earlier unopened one stop working. [Email](/developers-guide/backend/email#the-sign-in-link) describes the message.
+[Email](/developers-guide/backend/email#the-sign-in-link) describes the mail: its text, its locales and its link.
 
 ### Claiming
 

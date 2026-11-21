@@ -74,6 +74,7 @@ The `prerender` export makes the build write a page for the old URL that redirec
 | `yarn workspace @openvaa/docs check:research-quotes --base <rev> --component-base <rev>` | That the research quotes are unchanged; see [Research quotes](#research-quotes)                       |
 | `yarn workspace @openvaa/docs lint`                                                      | ESLint. The root `yarn lint:check` runs it too                                                        |
 | `yarn workspace @openvaa/docs check`                                                     | svelte-check                                                                                          |
+| `yarn workspace @openvaa/docs test:unit`                                                 | Unit tests of the docs scripts                                              |
 | `yarn workspace @openvaa/docs format:check`                                              | Prettier. The root `yarn format:check` runs it too                                                    |
 | `yarn workspace @openvaa/docs lint:full`                                                 | Prettier and ESLint                                                                                   |
 | `yarn workspace @openvaa/docs build`                                                     | The production build                                                                                  |

@@ -123,6 +123,10 @@ export const navigation: Navigation = [
             route: '/developers-guide/backend/authentication'
           },
           {
+            title: 'Nominations',
+            route: '/developers-guide/backend/nominations'
+          },
+          {
             title: 'Edge Functions',
             route: '/developers-guide/backend/edge-functions'
           },
@@ -205,7 +209,7 @@ export const navigation: Navigation = [
         children: [
           {
             title: 'Invitation',
-            route: '/developers-guide/contestant-app/pre-registration-and-invitation'
+            route: '/developers-guide/contestant-app/invitation'
           },
           {
             title: 'Registration',

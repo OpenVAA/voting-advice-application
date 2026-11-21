@@ -2,7 +2,7 @@
 
 There are three ways to register in the Contestant App, and the registration screen, `/contestant/register`, is the one tree they all start from. Each is a registration mode the project allows per entity type:
 
-- **`email`.** The user proves an email address that an invitation names, signs in by the link mailed to it and chooses a password. The account and its grant come from the invitation: an administrator creates it, and the claim writes the grant when its addressee signs in (see [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation)).
+- **`email`.** The user proves an email address that an invitation names, signs in by the link mailed to it and chooses a password. The account and its grant come from the invitation: an administrator creates it, and the claim writes the grant when its addressee signs in (see [Invitation](/developers-guide/contestant-app/invitation)).
 - **`code`.** The same, starting from a registration code the invitation holds.
 - **`identity_provider`.** The user identifies with a bank identity, and the `identity-callback` Edge Function creates the account and the entity it registers, a candidate or a party, with its grant. The user then gives the address they will sign in with. See [Bank authentication (OIDC)](/developers-guide/contestant-app/bank-authentication).
 
@@ -24,7 +24,7 @@ The screens above the forgot-password page are the Contestant App's entry routes
 
 ## The login screen
 
-The login screen holds no field. "Sign in with email" leads to the sign-in screen and passes on the `redirectTo` path the protected routes sent the visitor here with. "Register" leads to the registration screen and is rendered only when at least one registration mode is listed. Both are links, so the screen works before its script has loaded. A notice under the title says why a visitor was sent here, for the three reasons it knows: the user was signed out because their account's data could not be read (`errorMessage=loginFailed`), a mailed link could not be used (`errorMessage=authError`), or a link that confirms a new address was opened with no session after another account took that address (`errorMessage=emailTaken`). Any other value shows nothing.
+The login screen holds no field. "Sign in with email" leads to the sign-in screen and passes on the `redirectTo` path the protected routes sent the visitor here with. "Register" leads to the registration screen and is rendered only when at least one registration mode is listed. Both are links, so the screen works before its script has loaded. A notice under the title says why a visitor was sent here, for the reasons `$contestant/utils/loginError` knows. Three are about a link or a sign-out: the user was signed out because their account's data could not be read (`errorMessage=loginFailed`), a mailed link could not be used (`errorMessage=authError`), or a link that confirms a new address was opened with no session after another account took that address (`errorMessage=emailTaken`). The two reasons for a session that ended without the user pressing Log out in that tab are described under [Login and password reset](/developers-guide/contestant-app/login-and-password-reset#login). Any other value shows nothing.
 
 ## What lists a registration mode
 
@@ -35,7 +35,7 @@ The login screen holds no field. "Sign in with email" leads to the sign-in scree
 - `email` and `code` are listed when any entity type the project serves allows them, because the invitation they redeem names its own entity.
 - While `access.contestantEditing` is `'locked'`, nothing is listed: the login screen shows the locked sentence and no "Register". The database's rule allows no mode then either.
 
-The database applies the same matrix to the invitation itself: an open invitation for a candidate or an organization is honoured only under a mode its project allows for that type (see [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation#the-registration-modes)).
+The database applies the same matrix to the invitation itself: an open invitation for a candidate or an organization is honoured only under a mode its project allows for that type (see [Invitation](/developers-guide/contestant-app/invitation#the-registration-modes)).
 
 ## The guard of the registration routes
 
@@ -114,7 +114,7 @@ Acceptance of the terms of use belongs to the user and the project. It is not st
 - **Where it is recorded.** The `terms_of_use_acceptances` table holds one row for each user and project. The database stamps who accepted and when: the app sends neither. See [Authentication and authorisation](/developers-guide/backend/authentication#terms-of-use-acceptances) for the table's policies and privileges.
 - **When it is asked.** The server load of the protected layout, [`+layout.server.ts`](<https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/routes/contestant/(protected)/+layout.server.ts>), reads the user-level data first (`getBasicUserData`, whose `termsOfUseAccepted` is the time of acceptance or `null`) and passes it to the gate list. The entity is read by the load of the `[entityType]/[entityId]` routes below it, and not until every gate has passed.
 - **How often.** Once per project. A user who has accepted is not asked again after signing out, resetting their password or signing in again. A user who edits more than one entity in the project accepts once.
-- **How it is recorded.** The view calls the candidate context's `acceptTermsOfUse`, which calls the data writer's method of the same name. The Supabase data writer upserts a row with duplicates ignored, so accepting twice is not an error. The layout's loads then run again and the requested page replaces the view. If the write fails, the view stays and shows an error.
+- **How it is recorded.** The view calls the contestant context's `acceptTermsOfUse`, which calls the data writer's method of the same name. The Supabase data writer upserts a row with duplicates ignored, so accepting twice is not an error. The layout's loads then run again and the requested page replaces the view. If the write fails, the view stays and shows an error.
 - **What it does not decide.** Whether voters can see a candidate does not depend on acceptance; see [Row-level security and column grants](/developers-guide/backend/authentication#row-level-security-and-column-grants).
 
 ## Data writer methods

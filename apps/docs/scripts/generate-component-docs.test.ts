@@ -28,14 +28,15 @@ async function writeComponent(dir: string, name: string): Promise<void> {
 
 describe('generateComponentDocs', () => {
   it('fails, and writes nothing, when a component directory holds no component', async () => {
-    const empty = path.join(root, 'empty');
+    const empty = path.join(root, 'components');
     const out = path.join(root, 'out');
     await mkdir(empty);
 
     await expect(
       generateComponentDocs({
         outputDir: out,
-        componentDirs: [{ dir: empty, name: 'Empty', importPrefix: '$lib/components', categorySubdir: 'components' }]
+        componentDirs: [{ dir: empty, name: 'Empty', importPrefix: '$lib/components' }],
+        libRoot: root
       })
     ).rejects.toThrow(/no component/i);
     await expect(readdir(out)).rejects.toThrow();
@@ -51,8 +52,9 @@ describe('generateComponentDocs', () => {
     await generateComponentDocs({
       outputDir: out,
       componentDirs: [
-        { dir: components, name: 'Static', importPrefix: '$lib/components', categorySubdir: 'components' }
-      ]
+        { dir: components, name: 'Static', importPrefix: '$lib/components' }
+      ],
+      libRoot: root
     });
 
     expect((await readdir(out)).sort()).toEqual(['README.md', 'components']);
@@ -60,8 +62,8 @@ describe('generateComponentDocs', () => {
   });
 
   it('links each component in the table of contents to the page it writes', async () => {
-    const statics = path.join(root, 'statics');
-    const contestant = path.join(root, 'contestant');
+    const statics = path.join(root, 'components');
+    const contestant = path.join(root, 'contestant', 'components');
     const out = path.join(root, 'out');
     await writeComponent(path.join(statics, 'button'), 'Button');
     await writeComponent(path.join(contestant, 'card'), 'Card');
@@ -69,14 +71,14 @@ describe('generateComponentDocs', () => {
     await generateComponentDocs({
       outputDir: out,
       componentDirs: [
-        { dir: statics, name: 'Static', importPrefix: '$lib/components', categorySubdir: 'components' },
+        { dir: statics, name: 'Static', importPrefix: '$lib/components' },
         {
           dir: contestant,
           name: 'Contestant',
-          importPrefix: '$contestant/components',
-          categorySubdir: 'contestant/components'
+          importPrefix: '$contestant/components'
         }
-      ]
+      ],
+      libRoot: root
     });
 
     const toc = await readFile(path.join(out, 'README.md'), 'utf-8');
