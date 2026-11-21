@@ -171,21 +171,22 @@ export const handle: Handle = sequence(supabaseHandle, logoutDeadlineHandle, par
 
 /**
  * The error the error page renders for an unexpected error or a page that does not exist.
- * Its `message` is the response's status, which the error page shows as its title, so a missing page is titled 404 and a server error 500. The error itself is logged on the server and never reaches the page.
+ * Its `message` is the response's status, which the error page shows as its title, so a missing page is titled 404 and a server error 500. The error never reaches the page.
+ * A server error, status 500 or above, is logged through the shared logger with the error's name, message and stack. A status below 500, such as a missing page, is the client's request and is not logged.
  */
 export const handleError: HandleServerError = async ({ error, status }) => {
-  console.error('Server error:', error);
+  if (status >= 500) log.error('Server error', { err: error, status });
   return { message: String(status) };
 };
 
 /**
  * Start-up check of a production server.
  * Runs once, before the server answers its first request and after both dynamic environments are populated. It does nothing in development and during the build.
- * Refuses to start when a required variable is unset: it throws one error that names every such variable and prints no value.
+ * Refuses to start when a required variable is unset or invalid: it throws one error that names every such variable and prints no value.
  */
 export const init: ServerInit = () => {
   if (dev || building) return;
 
   const missing = missingRequiredEnv({ ...privateEnv, ...publicEnv });
-  if (missing.length > 0) throw new Error(`Required environment variables are not set: ${missing.join(', ')}`);
+  if (missing.length > 0) throw new Error(`Required environment variables are unset or invalid: ${missing.join(', ')}`);
 };

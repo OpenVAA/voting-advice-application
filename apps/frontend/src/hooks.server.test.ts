@@ -1,7 +1,7 @@
 /**
  * The server's error hook and its request hook's handling of the logout deadline.
  *
- * `handleError` answers the error the error page renders: its `message` is the response's status, which the page shows as its title. The error itself is logged on the server and never reaches the page.
+ * `handleError` answers the error the error page renders: its `message` is the response's status, which the page shows as its title. A server error is logged through the shared logger and never reaches the page; a missing page is not logged.
  *
  * `handle` signs out a request whose logout count the browser has let run out, the count's id pending and its deadline cookie gone, and settles the pending cookie in the same response with a value it never acts on again; two different pending ids sign nothing out and every copy is expired, the host's own domain's included. It is driven whole, for a request that names no route, so the gate lets it through.
  *
@@ -54,13 +54,16 @@ const UNTRACED_STATE = { tracing: { record_span: ({ fn }: { fn: (span: unknown) 
 const event = {} as RequestEvent;
 
 describe('handleError', () => {
+  let logError: MockInstance<typeof log.error>;
   let consoleError: MockInstance<typeof console.error>;
 
   beforeEach(() => {
+    logError = vi.spyOn(log, 'error').mockImplementation(() => undefined);
     consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
+    logError.mockRestore();
     consoleError.mockRestore();
   });
 
@@ -74,11 +77,20 @@ describe('handleError', () => {
     expect(await handleError({ error, event, status: 500, message: 'Internal Error' })).toEqual({ message: '500' });
   });
 
-  it('logs the error on the server and returns nothing of it', async () => {
+  it('logs a server error through the shared logger, with the error, and returns nothing of it', async () => {
     const error = new Error('the database is unreachable');
     const answer = await handleError({ error, event, status: 500, message: 'Internal Error' });
-    expect(consoleError).toHaveBeenCalledWith('Server error:', error);
+    expect(logError).toHaveBeenCalledTimes(1);
+    expect(logError).toHaveBeenCalledWith('Server error', { err: error, status: 500 });
+    expect(consoleError).not.toHaveBeenCalled();
     expect(JSON.stringify(answer)).not.toContain('unreachable');
+  });
+
+  it('logs nothing for a page that does not exist', async () => {
+    const error = new Error('Not found: /no-such-page');
+    await handleError({ error, event, status: 404, message: 'Not Found' });
+    expect(logError).not.toHaveBeenCalled();
+    expect(consoleError).not.toHaveBeenCalled();
   });
 });
 
