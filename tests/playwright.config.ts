@@ -1066,8 +1066,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI || process.env.GITHUB_ACTIONS === 'true',
   /* Retry tests on CI */
   retries: process.env.CI ? 3 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : 6,
+  /* Opt out of parallel tests on CI. Under GitHub Actions without CI (the wrapper unsets it), 4 workers match the 4-vCPU runner: on it 6 workers finish no sooner (1415 s against 1382 s at 4) and double the cold-start setup times, past the 10 s readiness budgets. */
+  workers: process.env.CI ? 1 : process.env.GITHUB_ACTIONS === 'true' ? 4 : 6,
 
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['html', { outputFolder: path.join(TESTS_DIR, '../playwright-report') }]],
@@ -1096,9 +1096,10 @@ export default defineConfig({
      * `retain-on-failure` records exactly what `'on'` records — same instrumentation, same runtime cost — and then discards the trace when the test passes. What it buys is disk: a full-suite run under `'on'` deposits 260-340 MB of trace zips that nobody opens, because the run was green.
      * Under `retain-on-failure` a green run deposits ~0 bytes and a red one still hands you the trace for the test that actually failed (local `retries: 0` does not weaken this — the retain fires on the final failed attempt either way).
      *
-     * When a passing test's trace IS the evidence — e.g. grepping console messages out of GREEN trace zips — flip this to `'on'` for that investigation and flip it back. That is the rare case; paying 300 MB a run for it is not worth it. Note that browser-side forensics (console / pageerror / requestfailed) are captured independently of this setting by the `forensicCapture` fixture, which
-     * attaches its transcripts to the result whether the test passed or not. */
-    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+     * When a passing test's trace IS the evidence — e.g. grepping console messages out of GREEN trace zips — flip this to `'on'` for that investigation and flip it back. That is the rare case; paying 300 MB a run for it is not worth it. Note that browser-side forensics (console / pageerror / requestfailed) are captured independently of this setting by the `forensicCapture` fixture, which attaches its transcripts to the result whether the test passed or not.
+     *
+     * CI is detected through GITHUB_ACTIONS as well, because `tests/scripts/e2e-run.sh` unsets `CI` and the CI E2E jobs run through it. Under the wrapper there are no retries, so a CI run records no trace at all; a failure there is read from its error-context snapshot and the `forensicCapture` transcripts. On the 4-vCPU runner the recorder costs about a third of a full run (2111 s traced against 1415 s untraced at 6 workers), load that pushes cold-load readiness waits past their budgets. */
+    trace: process.env.CI || process.env.GITHUB_ACTIONS === 'true' ? 'on-first-retry' : 'retain-on-failure',
 
     baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173'
   },

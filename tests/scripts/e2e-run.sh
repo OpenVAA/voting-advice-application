@@ -1096,7 +1096,7 @@ HOST_AT_START="$(host_snapshot start)"
   echo "db_reset=$DB_RESET"
   echo "package_watcher=$WATCH"
   echo "expected_retries=0"
-  echo "expected_workers=6"
+  echo "expected_workers=$( [ "${GITHUB_ACTIONS:-}" = true ] && echo 4 || echo 6 )"
   echo "heartbeat_interval_s=$HEARTBEAT_INTERVAL_S"
   echo "suspend_threshold_ms=$SUSPEND_THRESHOLD_MS"
   # Machine capacity at run start. Recorded, never enforced: a run is not refused for a busy machine, but an outlier can then be attributed from the run directory instead of reconstructed from outside it.

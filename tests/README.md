@@ -25,7 +25,7 @@ Driving your own server — for `--grep`, a different reporter, or a debugging s
 # In another shell. Without the prefix the served-project preflight aborts the run, naming both ids.
 PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2 yarn dev
 
-yarn test:e2e                              # the gate suite — 6 workers (1 on CI); EXCLUDES the @probe specs
+yarn test:e2e                              # the gate suite — 6 workers (4 under GitHub Actions, 1 with CI set); EXCLUDES the @probe specs
 yarn test:e2e:probes                       # the isolation probe, run on its own
 yarn test:e2e --project=voter-journey      # one project (still pulls in its dependency chain)
 yarn test:e2e --grep "result card"         # filter by title substring
@@ -184,7 +184,7 @@ yarn test:unit                    # every workspace's unit tests, then these
 
 ## Concurrency model
 
-- `workers: 6` (non-CI default; `1` on CI). The 6-worker pool is **global** across all projects.
+- `workers: 6` locally, `4` under GitHub Actions (the wrapper unsets `CI`, so `GITHUB_ACTIONS` selects it; the runner has 4 vCPUs) and `1` with `CI` set. The worker pool is **global** across all projects.
 - `fullyParallel: true` is the global default — files within a project run concurrently unless the project overrides `fullyParallel: false`. The journey + perm spec projects set `fullyParallel: false` (single serial test each).
 - Project-level `dependencies: [...]` enforces "runs after". A project becomes eligible the moment all its dependencies finish; multiple eligible projects then share the worker pool.
 - `teardown: '<project>'` runs the named teardown project after this project and all its transitive dependents complete.
