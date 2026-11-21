@@ -56,7 +56,7 @@ It compares each pair between the root `.env` and the functions' `.env`, and che
 
 Every query the frontend makes on a project-scoped table is limited to the project named by `PUBLIC_PROJECT_ID`. The variable is mandatory and has no fallback: if it is empty, or is not a canonical UUID, the Supabase adapter throws when it is constructed, and the message names the variable and the local default. The local value in `.env.example` is `00000000-0000-0000-0000-000000000001`, the default project that `seed.sql` creates.
 
-The `identity-callback` Edge Function reads the same name to decide which project a self-registered candidate joins, so the Edge Function `.env` carries it too.
+`send-email` reads the same name and refuses a request for another project, so the Edge Function `.env` carries it too.
 
 ## Reading variables in the frontend
 
@@ -117,6 +117,26 @@ For the local stack, `yarn workspace @openvaa/supabase supabase status -o env` p
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`: the mail server that `send-email` and `account-access` use (the local email testing server in the template).
 
 The functions read these from their own `.env`. The root `.env` carries them too, for serving a function directly against the root file, as the comments in `.env.example` describe.
+
+### Analytics
+
+These are private server variables, read once when the frontend server starts: a change needs a restart, not a rebuild. None has a `PUBLIC_` prefix, and the browser is told only whether analytics is active and the two modes.
+
+- `ANALYTICS_PROVIDER`: `none`, `log` or `posthog`; `none` when unset, which collects and sends nothing. `log` writes one structured line per event to the server's output and sends nothing off the machine; the template sets it. `posthog` forwards the events to PostHog.
+- `ANALYTICS_CONSENT_MODE`: `gated` (the default) asks the visitor before sending any event other than the page view; `free` sends without asking and attaches no visit id to sensitive events. Whether consent is needed in a jurisdiction is for the deployer to determine.
+- `ANALYTICS_VISIT_ID_MODE`: `memory` (the default) keeps one visit id in memory for the life of the page; `none` sends no visit id at all.
+- `ANALYTICS_POSTHOG_KEY`: the PostHog project key, required when the provider is `posthog`. It is a secret: set it in the deployment environment, never in a template.
+- `ANALYTICS_POSTHOG_HOST`: the PostHog host, `https://eu.i.posthog.com` when unset. It must be an `https:` URL, or `http:` on `localhost` or `127.0.0.1`.
+
+A value outside these vocabularies, an unacceptable host, or `posthog` with no key stops the production server from starting and names the variable; the dev server logs it and sends nothing.
+
+### Reverse proxy (production server)
+
+Only the production server (adapter-node, `node apps/frontend/build/index.js`) reads these; `yarn dev` does not. Keep them commented out in `.env`: Compose reads `.env`, so a live `ORIGIN` there would reach the production test image of `docker-compose.dev.yml` and make it refuse every form post. Compose and the Render template set them themselves.
+
+- `ORIGIN`: the public origin of the deployment as a browser sees it, for example `https://vaa.example.org`. The production server refuses to start without it.
+- `ADDRESS_HEADER`: the request header in which the nearest proxy sets the client address, for example `x-forwarded-for`.
+- `XFF_DEPTH`: the number of trusted proxies, counted from the right of that header; the adapter's default is `1`.
 
 ### Admin app
 

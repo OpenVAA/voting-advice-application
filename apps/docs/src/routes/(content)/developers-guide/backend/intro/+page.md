@@ -58,7 +58,7 @@ A frontend deployment serves exactly one project, named by `PUBLIC_PROJECT_ID` i
 PUBLIC_PROJECT_ID=00000000-0000-0000-0000-000000000001
 ```
 
-The Supabase adapter in the frontend has no fallback for this variable. If it is unset, or is not a canonical uuid, the adapter throws when it is constructed instead of reading some other project's rows. The `identity-callback` Edge Function reads the same variable to decide which project a candidate who registers through bank authentication joins.
+The Supabase adapter in the frontend has no fallback for this variable. If it is unset, or is not a canonical uuid, the adapter throws when it is constructed instead of reading some other project's rows. Of the Edge Functions, only `send-email` reads it; `identity-callback` and `account-access` take the project from the request.
 
 ## Tests and SQL lint
 
