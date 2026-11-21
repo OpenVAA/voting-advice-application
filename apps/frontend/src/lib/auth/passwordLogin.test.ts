@@ -223,10 +223,16 @@ describe('passwordLogin', () => {
   });
 
   // THE WRONG-DOOR CASE, the other half of what a role-only gate would get wrong: a project editor is an administrator of a project, and its role literal is `editor`.
-  it('denies the contestant door to a project-scope editor', async () => {
-    const { context } = contextWith({ session: { access_token: accessTokenFor([PROJECT_EDITOR]) } });
+  it('opens the admin door to a project-scope editor and denies it the contestant door', async () => {
+    const admin = contextWith({ session: { access_token: accessTokenFor([PROJECT_EDITOR]) } });
+    const contestant = contextWith({ session: { access_token: accessTokenFor([PROJECT_EDITOR]) } });
 
-    expect(await login(context, CONTESTANT_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
+    expect((await login(admin.context, ADMIN_GRANTS)).ok).toBe(true);
+    expect(await login(contestant.context, CONTESTANT_GRANTS)).toEqual({
+      ok: false,
+      status: 403,
+      reason: 'grantNotAllowed'
+    });
   });
 
   // A session minted before the access-token hook changed carries the retired claim key until its token refreshes. It opens nothing, here or in the database, and there is deliberately no fallback that would let it.
@@ -347,6 +353,7 @@ describe('hasAnyGrant', () => {
     expect(hasAnyGrant([ENTITY_EDITOR], ADMIN_GRANTS)).toBe(false);
     expect(hasAnyGrant([], ADMIN_GRANTS)).toBe(false);
     expect(hasAnyGrant([GLOBAL_ADMIN], ADMIN_GRANTS)).toBe(true);
+    expect(hasAnyGrant([PROJECT_EDITOR], ADMIN_GRANTS)).toBe(true);
     // Neither half alone is enough: the entity-scope admin matches the admin set's role and the contestant set's scope, and is admitted by neither.
     expect(hasAnyGrant([ENTITY_ADMIN], ADMIN_GRANTS)).toBe(false);
     expect(hasAnyGrant([ENTITY_ADMIN], CONTESTANT_GRANTS)).toBe(false);
@@ -373,7 +380,8 @@ describe('hasAnyGrant', () => {
     expect([...ADMIN_GRANTS]).toEqual([
       { scope: 'global', role: 'admin' },
       { scope: 'account', role: 'admin' },
-      { scope: 'project', role: 'admin' }
+      { scope: 'project', role: 'admin' },
+      { scope: 'project', role: 'editor' }
     ]);
     expect([...CONTESTANT_GRANTS]).toEqual([
       { scope: 'entity', role: 'editor', target_type: 'candidate' },

@@ -339,17 +339,12 @@ const REJECTED_TWINS: Record<EventName, Array<{ why: string; input: unknown; pat
       path: 'attributes.entityType'
     },
     {
-      why: 'no entity id',
-      input: withoutAttribute('results_browse_entity', 'entityId'),
+      why: 'the id of the entity the voter opened',
+      input: withAttributes('results_browse_entity', { entityId: SAMPLE_ID }),
       path: 'attributes.entityId'
     },
     {
-      why: 'an entity id of 65 characters',
-      input: withAttributes('results_browse_entity', { entityId: overLong(64) }),
-      path: 'attributes.entityId'
-    },
-    {
-      why: 'the entity id under its former name',
+      why: 'the id of the entity the voter opened, as `id`',
       input: withAttributes('results_browse_entity', { id: SAMPLE_ID }),
       path: 'attributes.id'
     },
@@ -403,8 +398,8 @@ const REJECTED_TWINS: Record<EventName, Array<{ why: string; input: unknown; pat
       path: 'attributes.score'
     },
     {
-      why: 'an entity id of 65 characters',
-      input: withAttributes('results_ranked_entity', { entityId: overLong(64) }),
+      why: 'the id of the entity the voter opened',
+      input: withAttributes('results_ranked_entity', { entityId: SAMPLE_ID }),
       path: 'attributes.entityId'
     },
     {

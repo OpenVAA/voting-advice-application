@@ -202,7 +202,7 @@ describe('PasswordSignIn', () => {
       expect(links).toHaveLength(1);
       expect(links[0].getAttribute('href')).toBe('/contestant/forgot-password');
       expect(links[0].getAttribute('data-testid')).toBe('login-forgot-password-link');
-      expect(links[0].textContent).toContain('contestantApp.login.forgotPassword');
+      expect(links[0].textContent).toContain('common.account.forgotPassword');
     });
 
     it('carries the address it was given to the forgot-password page', () => {
@@ -231,7 +231,7 @@ describe('PasswordSignIn', () => {
       const { target } = render({ ...SIGN_IN_SCREEN_IDS, ...NO_PASSWORD_YET_ID, email: ADDRESS });
 
       expect(target.querySelector('[data-testid="login-no-password-yet-link"]')).toBeNull();
-      expect(target.textContent).not.toContain('contestantApp.login.noPasswordYet');
+      expect(target.textContent).not.toContain('common.account.noPasswordYet');
     });
 
     it('leads to the forgot-password page with the address it was given, with the test id it was given', () => {
@@ -245,7 +245,7 @@ describe('PasswordSignIn', () => {
       const link = target.querySelector<HTMLAnchorElement>('[data-testid="login-no-password-yet-link"]');
       expect(link).not.toBeNull();
       expect(link!.tagName).toBe('A');
-      expect(link!.textContent).toContain('contestantApp.login.noPasswordYet');
+      expect(link!.textContent).toContain('common.account.noPasswordYet');
       const href = new URL(link!.getAttribute('href')!, 'http://localhost');
       expect(href.pathname).toBe('/contestant/forgot-password');
       expect(href.searchParams.get('email')).toBe(ADDRESS);

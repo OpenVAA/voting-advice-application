@@ -41,6 +41,11 @@ export const NOMINATION_ELECTION_PARAM = 'nominationElectionId';
  * The search param that carries the constituencies chosen in the nomination editor from one step to the next. It may be repeated, and like the election param it is not persistent.
  */
 export const NOMINATION_CONSTITUENCY_PARAM = 'nominationConstituencyId';
+
+/**
+ * The search param that carries, for an entity that chooses several constituencies in one election, each chosen election and constituency as one value: the election's id and the constituency's id, joined by the editor's contest separator. It may be repeated, and like the editor's other two params it is not persistent.
+ */
+export const NOMINATION_CONTEST_PARAM = 'nominationContest';
 /** Root route id of the Voter App. */
 export const VOTER = '/(voters)';
 /** Route-id prefix of the Voter App routes that require a selected election and constituency. */
@@ -152,26 +157,26 @@ export const ROUTE = {
   ContestantAppProfile: `${CONTESTANT_NOMINATED}/profile`,
   ContestantAppQuestion: `${CONTESTANT_NOMINATED}/questions/[questionId]`,
   ContestantAppQuestions: `${CONTESTANT_NOMINATED}/questions`,
+  /** The endpoint that starts the identity provider's flow. The registration screen posts the chosen entity type to it under the page's locale, which it asks the provider to show its screens in, and leaves for the address it answers. */
+  ContestantAppIdentityProviderAuthorize: `${API_ROOT}/oidc/authorize`,
   /** The identity provider's callback, where the provider sends the browser back after identification. The authorize endpoint gives the provider this path on its own origin. */
   ContestantAppIdentityProviderCallback: `${API_ROOT}/oidc/callback`,
   ContestantAppLogin: `${CONTESTANT}/login`,
   /** The sign-in screen: the email and password form, and the request for a mailed sign-in link. */
-  ContestantAppSignIn: `${CONTESTANT}/login/email`,
+  ContestantAppLoginEmail: `${CONTESTANT}/login/email`,
   /** The screen shown after a link was asked for by email. It renders only while the entry flow holds a link request, and leads a visitor who arrives with none to the login screen. */
   ContestantAppEmailSent: `${CONTESTANT}/email-sent`,
   /** The registration page, which lists the ways the project lets a visitor register. It is served only where at least one is listed, and leads to the login screen otherwise. */
   ContestantAppRegister: `${CONTESTANT}/register`,
   /** The screen that takes an email address for a registration code nobody has claimed. It renders only while the entry flow holds such a code, and leads a visitor who arrives with none to the registration page. */
-  ContestantAppRegisterEmail: `${CONTESTANT}/register/email`,
+  ContestantAppRegisterCodeEmail: `${CONTESTANT}/register/code/email`,
   /** The screen that signs in the holder of a registration code somebody has claimed, with that code and a password. It renders only while the entry flow holds such a code, and leads a visitor who arrives with none to the registration page. */
-  ContestantAppRegisterSignIn: `${CONTESTANT}/register/sign-in`,
+  ContestantAppRegisterCodeSignIn: `${CONTESTANT}/register/code/sign-in`,
   /** The screen an identification failure in the identity provider's flow lands on. It shows one of three classes, chosen by its `error` parameter, and nothing else of it. */
   ContestantAppIdentityProviderError: `${CONTESTANT}/register/identity-provider/error`,
   ContestantAppResetPassword: `${CONTESTANT}/password-reset`,
   /** The signed-in user's own settings page: the account's address and the password. It belongs to the user and not to an entity, so it sits directly below the protected root and is reached by a user with no entity, one or several alike. */
   ContestantAppSettings: `${CONTESTANT_PROT}/settings`,
-  /** The settings address under an entity. Its load redirects to `ContestantAppSettings`, so an address that names an entity still opens the settings page, and no link is built from this key. */
-  ContestantAppEntitySettings: `${CONTESTANT_ENTITY}/settings`,
   // The two auth endpoints sit under the generic API prefix because the contestant app and the admin app address the same handlers. Their keys carry no app name for the same reason.
   AuthCallback: `${API_ROOT}/auth/callback`,
   /** The confirm page a mailed link opens: it verifies the link only when its form is posted. It belongs to neither app, so it sits outside both and outside the API. */

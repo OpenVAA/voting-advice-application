@@ -27,7 +27,7 @@ const CONFIRMATION = '[data-testid="email-entry-confirmation"]';
 const EMAIL_ERROR = '[data-testid="email-entry-email-error"]';
 const CONFIRMATION_ERROR = '[data-testid="email-entry-confirmation-error"]';
 
-const REQUIRED_KEY = 'contestantApp.login.emailRequired';
+const REQUIRED_KEY = 'common.account.emailRequired';
 const INVALID_KEY = 'components.input.error.invalidEmail';
 const MISMATCH_KEY = 'contestantApp.register.emailEntry.mismatch';
 

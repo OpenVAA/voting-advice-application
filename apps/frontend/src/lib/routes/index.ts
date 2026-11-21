@@ -1,5 +1,6 @@
 export * from './appGates';
 export * from './buildRoute';
+export * from './contestantEntityPage';
 export * from './contestantHomeRoute';
 export * from './impliedParams';
 export * from './loginRedirectTarget';
@@ -7,5 +8,6 @@ export * from './params';
 export * from './parseParams';
 export * from './resultsRoutes';
 export * from './route';
+export * from './selectionData';
 export * from './selectionOrder';
 export * from './voterAppPath';

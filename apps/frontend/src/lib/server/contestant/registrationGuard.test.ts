@@ -5,7 +5,7 @@
  *
  * What this file holds:
  *
- * 1. **The decision** — whether registration is offered, for each of the two needs: any listed mode, and the code mode.
+ * 1. **The decision** — whether registration is offered, for each of the three needs: any listed mode, the code mode, and the identity provider's mode.
  * 2. **The refusal** — a 303 redirect to the login route in the request's locale, with no parameter, and nothing thrown where registration is offered.
  * 3. **Failing closed** — a settings read that rejects is logged and read as settings that offer nothing.
  * 4. **The read** — made through a data provider built on an anonymous client and the request's own fetch.
@@ -78,6 +78,11 @@ const EVERY_MODE_UNLOCKED = settingsWith(
   { servedEntityTypes: { candidate: { registrationModes: ['identity_provider', 'email', 'code'] } } },
   { answersLocked: false }
 );
+
+const EVERY_MODE_APP_CLOSED: Settings = {
+  ...EVERY_MODE_UNLOCKED,
+  access: { contestantApp: false, contestantEditing: 'open' }
+};
 
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
 
@@ -155,6 +160,31 @@ describe('the need for the code mode', () => {
   });
 });
 
+describe("the need for the identity provider's mode", () => {
+  it.each([
+    ['a served type with no mode', NO_MODE],
+    ['settings that declare nothing', {}],
+    ['the code mode alone', CODE_ALONE],
+    ['the email mode alone', EMAIL_ALONE],
+    ['every mode allowed while answers are locked', EVERY_MODE_LOCKED],
+    ['every mode allowed while the Contestant App is closed', EVERY_MODE_APP_CLOSED]
+  ])('redirects with 303 to the login route for %s', async (_name, settings) => {
+    getAppSettings.mockResolvedValue(settings);
+    expect(await redirectOf(makeEvent(), 'identityProvider')).toMatchObject({ status: 303, location: LOGIN_ROUTE });
+    expect(await isRegistrationOffered(makeEvent(), 'identityProvider')).toBe(false);
+  });
+
+  it.each([
+    ["the provider's mode for candidates", PROVIDER_FOR_CANDIDATES],
+    ["the provider's mode allowed for organizations alone", PROVIDER_FOR_ORGANIZATIONS_ALONE],
+    ['every mode while answers are not locked', EVERY_MODE_UNLOCKED]
+  ])('returns nothing and throws nothing for %s', async (_name, settings) => {
+    getAppSettings.mockResolvedValue(settings);
+    expect(await redirectOf(makeEvent(), 'identityProvider')).toBeUndefined();
+    expect(await isRegistrationOffered(makeEvent(), 'identityProvider')).toBe(true);
+  });
+});
+
 describe('the redirect', () => {
   it.each(['en', 'fi'])("leads to the login route in the request's locale %s", async (locale) => {
     getAppSettings.mockResolvedValue(NO_MODE);
@@ -163,7 +193,7 @@ describe('the redirect', () => {
     expect(redirected?.location).toBe(buildRoute({ route: 'ContestantAppLogin', locale }));
   });
 
-  it.each<RegistrationNeed>(['any', 'code'])(
+  it.each<RegistrationNeed>(['any', 'code', 'identityProvider'])(
     'carries no parameter, whatever the request carries, for the need %s',
     async (need) => {
       getAppSettings.mockResolvedValue(NO_MODE);
@@ -178,7 +208,7 @@ describe('the redirect', () => {
 });
 
 describe('a settings read that fails', () => {
-  it.each<RegistrationNeed>(['any', 'code'])(
+  it.each<RegistrationNeed>(['any', 'code', 'identityProvider'])(
     'is logged and read as settings that offer nothing, for the need %s',
     async (need) => {
       const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
@@ -197,6 +227,7 @@ describe('a settings read that fails', () => {
     getAppSettings.mockRejectedValue(new Error('unreachable'));
     expect(await isRegistrationOffered(makeEvent(), 'any')).toBe(false);
     expect(await isRegistrationOffered(makeEvent(), 'code')).toBe(false);
+    expect(await isRegistrationOffered(makeEvent(), 'identityProvider')).toBe(false);
   });
 });
 

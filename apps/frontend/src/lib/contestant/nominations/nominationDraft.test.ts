@@ -194,7 +194,7 @@ describe('buildCards', () => {
         nomination({ id: 'n2', electionId: OPEN.id, constituencyId: 'c2' })
       ];
 
-      const cards = cardsOf('organization', stored, chosen);
+      const cards = cardsOf('candidate', stored, chosen);
 
       expect(cards).toHaveLength(2);
       expect(cards.map((card) => card.nominationId)).toEqual(['n1', 'n2']);
@@ -203,6 +203,64 @@ describe('buildCards', () => {
       expect(cards.map((card) => card.previousConstituencyId)).toEqual([undefined, undefined]);
     }
   );
+
+  it('for an entity that chooses several constituencies, keeps each stored nomination whose constituency is chosen, removes the others and adds a new card for each chosen constituency', () => {
+    const stored = [
+      nomination({ id: 'n1', electionId: OPEN.id, constituencyId: 'c1' }),
+      nomination({ id: 'n2', electionId: OPEN.id, constituencyId: 'c2' })
+    ];
+
+    const cards = cardsOf('organization', stored, [pair(OPEN, 'c2'), pair(OPEN, 'c3'), pair(OPEN, 'c4')]);
+
+    expect(cards.map((card) => `${card.nominationId ?? 'new'}/${card.constituencyId}/${card.state}`)).toEqual([
+      'n1/c1/removed',
+      'n2/c2/kept',
+      'new/c3/new',
+      'new/c4/new'
+    ]);
+    expect(cards.map((card) => card.previousConstituencyId)).toEqual([undefined, undefined, undefined, undefined]);
+  });
+
+  it('for an entity that chooses several constituencies, moves no card: a stored nomination at another constituency than the chosen one is removed beside a new card', () => {
+    const stored = [nomination({ id: 'n1', electionId: OPEN.id, constituencyId: 'c1' })];
+
+    const cards = cardsOf('organization', stored, [pair(OPEN, 'c2')]);
+
+    expect(cards.map((card) => `${card.nominationId ?? 'new'}/${card.constituencyId}/${card.state}`)).toEqual([
+      'n1/c1/removed',
+      'new/c2/new'
+    ]);
+  });
+
+  it('for an entity that chooses several constituencies in two elections over one constituency group, keeps each election to its own chosen pairs', () => {
+    const stored = [
+      nomination({ id: 'n1', electionId: CLOSED.id, constituencyId: 'c1' }),
+      nomination({ id: 'n2', electionId: CLOSED.id, constituencyId: 'c2' }),
+      nomination({ id: 'n3', electionId: OPEN.id, constituencyId: 'c1' })
+    ];
+
+    const asStored = cardsOf('organization', stored, [pair(CLOSED, 'c1'), pair(CLOSED, 'c2'), pair(OPEN, 'c1')]);
+    expect(asStored.map((card) => `${card.electionId}/${card.constituencyId}/${card.state}`)).toEqual([
+      'closed/c1/kept',
+      'closed/c2/kept',
+      'open/c1/kept'
+    ]);
+    expect(somethingToWrite(asStored)).toBe(false);
+
+    const withAnother = cardsOf('organization', stored, [
+      pair(CLOSED, 'c1'),
+      pair(CLOSED, 'c2'),
+      pair(OPEN, 'c1'),
+      pair(OPEN, 'c2')
+    ]);
+    expect(withAnother.map((card) => `${card.electionId}/${card.constituencyId}/${card.state}`)).toEqual([
+      'closed/c1/kept',
+      'closed/c2/kept',
+      'open/c1/kept',
+      'open/c2/new'
+    ]);
+    expect(somethingToWrite(withAnother)).toBe(true);
+  });
 
   it('orders the cards by the elections’ given order, then as stored', () => {
     const stored = [
@@ -618,14 +676,6 @@ describe('parentChoicesOf — a moved card', () => {
       FACTION,
       ['entity:org-blue', 'entity:org-green', 'other'],
       undefined
-    ],
-    [
-      'a party under an organization',
-      'organization',
-      OPEN,
-      GREEN,
-      ['entity:all-hills', 'entity:all-coast', 'other', 'none'],
-      'none'
     ]
   ] as const)(
     'starts as a new card does where the stored parent is of another type (%s)',

@@ -259,9 +259,9 @@ describe('the entry routes — every route a signed-in caller is sent away from'
         'ContestantAppIdentityProviderError',
         'ContestantAppLogin',
         'ContestantAppRegister',
-        'ContestantAppRegisterEmail',
-        'ContestantAppRegisterSignIn',
-        'ContestantAppSignIn'
+        'ContestantAppRegisterCodeEmail',
+        'ContestantAppRegisterCodeSignIn',
+        'ContestantAppLoginEmail'
       ].sort()
     );
   });

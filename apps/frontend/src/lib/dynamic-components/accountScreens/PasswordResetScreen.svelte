@@ -47,7 +47,7 @@
 </script>
 
 <PasswordSaveForm
-  title={t('contestantApp.resetPassword.createNewPassword')}
+  title={t('common.account.resetPassword.createNewPassword')}
   {email}
   {setPassword}
   {afterSave}
@@ -58,7 +58,7 @@
   {#snippet heading()}
     <HeadingGroup>
       <PreHeading>{appName}</PreHeading>
-      <h1 tabindex="-1">{t('contestantApp.resetPassword.createNewPassword')}</h1>
+      <h1 tabindex="-1">{t('common.account.resetPassword.createNewPassword')}</h1>
     </HeadingGroup>
   {/snippet}
 

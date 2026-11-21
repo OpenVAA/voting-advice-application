@@ -41,7 +41,7 @@ vi.mock('$lib/components/input', async (importOriginal) => {
 
 const { EmailField } = await import('.');
 
-const ERROR = 'contestantApp.login.emailRequired';
+const ERROR = 'common.account.emailRequired';
 
 let teardown: Array<() => void> = [];
 

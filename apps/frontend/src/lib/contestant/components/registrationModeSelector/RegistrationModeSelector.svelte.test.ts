@@ -6,7 +6,7 @@
  * What this file holds:
  *
  * 1. **No mode and one mode** — nothing, and the one panel with no group around it.
- * 2. **Several modes** — the group, its name, its radios, drawn by the input library's `Radio`, and their order, and no panel on arrival.
+ * 2. **Several modes** — the group, its name, its radios, drawn by the input library's `RadioGroup`, and their order, and no panel on arrival.
  * 3. **Choosing** — the chosen mode's panel is the only panel in the document, and focus stays where it was.
  * 4. **The group's error** — an alert under the options that describes the group, cleared by a choice.
  * 5. **What the group does not add** — no role, no `tabindex`, no form.
@@ -26,19 +26,20 @@ const { track } = vi.hoisted(() => ({ track: vi.fn() }));
 
 vi.mock('$lib/contexts/app', () => ({ getAppContext: () => ({ track }) }));
 
-/** The props each `Radio` of the input library was rendered with, read when it was rendered. */
-const { radiosRendered } = vi.hoisted(() => ({
-  radiosRendered: new Array<{ name: unknown; value: unknown }>()
+/** The props each `RadioGroup` of the input library was rendered with, read when it was rendered. */
+const { groupsRendered } = vi.hoisted(() => ({
+  groupsRendered: new Array<{ name: unknown; values: Array<unknown> }>()
 }));
 
-// The library's `Radio` is wrapped so that a case can tell which component rendered the radios. The wrapper renders the real one.
+// The library's `RadioGroup` is wrapped so that a case can tell which component rendered the group. The wrapper renders the real one.
 vi.mock('$lib/components/input', async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
-  const render = actual.Radio as unknown as (anchor: unknown, props: Record<string, unknown>) => unknown;
+  const render = actual.RadioGroup as unknown as (anchor: unknown, props: Record<string, unknown>) => unknown;
   return {
     ...actual,
-    Radio: (anchor: unknown, props: Record<string, unknown>) => {
-      radiosRendered.push({ name: props.name, value: props.value });
+    RadioGroup: (anchor: unknown, props: Record<string, unknown>) => {
+      const options = props.options as Array<{ value: unknown }>;
+      groupsRendered.push({ name: props.name, values: options.map((option) => option.value) });
       return render(anchor, props);
     }
   };
@@ -66,7 +67,7 @@ let teardown: Array<() => void> = [];
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  radiosRendered.length = 0;
+  groupsRendered.length = 0;
   track.mockClear();
 });
 
@@ -188,24 +189,19 @@ describe('RegistrationModeSelector — several modes', () => {
     }
   });
 
-  it('renders each radio with the input library’s `Radio`, one per mode in the order given, under the group’s name', () => {
+  it('renders the group with the input library’s `RadioGroup`, one option per mode in the order given, under the group’s name', () => {
     const { target } = render();
 
-    expect(radiosRendered.map((radio) => radio.value)).toEqual(['identity_provider', 'email', 'code']);
-    expect(radiosRendered.map((radio) => radio.name)).toEqual([
-      'registrationMode',
-      'registrationMode',
-      'registrationMode'
-    ]);
+    expect(groupsRendered).toEqual([{ name: 'registrationMode', values: ['identity_provider', 'email', 'code'] }]);
     for (const radio of radiosOf(target)) {
       for (const name of ['radio', 'radio-primary', 'border']) expect(radio.classList.contains(name)).toBe(true);
     }
   });
 
-  it('renders no `Radio` for one mode', () => {
+  it('renders no `RadioGroup` for one mode', () => {
     render({ modes: ['email'] });
 
-    expect(radiosRendered).toEqual([]);
+    expect(groupsRendered).toEqual([]);
   });
 
   it('keeps the order it is given, whatever that order is', () => {

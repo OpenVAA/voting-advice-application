@@ -24,7 +24,7 @@ export function getImpliedElectionIds({
   // Filter to applicable elections: those to which one or more of the selected constituencies apply.
   if (selectedConstituencyIds?.length) {
     const constituencies = selectedConstituencyIds.map((id) => dataRoot.getConstituency(id));
-    elections = elections.filter((e) => e.getApplicableConstituencies(constituencies).length > 0);
+    elections = elections.filter((e) => e.isHeldIn(constituencies));
   }
   // Elections can be implied if there is only one election or if the app settings disallow selection and the caller honours that setting
   if (elections.length === 1 || (honourDisallowSelection && appSettings.elections?.disallowSelection))

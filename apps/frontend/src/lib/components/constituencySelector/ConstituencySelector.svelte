@@ -182,11 +182,11 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
       const { applicableElections, groups, selectedId } = sections[i];
       // If there is a selection, set it and those possibly implied by it
       if (selectedId) {
-        // For multiple elections, we need to imply the constituency for each election. Note that getImpliedConstituency will return the constituency itself if its applicable
+        // For multiple elections, we need to imply the constituency for each election. Note that getImpliedConstituency returns the constituency itself if it is applicable
         if (applicableElections.length > 1) {
           const constituency = groups[0].root.getConstituency(selectedId);
           for (const election of applicableElections) {
-            const impliedId = election.constituencyGroups[0].getImpliedConstituency(constituency)?.id;
+            const impliedId = election.getImpliedConstituency(constituency)?.id;
             selected[election.id] = impliedId ?? '';
           }
         } else {

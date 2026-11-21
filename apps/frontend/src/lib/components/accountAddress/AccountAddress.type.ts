@@ -2,7 +2,7 @@ import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type AccountAddressProps = Omit<SvelteHTMLElements['dl'], 'data-testid'> & {
   /**
-   * The label shown above the address, e.g. `t('contestantApp.nothingToEdit.signedInAs')`.
+   * The label shown above the address, e.g. `t('common.account.signedInAs')`.
    */
   label: string;
   /**

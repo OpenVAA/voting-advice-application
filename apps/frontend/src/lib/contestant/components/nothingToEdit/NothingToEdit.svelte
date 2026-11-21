@@ -58,7 +58,7 @@ Accesses `ContestantContext`. The signed-in email is read from the context's `us
 
   {#if contestantCtx.user?.email}
     <AccountAddress
-      label={t('contestantApp.nothingToEdit.signedInAs')}
+      label={t('common.account.signedInAs')}
       address={contestantCtx.user.email}
       data-testid="contestant-nothing-to-edit-email" />
   {/if}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   admissibleElectionsOf,
+  choosesSeveralConstituenciesOf,
   constituencyChoiceOf,
   nominationsEditableOf,
   startingSelectionOf,
@@ -117,24 +118,26 @@ describe('startingSelectionOf', () => {
 
   it('answers the election and the constituency of one nomination', () => {
     expect(startingSelectionOf([nomination(CLOSED_LIST, 'north')])).toEqual([
-      { electionId: 'closed-list', constituencyId: 'north' }
+      { electionId: 'closed-list', constituencyIds: ['north'] }
     ]);
   });
 
-  it('answers an election with two nominations once, with no constituency', () => {
+  it('answers an election with two nominations once, with both constituencies in the order met', () => {
     const starting = startingSelectionOf([
       nomination(CLOSED_LIST, 'north'),
       nomination(OPEN_LIST, 'nation'),
       nomination(CLOSED_LIST, 'south')
     ]);
 
-    expect(starting).toEqual([{ electionId: 'closed-list' }, { electionId: 'open-list', constituencyId: 'nation' }]);
-    expect(starting[0]).not.toHaveProperty('constituencyId');
+    expect(starting).toEqual([
+      { electionId: 'closed-list', constituencyIds: ['north', 'south'] },
+      { electionId: 'open-list', constituencyIds: ['nation'] }
+    ]);
   });
 
-  it('answers an election with two nominations in one constituency with no constituency either', () => {
+  it('answers a constituency held twice in one election once', () => {
     expect(startingSelectionOf([nomination(CLOSED_LIST, 'north'), nomination(CLOSED_LIST, 'north')])).toEqual([
-      { electionId: 'closed-list' }
+      { electionId: 'closed-list', constituencyIds: ['north'] }
     ]);
   });
 
@@ -161,23 +164,37 @@ describe('constituencyChoiceOf', () => {
 
   it('leaves a chosen election with no nomination, and one with a single nomination, to choose', () => {
     expect(
-      constituencyChoiceOf({ chosenElectionIds: ['candidates-only', 'open-list'], nominations: NOMINATIONS })
+      constituencyChoiceOf({
+        chosenElectionIds: ['candidates-only', 'open-list'],
+        nominations: NOMINATIONS,
+        severalConstituencies: false
+      })
     ).toEqual({ toChoose: ['candidates-only', 'open-list'], kept: [] });
   });
 
   it('keeps a chosen election with several nominations', () => {
-    expect(constituencyChoiceOf({ chosenElectionIds: ['closed-list'], nominations: NOMINATIONS })).toEqual({
+    expect(
+      constituencyChoiceOf({
+        chosenElectionIds: ['closed-list'],
+        nominations: NOMINATIONS,
+        severalConstituencies: false
+      })
+    ).toEqual({
       toChoose: [],
       kept: ['closed-list']
     });
   });
 
   it('puts an election that is not chosen in neither list', () => {
-    expect(constituencyChoiceOf({ chosenElectionIds: ['open-list'], nominations: NOMINATIONS })).toEqual({
+    expect(
+      constituencyChoiceOf({ chosenElectionIds: ['open-list'], nominations: NOMINATIONS, severalConstituencies: false })
+    ).toEqual({
       toChoose: ['open-list'],
       kept: []
     });
-    expect(constituencyChoiceOf({ chosenElectionIds: [], nominations: NOMINATIONS })).toEqual({
+    expect(
+      constituencyChoiceOf({ chosenElectionIds: [], nominations: NOMINATIONS, severalConstituencies: false })
+    ).toEqual({
       toChoose: [],
       kept: []
     });
@@ -186,8 +203,8 @@ describe('constituencyChoiceOf', () => {
   it('follows the order of the chosen ids, each once, and answers an object of its own', () => {
     const chosenElectionIds = ['open-list', 'closed-list', 'candidates-only', 'open-list'];
 
-    const first = constituencyChoiceOf({ chosenElectionIds, nominations: NOMINATIONS });
-    const second = constituencyChoiceOf({ chosenElectionIds, nominations: NOMINATIONS });
+    const first = constituencyChoiceOf({ chosenElectionIds, nominations: NOMINATIONS, severalConstituencies: false });
+    const second = constituencyChoiceOf({ chosenElectionIds, nominations: NOMINATIONS, severalConstituencies: false });
 
     expect(first).toEqual({ toChoose: ['open-list', 'candidates-only'], kept: ['closed-list'] });
     expect(second).toEqual(first);
@@ -195,11 +212,34 @@ describe('constituencyChoiceOf', () => {
     expect(second.toChoose).not.toBe(first.toChoose);
   });
 
+  it('keeps no election for an entity that chooses several constituencies in one election', () => {
+    expect(
+      constituencyChoiceOf({
+        chosenElectionIds: ['closed-list', 'open-list'],
+        nominations: NOMINATIONS,
+        severalConstituencies: true
+      })
+    ).toEqual({ toChoose: ['closed-list', 'open-list'], kept: [] });
+  });
+
   it('leaves every chosen election to choose for an entity with no nomination', () => {
-    expect(constituencyChoiceOf({ chosenElectionIds: ['closed-list', 'open-list'], nominations: [] })).toEqual({
+    expect(
+      constituencyChoiceOf({
+        chosenElectionIds: ['closed-list', 'open-list'],
+        nominations: [],
+        severalConstituencies: false
+      })
+    ).toEqual({
       toChoose: ['closed-list', 'open-list'],
       kept: []
     });
+  });
+});
+
+describe('choosesSeveralConstituenciesOf', () => {
+  it('lets an organization choose several constituencies in one election, and a candidate one', () => {
+    expect(choosesSeveralConstituenciesOf('organization')).toBe(true);
+    expect(choosesSeveralConstituenciesOf('candidate')).toBe(false);
   });
 });
 
@@ -212,6 +252,7 @@ describe('the barrel', () => {
       'admissibleElectionsOf',
       'writableNominationsOf',
       'startingSelectionOf',
+      'choosesSeveralConstituenciesOf',
       'constituencyChoiceOf',
       'buildCards',
       'parentChoicesOf',

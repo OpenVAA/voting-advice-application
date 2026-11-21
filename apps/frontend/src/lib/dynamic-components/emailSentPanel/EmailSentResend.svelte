@@ -63,8 +63,8 @@ While seconds are left, and while a request the button made is in flight, the bu
 <div {...concatClass(restProps, 'flex w-full flex-col items-center')}>
   <Button
     type="button"
-    text={loading ? t('common.loading') : t('contestantApp.emailSent.resend')}
-    suffix={counting ? t('contestantApp.emailSent.resendIn', { seconds: secondsLeft }) : undefined}
+    text={loading ? t('common.loading') : t('common.account.emailSent.resend')}
+    suffix={counting ? t('common.account.emailSent.resendIn', { seconds: secondsLeft }) : undefined}
     suffixProps={{ 'data-testid': countdownTestId }}
     aria-disabled={unavailable ? 'true' : undefined}
     aria-busy={loading ? 'true' : undefined}

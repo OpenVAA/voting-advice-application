@@ -137,7 +137,7 @@ export function constituenciesStepOutcome(input: SelectionInput): SelectionOutco
 }
 
 /**
- * The elections held in the constituencies given: those to which `Election.getApplicableConstituencies` finds one or more of them applicable. This is the list of the election step while a constituency group comes first.
+ * The elections held in the constituencies given: those `Election.isHeldIn` answers `true` for. This is the list of the election step while a constituency group comes first.
  *
  * @param elections - The elections to choose among.
  * @param constituencies - The chosen constituencies.
@@ -150,7 +150,7 @@ export function electionsHeldIn({
   elections: Array<Election>;
   constituencies: Array<Constituency>;
 }): Array<Election> {
-  return elections.filter((election) => election.getApplicableConstituencies(constituencies).length > 0);
+  return elections.filter((e) => e.isHeldIn(constituencies));
 }
 
 /**

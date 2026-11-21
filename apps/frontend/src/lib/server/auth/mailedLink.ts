@@ -71,11 +71,6 @@ export function mailedLinkLanding(next: string | null | undefined): MailedLinkLa
 }
 
 /**
- * The link types the auth callback refuses before it hands a link to the confirm page: nothing issues one, and verifying one for an invited account stores a password nobody chose. `verifyMailedLink` refuses them too, as it refuses every type that is not one of {@link MAILED_LINK_TYPES}.
- */
-export const REFUSED_LINK_TYPES: ReadonlySet<string> = new Set(['invite', 'signup', 'email']);
-
-/**
  * How the auth client reports the verification of an `email_change` link whose new address another account took after the link was mailed: status 500 and no error code, because the change breaks the uniqueness of addresses in the auth service. An expired link, or one a newer link replaced, answers 403 with the code `otp_expired`; a gateway error has another status; an unreachable service has status 0. Any other server failure of the verification with status 500 and no code is read the same way.
  */
 const ADDRESS_TAKEN_FAILURE = { status: 500, code: undefined } as const;

@@ -170,7 +170,7 @@ describe('adapter-boundary ESLint guard — REVIEW-ADP-06', () => {
 
   // The shrinking half of the allowlist: the grandfathered sites OUTSIDE the boundary. These probe the REAL file paths rather than invented ones, because the allowlist names exact files — an entry that stopped matching its file would turn the gate red on the untouched tree, and this is what catches a mistyped path before the next editor does.
   describe('grandfathered allowlist entries stay silent', () => {
-    it.each([['lib/server/contestant/signOutToLogin.ts'], ['hooks.server.ts']])(
+    it.each([['lib/server/auth/signOutOrFail.ts'], ['hooks.server.ts']])(
       'stays silent on a locals.supabase access in the allowlisted src/%s',
       async (relativePath) => {
         const [result] = await eslint.lintText(fixtureFor('a locals.supabase member access').source['.ts'], {

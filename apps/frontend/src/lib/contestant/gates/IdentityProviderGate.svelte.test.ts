@@ -156,9 +156,9 @@ const KEY = {
   saveFailed: 'contestantApp.identityProvider.saveFailed',
   hero: 'contestantApp.identityProvider.heroEmoji',
   nameSentence: 'dynamic.contestantAppBasicInfo.identity.name.editable.organization',
-  resendRequested: 'contestantApp.emailSent.resendRequested',
-  resendReady: 'contestantApp.emailSent.resendReady',
-  resendIn: 'contestantApp.emailSent.resendIn'
+  resendRequested: 'common.account.emailSent.resendRequested',
+  resendReady: 'common.account.emailSent.resendReady',
+  resendIn: 'common.account.emailSent.resendIn'
 };
 
 /** User-level data of an identity-provider account with no address, changed by `overrides`. */
@@ -675,6 +675,24 @@ describe('IdentityProviderGate — Send again', () => {
 
     await press(target, SEL.resend);
     expect(register).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps its count and its status running while the email form is shown in its place', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
+    register.mockResolvedValue('sent');
+    const target = render({ user: pendingUser(), arrival: 'existing' });
+    await press(target, SEL.resend);
+    const status = one(target, SEL.status);
+
+    await press(target, SEL.changeAddress);
+
+    expect(target.querySelector(SEL.resend)).toBeNull();
+    expect(one(target, SEL.status), 'the status region stays').toBe(status);
+    expect(status.textContent?.trim()).toBe(KEY.resendRequested);
+
+    vi.advanceTimersByTime(RESEND_WAIT_SECONDS * 1000);
+    flushSync();
+    expect(status.textContent?.trim()).toBe(KEY.resendReady);
   });
 });
 

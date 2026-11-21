@@ -1,5 +1,5 @@
 <!--
-@component A choice among the ways to register: one radio per mode, each a `Radio` of the input library, and under the chosen radio that mode's panel. The panel's content is a snippet of the caller's, which is given the mode it is rendered for.
+@component A choice among the ways to register: a `RadioGroup` of the input library with one radio per mode, and under the chosen radio that mode's panel. The panel's content is a snippet of the caller's, which is given the mode it is rendered for.
 
 Only the chosen mode's panel is in the document, so a browser finds no field of another mode to fill. Nothing is chosen until the user chooses. A panel opens and closes without an animation.
 
@@ -45,11 +45,9 @@ The radios are in no form. They choose and are never sent: the snippet holds the
 -->
 
 <script lang="ts">
-  import { ErrorMessage } from '$lib/components/errorMessage';
-  import { Radio } from '$lib/components/input';
+  import { RadioGroup } from '$lib/components/input';
   import { getAppContext } from '$lib/contexts/app';
   import { getComponentContext } from '$lib/contexts/component';
-  import { concatClass, getUUID } from '$lib/utils/components';
   import type { RegistrationMode } from '@openvaa/app-shared';
   import type { TranslationKey } from '$types';
   import type { RegistrationModeSelectorProps } from './RegistrationModeSelector.type';
@@ -59,13 +57,11 @@ The radios are in no form. They choose and are never sent: the snippet holds the
     selected = $bindable(),
     panel,
     error = $bindable(),
-    id: idProp = undefined,
-    'aria-describedby': describedByProp = undefined,
     ...restProps
   }: RegistrationModeSelectorProps = $props();
 
   export function focusFirst(): void {
-    fieldset?.querySelector<HTMLInputElement>('input[type="radio"]')?.focus();
+    group?.focusFirst();
   }
 
   const { t } = getComponentContext();
@@ -78,18 +74,11 @@ The radios are in no form. They choose and are never sent: the snippet holds the
     code: 'contestantApp.register.modes.code'
   };
 
-  // Generated once, so that the id is the same on every read.
-  const fallbackId = getUUID();
-  const id = $derived(idProp ?? fallbackId);
-  const errorId = $derived(`${id}-error`);
+  const options = $derived(modes.map((mode) => ({ value: mode, label: t(OPTION_TEXT[mode]) })));
 
-  let fieldset: HTMLFieldSetElement | undefined = $state();
-
-  /** What describes the group: whatever the caller named, then the error while it is rendered. */
-  const describedBy = $derived([describedByProp, error ? errorId : undefined].filter(Boolean).join(' ') || undefined);
+  let group: RadioGroup<RegistrationMode> | undefined = $state();
 
   function handleChoose(mode: RegistrationMode): void {
-    error = undefined;
     track('registration_modeChosen', { mode });
   }
 </script>
@@ -97,31 +86,27 @@ The radios are in no form. They choose and are never sent: the snippet holds the
 {#if modes.length === 1}
   {@render panel(modes[0])}
 {:else if modes.length > 1}
-  <fieldset
-    bind:this={fieldset}
-    {id}
-    aria-describedby={describedBy}
-    {...concatClass(restProps, 'flex w-full min-w-0 flex-col gap-md')}>
-    <legend class="mb-md text-center font-bold">{t('contestantApp.register.modes.legend')}</legend>
-    {#each modes as mode (mode)}
-      <div class="bg-base-100 rounded-lg" data-testid="register-mode-option" data-mode={mode}>
-        <Radio
-          bind:group={selected}
-          name="registrationMode"
-          value={mode}
-          label={t(OPTION_TEXT[mode])}
-          containerProps={{ class: 'p-lg' }}
-          data-testid="register-mode-input"
-          onchange={() => handleChoose(mode)} />
-        {#if selected === mode}
-          <div class="px-lg pb-lg" data-testid="register-mode-panel" data-mode={mode}>
-            {@render panel(mode)}
-          </div>
-        {/if}
+  <RadioGroup
+    bind:this={group}
+    bind:selected
+    bind:error
+    {...restProps}
+    legend={t('contestantApp.register.modes.legend')}
+    name="registrationMode"
+    {options}
+    onchoose={handleChoose}
+    legendProps={{ class: 'mb-md text-center' }}
+    optionProps={(mode) => ({
+      class: 'bg-base-100 rounded-lg',
+      'data-testid': 'register-mode-option',
+      'data-mode': mode
+    })}
+    radioProps={() => ({ containerProps: { class: 'p-lg' }, 'data-testid': 'register-mode-input' })}
+    errorTestId="register-modes-error">
+    {#snippet option(mode)}
+      <div class="px-lg pb-lg" data-testid="register-mode-panel" data-mode={mode}>
+        {@render panel(mode)}
       </div>
-    {/each}
-    {#if error}
-      <ErrorMessage inline message={error} id={errorId} role="alert" data-testid="register-modes-error" />
-    {/if}
-  </fieldset>
+    {/snippet}
+  </RadioGroup>
 {/if}
