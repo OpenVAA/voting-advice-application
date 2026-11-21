@@ -10,7 +10,7 @@
  *   5. new Writer — throws with messages on missing env, and refuses a non-local SUPABASE_URL unless `--allow-remote` or `DEV_SEED_ALLOW_REMOTE=1` opts out; CLI catches.
  *   6. runPipeline(template) — the generator orchestrator.
  *   7. fanOutLocales(rows, template, seed) — no-op if the flag is off.
- *   8. writer.write(rows, prefix, { openForVoters }) — the third argument carries the resolved template's `openForVoters`, because the writer receives rows, not the template; when the template declares it, the writer's last pass sets the target project's openness (162.1 D-21). Optionally returns `{ portraits }`. This CLI tolerates both a `void` return and the `{ portraits: number }` shape, so the writer's signature can move without re-touching it.
+ *   8. writer.write(rows, prefix, { openForVoters, templateName }). The third argument carries what the writer cannot read from rows: the template's `openForVoters`, which the writer's last pass applies to the project when the template declares it, and `templateName` (the `--template` argument), which a refusal of the template's settings names. Optionally returns `{ portraits }`. This CLI tolerates both a `void` return and the `{ portraits: number }` shape, so the writer's signature can move without re-touching it.
  *   9. formatSummary(...) => stdout.
  *   10. exit 0 on success, 1 on any error.
  *
@@ -103,7 +103,7 @@ try {
   const writeResult: unknown = await (writer.write as (...args: Array<unknown>) => Promise<unknown>)(
     rows,
     (template as Template & { externalIdPrefix?: string }).externalIdPrefix ?? 'seed_',
-    { openForVoters: template.openForVoters }
+    { openForVoters: template.openForVoters, templateName: templateArg }
   );
   const portraits = extractPortraitCount(writeResult);
 

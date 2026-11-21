@@ -16,6 +16,7 @@
 import { describe, expect, it } from 'vitest';
 import { BASE_APP_SETTINGS, BUILT_IN_TEMPLATES } from '../../src';
 import { baseTemplate } from '../../src/templates/e2e/base';
+import { MINIMAL_BASE_APP_SETTINGS } from '../../src/templates/e2e/perm/shared';
 
 type FragmentView = { fixed?: Array<Record<string, unknown>>; count?: number };
 
@@ -63,7 +64,7 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
     expect(Object.keys(BASE_APP_SETTINGS).sort()).toEqual(
       [
         'access',
-        'candidateApp',
+        'contestantApp',
         'elections',
         'entities',
         'entityDetails',
@@ -95,14 +96,34 @@ describe('BASE_APP_SETTINGS — base dataset settings contract', () => {
     });
   });
 
-  it('access block enables candidate/voter/admin apps, not under maintenance, answers unlocked', () => {
+  it('access block enables candidate/voter/admin apps, not under maintenance, contestant editing open', () => {
     expect(BASE_APP_SETTINGS.access).toEqual({
-      candidateApp: true,
+      contestantApp: true,
       voterApp: true,
       adminApp: true,
       underMaintenance: false,
-      answersLocked: false
+      contestantEditing: 'open'
     });
+  });
+
+  it('contestantApp block states the whole root: the question settings and both served entity types with their registration modes', () => {
+    expect(BASE_APP_SETTINGS.contestantApp).toEqual({
+      questions: { hideHero: false, hideVideo: false },
+      servedEntityTypes: {
+        candidate: { registrationModes: ['email', 'code'] },
+        organization: { registrationModes: ['email', 'code'] }
+      }
+    });
+  });
+
+  it('serves organizations with the email and code modes candidates have, and differs from the minimal perm base in the served types on purpose', () => {
+    const minimal = MINIMAL_BASE_APP_SETTINGS.contestantApp;
+    expect(Object.keys(BASE_APP_SETTINGS.contestantApp.servedEntityTypes)).toEqual(['candidate', 'organization']);
+    expect(BASE_APP_SETTINGS.contestantApp.servedEntityTypes.organization.registrationModes).toEqual(['email', 'code']);
+    expect(minimal.servedEntityTypes).toEqual({
+      candidate: BASE_APP_SETTINGS.contestantApp.servedEntityTypes.candidate
+    });
+    expect(minimal.questions).toEqual(BASE_APP_SETTINGS.contestantApp.questions);
   });
 
   it('questions block shows the intro + category tags + results link', () => {

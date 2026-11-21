@@ -17,13 +17,11 @@ import { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
 import { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
 import { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
 import { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
-import { permBankauthNotLocatedTemplate } from './e2e/perm/perm-bankauth-notloc';
 import { permClosedProjectTemplate } from './e2e/perm/perm-closed-project';
+import { permContestantNominationsTemplate } from './e2e/perm/perm-contestant-nominations';
 import { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
-import { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
 import { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
 import { permDisableElection2coTemplate } from './e2e/perm/perm-disable-election-2co';
-import { permDisableVoterAppTemplate } from './e2e/perm/perm-disable-voter-app';
 import { permDisjoint1coTemplate } from './e2e/perm/perm-disjoint-1co';
 import { permHeaderShowHelpTemplate } from './e2e/perm/perm-header-show-help';
 import { permHideAllNominationsTemplate } from './e2e/perm/perm-hide-all-nominations';
@@ -31,14 +29,17 @@ import { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags
 import { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
 import { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 import { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
+import { permIdentityProviderTemplate } from './e2e/perm/perm-identity-provider';
 import { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
 import { permLocalizationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 import { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
 import { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
 import { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
+import { permOrganizationEditingTemplate } from './e2e/perm/perm-organization-editing';
 import { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
 import { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 import { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
+import { permUnnominatedEntitiesTemplate } from './e2e/perm/perm-unnominated-entities';
 import { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
@@ -58,18 +59,16 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-disable-election-1co': permDisableElection1coTemplate,
   'perm-disable-election-2co': permDisableElection2coTemplate,
   'perm-not-located-2e2cg': permNotLocated2e2cgTemplate,
-  // Dedicated copy of perm-not-located-2e2cg's shape reserved for bank-auth-journey.setup.ts/.teardown.ts, with its own disjoint externalIdPrefix ('e2e-bankauth-notloc-') so its teardown never shares a PREFIX with (and cannot race) `data-teardown-perm-not-located-2e2cg`.
-  'perm-bankauth-notloc': permBankauthNotLocatedTemplate,
-  // 3 settings-permutation templates. Each carries its own distinct externalIdPrefix ('e2e-perm-novapp-', 'e2e-perm-nocand-', 'e2e-perm-notif-') for parallel safety across the wider suite.
-  'perm-disable-voter-app': permDisableVoterAppTemplate,
-  'perm-disable-candidate-app': permDisableCandidateAppTemplate,
+  // The identity-provider specs' dataset, with its own externalIdPrefix 'e2e-bankauth-idp-'. Its setup adds the identity provider's mode for candidates through `appSettingsOverride`.
+  'perm-identity-provider': permIdentityProviderTemplate,
+  // Per-app notifications perm. Distinct externalIdPrefix 'e2e-perm-notif-' for parallel safety across the wider suite.
   'perm-per-app-notifications': permPerAppNotificationsTemplate,
   // missing-nominations perm template. Distinct externalIdPrefix 'e2e-perm-missnoms-' (parallel-safe across the perm chains).
   'perm-missing-nominations': permMissingNominationsTemplate,
   // localisation-positive perm template. Distinct externalIdPrefix 'e2e-perm-l10n-pos-'. Uses the 3-locale staticSettings base (en/fi/sv) directly — no runtime override. Spec exercises the langSelector visible-and-switching surface + Finnish-translation authoring on q1/q3.
   'perm-localisation-positive': permLocalizationPositiveTemplate,
 
-  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some specs additionally consume the candidateSessionMinter helper to author per-perm Playwright storage-state JSON files.
+  // 9 settings-permutation templates. Each carries its own distinct externalIdPrefix. Some of their setups sign a candidate in and save a Playwright storage-state file for the spec.
   'perm-answers-locked': permAnswersLockedTemplate,
   'perm-hide-hero': permHideHeroTemplate,
   // renamed from the former perm-header-show-feedback key. Keeps header.showFeedback and extends with the survey/feedback-popup result-view surfaces.
@@ -86,10 +85,19 @@ export const BUILT_IN_TEMPLATES: Record<string, Template> = {
   'perm-interactive-info': permInteractiveInfoTemplate,
   'perm-org-matching': permOrgMatchingTemplate,
 
-  // Consolidated access-gating perm. Covers access.voterApp/candidateApp/underMaintenance via per-mode singleton re-seed. Distinct externalIdPrefix 'e2e-perm-access-disable-'. The old perm-disable-voter-app/candidate-app keys are RETAINED above because setup consumers still resolve them.
+  // Organization-editing perm. Two organizations, one confirmed and one not, and an unconfirmed candidate, each with a nomination; every opinion question is addressed to organizations. Distinct externalIdPrefix 'e2e-perm-organization-editing-'.
+  'perm-organization-editing': permOrganizationEditingTemplate,
+
+  // Unnominated-entities perm. A candidate and an organization with no nomination row and a candidate with one, all confirmed; no question states an entity type. Distinct externalIdPrefix 'e2e-perm-unnominated-entities-'.
+  'perm-unnominated-entities': permUnnominatedEntitiesTemplate,
+
+  // Contestant-nominations perm. Three elections of three nomination shapes, parties and alliances with and without a nomination, and a candidate and a party with no nomination row; opinion questions scoped to single elections. Distinct externalIdPrefix 'e2e-perm-contestant-nominations-'.
+  'perm-contestant-nominations': permContestantNominationsTemplate,
+
+  // Access-gating perm. Serves every access mode, access.voterApp, access.contestantApp and access.underMaintenance, through a per-mode singleton re-seed in its spec, so no dataset of a single mode is registered. Distinct externalIdPrefix 'e2e-perm-access-disable-'.
   'perm-access-disable': permAccessDisableTemplate,
 
-  // Analytics overlay perm. Seeds the app_settings analytics platform object (dummy umami code) + trackEvents:true so the voter-prefs-tracking spec can arm trackingIntercept.
+  // Analytics overlay perm. Seeds app_settings analytics.trackEvents:true so the voter-prefs-tracking spec sees usage events beyond the page-view count.
   // Distinct externalIdPrefix 'e2e-perm-analytics-'. Consent NOT seeded — toggled at runtime by the spec.
   'perm-analytics-tracking': permAnalyticsTrackingTemplate,
 
@@ -117,13 +125,11 @@ export { perm2eSharedTemplate } from './e2e/perm/perm-2e-shared';
 export { permAccessDisableTemplate } from './e2e/perm/perm-access-disable';
 export { permAnalyticsTrackingTemplate } from './e2e/perm/perm-analytics-tracking';
 export { permAnswersLockedTemplate } from './e2e/perm/perm-answers-locked';
-export { permBankauthNotLocatedTemplate } from './e2e/perm/perm-bankauth-notloc';
 export { permClosedProjectTemplate } from './e2e/perm/perm-closed-project';
+export { permContestantNominationsTemplate } from './e2e/perm/perm-contestant-nominations';
 export { permDisableAllowOpenTemplate } from './e2e/perm/perm-disable-allow-open';
-export { permDisableCandidateAppTemplate } from './e2e/perm/perm-disable-candidate-app';
 export { permDisableElection1coTemplate } from './e2e/perm/perm-disable-election-1co';
 export { permDisableElection2coTemplate } from './e2e/perm/perm-disable-election-2co';
-export { permDisableVoterAppTemplate } from './e2e/perm/perm-disable-voter-app';
 export { permDisjoint1coTemplate } from './e2e/perm/perm-disjoint-1co';
 export { permHeaderShowHelpTemplate } from './e2e/perm/perm-header-show-help';
 export { permHideAllNominationsTemplate } from './e2e/perm/perm-hide-all-nominations';
@@ -131,12 +137,15 @@ export { permHideCategoryTagsTemplate } from './e2e/perm/perm-hide-category-tags
 export { permHideElectionTagsTemplate } from './e2e/perm/perm-hide-election-tags';
 export { permHideHeroTemplate } from './e2e/perm/perm-hide-hero';
 export { permHideIfMissingAnswersTemplate } from './e2e/perm/perm-hide-if-missing-answers';
+export { permIdentityProviderTemplate } from './e2e/perm/perm-identity-provider';
 export { permInteractiveInfoTemplate } from './e2e/perm/perm-interactive-info';
 export { permLocalizationPositiveTemplate } from './e2e/perm/perm-localisation-positive';
 export { permMissingNominationsTemplate } from './e2e/perm/perm-missing-nominations';
 export { permNotLocated2e2cgTemplate } from './e2e/perm/perm-not-located-2e2cg';
 export { permOrgMatchingTemplate } from './e2e/perm/perm-org-matching';
+export { permOrganizationEditingTemplate } from './e2e/perm/perm-organization-editing';
 export { permPerAppNotificationsTemplate } from './e2e/perm/perm-per-app-notifications';
 export { permQuestionVideoTemplate } from './e2e/perm/perm-question-video';
 export { permStartfromcgTemplate } from './e2e/perm/perm-startfromcg';
+export { permUnnominatedEntitiesTemplate } from './e2e/perm/perm-unnominated-entities';
 export { showFeedbackSurveyTemplate } from './e2e/perm/show-feedback-survey';

@@ -4,7 +4,7 @@
  * Covers:
  *   - the constructor throws when `SUPABASE_URL` is missing.
  *   - the constructor throws when `SUPABASE_SERVICE_ROLE_KEY` is missing. Error messages are descriptive (mention the env var AND point at `supabase start` remediation).
- *   - `write()` calls `bulkImport` → `importAnswers` → `linkJoinTables`
+ *   - `write()` calls `bulkImport` → `importAnswers` → `linkQuestionScopes`
  *     in that order (single-transaction atomicity + post-pass enrichment).
  *   - routing: `accounts`, `projects`, `feedback`, `app_settings` are STRIPPED from the `bulk_import` payload. Each is routed elsewhere or skipped.
  *   - `app_settings` routes through `updateAppSettings` (the `merge_jsonb_column` RPC), NOT `bulk_import` (which fails on the `UNIQUE(project_id)` constraint pre-inserted by seed.sql).
@@ -43,8 +43,8 @@ vi.mock('../src/supabaseAdminClient', () => {
         importAnswers: vi.fn().mockImplementation(async () => {
           callOrder.push('importAnswers');
         }),
-        linkJoinTables: vi.fn().mockImplementation(async () => {
-          callOrder.push('linkJoinTables');
+        linkQuestionScopes: vi.fn().mockImplementation(async () => {
+          callOrder.push('linkQuestionScopes');
         }),
         updateAppSettings: vi.fn().mockImplementation(async () => {
           callOrder.push('updateAppSettings');
@@ -85,7 +85,7 @@ async function getMockedAdminClient(): Promise<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   importAnswers: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  linkJoinTables: any;
+  linkQuestionScopes: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateAppSettings: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -164,12 +164,12 @@ describe('Writer', () => {
       process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
     });
 
-    it('calls bulkImport → importAnswers → linkJoinTables in order (NF-01)', async () => {
+    it('calls bulkImport → importAnswers → linkQuestionScopes in order (NF-01)', async () => {
       const writer = new Writer();
       await writer.write({ elections: [{ external_id: 'seed_e1', project_id: 'p' }] });
 
       const instance = await getMockedAdminClient();
-      expect(instance.callOrder.slice(0, 3)).toEqual(['bulkImport', 'importAnswers', 'linkJoinTables']);
+      expect(instance.callOrder.slice(0, 3)).toEqual(['bulkImport', 'importAnswers', 'linkQuestionScopes']);
     });
 
     // ---------------------------------------------------------------------
@@ -189,7 +189,7 @@ describe('Writer', () => {
         // A guard that ran after bulkImport would leave rows committed.
         expect(instance.bulkImport).not.toHaveBeenCalled();
         expect(instance.importAnswers).not.toHaveBeenCalled();
-        expect(instance.linkJoinTables).not.toHaveBeenCalled();
+        expect(instance.linkQuestionScopes).not.toHaveBeenCalled();
       });
 
       it('names the key, the collection and the row external_id in the rejection', async () => {
@@ -207,7 +207,7 @@ describe('Writer', () => {
         await expect(
           writer.write({
             elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-            app_settings: [{ settings: { k: 'v' }, bogusSetting: true }]
+            app_settings: [{ settings: { matching: { minimumAnswers: 1 } }, bogusSetting: true }]
           })
         ).rejects.toThrow(/bogusSetting[\s\S]*app_settings|app_settings[\s\S]*bogusSetting/);
 
@@ -221,7 +221,7 @@ describe('Writer', () => {
 
         await writer.write({
           elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-          app_settings: [{ settings: { k: 'v' } }],
+          app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }],
           feedback: [{ rating: 5 }]
         });
 
@@ -270,7 +270,7 @@ describe('Writer', () => {
     it('routes app_settings through updateAppSettings, NOT bulk_import', async () => {
       const writer = new Writer();
       await writer.write({
-        app_settings: [{ settings: { key: 'value' } }],
+        app_settings: [{ settings: { matching: { minimumAnswers: 2 } } }],
         elections: [{ external_id: 'seed_e1', project_id: 'p' }]
       });
 
@@ -281,7 +281,7 @@ describe('Writer', () => {
       expect(bulkImportArg).not.toHaveProperty('app_settings');
 
       // updateAppSettings called with the settings blob.
-      expect(instance.updateAppSettings).toHaveBeenCalledWith({ key: 'value' });
+      expect(instance.updateAppSettings).toHaveBeenCalledWith({ matching: { minimumAnswers: 2 } });
     });
 
     it('passes the 10 bulk-import tables through to bulkImport untouched', async () => {
@@ -337,17 +337,17 @@ describe('Writer', () => {
     // ---------------------------------------------------------------------
 
     describe('uploadPortraits pass (GEN-09)', () => {
-      it('invokes selectCandidatesForPortraitUpload AFTER linkJoinTables and BEFORE updateAppSettings (sequence order)', async () => {
+      it('invokes selectCandidatesForPortraitUpload AFTER linkQuestionScopes and BEFORE updateAppSettings (sequence order)', async () => {
         const writer = new Writer();
         // With default mock (returns [] candidates), uploadPortrait is never called but selectCandidatesForPortraitUpload still runs — that's the assertion point.
         await writer.write({
           elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-          app_settings: [{ settings: { k: 'v' } }]
+          app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }]
         });
 
         const instance = await getMockedAdminClient();
         const order = instance.callOrder;
-        const idxLink = order.indexOf('linkJoinTables');
+        const idxLink = order.indexOf('linkQuestionScopes');
         const idxSelect = order.indexOf('selectCandidatesForPortraitUpload');
         const idxAppSettings = order.indexOf('updateAppSettings');
 
@@ -486,7 +486,7 @@ describe('Writer', () => {
         await expect(
           writer.write({
             elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-            app_settings: [{ settings: { k: 'v' } }]
+            app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }]
           })
         ).rejects.toThrow(/Portrait upload failed for seed_cand_0000/);
 
@@ -508,7 +508,7 @@ describe('Writer', () => {
         await expect(
           writer.write({
             elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-            app_settings: [{ settings: { k: 'v' } }]
+            app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }]
           })
         ).rejects.toThrow(/Image column update failed for seed_cand_0001/);
 
@@ -545,7 +545,7 @@ describe('Writer', () => {
         await writer.write(
           {
             elections: [{ external_id: 'seed_e1', project_id: 'p' }],
-            app_settings: [{ settings: { k: 'v' } }],
+            app_settings: [{ settings: { matching: { minimumAnswers: 1 } } }],
             feedback: [{ rating: 5 }]
           },
           'seed_',

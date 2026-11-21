@@ -73,7 +73,7 @@ export function settingsContainsExternalIdRefs(settings: unknown): boolean {
  */
 export function resolveAppSettingsExternalIds(
   settings: Record<string, unknown>,
-  externalIdToUuid: Map<string, string>
+  externalIdToUuid: Pick<ReadonlyMap<string, string>, 'get'>
 ): Record<string, unknown> {
   if (!settingsContainsExternalIdRefs(settings)) return settings;
 

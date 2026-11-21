@@ -131,7 +131,7 @@ describe('runPipeline', () => {
     const elA = out.elections.find((e) => e.external_id === 'el_a') as Record<string, unknown>;
     const elB = out.elections.find((e) => e.external_id === 'el_b') as Record<string, unknown>;
 
-    // el_a declared cg_a inline → fanout sentinel is NOT attached; the original declaration is left intact for linkJoinTables to consume.
+    // el_a declared cg_a inline → fanout sentinel is NOT attached; the original declaration is left intact for bulkImport to send as the election item's link key.
     expect(elA._constituencyGroups).toBeUndefined();
     expect(elA.constituency_groups).toEqual([{ external_id: 'cg_a' }]);
 

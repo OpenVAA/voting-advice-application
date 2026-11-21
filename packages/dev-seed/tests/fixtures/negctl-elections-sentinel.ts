@@ -5,7 +5,7 @@
  *
  * ⚠ The two halves must differ ONLY by the tree, so this file is BYTE-FROZEN at this exact path. Editing it between the halves destroys the property that makes the pair a control rather than two unrelated runs.
  *
- * The illegal key: `_constituencies` on an `elections` row. `linkJoinTables` reads `_constituencies` only on the collections `LINK_SENTINELS` declares it for — `constituency_groups`, `question_categories` and `questions` — never on an election, whose rule names only the constituency-GROUP keys. So the key is silently stripped by the generic `_`-prefix rule and nothing is ever written from it.
+ * The illegal key: `_constituencies` on an `elections` row. `bulkImport` and `linkQuestionScopes` read `_constituencies` only on the collections `LINK_SENTINELS` declares it for — `constituency_groups`, `question_categories` and `questions` — never on an election, whose rule names only the constituency-GROUP keys. So the key is silently stripped by the generic `_`-prefix rule and nothing is ever written from it.
  *
  * ⚠ NO `constituency_groups` IN THIS DATASET, AND THAT IS LOAD-BEARING.
  * `attachSentinels` in `pipeline.ts` fans a full-fanout `_constituencyGroups` onto every election only when `allGroupExtIds.length > 0`. With zero constituency groups the fanout does not happen, `election_constituency_groups` stays empty, and the drop is cleanly observable. Adding a constituency group here would write join rows and muddy the evidence.

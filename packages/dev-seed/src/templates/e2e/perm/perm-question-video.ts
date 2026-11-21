@@ -11,7 +11,7 @@
  *
  * `questions.categoryIntros.show = true` (overriding the MINIMAL base default of `false`) so the 3-category intro walk is visible to the voter slice.
  *
- * Candidates fully answer the 5 opinion questions so the candidate-app questions overview (which the candidate `hideVideo` slice drives) is populated.
+ * Candidates fully answer the 5 opinion questions so the contestant-app questions overview (which the candidate `hideVideo` slice drives) is populated.
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-qvid-'`. Row external_ids bare; nested refs prefixed. Its own namespaced dataset; does NOT touch `e2e/base`.
  */
@@ -62,7 +62,7 @@ export const permQuestionVideoTemplate: Template = {
         external_id: 'el-1',
         name: { en: '[EL1] Question-video election' },
         short_name: { en: 'EL1' },
-        election_type: 'organization_list',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,

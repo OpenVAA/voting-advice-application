@@ -5,7 +5,7 @@
  *
  * Phase 155's durable deliverable is not the seven environment defaults it removed; it is `scripts/assert-edge-env-defaults.mjs`, running on the one command every local run and every CI pass goes through. Decision D-D2 rejected fixing the seven sites WITHOUT a guard precisely because the next Edge Function reopens the class. Unwire the guard and the phase becomes a snapshot: the tree still looks clean, the script still exists on disk, and nothing anywhere tells anybody it stopped running. That silent-green shape is what this file exists to prevent.
  *
- * The stakes are higher in this tree than the wording suggests. `turbo run lint --dry` reports the supabase workspace as having no `lint` task and there is no ESLint configuration under it, so besides Prettier and the vitest files phase 155 added, this guard is the ONLY automated check that reaches `apps/supabase/supabase/functions` at all. A removed link does not degrade the coverage of that tree, it ends it.
+ * The stakes are higher in this tree than the wording suggests. `turbo run lint --dry` reports the supabase workspace as having no `lint` task and no ESLint configuration reaches `apps/supabase/supabase/functions`. Besides Prettier and the vitest files beside the modules, the checks that reach that tree are this guard and `deno check` (through `yarn typecheck`), and `deno check` reads types alone, so a removed link ends the tree's check for environment defaults rather than degrading it.
  *
  * ## Where the guard deliberately is NOT wired, so a later reader does not read the omission as an oversight
  *

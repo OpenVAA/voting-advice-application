@@ -14,7 +14,7 @@
  *
  * ## ⚠ Deleting ANY line of this file turns the type-check gate RED.
  *
- * Each of the two illegal rows below carries a deliberate excess-property error (`TS2353`) suppressed by a directive on the line immediately above it. An **unused** suppression directive is itself a diagnostic — `TS2578` — so removing an offending key to "clean up" does not quietly turn this control into a decoration; it fails the gate. That property was measured rather than assumed: deleting `_constituencies` from the primary exemplar produces the expected `TS2578`, while the present arm reports zero diagnostics — a self-control pair taken on the same tree.
+ * Each illegal row below carries a deliberate compile error — an excess property (`TS2353`) or a wrongly typed value (`TS2322`) — suppressed by a directive on the line immediately above it. An **unused** suppression directive is itself a diagnostic — `TS2578` — so removing an offending key to "clean up" does not quietly turn this control into a decoration; it fails the gate. That property was measured rather than assumed: deleting `_constituencies` from the primary exemplar produces the expected `TS2578`, while the present arm reports zero diagnostics — a self-control pair taken on the same tree.
  *
  * ## ⚠ The reach limitation — what a green gate here does NOT prove
  *
@@ -22,7 +22,12 @@
  * *constructs* the 28 `perm-*` templates' rows programmatically, and those rows are outside the type layer's guarantee altogether. The Pass 0 runtime guard `assertKnownRowProps` is the only cover there. A green gate here means "illegal keys in hand-authored inline literals are a compile error", and no more than that.
  */
 
-import type { CandidatesFixedRow, ElectionsFixedRow, QuestionsFixedRow } from '../../src/template/permittedKeys';
+import type {
+  CandidatesFixedRow,
+  ElectionsFixedRow,
+  QuestionCategoriesFixedRow,
+  QuestionsFixedRow
+} from '../../src/template/permittedKeys';
 
 /**
  * **primary** exemplar — `_constituencies` on an `elections` row.
@@ -51,7 +56,7 @@ export const illegalCandidatesRow: CandidatesFixedRow = {
 /**
  * **legality case** — `_elections` on a `questions` row. It carries **no** directive and MUST compile clean. A red here is a stop, not a catch: it would mean a shipped resolution path had been deleted.
  *
- * The pair is a first-class, resolved feature, not an oversight: the `_elections` sentinel resolver `electionResolve` was factored out of the `question_categories` block of `linkJoinTables` and called for **both** tables, extending `election_ids` JSONB scoping from `question_categories` alone to `questions` as well.
+ * The pair is a first-class, resolved feature, not an oversight: the `_elections` rule of `LINK_SENTINELS` declares **both** tables, so `linkQuestionScopes` writes `election_ids` JSONB scoping on `questions` as well as on `question_categories`.
  *
  * It lives in this file, beside the two exemplars, so it cannot rot: if `questions._elections` ever stopped compiling, this gate goes red.
  */
@@ -79,4 +84,43 @@ export const illegalQuestionsAnswersRow: QuestionsFixedRow = {
 export const legalCandidatesAnswersRow: CandidatesFixedRow = {
   external_id: 'negctl144-ca-2',
   answersByExternalId: { 'negctl144-qu-1': { value: 3 } }
+};
+
+/**
+ * **The entity type filter is a list, held at the TYPE layer.**
+ *
+ * `entity_type` on `questions` and `question_categories` is a JSON column, so the generated insert type admits any JSON value — a bare string included. A bare string never reaches the column: the RPC quotes it as text and the cast to JSON fails, with a syntax error that names neither the key nor the row. The row types narrow the key to an array of entity types, so the mistake is a compile error where it is written.
+ *
+ * Each directive is the control: if the key is ever widened back to the generated type, the error disappears, the directive goes unused, and `TS2578` turns the gate red.
+ */
+export const illegalQuestionsBareTypeRow: QuestionsFixedRow = {
+  external_id: 'negctl144-qu-3',
+  // @ts-expect-error TS2322 — the entity type filter of a `questions` row is an array of entity types, never a bare string.
+  entity_type: 'organization'
+};
+
+export const illegalQuestionCategoriesBareTypeRow: QuestionCategoriesFixedRow = {
+  external_id: 'negctl144-qc-1',
+  // @ts-expect-error TS2322 — the entity type filter of a `question_categories` row is an array of entity types, never a bare string.
+  entity_type: 'organization'
+};
+
+export const illegalQuestionsUnknownTypeRow: QuestionsFixedRow = {
+  external_id: 'negctl144-qu-4',
+  // @ts-expect-error TS2322 — a member of the list is one of the database's entity types.
+  entity_type: ['organisation']
+};
+
+/**
+ * The legality half: a list of entity types, an empty list and null all compile clean on both tables.
+ */
+export const legalQuestionsTypeListRows: Array<QuestionsFixedRow> = [
+  { external_id: 'negctl144-qu-5', entity_type: ['organization', 'alliance'] },
+  { external_id: 'negctl144-qu-6', entity_type: [] },
+  { external_id: 'negctl144-qu-7', entity_type: null }
+];
+
+export const legalQuestionCategoriesTypeListRow: QuestionCategoriesFixedRow = {
+  external_id: 'negctl144-qc-2',
+  entity_type: ['candidate']
 };

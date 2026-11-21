@@ -24,7 +24,7 @@ export const permClosedProjectTemplate: Template = {
     opinionQuestions: 1,
     infoQuestions: 0,
     settingsOverlay: {
-      access: { voterApp: true, candidateApp: true, underMaintenance: false }
+      access: { voterApp: true, contestantApp: true, underMaintenance: false }
     }
   }),
   openForVoters: false

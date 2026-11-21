@@ -8,15 +8,16 @@
  *
  * The live tier gates on REACHABILITY, not on `SUPABASE_URL`. `SupabaseAdminClient` already defaults to `http://localhost:54321` with the published local demo service-role key, so a plain `yarn test:unit` beside a running `supabase start` exercises the tier without an env fixture — vitest does not load the repo-root `.env`, and gating on the variable would silently skip the tier on every developer machine. When nothing is listening the tier is skipped, and the skip is recorded by a named passing test rather than left as an absence.
  *
- * The live tier writes to a SCRATCH project id that is neither the default project nor the E2E project, and deletes only what it created. The E2E project row is never deleted by anything here.
+ * The live tier writes to a SCRATCH project id that is neither the default project nor the E2E project, and deletes only what it created. It also ensures the E2E project, as every E2E run's global setup does, to read back the account it is attached to; the E2E project row is never deleted by anything here.
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createClient } from '@supabase/supabase-js';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { E2E_PROJECT_ID, resolveE2eProjectId, SupabaseAdminClient, TEST_PROJECT_ID } from '../src';
+import { E2E_ACCOUNT_ID } from '../src/supabaseAdminClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -238,6 +239,19 @@ describe.skipIf(!supabaseReachable)('ensureProject against the live local databa
 
     const { data: projects } = await read.from('projects').select('account_id').eq('id', SCRATCH_PROJECT_ID);
     expect(projects?.[0]?.account_id).toBe(DEFAULT_ACCOUNT_ID);
+  });
+
+  it('attaches the E2E project to the E2E account, never to the default one', async () => {
+    // Ensuring the E2E project is what every E2E run's global setup does; it creates nothing a run does not already depend on.
+    await new SupabaseAdminClient(undefined, undefined, E2E_PROJECT_ID).ensureProject();
+
+    const { data: accounts, error: accountsError } = await read.from('accounts').select('id').eq('id', E2E_ACCOUNT_ID);
+    expect(accountsError).toBeNull();
+    expect(accounts).toHaveLength(1);
+
+    const { data: projects } = await read.from('projects').select('account_id').eq('id', E2E_PROJECT_ID);
+    expect(projects?.[0]?.account_id).toBe(E2E_ACCOUNT_ID);
+    expect(E2E_ACCOUNT_ID).not.toBe(DEFAULT_ACCOUNT_ID);
   });
 
   it('accepts an explicit project id argument, overriding the client default', async () => {

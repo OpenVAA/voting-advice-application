@@ -47,7 +47,7 @@ export const defaultTemplate: Template = {
         external_id: 'election_default',
         name: { en: 'OpenVAA Demo Parliamentary Election 2026' },
         short_name: { en: 'Demo 2026' },
-        election_type: 'organization_list',
+        nomination_shape: 'organization_list_and_independents',
         election_date: '2026-06-15',
         sort_order: 0,
         multiple_rounds: false,
@@ -205,7 +205,7 @@ export const defaultTemplate: Template = {
             hideIfMissingAnswers: { candidate: false }
           },
           // Surface the Alliance entity tab in voter results.
-          // The frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts) shallow-merges by root key, so a value written here REPLACES the whole `results` object from the TS defaults — we MUST mirror the full default shape (cardContents for every entity type listed in `sections`, the popup delays) and only diff `sections` to add 'alliance'. Mirrors the `results` block of `packages/app-shared/src/settings/dynamicSettings.ts`.
+          // `sections` is a list, and the frontend's `mergeAppSettings` (apps/frontend/src/lib/utils/settings.ts) replaces a list whole, so it names every section and not only 'alliance'. The other members restate the `results` block of `packages/app-shared/src/settings/dynamicSettings.ts` so that the stored row is complete on its own: the voter route loaders merge it over the static settings only, with no shipped dynamic defaults beneath it.
           results: {
             cardContents: {
               candidate: ['submatches'],
@@ -215,6 +215,17 @@ export const defaultTemplate: Template = {
             showFeedbackPopup: 180,
             showSurveyPopup: 500,
             sections: ['candidate', 'organization', 'alliance']
+          },
+          // Serves both entity types by email and by code. The identity provider's mode is left out because it needs the provider's environment variables; the identity-provider E2E setup adds it for its own run.
+          contestantApp: {
+            questions: {
+              hideHero: false,
+              hideVideo: false
+            },
+            servedEntityTypes: {
+              candidate: { registrationModes: ['email', 'code'] },
+              organization: { registrationModes: ['email', 'code'] }
+            }
           }
         }
       }
