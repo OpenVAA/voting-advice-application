@@ -29,7 +29,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (90);
+  plan (91);
 
 SELECT
   create_test_data ();
@@ -209,6 +209,17 @@ SELECT
     ),
     'Entity name is immutable once confirmed:%',
     'candidates cell 1 (first_name): an entity grantee renaming a CONFIRMED entity is refused, and the refusal carries the immutability prefix'
+  );
+
+SELECT
+  throws_ok (
+    format(
+      $$UPDATE candidates SET first_name = 'Renamed' WHERE id = '%s'$$,
+      test_id ('candidate_a')
+    ),
+    'OV001',
+    NULL,
+    'candidates cell 1 (first_name): the refusal raises SQLSTATE OV001, the code of the immutability refusal alone'
   );
 
 SELECT

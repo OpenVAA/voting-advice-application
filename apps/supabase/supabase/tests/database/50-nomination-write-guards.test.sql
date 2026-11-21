@@ -1,7 +1,7 @@
 -- 50-nomination-write-guards.test.sql: what an entity's write of its nominations is checked against besides its own argument
 --
 -- Each assertion's description begins with the tag of the rule it pins:
---   STALE - `set_entity_nominations` takes the writable nominations as the caller read them, each id with its updated_at, and refuses with SQLSTATE 40001 when the stored writable nominations differs: a nomination created, moved, edited or deleted since the read is never deleted or written back by a set computed from the old read.
+--   STALE - `set_entity_nominations` takes the writable nominations as the caller read them, each id with its updated_at, and refuses with SQLSTATE OV003, the code of that refusal alone, when the stored writable nominations differs: a nomination created, moved, edited or deleted since the read is never deleted or written back by a set computed from the old read.
 --   READ  - `get_entity_nominations` states each nomination's updated_at, which is what the writer is given back.
 --   EXP   - the refusals of a malformed `p_expected_versions`, SQLSTATE 22023.
 --   CONST - a nomination's constituency must be one of its election's constituencies, for a new nomination and for a move; a stored nomination that stays where it is is not judged by it.
@@ -500,7 +500,7 @@ SELECT
       ),
       jsonb_build_object(pg_temp.eid ('n_stale'), '2020-01-01T00:00:00Z')
     ),
-    '40001',
+    'OV003',
     pg_temp.changed (),
     'STALE: a nomination created since the read is not deleted by a set computed from the read'
   );
@@ -562,7 +562,7 @@ SELECT
       ),
       jsonb_build_object(pg_temp.eid ('n_stale'), '2020-01-01T00:00:00Z')
     ),
-    '40001',
+    'OV003',
     pg_temp.changed (),
     'STALE: a move made since the read is not reverted by a set computed from the read'
   );
@@ -574,7 +574,7 @@ SELECT
       '[]'::jsonb,
       pg_temp.versions_now (pg_temp.eid ('cand_stale')) || jsonb_build_object(pg_temp.eid ('n_ghost'), '2020-01-01T00:00:00Z')
     ),
-    '40001',
+    'OV003',
     pg_temp.changed (),
     'STALE: an expectation that names a nomination no longer writable is refused'
   );
@@ -586,7 +586,7 @@ SELECT
       '[]'::jsonb,
       '{}'::jsonb
     ),
-    '40001',
+    'OV003',
     pg_temp.changed (),
     'STALE: an expectation that leaves out a writable nomination is refused'
   );

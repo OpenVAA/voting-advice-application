@@ -367,8 +367,8 @@ asks `account-access` for a link and signs in, and `claim_invitations` then writ
 grants for the caller's own confirmed address. An open invitation for a candidate or an
 organization is honoured only under a registration mode the project's settings allow for that
 type: `private.invitation_mode_allowed` asks `private.registration_mode_allowed`
-(`301-auth-functions.sql`), and the functions that read an open invitation treat a refused row as
-absent.
+(`301-auth-functions.sql`), which allows no mode while the project's contestant editing is
+`'locked'`, and the functions that read an open invitation treat a refused row as absent.
 
 The functions this schema adds for the sign-in flow, by file:
 
