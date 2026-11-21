@@ -524,241 +524,128 @@ const writerInScope = (file) =>
   (WRITER_DIRS.some((d) => file.startsWith(d)) || file === 'package.json' || file.endsWith('/package.json')) &&
   !WRITER_SELF_PATHS.some((p) => file.startsWith(p));
 
-// ── Reading ──
+// ── Gate ──
 
-/** Whether a table belongs to the families this guard classifies. */
-function inFamily(table) {
-  return table === 'api' || table === 'api.tls' || table === 'auth' || table.startsWith('auth.');
+/** Read every channel from `paths`, run `check` over them, print the findings and the census, and set the exit code. */
+function gate(paths) {
+  const envsDir = paths.envsDir;
+  const { roots, error } = readRoots(envsDir);
+  const { writers, error: writersError } = readWriters();
+  const inputs = {
+    config: readChannel(paths.config),
+    settings: readChannel(paths.settings),
+    staticSettings: readChannel(paths.staticSettings),
+    variables: readChannel(path.join(paths.moduleDir, 'variables.tf')),
+    module: readModule(paths.moduleDir),
+    writers,
+    writersError,
+    envsDir: display(envsDir),
+    roots,
+    rootsError: error
+  };
+  const result = check(inputs);
+  if (result.channelErrors.length > 0) {
+    for (const { file, what } of result.channelErrors) console.log(`${file}: ${what}`);
+    console.error(
+      `Hosted-settings parity guard — a channel could not be read, so no comparison was made and the verdict is withheld.`
+    );
+    process.exitCode = 1;
+    return;
+  }
+  for (const { file, id, what } of result.findings) console.log(`${file}: ${id}: ${what}`);
+  console.error(censusLine(result.census));
+  console.error(`max_rows compared three ways: config.toml ${show(result.census.maxRows)}.`);
+  const { structure } = result.census;
+  console.error(
+    `structure: ${structure.files} .tf file(s) of ${structure.dir}; ` +
+      `${HCL_OWNED_KEYS.length} HCL-owned key(s); ${structure.writersScanned} tracked file(s) scanned for a second writer of hosted settings.`
+  );
+  console.error(
+    result.findings.length === 0
+      ? `Hosted-settings parity guard — every classified key holds between ${inputs.config.file}, ${inputs.settings.file} and the Supabase roots under ${inputs.envsDir}.`
+      : `Hosted-settings parity guard — ${result.findings.length} finding(s).`
+  );
+  process.exitCode = result.findings.length === 0 ? 0 : 1;
 }
 
-/**
- * `dataAdapter.pageSize` from the static settings, by a line read inside the `dataAdapter` block.
- *
- * @returns `{ ok: true, value }`, or `{ ok: false, what }`.
- */
-function readPageSize(text) {
-  const lines = text.split('\n');
-  const start = lines.findIndex((l) => /^\s*dataAdapter\s*:\s*\{/.test(l));
-  if (start === -1) return { ok: false, what: 'no `dataAdapter: {` block was found' };
-  let depth = 0;
-  const values = [];
-  let unreadable = null;
-  for (let i = start; i < lines.length; i += 1) {
-    const code = lines[i].replace(/\/\/.*$/, '');
-    if (i > start && depth === 1 && /^\s*pageSize\s*:/.test(code)) {
-      const m = /^\s*pageSize\s*:\s*(\d+)\s*,?\s*$/.exec(code);
-      if (m) values.push(Number(m[1]));
-      else unreadable = lines[i].trim();
-    }
-    depth += (code.match(/\{/g) ?? []).length - (code.match(/\}/g) ?? []).length;
-    if (depth <= 0) break;
-  }
-  if (unreadable !== null)
-    return { ok: false, what: `the line '${unreadable}' is not a pageSize the line read can read` };
-  if (values.length === 0) return { ok: false, what: 'the `dataAdapter` block holds no pageSize' };
-  if (values.length > 1) return { ok: false, what: `the \`dataAdapter\` block holds pageSize ${values.length} times` };
-  return { ok: true, value: values[0] };
-}
-
-/**
- * The default of one hook switch in the module's `variables.tf`.
- *
- * @returns `{ ok: true, value }`, or `{ ok: false, what }`.
- */
-function readHookDefault(text, variable) {
-  const lines = text.split('\n');
-  const start = lines.findIndex((l) => new RegExp(`^\\s*variable\\s+"${variable}"\\s*\\{`).test(l));
-  if (start === -1) return { ok: false, what: `the module declares no variable ${variable}` };
-  const values = [];
-  for (let i = start + 1; i < lines.length && !/^\}/.test(lines[i]); i += 1) {
-    const m = /^\s*default\s*=\s*(\S+)\s*(?:#.*)?$/.exec(lines[i]);
-    if (m) values.push(m[1]);
-  }
-  if (values.length !== 1)
-    return { ok: false, what: `the variable ${variable} has ${values.length} default line(s), not one` };
-  if (values[0] !== 'true' && values[0] !== 'false')
-    return { ok: false, what: `the default ${values[0]} is not a bare boolean` };
-  return { ok: true, value: values[0] === 'true' };
-}
-
-/**
- * `public_origin` and each hook switch of one root's variable file, by line reads.
- *
- * @returns `origin` (a string or null), `hooks` (per switch variable, `{ value, comment }` or null) and `problems`.
- */
-function readRootVariables(text) {
-  const problems = [];
-  const origins = [];
-  const assigned = Object.fromEntries(HOOK_SWITCHES.map((h) => [h.variable, []]));
-  for (const line of text.split('\n')) {
-    if (/^\s*public_origin\s*=/.test(line)) {
-      const m = /^\s*public_origin\s*=\s*"([^"\\]*)"\s*(?:#.*)?$/.exec(line);
-      if (m) origins.push(m[1]);
-      else
-        problems.push({
-          id: 'auth/site_url',
-          what: `the line '${line.trim()}' is not a public_origin the line read can read`
-        });
-    }
-    for (const { variable, id } of HOOK_SWITCHES) {
-      if (!new RegExp(`^\\s*${variable}\\s*=`).test(line)) continue;
-      const m = new RegExp(`^\\s*${variable}\\s*=\\s*(true|false)\\s*(?:#\\s*(.*?))?\\s*$`).exec(line);
-      if (m) assigned[variable].push({ value: m[1] === 'true', comment: m[2] ?? '' });
-      else problems.push({ id, what: `the line '${line.trim()}' is not a ${variable} the line read can read` });
-    }
-  }
-  if (origins.length > 1)
-    problems.push({ id: 'auth/site_url', what: `public_origin is assigned ${origins.length} times` });
-  const hooks = {};
-  for (const { variable, id } of HOOK_SWITCHES) {
-    const list = assigned[variable];
-    if (list.length > 1) problems.push({ id, what: `${variable} is assigned ${list.length} times` });
-    hooks[variable] = list.length === 1 ? list[0] : null;
-  }
-  return { origin: origins.length === 1 ? origins[0] : null, hooks, problems };
-}
-
-// ── Comparing ──
-
-const show = (v) => JSON.stringify(v);
-
-/** Problems of one public origin under the site-address rule. */
-function originProblems(origin) {
-  let url;
+/** The variable file of each Supabase root under `envsDir`, one directory per root, in name order. */
+function readRoots(envsDir) {
+  let entries;
   try {
-    url = new URL(origin);
-  } catch {
-    return [`${show(origin)} is not a URL`];
+    entries = readdirSync(envsDir, { withFileTypes: true });
+  } catch (error) {
+    return { roots: [], error: `could not be read as a directory (${error.code ?? error.message})` };
   }
-  const problems = [];
-  if (url.protocol !== 'https:') problems.push(`${show(origin)} is not https`);
-  if (origin.includes('*')) problems.push(`${show(origin)} has a wildcard in the host`);
-  if (origin !== `${url.protocol}//${url.host}`)
-    problems.push(
-      `${show(origin)} is not a bare origin (a path, a trailing slash, a query, a fragment, credentials or a non-canonical spelling)`
-    );
-  const host = url.hostname;
-  if (
-    host === 'localhost' ||
-    host.endsWith('.localhost') ||
-    /^127\./.test(host) ||
-    host === '[::1]' ||
-    host === '0.0.0.0' ||
-    host === '[::]'
-  )
-    problems.push(`${show(origin)} is a loopback host`);
-  return problems;
+  const roots = [];
+  for (const entry of entries.filter((e) => e.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
+    const file = path.join(envsDir, entry.name, 'supabase', 'terraform.tfvars');
+    let exists = false;
+    try {
+      exists = statSync(file).isFile();
+    } catch {
+      exists = false;
+    }
+    if (exists) roots.push({ name: entry.name, ...readChannel(file) });
+  }
+  return { roots, error: null };
 }
 
-/** Problems of the redirect rule: the hosted callback paths against the local entries, for every origin. */
-function redirectProblems(localEntries, paths, origins) {
-  const problems = [];
-  if (!Array.isArray(localEntries) || !localEntries.every((e) => typeof e === 'string'))
-    return ['the local additional_redirect_urls is not a list of strings'];
-  if (!Array.isArray(paths) || !paths.every((p) => typeof p === 'string'))
-    return ['the hosted redirect_callback_paths is not a list of strings'];
-  if (paths.length !== REDIRECT_PATH_COUNT)
-    problems.push(`the hosted redirect_callback_paths holds ${paths.length} entries, not ${REDIRECT_PATH_COUNT}`);
-  if (new Set(paths).size !== paths.length) problems.push('the hosted redirect_callback_paths holds a path twice');
-  const matched = new Set();
-  for (const p of paths) {
-    if (!p.startsWith('/')) problems.push(`the path ${show(p)} does not start with /, so it would extend the host`);
-    if (p.includes('**')) problems.push(`the path ${show(p)} holds **`);
-    if (p.endsWith('*')) problems.push(`the path ${show(p)} ends in *`);
-    const local = localEntries.filter(
-      (e) => e.endsWith(p) && /^[a-z]+:\/\/[^/]+$/.test(e.slice(0, e.length - p.length))
-    );
-    if (local.length === 0) problems.push(`the path ${show(p)} is not the path suffix of any local entry`);
-    for (const e of local) matched.add(e);
-    for (const origin of origins) {
-      const entry = `${origin}${p}`;
-      const host = entry.replace(/^[a-z]+:\/\//, '').split('/')[0];
-      if (host.includes('*')) problems.push(`the hosted entry ${show(entry)} has a wildcard in the host`);
+/** The tracked files in the scope of the second-writer scan. A file listed but absent from the tree holds nothing. */
+function readWriters() {
+  let tracked;
+  try {
+    tracked = trackedFiles({ skip: (file) => !writerInScope(file) });
+  } catch (error) {
+    return { writers: [], error: `could not list the tracked files (${error.message.split('\n')[0]})` };
+  }
+  const writers = [];
+  for (const file of tracked) {
+    try {
+      writers.push({ file, text: readFileSync(path.join(REPO_ROOT, file), 'utf8') });
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'EISDIR') continue;
+      return { writers, error: `${file} could not be read (${error.code ?? error.message})` };
     }
   }
-  const listed = LOCAL_ONLY_REDIRECTS.map((l) => l.entry);
-  for (const e of localEntries)
-    if (!matched.has(e) && !listed.includes(e))
-      problems.push(`the local entry ${show(e)} has no hosted callback path and is not listed as local-only`);
-  for (const l of LOCAL_ONLY_REDIRECTS)
-    if (!localEntries.includes(l.entry))
-      problems.push(`the local-only entry ${show(l.entry)} is no longer in the local list; remove it from the guard`);
-  if (localEntries[0] !== undefined && !listed.includes(localEntries[0]))
-    problems.push(`the first local entry ${show(localEntries[0])} is not the listed local-only entry`);
-  return problems;
+  return { writers, error: null };
 }
 
-/** Seconds of a duration of hours, minutes and seconds, or null for any other form. */
-function durationSeconds(text) {
-  if (typeof text !== 'string') return null;
-  const m = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/.exec(text);
-  if (!m || text === '') return null;
-  return Number(m[1] ?? 0) * 3600 + Number(m[2] ?? 0) * 60 + Number(m[3] ?? 0);
-}
-
-/**
- * The comparison of one classified row whose key is live and readable.
- *
- * @returns A description of what does not hold, or null.
- */
-function compareRow(row, local, hosted, pageSize) {
-  const [group, key] = row.hosted;
-  const name = `${group}.${key}`;
-  switch (row.compare) {
-    case 'same':
-      return local === hosted ? null : `local ${show(local)}, hosted ${name} ${show(hosted)}; they must be equal`;
-    case 'inverted':
-      if (typeof local !== 'boolean' || typeof hosted !== 'boolean')
-        return `local ${show(local)}, hosted ${name} ${show(hosted)}; both must be booleans`;
-      return local === !hosted
-        ? null
-        : `local ${show(local)}, hosted ${name} ${show(hosted)}; the hosted key is the inverse and must be ${show(!local)}`;
-    case 'set':
-    case 'list': {
-      if (!Array.isArray(local) || typeof hosted !== 'string')
-        return `local ${show(local)}, hosted ${name} ${show(hosted)}; a list against a comma-separated string is required`;
-      const split = hosted.split(',').map((s) => s.trim());
-      const same =
-        row.compare === 'list'
-          ? split.length === local.length && split.every((s, i) => s === local[i])
-          : split.length === local.length &&
-            new Set(split).size === split.length &&
-            local.every((l) => split.includes(l));
-      return same
-        ? null
-        : `local ${show(local)}, hosted ${name} ${show(hosted)}; they must hold the same ${row.compare === 'list' ? 'list in order' : 'set'}`;
-    }
-    case 'maxRows':
-      return local === hosted && hosted === pageSize
-        ? null
-        : `config.toml ${show(local)}, hosted ${name} ${show(hosted)}, dataAdapter.pageSize ${show(pageSize)}; all three must be equal`;
-    case 'atMost':
-    case 'atLeast': {
-      if (!Number.isInteger(local) || !Number.isInteger(hosted))
-        return `local ${show(local)}, hosted ${name} ${show(hosted)}; both must be integers`;
-      const ok = row.compare === 'atMost' ? hosted <= local : hosted >= local;
-      return ok
-        ? null
-        : `hosted ${name} ${hosted} is weaker than local ${local}; it must be ${row.compare === 'atMost' ? 'at most' : 'at least'} the local value`;
-    }
-    case 'durationAtLeast': {
-      const seconds = durationSeconds(local);
-      if (seconds === null)
-        return `the local ${show(local)} is not a duration of hours, minutes and seconds this guard can read`;
-      if (!Number.isInteger(hosted)) return `hosted ${name} ${show(hosted)} must be an integer number of seconds`;
-      return hosted >= seconds
-        ? null
-        : `hosted ${name} ${hosted} s is weaker than the local ${local} (${seconds} s); it must be at least the local value`;
-    }
-    case 'requirements':
-      if (typeof local !== 'string' || typeof hosted !== 'string')
-        return `local ${show(local)}, hosted ${name} ${show(hosted)}; both must be strings`;
-      if (local === '') return null;
-      return `the local value ${show(local)} is not empty, and this guard has no ranking of composition rules to compare it with hosted ${show(hosted)}; extend the guard rather than guess`;
-    default:
-      return `the guard has no comparison '${row.compare}'`;
+/** One input file as `{ file, text }`, or with `text` null and an `error` when it cannot be read. */
+function readChannel(absolute) {
+  try {
+    return { file: display(absolute), text: readFileSync(absolute, 'utf8') };
+  } catch (error) {
+    return { file: display(absolute), text: null, error: `could not be read (${error.code ?? error.message})` };
   }
 }
+
+/** The module's `.tf` files, one level deep, by name. */
+function readModule(moduleDir) {
+  let entries;
+  try {
+    entries = readdirSync(moduleDir, { withFileTypes: true });
+  } catch (error) {
+    return {
+      dir: display(moduleDir),
+      files: [],
+      error: `could not be read as a directory (${error.code ?? error.message})`
+    };
+  }
+  const files = entries
+    .filter((e) => e.isFile() && e.name.endsWith('.tf'))
+    .map((e) => e.name)
+    .sort()
+    .map((name) => readChannel(path.join(moduleDir, name)));
+  return { dir: display(moduleDir), files, error: null };
+}
+
+/** A path as printed: relative to the repository when inside it, absolute otherwise. */
+function display(absolute) {
+  const relative = path.relative(REPO_ROOT, absolute);
+  return relative.startsWith('..') || path.isAbsolute(relative) ? absolute : relative;
+}
+
+// ── Checking ──
 
 /**
  * The findings for one set of inputs.
@@ -939,6 +826,242 @@ function check(inputs) {
     structure: { ...structure, dir: inputs.module.dir, writersScanned }
   };
   return { channelErrors: [], findings, census };
+}
+
+// ── Reading ──
+
+/** Whether a table belongs to the families this guard classifies. */
+function inFamily(table) {
+  return table === 'api' || table === 'api.tls' || table === 'auth' || table.startsWith('auth.');
+}
+
+/**
+ * `dataAdapter.pageSize` from the static settings, by a line read inside the `dataAdapter` block.
+ *
+ * @returns `{ ok: true, value }`, or `{ ok: false, what }`.
+ */
+function readPageSize(text) {
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => /^\s*dataAdapter\s*:\s*\{/.test(l));
+  if (start === -1) return { ok: false, what: 'no `dataAdapter: {` block was found' };
+  let depth = 0;
+  const values = [];
+  let unreadable = null;
+  for (let i = start; i < lines.length; i += 1) {
+    const code = lines[i].replace(/\/\/.*$/, '');
+    if (i > start && depth === 1 && /^\s*pageSize\s*:/.test(code)) {
+      const m = /^\s*pageSize\s*:\s*(\d+)\s*,?\s*$/.exec(code);
+      if (m) values.push(Number(m[1]));
+      else unreadable = lines[i].trim();
+    }
+    depth += (code.match(/\{/g) ?? []).length - (code.match(/\}/g) ?? []).length;
+    if (depth <= 0) break;
+  }
+  if (unreadable !== null)
+    return { ok: false, what: `the line '${unreadable}' is not a pageSize the line read can read` };
+  if (values.length === 0) return { ok: false, what: 'the `dataAdapter` block holds no pageSize' };
+  if (values.length > 1) return { ok: false, what: `the \`dataAdapter\` block holds pageSize ${values.length} times` };
+  return { ok: true, value: values[0] };
+}
+
+/**
+ * The default of one hook switch in the module's `variables.tf`.
+ *
+ * @returns `{ ok: true, value }`, or `{ ok: false, what }`.
+ */
+function readHookDefault(text, variable) {
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => new RegExp(`^\\s*variable\\s+"${variable}"\\s*\\{`).test(l));
+  if (start === -1) return { ok: false, what: `the module declares no variable ${variable}` };
+  const values = [];
+  for (let i = start + 1; i < lines.length && !/^\}/.test(lines[i]); i += 1) {
+    const m = /^\s*default\s*=\s*(\S+)\s*(?:#.*)?$/.exec(lines[i]);
+    if (m) values.push(m[1]);
+  }
+  if (values.length !== 1)
+    return { ok: false, what: `the variable ${variable} has ${values.length} default line(s), not one` };
+  if (values[0] !== 'true' && values[0] !== 'false')
+    return { ok: false, what: `the default ${values[0]} is not a bare boolean` };
+  return { ok: true, value: values[0] === 'true' };
+}
+
+/**
+ * `public_origin` and each hook switch of one root's variable file, by line reads.
+ *
+ * @returns `origin` (a string or null), `hooks` (per switch variable, `{ value, comment }` or null) and `problems`.
+ */
+function readRootVariables(text) {
+  const problems = [];
+  const origins = [];
+  const assigned = Object.fromEntries(HOOK_SWITCHES.map((h) => [h.variable, []]));
+  for (const line of text.split('\n')) {
+    if (/^\s*public_origin\s*=/.test(line)) {
+      const m = /^\s*public_origin\s*=\s*"([^"\\]*)"\s*(?:#.*)?$/.exec(line);
+      if (m) origins.push(m[1]);
+      else
+        problems.push({
+          id: 'auth/site_url',
+          what: `the line '${line.trim()}' is not a public_origin the line read can read`
+        });
+    }
+    for (const { variable, id } of HOOK_SWITCHES) {
+      if (!new RegExp(`^\\s*${variable}\\s*=`).test(line)) continue;
+      const m = new RegExp(`^\\s*${variable}\\s*=\\s*(true|false)\\s*(?:#\\s*(.*?))?\\s*$`).exec(line);
+      if (m) assigned[variable].push({ value: m[1] === 'true', comment: m[2] ?? '' });
+      else problems.push({ id, what: `the line '${line.trim()}' is not a ${variable} the line read can read` });
+    }
+  }
+  if (origins.length > 1)
+    problems.push({ id: 'auth/site_url', what: `public_origin is assigned ${origins.length} times` });
+  const hooks = {};
+  for (const { variable, id } of HOOK_SWITCHES) {
+    const list = assigned[variable];
+    if (list.length > 1) problems.push({ id, what: `${variable} is assigned ${list.length} times` });
+    hooks[variable] = list.length === 1 ? list[0] : null;
+  }
+  return { origin: origins.length === 1 ? origins[0] : null, hooks, problems };
+}
+
+// ── Comparing ──
+
+const show = (v) => JSON.stringify(v);
+
+/** Problems of one public origin under the site-address rule. */
+function originProblems(origin) {
+  let url;
+  try {
+    url = new URL(origin);
+  } catch {
+    return [`${show(origin)} is not a URL`];
+  }
+  const problems = [];
+  if (url.protocol !== 'https:') problems.push(`${show(origin)} is not https`);
+  if (origin.includes('*')) problems.push(`${show(origin)} has a wildcard in the host`);
+  if (origin !== `${url.protocol}//${url.host}`)
+    problems.push(
+      `${show(origin)} is not a bare origin (a path, a trailing slash, a query, a fragment, credentials or a non-canonical spelling)`
+    );
+  const host = url.hostname;
+  if (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    /^127\./.test(host) ||
+    host === '[::1]' ||
+    host === '0.0.0.0' ||
+    host === '[::]'
+  )
+    problems.push(`${show(origin)} is a loopback host`);
+  return problems;
+}
+
+/** Problems of the redirect rule: the hosted callback paths against the local entries, for every origin. */
+function redirectProblems(localEntries, paths, origins) {
+  const problems = [];
+  if (!Array.isArray(localEntries) || !localEntries.every((e) => typeof e === 'string'))
+    return ['the local additional_redirect_urls is not a list of strings'];
+  if (!Array.isArray(paths) || !paths.every((p) => typeof p === 'string'))
+    return ['the hosted redirect_callback_paths is not a list of strings'];
+  if (paths.length !== REDIRECT_PATH_COUNT)
+    problems.push(`the hosted redirect_callback_paths holds ${paths.length} entries, not ${REDIRECT_PATH_COUNT}`);
+  if (new Set(paths).size !== paths.length) problems.push('the hosted redirect_callback_paths holds a path twice');
+  const matched = new Set();
+  for (const p of paths) {
+    if (!p.startsWith('/')) problems.push(`the path ${show(p)} does not start with /, so it would extend the host`);
+    if (p.includes('**')) problems.push(`the path ${show(p)} holds **`);
+    if (p.endsWith('*')) problems.push(`the path ${show(p)} ends in *`);
+    const local = localEntries.filter(
+      (e) => e.endsWith(p) && /^[a-z]+:\/\/[^/]+$/.test(e.slice(0, e.length - p.length))
+    );
+    if (local.length === 0) problems.push(`the path ${show(p)} is not the path suffix of any local entry`);
+    for (const e of local) matched.add(e);
+    for (const origin of origins) {
+      const entry = `${origin}${p}`;
+      const host = entry.replace(/^[a-z]+:\/\//, '').split('/')[0];
+      if (host.includes('*')) problems.push(`the hosted entry ${show(entry)} has a wildcard in the host`);
+    }
+  }
+  const listed = LOCAL_ONLY_REDIRECTS.map((l) => l.entry);
+  for (const e of localEntries)
+    if (!matched.has(e) && !listed.includes(e))
+      problems.push(`the local entry ${show(e)} has no hosted callback path and is not listed as local-only`);
+  for (const l of LOCAL_ONLY_REDIRECTS)
+    if (!localEntries.includes(l.entry))
+      problems.push(`the local-only entry ${show(l.entry)} is no longer in the local list; remove it from the guard`);
+  if (localEntries[0] !== undefined && !listed.includes(localEntries[0]))
+    problems.push(`the first local entry ${show(localEntries[0])} is not the listed local-only entry`);
+  return problems;
+}
+
+/**
+ * The comparison of one classified row whose key is live and readable.
+ *
+ * @returns A description of what does not hold, or null.
+ */
+function compareRow(row, local, hosted, pageSize) {
+  const [group, key] = row.hosted;
+  const name = `${group}.${key}`;
+  switch (row.compare) {
+    case 'same':
+      return local === hosted ? null : `local ${show(local)}, hosted ${name} ${show(hosted)}; they must be equal`;
+    case 'inverted':
+      if (typeof local !== 'boolean' || typeof hosted !== 'boolean')
+        return `local ${show(local)}, hosted ${name} ${show(hosted)}; both must be booleans`;
+      return local === !hosted
+        ? null
+        : `local ${show(local)}, hosted ${name} ${show(hosted)}; the hosted key is the inverse and must be ${show(!local)}`;
+    case 'set':
+    case 'list': {
+      if (!Array.isArray(local) || typeof hosted !== 'string')
+        return `local ${show(local)}, hosted ${name} ${show(hosted)}; a list against a comma-separated string is required`;
+      const split = hosted.split(',').map((s) => s.trim());
+      const same =
+        row.compare === 'list'
+          ? split.length === local.length && split.every((s, i) => s === local[i])
+          : split.length === local.length &&
+            new Set(split).size === split.length &&
+            local.every((l) => split.includes(l));
+      return same
+        ? null
+        : `local ${show(local)}, hosted ${name} ${show(hosted)}; they must hold the same ${row.compare === 'list' ? 'list in order' : 'set'}`;
+    }
+    case 'maxRows':
+      return local === hosted && hosted === pageSize
+        ? null
+        : `config.toml ${show(local)}, hosted ${name} ${show(hosted)}, dataAdapter.pageSize ${show(pageSize)}; all three must be equal`;
+    case 'atMost':
+    case 'atLeast': {
+      if (!Number.isInteger(local) || !Number.isInteger(hosted))
+        return `local ${show(local)}, hosted ${name} ${show(hosted)}; both must be integers`;
+      const ok = row.compare === 'atMost' ? hosted <= local : hosted >= local;
+      return ok
+        ? null
+        : `hosted ${name} ${hosted} is weaker than local ${local}; it must be ${row.compare === 'atMost' ? 'at most' : 'at least'} the local value`;
+    }
+    case 'durationAtLeast': {
+      const seconds = durationSeconds(local);
+      if (seconds === null)
+        return `the local ${show(local)} is not a duration of hours, minutes and seconds this guard can read`;
+      if (!Number.isInteger(hosted)) return `hosted ${name} ${show(hosted)} must be an integer number of seconds`;
+      return hosted >= seconds
+        ? null
+        : `hosted ${name} ${hosted} s is weaker than the local ${local} (${seconds} s); it must be at least the local value`;
+    }
+    case 'requirements':
+      if (typeof local !== 'string' || typeof hosted !== 'string')
+        return `local ${show(local)}, hosted ${name} ${show(hosted)}; both must be strings`;
+      if (local === '') return null;
+      return `the local value ${show(local)} is not empty, and this guard has no ranking of composition rules to compare it with hosted ${show(hosted)}; extend the guard rather than guess`;
+    default:
+      return `the guard has no comparison '${row.compare}'`;
+  }
+}
+
+/** Seconds of a duration of hours, minutes and seconds, or null for any other form. */
+function durationSeconds(text) {
+  if (typeof text !== 'string') return null;
+  const m = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/.exec(text);
+  if (!m || text === '') return null;
+  return Number(m[1] ?? 0) * 3600 + Number(m[2] ?? 0) * 60 + Number(m[3] ?? 0);
 }
 
 // ── Checking the structure ──
@@ -1155,123 +1278,6 @@ function selfTest() {
   }
   console.error(`Hosted-settings parity guard — self-test ${ok ? 'passed' : 'FAILED'}: ${CASES.length} case(s).`);
   process.exitCode = ok ? 0 : 1;
-}
-
-// ── Gate ──
-
-function display(absolute) {
-  const relative = path.relative(REPO_ROOT, absolute);
-  return relative.startsWith('..') || path.isAbsolute(relative) ? absolute : relative;
-}
-
-function readChannel(absolute) {
-  try {
-    return { file: display(absolute), text: readFileSync(absolute, 'utf8') };
-  } catch (error) {
-    return { file: display(absolute), text: null, error: `could not be read (${error.code ?? error.message})` };
-  }
-}
-
-function readRoots(envsDir) {
-  let entries;
-  try {
-    entries = readdirSync(envsDir, { withFileTypes: true });
-  } catch (error) {
-    return { roots: [], error: `could not be read as a directory (${error.code ?? error.message})` };
-  }
-  const roots = [];
-  for (const entry of entries.filter((e) => e.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
-    const file = path.join(envsDir, entry.name, 'supabase', 'terraform.tfvars');
-    let exists = false;
-    try {
-      exists = statSync(file).isFile();
-    } catch {
-      exists = false;
-    }
-    if (exists) roots.push({ name: entry.name, ...readChannel(file) });
-  }
-  return { roots, error: null };
-}
-
-/** The module's `.tf` files, one level deep, by name. */
-function readModule(moduleDir) {
-  let entries;
-  try {
-    entries = readdirSync(moduleDir, { withFileTypes: true });
-  } catch (error) {
-    return {
-      dir: display(moduleDir),
-      files: [],
-      error: `could not be read as a directory (${error.code ?? error.message})`
-    };
-  }
-  const files = entries
-    .filter((e) => e.isFile() && e.name.endsWith('.tf'))
-    .map((e) => e.name)
-    .sort()
-    .map((name) => readChannel(path.join(moduleDir, name)));
-  return { dir: display(moduleDir), files, error: null };
-}
-
-/** The tracked files in the scope of the second-writer scan. A file listed but absent from the tree holds nothing. */
-function readWriters() {
-  let tracked;
-  try {
-    tracked = trackedFiles({ skip: (file) => !writerInScope(file) });
-  } catch (error) {
-    return { writers: [], error: `could not list the tracked files (${error.message.split('\n')[0]})` };
-  }
-  const writers = [];
-  for (const file of tracked) {
-    try {
-      writers.push({ file, text: readFileSync(path.join(REPO_ROOT, file), 'utf8') });
-    } catch (error) {
-      if (error.code === 'ENOENT' || error.code === 'EISDIR') continue;
-      return { writers, error: `${file} could not be read (${error.code ?? error.message})` };
-    }
-  }
-  return { writers, error: null };
-}
-
-function gate(paths) {
-  const envsDir = paths.envsDir;
-  const { roots, error } = readRoots(envsDir);
-  const { writers, error: writersError } = readWriters();
-  const inputs = {
-    config: readChannel(paths.config),
-    settings: readChannel(paths.settings),
-    staticSettings: readChannel(paths.staticSettings),
-    variables: readChannel(path.join(paths.moduleDir, 'variables.tf')),
-    module: readModule(paths.moduleDir),
-    writers,
-    writersError,
-    envsDir: display(envsDir),
-    roots,
-    rootsError: error
-  };
-  const result = check(inputs);
-  if (result.channelErrors.length > 0) {
-    for (const { file, what } of result.channelErrors) console.log(`${file}: ${what}`);
-    console.error(
-      `Hosted-settings parity guard — a channel could not be read, so no comparison was made and the verdict is withheld.`
-    );
-    process.exitCode = 1;
-    return;
-  }
-  for (const { file, id, what } of result.findings) console.log(`${file}: ${id}: ${what}`);
-  console.error(censusLine(result.census));
-  console.error(`max_rows compared three ways: config.toml ${show(result.census.maxRows)}.`);
-  const { structure } = result.census;
-  console.error(
-    `structure: ${structure.files} .tf file(s) of ${structure.dir}; ` +
-      `${HCL_OWNED_KEYS.length} HCL-owned key(s); ${structure.writersScanned} tracked file(s) scanned for a second writer of hosted settings.`
-  );
-  console.error(
-    result.findings.length === 0
-      ? `Hosted-settings parity guard — every classified key holds between ${inputs.config.file}, ${inputs.settings.file} and the Supabase roots under ${inputs.envsDir}.`
-      : `Hosted-settings parity guard — ${result.findings.length} finding(s).`
-  );
-  process.exitCode = result.findings.length === 0 ? 0 : 1;
 }
 
 // ── Arguments ──

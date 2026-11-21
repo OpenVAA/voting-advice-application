@@ -65,39 +65,6 @@ function refuse(message) {
   process.exit(2);
 }
 
-/** Every distinct value of the first capture group of `re` in `text`. */
-function distinct(text, re) {
-  return [...new Set([...text.matchAll(re)].map((m) => m[1]))];
-}
-
-/** The needles, each with the kind a finding names and the placeholder the fixture spells it with. */
-function deriveNeedles() {
-  let keys;
-  let issuerSource;
-  try {
-    keys = readFileSync(TEST_KEYS, 'utf8');
-    issuerSource = readFileSync(MOCK_ISSUER_SOURCE, 'utf8');
-  } catch (error) {
-    refuse(`could not read ${TEST_KEYS} or ${MOCK_ISSUER_SOURCE}: ${error.message}`);
-  }
-  const kids = distinct(keys, /\bkid: '([^']+)'/g);
-  const moduli = distinct(keys, new RegExp(`\\bn: '([A-Za-z0-9_-]{${MODULUS_PREFIX_LENGTH}})`, 'g'));
-  const issuers = distinct(issuerSource, /export const MOCK_ISSUER = '([^']+)'/g);
-  if (kids.length < 2) refuse(`expected at least two key ids in ${TEST_KEYS}, read ${kids.length}`);
-  if (moduli.length < 2) refuse(`expected at least two moduli in ${TEST_KEYS}, read ${moduli.length}`);
-  if (issuers.length !== 1) refuse(`expected one MOCK_ISSUER in ${MOCK_ISSUER_SOURCE}, read ${issuers.length}`);
-  return [
-    ...kids.map((value, i) => ({ kind: 'test key id', placeholder: `{{kid:${i}}}`, value })),
-    ...moduli.map((value, i) => ({ kind: 'test public modulus', placeholder: `{{modulus:${i}}}`, value })),
-    { kind: 'mock issuer', placeholder: '{{issuer}}', value: issuers[0] }
-  ];
-}
-
-/** The kinds of the needles `line` holds, one entry per needle. */
-function matchKinds(line, needles) {
-  return needles.filter((n) => line.includes(n.value)).map((n) => n.kind);
-}
-
 // ── Arguments ──
 const argv = process.argv.slice(2);
 let report = false;
@@ -151,4 +118,38 @@ function scan() {
     );
   if (findings > 0) console.error(REMEDY);
   process.exitCode = (findings > 0 || unreadable > 0 || !selfTestPassed) && !report ? 1 : 0;
+}
+
+// ── The needles ──
+/** The needles, each with the kind a finding names and the placeholder the fixture spells it with. */
+function deriveNeedles() {
+  let keys;
+  let issuerSource;
+  try {
+    keys = readFileSync(TEST_KEYS, 'utf8');
+    issuerSource = readFileSync(MOCK_ISSUER_SOURCE, 'utf8');
+  } catch (error) {
+    refuse(`could not read ${TEST_KEYS} or ${MOCK_ISSUER_SOURCE}: ${error.message}`);
+  }
+  const kids = distinct(keys, /\bkid: '([^']+)'/g);
+  const moduli = distinct(keys, new RegExp(`\\bn: '([A-Za-z0-9_-]{${MODULUS_PREFIX_LENGTH}})`, 'g'));
+  const issuers = distinct(issuerSource, /export const MOCK_ISSUER = '([^']+)'/g);
+  if (kids.length < 2) refuse(`expected at least two key ids in ${TEST_KEYS}, read ${kids.length}`);
+  if (moduli.length < 2) refuse(`expected at least two moduli in ${TEST_KEYS}, read ${moduli.length}`);
+  if (issuers.length !== 1) refuse(`expected one MOCK_ISSUER in ${MOCK_ISSUER_SOURCE}, read ${issuers.length}`);
+  return [
+    ...kids.map((value, i) => ({ kind: 'test key id', placeholder: `{{kid:${i}}}`, value })),
+    ...moduli.map((value, i) => ({ kind: 'test public modulus', placeholder: `{{modulus:${i}}}`, value })),
+    { kind: 'mock issuer', placeholder: '{{issuer}}', value: issuers[0] }
+  ];
+}
+
+/** Every distinct value of the first capture group of `re` in `text`. */
+function distinct(text, re) {
+  return [...new Set([...text.matchAll(re)].map((m) => m[1]))];
+}
+
+/** The kinds of the needles `line` holds, one entry per needle. */
+function matchKinds(line, needles) {
+  return needles.filter((n) => line.includes(n.value)).map((n) => n.kind);
 }

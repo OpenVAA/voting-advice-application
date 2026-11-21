@@ -157,6 +157,31 @@ function listDefaultRun() {
 
 // ── The census ──
 
+// The exit status is set rather than forced: writes to a pipe are asynchronous, and an immediate exit would drop lines that are still queued.
+function runCensus(list) {
+  const result = census(list);
+  if (result.tests === 0) cannotList('the list holds no test of the default run');
+  const { lines, findings } = linesOf(result);
+  for (const line of lines) console.log(line);
+  console.error(
+    `${GUARD_NAME} — ${result.tests} test(s) in the default run; ${REQUIRED_TAGS.length - findings.length} of ${REQUIRED_TAGS.length} tag(s) have a test${findings.length ? `; no test for ${findings.map((f) => f.split(':')[0]).join(', ')}` : ''}.`
+  );
+  const selfTestPassed = selfTest();
+  if (!selfTestPassed)
+    console.error(
+      `${SELF}: the self-test did not match its committed expectations (printed above), so the census over the default run cannot be trusted.`
+    );
+  process.exitCode = findings.length > 0 || !selfTestPassed ? 1 : 0;
+}
+
+// ── Self-test: the fixture list against its committed findings ──
+function selfTest() {
+  const { findings: observed } = linesOf(census(readList(FIXTURE_LIST)));
+  return compareWithExpected(GUARD_NAME, observed, FIXTURE_EXPECTED);
+}
+
+// ── Counting ──
+
 /** Every spec of the list, at any depth of describes. */
 function specsOf(list) {
   const specs = [];
@@ -194,27 +219,4 @@ function linesOf({ counts }) {
     } else lines.push(`${tag}: ${n} test(s)`);
   }
   return { lines, findings };
-}
-
-// The exit status is set rather than forced: writes to a pipe are asynchronous, and an immediate exit would drop lines that are still queued.
-function runCensus(list) {
-  const result = census(list);
-  if (result.tests === 0) cannotList('the list holds no test of the default run');
-  const { lines, findings } = linesOf(result);
-  for (const line of lines) console.log(line);
-  console.error(
-    `${GUARD_NAME} — ${result.tests} test(s) in the default run; ${REQUIRED_TAGS.length - findings.length} of ${REQUIRED_TAGS.length} tag(s) have a test${findings.length ? `; no test for ${findings.map((f) => f.split(':')[0]).join(', ')}` : ''}.`
-  );
-  const selfTestPassed = selfTest();
-  if (!selfTestPassed)
-    console.error(
-      `${SELF}: the self-test did not match its committed expectations (printed above), so the census over the default run cannot be trusted.`
-    );
-  process.exitCode = findings.length > 0 || !selfTestPassed ? 1 : 0;
-}
-
-// ── Self-test: the fixture list against its committed findings ──
-function selfTest() {
-  const { findings: observed } = linesOf(census(readList(FIXTURE_LIST)));
-  return compareWithExpected(GUARD_NAME, observed, FIXTURE_EXPECTED);
 }

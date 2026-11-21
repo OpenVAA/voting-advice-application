@@ -87,18 +87,6 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 const MIGRATIONS_DIR = 'apps/supabase/supabase/migrations';
 const MANIFEST_FILE = 'apps/supabase/supabase/migrations.manifest.json';
 
-function fail(message) {
-  console.error(`Migration freeze guard: ${message}`);
-  process.exit(1);
-}
-
-function countLines(text) {
-  const lines = text.split('\n');
-  // A trailing newline yields a final empty element that is not a line.
-  if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
-  return lines.length;
-}
-
 /**
  * Every rule of the frozen-mode checker, in the order the checker applies them.
  * The checker has no rule outside this list. `kind` opens every finding of the
@@ -135,23 +123,74 @@ const COMMIT_RE = /^[0-9a-f]{40}$/;
 
 const BASELINE_MEMBERS = ['name', 'file', 'commit'];
 
-function isRecord(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+/** What to do about a finding, for each kind of `FROZEN_RULES`. */
+const REMEDY_BY_KIND = Object.freeze({
+  'MALFORMED MANIFEST':
+    `Restore ${MANIFEST_FILE} from git. The guard checks the frozen migrations whether or not the manifest ` +
+    'is there, and without it every run fails.',
+  'BASELINE NOT FIRST': "Put the baseline's entry first in `migrations`; every later migration follows it.",
+  'BAD NAME': 'Rename the file as the finding says, and its manifest entry with it.',
+  'DUPLICATE VERSION': 'Give the later migration the next version after the highest one in the manifest.',
+  'NON-INCREASING VERSION': 'List the migrations in the manifest in version order.',
+  'VERSION GAP': 'Number the migrations one after another, leaving no version out.',
+  'MISSING MIGRATION':
+    'Restore the file from git. A listed migration is never deleted; a change to the schema is a new migration.',
+  'EDITED FROZEN MIGRATION':
+    'Restore the file from git and write the change as a new numbered migration. `supabase db push` skips a ' +
+    'version a database has recorded, so an edit to an applied migration never reaches that database.',
+  'UNLISTED MIGRATION':
+    'Add its entry, with its sha256 (`shasum -a 256 <file>`), to the end of the manifest in the same commit as the file.',
+  'EMPTY BASELINE': 'Restore the baseline from git.'
+});
+
+/** Check the repository's migrations against the manifest, print the census and every finding with its remedy, and exit 1 on a finding. */
+function main() {
+  const unremedied = [...new Set(FROZEN_RULES.map((rule) => rule.kind))].filter((kind) => !REMEDY_BY_KIND[kind]);
+  if (unremedied.length > 0) {
+    fail(`no remedy is written for the finding kind(s) ${unremedied.join(', ')}; add one to REMEDY_BY_KIND.`);
+  }
+
+  const findings = checkFrozenMigrations({
+    migrationsDir: path.join(REPO_ROOT, MIGRATIONS_DIR),
+    manifestPath: path.join(REPO_ROOT, MANIFEST_FILE)
+  });
+  const census = censusOf();
+
+  if (findings.length > 0) {
+    console.error(`Migration freeze guard — ${census}.\n`);
+    for (const finding of findings) {
+      const kind = finding.slice(0, finding.indexOf(':'));
+      console.error(`${finding}\n  ${REMEDY_BY_KIND[kind]}\n`);
+    }
+    console.error(
+      `${findings.length} finding(s) in ${MIGRATIONS_DIR} against ${MANIFEST_FILE}. A schema change is a new ` +
+        'numbered migration; see apps/supabase/README.md for the steps of a schema change.'
+    );
+    process.exit(1);
+  }
+
+  console.log(`Migration freeze guard — ${census}; the frozen migrations match the manifest.`);
 }
 
 /**
- * Builds every finding of the checker. The kind comes from `FROZEN_RULES`, so a
- * finding cannot be issued for a rule that is not in the list.
- *
- * @param {string} ruleId
- * @param {string} fileName a base name, never a path
- * @param {string} detail
- * @returns {string}
+ * True when this file is the script Node was started with, and false when it is
+ * imported. Both sides are resolved through symbolic links: Node resolves them
+ * for the module's own URL and not for `process.argv[1]`, and a plain string
+ * comparison would then skip `main()` and exit 0 without checking anything.
  */
-function frozenFinding(ruleId, fileName, detail) {
-  const rule = FROZEN_RULES.find((candidate) => candidate.id === ruleId);
-  if (!rule) throw new Error(`No frozen-mode rule has the id '${ruleId}'.`);
-  return `${rule.kind}: ${fileName} ${detail}`;
+function invokedDirectly() {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+/** Print `message` as the guard's and exit 1. */
+function fail(message) {
+  console.error(`Migration freeze guard: ${message}`);
+  process.exit(1);
 }
 
 /**
@@ -404,25 +443,25 @@ export function checkFrozenMigrations({ migrationsDir, manifestPath }) {
   return findings;
 }
 
-/** What to do about a finding, for each kind of `FROZEN_RULES`. */
-const REMEDY_BY_KIND = Object.freeze({
-  'MALFORMED MANIFEST':
-    `Restore ${MANIFEST_FILE} from git. The guard checks the frozen migrations whether or not the manifest ` +
-    'is there, and without it every run fails.',
-  'BASELINE NOT FIRST': "Put the baseline's entry first in `migrations`; every later migration follows it.",
-  'BAD NAME': 'Rename the file as the finding says, and its manifest entry with it.',
-  'DUPLICATE VERSION': 'Give the later migration the next version after the highest one in the manifest.',
-  'NON-INCREASING VERSION': 'List the migrations in the manifest in version order.',
-  'VERSION GAP': 'Number the migrations one after another, leaving no version out.',
-  'MISSING MIGRATION':
-    'Restore the file from git. A listed migration is never deleted; a change to the schema is a new migration.',
-  'EDITED FROZEN MIGRATION':
-    'Restore the file from git and write the change as a new numbered migration. `supabase db push` skips a ' +
-    'version a database has recorded, so an edit to an applied migration never reaches that database.',
-  'UNLISTED MIGRATION':
-    'Add its entry, with its sha256 (`shasum -a 256 <file>`), to the end of the manifest in the same commit as the file.',
-  'EMPTY BASELINE': 'Restore the baseline from git.'
-});
+/**
+ * Builds every finding of the checker. The kind comes from `FROZEN_RULES`, so a
+ * finding cannot be issued for a rule that is not in the list.
+ *
+ * @param {string} ruleId
+ * @param {string} fileName a base name, never a path
+ * @param {string} detail
+ * @returns {string}
+ */
+function frozenFinding(ruleId, fileName, detail) {
+  const rule = FROZEN_RULES.find((candidate) => candidate.id === ruleId);
+  if (!rule) throw new Error(`No frozen-mode rule has the id '${ruleId}'.`);
+  return `${rule.kind}: ${fileName} ${detail}`;
+}
+
+/** Whether `value` is a plain object: not null and not an array. */
+function isRecord(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 /**
  * The census of the real migrations: how many the manifest lists and how long
@@ -448,47 +487,12 @@ function censusOf() {
   return `census: ${listed}; ${baseline}`;
 }
 
-function main() {
-  const unremedied = [...new Set(FROZEN_RULES.map((rule) => rule.kind))].filter((kind) => !REMEDY_BY_KIND[kind]);
-  if (unremedied.length > 0) {
-    fail(`no remedy is written for the finding kind(s) ${unremedied.join(', ')}; add one to REMEDY_BY_KIND.`);
-  }
-
-  const findings = checkFrozenMigrations({
-    migrationsDir: path.join(REPO_ROOT, MIGRATIONS_DIR),
-    manifestPath: path.join(REPO_ROOT, MANIFEST_FILE)
-  });
-  const census = censusOf();
-
-  if (findings.length > 0) {
-    console.error(`Migration freeze guard — ${census}.\n`);
-    for (const finding of findings) {
-      const kind = finding.slice(0, finding.indexOf(':'));
-      console.error(`${finding}\n  ${REMEDY_BY_KIND[kind]}\n`);
-    }
-    console.error(
-      `${findings.length} finding(s) in ${MIGRATIONS_DIR} against ${MANIFEST_FILE}. A schema change is a new ` +
-        'numbered migration; see apps/supabase/README.md for the steps of a schema change.'
-    );
-    process.exit(1);
-  }
-
-  console.log(`Migration freeze guard — ${census}; the frozen migrations match the manifest.`);
-}
-
-/**
- * True when this file is the script Node was started with, and false when it is
- * imported. Both sides are resolved through symbolic links: Node resolves them
- * for the module's own URL and not for `process.argv[1]`, and a plain string
- * comparison would then skip `main()` and exit 0 without checking anything.
- */
-function invokedDirectly() {
-  if (!process.argv[1]) return false;
-  try {
-    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
-  } catch {
-    return false;
-  }
+/** The number of lines in `text`. */
+function countLines(text) {
+  const lines = text.split('\n');
+  // A trailing newline yields a final empty element that is not a line.
+  if (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+  return lines.length;
 }
 
 if (invokedDirectly()) main();

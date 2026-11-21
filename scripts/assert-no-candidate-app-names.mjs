@@ -90,25 +90,6 @@ const PATTERNS = [
 /** Every pattern above contains this spelling, so a line without it cannot match. */
 const ANY_FORM = /cand/i;
 
-/** Blank out the exempt names and the guard's own script name, keeping every column where it was. */
-function mask(text) {
-  let out = text;
-  for (const re of [...EXEMPT, SELF_NAME]) out = out.replace(re, (m) => ' '.repeat(m.length));
-  return out;
-}
-
-/** The names of the selected patterns that match `text`, for a file at `file`. Used for paths and for content lines alike. */
-function matchNames(text, file, patterns) {
-  if (!ANY_FORM.test(text)) return [];
-  const masked = mask(text);
-  const names = [];
-  for (const p of patterns) {
-    if (p.only && !p.only(file)) continue;
-    if (p.re.test(masked)) names.push(p.name);
-  }
-  return names;
-}
-
 function fail(message) {
   console.error(`${SELF}: ${message}`);
   console.error(
@@ -184,4 +165,24 @@ function scan() {
     );
   if (findings > 0) console.error(REMEDY);
   process.exitCode = (findings > 0 || unreadable > 0 || !selfTestPassed) && !report ? 1 : 0;
+}
+
+// ── Matching ──
+/** The names of the selected patterns that match `text`, for a file at `file`. Used for paths and for content lines alike. */
+function matchNames(text, file, patterns) {
+  if (!ANY_FORM.test(text)) return [];
+  const masked = mask(text);
+  const names = [];
+  for (const p of patterns) {
+    if (p.only && !p.only(file)) continue;
+    if (p.re.test(masked)) names.push(p.name);
+  }
+  return names;
+}
+
+/** Blank out the exempt names and the guard's own script name, keeping every column where it was. */
+function mask(text) {
+  let out = text;
+  for (const re of [...EXEMPT, SELF_NAME]) out = out.replace(re, (m) => ' '.repeat(m.length));
+  return out;
 }

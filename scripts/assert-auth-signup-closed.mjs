@@ -98,6 +98,33 @@ const REQUIRED = [
 /** The tables the requirements are in: the only ones read. */
 const TABLES = new Set(REQUIRED.map((r) => r.table));
 
+/** Check the repository's configuration file, run the self-test, and set the exit code from both. */
+function gate() {
+  let text;
+  try {
+    text = readFileSync(path.resolve(REPO_ROOT, CONFIG), 'utf8');
+  } catch (error) {
+    console.error(
+      `${SELF}: could not read '${CONFIG}' (${error.message}). A configuration this guard cannot read is never reported as closed.`
+    );
+    process.exitCode = 1;
+    return;
+  }
+  const findings = check(text);
+  for (const finding of findings) console.log(`${CONFIG}: ${describe(finding)}`);
+  console.error(
+    findings.length === 0
+      ? `Auth-signup-closed guard — ${REQUIRED.length} key(s) hold in ${CONFIG}.`
+      : `Auth-signup-closed guard — ${findings.length} of ${REQUIRED.length} key(s) do not hold in ${CONFIG}. The auth container reads the file when the stack starts: after correcting it, run \`yarn db:stop\` then \`yarn db:start\`.`
+  );
+  const selfTestPassed = selfTest(false);
+  if (!selfTestPassed)
+    console.error(
+      `${SELF}: the self-test did not match its expected cases (printed above), so the result over ${CONFIG} cannot be trusted.`
+    );
+  process.exitCode = findings.length === 0 && selfTestPassed ? 0 : 1;
+}
+
 /**
  * The findings for one configuration text, one per requirement that does not hold.
  *
@@ -123,6 +150,32 @@ function check(text) {
 /** One finding as a line of output. */
 function describe({ table, key, found, required, why }) {
   return `[${table}] ${key} is ${found}; required: ${key} = ${required} — ${why}`;
+}
+
+/**
+ * Run every case. Each case's line is printed on stdout when `verbose` is true, and only a failing case's line otherwise.
+ *
+ * @param verbose - Whether a passing case's line is printed too.
+ * @returns Whether every case reported exactly its expected keys.
+ */
+function selfTest(verbose) {
+  let ok = true;
+  for (const { name, text, expected } of CASES) {
+    if (name !== CASES[0].name && text === CORRECT) {
+      console.log(`self-test: FAIL  ${name}: the case text equals the required configuration, so it tests nothing`);
+      ok = false;
+      continue;
+    }
+    const observed = check(text).map((f) => `${f.table}/${f.key}`);
+    const same = observed.length === expected.length && observed.every((o, i) => o === expected[i]);
+    if (verbose || !same)
+      console.log(
+        `self-test: ${same ? 'pass' : 'FAIL'}  ${name}: reported [${observed.join(', ')}], expected [${expected.join(', ')}]`
+      );
+    if (!same) ok = false;
+  }
+  console.error(`Auth-signup-closed guard — self-test ${ok ? 'passed' : 'FAILED'}: ${CASES.length} case(s).`);
+  return ok;
 }
 
 /** The configuration the self-test edits: every key at its required value, beside same-named keys of another table. */
@@ -289,58 +342,6 @@ const CASES = [
     expected: ['auth/enable_signup']
   }
 ];
-
-/**
- * Run every case. Each case's line is printed on stdout when `verbose` is true, and only a failing case's line otherwise.
- *
- * @param verbose - Whether a passing case's line is printed too.
- * @returns Whether every case reported exactly its expected keys.
- */
-function selfTest(verbose) {
-  let ok = true;
-  for (const { name, text, expected } of CASES) {
-    if (name !== CASES[0].name && text === CORRECT) {
-      console.log(`self-test: FAIL  ${name}: the case text equals the required configuration, so it tests nothing`);
-      ok = false;
-      continue;
-    }
-    const observed = check(text).map((f) => `${f.table}/${f.key}`);
-    const same = observed.length === expected.length && observed.every((o, i) => o === expected[i]);
-    if (verbose || !same)
-      console.log(
-        `self-test: ${same ? 'pass' : 'FAIL'}  ${name}: reported [${observed.join(', ')}], expected [${expected.join(', ')}]`
-      );
-    if (!same) ok = false;
-  }
-  console.error(`Auth-signup-closed guard — self-test ${ok ? 'passed' : 'FAILED'}: ${CASES.length} case(s).`);
-  return ok;
-}
-
-function gate() {
-  let text;
-  try {
-    text = readFileSync(path.resolve(REPO_ROOT, CONFIG), 'utf8');
-  } catch (error) {
-    console.error(
-      `${SELF}: could not read '${CONFIG}' (${error.message}). A configuration this guard cannot read is never reported as closed.`
-    );
-    process.exitCode = 1;
-    return;
-  }
-  const findings = check(text);
-  for (const finding of findings) console.log(`${CONFIG}: ${describe(finding)}`);
-  console.error(
-    findings.length === 0
-      ? `Auth-signup-closed guard — ${REQUIRED.length} key(s) hold in ${CONFIG}.`
-      : `Auth-signup-closed guard — ${findings.length} of ${REQUIRED.length} key(s) do not hold in ${CONFIG}. The auth container reads the file when the stack starts: after correcting it, run \`yarn db:stop\` then \`yarn db:start\`.`
-  );
-  const selfTestPassed = selfTest(false);
-  if (!selfTestPassed)
-    console.error(
-      `${SELF}: the self-test did not match its expected cases (printed above), so the result over ${CONFIG} cannot be trusted.`
-    );
-  process.exitCode = findings.length === 0 && selfTestPassed ? 0 : 1;
-}
 
 const args = process.argv.slice(2);
 if (args.length === 0) gate();

@@ -98,81 +98,6 @@ if (selfTest && root !== null) fail('--self-test takes no other flag');
 /** A root given on the command line is read relative to where the command was run; the default is the repository's `infra/`. */
 const rootAbs = root === null ? path.join(REPO_ROOT, DEFAULT_ROOT) : path.resolve(process.cwd(), root);
 
-/** A path as findings print it: relative to the repository root when inside it, absolute otherwise. */
-function display(abs) {
-  const rel = path.relative(REPO_ROOT, abs);
-  return rel.startsWith('..') || path.isAbsolute(rel) ? abs : rel.split(path.sep).join('/');
-}
-
-/** Every `.tf` and `.tf.json` file under `dir`, sorted, skipping directories named `.terraform`. Symbolic links are not followed. */
-function walk(dir, out = { tf: [], tfJson: [] }) {
-  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    const abs = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      if (entry.name !== '.terraform') walk(abs, out);
-    } else if (entry.isFile()) {
-      if (TF_JSON.test(entry.name)) out.tfJson.push(abs);
-      else if (entry.name.endsWith('.tf')) out.tf.push(abs);
-    }
-  }
-  return out;
-}
-
-/**
- * The text of the block that opens on line `start`, up to the line where its braces balance. Returns null when the file ends first.
- */
-function blockFrom(lines, start) {
-  let depth = 0;
-  let opened = false;
-  for (let i = start; i < lines.length; i += 1) {
-    for (const ch of lines[i]) {
-      if (ch === '{') {
-        depth += 1;
-        opened = true;
-      } else if (ch === '}') depth -= 1;
-    }
-    if (opened && depth <= 0) return lines.slice(start, i + 1).join('\n');
-  }
-  return null;
-}
-
-/** Whether an exclusive-policies block keeps the identity free of inline policies: at least one `policy_names` and every one an empty list. */
-function exclusiveIsEmpty(block) {
-  if (block === null) return false;
-  const assignments = [...block.matchAll(/\bpolicy_names\s*=\s*/g)];
-  if (assignments.length === 0) return false;
-  return assignments.every((m) => /^\[\s*\]/.test(block.slice(m.index + m[0].length)));
-}
-
-/** The findings of one `.tf` file, in line order. */
-function findingsOf(abs) {
-  const shown = display(abs);
-  const lines = readFileSync(abs, 'utf8').split('\n');
-  const found = [];
-  lines.forEach((line, i) => {
-    for (const p of PATTERNS) if (p.re.test(line)) found.push(`${shown}:${i + 1}: ${p.name}`);
-    if (EXCLUSIVE.start.test(line) && !exclusiveIsEmpty(blockFrom(lines, i)))
-      found.push(`${shown}:${i + 1}: ${EXCLUSIVE.name}`);
-  });
-  return found;
-}
-
-/** Scan one root: the findings, and how many `.tf` files were read. */
-function scanRoot(dirAbs) {
-  let stat;
-  try {
-    stat = statSync(dirAbs);
-  } catch {
-    return { error: `cannot read '${display(dirAbs)}'` };
-  }
-  if (!stat.isDirectory()) return { error: `'${display(dirAbs)}' is not a directory` };
-  const { tf, tfJson } = walk(dirAbs);
-  const findings = [];
-  for (const abs of tfJson) findings.push(`${display(abs)}: path matches ${TF_JSON.name}`);
-  for (const abs of tf) findings.push(...findingsOf(abs));
-  return { findings, read: tf.length };
-}
-
 if (selfTest) runSelfTest();
 else gate();
 
@@ -216,4 +141,80 @@ function runSelfTest() {
     suffix: `; ${good.findings.length} on the clean root; ${bad.read + good.read} .tf file(s) read`
   });
   process.exitCode = ok ? 0 : 1;
+}
+
+// ── Scanning ──
+/** Scan one root: the findings, and how many `.tf` files were read. */
+function scanRoot(dirAbs) {
+  let stat;
+  try {
+    stat = statSync(dirAbs);
+  } catch {
+    return { error: `cannot read '${display(dirAbs)}'` };
+  }
+  if (!stat.isDirectory()) return { error: `'${display(dirAbs)}' is not a directory` };
+  const { tf, tfJson } = walk(dirAbs);
+  const findings = [];
+  for (const abs of tfJson) findings.push(`${display(abs)}: path matches ${TF_JSON.name}`);
+  for (const abs of tf) findings.push(...findingsOf(abs));
+  return { findings, read: tf.length };
+}
+
+/** Every `.tf` and `.tf.json` file under `dir`, sorted, skipping directories named `.terraform`. Symbolic links are not followed. */
+function walk(dir, out = { tf: [], tfJson: [] }) {
+  for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const abs = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name !== '.terraform') walk(abs, out);
+    } else if (entry.isFile()) {
+      if (TF_JSON.test(entry.name)) out.tfJson.push(abs);
+      else if (entry.name.endsWith('.tf')) out.tf.push(abs);
+    }
+  }
+  return out;
+}
+
+/** The findings of one `.tf` file, in line order. */
+function findingsOf(abs) {
+  const shown = display(abs);
+  const lines = readFileSync(abs, 'utf8').split('\n');
+  const found = [];
+  lines.forEach((line, i) => {
+    for (const p of PATTERNS) if (p.re.test(line)) found.push(`${shown}:${i + 1}: ${p.name}`);
+    if (EXCLUSIVE.start.test(line) && !exclusiveIsEmpty(blockFrom(lines, i)))
+      found.push(`${shown}:${i + 1}: ${EXCLUSIVE.name}`);
+  });
+  return found;
+}
+
+/**
+ * The text of the block that opens on line `start`, up to the line where its braces balance. Returns null when the file ends first.
+ */
+function blockFrom(lines, start) {
+  let depth = 0;
+  let opened = false;
+  for (let i = start; i < lines.length; i += 1) {
+    for (const ch of lines[i]) {
+      if (ch === '{') {
+        depth += 1;
+        opened = true;
+      } else if (ch === '}') depth -= 1;
+    }
+    if (opened && depth <= 0) return lines.slice(start, i + 1).join('\n');
+  }
+  return null;
+}
+
+/** Whether an exclusive-policies block keeps the identity free of inline policies: at least one `policy_names` and every one an empty list. */
+function exclusiveIsEmpty(block) {
+  if (block === null) return false;
+  const assignments = [...block.matchAll(/\bpolicy_names\s*=\s*/g)];
+  if (assignments.length === 0) return false;
+  return assignments.every((m) => /^\[\s*\]/.test(block.slice(m.index + m[0].length)));
+}
+
+/** A path as findings print it: relative to the repository root when inside it, absolute otherwise. */
+function display(abs) {
+  const rel = path.relative(REPO_ROOT, abs);
+  return rel.startsWith('..') || path.isAbsolute(rel) ? abs : rel.split(path.sep).join('/');
 }
