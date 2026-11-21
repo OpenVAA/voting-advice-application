@@ -60,6 +60,11 @@ set -euo pipefail
 # Auto-detect paths from the script's location, so the script behaves identically from any working directory.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd -P)"
+SCRIPT_NAME="check-proxy-topology.sh"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$REPO_ROOT/scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/redact.sh
+. "$REPO_ROOT/scripts/lib/redact.sh"
 COMPOSE_FILE="$SCRIPT_DIR/docker-compose.proxy.yml"
 
 PROJECT="openvaa-proxy-check"
@@ -102,30 +107,6 @@ STACK_TOUCHED=0
 CONTROL_TAGGED=0
 FAILED=0
 LOGIN_PATH="$LOGIN_ROUTE"
-
-usage() {
-  # Delimit the header block rather than hardcoding a line range, so the exit-code table is never truncated when the header grows.
-  sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[0]}" | sed '$d'
-}
-
-fatal() {
-  echo "check-proxy-topology.sh: FATAL -- $1" >&2
-  exit "$2"
-}
-
-usage_error() {
-  usage >&2
-  fatal "$1" 2
-}
-
-# A value-taking flag given as the LAST argument must be a usage error. `shift 2` with one positional left fails, and under `set -e` the script would die with status 1, which the table above gives to a failed observation.
-#
-# $1 = flag name, $2 = the caller's remaining argument count ($#).
-require_value() {
-  if [ "$2" -lt 2 ]; then
-    usage_error "$1 requires a value"
-  fi
-}
 
 # Every value comes from this process's environment: no .env file takes part in the interpolation.
 # OVERRIDE_FILE, when set, is layered over the compose file; the project name stays the same, so teardown removes either stack.
@@ -187,13 +168,6 @@ could_not_run() {
   fatal "$1" 3
 }
 
-# A TCP connection that opens on either loopback address means something listens there.
-port_has_listener() {
-  (exec 3<> "/dev/tcp/127.0.0.1/$1") 2> /dev/null && return 0
-  (exec 3<> "/dev/tcp/::1/$1") 2> /dev/null && return 0
-  return 1
-}
-
 is_digits() {
   case "$1" in
     '' | *[!0123456789]*) return 1 ;;
@@ -220,7 +194,7 @@ run_bounded() {
   return "$status"
 }
 
-# Removes the two values that must not be written anywhere, and anything shaped like a JWT, from the text on standard input.
+# Removes the two values that must not be written anywhere from the text on standard input, then every other credential print_redacted recognises.
 scrub() {
   SCRUB_KEY="${PROXY_CHECK_SUPABASE_ANON_KEY:-}" SCRUB_PASSWORD="${PROXY_CHECK_LOGIN_PASSWORD:-}" awk '
     (ENVIRON["SCRUB_KEY"] != "" && index($0, ENVIRON["SCRUB_KEY"])) ||
@@ -229,7 +203,7 @@ scrub() {
       next
     }
     { print }
-  ' | sed -E 's/eyJ[A-Za-z0-9_-]{10,}(\.[A-Za-z0-9_-]+)*/<redacted>/g'
+  ' | print_redacted
 }
 
 # Sends one request to the proxy as the public origin and prints the status, or 000 when no answer came. $1 = file for the body, $2 = file for the response headers, the rest = curl arguments, the URL among them.

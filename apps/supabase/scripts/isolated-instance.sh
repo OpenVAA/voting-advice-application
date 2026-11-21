@@ -50,6 +50,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd -P)"
 # shellcheck source=lib/cli.sh
 . "$SCRIPT_DIR/lib/cli.sh"
+# shellcheck source=../../../scripts/lib/redact.sh
+. "$REPO_ROOT/scripts/lib/redact.sh"
 CLI="$REPO_ROOT/node_modules/.bin/supabase"
 SOURCE_CONFIG="$REPO_ROOT/apps/supabase/supabase/config.toml"
 
@@ -454,15 +456,6 @@ containers_of() {
 
 volumes_of() {
   docker volume ls --filter "label=com.supabase.cli.project=$1" --format '{{.Name}}'
-}
-
-# Prints the CLI's output without its credentials. A line that names a key or a secret is dropped whole, because the CLI's status line also carries values with no recognisable shape (the JWT secret, the S3 secret); anything shaped like a JWT or a Supabase API key is removed from the lines that remain. $1 = file.
-print_redacted() {
-  sed -E \
-    -e '/SECRET|_KEY/s/.*/<a line naming a key or a secret was removed>/' \
-    -e 's/eyJ[A-Za-z0-9_-]{10,}(\.[A-Za-z0-9_-]+)*/<redacted>/g' \
-    -e 's/sb_(secret|publishable)_[A-Za-z0-9_-]+/<redacted>/g' \
-    "$1"
 }
 
 main "$@"
