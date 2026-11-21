@@ -123,6 +123,10 @@ export const navigation: Navigation = [
             route: '/developers-guide/backend/authentication'
           },
           {
+            title: 'Nominations',
+            route: '/developers-guide/backend/nominations'
+          },
+          {
             title: 'Edge Functions',
             route: '/developers-guide/backend/edge-functions'
           },

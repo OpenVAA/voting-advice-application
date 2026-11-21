@@ -89,7 +89,7 @@ A confirmed entity with a confirmed nomination is visible to voters once the pro
 
 #### The nominations
 
-An entity-scope item for a candidate or an organization may state the invited entity's nominations under `nominations`, a JSON array of at most 1000 objects, one per nomination. The key is refused on a project-scope item and on an item for a faction or an alliance, and a batch may state one entity's nominations on one item only. An object takes the keys of [`set_entity_nominations`](/developers-guide/backend/authentication#writing-an-entitys-nominations) and `confirmed`, `id` and `election_round`:
+An entity-scope item for a candidate or an organization may state the invited entity's nominations under `nominations`, a JSON array of at most 1000 objects, one per nomination. The key is refused on a project-scope item and on an item for a faction or an alliance, and a batch may state one entity's nominations on one item only. An object takes the keys of [`set_entity_nominations`](/developers-guide/backend/nominations#writing-an-entitys-nominations) and `confirmed`, `id` and `election_round`:
 
 | Key                                                                                    | Meaning                                                                                                                                                       |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
