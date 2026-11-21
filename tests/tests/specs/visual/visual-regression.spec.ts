@@ -11,8 +11,8 @@
  * Fixtures:
  * - Voter-results desktop + mobile use the voter-journey fixture's
  *   `answeredVoterPage` (base dataset; multi-election + multi-constituency walk), then PIN the Regional election — see `selectElectionByName` for why an unpinned /results screenshot can never reproduce.
- * - Candidate-preview desktop + mobile use the `candidatePreviewPage`
- *   function-fixture from the candidate-journey composition root, authenticated as the base candidate CA-AA-1 registered by `auth-setup`.
+ * - Candidate-preview desktop + mobile use the `contestantPreviewPage`
+ *   function-fixture from the contestant-journey composition root, authenticated as the base candidate CA-AA-1 registered by `auth-setup`.
  *
  * ## Re-baselining
  *
@@ -34,9 +34,10 @@
  */
 
 import { STORAGE_STATE } from '../../../playwright.config';
-import { expect, test as candidateTest } from '../../fixtures/candidate/candidate-journey';
+import { expect, test as contestantTest } from '../../fixtures/contestant/contestant-journey';
 import { voterJourneyTest as voterTest } from '../../fixtures/voter/voter-journey.fixture';
-import { buildRoute } from '../../utils/buildRoute';
+import { buildEntityLessRoute } from '../../utils/contestantEntityUrl';
+import { COMMON_PHONE, phoneUse } from '../../utils/phoneViewports';
 import { selectElectionByName } from '../../utils/selectElection';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
@@ -44,7 +45,7 @@ import type { Page } from '@playwright/test';
 /**
  * Block until webfont loading has settled, and assert the app's own font is the one that will be rasterised.
  *
- * `staticSettings.font.url` serves Inter from the app's OWN origin with `display: swap`, so a page paints in the `system-ui` fallback first and re-lays out when Inter arrives. A screenshot taken inside that window captures fallback advance widths — every glyph lands a few pixels off while the box layout is unchanged, which is exactly the diff this produced before the gate existed. The voter cases never showed it only because their walk takes ~20s, long enough for the swap; the candidate-preview cases capture ~4s in and straddled the race.
+ * `staticSettings.font.url` serves Inter from the app's OWN origin with `display: swap`, so a page paints in the `system-ui` fallback first and re-lays out when Inter arrives. A screenshot taken inside that window captures fallback advance widths — every glyph lands a few pixels off while the box layout is unchanged, which is exactly the diff this produced before the gate existed. The voter cases never showed it only because their walk takes ~20s, long enough for the swap; the contestant-preview cases capture ~4s in and straddled the race.
  *
  * What this check actually covers, MEASURED in mcr.microsoft.com/playwright:v1.63.0-noble (the pinned image, Chromium 153) rather than inferred:
  *
@@ -133,7 +134,7 @@ voterTest.describe('Voter Results - Desktop @visual', { tag: ['@visual'] }, () =
 
 voterTest.describe('Voter Results - Mobile @visual', { tag: ['@visual'] }, () => {
   voterTest.describe.configure({ mode: 'serial' });
-  voterTest.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  voterTest.use(phoneUse(COMMON_PHONE));
 
   voterTest('screenshot matches baseline', async ({ answeredVoterPage: page }) => {
     await page.getByTestId(testIds.voter.results.list).waitFor({ state: 'visible' });
@@ -151,18 +152,18 @@ voterTest.describe('Voter Results - Mobile @visual', { tag: ['@visual'] }, () =>
 
 // ── Candidate Preview - Desktop ──────────────────────────────────────
 
-candidateTest.describe('Candidate Preview - Desktop @visual', { tag: ['@visual'] }, () => {
-  candidateTest.describe.configure({ mode: 'serial' });
-  candidateTest.use({ storageState: STORAGE_STATE, viewport: { width: 1280, height: 720 } });
+contestantTest.describe('Candidate Preview - Desktop @visual', { tag: ['@visual'] }, () => {
+  contestantTest.describe.configure({ mode: 'serial' });
+  contestantTest.use({ storageState: STORAGE_STATE, viewport: { width: 1280, height: 720 } });
 
-  candidateTest('screenshot matches baseline', async ({ candidatePreviewPage, page }) => {
-    await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));
-    // Use the candidatePreviewPage fixture's container-visible assertion — the fixture wraps the testid lookup and offers strict visibility semantics + a future composition surface for follow-up assertions.
-    await candidatePreviewPage.expectPortraitVisible();
+  contestantTest('screenshot matches baseline', async ({ contestantPreviewPage, page }) => {
+    await page.goto(buildEntityLessRoute({ route: 'ContestantAppPreview', locale: 'en' }));
+    // Use the contestantPreviewPage fixture's container-visible assertion — the fixture wraps the testid lookup and offers strict visibility semantics + a future composition surface for follow-up assertions.
+    await contestantPreviewPage.expectPortraitVisible();
     await settleFonts(page);
     await guardThirdPartyFonts(page);
 
-    await expect(page).toHaveScreenshot('candidate-preview-desktop.png', {
+    await expect(page).toHaveScreenshot('contestant-preview-desktop.png', {
       fullPage: true,
       animations: 'disabled'
     });
@@ -171,22 +172,17 @@ candidateTest.describe('Candidate Preview - Desktop @visual', { tag: ['@visual']
 
 // ── Candidate Preview - Mobile ───────────────────────────────────────
 
-candidateTest.describe('Candidate Preview - Mobile @visual', { tag: ['@visual'] }, () => {
-  candidateTest.describe.configure({ mode: 'serial' });
-  candidateTest.use({
-    storageState: STORAGE_STATE,
-    viewport: { width: 390, height: 844 },
-    isMobile: true,
-    hasTouch: true
-  });
+contestantTest.describe('Candidate Preview - Mobile @visual', { tag: ['@visual'] }, () => {
+  contestantTest.describe.configure({ mode: 'serial' });
+  contestantTest.use({ ...phoneUse(COMMON_PHONE), storageState: STORAGE_STATE });
 
-  candidateTest('screenshot matches baseline', async ({ candidatePreviewPage, page }) => {
-    await page.goto(buildRoute({ route: 'CandAppPreview', locale: 'en' }));
-    await candidatePreviewPage.expectPortraitVisible();
+  contestantTest('screenshot matches baseline', async ({ contestantPreviewPage, page }) => {
+    await page.goto(buildEntityLessRoute({ route: 'ContestantAppPreview', locale: 'en' }));
+    await contestantPreviewPage.expectPortraitVisible();
     await settleFonts(page);
     await guardThirdPartyFonts(page);
 
-    await expect(page).toHaveScreenshot('candidate-preview-mobile.png', {
+    await expect(page).toHaveScreenshot('contestant-preview-mobile.png', {
       fullPage: true,
       animations: 'disabled'
     });

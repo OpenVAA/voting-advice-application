@@ -3,14 +3,14 @@
  *
  * ## Why this exists
  *
- * The `e2e/base` seed once carried exactly ONE multi-choice opinion question (`qu-opin-base-7-multichoice`, minSelections 2 / maxSelections 3), so every walk hard-coded "click the first 2 checkboxes" and cited that window in a COUPLING comment. The seed now also carries a second multi-choice question with an EQUAL window (`qu-opin-base-8-multichoice-exact`, min === max === 1) so the app can reach the `questions.multiChoice.selectExact` helper string. Against that question "click 2" is OVER-max, i.e. invalid — the candidate app leaves Save disabled and the voter app refuses to persist the answer. A walk that hard-codes a count is therefore coupled to one question's authoring and silently breaks (or silently under-answers) the moment a second window exists.
+ * The `e2e/base` seed once carried exactly ONE multi-choice opinion question (`qu-opin-base-7-multichoice`, minSelections 2 / maxSelections 3), so every walk hard-coded "click the first 2 checkboxes" and cited that window in a COUPLING comment. The seed now also carries a second multi-choice question with an EQUAL window (`qu-opin-base-8-multichoice-exact`, min === max === 1) so the app can reach the `questions.multiChoice.selectExact` helper string. Against that question "click 2" is OVER-max, i.e. invalid — the contestant app leaves Save disabled and the voter app refuses to persist the answer. A walk that hard-codes a count is therefore coupled to one question's authoring and silently breaks (or silently under-answers) the moment a second window exists.
  *
  * This helper removes the coupling: it selects the SMALLEST valid number of choices, discovered from the APP'S OWN validity signal rather than from a number copied out of the seed. It is correct for 1..1, 2..3, 2..null, and any future window without further edits.
  *
  * ## The validity signal
  *
  * Callers pass `validWhenEnabled` — a Locator for a control that is enabled iff the current selection is a VALID answer:
- *   - candidate app → `candidate-questions-save` (Save gates on
+ *   - contestant app → `contestant-questions-save` (Save gates on
  *     `isMultiChoiceCountValid`, multiChoiceValidity.ts:30).
  *   - voter app → `question-delete` (enabled iff an answer is persisted, and an
  *     out-of-range multi-choice selection is NEVER persisted —

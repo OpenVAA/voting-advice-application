@@ -15,7 +15,7 @@
  *
  * ## Where it runs
  *
- * Wired into `assertAxeScan` in `tests/tests/utils/axeScan.ts` — the shared scan core BOTH a11y specs import — so every axe-scanned surface is also raw-key-scanned. That is **14 routes x 2 themes = 28 surfaces**: the 7 voter routes of `specs/a11y/a11y-smoke.spec.ts` and the 7 candidate `(protected)` routes of `specs/a11y/candidate-a11y.spec.ts`. Each is already navigated, settled on its data-driven `contentTestId` anchor, and past `awaitAnimationsSettled`. The pages are loaded and quiescent at that point, so the marginal cost is a single DOM read.
+ * Wired into `assertAxeScan` in `tests/tests/utils/axeScan.ts` — the shared scan core BOTH a11y specs import — so every axe-scanned surface is also raw-key-scanned. That is **18 routes and views x 2 themes = 36 surfaces**: the 7 voter routes of `specs/a11y/a11y-smoke.spec.ts` and the 11 Contestant App surfaces of `specs/a11y/contestant-a11y.spec.ts`. Each is already navigated, settled on its data-driven `contentTestId` anchor, and past `awaitAnimationsSettled`. The pages are loaded and quiescent at that point, so the marginal cost is a single DOM read.
  *
  * It once ran on the voter half alone (7 routes x 2 themes = 14 surfaces).
  * The candidate half was blind, and the negative control's `RK1-OLD` / `RK2-OLD` rows are the measurement of that blindness: two candidate-side matchers passed while the exact keys they guard rendered raw.
@@ -33,7 +33,7 @@ import type { Page } from '@playwright/test';
 const FRONTEND_DIR = path.join(TESTS_DIR, '..', '..', 'apps', 'frontend');
 
 /**
- * The runtime Paraglide message catalog for the base locale. Each file's top-level object key already carries the namespace (`common.json` opens with `"common"`, `candidateApp.questions.json` with `"candidateApp.questions"`), so the flattened paths are already the exact strings `t()` echoes back on a miss — no filename-derived prefixing required here.
+ * The runtime Paraglide message catalog for the base locale. Each file's top-level object key already carries the namespace (`common.json` opens with `"common"`, `contestantApp.questions.json` with `"contestantApp.questions"`), so the flattened paths are already the exact strings `t()` echoes back on a miss — no filename-derived prefixing required here.
  *
  * The base locale is enough: `project.inlang/settings.json` declares one `pathPattern` set across all 7 locales, so the KEY set is locale-invariant even though the values are not. A raw key rendered in any locale is the same string in every locale.
  */
@@ -240,7 +240,7 @@ export interface RawI18nKeyVerdict {
  * The detection itself — the key-set derivation, the sub-run walk, the sighting collection — is deliberately unchanged by that split: it is the instrument the `RK1-OLD` / `RK2-OLD` negative controls were taken with, and the same injections are re-run against it.
  *
  * `label` names the surface (the a11y scan label) so a failure says WHICH of the
- * **28** scanned surfaces broke — 14 voter (`a11y-smoke.spec.ts`) and 14 candidate (`candidate-a11y.spec.ts`), each route in both themes. It was 14 before the gate was extended across the candidate `(protected)` family.
+ * **36** scanned surfaces broke — 14 voter (`a11y-smoke.spec.ts`) and 22 contestant (`contestant-a11y.spec.ts`), each surface in both themes.
  */
 export async function collectRawI18nKeyFindings(page: Page, label: string): Promise<RawI18nKeyVerdict> {
   const catalogKeys = loadCatalogKeys();

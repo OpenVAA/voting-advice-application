@@ -43,7 +43,7 @@ async function runEveryStep(steps: ReadonlyArray<readonly [string, () => Promise
 teardown('delete perm-closed-project dataset and reopen the project', async () => {
   const client = new SupabaseAdminClient();
   await runEveryStep([
-    ['unregister the seeded candidate auth user', () => client.unregisterCandidate(CANDIDATE_EMAIL)],
+    ['unregister the seeded candidate auth user', () => client.unregisterUser(CANDIDATE_EMAIL)],
     ['delete the prefixed dataset', () => runTeardownAsserted(PREFIX, client)],
     ['reopen the project', () => client.ensureProject()]
   ]);

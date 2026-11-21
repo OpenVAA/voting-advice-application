@@ -17,7 +17,7 @@ import type { Locator, Page } from '@playwright/test';
  *
  * NOTE: regex anchored case-insensitive; not exact-equality. Locked against apps/frontend/src/lib/i18n/messages/en/entityDetails.json.
  */
-const TAB_LABELS = Object.freeze({
+export const TAB_LABELS = Object.freeze({
   info: /Basic Info/i,
   children: /Members/i,
   opinions: /Opinions/i

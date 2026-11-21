@@ -14,6 +14,7 @@
 
 import { expect, test } from '../../fixtures/voter/views';
 import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
+import { COMMON_PHONE, phoneUse } from '../../utils/phoneViewports';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
@@ -156,7 +157,7 @@ test.describe('perm-interactive-info (EPERM-07)', () => {
 // A SCOPED mobile-viewport sub-test — `test.use` is INSIDE its own describe so the 390×844 isMobile/hasTouch descriptor NEVER leaks to the slices above (a file-scope test.use would flip the whole spec to mobile). Asserts the popup-modal info disclosure (the shipped interactiveInfo.enabled=true default) opens on mobile, reusing the popup assertion adapted to mobile.
 test.describe('mobile viewport smoke', () => {
   test.describe.configure({ mode: 'serial' });
-  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  test.use(phoneUse(COMMON_PHONE));
 
   test('popup info disclosure opens on mobile', async ({ page, questionInfo }) => {
     const consentDialog = page.getByRole('dialog');

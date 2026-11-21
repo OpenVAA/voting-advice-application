@@ -1,17 +1,18 @@
 /**
  * @file emailBucket fixture.
  *
- * Self-contained Mailpit (Inbucket) access for E2E tests. Talks directly to the Mailpit REST API (port 54324, started by `supabase start`) — it owns its own HTTP plumbing and does not depend on any other email module. Sibling to the other candidate fixtures (candidateLoginPage.fixture.ts, etc.); composed in `candidate-journey.ts`.
+ * Self-contained Mailpit (Inbucket) access for E2E tests. Talks directly to the Mailpit REST API (port 54324, started by `supabase start`) — it owns its own HTTP plumbing and does not depend on any other email module. Sibling to the other candidate fixtures (contestantLoginPage.fixture.ts, etc.); composed in `contestant-journey.ts`.
  *
  * Surface:
  *  - expectEmail(subject)              → polls Mailpit until a message with
  *                                        matching Subject arrives (15s timeout, [1000, 2000, 3000] retry intervals).
- *  - getEmail(subjectOrNth)            → string/RegExp → match by Subject;
+ *  - getEmail(subjectOrNth)            → string → the whole Subject; RegExp → a pattern over it;
  *                                        number → 0-indexed nth latest email.
  *  - getLinksInEmail(subjectOrNth)     → array of href values (cheerio-parsed
  *                                        anchors from the email HTML).
+ *  - listSubjects()                    → the subject of every mail the recipient has right now, read once; throws when Mailpit cannot be read.
  *
- * Also exports `toCallbackUrl(verifyLink)` — a pure transform that rewrites a Supabase Auth verify link (extracted from an email via `getLinksInEmail`) into a direct frontend auth-callback URL. Absorbed here when the legacy `utils/emailHelper.ts` was retired (its only remaining consumer).
+ * A link the `account-access` function mails, for a sign-in or for a password recovery, is already the application's callback URL. A spec opens it as received, through `utils/mailedLink`; nothing here builds or rewrites a link.
  *
  * **Rigidity contract**:
  * - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO
@@ -79,15 +80,36 @@ async function fetchEmailsForRecipient(recipientEmail: string): Promise<Array<Ma
   return data.messages ?? [];
 }
 
+/**
+ * The recipient's messages as Mailpit holds them right now, or an error.
+ *
+ * The strict counterpart of {@link fetchEmailsForRecipient}, for a caller that concludes something from a mail's ABSENCE: that helper answers a failed read with an empty list, which would let "no mail" pass while the catcher is unreachable.
+ *
+ * @throws Error naming the status when Mailpit does not answer the search.
+ */
+async function fetchEmailsForRecipientOrThrow(recipientEmail: string): Promise<Array<MailpitMessageSummary>> {
+  const response = await fetch(`${MAILPIT_URL}/api/v1/search?query=to:${encodeURIComponent(recipientEmail)}`);
+  if (!response.ok) {
+    throw new Error(
+      `emailBucket: the mail catcher answered status ${response.status} to a search for ${recipientEmail}`
+    );
+  }
+  const data = (await response.json()) as { messages?: Array<MailpitMessageSummary> };
+  return data.messages ?? [];
+}
+
 async function fetchFullMessage(id: string): Promise<MailpitMessage | undefined> {
   const response = await fetch(`${MAILPIT_URL}/api/v1/message/${id}`);
   if (!response.ok) return undefined;
   return (await response.json()) as MailpitMessage;
 }
 
+/**
+ * Whether a message's subject is the one asked for: a string is the whole subject, a RegExp is a pattern over it.
+ */
 function matchSubject(summary: MailpitMessageSummary, subject: string | RegExp): boolean {
   if (subject instanceof RegExp) return subject.test(summary.Subject);
-  return summary.Subject.includes(subject);
+  return summary.Subject === subject;
 }
 
 function toEmailRecord(message: MailpitMessage): EmailRecord {
@@ -107,10 +129,22 @@ function toEmailRecord(message: MailpitMessage): EmailRecord {
  *
  * @param _page Playwright Page (unused — emailBucket talks to Mailpit REST,
  *              not to the browser — but accepted for fixture-factory parity).
+ *              `null` from a caller that drives no page.
  * @param recipientEmail The recipient address to filter Mailpit by.
  */
-export function createEmailBucket(_page: Page, recipientEmail: string) {
+export function createEmailBucket(_page: Page | null, recipientEmail: string) {
   return {
+    /**
+     * The subject of every mail Mailpit holds for the recipient right now, newest first. Reads once and does not wait.
+     *
+     * For an assertion about how many mails there are, none included. Such an assertion is sound only once the sender is known to have finished; this method knows nothing about that.
+     *
+     * @throws Error when Mailpit cannot be read: an unreadable catcher is never taken for an empty one.
+     */
+    async listSubjects(): Promise<Array<string>> {
+      return (await fetchEmailsForRecipientOrThrow(recipientEmail)).map((message) => message.Subject);
+    },
+
     /**
      * Wait until at least one email with a matching subject arrives in the recipient's Mailpit queue. Polls via `expect.poll` with the canonical [1000, 2000, 3000] retry intervals (15s timeout).
      */
@@ -134,7 +168,7 @@ export function createEmailBucket(_page: Page, recipientEmail: string) {
      * Retrieve a single email by subject match (string / RegExp) OR by 0-indexed nth latest position (number). Polls until the target email exists.
      *
      * Polymorphic-overload dispatch:
-     *  - string | RegExp → subject match (returns the newest matching).
+     *  - string | RegExp → subject match, a string being the whole subject (returns the newest matching).
      *  - number          → nth latest (Mailpit returns newest-first).
      */
     async getEmail(subjectOrNth: string | RegExp | number): Promise<EmailRecord> {
@@ -183,23 +217,3 @@ export function createEmailBucket(_page: Page, recipientEmail: string) {
 }
 
 export type EmailBucketFixture = ReturnType<typeof createEmailBucket>;
-
-/**
- * Transform a Supabase Auth verify link into a direct auth callback URL.
- *
- * The Supabase invite/recovery email contains a link to the Auth verify endpoint which then redirects to the frontend. This extracts the token from the verify link and constructs a direct URL to the frontend's auth callback, bypassing the Supabase redirect (which may not carry the correct redirect_to).
- *
- * Pure function (no Mailpit/Page dependency); colocated here because its sole input is a link returned by `getLinksInEmail`.
- *
- * @param verifyLink - The link from the Supabase email (e.g. http://...54321/auth/v1/verify?token=...&type=invite)
- * @param callbackPath - The frontend auth callback path (default: /en/api/candidate/auth/callback)
- * @returns A URL pointing directly to the frontend callback with token_hash and type params
- */
-export function toCallbackUrl(verifyLink: string, callbackPath = '/en/api/candidate/auth/callback'): string {
-  const url = new URL(verifyLink.replace(/&amp;/g, '&'));
-  const token = url.searchParams.get('token');
-  const type = url.searchParams.get('type') ?? 'invite';
-  const frontendPort = process.env.FRONTEND_PORT ?? '5173';
-  const frontendUrl = `http://localhost:${frontendPort}`;
-  return `${frontendUrl}${callbackPath}?token_hash=${token}&type=${type}`;
-}

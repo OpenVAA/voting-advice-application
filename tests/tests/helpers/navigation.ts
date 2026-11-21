@@ -103,6 +103,37 @@ export async function readNavigationLandmarkText(page: Page): Promise<string | n
 }
 
 /**
+ * Wait until the root layout's post-navigation focus reset has landed: the page's `[data-focus-on-nav]` element, or its first `<h1>` when it has none, holds focus. The selector is the one {@link readNavigationLandmarkText} reads.
+ *
+ * On a page opened by its URL, the reset is the first sign that the page has hydrated. SvelteKit calls the root layout's `afterNavigate` once the page has mounted and starts its router in the same turn, and the reset moves focus in a later frame. Until the router has started, a press of a link the server rendered is followed by the browser itself and loads a new document, so a step whose press must be a navigation inside the application waits for this before it presses.
+ *
+ * The page must be one on which nothing has moved focus since the navigation that opened it: focus moved elsewhere keeps this wait open until it fails.
+ *
+ * The same wait also serves after a client navigation: the reset (`afterNavigate`, then a frame) lands only once the navigation and its View Transition have ended, so a focus or key press that follows a navigation waits for it first, or the reset takes focus back. Such a step passes the route-transition budget, `TIMEOUTS.page`, as `timeout`.
+ *
+ * @param page - Playwright Page.
+ * @param options.timeout - The wait's budget; `TIMEOUTS.slowPage` when omitted.
+ */
+export async function waitForNavigationFocusReset(
+  page: Page,
+  { timeout = TIMEOUTS.slowPage }: { timeout?: number } = {}
+): Promise<void> {
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() => {
+          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
+          return target !== null && document.activeElement === target;
+        }),
+      {
+        message: 'the post-navigation focus reset never landed (on a page opened by its URL: the page did not hydrate)',
+        timeout
+      }
+    )
+    .toBe(true);
+}
+
+/**
  * The callback an {@link expectClientNavigation} action MUST invoke immediately before the click that navigates, to record the settle's baseline.
  */
 export type CaptureNavigationBaseline = () => Promise<void>;

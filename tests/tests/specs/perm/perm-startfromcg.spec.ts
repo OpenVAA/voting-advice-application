@@ -4,10 +4,31 @@
  *
  * Runtime-set mechanism: the template OMITS elections.startFromConstituencyGroup; this spec's beforeAll resolves the CG-2 UUID via SupabaseAdminClient + client.updateAppSettings.
  *
+ * The contestant side: after the voter tests, one describe runs under the stored session of the editor of one seeded candidate and takes its `test` and its state steps from `fixtures/contestant/perm-startfromcg.ts`. It names the same group in the setting for its own tests and puts back what the setting held, and it begins by deleting that candidate's nominations with the service role, so that the nomination editor is open to the candidate: nothing writes the seeded nomination again, and nothing after this file reads the dataset. Its test bodies hold fixture steps alone. A test that changes an election's nomination shape puts the seeded shape back in a `finally`, and the step after such a change is a full page load. When its tests have run, any nomination the application wrote for the candidate is removed, because a later setup deletes this dataset's rows by prefix before this dataset's own teardown runs.
+ *
  * Rigidity contract: every assertion is HARD.
  */
 
 import { expect, test } from '@playwright/test';
+import {
+  chooseConstituencyGroupFirst,
+  clearWrittenNominations,
+  removeCandidateNominations,
+  restoreConstituencyGroupFirst,
+  setNominationShape,
+  test as contestantTest
+} from '../../fixtures/contestant/perm-startfromcg';
+import {
+  CANDIDATE_EDITOR,
+  CHILD_CONSTITUENCY_NAME,
+  FIRST_GROUP_NAME,
+  MUNICIPALITIES_ELECTION_EXTERNAL_ID,
+  MUNICIPALITIES_ELECTION_NAME,
+  ORPHAN_CONSTITUENCY_NAME,
+  PARENT_CONSTITUENCY_NAME,
+  REGIONS_ELECTION_NAME,
+  SEEDED_NOMINATION_SHAPES
+} from '../../utils/permStartFromCgData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import {
@@ -83,4 +104,118 @@ test.describe('perm-startfromcg', () => {
     await page.getByTestId(testIds.voter.elections.continue).click();
     await expectQuestion(page);
   });
+});
+
+contestantTest.describe('perm-startfromcg: the nomination editor of a candidate with no nomination', () => {
+  contestantTest.describe.configure({ mode: 'serial' });
+  contestantTest.use({ storageState: CANDIDATE_EDITOR.storageStatePath });
+
+  let priorGroup: string | null = null;
+
+  contestantTest.beforeAll(async () => {
+    priorGroup = await chooseConstituencyGroupFirst();
+    await removeCandidateNominations();
+  });
+
+  contestantTest.afterAll(async () => {
+    await restoreConstituencyGroupFirst(priorGroup);
+    await clearWrittenNominations();
+  });
+
+  contestantTest(
+    'contestant: the entry leads to the constituency step as one picker over the group',
+    { tag: '@nomination-definition' },
+    async ({ contestantNominationEditor, contestantNominationsPage }) => {
+      await contestantNominationsPage.open(CANDIDATE_EDITOR.grant);
+      await contestantNominationsPage.expectState({ state: 'empty', locked: false });
+      await contestantNominationsPage.expectCardCount(0);
+
+      // The entry address, as a new document. Two elections admit a candidate, and the group is chosen before either.
+      await contestantNominationEditor.open(CANDIDATE_EDITOR.grant);
+      await contestantNominationEditor.expectStep('constituencies');
+      await contestantNominationEditor.expectGroupPicker(FIRST_GROUP_NAME);
+      await contestantNominationEditor.expectNoElectionSentence(false);
+      await contestantNominationEditor.expectConstituenciesContinue(false);
+    }
+  );
+
+  contestantTest(
+    'contestant: a constituency with two admissible elections leads to the election step listing those two',
+    { tag: '@nomination-definition' },
+    async ({ contestantNominationEditor }) => {
+      await contestantNominationEditor.open(CANDIDATE_EDITOR.grant);
+      await contestantNominationEditor.expectStep('constituencies');
+
+      // A municipality that lies in a region: the municipalities' election is held in it, and the regions' election in its region.
+      await contestantNominationEditor.chooseConstituency(CHILD_CONSTITUENCY_NAME);
+      await contestantNominationEditor.expectNoElectionSentence(false);
+      await contestantNominationEditor.continueFromConstituencies();
+      await contestantNominationEditor.expectStep('elections');
+      await contestantNominationEditor.expectElections([REGIONS_ELECTION_NAME, MUNICIPALITIES_ELECTION_NAME]);
+      await contestantNominationEditor.expectChecked([]);
+    }
+  );
+
+  contestantTest(
+    'contestant: a constituency with one admissible election leads to the details step',
+    { tag: '@nomination-definition' },
+    async ({ contestantNominationEditor }) => {
+      await contestantNominationEditor.open(CANDIDATE_EDITOR.grant);
+      await contestantNominationEditor.expectStep('constituencies');
+
+      // The municipality that lies in no region: the municipalities' election alone is held in it, so no election is chosen.
+      await contestantNominationEditor.chooseConstituency(ORPHAN_CONSTITUENCY_NAME);
+      await contestantNominationEditor.expectNoElectionSentence(false);
+      await contestantNominationEditor.continueFromConstituencies();
+      await contestantNominationEditor.expectStep('details');
+      await contestantNominationEditor.expectCards([
+        {
+          election: MUNICIPALITIES_ELECTION_NAME,
+          constituency: ORPHAN_CONSTITUENCY_NAME,
+          state: 'new',
+          confirmed: false,
+          moved: false
+        }
+      ]);
+    }
+  );
+
+  contestantTest(
+    'contestant: a constituency with no election the candidate can stand in keeps the constituency step',
+    { tag: '@nomination-definition' },
+    async ({ contestantNominationEditor }) => {
+      try {
+        // The one election held in the municipality that lies in no region admits parties alone. The step after the change is a full page load.
+        await setNominationShape(MUNICIPALITIES_ELECTION_EXTERNAL_ID, 'organization_only');
+        await contestantNominationEditor.open(CANDIDATE_EDITOR.grant);
+        await contestantNominationEditor.expectStep('constituencies');
+        await contestantNominationEditor.expectGroupPicker(FIRST_GROUP_NAME);
+
+        await contestantNominationEditor.chooseConstituency(ORPHAN_CONSTITUENCY_NAME);
+        await contestantNominationEditor.expectNoElectionSentence(true);
+        await contestantNominationEditor.expectConstituenciesContinue(false);
+        await contestantNominationEditor.expectStep('constituencies');
+
+        // A municipality that lies in a region: the regions' election, which still admits a candidate, is held there, in the region.
+        await contestantNominationEditor.chooseConstituency(CHILD_CONSTITUENCY_NAME);
+        await contestantNominationEditor.expectNoElectionSentence(false);
+        await contestantNominationEditor.continueFromConstituencies();
+        await contestantNominationEditor.expectStep('details');
+        await contestantNominationEditor.expectCards([
+          {
+            election: REGIONS_ELECTION_NAME,
+            constituency: PARENT_CONSTITUENCY_NAME,
+            state: 'new',
+            confirmed: false,
+            moved: false
+          }
+        ]);
+      } finally {
+        await setNominationShape(
+          MUNICIPALITIES_ELECTION_EXTERNAL_ID,
+          SEEDED_NOMINATION_SHAPES[MUNICIPALITIES_ELECTION_EXTERNAL_ID]
+        );
+      }
+    }
+  );
 });

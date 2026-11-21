@@ -11,12 +11,12 @@
  *
  * ## The two question-category rollup consumers
  *
- * `voterContext.svelte.ts` and `candidateContext.svelte.ts` share one `questionCategories` rollup utility. Both rollups read the data root, so both could reintroduce the alias-skip above, and the two elections/info cases do not cover them. One case per rollup consumer covers them.
+ * `voterContext.svelte.ts` and `contestantContext.svelte.ts` share one `questionCategories` rollup utility. Both rollups read the data root, so both could reintroduce the alias-skip above, and the two elections/info cases do not cover them. One case per rollup consumer covers them.
  *
- * Neither route is reachable by a BARE `page.goto`, and that is a property of the product's route guards rather than a gap in this control — measured, not assumed: `/en/results` and `/en/questions` both 307 to `/elections?next=…` on a cold hit, because the located routes carry their election and constituency selection in the URL and there is nothing to imply from on a multi-election dataset. The candidate app additionally requires a session. So each case reaches its cold entry differently, and each keeps the cold property intact:
+ * Neither route is reachable by a BARE `page.goto`, and that is a property of the product's route guards rather than a gap in this control — measured, not assumed: `/en/results` and `/en/questions` both 307 to `/elections?next=…` on a cold hit, because the located routes carry their election and constituency selection in the URL and there is nothing to imply from on a multi-election dataset. The contestant app additionally requires a session. So each case reaches its cold entry differently, and each keeps the cold property intact:
  *
  *   - The RESULTS case discovers the located URL by walking once on `page`, then asserts in a BRAND-NEW browser context that shares nothing with that walk but the URL string. The walk is URL discovery, never the observation. The warm-walk masking this file warns about comes from data being present in the SAME document before the alias first computes; a fresh context performing a full document load has no such carry-over.
- *   - The CANDIDATE case is a genuinely bare hard navigation, carrying only a stored session cookie — the cold entry a returning candidate performs when they open a bookmark. It runs under its own Playwright project (`cold-entry-dataroot-candidate`) because it needs `storageState`, mirroring the split the a11y family already makes for exactly this reason. The `@cand-session` tag in its describe title is what routes it there.
+ *   - The CANDIDATE case is a genuinely bare hard navigation, carrying only a stored session cookie — the cold entry a returning candidate performs when they open a bookmark. It runs under its own Playwright project (`cold-entry-dataroot-contestant`) because it needs `storageState`, mirroring the split the a11y family already makes for exactly this reason. The `@contestant-session` tag in its describe title is what routes it there.
  *
  * Rigidity is the same for every case: waiting `toBeVisible({ timeout })` assertions on `testIds` constants, no `isVisible()`, no soft assertion, no fallback catch.
  *
@@ -28,7 +28,7 @@
 import { expect, test } from '@playwright/test';
 import { walkUntilQuestionsIntro } from '../../fixtures/voter/voter-journey.fixture';
 import { TIMEOUTS } from '../../helpers';
-import { buildRoute } from '../../utils/buildRoute';
+import { buildEntityLessRoute } from '../../utils/contestantEntityUrl';
 import { testIds } from '../../utils/testIds';
 
 test.describe('cold-entry-dataroot', () => {
@@ -77,12 +77,12 @@ test.describe('cold-entry-dataroot', () => {
   });
 });
 
-test.describe('cold-entry-dataroot candidate @cand-session', () => {
-  test('cold direct-URL entry to /candidate/questions renders the question overview', async ({ page }) => {
+test.describe('cold-entry-dataroot candidate @contestant-session', () => {
+  test('cold direct-URL entry to /contestant/questions renders the question overview', async ({ page }) => {
     // COLD: bare hard navigation, carrying only the stored session. No login walk, no in-app navigation.
-    await page.goto(buildRoute({ route: 'CandAppQuestions', locale: 'en' }));
+    await page.goto(buildEntityLessRoute({ route: 'ContestantAppQuestions', locale: 'en' }));
 
-    // The overview list is built from `candCtx.opinionQuestionCategories`, the shared rollup, so it is empty for exactly as long as the candidate context's view of the data root is stale.
-    await expect(page.getByTestId(testIds.candidate.questions.list)).toBeVisible({ timeout: TIMEOUTS.testMax });
+    // The overview list is built from `contestantCtx.opinionQuestionCategories`, the shared rollup, so it is empty for exactly as long as the candidate context's view of the data root is stale.
+    await expect(page.getByTestId(testIds.contestant.questions.list)).toBeVisible({ timeout: TIMEOUTS.testMax });
   });
 });

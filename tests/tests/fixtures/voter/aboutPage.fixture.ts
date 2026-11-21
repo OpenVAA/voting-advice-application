@@ -6,7 +6,7 @@
  * Surface:
  *  - goToPage(locale?)              — navigate to /about and assert it loaded.
  *  - expectPageVisible(visible?)    — canonical voter-page load-anchor pair.
- *  - expectOrgMatchingDisclosure(mode) — assert the org-matching disclosure block renders for an active org-matching mode, or is ABSENT when `mode='none'` (the disclosure renders only when `matching.organizationMatching !== 'none'`). The disclosure TEXT is locale-dependent (interpolates the matching method), so the reader asserts the disclosure block's PRESENCE/ABSENCE per mode rather than a specific string.
+ *  - expectOrgMatchingDisclosure(mode) — assert the org-matching disclosure block is ABSENT when `mode='none'` (the disclosure renders only when `matching.organizationMatching !== 'none'`); for an active mode, assert the block is visible, does not show the message's key, and holds the English sentence the catalogue gives that method, read from `apps/frontend/messages/en/about.json` and reduced to its text.
  *
  * **Rigidity contract**:
  *  - NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
@@ -19,11 +19,37 @@
 
 import { expect } from '@playwright/test';
 import { buildRoute } from '../../utils/buildRoute';
+import { messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 /** Org-matching disclosure mode (mirrors `matching.organizationMatching`). */
 export type OrgMatchingMode = 'none' | 'answersOnly' | 'impute';
+
+/** The key of the sentence the disclosure block shows, which a message with no variant for its method answers with. */
+const ORG_MATCHING_KEY = 'about.organizationMatching.content';
+
+/** The variants of the English party-matching sentence, keyed by their selector, read from the message source rather than copied. */
+const ORG_MATCHING_VARIANTS = (
+  messagesOf('about') as { organizationMatching: { content: Array<{ match: Record<string, string> }> } }
+).organizationMatching.content[0].match;
+
+/**
+ * The English sentence a method reaches, reduced to the text a browser shows: the variant whose selector value is the method, otherwise the catch-all.
+ */
+function orgMatchingSentence(mode: OrgMatchingMode): string | undefined {
+  const html = ORG_MATCHING_VARIANTS[`partyMatchingMethod=${mode}`] ?? ORG_MATCHING_VARIANTS['partyMatchingMethod=*'];
+  return html
+    ?.replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 export function createAboutPage(page: Page) {
   /**
@@ -48,15 +74,19 @@ export function createAboutPage(page: Page) {
     /**
      * Assert the org-matching disclosure block per `mode`:
      *  - 'none'                  → the disclosure block is ABSENT (hidden).
-     *  - 'answersOnly' | 'impute'→ the disclosure block is VISIBLE.
+     *  - 'answersOnly' | 'impute'→ the disclosure block is VISIBLE, does not show the message's key, and holds the English sentence the catalogue gives that method.
      */
     async expectOrgMatchingDisclosure(mode: OrgMatchingMode): Promise<void> {
       const disclosure = page.getByTestId(testIds.voter.about.organizationMatching);
       if (mode === 'none') {
         await expect(disclosure).toBeHidden();
-      } else {
-        await expect(disclosure).toBeVisible();
+        return;
       }
+      await expect(disclosure).toBeVisible();
+      await expect(disclosure).not.toContainText(ORG_MATCHING_KEY);
+      const sentence = orgMatchingSentence(mode);
+      expect(sentence, `the English catalogue has a party-matching sentence for ${mode}`).toBeDefined();
+      await expect(disclosure).toContainText(sentence!);
     }
   };
 }

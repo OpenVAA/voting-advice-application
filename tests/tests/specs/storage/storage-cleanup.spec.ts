@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
+import { supabaseUrl } from '../../utils/supabaseUrl';
 
 /**
  * # Storage cleanup, observed in committed state
@@ -29,9 +30,6 @@ const SCRATCH_PROJECT_ID = '00000000-0000-0000-0000-0000000005c1';
  */
 const STORAGE_CLEANUP_EXTERNAL_ID_PREFIX = 'e2e-storage-cleanup-';
 
-/** Same fallback the tests' admin client uses. */
-const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
-
 /** Storage does not inspect the content; four bytes shaped like an empty JPEG are enough to be an object. */
 const OBJECT_BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
 
@@ -43,7 +41,7 @@ const DELETE_POLL = { timeout: 30_000, intervals: [500, 1000, 2000] };
  * @param path - The object path inside the bucket.
  */
 async function publicStatus(path: string): Promise<number> {
-  const response = await fetch(`${SUPABASE_URL}/storage/v1/object/public/public-assets/${path}`);
+  const response = await fetch(`${supabaseUrl()}/storage/v1/object/public/public-assets/${path}`);
   return response.status;
 }
 

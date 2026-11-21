@@ -1,7 +1,7 @@
 /**
  * perm-analytics-tracking data-setup project.
  *
- * Invokes setupFromTemplate('perm-analytics-tracking'). UNAUTHENTICATED — the voter-prefs-tracking spec (Plan 06) exercises the voter flow (answer → /results) to read out analytics track events via the trackingIntercept fixture, and does not need a candidate session.
+ * Invokes setupFromTemplate('perm-analytics-tracking'). UNAUTHENTICATED — the voter-prefs-tracking spec exercises the voter flow and reads the analytics events from the requests the browser sends to the relay path, so it does not need a candidate session.
  *
  * The template seeds the analytics overlay (platform object + trackEvents:true, dummy code) into the shared app_settings singleton. Consent is toggled at runtime by the spec, NOT seeded.
  *

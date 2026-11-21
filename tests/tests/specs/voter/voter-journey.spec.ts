@@ -23,7 +23,7 @@ import {
   answerNumberScale,
   walkUntilQuestionsIntro
 } from '../../fixtures/voter/voter-journey.fixture';
-import { expectClientNavigation, TIMEOUTS } from '../../helpers';
+import { expectClientNavigation, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { testIds } from '../../utils/testIds';
 import type { Locator, Page } from '@playwright/test';
@@ -251,24 +251,6 @@ async function expectQuestionAndAdvance({
 }
 
 /**
- * Wait until the root layout's post-navigation focus reset has landed on the page's focus target (`[data-focus-on-nav] ?? h1`, the selector `focusNavigationTarget` uses).
- *
- * A Q→Q navigation swaps the DOM first, so a heading-text wait settles while the View Transition is still running; the reset (`afterNavigate` → rAF) runs only after the transition ends. A click usually waits that window out by itself: Playwright retries it until the element is the hit target, and the transition overlay covers the page. `focus()` and `keyboard.press()` have no such check, so a keyboard step taken in that window races the navigation's end: the reset takes focus back. Call this before any focus or key press that follows a navigation. The reset completes the navigation, so it gets the route-transition budget.
- */
-async function waitForNavigationFocusReset(page: Page): Promise<void> {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-          return target !== null && document.activeElement === target;
-        }),
-      { timeout: TIMEOUTS.page }
-    )
-    .toBe(true);
-}
-
-/**
  * Answer a NUMBER-scale opinion question at max and advance.
  *
  * The NumberScaleInput renders a native `<input type=range>` (no question-choice options); a matchable number question carries no radio/checkbox options, so `expectQuestionAndAdvance` cannot drive it. Focus the slider and press End to land the exact max value (the native-range keyboard contract), then click Next explicitly — number inputs never auto-advance. The key press waits for the navigation's focus reset (see `waitForNavigationFocusReset`), and Next waits until the answer is stored (`question-delete` enabled), so a lost key press fails here rather than as a missing answer several questions later.
@@ -279,7 +261,7 @@ async function expectNumberQuestionAndAdvance({ page, text }: { page: Page; text
     await expect(questionHeading).toHaveText(text, { timeout: TIMEOUTS.element });
     const slider = page.getByTestId(testIds.voter.questions.numberSlider);
     await expect(slider.first()).toBeVisible({ timeout: TIMEOUTS.element });
-    await waitForNavigationFocusReset(page);
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
     await slider.first().focus();
     await page.keyboard.press('End'); // native range → exact max
     await expect(page.getByTestId(testIds.shared.questionDelete)).toBeEnabled({ timeout: TIMEOUTS.element });
@@ -334,7 +316,7 @@ const SELECT_EXACT_ONE_EN = 'Select 1 option.';
  *
  * `qu-opin-base-8-multichoice-exact` is that question: min === max === 1 makes QuestionChoices render `selectExact` with `count = 1`. Exactly ONE checkbox is a valid answer here — clicking two would be over-max, so the answer would never persist.
  *
- * Shape precedent: the `selectRange` lock at candidate-journey step 18.5. This one asserts the RESOLVED text rather than a digit pattern, per the reasoning on SELECT_EXACT_ONE_EN above.
+ * Shape precedent: the `selectRange` lock at contestant-journey step 18.5. This one asserts the RESOLVED text rather than a digit pattern, per the reasoning on SELECT_EXACT_ONE_EN above.
  */
 async function expectExactOneMultiChoiceQuestionAndAdvance({
   page,
@@ -736,7 +718,7 @@ test.describe('voter journey', () => {
       await expect.soft(termTrigger.first()).toHaveText(/Likert/i, { timeout: TIMEOUTS.element });
 
       // A trigger focused before the navigation's focus reset loses focus to the heading, and the popup closes with it.
-      await waitForNavigationFocusReset(page);
+      await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
 
       // The definition popup is mounted only while the trigger is hovered/focused (Term.svelte W3C APG tooltip pattern). Focus reveals it; assert the definition content (seeded title + content joined as "title: content").
       await termTrigger.first().focus();
@@ -938,9 +920,7 @@ test.describe('voter journey', () => {
     //   - 5 outer org-cards (Party AA, AB, BA, BB, C).
     //   - Party BB has 2 members (test-ca-bb-1 + test-ca-bb-2). 2 ≤ 3
     //     maxSubcards → NO 'Show all' button.
-    //   - Party AA has 6 nominal members; 1 hidden (test-ca-aa-hidden via
-    //     terms_of_use_accepted absent) → 5 visible. Default shows 3;
-    //     'Show all 5 candidates' reveals 5; Collapse returns to 3.
+    //   - Party AA has 6 nominated members in the dataset; 1 is unconfirmed and so hidden from voters (test-e2e-base-ca-aa-hidden) → 5 visible. The contestant journey's invitation adds a seventh, unconfirmed nomination, which voters do not see. Default shows 3; 'Show all 5 candidates' reveals 5; Collapse returns to 3.
     // ====================================================================
 
     await test.step('organisation matching shows 5 cards, Party BB members, and Party AA show-all/collapse', async () => {
@@ -1015,7 +995,7 @@ test.describe('voter journey', () => {
       const candidateSection = page.getByTestId(testIds.voter.results.candidateSection);
       await expect.soft(candidateSection).toBeVisible({ timeout: TIMEOUTS.slowPage });
       const cards = candidateSection.getByTestId(testIds.voter.results.card);
-      // Expect to see 14 candidates minus the one who is hidden
+      // CO-Reg-N has 16 candidate nominations in the dataset; 3 of those candidates are unconfirmed and so hidden from voters, which leaves 13 cards. The contestant journey's invitation adds one unconfirmed nomination, which voters do not see.
       await expect.soft(cards).toHaveCount(13);
       // Expect the polar max and min candidates to be first and last on the list, respectively.
       const firstCardTitle = cards.first().getByTestId(testIds.voter.results.cardTitle);
@@ -1024,7 +1004,7 @@ test.describe('voter journey', () => {
       await expect.soft(lastCardTitle).toContainText(TEXT_RE.polarMin, { timeout: TIMEOUTS.element });
       // The partial-answer candidate (CA-AA-Special) should be somewhere in the middle (no first or last).
       await expect.soft(candidateSection).toContainText(TEXT_RE.specialCandidate);
-      // Expect the hidden candidate (CA-AA-Hidden) to NOT be present in the list (termsOfUseAccepted=false).
+      // Expect the hidden candidate (CA-AA-Hidden) to NOT be present in the list: it is unconfirmed.
       const hiddenCandidates = candidateSection
         .getByTestId(testIds.voter.results.card)
         .filter({ hasText: TEXT_RE.hiddenCandidate });
@@ -1252,7 +1232,7 @@ test.describe('voter journey', () => {
       const d1 = await entityFilters.openFilterDialog();
       await expect.soft(d1.getFilters()).toHaveCount(3, { timeout: TIMEOUTS.page });
 
-      // STAGE 2 — Party filter: 'No answer' option visible with count badge text containing '1' (1 candidate without parent_nomination → test-ca-independent).
+      // STAGE 2 — Party filter: 'No answer' option visible with count badge text containing '1' (1 candidate voters see has no parent_nomination → test-ca-independent).
       const partyFilter = await d1.getFilter(/Party/i);
       const noAnswerOption = await partyFilter.getOption(/No answer/i);
       await expect.soft(noAnswerOption).toBeVisible();

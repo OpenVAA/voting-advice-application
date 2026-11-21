@@ -1,11 +1,11 @@
 /**
  * @file viewTransitionLog fixture.
  *
- * Function-fixture that captures every document View Transition the application starts — with ZERO production instrumentation. Sibling in spirit to `../shared/trackingIntercept.fixture.ts`, whose whole shape (docblock naming the emission boundary, a local `declare global` augmentation, an install/read/clear surface, an async factory that installs before returning) this file copies.
+ * Function-fixture that captures every document View Transition the application starts — with ZERO production instrumentation. Its shape is a docblock naming the emission boundary, a local `declare global` augmentation, an install/read/clear surface, and an async factory that installs before returning.
  *
  * ## Emission boundary (VERIFIED)
  *
- * The application has exactly one door onto the browser's View-Transitions API: `startViewTransition` in `apps/frontend/src/lib/utils/viewTransition.ts`, which every call site goes through (the root layout's `onNavigate` hook, and `Tabs.svelte`'s `transitionOnChange` wrapper used by the entity-detail drawer). That helper ends in a single `document.startViewTransition(updateCallback)` call, so `document.startViewTransition` is the stable capture seam — the same relationship `window.umami.track` has to the analytics service.
+ * The application has exactly one door onto the browser's View-Transitions API: `startViewTransition` in `apps/frontend/src/lib/utils/viewTransition.ts`, which every call site goes through (the root layout's `onNavigate` hook, and `Tabs.svelte`'s `transitionOnChange` wrapper used by the entity-detail drawer). That helper ends in a single `document.startViewTransition(updateCallback)` call, so `document.startViewTransition` is the stable capture seam.
  *
  * ## The one production fact this wrapper rests on — and why capture happens INSIDE it
  *
@@ -56,7 +56,7 @@ export interface ViewTransitionLogFixture {
 }
 
 /**
- * Local window augmentation scoped to this fixture file (the captured-records array + the support flag). Kept local rather than in the global `.d.ts` because it is a test-only capture seam, not an app contract — the same reasoning `trackingIntercept.fixture.ts` gives for its own. Declared rather than cast: the tests workspace typechecks under the project's strict-TypeScript rule, so a `as any` on `document` would be a lint/typecheck violation, not a shortcut.
+ * Local window augmentation scoped to this fixture file (the captured-records array + the support flag). Kept local rather than in the global `.d.ts` because it is a test-only capture seam, not an app contract. Declared rather than cast: the tests workspace typechecks under the project's strict-TypeScript rule, so a `as any` on `document` would be a lint/typecheck violation, not a shortcut.
  */
 declare global {
   interface Window {

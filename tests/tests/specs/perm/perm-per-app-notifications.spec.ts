@@ -1,5 +1,5 @@
 /**
- * Topology: 1 election, 1 CG, 1 CO, 2 candidates. Settings override: `notifications.voterApp` + `notifications.candidateApp` both `show: true` with DISTINCT title/content markers `[notif-voter]` (voter side) and `[notif-cand]` (candidate side). The spec asserts each app's notification renders ONLY on its own route — strict cross-route absence enforcement (the [notif-cand] marker MUST NOT appear in the voter-route dialog and vice versa).
+ * Topology: 1 election, 1 CG, 1 CO, 2 candidates. Settings override: `notifications.voterApp` + `notifications.contestantApp` both `show: true` with DISTINCT title/content markers `[notif-voter]` (voter side) and `[notif-contestant]` (candidate side). The spec asserts each app's notification renders ONLY on its own route — strict cross-route absence enforcement: once a route's own dialog is shown, no dialog on the page carries the other app's marker.
  *
  * Notifications are rendered as Alert components with `role="dialog"`.
  *
@@ -15,15 +15,17 @@ test.describe('perm-per-app-notifications', () => {
     const voterDialog = page.getByRole('dialog').filter({ hasText: '[notif-voter]' });
     await expect(voterDialog).toBeVisible();
     await expect(voterDialog).toContainText('[notif-voter]');
-    await expect(voterDialog).not.toContainText('[notif-cand]');
+    await expect(voterDialog).not.toContainText('[notif-contestant]');
+    await expect(page.getByRole('dialog').filter({ hasText: '[notif-contestant]' })).toHaveCount(0);
   });
 
   test('candidate route shows candidate notification only', async ({ page }) => {
     // reason: candidate-route navigation — out of voter-fixture scope; no voter goToPage applies.
-    await page.goto('/en/candidate');
-    const candidateDialog = page.getByRole('dialog').filter({ hasText: '[notif-cand]' });
+    await page.goto('/en/contestant');
+    const candidateDialog = page.getByRole('dialog').filter({ hasText: '[notif-contestant]' });
     await expect(candidateDialog).toBeVisible();
-    await expect(candidateDialog).toContainText('[notif-cand]');
+    await expect(candidateDialog).toContainText('[notif-contestant]');
     await expect(candidateDialog).not.toContainText('[notif-voter]');
+    await expect(page.getByRole('dialog').filter({ hasText: '[notif-voter]' })).toHaveCount(0);
   });
 });
