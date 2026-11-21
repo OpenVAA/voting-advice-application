@@ -21,6 +21,12 @@
  *   IDENTITY_PROVIDER_CLIENT_ID PUBLIC_IDENTITY_PROVIDER_CLIENT_ID
  *   IDENTITY_PROVIDER_TYPE      PUBLIC_IDENTITY_PROVIDER_TYPE
  *
+ * Four more are read under ONE name by both the Edge Functions and the frontend SERVER, which takes
+ * them from `$env/dynamic/private`: IDENTITY_CALLBACK_SERVER_SECRET, IDENTITY_PROVIDER_DECRYPTION_JWKS,
+ * IDENTITY_PROVIDER_ISSUER and IDENTITY_PROVIDER_JWKS_URI. Locally the frontend reads them from the
+ * root `.env` and the functions from `apps/supabase/supabase/functions/.env`, so each is two values
+ * that must agree, kept in two files. These are SAME-NAME pairs; the four above are PREFIXED pairs.
+ *
  * The frontend and Deno copies of the identity-provider configuration have drifted apart TWICE,
  * both times undetected, caught once by a code review and once by a plan that happened to
  * re-measure. Phase 155's verifier recorded the missing drift guard as the residual risk that
@@ -31,7 +37,9 @@
  * would rot in exactly the way the two configurations it guards already drifted twice, and the
  * fifth pair would be discovered the way the first four were. A PAIR is any `NAME` such that the
  * Deno side contains a `Deno.env.get('NAME')` read in CODE under `apps/supabase/supabase/functions`
- * and the frontend side contains the identifier `PUBLIC_NAME` in CODE under `apps/frontend/src`.
+ * and the frontend side, in CODE under `apps/frontend/src`, either contains the identifier
+ * `PUBLIC_NAME` (a prefixed pair) or reads `NAME` as a member of the binding a file imports as
+ * `env` from `$env/dynamic/private` (a same-name pair).
  *
  * WHY THE FRONTEND PREDICATE IS THE BARE IDENTIFIER RATHER THAN A READ SHAPE. Today every public
  * variable enters the frontend through one line of `apps/frontend/src/lib/utils/constants.ts`
@@ -40,9 +48,13 @@
  * different way — `import.meta.env`, `process.env`, a `$env/static/public` named import, a
  * `vi.mock` fixture — and an evadable guard is the failure mode, not the false positive. The
  * over-breadth is bounded by the CONJUNCTION: an identifier only becomes a pair when the Deno side
- * independently reads the same name from its own environment. Three identity variables
- * (`IDENTITY_PROVIDER_ISSUER`, `IDENTITY_PROVIDER_JWKS_URI`, `IDENTITY_PROVIDER_DECRYPTION_JWKS`)
- * are single-source — the same spelling in both runtimes — and correctly derive no pair.
+ * independently reads the same name from its own environment.
+ *
+ * THE SAME-NAME PREDICATE IS A READ SHAPE, because a bare identifier cannot tell the frontend
+ * server's read of `NAME` from any other use of the same word. It is the member access `X.NAME` on
+ * the local binding `X` of `env` in an `import { env } from '$env/dynamic/private'` (renamed with
+ * `as` or not), in a file that holds that import. A `PUBLIC_` name is never a same-name pair: the
+ * private module does not expose it.
  *
  * COMMENTS ARE EXCLUDED STRUCTURALLY, AND THAT IS LOAD-BEARING IN BOTH DIRECTIONS. Phase 155 wrote
  * four docstrings that quote `Deno.env.get('X')` in prose to explain the shape it abolished; a
@@ -57,13 +69,14 @@
  * WHAT IS ASSERTED ABOUT `.env.example`, in four parts:
  *
  *   1. Both members of every derived pair are ASSIGNED there, outside comments. A comment that
- *      merely names a variable documents nothing a reader can copy.
+ *      merely names a variable documents nothing a reader can copy. A same-name pair has one name,
+ *      and so one assignment: its second member lives in `apps/supabase/supabase/functions/.env`.
  *   2. Each member is assigned exactly ONCE. Two assignments of one name make the effective value
  *      depend on file order, which is not a contract anyone can read off the page.
  *   3. The pair members are CONTIGUOUS: taken in file order, the assignments belonging to pairs
- *      form one unbroken run with no unrelated assignment inside it, and each pair's two members
- *      are adjacent to each other. Scattering a pair across three sections is how the twins became
- *      invisible to review in the first place.
+ *      form one unbroken run with no unrelated assignment inside it, and each prefixed pair's two
+ *      members are adjacent to each other. Scattering a pair across three sections is how the twins
+ *      became invisible to review in the first place.
  *   4. The block is introduced by a comment that states the agreement contract (`same value`) and
  *      names BOTH scan roots, so the reader learns which runtime reads which spelling from the
  *      file itself rather than from this script.
@@ -120,6 +133,15 @@ const ENV_FAMILY = { hash: true };
  * defaulting operator after the read is the whole predicate.
  */
 const DENO_READ_RE = /Deno\.env\.get\(\s*['"`]([A-Za-z_][A-Za-z0-9_]*)['"`]\s*\)/g;
+
+/**
+ * An import of `env` from `$env/dynamic/private`, capturing the braces' contents so the local name
+ * of `env` can be read from them.
+ */
+const PRIVATE_ENV_IMPORT_RE = /import\s*\{([^}]*)\}\s*from\s*['"]\$env\/dynamic\/private['"]/g;
+
+/** The `env` specifier inside the braces of an import, capturing the local name when it is renamed. */
+const ENV_SPECIFIER_RE = /(?:^|,)\s*env(?:\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*))?\s*(?=,|$)/;
 
 /**
  * A whole `PUBLIC_…` identifier. The lookbehind stops `MY_PUBLIC_THING` from being read as a
@@ -251,11 +273,11 @@ function codeMatches(text, re, map) {
 }
 
 /**
- * Collect every name matched by `re` across `files`, outside comments, with the first site each was
- * seen at. Returns `null` if any file could not be read, so the caller fails closed rather than
- * treating an unreadable tree as an empty one.
+ * Collect every name `matchesOf(text, map)` finds across `files`, outside comments, with the first
+ * site each was seen at. Returns `null` if any file could not be read, so the caller fails closed
+ * rather than treating an unreadable tree as an empty one.
  */
-function collectNames(files, re) {
+function collectNames(files, matchesOf) {
   const names = new Map();
   let reads = 0;
   for (const rel of files) {
@@ -270,7 +292,7 @@ function collectNames(files, re) {
       return null;
     }
     const map = commentMapOf(text, family);
-    for (const hit of codeMatches(text, re, map)) {
+    for (const hit of matchesOf(text, map)) {
       reads++;
       if (!names.has(hit.captured)) names.set(hit.captured, `${rel}:${hit.line}`);
     }
@@ -314,8 +336,40 @@ export function parseEnvAssignments(text) {
   return entries;
 }
 
+/** A regular expression source that matches `text` literally. */
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * The names a frontend file reads from `$env/dynamic/private` as a member of its local binding of
+ * `env`, outside comments and in ascending index order, leaving out the `PUBLIC_` names.
+ */
+function privateEnvReads(text, map) {
+  const bindings = new Set();
+  for (const hit of codeMatches(text, PRIVATE_ENV_IMPORT_RE, map)) {
+    const specifier = ENV_SPECIFIER_RE.exec(hit.captured);
+    if (specifier) bindings.add(specifier[1] ?? 'env');
+  }
+  const reads = [];
+  for (const binding of bindings) {
+    const readRe = new RegExp(
+      `(?<![A-Za-z0-9_$.])${escapeRegExp(binding)}\\s*\\.\\s*([A-Z][A-Z0-9_]*)(?![A-Za-z0-9_$])`,
+      'g'
+    );
+    for (const read of codeMatches(text, readRe, map)) {
+      if (!read.captured.startsWith(PUBLIC_PREFIX)) reads.push(read);
+    }
+  }
+  return reads.sort((a, b) => a.index - b.index);
+}
+
 /**
  * The cross-runtime pairs, derived from source.
+ *
+ * Each pair has a `kind`: `prefixed` when the frontend reads `PUBLIC_NAME`, and `same-name` when the
+ * frontend server reads `NAME` itself from `$env/dynamic/private`. In a same-name pair `deno` and
+ * `frontend` are the same name. A name that is both is reported once, as the prefixed pair.
  *
  * Exported so the runtime agreement checker consumes the SAME derivation rather than a second
  * opinion about what a pair is. Returns `null` when a scan root could not be read.
@@ -325,20 +379,33 @@ export function derivePairs() {
   const frontendFiles = enumerateFiles(FRONTEND_ROOT, FRONTEND_EXTENSIONS);
   if (denoFiles === null || frontendFiles === null) return null;
 
-  const deno = collectNames(denoFiles, DENO_READ_RE);
-  const frontend = collectNames(frontendFiles, PUBLIC_TOKEN_RE);
-  if (deno === null || frontend === null) return null;
+  const deno = collectNames(denoFiles, (text, map) => codeMatches(text, DENO_READ_RE, map));
+  const frontend = collectNames(frontendFiles, (text, map) => codeMatches(text, PUBLIC_TOKEN_RE, map));
+  const frontendPrivate = collectNames(frontendFiles, privateEnvReads);
+  if (deno === null || frontend === null || frontendPrivate === null) return null;
 
-  const pairs = [...deno.names.keys()]
-    .filter((name) => frontend.names.has(PUBLIC_PREFIX + name))
-    .sort()
-    .map((name) => ({
-      name,
-      deno: name,
-      frontend: PUBLIC_PREFIX + name,
-      denoSite: deno.names.get(name),
-      frontendSite: frontend.names.get(PUBLIC_PREFIX + name)
-    }));
+  const pairs = [];
+  for (const name of [...deno.names.keys()].sort()) {
+    if (frontend.names.has(PUBLIC_PREFIX + name)) {
+      pairs.push({
+        name,
+        kind: 'prefixed',
+        deno: name,
+        frontend: PUBLIC_PREFIX + name,
+        denoSite: deno.names.get(name),
+        frontendSite: frontend.names.get(PUBLIC_PREFIX + name)
+      });
+    } else if (frontendPrivate.names.has(name)) {
+      pairs.push({
+        name,
+        kind: 'same-name',
+        deno: name,
+        frontend: name,
+        denoSite: deno.names.get(name),
+        frontendSite: frontendPrivate.names.get(name)
+      });
+    }
+  }
 
   return {
     pairs,
@@ -346,7 +413,8 @@ export function derivePairs() {
       denoFiles: denoFiles.length,
       frontendFiles: frontendFiles.length,
       denoReads: deno.reads,
-      frontendReads: frontend.reads
+      frontendReads: frontend.reads,
+      frontendPrivateReads: frontendPrivate.reads
     }
   };
 }
@@ -396,15 +464,19 @@ function main() {
     positionsByName.get(name).push(i);
   }
 
-  const memberNames = [];
-  for (const pair of pairs) memberNames.push(pair.frontend, pair.deno);
+  // A same-name pair's two members are one name, assigned once in this template.
+  const membersOf = (pair) =>
+    pair.kind === 'same-name'
+      ? [[pair.deno, pair.denoSite]]
+      : [
+          [pair.frontend, pair.frontendSite],
+          [pair.deno, pair.denoSite]
+        ];
+  const memberNames = [...new Set(pairs.flatMap((pair) => membersOf(pair).map(([member]) => member)))];
 
   // --- Check 1: both members of every pair are assigned, exactly once ---
   for (const pair of pairs) {
-    for (const [member, site] of [
-      [pair.frontend, pair.frontendSite],
-      [pair.deno, pair.denoSite]
-    ]) {
+    for (const [member, site] of membersOf(pair)) {
       const positions = positionsByName.get(member) ?? [];
       if (positions.length === 0) {
         violate(
@@ -444,6 +516,7 @@ function main() {
   }
 
   for (const pair of pairs) {
+    if (pair.kind === 'same-name') continue;
     const a = (positionsByName.get(pair.frontend) ?? [])[0];
     const b = (positionsByName.get(pair.deno) ?? [])[0];
     if (a === undefined || b === undefined) continue; // already reported by check 1
@@ -466,7 +539,7 @@ function main() {
         `the comment introducing the cross-runtime pair block in '${ENV_EXAMPLE}' does not mention ` +
           `${missing.map((phrase) => `'${phrase}'`).join(' or ')}. The block header is where a ` +
           'reader learns that the two members must hold the same value and which runtime reads ' +
-          'which spelling; without that the block is eight variables in a row.'
+          'which spelling; without that the block is a run of unrelated-looking variables.'
       );
     }
   } else if (pairs.length > 0) {
@@ -481,8 +554,9 @@ function main() {
     `Cross-runtime env-pair registry guard (phase 153, plan 10) — ` +
       `source scanned: ${census.denoFiles} Deno file(s) under ${DENO_ROOT.split(path.sep).join('/')}, ` +
       `${census.frontendFiles} frontend file(s) under ${FRONTEND_ROOT.split(path.sep).join('/')}; ` +
-      `env reads found in code: ${census.denoReads} Deno, ${census.frontendReads} PUBLIC_; ` +
-      `pairs derived: ${pairs.length} (${pairs.map((pair) => pair.name).join(', ') || 'none'}); ` +
+      `env reads found in code: ${census.denoReads} Deno, ${census.frontendReads} PUBLIC_, ` +
+      `${census.frontendPrivateReads} $env/dynamic/private; ` +
+      `pairs derived: ${pairs.length} (${pairs.map((pair) => `${pair.name} [${pair.kind}]`).join(', ') || 'none'}); ` +
       `${ENV_EXAMPLE} assignments: ${assignments.length}. ${violations} violation(s).`
   );
 

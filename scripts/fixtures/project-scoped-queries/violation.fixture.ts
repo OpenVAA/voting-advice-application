@@ -241,7 +241,7 @@ export class ViolationFixture {
 
   /** REPORTED by check 7: an Edge Function dispositioned as needing a project term, invoked with a body that carries neither spelling of it. */
   invocationMissingProjectTerm(): Promise<unknown> {
-    return this.supabase.functions.invoke('invite-candidate', {
+    return this.supabase.functions.invoke('account-access', {
       body: { firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org' }
     });
   }

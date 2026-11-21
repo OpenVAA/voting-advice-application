@@ -376,6 +376,8 @@ jobs:
       # Supabase wiring below turns CI red instead of silently reverting to a
       # green skip.
       DEV_SEED_INTEGRATION_REQUIRED: "1"
+      # The same declaration for the frontend's data writer integration test, run below.
+      CONTESTANT_WRITER_INTEGRATION_REQUIRED: "1"
 
     steps:
       - name: "Checkout source code"
@@ -409,8 +411,13 @@ jobs:
       - name: "Compile the frontend's Paraglide messages"
         run: yarn workspace @openvaa/frontend paraglide:compile
 
+      # The edge runtime reads PUBLIC_PROJECT_ID through `[edge_runtime.secrets]` in config.toml when the
+      # stack starts, and `account-access` answers every request with an internal error without it. The
+      # value is the default project of seed.sql, the one the data writer integration test works in.
       - name: "Start Supabase"
         working-directory: apps/supabase
+        env:
+          PUBLIC_PROJECT_ID: "00000000-0000-0000-0000-000000000001"
         run: supabase start
 
       # Read the connection details off the running instance rather than hard-coding the local demo
@@ -446,6 +453,18 @@ jobs:
       # row-count, relational and portrait assertions all execute.
       - name: "Run dev-seed tests (incl. the operation budget)"
         run: yarn workspace @openvaa/dev-seed test:unit
+
+      # With SUPABASE_URL set, `describe.skipIf` in the frontend's
+      # supabaseDataWriter.integration.test.ts is false, so the writer's grant scoping, frozen names
+      # and nomination-set writes execute against this instance. The frontend's workspace
+      # dependencies are built first because the test imports them as built packages, and
+      # `svelte-kit sync` writes the `.svelte-kit/tsconfig.json` the frontend's tsconfig extends,
+      # without which Vite cannot start.
+      - name: "Run the frontend data writer integration test"
+        run: |
+          yarn build --filter=@openvaa/frontend^...
+          yarn workspace @openvaa/frontend svelte-kit sync
+          yarn workspace @openvaa/frontend vitest run supabaseDataWriter.integration
 
       - name: "Stop Supabase"
         if: always()
@@ -578,12 +597,21 @@ jobs:
       - name: "Run E2E tests"
         run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch
 
+      # The consent-free spec needs the dev server in consent-free mode, and one run serves one mode,
+      # so no full-suite run collects it: the wrapper runs it alone, with the dev server started from
+      # the same environment. It runs after a failed suite too, so each verdict is reported.
+      - name: "Run the consent-free analytics E2E tests"
+        if: ${{ !cancelled() }}
+        run: PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci-consent-free --no-db-reset --no-watch --project analytics-consent-free
+
       - name: "Upload the E2E run directory"
         uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-run
-          path: tests/e2e-runs/ci/
+          path: |
+            tests/e2e-runs/ci/
+            tests/e2e-runs/ci-consent-free/
           retention-days: 30
 
       - name: "Stop Supabase"
@@ -741,3 +769,75 @@ jobs:
 
       - name: "Assert the guard's own comparator self-test passes"
         run: node scripts/assert-node-engine.mjs --self-test
+
+  # Formats and validates every Terraform root under infra/, then checks that the Supabase module
+  # encodes the hosted settings with their types intact.
+  #
+  # It holds no credentials on purpose: `init -backend=false` reads no state, and `validate` calls no
+  # cloud API. A job that planned would need a role, and this one runs the configuration a pull
+  # request brings, so it gets no secret, no identity-token permission and no credential action. It
+  # writes no plan file and uploads nothing.
+  #
+  # Both actions are pinned by commit SHA, with the tag in a trailing comment, because a tag can be
+  # moved to other code. `terraform_wrapper: false` keeps the wrapper from hiding exit statuses.
+  #
+  # `-lockfile=readonly` fails `init` when a tracked lock file lacks the hashes of this runner's
+  # platform, instead of rewriting the lock file in the runner.
+  #
+  # The roots are found by glob, so a root added later is validated without an edit here. The loop
+  # then fails if any root named below was not among those validated, so an empty or short glob
+  # cannot pass. It names roots rather than counting them, because roots come and go.
+  #
+  # The validation and type-check steps run even when an earlier step failed, so a formatting
+  # failure does not hide a validation failure.
+  infra-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: "Setup Terraform 1.16.5"
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: "Check Terraform formatting"
+        run: terraform fmt -check -recursive -diff infra
+
+      - name: "Validate every Terraform root"
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          validated=()
+          for root in infra/bootstrap infra/envs/*/*/; do
+            root="${root%/}"
+            echo "::group::$root"
+            terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly
+            terraform -chdir="$root" validate -no-color
+            echo "::endgroup::"
+            validated+=("$root")
+          done
+          for required in \
+            infra/bootstrap \
+            infra/envs/staging/dns-mail \
+            infra/envs/staging/supabase \
+            infra/envs/staging/aws \
+            infra/envs/example/dns-mail \
+            infra/envs/example/supabase \
+            infra/envs/example/aws; do
+            found=0
+            for root in "${validated[@]}"; do
+              if [ "$root" = "$required" ]; then found=1; fi
+            done
+            if [ "$found" -ne 1 ]; then
+              echo "::error::$required was not among the roots validated (${validated[*]}). A required root is missing or the glob no longer reaches it."
+              exit 1
+            fi
+          done
+          echo "validated ${#validated[@]} roots: ${validated[*]}"
+
+      - name: "Check the settings types of the Supabase module"
+        if: ${{ !cancelled() }}
+        run: bash infra/scripts/check-settings-types.sh

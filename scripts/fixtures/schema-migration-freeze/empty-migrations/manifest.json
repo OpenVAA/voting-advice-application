@@ -1,0 +1,8 @@
+{
+  "baseline": {
+    "name": "initial_schema",
+    "file": "00001_initial_schema.sql",
+    "commit": "0123456789abcdef0123456789abcdef01234567"
+  },
+  "migrations": []
+}

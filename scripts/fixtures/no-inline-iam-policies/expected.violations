@@ -1,0 +1,9 @@
+scripts/fixtures/no-inline-iam-policies/violations/extra.tf.json: path matches .tf.json file
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:8: aws_iam_user_policy
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:17: inline_policy
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:23: aws_iam_role_policy
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:32: aws_iam_group_policy
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:37: aws_ssoadmin_permission_set_inline_policy
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:40: inline_policy
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:43: aws_iam_policy_attachment
+scripts/fixtures/no-inline-iam-policies/violations/main.tf:49: aws_iam_*_policies_exclusive not empty

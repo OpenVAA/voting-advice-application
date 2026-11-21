@@ -36,6 +36,12 @@
  * both unset are not two variables that agree, and counting them as an agreement is how a file with
  * nothing in it would report four clean comparisons.
  *
+ * A SAME-NAME PAIR NEEDS TWO FILES. Its two members are one name, read by the frontend server from
+ * the primary file and by the functions from the `--deno-file`. Its functions member is read from
+ * that file alone, never from the primary one, because a fallback would compare one assignment with
+ * itself. Without `--deno-file` there is one assignment for both runtimes and nothing to compare, so
+ * the pair is skipped and says so.
+ *
  * A RUN THAT COMPARED NOTHING FAILS. If not one pair had both members set, this exits 1 rather than
  * 0. It was asked to compare and it compared nothing; reporting that as success is the shape this
  * milestone kept finding. The summary line states the census — pairs derived, compared, skipped,
@@ -170,11 +176,18 @@ function main() {
   // unsubstituted-placeholder values. The two together cover the shape; neither does alone, and
   // collapsing them into one would need an allowlist of platform-injected names that this repository
   // has so far managed to avoid.
-  const inDeno = (name) => Boolean(denoFile) && !name.startsWith('PUBLIC_') && denoValues.has(name);
-  const fileOf = (name) => (inDeno(name) ? denoFile : target);
-  const valueOf = (name) => (inDeno(name) ? denoValues.get(name) : values.get(name));
-  const lineOf = (name) => (inDeno(name) ? denoLines.get(name) : lines.get(name));
-  const hasOf = (name) => (inDeno(name) ? true : values.has(name));
+  //
+  // A member is `{ name, side }`: the frontend side is always read from the primary file, and the
+  // Deno side from the second file as described above. A same-name pair's Deno member is read from
+  // the second file alone -- see A SAME-NAME PAIR NEEDS TWO FILES in the docblock.
+  const inDeno = ({ name, side, kind }) =>
+    Boolean(denoFile) &&
+    side === 'deno' &&
+    (kind === 'same-name' || (!name.startsWith('PUBLIC_') && denoValues.has(name)));
+  const fileOf = (member) => (inDeno(member) ? denoFile : target);
+  const valueOf = (member) => (inDeno(member) ? denoValues.get(member.name) : values.get(member.name));
+  const lineOf = (member) => (inDeno(member) ? denoLines.get(member.name) : lines.get(member.name));
+  const hasOf = (member) => (inDeno(member) ? denoValues.has(member.name) : values.has(member.name));
 
   let compared = 0;
   let skipped = 0;
@@ -182,15 +195,28 @@ function main() {
   let halfConfigured = 0;
 
   for (const pair of pairs) {
-    const members = [pair.frontend, pair.deno];
-    const unconfigured = members.filter((name) => {
-      const value = valueOf(name);
+    if (pair.kind === 'same-name' && !denoFile) {
+      skipped++;
+      console.log(
+        `  SKIP ${pair.name}: the frontend server and the Edge Functions read this one name, and ` +
+          `'${target}' holds one assignment of it, so there is nothing to compare. Pass ` +
+          "--deno-file <functions env file> to compare it with the functions' own value."
+      );
+      continue;
+    }
+    const frontendMember = { name: pair.frontend, side: 'frontend', kind: pair.kind };
+    const denoMember = { name: pair.deno, side: 'deno', kind: pair.kind };
+    const members = [frontendMember, denoMember];
+    const unconfigured = members.filter((member) => {
+      const value = valueOf(member);
       return value === undefined || value === '';
     });
 
     if (unconfigured.length > 0) {
-      const how = unconfigured.map((name) =>
-        hasOf(name) ? `${name} (set but empty in ${fileOf(name)})` : `${name} (unset in ${fileOf(name)})`
+      const how = unconfigured.map((member) =>
+        hasOf(member)
+          ? `${member.name} (set but empty in ${fileOf(member)})`
+          : `${member.name} (unset in ${fileOf(member)})`
       );
 
       // A pair with one member set and the other not is HALF-CONFIGURED, which is the shape that
@@ -200,15 +226,14 @@ function main() {
       // failure, because "no disagreement" is not the same property as "configured".
       if (requireBoth && unconfigured.length < members.length) {
         halfConfigured++;
-        const configured = members.filter((name) => !unconfigured.includes(name));
+        const configured = members.filter((member) => !unconfigured.includes(member));
         fail(
           `the cross-runtime pair '${pair.name}' is HALF-CONFIGURED in '${target}': ` +
-            `${configured.map((name) => `'${name}' (${fileOf(name)} line ${lineOf(name)})`).join(', ')} ` +
+            `${configured.map((member) => `'${member.name}' (${fileOf(member)} line ${lineOf(member)})`).join(', ')} ` +
             `${configured.length === 1 ? 'is' : 'are'} set, but ${how.join(', ')}. These are two ` +
-            'spellings of ONE setting, read by two runtimes — the frontend reads the PUBLIC_ name, ' +
-            'the Deno Edge Functions read the un-prefixed one — so a half-set pair configures one ' +
-            'runtime and leaves the other to fail at request time. Set both members to the same ' +
-            'value, or leave both unset. The values are deliberately not printed.'
+            'copies of ONE setting, read by two runtimes — the frontend and the Deno Edge Functions — ' +
+            'so a half-set pair configures one runtime and leaves the other to fail at request time. ' +
+            'Set both members to the same value, or leave both unset. The values are deliberately not printed.'
         );
         continue;
       }
@@ -224,7 +249,7 @@ function main() {
     }
 
     compared++;
-    if (valueOf(pair.frontend) === valueOf(pair.deno)) {
+    if (valueOf(frontendMember) === valueOf(denoMember)) {
       console.log(`  OK   ${pair.name}: ${pair.frontend} and ${pair.deno} agree.`);
       continue;
     }
@@ -232,13 +257,12 @@ function main() {
     disagreements++;
     // Names only. No value, no prefix, no length, no hash — see NON-DISCLOSURE in the docblock.
     fail(
-      `the cross-runtime pair '${pair.name}' has DRIFTED: '${pair.frontend}' (${fileOf(pair.frontend)} ` +
-        `line ${lineOf(pair.frontend)}) and '${pair.deno}' (${fileOf(pair.deno)} line ` +
-        `${lineOf(pair.deno)}) hold different values. They are two spellings of one setting — the frontend ` +
-        'reads the PUBLIC_ name because Vite exposes only prefixed variables to the client bundle, ' +
-        'and the Deno Edge Functions read the un-prefixed name — so the two runtimes are now ' +
-        'configured differently. This has happened twice before, both times undetected. The values ' +
-        'are deliberately not printed here; open the file and compare the two lines named above.'
+      `the cross-runtime pair '${pair.name}' has DRIFTED: '${pair.frontend}' (${fileOf(frontendMember)} ` +
+        `line ${lineOf(frontendMember)}) and '${pair.deno}' (${fileOf(denoMember)} line ` +
+        `${lineOf(denoMember)}) hold different values. They are two copies of one setting, one read by ` +
+        'the frontend and one by the Deno Edge Functions, so the two runtimes are now configured ' +
+        'differently. The values are deliberately not printed here; open the files and compare the ' +
+        'two lines named above.'
     );
   }
 
@@ -255,7 +279,7 @@ function main() {
 
   console.log(
     `Cross-runtime env-pair value-agreement checker (phase 153, plan 10) — env file: '${target}'; ` +
-      `pairs derived from source: ${pairs.length}; compared: ${compared}; skipped as unconfigured: ` +
+      `pairs derived from source: ${pairs.length}; compared: ${compared}; skipped: ` +
       `${skipped}; half-configured: ${halfConfigured}; disagreements: ${disagreements}` +
       (denoFile
         ? `; un-prefixed members read from '${denoFile}', so this run DID span the two-file deployment shape. `

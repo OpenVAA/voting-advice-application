@@ -1,0 +1,18 @@
+# The exact findings `node scripts/assert-declared-imports.mjs --self-test` must report against the
+# fixture workspace in this directory, as `<file> imports <package>`, files in byte order and packages
+# in byte order within a file. Every POSITIVE import of `src/index.ts` and the one in
+# `src/nested/deep.ts` is here; no NEGATIVE import is, and nothing from the skipped `*.test.ts` and
+# `*.spec.ts` files is.
+scripts/fixtures/declared-imports/src/index.ts imports @scope/undeclared-export-named
+scripts/fixtures/declared-imports/src/index.ts imports @scope/undeclared-inline-type
+scripts/fixtures/declared-imports/src/index.ts imports dev-only
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-dynamic
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-export-star
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-export-type
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-import-type
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-multiline
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-side-effect
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-static
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-subpath
+scripts/fixtures/declared-imports/src/index.ts imports undeclared-type-only
+scripts/fixtures/declared-imports/src/nested/deep.ts imports undeclared-nested

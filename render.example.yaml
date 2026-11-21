@@ -24,16 +24,36 @@ services:
         sync: false
       - key: PUBLIC_SUPABASE_ANON_KEY
         sync: false
+      - key: PUBLIC_PROJECT_ID
+        sync: false
 
       - key: PUBLIC_DEBUG
         value: 'false'
       - key: PUBLIC_LOG_LEVEL # debug | info | warn | error; anything else logs one error and falls back to warn
         value: 'warn'
+      - key: ANALYTICS_PROVIDER # none | log | posthog; a bad value, or posthog with no key, is reported at start and nothing is sent
+        value: 'none'
+      - key: ANALYTICS_CONSENT_MODE # gated | free; whether consent is needed is for the deployer to determine
+        value: 'gated'
+      - key: ANALYTICS_VISIT_ID_MODE # memory | none
+        value: 'memory'
+      - key: ANALYTICS_POSTHOG_KEY # the PostHog project key; a secret, entered in the dashboard
+        sync: false
+      - key: ANALYTICS_POSTHOG_HOST # the https origin of the PostHog ingest host
+        value: https://eu.i.posthog.com
 
       - key: PUBLIC_BROWSER_FRONTEND_URL # Check value after deployment
         value: https://<INSTANCE_NAME>-frontend.onrender.com
       - key: PUBLIC_SERVER_FRONTEND_URL # Check value after deployment
         value: https://<INSTANCE_NAME>-frontend.onrender.com
+
+      - key: ORIGIN # Check
+        value: https://<INSTANCE_DOMAIN>
+      # The proxy depth on Render has not been measured; 1 is the rightmost entry, which is never a value the client supplied.
+      - key: ADDRESS_HEADER # Check
+        value: x-forwarded-for
+      - key: XFF_DEPTH # Check
+        value: '1'
 
       # Uncomment these if using pre-registration
       # - fromGroup: IDENTITY PROVIDER - PRODUCTION CLIENT

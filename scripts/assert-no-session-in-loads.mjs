@@ -107,7 +107,7 @@ const CORPUS_FLOOR = 10;
 const ANCHOR_FILES = [
   '+layout.server.ts',
   path.join('admin', '+layout.server.ts'),
-  path.join('candidate', '+layout.server.ts')
+  path.join('contestant', '+layout.server.ts')
 ];
 
 /** The verified-session call. Both halves of check 1's pair are anchored on this identifier. */

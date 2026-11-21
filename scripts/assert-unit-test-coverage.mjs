@@ -25,6 +25,10 @@
  *   Check 2 — turbo execution:   a workspace that declares `test:unit` MUST actually be executed
  *             by `turbo run test:unit`. Without it, the declaration is the same empty
  *             claim. (UNIT-02 / D-17)
+ *   Check 3 — suites outside the workspaces: a Vitest suite kept under a directory that is not a
+ *             workspace MUST be run by a root script of its own, and the root `test:unit` script
+ *             MUST chain that script. Turbo fans out to workspaces only, so Checks 1 and 2 cannot
+ *             see such a suite at all.
  *
  * Check 1 alone would pass a tree where every workspace declares the script and turbo runs none
  * of them; Check 2 alone would pass a tree where the test-bearing workspaces declare nothing at
@@ -97,8 +101,8 @@ function fromRepoRoot(relativePath) {
  * place to look, and so widening or narrowing it is a single visible edit rather than a change
  * scattered across the checks below.
  *
- * It must not drift from the root `package.json` `"workspaces"` globs, which are
- * `["packages/*", "apps/*"]`. The literal is KEPT (rather than derived silently) so the scanned
+ * It must not drift from the root `package.json` `"workspaces"` globs of the `<root>/*` shape,
+ * which are `["packages/*", "apps/*"]`. The literal is KEPT (rather than derived silently) so the scanned
  * set stays readable at the top of the file — but it is no longer TRUSTED:
  * `assertWorkspaceRootsMatchManifest()` asserts set-equality against the globs on every run and
  * fails by name on a difference in EITHER direction. See phase 141 review CR-01 for why one
@@ -109,6 +113,13 @@ function fromRepoRoot(relativePath) {
  * guard exits 0. That is byte-for-byte the state the five packages of this phase were in.
  */
 const WORKSPACE_ROOTS = ['packages', 'apps'];
+
+/**
+ * The single-directory workspaces this guard scans: the glob-free entries of the root
+ * `package.json` `"workspaces"`, each naming one workspace directly rather than a root of them.
+ * Held to the manifest exactly as WORKSPACE_ROOTS is, by `assertWorkspaceRootsMatchManifest()`.
+ */
+const WORKSPACE_DIRS = ['scripts'];
 
 /**
  * What makes a file a test file. This is deliberately the pattern the RUNNER uses, not a hand-kept
@@ -159,6 +170,19 @@ const TEST_FILE_PATTERN = /\.(test|spec)\.(c|m)?[jt]sx?$/;
  * nothing and reports success.
  */
 const TEST_RUNNER = /(^|[\s&|;])vitest(\s|$)/;
+
+/**
+ * The Vitest suites that live outside every workspace, each with the root script that runs it.
+ *
+ * `tests/` holds the E2E harness and is not a workspace, so `turbo run test:unit` never reaches
+ * the unit tests of the harness's own utilities. `TEST_FILE_PATTERN` cannot find them by walking
+ * either: the Playwright specs beside them carry the same suffixes and are not Vitest's to run.
+ * The suite is therefore NAMED here, by the config that selects its files.
+ *
+ * A suite added under another non-workspace directory gets an entry here and a link in the root
+ * `test:unit` script; Check 3 then holds the two together.
+ */
+const NON_WORKSPACE_SUITES = [{ config: 'tests/vitest.config.ts', script: 'test:unit:tests' }];
 
 /**
  * Directory names the walk never descends into. Excluding `node_modules` is D-09's explicit
@@ -239,15 +263,32 @@ function head(text) {
 /**
  * The only glob shape this guard's depth-1 enumeration can faithfully reproduce: `<root>/*`, one
  * path segment then a single terminal star. `packages/*` and `apps/*` are both of this shape.
- * Anything else — a nested two-star glob, a `tools` double-star glob, a bare directory name —
- * would make WORKSPACE_ROOTS an incomplete restatement of the globs, so it is refused rather
- * than approximated.
  */
 const SUPPORTED_WORKSPACE_GLOB = /^[^*/]+\/\*$/;
 
 /**
+ * The other entry shape this guard enumerates: a bare, single-segment directory name such as
+ * `scripts`, which is one workspace rather than a root of them. Anything else — a nested
+ * two-star glob, a `tools` double-star glob, a multi-segment path — would make WORKSPACE_ROOTS
+ * and WORKSPACE_DIRS an incomplete restatement of the manifest, so it is refused rather than
+ * approximated.
+ */
+const SUPPORTED_WORKSPACE_DIR = /^[^*/]+$/;
+
+/**
+ * Set-difference of a guard literal against what the manifest derives, in both directions.
+ */
+function diffAgainstManifest(literal, derived) {
+  return {
+    coveredButNotScanned: [...derived].filter((entry) => !literal.includes(entry)).sort(),
+    scannedButNotCovered: literal.filter((entry) => !derived.has(entry)).sort()
+  };
+}
+
+/**
  * Assert WORKSPACE_ROOTS is EXACTLY the set of roots the root `package.json` "workspaces" globs
- * cover — in both directions (phase 141 review CR-01).
+ * cover, and WORKSPACE_DIRS EXACTLY its glob-free entries — in both directions (phase 141 review
+ * CR-01).
  *
  * The pre-existing docblock claimed the drift was handled, but only the "listed here, not covered
  * there" direction was: that one surfaces through Check 2's `notExecuted`. The opposite direction
@@ -281,24 +322,37 @@ function assertWorkspaceRootsMatchManifest() {
     );
   }
 
-  const unsupported = globs.filter((glob) => typeof glob !== 'string' || !SUPPORTED_WORKSPACE_GLOB.test(glob));
+  const unsupported = globs.filter(
+    (glob) => typeof glob !== 'string' || !(SUPPORTED_WORKSPACE_GLOB.test(glob) || SUPPORTED_WORKSPACE_DIR.test(glob))
+  );
   if (unsupported.length > 0) {
     fail(
       `the root '${manifestPath}' "workspaces" contains glob(s) this guard cannot enumerate: ` +
         `${unsupported.map((glob) => JSON.stringify(glob)).join(', ')}. Only the depth-1 ` +
-        `\`<root>/*\` shape is supported. Extend the enumeration in ${SELF} before trusting a ` +
+        `\`<root>/*\` shape and a bare single-segment directory name are supported. Extend the enumeration in ${SELF} before trusting a ` +
         `green run — a workspace this guard never enumerates is invisible to BOTH checks, so its ` +
         `tests can sit unexecuted while the summary reads 0 violations.`
     );
   }
 
-  const derived = new Set(globs.map((glob) => glob.slice(0, -2)));
-  const coveredButNotScanned = [...derived].filter((root) => !WORKSPACE_ROOTS.includes(root)).sort();
-  const scannedButNotCovered = WORKSPACE_ROOTS.filter((root) => !derived.has(root)).sort();
+  const derivedRoots = new Set(
+    globs.filter((glob) => SUPPORTED_WORKSPACE_GLOB.test(glob)).map((glob) => glob.slice(0, -2))
+  );
+  const derivedDirs = new Set(globs.filter((glob) => SUPPORTED_WORKSPACE_DIR.test(glob)));
+  const roots = diffAgainstManifest(WORKSPACE_ROOTS, derivedRoots);
+  const dirs = diffAgainstManifest(WORKSPACE_DIRS, derivedDirs);
+  const coveredButNotScanned = [
+    ...roots.coveredButNotScanned.map((root) => `${root}/* (WORKSPACE_ROOTS)`),
+    ...dirs.coveredButNotScanned.map((dir) => `${dir} (WORKSPACE_DIRS)`)
+  ];
+  const scannedButNotCovered = [
+    ...roots.scannedButNotCovered.map((root) => `${root}/* (WORKSPACE_ROOTS)`),
+    ...dirs.scannedButNotCovered.map((dir) => `${dir} (WORKSPACE_DIRS)`)
+  ];
 
   if (coveredButNotScanned.length > 0 || scannedButNotCovered.length > 0) {
     fail(
-      `WORKSPACE_ROOTS in ${SELF} has drifted from the root '${manifestPath}' "workspaces" globs, ` +
+      `WORKSPACE_ROOTS or WORKSPACE_DIRS in ${SELF} has drifted from the root '${manifestPath}' "workspaces" globs, ` +
         `so the two disagree about which workspaces exist:\n` +
         (coveredButNotScanned.length > 0
           ? `  - covered by the globs but NOT scanned by this guard: ${coveredButNotScanned.join(', ')}\n` +
@@ -309,8 +363,8 @@ function assertWorkspaceRootsMatchManifest() {
           ? `  - scanned by this guard but NOT covered by the globs: ${scannedButNotCovered.join(', ')}\n` +
             `    (turbo never sees these workspaces, so nothing it reports about them can be trusted)\n`
           : '') +
-        `Bring the two into agreement: add the root to the "workspaces" globs, or add/remove it ` +
-        `in WORKSPACE_ROOTS.`
+        `Bring the two into agreement: add the entry to the "workspaces" globs, or add/remove it ` +
+        `in WORKSPACE_ROOTS (for a \`<root>/*\` glob) or WORKSPACE_DIRS (for a bare directory).`
     );
   }
 }
@@ -334,6 +388,7 @@ function enumerateWorkspaces() {
   const workspaces = [];
   const skipped = [];
   const anomalies = [];
+  const candidates = [];
 
   for (const root of WORKSPACE_ROOTS) {
     // see phase 140 review IN-01: named precondition, mirroring the ORPHAN-PROBE and
@@ -362,53 +417,68 @@ function enumerateWorkspaces() {
       }
       // Plain files directly under a workspace root are genuinely out of scope, not an anomaly.
       if (!dirent.isDirectory()) continue;
-      const dir = path.join(root, dirent.name);
-      const manifestPath = path.join(dir, 'package.json');
-
-      if (!existsSync(fromRepoRoot(manifestPath))) {
-        // Counted, not dropped. A directory under a workspace root carrying no manifest is not a
-        // workspace and is correctly out of scope, but it is named in the summary so the reader
-        // can see WHAT was excluded rather than trusting that nothing was.
-        skipped.push(dir);
-        continue;
-      }
-
-      // Read and parse are separated so the message names which one failed (phase 141 review
-      // WR-06): an unreadable manifest (EACCES, a broken symlink) and an unparseable one are
-      // different defects with different fixes, and reporting a permissions error as "could not
-      // parse" sends the reader to the JSON.
-      let source;
-      try {
-        source = readFileSync(fromRepoRoot(manifestPath), 'utf8');
-      } catch (error) {
-        anomalies.push(
-          `${manifestPath} — could not be READ (${error.message}). Check the file's permissions, ` +
-            `or remove the directory from the scanned roots.`
-        );
-        continue;
-      }
-
-      let manifest;
-      try {
-        manifest = JSON.parse(source);
-      } catch (error) {
-        anomalies.push(`${manifestPath} — is not parseable JSON (${error.message}). Fix the JSON.`);
-        continue;
-      }
-
-      if (typeof manifest.name !== 'string' || manifest.name.length === 0) {
-        anomalies.push(
-          `${manifestPath} — declares no string "name" field. Check 2 matches workspaces against ` +
-            `turbo's task graph by package NAME (turbo reports names such as ` +
-            `"@openvaa/question-info", never directory names), so a nameless workspace cannot be ` +
-            `cross-checked.`
-        );
-        continue;
-      }
-
-      const scripts = manifest.scripts !== null && typeof manifest.scripts === 'object' ? manifest.scripts : {};
-      workspaces.push({ name: manifest.name, dir, scripts });
+      candidates.push(path.join(root, dirent.name));
     }
+  }
+
+  for (const dir of WORKSPACE_DIRS) {
+    // A single-directory workspace is read where it stands, with no readdir: its manifest is the
+    // workspace, and a missing directory is the same named failure a missing root is.
+    if (!existsSync(fromRepoRoot(dir))) {
+      fail(
+        `workspace directory '${dir}' does not exist under ${REPO_ROOT}, so its coverage cannot ` +
+          `be checked. Update WORKSPACE_DIRS in ${SELF} to match the root package.json "workspaces".`
+      );
+    }
+    candidates.push(dir);
+  }
+
+  for (const dir of candidates) {
+    const manifestPath = path.join(dir, 'package.json');
+
+    if (!existsSync(fromRepoRoot(manifestPath))) {
+      // Counted, not dropped. A directory under a workspace root carrying no manifest is not a
+      // workspace and is correctly out of scope, but it is named in the summary so the reader
+      // can see WHAT was excluded rather than trusting that nothing was.
+      skipped.push(dir);
+      continue;
+    }
+
+    // Read and parse are separated so the message names which one failed (phase 141 review
+    // WR-06): an unreadable manifest (EACCES, a broken symlink) and an unparseable one are
+    // different defects with different fixes, and reporting a permissions error as "could not
+    // parse" sends the reader to the JSON.
+    let source;
+    try {
+      source = readFileSync(fromRepoRoot(manifestPath), 'utf8');
+    } catch (error) {
+      anomalies.push(
+        `${manifestPath} — could not be READ (${error.message}). Check the file's permissions, ` +
+          `or remove the directory from the scanned roots.`
+      );
+      continue;
+    }
+
+    let manifest;
+    try {
+      manifest = JSON.parse(source);
+    } catch (error) {
+      anomalies.push(`${manifestPath} — is not parseable JSON (${error.message}). Fix the JSON.`);
+      continue;
+    }
+
+    if (typeof manifest.name !== 'string' || manifest.name.length === 0) {
+      anomalies.push(
+        `${manifestPath} — declares no string "name" field. Check 2 matches workspaces against ` +
+          `turbo's task graph by package NAME (turbo reports names such as ` +
+          `"@openvaa/question-info", never directory names), so a nameless workspace cannot be ` +
+          `cross-checked.`
+      );
+      continue;
+    }
+
+    const scripts = manifest.scripts !== null && typeof manifest.scripts === 'object' ? manifest.scripts : {};
+    workspaces.push({ name: manifest.name, dir, scripts });
   }
 
   // turbo's task ordering is not a specified contract and readdirSync's is platform-dependent, so
@@ -758,6 +828,65 @@ function checkTurboExecution(workspaces) {
 }
 
 // ---------------------------------------------------------------------------
+// Check 3 — suites outside the workspaces
+// ---------------------------------------------------------------------------
+
+/**
+ * Every suite in NON_WORKSPACE_SUITES MUST be run by its root script, and the root `test:unit`
+ * script MUST chain that script as an `&&` link of its own.
+ *
+ * The link is compared whole, so `yarn test:unit:tests || true`, which runs the suite and discards
+ * its status, does not satisfy it.
+ */
+function checkNonWorkspaceSuites() {
+  let scripts;
+  try {
+    scripts = JSON.parse(readFileSync(fromRepoRoot('package.json'), 'utf8')).scripts ?? {};
+  } catch (error) {
+    fail(`could not read the root package.json for Check 3 (${error.message}).`);
+  }
+
+  const composed = typeof scripts['test:unit'] === 'string' ? scripts['test:unit'] : '';
+  const links = composed.split('&&').map((link) => link.trim());
+  const problems = [];
+
+  for (const suite of NON_WORKSPACE_SUITES) {
+    if (!existsSync(fromRepoRoot(suite.config))) {
+      problems.push(
+        `${suite.config} does not exist. Remove its entry from NON_WORKSPACE_SUITES in ${SELF}, ` +
+          `together with the root \`${suite.script}\` script and its link in \`test:unit\`.`
+      );
+      continue;
+    }
+    const command = scripts[suite.script];
+    if (typeof command !== 'string' || !TEST_RUNNER.test(command) || !command.includes(`--config ${suite.config}`)) {
+      problems.push(
+        `the root \`${suite.script}\` script is ${JSON.stringify(command)}; it must run ` +
+          `\`vitest run --config ${suite.config}\`.`
+      );
+    }
+    if (!links.includes(`yarn ${suite.script}`)) {
+      problems.push(
+        `the root \`test:unit\` script does not chain \`yarn ${suite.script}\` as an \`&&\` link of ` +
+          `its own, so the tests ${suite.config} selects run in no gate. It is ${JSON.stringify(composed)}.`
+      );
+    }
+  }
+
+  if (problems.length > 0) {
+    console.error(
+      `[ERROR] Check 3 — suites outside the workspaces: ${problems.length} violation(s). Turbo runs ` +
+        `\`test:unit\` in workspaces only, so a suite kept elsewhere runs from \`yarn test:unit\` ` +
+        `only through a link of the root script:\n` +
+        problems.map((problem) => `  - ${problem}`).join('\n') +
+        `\n`
+    );
+  }
+
+  return { violations: problems.length, suiteCount: NON_WORKSPACE_SUITES.length };
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -775,7 +904,8 @@ function main() {
   const enumerationViolations = reportManifestAnomalies(anomalies);
   const check1Violations = checkDeclaredCoverage(workspaces);
   const check2 = checkTurboExecution(workspaces);
-  const errorCount = enumerationViolations + check1Violations + check2.violations;
+  const check3 = checkNonWorkspaceSuites();
+  const errorCount = enumerationViolations + check1Violations + check2.violations + check3.violations;
 
   console.log(
     `Unit-test coverage guard (phase 141: UNIT-04, UNIT-02) — ` +
@@ -783,8 +913,10 @@ function main() {
       `Check 1 (declared coverage): ${check1Violations} violation(s); ` +
       `Check 2 (turbo execution): ${check2.violations} violation(s), ` +
       `${check2.executedCount} workspace(s) executed, ${check2.unwired.length} unwired` +
-      `${check2.unwired.length > 0 ? `: ${check2.unwired.join(', ')}` : ''}. ` +
-      `Scanned ${workspaces.length} workspace(s) under ${WORKSPACE_ROOTS.join(', ')}; ` +
+      `${check2.unwired.length > 0 ? `: ${check2.unwired.join(', ')}` : ''}; ` +
+      `Check 3 (suites outside the workspaces): ${check3.violations} violation(s), ` +
+      `${check3.suiteCount} suite(s) named. ` +
+      `Scanned ${workspaces.length} workspace(s) under ${[...WORKSPACE_ROOTS, ...WORKSPACE_DIRS].join(', ')}; ` +
       `${skipped.length} non-workspace entr(ies) skipped` +
       `${skipped.length > 0 ? `: ${skipped.join(', ')}` : ''}. ` +
       `Total: ${errorCount} violation(s).`
