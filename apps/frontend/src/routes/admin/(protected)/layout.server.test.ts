@@ -4,10 +4,11 @@
  * The load decides in four steps: the session, the admission, the user-level data, the gate. What this file holds:
  *
  * 1. **No session** redirects to the login page with `loginFailed`, and nothing is read.
- * 2. **Admission is a match of the grants that reach this project against the Admin App's grant shapes.** A session whose token holds no admin grant is answered `{ admitted: false }` with no read and no gate, and the project's grants are not asked for. One whose token holds an admin grant is admitted only when the writer's read of the grants that reach this project holds one: an admin of another project only is answered `{ admitted: false }`, and an admin grant beside an editor grant is admitted, and so is a project editor of this project. A read of those grants that fails is answered as a failed read of the user-level data is (4).
- * 3. **The gate.** An admitted user whose account has no password, on a proved address, gets the set-password gate; one with a password gets none. Either way the answer holds the user-level data and no part of the session.
- * 4. **A failed read signs nobody out.** A read that answers nothing, or user-level data that does not say as a boolean whether the account has a password, asks the request's client whether a session is left: none redirects to the login page with `loginFailed`; one left ends on a 503 in the reader's language.
- * 5. **The load reads no `url`, `route` or `params`.** The event's getters for them throw in every case.
+ * 2. **Admission is a match of the grants that reach this project against the Admin App's grant shapes.** A session whose token holds neither an admin nor a contestant grant is answered `{ admitted: false }` with no read and no gate, and the project's grants are not asked for. One whose token holds an admin grant is admitted only when the writer's read of the grants that reach this project holds one: an admin of another project only is answered `{ admitted: false }`, and an admin grant beside an editor grant is admitted, and so is a project editor of this project. A read of those grants that fails is answered as a failed read of the user-level data is (5).
+ * 3. **A refused user at home in the Contestant App alone** is answered `{ admitted: false, home: 'contestant' }`, with no user-level data read: a candidate editor here, and an admin of another project whose only grant here is a candidate editor grant. A contestant token whose grants here open neither app, and one whose read of those grants fails, which is logged, are answered `{ admitted: false }`.
+ * 4. **The gate.** An admitted user whose account has no password, on a proved address, gets the set-password gate; one with a password gets none. Either way the answer holds the user-level data and no part of the session.
+ * 5. **A failed read signs nobody out.** A read that answers nothing, or user-level data that does not say as a boolean whether the account has a password, asks the request's client whether a session is left: none redirects to the login page with `loginFailed`; one left ends on a 503 in the reader's language.
+ * 6. **The load reads no `url`, `route` or `params`.** The event's getters for them throw in every case.
  *
  * `$lib/api/dataWriter` is replaced, so no Supabase client is built; the session check is the writer's. The grant reading is the real one, running on the fake event's session.
  */
@@ -146,12 +147,34 @@ describe("the Admin App's protected server load", () => {
     expect(getBasicUserData).not.toHaveBeenCalled();
   });
 
-  it('answers a session whose grants hold only a candidate editor grant with admitted false, and reads nothing', async () => {
+  it("sends a candidate editor of this project to the Contestant App's home, and reads no user-level data", async () => {
     createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
 
-    await expect(runLoad(makeEvent([CANDIDATE_EDITOR_GRANT]))).resolves.toEqual({ admitted: false });
+    await expect(runLoad(makeEvent([CANDIDATE_EDITOR_GRANT]))).resolves.toEqual({
+      admitted: false,
+      home: 'contestant'
+    });
+    expect(getProjectGrants).toHaveBeenCalledTimes(1);
     expect(getBasicUserData).not.toHaveBeenCalled();
-    expect(getProjectGrants).not.toHaveBeenCalled();
+  });
+
+  it('answers a candidate editor of another project only with admitted false', async () => {
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+
+    await expect(runLoad(makeEvent([CANDIDATE_EDITOR_GRANT], []))).resolves.toEqual({ admitted: false });
+    expect(getBasicUserData).not.toHaveBeenCalled();
+  });
+
+  it('answers a candidate editor whose read of the grants that reach this project fails with admitted false, and logs it', async () => {
+    const logged = vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
+    const event = makeEvent([CANDIDATE_EDITOR_GRANT]);
+    getProjectGrants.mockRejectedValue(new Error('The read failed.'));
+
+    await expect(runLoad(event)).resolves.toEqual({ admitted: false });
+    expect(logged).toHaveBeenCalledTimes(1);
+    expect(isSessionGone).not.toHaveBeenCalled();
+    expect(getBasicUserData).not.toHaveBeenCalled();
   });
 
   it('answers an admin of another project only with admitted false, and reads no user-level data', async () => {
@@ -162,12 +185,14 @@ describe("the Admin App's protected server load", () => {
     expect(getBasicUserData).not.toHaveBeenCalled();
   });
 
-  it('answers an admin whose only grant here is a candidate editor grant with admitted false', async () => {
+  it("sends an admin whose only grant here is a candidate editor grant to the Contestant App's home", async () => {
     createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
 
     await expect(runLoad(makeEvent([ADMIN_GRANT, CANDIDATE_EDITOR_GRANT], [CANDIDATE_EDITOR_GRANT]))).resolves.toEqual({
-      admitted: false
+      admitted: false,
+      home: 'contestant'
     });
+    expect(getProjectGrants).toHaveBeenCalledTimes(1);
     expect(getBasicUserData).not.toHaveBeenCalled();
   });
 
@@ -206,6 +231,7 @@ describe("the Admin App's protected server load", () => {
     createDataWriter.mockReturnValue({ getBasicUserData, getProjectGrants, isSessionGone });
 
     await expect(runLoad(makeEvent([]))).resolves.toEqual({ admitted: false });
+    expect(getProjectGrants).not.toHaveBeenCalled();
     expect(getBasicUserData).not.toHaveBeenCalled();
   });
 

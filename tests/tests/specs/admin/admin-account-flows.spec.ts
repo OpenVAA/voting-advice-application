@@ -33,7 +33,7 @@ import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
  * - A project admin with a password who is also the editor of the spec's reserved candidate signs in to the Admin App and reaches its home, and, signed out, signs in to the Contestant App with the same password and reaches the candidate's home there.
  * - A candidate invited by email, with no account, starts from the Admin App's login: "I have not set a password yet" leads to its forgot-password page and the request is sent. The mailed link names the Admin App, but the claim gives the user only the candidate's editor grant, so the link lands in the Contestant App, which asks for a password; once one is saved the Contestant App's set-password view is gone, and the password signs the user in to the Contestant App.
  * - An admin of another project only, whose one grant is on the stack's default project, is refused at the Admin App's login with the message that the user is not authorized, and holds no session: a grant counts in this project only when it is on the project, on its account or at global scope.
- * - A candidate signed in to the Contestant App who opens the Admin App's home by its address, a full page load, is signed out there and lands on the Admin App's login, which says the user is not authorized; the Contestant App then asks for a sign-in.
+ * - A candidate signed in to the Contestant App who opens the Admin App's home by its address, a full page load, is sent to the Contestant App's home, still signed in: opened again, the Contestant App lands on the candidate's home and asks for no sign-in.
  * - A mailed link the Admin App asked for that cannot be used, with a token nobody issued and then with none, lands on the Admin App's login, which says the link could not be used.
  *
  * ## What it scans
@@ -338,7 +338,7 @@ test.describe("the Admin App's account flows", () => {
     await adminLoginPage.expectLoginAddressSaysLoginFailed();
   });
 
-  test("a candidate signed in to the Contestant App who opens the Admin App by its address is signed out on the Admin App's login, which says why", async ({
+  test("a candidate signed in to the Contestant App who opens the Admin App by its address is sent to the Contestant App's home, still signed in", async ({
     invitationFlow,
     adminLoginPage,
     contestantLoginPage,
@@ -357,11 +357,10 @@ test.describe("the Admin App's account flows", () => {
     await contestantEntityHomePage.expectLanded(ADMIN_FLOWS_CANDIDATE);
 
     await adminLoginPage.goToHome();
-    await adminLoginPage.expectLoginAddressSaysNotAuthorized();
-    await adminLoginPage.expectSaysNotAuthorized();
+    await contestantEntityHomePage.expectLanded(ADMIN_FLOWS_CANDIDATE);
 
     await contestantEntityHomePage.open();
-    await contestantLoginPage.expectOnEntry();
+    await contestantEntityHomePage.expectLanded(ADMIN_FLOWS_CANDIDATE);
   });
 });
 
