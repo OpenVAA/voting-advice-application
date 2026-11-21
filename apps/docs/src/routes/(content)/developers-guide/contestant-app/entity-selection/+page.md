@@ -15,7 +15,7 @@ Every page that shows or edits an entity lives under two route params, below the
 /contestant/<entityType>/<entityId>/preview
 ```
 
-The settings page is not among them: the account's address and its password belong to the user, not to an entity. It has one address, `/contestant/settings` (`ContestantAppSettings`), directly below the `(protected)` group, behind the same gates as every protected page, and a user with no entity, one or several reaches it alike. The menu of every signed-in page, outside the group of an entity's items, the entity's home and the "nothing to edit" view link to it, and its Return leads to the app root. The settings address under an entity, `/contestant/<entityType>/<entityId>/settings`, still answers: its server load redirects it with 307 to `/contestant/settings`.
+The settings page is not among them: the account's address and its password belong to the user, not to an entity. It has one address, `/contestant/settings` (`ContestantAppSettings`), directly below the `(protected)` group, behind the same gates as every protected page, and a user with no entity, one or several reaches it alike. The menu of every signed-in page, outside the group of an entity's items, the entity's home and the "nothing to edit" view link to it, and its Return leads to the app root.
 
 Both params are guarded by a matcher, so a malformed segment is answered with SvelteKit's own 404 and never reaches a load:
 
@@ -64,7 +64,7 @@ A request for an entity page without the entity, such as `/contestant/profile` o
 - A user who edits exactly one entity is redirected to the same page under that entity.
 - Any other user is redirected to the app root.
 
-Every target is built from a route key. A question segment that is not a plain id leads to the app root, and the query string of the request is not carried over, so nothing of the requested path reaches the target unchecked.
+Every target is built from a route key, and the query string of the request is not carried over, so nothing of the requested path reaches the target unchecked. A question segment that is not a plain id is rejected by the matcher, so such a path is a 404.
 
 ## An entity the user may not edit
 

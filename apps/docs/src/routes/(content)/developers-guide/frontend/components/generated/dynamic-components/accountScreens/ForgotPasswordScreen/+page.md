@@ -22,7 +22,7 @@ The forgot-password screen both apps render: it takes an email address and asks 
   appName={contestantAppName}
   {sendEntryLink}
   emailSentHref={getRoute.current('ContestantAppEmailSent')}
-  returnHref={getRoute.current('ContestantAppSignIn')}
+  returnHref={getRoute.current('ContestantAppLoginEmail')}
   testId="contestant-forgot-password" />
 ```
 

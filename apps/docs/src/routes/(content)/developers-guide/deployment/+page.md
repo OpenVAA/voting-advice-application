@@ -49,7 +49,9 @@ Create a project in Supabase. The Supabase CLI comes with `yarn install` and run
 
    **Never set `SUPABASE_SERVICE_ROLE_KEY` on the frontend service.** The key bypasses row-level security. The frontend never reads it; it belongs only to the Supabase project and to local tooling.
 
-4. To use your own domain, list it under `domains` in `render.yaml` (or add it in the service's settings in Render). Then create a `CNAME` record at your DNS provider that points the domain to the service's Render URL, and verify the domain in Render.
+4. Set the service's health-check path to `/api/health`. It answers `200` with `{ "status": "ok", "build": <build id> }` and calls nothing upstream, so it answers while the backend is unreachable.
+5. To check what the server resolves behind Render's proxy, the origin, the client address and the forwarding headers, set `DEPLOYMENT_DIAGNOSTICS=true` and request `/api/diagnostics` (see [Environment variables](/developers-guide/configuration/environmental-variables#frontend)). Turn it on only while debugging the proxy setup, and remove it afterwards: while it is on, anyone can read what the server resolved for their own request.
+6. To use your own domain, list it under `domains` in `render.yaml` (or add it in the service's settings in Render). Then create a `CNAME` record at your DNS provider that points the domain to the service's Render URL, and verify the domain in Render.
 
 ### Upgrading an older Render service
 

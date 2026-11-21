@@ -1,6 +1,6 @@
 # RegistrationModeSelector
 
-A choice among the ways to register: one radio per mode, each a `Radio` of the input library, and under the chosen radio that mode's panel. The panel's content is a snippet of the caller's, which is given the mode it is rendered for.
+A choice among the ways to register: a `RadioGroup` of the input library with one radio per mode, and under the chosen radio that mode's panel. The panel's content is a snippet of the caller's, which is given the mode it is rendered for.
 
 Only the chosen mode's panel is in the document, so a browser finds no field of another mode to fill. Nothing is chosen until the user chooses. A panel opens and closes without an animation.
 

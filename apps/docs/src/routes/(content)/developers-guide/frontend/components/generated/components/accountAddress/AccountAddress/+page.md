@@ -16,7 +16,7 @@ An account's address under its label, centred and in bold, as the account screen
 ### Usage
 
 ```tsx
-<AccountAddress label={t('contestantApp.nothingToEdit.signedInAs')} address={email} data-testid="set-password-email" />
+<AccountAddress label={t('common.account.signedInAs')} address={email} data-testid="set-password-email" />
 ```
 
 ## Source
