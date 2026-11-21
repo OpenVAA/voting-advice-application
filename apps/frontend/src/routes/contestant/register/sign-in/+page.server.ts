@@ -9,7 +9,7 @@
  *
  * The code is a credential: whoever holds it can try a password against the account that claimed it. It therefore arrives in the body of the posted form, in a hidden field the page fills from memory, and is read from nowhere else. An address is stored in the browser's history, sent on as a referrer and written to request logs, and a form's body is none of those, so the action reads nothing of the request's address and takes no redirect target.
  *
- * After the guard the action calls the shared code sign-in helper once and does nothing else before that call. The helper signs in, then claims the user's invitations and refreshes the session when a grant was written, and only then reads the session and applies its grant gate. It is handed this request's own auth surface and session reader. The sign-in and the claim run on one data writer, built for this request when the helper first asks for it; the writer establishes the session on this request's own client, which is what puts the session cookies on this action's response.
+ * After the guard the action calls the shared code sign-in helper once and does nothing else before that call. The helper signs in, then claims the user's invitations and refreshes the session when a grant was written, and only then reads the session and applies its grant gate to the grants that reach this project. It is handed this request's own auth surface and session reader. The sign-in, the claim and the read of the grants run on one data writer, built for this request when the helper first asks for it; the writer establishes the session on this request's own client, which is what puts the session cookies on this action's response.
  *
  * Once the helper has admitted the session, and before the redirect, the action withdraws every count of the logout modal the request carries, so that no count a closed tab left can end the session it has signed in. A refusal keeps the count, the guard's as well as the helper's: a refused sign-in leaves a session the request already held as it was, and the request hook ends that session at the browser's next request once the count has run out.
  *
@@ -22,7 +22,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { createDataWriter } from '$lib/api/dataWriter';
 import { CONTESTANT_GRANTS, invitationCodeLogin } from '$lib/auth';
 import { buildRoute } from '$lib/routes';
-import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
+import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
 import { isRegistrationOffered, refuseUnlessRegistrationOffered } from '$lib/server/contestant/registrationGuard';
 
 export async function load(event) {
@@ -48,6 +48,7 @@ export const actions = {
         auth: locals.supabase.auth,
         getSession: locals.safeGetSession,
         claimInvitations: () => requestWriter().claimInvitations(),
+        getProjectGrants: () => requestWriter().getProjectGrants(),
         signInWithInvitationCode: async (credentials) =>
           (await requestWriter().signInWithInvitationCode(credentials)).type === 'success'
       },
@@ -57,7 +58,7 @@ export const actions = {
       logLabel: 'Contestant code sign-in'
     });
     if (!outcome.ok) return fail(outcome.status, { status: outcome.status });
-    withdrawLogoutCount(event);
+    withdrawLogoutDeadline(event);
     return redirect(303, buildRoute({ route: 'ContestantAppHome', locale: locals.currentLocale }));
   }
 };

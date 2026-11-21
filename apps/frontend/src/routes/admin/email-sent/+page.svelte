@@ -5,7 +5,7 @@
 Shown after the forgot-password page asked for a link. It renders the shared `EmailSentScreen` over the admin context's entry flow.
 
 - The page shows the one link request the entry flow holds, in its recovery wording, with the address the user typed. Nothing of a request's answer is read.
-- While the entry flow holds no request, as after a reload or a visit by address, the page renders nothing and leads to the login page in place of this history entry.
+- A reload or a visit by address finds the entry flow empty, so the page's load answers it with a redirect to the login page before anything is rendered (`+page.ts`). While the entry flow holds no request after a client-side navigation, the page renders nothing and leads to the login page in place of this history entry.
 - "Use another email address" leads back to the forgot-password page.
 
 -->

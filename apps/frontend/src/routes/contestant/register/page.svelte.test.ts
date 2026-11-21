@@ -34,17 +34,25 @@ type Submission = {
   answer: (result: Record<string, unknown>) => Promise<void>;
 };
 
-const { applyAction, checkInvitationCode, goto, holdEntryCode, leaveFor, localizeHref, sendEntryLink, submissions } =
-  vi.hoisted(() => ({
-    applyAction: vi.fn(),
-    checkInvitationCode: vi.fn(),
-    goto: vi.fn(),
-    holdEntryCode: vi.fn(),
-    leaveFor: vi.fn(),
-    localizeHref: vi.fn((href: string) => href),
-    sendEntryLink: vi.fn(),
-    submissions: new Array<unknown>()
-  }));
+const {
+  applyAction,
+  checkInvitationCode,
+  goto,
+  holdEntryCode,
+  leaveByFullLoad,
+  localizeHref,
+  sendEntryLink,
+  submissions
+} = vi.hoisted(() => ({
+  applyAction: vi.fn(),
+  checkInvitationCode: vi.fn(),
+  goto: vi.fn(),
+  holdEntryCode: vi.fn(),
+  leaveByFullLoad: vi.fn(),
+  localizeHref: vi.fn((href: string) => href),
+  sendEntryLink: vi.fn(),
+  submissions: new Array<unknown>()
+}));
 
 /** The posts the fake `enhance` saw, oldest first. */
 const posts = submissions as Array<Submission>;
@@ -81,7 +89,10 @@ vi.mock('$app/forms', () => ({
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
 
 // The document's `location` cannot be replaced here, so the departure is observed at the module that performs it.
-vi.mock('$lib/utils/leaveFor', () => ({ leaveFor }));
+vi.mock('$lib/components/preventNavigation/navigationGuards', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  leaveByFullLoad
+}));
 
 // The other members stay the test stubs; a case chooses the locale `localizeHref` puts in front of a path.
 vi.mock('$lib/paraglide/runtime', async (importOriginal) => ({ ...(await importOriginal<object>()), localizeHref }));
@@ -109,6 +120,9 @@ const context = {
 };
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
+
+// The mode selector the page renders sends a tracking event through the app context.
+vi.mock('$lib/contexts/app', () => ({ getAppContext: () => ({ track: () => undefined }) }));
 
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({ t: context.t, darkMode: { current: false } })
@@ -794,7 +808,7 @@ describe("the provider's mode", () => {
     expect(url).toBe(AUTHORIZE_ENDPOINT);
     expect(init.method).toBe('POST');
     expect(JSON.parse(String(init.body))).toEqual({ entityType: 'candidate' });
-    expect(leaveFor.mock.calls).toEqual([[AUTHORIZE_URL]]);
+    expect(leaveByFullLoad.mock.calls).toEqual([[AUTHORIZE_URL]]);
     expect(goto).not.toHaveBeenCalled();
     expect(sendEntryLink).not.toHaveBeenCalled();
     expect(checkInvitationCode).not.toHaveBeenCalled();
@@ -837,7 +851,7 @@ describe("the provider's mode", () => {
 
     request.resolve(answer(200, { authorizeUrl: AUTHORIZE_URL }));
     await settle();
-    expect(leaveFor).toHaveBeenCalledTimes(1);
+    expect(leaveByFullLoad).toHaveBeenCalledTimes(1);
     expect(one<HTMLButtonElement>(target, SUBMIT).disabled).toBe(true);
   });
 
@@ -857,7 +871,7 @@ describe("the provider's mode", () => {
     press(target, SUBMIT);
     await settle();
     expect(goto.mock.calls).toEqual([[errorScreen('mode_not_allowed')]]);
-    expect(leaveFor).not.toHaveBeenCalled();
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
   });
 
   it.each<[string, () => void]>([
@@ -879,7 +893,7 @@ describe("the provider's mode", () => {
     press(target, SUBMIT);
     await settle();
     expect(goto.mock.calls).toEqual([[errorScreen('registration_failed')]]);
-    expect(leaveFor).not.toHaveBeenCalled();
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
   });
 
   it('keeps the loading form after a failure, while the error screen is opened', async () => {
@@ -1006,7 +1020,7 @@ describe("the provider's types", () => {
     await settle();
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(leaveFor).not.toHaveBeenCalled();
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
     expect(goto).not.toHaveBeenCalled();
     const error = one(target, TYPE_ERROR);
     expect(error.getAttribute('role')).toBe('alert');
@@ -1028,7 +1042,7 @@ describe("the provider's types", () => {
     press(target, SUBMIT);
     await settle();
     expect(sentBody()).toEqual({ entityType: 'organization' });
-    expect(leaveFor.mock.calls).toEqual([[AUTHORIZE_URL]]);
+    expect(leaveByFullLoad.mock.calls).toEqual([[AUTHORIZE_URL]]);
   });
 
   it('sends the candidate when the candidate is chosen', async () => {

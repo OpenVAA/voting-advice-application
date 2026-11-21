@@ -11,14 +11,14 @@ import { LOGOUT_DEADLINE_SETTLED } from '$lib/auth/logoutDeadline';
 import { COOKIE } from '$lib/cookies';
 import * as server from './+page.server';
 
-const { passwordLogin, withdrawLogoutCount } = vi.hoisted(() => ({
+const { passwordLogin, withdrawLogoutDeadline } = vi.hoisted(() => ({
   passwordLogin: vi.fn(),
-  withdrawLogoutCount: vi.fn()
+  withdrawLogoutDeadline: vi.fn()
 }));
 
 // Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
 vi.mock('$lib/auth', async (importOriginal) => ({ ...(await importOriginal<object>()), passwordLogin }));
-vi.mock('$lib/server/auth/logoutCount', () => ({ withdrawLogoutCount }));
+vi.mock('$lib/server/auth/logoutDeadline', () => ({ withdrawLogoutDeadline }));
 // The action builds a data writer only inside the claim it hands the helper, which the replaced helper never calls.
 vi.mock('$lib/api/dataWriter', () => ({ createDataWriter: vi.fn() }));
 
@@ -99,8 +99,8 @@ describe('the logout count', () => {
   /** The order in which the withdrawal and the helper were called. */
   function recordOrder(outcome: { ok: true } | { ok: false; status: number; reason: string }): Array<string> {
     const order: Array<string> = [];
-    withdrawLogoutCount.mockImplementation(() => {
-      order.push('withdrawLogoutCount');
+    withdrawLogoutDeadline.mockImplementation(() => {
+      order.push('withdrawLogoutDeadline');
     });
     passwordLogin.mockImplementation(async () => {
       order.push('passwordLogin');
@@ -113,9 +113,9 @@ describe('the logout count', () => {
     const order = recordOrder({ ok: true });
     const event = postedLogin();
     const redirected = await signIn(event).catch((e: unknown) => e);
-    expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-    expect(withdrawLogoutCount.mock.calls[0][0]).toBe(event);
-    expect(order).toEqual(['passwordLogin', 'withdrawLogoutCount']);
+    expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+    expect(withdrawLogoutDeadline.mock.calls[0][0]).toBe(event);
+    expect(order).toEqual(['passwordLogin', 'withdrawLogoutDeadline']);
     expect(redirected).toMatchObject({ status: 303 });
   });
 
@@ -125,7 +125,7 @@ describe('the logout count', () => {
       const order = recordOrder({ ok: false, status, reason });
       const answer = await signIn(postedLogin());
       expect(answer).toMatchObject({ status });
-      expect(withdrawLogoutCount).not.toHaveBeenCalled();
+      expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
       expect(order).toEqual(['passwordLogin']);
     }
   );

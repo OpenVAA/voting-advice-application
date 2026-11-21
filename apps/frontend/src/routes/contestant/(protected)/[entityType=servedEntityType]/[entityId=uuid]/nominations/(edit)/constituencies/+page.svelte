@@ -15,7 +15,7 @@ Asks for the constituency the entity the user edits stands in, one for each elec
 
 Nothing is written on this step.
 
-Everything that differs between entity types is read from the descriptor of the selected entity's type.
+Everything that differs between entity types is a text whose key the page builds from the selected entity's type.
 
 ### Settings
 
@@ -35,7 +35,7 @@ Everything that differs between entity types is read from the descriptor of the 
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { Loading } from '$lib/components/loading';
   import { admissibleElectionsOf } from '$lib/contestant/nominations';
-  import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
+  import { servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { electionsHeldIn, usesSingleConstituencyGroup } from '$lib/routes';
   import {
@@ -65,8 +65,8 @@ Everything that differs between entity types is read from the descriptor of the 
   /** The id of the sentence that describes Continue while no admissible election is held in the selected constituency. */
   const NO_ELECTION_ID = 'contestant-nomination-constituencies-no-election';
 
-  /** Everything that differs by entity type. */
-  const descriptor = $derived(entityDescriptorOf(contestantCtx.selectedEntity?.type));
+  /** The type whose texts the page shows: each text that differs by type alone has a key ending in it. */
+  const textType = $derived(servedEntityTypeOf(contestantCtx.selectedEntity?.type));
 
   /** Whether the elections and the constituencies are on the page. They are not in the server-rendered markup. */
   const ready = $derived(
@@ -162,8 +162,10 @@ Everything that differs between entity types is read from the descriptor of the 
   }
 </script>
 
-<MainContent title={t(descriptor.nominationConstituenciesTitle)} data-testid="contestant-nomination-constituencies">
-  <p class="text-center">{t(descriptor.nominationConstituenciesIngress)}</p>
+<MainContent
+  title={t(`contestantApp.nominations.constituencies.title.${textType}`)}
+  data-testid="contestant-nomination-constituencies">
+  <p class="text-center">{t(`contestantApp.nominations.constituencies.ingress.${textType}`)}</p>
 
   {#if !ready}
     <Loading />
@@ -186,7 +188,7 @@ Everything that differs between entity types is read from the descriptor of the 
         id={NO_ELECTION_ID}
         role="status"
         data-testid="contestant-nomination-constituencies-no-election">
-        {t(descriptor.nominationConstituenciesNoElection)}
+        {t(`contestantApp.nominations.constituencies.noElection.${textType}`)}
       </p>
     {/if}
   {/if}

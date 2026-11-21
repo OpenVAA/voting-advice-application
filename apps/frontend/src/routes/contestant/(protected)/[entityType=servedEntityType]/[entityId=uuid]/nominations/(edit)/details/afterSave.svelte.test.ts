@@ -127,7 +127,7 @@ vi.mock('$lib/contexts/app', async () => {
         locale: 'en',
         t: (key: string) => key,
         getRoute: { current: (options: RouteOptions) => JSON.stringify(options) },
-        startEvent: () => undefined
+        track: () => undefined
       };
     }
   };

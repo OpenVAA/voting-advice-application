@@ -5,7 +5,7 @@
  * 2. **No entity data.** When the parent's data holds no entity the load returns an empty object, and the entity layout shows its own error view at the URL the user asked for.
  * 3. **The rule.** `isPreviewOpen` answers from the entity and the question data the parent loads read in this request, and from the election and constituency data it reads through a provider built over this request's client.
  * 4. **A closed preview.** The entity is redirected to its own home, which says what is missing.
- * 5. **An open preview, or no answer.** The load returns an empty object and the page is served. `isPreviewOpen` gives no answer when the question data is not usable, when the elections or the constituencies cannot be read, or when a nomination names an election or a constituency that was not read. Nothing is redirected then. Question data that is not usable is also the entity layout's own error view, shown in the page's place. In the other two cases the entity layout's data is valid, so the preview is served and no error view is shown.
+ * 5. **An open preview, or no answer.** The load returns an empty object and the page is served. `isPreviewOpen` gives no answer when the question data is not usable or when the elections or the constituencies cannot be read. Nothing is redirected then. Question data that is not usable is also the entity layout's own error view, shown in the page's place. In the other case the entity layout's data is valid, so the preview is served and no error view is shown.
  *
  * The load never signs anyone out. It trusts nothing the browser sends: the answer rests on rows the server read in this request, by the rule the browser's task state follows. The target is built with `buildRoute` from a route key and the two params the route's matchers admitted, so nothing of the requested path reaches it.
  *
@@ -18,7 +18,7 @@ import { redirect } from '@sveltejs/kit';
 import { createDataProvider } from '$lib/api/dataProvider';
 import { getLocale } from '$lib/paraglide/runtime';
 import { buildRoute } from '$lib/routes';
-import { isPreviewOpen } from '$lib/server/contestant/previewGate';
+import { isPreviewOpen } from '$lib/server/contestant/previewOpen';
 
 export async function load({ fetch, locals, params, parent }) {
   const parentData = await parent();

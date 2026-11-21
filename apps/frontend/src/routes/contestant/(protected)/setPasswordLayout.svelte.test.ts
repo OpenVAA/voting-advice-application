@@ -41,7 +41,7 @@ const { clearEntryFlow, context, initUserData, invalidateAll, logout, setDataRoo
     userData: { init: mocks.initUserData },
     appSettings: { analytics: { trackEvents: false } },
     // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
-    analyticsGate: {
+    analyticsPolicy: {
       current: {
         projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
         globalPrivacyControl: false,
@@ -119,7 +119,7 @@ const PAGE = '[data-testid="page"]';
 
 /** Load data for a user who must set a password: the gate, the user-level data with a proved address and the arrival marker, and no entity data. */
 function gatedData(user: object = USER) {
-  return { gate: 'setPassword', user: { ...user, passwordSet: false, addressState: 'proved' }, arrival: null };
+  return { gate: 'setPassword', user: { ...user, passwordSet: false, address: { state: 'proved' } }, arrival: null };
 }
 
 /** Load data for a user past the gates. */

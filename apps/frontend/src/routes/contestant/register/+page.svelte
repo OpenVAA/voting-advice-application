@@ -39,11 +39,11 @@ Lists the ways the project lets a visitor register, and leads each where it must
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Radio } from '$lib/components/input';
+  import { leaveByFullLoad } from '$lib/components/preventNavigation/navigationGuards';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { localizeHref } from '$lib/paraglide/runtime';
   import { getUUID } from '$lib/utils/components';
-  import { leaveFor } from '$lib/utils/leaveFor';
   import type { RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
   import type { SubmitFunction } from '@sveltejs/kit';
   import type { TranslationKey } from '$types';
@@ -223,7 +223,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
           .catch(() => undefined)
       : undefined;
     if (typeof authorizeUrl === 'string' && authorizeUrl) {
-      leaveFor(authorizeUrl);
+      void leaveByFullLoad(authorizeUrl);
       return;
     }
     const error = response?.status === 403 ? OIDC_ERROR.modeNotAllowed : OIDC_ERROR.registrationFailed;

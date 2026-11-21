@@ -67,7 +67,13 @@ let box = $state.raw<Box>(EMPTY_BOX);
 
 /** The page state the page reads its question's id from, reactive as the real one is, so a case can show the mounted page another question as SvelteKit does. */
 const routePage = $state({ params: {} as Record<string, string | undefined> });
-vi.mock('$app/state', async (importOriginal) => ({ ...(await importOriginal<object>()), page: routePage }));
+vi.mock('$app/state', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  // A getter, so the hoisted factory does not read `routePage` before its declaration has run.
+  get page() {
+    return routePage;
+  }
+}));
 
 const { getQuestion, setAnswer, save, resetUnsaved, goto, invalidateAll, readAnswersLocked } = vi.hoisted(() => ({
   readAnswersLocked: vi.fn(),

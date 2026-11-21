@@ -13,7 +13,7 @@
 ### Settings
 
 - `access.voterApp`: Whether to show the Voter App.
-- `analytics.trackEvents`: Affects whether the data consent popup is shown, through `shouldShowVoterPrompt` with the analytics projection, the Global Privacy Control signal and the stored consent choice (`ctx.analyticsGate.current`).
+- `analytics.trackEvents`: Affects whether the data consent popup is shown, through `shouldShowVoterPrompt` with the analytics projection, the Global Privacy Control signal and the stored consent choice (`ctx.analyticsPolicy.current`).
 - `header.showHelp`: Whether the help button is shown in the header.
 - `header.showFeedback`: Whether the feedback button is shown in the header.
 - `notifications.voterApp`: The possible notification popup to show.
@@ -24,7 +24,7 @@
   import { Layout, MaintenancePage } from '$layouts/main';
   import { DrawerHost } from '$lib/components/modal/drawerHost';
   import { Notification } from '$lib/components/notification';
-  import { shouldShowVoterPrompt } from '$lib/contexts/app/tracking/gates';
+  import { shouldShowVoterPrompt } from '$lib/contexts/app/tracking/sendPolicy';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
@@ -72,8 +72,8 @@
         props: { data: appSettings.notifications.voterApp }
       });
     }
-    // Ask for event tracking consent when the gate says the voter has a choice to make and has not made it
-    if (shouldShowVoterPrompt({ ...ctx.analyticsGate.current, voterAppAccessible: appSettings.access.voterApp }))
+    // Ask for event tracking consent when the send policy says the voter has a choice to make and has not made it
+    if (shouldShowVoterPrompt({ ...ctx.analyticsPolicy.current, voterAppAccessible: appSettings.access.voterApp }))
       popupQueue.push({ component: DataConsentPopup });
   });
 

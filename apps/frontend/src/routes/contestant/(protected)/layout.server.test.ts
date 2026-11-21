@@ -26,6 +26,7 @@ import { load as entityLoad } from './[entityType=servedEntityType]/[entityId=uu
 import { load } from './+layout.server';
 import type { BasicUserData, UserEntity } from '$lib/api/base/dataWriter.type';
 import type { GrantClaim, GrantShape } from '$lib/auth';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 
 const {
   createDataProvider,
@@ -163,10 +164,10 @@ function cookieHeader(cookies: Record<string, string>): Record<string, string> {
 }
 
 /** An id of a count's opening, as the page writes it. */
-const COUNT_ID = '0123456789abcdef0123456789abcdef';
+const DEADLINE_ID = '0123456789abcdef0123456789abcdef';
 
 /** The cookies of a request that carries one running logout count. */
-const COUNT_COOKIES = { [COOKIE.logoutPending]: COUNT_ID, [COOKIE.logoutDeadline]: COUNT_ID };
+const DEADLINE_COOKIES = { [COOKIE.logoutPending]: DEADLINE_ID, [COOKIE.logoutDeadline]: DEADLINE_ID };
 
 /**
  * User-level data with the given acceptance.
@@ -180,7 +181,7 @@ function userWith(
   termsOfUseAccepted: string | null,
   role: BasicUserData['role'] = 'contestant',
   passwordSet = true,
-  addressState: BasicUserData['addressState'] = 'proved'
+  addressState: AddressStateName = 'proved'
 ): BasicUserData {
   return {
     id: 'user-1',
@@ -190,11 +191,14 @@ function userWith(
     settings: {},
     termsOfUseAccepted,
     passwordSet,
-    addressState,
-    pendingEmail: null,
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: 'pending@example.test' }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
     ownOrganizationId: null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    ownOrganizationUnnamed: false
   };
 }
 
@@ -692,7 +696,7 @@ describe('routes/contestant/(protected)/+layout.server.ts — the logout count a
     vi.spyOn(log, 'error').mockImplementation(() => undefined);
     getBasicUserData.mockRejectedValue(new Error('No active session'));
 
-    const redirected = await redirectOf(makeEvent({ cookies: COUNT_COOKIES }));
+    const redirected = await redirectOf(makeEvent({ cookies: DEADLINE_COOKIES }));
 
     expect(redirected).toMatchObject({ status: 307, location: LOGIN_FAILED_ROUTE });
     expect(signOut).toHaveBeenCalledTimes(1);
@@ -708,7 +712,7 @@ describe('routes/contestant/(protected)/+layout.server.ts — the logout count a
     signOut.mockResolvedValue({ error: new Error('network down') });
     getSession.mockResolvedValue({ data: { session: { expires_at: 1893456000 } }, error: null });
 
-    const failed = await redirectOf(makeEvent({ cookies: COUNT_COOKIES }));
+    const failed = await redirectOf(makeEvent({ cookies: DEADLINE_COOKIES }));
 
     expect(isHttpError(failed, 503)).toBe(true);
     expect(signOut).toHaveBeenCalledTimes(1);

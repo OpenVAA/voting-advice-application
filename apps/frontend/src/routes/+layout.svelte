@@ -141,8 +141,8 @@
 
   // A view is started by its route id and route parameters, never by its URL, and its pageview is sent at the first flush: the next client navigation, the tab becoming hidden, or page hide. The events go to the application's own relay. The pageview code stays here and in the tracking service, never in a load.
 
-  // Whether a provider is configured. Read through `appCtx.analyticsGate.current`, never a destructured copy, so a change of the gate input reaches the lifecycle effect below.
-  const analyticsActive = $derived(appCtx.analyticsGate.current.projection.active);
+  // Whether a provider is configured. Read through `appCtx.analyticsPolicy.current`, never a destructured copy, so a change of the send-policy input reaches the lifecycle effect below.
+  const analyticsActive = $derived(appCtx.analyticsPolicy.current.projection.active);
 
   // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in apps/frontend/svelte.config.js
   beforeNavigate(({ willUnload, to }) => {

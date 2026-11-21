@@ -1,7 +1,7 @@
 /**
  * The voter app's privacy page, mounted for real against a fake app context.
  *
- * The fake context's `t` returns its key. Its analytics gate has an active relay, and the visitor sends Global Privacy Control, so the page renders its analytics text and no consent control. Assertions are on the DOM rather than on component state.
+ * The fake context's `t` returns its key. Its analytics send-policy input has an active relay, and the visitor sends Global Privacy Control, so the page renders its analytics text and no consent control. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -15,7 +15,7 @@ import { focusNavigationTarget } from '$lib/utils/focusNavigationTarget';
 const context = {
   t: (key: string) => key,
   getRoute: { current: () => '/' },
-  analyticsGate: {
+  analyticsPolicy: {
     current: {
       projection: { active: true, consentMode: 'gated' },
       globalPrivacyControl: true,

@@ -9,10 +9,10 @@ import { POST } from './+server';
  * The logout count is withdrawn with the request's event before the sign-out, on a sign-out that works and on one that fails. The withdrawal is replaced here; what it removes is asserted in its own test file.
  */
 
-const { withdrawLogoutCount } = vi.hoisted(() => ({ withdrawLogoutCount: vi.fn() }));
+const { withdrawLogoutDeadline } = vi.hoisted(() => ({ withdrawLogoutDeadline: vi.fn() }));
 
 // Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
-vi.mock('$lib/server/auth/logoutCount', () => ({ withdrawLogoutCount }));
+vi.mock('$lib/server/auth/logoutDeadline', () => ({ withdrawLogoutDeadline }));
 
 /** Build the event the endpoint receives, with a recording `signOut`. */
 function eventWith() {
@@ -52,9 +52,9 @@ describe('the logout count', () => {
   /** The order in which the withdrawal and the sign-out were called, with the sign-out failing or not. */
   function recordOrder(failing: boolean) {
     const order: Array<string> = [];
-    withdrawLogoutCount.mockReset();
-    withdrawLogoutCount.mockImplementation(() => {
-      order.push('withdrawLogoutCount');
+    withdrawLogoutDeadline.mockReset();
+    withdrawLogoutDeadline.mockImplementation(() => {
+      order.push('withdrawLogoutDeadline');
     });
     const { event, signOut } = eventWith();
     signOut.mockImplementationOnce(async () => {
@@ -69,9 +69,9 @@ describe('the logout count', () => {
   it("is withdrawn with the request's event before the sign-out, which answers as before", async () => {
     const { event, order } = recordOrder(false);
     const response = await POST(event);
-    expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-    expect(withdrawLogoutCount.mock.calls[0][0]).toBe(event);
-    expect(order).toEqual(['withdrawLogoutCount', 'signOut']);
+    expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+    expect(withdrawLogoutDeadline.mock.calls[0][0]).toBe(event);
+    expect(order).toEqual(['withdrawLogoutDeadline', 'signOut']);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true, type: 'success' });
   });
@@ -79,9 +79,9 @@ describe('the logout count', () => {
   it('is withdrawn before the sign-out also when the sign-out fails, which still answers a failure', async () => {
     const { event, order } = recordOrder(true);
     const response = await POST(event);
-    expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-    expect(withdrawLogoutCount.mock.calls[0][0]).toBe(event);
-    expect(order).toEqual(['withdrawLogoutCount', 'signOut']);
+    expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+    expect(withdrawLogoutDeadline.mock.calls[0][0]).toBe(event);
+    expect(order).toEqual(['withdrawLogoutDeadline', 'signOut']);
     expect(response.status).toBe(502);
     expect(await response.json()).toEqual({ ok: false, type: 'failure' });
   });

@@ -42,7 +42,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
 - The nominations are those the entity-level load read, each with the names it is shown with, so the cards are in the server-rendered markup and the page looks nothing up.
 - Whether an entry is offered is read from `nominationFacts` of the page's data: the facts the load of the nominations tree states, on which the editor's guard decides who is let in. The page and the guard therefore agree, and each state is in the server-rendered markup. On a page whose data holds no facts no entry is offered, and an empty view under no lock says nothing in place of the nominations.
 - On a page whose data holds no entity the list is not known, and neither a card nor a sentence in place of the nominations is shown.
-- Everything that differs between entity types is read from the descriptor of the selected entity's type.
+- Everything that differs between entity types is read from the descriptor of the selected entity's type, or is a text whose key the page builds from that type.
 
 ### Settings
 
@@ -68,14 +68,13 @@ Return follows it and leads to the entity's home wherever the main button leads 
   import { Warning } from '$lib/components/warning';
   import { typedParentNameOf } from '$lib/contestant/nominations';
   import { nominationsViewTarget } from '$lib/contestant/tasks';
-  import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
+  import { entityDescriptorOf, servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { ContactSupport } from '$lib/dynamic-components/contactSupport';
   import { managedNominationsOf, selectionSearch } from './(edit)/stepSelection';
   import type { DesiredNomination, EntityNomination, SetEntityNominationsResult } from '$lib/api/base/dataWriter.type';
   import type { NominationsViewTarget } from '$lib/contestant/tasks';
-  import type { EntityDescriptor } from '$lib/contestant/utils/entityDescriptor';
   import type { TranslationKey } from '$types';
   import type { PageData } from './$types';
 
@@ -97,12 +96,12 @@ Return follows it and leads to the entity's home wherever the main button leads 
   /** Which sentence stands in place of the nominations: a nomination can be defined, nominations cannot be edited, or no election admits the entity. */
   type EmptyKind = 'define' | 'locked' | 'noElection';
 
-  /** The descriptor member that holds the sentence of each kind. */
+  /** The part of the key of the sentence of each kind that comes before the entity type. */
   const EMPTY_SENTENCE = {
-    define: 'nominationsEmptyEditable',
-    locked: 'nominationsEmpty',
-    noElection: 'nominationsEmptyNoElection'
-  } as const satisfies Record<EmptyKind, keyof EntityDescriptor>;
+    define: 'emptyEditable',
+    locked: 'empty',
+    noElection: 'emptyNoElection'
+  } as const satisfies Record<EmptyKind, string>;
 
   /** The label of the main button, by what it does. Leading into the editor it reads what the home's nomination task reads. */
   const BUTTON_LABEL: Record<NominationsViewTarget['action'], TranslationKey> = {
@@ -111,8 +110,10 @@ Return follows it and leads to the entity's home wherever the main button leads 
     define: 'contestantApp.home.nomination.enter'
   };
 
-  /** Everything that differs by entity type. */
+  /** What differs by entity type beyond a text's key. */
   const descriptor = $derived(entityDescriptorOf(contestantCtx.selectedEntity?.type));
+  /** The type whose texts the page shows: each text that differs by type alone has a key ending in it. */
+  const textType = $derived(servedEntityTypeOf(contestantCtx.selectedEntity?.type));
   const nominations = $derived(contestantCtx.nominations);
 
   /** Whether the view lists nominations or says there are none. `undefined` while the list is not known, which is not an empty list. */
@@ -335,7 +336,11 @@ Return follows it and leads to the entity's home wherever the main button leads 
 
   {#if viewState === 'listed' && nominations}
     <p class="text-center">
-      {t(entryOffered ? descriptor.nominationsDescriptionEditable : descriptor.nominationsDescription)}
+      {t(
+        entryOffered
+          ? `contestantApp.nominations.descriptionEditable.${textType}`
+          : `contestantApp.nominations.description.${textType}`
+      )}
     </p>
     <ul
       class="mt-lg gap-lg flex list-none flex-col self-stretch pl-0"
@@ -372,7 +377,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
               {/if}
               {#if nomination.electionSymbol}
                 {@render row(
-                  t(descriptor.electionSymbolLabel),
+                  t(`common.electionSymbol.${textType}`),
                   nomination.electionSymbol,
                   'nomination-election-symbol'
                 )}
@@ -443,7 +448,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
     {/if}
   {:else if viewState === 'empty' && emptyKind}
     <p class="text-center" data-testid="contestant-nominations-empty" data-empty={emptyKind}>
-      {t(descriptor[EMPTY_SENTENCE[emptyKind]])}
+      {t(`contestantApp.nominations.${EMPTY_SENTENCE[emptyKind]}.${textType}`)}
     </p>
     {#if emptyKind === 'noElection'}
       <ContactSupport class="mt-lg" />

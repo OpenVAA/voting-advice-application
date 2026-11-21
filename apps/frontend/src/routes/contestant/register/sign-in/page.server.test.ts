@@ -25,25 +25,27 @@ const {
   createDataWriter,
   createSupabaseAnonClient,
   getAppSettings,
+  getProjectGrants,
   invitationCodeLogin,
   signInWithInvitationCode,
-  withdrawLogoutCount
+  withdrawLogoutDeadline
 } = vi.hoisted(() => ({
   claimInvitations: vi.fn(),
   createDataProvider: vi.fn(),
   createDataWriter: vi.fn(),
   createSupabaseAnonClient: vi.fn(),
   getAppSettings: vi.fn(),
+  getProjectGrants: vi.fn(),
   invitationCodeLogin: vi.fn(),
   signInWithInvitationCode: vi.fn(),
-  withdrawLogoutCount: vi.fn()
+  withdrawLogoutDeadline: vi.fn()
 }));
 
 // Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
 vi.mock('$lib/auth', async (importOriginal) => ({ ...(await importOriginal<object>()), invitationCodeLogin }));
 vi.mock('$lib/api/dataWriter', () => ({ createDataWriter }));
 vi.mock('$lib/api/dataProvider', () => ({ createDataProvider, createSupabaseAnonClient }));
-vi.mock('$lib/server/auth/logoutCount', () => ({ withdrawLogoutCount }));
+vi.mock('$lib/server/auth/logoutDeadline', () => ({ withdrawLogoutDeadline }));
 
 /** What the action touches of the request. The generated event type names this route's own id and locals. */
 type FakeEvent = {
@@ -81,6 +83,7 @@ type HandedOver = {
     auth: unknown;
     getSession: unknown;
     claimInvitations: () => Promise<unknown>;
+    getProjectGrants: () => Promise<unknown>;
     signInWithInvitationCode: (credentials: { code: string; password: string }) => Promise<boolean>;
   };
   code: unknown;
@@ -144,7 +147,8 @@ beforeEach(() => {
   createDataProvider.mockReturnValue({ getAppSettings });
   getAppSettings.mockResolvedValue(settingsFor(['code']));
   invitationCodeLogin.mockResolvedValue({ ok: true });
-  createDataWriter.mockReturnValue({ claimInvitations, signInWithInvitationCode });
+  createDataWriter.mockReturnValue({ claimInvitations, getProjectGrants, signInWithInvitationCode });
+  getProjectGrants.mockResolvedValue([]);
   claimInvitations.mockResolvedValue({ claimed: [], skipped: [] });
   signInWithInvitationCode.mockResolvedValue({ type: 'success' });
 });
@@ -296,6 +300,16 @@ describe('the one call of the code sign-in helper', () => {
     expect(claimInvitations).toHaveBeenCalledTimes(1);
   });
 
+  it('hands over a read of the grants that reach this project, on the same writer as the code sign-in', async () => {
+    const event = makeEvent();
+    await signIn(event).catch(() => undefined);
+    const { context } = handedOver();
+    await context.signInWithInvitationCode({ code: 'c', password: 'p' });
+    await context.getProjectGrants();
+    expect(createDataWriter, 'one writer serves the sign-in and the read of the grants').toHaveBeenCalledTimes(1);
+    expect(getProjectGrants).toHaveBeenCalledTimes(1);
+  });
+
   it('is made before a writer is built or anything is asked of the session', async () => {
     const event = makeEvent();
     const before = { writers: -1, sessionReads: -1, sessionWrites: -1 };
@@ -366,8 +380,8 @@ describe('the logout count', () => {
   /** The order in which the withdrawal and the helper were called. */
   function recordOrder(outcome: { ok: true } | { ok: false; status: number; reason: string }): Array<string> {
     const order: Array<string> = [];
-    withdrawLogoutCount.mockImplementation(() => {
-      order.push('withdrawLogoutCount');
+    withdrawLogoutDeadline.mockImplementation(() => {
+      order.push('withdrawLogoutDeadline');
     });
     invitationCodeLogin.mockImplementation(async () => {
       order.push('invitationCodeLogin');
@@ -380,9 +394,9 @@ describe('the logout count', () => {
     const order = recordOrder({ ok: true });
     const event = makeEvent();
     const redirect = await redirectOf(event);
-    expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-    expect(withdrawLogoutCount.mock.calls[0][0]).toBe(event);
-    expect(order).toEqual(['invitationCodeLogin', 'withdrawLogoutCount']);
+    expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+    expect(withdrawLogoutDeadline.mock.calls[0][0]).toBe(event);
+    expect(order).toEqual(['invitationCodeLogin', 'withdrawLogoutDeadline']);
     expect(redirect.status).toBe(303);
   });
 
@@ -392,7 +406,7 @@ describe('the logout count', () => {
       const order = recordOrder({ ok: false, status, reason });
       const answer = await signIn(makeEvent());
       expect(answer).toMatchObject({ status });
-      expect(withdrawLogoutCount).not.toHaveBeenCalled();
+      expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
       expect(order).toEqual(['invitationCodeLogin']);
     }
   );
@@ -400,7 +414,7 @@ describe('the logout count', () => {
   it('is not withdrawn where the guard refuses the post', async () => {
     getAppSettings.mockResolvedValue(settingsFor([]));
     await signIn(makeEvent());
-    expect(withdrawLogoutCount).not.toHaveBeenCalled();
+    expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
     expect(invitationCodeLogin).not.toHaveBeenCalled();
   });
 });

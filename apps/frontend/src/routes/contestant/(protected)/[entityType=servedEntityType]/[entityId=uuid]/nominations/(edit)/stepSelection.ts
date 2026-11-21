@@ -19,7 +19,6 @@ import {
   constituenciesStepOutcome,
   electionsHeldIn,
   electionsStepOutcome,
-  mostSpecificConstituency,
   NOMINATION_CONSTITUENCY_PARAM,
   NOMINATION_ELECTION_PARAM,
   usesSingleConstituencyGroup
@@ -324,8 +323,8 @@ export function constituenciesStepChoice(facts: StepFacts): ConstituencyStepChoi
   for (const election of toChoose) {
     const storedId = starting.find(({ electionId }) => electionId === election.id)?.constituencyId;
     const constituency =
-      mostSpecificConstituency({ election, constituencies: named }) ??
-      mostSpecificConstituency({ election, constituencies: storedId ? constituenciesOf(dataRoot, [storedId]) : [] });
+      election.getMostSpecificConstituency(named) ??
+      election.getMostSpecificConstituency(storedId ? constituenciesOf(dataRoot, [storedId]) : []);
     if (constituency) onArrival[election.id] = constituency.id;
   }
 
@@ -383,7 +382,7 @@ export function contestsOf({
   const constituencies = constituenciesOf(dataRoot, selection.constituencyIds);
   const contests: Array<NominationContest> = [];
   for (const election of chosen) {
-    const constituency = election.singleConstituency ?? mostSpecificConstituency({ election, constituencies });
+    const constituency = election.singleConstituency ?? election.getMostSpecificConstituency(constituencies);
     if (!constituency) return undefined;
     contests.push({ electionId: election.id, constituencyId: constituency.id });
   }

@@ -71,7 +71,8 @@ const USER = {
   role: 'contestant',
   settings: {},
   termsOfUseAccepted: '2026-10-06T00:54:12.277826+00:00',
-  passwordSet: true
+  passwordSet: true,
+  address: { state: 'proved' }
 };
 const CANDIDATE_ID = '11111111-1111-4111-8111-111111111111';
 const CANDIDATE = { type: 'candidate', id: CANDIDATE_ID, firstName: 'A', lastName: 'B', confirmed: true };

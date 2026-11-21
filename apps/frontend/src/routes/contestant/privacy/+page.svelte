@@ -6,9 +6,9 @@ Shows a registry and privacy statement
 
 ### Analytics
 
-Read from `contestantCtx.analyticsGate.current`:
+Read from `contestantCtx.analyticsPolicy.current`:
 
-- The `DataConsent` control is shown when the contestant has a choice to make, the same condition under which the terms-of-use view offers the opt-out (`shouldShowContestantOptOut`): a provider is configured, no Global Privacy Control, `analytics.trackEvents` is on and the consent mode is `gated`. It lets the contestant change the choice made when accepting the terms.
+- The `DataConsent` control is shown when the contestant has a choice to make, the same condition under which the terms-of-use view offers the opt-out (`shouldShowContestantOptOut`): a provider is configured, no Global Privacy Control, `analytics.trackEvents` is on and the consent mode is `gated`. It lets the contestant change the choice made when accepting the terms, the Contestant App's own choice (`contestantDataConsent`), which the voter app never reads.
 -->
 
 <script lang="ts">
@@ -16,7 +16,7 @@ Read from `contestantCtx.analyticsGate.current`:
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
-  import { shouldShowContestantOptOut } from '$lib/contexts/app/tracking/gates';
+  import { shouldShowContestantOptOut } from '$lib/contexts/app/tracking/sendPolicy';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { DataConsent } from '$lib/dynamic-components/dataConsent';
 
@@ -37,7 +37,7 @@ Read from `contestantCtx.analyticsGate.current`:
 
   <div class="my-lg gap-xl flex flex-col">
     <TermsOfUse />
-    {#if shouldShowContestantOptOut(contestantCtx.analyticsGate.current)}
+    {#if shouldShowContestantOptOut(contestantCtx.analyticsPolicy.current)}
       <DataConsent description="inline" class="bg-base-300 p-lg rounded-lg" />
     {/if}
   </div>

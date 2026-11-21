@@ -111,11 +111,9 @@ function adminWith(passwordSet: boolean): BasicUserData {
     settings: {},
     termsOfUseAccepted: null,
     passwordSet,
-    addressState: 'proved',
-    pendingEmail: null,
+    address: { state: 'proved' },
     ownOrganizationId: null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    ownOrganizationUnnamed: false
   };
 }
 
