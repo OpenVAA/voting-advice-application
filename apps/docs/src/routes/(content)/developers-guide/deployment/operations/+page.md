@@ -94,6 +94,68 @@ Expected: on staging, on 2026-11-14, `Plan: 0 to add, 0 to change, 40 to destroy
 
 **The Supabase project is never destroyed by Terraform.** The Supabase root imports the project, and the module's `supabase_project` resource carries `prevent_destroy = true`, so a plan that would delete it fails. `prevent_destroy` is not kept in the state: it protects the project only while that block exists, so renaming the block needs a `moved` block and removing it needs a `removed` block that does not destroy. The destroy workflow cannot reach the Supabase root at all: the deploy role is refused its state. A plan of a Supabase root that shows a destroy or a replacement is never applied. After staging's hand destroy on 2026-11-14, the Supabase root's plan read `No changes` and the conformance probe passed every check.
 
+## Restore
+
+**When:** the hosted project's data is lost or damaged, by a migration, a mistaken delete or an incident, and has to be put back from a backup.
+
+The AWS stack holds no data of its own, so a restore concerns the Supabase project alone. Supabase makes the backups and runs the restore; this section gives what its documentation says, read on 2026-11-21, and the order in which this repository's parts are applied to the restored project. No restore has been run on staging or on the throwaway project.
+
+### What Supabase keeps
+
+[Supabase's page on database backups](https://supabase.com/docs/guides/platform/backups), read on 2026-11-21, says:
+
+- A Pro project is backed up once a day and can be restored to any of its last 7 daily backups (Team 14, Enterprise up to 30). Projects on Postgres `15.8.1.079` and newer have physical backups, which cannot be downloaded; a copy of your own is made with `supabase db dump` or `pg_dump`.
+- Point-in-time recovery (PITR) is a paid add-on of Pro, Team and Enterprise projects. It restores to a chosen second, with a worst-case recovery point of two minutes, and is priced by how far back it reaches: about 100 USD a month for 7 days. Enabling it stops the daily backups.
+- **Storage objects are not in the database backup.** The database holds only their metadata, so a restore brings back no object deleted after the backup was taken.
+- The daily backups keep no password of a custom role.
+
+Staging's organisation is on the Pro plan. On staging, on 2026-11-20 at 13:55Z, the backups read of [Step 24 of the Supabase runbook](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#step-24-the-backups-read) answered 200: PITR off, WAL-G archiving on, eight backups, all eight `COMPLETED`, in `eu-north-1`. The earliest and the latest physical backup times both came back `null`, so the answer gave no physical-backup range, and the read did not list the days the eight backups cover. The read is one `GET` of the Management API, which [Supabase's API reference](https://supabase.com/docs/reference/api/v1-list-all-backups) lists under the scope `database:read`; the token goes to `curl` on its standard input:
+
+```bash
+REF=<project-ref>
+printf 'access token: '; read -rs SUPABASE_ACCESS_TOKEN; echo
+printf 'header = "Authorization: Bearer %s"\n' "$SUPABASE_ACCESS_TOKEN" \
+  | curl -sS -K - \
+    "https://api.supabase.com/v1/projects/$REF/database/backups" \
+  | jq '{region, pitr_enabled, walg_enabled,
+      backups: [.backups[] | {status, inserted_at}]}'
+unset SUPABASE_ACCESS_TOKEN
+```
+
+Expected: `pitr_enabled` false on a project without the add-on, and its backups each with a `status` and the time it was taken.
+
+### Restoring in place
+
+A restore in place replaces the project's database with the backup. Choose the closest backup taken before the damage, in the dashboard's Database > Backups, and confirm. Supabase documents that **the project is inaccessible while it restores**, for longer the larger the database, so every page of the application that reads data fails meanwhile; plan the restore for a quiet hour. With PITR, the restore is to a point in time, from the dashboard or from the Management API's [PITR restore](https://supabase.com/docs/reference/api/v1-restore-pitr-backup) (scope `database:write`):
+
+```bash
+printf 'header = "Authorization: Bearer %s"\n' "$SUPABASE_ACCESS_TOKEN" \
+  | curl -sS -K - -X POST -H 'Content-Type: application/json' \
+    -d '{"recovery_time_target_unix": <unix seconds>}' \
+    "https://api.supabase.com/v1/projects/$REF/database/backups/restore-pitr"
+```
+
+Expected: status 201, and the dashboard's notice once the restore is done. Afterwards, from what the database holds and what it does not:
+
+- Migrations pushed after the backup's time are gone, and so are their rows in the migration history, so `infra/scripts/push-migrations.sh` lists them as pending again and pushes them ([§ The Supabase project](/developers-guide/deployment#the-supabase-project) of the guide); the next deploy pushes them too.
+- The rows `infra/scripts/bootstrap.sql` writes are back at their values of the backup's time. Run the script again if the service-role key or the project's address has changed since.
+- Accounts created after the backup's time are gone with it.
+- Objects uploaded after the backup's time stay in the buckets with no row pointing at them, and objects deleted after it stay deleted.
+- The project's auth and API settings, its functions and their secrets are not in the database and stay as they were, and a plan of the Supabase root is the check: it reads `No changes`.
+
+### Restoring to a new project
+
+Restoring to a new project keeps the damaged project as it is, which Supabase advises when its present data is still wanted. [Supabase's page on restoring to a new project](https://supabase.com/docs/guides/platform/clone-project), read on 2026-11-21, marks the feature Beta and says that it needs a paid plan with physical backups, and that it starts from the source project's Database > Backups > "Restore to a New Project". The new project is in the source's region and gets the schema, the data, the roles, the auth users and the encryption root key. **It gets no Storage object and no bucket configuration, no Edge Function, no auth setting and no API key**, and none of the Realtime and extension settings. Extensions that call out, `pg_net` among them, run from the moment the restore completes.
+
+The new project is then brought up in the repository's order, the order of [§ The Supabase project](/developers-guide/deployment#the-supabase-project) of the guide:
+
+1. **The Supabase root.** Write the new project's ref and name into the root's `terraform.tfvars` and commit it; the deploy workflow reads the ref from that file. Take the old project out of the root's state with `terraform state rm module.supabase.supabase_project.this`, which deletes nothing on Supabase. Then plan and apply as in the guide: the root's `import` block imports the new project, and the apply writes its auth and API settings, its hooks, its SMTP settings and the function secrets. Read the plan first: it destroys no project.
+2. **The functions.** Deploy them from a work directory linked to the new ref.
+3. **`bootstrap.sql`**, with `BOOTSTRAP_STORAGE_URL` and the service-role key of the new project, before the new project takes any write. The copied `storage_config` rows still hold the old project's address and key, and the storage cleanup triggers send their deletes there through `pg_net`.
+4. **The Storage objects.** Check that both buckets, `public-assets` and `private-assets`, exist. The migration that creates them is recorded as applied in the copy and does not run again, so a missing bucket is created by hand with the settings of `apps/supabase/supabase/schema/400-storage.sql`. Then copy the objects of both buckets from the old project to the new one, for example with the Supabase CLI's `storage cp`, downloading from one and uploading to the other.
+
+Last, point the frontend at the new project: overwrite the anon key parameter as § Secret rotation describes, set `PUBLIC_SUPABASE_URL` in the AWS root's `environment_values`, and deploy. The conformance probe of [Step 23](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#step-23-the-conformance-probe) is the check that the new project serves what the repository declares.
+
 ## SES: sandbox and production access
 
 **When:** once, after the mail root's identity has verified, on an AWS account that has never sent mail through SES in the stack's region.
