@@ -11,7 +11,7 @@
  * Every comment line here is copied from, or shaped exactly like, a real occurrence in the
  * in-scope tree — this is not a synthetic worst case.
  *
- * Push-based mirror, mirroring the candidateContext fix
+ * Push-based mirror, mirroring the contestantContext fix
  * documented.
  * Introduced by Phase 88 and revised in Spike-024.
  * Milestone tag v2.11 and tool version Node 22.22.1 are both left alone.

@@ -17,7 +17,7 @@ Some ownership is real but belongs to no skill. Those rows name `CLAUDE.md` in t
 | `apps/frontend/`                              | (none - CLAUDE.md)   | Routing, the API layer and the data adapters: `CLAUDE.md` § _Architecture_ and § _Frontend (SvelteKit)_ |
 | `apps/frontend/src/lib/components/`           | components           | Base UI component library                                                                           |
 | `apps/frontend/src/lib/dynamic-components/`   | components           | Data-aware composed components                                                                      |
-| `apps/frontend/src/lib/candidate/components/` | components           | Candidate-app-specific components                                                                   |
+| `apps/frontend/src/lib/contestant/components/` | components           | Contestant-app-specific components                                                                   |
 | `apps/frontend/src/lib/contexts/`             | components           | How a component reads a context, and the reactivity rules that govern it                            |
 | `packages/app-shared/`                        | (none - CLAUDE.md)   | Cross-cutting settings and shared types: `CLAUDE.md` § _Settings Architecture_                       |
 | `packages/llm/`                               | (none)               | No LLM skill stub per context decision                                                              |
@@ -26,7 +26,9 @@ Some ownership is real but belongs to no skill. Those rows name `CLAUDE.md` in t
 _procedure_ (restructuring commit history into a reviewable PR stack) rather than a subsystem, so it
 claims no row above and never contradicts a directory owner. Where the two meet -- a sweep fix inside
 `packages/data/`, say -- the **directory owner is authoritative on the change** and `ship-review-stack`
-is authoritative only on how the change is sliced, committed and proved.
+is authoritative only on how the change is sliced, committed and proved. `recommended-skills` owns no
+source directory either: it records external skill sets installed per user, outside the repository,
+and defers to `database` on every schema question.
 
 **The retired Strapi backend's row was removed, not repointed.** That subsystem is gone from the
 tree -- Supabase is the only backend, and `apps/supabase/` is owned by `database` above -- so there
@@ -77,6 +79,7 @@ reader does not conclude the map merely forgot the subsystem.
 | Commit taxonomy and `[db]`-tag conformance                                                | ship-review-stack  | database (what counts as a database change)              |
 | Comment-hygiene sweep (codemod + residue pass)                                            | ship-review-stack  | --                                                       |
 | Per-slice code-review-checklist disposition                                               | ship-review-stack  | each directory owner (the verdict on its own files)      |
+| External agent skill sets: which are recommended, their pinned commit and the per-user install | recommended-skills | --                                                  |
 
 ## Gray Zones
 
@@ -87,8 +90,9 @@ reader does not conclude the map merely forgot the subsystem.
 | Entity filtering by answers                                                               | data, filters                          | filters             | Filters own the filtering logic; data owns the entity/answer types                                                        |
 | CategoricalQuestion subdimensions                                                         | data, matching                         | matching            | Matching owns the mathematical model; data defines normalizedDimensions property                                          |
 | MISSING_VALUE usage in filters                                                            | data, filters                          | data                | data defines the constant and its semantics; filters follows the convention                                               |
-| Frontend contexts (voterContext, candidateContext)                                        | components, `CLAUDE.md`                | components          | `CLAUDE.md` § _Architecture_ describes where contexts sit in the app; the components skill owns how one is read and the reactivity rules that govern the read |
+| Frontend contexts (voterContext, contestantContext)                                        | components, `CLAUDE.md`                | components          | `CLAUDE.md` § _Architecture_ describes where contexts sit in the app; the components skill owns how one is read and the reactivity rules that govern the read |
 | LocalizedValue / get_localized()                                                          | data, database                         | data                | data owns the TypeScript type; database owns the SQL function                                                             |
 | `packages/app-shared/` settings                                                           | data, `CLAUDE.md`                      | (none - CLAUDE.md)  | Cross-cutting settings are architecture and are answered in `CLAUDE.md` § _Settings Architecture_; data model settings are secondary |
 | A sweep fix inside a subsystem while cutting a review stack                               | ship-review-stack, the directory owner | the directory owner | ship-review-stack owns slicing, committing and proving; it never overrides a subsystem owner on what the change should be |
 | Whether a commit needs a `[db]` tag                                                       | ship-review-stack, database            | ship-review-stack   | ship-review-stack owns the taxonomy rule and its gate; database owns which paths count as database changes                |
+| Supabase or Postgres advice from a user-installed external skill                          | recommended-skills, database           | database            | database is authoritative on every schema, migration, RLS and function rule; recommended-skills only records where the external advice conflicts and that database wins |

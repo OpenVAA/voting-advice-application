@@ -24,7 +24,8 @@
  *  - stay()          — press the logout modal's Continue, and the modal closes.
  *  - closeAsThePlatformDoes() — close the open dialog with no key pressed, as a phone's back gesture does, and the dialog closes.
  *  - logOutInModal() — press the logout modal's Log out. The caller asserts where the user ends.
- *  - pressModalClose() — press the open dialog's close button, the ✕. The caller asserts what follows.
+ *  - pressModalClose() — press the open dialog's close button, the ✕, also while it reads as unavailable. The caller asserts what follows.
+ *  - expectModalCloseUnavailable() — the open dialog's ✕ reads as unavailable, as while the modal is held open.
  *  - pressEscape()   — press Escape. The caller asserts what follows.
  *  - expectModalSaysUnsavedAlone() — the modal says that unsaved changes will be lost, and nothing more than its count.
  *  - expectModalSaysUnsavedAndWhatIsLeft() — the modal says that unsaved changes will be lost, and at least one more thing above its count.
@@ -60,8 +61,6 @@
  * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect } from '@playwright/test';
 import { COOKIE } from '../../../../apps/frontend/src/lib/cookies/index';
 import { ROUTE } from '../../../../apps/frontend/src/lib/routes/route';
@@ -69,9 +68,11 @@ import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { DRAFT_KEY_STEM } from '../../utils/contestantDrafts';
+import { routeUntilEnded } from '../../utils/endableRoute';
+import { messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
+import type { EndRoute } from '../../utils/endableRoute';
 
 /** The length of the logout modal's count in seconds, by the button's default. */
 const MODAL_COUNT_SECONDS = 30;
@@ -83,37 +84,17 @@ const PAST_THE_MODAL_COUNT_MS = (MODAL_COUNT_SECONDS + 1) * 1000;
 const LOGOUT_DEADLINE_GRACE_SECONDS = 10;
 
 /** The shape of the id both cookies of the logout modal's count hold. */
-const COUNT_ID = /^[0-9a-f]{32}$/;
+const DEADLINE_ID = /^[0-9a-f]{32}$/;
 
 /** How far behind the server's clock {@link createHeaderLogout}'s `installClockBehindTheServer` puts the page's, in milliseconds: five minutes, far more than the count and its grace. */
 const CLOCK_BEHIND_THE_SERVER_MS = 5 * 60_000;
 
-/**
- * Read one English message file from the message source, rather than copying its strings.
- *
- * @param file - The file's name without `.json`, which is also its one top-level key.
- * @returns The file's messages.
- */
-function readEnglishMessages(file: string): Record<string, string> {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, string>>;
-  return source[file];
-}
+/** The English messages the steps assert, read from the message source rather than copied. */
+const COMMON_MESSAGES = messagesOf('common') as Record<string, string>;
 
-const COMMON_MESSAGES = readEnglishMessages('common');
-const ERROR_MESSAGES = readEnglishMessages('error');
-const LOGOUT_MODAL_MESSAGES = readEnglishMessages('contestantApp.logoutModal');
+const ERROR_MESSAGES = messagesOf('error') as Record<string, string>;
 
-/**
- * The logout modal's sentence with its count.
- *
- * @param seconds - The seconds the sentence says are left.
- * @returns The sentence.
- */
-function ingressAt(seconds: number): string {
-  return LOGOUT_MODAL_MESSAGES.ingress.replace('{timeLeft}', String(seconds));
-}
+const LOGOUT_MODAL_MESSAGES = messagesOf('contestantApp.logoutModal') as Record<string, string>;
 
 /** How a held sign-out request ends: it reaches the server, or it is answered with a failure and never does. */
 type HeldSignOutOutcome = 'reachServer' | 'fail';
@@ -134,7 +115,7 @@ const SEEDED_DRAFT_KEY = `${DRAFT_KEY_STEM}seeded-user-candidate-seeded-entity`;
  * Create the fixture for the header's Log out.
  *
  * @param page - The page the fixture drives.
- * @returns The fixture's steps: `expectShown`, `expectAbsent`, `press`, `installClock`, `installClockBehindTheServer`, `pressExpectingDialog`, `goBack`, `goBackAndSettle`, `goBackFromThePage`, `historyLength`, `expectLeftTheApp`, `expectDialogClosed`, `expectDialogOpen`, `advancePastModalCount`, `moveWallClockPastTheCount`, `showTabAgain`, `reloadTab`, `stay`, `closeAsThePlatformDoes`, `logOutInModal`, `pressModalClose`, `pressEscape`, `expectModalSaysUnsavedAlone`, `expectModalSaysUnsavedAndWhatIsLeft`, `expectModalNamesUnsavedAndDescribesCount`, `expectModalDescribesCount`, `expectModalDescriptionHoldsWhileCounting`, `expectNoSignOutRequest`, `expectSignOutRequested`, `expectStillSignedIn`, `expectSignedOut`, `endSessionWithNoSignal`, `dropSessionCookies`, `failSignOut`, `failSignOutAfterClearingCookies`, `restoreSignOut`, `holdSignOut`, `releaseSignOut`, `releaseSignOutAsFailure`, `expectInProgress`, `expectFailureMessage`, `expectNoFailureMessage`, `expectFailureMessagePressable`, `expectFailureMessageNamedOnce`, `closeFailureMessage`, `expectFailureMessageInsideThePhoneViewport`, `seedContestantDraft`, `expectNoContestantDraft`, `expectLogoutDeadlineSet`, `passLogoutDeadline`, `dropLogoutDeadline` and `expectNoLogoutDeadline`.
+ * @returns The fixture's steps: `expectShown`, `expectAbsent`, `press`, `installClock`, `installClockBehindTheServer`, `pressExpectingDialog`, `goBack`, `goBackAndSettle`, `goBackFromThePage`, `historyLength`, `expectLeftTheApp`, `expectDialogClosed`, `expectDialogOpen`, `advancePastModalCount`, `moveWallClockPastTheCount`, `showTabAgain`, `reloadTab`, `stay`, `closeAsThePlatformDoes`, `logOutInModal`, `pressModalClose`, `expectModalCloseUnavailable`, `pressEscape`, `expectModalSaysUnsavedAlone`, `expectModalSaysUnsavedAndWhatIsLeft`, `expectModalNamesUnsavedAndDescribesCount`, `expectModalDescribesCount`, `expectModalDescriptionHoldsWhileCounting`, `expectNoSignOutRequest`, `expectSignOutRequested`, `expectStillSignedIn`, `expectSignedOut`, `endSessionWithNoSignal`, `dropSessionCookies`, `failSignOut`, `failSignOutAfterClearingCookies`, `restoreSignOut`, `holdSignOut`, `releaseSignOut`, `releaseSignOutAsFailure`, `expectInProgress`, `expectFailureMessage`, `expectNoFailureMessage`, `expectFailureMessagePressable`, `expectFailureMessageNamedOnce`, `closeFailureMessage`, `expectFailureMessageInsideThePhoneViewport`, `seedContestantDraft`, `expectNoContestantDraft`, `expectLogoutDeadlineSet`, `passLogoutDeadline`, `dropLogoutDeadline` and `expectNoLogoutDeadline`.
  */
 export function createHeaderLogout(page: Page) {
   const button = page.getByTestId(testIds.shared.header.logout);
@@ -163,6 +144,14 @@ export function createHeaderLogout(page: Page) {
       .sort();
 
   let signOutRequests = 0;
+
+  /** Ends each route of the sign-out request that `failSignOut()`, `failSignOutAfterClearingCookies()` or `holdSignOut()` set and nothing has ended yet. */
+  const signOutRouteEnds: Array<EndRoute> = [];
+
+  /** Let every later sign-out request through as it is. */
+  const endSignOutRoutes = (): void => {
+    for (const end of signOutRouteEnds.splice(0)) end();
+  };
 
   /** The sign-out request {@link holdSignOut} keeps: the release that ends it, by letting it reach the server or by answering it with a failure, and its arrival and the end of its handling. */
   let heldSignOut:
@@ -341,10 +330,22 @@ export function createHeaderLogout(page: Page) {
     },
 
     /**
-     * Press the open dialog's close button, the ✕, found by its accessible name. The caller asserts what follows.
+     * Press the open dialog's close button, the ✕, found by its accessible name. While the modal is held open the ✕ is `aria-disabled`, which Playwright reads as not enabled although a user can still press it, so the press skips the enabled check once the ✕ is visible. The caller asserts what follows.
      */
     async pressModalClose(): Promise<void> {
-      await dialog.getByRole('button', { name: COMMON_MESSAGES.closeDialog, exact: true }).click();
+      const close = dialog.getByRole('button', { name: COMMON_MESSAGES.closeDialog, exact: true });
+      await expect(close).toBeVisible();
+      await close.click({ force: true });
+    },
+
+    /**
+     * Assert that the open dialog's close button, the ✕, reads as unavailable, as it does while the modal is held open.
+     */
+    async expectModalCloseUnavailable(): Promise<void> {
+      await expect(dialog.getByRole('button', { name: COMMON_MESSAGES.closeDialog, exact: true })).toHaveAttribute(
+        'aria-disabled',
+        'true'
+      );
     },
 
     /**
@@ -463,24 +464,26 @@ export function createHeaderLogout(page: Page) {
      * From now on answer the sign-out request with a failure, without letting it reach the server, so the cookies stay as they are. {@link restoreSignOut} ends it.
      */
     async failSignOut(): Promise<void> {
-      await page.route(isSignOutRequest, (route) => route.fulfill(SIGN_OUT_FAILURE));
+      signOutRouteEnds.push(await routeUntilEnded(page, isSignOutRequest, (route) => route.fulfill(SIGN_OUT_FAILURE)));
     },
 
     /**
      * From now on let the sign-out request reach the server and tell the page that it failed. The real sign-out runs and the cookies its response clears are cleared in the browser's context, while the page sees the failure the endpoint answers when the auth service fails with a valid access token. {@link restoreSignOut} ends it.
      */
     async failSignOutAfterClearingCookies(): Promise<void> {
-      await page.route(isSignOutRequest, async (route) => {
-        const response = await route.fetch();
-        await route.fulfill({ response, status: SIGN_OUT_FAILURE.status });
-      });
+      signOutRouteEnds.push(
+        await routeUntilEnded(page, isSignOutRequest, async (route) => {
+          const response = await route.fetch();
+          await route.fulfill({ response, status: SIGN_OUT_FAILURE.status });
+        })
+      );
     },
 
     /**
      * End what {@link failSignOut} or {@link failSignOutAfterClearingCookies} started: the sign-out request works again.
      */
     async restoreSignOut(): Promise<void> {
-      await page.unroute(isSignOutRequest);
+      endSignOutRoutes();
     },
 
     /**
@@ -494,12 +497,14 @@ export function createHeaderLogout(page: Page) {
       const arrived = new Promise<void>((resolve) => (markArrived = resolve));
       const passedOn = new Promise<void>((resolve) => (markPassedOn = resolve));
       heldSignOut = { release, arrived, passedOn };
-      await page.route(isSignOutRequest, async (route) => {
-        markArrived();
-        if ((await released) === 'fail') await route.fulfill(SIGN_OUT_FAILURE);
-        else await route.continue();
-        markPassedOn();
-      });
+      signOutRouteEnds.push(
+        await routeUntilEnded(page, isSignOutRequest, async (route) => {
+          markArrived();
+          if ((await released) === 'fail') await route.fulfill(SIGN_OUT_FAILURE);
+          else await route.continue();
+          markPassedOn();
+        })
+      );
     },
 
     /**
@@ -512,7 +517,7 @@ export function createHeaderLogout(page: Page) {
       held.release('reachServer');
       await held.passedOn;
       heldSignOut = undefined;
-      await page.unroute(isSignOutRequest);
+      endSignOutRoutes();
     },
 
     /**
@@ -525,7 +530,7 @@ export function createHeaderLogout(page: Page) {
       held.release('fail');
       await held.passedOn;
       heldSignOut = undefined;
-      await page.unroute(isSignOutRequest);
+      endSignOutRoutes();
     },
 
     /**
@@ -644,7 +649,7 @@ export function createHeaderLogout(page: Page) {
         .toEqual([COOKIE.logoutDeadline, COOKIE.logoutPending].sort());
       const [pending] = await contextCookiesNamed(COOKIE.logoutPending);
       const [deadline] = await contextCookiesNamed(COOKIE.logoutDeadline);
-      expect(pending.value).toMatch(COUNT_ID);
+      expect(pending.value).toMatch(DEADLINE_ID);
       expect(deadline.value).toBe(pending.value);
       const nowSeconds = Date.now() / 1000;
       expect(deadline.expires).toBeGreaterThan(nowSeconds);
@@ -689,3 +694,13 @@ export function createHeaderLogout(page: Page) {
 }
 
 export type HeaderLogoutFixture = ReturnType<typeof createHeaderLogout>;
+
+/**
+ * The logout modal's sentence with its count.
+ *
+ * @param seconds - The seconds the sentence says are left.
+ * @returns The sentence.
+ */
+function ingressAt(seconds: number): string {
+  return LOGOUT_MODAL_MESSAGES.ingress.replace('{timeLeft}', String(seconds));
+}

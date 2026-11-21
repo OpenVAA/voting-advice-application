@@ -1,0 +1,4 @@
+{
+  "remove": ["contestantApp.error.registrationLocked"],
+  "removeNamespace": ["contestantApp.preregister"]
+}

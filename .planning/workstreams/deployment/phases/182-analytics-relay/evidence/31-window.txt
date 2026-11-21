@@ -1,0 +1,18 @@
+ATTEMPT=20261020T054254Z.7d35eef7413d
+PREP_HEAD=7d35eef7413d9057676402abc314ca773b6e00d2
+PREP_TREE_CLEAN=yes
+GREEN_RUNS_HEAD=0e343a40d5993e9a273e7ab04f828fbed791205c
+ENV_FILE=present
+PORT_FREE=yes
+CHECKPOINT_PRESENTED attempt=20261020T054254Z.7d35eef7413d head=7d35eef7413d9057676402abc314ca773b6e00d2
+    I'll keep the stack free, so just continue w the rest of the steps at will
+    (standing authorisation given 2026-10-19 for the remaining phase-182 stack windows, relayed by the orchestrator for attempt 20261020T054254Z.7d35eef7413d)
+OPERATOR_CONFIRMED_STACK_FREE=yes attempt=20261020T054254Z.7d35eef7413d head=7d35eef7413d9057676402abc314ca773b6e00d2
+TASK3_STARTED=2026-10-20T05:43:43Z
+DB_STOP_AT_START_EXIT=0
+DB_STOP_AT_END_EXIT=0
+WINDOW_RESULT=red as planned: 31-red-free (wrapper 1, verdict 0, the pre-consent test failed by its assertion, 'the relay is active' passed); 31-red-default (wrapper 1, verdict 0, the mode precondition failed naming ANALYTICS_CONSENT_MODE); each run once, on 7d35eef7413d9057676402abc314ca773b6e00d2, database reset by the wrapper, schema probe t
+    Both runs are on 7d35eef74, which git finds equal outside .planning to 0e343a40d, the commit of plan 182-24's green records. Serial-describe followers counted as skipped (10 in 31-red-free, 4 in 31-red-default) did not run.
+STACK_STOPPED_AT_END=yes
+SHARED_DB_RESET_BY_THIS_SESSION=yes
+The v2.16 session must run `yarn db:reset` from its own worktree before it uses the local stack again.

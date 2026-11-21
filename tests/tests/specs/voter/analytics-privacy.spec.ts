@@ -33,7 +33,12 @@ import { RELAY_PATH } from '../../../../apps/frontend/src/lib/analytics/constant
 import { ADMIN, CONTESTANT, ROUTE, VOTER } from '../../../../apps/frontend/src/lib/routes/route';
 import { createAdminLoginPage } from '../../fixtures/admin/adminLoginPage.fixture';
 import { expectOnlyAllowedDeviceState } from '../../fixtures/shared/deviceStores.fixture';
-import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
+import {
+  createRelayCapture,
+  flushTrackingBuffer,
+  GRANTED_BUTTON,
+  hasVisitId
+} from '../../fixtures/shared/relayCapture.fixture';
 import { startRelayRecordingProxy } from '../../fixtures/shared/relayProxy.fixture';
 import {
   attachRequestRecorder,
@@ -44,15 +49,13 @@ import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fi
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
 import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { routeUntilEnded } from '../../utils/endableRoute';
 import { testIds } from '../../utils/testIds';
 import { navigateToFirstQuestion, walkVoterStages } from '../../utils/voterNavigation';
 import type { BrowserContext, Page, Route, TestInfo } from '@playwright/test';
 import type { RelayBatch, RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 import type { ProxiedRelayExchange, RelayRecordingProxy } from '../../fixtures/shared/relayProxy.fixture';
 import type { RequestRecorder } from '../../fixtures/shared/requestOrigins.fixture';
-
-/** The accessible name of the consent popup's button that grants consent. */
-const GRANTED_BUTTON = /agree to share my data/i;
 
 /** The duration the page-leave batch's pageview carries; no view the app sends in this test lasts exactly this long, so it tells the test's own request from the app's batches. */
 const PAGE_LEAVE_MARKER_DURATION = 987_600;
@@ -116,18 +119,6 @@ async function startToFirstQuestion(page: Page): Promise<void> {
   await walkVoterStages(page, ['question']);
   await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({
     timeout: TIMEOUTS.slowPage
-  });
-}
-
-/**
- * Reach the hidden flush point on the SAME document. The root layout sends the pending batch when the document becomes hidden, so this overrides `document.visibilityState` with `'hidden'` and dispatches `visibilitychange`; it then removes the override, so the real value shows through again, and dispatches the event once more, which marks the page visible.
- */
-async function flushTrackingBuffer(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    Reflect.deleteProperty(document, 'visibilityState');
-    document.dispatchEvent(new Event('visibilitychange'));
   });
 }
 
@@ -232,7 +223,7 @@ test.describe('analytics privacy across the voter, Contestant and Admin apps', (
       routeIds.some((routeId) => isUnder(ADMIN, routeId)),
       `no pageview of the Admin app (${ADMIN}) was captured; pageviews: ${listed}`
     ).toBe(true);
-    const withId = pageviews.filter((event) => event.id !== undefined).map((event) => event.routeId);
+    const withId = pageviews.filter(hasVisitId).map((event) => event.routeId);
     expect(withId, `pageviews carried an id: ${withId.join(', ')}`).toStrictEqual([]);
   });
 });
@@ -363,9 +354,10 @@ test.describe("the application's own send at page leave", () => {
 
 test.describe('the relay does not hold up the interface', () => {
   test('the interface does not wait for the relay', async ({ context, page }) => {
-    // Hold every request to the relay open until the end of the test.
+    // Hold every request to the relay open until the route is ended below.
     const held: Array<Route> = [];
-    await context.route(
+    const endHolding = await routeUntilEnded(
+      context,
       (url) => url.pathname === RELAY_PATH,
       (route) => {
         held.push(route);
@@ -388,8 +380,8 @@ test.describe('the relay does not hold up the interface', () => {
       .toContain('answer');
     expect(page.url(), 'the page is still on the results while the relay requests are held').toContain('/results');
 
-    // Release the held requests, then stop holding new ones.
+    // Stop holding new requests, then release the held ones.
+    endHolding();
     for (const route of held.splice(0)) await route.continue();
-    await context.unrouteAll({ behavior: 'wait' });
   });
 });

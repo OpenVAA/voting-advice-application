@@ -1,0 +1,15 @@
+ATTEMPT=20261019T110430Z.f28add41c
+GATE_HEAD=f28add41cd6540d37c16d2ec455f69fe491225dc
+GATE_TREE_CLEAN_BEFORE=yes
+TYPECHECK_EXIT=0
+LINT_EXIT=0
+GATE_HEAD_AFTER=f28add41cd6540d37c16d2ec455f69fe491225dc
+GATE_TREE_CLEAN_AFTER=yes
+
+Commands:
+    yarn workspace @openvaa/frontend typecheck
+    yarn workspace @openvaa/frontend lint
+Typecheck output (tail):
+    1792407885384 COMPLETED 3038 FILES 0 ERRORS 0 WARNINGS 0 FILES_WITH_PROBLEMS
+Lint output (tail):
+    (eslint printed nothing: no problems)

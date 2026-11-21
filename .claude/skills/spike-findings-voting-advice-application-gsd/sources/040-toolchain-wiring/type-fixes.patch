@@ -1,0 +1,67 @@
+diff --git a/apps/supabase/supabase/functions/_shared/entityGrant.ts b/apps/supabase/supabase/functions/_shared/entityGrant.ts
+index 7c197e713..e396bf9e0 100644
+--- a/apps/supabase/supabase/functions/_shared/entityGrant.ts
++++ b/apps/supabase/supabase/functions/_shared/entityGrant.ts
+@@ -46,7 +46,7 @@ export type EntityGrantType = SplitOnSpace<typeof ENTITY_GRANT_VOCABULARY>;
+  */
+ export interface GrantWriteClient {
+   from(table: string): {
+-    insert(row: Record<string, unknown>): Promise<{ error: { message: string; code?: string } | null }>;
++    insert(row: Record<string, unknown>): PromiseLike<{ error: { message: string; code?: string } | null }>;
+   };
+ }
+ 
+diff --git a/apps/supabase/supabase/functions/identity-callback/candidateRecord.ts b/apps/supabase/supabase/functions/identity-callback/candidateRecord.ts
+index 7ab3ecd99..e5c5b8ca2 100644
+--- a/apps/supabase/supabase/functions/identity-callback/candidateRecord.ts
++++ b/apps/supabase/supabase/functions/identity-callback/candidateRecord.ts
+@@ -100,7 +100,7 @@ export interface CandidateCreateClient {
+   from(table: string): {
+     insert(row: Record<string, unknown>): {
+       select(columns: string): {
+-        single(): Promise<{ data: { id: string } | null; error: { message: string } | null }>;
++        single(): PromiseLike<{ data: { id: string } | null; error: { message: string } | null }>;
+       };
+     };
+   };
+diff --git a/apps/supabase/supabase/functions/identity-callback/index.ts b/apps/supabase/supabase/functions/identity-callback/index.ts
+index 3d94703fb..4c00c0241 100644
+--- a/apps/supabase/supabase/functions/identity-callback/index.ts
++++ b/apps/supabase/supabase/functions/identity-callback/index.ts
+@@ -26,7 +26,7 @@
+ 
+ import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
+ import * as jose from 'npm:jose@6.2.12';
+-import { createCandidate, deleteCandidate, findExistingCandidate } from './candidateRecord.ts';
++import { type CandidateLookupClient, createCandidate, deleteCandidate, findExistingCandidate } from './candidateRecord.ts';
+ import { writeEntityGrant } from '../_shared/entityGrant.ts';
+ import { extractIdentityClaims, resolveProviderConfig } from './claimConfig.ts';
+ import { requireEnv } from '../_shared/envConfig.ts';
+@@ -296,7 +296,7 @@ Deno.serve(async (req: Request) => {
+     }
+ 
+     // 7. Find or create the candidate record. The lookup goes through the identity's candidate-editor grant and names the project this deployment serves: grants carry no project, one identity may hold candidates in several projects, and this admin client bypasses row-level security, so the project filter inside the lookup is the only thing keeping a candidate from another project from being adopted here. A failed lookup throws rather than answering null, because a null answer is indistinguishable from "no candidate in this project" and would send the branch below into its insert arm, creating a second candidate for an identity that already has one.
+-    const existingCandidate = await findExistingCandidate(supabaseAdmin, { projectId, authUserId: userId });
++    const existingCandidate = await findExistingCandidate(supabaseAdmin as unknown as CandidateLookupClient, { projectId, authUserId: userId });
+ 
+     let candidateId: string;
+ 
+diff --git a/apps/supabase/supabase/functions/invite-candidate/index.ts b/apps/supabase/supabase/functions/invite-candidate/index.ts
+index ce2a06bae..72ae362c2 100644
+--- a/apps/supabase/supabase/functions/invite-candidate/index.ts
++++ b/apps/supabase/supabase/functions/invite-candidate/index.ts
+@@ -1,4 +1,4 @@
+-import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
++import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.117.2';
+ import { callerMayOnProject } from '../_shared/callerAuthority.ts';
+ import { writeEntityGrant } from '../_shared/entityGrant.ts';
+ import { requireEnv } from '../_shared/envConfig.ts';
+@@ -197,7 +197,7 @@ Deno.serve(async (req) => {
+  * @param ids.userId - The auth user this request invited.
+  */
+ async function rollbackInvite(
+-  supabaseAdmin: ReturnType<typeof createClient>,
++  supabaseAdmin: SupabaseClient,
+   { candidateId, userId }: { candidateId: string; userId: string }
+ ): Promise<void> {
+   const { error: userError } = await supabaseAdmin.auth.admin.deleteUser(userId);

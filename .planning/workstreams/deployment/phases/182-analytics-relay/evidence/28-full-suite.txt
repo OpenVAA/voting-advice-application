@@ -1,0 +1,26 @@
+ATTEMPT=20261020T055440Z.cb8da595b414
+WINDOW_ATTEMPT=20261020T055034Z.cb8da595b414
+E2E_HEAD=cb8da595b414c15572ad05e23b7658731834727c
+COMMAND=ANALYTICS_PROVIDER=log bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-28-full-20261020T055034Z.cb8da595b414
+RUN_DIR=tests/e2e-runs/182-28-full-20261020T055034Z.cb8da595b414
+WRAPPER_EXIT=0
+TOTAL=548
+PASSED=548
+FAILED=0
+FLAKY=0
+SKIPPED=0
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+SCHEMA_PROBE=t
+E2E_HEAD_AFTER=cb8da595b414c15572ad05e23b7658731834727c
+    e2e-evidence.mjs: tests/e2e-runs/182-28-full-20261020T055034Z.cb8da595b414 -- total 548, passed 548, failed 0, flaky 0, skipped 0, didNotRun 0
+    VERDICT OK: 548 tests -- passed 548, failed 0, flaky 0, skipped 0, did not run 0
+LOG_PAGEVIEW_VOTER=yes
+    [frontend] {"level":30,"severityText":"INFO","time":1792475800556,"msg":"pageview","attributes":{"routeId":"/(voters)/elections","locale":"en","duration":300,"params":{},"openvaa.app":"voter"}}
+LOG_PAGEVIEW_CONTESTANT=yes
+    [frontend] {"level":30,"severityText":"INFO","time":1792475802687,"msg":"pageview","attributes":{"routeId":"/contestant/login/email","locale":"en","duration":1600,"params":{},"openvaa.app":"contestant"}}
+LOG_PAGEVIEW_ADMIN=yes
+    [frontend] {"level":30,"severityText":"INFO","time":1792475864634,"msg":"pageview","attributes":{"routeId":"/admin/login","locale":"en","duration":1200,"params":{},"openvaa.app":"admin"}}
+LOG_PAGEVIEW_WITH_SESSION_ID=0
+LOG_VAA_SESSION_ID=0
+    pageview lines by app:  6 "openvaa.app":"admin"; 466 "openvaa.app":"contestant"; 661 "openvaa.app":"voter";

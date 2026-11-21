@@ -1,0 +1,80 @@
+ATTEMPT=20261018T200948Z.13f2555aa
+GATE_HEAD=13f2555aa4831e7607064aba01ee594fbe5f7115
+GATE_TREE_CLEAN_BEFORE=yes
+HARNESS_MODE=db
+PGTAP_BASELINE_EXIT=0
+HARNESS_RESET=ok
+SHARED_CONTAINERS_UNCHANGED=yes
+GATE_HEAD_AFTER=13f2555aa4831e7607064aba01ee594fbe5f7115
+GATE_TREE_CLEAN_AFTER=yes
+
+date: 2026-10-18T20:11:24Z
+harness: apps/supabase/scripts/isolated-instance.sh as tracked at GATE_HEAD (committed by phase 181; not modified by this plan)
+start command:
+    apps/supabase/scripts/isolated-instance.sh start --name p182 --mode db --port-base 56200 --migrations apps/supabase/supabase/migrations --seed apps/supabase/supabase/seed.sql --tests apps/supabase/supabase/tests
+start exit status: 0
+project id: openvaa-iso-p182
+ports: 56200 to 56209 (database on 56201)
+container created: supabase_db_openvaa-iso-p182
+redacted CLI start output (lines naming keys removed):
+    WARN: config section [inbucket] is deprecated. Please use [local_smtp] instead.
+    Starting database...
+    Initialising schema...
+    Seeding globals from roles.sql...
+    Applying migration 00001_initial_schema.sql...
+    Seeding data from supabase/seed.sql...
+    {"status":"started","message":"Started local database."}
+applied migration (select version, name from supabase_migrations.schema_migrations order by version):
+    00001|initial_schema
+pgTAP baseline: node_modules/.bin/supabase test db --workdir "$ISO_WORKDIR", status 0
+    All tests successful.
+    Files=47, Tests=2603,  5 wallclock secs ( 0.13 usr  0.05 sys +  0.25 cusr  0.13 csys =  0.56 CPU)
+    Result: PASS
+rebuild: node_modules/.bin/supabase db reset --workdir "$ISO_WORKDIR", status 0
+    Resetting local database...
+    WARN: config section [inbucket] is deprecated. Please use [local_smtp] instead.
+    Recreating database...
+    Initialising schema...
+    Seeding globals from roles.sql...
+    Applying migration 00001_initial_schema.sql...
+    Seeding data from supabase/seed.sql...
+    Restarting containers...
+    Finished supabase db reset on branch main.
+    {"target":"local","version":"","message":"Reset local database."}
+pgTAP after the reset: status 0
+    All tests successful.
+    Files=47, Tests=2603,  5 wallclock secs ( 0.13 usr  0.06 sys +  0.26 cusr  0.13 csys =  0.58 CPU)
+    Result: PASS
+refusal check: start --name 'Bad Name' --mode db --migrations apps/supabase/supabase/migrations, status 4 (4 expected); started nothing
+shared stack: the 13 names ending _openvaa-local are identical before and after (cmp status 0)
+docker ps names before:
+    my-redis
+    supabase_analytics_openvaa-local
+    supabase_auth_openvaa-local
+    supabase_db_openvaa-local
+    supabase_edge_runtime_openvaa-local
+    supabase_imgproxy_openvaa-local
+    supabase_inbucket_openvaa-local
+    supabase_kong_openvaa-local
+    supabase_pg_meta_openvaa-local
+    supabase_realtime_openvaa-local
+    supabase_rest_openvaa-local
+    supabase_storage_openvaa-local
+    supabase_studio_openvaa-local
+    supabase_vector_openvaa-local
+docker ps names after:
+    my-redis
+    supabase_analytics_openvaa-local
+    supabase_auth_openvaa-local
+    supabase_db_openvaa-iso-p182
+    supabase_db_openvaa-local
+    supabase_edge_runtime_openvaa-local
+    supabase_imgproxy_openvaa-local
+    supabase_inbucket_openvaa-local
+    supabase_kong_openvaa-local
+    supabase_pg_meta_openvaa-local
+    supabase_realtime_openvaa-local
+    supabase_rest_openvaa-local
+    supabase_storage_openvaa-local
+    supabase_studio_openvaa-local
+    supabase_vector_openvaa-local

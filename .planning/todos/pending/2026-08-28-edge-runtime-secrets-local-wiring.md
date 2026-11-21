@@ -118,3 +118,11 @@ TBD — candidates:
   yields a working function.
 - Re-measure on a newer CLI: v2.116.0 was available at the time of writing and may resolve env files
   differently.
+
+## Update 2026-10-22 (Phase 179, plan 179-15): `identity-callback` no longer reads a project
+
+`identity-callback` takes its project from the request (`project_id`, a required uuid) and reads no `PUBLIC_PROJECT_ID` from its environment, so this todo no longer affects it. It now requires `IDENTITY_CALLBACK_SERVER_SECRET` instead, which the `[edge_runtime.secrets]` block does not name, like the identity provider's other variables (whether a bare `yarn db:start` delivers any of them from `apps/supabase/supabase/functions/.env` was not measured by this plan). A request without the credential header is refused before any variable is read, so an unconfigured local function answers `401 refused` to an anonymous call rather than `500`.
+
+The `PUBLIC_PROJECT_ID` entry of `[edge_runtime.secrets]` stays: `send-email` still requires the variable and refuses a request whose `project_id` differs from it. The gap this todo records (the entry reads the process environment, not the repo-root `.env`) is therefore unchanged for `send-email`.
+
+The "Blast radius" paragraph is stale since Phase 179's harness: the bank-auth projects are part of every run, and `tests/scripts/e2e-run.sh` serves the function with a generated environment file for the length of the run.

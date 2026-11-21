@@ -34,7 +34,7 @@ that generalizes [[reactive-contexts]] Pattern 1 to queue-shaped stores.
 | `app/appContext.svelte.ts`                   | `toStore(() => $state)` for appType, appSettings, appCustomization, darkMode, locale, idTokenClaims | 001 + 008 | [[reactive-contexts]] Pattern 1 (SSR-aware) |
 | `data/dataContext.svelte.ts`                 | `writable(dataRoot)` + `get(dataRootStore)` workaround                                              | 002       | [[reactive-contexts]] Pattern 2             |
 | `voter/answerStore.svelte.ts`                | `localStorageWritable + fromStore`                                                                  | 003       | [[persistent-rune-stores]]                  |
-| `candidate/candidateUserDataStore.svelte.ts` | `localStorageWritable + fromStore` for edited answers                                               | 005       | [[persistent-rune-stores]]                  |
+| `contestant/contestantUserDataState.svelte.ts` | `localStorageWritable + fromStore` for edited answers                                               | 005       | [[persistent-rune-stores]]                  |
 | `app/popup/popupStore.svelte.ts`             | `toStore(() => firstItem)` + `subscribe` getter                                                     | 010       | this file (below)                           |
 | `utils/persistedState.svelte.ts`             | (deletable after 003+005 land)                                                                      | 003+005   | [[persistent-rune-stores]]                  |
 | `utils/StackedState.svelte.ts`               | (deletable after 006 lands)                                                                         | 006       | [[layout-overlay-registry]]                 |
@@ -47,7 +47,7 @@ that generalizes [[reactive-contexts]] Pattern 1 to queue-shaped stores.
 | `app/survey.svelte.ts`                   | `fromStore(appSettings) + fromStore(sessionId)` + `toStore(() => linkValue)`                                             | Drop both `fromStore`s once Tier 1 done; drop `toStore` return; expose `{ get current() { return linkValue; } }`                                                                                                             |
 | `app/tracking/trackingService.svelte.ts` | `fromStore(appSettings) + fromStore(userPreferences) + fromStore(sessionId)` + `toStore(...)`                            | Drop all `fromStore`; drop `toStore` wrappers; expose `.current` getters                                                                                                                                                     |
 | `voter/voterContext.svelte.ts`           | `fromStore(appSettings) + fromStore(locale)` + `sessionStorageWritable('voterContext-firstQuestionId') + fromStore(...)` | See [[context-orchestration]]. Add `runeSessionStorage` for `firstQuestionId`                                                                                                                                                |
-| `candidate/candidateContext.svelte.ts`   | `fromStore(appSettings) + fromStore(locale) + fromStore(getRoute)`                                                       | See [[context-orchestration]] (same factory shape applies)                                                                                                                                                                   |
+| `contestant/contestantContext.svelte.ts`   | `fromStore(appSettings) + fromStore(locale) + fromStore(getRoute)`                                                       | See [[context-orchestration]] (same factory shape applies)                                                                                                                                                                   |
 | `utils/dataCollectionStore.ts`           | Accepts `Readable<DataRoot>` + `Readable<Array<Id>>`, returns `Readable<Array<TObject>>`                                 | Update signature to accept rune-context handles and return `{ get current() }`                                                                                                                                               |
 
 #### Tier 3 — Type files (delete or update last)
@@ -74,7 +74,7 @@ Wave 1 (parallel — all Tier 1 leaf contexts):
   ┌─ app/appContext.svelte.ts       ([[reactive-contexts]] Pattern 1, SSR-aware)
   ├─ data/dataContext.svelte.ts     ([[reactive-contexts]] Pattern 2)
   ├─ voter/answerStore.svelte.ts    ([[persistent-rune-stores]])
-  ├─ candidate/candidateUserDataStore.svelte.ts  (7-line edited-answers diff)
+  ├─ contestant/contestantUserDataState.svelte.ts  (7-line edited-answers diff)
   ├─ utils/StackedState → settingsOverlay + layout/layoutContext  ([[layout-overlay-registry]])
   └─ app/popup/popupStore.svelte.ts                              (this file)
 
@@ -83,7 +83,7 @@ Wave 2 (Tier 2 — consumes Wave 1):
   ├─ app/survey.svelte.ts           (consumer of appSettings + sessionId)
   ├─ app/tracking/trackingService   (consumer of appSettings + userPreferences)
   ├─ voter/voterContext             (consumer of appSettings + locale + sessionStorageWritable)
-  └─ candidate/candidateContext     (consumer of appSettings + locale + getRoute)
+  └─ contestant/contestantContext     (consumer of appSettings + locale + getRoute)
 
 Wave 3 (post-Tier 2 + consumer migration):
   ├─ app/getRoute.svelte.ts         (VALIDATED — [[reactive-contexts]] Pattern 3; Spike 012)
@@ -214,7 +214,7 @@ Verified push/shift/current sequence in the browser:
 - [[reactive-contexts]] — Wave 1 leaf-context patterns (appSettings, dataRoot)
 - [[persistent-rune-stores]] — Wave 1 answer-store patterns + `runeLocalStorage`
 - [[layout-overlay-registry]] — Wave 1 StackedState replacement
-- [[context-orchestration]] — Wave 2 voterContext / candidateContext shape
+- [[context-orchestration]] — Wave 2 voterContext / contestantContext shape
 - [[consumer-migration-codemod]] — Wave 3 mechanical consumer rewrite
 - [[matching-integration]] — zero-diff (already rune-native)
 

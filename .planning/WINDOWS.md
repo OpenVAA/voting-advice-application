@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 249
+open_count: 248
 waived_count: 1
-fixed_count: 36
-total_count: 286
-last_updated: 2026-10-01T21:29:03.872Z
+fixed_count: 40
+total_count: 289
+last_updated: 2026-11-02T19:43:11.392Z
 ---
 
 # Broken Windows Ledger
@@ -231,12 +231,12 @@ last_updated: 2026-10-01T21:29:03.872Z
 | 214 | 158 | deviation | apps/frontend/src/routes/admin/login/+page.server.ts |  | 158-05: one `locals.supabase.auth` access remains per login wrapper; both adapter-boundary allowlist entries measured still firing, so the backend-independence half of the blocking follow-up stays open | open |  | 2026-09-01T21:19:05.176Z |  |
 | 215 | 158 | deviation | apps/frontend/src/lib/api/adapters/supabase/dataWriter/supabaseDataWriter.ts |  | 158-05: the writer's own `atob` claims decode is still a separate copy of `readUserRoles`; role sets collapsed, decode not | open |  | 2026-09-01T21:19:05.347Z |  |
 | 216 | 158 | todo | apps/frontend/src/routes/candidate/preregister/+page.svelte |  | The five OIDC error values the callback puts on this page's query string are inert: the page never reads the error param, so every failure renders the same screen (pre-existing, out of REVIEW-RT-03 scope) | open |  | 2026-09-01T22:01:44.267Z |  |
-| 217 | 158 | unrun-verify | tests/specs/candidate/candidate-bank-auth-journey.spec.ts |  | 158-03: the bank-auth E2E round trip (plan verification item 4) was never run for the 18-site cookie-name rewrite; only a static byte-identity proof of the substitution exists | open |  | 2026-09-02T06:25:21.067Z |  |
+| 217 | 158 | unrun-verify | tests/specs/candidate/candidate-bank-auth-journey.spec.ts |  | 158-03: the bank-auth E2E round trip (plan verification item 4) was never run for the 18-site cookie-name rewrite; only a static byte-identity proof of the substitution exists | fixed |  | 2026-09-02T06:25:21.067Z | 2026-10-29T03:04:08.816Z |
 | 218 | 158 | unrun-verify | .agents/code-review-checklist.md |  | 158-03: the code-review-checklist walk over the diff (plan verification item 6) is unevidenced | open |  | 2026-09-02T06:25:21.262Z |  |
 | 219 | 158 | deviation | apps/frontend/src/routes/api/candidate/auth/callback/+server.ts |  | 158-06: the in-app forgot-password link cannot complete. The auth service's PKCE verify redirects to the callback with ?code=, and the handler reads only ?token_hash=, so it falls through to the login error redirect. Measured end to end on a fresh recovery mail. Pre-existing and independent of the route move; invisible to the suite because the E2E helper hand-builds ?token_hash= and bypasses the verify redirect. | open |  | 2026-09-02T07:09:25.576Z |  |
-| 220 | 158 | unrun-verify | tests/specs/candidate/candidate-bank-auth-journey.spec.ts |  | 158-06: the PLAYWRIGHT_BANK_AUTH-gated specs were not run for the auth endpoint move; they are excluded from the default full-suite run | open |  | 2026-09-02T07:09:25.919Z |  |
-| 221 | 158 | unrun-verify | tests/playwright.config.ts |  | The PLAYWRIGHT_BANK_AUTH-gated bank-auth / bank-auth-journey specs were not run by 158-16 either: they need the mock OIDC issuer AND the frontend server's own IdP-pointing env (a separate operator responsibility per IDURA-TEST-RUNBOOK.md), which is not set in this environment. The gap logged since 158-03 stays open. | open |  | 2026-09-02T13:10:24.270Z |  |
-| 222 | 158 | unrun-verify | tests/playwright.config.ts |  | 158-09 (the phase gate) did NOT close the PLAYWRIGHT_BANK_AUTH gap either. The full suite ran cardinal-clean at 153 passed / 0 failed / 0 flaky / 0 skipped / 0 did-not-run, but bank-auth and bank-auth-journey are opt-in and excluded from it, so NO run has exercised the OIDC cookie round trip since 158-03 rewrote all four cookie names across 17 call sites. What exists instead: a static byte-identity proof of the substitution, the chained assert:cookie-names guard (783 files, 0 violations) and six observed negative controls in ledger section B - all of which prove the GUARD fires, none of which proves the round trip still completes. Closing it needs the mock OIDC issuer plus the frontend server's own IdP-pointing env per IDURA-TEST-RUNBOOK.md, which is operator responsibility and is not set in this environment. Supersedes nothing; windows 217, 220 and 221 stay open for the same gap. | open |  | 2026-09-02T14:53:53.024Z |  |
+| 220 | 158 | unrun-verify | tests/specs/candidate/candidate-bank-auth-journey.spec.ts |  | 158-06: the PLAYWRIGHT_BANK_AUTH-gated specs were not run for the auth endpoint move; they are excluded from the default full-suite run | fixed |  | 2026-09-02T07:09:25.919Z | 2026-10-29T03:04:08.912Z |
+| 221 | 158 | unrun-verify | tests/playwright.config.ts |  | The PLAYWRIGHT_BANK_AUTH-gated bank-auth / bank-auth-journey specs were not run by 158-16 either: they need the mock OIDC issuer AND the frontend server's own IdP-pointing env (a separate operator responsibility per IDURA-TEST-RUNBOOK.md), which is not set in this environment. The gap logged since 158-03 stays open. | fixed |  | 2026-09-02T13:10:24.270Z | 2026-10-29T03:04:09.007Z |
+| 222 | 158 | unrun-verify | tests/playwright.config.ts |  | 158-09 (the phase gate) did NOT close the PLAYWRIGHT_BANK_AUTH gap either. The full suite ran cardinal-clean at 153 passed / 0 failed / 0 flaky / 0 skipped / 0 did-not-run, but bank-auth and bank-auth-journey are opt-in and excluded from it, so NO run has exercised the OIDC cookie round trip since 158-03 rewrote all four cookie names across 17 call sites. What exists instead: a static byte-identity proof of the substitution, the chained assert:cookie-names guard (783 files, 0 violations) and six observed negative controls in ledger section B - all of which prove the GUARD fires, none of which proves the round trip still completes. Closing it needs the mock OIDC issuer plus the frontend server's own IdP-pointing env per IDURA-TEST-RUNBOOK.md, which is operator responsibility and is not set in this environment. Supersedes nothing; windows 217, 220 and 221 stay open for the same gap. | fixed |  | 2026-09-02T14:53:53.024Z | 2026-10-29T03:04:09.103Z |
 | 223 | 158 | deviation | package.json |  | 158-09 gate finding: yarn format:check was RED (exit 1, six files) at the phase head before the gate ran - universalAdapter.test.ts, adminJobLifetime.test.ts, requireAdminIdentity.test.ts, requireAdminIdentity.ts, supabase/job.test.ts, admin-access.spec.ts - committed unformatted by 158-12, 158-15, 158-16 and 158-17. Fixed by the gate at c074bb04d. Root cause is the same one that let 60 comment-hygiene violations through at 23f0255d7: 158-16 deliberately did not run the lint/format chain, to avoid misattributing a red to a sibling plan. The per-plan skip is what makes the standing guards non-standing. | open |  | 2026-09-02T14:54:02.182Z |  |
 | 224 | 159 | deviation | .planning/phases/159-component-context-consolidation/159-03-PLAN.md |  | 159-03 must assert an $effect census total of 91, not 92; the CONTEXT.md D-H1 number predates a Phase 158 removal | open |  | 2026-09-02T17:00:47.685Z |  |
 | 225 | 159 | deviation | apps/frontend/src/lib/contexts/app/tracking/trackingService.svelte.test.ts | 158 | Stale doc: the producer's own-key lock still says 'the eight own-enumerable members appContext forwards'; appContext now forwards six. File left untouched on purpose — 159-06 Task 2 pins it out of the diff as the tell for the rejected narrowing mechanism. | fixed |  | 2026-09-02T17:16:26.100Z | 2026-09-03T07:06:51.893Z |
@@ -301,6 +301,9 @@ last_updated: 2026-10-01T21:29:03.872Z
 | 284 | 165.1 | deviation | CLAUDE.md |  | 165.1-08 task 3: D-24 and 165.1-PATTERNS E3 both place the new Results Navigation Invariants subsection 'under CLAUDE.md § Frontend (SvelteKit)', but the two analog invariant subsections they name (§ Context Destructuring Rule, § Svelte Warning-Accepted Format) actually live under § Important Implementation Notes. Resolved per the plan's own done-clause ('beside the two invariant subsections it belongs with'): the subsection landed beside them, and § Frontend (SvelteKit) gained a pointer line naming both invariants so D-24's stated location still reaches the rule. RESOLVED - recorded so the next editor of either section knows the placement was a decision, not drift. | fixed |  | 2026-09-23T19:10:09.449Z | 2026-09-23T19:10:16.213Z |
 | 285 | quick-260930-kxi | unrun-verify | apps/frontend/Dockerfile |  | Local git-archive production image build (Task 2a verify) could not run: Docker Desktop registry proxy times out fetching node:22-alpine metadata (3 attempts, DeadlineExceeded) | open |  | 2026-09-30T13:06:27.363Z |  |
 | 286 | 166 | skipped-test | apps/supabase/supabase/tests/database/36-entity-identity.test.sql |  | anon census + 42703 behavioural check held in todo_start/todo_end until 166-03 drops the auth link columns | fixed |  | 2026-10-01T20:42:45.579Z | 2026-10-01T21:29:03.872Z |
+| 287 | 172 | deviation | tests/scripts/e2e-run.sh |  | 172-09 closing E2E run was red on its first attempt (tests/e2e-runs/172/172-09-final: 77 passed, 9 failed, 94 did not run; dev server ready in 161 s against a 30 s norm) and green on a second attempt on the same commit with no fix in between (172-09-final-r2: 180 of 180). What slowed the host is not identified; todo 2026-10-06-172-full-suite-red-on-a-slow-dev-server-start.md | open |  | 2026-10-06T07:42:30.704Z |  |
+| 288 | 172 | unmet-truth | .claude/scripts/audit-skill-links.sh |  | 172-09 Task 1 acceptance criterion 'audit-skill-links.sh database exits 0' cannot hold: exit 1 on the phase start tree and after the task alike, same 31 dangling citations (146 checked before, 151 after, 0 of the 5 new ones dangling). Standing todo 2026-08-28-dangling-schema-citations-database-skill.md | open |  | 2026-10-06T07:42:30.790Z |  |
+| 289 | 179.1 | unmet-truth |  |  | Plan 179.1-47's close is not green: tests/e2e-runs/179.1-e2e/179.1-47-close, 1 failed, 263 did not run, in the manner of the slow first route load | open |  | 2026-11-02T19:43:11.392Z |  |
 
 ````json
 [
@@ -2903,10 +2906,10 @@ last_updated: 2026-10-01T21:29:03.872Z
     "file": "tests/specs/candidate/candidate-bank-auth-journey.spec.ts",
     "line": null,
     "description": "158-03: the bank-auth E2E round trip (plan verification item 4) was never run for the 18-site cookie-name rewrite; only a static byte-identity proof of the substitution exists",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-02T06:25:21.067Z",
-    "resolved_at": null
+    "resolved_at": "2026-10-29T03:04:08.816Z"
   },
   {
     "id": 218,
@@ -2939,10 +2942,10 @@ last_updated: 2026-10-01T21:29:03.872Z
     "file": "tests/specs/candidate/candidate-bank-auth-journey.spec.ts",
     "line": null,
     "description": "158-06: the PLAYWRIGHT_BANK_AUTH-gated specs were not run for the auth endpoint move; they are excluded from the default full-suite run",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-02T07:09:25.919Z",
-    "resolved_at": null
+    "resolved_at": "2026-10-29T03:04:08.912Z"
   },
   {
     "id": 221,
@@ -2951,10 +2954,10 @@ last_updated: 2026-10-01T21:29:03.872Z
     "file": "tests/playwright.config.ts",
     "line": null,
     "description": "The PLAYWRIGHT_BANK_AUTH-gated bank-auth / bank-auth-journey specs were not run by 158-16 either: they need the mock OIDC issuer AND the frontend server's own IdP-pointing env (a separate operator responsibility per IDURA-TEST-RUNBOOK.md), which is not set in this environment. The gap logged since 158-03 stays open.",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-02T13:10:24.270Z",
-    "resolved_at": null
+    "resolved_at": "2026-10-29T03:04:09.007Z"
   },
   {
     "id": 222,
@@ -2963,10 +2966,10 @@ last_updated: 2026-10-01T21:29:03.872Z
     "file": "tests/playwright.config.ts",
     "line": null,
     "description": "158-09 (the phase gate) did NOT close the PLAYWRIGHT_BANK_AUTH gap either. The full suite ran cardinal-clean at 153 passed / 0 failed / 0 flaky / 0 skipped / 0 did-not-run, but bank-auth and bank-auth-journey are opt-in and excluded from it, so NO run has exercised the OIDC cookie round trip since 158-03 rewrote all four cookie names across 17 call sites. What exists instead: a static byte-identity proof of the substitution, the chained assert:cookie-names guard (783 files, 0 violations) and six observed negative controls in ledger section B - all of which prove the GUARD fires, none of which proves the round trip still completes. Closing it needs the mock OIDC issuer plus the frontend server's own IdP-pointing env per IDURA-TEST-RUNBOOK.md, which is operator responsibility and is not set in this environment. Supersedes nothing; windows 217, 220 and 221 stay open for the same gap.",
-    "status": "open",
+    "status": "fixed",
     "reason": "",
     "recorded_at": "2026-09-02T14:53:53.024Z",
-    "resolved_at": null
+    "resolved_at": "2026-10-29T03:04:09.103Z"
   },
   {
     "id": 223,
@@ -3748,6 +3751,45 @@ last_updated: 2026-10-01T21:29:03.872Z
     "recorded_at": "2026-10-01T20:42:45.579Z",
     "resolved_at": "2026-10-01T21:29:03.872Z",
     "milestone": "v2.15"
+  },
+  {
+    "id": 287,
+    "kind": "deviation",
+    "phase": "172",
+    "file": "tests/scripts/e2e-run.sh",
+    "line": null,
+    "description": "172-09 closing E2E run was red on its first attempt (tests/e2e-runs/172/172-09-final: 77 passed, 9 failed, 94 did not run; dev server ready in 161 s against a 30 s norm) and green on a second attempt on the same commit with no fix in between (172-09-final-r2: 180 of 180). What slowed the host is not identified; todo 2026-10-06-172-full-suite-red-on-a-slow-dev-server-start.md",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-06T07:42:30.704Z",
+    "resolved_at": null,
+    "milestone": "v2.16"
+  },
+  {
+    "id": 288,
+    "kind": "unmet-truth",
+    "phase": "172",
+    "file": ".claude/scripts/audit-skill-links.sh",
+    "line": null,
+    "description": "172-09 Task 1 acceptance criterion 'audit-skill-links.sh database exits 0' cannot hold: exit 1 on the phase start tree and after the task alike, same 31 dangling citations (146 checked before, 151 after, 0 of the 5 new ones dangling). Standing todo 2026-08-28-dangling-schema-citations-database-skill.md",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-06T07:42:30.790Z",
+    "resolved_at": null,
+    "milestone": "v2.16"
+  },
+  {
+    "id": 289,
+    "kind": "unmet-truth",
+    "phase": "179.1",
+    "file": "",
+    "line": null,
+    "description": "Plan 179.1-47's close is not green: tests/e2e-runs/179.1-e2e/179.1-47-close, 1 failed, 263 did not run, in the manner of the slow first route load",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-11-02T19:43:11.392Z",
+    "resolved_at": null,
+    "milestone": "v2.16"
   }
 ]
 ````

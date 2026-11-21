@@ -38,3 +38,7 @@ page behind it — the same discipline `assertCandidateReach` applies to authent
 ## Note
 
 Filed alone: actionable without reading any of the other unscanned-state todos.
+
+## Update 2026-10-11 — a third route raises the same confirm; still scanned nowhere (Phase 177 close)
+
+The details step of the nomination editor (`…/nominations/(edit)/details/+page.svelte`) uses `PreventNavigation` and asks before a user leaves with changes that are not saved. In a browser it is the browser's own confirm, outside the page's document, so no axe scan can reach it; the spec asserts the prompt and what staying and leaving do (`leave: leaving with unsaved changes asks first, staying keeps the draft, and Cancel leaves without asking` in `contestant-nominations.spec.ts`). The component is thus raised on three routes and scanned on none. A full page load from that step with a draft meets the browser's `beforeunload` prompt as well; no test does that.

@@ -218,6 +218,21 @@ each skill on the last commit touching that skill's directory, so this phase's o
 those baselines — a green drift run after a phase that edited the skills says only that the phase
 edited them. Every figure here was produced locally by the command in its own row.
 
+**Added 2026-10-18: `recommended-skills`.** A pointer skill that lists the external agent skill sets
+this repository recommends, installed per user and never committed (operator ruling of 2026-10-18);
+its first entry is the Supabase set, pinned to a commit. It has no `targets:` on purpose: it
+documents content outside the repository and owns no repository directory, so
+`.claude/scripts/audit-skill-drift.sh` reports it as `SKIP (no targets defined)` by design. That is
+not the inert-audit trap § *Adding a skill* warns about, which is a skill that owns a directory but
+names it wrongly. Its verdicts at its adding commit: Check A **OK**, Check B **OK** (opens
+`external agent skill sets this`), link audit **OK** (`Dangling: 0`). Reproduce each:
+`bash .claude/scripts/audit-skill-routing.sh recommended-skills`,
+`bash .claude/scripts/audit-skill-links.sh recommended-skills` and
+`bash .claude/scripts/audit-skill-drift.sh recommended-skills`. The whole-corpus routing run
+(`bash .claude/scripts/audit-skill-routing.sh ; echo "exit=$?"`) printed, with the skill added,
+`Check B: descriptions 8  shared stems 1  skills implicated 4` and `Violations: 5`: the same
+violations as before it, with one more description and no new shared stem.
+
 ## Judgements
 
 Four judgements shaped this corpus. Each states its reason, not only its existence, so a future maintainer can re-evaluate it rather than merely inherit it. Every figure below was re-derived at `e8052177c` on 2026-09-13.
@@ -327,7 +342,7 @@ One more thing `O4` makes explicit, recorded because it had already propagated b
 
 - **The frontmatter `description` is the trigger, and it must be discriminative.** Write it to distinguish this skill from its neighbours, not to summarise the domain. Do not open with `Domain expert for the`; the corpus already has four of those out of seven live skills (re-derived 2026-09-13 — the figure of six predates this phase's deletion of `architect` and its rewrite of `components`) and they do not route.
 - **The body points directly at concrete files.** One level. If the skill has grown a table of contents that links to sub-tables of contents, split it into more, smaller skills instead — selection is most reliable at the description layer.
-- **`targets:` must be populated with repo-root-relative directories.** `.claude/scripts/audit-skill-drift.sh:79-81` prints `(directory not found)` and `continue`s for any target that is not a directory, so a **file** target is silently skipped and the skill scores clean forever — an inert audit that reads as a passing one. One `  - ` list item per directory; never an inline `[]`.
+- **`targets:` must be populated with repo-root-relative directories.** `.claude/scripts/audit-skill-drift.sh:79-81` prints `(directory not found)` and `continue`s for any target that is not a directory, so a **file** target is silently skipped and the skill scores clean forever — an inert audit that reads as a passing one. One `  - ` list item per directory; never an inline `[]`. The one exception is a pointer skill that documents external content and owns no repository directory, today `recommended-skills`; it has no `targets:` and its drift SKIP is by design.
 - **Cite paths repo-relative.** A path that resolves only against the package a skill documents resolves for no reader and no tool. (To verify: `bash .claude/scripts/audit-skill-links.sh <skill-name>` exits 0.)
 
 When you add or retire a skill, update this file in the same commit — a stale list here is worse than no list, because it reads as an assurance.

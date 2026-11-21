@@ -1,0 +1,41 @@
+ATTEMPT=20261020T073810Z.80e421ea1bd6
+PREP_HEAD=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+PREP_TREE_CLEAN=yes
+SWITCH_COMMIT=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+RED_ATTEMPT=20261020T073024Z.80e421ea1bd6
+ENV_FILE=present
+    from a standalone `test -f` of the root env file, exit 0
+PORT_FREE=yes
+CHECKPOINT_PRESENTED attempt=20261020T073810Z.80e421ea1bd6 head=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+    I'll keep the stack free, so just continue w the rest of the steps at will
+    (standing authorisation given 2026-10-19 for the remaining phase-182 stack windows, relayed by the orchestrator for attempt 20261020T073810Z.80e421ea1bd6; this window was requested by the operator on 2026-10-20 with 'prove it')
+OPERATOR_CONFIRMED_STACK_FREE=yes attempt=20261020T073810Z.80e421ea1bd6 head=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+TASK3_STARTED=2026-10-20T07:38:24Z
+DB_STOP_AT_START_EXIT=0
+E2E_HEAD=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+COMMAND=export PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free PLAYWRIGHT_RED_CONTROL_SKIP_MODE_CHECK=1; bash tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/182-rc-free-green-20261020T073810Z.80e421ea1bd6 --project analytics-consent-free
+RUN_DIR=tests/e2e-runs/182-rc-free-green-20261020T073810Z.80e421ea1bd6
+WRAPPER_EXIT=0
+PASSED=7
+FAILED=0
+FLAKY=0
+SKIPPED=0
+DID_NOT_RUN=0
+VERDICT_EXIT=0
+    the first test of the run (from results.json), with the switch annotation:
+    project=analytics-consent-free test.status=expected annotations=[{"type":"red-control","description":"PLAYWRIGHT_RED_CONTROL_SKIP_MODE_CHECK=1: the mode precondition was skipped"}]
+    status=passed retry=0 duration=5608ms annotations=[{"type":"red-control","description":"PLAYWRIGHT_RED_CONTROL_SKIP_MODE_CHECK=1: the mode precondition was skipped"}]
+DB_STOP_AT_END_EXIT=0
+    run directory: head 80e421ea1bd6..., exit 0, provenance db-reset: yes, void: no, no VOID-host-suspend.txt; worktree-status.txt lists only two untracked files of another session (.planning/workstreams/deployment/config.json and state.json), no tracked change
+STACK_STOPPED_AT_END=yes
+SHARED_DB_RESET_BY_THIS_SESSION=yes
+WINDOW_RESULT=green as expected: wrapper 0, verdict 0, 7 of 7 passed with the switch set in consent-free mode; the switch does not break the green path
+The v2.16 session must run `yarn db:reset` from its own worktree before it uses the local stack again.
+    note: the post-run script stopped after VERDICT_EXIT (bash 3.2 under set -u refuses an empty array: "SPECS[@]: unbound variable", rc-postrun.sh line 27, reached because a green run names no failing test). Its probe and verdict had already run while the stack was up and were saved beside this file; the keys below are appended from those files, by command, after the stop
+SCHEMA_PROBE=t
+    probe status 0, from tmp/182-evidence/rc-free-green.20261020T073810Z.80e421ea1bd6.probe.out, taken by rc-postrun.sh before the stack was stopped
+E2E_HEAD_AFTER=80e421ea1bd64e5fae92148acadecdb36f89a2a0
+    e2e-evidence.mjs: tests/e2e-runs/182-rc-free-green-20261020T073810Z.80e421ea1bd6 -- total 7, passed 7, failed 0, flaky 0, skipped 0, didNotRun 0
+    VERDICT OK: 7 tests -- passed 7, failed 0, flaky 0, skipped 0, did not run 0
+    verdict flags: --passed voter-tracking-consent-free.spec.ts --passed-test "the server is in consent-free mode" --passed-test "no prompt is shown" --no-other-failures --no-flaky
+The v2.16 session must run `yarn db:reset` from its own worktree before it uses the local stack again.

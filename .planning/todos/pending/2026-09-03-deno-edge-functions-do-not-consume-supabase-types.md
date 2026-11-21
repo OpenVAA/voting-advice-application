@@ -81,3 +81,14 @@ owning phase rather than left in source comments.
 assertions, and `2026-08-29-153-extension-bearing-specifier-class-wider-than-js.md` is about
 `.ts`-bearing relative specifiers. Neither states that the functions consume no shared types;
 `grep -c "supabase-types"` on the first returns 0.
+
+## Phase 180 note (2026-11-13)
+
+Measured on `feat/entity-signup-multi-grant` after phase 180. `yarn typecheck` now type-checks the Edge
+Functions: `@openvaa/supabase#typecheck` runs `cd supabase/functions && deno check .` with Deno 2.9.6
+(exact, a devDependency of `@openvaa/supabase`) over every non-test module, 22 of them. So a
+`createClient<Database>(…)` written in a function would now be checked against the generated types, and an RPC
+argument or row shape that disagreed with them would fail the gate. Nothing is parameterised yet: every
+`createClient` in the three `index.ts` files is still untyped, and `identity-callback`'s three admin-client
+parameters are typed `SupabaseClient` (no `Database` parameter), not `any`. This todo stays open; the phase removed
+the "nothing would check it" half of the problem, not the problem.

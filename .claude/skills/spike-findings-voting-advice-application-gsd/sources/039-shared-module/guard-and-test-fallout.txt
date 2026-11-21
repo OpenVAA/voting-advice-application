@@ -1,0 +1,19 @@
+# vitest after the move (before repointing two readFileSync paths)
+      Tests  1 failed | 455 passed (456)
+ FAIL  supabase/functions/identity-callback/flowConformance.test.ts [ supabase/functions/identity-callback/flowConformance.test.ts ]
+ FAIL  supabase/functions/invite-candidate/flowConformance.test.ts [ supabase/functions/invite-candidate/flowConformance.test.ts ]
+ FAIL  supabase/functions/send-email/flowConformance.test.ts > send-email flow conformance > shares ONE gate module with invite-candidate, byte for byte
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  3 failed | 17 passed (20)
+
+# vitest after repointing them (state captured in shared-module.patch)
+      Tests  1 failed | 487 passed (488)
+ FAIL  supabase/functions/send-email/flowConformance.test.ts > send-email flow conformance > shares ONE gate module with invite-candidate, byte for byte
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  1 failed | 19 passed (20)
+
+# scripts/assert-edge-env-defaults.mjs after the move
+[ERROR] scripts/assert-edge-env-defaults.mjs: expected at least two copies of 'envConfig.ts' under the functions tree and found 1. Either a deployment unit lost its copy of a shared module, or the module was renamed without updating this guard, which would leave the remaining copies unheld (REVIEW-EDGE-02).
+[ERROR] scripts/assert-edge-env-defaults.mjs: expected at least two copies of 'jwtSegment.ts' under the functions tree and found 1. Either a deployment unit lost its copy of a shared module, or the module was renamed without updating this guard, which would leave the remaining copies unheld (REVIEW-EDGE-02).
+[ERROR] scripts/assert-edge-env-defaults.mjs: expected at least two copies of 'callerAuthority.ts' under the functions tree and found 1. Either a deployment unit lost its copy of a shared module, or the module was renamed without updating this guard, which would leave the remaining copies unheld (REVIEW-EDGE-02).
+Edge-function environment-default guard (phase 155: REVIEW-EDGE-02) — files scanned: 37; checks live: 3 of 3 (env-default; copy-drift; vitest-reachability). 3 violation(s).

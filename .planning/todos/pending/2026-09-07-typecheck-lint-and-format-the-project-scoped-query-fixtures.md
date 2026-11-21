@@ -44,3 +44,7 @@ tally, and the per-message exact counts).
 4. Expect the fixtures to need small repairs: they are written to be READ as text and have never been
    compiled, so some shapes may not typecheck as written. A shape that has to change is a shape whose
    self-test count has to be re-measured, not adjusted.
+
+## Update 2026-10-07 (Phase 174, plan 174-10)
+
+The script beside the fixtures is in the same position. `scripts/assert-project-scoped-queries.mjs` reports 8 ESLint errors when linted directly (`no-console` among them), measured by 174-08 before and after its own edit of the file, and no gate row lints `scripts/`. Whatever chain is added for the fixtures should take the `.mjs` gates under `scripts/` with it, or state that they are exempt and why.
