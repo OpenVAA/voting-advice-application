@@ -7,6 +7,7 @@ import { COOKIE } from '$lib/cookies';
 import {
   clearLogoutDeadline,
   cookieValues,
+  everyCopyOf,
   LOGOUT_DEADLINE_GRACE_SECONDS,
   LOGOUT_DEADLINE_SETTLED,
   LOGOUT_PENDING_MAX_AGE_SECONDS,
@@ -120,6 +121,23 @@ describe('removalDomainsOf', () => {
 
   it.each(['localhost', '127.0.0.1', '::1', '[::1]'])('names none for %s', (hostname) => {
     expect(removalDomainsOf(hostname)).toEqual([]);
+  });
+});
+
+describe('everyCopyOf', () => {
+  it('names both cookies host-only and then for each removal domain', () => {
+    expect(everyCopyOf('app.example.org')).toEqual([
+      { name: COOKIE.logoutPending },
+      { name: COOKIE.logoutPending, domain: 'app.example.org' },
+      { name: COOKIE.logoutPending, domain: 'example.org' },
+      { name: COOKIE.logoutDeadline },
+      { name: COOKIE.logoutDeadline, domain: 'app.example.org' },
+      { name: COOKIE.logoutDeadline, domain: 'example.org' }
+    ]);
+  });
+
+  it('names only the host-only copies for localhost', () => {
+    expect(everyCopyOf('localhost')).toEqual([{ name: COOKIE.logoutPending }, { name: COOKIE.logoutDeadline }]);
   });
 });
 

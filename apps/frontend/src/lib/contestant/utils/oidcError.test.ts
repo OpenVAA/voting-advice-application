@@ -5,11 +5,11 @@ import { OIDC_ERROR, oidcErrorClass, oidcErrorFromFunction, oidcErrorFromProvide
 /**
  * # The codes an identification failure is reported with, and the class each is shown as
  *
- * The callback of the identity provider's flow reports a failure as `?error=<code>` on the address it redirects to. The codes are a closed set this application chooses: an operator reads them on the address bar with the identity-provider runbook, so their spellings are pinned exactly. The error screen shows a code as one of three classes, and any value it does not know as the class that says trying again may help.
+ * The callback of the identity provider's flow reports a failure as `?error=<code>` on the address it redirects to. The codes are a closed set this application chooses: an operator reads them on the address bar with the identity-provider runbook, so their spellings are pinned exactly. The error screen shows a code as one of four classes, and any value it does not know as the class that says trying again may help.
  *
  * What this file holds:
  *
- * 1. **The codes** — nine spellings, each declared once.
+ * 1. **The codes** — ten spellings, each declared once.
  * 2. **The classes** — the class of every code, and of a value that is not one, an inherited property name among them.
  * 3. **The provider's values** — its cancel, and every other value as one code.
  * 4. **The function's results** — each result of `identity-callback`'s answer as one code.
@@ -28,7 +28,7 @@ function readError(url: string): string | null {
 }
 
 describe('OIDC_ERROR — the codes this application chooses', () => {
-  it('spells the nine wire values exactly as the operator runbook names them', () => {
+  it('spells the ten wire values exactly as the operator runbook names them', () => {
     expect(OIDC_ERROR).toEqual({
       invalidState: 'invalid_state',
       invalidToken: 'invalid_token',
@@ -38,7 +38,8 @@ describe('OIDC_ERROR — the codes this application chooses', () => {
       providerError: 'provider_error',
       modeNotAllowed: 'mode_not_allowed',
       registrationFailed: 'registration_failed',
-      configurationError: 'configuration_error'
+      configurationError: 'configuration_error',
+      noAccount: 'no_account'
     });
   });
 
@@ -59,17 +60,18 @@ describe('oidcErrorClass — the class the error screen shows', () => {
     ['registration_failed', 'retry'],
     ['invalid_token', 'noRetry'],
     ['mode_not_allowed', 'noRetry'],
-    ['configuration_error', 'noRetry']
+    ['configuration_error', 'noRetry'],
+    ['no_account', 'noAccount']
   ])('shows %s as %s', (code, errorClass) => {
     expect(oidcErrorClass(code)).toBe(errorClass);
   });
 
   it('gives every code a class', () => {
     for (const code of Object.values(OIDC_ERROR))
-      expect(['cancelled', 'retry', 'noRetry']).toContain(oidcErrorClass(code));
+      expect(['cancelled', 'retry', 'noRetry', 'noAccount']).toContain(oidcErrorClass(code));
   });
 
-  it.each([null, undefined, '', 'access_denied', 'CANCELLED', 'noRetry', ' cancelled', '<b>x</b>'])(
+  it.each([null, undefined, '', 'access_denied', 'CANCELLED', 'noRetry', 'noAccount', ' cancelled', '<b>x</b>'])(
     'shows a value that is not a code, %j, as retry',
     (value) => {
       expect(oidcErrorClass(value)).toBe('retry');
@@ -105,6 +107,7 @@ describe("oidcErrorFromProvider — the provider's own error value", () => {
 describe("oidcErrorFromFunction — the result of identity-callback's answer", () => {
   it.each([
     ['mode_not_allowed', 'mode_not_allowed'],
+    ['no_account', 'no_account'],
     ['invalid_token', 'invalid_token'],
     ['configuration', 'configuration_error'],
     ['refused', 'configuration_error'],

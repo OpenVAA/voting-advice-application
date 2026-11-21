@@ -90,6 +90,16 @@ export function signInLinkOffered(settings: RegistrationOfferSettings): boolean 
 }
 
 /**
+ * Whether the login screen offers to sign in with the identity provider: the provider's mode is served for at least one entity type, so the deployment has accounts the provider made.
+ *
+ * Neither `access.contestantEditing` nor `access.contestantApp` is read, and the mode need not be allowed: a sign-in creates nothing, so a user the provider registered can sign in while registration is closed, as one with a password can.
+ * @param settings - The application settings to read.
+ */
+export function identityProviderSignInOffered(settings: RegistrationOfferSettings): boolean {
+  return isRegistrationModeServedForAnyType(settings, REGISTRATION_MODE.IdentityProvider);
+}
+
+/**
  * Whether the Contestant App is closed: `access.contestantApp` is stored as `false`. An absent or `null` value reads as open, the shipped default.
  *
  * Kept apart from `isRegistrationModeAllowed`, which states the rule of `private.registration_mode_allowed_in` alone. The database closes registration of a closed app in `private.project_contestant_app_closed`.

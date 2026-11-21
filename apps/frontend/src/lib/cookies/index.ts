@@ -17,6 +17,8 @@ export const COOKIE = deepFreeze({
   oidcCodeVerifier: 'oidc_code_verifier',
   /** The entity type the identity provider's flow was started for. It selects and never authorises: every reader checks the registration matrix again. */
   oidcEntityType: 'oidc_entity_type',
+  /** Set to `sign_in` when the identity provider's flow was started to sign in an existing account rather than to register. It selects and never authorises: a sign-in creates nothing, and `identity-callback` signs in only an account the identity already has. */
+  oidcIntent: 'oidc_intent',
   /** The locale the identity provider's flow was started in, so its return lands in that locale and not in whichever the provider's redirect resolves to. Read once by the callback and accepted only when it is a supported locale. */
   oidcLocale: 'oidc_locale',
   /** Whether the identity provider's return made the account or found one, read once by the view the user arrives at. It only ever adds a notice and never removes a gate. */

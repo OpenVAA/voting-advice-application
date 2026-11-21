@@ -3,7 +3,7 @@
  *
  * The callback of the identity provider's flow reports every failure as `?error=<code>` on the error screen's address. The codes are a closed set this application chooses: no value the identity provider or `identity-callback` sends passes through, each is mapped to a code first. They are an operator-facing contract, read on the address bar with `tests/IDURA-TEST-RUNBOOK.md`, so their spellings are pinned by a colocated test.
  *
- * The error screen shows a code as one of three classes, and only the class: `cancelled` for the user's own cancel, `retry` for a failure trying again may cure, `noRetry` for one it will not. A value that is not a code is shown as `retry`.
+ * The error screen shows a code as one of four classes, and only the class: `cancelled` for the user's own cancel, `retry` for a failure trying again may cure, `noRetry` for one it will not, and `noAccount` for a sign-in whose identity has no account. A value that is not a code is shown as `retry`.
  */
 
 /**
@@ -20,7 +20,8 @@ export const OIDC_ERROR: Record<OidcErrorKey, OidcError> = {
   providerError: 'provider_error',
   modeNotAllowed: 'mode_not_allowed',
   registrationFailed: 'registration_failed',
-  configurationError: 'configuration_error'
+  configurationError: 'configuration_error',
+  noAccount: 'no_account'
 } as const;
 
 /**
@@ -35,7 +36,8 @@ type OidcErrorKey =
   | 'providerError'
   | 'modeNotAllowed'
   | 'registrationFailed'
-  | 'configurationError';
+  | 'configurationError'
+  | 'noAccount';
 
 /**
  * The wire spellings that appear on the error screen's address. Changing one changes a documented operator procedure.
@@ -49,12 +51,13 @@ export type OidcError =
   | 'provider_error'
   | 'mode_not_allowed'
   | 'registration_failed'
-  | 'configuration_error';
+  | 'configuration_error'
+  | 'no_account';
 
 /**
- * The three things the error screen can say happened: the user cancelled, a failure trying again may cure, or one it will not.
+ * The four things the error screen can say happened: the user cancelled, a failure trying again may cure, one it will not, or a sign-in found no account for the identity.
  */
-export type OidcErrorClass = 'cancelled' | 'retry' | 'noRetry';
+export type OidcErrorClass = 'cancelled' | 'retry' | 'noRetry' | 'noAccount';
 
 /** The class of each code. Read through `Object.hasOwn`, so a name every object inherits has no class. */
 const OIDC_ERROR_CLASS: Readonly<Record<OidcError, OidcErrorClass>> = Object.freeze({
@@ -66,7 +69,8 @@ const OIDC_ERROR_CLASS: Readonly<Record<OidcError, OidcErrorClass>> = Object.fre
   registration_failed: 'retry',
   invalid_token: 'noRetry',
   mode_not_allowed: 'noRetry',
-  configuration_error: 'noRetry'
+  configuration_error: 'noRetry',
+  no_account: 'noAccount'
 });
 
 /**
@@ -98,6 +102,7 @@ export function oidcErrorFromProvider(value: string): OidcError {
 /** The code for each failed `result` of `identity-callback`'s answer. Read through `Object.hasOwn`. */
 const FUNCTION_RESULT_ERROR: Readonly<Record<string, OidcError>> = Object.freeze({
   mode_not_allowed: OIDC_ERROR.modeNotAllowed,
+  no_account: OIDC_ERROR.noAccount,
   invalid_token: OIDC_ERROR.invalidToken,
   configuration: OIDC_ERROR.configurationError,
   refused: OIDC_ERROR.configurationError,
@@ -108,7 +113,7 @@ const FUNCTION_RESULT_ERROR: Readonly<Record<string, OidcError>> = Object.freeze
 /**
  * The code for a failed answer of `identity-callback`, by the `result` its body names.
  *
- * A refused mode and a rejected token keep their meaning; the function's own configuration, a refused credential and a request it could not read are the deployment's fault, which trying again will not cure; an outage, an unknown result and an answer with no body are `registration_failed`, which it may.
+ * A refused mode, a sign-in with no account and a rejected token keep their meaning; the function's own configuration, a refused credential and a request it could not read are the deployment's fault, which trying again will not cure; an outage, an unknown result and an answer with no body are `registration_failed`, which it may.
  * @param result - The `result` member of the function's answer, or `undefined` when there is none.
  * @returns The code to report.
  */

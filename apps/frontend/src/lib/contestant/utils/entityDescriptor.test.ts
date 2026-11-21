@@ -43,7 +43,6 @@ function englishMessage(key: unknown): unknown {
 /** The members every entry holds. */
 const MEMBERS: Array<keyof EntityDescriptor> = [
   'identityFields',
-  'imageRemoveLabel',
   'colorField',
   'greetingName',
   'nominationParentLabel',
@@ -65,6 +64,7 @@ const PER_TYPE_KEY_STEMS: Array<string> = [
   'contestantApp.error.nameLocked',
   'contestantApp.basicInfo.instructions',
   'contestantApp.basicInfo.instructionsNoQuestions',
+  'contestantApp.basicInfo.removeImage',
   'contestantApp.home.ingress.notDone',
   'contestantApp.home.ingress.notDoneNoQuestions',
   'contestantApp.home.ingress.noNomination',
@@ -202,8 +202,7 @@ describe('ENTITY_DESCRIPTORS', () => {
       expect(descriptor.colorField).toEqual({ offered: false });
     });
 
-    it('has a portrait with no help line', () => {
-      expect(descriptor.imageRemoveLabel).toBe('contestantApp.basicInfo.removeImage');
+    it('has no help line under the image', () => {
       expect(descriptor.imageInfo).toBeUndefined();
     });
 
@@ -236,8 +235,7 @@ describe('ENTITY_DESCRIPTORS', () => {
       });
     });
 
-    it('has a logo with a help line', () => {
-      expect(descriptor.imageRemoveLabel).toBe('contestantApp.basicInfo.removeLogo');
+    it('has a help line under the logo', () => {
       expect(descriptor.imageInfo).toBe('contestantApp.basicInfo.logoInfo');
     });
 

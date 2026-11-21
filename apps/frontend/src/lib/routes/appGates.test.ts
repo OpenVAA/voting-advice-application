@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { APP_GATES, isAdminRoute, isEntryRoute, resolveAppGate } from './appGates';
+import { APP_GATES, isAdminRoute, isEntryRoute, isEntryRouteOf, resolveAppGate } from './appGates';
 import { isContestantRoute, isProtectedRoute, ROUTE } from './route';
 import type { AppGate } from './appGates';
 
@@ -100,9 +100,9 @@ describe('APP_GATES — one declared table, two rows (D10-C09)', () => {
 
   it('declares the candidate row first and the admin row second', () => {
     expect(
-      APP_GATES.map((gate) => gate.loginRoute),
+      APP_GATES.map((gate) => gate.name),
       'The order of the gate table is load-bearing, because resolveAppGate returns the FIRST matching row. This assertion fixes the order the identity assertions below are written against.'
-    ).toEqual(['ContestantAppLogin', 'AdminAppLogin']);
+    ).toEqual(['Contestant App', 'Admin App']);
   });
 
   it('is frozen, and a write to it throws', () => {
@@ -111,17 +111,17 @@ describe('APP_GATES — one declared table, two rows (D10-C09)', () => {
       (APP_GATES as Array<AppGate>)[0] = APP_GATES[1];
     }, 'Overwriting a row of the gate table did not throw. A request handler that can rewrite its own gate table is a worse shape than the two hand-written conditionals this table replaces.').toThrow();
     expect(
-      APP_GATES[0].loginRoute,
+      APP_GATES[0].name,
       'The gate table changed after a write was attempted against it, so the freeze is nominal.'
-    ).toBe('ContestantAppLogin');
+    ).toBe('Contestant App');
   });
 
   it('freezes every row and every redirect descriptor', () => {
     for (const gate of APP_GATES) {
       expect(Object.isFrozen(gate), `The gate row ${gate.name} is not frozen.`).toBe(true);
       expect(
-        Object.isFrozen(gate.whenAuthenticatedOnLogin),
-        `The authenticated-on-login descriptor of ${gate.name} is not frozen.`
+        Object.isFrozen(gate.whenAuthenticatedOnEntry),
+        `The authenticated-on-entry descriptor of ${gate.name} is not frozen.`
       ).toBe(true);
       expect(
         Object.isFrozen(gate.whenUnauthenticatedInProtectedGroup),
@@ -133,13 +133,12 @@ describe('APP_GATES — one declared table, two rows (D10-C09)', () => {
 
   it('holds no path string in any descriptor: every target is a route key', () => {
     for (const gate of APP_GATES) {
-      for (const descriptor of [gate.whenAuthenticatedOnLogin, gate.whenUnauthenticatedInProtectedGroup]) {
+      for (const descriptor of [gate.whenAuthenticatedOnEntry, gate.whenUnauthenticatedInProtectedGroup]) {
         expect(
           descriptor.route in ROUTE,
           `The descriptor ${descriptor.route} on the row ${gate.name} is not a key of the ROUTE map. A descriptor naming a path rather than a key gives the app a second producer of route strings, which is the drift this table exists to remove.`
         ).toBe(true);
       }
-      expect(gate.loginRoute in ROUTE, `The login route key of ${gate.name} is not a key of the ROUTE map.`).toBe(true);
       for (const key of gate.entryRoutes) {
         expect(
           key in ROUTE,
@@ -189,8 +188,8 @@ describe('resolveAppGate — the first matching row wins (D10-C09)', () => {
     const candidate = resolveAppGate(ROUTE.ContestantAppProfile);
     const admin = resolveAppGate(ROUTE.AdminAppJobs);
     expect(candidate, 'The two lookups returned the same row for two different applications.').not.toBe(admin);
-    expect(candidate?.loginRoute).toBe('ContestantAppLogin');
-    expect(admin?.loginRoute).toBe('AdminAppLogin');
+    expect(candidate?.name).toBe('Contestant App');
+    expect(admin?.name).toBe('Admin App');
     expect(
       APP_GATES.map((gate) => gate.name),
       'Resolving a gate changed the table. The table is module-level state shared by every concurrent request, so a lookup that mutated it would let two requests observe each other.'
@@ -224,20 +223,20 @@ describe('the two rows carry their genuinely different redirect shapes as data (
 
   it('sends an authenticated caller away from each app login page to that app home', () => {
     const [candidate, admin] = APP_GATES;
-    expect(candidate.whenAuthenticatedOnLogin.status).toBe(303);
-    expect(candidate.whenAuthenticatedOnLogin.route).toBe('ContestantAppHome');
-    expect(candidate.whenAuthenticatedOnLogin.params({ redirectTo: 'contestant/profile' })).toEqual({});
-    expect(admin.whenAuthenticatedOnLogin.status).toBe(303);
-    expect(admin.whenAuthenticatedOnLogin.route).toBe('AdminAppHome');
+    expect(candidate.whenAuthenticatedOnEntry.status).toBe(303);
+    expect(candidate.whenAuthenticatedOnEntry.route).toBe('ContestantAppHome');
+    expect(candidate.whenAuthenticatedOnEntry.params({ redirectTo: 'contestant/profile' })).toEqual({});
+    expect(admin.whenAuthenticatedOnEntry.status).toBe(303);
+    expect(admin.whenAuthenticatedOnEntry.route).toBe('AdminAppHome');
     expect(
-      admin.whenAuthenticatedOnLogin.params({ redirectTo: 'admin/jobs' }),
-      'The authenticated-on-login bounce carries no parameters on either side; a redirect target here would be a caller-controlled value applied to an already-authenticated session.'
+      admin.whenAuthenticatedOnEntry.params({ redirectTo: 'admin/jobs' }),
+      'The authenticated-on-entry bounce carries no parameters on either side; a redirect target here would be a caller-controlled value applied to an already-authenticated session.'
     ).toEqual({});
   });
 
   it('resolves each descriptor to a route id that its own application predicate claims', () => {
     for (const gate of APP_GATES) {
-      for (const descriptor of [gate.whenAuthenticatedOnLogin, gate.whenUnauthenticatedInProtectedGroup]) {
+      for (const descriptor of [gate.whenAuthenticatedOnEntry, gate.whenUnauthenticatedInProtectedGroup]) {
         const target = ROUTE[descriptor.route];
         expect(
           gate.isRoute(target),
@@ -273,7 +272,7 @@ describe('the entry routes — every route a signed-in caller is sent away from'
   it('holds the login route of its own row, and no key twice', () => {
     for (const gate of APP_GATES) {
       expect(gate.entryRoutes, `The entry routes of ${gate.name} do not hold its own login route.`).toContain(
-        gate.loginRoute
+        gate.whenUnauthenticatedInProtectedGroup.route
       );
       expect(new Set(gate.entryRoutes).size, `An entry route of ${gate.name} is listed twice.`).toBe(
         gate.entryRoutes.length
@@ -354,5 +353,24 @@ describe('isEntryRoute — whether a route id is an entry route of the row that 
 
   it('answers false for the "email sent" screen, which a signed-in user reaches from the forgot-password page', () => {
     expect(isEntryRoute(ROUTE.ContestantAppEmailSent)).toBe(false);
+  });
+});
+
+describe('isEntryRouteOf — whether a route id is an entry route of a given row', () => {
+  it("answers true for each row's own entry routes and false for the other row's", () => {
+    const [candidate, admin] = APP_GATES;
+    for (const key of candidate.entryRoutes) {
+      expect(isEntryRouteOf(candidate, ROUTE[key]), `${key} is not an entry route of ${candidate.name}.`).toBe(true);
+      expect(isEntryRouteOf(admin, ROUTE[key]), `${key} is an entry route of ${admin.name}.`).toBe(false);
+    }
+    for (const key of admin.entryRoutes) {
+      expect(isEntryRouteOf(admin, ROUTE[key]), `${key} is not an entry route of ${admin.name}.`).toBe(true);
+      expect(isEntryRouteOf(candidate, ROUTE[key]), `${key} is an entry route of ${candidate.name}.`).toBe(false);
+    }
+  });
+
+  it('answers false for a protected route of the row', () => {
+    expect(isEntryRouteOf(APP_GATES[0], ROUTE.ContestantAppProfile)).toBe(false);
+    expect(isEntryRouteOf(APP_GATES[1], ROUTE.AdminAppJobs)).toBe(false);
   });
 });
