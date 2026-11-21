@@ -11,7 +11,7 @@ import parser from 'svelte-eslint-parser';
  *
  * GROUP 1 — the boundary's own INSIDE. These are not "leaks" at all; they are what the adapter IS, and they are permanent by construction. A guard that fired here would be broken rather than strict.
  *
- * GROUP 2 — the six grandfathered sites OUTSIDE the boundary, each annotated with its disposition (see phase 158). One is a route file, one the password sign-in action both apps' login routes share, one the server helper the Contestant App's protected loads sign out through and one the server module that verifies a mailed link; the last two live under `src/` but outside the scope the guard was written for, and are recorded here so the guard does not fail on files it was never meant to cover.
+ * GROUP 2 — the six grandfathered sites OUTSIDE the boundary, each annotated with its disposition (see phase 158). One is a route file, one the password sign-in action both apps' login routes share, one the server helper sign-outs go through and one the server module that verifies a mailed link; the last two live under `src/` but outside the scope the guard was written for, and are recorded here so the guard does not fail on files it was never meant to cover.
  */
 const ADAPTER_BOUNDARY_ALLOWLIST = [
   // GROUP 1 of 2, the boundary's own inside, permanent by construction.
@@ -28,8 +28,8 @@ const ADAPTER_BOUNDARY_ALLOWLIST = [
   // GROUP 2 of 2, the six grandfathered sites, each annotated with its disposition (see phase 158). None of them can be taken off the list by an edit of its file alone: the shared password sign-in action is the heart of the login collapse, the mailed-link module needs adapter methods that do not exist, the logout handler would create a route cycle, and the remaining three either hand the cookie-capable client to the adapter or declare and populate it. The six below are a worklist, not an oversight.
   // The verification of a mailed link, which the confirm page's action calls: `auth.verifyOtp`, the refresh after the claim and the local sign-out after a failed one, all needing adapter methods that do not exist on `DataWriter` today.
   'src/lib/server/auth/mailedLink.ts',
-  // ONE site, a bare `locals.supabase.auth.signOut()` on the request's own cookie-bearing client. Every sign-out of the Contestant App's protected loads goes through this helper, so no load of that tree needs an entry of its own.
-  'src/lib/server/contestant/signOutToLogin.ts',
+  // ONE site, a bare `locals.supabase.auth.signOut()` on the request's own cookie-bearing client. Every sign-out of the Contestant App's protected loads and the confirm page's sign-out of a session it finds go through this helper, so no load or action of those routes needs an entry of its own.
+  'src/lib/server/auth/signOutOrFail.ts',
   // The hardest of the six: the password sign-in action of both apps' login routes, which hands `locals.supabase.auth`, the auth surface of the request's own cookie-bearing client, to the password sign-in helper so the session cookies land on the action's response; `DataWriter` has no method that takes its place. The heart of the login collapse (see phase 158).
   'src/lib/server/auth/passwordLoginAction.ts',
   // The easiest of the six, with a caveat: the handler signs out the local session, which `SupabaseDataWriter._logout` already does, but that method `fetch`es THIS route to clear the httpOnly cookies, so moving the call into the writer would create a cycle that has to be broken first.
@@ -42,11 +42,11 @@ const ADAPTER_BOUNDARY_ALLOWLIST = [
   // Outside both groups: the form action of the Contestant App's code sign-in screen. It hands `locals.supabase.auth`, the auth surface of the request's own cookie-bearing client, to the shared code sign-in helper, which refreshes the session on it after the claim and signs it out locally when the grant gate refuses. Those two calls must reach the client the session was established on, and `DataWriter` has no method that takes their place.
   'src/routes/contestant/register/code/sign-in/+page.server.ts',
 
-  // Outside both groups: the form action of the confirm page between a mailed link and its verification. When the request holds a session it signs that session out on `locals.supabase`, the request's own cookie-bearing client, before the link is verified on the same client, and `DataWriter` has no method that takes that call's place.
-  'src/routes/auth/confirm/+page.server.ts',
+  // Outside both groups: the identity provider's callback. It verifies the token `identity-callback` answers with on `locals.supabase`, the request's own cookie-bearing client, because the session cookies reach the browser only when the session is established on that client, and `DataWriter` has no method that takes that call's place.
+  'src/routes/api/oidc/callback/+server.ts',
 
-  // Outside both groups: the identity provider's callback. It invokes `identity-callback` and verifies the token the function answers with on `locals.supabase`, the request's own cookie-bearing client, because the session cookies reach the browser only when the session is established on that client, and `DataWriter` has no method that takes either call's place.
-  'src/routes/api/oidc/callback/+server.ts'
+  // Outside both groups: the callback's call to `identity-callback`, made on `locals.supabase` with the server secret, which no `DataWriter` method sends.
+  'src/lib/server/auth/identityCallback.ts'
 ];
 
 /**
