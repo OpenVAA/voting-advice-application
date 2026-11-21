@@ -15,7 +15,14 @@ import {
 import { COOKIE } from '$lib/cookies';
 import { getLocale } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
-import { buildRoute, isApiRoute, isProtectedRoute, loginRedirectTargetOf, resolveAppGate, ROUTE } from '$lib/routes';
+import {
+  buildRoute,
+  isApiRoute,
+  isEntryRouteOf,
+  isProtectedRoute,
+  loginRedirectTargetOf,
+  resolveAppGate
+} from '$lib/routes';
 import { analyticsConfigProblems } from '$lib/server/analytics/env';
 import { missingRequiredEnv } from '$lib/server/startup/requiredEnv';
 import { createSafeGetSession } from '$lib/supabase/safeGetSession';
@@ -154,8 +161,8 @@ const appGateHandle: Handle = async ({ event, resolve }) => {
 
   const { session } = await event.locals.safeGetSession();
 
-  if (session && gate.entryRoutes.some((key) => ROUTE[key] === routeId)) {
-    const { status, route: target, params } = gate.whenAuthenticatedOnLogin;
+  if (session && isEntryRouteOf(gate, routeId)) {
+    const { status, route: target, params } = gate.whenAuthenticatedOnEntry;
     redirect(status, buildRoute({ route: target, locale, ...params({ redirectTo: '' }) }));
   }
   if (!session && isProtectedRoute(routeId)) {

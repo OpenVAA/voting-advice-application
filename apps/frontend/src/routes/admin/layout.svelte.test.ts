@@ -15,7 +15,7 @@ const PROTECTED_ROUTE = ROUTE.AdminAppHome;
 const OTHER_PROTECTED_ROUTE = ROUTE.AdminAppJobs;
 
 /** The entry routes of the Admin App's row of the gate table. */
-const ENTRY_ROUTES = APP_GATES.find((gate) => gate.loginRoute === 'AdminAppLogin')?.entryRoutes ?? [];
+const ENTRY_ROUTES = APP_GATES.find((gate) => gate.name === 'Admin App')?.entryRoutes ?? [];
 
 const MESSAGE = 'common.logoutFailed';
 

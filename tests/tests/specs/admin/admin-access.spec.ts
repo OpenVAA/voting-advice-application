@@ -114,7 +114,7 @@ test.describe('admin-access (D10-C11 / D10-C08 / D10-C12)', () => {
     // 3. THE HOOK GATE, ON THE ARM THAT DISCRIMINATES.
     //
     // An authenticated caller asking for the admin LOGIN page must be bounced to the admin home.
-    // The load of `admin/login/+page.server.ts` returns no data, so the login page itself cannot produce this answer — only `appGateHandle`'s `whenAuthenticatedOnLogin` descriptor can. With the admin row deleted from `APP_GATES` this is a 200 on the login page instead.
+    // The load of `admin/login/+page.server.ts` returns no data, so the login page itself cannot produce this answer — only `appGateHandle`'s `whenAuthenticatedOnEntry` descriptor can. With the admin row deleted from `APP_GATES` this is a 200 on the login page instead.
     //
     // `maxRedirects: 0` is what makes the observation the FIRST response rather than wherever the chain settles; the request context is the page's own, so it carries this context's cookies.
     // ---------------------------------------------------------------------

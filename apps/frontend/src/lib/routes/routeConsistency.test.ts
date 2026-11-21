@@ -483,7 +483,7 @@ describe('C5 — every gated application subtree has a row in the gate table (D1
   );
 
   it('the admin row bounces with the same error message the admin protected layout redirects with', () => {
-    const adminGate = APP_GATES.find((gate) => gate.loginRoute === 'AdminAppLogin');
+    const adminGate = APP_GATES.find((gate) => gate.whenUnauthenticatedInProtectedGroup.route === 'AdminAppLogin');
     expect(
       adminGate,
       'No row of APP_GATES names the admin login route, so the admin application has no gate row at all and the check below has nothing to compare.'
