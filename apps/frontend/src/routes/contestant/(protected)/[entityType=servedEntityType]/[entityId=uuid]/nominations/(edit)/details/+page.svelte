@@ -45,8 +45,9 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
 <script lang="ts">
   import { log } from '@openvaa/app-shared';
   import { onDestroy, tick, untrack } from 'svelte';
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { NominationCard } from '$contestant/components/nominationCard';
   import { NotEditableNote } from '$contestant/components/notEditableNote';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
@@ -60,25 +61,36 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     buildCards,
     desiredSetOf,
     draftFactsOf,
+    NOMINATION_REFUSAL_MESSAGE,
     parentChoicesOf,
+    refusalOf,
     sameNominations,
     somethingToWrite,
     validateCards
   } from '$lib/contestant/nominations';
   import { nominationsSaveAction } from '$lib/contestant/tasks';
   import { entityDescriptorOf, servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
+  import { rereadPageData } from '$lib/contestant/utils/rereadPageData';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { EntitySelector } from '$lib/dynamic-components/entitySelector';
   import { CONTESTANT_NOMINATION_EDITOR } from '$lib/routes';
   import { EDITOR_STEP_ROUTE, hasSelectionStep, managedNominationsOf, selectionSearch } from '../stepSelection';
+  import type { NominationCardRow } from '$contestant/components/nominationCard';
   import type {
     EntityNomination,
     NominationContest,
     NominationParentOption,
     SetEntityNominationsResult
   } from '$lib/api/base/dataWriter.type';
-  import type { CardError, CardErrorKind, EditorCard, ListedParent, ParentChoices } from '$lib/contestant/nominations';
+  import type {
+    CardError,
+    CardErrorKind,
+    EditorCard,
+    ListedParent,
+    NominationRefusal,
+    ParentChoices
+  } from '$lib/contestant/nominations';
   import type { EntitySelectorOption } from '$lib/dynamic-components/entitySelector';
   import type { PageData } from './$types';
 
@@ -106,8 +118,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   /** Whether a save is under way. */
   let saving = $state(false);
   /** What a press of the main button that stayed on the page says: a card is not finished, or the save was not stored for one of five reasons. */
-  type StayedOutcome =
-    'invalid' | 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' | 'nominationsLocked' | 'failed';
+  type StayedOutcome = 'invalid' | NominationRefusal;
   /** What the last press of the main button left to say, while it did not lead on to another page. */
   let saveMessage = $state<{ outcome: StayedOutcome; text: string } | undefined>();
   /** The errors the last press of the main button found. */
@@ -248,7 +259,8 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
 
   type CardView = {
     card: EditorCard;
-    headingId: string;
+    /** The prefix of the ids of the elements inside the card. */
+    idPrefix: string;
     electionName: string;
     constituencyName: string;
     /** The name of the constituency the nomination is stored in, on a moved card alone. */
@@ -290,7 +302,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
         const choices = choicesByKey.get(card.key) ?? { options: [], selected: undefined, required: false };
         return {
           card,
-          headingId: `nomination-editor-card-${index}-heading`,
+          idPrefix: `nomination-editor-card-${index}`,
           electionName: contestantCtx.dataRoot.getElection(card.electionId).name,
           constituencyName: contestantCtx.dataRoot.getConstituency(card.constituencyId).name,
           previousConstituencyName:
@@ -512,11 +524,8 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
         return undefined;
       });
     // The page's loads are run again whatever the outcome, so that the settings, the entity's nominations, its tasks and its question lists are those the database holds. The re-read redirects to the nominations view when nominations can no longer be edited.
-    await invalidateAll().catch((e) => {
-      log.error(`[Contestant app nomination editor] Error reading the page data again: ${e?.message}`);
-    });
-    // What the re-read brought has reached the entity's tasks and this page's own data after one tick.
-    await tick();
+    // What the re-read brought has reached the entity's tasks and this page's own data once it resolves.
+    await rereadPageData('[Contestant app nomination editor]');
 
     if (result?.type === 'saved') {
       // Where the re-read led out of the editor the user stays there; where it led to another step of the editor, the save still leads to the nominations view.
@@ -528,23 +537,13 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     if (!shown) return;
 
     const outcome = await notStoredOutcome(result, startedFrom);
-    saveMessage = { outcome, text: t(NOT_STORED_MESSAGE[outcome]) };
+    saveMessage = { outcome, text: t(NOMINATION_REFUSAL_MESSAGE[outcome]) };
     leavingUnasked = false;
     saving = false;
     // The button was disabled while the save ran, which can cost it its focus.
     await tick();
     actions?.querySelector<HTMLElement>('[data-testid="contestant-nomination-submit"]')?.focus();
   }
-
-  /** The message of each reason a save was not stored. */
-  const NOT_STORED_MESSAGE = {
-    changed: 'contestantApp.nominations.error.changed',
-    hasCandidates: 'contestantApp.nominations.error.hasCandidates',
-    tooManyPending: 'contestantApp.nominations.error.tooManyPending',
-    answersLocked: 'contestantApp.common.nominationsNotEditableAnswersLocked',
-    nominationsLocked: 'contestantApp.common.nominationsNotEditable',
-    failed: 'contestantApp.nominations.error.saveFailed'
-  } as const;
 
   /**
    * Why a save was not stored, decided in a fixed order after the page's data was read again: the write was refused because answers or nominations are locked, then the entity's nominations are no longer those the cards were built on, by the re-read or by the write's own refusal, then the two other refusals the write names, then anything else. Where the nominations have changed the cards are built again from them, and the read of their options is awaited.
@@ -554,7 +553,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   async function notStoredOutcome(
     result: SetEntityNominationsResult | undefined,
     startedFrom: ReadonlyArray<EntityNomination>
-  ): Promise<keyof typeof NOT_STORED_MESSAGE> {
+  ): Promise<NominationRefusal> {
     // A lock refuses the write before the nominations are compared, so the refusal says nothing of whether they have changed, and no save can be stored while it holds.
     if (result?.type === 'refused' && (result.reason === 'answersLocked' || result.reason === 'nominationsLocked'))
       return result.reason;
@@ -566,9 +565,36 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
       await optionsRead;
       return 'changed';
     }
-    if (result?.type === 'refused' && (result.reason === 'hasCandidates' || result.reason === 'tooManyPending'))
-      return result.reason;
-    return 'failed';
+    return refusalOf(result) ?? 'failed';
+  }
+
+  /**
+   * The rows of a card: its constituency, with the one it moves from under it on a moved card, and the status of a stored nomination.
+   */
+  function rowsOf(view: CardView): Array<NominationCardRow> {
+    const rows: Array<NominationCardRow> = [
+      {
+        label: t('common.constituency'),
+        value: view.constituencyName,
+        testId: 'nomination-editor-constituency',
+        line:
+          view.previousConstituencyName !== undefined
+            ? {
+                text: t('contestantApp.nominations.details.previousConstituency', {
+                  constituency: view.previousConstituencyName
+                }),
+                testId: 'nomination-editor-previous-constituency'
+              }
+            : undefined
+      }
+    ];
+    if (view.card.nominationId !== undefined)
+      rows.push({
+        label: t('contestantApp.nominations.state.label'),
+        value: view.card.confirmed ? t('common.confirmed') : t('contestantApp.nominations.state.pending'),
+        testId: 'nomination-editor-state'
+      });
+    return rows;
   }
 
   /**
@@ -589,14 +615,6 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     if (listing) return pageStyles.push({ drawer: { background: 'bg-base-200' } });
   });
 </script>
-
-<!-- One row of a card: the label above its value, which wraps at any character. -->
-{#snippet row(label: string, value: string, testId: string)}
-  <div>
-    <dt class="small-info uc-first">{label}</dt>
-    <dd class="mt-xs [overflow-wrap:anywhere]" data-testid={testId}>{value}</dd>
-  </div>
-{/snippet}
 
 <PreventNavigation active={() => !leavingUnasked && somethingToWrite(cards)} />
 
@@ -623,43 +641,19 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
       bind:this={cardList}
       data-testid="contestant-nomination-details-list">
       {#each views as view (view.card.key)}
-        {@const otherErrorId = `${view.headingId}-other-error`}
-        {@const removedNoteId = `${view.headingId}-removed-note`}
+        {@const otherErrorId = `${view.idPrefix}-other-error`}
+        {@const removedNoteId = `${view.idPrefix}-removed-note`}
         {@const otherNameMissing = shownErrors.get(view.card.key) === 'otherNameRequired'}
         {@const existing = view.card.nominationId !== undefined}
         <li>
-          <article
-            class="bg-base-100 p-lg rounded-lg"
-            aria-labelledby={view.headingId}
+          <NominationCard
+            title={view.electionName}
+            titleTestId="nomination-editor-election"
+            rows={rowsOf(view)}
             data-testid="nomination-editor-card"
             data-card-state={view.card.state}
             data-confirmed={view.card.confirmed ? 'true' : 'false'}
             data-moved={view.card.previousConstituencyId !== undefined ? 'true' : 'false'}>
-            <h2 class="text-lg" id={view.headingId} data-testid="nomination-editor-election">{view.electionName}</h2>
-            <dl class="mt-md gap-md flex flex-col">
-              <div>
-                <dt class="small-info uc-first">{t('common.constituency')}</dt>
-                <dd class="mt-xs [overflow-wrap:anywhere]" data-testid="nomination-editor-constituency">
-                  {view.constituencyName}
-                </dd>
-                {#if view.previousConstituencyName !== undefined}
-                  <dd
-                    class="small-info mt-xs [overflow-wrap:anywhere]"
-                    data-testid="nomination-editor-previous-constituency">
-                    {t('contestantApp.nominations.details.previousConstituency', {
-                      constituency: view.previousConstituencyName
-                    })}
-                  </dd>
-                {/if}
-              </div>
-              {#if existing}
-                {@render row(
-                  t('contestantApp.nominations.state.label'),
-                  view.card.confirmed ? t('common.confirmed') : t('contestantApp.nominations.state.pending'),
-                  'nomination-editor-state'
-                )}
-              {/if}
-            </dl>
             {#if view.card.state === 'removed'}
               <Warning class="mt-md" role="status" id={removedNoteId} data-testid="nomination-editor-removed-note">
                 {t(
@@ -750,7 +744,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
                   data-testid="nomination-editor-remove" />
               {/if}
             {/if}
-          </article>
+          </NominationCard>
         </li>
       {/each}
     </ul>

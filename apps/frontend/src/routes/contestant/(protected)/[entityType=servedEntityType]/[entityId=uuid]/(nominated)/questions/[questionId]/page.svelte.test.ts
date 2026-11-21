@@ -5,7 +5,7 @@
  *
  * 1. **The label, before any save.** "Save and Continue" while a save would lead onward — another question is unanswered, or this is the last unanswered one — and "Save and Return" or "Return" when the save is an edit with no question left.
  * 2. **The target of a stored save.** The first unanswered question while one remains; the profile, or the entity's home, after the last unanswered question was answered; the questions list after an edit with none left.
- * 3. **A save that is not stored.** Nothing navigates, the failure is said, and the label is what it was.
+ * 3. **A save that is not stored.** Nothing navigates, the failure is said in the alert region rendered before the press, and the label is what it was.
  * 4. **Answers locked.** No Save button.
  * 5. **A save the answers lock refuses.** The page says that answers can no longer be edited rather than that the save failed, and reads its data again: when the save rejects with the answers-locked error, and when any other failed save is followed by a read of the lock alone that finds answers locked. A failed save after which the lock is read as open, or cannot be read, runs no load again: the page stays as it is, with the draft, and says that the save failed.
  * 6. **The open answer before the answer.** The open answer of a question that allows one can be written while the question is unanswered; Save stays disabled, and the sentence that says why is beside it and describes it. What is written is held by the page and staged with the answer once one is chosen, never on its own, so no save can store an open answer with no answer.
@@ -204,6 +204,7 @@ const Page = (await import('./+page.svelte')).default;
 const SAVE = '[data-testid="contestant-questions-save"]';
 const RETURN = '[data-testid="contestant-questions-return"]';
 const LOCKED_NOTE = '[data-testid="contestant-answers-locked-warning"]';
+const SAVE_MESSAGE = '[data-testid="contestant-questions-save-message"]';
 
 const SAVE_AND_CONTINUE = 'common.saveAndContinue';
 const SAVE_AND_RETURN = 'common.saveAndReturn';
@@ -427,6 +428,20 @@ describe('question page — a save that is not stored', () => {
     expect(target.textContent).toContain(SAVE_FAILED);
     expect(target.textContent).not.toContain('the write was refused');
     expect(saveOf(target).textContent).toContain(SAVE_AND_CONTINUE);
+  });
+
+  it('puts the failure into an alert region that is rendered before the press, so that it is announced', async () => {
+    save.mockResolvedValue({ type: 'failure' });
+    const target = render(SECOND, { hasUnsaved: true, unansweredOpinionQuestions: [SECOND] });
+    const region = target.querySelector<HTMLElement>(SAVE_MESSAGE);
+    expect(region, 'the message region should be rendered before any save').not.toBeNull();
+    expect(region!.getAttribute('role')).toBe('alert');
+    expect(region!.textContent?.trim()).toBe('');
+
+    await pressSave(target);
+
+    expect(target.querySelector(SAVE_MESSAGE)).toBe(region);
+    expect(region!.textContent).toContain(SAVE_FAILED);
   });
 });
 

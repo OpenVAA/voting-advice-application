@@ -15,6 +15,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
 - "Send again" keeps focus when pressed. While unavailable it is `aria-disabled`, still a tab stop, and its label ends with the seconds left, which also describe it. A polite status region says when a new email has been asked for and when another can be asked for.
 - "Use another email address" moves focus to the address field it shows.
 - A failed save is announced as an alert.
+- The message that the password could not be changed is an alert, and the line that it was changed a status message; both regions are always rendered.
 -->
 
 <script lang="ts">
@@ -242,11 +243,17 @@ The signed-in user's own settings page: the account's address, which cannot be e
             validationError = errorMessage;
           }} />
 
-        {#if status === 'error'}
-          <ErrorMessage inline message={t('contestantApp.settings.error.changePassword')} class="mb-lg mt-md" />
-        {:else if status === 'success'}
-          <SuccessMessage inline message={t('contestantApp.settings.password.updated')} class="mb-lg mt-md" />
-        {/if}
+        <!-- The result of a password change. Both regions are always rendered, so that a message put into one is announced. -->
+        <div role="alert" data-testid="settings-password-error">
+          {#if status === 'error'}
+            <ErrorMessage inline message={t('contestantApp.settings.error.changePassword')} class="mb-lg mt-md" />
+          {/if}
+        </div>
+        <div role="status" data-testid="settings-password-updated">
+          {#if status === 'success'}
+            <SuccessMessage inline message={t('contestantApp.settings.password.updated')} class="mb-lg mt-md" />
+          {/if}
+        </div>
 
         <Button
           onclick={handleSubmit}

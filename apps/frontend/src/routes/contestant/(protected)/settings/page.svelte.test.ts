@@ -10,6 +10,7 @@
  * 3. **Another address** — "Use another email address" shows the address fields and the save button; an incomplete pair sends nothing; a valid pair is saved and the loads rerun; an address another account holds is told at the address field; any other failure is told under the fields.
  * 4. **No address** — no address anywhere.
  * 5. **The way back** — Return leads to the app's root, which names no entity: the page is the user's own and is reached from every state, with no entity, one or several.
+ * 6. **A password change** — its failure is put into an alert region, and its success into a status region, each rendered before the press, so that the message is announced.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
@@ -404,5 +405,75 @@ describe('the settings page — the way back', () => {
     const target = render(user);
 
     expect(one<HTMLAnchorElement>(target, SEL.return).getAttribute('href')).toBe('/route/ContestantAppHome');
+  });
+});
+
+describe('the settings page — a password change', () => {
+  /** A password that satisfies every enforced rule. */
+  const NEW_PASSWORD = 'Abcdef1!';
+  /** The password rule list validates on a 200 ms debounce. */
+  const DEBOUNCE_MS = 200;
+  const PASSWORD = {
+    field: '[data-testid="password-setter-password"] input',
+    confirmation: '[data-testid="password-setter-confirmation"] input',
+    submit: '[data-testid="settings-update-password"]',
+    error: '[data-testid="settings-password-error"]',
+    updated: '[data-testid="settings-password-updated"]'
+  };
+  const CHANGE_FAILED = 'contestantApp.settings.error.changePassword';
+  const UPDATED = 'contestantApp.settings.password.updated';
+
+  /** Type a valid new password into both fields and let the rule list judge it. */
+  function typeNewPassword(target: HTMLElement): void {
+    for (const selector of [PASSWORD.field, PASSWORD.confirmation]) {
+      const input = one<HTMLInputElement>(target, selector);
+      input.value = NEW_PASSWORD;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      flushSync();
+    }
+    vi.advanceTimersByTime(DEBOUNCE_MS);
+    flushSync();
+  }
+
+  /** The two regions, which are rendered and empty before any press. */
+  function regionsOf(target: HTMLElement): { error: HTMLElement; updated: HTMLElement } {
+    const error = one(target, PASSWORD.error);
+    const updated = one(target, PASSWORD.updated);
+    expect(error.getAttribute('role')).toBe('alert');
+    expect(updated.getAttribute('role')).toBe('status');
+    expect(error.textContent?.trim()).toBe('');
+    expect(updated.textContent?.trim()).toBe('');
+    return { error, updated };
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  });
+
+  it('puts a failed change into the alert region rendered before the press', async () => {
+    context.setPassword.mockResolvedValue({ type: 'failure' });
+    const target = render(PROVED_USER);
+    const { error, updated } = regionsOf(target);
+    typeNewPassword(target);
+
+    await press(target, PASSWORD.submit);
+
+    expect(context.setPassword).toHaveBeenCalledWith({ password: NEW_PASSWORD });
+    expect(one(target, PASSWORD.error)).toBe(error);
+    expect(error.textContent).toContain(CHANGE_FAILED);
+    expect(updated.textContent?.trim()).toBe('');
+  });
+
+  it('puts a stored change into the status region rendered before the press', async () => {
+    context.setPassword.mockResolvedValue({ type: 'success' });
+    const target = render(PROVED_USER);
+    const { error, updated } = regionsOf(target);
+    typeNewPassword(target);
+
+    await press(target, PASSWORD.submit);
+
+    expect(one(target, PASSWORD.updated)).toBe(updated);
+    expect(updated.textContent).toContain(UPDATED);
+    expect(error.textContent?.trim()).toBe('');
   });
 });

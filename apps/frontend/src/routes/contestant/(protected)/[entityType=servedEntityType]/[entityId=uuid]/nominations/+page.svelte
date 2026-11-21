@@ -60,20 +60,23 @@ Return follows it and leads to the entity's home wherever the main button leads 
 <script lang="ts">
   import { log } from '@openvaa/app-shared';
   import { tick } from 'svelte';
-  import { invalidateAll } from '$app/navigation';
+  import { NominationCard } from '$contestant/components/nominationCard';
   import { NotEditableNote } from '$contestant/components/notEditableNote';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Warning } from '$lib/components/warning';
-  import { typedParentNameOf } from '$lib/contestant/nominations';
+  import { NOMINATION_REFUSAL_MESSAGE, refusalOf, typedParentNameOf } from '$lib/contestant/nominations';
   import { nominationsViewTarget } from '$lib/contestant/tasks';
   import { entityDescriptorOf, servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
+  import { rereadPageData } from '$lib/contestant/utils/rereadPageData';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { ContactSupport } from '$lib/dynamic-components/contactSupport';
   import { managedNominationsOf, selectionSearch } from './(edit)/stepSelection';
-  import type { DesiredNomination, EntityNomination, SetEntityNominationsResult } from '$lib/api/base/dataWriter.type';
+  import type { NominationCardRow } from '$contestant/components/nominationCard';
+  import type { DesiredNomination, EntityNomination } from '$lib/api/base/dataWriter.type';
+  import type { NominationRefusal } from '$lib/contestant/nominations';
   import type { NominationsViewTarget } from '$lib/contestant/tasks';
   import type { TranslationKey } from '$types';
   import type { PageData } from './$types';
@@ -174,16 +177,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
   );
 
   /** What a confirmed delete left to say: that it was done, or why it was not. */
-  type DeleteOutcome =
-    'deleted' | 'changed' | 'hasCandidates' | 'tooManyPending' | 'answersLocked' | 'nominationsLocked' | 'failed';
-
-  /** The message of each reason a delete was not stored: those the editor shows for a save. */
-  const NOT_DELETED_MESSAGE = {
-    changed: 'contestantApp.nominations.error.changed',
-    hasCandidates: 'contestantApp.nominations.error.hasCandidates',
-    tooManyPending: 'contestantApp.nominations.error.tooManyPending',
-    failed: 'contestantApp.nominations.error.saveFailed'
-  } as const satisfies Partial<Record<DeleteOutcome, TranslationKey>>;
+  type DeleteOutcome = 'deleted' | NominationRefusal;
 
   /** The id of the nomination whose card asks to confirm its delete. */
   let confirming = $state<string | undefined>();
@@ -244,13 +238,10 @@ Return follows it and leads to the entity's home wherever the main button leads 
         return undefined;
       });
     // The page's loads are run again whatever the outcome, so that the nominations, the settings and the entity's tasks are those the database holds.
-    await invalidateAll().catch((e) => {
-      log.error(`[Contestant app nominations] Error reading the page data again: ${e?.message}`);
-    });
-    await tick();
+    await rereadPageData('[Contestant app nominations]');
     deleting = false;
     confirming = undefined;
-    deleteOutcome = outcomeOf(result);
+    deleteOutcome = refusalOf(result) ?? 'deleted';
     if (deleteOutcome === 'deleted') {
       await tick();
       document.querySelector<HTMLElement>('[data-testid="contestant-nominations-continue"]')?.focus();
@@ -260,13 +251,38 @@ Return follows it and leads to the entity's home wherever the main button leads 
   }
 
   /**
-   * What a write of a delete came to.
-   * @param result - What the write answered, or nothing for a write that was rejected.
+   * The rows of a nomination's card: its constituency, what it stands under when it stands under something, its election symbol when it has one, and its state. A parent name the editor typed is shown with the line that it is a request.
    */
-  function outcomeOf(result: SetEntityNominationsResult | undefined): DeleteOutcome {
-    if (result?.type === 'saved') return 'deleted';
-    if (result?.type === 'refused') return result.reason;
-    return 'failed';
+  function rowsOf(nomination: EntityNomination): Array<NominationCardRow> {
+    const rows: Array<NominationCardRow> = [
+      { label: t('common.constituency'), value: nomination.constituencyName, testId: 'nomination-constituency' }
+    ];
+    const typedParentName = typedParentNameOf(nomination);
+    if (nomination.parent)
+      rows.push({
+        label: t(descriptor.nominationParentLabel),
+        value: nomination.parent.name || nomination.parent.shortName,
+        testId: 'nomination-parent'
+      });
+    else if (typedParentName)
+      rows.push({
+        label: t(descriptor.nominationParentLabel),
+        value: typedParentName,
+        testId: 'nomination-parent',
+        line: { text: t('contestantApp.nominations.requestedParent'), testId: 'nomination-requested-parent' }
+      });
+    if (nomination.electionSymbol)
+      rows.push({
+        label: t(`common.electionSymbol.${textType}`),
+        value: nomination.electionSymbol,
+        testId: 'nomination-election-symbol'
+      });
+    rows.push({
+      label: t('contestantApp.nominations.state.label'),
+      value: nomination.confirmed ? t('common.confirmed') : t('contestantApp.nominations.state.pending'),
+      testId: 'nomination-state'
+    });
+    return rows;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -285,19 +301,6 @@ Return follows it and leads to the entity's home wherever the main button leads 
     if (viewState === 'listed') return pageStyles.push({ drawer: { background: 'bg-base-200' } });
   });
 </script>
-
-<!-- One row of a card: the label above its value, which wraps at any character. A row given a line shows it under the value. -->
-{#snippet row(label: string, value: string | undefined, testId: string, line?: string)}
-  <div>
-    <dt class="small-info uc-first">{label}</dt>
-    <dd class="mt-xs [overflow-wrap:anywhere]" data-testid={testId}>
-      {value}
-      {#if line}
-        <p class="small-info mt-xs" data-testid="nomination-requested-parent">{line}</p>
-      {/if}
-    </dd>
-  </div>
-{/snippet}
 
 <MainContent
   title={t('contestantApp.nominations.title')}
@@ -325,7 +328,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
     {:else if deleteOutcome === 'nominationsLocked'}
       <NotEditableNote reason="nominationsLocked" class="mb-lg" />
     {:else if deleteOutcome && deleteOutcome !== 'deleted'}
-      <ErrorMessage inline message={t(NOT_DELETED_MESSAGE[deleteOutcome])} class="mb-lg" />
+      <ErrorMessage inline message={t(NOMINATION_REFUSAL_MESSAGE[deleteOutcome])} class="mb-lg" />
     {/if}
   </div>
   <div role="status" data-testid="contestant-nominations-deleted">
@@ -348,46 +351,15 @@ Return follows it and leads to the entity's home wherever the main button leads 
       bind:this={cardList}
       data-testid="contestant-nominations-list">
       {#each nominations as nomination (nomination.id)}
-        {@const headingId = `nomination-${nomination.id}-heading`}
-        {@const typedParentName = typedParentNameOf(nomination)}
         {@const promptId = `nomination-${nomination.id}-delete-prompt`}
         <li>
-          <article
-            class="bg-base-100 p-lg rounded-lg"
-            aria-labelledby={headingId}
+          <NominationCard
+            title={nomination.electionName}
+            titleTestId="nomination-election"
+            rows={rowsOf(nomination)}
             data-testid="contestant-nomination"
             data-nomination-id={nomination.id}
             data-confirmed={nomination.confirmed ? 'true' : 'false'}>
-            <h2 class="text-lg" id={headingId} data-testid="nomination-election">{nomination.electionName}</h2>
-            <dl class="mt-md gap-md flex flex-col">
-              {@render row(t('common.constituency'), nomination.constituencyName, 'nomination-constituency')}
-              {#if nomination.parent}
-                {@render row(
-                  t(descriptor.nominationParentLabel),
-                  nomination.parent.name || nomination.parent.shortName,
-                  'nomination-parent'
-                )}
-              {:else if typedParentName}
-                {@render row(
-                  t(descriptor.nominationParentLabel),
-                  typedParentName,
-                  'nomination-parent',
-                  t('contestantApp.nominations.requestedParent')
-                )}
-              {/if}
-              {#if nomination.electionSymbol}
-                {@render row(
-                  t(`common.electionSymbol.${textType}`),
-                  nomination.electionSymbol,
-                  'nomination-election-symbol'
-                )}
-              {/if}
-              {@render row(
-                t('contestantApp.nominations.state.label'),
-                nomination.confirmed ? t('common.confirmed') : t('contestantApp.nominations.state.pending'),
-                'nomination-state'
-              )}
-            </dl>
             {#if !nomination.confirmed}
               <p class="small-info mt-md" data-testid="nomination-pending-note">
                 {t('contestantApp.nominations.state.pendingInfo')}
@@ -433,7 +405,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
                 </div>
               {/if}
             {/if}
-          </article>
+          </NominationCard>
         </li>
       {/each}
     </ul>

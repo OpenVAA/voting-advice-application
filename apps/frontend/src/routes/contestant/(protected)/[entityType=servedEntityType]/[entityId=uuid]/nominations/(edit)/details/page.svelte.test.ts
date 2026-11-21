@@ -408,6 +408,13 @@ function textOf(element: Element): string {
   return (element.textContent ?? '').replace(/\s+/g, ' ').trim();
 }
 
+/** The text of a row's value without the line under it: a moved card's constituency names the previous one in its own element. */
+function valueTextOf(element: Element): string {
+  const copy = element.cloneNode(true) as Element;
+  for (const line of copy.querySelectorAll(PREVIOUS)) line.remove();
+  return textOf(copy);
+}
+
 /** The cards, in the page's order. */
 function cardsOf(root: ParentNode): Array<HTMLElement> {
   return [...root.querySelectorAll<HTMLElement>(CARD)];
@@ -417,7 +424,7 @@ function cardsOf(root: ParentNode): Array<HTMLElement> {
 function summaryOf(root: ParentNode): Array<[string, string, string | null]> {
   return cardsOf(root).map((card) => [
     textOf(one(card, ELECTION)),
-    textOf(one(card, CONSTITUENCY)),
+    valueTextOf(one(card, CONSTITUENCY)),
     card.getAttribute('data-card-state')
   ]);
 }
@@ -491,6 +498,7 @@ describe('which cards there are', () => {
     const card = one(root, CARD);
     expect(card.getAttribute('data-moved')).toBe('true');
     expect(textOf(one(card, PREVIOUS))).toBe(`${KEYS.previousConstituency} {"constituency":"Region 1"}`);
+    expect(one(card, CONSTITUENCY).contains(one(card, PREVIOUS))).toBe(true);
     expect(one<HTMLInputElement>(card, SYMBOL).value).toBe('7');
 
     await press(root, SUBMIT);
