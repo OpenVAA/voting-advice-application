@@ -71,8 +71,8 @@
  * hides the session behind an indirection this scanner cannot follow — a helper in another module
  * that returns it, or a value assembled through a variable chain — is not caught. The narrow
  * shapes it DOES catch are the ones the class actually took in this repository three times. The
- * unit spec `apps/frontend/src/routes/admin/layout.server.test.ts` is the other half: it
- * enumerates the two narrowed loads' returned key set and fails an adjacent member by name.
+ * unit spec `apps/frontend/src/lib/server/auth/accountLoads.test.ts` is the other half: it
+ * enumerates the shared projection load's returned key set and fails an adjacent member by name.
  *
  * Usage:
  *   node scripts/assert-no-session-in-loads.mjs
@@ -430,8 +430,8 @@ function scanModule(relPath, rawSource) {
                 `REFRESH TOKEN into the document of every page under this route, for every signed-in ` +
                 `user. Return the PROJECTION instead — '{ userId, expiresAt }', taking the identifier ` +
                 `from the separately VERIFIED user '${SESSION_CALL}()' also returns — exactly as ` +
-                `'apps/frontend/src/routes/admin/+layout.server.ts' does, and read that file's ` +
-                `docstring for the reason.\n    ${text.split('\n')[0].trim()}`
+                `'sessionProjectionLoad' in 'apps/frontend/src/lib/server/auth/accountLoads.ts' does, and read ` +
+                `its docstring for the reason.\n    ${text.split('\n')[0].trim()}`
             });
           }
         }

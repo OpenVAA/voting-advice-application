@@ -11,7 +11,7 @@ import parser from 'svelte-eslint-parser';
  *
  * GROUP 1 — the boundary's own INSIDE. These are not "leaks" at all; they are what the adapter IS, and they are permanent by construction. A guard that fired here would be broken rather than strict.
  *
- * GROUP 2 — the six grandfathered sites OUTSIDE the boundary, each annotated with its disposition (see phase 158). Two are route files, one is the server helper the Contestant App's protected loads sign out through and one the server module that verifies a mailed link; the last two live under `src/` but outside the scope the guard was written for, and are recorded here so the guard does not fail on files it was never meant to cover.
+ * GROUP 2 — the six grandfathered sites OUTSIDE the boundary, each annotated with its disposition (see phase 158). One is a route file, one the password sign-in action both apps' login routes share, one the server helper the Contestant App's protected loads sign out through and one the server module that verifies a mailed link; the last two live under `src/` but outside the scope the guard was written for, and are recorded here so the guard does not fail on files it was never meant to cover.
  */
 const ADAPTER_BOUNDARY_ALLOWLIST = [
   // GROUP 1 of 2, the boundary's own inside, permanent by construction.
@@ -25,13 +25,13 @@ const ADAPTER_BOUNDARY_ALLOWLIST = [
   'src/lib/api/adminWriter.ts',
   'src/lib/api/feedbackWriter.ts',
 
-  // GROUP 2 of 2, the six grandfathered sites, each annotated with its disposition (see phase 158). None of them can be taken off the list by an edit of its file alone: the Admin App's login file is the heart of the login collapse, the mailed-link module needs adapter methods that do not exist, the logout handler would create a route cycle, and the remaining three either hand the cookie-capable client to the adapter or declare and populate it. The six below are a worklist, not an oversight.
+  // GROUP 2 of 2, the six grandfathered sites, each annotated with its disposition (see phase 158). None of them can be taken off the list by an edit of its file alone: the shared password sign-in action is the heart of the login collapse, the mailed-link module needs adapter methods that do not exist, the logout handler would create a route cycle, and the remaining three either hand the cookie-capable client to the adapter or declare and populate it. The six below are a worklist, not an oversight.
   // The verification of a mailed link, which the confirm page's action calls: `auth.verifyOtp`, the refresh after the claim and the local sign-out after a failed one, all needing adapter methods that do not exist on `DataWriter` today.
   'src/lib/server/auth/mailedLink.ts',
   // ONE site, a bare `locals.supabase.auth.signOut()` on the request's own cookie-bearing client. Every sign-out of the Contestant App's protected loads goes through this helper, so no load of that tree needs an entry of its own.
   'src/lib/server/contestant/signOutToLogin.ts',
-  // The hardest of the six: the Admin App's login action, which hands `locals.supabase.auth` to the shared password sign-in helper; the heart of the login collapse (see phase 158).
-  'src/routes/admin/login/+page.server.ts',
+  // The hardest of the six: the password sign-in action of both apps' login routes, which hands `locals.supabase.auth`, the auth surface of the request's own cookie-bearing client, to the password sign-in helper so the session cookies land on the action's response; `DataWriter` has no method that takes its place. The heart of the login collapse (see phase 158).
+  'src/lib/server/auth/passwordLoginAction.ts',
   // The easiest of the six, with a caveat: the handler signs out the local session, which `SupabaseDataWriter._logout` already does, but that method `fetch`es THIS route to clear the httpOnly cookies, so moving the call into the writer would create a cycle that has to be broken first.
   'src/routes/api/auth/logout/+server.ts',
   // Outside the scope the guard was written for: this file POPULATES `event.locals.supabase`, which is the structural reason the files above can reach Supabase without importing it.
@@ -39,11 +39,8 @@ const ADAPTER_BOUNDARY_ALLOWLIST = [
   // Unreachable by this guard on purpose: this file DECLARES `supabase` on the global `App.Locals` interface, which is a type declaration rather than an import or a member access, so the guard should not pretend to reach it.
   'src/app.d.ts',
 
-  // Outside both groups: the form action of the Contestant App's sign-in screen. It hands `locals.supabase.auth`, the auth surface of the request's own cookie-bearing client, to the shared password sign-in helper, exactly as the Admin App's login action listed above does. The session cookies reach the browser only when the sign-in is issued on that client, and `DataWriter` has no method that takes its place.
-  'src/routes/contestant/login/email/+page.server.ts',
-
   // Outside both groups: the form action of the Contestant App's code sign-in screen. It hands `locals.supabase.auth`, the auth surface of the request's own cookie-bearing client, to the shared code sign-in helper, which refreshes the session on it after the claim and signs it out locally when the grant gate refuses. Those two calls must reach the client the session was established on, and `DataWriter` has no method that takes their place.
-  'src/routes/contestant/register/sign-in/+page.server.ts',
+  'src/routes/contestant/register/code/sign-in/+page.server.ts',
 
   // Outside both groups: the form action of the confirm page between a mailed link and its verification. When the request holds a session it signs that session out on `locals.supabase`, the request's own cookie-bearing client, before the link is verified on the same client, and `DataWriter` has no method that takes that call's place.
   'src/routes/auth/confirm/+page.server.ts',
