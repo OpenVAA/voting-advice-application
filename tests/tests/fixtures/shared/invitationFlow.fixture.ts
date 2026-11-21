@@ -56,14 +56,16 @@ import {
 import { assertSignInLinkShape, runOriginFromEnv, toRunOrigin } from '../../utils/mailedLink';
 import { resolveE2eProjectId, SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { supabaseServiceRoleKey } from '../../utils/supabaseServiceRoleKey';
+import type { ServedEntityType } from '@openvaa/app-shared';
 import type { SeededInvitation } from '@openvaa/dev-seed';
 import type { Page, Route } from '@playwright/test';
+import type { GrantClaim } from '../../../../apps/frontend/src/lib/auth/roles';
 import type { AccountAccessAnswer } from '../../utils/accountAccessClient';
-import type { GrantSpec, RpcAnswer, SessionTokens } from '../../utils/authApi';
+import type { RpcAnswer, SessionTokens } from '../../utils/authApi';
 import type { EntityGrantTarget, LinkWitnessOutcome } from '../../utils/supabaseAdminClient';
 
 /** Which of a flow's reserved dataset rows a step works on. */
-export type DedicatedTarget = 'candidate' | 'organization';
+export type DedicatedTarget = ServedEntityType;
 
 /**
  * The dataset rows reserved for one flow: for each kind of entity, the `external_id` of the row.
@@ -136,44 +138,8 @@ export interface InvitationState {
   readonly claimed_at: string | null;
 }
 
-/** A grant as a comparable string, for sorting. */
-function grantKey(grant: GrantSpec): string {
-  return [grant.scope, grant.target_type ?? '', grant.target_id ?? '', grant.role].join('|');
-}
-
-/** The four specification columns of a grant and nothing else, in a fixed key order. */
-function toGrantSpec({ scope, target_type, target_id, role }: GrantSpec): GrantSpec {
-  return { scope, target_type, target_id, role };
-}
-
-/** Grants as a set: reduced to their four columns and sorted, so two sets compare with `toEqual`. */
-function asGrantSet(grants: ReadonlyArray<GrantSpec>): Array<GrantSpec> {
-  return grants.map(toGrantSpec).sort((a, b) => grantKey(a).localeCompare(grantKey(b)));
-}
-
-/**
- * The body of a request as a JSON object, or undefined when the request has no body or its body is anything else.
- */
-function jsonObjectOf(body: string | null): Record<string, unknown> | undefined {
-  if (body === null) return undefined;
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(body);
-  } catch {
-    return undefined;
-  }
-  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-    ? (parsed as Record<string, unknown>)
-    : undefined;
-}
-
 /** The symbols a registration code is made of: Crockford's base-32 alphabet, which has no `I`, `L`, `O` or `U`. */
 const CODE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-
-/** A password the auth service's policy accepts, unique per call. */
-function freshPassword(): string {
-  return `${crypto.randomUUID()}-Aa1!`;
-}
 
 /**
  * Create the invitation flow.
@@ -294,17 +260,17 @@ export function createInvitationFlow(
     freshAddress: (): string => freshInvitationAddress(addressPrefix),
 
     /** The grant a project-scope invitation of the suite's project promises, as its four columns. */
-    projectGrant(role: 'admin' | 'editor'): GrantSpec {
+    projectGrant(role: 'admin' | 'editor'): GrantClaim {
       return { scope: 'project', target_type: null, target_id: projectId, role };
     },
 
     /** The grant an entity-scope editor invitation for a reserved row promises, as its four columns. */
-    promisedGrant(target: DedicatedTarget, row: DedicatedRow): GrantSpec {
+    promisedGrant(target: DedicatedTarget, row: DedicatedRow): GrantClaim {
       return { scope: 'entity', target_type: target, target_id: row.id, role: 'editor' };
     },
 
     /** The grant an editor invitation for an entity of the suite's project promises, as its four columns. */
-    async editorGrantOn(entity: EntityGrantTarget): Promise<GrantSpec> {
+    async editorGrantOn(entity: EntityGrantTarget): Promise<GrantClaim> {
       return { scope: 'entity', target_type: entity.entityType, target_id: await entityIdOf(entity), role: 'editor' };
     },
 
@@ -794,12 +760,12 @@ export function createInvitationFlow(
     },
 
     /** The grants a session's access token carries, as a set of four-column tuples. */
-    grantsClaimOf(session: SessionTokens): Array<GrantSpec> {
+    grantsClaimOf(session: SessionTokens): Array<GrantClaim> {
       return asGrantSet(readGrantsClaim(session.accessToken));
     },
 
     /** The grants an access token carries, as a set of four-column tuples. For a token a function answered with. */
-    grantsClaimOfToken(accessToken: string): Array<GrantSpec> {
+    grantsClaimOfToken(accessToken: string): Array<GrantClaim> {
       return asGrantSet(readGrantsClaim(accessToken));
     },
 
@@ -815,7 +781,7 @@ export function createInvitationFlow(
     // -----------------------------------------------------------------------
 
     /** The rows of `public.grants` a user holds, as a set of four-column tuples. */
-    async grantRowsOf(email: string): Promise<Array<GrantSpec>> {
+    async grantRowsOf(email: string): Promise<Array<GrantClaim>> {
       return asGrantSet(await admin.grantRowsForUser(email));
     },
 
@@ -928,5 +894,41 @@ export const test = base.extend<object, { invitationFlow: InvitationFlowFixture 
     { scope: 'worker' }
   ]
 });
+
+/** A password the auth service's policy accepts, unique per call. */
+function freshPassword(): string {
+  return `${crypto.randomUUID()}-Aa1!`;
+}
+
+/**
+ * The body of a request as a JSON object, or undefined when the request has no body or its body is anything else.
+ */
+function jsonObjectOf(body: string | null): Record<string, unknown> | undefined {
+  if (body === null) return undefined;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    return undefined;
+  }
+  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+    ? (parsed as Record<string, unknown>)
+    : undefined;
+}
+
+/** Grants as a set: reduced to their four columns and sorted, so two sets compare with `toEqual`. */
+function asGrantSet(grants: ReadonlyArray<GrantClaim>): Array<GrantClaim> {
+  return grants.map(toGrantClaim).sort((a, b) => grantKey(a).localeCompare(grantKey(b)));
+}
+
+/** The four specification columns of a grant and nothing else, in a fixed key order. */
+function toGrantClaim({ scope, target_type, target_id, role }: GrantClaim): GrantClaim {
+  return { scope, target_type, target_id, role };
+}
+
+/** A grant as a comparable string, for sorting. */
+function grantKey(grant: GrantClaim): string {
+  return [grant.scope, grant.target_type ?? '', grant.target_id ?? '', grant.role].join('|');
+}
 
 export { expect };

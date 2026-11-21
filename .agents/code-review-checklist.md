@@ -30,6 +30,13 @@ _Apply when a long-lived branch is restructured into a stack of review PRs — s
 - [ ] Planning records are in one commit, other documentation in one commit, and tests in one commit.
 - [ ] The stack's top reproduces the source branch byte for byte; the original reiterative history is kept in a backup worktree only until review ends.
 
+### E2E Tests
+
+_Apply when changes touch `tests/`._
+
+- [ ] A new page-object fixture stays near the size of the existing ones: under about 150 effective lines. One that grows past that is usually carrying steps that belong elsewhere.
+- [ ] A step that only one spec uses lives in that spec, not in a shared fixture.
+
 ### Supabase Backend
 
 _Apply when changes touch `apps/supabase/` or database-related code._
