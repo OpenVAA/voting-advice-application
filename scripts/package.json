@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "name": "@openvaa/repo-gates",
+  "version": "0.1.0",
+  "description": "The repository guards under scripts/ and the unit tests that hold them and the files they check to their contract.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}
