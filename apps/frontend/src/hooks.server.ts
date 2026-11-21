@@ -120,7 +120,7 @@ const appGateHandle: Handle = async ({ event, resolve }) => {
   }
   if (!session && isProtectedRoute(routeId)) {
     const { status, route: target, params } = gate.whenUnauthenticatedInProtectedGroup;
-    // The requested path, which the candidate row carries back as `redirectTo` and the admin row ignores. It is read off the URL because the route id has placeholders instead of values. `redirectTo` is not a route param, so `buildRoute` puts it in the query string, percent-encoded.
+    // The requested path, which the Contestant App's row carries back as `redirectTo` and the admin row ignores. It is read off the URL because the route id has placeholders instead of values. `redirectTo` is not a route param, so `buildRoute` puts it in the query string, percent-encoded.
     redirect(status, buildRoute({ route: target, locale, ...params({ redirectTo: loginRedirectTargetOf(url) }) }));
   }
 

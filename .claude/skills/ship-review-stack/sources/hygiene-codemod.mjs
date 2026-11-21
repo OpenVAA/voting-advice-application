@@ -9,10 +9,9 @@
  * runtime user-visible `console.warn` string, Playwright test titles, and an ESLint rule
  * `message:`. A regex-only pass over all of them would edit program behaviour.
  *
- * Mirrors the two in-repo codemod precedents (apps/frontend/scripts/store-to-state-codemod.mjs
- * and .../flatten-current-codemod.mjs): `globSync` enumeration with an explicit empty-match
- * hard failure, dry-run by default, `--apply` to write, `--files <glob>` to restrict scope,
- * a warn-only second pass that REPORTS residue without rewriting it, and a final line that
+ * Mirrors the in-repo codemod precedent (apps/frontend/scripts/flatten-current-codemod.mjs):
+ * `globSync` enumeration with an explicit empty-match hard failure, dry-run by default,
+ * `--apply` to write, `--files <glob>` to restrict scope, a warn-only second pass that REPORTS residue without rewriting it, and a final line that
  * always states which mode ran.
  *
  * ── ORDERED MECHANICAL RULES (RESEARCH § Pattern 4, rules 1-7) ───────────────
