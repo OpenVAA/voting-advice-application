@@ -5,17 +5,17 @@ milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytic
 current_phase: 189
 current_phase_name: Documentation and Closure
 current_plan: 20
-status: executing
-stopped_at: Completed 189-16-PLAN.md
-last_updated: "2026-11-21T08:00:09.983Z"
+status: verifying
+stopped_at: Completed 189-20-PLAN.md
+last_updated: "2026-11-21T12:45:19.656Z"
 last_activity: 2026-11-20
 last_activity_desc: Phase 189 execution started
-state_head: c5906f1b01340c2a5e9555fdc6f39648793bbf3d
+state_head: f2d2b64d4bda7308c055a7cd8d57cd82811d3f12
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 208
-  completed_plans: 207
+  completed_plans: 208
   percent: 80
 ---
 
@@ -35,7 +35,7 @@ Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is 
 
 Phase: 189 (Documentation and Closure) — EXECUTING
 Plan: 20 of 20
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-11-20 — Phase 189 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 80%); 7 of 9 roadmap phases complete, 181.1 inserted besides
@@ -216,6 +216,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189 P14 | 8min | 2 tasks | 3 files |
 | Phase 189 P15 | 4min | 3 tasks | 5 files |
 | Phase 189 P16 | 12min | 3 tasks | 11 files |
+| Phase 189 P20 | 283min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -474,6 +475,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189]: 189-15: S11 (running-image-digest.sh on a tag-named task definition) became a dated 2026-11-17 row from run 44104573552 instead of a todo entry, under C-01's rule that an existing record settles it; new 2026-11-17 rows sit after each table's last 2026-11-17 row to keep date order
 - [Phase 189]: 189-16: S18 (staging DMARC record applied in place of the parent's) settled by a 2026-11-20 row reading the 2026-11-11 mail's dmarc=pass under p=QUARANTINE with 189-05's p=none read
 - [Phase 189]: 189-16: orchestrator item 1 (smtp.tf send-condition comment) is C-01 S24, fixed in Task 2's commit 0be877e23 as present tense, settled by the 2026-11-11 mail row
+- [Phase 189]: 189-20: the navigation-idempotence gate formats the generated config from apps/docs (the root .prettierignore lists docs, so a root-level Prettier run is a no-op there)
 
 ### Pending Todos
 
@@ -540,6 +542,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-21T08:00:08.806Z
-**Stopped At:** Completed 189-16-PLAN.md
+Last session: 2026-11-21T12:45:18.562Z
+**Stopped At:** Completed 189-20-PLAN.md
 **Resume File:** None

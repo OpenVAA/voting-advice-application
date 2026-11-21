@@ -194,11 +194,11 @@ Each is run on a real project, recorded with its date, and acted on.
 
 ### DOCS — Documentation
 
-- [ ] **DOCS-01**: The deployment guide is rewritten around the Terraform and Supabase-as-code path, and states
+- [x] **DOCS-01**: The deployment guide is rewritten around the Terraform and Supabase-as-code path, and states
       that the HCL is kept OpenTofu-compatible (A6).
 - [x] **DOCS-02**: A settings reference lists each hosted setting, where the repository sets it, and how to
       verify it.
-- [ ] **DOCS-03**: Every "unverified" statement about a hosted project is replaced by a dated observation or
+- [x] **DOCS-03**: Every "unverified" statement about a hosted project is replaced by a dated observation or
       removed.
 - [x] **DOCS-04**: The environment-variable reference covers the proxy variables, the analytics variables and
       `PUBLIC_PROJECT_ID`.
@@ -338,9 +338,9 @@ closes; those are not listed against the earlier phase here.
 | RELAY-19 | Phase 182 | Complete |
 | RELAY-20 | Phase 182 | Complete |
 | RELAY-21 | Phase 182 | Complete |
-| DOCS-01 | Phase 189 | Pending |
+| DOCS-01 | Phase 189 | Complete |
 | DOCS-02 | Phase 189 | Complete |
-| DOCS-03 | Phase 189 | Pending |
+| DOCS-03 | Phase 189 | Complete |
 | DOCS-04 | Phase 189 | Complete |
 | DOCS-05 | Phase 189 | Complete |
 | DOCS-06 | Phase 189 | Complete |
