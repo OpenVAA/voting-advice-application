@@ -199,3 +199,11 @@ election admits as nominees and which parent each may name. Key Source Locations
 Interfaces name the module and where its comparison with the database lives; `object-model.md` gains
 § _The nomination shape of an election_. Checked against the source on this date: the four members of
 `NOMINATION_SHAPE`, the default, and both functions' answers for each entity type.
+
+**Updated 2026-11-21** (PR 898 review fixes): the drift audit reported `DRIFT 1 commits, 2 files` under
+`packages/data/src/` since `0d9c1535`. `1d02d3f0` gave `Election` two never-throwing methods,
+`isHeldIn(constituencies)` and `getImpliedConstituency(constituency)`, with tests in
+`election.test.ts`; the app now asks `isHeldIn()` where it asked `getApplicableConstituencies()` whether
+an election applies, and `ConstituencySelector` asks the election rather than its first constituency
+group for the implied constituency. `object-model.md`'s constituency-resolution list grows from three
+methods to five and names those callers. Nothing else in the package changed.

@@ -14,7 +14,7 @@
  *   - A request a page makes, or does not make: `witnessPageRequest`, `expectNoPageRequest`.
  *   - The mail: `mailSubjects`, `expectMailCount`, `receiveSignInLink`, `signInLinkToOpen`, `recoveryLinkToOpen`, `expectNothingSent`, `expectNoMailAfter`.
  *   - The session: `signInWithLink`, `signInWithPassword`, `claim`, `accountState`, `claimNamingAnAddress`, `refresh`, `grantsClaimOf`, `grantsClaimOfToken`, `setFreshPassword`.
- *   - The service role's view: `grantRowsOf`, `invitationsAddressedTo`, `hasAccount`, `createUserWithPassword`, `releaseLinkSlot`.
+ *   - The service role's view: `grantRowsOf`, `invitationsAddressedTo`, `withdrawInvitationsOf`, `hasAccount`, `createUserWithPassword`, `releaseLinkSlot`.
  *   - Cleanup: `resetDedicatedRows`, `leftovers`, `removeEverythingUnderPrefix`, `leftoversUnderPrefix`.
  *
  * **The reserved rows.** A flow promises its entity-scope grants on dataset rows reserved for it, named by the `dedicatedRows` option: the invitation contract spec's candidate and organization when the option is absent, and otherwise exactly the rows given. A candidate admits one editor, so two specs that run side by side take different rows as they take different address prefixes. A step asked for a kind of row the flow was not given fails; the cleanup steps reach the flow's own rows and no others.
@@ -797,6 +797,15 @@ export function createInvitationFlow(
         id: String(row.id),
         claimed_at: typeof row.claimed_at === 'string' ? row.claimed_at : null
       }));
+    },
+
+    /**
+     * Withdraw the invitations of the suite's project addressed to an address, open or claimed, as an administrator who deletes them does. The grants a claim wrote stay.
+     *
+     * @returns How many invitations were withdrawn.
+     */
+    withdrawInvitationsOf(email: string): Promise<number> {
+      return admin.removeInvitations({ emails: [email] });
     },
 
     /** Whether an auth user holds an address. Throws when the users cannot be listed. */

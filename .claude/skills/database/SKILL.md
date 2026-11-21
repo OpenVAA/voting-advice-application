@@ -819,7 +819,10 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `invitation_link_request` then decides whom a mail may go to (one per address per 60 s).
      `request-recovery` answers the same way, before any work, and then asks
      `recovery_link_request`: for `recovery` it mints a `recovery` token for the existing account
-     (`generateLink({ type: 'recovery' })`) and mails the recovery mail; for `sign-in` it does what
+     (`generateLink({ type: 'recovery' })`) and mails the recovery mail, which names the control
+     that asks for a new link by the frontend catalogue's `common.account.forgotPassword` label
+     (`RECOVERY_MAIL_TEMPLATES`, `apps/supabase/supabase/functions/account-access/mailTemplates.ts`; its test reads the label from
+     `apps/frontend/messages/<locale>/common.json`); for `sign-in` it does what
      `request-link` does; for null it stops. `code-sign-in` asks `invitation_code_claimant_email` and
      the auth service's password grant; it does not ask the registration-mode matrix. All of these
      are `service_role`-only functions in `506-invitation-rpcs.sql`. A link is issued
@@ -1002,7 +1005,9 @@ p_template_subject)` is SECURITY DEFINER (reads auth.users). For each user: look
      `IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_ISSUER` (the last two through
      `requireVerifyClaimBinding`, § 6) and `IDENTITY_CALLBACK_SERVER_SECRET`, the server's
      credential, which the frontend server holds too (`$lib/server/constants`) and sends in
-     `x-identity-callback-secret`; it is read only for a request that carries the header, so an
+     `x-identity-callback-secret` (the route `apps/frontend/src/routes/api/oidc/callback/+server.ts`
+     reads the secret, and `apps/frontend/src/lib/server/auth/identityCallback.ts` makes the call;
+     `apps/supabase/supabase/functions/identity-callback/flowConformance.test.ts` reads both files); it is read only for a request that carries the header, so an
      anonymous call is refused before any configuration is read. No `PUBLIC_PROJECT_ID` and no
      `SITE_URL`: the project is the request's, and the sign-in token is handed to the caller, not
      mailed. `account-access` -- `PUBLIC_PROJECT_ID` (the one project it serves; a request for
@@ -1482,6 +1487,15 @@ No pgTAP run was made for this entry, so the run total is not stated.
 `schema-reference.md` and `rls-policy-map.md` carry the same. Migration `00002_refusal_codes.sql` makes
 the change. Re-measured on this date: 2964 planned pgTAP assertions, 42 functions created in `private`,
 and 2 migration files and manifest entries; no other count was re-measured and no pgTAP run was made.
+
+**Updated 2026-11-21** (PR 898 review fixes): the drift audit reported `DRIFT 2 commits, 3 files` under
+`apps/supabase/` since `0d9c1535`. `f90940ca` moved the label the recovery mail names from
+`contestantApp.login.forgotPassword` to `common.account.forgotPassword` (`mailTemplates.ts`'s comment and
+its test's catalogue read); `7034cab9` moved the frontend's call of `identity-callback` into
+`apps/frontend/src/lib/server/auth/identityCallback.ts`, leaving the secret's read in the callback route,
+and `flowConformance.test.ts` now reads both. Service Patterns § 1 names the label and § 7 the two
+frontend files. No schema, policy, function or pgTAP file changed, so no count was re-measured and
+`schema-reference.md` and `rls-policy-map.md` are unchanged.
 
 ### What changed under the targets, and what it did to this skill
 
