@@ -12,15 +12,14 @@
  * A redirect the load throws is caught by the case: the reads recorded up to it are what is asserted.
  *
  * Correctness invariants, each one a distinct way this file could hand back a false pass:
- * 1. Each instrument must actually record. A trap that never pushed would make every assertion below `[] === []`. The control cases at the foot of this file are the answer, one per instrument.
- * 2. The `untrack` counter must actually suppress, or a load reading the URL untracked would be reported. The `url` control asserts that the read it makes INSIDE `untrack` is absent from the recorded set.
- * 3. The subject must be the REAL load, run to its redirect: the positive cases import `load` from `./+page.server` and assert the target only the real load builds. The controls deliberately do not import it.
+ * 1. Each instrument must actually record. A trap that never pushed would make every assertion below `[] === []`. The controls in `loadTracking.testUtils.test.ts` are the answer, one per instrument.
+ * 2. The `untrack` counter must actually suppress, or a load reading the URL untracked would be reported. The `url` control there asserts that the read it makes INSIDE `untrack` is absent from the recorded set.
+ * 3. The subject must be the REAL load, run to its redirect: the positive cases import `load` from `./+page.server` and assert the target only the real load builds.
  */
 
 import { describe, expect, it, vi } from 'vitest';
 import { load } from './+page.server';
-import { forbiddenRoute, recordingParams, recordingUrl } from '../loadTracking.testUtils';
-import type { Untrack } from '../loadTracking.testUtils';
+import { recordingEvent } from '../loadTracking.testUtils';
 
 const USER = {
   id: 'user-1',
@@ -39,36 +38,11 @@ const ORGANIZATION = { type: 'organization', id: '22222222-2222-4222-8222-222222
 /** Four forms of sub-path that name an entity page. */
 const SUB_PATHS = ['profile', 'questions', `questions/${QUESTION_ID}`, 'preview'];
 
-/**
- * A request event for an entity-less path, with every instrument in place.
- * @param href - The URL of the request.
- * @param page - The sub-path the URL names, which is the route's one param.
- * @param parentData - What the user-level load resolves to.
- * @returns The event and what its instruments recorded.
- */
-function recordingEvent(href: string, page: string, parentData: unknown) {
-  const { url, trackedReads, untrack } = recordingUrl(href);
-  const { params, paramReads } = recordingParams({ page });
-  const eventReads: Array<string> = [];
-  const event = new Proxy(
-    {
-      fetch: vi.fn(),
-      locals: { supabase: { auth: { signOut: vi.fn(async () => ({ error: null })) } } },
-      params,
-      parent: async () => parentData,
-      route: forbiddenRoute(),
-      untrack,
-      url
-    },
-    {
-      get(target, prop) {
-        if (typeof prop === 'string') eventReads.push(prop);
-        return Reflect.get(target, prop, target);
-      }
-    }
-  );
-  return { event: event as unknown as Parameters<typeof load>[0], eventReads, paramReads, trackedReads };
-}
+/** The members of the event beside the instruments and `parent`. */
+const EVENT_MEMBERS = {
+  fetch: vi.fn(),
+  locals: { supabase: { auth: { signOut: vi.fn(async () => ({ error: null })) } } }
+};
 
 /** What the load resolved to or threw. */
 async function outcomeOf(event: Parameters<typeof load>[0]): Promise<{ resolved?: unknown; thrown?: unknown }> {
@@ -83,11 +57,12 @@ describe('contestant/(protected)/[...page]/+page.server.ts load dependency track
   it.each(SUB_PATHS.flatMap((page) => ['', '?start=true'].map((query) => [page, query] as const)))(
     'reads the page param and no other, no URL property tracked and no route (%s%s)',
     async (page, query) => {
-      const { event, eventReads, paramReads, trackedReads } = recordingEvent(
-        `http://localhost/contestant/${page}${query}`,
-        page,
-        { gate: null, user: USER, entities: [CANDIDATE] }
-      );
+      const { event, eventReads, paramReads, trackedReads } = recordingEvent<Parameters<typeof load>[0]>({
+        href: `http://localhost/contestant/${page}${query}`,
+        params: { page },
+        parent: async () => ({ gate: null, user: USER, entities: [CANDIDATE] }),
+        extra: EVENT_MEMBERS
+      });
 
       const outcome = await outcomeOf(event);
 
@@ -112,75 +87,17 @@ describe('contestant/(protected)/[...page]/+page.server.ts load dependency track
     ['no entity', { gate: null, user: USER, entities: [] }],
     ['several entities', { gate: null, user: USER, entities: [CANDIDATE, ORGANIZATION] }]
   ])('reads no URL property tracked, no route and no param other than page for %s', async (_, parentData) => {
-    const { event, eventReads, paramReads, trackedReads } = recordingEvent(
-      'http://localhost/contestant/profile?start=true',
-      'profile',
-      parentData
-    );
+    const { event, eventReads, paramReads, trackedReads } = recordingEvent<Parameters<typeof load>[0]>({
+      href: 'http://localhost/contestant/profile?start=true',
+      params: { page: 'profile' },
+      parent: async () => parentData,
+      extra: EVENT_MEMBERS
+    });
 
     await outcomeOf(event);
 
     expect(trackedReads).toEqual([]);
     expect(paramReads.filter((name) => name !== 'page')).toEqual([]);
     expect([...new Set(eventReads)].sort()).toEqual(['params', 'parent']);
-  });
-
-  /**
-   * Negative controls: the assertions above are only meaningful if each instrument can catch what it guards against.
-   *
-   * Each subject is a LOCAL load-shaped function. None imports the real `load`: that would make the control a test of production code rather than of the instrument.
-   *
-   * NAMED LIMIT: these prove the INSTRUMENTS work. They do not prove the real load was ever wrong.
-   */
-  it('the recording url Proxy catches a tracked url.search read (negative control)', () => {
-    /** A redirect target that carries the query string over, kept local to this control. */
-    function targetWithQuery({ url, untrack }: { url: URL; untrack: Untrack }): string {
-      // An untracked read, exercised so the counter's suppression is covered as well as its recording.
-      untrack(() => url.searchParams.get('start'));
-      // Tracked.
-      return `/contestant/candidate/${CANDIDATE_ID}/profile${url.search}`;
-    }
-
-    const { url, trackedReads, untrack } = recordingUrl('http://localhost/contestant/profile?start=true');
-    targetWithQuery({ url, untrack });
-
-    expect(
-      trackedReads,
-      'the Proxy failed to record a tracked url.search read, so the assertions above prove nothing'
-    ).toEqual(['search']);
-    expect(
-      trackedReads,
-      'the untrack counter failed to suppress a read inside it, so a legitimate untracked read would be reported'
-    ).not.toEqual(expect.arrayContaining(['searchParams']));
-  });
-
-  it('the recording params Proxy records a read of a param other than page (negative control)', () => {
-    /** A load-shaped function that reads a param this route does not carry, kept local to this control. */
-    function pageUnderEntity({ params }: { params: Record<string, string> }): string {
-      return `${params.entityType}/${params.page}`;
-    }
-
-    const { params, paramReads } = recordingParams({ page: 'profile' });
-
-    expect(pageUnderEntity({ params })).toBe('undefined/profile');
-    expect(paramReads, 'the Proxy failed to record a param read, so the assertions above prove nothing').toEqual([
-      'entityType',
-      'page'
-    ]);
-  });
-
-  it('the route Proxy throws on a read, and the event Proxy records which members were taken (negative control)', () => {
-    /** A load-shaped function that takes the route from its event, kept local to this control. */
-    function routeIdOf({ route }: { route: { id: string } }): string {
-      return route.id;
-    }
-
-    const { event, eventReads } = recordingEvent('http://localhost/contestant/profile', 'profile', {
-      gate: 'termsOfUse',
-      user: USER
-    });
-
-    expect(() => routeIdOf(event as unknown as { route: { id: string } })).toThrow(/route\.id/);
-    expect(eventReads, 'the event Proxy failed to record which member was taken').toEqual(['route']);
   });
 });
