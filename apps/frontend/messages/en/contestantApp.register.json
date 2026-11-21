@@ -15,15 +15,15 @@
     "heroEmoji": "🖋️",
     "identityProvider": {
       "intro": {
-        "both": "Identify yourself with Bank ID to register yourself as a candidate or to register a party.",
         "candidate": "To register as a candidate, identify yourself with Bank ID. Your candidate profile is created with the name in your identification.",
+        "candidateAndOrganization": "Identify yourself with Bank ID to register yourself as a candidate or to register a party.",
         "organization": "To register a party, identify yourself with Bank ID and then enter the party’s name. An administrator confirms the party before it is shown to voters."
       },
       "redirectInfo": "You will be taken to the Bank ID service. When you have identified yourself, you will come back to this application.",
       "types": {
         "candidate": "Myself, as a candidate",
         "legend": "What would you like to register?",
-        "organization": "A party or constituency association",
+        "organization": "A party",
         "required": "Choose what you would like to register."
       }
     },
@@ -46,7 +46,7 @@
     },
     "register": "Register",
     "registeredNotice": {
-      "content": "Please log in with your email and password instead or check your email for the confirmation link.",
+      "content": "This browser has been used to register before. Sign in instead, or reset your password if you have forgotten it or never set one.",
       "title": "It looks like you are already registered"
     },
     "signIn": {

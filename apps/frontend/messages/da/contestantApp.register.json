@@ -15,15 +15,15 @@
     "heroEmoji": "🖋️",
     "identityProvider": {
       "intro": {
-        "both": "Identificer dig med BankID for at registrere dig som kandidat eller for at registrere et parti.",
         "candidate": "For at registrere dig som kandidat skal du identificere dig med BankID. Din kandidatprofil oprettes med navnet fra din identifikation.",
+        "candidateAndOrganization": "Identificer dig med BankID for at registrere dig som kandidat eller for at registrere et parti.",
         "organization": "For at registrere et parti skal du identificere dig med BankID og derefter indtaste partiets navn. En administrator bekræfter partiet, før det vises for vælgerne."
       },
       "redirectInfo": "Du bliver sendt videre til BankID-tjenesten. Når du har identificeret dig, kommer du tilbage til denne applikation.",
       "types": {
         "candidate": "Mig selv som kandidat",
         "legend": "Hvad vil du registrere?",
-        "organization": "Et parti eller en vælgerforening",
+        "organization": "Et parti",
         "required": "Vælg, hvad du vil registrere."
       }
     },
@@ -46,7 +46,7 @@
     },
     "register": "Registrér",
     "registeredNotice": {
-      "content": "Log ind med din e-mail og adgangskode, eller tjek din e-mail for bekræftelseslinket.",
+      "content": "Denne browser er tidligere blevet brugt til at registrere sig. Log ind i stedet, eller nulstil din adgangskode, hvis du har glemt den eller aldrig har valgt en.",
       "title": "Det ser ud til, at du allerede er registreret"
     },
     "signIn": {

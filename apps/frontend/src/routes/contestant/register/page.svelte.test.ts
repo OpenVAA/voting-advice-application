@@ -971,7 +971,7 @@ describe("the provider's types", () => {
     const target = renderWith(settingsForBothTypes(['identity_provider']));
     const form = one(target, PROVIDER_FORM);
     expect(form.getAttribute('data-entity-types')).toBe('candidate organization');
-    expect(form.textContent).toContain('contestantApp.register.identityProvider.intro.both');
+    expect(form.textContent).toContain('contestantApp.register.identityProvider.intro.candidateAndOrganization');
     expect(form.textContent).toContain(PROVIDER_INFO);
 
     const group = one<HTMLFieldSetElement>(target, TYPE_GROUP);
