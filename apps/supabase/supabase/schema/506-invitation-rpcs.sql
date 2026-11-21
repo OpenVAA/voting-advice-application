@@ -768,7 +768,7 @@ FROM
 --
 -- A CLOSED CONTESTANT APP REFUSES EVERY ENTITY ROW. While the project's stored `access.contestantApp` is the JSON boolean false (private.project_contestant_app_closed), no entity-scope row is allowed, whatever its type or its mode: an invitation that leads to the Contestant App is not honoured while that app is switched off.
 --
--- WHICH ROWS ARE JUDGED BY THE MATRIX. An entity-scope row whose target is a candidate or an organization: the registration-mode matrix has a row for those two types and for no other. Such a row is allowed when private.registration_mode_allowed says so for the row's project, its target type and its mode. The matrix has no row for a faction or an alliance, so such a row is allowed while the Contestant App is not closed.
+-- WHICH ROWS ARE JUDGED BY THE MATRIX. An entity-scope row whose target is a candidate or an organization: the registration-mode matrix has a row for those two types and for no other. Such a row is allowed when private.registration_mode_allowed says so for the row's project, its target type and its mode, which it never does while the project's contestant editing is `locked`. The matrix has no row for a faction or an alliance, so such a row is allowed while the Contestant App is not closed.
 --
 -- A ROW'S MODE is read from which of its two bindings is set: `code` for a row that holds a code hash, `email` for a row bound to an address.
 --

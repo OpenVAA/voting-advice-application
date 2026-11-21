@@ -1,6 +1,6 @@
 -- 36-entity-identity.test.sql: the caller's own entities are read from the grant table
 --
--- `get_user_entities` lists every candidate and organization the caller holds an `(entity, <type>, <id>, editor)` row on in `public.grants`, in the one project the caller names, as one jsonb object whose `entities` array holds the entries and whose `organization`, present only then, names the organization an identity provider registered for the caller there. `get_caller_account_state` answers the facts about the caller's own account: `password_set`, whether it has a password, and `pending_email_taken`, whether the address it is changing to is already another account's. `get_entity_user_data` returns the editable row of one such entity, or no row. This file pins the list for zero, one and several grants, for mixed types, across two projects, and for a project admin, an entity-admin grant holder and a faction editor (none of which is listed); the one-entity read for the caller's own candidate and organization and for every refusal, each of which is an empty result and never a raise; that an entity is listed exactly when the read returns it, with a token older than a grant (served, read and written at once, since row-level security reads the grant table too) and with a token that outlives one (neither served nor read nor written); and that anon is refused both functions by privilege. The password section pins the fact for a stored hash, an empty string and a null, each read by its own account, and for a session with no caller. The pending-address section pins `pending_email_taken` for no pending address, one that is another account's in another case and with spaces, one that is no account's, one that is the caller's own address, a caller whose own address is another caller's pending address, and a session with no caller. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by two INVOKER RPCs; where the password fact lives: a zero-argument definer function in `private` that `authenticated` alone may execute, over a helper no API role may; and where the pending-address fact lives: another such zero-argument definer function. The last section pins the write-side rule: a candidate admits one editor, an organization several, and each refusal names its unique key.
+-- `get_user_entities` lists every candidate and organization the caller holds an `(entity, <type>, <id>, editor)` row on in `public.grants`, in the one project the caller names, as one jsonb object whose `entities` array holds the entries and whose `organization`, present only then, names the organization an identity provider registered for the caller there. `get_caller_account_state` answers the facts about the caller's own account: `password_set`, whether it has a password, and `pending_email_taken`, whether the address it is changing to is already another account's. `get_entity_user_data` returns the editable row of one such entity, or no row. This file pins the list for zero, one and several grants, for mixed types, across two projects, and for a project admin, an entity-admin grant holder and a faction editor (none of which is listed); the one-entity read for the caller's own candidate and organization and for every refusal, each of which is an empty result and never a raise; that an entity is listed exactly when the read returns it, with a token older than a grant (served, read and written at once, since row-level security reads the grant table too) and with a token that outlives one (neither served nor read nor written); and that anon is refused the three functions by privilege. The password section pins the fact for a stored hash, an empty string and a null, each read by its own account, and for a session with no caller. The pending-address section pins `pending_email_taken` for no pending address, one that is another account's in another case and with spaces, one that is no account's, one that is the caller's own address, a caller whose own address is another caller's pending address, and a session with no caller. The catalog section pins where the lookup lives: a SECURITY DEFINER helper in `private` with an empty search_path, called by two INVOKER RPCs, and that the account-state RPC is INVOKER too; where the password fact lives: a zero-argument definer function in `private` that `authenticated` alone may execute, over a helper no API role may; and where the pending-address fact lives: another such zero-argument definer function. The last section pins the write-side rule: a candidate admits one editor, an organization several, and each refusal names its unique key.
 --
 -- The first section pins what anon can read: no column holding an auth user id on any table anon can select, with nominations.created_by the one named exemption.
 --
@@ -17,7 +17,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (91);
+  plan (95);
 
 SELECT
   create_test_data ();
@@ -356,6 +356,11 @@ $$;
 -- The sorted top-level keys of what public.get_user_entities answers the caller.
 CREATE FUNCTION pg_temp.answer_keys (p_project_id uuid) RETURNS text[] LANGUAGE sql AS $$
   SELECT ARRAY(SELECT jsonb_object_keys(public.get_user_entities(p_project_id)) ORDER BY 1);
+$$;
+
+-- The sorted top-level keys of what public.get_caller_account_state answers the caller.
+CREATE FUNCTION pg_temp.account_state_keys () RETURNS text[] LANGUAGE sql AS $$
+  SELECT ARRAY(SELECT jsonb_object_keys(public.get_caller_account_state()) ORDER BY 1);
 $$;
 
 -- =====================================================================
@@ -1105,21 +1110,35 @@ SELECT
 
 SELECT
   is (
+    pg_temp.account_state_keys (),
+    ARRAY['password_set', 'pending_email_taken'],
+    'PWD: the account state of a caller that edits none has exactly the top-level keys password_set and pending_email_taken'
+  );
+
+SELECT
+  is (
     (
       SELECT
         count(*)
       FROM
-        public.get_user_entities (test_id ('project_a'))
+        public.get_caller_account_state ()
     ),
     1::bigint,
-    'PWD: a caller with no entity still gets exactly one row'
+    'PWD: a caller with no entity still gets exactly one row of account state'
   );
 
 SELECT
   is (
     public.get_user_entities (test_id ('project_a')),
     '{"entities": []}'::jsonb,
-    'PWD: and that row is one object holding an empty entities array'
+    'PWD: the entities answer of a caller that edits none is one object holding an empty entities array'
+  );
+
+SELECT
+  is (
+    public.get_caller_account_state (),
+    '{"password_set": false, "pending_email_taken": false}'::jsonb,
+    'PWD: and its row of account state is one object holding the caller''s password_set and pending_email_taken'
   );
 
 SELECT
@@ -1339,6 +1358,14 @@ SELECT
 
 SELECT
   throws_ok (
+    $$SELECT public.get_caller_account_state()$$,
+    '42501',
+    NULL,
+    'anon is refused get_caller_account_state by privilege'
+  );
+
+SELECT
+  throws_ok (
     format(
       $$SELECT * FROM public.get_entity_user_data(%L, 'candidate', '36363636-3636-3636-3636-0000000000c1')$$,
       test_id ('project_a')
@@ -1405,6 +1432,24 @@ SELECT
       false
     ),
     'get_user_entities runs with the caller''s rights'
+  );
+
+SELECT
+  ok (
+    COALESCE(
+      (
+        SELECT
+          NOT p.prosecdef
+        FROM
+          pg_proc p
+          JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE
+          n.nspname = 'public'
+          AND p.proname = 'get_caller_account_state'
+      ),
+      false
+    ),
+    'get_caller_account_state runs with the caller''s rights'
   );
 
 SELECT
