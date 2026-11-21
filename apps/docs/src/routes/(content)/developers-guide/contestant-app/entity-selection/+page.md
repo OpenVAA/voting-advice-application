@@ -64,7 +64,7 @@ A request for an entity page without the entity, such as `/contestant/profile` o
 - A user who edits exactly one entity is redirected to the same page under that entity.
 - Any other user is redirected to the app root.
 
-Every target is built from a route key. A question segment that is not a plain id leads to the app root, and the query string of the request is not carried over, so nothing of the requested path reaches the target unchecked.
+Every target is built from a route key, and the query string of the request is not carried over, so nothing of the requested path reaches the target unchecked. A question segment that is not a plain id is rejected by the matcher, so such a path is a 404.
 
 ## An entity the user may not edit
 

@@ -143,7 +143,7 @@ function clearFlowCookies(cookies: Cookies): void {
 }
 
 /**
- * The address of the identity provider's error screen for a code, in the request's locale. `error` is not a declared route param, so the builder puts it on the search side.
+ * The address of the identity provider's error screen for a code, in the given locale: the flow's recorded locale, or the request's own when none is recorded. `error` is not a declared route param, so the builder puts it on the search side.
  */
 function errorScreen(error: OidcError, locale: string | undefined): string {
   return buildRoute({ route: 'ContestantAppIdentityProviderError', locale, error });

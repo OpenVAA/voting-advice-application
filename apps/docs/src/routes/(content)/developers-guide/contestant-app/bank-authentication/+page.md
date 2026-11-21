@@ -34,9 +34,9 @@ Every step that handles a token runs on the server: in a SvelteKit server route 
    - Idura: the server signs the request object with the signing key, and stores the request's `state` and `nonce` in `httpOnly` cookies for ten minutes. The signing key never reaches the browser.
    - Signicat: the server makes the PKCE code verifier and challenge, gives the challenge to the provider, and stores the verifier in the `httpOnly` `oidc_code_verifier` cookie for the callback.
 
-   The chosen type is stored in the `httpOnly` `oidc_entity_type` cookie with the same attributes. It only selects which type is registered: every reader checks the matrix again, and the callback deletes it on every path. The browser then goes to the provider.
+   The chosen type is stored in the `httpOnly` `oidc_entity_type` cookie with the same attributes. It only selects which type is registered: every reader checks the matrix again, and the callback deletes it on every path. Beside it, the request's locale is stored in the `httpOnly` `oidc_locale` cookie with the same attributes. The browser then goes to the provider.
 
-2. **Callback.** The provider redirects to the server route `/api/oidc/callback` with an authorization code, or with an error. The route:
+2. **Callback.** The provider redirects to the server route `/api/oidc/callback` with an authorization code, or with an error. The route first reads the `oidc_locale` cookie once and deletes it, on every path; every address it sends the browser to, the error screen's and the Contestant App's root, is in that locale when it is a supported one, and otherwise in the request's own. The route then:
    1. maps an error the provider reports to a code first: its cancel to `cancelled`, every other value to `provider_error`. A callback with neither a code nor an error is `missing_code`;
    2. checks the browser-bound proof the provider declares: the returned `state` must equal the `oidc_state` cookie (Idura), or the `oidc_code_verifier` cookie must be present (Signicat). Without it, the code is not redeemed (`invalid_state`);
    3. exchanges the code for an ID token at the provider (`token_exchange_failed` when that fails);

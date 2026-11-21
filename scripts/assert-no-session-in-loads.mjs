@@ -22,7 +22,11 @@
  * FOUR checks, ordered so the vacuity precondition runs first:
  *
  *   Check 0 — the corpus is real. The route tree resolves, it yields at least CORPUS_FLOOR
- *     server-load modules, and the three named anchors are among them. A guard whose corpus is
+ *     server-load modules, the three named anchors are among them, and every module of
+ *     EXTRA_MODULES is readable. The corpus is the route tree's server loads PLUS that explicit
+ *     list of modules outside it whose functions route files re-export as their `load`: the
+ *     session projection the Admin App's and the Contestant App's outer layouts serve lives in
+ *     `apps/frontend/src/lib/server/auth/accountLoads.ts`, not in either layout. A guard whose corpus is
  *     empty reports zero violations and looks green forever, and zero-from-an-inert-guard is
  *     indistinguishable from zero-from-a-clean-tree unless the guard proves its corpus first.
  *     The corpus size is printed on EVERY run, pass or fail, so a later reader can tell which
@@ -68,8 +72,9 @@
  * three.
  *
  * WHAT THIS GUARD DOES NOT SEE, stated so its green is not read as more than it is. A load that
- * hides the session behind an indirection this scanner cannot follow — a helper in another module
- * that returns it, or a value assembled through a variable chain — is not caught. The narrow
+ * hides the session behind an indirection this scanner cannot follow — a helper in a module that
+ * is not in EXTRA_MODULES, or a value assembled through a variable chain — is not caught. A new
+ * shared module whose functions route files re-export as a `load` belongs in EXTRA_MODULES. The narrow
  * shapes it DOES catch are the ones the class actually took in this repository three times. The
  * unit spec `apps/frontend/src/lib/server/auth/accountLoads.test.ts` is the other half: it
  * enumerates the shared projection load's returned key set and fails an adjacent member by name.
@@ -103,7 +108,18 @@ const SERVER_LOAD_FILENAMES = new Set(['+layout.server.ts', '+page.server.ts']);
  */
 const CORPUS_FLOOR = 10;
 
-/** Check 0's anchors, relative to `ROUTES_DIR_REL`: the root server loader (which removed this class first) and the two subtree loaders phase 158 narrowed. If these are not in the corpus, this guard is scanning something other than the tree it was written for. */
+/**
+ * Modules outside `ROUTES_DIR_REL` that hold server loads route files re-export, relative to the repository root. They are scanned with the same `scanModule` as the route tree, and each is a check-0 anchor: a module that cannot be read fails the run rather than leaving the projection unscanned.
+ *
+ * `accountLoads.ts` holds `sessionProjectionLoad`, the session projection the outer layouts of the Admin App and the Contestant App re-export as their `load`, and the password-reset load both apps share.
+ */
+const EXTRA_MODULES = [path.join('apps', 'frontend', 'src', 'lib', 'server', 'auth', 'accountLoads.ts')];
+
+/**
+ * Check 0's anchors, relative to `ROUTES_DIR_REL`: the root server loader (which removed this class first) and the two subtree loaders phase 158 narrowed. If these are not in the corpus, this guard is scanning something other than the tree it was written for.
+ *
+ * The two subtree loaders are one-line re-exports of `sessionProjectionLoad`; the projection itself, the body this guard watches, is in `apps/frontend/src/lib/server/auth/accountLoads.ts`, which EXTRA_MODULES brings into the corpus and anchors.
+ */
 const ANCHOR_FILES = [
   '+layout.server.ts',
   path.join('admin', '+layout.server.ts'),
@@ -478,35 +494,38 @@ function scanModule(relPath, rawSource) {
 
 function main() {
   // ── Check 0: the corpus is real, before any zero it produces is allowed to mean anything ──
-  const corpus = collectServerLoads(ROUTES_DIR_REL);
+  const routeLoads = collectServerLoads(ROUTES_DIR_REL);
+  const routeLoadCount = routeLoads.length;
+  const corpus = [...routeLoads, ...EXTRA_MODULES];
   const corpusSize = corpus.length;
 
   // Printed FIRST and unconditionally, so a failing run says how much it looked at too.
   console.log(
-    `No-session-in-server-loads guard (phase 158: ${REQUIREMENT}) — corpus: ${corpusSize} server-load ` +
-      `module(s) under ${ROUTES_DIR_REL} (floor ${CORPUS_FLOOR}).`
+    `No-session-in-server-loads guard (phase 158: ${REQUIREMENT}) — corpus: ${routeLoadCount} server-load ` +
+      `module(s) under ${ROUTES_DIR_REL} (floor ${CORPUS_FLOOR}) and ${EXTRA_MODULES.length} shared ` +
+      `load module(s): ${EXTRA_MODULES.join(', ')}.`
   );
 
   let corpusIsReal = true;
 
-  if (corpusSize === 0) {
+  if (routeLoadCount === 0) {
     corpusIsReal = false;
     violate(
       `'${ROUTES_DIR_REL}' contains no server-load module, so every check below would report a vacuous ` +
         `zero. Either the route tree moved, in which case update ROUTES_DIR_REL in this file, or the ` +
         `corpus is genuinely gone, in which case this guard has nothing left to guard.`
     );
-  } else if (corpusSize < CORPUS_FLOOR) {
+  } else if (routeLoadCount < CORPUS_FLOOR) {
     corpusIsReal = false;
     violate(
-      `'${ROUTES_DIR_REL}' yields ${corpusSize} server-load module(s), below the floor of ${CORPUS_FLOOR} ` +
+      `'${ROUTES_DIR_REL}' yields ${routeLoadCount} server-load module(s), below the floor of ${CORPUS_FLOOR} ` +
         `measured when this guard was written. Loads have been removed, or the walk is missing part of ` +
         `the tree. Lower CORPUS_FLOOR in the same commit that removes a load, so the reduction is ` +
         `visible in the diff rather than absorbed silently.`
     );
   }
 
-  const corpusRelativeToRoutes = corpus.map((file) => path.relative(ROUTES_DIR_REL, file));
+  const corpusRelativeToRoutes = routeLoads.map((file) => path.relative(ROUTES_DIR_REL, file));
   for (const anchor of ANCHOR_FILES) {
     if (!corpusRelativeToRoutes.includes(anchor)) {
       corpusIsReal = false;
@@ -514,6 +533,19 @@ function main() {
         `the anchor '${path.join(ROUTES_DIR_REL, anchor)}' is not in the scanned corpus. This guard is ` +
           `therefore scanning something other than the route tree it was written for, and its zero would ` +
           `be vacuous. Update ANCHOR_FILES in this file when the route tree is deliberately restructured.`
+      );
+    }
+  }
+
+  for (const extra of EXTRA_MODULES) {
+    try {
+      readFileSync(path.resolve(REPO_ROOT, extra), 'utf8');
+    } catch (error) {
+      corpusIsReal = false;
+      violate(
+        `the shared load module '${extra}' could not be read (${error.message}). Route files re-export ` +
+          `its loads, so leaving it unscanned would let a session return there pass. Update EXTRA_MODULES ` +
+          `in this file when the module is deliberately moved or removed.`
       );
     }
   }
