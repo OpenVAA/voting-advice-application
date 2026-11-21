@@ -6,33 +6,36 @@ Displays information about the privacy policy of the app as well as the possible
 
 ### Settings
 
-- `analytics.platform`: Affects the information displayed.
-- `analytics.trackEvents`: Affects the information displayed and whether the `DataConsent` component is shown.
+- `analytics.trackEvents`: Affects whether the `DataConsent` component is shown.
+
+### Analytics
+
+Read from `ctx.analyticsPolicy.current`:
+
+- `projection.active`: Whether the analytics section is shown.
+- `projection.consentMode`: Which description is shown, `privacy.analytics.content.gated` or `privacy.analytics.content.free`. The page-view count and the Global Privacy Control rule are always shown with it.
+- The `DataConsent` component is shown only when the visitor has a choice to make: the relay is usable (`relayUsable`, so not under Global Privacy Control), `trackEvents` is on and the consent mode is `gated`.
 -->
 
 <script lang="ts">
-  import { staticSettings } from '@openvaa/app-shared';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
+  import { relayUsable } from '$lib/contexts/app/tracking/sendPolicy';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { DataConsent } from '$lib/dynamic-components/dataConsent';
-  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { sanitizeHtml } from '$lib/utils/sanitize';
 
   const ctx = getAppContext();
   const { getRoute, t } = ctx;
-  // appSettings is a reactive accessor — read via ctx.X, never destructure.
-  const appSettings = $derived(ctx.appSettings);
-
-  // Construct the analytics link for privacy translations
-  const analyticsLink = staticSettings.analytics?.platform?.infoUrl
-    ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${
-        staticSettings.analytics.platform.name.charAt(0).toUpperCase() + staticSettings.analytics.platform.name.slice(1)
-      }</a>`
-    : '';
+  // analyticsPolicy is a reactive handle — read via ctx.analyticsPolicy.current, never destructure.
+  const policy = $derived(ctx.analyticsPolicy.current);
+  // The consent control is offered only when there is a choice to make: in consent-free mode and under Global Privacy Control there is none, and the analytics text says why.
+  const showConsentControl = $derived(
+    policy.trackEvents && policy.projection.consentMode === 'gated' && relayUsable(policy)
+  );
 
   const { topBarSettings } = getLayoutContext();
   topBarSettings.use({
@@ -53,7 +56,7 @@ Displays information about the privacy policy of the app as well as the possible
   {#snippet heading()}
     <HeadingGroup>
       <PreHeading class="text-primary">{t('dynamic.appName')}</PreHeading>
-      <h1>{t('privacy.title')}</h1>
+      <h1 tabindex="-1">{t('privacy.title')}</h1>
     </HeadingGroup>
   {/snippet}
 
@@ -61,21 +64,23 @@ Displays information about the privacy policy of the app as well as the possible
     <div>
       {@html sanitizeHtml(t('dynamic.privacy.content'))}
     </div>
-    {#if appSettings.analytics?.platform}
+    {#if policy.projection.active}
       <h2 class="mt-lg mb-md">{t('privacy.analytics.title')}</h2>
       <div>
-        {@html sanitizeHtml(
-          t(assertTranslationKey(`privacy.analytics.content.${appSettings.analytics.platform.name}`), {
-            analyticsLink
-          })
-        )}
+        <p>
+          {policy.projection.consentMode === 'gated'
+            ? t('privacy.analytics.content.gated')
+            : t('privacy.analytics.content.free')}
+        </p>
+        <p>{t('privacy.analytics.pageviews')}</p>
+        <p>{t('privacy.analytics.gpc')}</p>
       </div>
     {/if}
     <h2 class="mt-lg mb-md">{t('privacy.cookies.title')}</h2>
     <div>
       {@html sanitizeHtml(t('privacy.cookies.content'))}
     </div>
-    {#if appSettings.analytics.trackEvents}
+    {#if showConsentControl}
       <h2 class="mt-lg mb-md">{t('common.privacy.dataCollection.title')}</h2>
       <DataConsent description="inline" class="bg-base-300 p-lg rounded-lg" />
     {/if}

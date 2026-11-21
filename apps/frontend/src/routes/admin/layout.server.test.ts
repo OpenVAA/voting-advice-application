@@ -1,7 +1,7 @@
 /**
  * The two subtree server loaders' returned session PROJECTION (phase 158, D10 criterion 13).
  *
- * Everything a server load returns is serialised into the hydration payload in the HTML body. Until this spec, `routes/admin/+layout.server.ts` and `routes/candidate/+layout.server.ts` each returned `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record — so a REFRESH TOKEN sat in the document of every authenticated admin page and every authenticated candidate page. `158-ADMIN-BASELINE.md` measured that shape at this phase's HEAD rather than assuming it.
+ * Everything a server load returns is serialised into the hydration payload in the HTML body. Until this spec, `routes/admin/+layout.server.ts` and `routes/contestant/+layout.server.ts` each returned `locals.safeGetSession()`'s whole `Session` — `access_token`, **`refresh_token`**, `expires_at` and the full `user` record — so a REFRESH TOKEN sat in the document of every authenticated admin page and every authenticated candidate page. `158-ADMIN-BASELINE.md` measured that shape at this phase's HEAD rather than assuming it.
  *
  * The remedy is the projection the root server loader's docstring already sanctions: `{ userId, expiresAt }`, and never the token-bearing object. Both consumers need EXISTENCE only — `authContext`'s `$derived(!!page.data.session)` and `getUserData`'s ancestor pre-check `if (!parentData.session)` — so the narrowing is invisible to them and visible to anyone reading the document body.
  *
@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { load as adminLoad } from './+layout.server';
-import { load as candidateLoad } from '../candidate/+layout.server';
+import { load as contestantLoad } from '../contestant/+layout.server';
 import type { getUserData } from '$lib/auth/getUserData';
 
 /** The exact member list the projection is allowed to carry. An adjacent extra member fails by name against this array. */
@@ -66,7 +66,7 @@ function authenticatedEvent({
 
 const LOADS: Array<[string, LoadFn]> = [
   ['routes/admin/+layout.server.ts', adminLoad as unknown as LoadFn],
-  ['routes/candidate/+layout.server.ts', candidateLoad as unknown as LoadFn]
+  ['routes/contestant/+layout.server.ts', contestantLoad as unknown as LoadFn]
 ];
 
 describe.each(LOADS)('%s — the returned session projection', (_name, load) => {
@@ -179,7 +179,7 @@ describe('getUserData’s structural ancestor-data type still names a REQUIRED m
    */
   it('both loads’ own return types are accepted where the helper expects its ancestor data', () => {
     const adminPayloadSatisfiesTheHelper: Accepts<Awaited<ReturnType<typeof adminLoad>>> = true;
-    const candidatePayloadSatisfiesTheHelper: Accepts<Awaited<ReturnType<typeof candidateLoad>>> = true;
+    const candidatePayloadSatisfiesTheHelper: Accepts<Awaited<ReturnType<typeof contestantLoad>>> = true;
 
     expect([adminPayloadSatisfiesTheHelper, candidatePayloadSatisfiesTheHelper]).toEqual([true, true]);
   });

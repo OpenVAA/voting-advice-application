@@ -1,43 +1,69 @@
 /**
- * Provider-agnostic OIDC callback endpoint.
+ * The identity provider's callback: the provider redirects the browser here after identification, with an authorization code or an error in the query string.
  *
- * The identity provider redirects the browser here after authentication with an authorization code in the query string. This handler:
+ * 1. An error the provider reports is mapped to a code first — its cancel to `cancelled`, every other value to `provider_error` — so no value the provider chose reaches an address. The flow cookies are cleared.
+ * 2. A callback with no code is `missing_code`, and the flow cookies are cleared.
+ * 3. The browser-bound proof the active provider declares in `callbackBinding` is demanded: a `state` equal to the `oidc_state` cookie (Idura), or the `oidc_code_verifier` cookie (Signicat PKCE). A callback without it is `invalid_state`, before any token request, and the flow cookies are cleared.
+ * 4. The code is exchanged for an id_token and the token's claims are verified. A rejected token is `invalid_token`; any other failure of the exchange is `token_exchange_failed`.
+ * 5. The entity type the flow was started for is checked against the registration matrix again, over the application settings read anonymously as the authorize endpoint reads them, by the function that endpoint decides by (`identityProviderEntityType`): a named type must be served and allow the provider's mode, an absent one is taken only when exactly one served type allows it, and while answers are locked every type is refused. A refusal is `mode_not_allowed`; a failed settings read is `registration_failed`.
+ * 6. The `identity-callback` Edge Function is invoked with the id_token, the project and the type, and with this server's secret in the credential header: the function answers this server alone. It decides again, finds or creates the account and its entity, and answers one closed `result` with a sign-in token. A failed answer is mapped to a code by `oidcErrorFromFunction`; an unset or malformed project, and an unset secret, are `configuration_error`, and nothing is invoked.
+ * 7. The session is established on this request's own client by verifying the function's token. A failure is `registration_failed`. Once it is set, and not before, every count of the logout modal the request carries is withdrawn in this response, so that no count a closed tab left can end the session just signed in. Every earlier failure leaves the count in place, because it signs nobody in.
+ * 8. The arrival marker is set as an httpOnly cookie, `created` when the function made the account's entity and `existing` when it found one, and the browser is sent to the Contestant App's root, where the protected layout shows what the account still lacks.
  *
- * 1. Validates the authorization code is present
- * 2. Demands the browser-bound proof the active provider declares in `callbackBinding`: a `state` equal to the `oidc_state` cookie (Idura), or the `oidc_code_verifier` cookie (Signicat PKCE). A callback without that proof is rejected with `invalid_state` before any token request (login CSRF protection)
- * 3. Exchanges the code for an id_token via the active provider
- * 4. Verifies the id_token by extracting claims
- * 5. Sets the `id_token` as an httpOnly cookie
- * 6. Redirects the browser to the preregister page
+ * The id_token never reaches the browser: it is exchanged and handed on within this request. The entity type cookie the authorize endpoint set is read once and deleted on every path, the successful one included.
  *
- * This is an API-style server route (GET handler) -- no client-side JavaScript involved.
- * Both Idura (JAR + private_key_jwt) and Signicat (PKCE + client_secret) flows converge here.
+ * Every failure redirects to the identity provider's error screen with one code of `OIDC_ERROR`, which the screen shows as one of three classes. Both Idura (JAR + private_key_jwt) and Signicat (PKCE + client_secret) flows converge here.
  */
 
 import { redirect } from '@sveltejs/kit';
-import { OIDC_ERROR, upstreamOidcError } from '$candidate/utils/oidcError';
+import { OIDC_ERROR, oidcErrorFromFunction, oidcErrorFromProvider } from '$contestant/utils/oidcError';
+import { identityProviderEntityType } from '$contestant/utils/registrationOffer';
+import { createDataProvider, createSupabaseAnonClient } from '$lib/api/dataProvider';
 import { formatOidcFailure } from '$lib/api/utils/auth/oidcFailure';
 import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import { COOKIE } from '$lib/cookies';
 import { buildRoute } from '$lib/routes';
+import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
+import { constants } from '$lib/server/constants';
+import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
+import type { OidcError } from '$contestant/utils/oidcError';
 
-export async function GET({ url, cookies, locals }: RequestEvent): Promise<never> {
+/** The attributes of the arrival marker: those of the flow's cookies. It is read by the server alone, and lives as long as one return. */
+const ARRIVAL_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax',
+  path: '/',
+  maxAge: 600
+} as const;
+
+/** The marker each successful `result` of `identity-callback` leaves. */
+const ARRIVAL_OF_RESULT: Readonly<Record<string, 'created' | 'existing'>> = Object.freeze({
+  created: 'created',
+  found: 'existing',
+  no_entity: 'existing'
+});
+
+export async function GET(event: RequestEvent): Promise<never> {
+  const { url, cookies, request, fetch, locals } = event;
   const code = url.searchParams.get('code');
   const returnedState = url.searchParams.get('state');
   const errorParam = url.searchParams.get('error');
-  // Every redirect below names its target by route key and lets the builder assemble the URL, so a route that moves stays reachable from here without a second edit. `error` is not a declared route param, so the builder puts it on the search side and percent-encodes it; no caller here may encode a value first, or it would arrive encoded twice. The builder also hands the result to Paraglide, which prefixes every non-base locale and omits the prefix for the base one, so a visitor who arrived in a non-base locale is now returned to that locale's URL instead of the unprefixed one. The preregistration layout has always built its own redirect this way.
   const locale = locals.currentLocale;
 
-  // Handle IdP errors (user canceled, access denied, etc.)
+  // The entity type the flow was started for selects for this one return alone, so it is read once and removed on every path.
+  const requestedType = cookies.get(COOKIE.oidcEntityType);
+  cookies.delete(COOKIE.oidcEntityType, { path: '/' });
+
   if (errorParam) {
-    // The value is the provider's, not ours, which is why it goes through the one named widening site rather than through the closed union. It is passed RAW: the builder does the encoding.
-    throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: upstreamOidcError(errorParam) }));
+    clearFlowCookies(cookies);
+    throw redirect(303, errorScreen(oidcErrorFromProvider(errorParam), locale));
   }
 
-  // Validate authorization code is present
   if (!code) {
-    throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.missingCode }));
+    clearFlowCookies(cookies);
+    throw redirect(303, errorScreen(OIDC_ERROR.missingCode, locale));
   }
 
   try {
@@ -51,17 +77,17 @@ export async function GET({ url, cookies, locals }: RequestEvent): Promise<never
         const storedState = cookies.get(COOKIE.oidcState);
         if (!storedState || !returnedState || returnedState !== storedState) {
           clearFlowCookies(cookies);
-          throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.invalidState }));
+          throw redirect(303, errorScreen(OIDC_ERROR.invalidState, locale));
         }
         cookies.delete(COOKIE.oidcState, { path: '/' });
         break;
       }
       case 'pkce': {
-        // The preregister page stores the verifier in a cookie so this server route can read it (localStorage is client-only). The provider issues no `state`, so none is required here.
+        // The authorize endpoint keeps the verifier in an httpOnly cookie for this route. The provider issues no `state`, so none is required here.
         codeVerifier = cookies.get(COOKIE.oidcCodeVerifier);
         if (!codeVerifier) {
           clearFlowCookies(cookies);
-          throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.invalidState }));
+          throw redirect(303, errorScreen(OIDC_ERROR.invalidState, locale));
         }
         cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
         break;
@@ -71,56 +97,139 @@ export async function GET({ url, cookies, locals }: RequestEvent): Promise<never
         const unhandled: never = provider.callbackBinding;
         console.error('[oidc/callback] Unrecognised callback binding:', unhandled);
         clearFlowCookies(cookies);
-        throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.invalidState }));
+        throw redirect(303, errorScreen(OIDC_ERROR.invalidState, locale));
       }
     }
 
-    // Exchange the authorization code for an id_token
     const { idToken } = await provider.exchangeCodeForToken({
       authorizationCode: code,
       redirectUri,
       codeVerifier
     });
 
-    // Verify the token is valid by extracting claims
     const claims = await provider.getIdTokenClaims(idToken);
     if (!claims.success) {
-      // The OPAQUE failure-class code only. Do not pass the caught error, and do not pass `error.message`: that message carries the incoming kid, and the leak-safety rule on `decryptAndVerifyIdToken` forbids anything more than the code crossing this boundary. (Note the outer catch below deliberately does the opposite -- it logs the whole error, because that path has no coded failure to name.)
-      //
-      // The code set is OPEN, and the comment that used to stand here said the opposite. It asserted "the set is exactly ERR_JWKS_MALFORMED, ERR_JWKS_EMPTY, ERR_JWK_KID_MISMATCH, ERR_AUDIENCE_UNCONFIGURED and ERR_ISSUER_UNCONFIGURED", while its own dependency's `@throws` tag said "jose's own coded errors flow through unchanged" -- and the provider catch arms, which forward `e.code` for any `Error` carrying one, made the dependency the truthful one. A live Idura callback then logged `ERR_JOSE_GENERIC`, a member of neither that list nor the 'none' placeholder, and the line carried nothing else; the failing stage had to be recovered by reading jose's source. See `.planning/debug/resolved/idura-bank-auth-empty-client.md`, finding 2.
-      //
-      // `formatOidcFailure` is the repair: it resolves the code -- ours or jose's -- to the STAGE it failed at and a FIXED operator hint naming the environment variable behind it, and it is total over unrecognised codes rather than silently mis-attributing them. It interpolates no value, so it stays safe to log; the provider type is included because selecting the WRONG provider was finding 1 of that same session.
-      // 'none' remains the placeholder for a failure carrying no code at all -- a thrown non-`Error`, or an `Error` with its code on `.cause` (Node's `TypeError: fetch failed`). It is the absence of a class, not a class.
-      // The redirect below is unchanged and still carries only the opaque `invalid_token`: the server console and the browser URL are different audiences, and nothing from this log line reaches the second.
+      // The log names the failure's code, resolved by `formatOidcFailure` to the stage it failed at and a fixed operator hint, and the provider type; it interpolates no value of the token or the error. The address carries only the coarse `invalid_token`.
       console.error('[oidc/callback] ID token claims rejected;', formatOidcFailure(claims.error.code, provider.type));
-      throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.invalidToken }));
+      throw redirect(303, errorScreen(OIDC_ERROR.invalidToken, locale));
     }
 
-    // Clean up nonce cookie (stored by the authorize endpoint for Idura).
-    // Nonce verification against the id_token nonce claim is a future enhancement.
+    // The authorize endpoint stores a nonce for Idura; it is cleared here.
     const storedNonce = cookies.get(COOKIE.oidcNonce);
     if (storedNonce) {
       cookies.delete(COOKIE.oidcNonce, { path: '/' });
     }
 
-    // Set the id_token cookie (same pattern as the /api/oidc/token endpoint)
-    cookies.set(COOKIE.idToken, idToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      path: '/'
-    });
-
-    // Redirect to the preregister page. This is the one redirect that carries no error value.
-    throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale }));
+    throw redirect(303, await register({ idToken, requestedType, cookies, request, url, fetch, locals, locale }));
   } catch (e) {
-    // Re-throw SvelteKit redirects (they are thrown as exceptions)
+    // A SvelteKit redirect is thrown as an exception, and is passed on.
     if (e && typeof e === 'object' && 'status' in e && 'location' in e) {
       throw e;
     }
     console.error('Callback token exchange failed:', e);
-    throw redirect(303, buildRoute({ route: 'CandAppPreregister', locale, error: OIDC_ERROR.tokenExchangeFailed }));
+    throw redirect(303, errorScreen(OIDC_ERROR.tokenExchangeFailed, locale));
   }
+}
+
+/**
+ * Register the identified user through `identity-callback` and sign them in on this request's client.
+ *
+ * Once `verifyOtp` has set the session, the logout count the request carries is withdrawn, through `cookies`, `request` and `url`, before the arrival marker is set. A failure before that point leaves the count in place.
+ *
+ * Never throws: every failure is answered with the error screen's address for one closed code, and only that code is logged.
+ * @returns The address the browser is sent to: the Contestant App's root on success, the error screen otherwise.
+ */
+async function register({
+  idToken,
+  requestedType,
+  cookies,
+  request,
+  url,
+  fetch,
+  locals,
+  locale
+}: {
+  idToken: string;
+  requestedType: string | undefined;
+  cookies: Cookies;
+  request: Request;
+  url: URL;
+  fetch: typeof globalThis.fetch;
+  locals: App.Locals;
+  locale: string | undefined;
+}): Promise<string> {
+  function failed(error: OidcError): string {
+    console.error('[oidc/callback] Registration through identity-callback failed:', error);
+    return errorScreen(error, locale);
+  }
+
+  // Building the provider resolves the project the application is scoped to, and refuses one that is unset or malformed.
+  let dataProvider: ReturnType<typeof createDataProvider>;
+  try {
+    dataProvider = createDataProvider({ fetch, client: createSupabaseAnonClient({ fetch }) });
+  } catch {
+    return failed(OIDC_ERROR.configurationError);
+  }
+  const serverSecret = constants.IDENTITY_CALLBACK_SERVER_SECRET;
+  if (!serverSecret) return failed(OIDC_ERROR.configurationError);
+
+  let settings: ContestantAppSettingsInput;
+  try {
+    settings = (await dataProvider.getAppSettings()) as ContestantAppSettingsInput;
+  } catch {
+    return failed(OIDC_ERROR.registrationFailed);
+  }
+  const entityType = identityProviderEntityType(settings, requestedType);
+  if (!entityType) return failed(OIDC_ERROR.modeNotAllowed);
+
+  let answer: { result?: unknown; token?: unknown } | undefined;
+  try {
+    const { data, error } = await locals.supabase.functions.invoke('identity-callback', {
+      // The function's `SERVER_CREDENTIAL_HEADER`; its conformance test reads this line.
+      headers: { 'x-identity-callback-secret': serverSecret },
+      body: { id_token: idToken, project_id: dataProvider.projectId, entity_type: entityType }
+    });
+    answer = error ? await failedAnswerOf(error) : (data ?? undefined);
+  } catch {
+    answer = undefined;
+  }
+
+  const result = answer?.result;
+  const token = answer?.token;
+  const arrival =
+    typeof result === 'string' && Object.hasOwn(ARRIVAL_OF_RESULT, result) ? ARRIVAL_OF_RESULT[result] : undefined;
+  if (!arrival) return failed(oidcErrorFromFunction(result));
+  if (typeof token !== 'string' || token === '') return failed(OIDC_ERROR.registrationFailed);
+
+  try {
+    const { data, error } = await locals.supabase.auth.verifyOtp({ token_hash: token, type: 'magiclink' });
+    if (error || !data.session) return failed(OIDC_ERROR.registrationFailed);
+  } catch {
+    return failed(OIDC_ERROR.registrationFailed);
+  }
+
+  withdrawLogoutDeadline({ cookies, request, url });
+  cookies.set(COOKIE.identityProviderArrival, arrival, ARRIVAL_COOKIE_OPTIONS);
+  return buildRoute({ route: 'ContestantAppHome', locale });
+}
+
+/**
+ * The body of a failed `identity-callback` answer. `functions.invoke` keeps the function's response as the error's `context` when the function answered; when it was never reached there is none.
+ * @param error - The error `functions.invoke` returned.
+ * @returns The answer's body, or `undefined` when there is none that reads as an object.
+ */
+async function failedAnswerOf(error: unknown): Promise<{ result?: unknown } | undefined> {
+  const context = (error as { context?: unknown }).context;
+  if (!(context instanceof Response)) return undefined;
+  const body: unknown = await context.json().catch(() => undefined);
+  return body && typeof body === 'object' ? (body as { result?: unknown }) : undefined;
+}
+
+/**
+ * The address of the identity provider's error screen for a code, in the request's locale. `error` is not a declared route param, so the builder puts it on the search side.
+ */
+function errorScreen(error: OidcError, locale: string | undefined): string {
+  return buildRoute({ route: 'ContestantAppIdentityProviderError', locale, error });
 }
 
 /**
@@ -130,4 +239,5 @@ function clearFlowCookies(cookies: Cookies): void {
   cookies.delete(COOKIE.oidcState, { path: '/' });
   cookies.delete(COOKIE.oidcNonce, { path: '/' });
   cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
+  cookies.delete(COOKIE.oidcEntityType, { path: '/' });
 }

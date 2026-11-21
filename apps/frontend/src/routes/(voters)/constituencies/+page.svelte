@@ -20,7 +20,7 @@ See `+page.ts` for possible redirects.
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { isVoterAppPath, parseParams } from '$lib/routes';
+  import { isVoterAppPath, parseParams, usesSingleConstituencyGroup } from '$lib/routes';
   import { filterPersistent } from '$lib/routes/filterPersistent';
   import type { Id } from '@openvaa/core';
 
@@ -42,35 +42,19 @@ See `+page.ts` for possible redirects.
   /** The selected `constituencyIds` per election */
   let selected = $state<{ [electionId: Id]: Id }>({});
 
-  // `useSingleGroup` MUST be `$derived` AND must safely handle the dataRoot-not-yet-populated state. The original `const` shape captured the empty `getConstituencyGroup(...)` lookup at module init when the root layout's `$effect` had not yet provided constituency data; even making it `$derived` is not enough because `getConstituencyGroup` throws when the id is missing — a synchronous throw in a `$derived` surfaces as a page error and freezes the page on its initial empty template (variant-startfromcg.spec.ts:115 hydration race).
-  const useSingleGroup = $derived.by(() => {
-    const id = appSettings.elections?.startFromConstituencyGroup;
-    if (!id) return undefined;
-    return voterCtx.dataRoot.constituencyGroups.find((g) => g.id === id);
-  });
+  // `useSingleGroup` must be `$derived`, and its lookup must not throw: the constituency data may not be provided yet when this is first read, and a throw in a `$derived` surfaces as a page error.
+  const useSingleGroup = $derived(
+    usesSingleConstituencyGroup({ appSettings, constituencyGroups: voterCtx.dataRoot.constituencyGroups })
+  );
 
   let elections = $derived(useSingleGroup ? voterCtx.dataRoot.elections : voterCtx.selectedElections);
 
-  // Pre-fill `selected` from the voter context's current constituency choices (e.g., on back-navigation from /questions). The previous implementation delegated to `Election.getApplicableConstituency`, which THROWS when more than one constituency in the array matches the election — a state that surfaces whenever two elections share a constituency group but the user has previously selected different members of that group for each. The resulting `DataTypeError: More than one constituency matches the election` propagated out of the $effect and broke the constituency page.
-  //
-  // Instead, iterate per-election and pick the MOST SPECIFIC applicable constituency — the one whose enclosing group has the fewest members (i.e., the leaf in the hierarchy). For a Regions-or-Municipalities election, that's the municipality the voter chose; the region implication is reconstructed from the municipality via the hierarchy at evaluation time. Ties fall back to first-match deterministically.
+  // Pre-fill `selected` from the voter context's current constituency choices (e.g., on back-navigation from /questions). Several of them may be applicable to one election: two elections may share a constituency group for which a different member was selected for each, and a constituency may be selected together with its parent. `Election.getMostSpecificConstituency` picks one of them per election and does not throw for such a selection.
   $effect(() => {
     if (!voterCtx.selectedConstituencies.length) return;
     for (const election of elections) {
-      const matches = voterCtx.selectedConstituencies.filter((c) =>
-        election.constituencyGroups.some((g) => g.data.constituencyIds.includes(c.id))
-      );
-      if (!matches.length) continue;
-      const best = matches.reduce((a, b) => {
-        const aSize =
-          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(a.id))?.constituencies.length ??
-          Infinity;
-        const bSize =
-          election.constituencyGroups.find((g) => g.data.constituencyIds.includes(b.id))?.constituencies.length ??
-          Infinity;
-        return bSize < aSize ? b : a;
-      });
-      selected[election.id] = best.id;
+      const best = election.getMostSpecificConstituency(voterCtx.selectedConstituencies);
+      if (best) selected[election.id] = best.id;
     }
   });
 
@@ -92,7 +76,7 @@ See `+page.ts` for possible redirects.
     if (next) {
       const decoded = decodeURIComponent(next);
       if (isVoterAppPath(decoded)) {
-        // Append the just-picked electionId + constituencyId to the deferred target before goto. Without this, `goto(decoded)` lands on a raw `/results` URL with neither id present; (located)/+layout.ts then sees no electionId in URL OR voter-context state (the constituency page never writes back to voterCtx — the URL is the only persistence) and bounces the voter back through /elections, looping test 1. Preserve any query params the original deferred target already carried (e.g., `?entityType=candidates` in test 2 — the test asserts that param survives the round-trip).
+        // The persistent search params of this page's address, the elections among them, and the constituencies just picked are appended to the deferred target. The target's own address carries neither, and the address is the only place the selection is kept: this page writes nothing back to the voter context, so `(located)/+layout.ts` would find no election and send the voter to the election selection again. The query params the deferred target already carries, such as `entityType`, are kept.
         const target = new URL(decoded, page.url.origin);
         const persistent = filterPersistent(parseParams({ url: page.url }));
         const targetParams = qs.parse(target.search.replace(/^\?/g, ''));

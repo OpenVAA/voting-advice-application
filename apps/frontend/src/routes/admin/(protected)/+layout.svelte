@@ -4,14 +4,17 @@
 
 - Only displays children if user is authenticated with admin privileges
 - Handles loading and error states
+- Renders the view of the gate the server load reported (see `$lib/admin/gates`) in place of the page, and moves focus to it when it replaced another view without a navigation
 
 -->
 
 <script lang="ts">
   import { log } from '@openvaa/app-shared';
+  import { ADMIN_GATE_VIEWS } from '$lib/admin/gates/adminGateViews';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { getAdminContext } from '$lib/contexts/admin';
+  import { GateOutlet } from '$lib/dynamic-components/gates';
   import type { Snippet } from 'svelte';
   import type { LayoutData } from './$types';
 
@@ -48,5 +51,7 @@
 {:else if !ready}
   <Loading />
 {:else}
-  {@render children?.()}
+  <GateOutlet gate={data.gate} views={ADMIN_GATE_VIEWS}>
+    {@render children?.()}
+  </GateOutlet>
 {/if}

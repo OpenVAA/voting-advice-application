@@ -19,6 +19,7 @@ See `+page.ts` for possible redirects.
   import { ElectionSelector } from '$lib/components/electionSelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { electionsHeldIn } from '$lib/routes';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -37,21 +38,12 @@ See `+page.ts` for possible redirects.
 
   let selected: Array<Id> = $state([]);
 
-  let elections = $derived.by(() => {
-    let result = voterCtx.dataRoot.elections;
-    if (appSettings.elections?.startFromConstituencyGroup) {
-      // Only show elections for which a Constituency is available.
-      // `getApplicableConstituency` throws when more than one of the passed constituencies maps to one of the election's groups (e.g. a municipality and its parent region both end up in selectedConstituencies for an election whose cgs include both Regions and Municipalities). Treat that throw as "applicable" — the election clearly matches *something* in the selection — so the multi-cg election still appears in the list (variant-startfromcg.spec.ts:145 hierarchy edge case).
-      result = result.filter((e) => {
-        try {
-          return !!e.getApplicableConstituency(voterCtx.selectedConstituencies);
-        } catch {
-          return true;
-        }
-      });
-    }
-    return result;
-  });
+  // If `startFromConstituencyGroup` is set, only the elections held in the selected constituencies are shown.
+  let elections = $derived(
+    appSettings.elections?.startFromConstituencyGroup
+      ? electionsHeldIn({ elections: voterCtx.dataRoot.elections, constituencies: voterCtx.selectedConstituencies })
+      : voterCtx.dataRoot.elections
+  );
 
   $effect(() => {
     selected = (voterCtx.selectedElections.length ? voterCtx.selectedElections : elections).map((e) => e.id);
@@ -63,7 +55,7 @@ See `+page.ts` for possible redirects.
 
   let canSubmit = $derived(selected?.length > 0);
 
-  // Async + awaited so the click handler reports navigation errors instead of swallowing them. Prior implementation `function handleSubmit(): void` discarded the goto() promise — when SvelteKit's client-side navigation raced with a $effect (e.g. a stores' `.set()` triggered on first click hydration) goto() resolved to undefined and the URL never changed (multi-election.spec.ts:173 documents the same flake). The Array.from copy decouples the URL builder from the $state proxy on `selected` so qs.stringify sees a plain array.
+  // The navigation is awaited, so that an error of it reaches the click handler and the handler does not return before the address has changed. The `Array.from` copy hands the route builder a plain array and not the `$state` proxy on `selected`.
   async function handleSubmit(): Promise<void> {
     if (!canSubmit) return;
     const electionId = Array.from(selected);
