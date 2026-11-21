@@ -7,9 +7,9 @@ const UUID = '3f2b8c1e-9a4d-4e6f-8b7a-0c1d2e3f4a5b';
 /**
  * Unit test for the `contestantEntityPage` SvelteKit param matcher.
  *
- * Accept-set: `profile`, `questions`, `questions/<one segment>`, `preview` and `nominations`.
+ * Accept-set: `profile`, `questions`, `questions/<a plain id>`, `preview` and `nominations`.
  *
- * Rejects the empty string, which a rest segment's matcher receives for the app root, a page of the app that is not an entity page (the settings page among them: it belongs to the user and has its own route at the app root), an empty or a nested question segment, a case variant and an id alone.
+ * Rejects the empty string, which a rest segment's matcher receives for the app root, a page of the app that is not an entity page (the settings page among them: it belongs to the user and has its own route at the app root), an empty or a nested question segment, a question segment that is not a plain id, a case variant and an id alone.
  */
 describe('contestantEntityPage matcher', () => {
   it.each([
@@ -34,6 +34,11 @@ describe('contestantEntityPage matcher', () => {
     'settings/',
     'questions/',
     'questions/a/b',
+    'questions/a b',
+    'questions/..',
+    'questions/a?next=x',
+    'questions/a#b',
+    'questions/a%2Fb',
     `questions/${UUID}/`,
     'profile/x',
     'preview/',

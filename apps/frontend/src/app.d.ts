@@ -1,4 +1,5 @@
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
+import type { IdentityProviderArrival } from '$contestant/gates/gates';
 import type { AnalyticsProjection } from '$lib/analytics/modes';
 import type { SupabaseDatabase } from '$lib/api/adapters/supabase/supabaseAdapter.type';
 import type { DPReturnType } from '$lib/api/base/dataProvider.type';
@@ -37,8 +38,10 @@ declare global {
       contestantUserData?: EntityUserData<true>;
       /** The signed-in user, from the load of the Contestant App's protected tree. */
       user?: BasicUserData;
-      /** The entities the signed-in user edits, of the types the project serves, from the same load. */
-      entities?: Array<UserEntity>;
+      /** The entities the signed-in user edits, of the types the project serves, from the same load, or `null` when the list could not be read. */
+      entities?: Array<UserEntity> | null;
+      /** The identity provider's arrival marker, from the same load while a gate is pending. */
+      arrival?: IdentityProviderArrival;
     }
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface PageState {}
