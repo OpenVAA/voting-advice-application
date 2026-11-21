@@ -35,3 +35,13 @@ C01_S22=rewritten infra/modules/mail-ses/main.tf, the comment above aws_route53_
 C01_S23=rewritten infra/modules/mail-ses/main.tf, the comment above aws_route53_record.dmarc: mail from this identity passes DMARC, aligned with the From domain. Settled by the Supabase runbook's 2026-11-11 row on the mail's Authentication-Results (dkim=pass aligned with staging.openvaa.org, spf=pass, dmarc=pass), and the DNS-and-mail runbook's new 2026-11-11 row.
 C01_S24=rewritten infra/modules/mail-ses/smtp.tf, the comment above data.aws_iam_policy_document.ses_send: SES authorises an SMTP send against the identity's ARN under this condition. Settled by the Supabase runbook's 2026-11-11 row (a sign-in mail sent through SES by the SMTP user arrived), with the DNS-and-mail runbook's 2026-10-22 row (Step 3, item 9: the SMTP user's one attached policy is this send policy). The fallback clause for a refused first send is dropped, since the send was accepted.
 ```
+
+## `apps/docs/src/routes/(content)/developers-guide/backend/authentication/+page.md`, § Known residuals
+
+The bullets' headings and every anchor are kept; only the sentences named below changed.
+
+```
+C01_S25=moved-to-pre-launch-todo The per-server sign-in budget stays a pre-launch risk; the sentences saying which address the hosted auth service counts is not measured are replaced by the check to run before a hosted project goes live (exhaust the budget from one client through one server, sign in from another network, a 429 over_request_rate_limit means shared; code and email sign-in checked apart) and the remedy. The check itself is held by plan 189-17's todo, .planning/todos/pending/2026-11-20-189-pre-launch-auth-checks-on-the-production-project.md § Check: the shared per-address sign-in budget.
+C01_S26=todo The timing difference is stated as a local measurement only; the hosted half (whether the difference shows over a network) is carried into the C-01 todo with its check.
+C01_S27=row 2026-11-20 S1_POSTGRES_UPDATE_AUTH_USERS=t (189-05-staging-reads.md, read 2026-11-20T13:34Z, also a 2026-11-20 row in the Supabase runbook): the page now states that postgres may update auth.users on the local stack and on a hosted project, with the staging read and its date.
+```
