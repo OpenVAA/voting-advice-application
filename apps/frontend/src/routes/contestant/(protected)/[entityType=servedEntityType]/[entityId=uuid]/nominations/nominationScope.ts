@@ -7,9 +7,14 @@
  */
 
 import { CONTESTANT_EDITING, getContestantEditing } from '@openvaa/app-shared';
-import { admissibleElectionsOf, nominationsEditableOf, writableNominationsOf } from '$lib/contestant/nominations';
+import {
+  admissibleElectionsOf,
+  choosesSeveralConstituenciesOf,
+  nominationsEditableOf,
+  writableNominationsOf
+} from '$lib/contestant/nominations';
 import type { Id } from '@openvaa/core';
-import type { EntityType } from '@openvaa/data';
+import type { Election, EntityType } from '@openvaa/data';
 import type { EntityNomination } from '$lib/api/base/dataWriter.type';
 import type { SelectionData } from '$lib/routes';
 
@@ -21,7 +26,9 @@ export type NominationScope = {
   admissibleElectionIds: Array<Id>;
   /** The ids of the entity's nominations the editor manages: those the database marks writable. */
   writableNominationIds: Array<Id>;
-  /** Whether another nomination can be added: the nominations may be edited, and an election that admits the entity's type holds no nomination of it that the editor manages. The editor chooses one constituency in each election, so an election the entity already stands in leaves nothing to add in it. */
+  /** Whether the editor lets the entity choose several constituencies in one election, as `choosesSeveralConstituenciesOf` answers for its type. */
+  severalConstituencies: boolean;
+  /** Whether another nomination can be added: the nominations may be edited, and an election that admits the entity's type has room for one. For an entity that chooses several constituencies in one election, that is an election and constituency in which it holds no nomination the editor manages. For any other entity, which chooses one constituency in each election, it is an election in which it holds none, since an election it already stands in leaves nothing to add in it. */
   canAddAnother: boolean;
 };
 
@@ -46,13 +53,29 @@ export function nominationScopeOf({
     nominationsLocked: getContestantEditing(appSettings) !== CONTESTANT_EDITING.Open,
     answersLocked: getContestantEditing(appSettings) === CONTESTANT_EDITING.Locked
   });
-  const admissibleElectionIds = admissibleElectionsOf(elections, entityType).map((election) => election.id);
+  const admissible = admissibleElectionsOf(elections, entityType);
   const writable = writableNominationsOf(nominations);
-  const heldElectionIds = new Set(writable.map((nomination) => nomination.electionId));
+  const severalConstituencies = choosesSeveralConstituenciesOf(entityType);
+  const hasRoom = severalConstituencies
+    ? freeContestIn(writable)
+    : (election: Election) => !writable.some((nomination) => nomination.electionId === election.id);
   return {
     editable,
-    admissibleElectionIds,
+    admissibleElectionIds: admissible.map((election) => election.id),
     writableNominationIds: writable.map((nomination) => nomination.id),
-    canAddAnother: editable && admissibleElectionIds.some((electionId) => !heldElectionIds.has(electionId))
+    severalConstituencies,
+    canAddAnother: editable && admissible.some(hasRoom)
   };
+}
+
+/**
+ * Whether an election has a constituency in which the entity holds none of the nominations given.
+ * @param nominations - The entity's writable nominations.
+ */
+function freeContestIn(nominations: ReadonlyArray<EntityNomination>): (election: Election) => boolean {
+  const held = new Set(nominations.map(({ electionId, constituencyId }) => `${electionId} ${constituencyId}`));
+  return (election) =>
+    election.constituencyGroups.some((group) =>
+      group.data.constituencyIds.some((constituencyId) => !held.has(`${election.id} ${constituencyId}`))
+    );
 }

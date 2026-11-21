@@ -322,7 +322,8 @@ async function pageDataOf(world: World): Promise<Record<string, unknown>> {
   const nominationScope = {
     editable: true,
     admissibleElectionIds: ELECTION_DATA.map((election) => election.id),
-    writableNominationIds: (world.nominations ?? []).map((row) => row.id)
+    writableNominationIds: (world.nominations ?? []).map((row) => row.id),
+    severalConstituencies: (world.entity ?? PARTY).type === 'organization'
   };
   const search = new URLSearchParams();
   for (const id of world.elections) search.append('nominationElectionId', id);
@@ -488,8 +489,9 @@ describe('which cards there are', () => {
     expect(setEntityNominations).not.toHaveBeenCalled();
   });
 
-  it('shows one moved card for a nomination whose election is chosen with another constituency, naming the previous one', async () => {
+  it('shows one moved card for a candidate whose election is chosen with another constituency, naming the previous one', async () => {
     const root = await render({
+      entity: CANDIDATE,
       nominations: [nomination('nomination-regional', 'regional', 'region-1', { electionSymbol: '7' })],
       elections: ['regional'],
       constituencies: ['region-2']
@@ -501,26 +503,55 @@ describe('which cards there are', () => {
     expect(textOf(one(card, PREVIOUS))).toBe(`${KEYS.previousConstituency} {"constituency":"Region 1"}`);
     expect(one(card, CONSTITUENCY).contains(one(card, PREVIOUS))).toBe(true);
     expect(one<HTMLInputElement>(card, SYMBOL).value).toBe('7');
+  });
+
+  it('moves no card of an organization: a nomination whose constituency is not chosen is about to be removed, beside a new card for the chosen one', async () => {
+    const root = await render({
+      nominations: [nomination('nomination-regional', 'regional', 'region-1', { electionSymbol: '7' })],
+      elections: ['regional'],
+      constituencies: ['region-2']
+    });
+
+    expect(summaryOf(root)).toEqual([
+      ['Regional', 'Region 1', 'removed'],
+      ['Regional', 'Region 2', 'new']
+    ]);
+    expect(cardsOf(root).map((card) => card.getAttribute('data-moved'))).toEqual(['false', 'false']);
 
     await press(root, SUBMIT);
     expect(setEntityNominations).toHaveBeenCalledTimes(1);
     expect(setEntityNominations.mock.calls[0][0]).toEqual([
-      {
-        id: 'nomination-regional',
-        electionId: 'regional',
-        constituencyId: 'region-2',
-        electionSymbol: '7',
-        parent: { kind: 'none' }
-      }
+      { electionId: 'regional', constituencyId: 'region-2', electionSymbol: '', parent: { kind: 'none' } }
     ]);
   });
 
-  it('shows a card for each of several nominations in one election, each as stored, and reads the parent options for every card', async () => {
+  it('gives an organization a card for each chosen constituency of one election, keeping those it is nominated in', async () => {
+    const root = await render({
+      nominations: [REGIONAL],
+      elections: ['regional'],
+      constituencies: ['region-1', 'region-2']
+    });
+
+    expect(summaryOf(root)).toEqual([
+      ['Regional', 'Region 1', 'kept'],
+      ['Regional', 'Region 2', 'new']
+    ]);
+    expect(getNominationParentOptions.mock.calls[0][0]).toEqual([
+      { electionId: 'regional', constituencyId: 'region-1' },
+      { electionId: 'regional', constituencyId: 'region-2' }
+    ]);
+  });
+
+  it('shows a candidate a card for each of several nominations in one election, each as stored, and reads the parent options for every card', async () => {
     const second = nomination('nomination-regional-2', 'regional', 'region-2', {
       confirmed: false,
       electionSymbol: '9'
     });
-    const root = await render({ nominations: [REGIONAL, second, NATIONAL], elections: ['regional'] });
+    const root = await render({
+      entity: CANDIDATE,
+      nominations: [REGIONAL, second, NATIONAL],
+      elections: ['regional']
+    });
 
     expect(summaryOf(root)).toEqual([
       ['Regional', 'Region 1', 'kept'],

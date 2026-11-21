@@ -25,6 +25,9 @@
  *  - expectGroupPicker(groupName)         — one picker under no heading, over the constituency group of that name.
  *  - chooseConstituency(constituencyName, electionName?) — choose a constituency in a picker.
  *  - expectChosenConstituency(constituencyName, electionName?) — a picker shows that constituency as chosen.
+ *  - expectConstituencyLists(electionNames) — for an entity that chooses several constituencies in one election, one list of checkboxes per election named, in order, and no picker.
+ *  - setConstituency(constituencyName, checked, electionName?) — check or uncheck a constituency in such a list.
+ *  - expectCheckedConstituencies(constituencyNames, electionName?) — the constituencies such a list shows as checked, in order.
  *  - expectKept(electionName)             — the section that stands in for a picker is shown for that election.
  *  - expectNoElectionSentence(shown)      — the sentence that says the chosen constituency holds no election is shown and describes Continue, or is absent.
  *  - expectConstituenciesContinue(enabled) — Continue can be pressed, or cannot.
@@ -395,6 +398,17 @@ export function createContestantNominationEditor(page: Page, admin: SupabaseAdmi
     return heading.locator('xpath=..').getByRole('combobox');
   }
 
+  /**
+   * The list of checkboxes of a constituency: the one list of the step, or the list under the heading that names `electionName`.
+   */
+  function checkboxListOf(electionName?: string): Locator {
+    if (electionName === undefined) return constituenciesList;
+    const heading = constituenciesList.getByRole('heading', { level: 3 }).filter({ hasText: electionName });
+    // reason: a list's section has no role and carries no test id; it is the parent of the heading that names its election, reached by the parent axis, which reads no translated string.
+    // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
+    return heading.locator('xpath=..');
+  }
+
   /** Wait until the details step says it is ready: its cards are shown with their options, and the page takes what is done on it. */
   async function expectReady(): Promise<void> {
     await expect(stepPage.details).toHaveAttribute('data-editor-state', 'ready', { timeout: TIMEOUTS.slowPage });
@@ -623,6 +637,42 @@ export function createContestantNominationEditor(page: Page, admin: SupabaseAdmi
       const picker = pickerOf(electionName);
       await expect(picker, 'the constituency is read from one picker').toHaveCount(1, { timeout: TIMEOUTS.slowPage });
       await expect(picker).toHaveValue(endsWith(constituencyName), { timeout: TIMEOUTS.page });
+    },
+
+    /**
+     * Assert the lists of checkboxes of the constituency step, the form it takes for an entity that chooses several constituencies in one election: one per election named, in order, and no picker. Several lists are each headed by their election; a single list has no heading.
+     */
+    async expectConstituencyLists(electionNames: ReadonlyArray<string>): Promise<void> {
+      await expect(constituenciesList).toBeVisible({ timeout: TIMEOUTS.slowPage });
+      await expect(constituenciesList.getByRole('combobox')).toHaveCount(0, { timeout: TIMEOUTS.page });
+      await expect(constituenciesList.getByRole('checkbox')).not.toHaveCount(0, { timeout: TIMEOUTS.page });
+      const headings = constituenciesList.getByRole('heading', { level: 3 });
+      if (electionNames.length > 1) {
+        await expect(headings).toContainText([...electionNames], { timeout: TIMEOUTS.page });
+      } else {
+        expect(electionNames, 'the constituency step is never shown with no list').toHaveLength(1);
+        await expect(headings).toHaveCount(0, { timeout: TIMEOUTS.page });
+      }
+    },
+
+    /**
+     * Check or uncheck the constituency of that name: in the step's one list of checkboxes, or in the list headed by `electionName`.
+     */
+    async setConstituency(constituencyName: string, checked: boolean, electionName?: string): Promise<void> {
+      const box = checkboxListOf(electionName).getByRole('checkbox', { name: constituencyName, exact: true });
+      await expect(box, 'the constituency is one checkbox').toHaveCount(1, { timeout: TIMEOUTS.slowPage });
+      await box.setChecked(checked);
+      await expect(box).toBeChecked({ checked, timeout: TIMEOUTS.page });
+    },
+
+    /**
+     * Assert the constituencies the step's one list of checkboxes, or the list headed by `electionName`, shows as checked, in the list's order.
+     */
+    async expectCheckedConstituencies(constituencyNames: ReadonlyArray<string>, electionName?: string): Promise<void> {
+      const checked = checkboxListOf(electionName).getByRole('checkbox', { checked: true });
+      await expect(checked).toHaveCount(constituencyNames.length, { timeout: TIMEOUTS.slowPage });
+      for (const [index, name] of constituencyNames.entries())
+        await expect(checked.nth(index)).toHaveAccessibleName(name, { timeout: TIMEOUTS.page });
     },
 
     /**

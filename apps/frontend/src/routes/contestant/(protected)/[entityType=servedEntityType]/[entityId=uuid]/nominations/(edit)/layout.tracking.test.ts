@@ -46,6 +46,7 @@ const SERVED: NominationScope = {
   editable: true,
   admissibleElectionIds: ['election-1', 'election-2'],
   writableNominationIds: [],
+  severalConstituencies: false,
   canAddAnother: true
 };
 

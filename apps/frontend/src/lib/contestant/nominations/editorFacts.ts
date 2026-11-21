@@ -8,7 +8,7 @@
  * Tested in `editorFacts.test.ts`.
  */
 
-import { isNominableInShape } from '@openvaa/data';
+import { ENTITY_TYPE, isNominableInShape } from '@openvaa/data';
 import type { Id } from '@openvaa/core';
 import type { EntityType, NominationShape } from '@openvaa/data';
 
@@ -44,8 +44,8 @@ export type NominationContestFacts = {
 export type StartingElection = {
   /** The id of an election the entity is nominated in. */
   electionId: Id;
-  /** The id of the constituency the entity is nominated in there. Left out where the entity holds several nominations in the election. */
-  constituencyId?: Id;
+  /** The ids of the constituencies the entity is nominated in there, each once, in the order the nominations are given. */
+  constituencyIds: Array<Id>;
 };
 
 /** Which of the chosen elections a constituency is chosen for. */
@@ -109,7 +109,16 @@ export function writableNominationsOf<TNomination extends NominationWritableFact
 }
 
 /**
- * What the selection of elections and constituencies starts from for an entity that has nominations: each election it is nominated in, once, and the constituency it is nominated in there where it holds exactly one nomination in the election.
+ * Whether the editor lets an entity of the given type choose several constituencies in one election. An organization does: a party usually stands in many constituencies of one election. A candidate stands in one constituency of an election. The editor offers only the elections that admit the entity's type, so every election in which an organization chooses several admits organizations.
+ * @param entityType - The type of the entity.
+ * @returns `true` for an organization.
+ */
+export function choosesSeveralConstituenciesOf(entityType: EntityType): boolean {
+  return entityType === ENTITY_TYPE.Organization;
+}
+
+/**
+ * What the selection of elections and constituencies starts from for an entity that has nominations: each election it is nominated in, once, with the constituencies it is nominated in there.
  * @param nominations - The entity's writable nominations, as the caller has read them. No other nomination is to be handed over: every one given is read.
  * @returns Fresh objects, in the order the elections are first met. Empty for an entity with no nomination.
  */
@@ -117,32 +126,34 @@ export function startingSelectionOf(nominations: ReadonlyArray<NominationContest
   const constituencies = new Map<Id, Array<Id>>();
   for (const { electionId, constituencyId } of nominations) {
     const held = constituencies.get(electionId);
-    if (held) held.push(constituencyId);
-    else constituencies.set(electionId, [constituencyId]);
+    if (!held) constituencies.set(electionId, [constituencyId]);
+    else if (!held.includes(constituencyId)) held.push(constituencyId);
   }
-  return [...constituencies].map(([electionId, held]) =>
-    held.length === 1 ? { electionId, constituencyId: held[0] } : { electionId }
-  );
+  return [...constituencies].map(([electionId, constituencyIds]) => ({ electionId, constituencyIds }));
 }
 
-// TODO: Let an entity add a further constituency in an election. The database allows several nominations of one entity in one election, but the editor offers one constituency per election for a new nomination.
 /**
- * Which of the chosen elections a constituency is chosen for. An election in which the entity holds several nominations has none to choose: those nominations are kept as they are stored, each in its own constituency.
+ * Which of the chosen elections constituencies are chosen for. For an entity that chooses one constituency in each election, an election in which it holds several nominations has none to choose: those nominations are kept as they are stored, each in its own constituency. An entity that chooses several constituencies in an election, as `choosesSeveralConstituenciesOf` answers, chooses them in every chosen election, and none is kept.
  * @param chosenElectionIds - The ids of the chosen elections.
  * @param nominations - The entity's writable nominations, as the caller has read them.
+ * @param severalConstituencies - Whether the entity chooses several constituencies in one election.
  * @returns A fresh object. Each chosen id is in exactly one of its two lists, once, in the order given; an election that is not chosen is in neither.
  */
 export function constituencyChoiceOf({
   chosenElectionIds,
-  nominations
+  nominations,
+  severalConstituencies
 }: {
   chosenElectionIds: ReadonlyArray<Id>;
   nominations: ReadonlyArray<NominationContestFacts>;
+  severalConstituencies: boolean;
 }): ConstituencyChoice {
   const held = new Map<Id, number>();
   for (const { electionId } of nominations) held.set(electionId, (held.get(electionId) ?? 0) + 1);
   const choice: ConstituencyChoice = { toChoose: [], kept: [] };
-  for (const electionId of new Set(chosenElectionIds))
-    ((held.get(electionId) ?? 0) > 1 ? choice.kept : choice.toChoose).push(electionId);
+  for (const electionId of new Set(chosenElectionIds)) {
+    const keptAsStored = !severalConstituencies && (held.get(electionId) ?? 0) > 1;
+    (keptAsStored ? choice.kept : choice.toChoose).push(electionId);
+  }
   return choice;
 }

@@ -63,6 +63,7 @@ type World = {
   startFromConstituencyGroup?: string;
   nominations?: Array<StoredNomination>;
   notWritable?: Array<StoredNomination>;
+  severalConstituencies?: boolean;
 };
 
 /** The data of a step's parent loads for an ungated user, in the world given. The entity's nominations are listed with those that are not writable first, and the facts name the others. */
@@ -71,7 +72,8 @@ function parentDataOf({
   admissible = elections,
   startFromConstituencyGroup,
   nominations = [],
-  notWritable = []
+  notWritable = [],
+  severalConstituencies = false
 }: World): Record<string, unknown> {
   const writable = nominations.map((nomination, index) => ({ id: `nomination-${index}`, ...nomination }));
   const others = notWritable.map((nomination, index) => ({ id: `other-nomination-${index}`, ...nomination }));
@@ -80,7 +82,8 @@ function parentDataOf({
     nominationScope: {
       editable: true,
       admissibleElectionIds: admissible,
-      writableNominationIds: writable.map((nomination) => nomination.id)
+      writableNominationIds: writable.map((nomination) => nomination.id),
+      severalConstituencies
     },
     contestantUserData: { nominations: [...others, ...writable] },
     appSettingsData: { elections: { startFromConstituencyGroup } },
@@ -90,8 +93,8 @@ function parentDataOf({
 }
 
 /** What the constituency step's load answers beside the selection, for an entity with no nomination. */
-function nothingKept(toChoose: Array<string>, onArrival: Record<string, string> = {}) {
-  return { toChoose, kept: [], onArrival };
+function nothingKept(toChoose: Array<string>, onArrival: Record<string, Array<string>> = {}) {
+  return { toChoose, kept: [], onArrival, severalConstituencies: false };
 }
 
 type StepLoad = typeof electionsLoad | typeof constituenciesLoad | typeof detailsLoad;
@@ -361,7 +364,7 @@ describe('the address of the constituency step', () => {
       )
     ).toEqual({
       nominationSelection: { electionIds: ['regional'], constituencyIds: ['region-2'] },
-      nominationConstituencyChoice: nothingKept(['national', 'regional'], { regional: 'region-2' })
+      nominationConstituencyChoice: nothingKept(['national', 'regional'], { regional: ['region-2'] })
     });
   });
 });
@@ -379,7 +382,12 @@ describe('the address of the constituency step, for an entity that has nominatio
     };
     expect(await constituenciesLoad(eventOf('constituencies', BOTH, parentDataOf(world)))).toEqual({
       nominationSelection: { electionIds: ['regional', 'national'], constituencyIds: [] },
-      nominationConstituencyChoice: { toChoose: ['regional'], kept: [], onArrival: { regional: 'region-2' } }
+      nominationConstituencyChoice: {
+        toChoose: ['regional'],
+        kept: [],
+        onArrival: { regional: ['region-2'] },
+        severalConstituencies: false
+      }
     });
   });
 
@@ -397,7 +405,12 @@ describe('the address of the constituency step, for an entity that has nominatio
     );
     expect(result).toEqual({
       nominationSelection: { electionIds: ['regional', 'national'], constituencyIds: ['region-1'] },
-      nominationConstituencyChoice: { toChoose: ['regional'], kept: [], onArrival: { regional: 'region-1' } }
+      nominationConstituencyChoice: {
+        toChoose: ['regional'],
+        kept: [],
+        onArrival: { regional: ['region-1'] },
+        severalConstituencies: false
+      }
     });
   });
 
@@ -417,7 +430,8 @@ describe('the address of the constituency step, for an entity that has nominatio
       nominationConstituencyChoice: {
         toChoose: ['regional', 'county'],
         kept: [],
-        onArrival: { regional: 'region-2', county: 'region-1' }
+        onArrival: { regional: ['region-2'], county: ['region-1'] },
+        severalConstituencies: false
       }
     });
   });
@@ -443,7 +457,12 @@ describe('the address of the constituency step, for an entity that has nominatio
     };
     expect(await constituenciesLoad(eventOf('constituencies', '', parentDataOf(world)))).toEqual({
       nominationSelection: { electionIds: ['regional'], constituencyIds: [] },
-      nominationConstituencyChoice: { toChoose: ['regional'], kept: [], onArrival: { regional: 'region-1' } }
+      nominationConstituencyChoice: {
+        toChoose: ['regional'],
+        kept: [],
+        onArrival: { regional: ['region-1'] },
+        severalConstituencies: false
+      }
     });
   });
 
@@ -460,7 +479,12 @@ describe('the address of the constituency step, for an entity that has nominatio
     );
     expect(result).toEqual({
       nominationSelection: { electionIds: ['municipal', 'regional', 'national'], constituencyIds: [] },
-      nominationConstituencyChoice: { toChoose: ['municipal'], kept: ['regional'], onArrival: {} }
+      nominationConstituencyChoice: {
+        toChoose: ['municipal'],
+        kept: ['regional'],
+        onArrival: {},
+        severalConstituencies: false
+      }
     });
   });
 
@@ -512,7 +536,8 @@ describe('the address of the constituency step, for an entity that has nominatio
       nominationConstituencyChoice: {
         toChoose: ['regional', 'municipal'],
         kept: [],
-        onArrival: { municipal: 'municipality-2a' }
+        onArrival: { municipal: ['municipality-2a'] },
+        severalConstituencies: false
       }
     });
   });
@@ -673,6 +698,105 @@ describe('the address of the details step, for an entity that has nominations', 
   });
 });
 
+describe('every step, for an entity that chooses several constituencies in one election', () => {
+  const ORGANIZATION: World = {
+    elections: ['national', 'regional', 'municipal'],
+    severalConstituencies: true,
+    nominations: [
+      { electionId: 'regional', constituencyId: 'region-1' },
+      { electionId: 'regional', constituencyId: 'region-2' },
+      { electionId: 'municipal', constituencyId: 'municipality-1a' }
+    ]
+  };
+
+  it('the constituency step keeps no election, and selects every stored constituency on arrival', async () => {
+    const result = await constituenciesLoad(
+      eventOf('constituencies', searchOf({ elections: ['regional', 'municipal'] }), parentDataOf(ORGANIZATION))
+    );
+    expect(result).toEqual({
+      nominationSelection: { electionIds: ['regional', 'municipal'], constituencyIds: [] },
+      nominationConstituencyChoice: {
+        toChoose: ['regional', 'municipal'],
+        kept: [],
+        onArrival: { regional: ['region-1', 'region-2'], municipal: ['municipality-1a'] },
+        severalConstituencies: true
+      }
+    });
+  });
+
+  it('the constituency step selects on arrival every constituency of its address that an election is held in, in place of the stored ones', async () => {
+    const result = await constituenciesLoad(
+      eventOf(
+        'constituencies',
+        searchOf({
+          elections: ['regional', 'municipal'],
+          constituencies: ['region-2', 'municipality-1b', 'municipality-2a']
+        }),
+        parentDataOf(ORGANIZATION)
+      )
+    );
+    expect(result).toMatchObject({
+      nominationConstituencyChoice: {
+        onArrival: { regional: ['region-2'], municipal: ['municipality-1b', 'municipality-2a'] }
+      }
+    });
+  });
+
+  it('the constituency step is shown, not passed over, for an election in which the entity holds several nominations', async () => {
+    const run = constituenciesLoad(
+      eventOf('constituencies', searchOf({ elections: ['regional'] }), parentDataOf(ORGANIZATION))
+    );
+    expect(await forwardOf(run)).toBeUndefined();
+  });
+
+  it('the details step is served with one contest for each chosen constituency of an election, and keeps no election', async () => {
+    const result = await detailsLoad(
+      eventOf(
+        'details',
+        searchOf({
+          elections: ['municipal', 'regional', 'national'],
+          constituencies: ['region-2', 'region-1', 'municipality-2a']
+        }),
+        parentDataOf(ORGANIZATION)
+      )
+    );
+    expect(result).toEqual({
+      nominationContests: [
+        { electionId: 'national', constituencyId: 'whole-country' },
+        { electionId: 'regional', constituencyId: 'region-1' },
+        { electionId: 'regional', constituencyId: 'region-2' },
+        { electionId: 'municipal', constituencyId: 'municipality-2a' }
+      ],
+      nominationKeptElectionIds: []
+    });
+  });
+
+  it('the details step forwards to the constituency step for an election with several constituencies and none chosen, whatever is stored', async () => {
+    const run = detailsLoad(eventOf('details', searchOf({ elections: ['regional'] }), parentDataOf(ORGANIZATION)));
+    expect(await forwardOf(run)).toEqual({
+      step: 'constituencies',
+      selection: { electionIds: ['regional'], constituencyIds: [] }
+    });
+  });
+
+  it('Continue of the election step leads to the constituency step for an election in which the entity holds several nominations', () => {
+    const dataRoot = new DataRoot();
+    dataRoot.provideElectionData(ORGANIZATION.elections.map((id) => ELECTIONS[id]));
+    dataRoot.provideConstituencyData(CONSTITUENCY_DATA);
+    const selection = { electionIds: ['regional'], constituencyIds: [] };
+    expect(
+      afterElections({
+        appSettings: { ...staticSettings, ...dynamicSettings },
+        dataRoot,
+        admissible: ORGANIZATION.elections.map((id) => dataRoot.getElection(id)),
+        selection,
+        nominations: ORGANIZATION.nominations ?? [],
+        severalConstituencies: true
+      })
+    ).toEqual({ step: 'constituencies', selection });
+  });
+});
+
 describe('every step, while nothing can be decided', () => {
   const LOADS: Array<{ step: string; load: StepLoad; nothing: unknown }> = [
     {
@@ -685,7 +809,7 @@ describe('every step, while nothing can be decided', () => {
       load: constituenciesLoad,
       nothing: {
         nominationSelection: { electionIds: [], constituencyIds: [] },
-        nominationConstituencyChoice: { toChoose: [], kept: [], onArrival: {} }
+        nominationConstituencyChoice: { toChoose: [], kept: [], onArrival: {}, severalConstituencies: false }
       }
     },
     { step: 'details', load: detailsLoad, nothing: { nominationContests: [], nominationKeptElectionIds: [] } }
@@ -721,7 +845,14 @@ describe('where Continue of a selection step leads', () => {
       ...dynamicSettings,
       elections: { ...dynamicSettings.elections, startFromConstituencyGroup: world.startFromConstituencyGroup }
     };
-    return { appSettings, dataRoot, admissible, selection, nominations: world.nominations ?? [] };
+    return {
+      appSettings,
+      dataRoot,
+      admissible,
+      selection,
+      nominations: world.nominations ?? [],
+      severalConstituencies: !!world.severalConstituencies
+    };
   }
 
   it('from the elections: the constituency step while a chosen election has several constituencies', () => {

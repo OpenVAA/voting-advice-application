@@ -11,7 +11,7 @@
  */
 
 import { allowedParentTypes, ENTITY_TYPE } from '@openvaa/data';
-import { admissibleElectionsOf } from './editorFacts';
+import { admissibleElectionsOf, choosesSeveralConstituenciesOf } from './editorFacts';
 import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { EntityType, NominationShape } from '@openvaa/data';
@@ -161,6 +161,7 @@ export type DraftFacts = {
  * - A stored nomination that is the only one of its election, in an election chosen with another constituency, is one moved card: `kept`, at the chosen constituency, with the stored one as its previous constituency.
  * - An election with several stored nominations gives a card for each, as stored, and no new card: the selection can start them as removed and do nothing else to them.
  * - A chosen pair in whose election the entity has no nomination gives a `new` card, where the election is among those given and admits the entity's type. Of two pairs that name one election the first is read.
+ * - For an entity that chooses several constituencies in one election, as `choosesSeveralConstituenciesOf` answers, every chosen pair is read, and no card is moved: a stored nomination is `kept` where its own election and constituency are chosen and `removed` where they are not, and each chosen pair in which the entity has no nomination gives a `new` card after the stored ones of its election.
  * - An existing card's draft starts from what is stored; a new card's symbol and typed name are empty. The parent choice on arrival is the one `parentChoicesOf` states.
  * - The cards are ordered by the elections' given order, and within one election as the nominations are given.
  *
@@ -184,9 +185,13 @@ export function buildCards({
   const shapes = new Map(elections.map((election) => [election.id, election.nominationShape]));
   const admitting = new Set(admissibleElectionsOf(elections, entityType).map((election) => election.id));
 
-  const chosenConstituencies = new Map<Id, Id>();
-  for (const { electionId, constituencyId } of chosen)
-    if (!chosenConstituencies.has(electionId)) chosenConstituencies.set(electionId, constituencyId);
+  const severalConstituencies = choosesSeveralConstituenciesOf(entityType);
+  const chosenConstituencies = new Map<Id, Array<Id>>();
+  for (const { electionId, constituencyId } of chosen) {
+    const ids = chosenConstituencies.get(electionId);
+    if (!ids) chosenConstituencies.set(electionId, [constituencyId]);
+    else if (!ids.includes(constituencyId)) ids.push(constituencyId);
+  }
 
   const stored = new Map<Id, Array<EntityNomination>>();
   for (const nomination of nominations) {
@@ -198,21 +203,28 @@ export function buildCards({
   const cards: Array<EditorCard> = [];
   for (const electionId of new Set([...shapes.keys(), ...stored.keys()])) {
     const rows = stored.get(electionId) ?? [];
-    const constituencyId = chosenConstituencies.get(electionId);
+    const chosenIds = chosenConstituencies.get(electionId) ?? [];
+    const rule = parentRuleOf(shapes.get(electionId), entityType);
+    if (severalConstituencies) {
+      for (const nomination of rows)
+        cards.push(
+          existingCardOf({
+            nomination,
+            rule,
+            state: chosenIds.includes(nomination.constituencyId) ? 'kept' : 'removed',
+            movedTo: undefined
+          })
+        );
+      if (!admitting.has(electionId)) continue;
+      for (const constituencyId of chosenIds)
+        if (!rows.some((nomination) => nomination.constituencyId === constituencyId))
+          cards.push(newCardOf({ electionId, constituencyId, rule }));
+      continue;
+    }
+    const constituencyId = chosenIds[0];
     if (rows.length === 0) {
       if (constituencyId === undefined || !admitting.has(electionId)) continue;
-      const rule = parentRuleOf(shapes.get(electionId), entityType);
-      cards.push({
-        key: `new:${electionId}:${constituencyId}`,
-        electionId,
-        constituencyId,
-        confirmed: false,
-        state: 'new',
-        electionSymbol: '',
-        parentChoice: newCardChoice(rule),
-        otherName: '',
-        parentRule: rule
-      });
+      cards.push(newCardOf({ electionId, constituencyId, rule }));
       continue;
     }
     for (const nomination of rows) {
@@ -223,7 +235,7 @@ export function buildCards({
       cards.push(
         existingCardOf({
           nomination,
-          rule: parentRuleOf(shapes.get(electionId), entityType),
+          rule,
           state: constituencyId === undefined ? 'removed' : 'kept',
           movedTo
         })
@@ -256,6 +268,31 @@ function answersParentGroupItself(entityType: EntityType): boolean {
 /** The parent choice a new card starts with: nothing where the user must choose or no group is shown, and otherwise the option that names no parent. */
 function newCardChoice(rule: ParentRule): string | undefined {
   return rule.types.length === 0 || rule.choiceRequired ? undefined : NO_PARENT_CHOICE;
+}
+
+/**
+ * The card of a nomination that a save would create.
+ */
+function newCardOf({
+  electionId,
+  constituencyId,
+  rule
+}: {
+  electionId: Id;
+  constituencyId: Id;
+  rule: ParentRule;
+}): EditorCard {
+  return {
+    key: `new:${electionId}:${constituencyId}`,
+    electionId,
+    constituencyId,
+    confirmed: false,
+    state: 'new',
+    electionSymbol: '',
+    parentChoice: newCardChoice(rule),
+    otherName: '',
+    parentRule: rule
+  };
 }
 
 /**

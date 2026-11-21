@@ -7,6 +7,7 @@
  * 2. **No sentence otherwise.** With an admissible election held in the selected constituency, in the constituency itself or in the one it lies in, and without a constituency group chosen first, the page holds no sentence and Continue follows the selection.
  * 3. **The loading form.** While the data root holds no constituency, a loading indicator stands in the selector's place and the page holds no sentence.
  * 4. **An entity that has nominations.** The constituency of its one nomination in an election is selected on arrival. An election in which it holds several nominations has no selector: a section headed by the election says that they are kept, and the selector is given the other elections alone.
+ * 5. **An organization.** It chooses several constituencies in one election, each with a checkbox: every stored constituency is checked on arrival, no election is kept, and Continue goes on with every checked constituency once each election has one.
  *
  * The fake context's members are reactive behind getters over one raw state box, as the real accessors are, and its data root is a real `DataRoot`. The page's data is what the step's real load answers for the same elections, settings, nominations and address. A constituency is selected as a user selects it: the selector's field is focused and an option of its list is pressed. Messages are their keys, and a route is the options it was asked for.
  */
@@ -38,6 +39,8 @@ const CANDIDATE: UserEntity = {
   lastName: 'Alpha',
   confirmed: true
 };
+
+const PARTY: UserEntity = { type: 'organization', id: ENTITY_ID, name: 'Alpha Party', confirmed: true };
 
 /** The election held by region, and the election held by municipality in the shape given. */
 function electionsOf(municipalShape: ElectionData['nominationShape']): Array<ElectionData> {
@@ -143,6 +146,7 @@ const CONTINUE = '[data-testid="contestant-nomination-constituencies-continue"]'
 const LOADING = '[data-testid="loading-indicator"]';
 const PICKER = 'input[role="combobox"]';
 const OPTION = '[role="option"]';
+const CHECKBOX = 'input[type="checkbox"]';
 
 const NO_ELECTION = 'contestantApp.nominations.constituencies.noElection.candidate';
 const SEVERAL_KEPT = 'contestantApp.nominations.constituencies.severalKept';
@@ -162,8 +166,9 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
-/** What a case states: the shape of the municipal election, the constituency group that is chosen first, if any, the candidate's nominations, and whether the context's data root holds nothing yet. */
+/** What a case states: the entity, a candidate unless stated otherwise, the shape of the municipal election, the constituency group that is chosen first, if any, the entity's nominations, and whether the context's data root holds nothing yet. */
 type World = {
+  entity?: UserEntity;
   municipalShape: ElectionData['nominationShape'];
   startFromConstituencyGroup?: string;
   nominations?: Array<{ electionId: string; constituencyId: string }>;
@@ -179,16 +184,18 @@ async function pageDataOf(world: World, { electionIds, constituencyIds }: Nomina
   const search = new URLSearchParams();
   for (const id of electionIds) search.append('nominationElectionId', id);
   for (const id of constituencyIds) search.append('nominationConstituencyId', id);
+  const entityType = (world.entity ?? CANDIDATE).type;
   const event = {
-    params: { entityType: 'candidate', entityId: ENTITY_ID },
+    params: { entityType, entityId: ENTITY_ID },
     parent: async () => ({
       gate: null,
       nominationScope: {
         editable: true,
-        admissibleElectionIds: admissibleElectionsOf(dataRootOf(world.municipalShape).elections, 'candidate').map(
+        admissibleElectionIds: admissibleElectionsOf(dataRootOf(world.municipalShape).elections, entityType).map(
           (election) => election.id
         ),
-        writableNominationIds: nominations.map((nomination) => nomination.id)
+        writableNominationIds: nominations.map((nomination) => nomination.id),
+        severalConstituencies: entityType === 'organization'
       },
       contestantUserData: { nominations },
       appSettingsData: { elections: { startFromConstituencyGroup: world.startFromConstituencyGroup } },
@@ -204,7 +211,7 @@ async function pageDataOf(world: World, { electionIds, constituencyIds }: Nomina
 async function render(world: World, selection: NominationSelection): Promise<HTMLElement> {
   const data = await pageDataOf(world, selection);
   box = {
-    selectedEntity: CANDIDATE,
+    selectedEntity: world.entity ?? CANDIDATE,
     dataRoot: world.emptyDataRoot ? new DataRoot() : dataRootOf(world.municipalShape),
     appSettings: settingsOf(world.startFromConstituencyGroup)
   };
@@ -495,5 +502,84 @@ describe('for an entity that has nominations', () => {
     expect(one<HTMLInputElement>(outsideGroup, PICKER).value).toBe('');
     expect(count(outsideGroup, KEPT)).toBe(0);
     expect(one<HTMLButtonElement>(outsideGroup, CONTINUE).disabled).toBe(true);
+  });
+});
+
+describe('for an organization, which chooses several constituencies in one election', () => {
+  const OPEN = NOMINATION_SHAPE.OrganizationListAndIndependents;
+  const BOTH: NominationSelection = { electionIds: ['regional', 'municipal'], constituencyIds: [] };
+
+  /** The names of the checked constituencies, in the page's order. */
+  function checkedNames(root: ParentNode): Array<string> {
+    return [...root.querySelectorAll<HTMLInputElement>(CHECKBOX)]
+      .filter((box) => box.checked)
+      .map((box) => textOf(box.closest('label') as HTMLElement));
+  }
+
+  /** Check or uncheck the constituency of that name, as a user does. */
+  async function toggle(root: ParentNode, name: string): Promise<void> {
+    const boxes = [...root.querySelectorAll<HTMLInputElement>(CHECKBOX)].filter(
+      (box) => textOf(box.closest('label') as HTMLElement) === name
+    );
+    expect(boxes, `checkboxes named ${name}`).toHaveLength(1);
+    boxes[0].click();
+    await tick();
+    flushSync();
+  }
+
+  it('checks every stored constituency on arrival, keeps no election, and goes on with every checked constituency', async () => {
+    const root = await render(
+      {
+        entity: PARTY,
+        municipalShape: OPEN,
+        nominations: [
+          { electionId: 'regional', constituencyId: 'region-1' },
+          { electionId: 'regional', constituencyId: 'region-2' },
+          { electionId: 'municipal', constituencyId: 'municipality-1a' }
+        ]
+      },
+      BOTH
+    );
+    await tick();
+    flushSync();
+
+    expect(count(root, KEPT)).toBe(0);
+    expect(count(root, PICKER)).toBe(0);
+    expect(count(root, `${LIST} fieldset`)).toBe(2);
+    expect(checkedNames(root)).toEqual(['Region 1', 'Region 2', 'Municipality 1a']);
+    expect(one<HTMLButtonElement>(root, CONTINUE).disabled).toBe(false);
+
+    await toggle(root, 'Municipality X');
+    await toggle(root, 'Region 1');
+
+    one<HTMLButtonElement>(root, CONTINUE).click();
+    flushSync();
+    expect(wentOnWith()).toEqual({
+      route: 'ContestantAppNominationDetails',
+      nominationElectionId: ['regional', 'municipal'],
+      nominationConstituencyId: ['region-2', 'municipality-1a', 'municipality-x']
+    });
+  });
+
+  it('disables Continue while an election has no constituency checked', async () => {
+    const root = await render(
+      {
+        entity: PARTY,
+        municipalShape: OPEN,
+        nominations: [{ electionId: 'regional', constituencyId: 'region-1' }]
+      },
+      BOTH
+    );
+    await tick();
+    flushSync();
+
+    expect(checkedNames(root)).toEqual(['Region 1']);
+    expect(one<HTMLButtonElement>(root, CONTINUE).disabled).toBe(true);
+
+    await toggle(root, 'Municipality 2a');
+    expect(one<HTMLButtonElement>(root, CONTINUE).disabled).toBe(false);
+
+    await toggle(root, 'Region 1');
+    expect(one<HTMLButtonElement>(root, CONTINUE).disabled).toBe(true);
   });
 });

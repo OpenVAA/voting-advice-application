@@ -4,7 +4,7 @@
     "constituencies": {
       "ingress": {
         "candidate": "Vali valimisringkond, kus sa kandideerid.",
-        "organization": "Vali valimisringkond, kus sinu erakond kandideerib. Iga valimiste kohta saab valida ühe valimisringkonna; kui sinu erakond kandideerib mitmes, võta palun ühendust toega."
+        "organization": "Vali valimisringkonnad, kus sinu erakond kandideerib. Iga valimiste kohta saab valida mitu."
       },
       "noElection": {
         "candidate": "Selles valimisringkonnas ei toimu valimisi, kus sa saaksid kandideerida.",
@@ -13,7 +13,7 @@
       "severalKept": "Sul on nendel valimistel mitu kandidatuuri. Need jäävad nii, nagu on; nende andmeid saad muuta järgmises sammus.",
       "title": {
         "candidate": "Milline on sinu valimisringkond?",
-        "organization": "Milline on sinu erakonna valimisringkond?"
+        "organization": "Millistes valimisringkondades sinu erakond kandideerib?"
       }
     },
     "delete": "Kustuta",

@@ -4,7 +4,7 @@
     "constituencies": {
       "ingress": {
         "candidate": "Select the constituency you are standing in.",
-        "organization": "Select the constituency your party is standing in. One constituency can be selected for each election; if your party stands in several, please contact support."
+        "organization": "Select the constituencies your party is standing in. You can select several in each election."
       },
       "noElection": {
         "candidate": "No election you can be nominated in is held in this constituency.",
@@ -13,7 +13,7 @@
       "severalKept": "You have several nominations in this election. They are kept as they are; you can change their details in the next step.",
       "title": {
         "candidate": "What is your constituency?",
-        "organization": "What is your party’s constituency?"
+        "organization": "What are your party’s constituencies?"
       }
     },
     "delete": "Delete",

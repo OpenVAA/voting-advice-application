@@ -79,6 +79,7 @@ const EDITABLE: NominationScope = {
   editable: true,
   admissibleElectionIds: ['election-1', 'election-2'],
   writableNominationIds: [],
+  severalConstituencies: false,
   canAddAnother: false
 };
 /** A lock is on. */
