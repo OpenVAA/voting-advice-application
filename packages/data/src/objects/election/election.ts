@@ -176,6 +176,15 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
   }
 
   /**
+   * Whether this `Election` is held in one or more of the `Constituency`s given, i.e., whether one of them is in one of its `ConstituencyGroup`s (see `getApplicableConstituencies`).
+   * @param constituencies - The `Constituency`s to check.
+   * @returns `true` when any of them applies to this `Election`.
+   */
+  isHeldIn(constituencies: Array<Constituency>): boolean {
+    return this.getApplicableConstituencies(constituencies).length > 0;
+  }
+
+  /**
    * Return the `Constituency` in an array that applies to this `Election`.
    * @throws If more than one `Constituency`s matches the criteria. Use `getApplicableConstituencies` or `getMostSpecificConstituency` when several may.
    */
@@ -207,6 +216,32 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
       if (!best || groupSize < best.groupSize) best = { constituency, groupSize };
     }
     return best?.constituency;
+  }
+
+  /**
+   * The `Constituency` of this `Election` that a `Constituency` is or lies in: the `Constituency` itself when one of this `Election`'s `ConstituencyGroup`s holds it, and otherwise the first one a group implies (see `ConstituencyGroup.getImpliedConstituency`), so a municipality implies its region for an election held by region. A group that holds several of the `Constituency`'s lineage implies none. Never throws.
+   * @param constituency - The `Constituency` to find this `Election`'s `Constituency` for.
+   * @returns The `Constituency`, or `undefined` when none of this `Election`'s groups implies one.
+   */
+  getImpliedConstituency(constituency: Constituency): Constituency | undefined {
+    const applicable = this.getApplicableConstituencies([constituency])[0];
+    if (applicable) return applicable;
+    for (const group of this.constituencyGroups) {
+      const implied = impliedByGroup(group, constituency);
+      if (implied) return implied;
+    }
+    return undefined;
+  }
+}
+
+/**
+ * The `Constituency` a `ConstituencyGroup` implies for a `Constituency`, or `undefined` when it implies none, including when it holds several of the `Constituency`'s lineage.
+ */
+function impliedByGroup(group: ConstituencyGroup, constituency: Constituency): Constituency | undefined {
+  try {
+    return group.getImpliedConstituency(constituency) ?? undefined;
+  } catch {
+    return undefined;
   }
 }
 

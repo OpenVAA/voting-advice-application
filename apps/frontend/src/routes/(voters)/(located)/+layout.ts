@@ -9,11 +9,18 @@
  */
 
 import { staticSettings } from '@openvaa/app-shared';
-import { DataRoot } from '@openvaa/data';
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { createDataProvider, createSupabaseUniversalClient } from '$lib/api/dataProvider';
+import { t } from '$lib/i18n';
 import { getLocale } from '$lib/paraglide/runtime';
-import { buildRoute, getImpliedConstituencyIds, getImpliedElectionIds, isVoterAppPath, parseParams } from '$lib/routes';
+import {
+  buildRoute,
+  getImpliedConstituencyIds,
+  getImpliedElectionIds,
+  isVoterAppPath,
+  parseParams,
+  selectionDataOf
+} from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Id } from '@openvaa/core';
 
@@ -51,12 +58,15 @@ export async function load({ data, fetch, parent, untrack, url }) {
   // Try to imply ids if not provided
   if (!hasSelection(electionId) || !hasSelection(constituencyId)) {
     const { appSettingsData, constituencyData, electionData } = await parent();
-    const appSettings = mergeAppSettings(staticSettings, await appSettingsData);
-
-    // Create a temporary data root we use for implication
-    const dataRoot = new DataRoot();
-    dataRoot.provideElectionData(await electionData);
-    dataRoot.provideConstituencyData(await constituencyData);
+    // A temporary data root we use for implication
+    const selectionData = selectionDataOf({
+      appSettingsData: await appSettingsData,
+      electionData: await electionData,
+      constituencyData: await constituencyData,
+      mergeSettings: (data) => mergeAppSettings(staticSettings, data)
+    });
+    if (!selectionData) error(500, { message: t('error.default') });
+    const { appSettings, dataRoot } = selectionData;
     if (!hasSelection(electionId)) {
       electionId = getImpliedElectionIds({
         appSettings,

@@ -21,15 +21,15 @@ import {
   electionsStepOutcome,
   NOMINATION_CONSTITUENCY_PARAM,
   NOMINATION_ELECTION_PARAM,
+  selectionDataOf,
   usesSingleConstituencyGroup
 } from '$lib/routes';
-import { selectionDataOf } from '../nominationFacts';
 import type { Id } from '@openvaa/core';
-import type { Constituency, ConstituencyGroup, DataRoot, Election } from '@openvaa/data';
+import type { Constituency, DataRoot, Election } from '@openvaa/data';
 import type { NominationContest } from '$lib/api/base/dataWriter.type';
 import type { NominationContestFacts } from '$lib/contestant/nominations';
-import type { Route, SelectionInput } from '$lib/routes';
-import type { NominationFacts, RootSelectionData } from '../nominationFacts';
+import type { RootSelectionData, Route, SelectionInput } from '$lib/routes';
+import type { NominationFacts } from '../nominationFacts';
 
 /** A step of the editor. */
 export type EditorStep = 'elections' | 'constituencies' | 'details';
@@ -447,11 +447,9 @@ export function constituenciesStoodFor({
   for (const election of elections) {
     const groups = election.constituencyGroups;
     if (groups.some((group) => constituencies.some(({ id }) => group.data.constituencyIds.includes(id)))) continue;
-    for (const group of groups) {
-      for (const constituency of constituencies) {
-        const implied = impliedIn(group, constituency);
-        if (implied) found.set(implied.id, implied);
-      }
+    for (const constituency of constituencies) {
+      const implied = election.getImpliedConstituency(constituency);
+      if (implied) found.set(implied.id, implied);
     }
   }
   return [...found.values()];
@@ -465,15 +463,6 @@ export function constituenciesStoodFor({
  */
 export function constituenciesOf(dataRoot: DataRoot, ids: ReadonlyArray<Id>): Array<Constituency> {
   return dataRoot.constituencies.filter((constituency) => ids.includes(constituency.id));
-}
-
-/** The constituency of a group that a constituency is or lies in. `undefined` when the group holds none, and when it holds several of the constituency's line, which name no single one. */
-function impliedIn(group: ConstituencyGroup, constituency: Constituency): Constituency | undefined {
-  try {
-    return group.getImpliedConstituency(constituency) ?? undefined;
-  } catch {
-    return undefined;
-  }
 }
 
 /** Which of the elections given have a constituency to choose, and which hold several of the entity's nominations and are kept as stored. */

@@ -17,20 +17,23 @@
  */
 
 import { staticSettings } from '@openvaa/app-shared';
-import { DataRoot } from '@openvaa/data';
-import { redirect } from '@sveltejs/kit';
-import { buildRoute, constituenciesStepOutcome, parseParams } from '$lib/routes';
+import { error, redirect } from '@sveltejs/kit';
+import { t } from '$lib/i18n';
+import { buildRoute, constituenciesStepOutcome, parseParams, selectionDataOf } from '$lib/routes';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Route } from '$lib/routes';
 
 export async function load({ parent, params, route, url }) {
   const { appSettingsData, constituencyData, electionData } = await parent();
-  const appSettings = mergeAppSettings(staticSettings, await appSettingsData);
-
-  // Create a temporary data root we use for implication
-  const dataRoot = new DataRoot();
-  dataRoot.provideElectionData(await electionData);
-  dataRoot.provideConstituencyData(await constituencyData);
+  // A temporary data root we use for implication
+  const selectionData = selectionDataOf({
+    appSettingsData: await appSettingsData,
+    electionData: await electionData,
+    constituencyData: await constituencyData,
+    mergeSettings: (data) => mergeAppSettings(staticSettings, data)
+  });
+  if (!selectionData) error(500, { message: t('error.default') });
+  const { appSettings, dataRoot } = selectionData;
 
   // Every election is on offer and `elections.disallowSelection` is honoured. A constituency is never implied while `startFromConstituencyGroup` is set: the constituency must then be selected, and the election selection comes after this page.
   const { electionId } = parseParams({ params, url });

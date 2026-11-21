@@ -10,7 +10,8 @@
  * The load takes `parent` from the event and nothing else: no param, no `url` property and no `route`. It therefore runs on entry to the nominations tree and when a parent load's data changes, and not on a navigation between two pages of the tree.
  */
 
-import { nominationFactsOf, selectionDataOf } from './nominationFacts';
+import { selectionDataOf } from '$lib/routes';
+import { nominationFactsOf } from './nominationFacts';
 import type { NominationFacts } from './nominationFacts';
 
 export async function load({ parent }): Promise<{ nominationFacts: NominationFacts | undefined }> {
