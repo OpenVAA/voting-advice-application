@@ -108,7 +108,8 @@ Wiping the database is no part of this: the suite's rows live in a project nothi
 
 ## Concurrency model
 
-- `workers: 6` (non-CI default; `1` on CI). The 6-worker pool is **global** across all projects.
+- `workers: 6` (non-CI default; `1` on CI; `3` with `E2E_SLOW_HOST=1`). The worker pool is **global** across all projects.
+- `E2E_SLOW_HOST=1` declares a host too small for the developer-machine posture, such as a 4-CPU cloud container: 3 workers and the GitHub Actions per-test ceiling of 180 s (`TIMEOUTS.testMax`). Unset, nothing changes.
 - `fullyParallel: true` is the global default — files within a project run concurrently unless the project overrides `fullyParallel: false`. The journey + perm spec projects set `fullyParallel: false` (single serial test each).
 - Project-level `dependencies: [...]` enforces "runs after". A project becomes eligible the moment all its dependencies finish; multiple eligible projects then share the worker pool.
 - `teardown: '<project>'` runs the named teardown project after this project and all its transitive dependents complete.
