@@ -13,6 +13,8 @@ export const testIds = {
       page: 'contestant-login',
       // The login screen's entry that leads to the sign-in screen.
       signInLink: 'login-sign-in-link',
+      // The login screen's entry that signs in with the identity provider. Rendered only while the provider's mode is served for an entity type.
+      identityProviderSignIn: 'login-identity-provider-sign-in',
       // The message under the login screen's title. Carries data-reason="loginFailed" | "authError".
       notice: 'login-notice',
       // The two links under the login screen's entries: the help page and the voter app.

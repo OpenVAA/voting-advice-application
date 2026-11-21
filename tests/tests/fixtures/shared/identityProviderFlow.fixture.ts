@@ -8,6 +8,7 @@
  * **Steps.**
  *   - `mintIdentity`: a fresh identity, and the provider's answer to the next authorization, for one browser context.
  *   - `startIdentityProviderFlow`: open the registration screen, in English or in a locale given, choose the provider's mode and, where the panel asks, the entity type, and press Continue, so the browser leaves for the provider and comes back with its answer; a test may take a step of its own while the panel is shown and while the browser is at the provider.
+ *   - `signInWithIdentityProvider`: open the login screen in English and press its entry that signs in with the provider, so the browser leaves for the provider and comes back with its answer.
  *   - `expectProviderAskedForLocale`: the provider was asked to show its screens in a locale, as the `ui_locales` of the authorization request it received.
  *   - `forgeEntityType`: overwrite the entity type cookie the flow's start left in a browser context, as the browser's owner can.
  *   - `setIdentityProviderMatrix`: which entity types the project lets register with the provider.
@@ -61,6 +62,7 @@ import { assertSignInLinkShape, openMailedLink, runOriginFromEnv, toRunOrigin } 
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
 import { createContestantIdentityProviderGate } from '../contestant/contestantIdentityProviderGate.fixture';
+import { createContestantLoginPage } from '../contestant/contestantLoginPage.fixture';
 import { createContestantLogoutButton } from '../contestant/contestantLogoutButton.fixture';
 import { createContestantRegisterPage } from '../contestant/contestantRegisterPage.fixture';
 import { createContestantTermsOfUsePage } from '../contestant/contestantTermsOfUsePage.fixture';
@@ -218,6 +220,18 @@ export function createIdentityProviderFlow() {
           { times: 1 }
         );
       await registerPage.continueToIdentityProvider();
+    },
+
+    /**
+     * Sign in with the identity provider as a visitor does: open the login screen in English and press its entry that signs in with the provider. The browser leaves for the provider, which answers as {@link mintIdentity} chose, and the step returns once the browser is back in the application; the caller asserts the screen the flow ends on.
+     *
+     * @param page - The test's page, in the browser context an identity was minted for, with no session.
+     */
+    async signInWithIdentityProvider(page: Page): Promise<void> {
+      const loginPage = createContestantLoginPage(page);
+      await loginPage.openEntryDirectly();
+      await loginPage.expectEntryShown();
+      await loginPage.continueWithIdentityProvider();
     },
 
     /**
