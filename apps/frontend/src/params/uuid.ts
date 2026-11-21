@@ -1,7 +1,4 @@
-/**
- * The canonical textual form of a uuid: five groups of 8, 4, 4, 4 and 12 hexadecimal digits joined by hyphens, in lower case, and nothing before or after. It is the form the database renders every id in, so an id the matcher admits is compared exactly with the ids a load reads.
- */
-const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+import { isCanonicalUuid } from '$lib/utils/uuid';
 
 /**
  * SvelteKit param matcher for a URL segment that names a row by its uuid.
@@ -13,5 +10,5 @@ const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
  * The matcher filename MUST equal the name used in the route brackets (e.g. `[entityId=uuid]`).
  */
 export function match(param: string): boolean {
-  return CANONICAL_UUID.test(param);
+  return isCanonicalUuid(param);
 }
