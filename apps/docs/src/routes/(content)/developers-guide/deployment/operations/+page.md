@@ -98,7 +98,7 @@ Expected: on staging, on 2026-11-14, `Plan: 0 to add, 0 to change, 40 to destroy
 
 **When:** the hosted project's data is lost or damaged, by a migration, a mistaken delete or an incident, and has to be put back from a backup.
 
-The AWS stack holds no data of its own, so a restore concerns the Supabase project alone. Supabase makes the backups and runs the restore; this section gives what its documentation says, read on 2026-11-21, and the order in which this repository's parts are applied to the restored project. No restore has been run on staging or on the throwaway project.
+The AWS stack holds no application data of its own, so a restore concerns the Supabase project alone. Supabase makes the backups and runs the restore; this section gives what its documentation says, read on 2026-11-21, and the order in which this repository's parts are applied to the restored project. No restore has been run on staging or on the throwaway project.
 
 ### What Supabase keeps
 
@@ -154,7 +154,150 @@ The new project is then brought up in the repository's order, the order of [§ T
 3. **`bootstrap.sql`**, with `BOOTSTRAP_STORAGE_URL` and the service-role key of the new project, before the new project takes any write. The copied `storage_config` rows still hold the old project's address and key, and the storage cleanup triggers send their deletes there through `pg_net`.
 4. **The Storage objects.** Check that both buckets, `public-assets` and `private-assets`, exist. The migration that creates them is recorded as applied in the copy and does not run again, so a missing bucket is created by hand with the settings of `apps/supabase/supabase/schema/400-storage.sql`. Then copy the objects of both buckets from the old project to the new one, for example with the Supabase CLI's `storage cp`, downloading from one and uploading to the other.
 
-Last, point the frontend at the new project: overwrite the anon key parameter as § Secret rotation describes, set `PUBLIC_SUPABASE_URL` in the AWS root's `environment_values`, and deploy. The conformance probe of [Step 23](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#step-23-the-conformance-probe) is the check that the new project serves what the repository declares.
+Last, point the frontend at the new project: overwrite the anon key parameter as in [§ The two parameters](#the-two-parameters), set `PUBLIC_SUPABASE_URL` in the AWS root's `environment_values`, and deploy. The conformance probe of [Step 23](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#step-23-the-conformance-probe) is the check that the new project serves what the repository declares.
+
+## Secret rotation
+
+**When:** a secret has leaked or may have, someone who held it leaves, or a scheduled rotation is due.
+
+Each procedure below says what the secret protects, where it lives, how it reaches what uses it, the steps in order, what breaks in between and the check afterwards. Every command takes the secret at a prompt, on standard input or from a file only you can read, so that no value reaches a command line, the process list or a shell history, and no step prints one. Of these procedures, the origin header secret's was carried out on staging, on 2026-11-20, and its window measured; the others are written from the mechanism in the files they name.
+
+### The two parameters
+
+`PUBLIC_SUPABASE_ANON_KEY`, the Supabase project's anon key, and `ANALYTICS_POSTHOG_KEY`, the PostHog project key the analytics relay forwards events with, are SecureStrings of the AWS parameter store under `/openvaa/<your-environment>/frontend/`, created by hand outside Terraform. Both are `parameter` entries of [`task-environment.json`](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/modules/frontend-service/task-environment.json), and the module's `container_secrets` in `infra/modules/frontend-service/main.tf` gives the task definition each parameter's unversioned ARN. ECS reads the value **when a task starts**, so a running task keeps the value it started with, and a new value reaches only tasks started after it was written.
+
+1. Overwrite the value, typed at the prompt. AWS refuses tags on an overwrite, and the parameter keeps its own:
+
+   ```bash
+   P=/openvaa/<your-environment>/frontend
+   N=PUBLIC_SUPABASE_ANON_KEY   # or ANALYTICS_POSTHOG_KEY
+   printf '%s: ' "$N"; read -rs V; echo
+   printf '%s' "$V" | aws ssm put-parameter --name "$P/$N" \
+     --type SecureString --value file:///dev/stdin --overwrite
+   echo "put_exit=$?"; unset V
+   ```
+
+2. Start new tasks. The first route is a deploy: push a new commit to `deploy/staging`, whose new image makes a new task definition and so a rollout. Without a new commit, a forced new deployment of the service starts new tasks from the same task definition:
+
+   ```bash
+   C=openvaa-staging; S=openvaa-staging-frontend   # your cluster and service
+   aws ecs update-service --cluster "$C" --service "$S" \
+     --force-new-deployment --query 'service.serviceName' --output text
+   aws ecs wait services-stable --cluster "$C" --services "$S"
+   echo "stable_exit=$?"
+   ```
+
+In between, tasks started before step 1 hold the old value, and tasks started after it, by a scale-out or by the rollout, the new one; a rollout runs both side by side for a while. If the old value no longer works once the new one is issued, as the anon key after a new JWT secret, the old tasks fail with it until the rollout has replaced them. Expected afterwards: the rollout steady, `/api/health` answering 200 through the public name, and a plan of the AWS root with the running digest reading `No changes.`. See [Step 2 of the AWS runbook](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/aws/README.md#step-2-the-two-parameters).
+
+### The origin header secret
+
+The load balancer forwards a request to the tasks only when it carries the origin header with the value CloudFront sends, and answers every other request with a fixed 403, so the tasks are reached through CloudFront alone. The value is one `random_password`, `origin_verify` in `infra/modules/frontend-service/origin.tf`, kept in the AWS root's state. Two resources read it: the listener rule `from_cloudfront` in the same file, whose header condition forwards, and the origin's `custom_header` of the distribution in `edge.tf`.
+
+The rotation is one plan and one apply of the AWS root, with the running digest and the password replaced, `T` and `DIGEST` set as in [§ Election-day scaling](#election-day-scaling). The staging root instantiates the module as `module "frontend"`, so the address is `module.frontend.random_password.origin_verify`:
+
+```bash
+terraform -chdir="$T" plan -input=false -var "image_digest=$DIGEST" \
+  -replace=module.frontend.random_password.origin_verify -out=tfplan
+terraform -chdir="$T" apply -input=false tfplan
+```
+
+Apply the plan only if it changes exactly three things: the password replaced, the listener rule updated (or replaced) and the distribution updated. Make no deploy meanwhile. Terraform updates the listener rule and the distribution in parallel, since nothing orders them: the rule takes the new value within seconds, while the distribution's change reaches the edge locations over minutes, and the apply waits until it reads deployed. **In between, a request an edge location forwards with the old value is answered 403**, so a short window of 403s through the public name is expected. Poll `/api/health` once a second from before the apply until ten minutes after it, and keep the workstation awake, so that the window is measured; only health that is not back to 200 by then, or any 5xx, is a failure. The step's recovery is in the runbook.
+
+On staging, on 2026-11-20, the plan read `Plan: 1 to add, 2 to change, 1 to destroy.`: the password replaced, the listener rule and the distribution updated in place, and nothing else. The apply exited 0 and completed at 21:44:56Z. The poll, with no gap over 3 seconds, read **5 answers of 403 from 21:44:14Z to 21:44:19Z, a window of 5 seconds**, which closed 37 seconds before the apply did, and no 5xx; health was 200 for the rest of the ten minutes. The window is what the edge location this one workstation reached saw; another edge location takes the new value at its own moment within the apply. A plan of the same digest afterwards read `No changes.`, which reads the listener rule and the distribution back from AWS, the value's hash had changed, and `/api/health` through CloudFront answered 200, so the header CloudFront sends is the one the rule forwards. The three requests sent to the load balancer directly, without the header, with a wrong value and with the right one, got no answer at all (`000`, curl exit 28): its security group admits CloudFront's addresses only, so they never reached the listener rule. The rule's own 403 to a direct request was read in Step 9, through an address opened for that step and closed after it. The value was never printed. See [Step 19 of the AWS runbook](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/aws/README.md#step-19-the-origin-header-secret-rotated) and its [Observations](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/aws/README.md#observations).
+
+### The SES SMTP key
+
+The SMTP credential is how Supabase Auth and the functions send mail through SES: invitations, sign-in links and password recovery all depend on it. It is the access key `aws_iam_access_key.smtp` of the SMTP user in `infra/modules/mail-ses/smtp.tf`, kept in the zone-and-mail root's state; the root's outputs `smtp_username` (the key's id) and `smtp_password` (the SMTP password SES derives from the key's secret) are what the operator reads into `TF_VAR_smtp_user` and `TF_VAR_smtp_password` for the Supabase root. That root sends them twice: as the auth service's SMTP settings, through `supabase_settings.smtp_secret` in `infra/modules/supabase/main.tf`, and as the function secrets `SMTP_USER` and `SMTP_PASS`.
+
+1. Replace the key in the zone-and-mail root, where the staging root calls the module `mail_ses`:
+
+   ```bash
+   D=infra/envs/<your-environment>/dns-mail
+   terraform -chdir="$D" plan -input=false \
+     -replace=module.mail_ses.aws_iam_access_key.smtp -out=tfplan
+   terraform -chdir="$D" apply -input=false tfplan; rm -f "$D/tfplan"
+   ```
+
+   Expected: `Plan: 1 to add, 0 to change, 1 to destroy.`, the access key alone.
+
+2. At once, apply the Supabase root with the new outputs read into the two variables, with the commands of [§ The Supabase project](/developers-guide/deployment#the-supabase-project) of the guide. Expected: the plan updates the SMTP settings and the function secrets, and a second plan reads `No changes`.
+
+The replacement deletes the old key before it creates the new one, and the module sets no other order, so **every mail fails from the first apply until the second**: run both in one sitting, at a quiet hour. The plan files hold the credential in clear text and are removed after each apply. Afterwards, send one mail that the stack sends, such as a password recovery to your own address, and follow it.
+
+### The function secrets
+
+The Edge Functions' seven secrets set by Terraform are `PUBLIC_PROJECT_ID`, `SITE_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `SMTP_USER` and `SMTP_PASS`, written by `supabase_edge_function_secrets.this` in `infra/modules/supabase/function-secrets.tf` from the Supabase root's inputs: `public_project_id`, `public_origin`, the `smtp` object and the two SMTP variables. That resource is their only writer, and the values are kept in the root's state in clear text, which is why the state is in the encrypted bucket. To change one, change its input and plan and apply the Supabase root as the guide does. [Supabase documents](https://supabase.com/docs/guides/functions/secrets) that functions read a new secret at once, with no new deploy, so one apply leaves no window but the SMTP one above. Expected: a second plan reads `No changes`, and the read-back of [Step 18 of the Supabase runbook](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#step-18-the-settings-and-the-function-secrets) lists the secrets by name, never by value. [Hosted Supabase settings](/developers-guide/deployment/hosted-settings) lists each.
+
+### The identity-callback server secret
+
+`IDENTITY_CALLBACK_SERVER_SECRET` proves to the `identity-callback` function that a call comes from the frontend server: the server's `constants.IDENTITY_CALLBACK_SERVER_SECRET` (`apps/frontend/src/lib/server/constants.ts`) is sent in the `x-identity-callback-secret` header by the bank-authentication callback, and the function refuses every call whose header does not match its own value. The two sides must hold the same value, and **neither is set by Terraform**: the secret is one of the function's secrets, which the resource above leaves alone because it never managed it, and a private environment variable of the frontend server. The AWS task does not carry it today, since bank authentication is not wired on the AWS path ([§ The AWS root and its image](/developers-guide/deployment#the-aws-root-and-its-image) of the guide), so on that path there is nothing to rotate until it is.
+
+Make one new value and set it on both sides back to back. On the function, through a file that only you can read:
+
+```bash
+L=$(umask 077; mktemp -d)
+printf 'IDENTITY_CALLBACK_SERVER_SECRET=%s\n' "$(openssl rand -hex 32)" \
+  > "$L/callback.env"
+node_modules/.bin/supabase secrets set --project-ref "$REF" \
+  --env-file "$L/callback.env"; echo "secrets_set_exit=$?"
+```
+
+Then the same value on the frontend server, by whatever route its private environment is set: where it is a parameter of the parameter store, as in [§ The two parameters](#the-two-parameters), and then new tasks. Remove the file with `rm -rf "$L"` afterwards. Between the two changes, every bank identification is refused by the function and ends on the error screen with `configuration_error`. Expected afterwards: one identification through the provider signs in.
+
+### The database password
+
+The password of the `postgres` role lives in the Supabase project. The Supabase root's `database_password` variable is required by the provider but never sent: the project resource ignores changes to it (`ignore_changes` in `infra/modules/supabase/main.tf`), so a new password needs no Terraform change. It is used by the deploy job, as the `staging` environment's secret `SUPABASE_DB_PASSWORD`, to link the project and push the migrations, and by the operator's shells for `psql`, the migrations and the bootstrap.
+
+1. Reset it in the dashboard's Database Settings. [Supabase documents](https://supabase.com/docs/guides/database/postgres/roles) that the change causes no downtime and that its own services follow it.
+2. Update the GitHub secret, typed at the prompt, and the store you keep it in:
+
+   ```bash
+   gh secret set SUPABASE_DB_PASSWORD --env staging
+   ```
+
+A deploy between the two steps fails at the link of the migrations, so make none. Expected afterwards: `psql` connects with the new password read at a prompt, and the next deploy passes its migrations step.
+
+### The service-role key and the anon key
+
+The service-role key bypasses row-level security. It is in no task and no workflow: `infra/scripts/bootstrap.sql` writes it into the `service_role_key` row of `public.storage_config`, for the storage cleanup triggers to send to the Storage API, and the platform gives the functions their own copy. The anon key is the parameter above. Both are the legacy keys, JWTs signed with the project's legacy JWT secret, so **they rotate only with the JWT secret, and only together**. Supabase's page on [JWT signing keys](https://supabase.com/docs/guides/auth/signing-keys), read on 2026-11-21, says that with the legacy JWT secret the users signed in at the time of a rotation are signed out at once, and that the anon and service-role keys must be rotated simultaneously.
+
+1. Make a new legacy JWT secret in the project's JWT settings in the dashboard. From here, **every user is signed out**, and the old anon and service-role keys stop working.
+2. Overwrite the anon key parameter with the new anon key and start new tasks, as in [§ The two parameters](#the-two-parameters). Until the new tasks serve, the old ones send the old key, which the project refuses, so the application serves no data.
+3. Run `infra/scripts/bootstrap.sql` again with the new service-role key typed at the prompt, as in the guide's bootstrap; its header says that a rotated key is applied by running it again. Until then the storage cleanup's deletes are refused, so a deleted row leaves its object behind.
+4. The functions need nothing: the platform sets their keys itself.
+
+Make all four steps in one sitting, at an hour with few users. Expected afterwards: voter pages show their data, and the conformance probe of [Step 23](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#step-23-the-conformance-probe) passes. The future path is the publishable and secret keys, which are not JWTs: [Supabase's page on API keys](https://supabase.com/docs/guides/api/api-keys), read on 2026-11-21, says it is deprecating the anon and service-role keys by the end of 2026, its page on [rotating a leaked key](https://supabase.com/docs/guides/security/rotate-leaked-api-keys) rotates a secret key by creating a new one and deleting the old one, and the signing keys page says that a rotation of signing keys signs no user out. Moving the deployment to them is future work (FUT-02).
+
+### The Supabase access token
+
+The access token is a personal token of the operator's Supabase account, and it reaches every project of that account, not one alone. The deploy job holds it as the `staging` environment's secret `SUPABASE_ACCESS_TOKEN`, to link the project, push the migrations and deploy the functions; the operator's shells give it to the Supabase provider, the CLI and the Management API reads.
+
+1. Create a new token in the dashboard's account tokens page.
+2. Update the GitHub secret, typed at the prompt, and the store you keep it in:
+
+   ```bash
+   gh secret set SUPABASE_ACCESS_TOKEN --env staging
+   ```
+
+3. Revoke the old token on the same page.
+
+Nothing breaks in between, as long as the old token is revoked last. Expected afterwards: the backups read of [§ Restore](#what-supabase-keeps) answers with the new token, and the next deploy passes its functions step.
+
+### The GitHub secrets
+
+The repository's workflows use seven stored secrets. `GITHUB_TOKEN`, which GitHub issues for each run, is not one of them. Each is updated with `gh secret set <name>`, with `--env staging` for an environment secret, and its value typed at the prompt.
+
+| Secret                      | Where                                        | What it is for                                                         | Used by                                                          | Rotation                                                                                                                                                                                                                                                                                       |
+| --------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ALERT_EMAIL`               | The `staging` environment and the repository | The address of the alert topic's subscription, as `TF_VAR_alert_email` | `deploy.yml` and the pull-request plan of `infra-plan.yml`       | Set both; the next apply changes the subscription, which is confirmed again by mail                                                                                                                                                                                                            |
+| `SUPABASE_ACCESS_TOKEN`     | The `staging` environment                    | The Supabase CLI and provider in the deploy job                        | `deploy.yml`                                                     | [§ The Supabase access token](#the-supabase-access-token)                                                                                                                                                                                                                                      |
+| `SUPABASE_DB_PASSWORD`      | The `staging` environment                    | The link and the migrations push in the deploy job                     | `deploy.yml`                                                     | [§ The database password](#the-database-password)                                                                                                                                                                                                                                              |
+| `SMOKE_CONTESTANT_EMAIL`    | The `staging` environment                    | The smoke contestant's address, for the deployed smoke run             | `deploy.yml`                                                     | With the password                                                                                                                                                                                                                                                                              |
+| `SMOKE_CONTESTANT_PASSWORD` | The `staging` environment                    | The smoke contestant's password                                        | `deploy.yml`                                                     | Give the user a new password, then update this secret and the keychain item `openvaa-staging-smoke-contestant` that `yarn test:e2e:deployed` reads ([Step 22](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/envs/staging/supabase/README.md#step-22-the-smoke-dataset)) |
+| `ANTHROPIC_API_KEY`         | The repository                               | The review and issue workflows, outside the deployment                 | `claude.yml`, `claude-code-review.yml`, `claude-solve-issue.yml` | A new key from the provider, the secret, then the old key revoked                                                                                                                                                                                                                              |
+| `TURBO_TOKEN`               | The repository                               | Turborepo's remote cache, outside the deployment                       | `docs.yml`, `release.yml`                                        | A new token, the secret, then the old token revoked                                                                                                                                                                                                                                            |
+
+The environments and their settings are listed in [§ The environments and their settings](https://github.com/OpenVAA/voting-advice-application/blob/main/infra/README.md#the-environments-and-their-settings) of the infrastructure README.
 
 ## SES: sandbox and production access
 
