@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189
 current_phase_name: Documentation and Closure
-current_plan: 18
+current_plan: 19
 status: executing
-stopped_at: Completed 189-14-PLAN.md
-last_updated: "2026-11-21T07:40:52.753Z"
+stopped_at: Completed 189-15-PLAN.md
+last_updated: "2026-11-21T07:47:56.894Z"
 last_activity: 2026-11-20
 last_activity_desc: Phase 189 execution started
-state_head: bb68f65d6b0ddd2e58c17c2733ed3951e47ae4b3
+state_head: 58c9688889d36e6c1cd32882fc8fb68b5fe198f3
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 208
-  completed_plans: 205
+  completed_plans: 206
   percent: 80
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189 (Documentation and Closure) — EXECUTING
-Plan: 18 of 20
+Plan: 19 of 20
 Status: Ready to execute
 Last activity: 2026-11-20 — Phase 189 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 18
+**Current Plan:** 19
 
 From 184 on, the numeric order is the dependency order.
 
@@ -214,6 +214,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189 P18 | 12min | 3 tasks | 6 files |
 | Phase 189 P07 | 15h (sitting wait) | 3 tasks | 2 files |
 | Phase 189 P14 | 8min | 2 tasks | 3 files |
+| Phase 189 P15 | 4min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -469,6 +470,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189]: 189-14: the origin header rotation is documented as recorded (5 x 403 over 5 s through the CDN, converged plan); direct load balancer requests are stated as no answer (000, curl exit 28), never as 403
 - [Phase 189]: 189-14: restore to a new project runs bootstrap.sql before the copy takes any write, because the copied storage_config rows point at the source project and pg_net runs at once
 - [Phase 189]: 189-14: legacy anon/service-role keys rotate only with the JWT secret, signing out every user (cited to Supabase's signing-keys page); publishable and secret keys are the future path (FUT-02)
+- [Phase 189]: 189-15: S11 (running-image-digest.sh on a tag-named task definition) became a dated 2026-11-17 row from run 44104573552 instead of a todo entry, under C-01's rule that an existing record settles it; new 2026-11-17 rows sit after each table's last 2026-11-17 row to keep date order
 
 ### Pending Todos
 
@@ -535,6 +537,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-21T07:40:51.664Z
-**Stopped At:** Completed 189-14-PLAN.md
+Last session: 2026-11-21T07:47:55.530Z
+**Stopped At:** Completed 189-15-PLAN.md
 **Resume File:** None
