@@ -3,7 +3,7 @@
  *
  * This is the IDENTITY ENTRY POINT, not an authorisation gate on a claim: it chooses the entity type to create among the types the database allows, creates the account the passwordless way, and has one database function find or create the identity's entity and its grant. What is checked here is the shape of that path: the frontend server's credential is checked before anything else is read, and the frontend's callback sends it under the header the function reads; the project is the one the request names; no account is created by a call that stores a password; no admin update carries an address or `app_metadata`, and the only admin update confirms the placeholder the identity's account was created on; the identity metadata is built by `identityAppMetadata`, so no claim of the provider's token is spread into it, and is handed to the database function, which writes it under the same lock as the record; the entity type is decided before anything is written; the account is resolved, then the entity is found or created with the decided type and the metadata written, then the placeholder is confirmed, then the sign-in link is generated; and every answer is built by `resultBody`.
  *
- * `index.ts` cannot be imported by vitest (see `envReadSites.test.ts`), so these checks read its source with the comments stripped: the comments describe the path in the same words the checks look for. The entity, its grant and the record are written by `public.identity_entity_find_or_create`, whose own pgTAP file asserts them.
+ * `index.ts` cannot be imported by vitest (see `envReadSites.test.ts`), so these checks read its source with the comments stripped: the comments describe the path in the same words the checks look for. The entity, its grant and the record are written by `public.identity_entity_find_or_create`, whose own pgTAP file asserts them. What a sign-in does with the account it finds is run by `signIn.test.ts`; here only the handler's branch to it is checked.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -303,7 +303,7 @@ describe('identity-callback flow conformance', () => {
       expect(parsedAt).toBeGreaterThan(readAt);
       expect(decidedAt).toBeGreaterThan(parsedAt);
       for (const call of [
-        'findIdentityAccount(supabaseAdmin',
+        'findIdentityAccount(supabaseAdmin, matchValue',
         'generateLink(',
         'updateUserById(',
         "rpc('identity_entity_find_or_create'"
@@ -414,6 +414,44 @@ describe('identity-callback flow conformance', () => {
     it('answers every refusal and failure through respond, with no message of its own', () => {
       expect(CODE).not.toMatch(/error:\s*'[^'\n]*'/);
       expect(CODE).not.toContain('Internal server error');
+    });
+  });
+
+  describe('a sign-in', () => {
+    const BRANCH = 'if (request.intent === IDENTITY_CALLBACK_INTENT.sign_in) {';
+
+    /** The sign-in branch of the handler, from its condition to its closing brace. */
+    function signInBranch(): string {
+      const at = firstAt(BRANCH);
+      return CODE.slice(at, CODE.indexOf('\n    }\n', at));
+    }
+
+    it('leaves the registration path after the token and its claims are read, and before the entity type is decided', () => {
+      const branchAt = firstAt(BRANCH);
+      expect(branchAt).toBeGreaterThan(firstAt('extractIdentityClaims(payload, config)'));
+      expect(branchAt).toBeLessThan(firstAt("rpc('identity_provider_entity_types'"));
+      expect(occurrences('signInExistingAccount(')).toBe(1);
+    });
+
+    it('hands signInExistingAccount the account look-up and the one sign-in link, and answers what it comes to', () => {
+      const branch = signInBranch().replace(/\s+/g, ' ');
+      expect(branch).toContain(
+        'findAccount: (value) => findIdentityAccount(supabaseAdmin, value, placeholderEmailFor(value))'
+      );
+      expect(branch).toContain('signInToken: (userId) => signInToken(supabaseAdmin, userId)');
+      expect(branch).toContain("return respond(signIn.result, 'token' in signIn ? signIn.token : undefined);");
+    });
+
+    it.each(['generateLink(', 'updateUserById(', '.rpc(', 'identityAppMetadata(', 'resolveEntityType('])(
+      'invites, confirms, writes and decides nothing itself: %s',
+      (call) => {
+        expect(signInBranch()).not.toContain(call);
+      }
+    );
+
+    it('mints its token with the registration, through the one sign-in link', () => {
+      expect(occurrences('signInToken(supabaseAdmin, ')).toBe(2);
+      expect(CODE).toContain('return respond(result, await signInToken(supabaseAdmin, userId));');
     });
   });
 
