@@ -82,7 +82,7 @@ The split is a dependency rule, not a filing convention: a base component that r
    - **The Contestant App's entry screens are scanned too.** `contestant-entry-scan` scans every
      signed-out screen of the entry flow in both themes through `declareEntryScans`
      (`tests/tests/utils/entryAxeScan.ts`, which the wiring gate reads under the same rules as
-     `contestantAxeScan.ts`); `contestant-a11y-scan` scans the set-password view, as it opens and with
+     `contestantAxeScan.ts` and `themedAxeScans.ts`, where both declare their light and dark scans); `contestant-a11y-scan` scans the set-password view, as it opens and with
      its confirmation in error, under the stored session of a user with no password, and the reset
      page; `contestant-entry-phone` measures each entry screen for overflow at 320 and 390 px. A new
      entry screen gets an entry in the first and two tests in the third.
