@@ -411,8 +411,13 @@ jobs:
       - name: "Compile the frontend's Paraglide messages"
         run: yarn workspace @openvaa/frontend paraglide:compile
 
+      # The edge runtime reads PUBLIC_PROJECT_ID through `[edge_runtime.secrets]` in config.toml when the
+      # stack starts, and `account-access` answers every request with an internal error without it. The
+      # value is the default project of seed.sql, the one the data writer integration test works in.
       - name: "Start Supabase"
         working-directory: apps/supabase
+        env:
+          PUBLIC_PROJECT_ID: "00000000-0000-0000-0000-000000000001"
         run: supabase start
 
       # Read the connection details off the running instance rather than hard-coding the local demo

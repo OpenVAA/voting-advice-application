@@ -712,6 +712,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
           confirmed: false,
           customData: null,
           updatedAt: expect.any(String),
+          writable: true,
           parent: {
             entityType: 'organization',
             entityId: confirmedOrganization.id,
@@ -746,7 +747,8 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter against the local database', (
           electionSymbol: '',
           confirmed: true,
           customData: NOMINATION_CUSTOM_DATA,
-          updatedAt: expect.any(String)
+          updatedAt: expect.any(String),
+          writable: true
         }
       ]);
       expect(userData?.nominations.every((nomination) => !Object.hasOwn(nomination, 'parent'))).toBe(true);
@@ -1664,7 +1666,7 @@ describe.skipIf(!hasSupabase)('SupabaseDataWriter and the invitation contract ag
   );
 
   it(
-    'claims nothing for that session, whose invitation is already claimed, and reports that the user has a password',
+    'claims nothing for that session, whose invitation is already claimed',
     async () => {
       expect(await writer.claimInvitations()).toStrictEqual({ claimed: [], skipped: [] });
     },
