@@ -141,7 +141,7 @@ declareEntryScans([
   {
     // The sign-in screen as it opens, with its link for a user without a password beside the Forgot password link.
     name: 'entry-sign-in',
-    routeId: 'ContestantAppSignIn',
+    routeId: 'ContestantAppLoginEmail',
     reach: async (page) => {
       const loginPage = await openSignIn(page);
       await loginPage.expectNoPasswordYetLink(true);
@@ -151,7 +151,7 @@ declareEntryScans([
   {
     // The sign-in screen after a wrong password for an address nobody holds.
     name: 'entry-sign-in-failed',
-    routeId: 'ContestantAppSignIn',
+    routeId: 'ContestantAppLoginEmail',
     reach: async (page) => {
       const loginPage = await openSignIn(page);
       await loginPage.typeEmail(openCodeFlow.freshAddress());
@@ -167,7 +167,7 @@ declareEntryScans([
   {
     // The sign-in screen after its main button was pressed with nothing typed: the email field in error, with focus on it.
     name: 'entry-sign-in-email-required',
-    routeId: 'ContestantAppSignIn',
+    routeId: 'ContestantAppLoginEmail',
     reach: async (page) => {
       const loginPage = await openSignIn(page);
       await loginPage.submit();

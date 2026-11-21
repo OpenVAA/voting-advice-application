@@ -38,5 +38,5 @@ Takes an email address and asks for a mail with which to set a new password, thr
   appName={contestantAppName}
   {sendEntryLink}
   emailSentHref={getRoute.current('ContestantAppEmailSent')}
-  returnHref={getRoute.current('ContestantAppSignIn')}
+  returnHref={getRoute.current('ContestantAppLoginEmail')}
   testId="contestant-forgot-password" />

@@ -72,7 +72,7 @@ const RETURN = '[data-testid="forgot-password-return"]';
 
 const ADDRESS = 'someone@example.test';
 
-const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppSignIn' }, { params: {} });
+const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppLoginEmail' }, { params: {} });
 const EMAIL_SENT_ROUTE = buildRoute({ route: 'ContestantAppEmailSent' }, { params: {} });
 
 let teardown: Array<() => void> = [];

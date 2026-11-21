@@ -261,7 +261,7 @@ describe('the entry routes — every route a signed-in caller is sent away from'
         'ContestantAppRegister',
         'ContestantAppRegisterCodeEmail',
         'ContestantAppRegisterCodeSignIn',
-        'ContestantAppSignIn'
+        'ContestantAppLoginEmail'
       ].sort()
     );
   });

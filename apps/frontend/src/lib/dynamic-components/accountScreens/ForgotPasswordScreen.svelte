@@ -21,7 +21,7 @@
   appName={contestantAppName}
   {sendEntryLink}
   emailSentHref={getRoute.current('ContestantAppEmailSent')}
-  returnHref={getRoute.current('ContestantAppSignIn')}
+  returnHref={getRoute.current('ContestantAppLoginEmail')}
   testId="contestant-forgot-password" />
 ```
 -->

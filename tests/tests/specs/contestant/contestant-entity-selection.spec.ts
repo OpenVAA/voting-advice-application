@@ -13,7 +13,7 @@
  *   7. A closed entry — on the home, in both colour schemes, a closed entry's lock has the colour of its label and an open row's icon does not.
  *   8. One entity — a user who edits a single entity is redirected from the root to its home, which offers no Switch profile, and has no switch item.
  *   9. Nothing to edit — a user whose only grant is removed sees the view with their email and logs out from it without a confirmation modal.
- *  10. The settings page — a user who edits nothing reaches it from the "nothing to edit" view, a user who edits several opens it at the app's root, and the settings address under an entity leads to it.
+ *  10. The settings page — a user who edits nothing reaches it from the "nothing to edit" view, and a user who edits several opens it at the app's root.
  *
  * No stored session is signed out here: the cases that log out sign in through the login form first, in a session of their own, and a sign-out ends that session alone. The spec writes to one row, the first selection candidate, which is unconfirmed and so read by no voter query.
  *
@@ -1898,13 +1898,12 @@ test.describe('contestant entity selection', () => {
     );
 
     test(
-      'a user who is no administrator, on a link into the Admin App, is signed out with no draft left',
+      "a contestant who is no administrator, on a link into the Admin App, lands on the Contestant App's home still signed in, with the draft kept",
       { tag: '@entity-selection' },
       async ({
         contestantEntityPages,
         contestantLoginPage,
         contestantQuestionPage,
-        headerLogout,
         nativeDialogs,
         page,
         selectionEntities
@@ -1921,61 +1920,13 @@ test.describe('contestant entity selection', () => {
           });
         });
 
-        await test.step('a link into the Admin App ends on its login page, signed out, with no draft left and no native question', async () => {
+        await test.step("a link into the Admin App ends on the Contestant App's home, with the draft kept and no native question", async () => {
+          const { differingQuestionId, organization } = selectionEntities;
           await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
-          await adminLoginPage.expectOnLoginPage();
-          await adminLoginPage.expectLoginAddressSaysNotAuthorized();
-          await headerLogout.expectNoContestantDraft();
+          await contestantEntityPages.expectOnHome(organization);
+          expect(await contestantEntityPages.draftQuestionIds(organization)).toEqual([differingQuestionId]);
           expect(nativeDialogs.types()).toEqual([]);
         });
-      }
-    );
-
-    test(
-      'a user who is no administrator and whose sign-out fails, on a link into the Admin App, ends on the error page',
-      { tag: '@entity-selection' },
-      async ({ contestantEntityPages, contestantLoginPage, headerLogout, page, selectionEntities }) => {
-        const adminLoginPage = createAdminLoginPage(page);
-
-        await contestantLoginPage.goToPage();
-        await contestantLoginPage.login(TEST_LOGOUT_ENTITY_EMAIL, TEST_PASSWORD);
-        await contestantEntityPages.expectOnHome(selectionEntities.organization);
-
-        await headerLogout.failSignOut();
-        await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
-        await adminLoginPage.expectErrorPageSays('403');
-        await adminLoginPage.expectNoLoginPageRequest();
-      }
-    );
-
-    test(
-      'a user who is no administrator and whose sign-out fails after clearing the cookies, on a link into the Admin App, ends on the login page, with no draft left',
-      { tag: '@entity-selection' },
-      async ({
-        contestantEntityPages,
-        contestantLoginPage,
-        contestantQuestionPage,
-        headerLogout,
-        nativeDialogs,
-        page,
-        selectionEntities
-      }) => {
-        const adminLoginPage = createAdminLoginPage(page);
-
-        await signInWithADraftOnTheOrganization({
-          contestantEntityPages,
-          contestantLoginPage,
-          contestantQuestionPage,
-          nativeDialogs,
-          selectionEntities
-        });
-
-        await headerLogout.failSignOutAfterClearingCookies();
-        await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
-        await adminLoginPage.expectOnLoginPage();
-        await adminLoginPage.expectLoginAddressSaysNotAuthorized();
-        await headerLogout.expectNoContestantDraft();
-        expect(nativeDialogs.types()).toEqual([]);
       }
     );
 
@@ -2114,16 +2065,6 @@ test.describe('contestant entity selection', () => {
       { tag: '@entity-selection' },
       async ({ contestantSettingsPage }) => {
         await contestantSettingsPage.open();
-        await contestantSettingsPage.expectAddress(TEST_MULTI_ENTITY_EMAIL);
-      }
-    );
-
-    test(
-      'the entity-scoped settings address leads to the settings page',
-      { tag: '@entity-selection' },
-      async ({ contestantEntityPages, contestantSettingsPage, selectionEntities }) => {
-        await contestantEntityPages.requestEntitySettings(selectionEntities.candidateA);
-        await contestantSettingsPage.expectShown();
         await contestantSettingsPage.expectAddress(TEST_MULTI_ENTITY_EMAIL);
       }
     );

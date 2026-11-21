@@ -9,4 +9,6 @@ export { default as QuestionInput } from './QuestionInput.svelte';
 export * from './QuestionInput.type';
 export { default as Radio } from './Radio.svelte';
 export * from './Radio.type';
+export { default as RadioGroup } from './RadioGroup.svelte';
+export * from './RadioGroup.type';
 export * from './shared';

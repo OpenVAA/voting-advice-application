@@ -107,7 +107,7 @@ const CONTESTANT_GATE: AppGate = Object.freeze({
   loginRoute: 'ContestantAppLogin',
   entryRoutes: Object.freeze([
     'ContestantAppLogin',
-    'ContestantAppSignIn',
+    'ContestantAppLoginEmail',
     'ContestantAppRegister',
     'ContestantAppRegisterCodeEmail',
     'ContestantAppRegisterCodeSignIn',

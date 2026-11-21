@@ -178,7 +178,7 @@ const ADDRESS = 'someone@example.test';
 const TYPED_CODE = 'abcd-efgh-jkmn';
 
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin' }, { params: {} });
-const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppSignIn' }, { params: {} });
+const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppLoginEmail' }, { params: {} });
 const EMAIL_SENT_ROUTE = buildRoute({ route: 'ContestantAppEmailSent' }, { params: {} });
 const EMAIL_ENTRY_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeEmail' }, { params: {} });
 const CODE_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeSignIn' }, { params: {} });

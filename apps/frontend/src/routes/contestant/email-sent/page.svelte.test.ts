@@ -304,7 +304,7 @@ describe('the address and the way back to it', () => {
   });
 
   it.each([
-    ['the sign-in screen', 'signIn', 'ContestantAppSignIn'],
+    ['the sign-in screen', 'signIn', 'ContestantAppLoginEmail'],
     ['the registration page', 'register', 'ContestantAppRegister'],
     ['the forgot-password page', 'forgotPassword', 'ContestantAppForgotPassword'],
     ['the screen that takes the address for a registration code', 'registerEmail', 'ContestantAppRegisterCodeEmail']

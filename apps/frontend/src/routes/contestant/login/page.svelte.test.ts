@@ -110,7 +110,7 @@ const HELP = '[data-testid="login-help-link"]';
 const VOTER_APP = '[data-testid="login-voter-app-link"]';
 
 const LOGIN_ADDRESS = 'http://localhost/en/contestant/login';
-const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppSignIn' }, { params: {} });
+const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppLoginEmail' }, { params: {} });
 const REGISTER_ROUTE = buildRoute({ route: 'ContestantAppRegister' }, { params: {} });
 
 let teardown: Array<() => void> = [];

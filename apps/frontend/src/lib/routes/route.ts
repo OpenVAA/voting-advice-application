@@ -158,7 +158,7 @@ export const ROUTE = {
   ContestantAppIdentityProviderCallback: `${API_ROOT}/oidc/callback`,
   ContestantAppLogin: `${CONTESTANT}/login`,
   /** The sign-in screen: the email and password form, and the request for a mailed sign-in link. */
-  ContestantAppSignIn: `${CONTESTANT}/login/email`,
+  ContestantAppLoginEmail: `${CONTESTANT}/login/email`,
   /** The screen shown after a link was asked for by email. It renders only while the entry flow holds a link request, and leads a visitor who arrives with none to the login screen. */
   ContestantAppEmailSent: `${CONTESTANT}/email-sent`,
   /** The registration page, which lists the ways the project lets a visitor register. It is served only where at least one is listed, and leads to the login screen otherwise. */
@@ -172,8 +172,6 @@ export const ROUTE = {
   ContestantAppResetPassword: `${CONTESTANT}/password-reset`,
   /** The signed-in user's own settings page: the account's address and the password. It belongs to the user and not to an entity, so it sits directly below the protected root and is reached by a user with no entity, one or several alike. */
   ContestantAppSettings: `${CONTESTANT_PROT}/settings`,
-  /** The settings address under an entity. Its load redirects to `ContestantAppSettings`, so an address that names an entity still opens the settings page, and no link is built from this key. */
-  ContestantAppEntitySettings: `${CONTESTANT_ENTITY}/settings`,
   // The two auth endpoints sit under the generic API prefix because the contestant app and the admin app address the same handlers. Their keys carry no app name for the same reason.
   AuthCallback: `${API_ROOT}/auth/callback`,
   /** The confirm page a mailed link opens: it verifies the link only when its form is posted. It belongs to neither app, so it sits outside both and outside the API. */
