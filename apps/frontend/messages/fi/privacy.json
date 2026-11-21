@@ -2,11 +2,12 @@
   "privacy": {
     "analytics": {
       "content": {
-        "free": "Tämä sovellus kerää käyttötietoja kysymättä sinulta erikseen. Niihin sisältyvät vastauksesi kysymyksiin, sovelluksessa käytetty aika ja katsomasi tulokset. Jokainen tapahtuma, josta käy ilmi vastaus tai mieltymys, lähetetään erikseen eikä siinä ole tunnistetta, mutta kuten kaikkiin muihinkin tapahtumiin, siihen tallentuu sen tapahtumisaika. Tiedot lähetetään tämän sivuston oman palvelimen kautta, eikä palvelin välitä eteenpäin verkko-osoitettasi eikä selaimesi tunnistetietoja. Laitteellesi ei tallenneta tästä mitään.",
+        "free": "Tämä sovellus kerää käyttötietoja kysymättä sinulta erikseen. Niihin sisältyvät vastauksesi kysymyksiin, sovelluksessa käytetty aika ja katsomasi tulokset. Jokainen tapahtuma, josta käy ilmi vastaus tai mieltymys, ei sisällä yhtään tunnistetta, joka olisi jonkin toisen tapahtuman kanssa yhteinen, eikä sivujen katselukerroissakaan ole tunnistetta. Kuten kaikkiin muihinkin tapahtumiin, siihen kuitenkin tallentuu sen tapahtumisaika. Tiedot lähetetään tämän sivuston oman palvelimen kautta, eikä palvelin välitä eteenpäin verkko-osoitettasi eikä selaimesi tunnistetietoja. Laitteellesi ei tallenneta tästä mitään.",
         "gated": "Käyttötietoja kerätään vain, jos annat siihen luvan. Niihin sisältyvät vastauksesi kysymyksiin, sovelluksessa käytetty aika ja katsomasi tulokset. Saman käyntikerran tapahtumat yhdistetään enintään tunnisteella, joka säilyy vain sivun muistissa ja katoaa, kun sivu ladataan uudelleen tai suljetaan. Tiedot lähetetään tämän sivuston oman palvelimen kautta, eikä palvelin välitä eteenpäin verkko-osoitettasi eikä selaimesi tunnistetietoja. Laitteellesi ei tallenneta tästä mitään muuta kuin valintasi. Tässä selaimessa tehty valinta koskee sitä sovelluksen osaa, jossa se tehtiin: ehdokas- ja puoluesovelluksella on oma valintansa, ja äänestäjäsovellus ja ylläpitosovellus jakavat toisen. Voit muuttaa kumpaa tahansa tietosuojasivulla."
       },
       "gpc": "Jos selaimesi lähettää Global Privacy Control -signaalin, mitään ei kerätä, ei edes sivujen katselukertoja, eikä sinulta kysytä. Signaalin muistamiseksi ei tallenneta mitään.",
       "pageviews": "Sivujen katselukerrat lasketaan silloinkin, kun muita käyttötietoja ei kerätä: minkä tyyppinen sivu avattiin, millä kielellä ja kuinka pitkäksi aikaa. Näihin tietoihin ei kuitenkaan sisälly esimerkiksi, minkä puolueen tai ehdokkaan tietoja on tarkasteltu. Laskennassa ei käytetä tunnistetta.",
+      "survey": "Jos avaat käyttäjäkyselyn, käyntikerran tunniste lisätään kyselyn linkkiin, jotta kyselyvastauksesi voidaan yhdistää tämän käyntikerran käyttötietoihin.",
       "title": "Analytiikka"
     },
     "cookies": {
@@ -51,7 +52,10 @@
       "label": "Älä kerää käyttötietoja siitä, miten käytän sovellusta"
     },
     "usageData": {
-      "content": "Sovelluksen käyttöä mitataan samalla tavalla äänestäjien sovelluksessa, ehdokkaiden ja puolueiden sovelluksessa sekä ylläpitonäkymässä. Hyväksymällä käyttöehdot annat luvan kerätä käyttötietoja siitä, miten käytät ehdokkaiden ja puolueiden sovellusta, ellet rastita käyttöehtojen alla olevaa ruutua. Sivujen katselukerrat lasketaan ilman tunnistetta tietosuojasivulla kuvatulla tavalla. Valintasi koskee vain tässä selaimessa avattua ehdokas- ja puoluesovellusta, ja voit muuttaa sitä myöhemmin tietosuojasivulla.",
+      "content": {
+        "free": "Sovelluksen käyttöä mitataan samalla tavalla äänestäjien sovelluksessa, ehdokkaiden ja puolueiden sovelluksessa sekä ylläpitonäkymässä. Käyttötietoja siitä, miten käytät ehdokkaiden ja puolueiden sovellusta, kerätään ilman erillistä valintaa. Sivujen katselukerrat lasketaan ilman tunnistetta tietosuojasivulla kuvatulla tavalla.",
+        "gated": "Sovelluksen käyttöä mitataan samalla tavalla äänestäjien sovelluksessa, ehdokkaiden ja puolueiden sovelluksessa sekä ylläpitonäkymässä. Hyväksymällä käyttöehdot annat luvan kerätä käyttötietoja siitä, miten käytät ehdokkaiden ja puolueiden sovellusta, ellet rastita käyttöehtojen alla olevaa ruutua. Sivujen katselukerrat lasketaan ilman tunnistetta tietosuojasivulla kuvatulla tavalla. Valintasi koskee vain tässä selaimessa avattua ehdokas- ja puoluesovellusta, ja voit muuttaa sitä myöhemmin tietosuojasivulla."
+      },
       "title": "Käyttötiedot"
     }
   }

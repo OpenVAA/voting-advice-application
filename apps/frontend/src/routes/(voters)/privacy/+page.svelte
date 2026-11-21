@@ -6,14 +6,17 @@ Displays information about the privacy policy of the app as well as the possible
 
 ### Settings
 
-- `analytics.trackEvents`: Affects whether the `DataConsent` component is shown.
+- `analytics.trackEvents`: Affects whether the usage events are described and whether the `DataConsent` component is shown.
+- `survey.linkTemplate`: Affects whether the survey notice is shown.
 
 ### Analytics
 
 Read from `ctx.analyticsPolicy.current`:
 
-- `projection.active`: Whether the analytics section is shown.
-- `projection.consentMode`: Which description is shown, `privacy.analytics.content.gated` or `privacy.analytics.content.free`. The page-view count and the Global Privacy Control rule are always shown with it.
+- `projection.active`: Whether the analytics section is shown. The page-view count and the Global Privacy Control rule are always shown in it.
+- `trackEvents`: Whether the section describes the usage events at all. With it off only the page view is sent, so the section describes only the page-view count.
+- `projection.consentMode`: Which description of the usage events is shown, `privacy.analytics.content.gated` or `privacy.analytics.content.free`.
+- `projection.visitIdMode`: With `memory`, and a `survey.linkTemplate` that holds the `{sessionId}` placeholder, the section says that the visit id is added to the survey link (`privacy.analytics.survey`).
 - The `DataConsent` component is shown only when the visitor has a choice to make: the relay is usable (`relayUsable`, so not under Global Privacy Control), `trackEvents` is on and the consent mode is `gated`.
 -->
 
@@ -35,6 +38,10 @@ Read from `ctx.analyticsPolicy.current`:
   // The consent control is offered only when there is a choice to make: in consent-free mode and under Global Privacy Control there is none, and the analytics text says why.
   const showConsentControl = $derived(
     policy.trackEvents && policy.projection.consentMode === 'gated' && relayUsable(policy)
+  );
+  // The survey link carries the visit id only when its template holds the placeholder and the visit has an id.
+  const showSurveyNotice = $derived(
+    policy.projection.visitIdMode === 'memory' && /\{\s*sessionId\s*\}/.test(ctx.appSettings.survey?.linkTemplate ?? '')
   );
 
   const { topBarSettings } = getLayoutContext();
@@ -67,11 +74,16 @@ Read from `ctx.analyticsPolicy.current`:
     {#if policy.projection.active}
       <h2 class="mt-lg mb-md">{t('privacy.analytics.title')}</h2>
       <div>
-        <p>
-          {policy.projection.consentMode === 'gated'
-            ? t('privacy.analytics.content.gated')
-            : t('privacy.analytics.content.free')}
-        </p>
+        {#if policy.trackEvents}
+          <p>
+            {policy.projection.consentMode === 'gated'
+              ? t('privacy.analytics.content.gated')
+              : t('privacy.analytics.content.free')}
+          </p>
+        {/if}
+        {#if showSurveyNotice}
+          <p>{t('privacy.analytics.survey')}</p>
+        {/if}
         <p>{t('privacy.analytics.pageviews')}</p>
         <p>{t('privacy.analytics.gpc')}</p>
       </div>
