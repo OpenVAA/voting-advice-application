@@ -87,10 +87,11 @@ test.describe('contestant-nominations: the steps an entity with no nomination me
           await setNominationShape(OPEN_ELECTION_EXTERNAL_ID, 'candidate_only');
           await contestantNominationEditor.open(NEW_ORGANIZATION_EDITOR.grant);
           await contestantNominationEditor.expectStep('constituencies');
-          await contestantNominationEditor.expectConstituencyPickers([LIST_ELECTION_NAME.en]);
+          // A party chooses several constituencies in one election, so the step lists checkboxes rather than a picker.
+          await contestantNominationEditor.expectConstituencyLists([LIST_ELECTION_NAME.en]);
           await contestantNominationEditor.expectNoElectionSentence(false);
           await contestantNominationEditor.expectConstituenciesContinue(false);
-          await contestantNominationEditor.chooseConstituency(NORTH_CONSTITUENCY_NAME.en);
+          await contestantNominationEditor.setConstituency(NORTH_CONSTITUENCY_NAME.en, true);
           await contestantNominationEditor.continueFromConstituencies();
           await contestantNominationEditor.expectStep('details');
           await contestantNominationEditor.expectCards([
