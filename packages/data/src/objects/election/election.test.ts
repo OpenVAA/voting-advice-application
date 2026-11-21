@@ -223,6 +223,81 @@ describe('getMostSpecificConstituency', () => {
   });
 });
 
+describe('isHeldIn', () => {
+  const root = hierarchicalRoot();
+  function constituenciesOf(...ids: Array<string>): Array<Constituency> {
+    return ids.map((id) => root.getConstituency(id));
+  }
+
+  test("Should be true when one of the constituencies is in one of the election's groups", () => {
+    expect(root.getElection('mixed').isHeldIn(constituenciesOf('district-x', 'municipality-1a'))).toBe(true);
+    expect(root.getElection('paired').isHeldIn(constituenciesOf('district-y'))).toBe(true);
+  });
+
+  test("Should be false when none of the constituencies is in the election's groups", () => {
+    expect(root.getElection('regional').isHeldIn(constituenciesOf('municipality-1a', 'district-x'))).toBe(false);
+    expect(root.getElection('regional').isHeldIn([])).toBe(false);
+  });
+});
+
+/**
+ * A root whose constituencies form one line, a village in a municipality in a region, and whose `tangled` group holds both the region and the municipality.
+ */
+function lineageRoot(): DataRoot {
+  const root = new DataRoot();
+  root.provideElectionData([
+    { id: 'regional', name: 'Regional', constituencyGroupIds: ['regions'] },
+    { id: 'tangled', name: 'Tangled', constituencyGroupIds: ['tangled'] },
+    { id: 'tangledThenRegional', name: 'Tangled then regional', constituencyGroupIds: ['tangled', 'regions'] },
+    { id: 'villages', name: 'Villages', constituencyGroupIds: ['districts', 'villages'] }
+  ]);
+  root.provideConstituencyData({
+    groups: [
+      { id: 'regions', constituencyIds: ['region-1'] },
+      { id: 'tangled', constituencyIds: ['region-1', 'municipality-1'] },
+      { id: 'districts', constituencyIds: ['district-x'] },
+      { id: 'villages', constituencyIds: ['village-1'] }
+    ],
+    constituencies: [
+      { id: 'region-1', name: 'Region 1' },
+      { id: 'municipality-1', name: 'Municipality 1', parentId: 'region-1' },
+      { id: 'village-1', name: 'Village 1', parentId: 'municipality-1' },
+      { id: 'district-x', name: 'District X' }
+    ]
+  });
+  return root;
+}
+
+describe('getImpliedConstituency', () => {
+  const root = lineageRoot();
+
+  test("Should return the constituency itself when one of the election's groups holds it", () => {
+    const village = root.getConstituency('village-1');
+    expect(root.getElection('villages').getImpliedConstituency(village)).toBe(village);
+  });
+
+  test('Should return the ancestor a group holds, grandparents included', () => {
+    expect(root.getElection('regional').getImpliedConstituency(root.getConstituency('village-1'))?.id).toBe('region-1');
+  });
+
+  test('Should look in every group of the election, not only the first', () => {
+    expect(root.getElection('villages').getImpliedConstituency(root.getConstituency('municipality-1'))).toBeUndefined();
+    expect(root.getElection('tangledThenRegional').getImpliedConstituency(root.getConstituency('village-1'))?.id).toBe(
+      'region-1'
+    );
+  });
+
+  test('Should count a group holding several of the lineage as implying none, and not throw', () => {
+    const village = root.getConstituency('village-1');
+    expect(() => root.getConstituencyGroup('tangled').getImpliedConstituency(village)).toThrow();
+    expect(root.getElection('tangled').getImpliedConstituency(village)).toBeUndefined();
+  });
+
+  test('Should return undefined when no group implies a constituency', () => {
+    expect(root.getElection('regional').getImpliedConstituency(root.getConstituency('district-x'))).toBeUndefined();
+  });
+});
+
 describe('GetQuestions', () => {
   const election = root.getElection('election-1');
   const constituency = root.getConstituency('constituency-1-1');
