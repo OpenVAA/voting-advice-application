@@ -205,7 +205,7 @@ Each is run on a real project, recorded with its date, and acted on.
 - [x] **DOCS-05**: The analytics documentation gives the event catalogue, how to add a provider, the privacy
       mechanism, and a checklist the deployer completes for their own jurisdiction. It says the consent
       determination is the deployer's and nowhere says that no consent is required (B7).
-- [ ] **DOCS-06**: An operations runbook covers election-day scaling, rollback, teardown and restore, secret
+- [x] **DOCS-06**: An operations runbook covers election-day scaling, rollback, teardown and restore, secret
       rotation, SES, and the limit that Admin job progress is unreliable above one task (D1).
 - [x] **DOCS-07**: The Render deployment example and its mentions are removed, and the orphan compose file
       is retired if nothing references it (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01;
@@ -343,7 +343,7 @@ closes; those are not listed against the earlier phase here.
 | DOCS-03 | Phase 189 | Pending |
 | DOCS-04 | Phase 189 | Complete |
 | DOCS-05 | Phase 189 | Complete |
-| DOCS-06 | Phase 189 | Pending |
+| DOCS-06 | Phase 189 | Complete |
 | DOCS-07 | Phase 189 | Complete |
 | DOCS-08 | Phase 189 | Complete |
 
