@@ -70,7 +70,7 @@ import { constants } from '$lib/utils/constants';
 const projectId = constants.PUBLIC_PROJECT_ID;
 ```
 
-Both modules turn an unset variable into an empty string and never throw, because they are imported everywhere. The one default is `PUBLIC_IDENTITY_PROVIDER_TYPE`, which falls back to `signicat-ftn`. A required value is checked where it is used: the project id in the Supabase adapter, the identity-provider values when bank authentication runs. To add a variable, add it to the right `constants` module and to `.env.example`.
+Both modules turn an unset variable into an empty string and never throw, because they are imported everywhere. The one default is `PUBLIC_IDENTITY_PROVIDER_TYPE`, which falls back to `signicat-ftn`. A production server checks the values it cannot run without once, when it starts: `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `PUBLIC_PROJECT_ID` (which must also be a canonical UUID) and `ORIGIN`, the pairing of the [analytics](#analytics) variables, and `IDENTITY_CALLBACK_SERVER_SECRET` when an identity provider is set up. If any of them is unset or invalid, the server refuses to start, and the error names every one. The dev server skips this check. The other identity-provider values are checked when bank authentication runs. To add a variable, add it to the right `constants` module and to `.env.example`.
 
 Because both modules use `$env/dynamic/*`, the values are read when the server starts, not when the app is built. A production container therefore takes its configuration from the hosting platform's environment.
 

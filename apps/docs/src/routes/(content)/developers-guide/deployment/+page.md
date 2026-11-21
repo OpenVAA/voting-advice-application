@@ -38,14 +38,16 @@ Create a project in Supabase. The Supabase CLI comes with `yarn install` and run
 ## 3. Deploy the frontend on Render
 
 1. Copy `render.example.yaml` to `render.yaml` and replace its placeholders (`<INSTANCE_NAME>`, `<INSTANCE_BRANCH>`, `<INSTANCE_DOMAIN>`), as its header comment lists. Check the values marked `# Check`, such as the plan and whether to deploy automatically.
-2. Create the service in Render from the Blueprint. It is a Docker web service built from `./apps/frontend/Dockerfile` with the repository root as the build context. The image builds the shared packages and the frontend and runs `node ./apps/frontend/build/index.js` on port 3000.
+2. Create the service in Render from the Blueprint. It is a Docker web service built from `./apps/frontend/Dockerfile` with the repository root as the build context. The image builds the shared packages and the frontend and runs `node ./apps/frontend/build/index.js` on port 3000. The image takes an optional build argument, `BUILD_SHA` (`docker build --build-arg BUILD_SHA=$(git rev-parse HEAD)`), which becomes the app's version name, served at `/_app/version.json`; without it the version is time-based.
 3. Set the variables. The template declares:
-   - `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`, which you enter in Render (`sync: false`)
+   - `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY` and `PUBLIC_PROJECT_ID`, which you enter in Render (`sync: false`)
    - `PUBLIC_DEBUG` and `PUBLIC_LOG_LEVEL`
+   - the [analytics](/developers-guide/configuration/environmental-variables#analytics) variables: `ANALYTICS_PROVIDER` (`none`), `ANALYTICS_CONSENT_MODE` (`gated`), `ANALYTICS_VISIT_ID_MODE` (`memory`), `ANALYTICS_POSTHOG_KEY`, which you enter in Render as a secret, and `ANALYTICS_POSTHOG_HOST`
    - `PUBLIC_BROWSER_FRONTEND_URL` and `PUBLIC_SERVER_FRONTEND_URL`
-   - a commented-out environment group, `IDENTITY PROVIDER - PRODUCTION CLIENT`, for registration with bank authentication
+   - the [reverse-proxy](/developers-guide/configuration/environmental-variables#reverse-proxy-production-server) variables `ORIGIN`, `ADDRESS_HEADER` and `XFF_DEPTH`. `ORIGIN` must be the deployment's public origin, or the server refuses every form post. The proxy depth behind Render has not been measured, so check `ADDRESS_HEADER` and `XFF_DEPTH` (step 5 shows how)
+   - a commented-out group for registration with bank authentication: the identity-provider variables and `IDENTITY_CALLBACK_SERVER_SECRET`, the same value as the `identity-callback` function's secret
 
-   Also add **`PUBLIC_PROJECT_ID`**, which the template does not list: the frontend's Supabase adapter throws without it. For bank authentication, the frontend needs the identity-provider variables listed under [Environment variables](/developers-guide/configuration/environmental-variables#bank-authentication-identity-provider), and for the Admin app's LLM features, `LLM_OPENAI_API_KEY`.
+   The container exits at start, naming the missing variables, when a required one is unset; [Environment variables](/developers-guide/configuration/environmental-variables#reading-variables-in-the-frontend) lists which are required. For bank authentication, the frontend needs the identity-provider variables listed under [Environment variables](/developers-guide/configuration/environmental-variables#bank-authentication-identity-provider), and for the Admin app's LLM features, `LLM_OPENAI_API_KEY`.
 
    **Never set `SUPABASE_SERVICE_ROLE_KEY` on the frontend service.** The key bypasses row-level security. The frontend never reads it; it belongs only to the Supabase project and to local tooling.
 
