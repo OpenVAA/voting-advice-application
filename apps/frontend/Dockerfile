@@ -27,7 +27,7 @@ WORKDIR /opt
 # Build all shared modules
 RUN yarn build
 
-FROM base AS frontend
+FROM base AS production
 
 WORKDIR /opt
 
@@ -35,16 +35,12 @@ WORKDIR /opt
 COPY --from=shared /opt/packages packages
 COPY --from=shared /opt/apps/frontend apps/frontend
 
-FROM frontend AS production
-
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
 # The commit the image is built from. The build takes it as its version name; left empty, the name is time-based.
 ARG BUILD_SHA=""
 ENV BUILD_SHA=${BUILD_SHA}
-
-WORKDIR /opt
 
 RUN yarn workspace @openvaa/frontend build
 
