@@ -2,7 +2,7 @@
   "baseLocale": "en",
   "locales": ["en", "fi", "sv", "da", "et", "fr", "lb"],
   "modules": [
-    "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@4.6.0/dist/index.js",
+    "https://cdn.jsdelivr.net/npm/@inlang/plugin-message-format@4/dist/index.js",
     "https://cdn.jsdelivr.net/npm/@inlang/plugin-m-function-matcher@2/dist/index.js"
   ],
   "plugin.inlang.messageFormat": {
@@ -25,7 +25,6 @@
       "./messages/{locale}/contestantApp.help.json",
       "./messages/{locale}/contestantApp.home.json",
       "./messages/{locale}/contestantApp.identityProvider.json",
-      "./messages/{locale}/contestantApp.info.json",
       "./messages/{locale}/contestantApp.login.json",
       "./messages/{locale}/contestantApp.logoutModal.json",
       "./messages/{locale}/contestantApp.nominations.json",

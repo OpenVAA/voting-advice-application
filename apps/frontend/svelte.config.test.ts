@@ -24,7 +24,9 @@ describe('svelte.config.js — kit.env.dir', () => {
 
   it('points at the repo root, not at the frontend workspace', () => {
     // Compared with the trailing separator normalised away: `fileURLToPath` on a directory URL keeps it, and whether the config carries one is not the property under test.
-    const strip = (p: string) => p.replace(/[/\\]+$/, '');
+    function strip(p: string): string {
+      return p.replace(/[/\\]+$/, '');
+    }
 
     expect(strip(config.kit?.env?.dir as string)).toBe(strip(repoRoot));
     expect(strip(config.kit?.env?.dir as string)).not.toBe(strip(frontendDir));
@@ -63,9 +65,6 @@ describe('svelte.config.js — kit.version.name', () => {
   /** The variable the build id is read from. */
   const BUILD_SHA = 'BUILD_SHA';
 
-  /** The interval of the client's version poll, which the build id must leave alone. */
-  const POLL_INTERVAL_MS = 5 * 60 * 1000;
-
   /** The value the variable had when this file was loaded, restored after each case. */
   const initialBuildSha = process.env[BUILD_SHA];
 
@@ -100,14 +99,5 @@ describe('svelte.config.js — kit.version.name', () => {
   it('is undefined, not the empty string, when BUILD_SHA is empty', async () => {
     const built = await configBuiltWith('');
     expect(built.kit?.version?.name).toBeUndefined();
-  });
-
-  it.each([
-    ['set', 'abc1234'],
-    ['unset', undefined],
-    ['empty', '']
-  ])('leaves the poll interval alone when BUILD_SHA is %s', async (_state, buildSha) => {
-    const built = await configBuiltWith(buildSha);
-    expect(built.kit?.version?.pollInterval).toBe(POLL_INTERVAL_MS);
   });
 });

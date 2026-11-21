@@ -12,9 +12,11 @@ import parser from 'svelte-eslint-parser';
  * GROUP 1 — the boundary's own INSIDE. These are not "leaks" at all; they are what the adapter IS, and they are permanent by construction. A guard that fired here would be broken rather than strict.
  *
  * GROUP 2 — the six grandfathered sites OUTSIDE the boundary, each annotated with its disposition (see phase 158). One is a route file, one the password sign-in action both apps' login routes share, one the server helper sign-outs go through and one the server module that verifies a mailed link; the last two live under `src/` but outside the scope the guard was written for, and are recorded here so the guard does not fail on files it was never meant to cover.
+ *
+ * GROUP 3 — the auth form actions and callback that must call the request's own cookie-bearing `locals.supabase`, because `DataWriter` has no method for the call.
  */
 const ADAPTER_BOUNDARY_ALLOWLIST = [
-  // GROUP 1 of 2, the boundary's own inside, permanent by construction.
+  // GROUP 1 of 3, the boundary's own inside, permanent by construction.
   // The Supabase adapter itself. Supabase specifics are exactly what this directory is for.
   'src/lib/api/adapters/**',
   // The browser and server Supabase client factories the adapter is built on.
@@ -25,7 +27,7 @@ const ADAPTER_BOUNDARY_ALLOWLIST = [
   'src/lib/api/adminWriter.ts',
   'src/lib/api/feedbackWriter.ts',
 
-  // GROUP 2 of 2, the six grandfathered sites, each annotated with its disposition (see phase 158). None of them can be taken off the list by an edit of its file alone: the shared password sign-in action is the heart of the login collapse, the mailed-link module needs adapter methods that do not exist, the logout handler would create a route cycle, and the remaining three either hand the cookie-capable client to the adapter or declare and populate it. The six below are a worklist, not an oversight.
+  // GROUP 2 of 3, the six grandfathered sites, each annotated with its disposition (see phase 158). None of them can be taken off the list by an edit of its file alone: the shared password sign-in action is the heart of the login collapse, the mailed-link module needs adapter methods that do not exist, the logout handler would create a route cycle, and the remaining three either hand the cookie-capable client to the adapter or declare and populate it. The six below are a worklist, not an oversight.
   // The verification of a mailed link, which the confirm page's action calls: `auth.verifyOtp`, the refresh after the claim and the local sign-out after a failed one, all needing adapter methods that do not exist on `DataWriter` today.
   'src/lib/server/auth/mailedLink.ts',
   // ONE site, a bare `locals.supabase.auth.signOut()` on the request's own cookie-bearing client. Every sign-out of the Contestant App's protected loads and the confirm page's sign-out of a session it finds go through this helper, so no load or action of those routes needs an entry of its own.
@@ -39,20 +41,19 @@ const ADAPTER_BOUNDARY_ALLOWLIST = [
   // Unreachable by this guard on purpose: this file DECLARES `supabase` on the global `App.Locals` interface, which is a type declaration rather than an import or a member access, so the guard should not pretend to reach it.
   'src/app.d.ts',
 
-  // Outside both groups: the form action of the Contestant App's code sign-in screen. It hands `locals.supabase.auth`, the auth surface of the request's own cookie-bearing client, to the shared code sign-in helper, which refreshes the session on it after the claim and signs it out locally when the grant gate refuses. Those two calls must reach the client the session was established on, and `DataWriter` has no method that takes their place.
+  // GROUP 3 of 3, the auth form actions and callback that must call the request's own cookie-bearing `locals.supabase`, because `DataWriter` has no method for the call; the session is established on that client, so its cookies reach the browser only through it.
+  // Code sign-in: the Contestant App's code sign-in action refreshes the session after the claim and signs it out locally when the grant gate refuses.
   'src/routes/contestant/register/code/sign-in/+page.server.ts',
-
-  // Outside both groups: the identity provider's callback. It verifies the token `identity-callback` answers with on `locals.supabase`, the request's own cookie-bearing client, because the session cookies reach the browser only when the session is established on that client, and `DataWriter` has no method that takes that call's place.
+  // OIDC token verification: the identity provider's callback verifies the token `identity-callback` answers with.
   'src/routes/api/oidc/callback/+server.ts',
-
-  // Outside both groups: the callback's call to `identity-callback`, made on `locals.supabase` with the server secret, which no `DataWriter` method sends.
+  // The callback's call to `identity-callback`, sent with the server secret.
   'src/lib/server/auth/identityCallback.ts'
 ];
 
 /**
  * Shared esquery fragments for the parse-posture guard: a parse-failure branch must not degrade to an empty value (see phase 157.1).
  *
- * KEPT CHARACTER FOR CHARACTER as they were written, executed and scored against seventeen fixtures — twelve violation fixtures, four of them deliberate evasions, and five compliant ones: the five selectors fired 5/5 with zero false positives across the compliant set. One further compliant shape was measured as a false positive and is not among the seventeen. They must not be re-derived: a re-derived selector is a different selector, and the four deliberate evasion fixtures exist because the obvious derivations miss them. The same three fragments and the same five compositions are written a second time in `src/lib/_guards/eslint-parse-posture-guard.test.ts`, under the names `FAIL_BRANCH`, `OK_BRANCH` and `EMPTY`; the prefixes below only disambiguate them in this file's namespace.
+ * Do not re-derive these selectors: the evasion fixtures in `src/lib/_guards/eslint-parse-posture-guard.test.ts` exist because the obvious derivations miss them. The same three fragments and the same five compositions are written a second time in `src/lib/_guards/eslint-parse-posture-guard.test.ts`, under the names `FAIL_BRANCH`, `OK_BRANCH` and `EMPTY`; the prefixes below only disambiguate them in this file's namespace.
  *
  * ⚠ THE ESQUERY TRAP, measured and not to be repeated. `[argument.name='undefined']` matches whenever the attribute is JavaScript-`undefined` — it was measured firing at `return {};` in a fixture that contained no `undefined` identifier anywhere, i.e. it over-fires on every empty-object return. Every `undefined` arm below is therefore PAIRED with an argument-type guard, `[argument.type='Identifier'][argument.name='undefined']`. Do not simplify them.
  */
@@ -77,7 +78,7 @@ const PARSE_EMPTY_ARGUMENT =
 /**
  * The adapter naming convention BOTH adapter-singleton clauses key on (see phase 157.2).
  *
- * KEPT CHARACTER FOR CHARACTER as the five suffixes were written, executed against a 17-fixture matrix and scored: 12/12 firing with zero false positives on the compliant set. It must not be re-derived: a re-derived selector is a different selector, and the four deliberate evasion fixtures of `src/lib/_guards/eslint-adapter-singleton-guard.test.ts` (V5, V5b, V7, D5) exist because the obvious derivations miss them.
+ * Do not re-derive these suffixes: the evasion fixtures in `src/lib/_guards/eslint-adapter-singleton-guard.test.ts` (V5, V5b, V7, D5) exist because the obvious derivations miss them.
  *
  * The same regex body is read off two DIFFERENT attributes below — `callee.name` for a `new` expression, `id.name` for a class declaration — which is what makes the declaration clause a composition of measured fragments rather than an invention.
  */
@@ -151,7 +152,7 @@ const ADAPTER_INIT_DECLARATION_SCOPED = [
 /**
  * ADAPTER-SINGLETON CLAUSE 2, BROAD FORM — an `init` member on ANY class body. Spread into the ADAPTER BLOCK ONLY; see the asymmetry note on `ADAPTER_INIT_DECLARATION_SCOPED` above for the measurement that confines it there.
  *
- * KEPT CHARACTER FOR CHARACTER as it was written, executed and scored, firing on all five declaration shapes — the method, the arrow property, the async method, the mixin's inner class and the private-named `#init` evasion.
+ * Do not re-derive this selector: the evasion fixtures in `src/lib/_guards/eslint-adapter-singleton-guard.test.ts` exist because the obvious derivations miss them. It covers five declaration shapes — the method, the arrow property, the async method, the mixin's inner class and the private-named `#init`.
  */
 const ADAPTER_INIT_DECLARATION_BROAD = [
   {
@@ -339,7 +340,7 @@ export default [
           message:
             'Destructuring `supabase` reaches through the adapter boundary. Call through the `dataProvider` or `dataWriter` interface instead.'
         },
-        // The adapter-singleton guard, SPREAD rather than appended as a fourth block; see the note above the constants. Zone B resolves to this block's array, and it is the zone that holds BOTH the abstract base and the live candidate user-data store — which is exactly why only the scoped declaration form is here: its own 4 entries, then the guard's six instance arms and its scoped declaration arm.
+        // The adapter-singleton guard, SPREAD rather than appended as a fourth block; see the note above the constants. Zone B resolves to this block's array, and it is the zone that holds BOTH the abstract base and the live contestant user-data store — which is exactly why only the scoped declaration form is here: its own 4 entries, then the guard's six instance arms and its scoped declaration arm.
         ...ADAPTER_SINGLETON_INSTANCE,
         ...ADAPTER_INIT_DECLARATION_SCOPED
       ]
@@ -349,10 +350,10 @@ export default [
   //
   // WHAT IS BANNED IS THE SHAPE, NOT A LIBRARY CALL. Banning a call would miss a NEW schema; banning strictness would miss a permissive schema carrying the same degrade branch. No boundary schema carries such a branch today, but that leaves the CLASS open — one new helper written in that shape undoes all of it. These five entries are what mechanically says no.
   //
-  // ⚠ FLAT-CONFIG REPLACE, measured rather than reasoned — the same trap the two blocks above document, and the reason the first two entries below look like duplication. Measured with this object present and the two entries below OMITTED: `export enum Color {}` and `await import('svelte/store')` at `src/lib/api/adapters/supabase/utils/` both linted CLEAN — zero messages of any kind — while the five parse-posture selectors fired 12/12 on their fixtures. The replacement is per-file and TOTAL, so both bans vanished for every adapter file and NO GATE IN THIS REPOSITORY reported anything: the adapter contains no enums and no dynamic store imports today. The entries are therefore re-included BYTE-IDENTICALLY from their sources — `TSEnumDeclaration` from `packages/shared-config/eslint.config.mjs`, the dynamic `ImportExpression` from the `src/**` store-guard block above — selector and message text alike.
+  // ⚠ FLAT-CONFIG REPLACE, measured rather than reasoned — the same trap the two blocks above document, and the reason the first two entries below look like duplication. Without the two entries below, the per-file replacement drops the enum and dynamic store-import bans for every adapter file silently. The entries are therefore re-included BYTE-IDENTICALLY from their sources — `TSEnumDeclaration` from `packages/shared-config/eslint.config.mjs`, the dynamic `ImportExpression` from the `src/**` store-guard block above — selector and message text alike.
   // A future editor who tidies this duplication away reopens the hole. Do not. The only detector is the pair of standing regressions in `src/lib/_guards/eslint-parse-posture-guard.test.ts`, one per re-included entry.
   //
-  // ⚠ The sibling IMPORT-restriction rule that the `svelte/store` guard above pairs with its syntax ban is DELIBERATELY NOT SET in this object. Leaving a rule entirely unset means no replacement occurs for it and its inherited array survives untouched for adapter files; setting it to an empty array is NOT the same thing and would delete those bans. (Its rule id is deliberately not spelled anywhere in this object, so that a search of this block for that literal finds nothing — the mechanical form of "this object sets exactly one rule". Measured: a deep-relative `lib` import at a guarded adapter path still fires the inherited pattern ban.)
+  // ⚠ The sibling IMPORT-restriction rule that the `svelte/store` guard above pairs with its syntax ban is DELIBERATELY NOT SET in this object. Leaving a rule entirely unset means no replacement occurs for it and its inherited array survives untouched for adapter files; setting it to an empty array is NOT the same thing and would delete those bans.
   //
   // NO `ignores` KEY, on purpose. `ADAPTER_BOUNDARY_ALLOWLIST` above EXEMPTS `src/lib/api/adapters/**`, which is this guard's ENTIRE SCOPE. Copying that list here would invert the intent and produce a guard that never fires.
   //
