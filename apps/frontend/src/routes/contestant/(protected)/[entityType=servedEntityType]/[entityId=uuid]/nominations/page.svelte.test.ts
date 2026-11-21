@@ -11,18 +11,19 @@
  * 6. **Add a nomination.** Below the cards while the facts say another can be added and neither lock is on, leading to the editor's entry; never in place of the nominations.
  * 7. **What the page does not do.** It reads no data root, logs nothing but a rejected write, holds no form control, puts no control on a card of a nomination that is not writable, adds no dialog and gives no element a view-transition name.
  *
- * The fake context's members are reactive behind getters over one raw state box, as the real accessors are, and its `dataRoot` throws when it is read. The page's data is a raw state too, handed over behind a getter, so that a load run again reaches the mounted page. Task states are built with the real `taskStateOf`. Messages are their keys, and a route is its name.
+ * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are, and its `dataRoot` throws when it is read. The page's data is a raw state too, handed over behind a getter, so that a load run again reaches the mounted page. Task states are built with the real `taskStateOf`. Messages are their keys, and a route is its name.
  */
 
 import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { taskStateOf } from '$lib/contestant/tasks';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { selectionSearch } from './(edit)/stepSelection';
 import type { DesiredNomination, EntityNomination, UserEntity } from '$lib/api/base/dataWriter.type';
 import type { TaskState, TaskStateInput } from '$lib/contestant/tasks';
 import type { RouteOptions } from '$lib/routes';
-import type { NominationFacts } from './nominationFacts';
+import type { NominationScope } from './nominationScope';
 
 /** Everything the page reads from the contestant context. */
 type Box = {
@@ -34,7 +35,7 @@ type Box = {
 };
 
 /** What the page reads of its data. */
-type PageData = { nominationFacts: NominationFacts | undefined };
+type PageData = { nominationScope: NominationScope | undefined };
 
 /** The facts of an entity with a nomination whose every task is complete, while nominations cannot be edited. */
 const ALL_COMPLETE: TaskStateInput = {
@@ -75,19 +76,19 @@ const EMPTY_BOX: Box = {
 };
 
 /** Nominations can be edited and an election admits the entity. No other nomination is said to be addable, so the view offers no Add; the cases of Add say so themselves. */
-const EDITABLE: NominationFacts = {
+const EDITABLE: NominationScope = {
   editable: true,
   admissibleElectionIds: ['election-1', 'election-2'],
   writableNominationIds: [],
+  severalConstituencies: false,
   canAddAnother: false
 };
 /** A lock is on. */
-const NOT_EDITABLE: NominationFacts = { ...EDITABLE, editable: false };
+const NOT_EDITABLE: NominationScope = { ...EDITABLE, editable: false };
 /** Nominations can be edited and no election admits the entity. */
-const NO_ELECTION: NominationFacts = { ...EDITABLE, admissibleElectionIds: [] };
+const NO_ELECTION: NominationScope = { ...EDITABLE, admissibleElectionIds: [] };
 
-let box = $state.raw<Box>(EMPTY_BOX);
-let pageData = $state.raw<PageData>({ nominationFacts: undefined });
+let pageData = $state.raw<PageData>({ nominationScope: undefined });
 
 const push = vi.fn();
 const revert = vi.fn();
@@ -100,8 +101,7 @@ const setEntityNominations =
     ) => Promise<{ type: string; reason?: string }>
   >();
 
-const context = {
-  t: (key: string) => key,
+const { context, box } = fakeContestantContext(EMPTY_BOX, () => ({
   getRoute: {
     current: (options: RouteOptions) => {
       const { route, questionId, ...search } =
@@ -115,23 +115,8 @@ const context = {
   appSettings: { admin: { email: 'support@example.org' } },
   get dataRoot(): never {
     throw new Error('the page read the data root');
-  },
-  get selectedEntity() {
-    return box.selectedEntity;
-  },
-  get nominations() {
-    return box.nominations;
-  },
-  get nominationsLocked() {
-    return box.nominationsLocked;
-  },
-  get answersLocked() {
-    return box.answersLocked;
-  },
-  get taskState() {
-    return box.taskState;
   }
-};
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -294,8 +279,8 @@ beforeEach(() => {
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  box = EMPTY_BOX;
-  pageData = { nominationFacts: undefined };
+  box.current = EMPTY_BOX;
+  pageData = { nominationScope: undefined };
   vi.restoreAllMocks();
   vi.resetAllMocks();
 });
@@ -305,9 +290,9 @@ afterEach(() => {
  * @param state - What the context holds.
  * @param facts - The facts of the page's data, or `null` for data that holds none. Left out, nominations can be edited and an election admits the entity.
  */
-function render(state: Partial<Box>, facts: NominationFacts | null = EDITABLE): HTMLElement {
-  box = { ...EMPTY_BOX, ...state };
-  pageData = { nominationFacts: facts ?? undefined };
+function render(state: Partial<Box>, facts: NominationScope | null = EDITABLE): HTMLElement {
+  box.current = { ...EMPTY_BOX, ...state };
+  pageData = { nominationScope: facts ?? undefined };
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(Page, {
@@ -327,9 +312,9 @@ function render(state: Partial<Box>, facts: NominationFacts | null = EDITABLE): 
 }
 
 /** Replace part of the context's state under a mounted page and, when given, the facts of the page's data. */
-function update(state: Partial<Box>, facts?: NominationFacts): void {
-  box = { ...box, ...state };
-  if (facts) pageData = { nominationFacts: facts };
+function update(state: Partial<Box>, facts?: NominationScope): void {
+  box.set(state);
+  if (facts) pageData = { nominationScope: facts };
   flushSync();
 }
 
@@ -620,7 +605,7 @@ type ViewCase = {
   nominations: ReadonlyArray<EntityNomination>;
   locks: Pick<Box, 'nominationsLocked' | 'answersLocked'>;
   /** The facts of the page's data, or `null` for data that holds none. */
-  facts: NominationFacts | null;
+  facts: NominationScope | null;
   taskState: TaskState;
   expected: {
     /** The note's reason, or `null` for no note. */
@@ -1095,7 +1080,7 @@ describe('the nominations page — its buttons', () => {
 });
 
 /** The facts of an entity both of whose nominations are writable, while nominations can be edited. */
-const BOTH_WRITABLE: NominationFacts = { ...EDITABLE, writableNominationIds: [FIRST.id, SECOND.id] };
+const BOTH_WRITABLE: NominationScope = { ...EDITABLE, writableNominationIds: [FIRST.id, SECOND.id] };
 
 /** Press a control and let the page settle: the write it starts, the re-read and what follows them. */
 async function press(root: ParentNode, selector: string): Promise<void> {
@@ -1125,6 +1110,32 @@ describe('the nominations page — Edit and Delete on a card', () => {
       expect(textOf(remove)).toBe('contestantApp.nominations.delete');
       expect(count(card, DELETE_CONFIRM)).toBe(0);
     }
+  });
+
+  it("for an organization, leads Edit to the details step with each constituency chosen in its own nomination's election alone", () => {
+    const third = nomination({
+      id: 'nomination-3',
+      constituencyId: 'constituency-2',
+      constituencyName: 'Southern District'
+    });
+    const target = render(
+      { selectedEntity: PARTY, nominations: [FIRST, SECOND, third], taskState: STATE.profileNext },
+      { ...EDITABLE, severalConstituencies: true, writableNominationIds: [FIRST.id, SECOND.id, third.id] }
+    );
+
+    const details = `/route/ContestantAppNominationDetails?${JSON.stringify(
+      selectionSearch({
+        electionIds: ['election-1', 'election-2'],
+        constituencyIds: ['constituency-1', 'constituency-2'],
+        constituencyIdsByElection: {
+          'election-1': ['constituency-1', 'constituency-2'],
+          'election-2': ['constituency-1']
+        }
+      })
+    )}`;
+    for (const card of cardsOf(target)) expect(one(card, CARD_EDIT).getAttribute('href')).toBe(details);
+    expect(details).toContain('nominationContest');
+    expect(details).not.toContain('nominationConstituencyId');
   });
 
   it('offers neither on a card of a nomination that is not writable', () => {
@@ -1196,7 +1207,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
       BOTH_WRITABLE
     );
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, nominations: [SECOND] };
+      box.set({ nominations: [SECOND] });
     });
 
     await press(cardsOf(target)[0], CARD_DELETE);
@@ -1300,7 +1311,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
       BOTH_WRITABLE
     );
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, nominationsLocked: true, answersLocked: true };
+      box.set({ nominationsLocked: true, answersLocked: true });
     });
 
     await press(cardsOf(target)[0], CARD_DELETE);
@@ -1322,7 +1333,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
       BOTH_WRITABLE
     );
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, nominationsLocked: true };
+      box.set({ nominationsLocked: true });
     });
 
     await press(cardsOf(target)[0], CARD_DELETE);
@@ -1340,7 +1351,7 @@ describe('the nominations page — Edit and Delete on a card', () => {
 
 describe('the nominations page — Add a nomination', () => {
   /** The facts of an entity that can add another nomination. */
-  const ROOM: NominationFacts = { ...BOTH_WRITABLE, canAddAnother: true };
+  const ROOM: NominationScope = { ...BOTH_WRITABLE, canAddAnother: true };
 
   it("offers Add below the cards while another can be added, leading to the editor's entry", () => {
     const target = render(

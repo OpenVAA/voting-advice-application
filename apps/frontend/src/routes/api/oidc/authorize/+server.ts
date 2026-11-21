@@ -7,7 +7,7 @@
  * 2. The type is checked against the registration matrix before anyone is sent to the provider, through `identityProviderEntityType` over `identityProviderEntityTypes`, the function the registration screen reads the types it offers from. A named type must be in that list; an absent one is taken only when the list holds exactly one. Anything else, and every type while answers are locked, answers 403 `{ error: 'mode_not_allowed' }`.
  * 3. The redirect the provider is given is this endpoint's own origin and the callback's path. For a provider bound by PKCE (Signicat), the verifier and its challenge are generated here and the verifier is kept in an httpOnly cookie, so the browser sends no challenge. Idura's signed request (JAR) is built here too, so its signing keys never reach the browser.
  * 4. The provider is asked to show its screens in the request's locale, `locals.currentLocale`, as `ui_locales`. The registration screen posts under its own locale's prefix, so that locale is the one the page was shown in.
- * 5. The provider's `state` and `nonce`, when it returns them (Idura), and the chosen type are set as httpOnly cookies with the flow's attributes, and the answer is `{ authorizeUrl }`.
+ * 5. The provider's `state` and `nonce`, when it returns them (Idura), the chosen type and the request's locale are set as httpOnly cookies with the flow's attributes, `OIDC_FLOW_COOKIE_OPTIONS`, and the answer is `{ authorizeUrl }`. The callback lands the user in the locale this cookie names.
  *
  * The type cookie returns with the provider's redirect and is bound to the flow only by the cookie jar and its lifetime. It selects which type the callback asks for and never authorises: every reader checks the matrix again, and the `identity-callback` function's check is the authority.
  */
@@ -18,19 +18,10 @@ import { createDataProvider, createSupabaseAnonClient } from '$lib/api/dataProvi
 import { generateChallenge } from '$lib/api/utils/auth/generateChallenge';
 import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import { identityProviderEntityType } from '$lib/contestant/utils/registrationOffer';
-import { COOKIE } from '$lib/cookies';
+import { COOKIE, OIDC_FLOW_COOKIE_OPTIONS } from '$lib/cookies';
 import { ROUTE } from '$lib/routes';
 import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { RequestEvent } from '@sveltejs/kit';
-
-/** The attributes of every cookie the flow leaves behind. `lax` lets them return with the provider's top-level redirect. */
-const FLOW_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'lax',
-  path: '/',
-  maxAge: 600
-} as const;
 
 export async function POST({ cookies, fetch, locals, request, url }: RequestEvent): Promise<Response> {
   try {
@@ -61,10 +52,11 @@ export async function POST({ cookies, fetch, locals, request, url }: RequestEven
 
     const result = await provider.getAuthorizeUrl({ redirectUri, codeChallenge, locale: locals.currentLocale });
 
-    if (codeVerifier) cookies.set(COOKIE.oidcCodeVerifier, codeVerifier, FLOW_COOKIE_OPTIONS);
-    if (result.state) cookies.set(COOKIE.oidcState, result.state, FLOW_COOKIE_OPTIONS);
-    if (result.nonce) cookies.set(COOKIE.oidcNonce, result.nonce, FLOW_COOKIE_OPTIONS);
-    cookies.set(COOKIE.oidcEntityType, entityType, FLOW_COOKIE_OPTIONS);
+    if (codeVerifier) cookies.set(COOKIE.oidcCodeVerifier, codeVerifier, OIDC_FLOW_COOKIE_OPTIONS);
+    if (result.state) cookies.set(COOKIE.oidcState, result.state, OIDC_FLOW_COOKIE_OPTIONS);
+    if (result.nonce) cookies.set(COOKIE.oidcNonce, result.nonce, OIDC_FLOW_COOKIE_OPTIONS);
+    cookies.set(COOKIE.oidcEntityType, entityType, OIDC_FLOW_COOKIE_OPTIONS);
+    cookies.set(COOKIE.oidcLocale, locals.currentLocale, OIDC_FLOW_COOKIE_OPTIONS);
 
     return json({ authorizeUrl: result.authorizeUrl });
   } catch (e) {

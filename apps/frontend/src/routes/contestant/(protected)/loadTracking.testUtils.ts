@@ -53,3 +53,48 @@ export function forbiddenRoute(): { id: string } {
     }
   );
 }
+
+/** What a recording request event is built from. */
+export interface RecordingEventOptions {
+  /** The URL of the request. */
+  href: string;
+  /** The route params the URL carries. */
+  params?: Record<string, string>;
+  /** The event's `parent`. When it is left out, `parent` rejects. */
+  parent?: () => Promise<unknown>;
+  /** Any further members of the event, such as `cookies`, `fetch` or `locals`. */
+  extra?: Record<string, unknown>;
+}
+
+/**
+ * A request event that is itself a recording Proxy, whose `url`, `params` and `route` are the instruments above and whose own member reads are logged by name.
+ * @param options - The URL, params, parent and further members of the event.
+ * @returns The event, typed as the load's own event, and what its instruments recorded.
+ */
+export function recordingEvent<TEvent>({ href, params: routeParams = {}, parent, extra = {} }: RecordingEventOptions): {
+  event: TEvent;
+  eventReads: Array<string>;
+  paramReads: Array<string>;
+  trackedReads: Array<string>;
+} {
+  const { url, trackedReads, untrack } = recordingUrl(href);
+  const { params, paramReads } = recordingParams(routeParams);
+  const eventReads: Array<string> = [];
+  const event = new Proxy(
+    {
+      ...extra,
+      params,
+      parent: parent ?? (() => Promise.reject(new Error('the load must not await a parent'))),
+      route: forbiddenRoute(),
+      untrack,
+      url
+    },
+    {
+      get(target, prop) {
+        if (typeof prop === 'string') eventReads.push(prop);
+        return Reflect.get(target, prop, target);
+      }
+    }
+  );
+  return { event: event as unknown as TEvent, eventReads, paramReads, trackedReads };
+}

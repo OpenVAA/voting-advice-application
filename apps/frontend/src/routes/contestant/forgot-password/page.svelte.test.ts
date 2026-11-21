@@ -1,7 +1,7 @@
 /**
  * The forgot-password page, mounted for real with its real email field against a fake contestant context.
  *
- * The fake context's `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -15,6 +15,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
@@ -23,12 +24,13 @@ const { goto, sendEntryLink } = vi.hoisted(() => ({ goto: vi.fn(), sendEntryLink
 // The other members stay the resolvable stubs: components the page reaches import them too.
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
 
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  sendEntryLink,
-  appSettings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } }
-};
+const { context } = fakeContestantContext(
+  { appSettings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } } },
+  () => ({
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    sendEntryLink
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -72,7 +74,7 @@ const RETURN = '[data-testid="forgot-password-return"]';
 
 const ADDRESS = 'someone@example.test';
 
-const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppSignIn' }, { params: {} });
+const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppLoginEmail' }, { params: {} });
 const EMAIL_SENT_ROUTE = buildRoute({ route: 'ContestantAppEmailSent' }, { params: {} });
 
 let teardown: Array<() => void> = [];
@@ -169,7 +171,7 @@ describe('the frame', () => {
   it("has the page's first-level heading, which can take focus, under the app's name", () => {
     const target = render();
     const heading = one(target, 'h1');
-    expect(heading.textContent?.trim()).toBe('contestantApp.resetPassword.title');
+    expect(heading.textContent?.trim()).toBe('common.account.resetPassword.title');
     expect(heading.getAttribute('tabindex')).toBe('-1');
     expect(target.textContent).toContain('dynamic.contestantAppName.');
     heading.focus();
@@ -178,7 +180,7 @@ describe('the frame', () => {
 
   it('says what the address is for', () => {
     const target = render();
-    expect(target.textContent).toContain('contestantApp.resetPassword.ingress');
+    expect(target.textContent).toContain('common.account.resetPassword.ingress');
   });
 
   it('leads back to the sign-in screen', () => {
@@ -249,7 +251,7 @@ describe('the form', () => {
     expect(button.getAttribute('form')).toBe(form.id);
     expect(form.contains(button)).toBe(false);
     expect(button.closest('section')?.getAttribute('aria-label')).toBe('common.primaryActions');
-    expect(button.textContent?.trim()).toBe('contestantApp.resetPassword.sendLink');
+    expect(button.textContent?.trim()).toBe('common.account.resetPassword.sendLink');
   });
 
   it('has a submit button that is natively disabled until the page has mounted', () => {
@@ -269,7 +271,7 @@ describe('the main button', () => {
     expect(goto).not.toHaveBeenCalled();
     const email = one<HTMLInputElement>(target, EMAIL);
     const error = one(target, EMAIL_ERROR);
-    expect(messageOf(error)).toBe('contestantApp.login.emailRequired');
+    expect(messageOf(error)).toBe('common.account.emailRequired');
     expect(error.getAttribute('role')).toBe('alert');
     expect(email.getAttribute('aria-invalid')).toBe('true');
     expect(document.activeElement).toBe(email);
@@ -281,7 +283,7 @@ describe('the main button', () => {
     press(target, SUBMIT);
     await settle();
     expect(sendEntryLink).not.toHaveBeenCalled();
-    expect(messageOf(one(target, EMAIL_ERROR))).toBe('contestantApp.login.emailRequired');
+    expect(messageOf(one(target, EMAIL_ERROR))).toBe('common.account.emailRequired');
   });
 
   it('asks for nothing with text that is no address, and says so at the field', async () => {

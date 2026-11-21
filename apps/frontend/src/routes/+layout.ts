@@ -33,14 +33,14 @@ export async function load({ data, fetch }) {
 
   // Await all remaining data in parallel
   const [appSettingsData, electionData, constituencyData] = await Promise.all([
-    // Named explicitly, like its two siblings. `_getAppSettings` localizes the contestant-app and voter-app notification `title` and `content`, so a call with no locale rendered those banners against an empty key on every route: `getLocalized` finds no `''` entry, falls back to `'en'`, and — for a column carrying no `en` entry — returns whichever key comes first in the object. CLAUDE.md requires every user-facing string to follow the selected language.
+    // Named explicitly, like its two siblings: `_getAppSettings` localizes the contestant-app and voter-app notification `title` and `content`, and without a locale `getLocalized` would fall back to `'en'` or to the first key.
     dataProvider.getAppSettings({ locale: lang }).catch((e) => e),
     dataProvider.getElectionData({ locale: lang }).catch((e) => e),
     dataProvider.getConstituencyData({ locale: lang }).catch((e) => e)
   ]);
 
   return {
-    // ⚠ FORWARDED DELIBERATELY. The presence of this file suppresses the automatic pass-through — a missing `+layout.ts` behaves as `({ data }) => data`, but a present one hands on only what it explicitly returns, so anything omitted here vanishes for every descendant in the app. The cookie array is deliberately NOT forwarded: no descendant needs it, and it is consumed one line above to build the client. There is no `session` to forward — the root server load stopped returning one, because a `Session` carries a refresh token and everything a server load returns is serialised into the HTML; `authContext`'s `page.data.session` is supplied by `admin/+layout.server.ts` and `candidate/+layout.server.ts`, and publishing a session app-wide would flip that read on voter routes that have never seen one.
+    // ⚠ FORWARDED DELIBERATELY. The presence of this file suppresses the automatic pass-through — a missing `+layout.ts` behaves as `({ data }) => data`, but a present one hands on only what it explicitly returns, so anything omitted here vanishes for every descendant in the app. The cookie array is deliberately NOT forwarded: no descendant needs it, and it is consumed one line above to build the client. There is no `session` to forward: the root server load returns none, because a `Session` carries a refresh token and everything a server load returns is serialised into the HTML; `authContext`'s `page.data.session` comes from `admin/+layout.server.ts` and `contestant/+layout.server.ts`, and a session published app-wide would flip that read on voter routes.
     supabaseClient,
     appCustomizationData,
     appSettingsData,

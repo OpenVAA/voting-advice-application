@@ -1,7 +1,7 @@
 /**
  * The Contestant App's root page, mounted for real against a fake contestant context and a real `DataRoot`, with the real `NothingToEdit`, `ReadFailure`, `MainContent`, `EntityList` and `EntityCard` below it.
  *
- * The fake context's `entities` and `dataRoot` are reactive behind getters, as the real accessors are: `setDataRoot` runs its updater untracked and bumps a version the `dataRoot` getter reads. The data root holds no question, and the settings name one as card content, so a card that looked its questions up would throw.
+ * The fake context is the shared `fakeContestantContext`, whose `entities` and `dataRoot` are reactive behind getters, as the real accessors are: `setDataRoot` runs its updater untracked and bumps a version the `dataRoot` getter reads. The data root holds no question, and the settings name one as card content, so a card that looked its questions up would throw.
  *
  * Routes are built with the real `buildRoute` from an empty set of route params, as on a page whose URL names no entity.
  */
@@ -9,6 +9,7 @@
 import { DataRoot } from '@openvaa/data';
 import { flushSync, mount, unmount, untrack } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { UserEntity } from '$lib/api/base/dataWriter.type';
 import type { RouteOptions } from '$lib/routes';
@@ -34,9 +35,9 @@ const PARTY: UserEntity = {
   confirmed: true
 };
 
-const state = $state<{ entities: ReadonlyArray<UserEntity>; version: number }>({ entities: [], version: 0 });
-
 let dataRoot = new DataRoot();
+/** Counts the writes to the data root, which the fake's `dataRoot` reads so that a write reaches its readers. */
+let dataRootVersion = $state(0);
 /** How the fake `setDataRoot` treats an updater: it runs it, throws, or reports success having provided nothing. */
 let provision: 'run' | 'throw' | 'skip' = 'run';
 
@@ -57,32 +58,33 @@ const appSettings = {
   results: { cardContents: { candidate: [{ question: 'q1' }], organization: [{ question: 'q1' }] } }
 };
 
-const context = {
-  appType: { current: 'contestant' },
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  track: () => undefined,
-  logout: async () => undefined,
-  setDataRoot: (updater: (dr: DataRoot) => void) =>
-    untrack(() => {
-      provide(updater);
-      state.version++;
-    }),
-  appSettings,
-  locale: 'en',
-  answersLocked: false,
-  unansweredRequiredInfoQuestions: [],
-  unansweredOpinionQuestions: [],
-  userData: { savedEntityData: undefined },
-  user: { email: 'user@example.org' },
-  get entities() {
-    return state.entities;
+const { context, box } = fakeContestantContext(
+  {
+    entities: [] as ReadonlyArray<UserEntity>,
+    appSettings,
+    locale: 'en',
+    answersLocked: false,
+    unansweredRequiredInfoQuestions: [],
+    unansweredOpinionQuestions: []
   },
-  get dataRoot() {
-    void state.version;
-    return dataRoot;
-  }
-};
+  () => ({
+    appType: { current: 'contestant' },
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    track: () => undefined,
+    logout: async () => undefined,
+    setDataRoot: (updater: (dr: DataRoot) => void) =>
+      untrack(() => {
+        provide(updater);
+        dataRootVersion++;
+      }),
+    userData: { savedEntityData: undefined },
+    user: { email: 'user@example.org' },
+    get dataRoot() {
+      void dataRootVersion;
+      return dataRoot;
+    }
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 vi.mock('$lib/contexts/app', () => ({ getAppContext: () => context }));
@@ -141,7 +143,7 @@ afterEach(() => {
   teardown = [];
   dataRoot = new DataRoot();
   provision = 'run';
-  state.entities = [];
+  box.set({ entities: [] });
   push.mockClear();
   revert.mockClear();
 });
@@ -156,7 +158,7 @@ function render(
   entities: ReadonlyArray<UserEntity>,
   { flush = true }: { flush?: boolean } = {}
 ): HTMLElement {
-  state.entities = entities;
+  box.set({ entities });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(Page, { target, props: { data: { view } } as never });
@@ -281,7 +283,7 @@ describe('contestant root page — the selection view', () => {
   it('follows the list when it changes', () => {
     const target = render('select', [ZOE, ADA]);
 
-    state.entities = [ZOE, ADA, PARTY];
+    box.set({ entities: [ZOE, ADA, PARTY] });
     flushSync();
 
     expect(cardTitles(target)).toEqual(['Ada Alpha', 'Zoe Zeta', 'The Example Party']);

@@ -15,11 +15,11 @@ import {
   electionsStepSelection,
   emptySelection,
   stepAddress,
-  stepFactsOf
+  stepInputOf
 } from '../stepSelection';
 
 export async function load({ params, parent, url }) {
-  const facts = stepFactsOf({ parentData: await parent(), url });
+  const facts = stepInputOf({ parentData: await parent(), url });
   if (!facts) return { nominationSelection: emptySelection() };
 
   const forward = electionsAddressForward(facts);

@@ -8,8 +8,8 @@ Locale handling is managed by Paraglide JS via the reroute hook in `src/hooks.ts
 
 - Voters app routes are in `(voters)/`, with those requiring a selected election and constituency under `(voters)/(located)/`
 - Contestant app routes are in `contestant/`, and the ones requiring a signed-in user under `contestant/(protected)/`, where the pages of one entity are under `contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/`
-- Admin app routes are in `admin/`, and the ones requiring the `admin` role under `admin/(protected)/`
-- Server endpoints are in `api/` — `api/admin/jobs/**` (job control, each guarded on the `admin` role), `api/auth/**`, `api/oidc/**` (the identity provider's authorize endpoint and its callback, which registers or finds the account), `api/contestant/identity-provider` (the save, resend and acknowledge of the identity provider's gate), plus `api/data/[collection]`, `api/feedback`, `api/health`, `api/diagnostics` and `api/usage`
+- Admin app routes are in `admin/`, and the ones open only to a user with an admin grant that reaches the project (`ADMIN_GRANTS`) under `admin/(protected)/`
+- Server endpoints are in `api/` — `api/admin/jobs/**` (job control, each open only to a verified user with an admin grant that reaches the project), `api/auth/**`, `api/oidc/**` (the identity provider's authorize endpoint and its callback, which registers or finds the account), `api/contestant/identity-provider` (the save, resend and acknowledge of the identity provider's gate), plus `api/data/[collection]`, `api/feedback`, `api/health`, `api/diagnostics` and `api/usage`
 
 The only non-route file left directly in this directory is `+error.svelte`. The app
 shell components that used to sit here now live outside the router's namespace, at
@@ -28,7 +28,7 @@ login form actions share also lives outside this directory, at
 The group segment is defined once, as `PROTECTED_GROUP` in `$lib/routes/route.ts`, and the two
 group-prefix constants and both membership predicates are built from it. `$lib/routes/routeConsistency.test.ts`
 runs in `yarn test:unit` and holds three things to that one definition: the pattern, this directory
-tree, and the candidate auth handler in `src/hooks.server.ts`.
+tree, and the application session-gate handler (`appGateHandle`) in `src/hooks.server.ts`.
 
 So, when you add a route under a `(protected)` directory, also add a `ROUTE` entry addressing it, or
 the unit suite goes red naming the directory. When you remove one, remove its `ROUTE` entry too. And

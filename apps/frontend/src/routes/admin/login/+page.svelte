@@ -3,6 +3,7 @@
 # Admin app login page
 
 - The `/admin` routes redirect here if there is not auth token in the cookie and show a possible error defined by the `errorMessage` seach param
+- A refused sign-in shows one sentence chosen by the status of the refusal. The same sentence is shown from the `form` prop when the page is rendered after a post its script did not make, before any reason the page was opened for
 - The message under the password field says why the visitor was sent here, for the reasons `$lib/admin/utils/loginError` knows: the session was not there or the user's data could not be read, the user may not use the Admin App, a logout count ran out with no one to cancel it, or the user logged out in another tab or window. The reason is read from the page's load, which answers the automatic logout when the request hook has just ended the session at a count's end, else from `errorMessage`: the gate that sends that request here names `loginFailed` on the address bar, which says less. Any other value shows nothing, and no text from the address bar is rendered. The message is an alert
 - The heading takes the focus the root layout moves after a navigation, and while a message is shown it names the message as its description, so a screen reader that lands on the heading is given the sentence with it
 - Shows login form
@@ -13,6 +14,7 @@
 ## Data
 
 - `signedOutReason`: The reason the page's load answers, shown before the one `errorMessage` names.
+- `form.status`: The status of a refused sign-in, which the action's failure repeats as its data.
 
 ## Params
 
@@ -35,9 +37,9 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import type { LoginError } from '$lib/admin/utils/loginError';
-  import type { PageData } from './$types';
+  import type { ActionData, PageData } from './$types';
 
-  let { data }: { data: PageData } = $props();
+  let { data, form }: { data: PageData; form: ActionData } = $props();
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -59,16 +61,30 @@
   /** The id of the message, which the heading names as its description while it is shown. */
   const messageId = $props.id();
 
+  /**
+   * The sentence for a refused sign-in.
+   * @param refusal - The status of the refusal.
+   */
+  function failureSentence(refusal: number): string {
+    if (refusal === 400) return t('error.wrongEmailOrPassword');
+    if (refusal === 403) return t('error.403');
+    return t('error.general');
+  }
+
   /** The message key of why the page was opened, the load's reason before the address bar's, read once: later messages come from the form's handler. */
   // svelte-ignore state_referenced_locally
   const reasonKey =
     getErrorTranslationKey(data.signedOutReason ?? null) ??
     getErrorTranslationKey(page.url.searchParams.get('errorMessage') as LoginError | null);
 
+  /** The message the page opens with, read once: the refusal of the post the page was rendered from, else why the page was opened. */
+  // svelte-ignore state_referenced_locally
+  const initialMessage = form?.status ? failureSentence(form.status) : reasonKey ? t(reasonKey) : undefined;
+
   let email = $state('');
-  let errorMessage = $state<string | undefined>(reasonKey ? t(reasonKey) : undefined);
+  let errorMessage = $state<string | undefined>(initialMessage);
   let password = $state('');
-  let status = $state<ActionStatus>(reasonKey ? 'error' : 'idle');
+  let status = $state<ActionStatus>(initialMessage ? 'error' : 'idle');
 
   let canSubmit = $derived(!!(status !== 'loading' && email && password));
 
@@ -117,12 +133,7 @@
         if (result.type === 'failure') {
           await update();
           status = 'error';
-          errorMessage =
-            result.status === 400
-              ? t('error.wrongEmailOrPassword')
-              : result.status === 403
-                ? t('error.403')
-                : t('error.general');
+          errorMessage = failureSentence(result.status);
           return;
         }
         // One navigation, so a sign-in writes one history entry.
@@ -172,11 +183,11 @@
       <div class="mt-md flex flex-col items-center">
         <Button
           href={forgotPasswordHref}
-          text={t('contestantApp.login.forgotPassword')}
+          text={t('common.account.forgotPassword')}
           data-testid="admin-login-forgot-password" />
         <Button
           href={forgotPasswordHref}
-          text={t('contestantApp.login.noPasswordYet')}
+          text={t('common.account.noPasswordYet')}
           data-testid="admin-login-no-password-yet" />
       </div>
     </div>

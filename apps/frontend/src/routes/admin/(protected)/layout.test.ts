@@ -6,10 +6,11 @@
  * 1. **No session in the page data** redirects to the login page with `loginFailed`, before anything is read.
  * 2. **A read in the browser that answers nothing, with a session in the page data,** asks the writer whether the load's client still holds a session. When it holds none, the session ended elsewhere and the load redirects to the login page with `loginFailed`. When one is left, or the client cannot tell, it is an error in the reader's language: no redirect and no sign-out. The gate sends a live session straight back from the login page, so a redirect there would never end.
  * 3. **An admitted user** gets the user data and the gate the server load decided: during server rendering the server load's user data, with nothing read; in the browser the user data read with the tab's own client.
- * 4. **A user the server load did not admit** is signed out, with nothing read, and redirected to the login page with `userNotAuthorized` when the sign-out works. When it fails, the failure is logged. In the browser the writer is then asked whether a session is left: none redirects to the login page with `userNotAuthorized`, and one left, or no answer, throws a 403 in the reader's language, with no redirect, for the same reason as in 2. On the server it is not asked and the load throws the 403: the client there writes no cookies, so after its own failed sign-out it answers no session while the browser still holds one.
- * 5. **The load reads no `url`, `route` or `params`.** The event's getters for them throw, in every case, and one case reaches the end of the load to show it.
- * 6. **The Contestant App's drafts.** In the browser, a sign-out of a user who is no administrator that has ended the session removes them before the redirect: one that worked, and one that failed with no session left. One that failed with a session left removes none, and on the server nothing is removed. A load that finds no session removes none.
- * 7. **The announcements to the other tabs.** In the browser, the sign-out of a user who is no administrator is made between a `start` and an `end` announcement.
+ * 4. **A user the server load did not admit** is signed out, with nothing read, and redirected to the login page with `userNotAuthorized` when the sign-out works. When it fails, the failure is logged. In the browser the writer is then asked whether a session is left: none redirects to the login page with `userNotAuthorized`, and one left, or no answer, throws a 503 in the reader's language, with no redirect, for the same reason as in 2. On the server it is not asked and the load throws the 503: the client there writes no cookies, so after its own failed sign-out it answers no session while the browser still holds one.
+ * 5. **A user at home in the Contestant App alone,** whom the server load answered with `home: 'contestant'`, is redirected with a 303 to the Contestant App's home, on the server and in the browser, with no sign-out, no announcement, no draft removed and nothing read.
+ * 6. **The load reads no `url`, `route` or `params`.** The event's getters for them throw, in every case, and one case reaches the end of the load to show it.
+ * 7. **The Contestant App's drafts.** In the browser, a sign-out of a user who is no administrator that has ended the session removes them before the redirect: one that worked, and one that failed with no session left. One that failed with a session left removes none, and on the server nothing is removed. A load that finds no session removes none.
+ * 8. **The announcements to the other tabs.** In the browser, the sign-out of a user who is no administrator is made between a `start` and an `end` announcement.
  *
  * `$lib/auth`, `$lib/api/dataWriter`, the drafts' module and the announcements' module are replaced, so no Supabase client is built and no storage is read, and `$app/environment` answers the `browser` each case sets, the server's by default. `$lib/routes` is real, and the Paraglide stub answers a message's key.
  */
@@ -55,9 +56,13 @@ const ADMIN = { id: 'user-1', role: 'admin' };
 const SERVER_ADMIN = { id: 'user-1', role: 'admin', email: 'admin@example.test' };
 
 /** What the server load of the group answers. */
-type ServerData = { admitted: false } | { admitted: true; gate: 'setPassword' | null; user: unknown };
+type ServerData =
+  | { admitted: false }
+  | { admitted: false; home: 'contestant' }
+  | { admitted: true; gate: 'setPassword' | null; user: unknown };
 const ADMITTED: ServerData = { admitted: true, gate: null, user: SERVER_ADMIN };
 const NOT_ADMITTED: ServerData = { admitted: false };
+const CONTESTANT_ONLY: ServerData = { admitted: false, home: 'contestant' };
 
 /**
  * An event holding `fetch` and `parent`, whose `url`, `route` and `params` throw when read. A read of any of them would make SvelteKit rerun the load when that part of the address changes.
@@ -200,7 +205,7 @@ describe("the Admin App's protected load", () => {
     expect(getUserData).not.toHaveBeenCalled();
   });
 
-  it('on the server, logs a sign-out that fails and throws a 403 with the text of error.403, with no redirect, and does not ask whether a session is left', async () => {
+  it('on the server, logs a sign-out that fails and throws a 503 with the text of error.default, with no redirect, and does not ask whether a session is left', async () => {
     const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
     createDataWriter.mockReturnValue({ isSessionGone, logout });
     logout.mockRejectedValue(new Error('The logout endpoint answered 502.'));
@@ -208,7 +213,7 @@ describe("the Admin App's protected load", () => {
 
     const failed = await httpErrorFrom(makeEvent(SESSION, NOT_ADMITTED));
 
-    expect(failed).toEqual({ status: 403, body: { message: 'error.403' } });
+    expect(failed).toEqual({ status: 503, body: { message: 'error.default' } });
     expect(isSessionGone).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledTimes(1);
     expect(String(error.mock.calls[0][0])).toContain('The logout endpoint answered 502.');
@@ -234,7 +239,7 @@ describe("the Admin App's protected load", () => {
     expect(getUserData).not.toHaveBeenCalled();
   });
 
-  it('in the browser, logs a sign-out that fails and throws a 403 with the text of error.403, with no redirect, when a session is left', async () => {
+  it('in the browser, logs a sign-out that fails and throws a 503 with the text of error.default, with no redirect, when a session is left', async () => {
     environment.browser = true;
     const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
     createDataWriter.mockReturnValue({ isSessionGone, logout });
@@ -243,11 +248,30 @@ describe("the Admin App's protected load", () => {
 
     const failed = await httpErrorFrom(makeEvent(SESSION, NOT_ADMITTED));
 
-    expect(failed).toEqual({ status: 403, body: { message: 'error.403' } });
+    expect(failed).toEqual({ status: 503, body: { message: 'error.default' } });
     expect(isSessionGone).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledTimes(1);
     expect(getUserData).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['on the server', false],
+    ['in the browser', true]
+  ])(
+    '%s, redirects a user at home in the Contestant App alone to its home with a 303, and signs nobody out',
+    async (_where, inBrowser) => {
+      environment.browser = inBrowser;
+      createDataWriter.mockReturnValue({ isSessionGone, logout });
+
+      const redirected = await redirectFrom(makeEvent(SESSION, CONTESTANT_ONLY));
+
+      expect(redirected).toEqual({ status: 303, location: buildRoute({ route: 'ContestantAppHome', locale: 'en' }) });
+      expect(logout).not.toHaveBeenCalled();
+      expect(announceLogout).not.toHaveBeenCalled();
+      expect(discardContestantDrafts).not.toHaveBeenCalled();
+      expect(getUserData).not.toHaveBeenCalled();
+    }
+  );
 
   it('reaches its end with no read of url, route or params', async () => {
     environment.browser = true;
@@ -298,7 +322,7 @@ describe("the Admin App's protected load and the Contestant App's drafts", () =>
 
     const failed = await httpErrorFrom(makeEvent(SESSION, NOT_ADMITTED));
 
-    expect(failed.status).toBe(403);
+    expect(failed.status).toBe(503);
     expect(discardContestantDrafts).not.toHaveBeenCalled();
     expect(getUserData).not.toHaveBeenCalled();
   });
@@ -322,7 +346,7 @@ describe("the Admin App's protected load and the Contestant App's drafts", () =>
 
     const failed = await httpErrorFrom(makeEvent(SESSION, NOT_ADMITTED));
 
-    expect(failed.status).toBe(403);
+    expect(failed.status).toBe(503);
     expect(discardContestantDrafts).not.toHaveBeenCalled();
     expect(getUserData).not.toHaveBeenCalled();
   });

@@ -98,7 +98,7 @@ Signs a user in with an email address and a password, and leads a user who has n
     const passwordMissing = !formData.get('password');
     if (addressMissing || passwordMissing) {
       cancel();
-      if (addressMissing) emailError = t('contestantApp.login.emailRequired');
+      if (addressMissing) emailError = t('common.account.emailRequired');
       if (passwordMissing) passwordError = t('contestantApp.login.passwordRequired');
       if (addressMissing) emailField?.focus();
       else passwordSignIn?.focus();

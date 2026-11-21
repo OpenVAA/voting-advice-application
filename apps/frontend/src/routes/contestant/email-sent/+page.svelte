@@ -26,9 +26,9 @@ Shown after a link was asked for by email, whichever screen asked: the sign-in s
 
   /** The screen an address was typed on, by the origin of the request made there. An origin with no entry has no such screen. */
   const addressScreenHrefs = $derived({
-    signIn: getRoute.current('ContestantAppSignIn'),
+    signIn: getRoute.current('ContestantAppLoginEmail'),
     register: getRoute.current('ContestantAppRegister'),
-    registerEmail: getRoute.current('ContestantAppRegisterEmail'),
+    registerEmail: getRoute.current('ContestantAppRegisterCodeEmail'),
     forgotPassword: getRoute.current('ContestantAppForgotPassword')
   });
 

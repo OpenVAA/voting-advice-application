@@ -7,12 +7,13 @@
  * 2. **What differs by entity type.** An organization's card begins with that line, its details are given the tabs to leave out and the note is the organization's; a candidate's card has no such line, leaves no tab out and keeps the candidate's note.
  * 3. **The colour.** The entity's data reaches the data root with a colour that is adjusted for contrast, or with none.
  *
- * The fake context's members are reactive behind getters over one raw state box, as the real accessors are. A message is its key.
+ * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are. A message is its key.
  */
 
 import { DataRoot } from '@openvaa/data';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import type { AnyEntityVariant } from '@openvaa/data';
 import type { LocalizedEntityData, UserEntity } from '$lib/api/base/dataWriter.type';
 
@@ -25,7 +26,6 @@ type Box = {
 
 const EMPTY_BOX: Box = { selectedEntity: undefined, savedEntityData: undefined };
 
-let box = $state.raw<Box>(EMPTY_BOX);
 let dataRoot = new DataRoot();
 
 /** The store's reload of the entity's data. Each case decides what it answers. */
@@ -44,25 +44,18 @@ function EntityDetailsStandIn(anchor: Node, props: { entity: AnyEntityVariant; e
   anchor.parentNode?.insertBefore(element, anchor);
 }
 
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (route: string) => `/route/${route}` },
+const { context, box } = fakeContestantContext(EMPTY_BOX, (held) => ({
+  locale: 'en',
   userData: {
     get savedEntityData() {
-      return box.savedEntityData;
+      return held.current.savedEntityData;
     },
     reloadEntityData
   },
-  get locale() {
-    return 'en';
-  },
   get dataRoot() {
     return dataRoot;
-  },
-  get selectedEntity() {
-    return box.selectedEntity;
   }
-};
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 vi.mock('$lib/contexts/component', () => ({
@@ -131,7 +124,7 @@ let teardown: Array<() => void> = [];
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  box = EMPTY_BOX;
+  box.current = EMPTY_BOX;
   dataRoot = new DataRoot();
   reloadEntityData.mockReset();
   detailsProps.length = 0;
@@ -140,7 +133,7 @@ afterEach(() => {
 
 /** Mount the page for a state of the context. */
 function render(state: Box): HTMLElement {
-  box = state;
+  box.current = state;
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(Page, { target });

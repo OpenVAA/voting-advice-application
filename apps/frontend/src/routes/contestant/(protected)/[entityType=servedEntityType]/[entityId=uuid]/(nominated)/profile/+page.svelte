@@ -19,7 +19,7 @@ Which fields a profile has, and every text that differs between the two entity t
 <script lang="ts">
   import { getCustomData, isLocalizedString, log } from '@openvaa/app-shared';
   import { tick } from 'svelte';
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { NotEditableNote } from '$contestant/components/notEditableNote';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
@@ -33,7 +33,7 @@ Which fields a profile has, and every text that differs between the two entity t
   import { isHiddenIfMissingAnswers } from '$lib/contestant/utils/hideIfMissingAnswers';
   import { isNameEditable, isRequiredNameMissing, nameState, requiredNameLocale } from '$lib/contestant/utils/nameRule';
   import { opinionQuestionsStateOf } from '$lib/contestant/utils/opinionQuestionsState';
-  import { readAnswersLocked } from '$lib/contestant/utils/readAnswersLocked';
+  import { lockedAfterRefusedSave, rereadPageData } from '$lib/contestant/utils/rereadPageData';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import type { LocalizedAnswer } from '@openvaa/app-shared';
@@ -276,6 +276,9 @@ Which fields a profile has, and every text that differs between the two entity t
     userData.setAnswer(question.id, answer);
   }
 
+  /** The label the page's logged failures start with. */
+  const LOG_LABEL = '[Contestant app profile page]';
+
   /**
    * Save every edit of the page, and lead on to the next page when it was stored. A save that was not stored whole stays on the page and says why.
    */
@@ -292,7 +295,8 @@ Which fields a profile has, and every text that differs between the two entity t
       return undefined;
     });
     if (result?.type === 'success') {
-      if (result.listedPropertySaved) await rereadEntityList();
+      // The list of the user's entities is read again so that it shows what is stored: the menu's title, and whether the entity is confirmed. A failure of the re-read is not a failed save.
+      if (result.listedPropertySaved) await rereadPageData(LOG_LABEL);
       status = 'success';
       // The target is asked only now, of the state the save and the list's re-read left.
       goto(getRoute.current(profileSaveTarget(contestantCtx.taskState).route));
@@ -301,17 +305,11 @@ Which fields a profile has, and every text that differs between the two entity t
     if (result?.type === 'nameRefused') {
       nameRefusedFor = contestantCtx.selectedEntity?.id;
       saveMessage = { outcome: 'name-refused', text: t(`contestantApp.error.nameLocked.${textType}`) };
-      await rereadEntityList();
+      await rereadPageData(LOG_LABEL);
       status = 'idle';
     } else {
       // The database refuses the write without naming the lock where a row it hides answers with no row, so the lock is asked of the stored settings alone, and the page's data is read again only when answers are locked.
-      if ((await readAnswersLocked({ locale: contestantCtx.locale })) === true) {
-        await invalidateAll().catch((e) => {
-          log.error(`[Contestant app profile page] Error reading the page data again: ${e?.message}`);
-        });
-        // What the re-read brought has reached the settings after one tick.
-        await tick();
-      }
+      await lockedAfterRefusedSave({ refusedByLock: false, locale: contestantCtx.locale, logLabel: LOG_LABEL });
       if (contestantCtx.answersLocked) {
         // The note says why the save was not stored, so no failure is said.
         status = 'idle';
@@ -323,15 +321,6 @@ Which fields a profile has, and every text that differs between the two entity t
     // The button was disabled while the save ran, which can cost it its focus. While answers are locked the Return button stands in its place.
     await tick();
     actions?.querySelector<HTMLElement>('[data-testid="profile-submit"], [data-testid="profile-return"]')?.focus();
-  }
-
-  /**
-   * Read the page's loads again, so that the list of the user's entities shows what is stored: the menu's title, and whether the entity is confirmed. It follows a save that has been stored and is never part of it, so a failure here is not a failed save. It is logged, and handled where the failure of a load is.
-   */
-  async function rereadEntityList(): Promise<void> {
-    await invalidateAll().catch((e) => {
-      log.error(`[Contestant app profile page] Error reading the page data again: ${e?.message}`);
-    });
   }
 
   /**

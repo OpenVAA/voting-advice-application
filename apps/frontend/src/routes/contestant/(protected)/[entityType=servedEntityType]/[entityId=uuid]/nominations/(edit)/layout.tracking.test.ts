@@ -10,16 +10,15 @@
  * - `parent` resolves the parent loads' data for an ungated user, with the facts of the entity's nominations.
  *
  * Correctness invariants, each one a distinct way this file could hand back a false pass:
- * 1. Each instrument must actually record. A trap that never pushed would make every assertion below `[] === []`. The control cases at the foot of this file are the answer, one per instrument.
- * 2. The `untrack` counter must actually suppress, or a load reading the URL untracked would be reported. The `url` control asserts that the read it makes INSIDE `untrack` is absent from the recorded set.
- * 3. The subject must be the REAL load, run to its end on both of its paths: the positive cases import `load` from `./+layout` and assert the empty object it resolves for an entity the editor is served to and the redirect it throws for every other. The controls deliberately do not import it.
+ * 1. Each instrument must actually record. A trap that never pushed would make every assertion below `[] === []`. The controls in `loadTracking.testUtils.test.ts` are the answer, one per instrument.
+ * 2. The `untrack` counter must actually suppress, or a load reading the URL untracked would be reported. The `url` control there asserts that the read it makes INSIDE `untrack` is absent from the recorded set.
+ * 3. The subject must be the REAL load, run to its end on both of its paths: the positive cases import `load` from `./+layout` and assert the empty object it resolves for an entity the editor is served to and the redirect it throws for every other.
  */
 
 import { describe, expect, it } from 'vitest';
 import { load } from './+layout';
-import { forbiddenRoute, recordingParams, recordingUrl } from '../../../../loadTracking.testUtils';
-import type { Untrack } from '../../../../loadTracking.testUtils';
-import type { NominationFacts } from '../nominationFacts';
+import { recordingEvent } from '../../../../loadTracking.testUtils';
+import type { NominationScope } from '../nominationScope';
 
 const CANDIDATE_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -43,15 +42,16 @@ const STEP_ADDRESSES: Array<[string]> = [
 ];
 
 /** The facts of an entity the editor is served to: editable, with an election to stand in and no nomination yet. */
-const SERVED: NominationFacts = {
+const SERVED: NominationScope = {
   editable: true,
   admissibleElectionIds: ['election-1', 'election-2'],
   writableNominationIds: [],
+  severalConstituencies: false,
   canAddAnother: true
 };
 
 /** The facts of every entity the editor is served to, by what it holds. */
-const SERVED_ENTITIES: Array<{ title: string; facts: NominationFacts }> = [
+const SERVED_ENTITIES: Array<{ title: string; facts: NominationScope }> = [
   { title: 'no nomination', facts: SERVED },
   {
     title: 'a writable nomination',
@@ -60,7 +60,7 @@ const SERVED_ENTITIES: Array<{ title: string; facts: NominationFacts }> = [
 ];
 
 /** The facts of every entity the editor is not served to, by what turns it away. */
-const TURNED_AWAY: Array<{ title: string; facts: NominationFacts }> = [
+const TURNED_AWAY: Array<{ title: string; facts: NominationScope }> = [
   { title: 'a lock is on', facts: { ...SERVED, editable: false } },
   { title: "no election admits the entity's type", facts: { ...SERVED, admissibleElectionIds: [] } },
   {
@@ -69,37 +69,9 @@ const TURNED_AWAY: Array<{ title: string; facts: NominationFacts }> = [
   }
 ];
 
-/**
- * A request event below the parent loads, with every instrument in place.
- * @param href - The URL of the request.
- * @param parentData - What the parent loads resolved.
- * @returns The event and what its instruments recorded.
- */
-function recordingEvent(href: string, parentData: Record<string, unknown>) {
-  const { url, trackedReads, untrack } = recordingUrl(href);
-  const { params, paramReads } = recordingParams(ENTITY_PARAMS);
-  const eventReads: Array<string> = [];
-  const event = new Proxy(
-    {
-      params,
-      parent: async () => parentData,
-      route: forbiddenRoute(),
-      untrack,
-      url
-    },
-    {
-      get(target, prop) {
-        if (typeof prop === 'string') eventReads.push(prop);
-        return Reflect.get(target, prop, target);
-      }
-    }
-  );
-  return { event: event as unknown as Parameters<typeof load>[0], eventReads, paramReads, trackedReads };
-}
-
 /** The parent loads' data of an ungated user whose entity has the facts given. */
-function ungated(nominationFacts: NominationFacts | undefined): Record<string, unknown> {
-  return { gate: null, nominationFacts };
+function ungated(nominationScope: NominationScope | undefined): Record<string, unknown> {
+  return { gate: null, nominationScope };
 }
 
 describe('contestant/(protected)/[entityType]/[entityId]/nominations/(edit)/+layout.ts load dependency tracking', () => {
@@ -107,10 +79,11 @@ describe('contestant/(protected)/[entityType]/[entityId]/nominations/(edit)/+lay
     it.each(STEP_ADDRESSES)(
       'serves the editor on no URL property tracked, no route and no param but the two entity params (%s)',
       async (path) => {
-        const { event, eventReads, paramReads, trackedReads } = recordingEvent(
-          `http://localhost${path}`,
-          ungated(facts)
-        );
+        const { event, eventReads, paramReads, trackedReads } = recordingEvent<Parameters<typeof load>[0]>({
+          href: `http://localhost${path}`,
+          params: ENTITY_PARAMS,
+          parent: async () => ungated(facts)
+        });
 
         const result = await load(event);
 
@@ -134,10 +107,11 @@ describe('contestant/(protected)/[entityType]/[entityId]/nominations/(edit)/+lay
     it.each(STEP_ADDRESSES)(
       'redirects to the nominations view on the two entity params and no other, no URL property tracked and no route (%s)',
       async (path) => {
-        const { event, eventReads, paramReads, trackedReads } = recordingEvent(
-          `http://localhost${path}`,
-          ungated(facts)
-        );
+        const { event, eventReads, paramReads, trackedReads } = recordingEvent<Parameters<typeof load>[0]>({
+          href: `http://localhost${path}`,
+          params: ENTITY_PARAMS,
+          parent: async () => ungated(facts)
+        });
 
         // The load ran to its end on the path that builds a target, so every stage had the chance to read. The target carries nothing of the address asked for.
         await expect(load(event)).rejects.toMatchObject({ status: 307, location: NOMINATIONS_VIEW });
@@ -156,77 +130,22 @@ describe('contestant/(protected)/[entityType]/[entityId]/nominations/(edit)/+lay
   });
 
   it.each([
-    { title: 'a user-level gate is pending', parentData: { gate: 'termsOfUse', nominationFacts: undefined } },
+    { title: 'a user-level gate is pending', parentData: { gate: 'termsOfUse', nominationScope: undefined } },
     {
       title: 'a user-level gate is pending, whatever the facts say',
-      parentData: { gate: 'termsOfUse', nominationFacts: { ...SERVED, editable: false } }
+      parentData: { gate: 'termsOfUse', nominationScope: { ...SERVED, editable: false } }
     },
     { title: "the parent's data holds no facts", parentData: ungated(undefined) }
   ])('decides nothing and redirects nowhere while $title', async ({ parentData }) => {
-    const { event, eventReads, paramReads, trackedReads } = recordingEvent(
-      `http://localhost${NOMINATIONS_VIEW}/details?${SELECTION}`,
-      parentData
-    );
+    const { event, eventReads, paramReads, trackedReads } = recordingEvent<Parameters<typeof load>[0]>({
+      href: `http://localhost${NOMINATIONS_VIEW}/details?${SELECTION}`,
+      params: ENTITY_PARAMS,
+      parent: async () => parentData
+    });
 
     expect(await load(event)).toEqual({});
     expect(trackedReads).toEqual([]);
     expect(paramReads, 'no target is built, so no param is read').toEqual([]);
     expect([...new Set(eventReads)].sort()).toEqual(['params', 'parent']);
-  });
-
-  /**
-   * Negative controls: the assertions above are only meaningful if each instrument can catch what it guards against.
-   *
-   * Each subject is a LOCAL load-shaped function. None imports the real `load`: that would make the control a test of production code rather than of the instrument.
-   *
-   * NAMED LIMIT: these prove the INSTRUMENTS work. They do not prove the real load was ever wrong.
-   */
-  it('the recording url Proxy catches a tracked url.searchParams read (negative control)', () => {
-    /** The elections of a tracked address, kept local to this control. */
-    function electionsFromAddress({ url, untrack }: { url: URL; untrack: Untrack }): Array<string> {
-      // An untracked read, exercised so the counter's suppression is covered as well as its recording.
-      untrack(() => url.pathname);
-      // Tracked.
-      return url.searchParams.getAll('nominationElectionId');
-    }
-
-    const { url, trackedReads, untrack } = recordingUrl(`http://localhost${NOMINATIONS_VIEW}/details?${SELECTION}`);
-
-    expect(electionsFromAddress({ url, untrack })).toEqual(['election-1', 'election-2']);
-    expect(
-      trackedReads,
-      'the Proxy failed to record a tracked url.searchParams read, so the assertions above prove nothing'
-    ).toEqual(['searchParams']);
-    expect(
-      trackedReads,
-      'the untrack counter failed to suppress a read inside it, so a legitimate untracked read would be reported'
-    ).not.toEqual(expect.arrayContaining(['pathname']));
-  });
-
-  it('the recording params Proxy records a param read (negative control)', () => {
-    /** A load-shaped function that reads a param beside the two that name the entity, kept local to this control. */
-    function stepFromParams({ params }: { params: Record<string, string> }): string {
-      return `${params.entityId}/${params.step}`;
-    }
-
-    const { params, paramReads } = recordingParams({ ...ENTITY_PARAMS, step: 'details' });
-
-    expect(stepFromParams({ params })).toBe(`${CANDIDATE_ID}/details`);
-    expect(paramReads, 'the Proxy failed to record a param read, so the assertions above prove nothing').toEqual([
-      'entityId',
-      'step'
-    ]);
-  });
-
-  it('the route Proxy throws on a read, and the event Proxy records which members were taken (negative control)', () => {
-    /** A load-shaped function that takes the route from its event, kept local to this control. */
-    function routeIdOf({ route }: { route: { id: string } }): string {
-      return route.id;
-    }
-
-    const { event, eventReads } = recordingEvent(`http://localhost${NOMINATIONS_VIEW}/details`, ungated(SERVED));
-
-    expect(() => routeIdOf(event as unknown as { route: { id: string } })).toThrow(/route\.id/);
-    expect(eventReads, 'the event Proxy failed to record which member was taken').toEqual(['route']);
   });
 });

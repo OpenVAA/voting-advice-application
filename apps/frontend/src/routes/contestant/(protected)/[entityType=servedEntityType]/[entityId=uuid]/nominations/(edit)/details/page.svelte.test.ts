@@ -11,7 +11,7 @@
  * 6. **A save that is not stored.** Which of its four messages the page shows, or the note that nominations can no longer be changed because answers are locked, that the message is the page's own, what becomes of the cards and of what was typed, where focus is, and that the page navigates nowhere. And a re-read that led away from the page: nothing further when it led out of the editor, the nominations view when a stored save's re-read led to another step.
  * 7. **Leaving.** The navigation guard asks while the draft differs from what is stored, and not for an untouched set, after Cancel or while a save is under way.
  *
- * The fake context's members are reactive behind getters over one raw state box, as the real accessors are, its data root is a real `DataRoot`, and its two nomination functions are spies. The page state is the suite's stub, whose route a case sets, and the navigation guards the page registers are kept so that a case can run them as a navigation does. The page's data is what the step's real load answers for the same elections, nominations and address, with the facts of the nominations beside it. No entity is listed as a parent option, so every option of a parent group is a plain row. Messages are their keys, followed by their payload when they have one, and a route is the options it was asked for.
+ * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are, its data root is a real `DataRoot`, and its two nomination functions are spies. The page state is the suite's stub, whose route a case sets, and the navigation guards the page registers are kept so that a case can run them as a navigation does. The page's data is what the step's real load answers for the same elections, nominations and address, with the facts of the nominations beside it. No entity is listed as a parent option, so every option of a parent group is a plain row. Messages are their keys, followed by their payload when they have one, and a route is the options it was asked for.
  */
 
 import { dynamicSettings, log, staticSettings } from '@openvaa/app-shared';
@@ -19,6 +19,7 @@ import { DataRoot, NOMINATION_SHAPE } from '@openvaa/data';
 import { flushSync, mount, tick, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { ROUTE } from '$lib/routes';
 import { load } from './+page';
 import type { ElectionData } from '@openvaa/data';
@@ -153,8 +154,6 @@ const EMPTY_BOX: Box = {
   taskState: NOT_KNOWN
 };
 
-let box = $state.raw<Box>(EMPTY_BOX);
-
 const goto = vi.fn<(address: string) => Promise<void>>();
 const invalidateAll = vi.fn<() => Promise<void>>();
 const setEntityNominations =
@@ -169,32 +168,14 @@ const getNominationParentOptions = vi.fn<(contests: ReadonlyArray<NominationCont
 /** The guards the page registered for a navigation away from it. */
 const guards: Array<(navigation: { cancel: () => void }) => void> = [];
 
-const context = {
+const { context, box } = fakeContestantContext(EMPTY_BOX, (held) => ({
   t: (key: string, payload?: Record<string, unknown>) => (payload ? `${key} ${JSON.stringify(payload)}` : key),
   getRoute: { current: (options: RouteOptions) => JSON.stringify(options) },
-  setDataRoot: (updater: (dataRoot: DataRoot) => void) => updater(box.dataRoot),
+  setDataRoot: (updater: (dataRoot: DataRoot) => void) => updater(held.current.dataRoot),
   setEntityNominations: (nominations: ReadonlyArray<DesiredNomination>, readFrom: ReadonlyArray<EntityNomination>) =>
     setEntityNominations(nominations, readFrom),
-  getNominationParentOptions: (contests: ReadonlyArray<NominationContest>) => getNominationParentOptions(contests),
-  get appSettings() {
-    return box.appSettings;
-  },
-  get dataRoot() {
-    return box.dataRoot;
-  },
-  get locale() {
-    return box.locale;
-  },
-  get nominations() {
-    return box.nominations;
-  },
-  get selectedEntity() {
-    return box.selectedEntity;
-  },
-  get taskState() {
-    return box.taskState;
-  }
-};
+  getNominationParentOptions: (contests: ReadonlyArray<NominationContest>) => getNominationParentOptions(contests)
+}));
 
 vi.mock('$app/navigation', () => ({
   goto: (address: string) => goto(address),
@@ -259,6 +240,7 @@ const PARENT = '[data-testid="nomination-editor-parent"]';
 const OPTION = '[data-testid="entity-selector-option"]';
 const OPTION_INPUT = '[data-testid="entity-selector-option-input"]';
 const OTHER_NAME = '[data-testid="nomination-editor-other-input"]';
+const OTHER_ERROR = '[data-testid="nomination-editor-other-error"]';
 const REMOVE = '[data-testid="nomination-editor-remove"]';
 const KEEP = '[data-testid="nomination-editor-keep"]';
 const MESSAGE = '[data-testid="contestant-nomination-save-message"]';
@@ -300,7 +282,7 @@ afterEach(() => {
   teardown = [];
   guards.length = 0;
   page.route.id = null;
-  box = EMPTY_BOX;
+  box.current = EMPTY_BOX;
   vi.restoreAllMocks();
   vi.resetAllMocks();
 });
@@ -318,10 +300,11 @@ type World = {
 /** The data the page is given for a world: what the step's load answers for the address, and the facts of the entity's nominations. */
 async function pageDataOf(world: World): Promise<Record<string, unknown>> {
   const nominations = [...(world.notWritable ?? []), ...(world.nominations ?? [])];
-  const nominationFacts = {
+  const nominationScope = {
     editable: true,
     admissibleElectionIds: ELECTION_DATA.map((election) => election.id),
-    writableNominationIds: (world.nominations ?? []).map((row) => row.id)
+    writableNominationIds: (world.nominations ?? []).map((row) => row.id),
+    severalConstituencies: (world.entity ?? PARTY).type === 'organization'
   };
   const search = new URLSearchParams();
   for (const id of world.elections) search.append('nominationElectionId', id);
@@ -330,7 +313,7 @@ async function pageDataOf(world: World): Promise<Record<string, unknown>> {
     params: { entityType: (world.entity ?? PARTY).type, entityId: ENTITY_ID },
     parent: async () => ({
       gate: null,
-      nominationFacts,
+      nominationScope,
       contestantUserData: { nominations },
       appSettingsData: {},
       electionData: ELECTION_DATA,
@@ -338,7 +321,7 @@ async function pageDataOf(world: World): Promise<Record<string, unknown>> {
     }),
     url: new URL(`http://localhost/contestant/organization/${ENTITY_ID}/nominations/details?${search}`)
   };
-  return { ...(await load(event as never)), nominationFacts };
+  return { ...(await load(event as never)), nominationScope };
 }
 
 /** Wait until the page says it is in the state given. */
@@ -366,7 +349,7 @@ async function render(world: World): Promise<HTMLElement> {
 /** Mount the page in a world, wait until its cards are shown, and hand over the function that takes the page away, as a navigation to another page does. */
 async function renderRemovable(world: World): Promise<{ root: HTMLElement; takeAway: () => void }> {
   const data = await pageDataOf(world);
-  box = {
+  box.current = {
     ...EMPTY_BOX,
     selectedEntity: world.entity ?? PARTY,
     dataRoot: dataRootOf(),
@@ -408,6 +391,13 @@ function textOf(element: Element): string {
   return (element.textContent ?? '').replace(/\s+/g, ' ').trim();
 }
 
+/** The text of a row's value without the line under it: a moved card's constituency names the previous one in its own element. */
+function valueTextOf(element: Element): string {
+  const copy = element.cloneNode(true) as Element;
+  for (const line of copy.querySelectorAll(PREVIOUS)) line.remove();
+  return textOf(copy);
+}
+
 /** The cards, in the page's order. */
 function cardsOf(root: ParentNode): Array<HTMLElement> {
   return [...root.querySelectorAll<HTMLElement>(CARD)];
@@ -417,7 +407,7 @@ function cardsOf(root: ParentNode): Array<HTMLElement> {
 function summaryOf(root: ParentNode): Array<[string, string, string | null]> {
   return cardsOf(root).map((card) => [
     textOf(one(card, ELECTION)),
-    textOf(one(card, CONSTITUENCY)),
+    valueTextOf(one(card, CONSTITUENCY)),
     card.getAttribute('data-card-state')
   ]);
 }
@@ -480,8 +470,9 @@ describe('which cards there are', () => {
     expect(setEntityNominations).not.toHaveBeenCalled();
   });
 
-  it('shows one moved card for a nomination whose election is chosen with another constituency, naming the previous one', async () => {
+  it('shows one moved card for a candidate whose election is chosen with another constituency, naming the previous one', async () => {
     const root = await render({
+      entity: CANDIDATE,
       nominations: [nomination('nomination-regional', 'regional', 'region-1', { electionSymbol: '7' })],
       elections: ['regional'],
       constituencies: ['region-2']
@@ -491,27 +482,57 @@ describe('which cards there are', () => {
     const card = one(root, CARD);
     expect(card.getAttribute('data-moved')).toBe('true');
     expect(textOf(one(card, PREVIOUS))).toBe(`${KEYS.previousConstituency} {"constituency":"Region 1"}`);
+    expect(one(card, CONSTITUENCY).contains(one(card, PREVIOUS))).toBe(true);
     expect(one<HTMLInputElement>(card, SYMBOL).value).toBe('7');
+  });
+
+  it('moves no card of an organization: a nomination whose constituency is not chosen is about to be removed, beside a new card for the chosen one', async () => {
+    const root = await render({
+      nominations: [nomination('nomination-regional', 'regional', 'region-1', { electionSymbol: '7' })],
+      elections: ['regional'],
+      constituencies: ['region-2']
+    });
+
+    expect(summaryOf(root)).toEqual([
+      ['Regional', 'Region 1', 'removed'],
+      ['Regional', 'Region 2', 'new']
+    ]);
+    expect(cardsOf(root).map((card) => card.getAttribute('data-moved'))).toEqual(['false', 'false']);
 
     await press(root, SUBMIT);
     expect(setEntityNominations).toHaveBeenCalledTimes(1);
     expect(setEntityNominations.mock.calls[0][0]).toEqual([
-      {
-        id: 'nomination-regional',
-        electionId: 'regional',
-        constituencyId: 'region-2',
-        electionSymbol: '7',
-        parent: { kind: 'none' }
-      }
+      { electionId: 'regional', constituencyId: 'region-2', electionSymbol: '', parent: { kind: 'none' } }
     ]);
   });
 
-  it('shows a card for each of several nominations in one election, each as stored, and reads the parent options for every card', async () => {
+  it('gives an organization a card for each chosen constituency of one election, keeping those it is nominated in', async () => {
+    const root = await render({
+      nominations: [REGIONAL],
+      elections: ['regional'],
+      constituencies: ['region-1', 'region-2']
+    });
+
+    expect(summaryOf(root)).toEqual([
+      ['Regional', 'Region 1', 'kept'],
+      ['Regional', 'Region 2', 'new']
+    ]);
+    expect(getNominationParentOptions.mock.calls[0][0]).toEqual([
+      { electionId: 'regional', constituencyId: 'region-1' },
+      { electionId: 'regional', constituencyId: 'region-2' }
+    ]);
+  });
+
+  it('shows a candidate a card for each of several nominations in one election, each as stored, and reads the parent options for every card', async () => {
     const second = nomination('nomination-regional-2', 'regional', 'region-2', {
       confirmed: false,
       electionSymbol: '9'
     });
-    const root = await render({ nominations: [REGIONAL, second, NATIONAL], elections: ['regional'] });
+    const root = await render({
+      entity: CANDIDATE,
+      nominations: [REGIONAL, second, NATIONAL],
+      elections: ['regional']
+    });
 
     expect(summaryOf(root)).toEqual([
       ['Regional', 'Region 1', 'kept'],
@@ -545,7 +566,7 @@ describe('which cards there are', () => {
 
   it('builds no card and reads no option while the nominations of the entity are not known', async () => {
     const data = await pageDataOf({ nominations: [REGIONAL], elections: ['regional'], constituencies: ['region-1'] });
-    box = { ...EMPTY_BOX, selectedEntity: PARTY, dataRoot: dataRootOf(), nominations: undefined };
+    box.current = { ...EMPTY_BOX, selectedEntity: PARTY, dataRoot: dataRootOf(), nominations: undefined };
     const target = document.createElement('div');
     document.body.appendChild(target);
     const component = mount(Page, { target, props: { data: data as never } });
@@ -559,7 +580,7 @@ describe('which cards there are', () => {
     expect(count(target, CARD)).toBe(0);
     expect(getNominationParentOptions).not.toHaveBeenCalled();
 
-    box = { ...box, nominations: [REGIONAL] };
+    box.set({ nominations: [REGIONAL] });
     await settled(target);
     expect(summaryOf(target)).toEqual([['Regional', 'Region 1', 'kept']]);
   });
@@ -568,7 +589,7 @@ describe('which cards there are', () => {
     const root = await render({ nominations: [NATIONAL], elections: ['national'] });
     commit(one<HTMLInputElement>(root, SYMBOL), '99');
 
-    box = { ...box, nominations: [{ ...NATIONAL }] };
+    box.set({ nominations: [{ ...NATIONAL }] });
     await afterPress();
 
     expect(one<HTMLInputElement>(root, SYMBOL).value).toBe('99');
@@ -581,7 +602,7 @@ describe('a name a card cannot be shown with', () => {
     const logged = vi.spyOn(log, 'error').mockImplementation(() => undefined);
     const stray = nomination('nomination-stray', 'national', 'constituency-not-in-the-data');
     const data = await pageDataOf({ nominations: [stray], elections: ['national'] });
-    box = {
+    box.current = {
       ...EMPTY_BOX,
       selectedEntity: PARTY,
       dataRoot: dataRootOf(),
@@ -821,7 +842,7 @@ describe('the main button', () => {
     const root = await render(STORED);
     commit(one<HTMLInputElement>(cardsOf(root)[1], SYMBOL), '22');
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, taskState };
+      box.set({ taskState });
     });
 
     await press(root, SUBMIT);
@@ -887,6 +908,35 @@ describe('the main button', () => {
     expect(setEntityNominations).toHaveBeenCalledTimes(1);
     expect(setEntityNominations.mock.calls[0][0]).toEqual([]);
   });
+
+  it('stays on the page for a typed parent with no name, with the error at the name field, which an edit clears', async () => {
+    const root = await render({ nominations: [NATIONAL], elections: ['national'] });
+    const card = one(root, CARD);
+    radioOf(card, 'other').click();
+    flushSync();
+
+    await press(root, SUBMIT);
+
+    const field = one<HTMLInputElement>(card, OTHER_NAME);
+    const error = one(card, OTHER_ERROR);
+    expect(textOf(error)).toContain('contestantApp.nominations.error.otherRequired.organization');
+    expect(error.getAttribute('role')).toBe('alert');
+    expect(field.getAttribute('aria-invalid')).toBe('true');
+    expect(field.getAttribute('aria-describedby')?.split(' ')).toContain(error.id);
+    expect(document.activeElement).toBe(field);
+    expect(setEntityNominations).not.toHaveBeenCalled();
+
+    field.value = 'T';
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    flushSync();
+
+    expect(count(card, OTHER_ERROR)).toBe(0);
+    expect(field.hasAttribute('aria-invalid')).toBe(false);
+
+    await press(root, SUBMIT);
+
+    expect(count(card, OTHER_ERROR)).toBe(1);
+  });
 });
 
 /** The main button's label and action. */
@@ -906,7 +956,7 @@ describe('what the main button says', () => {
     const root = await render(STORED);
     expect(buttonOf(root)).toEqual({ label: 'common.continue', action: 'continue' });
 
-    box = { ...box, taskState: NOTHING_LEFT };
+    box.set({ taskState: NOTHING_LEFT });
     flushSync();
     expect(buttonOf(root)).toEqual({ label: 'common.return', action: 'return' });
   });
@@ -917,7 +967,7 @@ describe('what the main button says', () => {
     commit(symbol, '22');
     expect(buttonOf(root)).toEqual({ label: 'common.saveAndContinue', action: 'continue' });
 
-    box = { ...box, taskState: NOTHING_LEFT };
+    box.set({ taskState: NOTHING_LEFT });
     flushSync();
     expect(buttonOf(root)).toEqual({ label: 'common.saveAndReturn', action: 'return' });
 
@@ -966,7 +1016,7 @@ describe('a save that is not stored', () => {
   /** The re-read that follows a save: the context holds the nominations given, as new objects. */
   function rereadAs(nominations: Array<EntityNomination>): void {
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, nominations: nominations.map((row) => ({ ...row })) };
+      box.set({ nominations: nominations.map((row) => ({ ...row })) });
     });
   }
 

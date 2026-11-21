@@ -12,34 +12,36 @@
  * 7. **Log Out calls the context's `logout`** and saves nothing.
  * 8. **An ungated load renders the page and no gate.**
  *
- * The fake context's `user` is the user of the load data the layout was given, which is how the real context derives it. The assertions are on the DOM rather than on component state: what matters is what the user is shown.
+ * The fake context is the shared `fakeContestantContext`; its `user` is the user of the load data the layout was given, which is how the real context derives it. The assertions are on the DOM rather than on component state: what matters is what the user is shown.
  */
 
 import { log } from '@openvaa/app-shared';
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 
-const { clearEntryFlow, context, initUserData, invalidateAll, logout, setDataRoot, setPassword } = vi.hoisted(() => {
-  const mocks = {
-    clearEntryFlow: vi.fn(),
-    initUserData: vi.fn(),
-    invalidateAll: vi.fn(),
-    logout: vi.fn(),
-    setDataRoot: vi.fn(),
-    setPassword: vi.fn()
-  };
-  /** The load data the layout was last given, whose user the context hands on. */
-  const held: { data: { user?: unknown } } = { data: {} };
-  const context = {
-    held,
-    t: (key: string) => key,
-    setDataRoot: mocks.setDataRoot,
-    logout: mocks.logout,
-    setPassword: mocks.setPassword,
-    clearEntryFlow: mocks.clearEntryFlow,
+const { clearEntryFlow, initUserData, invalidateAll, logout, setDataRoot, setPassword } = vi.hoisted(() => ({
+  clearEntryFlow: vi.fn(),
+  initUserData: vi.fn(),
+  invalidateAll: vi.fn(),
+  logout: vi.fn(),
+  setDataRoot: vi.fn(),
+  setPassword: vi.fn()
+}));
+
+const { context, box } = fakeContestantContext(
+  {
+    /** The load data the layout was last given, whose user the context hands on. */
+    data: {} as { user?: unknown },
+    appSettings: { analytics: { trackEvents: false } }
+  },
+  (held) => ({
+    setDataRoot,
+    logout,
+    setPassword,
+    clearEntryFlow,
     acceptTermsOfUse: async () => ({ type: 'success' }),
-    userData: { init: mocks.initUserData },
-    appSettings: { analytics: { trackEvents: false } },
+    userData: { init: initUserData },
     // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
     analyticsPolicy: {
       current: {
@@ -50,11 +52,10 @@ const { clearEntryFlow, context, initUserData, invalidateAll, logout, setDataRoo
       }
     },
     get user() {
-      return held.data.user;
+      return held.current.data.user;
     }
-  };
-  return { ...mocks, context };
-});
+  })
+);
 
 vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({ getContestantContext: () => context }));
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
@@ -140,7 +141,7 @@ beforeEach(() => {
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  context.held.data = {};
+  box.set({ data: {} });
   vi.restoreAllMocks();
   vi.resetAllMocks();
 });
@@ -149,7 +150,7 @@ afterEach(() => {
 const page = createRawSnippet(() => ({ render: () => '<div data-testid="page"></div>' }));
 
 function render(data: { gate: string | null; user?: unknown; arrival?: unknown }): HTMLElement {
-  context.held.data = data;
+  box.set({ data });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(ProtectedLayout, {
@@ -230,9 +231,9 @@ describe('contestant protected layout — a load gated on the password', () => {
     const target = render(gatedData());
 
     const heading = one<HTMLHeadingElement>(target, 'h1');
-    expect(heading.textContent?.trim()).toBe('contestantApp.setPassword.title');
+    expect(heading.textContent?.trim()).toBe('common.account.setPassword.title');
     expect(heading.getAttribute('tabindex')).toBe('-1');
-    expect(one(target, GATE).textContent).toContain('contestantApp.setPassword.why');
+    expect(one(target, GATE).textContent).toContain('common.account.setPassword.why');
     expect(target.querySelector('figure')).toBeNull();
   });
 
@@ -243,7 +244,7 @@ describe('contestant protected layout — a load gated on the password', () => {
     expect(shown.tagName).toBe('DD');
     expect(shown.textContent?.trim()).toBe(ADDRESS);
     expect(shown.getAttribute('translate')).toBe('no');
-    expect(shown.previousElementSibling?.textContent?.trim()).toBe('contestantApp.nothingToEdit.signedInAs');
+    expect(shown.previousElementSibling?.textContent?.trim()).toBe('common.account.signedInAs');
     const username = one<HTMLInputElement>(formOf(target), 'input[name="username"]');
     expect(username.value).toBe(ADDRESS);
     expect(username.readOnly).toBe(true);
@@ -285,7 +286,7 @@ describe('contestant protected layout — the set-password view’s main button'
     expect(form.contains(submit), 'the button stands outside the form it names').toBe(false);
     expect(form.contains(one(target, PASSWORD))).toBe(true);
     expect(form.contains(one(target, CONFIRMATION))).toBe(true);
-    expect(submit.textContent).toContain('contestantApp.setPassword.setPassword');
+    expect(submit.textContent).toContain('common.account.setPassword.setPassword');
     expect(submit.disabled).toBe(false);
   });
 
@@ -299,7 +300,7 @@ describe('contestant protected layout — the set-password view’s main button'
     expect(prevented).toBe(true);
     expect(setPassword).not.toHaveBeenCalled();
     expect(invalidateAll).not.toHaveBeenCalled();
-    expect(one(target, PASSWORD_ERROR).textContent).toContain('contestantApp.setPassword.passwordNotValid');
+    expect(one(target, PASSWORD_ERROR).textContent).toContain('common.account.setPassword.passwordNotValid');
     expect(one(target, GATE).getAttribute('data-set-password-state')).toBe('idle');
     expect(target.querySelector(SAVE_ERROR)).toBeNull();
   });
@@ -406,7 +407,7 @@ describe('contestant protected layout — a password that could not be saved', (
     expect(one(target, GATE).getAttribute('data-set-password-state')).toBe('failed');
     const alert = one<HTMLElement>(target, SAVE_ERROR);
     expect(alert.getAttribute('role')).toBe('alert');
-    expect(alert.textContent).toContain('contestantApp.setPassword.error');
+    expect(alert.textContent).toContain('common.account.setPassword.error');
     expect(one<HTMLInputElement>(target, PASSWORD).value).toBe(VALID_PASSWORD);
     expect(one<HTMLInputElement>(target, CONFIRMATION).value).toBe(VALID_PASSWORD);
     expect(one<HTMLButtonElement>(target, SUBMIT).disabled).toBe(false);

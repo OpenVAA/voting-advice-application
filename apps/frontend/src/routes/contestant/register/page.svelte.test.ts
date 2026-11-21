@@ -1,7 +1,7 @@
 /**
  * The registration page, mounted for real with the real mode selector and fields against a fake contestant context.
  *
- * The fake context's `appSettings` is reactive behind a getter, as the real accessor is, and each case sets the registration matrix it reads. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `appSettings` is reactive behind a getter, as the real accessor is, and each case sets the registration matrix it reads. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -23,6 +23,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RegistrationMode } from '@openvaa/app-shared';
 import type { RouteOptions } from '$lib/routes';
@@ -102,22 +103,16 @@ type FakeSettings = {
   access?: { contestantEditing: 'open' | 'nominationsLocked' | 'locked' };
 };
 
-/** The settings the fake context holds. Replaced whole on every write, never changed in place. */
-let heldSettings = $state.raw<FakeSettings>(settingsFor([]));
-
 /** The page's data, as its server load answers it. */
 let heldData: { registered: boolean } = { registered: false };
 
-const context = {
-  t: (key: string) => key,
+/** The fake context. Its settings are replaced whole on every write, never changed in place. */
+const { context, box } = fakeContestantContext({ appSettings: settingsFor([]) }, () => ({
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
   checkInvitationCode,
   holdEntryCode,
-  sendEntryLink,
-  get appSettings() {
-    return heldSettings;
-  }
-};
+  sendEntryLink
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -178,10 +173,10 @@ const ADDRESS = 'someone@example.test';
 const TYPED_CODE = 'abcd-efgh-jkmn';
 
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin' }, { params: {} });
-const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppSignIn' }, { params: {} });
+const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppLoginEmail' }, { params: {} });
 const EMAIL_SENT_ROUTE = buildRoute({ route: 'ContestantAppEmailSent' }, { params: {} });
-const EMAIL_ENTRY_ROUTE = buildRoute({ route: 'ContestantAppRegisterEmail' }, { params: {} });
-const CODE_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterSignIn' }, { params: {} });
+const EMAIL_ENTRY_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeEmail' }, { params: {} });
+const CODE_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeSignIn' }, { params: {} });
 const FORGOT_PASSWORD_ROUTE = buildRoute({ route: 'ContestantAppForgotPassword' }, { params: {} });
 
 /** The identity provider's error screen for a code. */
@@ -233,7 +228,7 @@ beforeEach(() => {
   localizeHref.mockImplementation((href: string) => href);
   vi.stubGlobal('fetch', fetchMock);
   fetchMock.mockResolvedValue(answer(200, { authorizeUrl: AUTHORIZE_URL }));
-  heldSettings = settingsFor([]);
+  box.set({ appSettings: settingsFor([]) });
   heldData = { registered: false };
   goto.mockResolvedValue(undefined);
   sendEntryLink.mockResolvedValue(undefined);
@@ -258,7 +253,7 @@ afterEach(() => {
  * @returns The element the page was mounted into.
  */
 function renderUnmounted(modes: Array<RegistrationMode>): HTMLElement {
-  heldSettings = settingsFor(modes);
+  box.set({ appSettings: settingsFor(modes) });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(RegisterPage, { target, props: { data: heldData } as never });
@@ -278,7 +273,7 @@ function render(modes: Array<RegistrationMode>): HTMLElement {
 
 /** Mount the page for the given settings, and run its effects. */
 function renderWith(settings: FakeSettings): HTMLElement {
-  heldSettings = settings;
+  box.set({ appSettings: settings });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(RegisterPage, { target, props: { data: heldData } as never });
@@ -397,7 +392,7 @@ describe('the frame', () => {
   it('follows a matrix that changes under the mounted page', () => {
     const target = render(['email', 'code']);
     choose(target, 'code');
-    heldSettings = settingsFor(['email']);
+    box.set({ appSettings: settingsFor(['email']) });
     flushSync();
     const frame = one(target, FRAME);
     expect(frame.getAttribute('data-modes')).toBe('email');
@@ -581,8 +576,8 @@ describe('the forms', () => {
 
 describe('the email mode', () => {
   it.each<[string, string, string]>([
-    ['an empty field', '', 'contestantApp.login.emailRequired'],
-    ['a field holding spaces alone', '   ', 'contestantApp.login.emailRequired'],
+    ['an empty field', '', 'common.account.emailRequired'],
+    ['a field holding spaces alone', '   ', 'common.account.emailRequired'],
     ['an address the control reports invalid', 'not-an-address', 'components.input.error.invalidEmail']
   ])('sends nothing for %s, says what to enter at the field and focuses it', async (_name, typed, message) => {
     const target = render(['email', 'code']);
@@ -1169,7 +1164,7 @@ describe('the notice for a browser that has confirmed an address', () => {
     expect(login.textContent).toContain('common.login');
     const forgotPassword = one<HTMLAnchorElement>(notice, NOTICE_FORGOT_PASSWORD);
     expect(forgotPassword.getAttribute('href')).toBe(FORGOT_PASSWORD_ROUTE);
-    expect(forgotPassword.textContent).toContain('contestantApp.login.forgotPassword');
+    expect(forgotPassword.textContent).toContain('common.account.forgotPassword');
   });
 
   it('offers a Dismiss that posts to the action dismissRegistered, in a form of its own inside the notice', () => {

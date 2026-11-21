@@ -181,7 +181,7 @@ if (typeof window.matchMedia !== 'function') {
   });
 }
 
-const Harness = (await import('./AfterSaveRoot.svelte')).default;
+const Harness = (await import('./__tests__/DetailsRootHarness.svelte')).default;
 
 const STEP = '[data-testid="contestant-nomination-details"]';
 const LIST = '[data-testid="contestant-nomination-details-list"]';
@@ -240,7 +240,7 @@ async function loadedWith(nominations: Array<EntityNomination>): Promise<Loaded>
     localizedNames: { name: { en: 'Alpha Party' }, shortName: null },
     nominations: nominations.map((nomination) => ({ ...nomination }))
   };
-  const nominationFacts = {
+  const nominationScope = {
     editable: true,
     admissibleElectionIds: ELECTION_DATA.map((election) => election.id),
     writableNominationIds: nominations.map((nomination) => nomination.id)
@@ -249,7 +249,7 @@ async function loadedWith(nominations: Array<EntityNomination>): Promise<Loaded>
     params: { entityType: PARTY.type, entityId: ENTITY_ID },
     parent: async () => ({
       gate: null,
-      nominationFacts,
+      nominationScope,
       contestantUserData,
       appSettingsData: {},
       electionData: ELECTION_DATA,
@@ -266,7 +266,7 @@ async function loadedWith(nominations: Array<EntityNomination>): Promise<Loaded>
       questionData: { categories: [...QUESTION_DATA.categories], questions: [...QUESTION_DATA.questions] },
       contestantUserData
     },
-    detailsData: { ...(await load(event as never)), nominationFacts }
+    detailsData: { ...(await load(event as never)), nominationScope }
   };
 }
 

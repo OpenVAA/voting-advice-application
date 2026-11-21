@@ -15,6 +15,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
 - "Send again" keeps focus when pressed. While unavailable it is `aria-disabled`, still a tab stop, and its label ends with the seconds left, which also describe it. A polite status region says when a new email has been asked for and when another can be asked for.
 - "Use another email address" moves focus to the address field it shows.
 - A failed save is announced as an alert.
+- The message that the password could not be changed is an alert, and the line that it was changed a status message; both regions are always rendered.
 -->
 
 <script lang="ts">
@@ -28,10 +29,9 @@ The signed-in user's own settings page: the account's address, which cannot be e
   import { Input } from '$lib/components/input';
   import { PasswordSetter } from '$lib/components/passwordSetter';
   import SuccessMessage from '$lib/components/successMessage/SuccessMessage.svelte';
-  import { PendingAddressResend } from '$lib/contestant/utils/pendingAddressResend.svelte';
+  import { PendingAddressPanel } from '$lib/contestant/components/pendingAddressPanel';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { EmailSentResend } from '$lib/dynamic-components/emailSentPanel';
   import { getUUID } from '$lib/utils/components';
 
   ////////////////////////////////////////////////////////////////////
@@ -88,15 +88,6 @@ The signed-in user's own settings page: the account's address, which cannot be e
   );
   const addressPending = $derived(pendingEmail !== undefined);
 
-  const resend = new PendingAddressResend(registerIdentityProviderAccount);
-  const resendStatus = $derived(
-    resend.status === 'requested'
-      ? t('contestantApp.emailSent.resendRequested')
-      : resend.status === 'ready'
-        ? t('contestantApp.emailSent.resendReady')
-        : ''
-  );
-
   const emailFormId = getUUID();
   const emailEntryId = getUUID();
   /** Whether the user chose to give another address in place of the pending one. */
@@ -146,8 +137,6 @@ The signed-in user's own settings page: the account's address, which cannot be e
 
   onMount(() => {
     mounted = true;
-    resend.start();
-    return () => resend.stop();
   });
 
   ///////////////////////////////////////////////////////////////////
@@ -177,50 +166,44 @@ The signed-in user's own settings page: the account's address, which cannot be e
       locked
       data-testid="settings-email" />
 
+    {#snippet emailForm()}
+      <form
+        id={emailFormId}
+        method="POST"
+        novalidate
+        onsubmit={handleSaveEmail}
+        class="gap-md mt-md flex w-full flex-col">
+        <EmailEntry id={emailEntryId} bind:email={newEmail} bind:this={emailEntry} />
+        <Button
+          type="submit"
+          variant="main"
+          text={t('contestantApp.settings.saveEmail')}
+          disabled={!mounted}
+          loading={emailStatus === 'saving'}
+          loadingText={t('common.saving')}
+          data-testid="settings-email-save" />
+      </form>
+      {#if emailStatus === 'failed'}
+        <ErrorMessage
+          inline
+          role="alert"
+          class="my-md"
+          message={t('contestantApp.identityProvider.saveFailed')}
+          data-testid="settings-email-error" />
+      {/if}
+    {/snippet}
+
     {#if addressPending}
-      <div class="mt-md flex flex-col items-center">
-        <EmailSentResend
-          secondsLeft={resend.secondsLeft}
-          loading={resend.requesting}
-          onresend={() => resend.resend()}
-          resendTestId="settings-email-pending-resend"
-          countdownTestId="settings-email-pending-countdown" />
-        {#if changingEmail}
-          <form
-            id={emailFormId}
-            method="POST"
-            novalidate
-            onsubmit={handleSaveEmail}
-            class="gap-md mt-md flex w-full flex-col">
-            <EmailEntry id={emailEntryId} bind:email={newEmail} bind:this={emailEntry} />
-            <Button
-              type="submit"
-              variant="main"
-              text={t('contestantApp.settings.saveEmail')}
-              disabled={!mounted}
-              loading={emailStatus === 'saving'}
-              loadingText={t('common.saving')}
-              data-testid="settings-email-save" />
-          </form>
-          {#if emailStatus === 'failed'}
-            <ErrorMessage
-              inline
-              role="alert"
-              class="my-md"
-              message={t('contestantApp.identityProvider.saveFailed')}
-              data-testid="settings-email-error" />
-          {/if}
-        {:else}
-          <Button
-            type="button"
-            text={t('contestantApp.emailSent.changeAddress')}
-            onclick={handleChangeEmail}
-            data-testid="settings-email-pending-change" />
-        {/if}
-        <p class="sr-only" role="status" aria-live="polite" data-testid="settings-email-pending-status">
-          {resendStatus}
-        </p>
-      </div>
+      <PendingAddressPanel
+        class="mt-md"
+        onchangeaddress={handleChangeEmail}
+        changeForm={changingEmail ? emailForm : undefined}
+        testIds={{
+          resend: 'settings-email-pending-resend',
+          countdown: 'settings-email-pending-countdown',
+          change: 'settings-email-pending-change',
+          status: 'settings-email-pending-status'
+        }} />
     {/if}
   </section>
 
@@ -230,7 +213,7 @@ The signed-in user's own settings page: the account's address, which cannot be e
     <h2 class={subheadingClass}>{t('contestantApp.settings.password.update')}</h2>
 
     <div class="gap-md flex flex-col">
-      <div class="flex-nowarp flex flex-col items-center" data-testid="settings-new-password">
+      <div class="flex flex-col items-center" data-testid="settings-new-password">
         <!-- bind: keep — PasswordSetter.password is $bindable(''); bind:this is the component reference handleSubmit calls reset() on. Validity and the error message are derived inside the component and arrive through onValidityChange, so neither is bindable. -->
         <PasswordSetter
           bind:password
@@ -242,11 +225,17 @@ The signed-in user's own settings page: the account's address, which cannot be e
             validationError = errorMessage;
           }} />
 
-        {#if status === 'error'}
-          <ErrorMessage inline message={t('contestantApp.settings.error.changePassword')} class="mb-lg mt-md" />
-        {:else if status === 'success'}
-          <SuccessMessage inline message={t('contestantApp.settings.password.updated')} class="mb-lg mt-md" />
-        {/if}
+        <!-- The result of a password change. Both regions are always rendered, so that a message put into one is announced. -->
+        <div role="alert" data-testid="settings-password-error">
+          {#if status === 'error'}
+            <ErrorMessage inline message={t('contestantApp.settings.error.changePassword')} class="mb-lg mt-md" />
+          {/if}
+        </div>
+        <div role="status" data-testid="settings-password-updated">
+          {#if status === 'success'}
+            <SuccessMessage inline message={t('contestantApp.settings.password.updated')} class="mb-lg mt-md" />
+          {/if}
+        </div>
 
         <Button
           onclick={handleSubmit}

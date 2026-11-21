@@ -124,7 +124,7 @@ function makeEvent({
       safeGetSession: vi.fn(),
       supabase: { auth: requestAuth }
     },
-    url: new URL(`http://localhost/${locale}/contestant/register/sign-in${search}`)
+    url: new URL(`http://localhost/${locale}/contestant/register/code/sign-in${search}`)
   };
 }
 

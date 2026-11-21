@@ -75,7 +75,7 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
   /** The sign-in screen's address, with the address bar's `redirectTo` passed on as it is when there is one. */
   const signInRoute = $derived.by(() => {
     const redirectTo = page.url.searchParams.get('redirectTo');
-    return getRoute.current(redirectTo ? { route: 'ContestantAppSignIn', redirectTo } : 'ContestantAppSignIn');
+    return getRoute.current(redirectTo ? { route: 'ContestantAppLoginEmail', redirectTo } : 'ContestantAppLoginEmail');
   });
 
   ////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /**
  * The server load of the identity provider's error screen, driven directly with a fake request context.
  *
- * `$lib/api/dataProvider` is replaced, so no Supabase client is built: `createSupabaseAnonClient` answers a marker object and `createDataProvider` answers a provider whose `getAppSettings` each case controls. The class table and the list of offered modes are the real ones.
+ * `$lib/api/dataProvider` is replaced, so no Supabase client is built: `createSupabaseAnonClient` answers a marker object and `createDataProvider` answers a provider whose `getAppSettings` each case controls. The class table, the registration guard it asks and the list of offered modes are the real ones.
  *
  * What this file holds:
  *
@@ -40,6 +40,7 @@ const NOTHING_LISTED = {
   contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
 };
 const PROVIDER_LOCKED = { ...PROVIDER_LISTED, access: { contestantEditing: 'locked' } };
+const PROVIDER_APP_CLOSED = { ...PROVIDER_LISTED, access: { contestantApp: false } };
 
 /**
  * A request for the error screen.
@@ -112,7 +113,8 @@ describe('Try again', () => {
   it.each([
     ["the provider's mode is not allowed", PROVIDER_NOT_LISTED],
     ['no mode is allowed', NOTHING_LISTED],
-    ['answers are locked', PROVIDER_LOCKED]
+    ['answers are locked', PROVIDER_LOCKED],
+    ['the Contestant App is closed', PROVIDER_APP_CLOSED]
   ])('is not offered when %s', async (_name, settings) => {
     getAppSettings.mockResolvedValue(settings);
     expect((await run('cancelled')).providerOffered).toBe(false);

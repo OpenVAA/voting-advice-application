@@ -1,7 +1,7 @@
 /**
  * The screen that signs in the holder of a claimed registration code, mounted for real with its real password field against a fake contestant context.
  *
- * The fake context's `entryFlow` is reactive behind a getter and replaced whole on every write, as the real accessor is. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. `$app/forms` is replaced: the fake `enhance` listens for the form's submit event as the real one does, hands the page's callback the posted form data and a `cancel`, and keeps what the callback returned so that a test can answer the post with a result of its choice. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `entryFlow` is reactive behind a getter and replaced whole on every write, as the real accessor is. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. `$app/forms` is replaced: the fake `enhance` listens for the form's submit event as the real one does, hands the page's callback the posted form data and a `cancel`, and keeps what the callback returned so that a test can answer the post with a result of its choice. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -16,6 +16,7 @@
 import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { EntryFlow, EntryHeldCode, EntryHeldRequest } from '$lib/auth/entryFlow';
 import type { RouteOptions } from '$lib/routes';
@@ -71,24 +72,20 @@ vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal
 
 type Modes = Array<'identity_provider' | 'email' | 'code'>;
 
-/** The registration modes the fake settings allow candidates. */
-const modes = $state<{ candidate: Modes }>({ candidate: ['email', 'code'] });
-
-/** What the fake context holds. Replaced whole on every write, never changed in place. */
-let heldFlow = $state.raw<EntryFlow | undefined>(undefined);
-
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  sendEntryLink,
-  clearEntryFlow,
-  get appSettings() {
-    return { contestantApp: { servedEntityTypes: { candidate: { registrationModes: modes.candidate } } } };
-  },
-  get entryFlow() {
-    return heldFlow;
-  }
-};
+/** What the fake context holds: the registration modes the fake settings allow candidates, and the entry flow. Both are replaced whole on every write, never changed in place. */
+const { context, box } = fakeContestantContext(
+  { candidateModes: ['email', 'code'] as Modes, entryFlow: undefined as EntryFlow | undefined },
+  (held) => ({
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    sendEntryLink,
+    clearEntryFlow,
+    get appSettings() {
+      return {
+        contestantApp: { servedEntityTypes: { candidate: { registrationModes: held.current.candidateModes } } }
+      };
+    }
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -157,8 +154,8 @@ function flowWith(status: EntryHeldCode['status']): EntryFlow {
 let teardown: Array<() => void> = [];
 
 beforeEach(() => {
-  heldFlow = undefined;
-  modes.candidate = ['email', 'code'];
+  box.set({ entryFlow: undefined });
+  box.set({ candidateModes: ['email', 'code'] });
   goto.mockResolvedValue(undefined);
   sendEntryLink.mockResolvedValue(undefined);
   applyAction.mockResolvedValue(undefined);
@@ -181,7 +178,7 @@ afterEach(() => {
  * @returns The element the page was mounted into.
  */
 function renderUnmounted(held: EntryFlow | undefined, props: Record<string, unknown> = {}): HTMLElement {
-  heldFlow = held;
+  box.set({ entryFlow: held });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(CodeSignInPage, { target, props: { form: null, ...props } as never });
@@ -297,7 +294,7 @@ describe('without a used code held', () => {
 
   it('leaves the screen when the held code goes while it is shown', () => {
     const target = render();
-    heldFlow = undefined;
+    box.set({ entryFlow: undefined });
     flushSync();
     expect(target.querySelector(FRAME)).toBeNull();
     expect(goto).toHaveBeenCalledTimes(1);
@@ -585,7 +582,7 @@ describe('the links to the forgot-password page', () => {
       expect(link.tagName).toBe('A');
       expect(link.getAttribute('href')).toBe(FORGOT_PASSWORD_ROUTE);
     }
-    expect(one(target, NO_PASSWORD_YET).textContent?.trim()).toBe('contestantApp.login.noPasswordYet');
+    expect(one(target, NO_PASSWORD_YET).textContent?.trim()).toBe('common.account.noPasswordYet');
   });
 
   it.each<[string, Modes, boolean]>([
@@ -593,7 +590,7 @@ describe('the links to the forgot-password page', () => {
     ['the identity provider', ['identity_provider', 'code'], true],
     ['the code mode alone', ['code'], false]
   ])('offer the link for a user without a password with %s', (_name, candidate, offered) => {
-    modes.candidate = candidate;
+    box.set({ candidateModes: candidate });
     const target = render();
     expect(target.querySelectorAll(NO_PASSWORD_YET).length).toBe(offered ? 1 : 0);
     expect(target.querySelectorAll(FORGOT_PASSWORD).length).toBe(1);

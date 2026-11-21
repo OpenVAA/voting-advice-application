@@ -1,12 +1,12 @@
 /**
- * Whether another nomination can be added, as `nominationFactsOf` answers it: while nominations may be edited, an election that admits the entity's type is one in which the entity holds no nomination the editor manages. The editor chooses one constituency in each election, so an election the entity already stands in leaves nothing to add in it.
+ * Whether another nomination can be added, as `nominationScopeOf` answers it: while nominations may be edited, an election that admits the entity's type has room for one. A candidate chooses one constituency in each election, so an election it already stands in leaves nothing to add in it. An organization chooses several, so an election has room while one of its constituencies holds no nomination of it that the editor manages.
  *
  * The facts are asked of a real `DataRoot` that holds the elections and their constituencies, with the settings the case names.
  */
 
 import { DataRoot } from '@openvaa/data';
 import { describe, expect, it } from 'vitest';
-import { nominationFactsOf } from './nominationFacts';
+import { nominationScopeOf } from './nominationScope';
 import type { ElectionData } from '@openvaa/data';
 import type { EntityNomination } from '$lib/api/base/dataWriter.type';
 
@@ -65,10 +65,25 @@ function canAddAnother({
   dataRoot.provideElectionData(ELECTION_DATA);
   dataRoot.provideConstituencyData(CONSTITUENCY_DATA);
   const appSettings = { access } as AppSettings;
-  return nominationFactsOf({ selectionData: { appSettings, dataRoot }, entityType, nominations }).canAddAnother;
+  return nominationScopeOf({ selectionData: { appSettings, dataRoot }, entityType, nominations }).canAddAnother;
 }
 
-describe('nominationFactsOf — whether another nomination can be added', () => {
+describe('nominationScopeOf — whether the entity chooses several constituencies in one election', () => {
+  it('is true for an organization and false for a candidate', () => {
+    const dataRoot = new DataRoot();
+    dataRoot.provideElectionData(ELECTION_DATA);
+    dataRoot.provideConstituencyData(CONSTITUENCY_DATA);
+    const selectionData = { appSettings: { access: {} } as AppSettings, dataRoot };
+    expect(
+      nominationScopeOf({ selectionData, entityType: 'organization', nominations: [] }).severalConstituencies
+    ).toBe(true);
+    expect(nominationScopeOf({ selectionData, entityType: 'candidate', nominations: [] }).severalConstituencies).toBe(
+      false
+    );
+  });
+});
+
+describe('nominationScopeOf — whether another nomination can be added', () => {
   it('is true for an entity with no nomination while an election admits it', () => {
     expect(canAddAnother({})).toBe(true);
   });
@@ -89,6 +104,25 @@ describe('nominationFactsOf — whether another nomination can be added', () => 
     const nominations = [nomination('n-1', 'closed', 'region-1'), nomination('n-2', 'open', 'whole-country')];
     expect(canAddAnother({ entityType: 'candidate', nominations })).toBe(false);
     expect(canAddAnother({ entityType: 'organization', nominations })).toBe(true);
+  });
+
+  it('is true for an organization while a constituency of an election it stands in is free', () => {
+    const nominations = [
+      nomination('n-1', 'closed', 'region-1'),
+      nomination('n-2', 'open', 'whole-country'),
+      nomination('n-3', 'parties', 'whole-country')
+    ];
+    expect(canAddAnother({ entityType: 'organization', nominations })).toBe(true);
+  });
+
+  it('is false for an organization once it stands in every constituency of every election that admits it', () => {
+    const nominations = [
+      nomination('n-1', 'closed', 'region-1'),
+      nomination('n-2', 'closed', 'region-2'),
+      nomination('n-3', 'open', 'whole-country'),
+      nomination('n-4', 'parties', 'whole-country')
+    ];
+    expect(canAddAnother({ entityType: 'organization', nominations })).toBe(false);
   });
 
   it('counts no nomination that is not writable', () => {

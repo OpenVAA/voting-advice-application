@@ -2,7 +2,7 @@
  * Decide what a signed-in user who asks for the root of the Contestant App gets (server-side). The root names no entity, so the decision is made on the user-level load's list alone:
  *
  * 1. **The parent.** The user-level load's `gate` and `entities`, awaited before anything else. While a gate is pending the load returns an empty object and redirects nowhere, so the gate's view is shown at the root.
- * 2. **A list that could not be read.** When the user-level load says so, the load returns `{ view: 'readFailed' }` before it looks at the list: the user stays signed in and is shown the read-failure view, from which they can try again.
+ * 2. **A list that could not be read.** When the user-level load's `entities` is `null`, the load returns `{ view: 'readFailed' }` before it looks at the list: the user stays signed in and is shown the read-failure view, from which they can try again.
  * 3. **No entity.** The load returns `{ view: 'nothingToEdit' }`: the user stays signed in and is told there is nothing to edit.
  * 4. **Exactly one entity.** The user is redirected to that entity's home.
  * 5. **Several entities.** The load returns `{ view: 'select' }`: the user chooses which one to edit.
@@ -17,8 +17,8 @@ import { buildRoute } from '$lib/routes';
 export async function load({ parent }): Promise<{ view?: 'nothingToEdit' | 'select' | 'readFailed' }> {
   const parentData = await parent();
   if (parentData.gate !== null) return {};
-  if (parentData.entitiesReadFailed) return { view: 'readFailed' };
   const { entities } = parentData;
+  if (entities === null) return { view: 'readFailed' };
 
   if (entities.length === 1) {
     const [{ type, id }] = entities;

@@ -1,7 +1,7 @@
 /**
  * The password-reset page, mounted for real with the real password setter and support block against a fake contestant context.
  *
- * The page is given the data its server load returns: the address of the signed-in user. The fake context's `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. `$app/state` is replaced by a page whose address holds a `code` and a link `type`, and which counts every read of it. Assertions are on the DOM rather than on component state.
+ * The page is given the data its server load returns: the address of the signed-in user. The fake context is the shared `fakeContestantContext`. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. `$app/state` is replaced by a page whose address holds a `code` and a link `type`, and which counts every read of it. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -17,6 +17,7 @@
 import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
@@ -41,15 +42,18 @@ vi.mock('$app/state', () => ({
   }
 }));
 
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  setPassword,
-  appSettings: {
-    admin: { email: 'support@example.test' },
-    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
-  }
-};
+const { context } = fakeContestantContext(
+  {
+    appSettings: {
+      admin: { email: 'support@example.test' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    }
+  },
+  () => ({
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    setPassword
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -206,7 +210,7 @@ describe('the frame', () => {
   it("has the page's first-level heading, which can take focus, under the app's name", () => {
     const target = render();
     const heading = one<HTMLElement>(target, 'h1');
-    expect(heading.textContent?.trim()).toBe('contestantApp.resetPassword.createNewPassword');
+    expect(heading.textContent?.trim()).toBe('common.account.resetPassword.createNewPassword');
     expect(heading.getAttribute('tabindex')).toBe('-1');
     expect(target.textContent).toContain('dynamic.contestantAppName.');
     heading.focus();
@@ -229,7 +233,7 @@ describe('the account', () => {
     expect(address.tagName).toBe('DD');
     expect(address.textContent?.trim()).toBe(ADDRESS);
     expect(address.getAttribute('translate')).toBe('no');
-    expect(one(target, 'dt').textContent?.trim()).toBe('contestantApp.nothingToEdit.signedInAs');
+    expect(one(target, 'dt').textContent?.trim()).toBe('common.account.signedInAs');
   });
 
   it("hands the address to the form's user-name field, which is read-only and not rendered", () => {
@@ -267,7 +271,7 @@ describe('the main button', () => {
     expect(button.getAttribute('form')).toBe(form.id);
     expect(form.contains(button)).toBe(false);
     expect(button.closest('section')?.getAttribute('aria-label')).toBe('common.primaryActions');
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
   });
 
   it('is natively disabled until the page has mounted', () => {
@@ -283,10 +287,10 @@ describe('the main button', () => {
     expect(button.disabled).toBe(false);
     typeBoth(target, RULE_BREAKING_PASSWORD);
     expect(button.disabled).toBe(false);
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
     typeBoth(target, VALID_PASSWORD);
     expect(button.disabled).toBe(false);
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
   });
 });
 
@@ -329,13 +333,13 @@ describe('a failed save', () => {
     expect(setPassword).toHaveBeenCalledTimes(1);
     expect(goto).not.toHaveBeenCalled();
     const error = one(target, SAVE_ERROR);
-    expect(messageOf(error)).toBe('contestantApp.setPassword.error');
+    expect(messageOf(error)).toBe('common.account.setPassword.error');
     expect(error.getAttribute('role')).toBe('alert');
     expect(one<HTMLInputElement>(target, PASSWORD).value).toBe(VALID_PASSWORD);
     expect(one<HTMLInputElement>(target, CONFIRMATION).value).toBe(VALID_PASSWORD);
     const button = one<HTMLButtonElement>(target, SUBMIT);
     expect(button.disabled).toBe(false);
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
   });
 
   it('is cleared by the next press, which saves again', async () => {
@@ -394,7 +398,7 @@ describe('a saved password', () => {
 
     navigations[0]();
     await settle();
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
   });
 });
 

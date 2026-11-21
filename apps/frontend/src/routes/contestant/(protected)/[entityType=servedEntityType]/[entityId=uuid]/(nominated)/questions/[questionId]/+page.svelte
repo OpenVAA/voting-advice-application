@@ -17,14 +17,17 @@ The Save button stores the answer and leads on: to the first opinion question th
 - `questions.showCategoryTags`: Whether to show category tags for questions.
 - `contestantApp.questions.hideVideo`: Whether to hide video content for questions.
 - `contestantApp.questions.hideHero`: Whether to hide hero content for questions.
+
+## Accessibility
+
+- The message of a failed save is an alert, and its region is always rendered.
 -->
 
 <script lang="ts">
   import { getCustomData, log } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
-  import { tick } from 'svelte';
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { NotEditableNote } from '$contestant/components/notEditableNote';
   import { MainContent } from '$layouts/main';
@@ -37,7 +40,7 @@ The Save button stores the answer and leads on: to the first opinion question th
   import { PreventNavigation } from '$lib/components/preventNavigation';
   import { OpinionQuestionInput, QuestionBasicInfo } from '$lib/components/questions';
   import { hasNomination, questionSaveTarget, taskStateOf } from '$lib/contestant/tasks';
-  import { readAnswersLocked } from '$lib/contestant/utils/readAnswersLocked';
+  import { lockedAfterRefusedSave } from '$lib/contestant/utils/rereadPageData';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
@@ -247,15 +250,13 @@ The Save button stores the answer and leads on: to the first opinion question th
       return undefined;
     });
     if (result?.type !== 'success') {
-      // A refusal that does not name the lock is asked of the stored settings alone.
-      const locked = refusedByLock || (await readAnswersLocked({ locale: contestantCtx.locale })) === true;
+      // The page's data is read again only for the lock, so that every view shows it.
+      const locked = await lockedAfterRefusedSave({
+        refusedByLock,
+        locale: contestantCtx.locale,
+        logLabel: '[Contestant app question page]'
+      });
       if (locked) {
-        // The page's data is read again only for the lock, so that every view shows it.
-        await invalidateAll().catch((e) => {
-          log.error(`[Contestant app question page] Error reading the page data again: ${e?.message}`);
-        });
-        // What the re-read brought has reached the settings after one tick.
-        await tick();
         // The note says why the save was not stored, so no failure is said.
         saveRefusedByLockFor = question.id;
         status = 'idle';
@@ -367,11 +368,13 @@ The Save button stores the answer and leads on: to the first opinion question th
               class="w-full" />
           {/if}
 
-          <!-- Error message -->
+          <!-- Error message. The region is always rendered, so that a message put into it is announced. -->
 
-          {#if status === 'error'}
-            <ErrorMessage inline message={errorMessage} class="mb-lg mt-md" />
-          {/if}
+          <div role="alert" data-testid="contestant-questions-save-message">
+            {#if status === 'error'}
+              <ErrorMessage inline message={errorMessage} class="mb-lg mt-md" />
+            {/if}
+          </div>
 
           <!-- Submit or cancel -->
 

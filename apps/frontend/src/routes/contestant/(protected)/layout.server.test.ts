@@ -3,13 +3,13 @@
  *
  * The load runs four stages (session, user-level data and the settings, gates, the served entity list) and reads no entity: that is the entity-level load's, one level down. What this file holds:
  *
- * 0. **A session whose grants in this project open the Admin App and not this one** is redirected to the Admin App's home before anything is read, so such a user meets none of this app's gates. A project, account or global admin is; an admin who also edits a candidate or an organization, the editor of an entity alone and a project editor are not. The grants are the writer's read of those that reach this project, asked only of a session whose token holds an admin grant: an admin of another project only stays, an admin here who edits a candidate of another project only is redirected, and a read that fails is logged and redirects nobody.
+ * 0. **A session whose grants in this project open the Admin App and not this one** is redirected to the Admin App's home before anything is read, so such a user meets none of this app's gates. A project, account or global admin is, and so is a project editor; an admin who also edits a candidate or an organization and the editor of an entity alone are not. The grants are the writer's read of those that reach this project, asked only of a session whose token holds an admin grant: an admin of another project only stays, an admin here who edits a candidate of another project only is redirected, and a read that fails is logged and redirects nobody.
  * 1. **A gated user gets the gate, the user and the arrival marker, and nothing else.** The settings are read once, before the gates; the entity list is not read and nobody is signed out, so no outcome of a later stage can pre-empt the gate. The list read is set up to REJECT in that case, so reaching it would fail it. A user whose account has no password gets the set-password gate, before the terms of use. An identity-provider account with no address gets the identity-provider gate.
  * 1a. **The two facts of the request.** The arrival marker is read from its cookie, and only `created` and `existing` count; the answers lock is read from the settings, and a failed settings read leaves answers unlocked. The marker only adds the identity-provider gate.
  * 2. **A user past the gates gets the user and the served entities**: the list is read after the user-level data and filtered by the entity types the project serves. The result holds no entity data, no question data and no part of the session.
  * 3. **The coarse role decides nothing.** A user whose role is `'admin'`, or who has none, is listed with the one served entity they edit.
  * 4. **A failed read of the user-level data** signs the user out through the sign-out helper and redirects to the login page with `loginFailed`. So does user-level data that does not say, as a boolean, whether the account has a password: the gate list is never asked about such a user.
- * 4a. **A failed read of the list** signs nobody out: the load logs it and resolves the user with an empty list and `entitiesReadFailed: true`, whatever the cause. A request for an entity made while the list cannot be read is sent to the app root by the entity-level load, as one for an entity the list does not hold is.
+ * 4a. **A failed read of the list** signs nobody out: the load logs it and resolves the user with `entities: null`, whatever the cause. A request for an entity made while the list cannot be read is sent to the app root by the entity-level load, as one for an entity the list does not hold is.
  * 4b. **The logout count a request carries** is withdrawn in the response only after a sign-out that worked, and kept when the sign-out fails with a session left and the load ends on the error page.
  * 5. **No session** redirects to the login page before anything is read.
  * 6. **The entity the URL names decides nothing here.** The load resolves the same data with and without the entity params.
@@ -245,6 +245,7 @@ describe('routes/contestant/(protected)/+layout.server.ts — a session whose gr
     ['a project admin', [PROJECT_ADMIN]],
     ['an account admin', [ACCOUNT_ADMIN]],
     ['a global admin', [GLOBAL_ADMIN]],
+    ['a project editor', [PROJECT_EDITOR]],
     ['a project admin who is also a project editor', [PROJECT_ADMIN, PROJECT_EDITOR]]
   ])(
     "redirects %s to the Admin App's home before the user-level data, the settings or the list is read",
@@ -263,7 +264,7 @@ describe('routes/contestant/(protected)/+layout.server.ts — a session whose gr
     ['an admin who also edits a candidate', [PROJECT_ADMIN, CANDIDATE_EDITOR]],
     ['an admin who also edits an organization', [ACCOUNT_ADMIN, ORGANIZATION_EDITOR]],
     ["a candidate's editor", [CANDIDATE_EDITOR]],
-    ['a project editor', [PROJECT_EDITOR]]
+    ['a project editor who also edits a candidate', [PROJECT_EDITOR, CANDIDATE_EDITOR]]
   ])('does not redirect %s, and reads the user-level data as for any user', async (_, grants) => {
     const user = userWith(ACCEPTED_AT);
     getBasicUserData.mockResolvedValue(user);
@@ -614,28 +615,24 @@ describe('routes/contestant/(protected)/+layout.server.ts — the entity list ca
     ['a schema mismatch', new Error("The list of the user's entities did not match its schema at: entities")],
     ['a network error', new TypeError('fetch failed')],
     ['a server error', new Error("Failed to list the user's entities: 500")]
-  ] as const)(
-    'answers %s with the user, an empty list and the read failure, logs it, and signs nobody out',
-    async (_, failure) => {
-      const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
-      getBasicUserData.mockResolvedValue(userWith(ACCEPTED_AT));
-      getUserEntities.mockRejectedValue(failure);
+  ] as const)('answers %s with the user and a null list, logs it, and signs nobody out', async (_, failure) => {
+    const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    getBasicUserData.mockResolvedValue(userWith(ACCEPTED_AT));
+    getUserEntities.mockRejectedValue(failure);
 
-      const loading = runLoad(makeEvent());
+    const loading = runLoad(makeEvent());
 
-      await expect(loading).resolves.toEqual({
-        gate: null,
-        user: userWith(ACCEPTED_AT),
-        entities: [],
-        entitiesReadFailed: true
-      });
-      expect(signOut).not.toHaveBeenCalled();
-      expect(getEntityUserData).not.toHaveBeenCalled();
-      expect(getQuestionData).not.toHaveBeenCalled();
-      expect(error).toHaveBeenCalledTimes(1);
-      expect(error.mock.calls[0][1]).toEqual({ err: failure });
-    }
-  );
+    await expect(loading).resolves.toEqual({
+      gate: null,
+      user: userWith(ACCEPTED_AT),
+      entities: null
+    });
+    expect(signOut).not.toHaveBeenCalled();
+    expect(getEntityUserData).not.toHaveBeenCalled();
+    expect(getQuestionData).not.toHaveBeenCalled();
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error.mock.calls[0][1]).toEqual({ err: failure });
+  });
 
   it('sends a request for an entity to the app root, where the read failure is shown, and reads no entity', async () => {
     vi.spyOn(log, 'error').mockImplementation(() => undefined);
@@ -645,7 +642,7 @@ describe('routes/contestant/(protected)/+layout.server.ts — the entity list ca
     const event = makeEvent({ params });
 
     const listing = runLoad(event);
-    await expect(listing).resolves.toMatchObject({ gate: null, entities: [], entitiesReadFailed: true });
+    await expect(listing).resolves.toMatchObject({ gate: null, entities: null });
     const parent = await listing;
     const redirected = await (entityLoad as unknown as (event: unknown) => Promise<unknown>)({
       fetch: fakeFetch,
