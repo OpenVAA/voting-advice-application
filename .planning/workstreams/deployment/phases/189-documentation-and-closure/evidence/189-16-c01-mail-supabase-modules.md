@@ -24,3 +24,14 @@ C01_S28=rewritten The sentence of § Settings and their guard that the root's te
 ```
 
 Back-links: 25 `← guide:` lines under Steps 8, 9 and 15 to 24 and Observations, one per citing section of the deployment, hosted-settings and operations pages.
+
+## The module comments (`infra/modules/`)
+
+Each comment now states the code and what holds, in the present tense, with no date, run id or planning reference. Only comment lines changed (`git diff -U0 infra/modules` holds no changed line whose first non-blank character is not `#`).
+
+```
+C01_S21=rewritten infra/modules/supabase/main.tf, the comment above supabase_settings.smtp_secret: each of the two settings resources writes only its own keys, and the first SMTP enablement is accepted with the user name and password from the second. Settled by the Supabase runbook's 2026-11-09/10 rows (two settings resources side by side, each keeping its own keys, the next plan "No changes"; the first SMTP enablement accepted with the credentials from the second resource) and its 2026-11-11 rows (the persistent root's plan with smtp set creating smtp_secret[0]; the apply whole on the first try, the project serving the SMTP host, port and sender with an SMTP user name set).
+C01_S22=rewritten infra/modules/mail-ses/main.tf, the comment above aws_route53_record.dkim: the default is the zone SES assigns to this identity. Settled by the DNS-and-mail runbook's 2026-10-22 row (Step 2, item 7: SigningHostedZone reads dkim.amazonses.com, the default).
+C01_S23=rewritten infra/modules/mail-ses/main.tf, the comment above aws_route53_record.dmarc: mail from this identity passes DMARC, aligned with the From domain. Settled by the Supabase runbook's 2026-11-11 row on the mail's Authentication-Results (dkim=pass aligned with staging.openvaa.org, spf=pass, dmarc=pass), and the DNS-and-mail runbook's new 2026-11-11 row.
+C01_S24=rewritten infra/modules/mail-ses/smtp.tf, the comment above data.aws_iam_policy_document.ses_send: SES authorises an SMTP send against the identity's ARN under this condition. Settled by the Supabase runbook's 2026-11-11 row (a sign-in mail sent through SES by the SMTP user arrived), with the DNS-and-mail runbook's 2026-10-22 row (Step 3, item 9: the SMTP user's one attached policy is this send policy). The fallback clause for a refused first send is dropped, since the send was accepted.
+```
