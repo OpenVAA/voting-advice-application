@@ -7,7 +7,7 @@
  *
  * ## Why this spec exists, and what it would catch
  *
- * Everything a server load returns is serialised into the hydration payload in the HTML body. `cookies.getAll()` yields the request's WHOLE jar, which includes every cookie this application sets `httpOnly: true` — the two OIDC replay/CSRF guards, the PKCE companion, the identity provider's entity-type cookie and its arrival marker. Serialising any of those defeats the flag outright. The filter is therefore a data-protection boundary, and this spec is what makes it a checked one.
+ * Everything a server load returns is serialised into the hydration payload in the HTML body. `cookies.getAll()` yields the request's WHOLE jar, which includes every cookie this application sets `httpOnly: true` — the two OIDC replay/CSRF guards, the PKCE companion, the identity provider's entity-type cookie, the identity provider's locale cookie and its arrival marker. Serialising any of those defeats the flag outright. The filter is therefore a data-protection boundary, and this spec is what makes it a checked one.
  *
  * ⚠ AN ABSENCE-ONLY ASSERTION PASSES TRIVIALLY AGAINST AN EMPTY ARRAY, and an empty array is exactly what a broken filter produces — a spelled prefix literal that stopped matching would empty it, `createServerClient` would find no session, and the server-rendered pass would silently go anonymous with no throw, no log and no failing test. Every case below therefore carries its POSITIVE CONTROL inside the same `expect`: the absences and the forwarded array are compared as one object, so a load that returned `[]` fails on the presence half. A stub load returning `{ supabaseCookies: [] }` passes every absence and fails every presence.
  *
@@ -97,7 +97,7 @@ const LOADS: Array<[string, LoadFn]> = [
 
 describe('the registry this spec derives its forbidden set from', () => {
   it('declares exactly the cookies the fixture jar carries', () => {
-    // If another cookie is registered, this fails and the fixture jar must grow with it, rather than the new cookie escaping the spec unnoticed.
+    // If another cookie is registered, this fails and the fixture jar must grow with it, rather than the new cookie escaping the spec unnoticed. A new `httpOnly` cookie also joins `HTTP_ONLY_COOKIE_NAMES` in `tests/tests/specs/admin/admin-access.spec.ts`, the end-to-end copy of the names, which nothing checks against this list.
     expect([...APPLICATION_COOKIE_NAMES].sort()).toEqual([
       'identity_provider_arrival',
       'logout-deadline',

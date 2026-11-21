@@ -41,13 +41,14 @@ const UNRESOLVABLE_QUESTION_ID = '00000000-0000-4000-8000-00000000dead';
 /**
  * The cookies this application sets `httpOnly`, spelled here rather than imported.
  *
- * `apps/frontend/src/lib/cookies/index.ts` is the single declaration of the names, but it does not say which of them are `httpOnly`. The copy is not unguarded: the unit spec `apps/frontend/src/routes/admin/(protected)/subtreeCookieFilter.server.test.ts` pins that map's names, so a newly registered cookie reddens there rather than slipping past here unnoticed.
+ * `apps/frontend/src/lib/cookies/index.ts` is the single declaration of the names, but it does not say which of them are `httpOnly`. The unit spec `apps/frontend/src/routes/admin/(protected)/subtreeCookieFilter.server.test.ts` pins that map's names, so a newly registered cookie reddens there; nothing compares this copy with it, so the comment at that pin names this list, and a new `httpOnly` cookie is added to both.
  */
 const HTTP_ONLY_COOKIE_NAMES = [
   'oidc_state',
   'oidc_nonce',
   'oidc_code_verifier',
   'oidc_entity_type',
+  'oidc_locale',
   'identity_provider_arrival',
   'registered'
 ] as const;
