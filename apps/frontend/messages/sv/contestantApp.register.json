@@ -35,7 +35,6 @@
       "required": "Välj hur du vill registrera dig."
     },
     "passwordValidation": {
-      "commonPatterns": "Innehåller vanliga sekvenser eller mönster",
       "length": "Minst {minPasswordLength} tecken",
       "lowercase": "Liten bokstav",
       "number": "Nummer",

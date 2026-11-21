@@ -35,7 +35,6 @@
       "required": "Choose how you would like to register."
     },
     "passwordValidation": {
-      "commonPatterns": "Contains common sequences or patterns",
       "length": "At least {minPasswordLength} characters",
       "lowercase": "Lowercase letter",
       "number": "Number",

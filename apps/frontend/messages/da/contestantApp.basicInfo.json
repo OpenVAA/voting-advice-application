@@ -2,11 +2,7 @@
   "contestantApp.basicInfo": {
     "colorInfo": "Vises bag dit partis forkortelse, når partiet ikke har et logo, og på partisymbolet ved siden af partiets kandidater. Indtast en hex-kode, f.eks. #2546a8, eller brug farvevælgeren, eller lad feltet stå tomt, hvis du ikke ønsker en farve. Farven kan blive justeret automatisk, så den forbliver læsbar; forhåndsvisningen viser resultatet.",
     "editableInfos": {
-      "description": "Disse oplysninger vises i din profil.",
       "title": "Din profil"
-    },
-    "error": {
-      "invalidQuestion": "Spørgsmålstype eller svartype er ugyldig for spørgsmål {questionId}"
     },
     "instructions": {
       "candidate": "Udfyld først dine grundlæggende oplysninger, og upload et billede, hvis du ønsker det. Herefter bliver du bedt om at angive dine politiske holdninger.",

@@ -35,7 +35,6 @@
       "required": "Valitse, miten haluat rekisteröityä."
     },
     "passwordValidation": {
-      "commonPatterns": "Sisältää yleisiä merkkisarjoja",
       "length": "Vähintään {minPasswordLength} merkkiä",
       "lowercase": "Pieni kirjain",
       "number": "Numero",

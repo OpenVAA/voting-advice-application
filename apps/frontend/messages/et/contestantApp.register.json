@@ -35,7 +35,6 @@
       "required": "Vali, kuidas soovid registreeruda."
     },
     "passwordValidation": {
-      "commonPatterns": "Sisaldab levinud märgijadasid",
       "length": "Vähemalt {minPasswordLength} märki",
       "lowercase": "Väiketäht",
       "number": "Number",

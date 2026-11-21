@@ -2,11 +2,7 @@
   "contestantApp.basicInfo": {
     "colorInfo": "Väri näytetään puolueesi lyhenteen taustalla silloin, kun puolueella ei ole logoa, sekä puolueen tunnuksessa sen ehdokkaiden yhteydessä. Kirjoita heksakoodi, esimerkiksi #2546a8, tai käytä värivalitsinta. Jos et halua väriä, jätä kenttä tyhjäksi. Väriä voidaan säätää automaattisesti, jotta se pysyy luettavana; esikatselu näyttää lopputuloksen.",
     "editableInfos": {
-      "description": "Nämä tiedot näkyvät profiilisivullasi.",
       "title": "Profiilisi"
-    },
-    "error": {
-      "invalidQuestion": "Kysymyksen tai vastauksen tyyppi oli virheellinen kysymykselle {questionId}."
     },
     "instructions": {
       "candidate": "Täytä ensin perustietosi ja lataa halutessasi valokuva. Tämän jälkeen sinulta kysytään poliittisia mielipiteitäsi.",

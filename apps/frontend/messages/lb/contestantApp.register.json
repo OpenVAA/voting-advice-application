@@ -35,7 +35,6 @@
       "required": "Wielt, wéi Dir Iech aschreiwe wëllt."
     },
     "passwordValidation": {
-      "commonPatterns": "Enthält heefeg Sequenzen oder Musteren",
       "length": "Op d’mannst {minPasswordLength} Zeechen",
       "lowercase": "Kleng Buschtaf",
       "number": "Zuel",

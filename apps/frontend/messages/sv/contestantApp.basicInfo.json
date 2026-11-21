@@ -2,11 +2,7 @@
   "contestantApp.basicInfo": {
     "colorInfo": "Visas bakom ditt partis förkortning när partiet saknar logotyp, och på partisymbolen bredvid partiets kandidater. Skriv en hexkod, till exempel #2546a8, eller använd färgväljaren, eller lämna fältet tomt om du inte vill ha någon färg. Färgen kan justeras automatiskt för att förbli läsbar; förhandsgranskningen visar resultatet.",
     "editableInfos": {
-      "description": "Denna information kommer att visas i din profil.",
       "title": "Din profil"
-    },
-    "error": {
-      "invalidQuestion": "Frågetyp eller svarstyp är ogiltig för frågan {questionId}"
     },
     "instructions": {
       "candidate": "Fyll först i dina grundläggande uppgifter och ladda upp ett foto om du vill. Därefter får du svara på frågor om dina politiska åsikter.",

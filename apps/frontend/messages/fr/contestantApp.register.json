@@ -35,7 +35,6 @@
       "required": "Choisissez comment vous souhaitez vous inscrire."
     },
     "passwordValidation": {
-      "commonPatterns": "Contient des séquences ou motifs courants",
       "length": "Au moins {minPasswordLength} caractères",
       "lowercase": "Lettre minuscule",
       "number": "Chiffre",

@@ -25,7 +25,6 @@
       "./messages/{locale}/contestantApp.help.json",
       "./messages/{locale}/contestantApp.home.json",
       "./messages/{locale}/contestantApp.identityProvider.json",
-      "./messages/{locale}/contestantApp.info.json",
       "./messages/{locale}/contestantApp.login.json",
       "./messages/{locale}/contestantApp.logoutModal.json",
       "./messages/{locale}/contestantApp.nominations.json",

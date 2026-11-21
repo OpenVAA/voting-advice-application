@@ -35,7 +35,6 @@
       "required": "Vælg, hvordan du vil registrere dig."
     },
     "passwordValidation": {
-      "commonPatterns": "Indeholder almindelige mønstre eller sekvenser",
       "length": "Mindst {minPasswordLength} tegn",
       "lowercase": "Lille bogstav",
       "number": "Tal",
