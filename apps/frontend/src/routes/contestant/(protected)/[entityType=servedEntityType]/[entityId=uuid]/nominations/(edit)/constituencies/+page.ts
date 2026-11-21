@@ -20,12 +20,12 @@ import {
   constituenciesStepSelection,
   emptySelection,
   stepAddress,
-  stepFactsOf
+  stepInputOf
 } from '../stepSelection';
 import type { ConstituencyStepChoice } from '../stepSelection';
 
 export async function load({ params, parent, url }) {
-  const facts = stepFactsOf({ parentData: await parent(), url });
+  const facts = stepInputOf({ parentData: await parent(), url });
   if (!facts) {
     const nothing: ConstituencyStepChoice = { toChoose: [], kept: [], onArrival: {} };
     return { nominationSelection: emptySelection(), nominationConstituencyChoice: nothing };

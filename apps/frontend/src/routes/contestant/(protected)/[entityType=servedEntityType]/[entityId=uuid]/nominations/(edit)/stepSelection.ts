@@ -29,7 +29,7 @@ import type { Constituency, DataRoot, Election } from '@openvaa/data';
 import type { NominationContest } from '$lib/api/base/dataWriter.type';
 import type { NominationContestFacts } from '$lib/contestant/nominations';
 import type { RootSelectionData, Route, SelectionInput } from '$lib/routes';
-import type { NominationFacts } from '../nominationFacts';
+import type { NominationScope } from '../nominationScope';
 
 /** A step of the editor. */
 export type EditorStep = 'elections' | 'constituencies' | 'details';
@@ -56,7 +56,7 @@ export type StepForward = {
 };
 
 /** The values every decision of a step is made from. */
-export type StepFacts = {
+export type StepInput = {
   /** The application settings. */
   appSettings: AppSettings;
   /** The data root that holds the elections and the constituencies. */
@@ -80,7 +80,7 @@ export type StepParentData = RootSelectionData & {
   /** The user-level gate that is pending, or `null`. */
   gate?: unknown;
   /** The facts of the entity's nominations, when they are known. */
-  nominationFacts?: NominationFacts;
+  nominationScope?: NominationScope;
   /** The data of the entity the address names, with its nominations as the entity-level load read them. */
   contestantUserData?: { nominations?: ReadonlyArray<IdentifiedNomination> | null } | null;
 };
@@ -169,7 +169,7 @@ export function stepAddress({
  */
 export function managedNominationsOf<TNomination extends { id: Id }>(
   nominations: ReadonlyArray<TNomination> | null | undefined,
-  facts: NominationFacts | undefined
+  facts: NominationScope | undefined
 ): Array<TNomination> {
   if (!nominations || !facts) return [];
   const writable = new Set(facts.writableNominationIds);
@@ -182,19 +182,19 @@ export function managedNominationsOf<TNomination extends { id: Id }>(
  * @param url - The step's address.
  * @returns The values, or `undefined` while a gate is pending, while the facts are not known and when the root load's data could not be read: nothing is decided then.
  */
-export function stepFactsOf({ parentData, url }: { parentData: StepParentData; url: URL }): StepFacts | undefined {
-  if (parentData.gate !== null || !parentData.nominationFacts) return undefined;
+export function stepInputOf({ parentData, url }: { parentData: StepParentData; url: URL }): StepInput | undefined {
+  if (parentData.gate !== null || !parentData.nominationScope) return undefined;
   const selectionData = selectionDataOf(parentData);
   if (!selectionData) return undefined;
   const { appSettings, dataRoot } = selectionData;
-  const admissibleIds = new Set(parentData.nominationFacts.admissibleElectionIds);
+  const admissibleIds = new Set(parentData.nominationScope.admissibleElectionIds);
   const admissible = dataRoot.elections.filter((election) => admissibleIds.has(election.id));
   return {
     appSettings,
     dataRoot,
     admissible,
     selection: matchedSelection({ appSettings, dataRoot, admissible, selection: selectionOfAddress(url) }),
-    nominations: managedNominationsOf(parentData.contestantUserData?.nominations, parentData.nominationFacts)
+    nominations: managedNominationsOf(parentData.contestantUserData?.nominations, parentData.nominationScope)
   };
 }
 
@@ -208,7 +208,7 @@ export function matchedSelection({
   dataRoot,
   admissible,
   selection
-}: Omit<StepFacts, 'nominations'>): NominationSelection {
+}: Omit<StepInput, 'nominations'>): NominationSelection {
   const electionIds = new Set(admissible.map((election) => election.id));
   const groups = admissible.flatMap((election) => election.constituencyGroups);
   const first = usesSingleConstituencyGroup({ appSettings, constituencyGroups: dataRoot.constituencyGroups });
@@ -225,7 +225,7 @@ export function matchedSelection({
  * @param facts - The values the step decides from.
  * @returns The step the address forwards to, or `undefined` when the election step is shown.
  */
-export function electionsAddressForward(facts: StepFacts): StepForward | undefined {
+export function electionsAddressForward(facts: StepInput): StepForward | undefined {
   const outcome = electionsStepOutcome(selectionInputOf(facts));
   if (outcome.action === 'show') return undefined;
   if (outcome.action === 'done')
@@ -247,7 +247,7 @@ export function electionsAddressForward(facts: StepFacts): StepForward | undefin
  * @param facts - The values the step decides from.
  * @returns A fresh selection.
  */
-export function electionsStepSelection({ selection, nominations }: StepFacts): NominationSelection {
+export function electionsStepSelection({ selection, nominations }: StepInput): NominationSelection {
   return {
     electionIds: selection.electionIds.length
       ? [...selection.electionIds]
@@ -263,7 +263,7 @@ export function electionsStepSelection({ selection, nominations }: StepFacts): N
  * @param facts - The values the step decides from.
  * @returns The step the address forwards to, or `undefined` when the constituency step is shown.
  */
-export function constituenciesAddressForward(facts: StepFacts): StepForward | undefined {
+export function constituenciesAddressForward(facts: StepInput): StepForward | undefined {
   const { selection } = facts;
   const constituencyFirst = !!facts.appSettings.elections?.startFromConstituencyGroup;
   const { toChoose, kept } = constituencyFirst
@@ -292,7 +292,7 @@ export function constituenciesAddressForward(facts: StepFacts): StepForward | un
  * @param facts - The values the step decides from.
  * @returns A fresh selection.
  */
-export function constituenciesStepSelection({ admissible, selection }: StepFacts): NominationSelection {
+export function constituenciesStepSelection({ admissible, selection }: StepInput): NominationSelection {
   const implied = !selection.electionIds.length && admissible.length === 1;
   return {
     electionIds: implied ? [admissible[0].id] : [...selection.electionIds],
@@ -307,7 +307,7 @@ export function constituenciesStepSelection({ admissible, selection }: StepFacts
  * @param facts - The values the step decides from.
  * @returns A fresh object.
  */
-export function constituenciesStepChoice(facts: StepFacts): ConstituencyStepChoice {
+export function constituenciesStepChoice(facts: StepInput): ConstituencyStepChoice {
   const { appSettings, dataRoot, admissible, selection, nominations } = facts;
   const singleGroup = usesSingleConstituencyGroup({ appSettings, constituencyGroups: dataRoot.constituencyGroups });
   const choice = singleGroup
@@ -342,7 +342,7 @@ export function constituenciesStepChoice(facts: StepFacts): ConstituencyStepChoi
  * @param facts - The values the step decides from.
  * @returns The contests and the kept elections, or the step the address forwards to.
  */
-export function detailsAddressOutcome(facts: StepFacts): DetailsStepContests | StepForward {
+export function detailsAddressOutcome(facts: StepInput): DetailsStepContests | StepForward {
   let selection = facts.selection;
   if (!selection.electionIds.length) {
     const entry = electionsAddressForward(facts);
@@ -363,7 +363,7 @@ export function detailsAddressOutcome(facts: StepFacts): DetailsStepContests | S
  * @param facts - The settings, the data root and the admissible elections. The selection is not read.
  * @returns `false` when the editor's entry leads straight to the details step with nothing chosen.
  */
-export function hasSelectionStep(facts: Omit<StepFacts, 'selection' | 'nominations'>): boolean {
+export function hasSelectionStep(facts: Omit<StepInput, 'selection' | 'nominations'>): boolean {
   return electionsAddressForward({ ...facts, selection: emptySelection(), nominations: [] })?.step !== 'details';
 }
 
@@ -376,7 +376,7 @@ export function contestsOf({
   dataRoot,
   admissible,
   selection
-}: Pick<StepFacts, 'dataRoot' | 'admissible' | 'selection'>): Array<NominationContest> | undefined {
+}: Pick<StepInput, 'dataRoot' | 'admissible' | 'selection'>): Array<NominationContest> | undefined {
   const chosen = admissible.filter((election) => selection.electionIds.includes(election.id));
   if (!chosen.length) return undefined;
   const constituencies = constituenciesOf(dataRoot, selection.constituencyIds);
@@ -394,7 +394,7 @@ export function contestsOf({
  * @param facts - The values the page read, with the elections chosen on it and the constituencies of its address as the selection.
  * @returns The step and the selection its address carries.
  */
-export function afterElections(facts: StepFacts): StepForward {
+export function afterElections(facts: StepInput): StepForward {
   const { selection } = facts;
   if (facts.appSettings.elections?.startFromConstituencyGroup) return { step: 'details', selection };
   const forward = constituenciesAddressForward(facts);
@@ -406,7 +406,7 @@ export function afterElections(facts: StepFacts): StepForward {
  * @param facts - The values the page read, with the elections of its address and the constituencies chosen on it as the selection.
  * @returns The step and the selection its address carries, or `undefined` when a constituency group is chosen first and no admissible election is held in the chosen constituencies: the step is not left. While a constituency group is chosen first, the selection carries the chosen constituencies followed by those they stand for.
  */
-export function afterConstituencies(facts: Omit<StepFacts, 'nominations'>): StepForward | undefined {
+export function afterConstituencies(facts: Omit<StepInput, 'nominations'>): StepForward | undefined {
   const { selection } = facts;
   if (!facts.appSettings.elections?.startFromConstituencyGroup) return { step: 'details', selection };
   const constituencies = constituenciesStoodFor({
@@ -466,7 +466,7 @@ export function constituenciesOf(dataRoot: DataRoot, ids: ReadonlyArray<Id>): Ar
 }
 
 /** Which of the elections given have a constituency to choose, and which hold several of the entity's nominations and are kept as stored. */
-function choiceAmong({ nominations }: Pick<StepFacts, 'nominations'>, electionIds: ReadonlyArray<Id>) {
+function choiceAmong({ nominations }: Pick<StepInput, 'nominations'>, electionIds: ReadonlyArray<Id>) {
   return constituencyChoiceOf({ chosenElectionIds: electionIds, nominations });
 }
 
@@ -482,7 +482,7 @@ function selectionInputOf({
   dataRoot,
   admissible,
   selection
-}: Omit<StepFacts, 'nominations'>): SelectionInput {
+}: Omit<StepInput, 'nominations'>): SelectionInput {
   return {
     dataRoot,
     elections: admissible,

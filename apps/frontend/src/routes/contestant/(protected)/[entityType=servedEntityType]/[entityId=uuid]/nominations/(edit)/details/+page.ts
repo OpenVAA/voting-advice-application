@@ -14,12 +14,12 @@
 
 import { redirect } from '@sveltejs/kit';
 import { getLocale } from '$lib/paraglide/runtime';
-import { detailsAddressOutcome, stepAddress, stepFactsOf } from '../stepSelection';
+import { detailsAddressOutcome, stepAddress, stepInputOf } from '../stepSelection';
 import type { Id } from '@openvaa/core';
 import type { NominationContest } from '$lib/api/base/dataWriter.type';
 
 export async function load({ params, parent, url }) {
-  const facts = stepFactsOf({ parentData: await parent(), url });
+  const facts = stepInputOf({ parentData: await parent(), url });
   if (!facts) return { nominationContests: new Array<NominationContest>(), nominationKeptElectionIds: new Array<Id>() };
 
   const outcome = detailsAddressOutcome(facts);

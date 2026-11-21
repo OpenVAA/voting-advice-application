@@ -2,12 +2,12 @@
 
 # Test harness: the layouts above the entity layout
 
-Stands in for the root layout and renders `AfterSaveContestant` below it, for `afterSave.svelte.test.ts`. It initialises the data context and gives the data root the elections and the constituencies in an effect of its own, as the root layout does.
+Stands in for the root layout and renders `DetailsContestantHarness` below it, for `../afterSave.svelte.test.ts`. It initialises the data context and gives the data root the elections and the constituencies in an effect of its own, as the root layout does.
 -->
 
 <script lang="ts">
   import { initDataContext } from '$lib/contexts/data';
-  import AfterSaveContestant from './AfterSaveContestant.svelte';
+  import DetailsContestantHarness from './DetailsContestantHarness.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
 
   let {
@@ -38,4 +38,4 @@ Stands in for the root layout and renders `AfterSaveContestant` below it, for `a
   });
 </script>
 
-<AfterSaveContestant {layoutData} {pageData} />
+<DetailsContestantHarness {layoutData} {pageData} />

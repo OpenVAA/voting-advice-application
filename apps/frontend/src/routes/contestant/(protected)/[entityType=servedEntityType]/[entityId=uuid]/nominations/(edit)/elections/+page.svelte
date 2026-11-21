@@ -114,7 +114,7 @@ Everything that differs between entity types is a text whose key the page builds
       appSettings: contestantCtx.appSettings,
       dataRoot: contestantCtx.dataRoot,
       admissible,
-      nominations: managedNominationsOf(contestantCtx.nominations, data.nominationFacts),
+      nominations: managedNominationsOf(contestantCtx.nominations, data.nominationScope),
       selection: { electionIds: chosen, constituencyIds: data.nominationSelection.constituencyIds }
     });
     await goto(getRoute.current({ route: EDITOR_STEP_ROUTE[forward.step], ...selectionSearch(forward.selection) }));

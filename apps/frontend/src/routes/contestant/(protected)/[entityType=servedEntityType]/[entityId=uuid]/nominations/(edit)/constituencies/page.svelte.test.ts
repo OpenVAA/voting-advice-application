@@ -183,7 +183,7 @@ async function pageDataOf(world: World, { electionIds, constituencyIds }: Nomina
     params: { entityType: 'candidate', entityId: ENTITY_ID },
     parent: async () => ({
       gate: null,
-      nominationFacts: {
+      nominationScope: {
         editable: true,
         admissibleElectionIds: admissibleElectionsOf(dataRootOf(world.municipalShape).elections, 'candidate').map(
           (election) => election.id

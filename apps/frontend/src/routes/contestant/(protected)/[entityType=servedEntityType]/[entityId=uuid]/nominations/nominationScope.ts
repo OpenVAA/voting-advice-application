@@ -3,7 +3,7 @@
  *
  * The function takes values a load has already read and makes no request.
  *
- * Tested in `layout.test.ts`, through the load that calls it, and whether another nomination can be added in `nominationFacts.test.ts`.
+ * Tested in `layout.test.ts`, through the load that calls it, and whether another nomination can be added in `nominationScope.test.ts`.
  */
 
 import { CONTESTANT_EDITING, getContestantEditing } from '@openvaa/app-shared';
@@ -14,7 +14,7 @@ import type { EntityNomination } from '$lib/api/base/dataWriter.type';
 import type { SelectionData } from '$lib/routes';
 
 /** What is known of an entity's nominations before any page of the nominations tree renders. */
-export type NominationFacts = {
+export type NominationScope = {
   /** Whether the entity's nominations may be edited: neither the nominations lock nor the answers lock is on. */
   editable: boolean;
   /** The ids of the elections that admit the entity's type, in the order the application lists elections. */
@@ -32,7 +32,7 @@ export type NominationFacts = {
  * @param nominations - The entity's nominations, as the entity-level load read them.
  * @returns A fresh object.
  */
-export function nominationFactsOf({
+export function nominationScopeOf({
   selectionData: { appSettings, dataRoot },
   entityType,
   nominations
@@ -40,7 +40,7 @@ export function nominationFactsOf({
   selectionData: SelectionData;
   entityType: EntityType;
   nominations: ReadonlyArray<EntityNomination>;
-}): NominationFacts {
+}): NominationScope {
   const elections = dataRoot.elections;
   const editable = nominationsEditableOf({
     nominationsLocked: getContestantEditing(appSettings) !== CONTESTANT_EDITING.Open,

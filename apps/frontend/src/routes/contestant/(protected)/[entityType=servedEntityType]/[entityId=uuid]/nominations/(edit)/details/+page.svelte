@@ -123,6 +123,8 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   let saveMessage = $state<{ outcome: StayedOutcome; text: string } | undefined>();
   /** The errors the last press of the main button found. */
   let reported = $state.raw<ReadonlyArray<CardError>>([]);
+  /** The message of each card's name field for a party or an alliance that is not listed, by the card's key: set by a press that found the name missing, and cleared by the field when the user edits it. */
+  let otherNameErrors = $state<Record<string, string | undefined>>({});
   /** The list of cards, through which focus is moved to a control in error. */
   let cardList = $state<HTMLElement | undefined>();
   /** The element that holds the page's buttons, through which focus is returned to the main button. */
@@ -140,9 +142,6 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   const descriptor = $derived(entityDescriptorOf(contestantCtx.selectedEntity?.type));
   /** The type whose texts the page shows: each text that differs by type alone has a key ending in it. */
   const textType = $derived(servedEntityTypeOf(contestantCtx.selectedEntity?.type));
-
-  /** The options as they were read, or `undefined` while there are none to show. */
-  const readOptions = $derived(parentOptions === 'failed' ? undefined : parentOptions);
 
   /** The longest election symbol and the longest typed name the database stores. Each reaches its field's control as an attribute, with the other attributes `Input` passes on. */
   const SYMBOL_LIMIT = { maxlength: 50 };
@@ -179,7 +178,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     const known =
       !!contestantCtx.selectedEntity?.type &&
       !!contestantCtx.nominations &&
-      !!data.nominationFacts &&
+      !!data.nominationScope &&
       admissible.length > 0;
     if (!known || builtFor === key) return;
     untrack(buildCardsAnew);
@@ -191,7 +190,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   function buildCardsAnew(): void {
     const entityType = contestantCtx.selectedEntity?.type;
     const stored = contestantCtx.nominations;
-    const facts = data.nominationFacts;
+    const facts = data.nominationScope;
     if (!entityType || !stored || !facts || !admissible.length) return;
     const key = contestsKey;
     builtFor = key;
@@ -199,6 +198,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     builtOn = nominations;
     cards = buildCards({ entityType, nominations, chosen: chosenPairsOf(nominations), elections: admissible });
     reported = [];
+    otherNameErrors = {};
     saveMessage = undefined;
     optionsRead = readParentOptions(key, contestsOf(cards));
   }
@@ -269,65 +269,64 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     options: Array<EntitySelectorOption>;
   };
 
-  /** The entities the options name, each with the name the data root holds for it: `undefined` until the options are read, and `'failed'` when the data root does not hold one of their entities. */
-  const listedLookup = $derived.by((): Array<ListedParent> | 'failed' | undefined => {
-    if (!readOptions) return undefined;
+  /** The entities the options name, what each card's parent group offers and every card with the names and options it is shown with. */
+  type Resolved = {
+    listed: Array<ListedParent>;
+    choicesByKey: Map<string, ParentChoices>;
+    /** `undefined` while there are no cards. */
+    views: Array<CardView> | undefined;
+  };
+
+  /** What the options and the cards resolve to in the data root: `undefined` until the options are read, and `'failed'` when their read failed or the data root does not hold an entity the options name or a name a card is shown with, so that no card is shown without its options or with a name it could not resolve. */
+  const resolved = $derived.by((): Resolved | 'failed' | undefined => {
+    if (parentOptions === undefined) return undefined;
+    if (parentOptions === 'failed') return 'failed';
     try {
-      return readOptions.map(({ entity }) => ({
+      const listed = parentOptions.map(({ entity }) => ({
         entityType: entity.type,
         id: entity.id,
         name: contestantCtx.dataRoot.getEntity(entity.type, entity.id).name
       }));
+      const choicesByKey = new Map(
+        cards.map((card) => [card.key, parentChoicesOf({ card, listed, locale: contestantCtx.locale })])
+      );
+      const views = cards.length
+        ? cards.map((card, index) => {
+            const choices = choicesByKey.get(card.key) ?? { options: [], selected: undefined, required: false };
+            return {
+              card,
+              idPrefix: `nomination-editor-card-${index}`,
+              electionName: contestantCtx.dataRoot.getElection(card.electionId).name,
+              constituencyName: contestantCtx.dataRoot.getConstituency(card.constituencyId).name,
+              previousConstituencyName:
+                card.previousConstituencyId === undefined
+                  ? undefined
+                  : contestantCtx.dataRoot.getConstituency(card.previousConstituencyId).name,
+              choices,
+              options: choices.options.map((option) => selectorOptionOf(card, option))
+            };
+          })
+        : undefined;
+      return { listed, choicesByKey, views };
     } catch (e) {
-      log.error(`[Contestant app nomination editor] Error resolving a parent option in the data root: ${e}`);
+      log.error(
+        `[Contestant app nomination editor] Error resolving the parent options or a card's names in the data root: ${e}`
+      );
       return 'failed';
     }
   });
 
   /** The entities the options name, or `undefined` while there are none to show. */
-  const listed = $derived(listedLookup === 'failed' ? undefined : listedLookup);
-
+  const listed = $derived(typeof resolved === 'object' ? resolved.listed : undefined);
   /** What each card's parent group offers, by the card's key. */
   const choicesByKey = $derived(
-    new Map(
-      cards.map((card) => [card.key, parentChoicesOf({ card, listed: listed ?? [], locale: contestantCtx.locale })])
-    )
+    typeof resolved === 'object' ? resolved.choicesByKey : new Map<string, ParentChoices>()
   );
-
-  /** Every card with the names and options it is shown with: `undefined` until the options are listed, and `'failed'` when the data root does not hold a name a card is shown with, so that no card is shown without its options or with a name it could not resolve. */
-  const viewsLookup = $derived.by((): Array<CardView> | 'failed' | undefined => {
-    if (!listed || !cards.length) return undefined;
-    try {
-      return cards.map((card, index) => {
-        const choices = choicesByKey.get(card.key) ?? { options: [], selected: undefined, required: false };
-        return {
-          card,
-          idPrefix: `nomination-editor-card-${index}`,
-          electionName: contestantCtx.dataRoot.getElection(card.electionId).name,
-          constituencyName: contestantCtx.dataRoot.getConstituency(card.constituencyId).name,
-          previousConstituencyName:
-            card.previousConstituencyId === undefined
-              ? undefined
-              : contestantCtx.dataRoot.getConstituency(card.previousConstituencyId).name,
-          choices,
-          options: choices.options.map((option) => selectorOptionOf(card, option))
-        };
-      });
-    } catch (e) {
-      log.error(`[Contestant app nomination editor] Error resolving a card's names in the data root: ${e}`);
-      return 'failed';
-    }
-  });
-
   /** Every card with the names and options it is shown with, or `undefined` while there are none to show. */
-  const views = $derived(viewsLookup === 'failed' ? undefined : viewsLookup);
+  const views = $derived(typeof resolved === 'object' ? resolved.views : undefined);
 
   /** Which of its states the page is in. */
-  const editorState = $derived.by((): 'loading' | 'ready' | 'saving' | 'error' => {
-    if (parentOptions === 'failed' || listedLookup === 'failed' || viewsLookup === 'failed') return 'error';
-    if (!views) return 'loading';
-    return saving ? 'saving' : 'ready';
-  });
+  const editorState = $derived(resolved === 'failed' ? 'error' : !views ? 'loading' : saving ? 'saving' : 'ready');
 
   /** Whether the page lists cards. */
   const listing = $derived(views !== undefined);
@@ -394,7 +393,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
    * Whether a listed entity is nominated in a card's election and constituency.
    */
   function isNominatedAt(card: EditorCard, entityId: string): boolean {
-    const option = readOptions?.find(({ entity }) => entity.id === entityId);
+    const option = parentOptions === 'failed' ? undefined : parentOptions?.find(({ entity }) => entity.id === entityId);
     return !!option?.nominatedIn.some(
       (contest) => contest.electionId === card.electionId && contest.constituencyId === card.constituencyId
     );
@@ -427,6 +426,13 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
       default:
         return undefined;
     }
+  }
+
+  /**
+   * The message of a card's name field for a party or an alliance that is not listed, while the last press found the name missing and the draft has not put it right since.
+   */
+  function otherNameErrorOf(card: EditorCard): string | undefined {
+    return shownErrors.get(card.key) === 'otherNameRequired' ? otherNameErrors[card.key] : undefined;
   }
 
   /**
@@ -500,6 +506,11 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
 
     const errors = validateCards(cards, choicesByKey);
     reported = errors;
+    otherNameErrors = Object.fromEntries(
+      errors
+        .filter(({ error }) => error === 'otherNameRequired')
+        .map(({ key }) => [key, t(`contestantApp.nominations.error.otherRequired.${textType}`)])
+    );
     if (errors.length) {
       saveMessage = { outcome: 'invalid', text: t('contestantApp.nominations.error.checkCards') };
       await focusError(errors[0]);
@@ -557,7 +568,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     // A lock refuses the write before the nominations are compared, so the refusal says nothing of whether they have changed, and no save can be stored while it holds.
     if (result?.type === 'refused' && (result.reason === 'answersLocked' || result.reason === 'nominationsLocked'))
       return result.reason;
-    const stored = managedNominationsOf(contestantCtx.nominations, data.nominationFacts);
+    const stored = managedNominationsOf(contestantCtx.nominations, data.nominationScope);
     const refusedAsChanged = result?.type === 'refused' && result.reason === 'changed';
     if (refusedAsChanged || !sameNominations(startedFrom, stored)) {
       // The re-read has built the cards again already where it also changed what the address chose.
@@ -641,9 +652,7 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
       bind:this={cardList}
       data-testid="contestant-nomination-details-list">
       {#each views as view (view.card.key)}
-        {@const otherErrorId = `${view.idPrefix}-other-error`}
         {@const removedNoteId = `${view.idPrefix}-removed-note`}
-        {@const otherNameMissing = shownErrors.get(view.card.key) === 'otherNameRequired'}
         {@const existing = view.card.nominationId !== undefined}
         <li>
           <NominationCard
@@ -703,19 +712,12 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
                           autocomplete="off"
                           value={view.card.otherName}
                           onChange={(value) => (view.card.otherName = typeof value === 'string' ? value.trim() : '')}
-                          aria-invalid={otherNameMissing ? 'true' : undefined}
-                          aria-describedby={otherNameMissing ? otherErrorId : undefined}
+                          bind:error={
+                            () => otherNameErrorOf(view.card), (next) => (otherNameErrors[view.card.key] = next)
+                          }
+                          errorTestId="nomination-editor-other-error"
                           containerProps={{ 'data-testid': 'nomination-editor-other' }}
                           data-testid="nomination-editor-other-input" />
-                        {#if otherNameMissing}
-                          <p
-                            class="text-warning mt-sm"
-                            role="alert"
-                            id={otherErrorId}
-                            data-testid="nomination-editor-other-error">
-                            {t(`contestantApp.nominations.error.otherRequired.${textType}`)}
-                          </p>
-                        {/if}
                       </div>
                     {/if}
                   {/snippet}

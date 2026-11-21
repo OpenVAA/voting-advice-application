@@ -20,7 +20,7 @@ export async function load({ params, parent }) {
   const parentData = await parent();
   if (parentData.gate !== null) return {};
 
-  const facts = parentData.nominationFacts;
+  const facts = parentData.nominationScope;
   if (!facts) return {};
 
   if (!facts.editable || facts.admissibleElectionIds.length === 0)

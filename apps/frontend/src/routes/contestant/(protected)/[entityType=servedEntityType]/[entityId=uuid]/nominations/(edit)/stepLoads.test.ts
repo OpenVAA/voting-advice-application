@@ -18,7 +18,7 @@ import {
   selectionOfAddress
 } from './stepSelection';
 import type { ElectionData } from '@openvaa/data';
-import type { NominationSelection, StepFacts } from './stepSelection';
+import type { NominationSelection, StepInput } from './stepSelection';
 
 const ENTITY_ID = '11111111-1111-4111-8111-111111111111';
 const ENTITY_PARAMS = { entityType: 'candidate', entityId: ENTITY_ID };
@@ -77,7 +77,7 @@ function parentDataOf({
   const others = notWritable.map((nomination, index) => ({ id: `other-nomination-${index}`, ...nomination }));
   return {
     gate: null,
-    nominationFacts: {
+    nominationScope: {
       editable: true,
       admissibleElectionIds: admissible,
       writableNominationIds: writable.map((nomination) => nomination.id)
@@ -703,7 +703,7 @@ describe('every step, while nothing can be decided', () => {
   it.each(LOADS)(
     '$step decides nothing and forwards nowhere while the facts are not known',
     async ({ step, load, nothing }) => {
-      const parentData = { ...parentDataOf({ elections: ['national'] }), nominationFacts: undefined };
+      const parentData = { ...parentDataOf({ elections: ['national'] }), nominationScope: undefined };
       expect(await load(eventOf(step, SEARCH, parentData))).toEqual(nothing);
     }
   );
@@ -711,7 +711,7 @@ describe('every step, while nothing can be decided', () => {
 
 describe('where Continue of a selection step leads', () => {
   /** The values a page hands over, in the world given, with the selection the page holds and the entity's writable nominations. */
-  function factsOf(world: World, selection: NominationSelection): StepFacts {
+  function factsOf(world: World, selection: NominationSelection): StepInput {
     const dataRoot = new DataRoot();
     dataRoot.provideElectionData(world.elections.map((id) => ELECTIONS[id]));
     dataRoot.provideConstituencyData(CONSTITUENCY_DATA);

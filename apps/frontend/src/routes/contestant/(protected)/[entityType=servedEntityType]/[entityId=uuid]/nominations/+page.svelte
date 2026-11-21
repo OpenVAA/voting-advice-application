@@ -26,7 +26,7 @@ One card per nomination, in the order they were read. A card is headed by the el
 A card of a nomination the editor manages offers Edit and Delete while an entry to the editor is offered and neither lock is on; any other card holds no control.
 
 - **Edit** leads to the editor's details step with the election and the constituency of every nomination the editor manages chosen, so that the card's nomination is shown with the others and none of them is about to be removed.
-- **Delete** writes nothing and opens no dialog. The card then asks whether the nomination is to be deleted and offers Confirm and Cancel; Cancel takes the question back.
+- **Delete** writes nothing and opens no dialog: it is a `ButtonWithConfirmation` that confirms inline. The card then asks whether the nomination is to be deleted, holds no Edit, and offers Confirm and Cancel; Cancel takes the question back.
 - **Confirm** writes the nominations the editor manages, as the page shows them, without the card's own: each of the others with its symbol and with its parent kept. The write is checked against the nominations shown, so a set changed since they were read is refused and nothing is written. The page's data is then read again, whatever the outcome.
 - **Add a nomination** follows the cards while `canAddAnother` of the facts says another can be added and neither lock is on, and leads to the editor's entry, where the elections of the entity's nominations are chosen already. It is never shown in place of the nominations: there the main button leads into the editor.
 - **What came of it** is said above the cards: that the nomination was deleted, as a status; or, for a write that was refused or failed, the message the editor shows for the same reason, with the card kept. A write refused for the answers lock shows the note that nominations can no longer be changed; where the data read again already shows the lock's note above the title, the region holds only that note's sentence, for assistive technology, so the page shows one note and one Contact support button.
@@ -40,7 +40,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
 ### What the page reads
 
 - The nominations are those the entity-level load read, each with the names it is shown with, so the cards are in the server-rendered markup and the page looks nothing up.
-- Whether an entry is offered is read from `nominationFacts` of the page's data: the facts the load of the nominations tree states, on which the editor's guard decides who is let in. The page and the guard therefore agree, and each state is in the server-rendered markup. On a page whose data holds no facts no entry is offered, and an empty view under no lock says nothing in place of the nominations.
+- Whether an entry is offered is read from `nominationScope` of the page's data: the facts the load of the nominations tree states, on which the editor's guard decides who is let in. The page and the guard therefore agree, and each state is in the server-rendered markup. On a page whose data holds no facts no entry is offered, and an empty view under no lock says nothing in place of the nominations.
 - On a page whose data holds no entity the list is not known, and neither a card nor a sentence in place of the nominations is shown.
 - Everything that differs between entity types is read from the descriptor of the selected entity's type, or is a text whose key the page builds from that type.
 
@@ -64,8 +64,8 @@ Return follows it and leads to the entity's home wherever the main button leads 
   import { NotEditableNote } from '$contestant/components/notEditableNote';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
+  import { ButtonWithConfirmation } from '$lib/components/buttonWithConfirmation';
   import { ErrorMessage } from '$lib/components/errorMessage';
-  import { Warning } from '$lib/components/warning';
   import { NOMINATION_REFUSAL_MESSAGE, refusalOf, typedParentNameOf } from '$lib/contestant/nominations';
   import { nominationsViewTarget } from '$lib/contestant/tasks';
   import { entityDescriptorOf, servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
@@ -133,7 +133,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
   });
 
   /** The facts the editor's guard decides on. `undefined` on a page whose data holds none. */
-  const facts = $derived(data.nominationFacts);
+  const facts = $derived(data.nominationScope);
 
   /** Whether an entry to the editor is offered: nominations can be edited and an election admits the entity. */
   const entryOffered = $derived(!!facts && facts.editable && facts.admissibleElectionIds.length > 0);
@@ -198,20 +198,11 @@ Return follows it and leads to the entity's home wherever the main button leads 
   }
 
   /**
-   * Ask on a card whether its nomination is to be deleted. Nothing is written.
+   * Show or take back a card's question whether its nomination is to be deleted. Nothing is written.
    */
-  async function askDelete(nomination: EntityNomination): Promise<void> {
-    confirming = nomination.id;
-    deleteOutcome = undefined;
-    await focusInCard(nomination.id, 'contestant-nomination-delete-confirm');
-  }
-
-  /**
-   * Take a card's question back.
-   */
-  async function cancelDelete(nomination: EntityNomination): Promise<void> {
-    confirming = undefined;
-    await focusInCard(nomination.id, 'contestant-nomination-delete');
+  function setConfirming(nomination: EntityNomination, open: boolean): void {
+    confirming = open ? nomination.id : undefined;
+    if (open) deleteOutcome = undefined;
   }
 
   /**
@@ -351,7 +342,6 @@ Return follows it and leads to the entity's home wherever the main button leads 
       bind:this={cardList}
       data-testid="contestant-nominations-list">
       {#each nominations as nomination (nomination.id)}
-        {@const promptId = `nomination-${nomination.id}-delete-prompt`}
         <li>
           <NominationCard
             title={nomination.electionName}
@@ -366,44 +356,29 @@ Return follows it and leads to the entity's home wherever the main button leads 
               </p>
             {/if}
             {#if actionIds.has(nomination.id)}
-              {#if confirming === nomination.id}
-                <Warning class="mt-md" id={promptId} data-testid="contestant-nomination-delete-prompt">
-                  {t('contestantApp.nominations.deletePrompt')}
-                </Warning>
-                <div class="mt-sm gap-sm flex flex-wrap">
-                  <Button
-                    text={t('contestantApp.nominations.deleteConfirm')}
-                    icon="removeFromList"
-                    iconPos="left"
-                    color="warning"
-                    loading={deleting}
-                    aria-describedby={promptId}
-                    onclick={() => confirmDelete(nomination)}
-                    data-testid="contestant-nomination-delete-confirm" />
-                  <Button
-                    text={t('contestantApp.nominations.deleteCancel')}
-                    disabled={deleting}
-                    onclick={() => cancelDelete(nomination)}
-                    data-testid="contestant-nomination-delete-cancel" />
-                </div>
-              {:else}
-                <div class="mt-md gap-sm flex flex-wrap">
+              <div class="mt-md gap-sm flex flex-wrap">
+                {#if confirming !== nomination.id}
                   <Button
                     text={t('contestantApp.nominations.edit')}
                     icon="create"
                     iconPos="left"
                     href={editHref}
                     data-testid="contestant-nomination-edit" />
-                  <Button
-                    text={t('contestantApp.nominations.delete')}
-                    icon="removeFromList"
-                    iconPos="left"
-                    color="warning"
-                    disabled={deleting}
-                    onclick={() => askDelete(nomination)}
-                    data-testid="contestant-nomination-delete" />
-                </div>
-              {/if}
+                {/if}
+                <ButtonWithConfirmation
+                  confirmationType="inline"
+                  bind:open={() => confirming === nomination.id, (open) => setConfirming(nomination, open)}
+                  text={t('contestantApp.nominations.delete')}
+                  icon="removeFromList"
+                  iconPos="left"
+                  color="warning"
+                  disabled={deleting}
+                  modalTitle={t('contestantApp.nominations.deletePrompt')}
+                  confirmLabel={t('contestantApp.nominations.deleteConfirm')}
+                  cancelLabel={t('contestantApp.nominations.deleteCancel')}
+                  onConfirm={() => confirmDelete(nomination)}
+                  data-testid="contestant-nomination-delete" />
+              </div>
             {/if}
           </NominationCard>
         </li>

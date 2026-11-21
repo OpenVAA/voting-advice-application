@@ -18,7 +18,7 @@
 import { describe, expect, it } from 'vitest';
 import { load } from './+layout';
 import { recordingEvent } from '../../../../loadTracking.testUtils';
-import type { NominationFacts } from '../nominationFacts';
+import type { NominationScope } from '../nominationScope';
 
 const CANDIDATE_ID = '11111111-1111-4111-8111-111111111111';
 
@@ -42,7 +42,7 @@ const STEP_ADDRESSES: Array<[string]> = [
 ];
 
 /** The facts of an entity the editor is served to: editable, with an election to stand in and no nomination yet. */
-const SERVED: NominationFacts = {
+const SERVED: NominationScope = {
   editable: true,
   admissibleElectionIds: ['election-1', 'election-2'],
   writableNominationIds: [],
@@ -50,7 +50,7 @@ const SERVED: NominationFacts = {
 };
 
 /** The facts of every entity the editor is served to, by what it holds. */
-const SERVED_ENTITIES: Array<{ title: string; facts: NominationFacts }> = [
+const SERVED_ENTITIES: Array<{ title: string; facts: NominationScope }> = [
   { title: 'no nomination', facts: SERVED },
   {
     title: 'a writable nomination',
@@ -59,7 +59,7 @@ const SERVED_ENTITIES: Array<{ title: string; facts: NominationFacts }> = [
 ];
 
 /** The facts of every entity the editor is not served to, by what turns it away. */
-const TURNED_AWAY: Array<{ title: string; facts: NominationFacts }> = [
+const TURNED_AWAY: Array<{ title: string; facts: NominationScope }> = [
   { title: 'a lock is on', facts: { ...SERVED, editable: false } },
   { title: "no election admits the entity's type", facts: { ...SERVED, admissibleElectionIds: [] } },
   {
@@ -69,8 +69,8 @@ const TURNED_AWAY: Array<{ title: string; facts: NominationFacts }> = [
 ];
 
 /** The parent loads' data of an ungated user whose entity has the facts given. */
-function ungated(nominationFacts: NominationFacts | undefined): Record<string, unknown> {
-  return { gate: null, nominationFacts };
+function ungated(nominationScope: NominationScope | undefined): Record<string, unknown> {
+  return { gate: null, nominationScope };
 }
 
 describe('contestant/(protected)/[entityType]/[entityId]/nominations/(edit)/+layout.ts load dependency tracking', () => {
@@ -129,10 +129,10 @@ describe('contestant/(protected)/[entityType]/[entityId]/nominations/(edit)/+lay
   });
 
   it.each([
-    { title: 'a user-level gate is pending', parentData: { gate: 'termsOfUse', nominationFacts: undefined } },
+    { title: 'a user-level gate is pending', parentData: { gate: 'termsOfUse', nominationScope: undefined } },
     {
       title: 'a user-level gate is pending, whatever the facts say',
-      parentData: { gate: 'termsOfUse', nominationFacts: { ...SERVED, editable: false } }
+      parentData: { gate: 'termsOfUse', nominationScope: { ...SERVED, editable: false } }
     },
     { title: "the parent's data holds no facts", parentData: ungated(undefined) }
   ])('decides nothing and redirects nowhere while $title', async ({ parentData }) => {

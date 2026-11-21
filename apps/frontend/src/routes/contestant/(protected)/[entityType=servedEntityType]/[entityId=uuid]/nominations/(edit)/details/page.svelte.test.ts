@@ -259,6 +259,7 @@ const PARENT = '[data-testid="nomination-editor-parent"]';
 const OPTION = '[data-testid="entity-selector-option"]';
 const OPTION_INPUT = '[data-testid="entity-selector-option-input"]';
 const OTHER_NAME = '[data-testid="nomination-editor-other-input"]';
+const OTHER_ERROR = '[data-testid="nomination-editor-other-error"]';
 const REMOVE = '[data-testid="nomination-editor-remove"]';
 const KEEP = '[data-testid="nomination-editor-keep"]';
 const MESSAGE = '[data-testid="contestant-nomination-save-message"]';
@@ -318,7 +319,7 @@ type World = {
 /** The data the page is given for a world: what the step's load answers for the address, and the facts of the entity's nominations. */
 async function pageDataOf(world: World): Promise<Record<string, unknown>> {
   const nominations = [...(world.notWritable ?? []), ...(world.nominations ?? [])];
-  const nominationFacts = {
+  const nominationScope = {
     editable: true,
     admissibleElectionIds: ELECTION_DATA.map((election) => election.id),
     writableNominationIds: (world.nominations ?? []).map((row) => row.id)
@@ -330,7 +331,7 @@ async function pageDataOf(world: World): Promise<Record<string, unknown>> {
     params: { entityType: (world.entity ?? PARTY).type, entityId: ENTITY_ID },
     parent: async () => ({
       gate: null,
-      nominationFacts,
+      nominationScope,
       contestantUserData: { nominations },
       appSettingsData: {},
       electionData: ELECTION_DATA,
@@ -338,7 +339,7 @@ async function pageDataOf(world: World): Promise<Record<string, unknown>> {
     }),
     url: new URL(`http://localhost/contestant/organization/${ENTITY_ID}/nominations/details?${search}`)
   };
-  return { ...(await load(event as never)), nominationFacts };
+  return { ...(await load(event as never)), nominationScope };
 }
 
 /** Wait until the page says it is in the state given. */
@@ -894,6 +895,35 @@ describe('the main button', () => {
 
     expect(setEntityNominations).toHaveBeenCalledTimes(1);
     expect(setEntityNominations.mock.calls[0][0]).toEqual([]);
+  });
+
+  it('stays on the page for a typed parent with no name, with the error at the name field, which an edit clears', async () => {
+    const root = await render({ nominations: [NATIONAL], elections: ['national'] });
+    const card = one(root, CARD);
+    radioOf(card, 'other').click();
+    flushSync();
+
+    await press(root, SUBMIT);
+
+    const field = one<HTMLInputElement>(card, OTHER_NAME);
+    const error = one(card, OTHER_ERROR);
+    expect(textOf(error)).toContain('contestantApp.nominations.error.otherRequired.organization');
+    expect(error.getAttribute('role')).toBe('alert');
+    expect(field.getAttribute('aria-invalid')).toBe('true');
+    expect(field.getAttribute('aria-describedby')?.split(' ')).toContain(error.id);
+    expect(document.activeElement).toBe(field);
+    expect(setEntityNominations).not.toHaveBeenCalled();
+
+    field.value = 'T';
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    flushSync();
+
+    expect(count(card, OTHER_ERROR)).toBe(0);
+    expect(field.hasAttribute('aria-invalid')).toBe(false);
+
+    await press(root, SUBMIT);
+
+    expect(count(card, OTHER_ERROR)).toBe(1);
   });
 });
 

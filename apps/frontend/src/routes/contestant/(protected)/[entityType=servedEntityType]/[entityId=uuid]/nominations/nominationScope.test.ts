@@ -1,12 +1,12 @@
 /**
- * Whether another nomination can be added, as `nominationFactsOf` answers it: while nominations may be edited, an election that admits the entity's type is one in which the entity holds no nomination the editor manages. The editor chooses one constituency in each election, so an election the entity already stands in leaves nothing to add in it.
+ * Whether another nomination can be added, as `nominationScopeOf` answers it: while nominations may be edited, an election that admits the entity's type is one in which the entity holds no nomination the editor manages. The editor chooses one constituency in each election, so an election the entity already stands in leaves nothing to add in it.
  *
  * The facts are asked of a real `DataRoot` that holds the elections and their constituencies, with the settings the case names.
  */
 
 import { DataRoot } from '@openvaa/data';
 import { describe, expect, it } from 'vitest';
-import { nominationFactsOf } from './nominationFacts';
+import { nominationScopeOf } from './nominationScope';
 import type { ElectionData } from '@openvaa/data';
 import type { EntityNomination } from '$lib/api/base/dataWriter.type';
 
@@ -65,10 +65,10 @@ function canAddAnother({
   dataRoot.provideElectionData(ELECTION_DATA);
   dataRoot.provideConstituencyData(CONSTITUENCY_DATA);
   const appSettings = { access } as AppSettings;
-  return nominationFactsOf({ selectionData: { appSettings, dataRoot }, entityType, nominations }).canAddAnother;
+  return nominationScopeOf({ selectionData: { appSettings, dataRoot }, entityType, nominations }).canAddAnother;
 }
 
-describe('nominationFactsOf — whether another nomination can be added', () => {
+describe('nominationScopeOf — whether another nomination can be added', () => {
   it('is true for an entity with no nomination while an election admits it', () => {
     expect(canAddAnother({})).toBe(true);
   });

@@ -91,7 +91,7 @@ function eventOf(parentData: Record<string, unknown>) {
 
 /** The facts the load states for the parent data given. */
 async function factsOf(parentData: Record<string, unknown>) {
-  return (await load(eventOf(parentData).event)).nominationFacts;
+  return (await load(eventOf(parentData).event)).nominationScope;
 }
 
 describe('contestant/(protected)/[entityType]/[entityId]/nominations/+layout.ts', () => {
@@ -160,7 +160,7 @@ describe('contestant/(protected)/[entityType]/[entityId]/nominations/+layout.ts'
   it('takes parent from the event and nothing else', async () => {
     const { event, eventReads } = eventOf(parentDataOf());
 
-    expect((await load(event)).nominationFacts).toBeDefined();
+    expect((await load(event)).nominationScope).toBeDefined();
     expect(eventReads).toEqual(['parent']);
   });
 });
