@@ -10,33 +10,26 @@
  * 7. The session is established on this request's own client by verifying the function's token. A failure is `registration_failed`. Once it is set, and not before, every count of the logout modal the request carries is withdrawn in this response, so that no count a closed tab left can end the session just signed in. Every earlier failure leaves the count in place, because it signs nobody in.
  * 8. The arrival marker is set as an httpOnly cookie, `created` when the function made the account's entity and `existing` when it found one, and the browser is sent to the Contestant App's root, where the protected layout shows what the account still lacks.
  *
- * The id_token never reaches the browser: it is exchanged and handed on within this request. The entity type cookie the authorize endpoint set is read once and deleted on every path, the successful one included.
+ * The id_token never reaches the browser: it is exchanged and handed on within this request. The entity type and locale cookies the authorize endpoint set are read once and deleted on every path, the successful one included. Every address this route sends the browser to is in the recorded locale when it is a supported one, and otherwise in the request's own, so a user who started in one locale returns in it.
  *
  * Every failure redirects to the identity provider's error screen with one code of `OIDC_ERROR`, which the screen shows as one of three classes. Both Idura (JAR + private_key_jwt) and Signicat (PKCE + client_secret) flows converge here.
  */
 
+import { log } from '@openvaa/app-shared';
 import { redirect } from '@sveltejs/kit';
 import { OIDC_ERROR, oidcErrorFromFunction, oidcErrorFromProvider } from '$contestant/utils/oidcError';
 import { identityProviderEntityType } from '$contestant/utils/registrationOffer';
 import { createDataProvider, createSupabaseAnonClient } from '$lib/api/dataProvider';
 import { formatOidcFailure } from '$lib/api/utils/auth/oidcFailure';
 import { getActiveProvider } from '$lib/api/utils/auth/providers';
-import { COOKIE } from '$lib/cookies';
+import { COOKIE, OIDC_FLOW_COOKIE_OPTIONS } from '$lib/cookies';
+import { isLocale } from '$lib/paraglide/runtime';
 import { buildRoute } from '$lib/routes';
 import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
 import { constants } from '$lib/server/constants';
 import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 import type { OidcError } from '$contestant/utils/oidcError';
-
-/** The attributes of the arrival marker: those of the flow's cookies. It is read by the server alone, and lives as long as one return. */
-const ARRIVAL_COOKIE_OPTIONS = {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'lax',
-  path: '/',
-  maxAge: 600
-} as const;
 
 /** The marker each successful `result` of `identity-callback` leaves. */
 const ARRIVAL_OF_RESULT: Readonly<Record<string, 'created' | 'existing'>> = Object.freeze({
@@ -50,11 +43,12 @@ export async function GET(event: RequestEvent): Promise<never> {
   const code = url.searchParams.get('code');
   const returnedState = url.searchParams.get('state');
   const errorParam = url.searchParams.get('error');
-  const locale = locals.currentLocale;
 
-  // The entity type the flow was started for selects for this one return alone, so it is read once and removed on every path.
+  // The entity type and the locale the flow was started with select for this one return alone, so each is read once and removed on every path.
   const requestedType = cookies.get(COOKIE.oidcEntityType);
   cookies.delete(COOKIE.oidcEntityType, { path: '/' });
+  const locale = flowLocale(cookies.get(COOKIE.oidcLocale), locals.currentLocale);
+  cookies.delete(COOKIE.oidcLocale, { path: '/' });
 
   if (errorParam) {
     clearFlowCookies(cookies);
@@ -95,7 +89,7 @@ export async function GET(event: RequestEvent): Promise<never> {
       default: {
         // Unreachable while every `CallbackBinding` has a case above: the `never` assignment stops compiling when a binding is added without one. A provider whose binding this route cannot check is refused rather than trusted.
         const unhandled: never = provider.callbackBinding;
-        console.error('[oidc/callback] Unrecognised callback binding:', unhandled);
+        log.error(`[oidc/callback] Unrecognised callback binding: ${String(unhandled)}`);
         clearFlowCookies(cookies);
         throw redirect(303, errorScreen(OIDC_ERROR.invalidState, locale));
       }
@@ -110,7 +104,7 @@ export async function GET(event: RequestEvent): Promise<never> {
     const claims = await provider.getIdTokenClaims(idToken);
     if (!claims.success) {
       // The log names the failure's code, resolved by `formatOidcFailure` to the stage it failed at and a fixed operator hint, and the provider type; it interpolates no value of the token or the error. The address carries only the coarse `invalid_token`.
-      console.error('[oidc/callback] ID token claims rejected;', formatOidcFailure(claims.error.code, provider.type));
+      log.error(`[oidc/callback] ID token claims rejected; ${formatOidcFailure(claims.error.code, provider.type)}`);
       throw redirect(303, errorScreen(OIDC_ERROR.invalidToken, locale));
     }
 
@@ -126,7 +120,7 @@ export async function GET(event: RequestEvent): Promise<never> {
     if (e && typeof e === 'object' && 'status' in e && 'location' in e) {
       throw e;
     }
-    console.error('Callback token exchange failed:', e);
+    log.error('[oidc/callback] Callback token exchange failed', { err: e });
     throw redirect(303, errorScreen(OIDC_ERROR.tokenExchangeFailed, locale));
   }
 }
@@ -136,7 +130,7 @@ export async function GET(event: RequestEvent): Promise<never> {
  *
  * Once `verifyOtp` has set the session, the logout count the request carries is withdrawn, through `cookies`, `request` and `url`, before the arrival marker is set. A failure before that point leaves the count in place.
  *
- * Never throws: every failure is answered with the error screen's address for one closed code, and only that code is logged.
+ * Never throws: every failure is answered with the error screen's address for one closed code. The log names that code and a fixed cause for the operator: the stage that failed, or the function's closed `result` and its HTTP status, or the name of the error the invoke threw. No value of the tokens and no message the function or the auth service sent is logged.
  * @returns The address the browser is sent to: the Contestant App's root on success, the error screen otherwise.
  */
 async function register({
@@ -158,8 +152,8 @@ async function register({
   locals: App.Locals;
   locale: string | undefined;
 }): Promise<string> {
-  function failed(error: OidcError): string {
-    console.error('[oidc/callback] Registration through identity-callback failed:', error);
+  function failed(error: OidcError, cause: string): string {
+    log.error(`[oidc/callback] Registration through identity-callback failed: ${error} (${cause})`);
     return errorScreen(error, locale);
   }
 
@@ -168,21 +162,23 @@ async function register({
   try {
     dataProvider = createDataProvider({ fetch, client: createSupabaseAnonClient({ fetch }) });
   } catch {
-    return failed(OIDC_ERROR.configurationError);
+    return failed(OIDC_ERROR.configurationError, 'project id unset or malformed');
   }
   const serverSecret = constants.IDENTITY_CALLBACK_SERVER_SECRET;
-  if (!serverSecret) return failed(OIDC_ERROR.configurationError);
+  if (!serverSecret)
+    return failed(OIDC_ERROR.configurationError, 'IDENTITY_CALLBACK_SERVER_SECRET unset on the frontend server');
 
   let settings: ContestantAppSettingsInput;
   try {
     settings = (await dataProvider.getAppSettings()) as ContestantAppSettingsInput;
   } catch {
-    return failed(OIDC_ERROR.registrationFailed);
+    return failed(OIDC_ERROR.registrationFailed, 'app settings read failed');
   }
   const entityType = identityProviderEntityType(settings, requestedType);
-  if (!entityType) return failed(OIDC_ERROR.modeNotAllowed);
+  if (!entityType) return failed(OIDC_ERROR.modeNotAllowed, 'entity type not allowed');
 
   let answer: { result?: unknown; token?: unknown } | undefined;
+  let status: FunctionStatus;
   try {
     const { data, error } = await locals.supabase.functions.invoke('identity-callback', {
       // The function's `SERVER_CREDENTIAL_HEADER`; its conformance test reads this line.
@@ -190,26 +186,30 @@ async function register({
       body: { id_token: idToken, project_id: dataProvider.projectId, entity_type: entityType }
     });
     answer = error ? await failedAnswerOf(error) : (data ?? undefined);
-  } catch {
-    answer = undefined;
+    status = error ? failedStatusOf(error) : '2xx';
+  } catch (e) {
+    return failed(oidcErrorFromFunction(undefined), `the invoke threw ${errorName(e)}`);
   }
 
   const result = answer?.result;
   const token = answer?.token;
   const arrival =
     typeof result === 'string' && Object.hasOwn(ARRIVAL_OF_RESULT, result) ? ARRIVAL_OF_RESULT[result] : undefined;
-  if (!arrival) return failed(oidcErrorFromFunction(result));
-  if (typeof token !== 'string' || token === '') return failed(OIDC_ERROR.registrationFailed);
+  const answerCause = `function result ${String(result)}, status ${status}`;
+  if (!arrival) return failed(oidcErrorFromFunction(result), withAnswerHint(answerCause, result));
+  if (typeof token !== 'string' || token === '')
+    return failed(OIDC_ERROR.registrationFailed, `${answerCause}, with no sign-in token`);
 
   try {
     const { data, error } = await locals.supabase.auth.verifyOtp({ token_hash: token, type: 'magiclink' });
-    if (error || !data.session) return failed(OIDC_ERROR.registrationFailed);
-  } catch {
-    return failed(OIDC_ERROR.registrationFailed);
+    if (error) return failed(OIDC_ERROR.registrationFailed, 'the sign-in token was not verified');
+    if (!data.session) return failed(OIDC_ERROR.registrationFailed, 'the verified sign-in token gave no session');
+  } catch (e) {
+    return failed(OIDC_ERROR.registrationFailed, `the sign-in token's verification threw ${errorName(e)}`);
   }
 
   withdrawLogoutDeadline({ cookies, request, url });
-  cookies.set(COOKIE.identityProviderArrival, arrival, ARRIVAL_COOKIE_OPTIONS);
+  cookies.set(COOKIE.identityProviderArrival, arrival, OIDC_FLOW_COOKIE_OPTIONS);
   return buildRoute({ route: 'ContestantAppHome', locale });
 }
 
@@ -223,6 +223,39 @@ async function failedAnswerOf(error: unknown): Promise<{ result?: unknown } | un
   if (!(context instanceof Response)) return undefined;
   const body: unknown = await context.json().catch(() => undefined);
   return body && typeof body === 'object' ? (body as { result?: unknown }) : undefined;
+}
+
+/** The HTTP status of an `identity-callback` answer as the log names it: `2xx` for a successful one, `unreachable` when the function was never reached. */
+type FunctionStatus = number | '2xx' | 'unreachable';
+
+/**
+ * The HTTP status of a failed `identity-callback` answer, read from the response `functions.invoke` keeps as the error's `context`.
+ * @param error - The error `functions.invoke` returned.
+ * @returns The status, or `unreachable` when the function never answered.
+ */
+function failedStatusOf(error: unknown): FunctionStatus {
+  return (error as { context?: Response }).context?.status ?? 'unreachable';
+}
+
+/**
+ * Add the operator hint a function `result` has to the log's cause. `refused` is the function's answer to a missing or mismatched credential, which the function does not log itself.
+ */
+function withAnswerHint(cause: string, result: unknown): string {
+  return result === 'refused' ? `${cause}; the secret differs between the root .env and the function env` : cause;
+}
+
+/** The name of a thrown value, the only part of it the log names: never its message. */
+function errorName(thrown: unknown): string {
+  return thrown instanceof Error ? thrown.name : 'a non-error value';
+}
+
+/**
+ * The locale the flow lands in: the one the authorize endpoint recorded when it is a supported locale, otherwise the request's own.
+ * @param recorded - The value of the flow's locale cookie, if any.
+ * @param current - The locale this request was resolved to.
+ */
+function flowLocale(recorded: string | undefined, current: string): string {
+  return isLocale(recorded) ? recorded : current;
 }
 
 /**
@@ -240,4 +273,5 @@ function clearFlowCookies(cookies: Cookies): void {
   cookies.delete(COOKIE.oidcNonce, { path: '/' });
   cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
   cookies.delete(COOKIE.oidcEntityType, { path: '/' });
+  cookies.delete(COOKIE.oidcLocale, { path: '/' });
 }

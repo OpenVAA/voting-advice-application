@@ -14,6 +14,10 @@ export const locales: Array<string> = ['en', 'fi', 'sv', 'da', 'et', 'fr', 'lb']
 
 export const baseLocale = 'en';
 
+export function isLocale(locale: unknown): locale is string {
+  return typeof locale === 'string' && locales.includes(locale);
+}
+
 export function localizeHref(href: string, _options?: { locale?: string }): string {
   return href;
 }

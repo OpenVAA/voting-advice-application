@@ -259,6 +259,13 @@ cookie `mock_oidc_ui_locales` on its own origin to the request object's `ui_loca
 
   The server log names the stage of a rejected token without any value of it
   (`[oidc/callback] ID token claims rejected; …`).
+  A failed registration is logged with the code and a fixed cause: the stage
+  that failed, or the function's closed `result` with its HTTP status
+  (`[oidc/callback] Registration through identity-callback failed:
+configuration_error (function result refused, status 401; the secret differs
+between the root .env and the function env)`). A `configuration_error` with
+  `IDENTITY_CALLBACK_SERVER_SECRET unset on the frontend server` means the root
+  `.env` has no secret; `status unreachable` means the function was never reached.
 
 - **Edge Function "decryption failed"** → `IDENTITY_PROVIDER_DECRYPTION_JWKS`
   (RSA-OAEP-256) doesn't match the registered **encryption** public key, or the

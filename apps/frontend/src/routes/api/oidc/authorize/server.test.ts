@@ -273,6 +273,14 @@ describe('POST /api/oidc/authorize', () => {
       expect(cookieSet(event, COOKIE.oidcState)).toEqual(expect.any(String));
     });
 
+    it("records the request's locale in the locale cookie with the flow attributes, so the callback lands in it", async () => {
+      const event = createMockRequestEvent({ entityType: 'candidate' }, 'fi');
+      const response = await POST(event);
+
+      expect(response.status).toBe(200);
+      expect(event.cookies.set).toHaveBeenCalledWith(COOKIE.oidcLocale, 'fi', FLOW_COOKIE_OPTIONS);
+    });
+
     it('accepts an allowed organization', async () => {
       getAppSettings.mockResolvedValue(ORGANIZATIONS_ONLY);
       const event = createMockRequestEvent({ entityType: 'organization' });

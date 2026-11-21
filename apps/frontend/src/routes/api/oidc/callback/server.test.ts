@@ -5,7 +5,9 @@
  *
  * Every failure lands on the identity provider's error screen with one code of the closed set, and no value the provider sent reaches the address: its cancel is `cancelled`, any other value `provider_error`.
  *
- * After the token is verified the route registers the user: it checks the entity type the flow was started for against the registration matrix again, invokes `identity-callback` with the token, the project and the type and with the server's secret in the credential header, establishes the session from the token the function answers with, leaves the arrival marker and sends the browser to the Contestant App's root. The ID token is never set in a cookie. Every failure of that part is one closed code, and no message the function or the auth service sent reaches the address or a log line.
+ * After the token is verified the route registers the user: it checks the entity type the flow was started for against the registration matrix again, invokes `identity-callback` with the token, the project and the type and with the server's secret in the credential header, establishes the session from the token the function answers with, leaves the arrival marker and sends the browser to the Contestant App's root. The ID token is never set in a cookie. Every failure of that part is one closed code, and no message the function or the auth service sent reaches the address or a log line. The log names the code with a fixed cause for the operator, the function's closed `result` and status among them.
+ *
+ * The locale the authorize endpoint recorded in its cookie is the one every address is built in, when it is a supported locale.
  *
  * Right after it has established the session, the route withdraws every count of the logout modal the request carries, so no count a closed tab left can end that session. A callback that fails before then leaves the count in place.
  *
@@ -14,6 +16,7 @@
  * @vitest-environment node
  */
 
+import { log } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { iduraProvider } from '$lib/api/utils/auth/providers/idura';
 import { signicatProvider } from '$lib/api/utils/auth/providers/signicat';
@@ -269,7 +272,7 @@ describe('GET /api/oidc/callback', () => {
         success: false,
         error: { code: 'ERR_JOSE_GENERIC' }
       } as unknown as Awaited<ReturnType<IdentityProvider['getIdTokenClaims']>>);
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = createEvent('code=c-1&state=s-1', { [COOKIE.oidcState]: 's-1' });
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('invalid_token') });
       expect(tokenWasSetInACookie(event)).toBe(false);
@@ -277,7 +280,7 @@ describe('GET /api/oidc/callback', () => {
 
     it('reports a failed exchange as token_exchange_failed and sets no cookie that holds the token', async () => {
       exchange.mockRejectedValue(new Error('exchange failed'));
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = createEvent('code=c-1&state=s-1', { [COOKIE.oidcState]: 's-1' });
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('token_exchange_failed') });
       expect(tokenWasSetInACookie(event)).toBe(false);
@@ -357,7 +360,7 @@ describe('GET /api/oidc/callback', () => {
       beforeEach(() => {
         mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'idura-ftn';
         exchange = stubProvider(iduraProvider);
-        vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        vi.spyOn(log, 'error').mockImplementation(() => undefined);
       });
 
       it.each<[string, string, Record<string, string>, () => void]>([
@@ -435,7 +438,7 @@ describe('GET /api/oidc/callback', () => {
 
     it('answers an unset server secret as configuration_error, invoking nothing and signing nobody in', async () => {
       mockServerConstants.IDENTITY_CALLBACK_SERVER_SECRET = '';
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = verifiedCallback();
 
       try {
@@ -487,7 +490,7 @@ describe('GET /api/oidc/callback', () => {
     });
 
     it('leaves a logout count in place when the session is not established', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       verifyOtp.mockResolvedValue({ data: { session: null, user: null }, error: new Error('Token has expired') });
       const event = verifiedCallback(DEADLINE_COOKIES);
 
@@ -519,7 +522,7 @@ describe('GET /api/oidc/callback', () => {
       ]
     ])('leaves a logout count in place on %s', async (_, query, cookies, code, arrange) => {
       arrange();
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = createEvent(query, { ...cookies, ...DEADLINE_COOKIES });
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen(code) });
@@ -615,7 +618,7 @@ describe('GET /api/oidc/callback', () => {
       ['no type, with none allowing the provider', {}, { candidate: ['email'] }]
     ])('refuses %s as mode_not_allowed, invoking nothing and signing nobody in', async (_, cookies, modes) => {
       getAppSettings.mockResolvedValue(settingsAllowing(modes));
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = verifiedCallback(cookies);
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('mode_not_allowed') });
@@ -630,7 +633,7 @@ describe('GET /api/oidc/callback', () => {
         ...settingsAllowing({ candidate: ['identity_provider'], organization: ['identity_provider'] }),
         access: { contestantEditing: 'locked' }
       });
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = verifiedCallback({ [COOKIE.oidcEntityType]: 'candidate' });
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('mode_not_allowed') });
@@ -642,7 +645,7 @@ describe('GET /api/oidc/callback', () => {
 
     it('answers a failed settings read as registration_failed, invoking nothing', async () => {
       getAppSettings.mockRejectedValue(new Error('settings unavailable'));
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
 
       await expect(GET(verifiedCallback())).rejects.toMatchObject({
         status: 303,
@@ -655,7 +658,7 @@ describe('GET /api/oidc/callback', () => {
       createDataProvider.mockImplementation(() => {
         throw new Error('PUBLIC_PROJECT_ID is required but not set.');
       });
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
 
       await expect(GET(verifiedCallback())).rejects.toMatchObject({
         status: 303,
@@ -675,7 +678,7 @@ describe('GET /api/oidc/callback', () => {
       ['a body that is not JSON', 502, 'not json', 'registration_failed']
     ])('maps a failed answer for %s to %s, and signs nobody in', async (_, status, body, code) => {
       invoke.mockResolvedValue(functionFailed(status, body));
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = verifiedCallback();
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen(code) });
@@ -686,7 +689,7 @@ describe('GET /api/oidc/callback', () => {
 
     it('answers a function that was never reached as registration_failed', async () => {
       invoke.mockResolvedValue({ data: null, error: new Error('Failed to send a request to the Edge Function') });
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
 
       await expect(GET(verifiedCallback())).rejects.toMatchObject({
         status: 303,
@@ -696,7 +699,7 @@ describe('GET /api/oidc/callback', () => {
 
     it('answers an invoke that rejects as registration_failed', async () => {
       invoke.mockRejectedValue(new Error('network down'));
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
 
       await expect(GET(verifiedCallback())).rejects.toMatchObject({
         status: 303,
@@ -712,7 +715,7 @@ describe('GET /api/oidc/callback', () => {
       ['no result', { token: SIGN_IN_TOKEN }]
     ])('answers a successful status with %s as registration_failed', async (_, body) => {
       invoke.mockResolvedValue(functionAnswered(body));
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = verifiedCallback();
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('registration_failed') });
@@ -734,7 +737,7 @@ describe('GET /api/oidc/callback', () => {
       ['the verification rejects', () => verifyOtp.mockRejectedValue(new Error('auth unreachable'))]
     ])('answers registration_failed and leaves no marker when %s', async (_, arrange) => {
       arrange();
-      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
       const event = verifiedCallback();
 
       await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('registration_failed') });
@@ -742,9 +745,69 @@ describe('GET /api/oidc/callback', () => {
       expect(arrivalSet(event)).toBeUndefined();
     });
 
+    it.each<[string, () => void, string]>([
+      [
+        'an unresolvable project',
+        () =>
+          createDataProvider.mockImplementation(() => {
+            throw new Error('PUBLIC_PROJECT_ID is required but not set.');
+          }),
+        'configuration_error (project id unset or malformed)'
+      ],
+      [
+        'a failed settings read',
+        () => getAppSettings.mockRejectedValue(new Error('settings unavailable')),
+        'registration_failed (app settings read failed)'
+      ],
+      [
+        'a refused credential',
+        () => invoke.mockResolvedValue(functionFailed(401, { result: 'refused' })),
+        'configuration_error (function result refused, status 401; the secret differs between the root .env and the function env)'
+      ],
+      [
+        'its configuration',
+        () => invoke.mockResolvedValue(functionFailed(500, { result: 'configuration' })),
+        'configuration_error (function result configuration, status 500)'
+      ],
+      [
+        'a function that was never reached',
+        () =>
+          invoke.mockResolvedValue({ data: null, error: new Error('Failed to send a request to the Edge Function') }),
+        'registration_failed (function result undefined, status unreachable)'
+      ],
+      [
+        'an invoke that rejects',
+        () => invoke.mockRejectedValue(new TypeError('network down')),
+        'registration_failed (the invoke threw TypeError)'
+      ]
+    ])('logs the code with the cause of %s', async (_, arrange, logged) => {
+      arrange();
+      const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
+
+      await GET(verifiedCallback()).catch(() => undefined);
+
+      expect(error.mock.calls).toEqual([[`[oidc/callback] Registration through identity-callback failed: ${logged}`]]);
+    });
+
+    it('logs an unset server secret as such', async () => {
+      mockServerConstants.IDENTITY_CALLBACK_SERVER_SECRET = '';
+      const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
+
+      try {
+        await GET(verifiedCallback()).catch(() => undefined);
+      } finally {
+        mockServerConstants.IDENTITY_CALLBACK_SERVER_SECRET = SERVER_SECRET;
+      }
+      expect(error.mock.calls).toEqual([
+        [
+          '[oidc/callback] Registration through identity-callback failed: configuration_error (IDENTITY_CALLBACK_SERVER_SECRET unset on the frontend server)'
+        ]
+      ]);
+    });
+
     it('puts no message the function or the auth service sent on the address or in a log line', async () => {
       const crafted = 'crafted-message-5678';
-      const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
       invoke.mockResolvedValue(functionFailed(503, { result: 'unavailable', error: crafted }));
 
       const first = await GET(verifiedCallback()).catch((e: unknown) => e);
@@ -757,6 +820,70 @@ describe('GET /api/oidc/callback', () => {
       expect(JSON.stringify(error.mock.calls)).not.toContain(crafted);
       expect(JSON.stringify(error.mock.calls)).not.toContain(SIGN_IN_TOKEN);
       expect(JSON.stringify(error.mock.calls)).not.toContain('test.id.token');
+    });
+  });
+
+  describe('the locale cookie', () => {
+    beforeEach(() => {
+      mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'idura-ftn';
+      stubProvider(iduraProvider);
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    });
+
+    it('lands the user in the locale the flow was started in, not the one the return resolved to', async () => {
+      const event = createEvent('code=c-1&state=s-1', { [COOKIE.oidcState]: 's-1', [COOKIE.oidcLocale]: 'fi' });
+
+      await expect(GET(event)).rejects.toMatchObject({
+        status: 303,
+        location: buildRoute({ route: 'ContestantAppHome', locale: 'fi' })
+      });
+      expect(event.cookies.delete).toHaveBeenCalledWith(COOKIE.oidcLocale, { path: '/' });
+    });
+
+    it('shows a failure in the locale the flow was started in', async () => {
+      const event = createEvent('error=access_denied', { [COOKIE.oidcLocale]: 'fi' });
+
+      await expect(GET(event)).rejects.toMatchObject({
+        status: 303,
+        location: buildRoute({ route: 'ContestantAppIdentityProviderError', locale: 'fi', error: 'cancelled' })
+      });
+    });
+
+    it.each([['xx'], ['constructor'], ['']])(
+      "falls back to the request's locale when the cookie holds %j, which is not a supported locale",
+      async (value) => {
+        const event = createEvent('code=c-1&state=s-1', { [COOKIE.oidcState]: 's-1', [COOKIE.oidcLocale]: value });
+
+        await expect(GET(event)).rejects.toMatchObject({ status: 303, location: HOME });
+      }
+    );
+
+    it.each<[string, string, Record<string, string>, () => void]>([
+      ["the provider's cancel", 'error=access_denied', {}, () => undefined],
+      ['a missing state cookie', 'code=c-1&state=s-1', {}, () => undefined],
+      [
+        'a rejected token',
+        'code=c-1&state=s-1',
+        { [COOKIE.oidcState]: 's-1' },
+        () =>
+          vi.spyOn(iduraProvider, 'getIdTokenClaims').mockResolvedValue({
+            success: false,
+            error: { code: 'ERR_JOSE_GENERIC' }
+          } as unknown as Awaited<ReturnType<IdentityProvider['getIdTokenClaims']>>)
+      ],
+      [
+        'a failed registration',
+        'code=c-1&state=s-1',
+        { [COOKIE.oidcState]: 's-1' },
+        () => invoke.mockResolvedValue(functionFailed(503, { result: 'unavailable' }))
+      ],
+      ['a success', 'code=c-1&state=s-1', { [COOKIE.oidcState]: 's-1' }, () => undefined]
+    ])('deletes the locale cookie on %s', async (_, query, cookies, arrange) => {
+      arrange();
+      const event = createEvent(query, { ...cookies, [COOKIE.oidcLocale]: 'fi' });
+
+      await expect(GET(event)).rejects.toMatchObject({ status: 303 });
+      expect(event.cookies.delete).toHaveBeenCalledWith(COOKIE.oidcLocale, { path: '/' });
     });
   });
 
