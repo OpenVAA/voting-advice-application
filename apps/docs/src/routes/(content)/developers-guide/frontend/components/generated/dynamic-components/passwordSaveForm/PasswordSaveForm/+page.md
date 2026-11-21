@@ -36,7 +36,7 @@ Accesses the component context for its translations, and nothing of any app's co
 
 ```tsx
 <PasswordSaveForm
-  title={t('contestantApp.setPassword.title')}
+  title={t('common.account.setPassword.title')}
   {email}
   {setPassword}
   afterSave={invalidateAll}
