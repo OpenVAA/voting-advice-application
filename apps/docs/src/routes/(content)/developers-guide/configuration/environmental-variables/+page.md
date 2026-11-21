@@ -4,7 +4,7 @@ OpenVAA reads its per-deployment configuration from environment variables. Local
 
 Both files are copied from a committed template, and both are ignored by Git. Never commit a `.env` file, and never put a real key into a template.
 
-The variables are grouped below by role. A unit test, `apps/frontend/src/lib/server/startup/environmentReference.test.ts`, fails when a variable of the frontend task's environment list, of the start-up check, of the analytics configuration or of the bootstrap script is missing from this page.
+The variables are grouped below by role. A unit test, `apps/frontend/src/lib/server/startup/environmentReference.test.ts`, fails when a variable of the frontend task's environment list, of the start-up check, of the analytics configuration, of either `constants` module or of the bootstrap script is missing from this page, and when a table or list on this page names a variable that neither that code, an Edge Function nor one of the two `.env.example` templates declares.
 
 ## The repo-root `.env`
 
