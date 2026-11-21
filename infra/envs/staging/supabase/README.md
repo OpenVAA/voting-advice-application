@@ -142,7 +142,7 @@ categories are fetched from the API.
    ```bash
    cd infra/envs/scratch/supabase
    export LC_ALL=C
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
    ```
 
    Then export, for this session only, `SUPABASE_ACCESS_TOKEN` and `TF_VAR_database_password` with the
@@ -215,7 +215,7 @@ and the region, so the three exports of Step 2 are removed.
 ```bash
 cd infra/envs/scratch/supabase
 export LC_ALL=C
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 unset TF_VAR_organization_id TF_VAR_project_name TF_VAR_region
 ```
 
@@ -289,7 +289,7 @@ receives the raw auth configuration of the project, which holds its secrets.
 ```bash
 cd infra/envs/scratch/supabase
 export LC_ALL=C
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 REF='<the throwaway project ref>'
 ```
 
@@ -416,7 +416,7 @@ to import, stop and say so.
 cd infra/envs/staging/supabase
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 REF='<the persistent project ref>'
 ```
 
@@ -507,7 +507,7 @@ which holds its secrets.
 cd infra/envs/staging/supabase
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 REF='<the persistent project ref>'
 ```
 

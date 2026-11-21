@@ -72,7 +72,7 @@ new terminal. Each step lists the ones it needs.
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 ```
 
 `LC_ALL=C` keeps every number and sort order independent of your workstation's locale. Give a time in
@@ -111,7 +111,7 @@ is, run `aws iam list-users --query 'Users[].UserName'` on your own machine and 
    ```bash
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
    echo "s3_account=$(aws sts get-caller-identity --query Account --output text)"
    aws sts get-caller-identity --query Arn --output text | sed -E 's#^arn:aws:(sts|iam)::[0-9]+:##; s#^(assumed-role/[^/]+)/.*#\1#; s#^user/.*#user#; s#^#s3_principal=#'
    echo "s3_user_mfa_devices=$(aws iam list-mfa-devices --query 'length(MFADevices)' --output text)"
@@ -192,7 +192,7 @@ After a conversion or a deletion, run the check again in a new sitting:
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s5b.log" 2>&1; echo "s5b_assert_users_exit=$?"
 sed 's/^/s5b_inv=/' "$L/s5b.log"
 test -n "$L" && rm -rf "$L" && echo "s5b_logs_removed=yes"
@@ -220,7 +220,7 @@ by hand. Run it in one terminal, signed in with the identity of Step 1.
    ```bash
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
    export TF_VAR_alert_email='<your-address>'
    ```
 
@@ -310,7 +310,7 @@ of the address out if you track it.
 cd infra/bootstrap
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 export TF_VAR_alert_email='<your-address>'
 B=openvaa-tfstate-471112560111
 ```
@@ -507,7 +507,7 @@ Step 6.
    export AWS_PAGER=""
    export TF_VAR_alert_email='<your-address>'
    B=openvaa-tfstate-471112560111
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
    ```
 
    Then, in terminal 2, a plan that must fail on the lock, and a read of the lock object:
@@ -565,7 +565,7 @@ once. Leave the export of the address out if you track it.
 cd infra/bootstrap
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 export TF_VAR_alert_email='<your-address>'
 ```
 

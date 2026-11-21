@@ -81,7 +81,7 @@ new terminal. Each step lists the ones it needs.
 cd infra/envs/staging/dns-mail
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 ```
 
 `LC_ALL=C` keeps every number and sort order independent of your workstation's locale. Give a time in
@@ -99,7 +99,7 @@ customer-managed send policy. Run Steps 1 to 3 in one terminal, signed in with t
    cd infra/envs/staging/dns-mail
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
    ```
 
 2. It must print `s2_account=471112560111`. Any other account means stop: the shell is signed in
@@ -228,7 +228,7 @@ The lines that begin the sitting, from the repository root, signed in:
 cd infra/envs/staging/dns-mail
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 ```
 
 Plan, and print the summary line and the resource headings:
@@ -322,7 +322,7 @@ The lines that begin the sitting, signed in:
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 ```
 
 1. The identity's three statuses:
