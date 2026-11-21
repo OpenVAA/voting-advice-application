@@ -51,8 +51,8 @@ const APP_NAME = messagesOf('dynamic').contestantAppName as {
 const LOGIN_ROUTE = buildRoute({ route: 'ContestantAppLogin', locale: 'en' });
 const REGISTER_ROUTE = buildRoute({ route: 'ContestantAppRegister', locale: 'en' });
 /** The two screens a checked registration code leads to: the one that asks for an address, and the one that signs in the holder of a used code. */
-const REGISTER_EMAIL_ROUTE = buildRoute({ route: 'ContestantAppRegisterEmail', locale: 'en' });
-const REGISTER_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterSignIn', locale: 'en' });
+const REGISTER_EMAIL_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeEmail', locale: 'en' });
+const REGISTER_SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppRegisterCodeSignIn', locale: 'en' });
 
 /** The served entity types as the settings store them. */
 type ServedEntityTypes = DynamicSettings['contestantApp']['servedEntityTypes'];

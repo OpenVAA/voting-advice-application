@@ -99,7 +99,7 @@ const CODE_UNCONFIRMED_MESSAGE = messageOf('contestantApp.register', 'codeUnconf
 
 /** The sentence under the email field for each reason it can be in error, read from the message source rather than copied. */
 const EMAIL_ERROR_MESSAGES: Readonly<Record<ContestantRegisterFieldReason['email'], string>> = Object.freeze({
-  required: messageOf('contestantApp.login', 'emailRequired'),
+  required: messageOf('common', 'account.emailRequired'),
   invalid: messageOf('components', 'input.error.invalidEmail')
 });
 
@@ -521,7 +521,7 @@ export function createContestantRegisterPage(page: Page) {
      * The step waits for nothing. The screen is not shown to such a visitor, so the caller asserts where they end.
      */
     async openEmailEntryDirectly(): Promise<void> {
-      await page.goto(buildRoute({ route: 'ContestantAppRegisterEmail', locale: 'en' }));
+      await page.goto(buildRoute({ route: 'ContestantAppRegisterCodeEmail', locale: 'en' }));
     },
 
     /**
@@ -595,7 +595,7 @@ export function createContestantRegisterPage(page: Page) {
      * The step waits for nothing. The screen is not shown to such a visitor, so the caller asserts where they end.
      */
     async openCodeSignInDirectly(): Promise<void> {
-      await page.goto(buildRoute({ route: 'ContestantAppRegisterSignIn', locale: 'en' }));
+      await page.goto(buildRoute({ route: 'ContestantAppRegisterCodeSignIn', locale: 'en' }));
     },
 
     /**

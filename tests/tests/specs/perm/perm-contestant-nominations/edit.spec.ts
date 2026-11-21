@@ -25,6 +25,7 @@ import {
   LISTED_PARTIES,
   OTHER_PARTY_OPTION,
   PENDING_KEPT_NOTES,
+  REMOVED_NOTES,
   SOUTH_NOMINATION_SYMBOL,
   TYPED_PARTY_NAME
 } from './helpers';
@@ -91,7 +92,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
         const alliances = ALLIANCE_OPTIONS;
         await startFrom(EDIT_ORGANIZATION_EDITOR.grant, 'seeded');
 
-        // Both elections the party stands in are checked on arrival, and the constituency it stands in is selected.
+        // Both elections the party stands in are checked on arrival. A party chooses its constituencies with checkboxes, and the constituency it stands in is checked.
         await contestantNominationEditor.open(EDIT_ORGANIZATION_EDITOR.grant);
         await contestantNominationEditor.expectStep('elections');
         await contestantNominationEditor.expectElections([LIST_ELECTION_NAME.en, OPEN_ELECTION_NAME.en]);
@@ -99,8 +100,8 @@ test.describe('contestant-nominations: editing existing nominations', () => {
         await contestantNominationEditor.expectElectionsHint(false);
         await contestantNominationEditor.continueFromElections();
         await contestantNominationEditor.expectStep('constituencies');
-        await contestantNominationEditor.expectConstituencyPickers([LIST_ELECTION_NAME.en]);
-        await contestantNominationEditor.expectChosenConstituency(NORTH_CONSTITUENCY_NAME.en);
+        await contestantNominationEditor.expectConstituencyLists([LIST_ELECTION_NAME.en]);
+        await contestantNominationEditor.expectCheckedConstituencies([NORTH_CONSTITUENCY_NAME.en]);
         await contestantNominationEditor.continueFromConstituencies();
 
         // One card for each stored nomination, each with what is stored and the note that a change must be confirmed again.
@@ -246,7 +247,7 @@ test.describe('contestant-nominations: editing existing nominations', () => {
     );
 
     test(
-      'edit: several nominations in one election are kept as they are',
+      'edit: a party standing in several constituencies of one election has each of them checked and kept',
       { tag: '@nomination-definition' },
       async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
         const northCard = { election: LIST_ELECTION_NAME.en, constituency: NORTH_CONSTITUENCY_NAME.en };
@@ -267,11 +268,18 @@ test.describe('contestant-nominations: editing existing nominations', () => {
           electionSymbol: SOUTH_NOMINATION_SYMBOL
         });
         try {
-          // The election with two nominations is checked like the other. It has no constituency to choose, and the other election has one constituency, so Continue leads straight to the cards.
+          // The election with two nominations is checked like the other, and both of its constituencies are checked on the constituency step.
           await contestantNominationEditor.open(EDIT_ORGANIZATION_EDITOR.grant);
           await contestantNominationEditor.expectStep('elections');
           await contestantNominationEditor.expectChecked([LIST_ELECTION_NAME.en, OPEN_ELECTION_NAME.en]);
           await contestantNominationEditor.continueFromElections();
+          await contestantNominationEditor.expectStep('constituencies');
+          await contestantNominationEditor.expectConstituencyLists([LIST_ELECTION_NAME.en]);
+          await contestantNominationEditor.expectCheckedConstituencies([
+            NORTH_CONSTITUENCY_NAME.en,
+            SOUTH_CONSTITUENCY_NAME.en
+          ]);
+          await contestantNominationEditor.continueFromConstituencies();
           await contestantNominationEditor.expectStep('details');
           await contestantNominationEditor.expectCards([
             EDIT_ORGANIZATION_LIST_CARD,
@@ -306,6 +314,100 @@ test.describe('contestant-nominations: editing existing nominations', () => {
           ]);
           await contestantNominationEditor.expectNoDialog();
         } finally {
+          await setNominations(EDIT_ORGANIZATION_EDITOR.grant, 'seeded');
+        }
+      }
+    );
+
+    test(
+      'edit: a party adds a further constituency in an election it stands in, and unchecking it removes that nomination',
+      { tag: '@nomination-definition' },
+      async ({ contestantEntityPages, contestantNominationEditor, contestantNominationsPage }) => {
+        const southCard = { election: LIST_ELECTION_NAME.en, constituency: SOUTH_CONSTITUENCY_NAME.en };
+        const newSouthCard = {
+          election: LIST_ELECTION_NAME.en,
+          constituency: SOUTH_CONSTITUENCY_NAME.en,
+          state: 'new' as const,
+          confirmed: false,
+          moved: false
+        };
+        await startFrom(EDIT_ORGANIZATION_EDITOR.grant, 'seeded');
+        await setAnswers(EDIT_ORGANIZATION_EDITOR.grant, { requiredInfo: false, opinions: [] });
+        try {
+          // Nominated in one region of the closed-list election, the party is offered Add, and checks the other region beside it.
+          await contestantNominationsPage.open(EDIT_ORGANIZATION_EDITOR.grant);
+          await contestantNominationsPage.expectAddAction(true);
+          await contestantNominationEditor.open(EDIT_ORGANIZATION_EDITOR.grant);
+          await contestantNominationEditor.expectStep('elections');
+          await contestantNominationEditor.continueFromElections();
+          await contestantNominationEditor.expectStep('constituencies');
+          await contestantNominationEditor.expectCheckedConstituencies([NORTH_CONSTITUENCY_NAME.en]);
+          await contestantNominationEditor.setConstituency(SOUTH_CONSTITUENCY_NAME.en, true);
+          await contestantNominationEditor.expectCheckedConstituencies([
+            NORTH_CONSTITUENCY_NAME.en,
+            SOUTH_CONSTITUENCY_NAME.en
+          ]);
+
+          // With no constituency checked Continue cannot be pressed.
+          await contestantNominationEditor.setConstituency(NORTH_CONSTITUENCY_NAME.en, false);
+          await contestantNominationEditor.setConstituency(SOUTH_CONSTITUENCY_NAME.en, false);
+          await contestantNominationEditor.expectConstituenciesContinue(false);
+          await contestantNominationEditor.setConstituency(NORTH_CONSTITUENCY_NAME.en, true);
+          await contestantNominationEditor.setConstituency(SOUTH_CONSTITUENCY_NAME.en, true);
+          await contestantNominationEditor.continueFromConstituencies();
+
+          // The stored nomination keeps its card, and the region added has a new card of its own.
+          await contestantNominationEditor.expectStep('details');
+          await contestantNominationEditor.expectCards([
+            EDIT_ORGANIZATION_LIST_CARD,
+            newSouthCard,
+            EDIT_ORGANIZATION_OPEN_CARD
+          ]);
+          await contestantNominationEditor.submit();
+          await contestantNominationsPage.expectShown(EDIT_ORGANIZATION_EDITOR.grant);
+          await contestantNominationEditor.expectNoStep();
+          await contestantNominationsPage.pressButton('continue');
+          await contestantEntityPages.expectOnProfile(EDIT_ORGANIZATION_EDITOR.grant);
+          expect(await nominationsOf(EDIT_ORGANIZATION_EDITOR.grant)).toEqual([
+            EDIT_ORGANIZATION_LIST_SEEDED_NOMINATION,
+            {
+              externalId: null,
+              contest: LIST_SOUTH_CONTEST,
+              electionSymbol: null,
+              confirmed: false,
+              parentEntityExternalId: null,
+              requestedParent: null
+            },
+            EDIT_ORGANIZATION_OPEN_SEEDED_NOMINATION
+          ]);
+
+          // Opened again, both regions are checked. Unchecking the southern one starts its card as removed, and the save deletes it.
+          await contestantNominationEditor.open(EDIT_ORGANIZATION_EDITOR.grant);
+          await contestantNominationEditor.expectStep('elections');
+          await contestantNominationEditor.continueFromElections();
+          await contestantNominationEditor.expectStep('constituencies');
+          await contestantNominationEditor.expectCheckedConstituencies([
+            NORTH_CONSTITUENCY_NAME.en,
+            SOUTH_CONSTITUENCY_NAME.en
+          ]);
+          await contestantNominationEditor.setConstituency(SOUTH_CONSTITUENCY_NAME.en, false);
+          await contestantNominationEditor.continueFromConstituencies();
+          await contestantNominationEditor.expectStep('details');
+          await contestantNominationEditor.expectCards([
+            EDIT_ORGANIZATION_LIST_CARD,
+            { ...newSouthCard, state: 'removed' },
+            EDIT_ORGANIZATION_OPEN_CARD
+          ]);
+          await contestantNominationEditor.expectNotes(southCard, REMOVED_NOTES);
+          await contestantNominationEditor.submit();
+          await contestantNominationsPage.expectShown(EDIT_ORGANIZATION_EDITOR.grant);
+          expect(await nominationsOf(EDIT_ORGANIZATION_EDITOR.grant)).toEqual([
+            EDIT_ORGANIZATION_LIST_SEEDED_NOMINATION,
+            EDIT_ORGANIZATION_OPEN_SEEDED_NOMINATION
+          ]);
+          await contestantNominationEditor.expectNoDialog();
+        } finally {
+          await clearWrittenNominations();
           await setNominations(EDIT_ORGANIZATION_EDITOR.grant, 'seeded');
         }
       }

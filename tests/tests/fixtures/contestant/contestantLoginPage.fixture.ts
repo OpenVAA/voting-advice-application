@@ -111,7 +111,7 @@ export function createContestantLoginPage(page: Page) {
      * Open the sign-in screen and wait for its form.
      */
     async goToPage(): Promise<void> {
-      await page.goto(buildRoute({ route: 'ContestantAppSignIn', locale: 'en' }));
+      await page.goto(buildRoute({ route: 'ContestantAppLoginEmail', locale: 'en' }));
       await expect(page.getByTestId(ids.signInPage)).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect(page.getByTestId(ids.email)).toBeVisible({ timeout: TIMEOUTS.slowPage });
     },
@@ -128,7 +128,7 @@ export function createContestantLoginPage(page: Page) {
      * @throws Error if the form has not appeared after the third opening.
      */
     async signInFromCold(email: string, password: string): Promise<void> {
-      const signIn = buildRoute({ route: 'ContestantAppSignIn', locale: 'en' });
+      const signIn = buildRoute({ route: 'ContestantAppLoginEmail', locale: 'en' });
       let formShown = false;
       for (let attempt = 1; attempt <= COLD_SIGN_IN_ATTEMPTS && !formShown; attempt++) {
         await page.goto(signIn, { waitUntil: 'domcontentloaded' });
@@ -349,7 +349,7 @@ export function createContestantLoginPage(page: Page) {
      */
     async openSignIn({ redirectTo, locale = 'en' }: { redirectTo?: string; locale?: string } = {}): Promise<void> {
       // The route holds no locale segment: the base locale `en` is served with no prefix, any other under `/<locale>`.
-      const address = (locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'ContestantAppSignIn', locale });
+      const address = (locale === 'en' ? '' : `/${locale}`) + buildRoute({ route: 'ContestantAppLoginEmail', locale });
       const search = redirectTo === undefined ? '' : `?${new URLSearchParams({ redirectTo })}`;
       await page.goto(`${address}${search}`);
       await expect(page.getByTestId(ids.signInPage)).toBeVisible({ timeout: TIMEOUTS.slowPage });
@@ -361,7 +361,7 @@ export function createContestantLoginPage(page: Page) {
      * The step waits for nothing: a signed-in user is not shown the screen, so the caller asserts where they end.
      */
     async openSignInDirectly(): Promise<void> {
-      await page.goto(buildRoute({ route: 'ContestantAppSignIn', locale: 'en' }));
+      await page.goto(buildRoute({ route: 'ContestantAppLoginEmail', locale: 'en' }));
     },
 
     /**
@@ -540,7 +540,7 @@ export function createContestantLoginPage(page: Page) {
      * Assert that the HTML the server sends for the sign-in screen holds the password control masked, whatever a script does afterwards.
      */
     async expectPasswordServedMasked(): Promise<void> {
-      const response = await page.request.get(buildRoute({ route: 'ContestantAppSignIn', locale: 'en' }));
+      const response = await page.request.get(buildRoute({ route: 'ContestantAppLoginEmail', locale: 'en' }));
       expect(response.ok()).toBe(true);
       const tags = (await response.text()).match(/<input\b[^>]*>/g) ?? [];
       const control = tags.filter((tag) => tag.includes(`data-testid="${testIds.shared.account.password.field}"`));

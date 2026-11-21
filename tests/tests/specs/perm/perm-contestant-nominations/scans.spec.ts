@@ -1,7 +1,7 @@
 /**
  * @file scans.spec.ts — perm-chain spec, one surface of the `perm-contestant-nominations` project.
  *
- * Scans: thirteen states of the editor's three steps and of the nominations view, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds what the states need: an entity with no nomination, several elections of several nomination shapes, parties and alliances to stand under, and a lock or an election's nomination shape that is changed for the whole project.
+ * Scans: fourteen states of the editor's three steps and of the nominations view, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds what the states need: an entity with no nomination, several elections of several nomination shapes, parties and alliances to stand under, and a lock or an election's nomination shape that is changed for the whole project.
  *
  * Each entry's `reach` sets its state through the state steps, walks to the state through the fixtures' steps — a full page load after every state step — and ends on the steps that assert the state, before the reach proof and the scan. The describe that declares a session's entries puts back, after each scan, the contestant-editing setting, the nomination shape of each election an entry changes, and the entity's answers and nominations. A state of the details step is scanned under one entity type: the other type's cards are the same markup with other sentences and other options, asserted by the editor's other specs.
  *
@@ -215,6 +215,27 @@ const NEW_CANDIDATE_SCANS: ReadonlyArray<ContestantAxeRoute> = [
  * The states of the editor and of the nominations view that are scanned under the session of the party with two confirmed nominations. Every entry's `reach` writes the state it reads and then loads its page as a new document.
  */
 const EDIT_ORGANIZATION_SCANS: ReadonlyArray<ContestantAxeRoute> = [
+  {
+    // The constituency step as a party sees it: the regions of the closed-list election, each with a checkbox, in a group named for the constituency group, the region the party stands in checked, Continue enabled, and Cancel.
+    // Anchor and marker: the list, which stands in the loading indicator's place once the elections are on the page.
+    name: 'nomination-constituencies-several',
+    fixture: 'raw',
+    routeId: 'ContestantAppNominations',
+    contentTestId: testIds.contestant.nominationEditor.constituenciesList,
+    postLoginTestId: testIds.contestant.nominationEditor.constituenciesList,
+    reach: async (page) => {
+      const { contestantNominationEditor } = contestantNominationsPagesOf(page);
+      await startFrom(EDIT_ORGANIZATION_EDITOR.grant, 'seeded');
+      await setAnswers(EDIT_ORGANIZATION_EDITOR.grant, NOTHING_ANSWERED);
+      await contestantNominationEditor.open(EDIT_ORGANIZATION_EDITOR.grant);
+      await contestantNominationEditor.expectStep('elections');
+      await contestantNominationEditor.continueFromElections();
+      await contestantNominationEditor.expectStep('constituencies');
+      await contestantNominationEditor.expectConstituencyLists([LIST_ELECTION_NAME.en]);
+      await contestantNominationEditor.expectCheckedConstituencies([NORTH_CONSTITUENCY_NAME.en]);
+      await contestantNominationEditor.expectConstituenciesContinue(true);
+    }
+  },
   {
     // The details step of a party with two confirmed nominations, nothing changed: on each card the status row, the line that a change must be confirmed again, the symbol field — filled on one card — the alliance group with "None" chosen and both alliances listed, and Remove; above the cards the link back to the selection. The main button says Continue.
     // Anchor on a card. Marker: the line that a change must be confirmed again, which a card shows only for a confirmed nomination that is kept.

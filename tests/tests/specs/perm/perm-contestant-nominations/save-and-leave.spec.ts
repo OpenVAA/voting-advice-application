@@ -314,10 +314,16 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
           electionSymbol: SOUTH_NOMINATION_SYMBOL
         });
         try {
-          // The election with two nominations has no constituency to choose, so Continue leads straight to the cards and the address names no constituency for it.
+          // Both constituencies of the election with two nominations are checked on arrival, and the cards are those of the three nominations.
           await contestantNominationEditor.open(EDIT_ORGANIZATION_EDITOR.grant);
           await contestantNominationEditor.expectStep('elections');
           await contestantNominationEditor.continueFromElections();
+          await contestantNominationEditor.expectStep('constituencies');
+          await contestantNominationEditor.expectCheckedConstituencies([
+            NORTH_CONSTITUENCY_NAME.en,
+            SOUTH_CONSTITUENCY_NAME.en
+          ]);
+          await contestantNominationEditor.continueFromConstituencies();
           await contestantNominationEditor.expectStep('details');
           await contestantNominationEditor.expectCards([
             EDIT_ORGANIZATION_LIST_CARD,
@@ -325,7 +331,7 @@ test.describe('contestant-nominations: the main button, a refused save and leavi
             EDIT_ORGANIZATION_OPEN_CARD
           ]);
 
-          // With one of the two removed the election holds one nomination, and the address the save was made from no longer says where it is. The save is stored all the same, and leads on to the profile.
+          // With one of the two removed the election holds one nomination. The save is stored, and leads on to the profile.
           await contestantNominationEditor.remove(southCard);
           await contestantNominationEditor.expectSubmit('continue', 'saveAndContinue');
           await contestantNominationEditor.submit();

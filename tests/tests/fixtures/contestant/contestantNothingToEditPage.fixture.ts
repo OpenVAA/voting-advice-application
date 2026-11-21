@@ -19,12 +19,13 @@ import { expect } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantAppRootUrlRe } from '../../utils/contestantEntityUrl';
-import { messagesOf } from '../../utils/messages';
+import { messageOf, messagesOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
 /** The view's sentences that a step asserts, read from the English message source rather than copied. */
-const MESSAGES = messagesOf('contestantApp.nothingToEdit') as Record<'nextStepsNoAddress' | 'signedInAs', string>;
+const MESSAGES = messagesOf('contestantApp.nothingToEdit') as Record<'nextStepsNoAddress', string>;
+const SIGNED_IN_AS = messageOf('common', 'account.signedInAs');
 
 export function createContestantNothingToEditPage(page: Page) {
   const container = page.getByTestId(testIds.contestant.nothingToEdit.container);
@@ -59,7 +60,7 @@ export function createContestantNothingToEditPage(page: Page) {
     async expectNoAddress(): Promise<void> {
       await expect(container.getByTestId(testIds.contestant.nothingToEdit.email)).toHaveCount(0);
       await expect(container.getByRole('term')).toHaveCount(0);
-      await expect(container).not.toContainText(MESSAGES.signedInAs);
+      await expect(container).not.toContainText(SIGNED_IN_AS);
       await expect(container).toContainText(MESSAGES.nextStepsNoAddress);
     },
 

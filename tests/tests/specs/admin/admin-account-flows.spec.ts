@@ -3,6 +3,7 @@ import {
   createAdminPasswordResetPage,
   expect,
   recoverPasswordInTheAdminApp,
+  signInThenLoseEveryGrant,
   test
 } from '../../fixtures/admin/admin-account-flows';
 import { createAdminLoginPage } from '../../fixtures/admin/adminLoginPage.fixture';
@@ -33,7 +34,8 @@ import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
  * - A project admin with a password who is also the editor of the spec's reserved candidate signs in to the Admin App and reaches its home, and, signed out, signs in to the Contestant App with the same password and reaches the candidate's home there.
  * - A candidate invited by email, with no account, starts from the Admin App's login: "I have not set a password yet" leads to its forgot-password page and the request is sent. The mailed link names the Admin App, but the claim gives the user only the candidate's editor grant, so the link lands in the Contestant App, which asks for a password; once one is saved the Contestant App's set-password view is gone, and the password signs the user in to the Contestant App.
  * - An admin of another project only, whose one grant is on the stack's default project, is refused at the Admin App's login with the message that the user is not authorized, and holds no session: a grant counts in this project only when it is on the project, on its account or at global scope.
- * - A candidate signed in to the Contestant App who opens the Admin App's home by its address, a full page load, is signed out there and lands on the Admin App's login, which says the user is not authorized; the Contestant App then asks for a sign-in.
+ * - A candidate signed in to the Contestant App who opens the Admin App's home by its address, a full page load, is sent to the Contestant App's home, still signed in: opened again, the Contestant App lands on the candidate's home and asks for no sign-in.
+ * - A user signed in to the Contestant App whose one grant has been removed, so that the session's grants open neither app, follows a link into the Admin App: the Admin App signs the user out and lands on its login, whose address says the user is not authorized, with no draft of the Contestant App left in the browser. When the sign-out fails the link ends on the error page, with no request to the login page; when that failed sign-out has cleared the cookies it ends on the login page as a sign-out that worked does, with no draft left.
  * - A mailed link the Admin App asked for that cannot be used, with a token nobody issued and then with none, lands on the Admin App's login, which says the link could not be used.
  *
  * ## What it scans
@@ -42,7 +44,7 @@ import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
  *
  * ## What it writes
  *
- * Users whose address begins with the spec's own prefix, or with the scans' prefix, project-scope invitations for such addresses, the grants their claims write, an account grant on the suite project's account, which reaches every project of that account, a global grant, which reaches every project of the stack, and an editor grant on the spec's reserved candidate, which is unconfirmed and has no nomination. Each test removes what it created and puts the reserved candidate back as the dataset seeds it; `beforeAll` removes what an interrupted run left and `afterAll` asserts that nothing is left. It writes on no entity a voter reads and seeds no entity invitation, so it changes nothing a voter reads.
+ * Users whose address begins with the spec's own prefix, or with the scans' prefix, project-scope invitations for such addresses, the grants their claims write, an account grant on the suite project's account, which reaches every project of that account, a global grant, which reaches every project of the stack, and an editor grant on the spec's reserved candidate, which is unconfirmed and has no nomination, and which three tests remove again while its user is signed in. Those three also store a draft of the Contestant App in the browser, under a user and an entity of no dataset. Each test removes what it created and puts the reserved candidate back as the dataset seeds it; `beforeAll` removes what an interrupted run left and `afterAll` asserts that nothing is left. It writes on no entity a voter reads and seeds no entity invitation, so it changes nothing a voter reads.
  *
  * Rigidity contract: HARD assertions only (no expect.soft / try-catch / .catch around an expectation). No expectation takes a link, a token or a password as its subject.
  */
@@ -338,7 +340,7 @@ test.describe("the Admin App's account flows", () => {
     await adminLoginPage.expectLoginAddressSaysLoginFailed();
   });
 
-  test("a candidate signed in to the Contestant App who opens the Admin App by its address is signed out on the Admin App's login, which says why", async ({
+  test("a candidate signed in to the Contestant App who opens the Admin App by its address is sent to the Contestant App's home, still signed in", async ({
     invitationFlow,
     adminLoginPage,
     contestantLoginPage,
@@ -357,11 +359,68 @@ test.describe("the Admin App's account flows", () => {
     await contestantEntityHomePage.expectLanded(ADMIN_FLOWS_CANDIDATE);
 
     await adminLoginPage.goToHome();
-    await adminLoginPage.expectLoginAddressSaysNotAuthorized();
-    await adminLoginPage.expectSaysNotAuthorized();
+    await contestantEntityHomePage.expectLanded(ADMIN_FLOWS_CANDIDATE);
 
     await contestantEntityHomePage.open();
-    await contestantLoginPage.expectOnEntry();
+    await contestantEntityHomePage.expectLanded(ADMIN_FLOWS_CANDIDATE);
+  });
+
+  test("a user whose grants open neither app, on a link into the Admin App, is signed out on the Admin App's login, which says why, with no draft left", async ({
+    invitationFlow,
+    adminLoginPage,
+    contestantLoginPage,
+    contestantEntityHomePage,
+    headerLogout
+  }) => {
+    await signInThenLoseEveryGrant(
+      { invitationFlow, contestantLoginPage, contestantEntityHomePage, headerLogout },
+      ADMIN_FLOWS_CANDIDATE,
+      CHOSEN_PASSWORD
+    );
+
+    await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
+    await adminLoginPage.expectLoginAddressSaysNotAuthorized();
+    await adminLoginPage.expectSaysNotAuthorized();
+    await headerLogout.expectNoContestantDraft();
+  });
+
+  test('a user whose grants open neither app and whose sign-out fails, on a link into the Admin App, ends on the error page', async ({
+    invitationFlow,
+    adminLoginPage,
+    contestantLoginPage,
+    contestantEntityHomePage,
+    headerLogout
+  }) => {
+    await signInThenLoseEveryGrant(
+      { invitationFlow, contestantLoginPage, contestantEntityHomePage, headerLogout },
+      ADMIN_FLOWS_CANDIDATE,
+      CHOSEN_PASSWORD
+    );
+
+    await headerLogout.failSignOut();
+    await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
+    await adminLoginPage.expectErrorPageSays('default');
+    await adminLoginPage.expectNoLoginPageRequest();
+  });
+
+  test("a user whose grants open neither app and whose sign-out fails after clearing the cookies, on a link into the Admin App, ends on the Admin App's login with no draft left", async ({
+    invitationFlow,
+    adminLoginPage,
+    contestantLoginPage,
+    contestantEntityHomePage,
+    headerLogout
+  }) => {
+    await signInThenLoseEveryGrant(
+      { invitationFlow, contestantLoginPage, contestantEntityHomePage, headerLogout },
+      ADMIN_FLOWS_CANDIDATE,
+      CHOSEN_PASSWORD
+    );
+
+    await headerLogout.failSignOutAfterClearingCookies();
+    await adminLoginPage.followLinkInsideTheApp(buildRoute({ route: 'AdminAppHome', locale: 'en' }));
+    await adminLoginPage.expectLoginAddressSaysNotAuthorized();
+    await adminLoginPage.expectOnLoginPage();
+    await headerLogout.expectNoContestantDraft();
   });
 });
 

@@ -272,13 +272,6 @@ export function createContestantEntityPages(page: Page) {
     },
 
     /**
-     * Navigate to the settings address under the entity with that type and id, as a link kept from before names it, and assert nothing: where the application lands the user is the caller's question.
-     */
-    async requestEntitySettings(entity: Pick<SelectionEntity, 'entityType' | 'id'>): Promise<void> {
-      await page.goto(`${homePath(entity)}/settings`);
-    },
-
-    /**
      * Navigate to an entity's home and wait for it.
      */
     async openHome(entity: SelectionEntity): Promise<void> {

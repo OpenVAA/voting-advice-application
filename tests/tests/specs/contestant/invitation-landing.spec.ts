@@ -1,6 +1,9 @@
 import { expect, test } from '../../fixtures/contestant/invitation-landing';
 import { openMailedLink } from '../../utils/mailedLink';
 import { messageOf } from '../../utils/messages';
+import { signedInAddress } from '../../utils/sessionCookie';
+import type { Page } from '@playwright/test';
+import type { AdminLoginPageFixture } from '../../fixtures/admin/adminLoginPage.fixture';
 
 /**
  * # Where a claim lands
@@ -9,7 +12,7 @@ import { messageOf } from '../../utils/messages';
  *
  * ## The cases
  *
- * - A user who has a password is promised the project's editor role, asks for a sign-in link, opens it and confirms it on the confirm page, which verifies it, claims and lands them in the Contestant App, which tells them there is nothing to edit: a project role names no entity.
+ * - A user who has a password is promised the project's editor role, asks for a sign-in link, opens it and confirms it on the confirm page, which verifies it, claims and lands them on the Contestant App's root, which sends a project editor to the Admin App's home: a project role names no entity, and an editor of the project works in the Admin App.
  * - A user who has a password is promised the project's admin role and signs in at the Admin App's login. The login action claims and refreshes before its gate reads the session, so a user who held no grant when they submitted the form is let in.
  * - A user nobody invited signs in at the Contestant App's login while an invitation is open for another address. They are refused as any user with no grant is, hold no grant afterwards, and the invitation stays open.
  * - A returning user's sign-in link, as in the first case, opened as received: it opens the confirm page, which verifies and claims nothing until Continue is pressed; then it verifies, claims and lands the user.
@@ -21,6 +24,8 @@ import { messageOf } from '../../utils/messages';
  * - A link fetched twice without a browser, as a mail scanner or a prefetcher does, before the user opens it: the link still signs the user in.
  * - A link opened in a browser signed in to another account: the page says that continuing signs that account out. Cancel leads back to that account's app, still signed in, and spends nothing; the link opened again and confirmed signs the first account out and the link's account in.
  * - A mailed link, followed by the browser, ends on the confirm page's address with the link's token and type, and Continue there signs the user in.
+ *
+ * The Admin App's home names no account, so the account a browser is signed in to is read from its session cookie.
  *
  * ## The Admin App's login
  *
@@ -42,6 +47,22 @@ import { messageOf } from '../../utils/messages';
  */
 const NO_PROFILE_MESSAGE = messageOf('contestantApp.login', 'noProfile');
 
+/**
+ * Assert that the browser shows the Admin App's home, signed in to the account with this address.
+ *
+ * @param page - The page under test.
+ * @param adminLoginPage - The Admin App's login page fixture, whose step asserts the home.
+ * @param email - The address of the account the browser must be signed in to.
+ */
+async function expectAdminHomeSignedInAs(
+  page: Page,
+  adminLoginPage: AdminLoginPageFixture,
+  email: string
+): Promise<void> {
+  await adminLoginPage.expectAdminHome();
+  expect(await signedInAddress(page), 'the account the browser is signed in to').toBe(email);
+}
+
 // Every test signs in from scratch.
 test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -60,10 +81,10 @@ test.describe('where a claimed invitation lands its user', () => {
     expect(await invitationFlow.leftoversUnderPrefix()).toEqual({ invitations: 0, users: 0 });
   });
 
-  test('a returning user promised a project role is signed in by the mailed link with the grant claimed, and is told there is nothing to edit', async ({
+  test("a returning user promised a project role is signed in by the mailed link with the grant claimed, and lands on the Admin App's home", async ({
     page,
     invitationFlow,
-    contestantNothingToEditPage
+    adminLoginPage
   }) => {
     const user = await invitationFlow.createUserWithPassword({ acceptTermsOfUse: true });
     await invitationFlow.seedProjectInvitation('editor', user.email, { confirmEntity: true });
@@ -72,11 +93,10 @@ test.describe('where a claimed invitation lands its user', () => {
     const request = await invitationFlow.askForLink({ email: user.email, locale: 'en' });
     expect(request.outcome, 'the link request handed a mail over').toBe('sent');
 
-    // The link is opened as received, on the run's origin, and confirmed on the confirm page, which verifies it, claims, refreshes and lands a user who has a password on the Contestant App's root.
+    // The link is opened as received, on the run's origin, and confirmed on the confirm page, which verifies it, claims, refreshes and lands a user who has a password on the Contestant App's root, which sends a project editor to the Admin App's home.
     await openMailedLink(page, await invitationFlow.signInLinkToOpen(user.email, { locale: 'en' }));
 
-    await contestantNothingToEditPage.expectShown();
-    await contestantNothingToEditPage.expectSignedInEmail(user.email);
+    await expectAdminHomeSignedInAs(page, adminLoginPage, user.email);
 
     expect(await invitationFlow.grantRowsOf(user.email)).toEqual([invitationFlow.projectGrant('editor')]);
     const invitations = await invitationFlow.invitationsAddressedTo(user.email);
@@ -128,9 +148,10 @@ test.describe('where a claimed invitation lands its user', () => {
   });
 
   test('a mailed sign-in link confirmed on the confirm page signs the user in with the grant claimed', async ({
+    page,
     invitationFlow,
     authConfirmPage,
-    contestantNothingToEditPage
+    adminLoginPage
   }) => {
     const user = await invitationFlow.createUserWithPassword({ acceptTermsOfUse: true });
     await invitationFlow.seedProjectInvitation('editor', user.email, { confirmEntity: true });
@@ -146,8 +167,7 @@ test.describe('where a claimed invitation lands its user', () => {
 
     await authConfirmPage.pressContinue();
 
-    await contestantNothingToEditPage.expectShown();
-    await contestantNothingToEditPage.expectSignedInEmail(user.email);
+    await expectAdminHomeSignedInAs(page, adminLoginPage, user.email);
     expect(await invitationFlow.grantRowsOf(user.email)).toEqual([invitationFlow.projectGrant('editor')]);
     const invitations = await invitationFlow.invitationsAddressedTo(user.email);
     expect(invitations).toHaveLength(1);
@@ -169,9 +189,10 @@ test.describe('a mailed link on the confirm page', () => {
   });
 
   test('fetching the confirm page spends nothing: the link still signs in after two fetches', async ({
+    page,
     invitationFlow,
     authConfirmPage,
-    contestantNothingToEditPage
+    adminLoginPage
   }) => {
     const user = await invitationFlow.createUserWithPassword({ acceptTermsOfUse: true });
     await invitationFlow.seedProjectInvitation('editor', user.email, { confirmEntity: true });
@@ -187,8 +208,7 @@ test.describe('a mailed link on the confirm page', () => {
     await authConfirmPage.expectShown('magiclink');
     await authConfirmPage.pressContinue();
 
-    await contestantNothingToEditPage.expectShown();
-    await contestantNothingToEditPage.expectSignedInEmail(user.email);
+    await expectAdminHomeSignedInAs(page, adminLoginPage, user.email);
     expect(await invitationFlow.grantRowsOf(user.email)).toEqual([invitationFlow.projectGrant('editor')]);
   });
 
@@ -196,7 +216,7 @@ test.describe('a mailed link on the confirm page', () => {
     page,
     invitationFlow,
     authConfirmPage,
-    contestantNothingToEditPage
+    adminLoginPage
   }) => {
     // The browser is signed in as the first user, through that user's own mailed link.
     const signedIn = await invitationFlow.createUserWithPassword({ acceptTermsOfUse: true });
@@ -204,8 +224,7 @@ test.describe('a mailed link on the confirm page', () => {
     const firstRequest = await invitationFlow.askForLink({ email: signedIn.email, locale: 'en' });
     expect(firstRequest.outcome, "the first user's link request handed a mail over").toBe('sent');
     await openMailedLink(page, await invitationFlow.signInLinkToOpen(signedIn.email, { locale: 'en' }));
-    await contestantNothingToEditPage.expectShown();
-    await contestantNothingToEditPage.expectSignedInEmail(signedIn.email);
+    await expectAdminHomeSignedInAs(page, adminLoginPage, signedIn.email);
 
     // The second user's link is opened in that browser.
     const linked = await invitationFlow.createUserWithPassword({ acceptTermsOfUse: true });
@@ -220,8 +239,7 @@ test.describe('a mailed link on the confirm page', () => {
     await authConfirmPage.pressCancel();
 
     // Cancel led back to the first user's app, still signed in as that user, and spent nothing.
-    await contestantNothingToEditPage.expectShown();
-    await contestantNothingToEditPage.expectSignedInEmail(signedIn.email);
+    await expectAdminHomeSignedInAs(page, adminLoginPage, signedIn.email);
     expect(await invitationFlow.grantRowsOf(linked.email), "the second user's grants after Cancel").toEqual([]);
 
     // The link still works: confirmed, it signs the first user out and the second in.
@@ -230,15 +248,15 @@ test.describe('a mailed link on the confirm page', () => {
     await authConfirmPage.expectSignedInNotice(true);
     await authConfirmPage.pressContinue();
 
-    await contestantNothingToEditPage.expectShown();
-    await contestantNothingToEditPage.expectSignedInEmail(linked.email);
+    await expectAdminHomeSignedInAs(page, adminLoginPage, linked.email);
     expect(await invitationFlow.grantRowsOf(linked.email)).toEqual([invitationFlow.projectGrant('editor')]);
   });
 
   test('a mailed link lands on the confirm page with its parameters, and Continue signs in', async ({
+    page,
     invitationFlow,
     authConfirmPage,
-    contestantNothingToEditPage
+    adminLoginPage
   }) => {
     const user = await invitationFlow.createUserWithPassword({ acceptTermsOfUse: true });
     await invitationFlow.seedProjectInvitation('editor', user.email, { confirmEntity: true });
@@ -254,8 +272,7 @@ test.describe('a mailed link on the confirm page', () => {
 
     await authConfirmPage.pressContinue();
 
-    await contestantNothingToEditPage.expectShown();
-    await contestantNothingToEditPage.expectSignedInEmail(user.email);
+    await expectAdminHomeSignedInAs(page, adminLoginPage, user.email);
     expect(await invitationFlow.grantRowsOf(user.email)).toEqual([invitationFlow.projectGrant('editor')]);
   });
 });
