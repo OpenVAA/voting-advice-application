@@ -58,11 +58,11 @@
     "multiChoice": {
       "selectExact": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Sélectionnez 1 option.",
-            "countPlural=*": "Sélectionnez {count} options."
+            "count=1": "Sélectionnez 1 option.",
+            "count=*": "Sélectionnez {count} options."
           }
         }
       ],

@@ -40,11 +40,11 @@
       "incomplete": "Not completed yet.",
       "incompleteCount": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Not completed yet: one item left.",
-            "countPlural=*": "Not completed yet: {count} items left."
+            "count=1": "Not completed yet: one item left.",
+            "count=*": "Not completed yet: {count} items left."
           }
         }
       ]

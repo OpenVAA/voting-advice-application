@@ -19,16 +19,7 @@
           "withoutAddress": "Kui sa e-kirja ei leia, kontrolli rämpspostikausta."
         },
         "resend": "Saada uuesti",
-        "resendIn": [
-          {
-            "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
-            "selectors": ["secondsPlural"],
-            "match": {
-              "secondsPlural=one": "({seconds} s pärast)",
-              "secondsPlural=*": "({seconds} s pärast)"
-            }
-          }
-        ],
+        "resendIn": "({seconds} s pärast)",
         "resendReady": "Nüüd saad küsida uue e-kirja.",
         "resendRequested": "Uus e-kiri on küsitud.",
         "support": "Kui sul on probleeme e-kirja kättesaamisega, {contactSupportLink}.",

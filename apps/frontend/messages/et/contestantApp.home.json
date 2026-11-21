@@ -40,11 +40,11 @@
       "incomplete": "Veel tegemata.",
       "incompleteCount": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Veel tegemata: jäänud on üks punkt.",
-            "countPlural=*": "Veel tegemata: jäänud on {count} punkti."
+            "count=1": "Veel tegemata: jäänud on üks punkt.",
+            "count=*": "Veel tegemata: jäänud on {count} punkti."
           }
         }
       ]

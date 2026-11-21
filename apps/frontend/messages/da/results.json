@@ -16,23 +16,23 @@
         "template": "{candidates} på tværs af {parties}",
         "candidates": [
           {
-            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "declarations": ["input numCandidates"],
+            "selectors": ["numCandidates"],
             "match": {
-              "numCandidates=0, numCandidatesPlural=*": "Ingen kandidater",
-              "numCandidates=*, numCandidatesPlural=one": "1 kandidat",
-              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} kandidater"
+              "numCandidates=0": "Ingen kandidater",
+              "numCandidates=1": "1 kandidat",
+              "numCandidates=*": "{numCandidates} kandidater"
             }
           }
         ],
         "parties": [
           {
-            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numParties", "numPartiesPlural"],
+            "declarations": ["input numParties"],
+            "selectors": ["numParties"],
             "match": {
-              "numParties=0, numPartiesPlural=*": "ingen partier",
-              "numParties=*, numPartiesPlural=one": "1 parti",
-              "numParties=*, numPartiesPlural=*": "{numParties} partier"
+              "numParties=0": "ingen partier",
+              "numParties=1": "1 parti",
+              "numParties=*": "{numParties} partier"
             }
           }
         ]

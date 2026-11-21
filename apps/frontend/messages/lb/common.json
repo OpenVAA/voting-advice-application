@@ -19,16 +19,7 @@
           "withoutAddress": "Wann Dir d’E-Mail net fannt, kuckt an Ärem Spam-Dossier no."
         },
         "resend": "Nach eng Kéier schécken",
-        "resendIn": [
-          {
-            "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
-            "selectors": ["secondsPlural"],
-            "match": {
-              "secondsPlural=one": "(an {seconds} s)",
-              "secondsPlural=*": "(an {seconds} s)"
-            }
-          }
-        ],
+        "resendIn": "(an {seconds} s)",
         "resendReady": "Dir kënnt elo eng nei E-Mail ufroen.",
         "resendRequested": "Eng nei E-Mail gouf ugefrot.",
         "support": "Wann Dir Problemer hutt, d’E-Mail ze kréien, {contactSupportLink}.",

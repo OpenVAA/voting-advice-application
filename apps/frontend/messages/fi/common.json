@@ -19,16 +19,7 @@
           "withoutAddress": "Jos et löydä viestiä, tarkista roskapostikansiosi."
         },
         "resend": "Lähetä uudelleen",
-        "resendIn": [
-          {
-            "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
-            "selectors": ["secondsPlural"],
-            "match": {
-              "secondsPlural=one": "({seconds} s kuluttua)",
-              "secondsPlural=*": "({seconds} s kuluttua)"
-            }
-          }
-        ],
+        "resendIn": "({seconds} s kuluttua)",
         "resendReady": "Voit nyt pyytää uuden viestin.",
         "resendRequested": "Uutta viestiä on pyydetty.",
         "support": "Jos sinulla on ongelmia viestin vastaanottamisessa, {contactSupportLink}.",

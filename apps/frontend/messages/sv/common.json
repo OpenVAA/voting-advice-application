@@ -19,16 +19,7 @@
           "withoutAddress": "Om du inte hittar meddelandet, kontrollera din skräppostmapp."
         },
         "resend": "Skicka igen",
-        "resendIn": [
-          {
-            "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
-            "selectors": ["secondsPlural"],
-            "match": {
-              "secondsPlural=one": "(om {seconds} s)",
-              "secondsPlural=*": "(om {seconds} s)"
-            }
-          }
-        ],
+        "resendIn": "(om {seconds} s)",
         "resendReady": "Du kan nu be om ett nytt e-postmeddelande.",
         "resendRequested": "Ett nytt e-postmeddelande har begärts.",
         "support": "Om du har problem med att ta emot e-postmeddelandet, {contactSupportLink}.",
