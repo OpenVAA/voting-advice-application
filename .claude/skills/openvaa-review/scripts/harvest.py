@@ -25,6 +25,12 @@ DATA_RE = re.compile(r"<!-- openvaa-review-data\s*(\{.*?\})\s*-->", re.S)
 TICK_RE = re.compile(r"^- \[[xX]\] ([A-Z][A-Z0-9]{1,4}-\d+)\b", re.M)
 
 
+def origin_repo():
+    """owner/name of the `origin` remote; `gh repo view` needs GraphQL, which cloud sessions refuse."""
+    url = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, check=True).stdout.strip()
+    return re.sub(r"\.git$", "", re.sub(r"^.*github\.com[:/]", "", url))
+
+
 def gh_json(*args):
     """Run gh and parse JSON. Paginated `gh api` calls get --slurp so pages arrive as one list of lists."""
     args = list(args)
@@ -49,11 +55,12 @@ def main():
     ap.add_argument("--limit", type=int, default=60)
     ap.add_argument("--repo")
     args = ap.parse_args()
-    repo = args.repo or subprocess.run(["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
-                                       capture_output=True, text=True, check=True).stdout.strip()
+    repo = args.repo or origin_repo()
 
-    prs = gh_json("pr", "list", "--repo", repo, "--state", "all", "--limit", str(args.limit),
-                  "--json", "number,author,headRefOid,state,title") or []
+    pulls = gh_json("api", f"repos/{repo}/pulls?state=all&sort=created&direction=desc&per_page={min(args.limit, 100)}") or []
+    prs = [{"number": p["number"], "title": p["title"], "author": {"login": (p.get("user") or {}).get("login")},
+            "headRefOid": p["head"]["sha"],
+            "state": "MERGED" if p.get("merged_at") else p["state"].upper()} for p in pulls[:args.limit]]
     records = []
     for pr in prs:
         n = pr["number"]

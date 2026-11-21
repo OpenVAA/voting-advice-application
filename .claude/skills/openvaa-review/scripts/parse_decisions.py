@@ -113,6 +113,12 @@ def collect_mentions(repo, pr, known, review_ids, since):
     return mentions, unlinked
 
 
+def origin_repo():
+    """owner/name of the `origin` remote; `gh repo view` needs GraphQL, which cloud sessions refuse."""
+    url = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True, check=True).stdout.strip()
+    return re.sub(r"\.git$", "", re.sub(r"^.*github\.com[:/]", "", url))
+
+
 def gh_json(*args):
     out = subprocess.run(["gh", *args], capture_output=True, text=True)
     if out.returncode != 0 or not out.stdout.strip():
@@ -136,8 +142,7 @@ def main():
         for p in a.from_files:
             with open(p) as fh: mine.append({"id": p, "body": fh.read()})
     else:
-        repo = a.repo or subprocess.run(["gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
-                                        capture_output=True, text=True, check=True).stdout.strip()
+        repo = a.repo or origin_repo()
         comments = gh_json("api", f"repos/{repo}/issues/{a.pr}/comments", "--paginate", "--slurp") or []
         comments = [c for page in comments for c in (page if isinstance(page, list) else [page])]
         mine = [c for c in comments if marker in (c.get("body") or "")]
