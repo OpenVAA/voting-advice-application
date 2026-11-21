@@ -7,7 +7,7 @@
  * 2. **A user listed with no entity is shown the "nothing to edit" view.** The load resolves `{ view: 'nothingToEdit' }`, redirects nowhere and signs nobody out.
  * 3. **A user listed with exactly one entity is redirected to that entity's home**, a candidate and an organization alike, with status 307 and without being signed out.
  * 4. **A user listed with several entities chooses.** The load resolves `{ view: 'select' }` for two entities of one type and for a candidate with an organization, redirects nowhere and signs nobody out.
- * 5. **A list that could not be read is shown as the read failure.** The load resolves `{ view: 'readFailed' }` before it looks at the list, so neither the one-entity redirect nor the "nothing to edit" view is reached, and signs nobody out.
+ * 5. **A list that could not be read is shown as the read failure.** A `null` list resolves `{ view: 'readFailed' }`, redirects nowhere and signs nobody out.
  *
  * The fake locals carry a sign-out spy the load has no reason to reach: every case asserts it was never called.
  */
@@ -103,11 +103,8 @@ describe('routes/contestant/(protected)/+page.server.ts — a user listed with n
 });
 
 describe('routes/contestant/(protected)/+page.server.ts — a list that could not be read', () => {
-  it.each([
-    ['an empty list', []],
-    ['a list of one entity', [CANDIDATE]]
-  ] as const)('resolves the read-failure view with %s, redirects nowhere and signs nobody out', async (_, entities) => {
-    const event = makeEvent({ gate: null, user: USER, entities, entitiesReadFailed: true });
+  it('resolves the read-failure view, redirects nowhere and signs nobody out', async () => {
+    const event = makeEvent({ gate: null, user: USER, entities: null });
 
     expect(await redirectOf(event)).toBeUndefined();
     expect(await runLoad(event)).toEqual({ view: 'readFailed' });

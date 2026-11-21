@@ -9,7 +9,7 @@
  * 2. **A user past the gates gets the user and the served entities**: the list is read after the user-level data and filtered by the entity types the project serves. The result holds no entity data, no question data and no part of the session.
  * 3. **The coarse role decides nothing.** A user whose role is `'admin'`, or who has none, is listed with the one served entity they edit.
  * 4. **A failed read of the user-level data** signs the user out through the sign-out helper and redirects to the login page with `loginFailed`. So does user-level data that does not say, as a boolean, whether the account has a password: the gate list is never asked about such a user.
- * 4a. **A failed read of the list** signs nobody out: the load logs it and resolves the user with an empty list and `entitiesReadFailed: true`, whatever the cause. A request for an entity made while the list cannot be read is sent to the app root by the entity-level load, as one for an entity the list does not hold is.
+ * 4a. **A failed read of the list** signs nobody out: the load logs it and resolves the user with `entities: null`, whatever the cause. A request for an entity made while the list cannot be read is sent to the app root by the entity-level load, as one for an entity the list does not hold is.
  * 4b. **The logout count a request carries** is withdrawn in the response only after a sign-out that worked, and kept when the sign-out fails with a session left and the load ends on the error page.
  * 5. **No session** redirects to the login page before anything is read.
  * 6. **The entity the URL names decides nothing here.** The load resolves the same data with and without the entity params.
@@ -615,28 +615,24 @@ describe('routes/contestant/(protected)/+layout.server.ts — the entity list ca
     ['a schema mismatch', new Error("The list of the user's entities did not match its schema at: entities")],
     ['a network error', new TypeError('fetch failed')],
     ['a server error', new Error("Failed to list the user's entities: 500")]
-  ] as const)(
-    'answers %s with the user, an empty list and the read failure, logs it, and signs nobody out',
-    async (_, failure) => {
-      const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
-      getBasicUserData.mockResolvedValue(userWith(ACCEPTED_AT));
-      getUserEntities.mockRejectedValue(failure);
+  ] as const)('answers %s with the user and a null list, logs it, and signs nobody out', async (_, failure) => {
+    const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    getBasicUserData.mockResolvedValue(userWith(ACCEPTED_AT));
+    getUserEntities.mockRejectedValue(failure);
 
-      const loading = runLoad(makeEvent());
+    const loading = runLoad(makeEvent());
 
-      await expect(loading).resolves.toEqual({
-        gate: null,
-        user: userWith(ACCEPTED_AT),
-        entities: [],
-        entitiesReadFailed: true
-      });
-      expect(signOut).not.toHaveBeenCalled();
-      expect(getEntityUserData).not.toHaveBeenCalled();
-      expect(getQuestionData).not.toHaveBeenCalled();
-      expect(error).toHaveBeenCalledTimes(1);
-      expect(error.mock.calls[0][1]).toEqual({ err: failure });
-    }
-  );
+    await expect(loading).resolves.toEqual({
+      gate: null,
+      user: userWith(ACCEPTED_AT),
+      entities: null
+    });
+    expect(signOut).not.toHaveBeenCalled();
+    expect(getEntityUserData).not.toHaveBeenCalled();
+    expect(getQuestionData).not.toHaveBeenCalled();
+    expect(error).toHaveBeenCalledTimes(1);
+    expect(error.mock.calls[0][1]).toEqual({ err: failure });
+  });
 
   it('sends a request for an entity to the app root, where the read failure is shown, and reads no entity', async () => {
     vi.spyOn(log, 'error').mockImplementation(() => undefined);
@@ -646,7 +642,7 @@ describe('routes/contestant/(protected)/+layout.server.ts — the entity list ca
     const event = makeEvent({ params });
 
     const listing = runLoad(event);
-    await expect(listing).resolves.toMatchObject({ gate: null, entities: [], entitiesReadFailed: true });
+    await expect(listing).resolves.toMatchObject({ gate: null, entities: null });
     const parent = await listing;
     const redirected = await (entityLoad as unknown as (event: unknown) => Promise<unknown>)({
       fetch: fakeFetch,

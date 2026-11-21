@@ -5,7 +5,7 @@
  *
  * 1. **A gated parent decides nothing.** The load resolves an empty object and redirects nowhere, so the gate's view is shown at the URL the user asked for.
  * 2. **A user listed with exactly one entity is redirected to the same page under it**, with status 307, for each form of sub-path that names an entity page, a candidate and an organization alike.
- * 3. **A user listed with no entity or with several is redirected to the app root**, whatever page was asked for.
+ * 3. **A user listed with no entity or with several, or whose list could not be read, is redirected to the app root**, whatever page was asked for.
  * 4. **A question segment that is not a plain id is rejected by the matcher**, so such a path 404s, and the load still sends it to the app root, so no part of the requested path can steer the redirect.
  * 5. **A sub-path that names no entity page leads to the app root**: `settings` belongs to the user, has its own route at the app root, and is mapped to no page here.
  * 6. **The resolver and the entity routes claim no path in common**: no sub-path the resolver's matcher admits begins with a segment the entity-type matcher admits, and the matcher rejects what follows the app root in every entity path. Which of the two routes SvelteKit tries first therefore decides nothing.
@@ -39,7 +39,7 @@ const ORGANIZATION: UserEntity = { type: 'organization', id: ORGANIZATION_ID, na
 const GATED_PARENT = { gate: 'termsOfUse', user: USER };
 
 /** What the user-level load resolves to for a user past the gates who is listed with the given entities. */
-function parentWith(entities: Array<UserEntity>) {
+function parentWith(entities: Array<UserEntity> | null) {
   return { gate: null, user: USER, entities };
 }
 
@@ -102,6 +102,12 @@ describe('routes/contestant/(protected)/[...page]/+page.server.ts — a user lis
 
   it.each(SUB_PATHS)('redirects a user with several entities to the app root (%s)', async (page) => {
     const redirected = await redirectOf(makeEvent(page, parentWith([CANDIDATE, ORGANIZATION])));
+
+    expect(redirected).toMatchObject({ status: 307, location: APP_ROOT });
+  });
+
+  it.each(SUB_PATHS)('redirects a user whose list could not be read to the app root (%s)', async (page) => {
+    const redirected = await redirectOf(makeEvent(page, parentWith(null)));
 
     expect(redirected).toMatchObject({ status: 307, location: APP_ROOT });
   });

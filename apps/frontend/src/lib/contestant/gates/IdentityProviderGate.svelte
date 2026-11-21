@@ -76,10 +76,7 @@ None.
   ////////////////////////////////////////////////////////////////////
 
   /** The arrival marker as the gated load returns it: `created` for an identity just registered, `existing` for one found. */
-  const arrival = $derived.by((): 'created' | 'existing' | null => {
-    const value: unknown = page.data.arrival;
-    return value === 'created' || value === 'existing' ? value : null;
-  });
+  const arrival = $derived(page.data.arrival ?? null);
 
   const address = $derived<AddressState>(contestantCtx.user?.address ?? { state: 'none', pendingTaken: false });
   const addressState = $derived(address.state);

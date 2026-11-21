@@ -3,7 +3,7 @@
  *
  * 1. **The parent.** The user-level load's `gate` and `entities`, awaited before anything else. While a gate is pending the load returns an empty object and redirects nowhere, so the gate's view is shown at the URL the user asked for.
  * 2. **Exactly one entity.** The user is redirected to the same page under that entity.
- * 3. **Any other number of entities.** The user is redirected to the app root, which decides what such a user sees.
+ * 3. **Any other number of entities, or a list that could not be read.** The user is redirected to the app root, which decides what such a user sees.
  *
  * The load never signs anyone out. Every target is built with `buildRoute` from a route key and the page `entityPageOf` resolves, so nothing of the requested path reaches the target unchecked; a sub-path it resolves to no page, which the matcher already rejects, leads to the app root.
  *
@@ -22,7 +22,7 @@ export async function load({ params, parent }) {
   const lang = getLocale();
   const appRoot = buildRoute({ route: 'ContestantAppHome', locale: lang });
 
-  if (entities.length !== 1) redirect(307, appRoot);
+  if (entities === null || entities.length !== 1) redirect(307, appRoot);
   const [{ type, id }] = entities;
 
   const entityPage = entityPageOf(params.page);
