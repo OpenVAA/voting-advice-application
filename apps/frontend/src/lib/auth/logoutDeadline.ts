@@ -14,6 +14,11 @@ export const LOGOUT_PENDING_MAX_AGE_SECONDS = 400 * 24 * 60 * 60;
 export const LOGOUT_DEADLINE_SETTLED = 'settled';
 
 /**
+ * The attributes the page and the server's request hook alike write and remove both cookies of the logout modal's count with, so a removal names the cookie a write made. `Secure` is added on an `https:` page by each writer.
+ */
+export const LOGOUT_COOKIE_ATTRIBUTES = { path: '/', sameSite: 'lax' } as const;
+
+/**
  * The `sessionStorage` key under which a tab keeps the id of the count it wrote. It survives a reload of the same tab and is not shared with another, so a reload of the tab that held the modal removes its count and a page of another tab, which has no record of it, leaves the count alone.
  */
 export const LOGOUT_TAB_RECORD_KEY = 'logout-deadline-tab';
@@ -102,6 +107,18 @@ export function parentDomainsOf(hostname: string): Array<string> {
 export function removalDomainsOf(hostname: string): Array<string> {
   if (hostname.includes(':') || IPV4_ADDRESS.test(hostname) || !hostname.includes('.')) return [];
   return [hostname, ...parentDomainsOf(hostname)];
+}
+
+/**
+ * Every copy of the two cookies of the logout modal's count a page of a host can hold: both names host-only, then both names for each domain {@link removalDomainsOf} gives. Removing each one expires every copy.
+ *
+ * @param hostname - The host name, as a URL's `hostname` holds it.
+ * @returns Each copy's name, with the domain it was written for, or no domain for the host-only copy.
+ */
+export function everyCopyOf(hostname: string): Array<{ name: string; domain?: string }> {
+  const names = [COOKIE.logoutPending, COOKIE.logoutDeadline];
+  const domains = removalDomainsOf(hostname);
+  return names.flatMap((name) => [{ name }, ...domains.map((domain) => ({ name, domain }))]);
 }
 
 /**
@@ -219,14 +236,11 @@ function forgetTabRecord(): void {
 /** Expire both cookies, host-only, for the page's host's own domain and for each of its parent domains. */
 function expireEveryCopy(): void {
   const hostname = typeof location === 'undefined' ? '' : location.hostname;
-  for (const name of [COOKIE.logoutPending, COOKIE.logoutDeadline]) {
-    setCookie(name, '', 0);
-    for (const domain of removalDomainsOf(hostname)) setCookie(name, '', 0, domain);
-  }
+  for (const { name, domain } of everyCopyOf(hostname)) setCookie(name, '', 0, domain);
 }
 
 /**
- * Assign one of the two cookies with the attributes every write and removal carries, so a removal names the cookie a write made.
+ * Assign one of the two cookies with {@link LOGOUT_COOKIE_ATTRIBUTES}, which every write and removal carries.
  *
  * @param name - The cookie's name.
  * @param value - The cookie's value.
@@ -236,5 +250,7 @@ function expireEveryCopy(): void {
 function setCookie(name: string, value: string, maxAge: number, domain?: string): void {
   const secure = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
   const domainAttribute = domain ? `; Domain=${domain}` : '';
-  document.cookie = `${name}=${value}; Path=/; Max-Age=${maxAge}; SameSite=Lax${domainAttribute}${secure}`;
+  const { path, sameSite } = LOGOUT_COOKIE_ATTRIBUTES;
+  const sameSiteAttribute = `${sameSite.charAt(0).toUpperCase()}${sameSite.slice(1)}`;
+  document.cookie = `${name}=${value}; Path=${path}; Max-Age=${maxAge}; SameSite=${sameSiteAttribute}${domainAttribute}${secure}`;
 }
