@@ -7,6 +7,7 @@
  *
  * 1. **The frame** — the screen's marker and what it states about itself, a heading that can take focus and holds the app's name, and no field.
  * 2. **The entries** — "Sign in with email" always, "Register" exactly when a registration mode is listed, each a link that works with no script.
+ * 2b. **Signing in with the identity provider** — offered while the provider's mode is served, locked answers included; a post of the sign-in intent to the authorize endpoint, and the departure it answers.
  * 3. **While answers are locked** — the sentence, and no "Register".
  * 4. **The notice** — a sentence for each reason a visitor is sent here with, from the address bar or from the page's load, and nothing for any other text in the address bar; the heading names it as its description while it is shown.
  * 5. **A deep link's target** — carried on by the first entry as it is, and by nothing else.
@@ -21,10 +22,16 @@ import { fakeContestantContext } from '$lib/contexts/contestant/contestantContex
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
-const { goto } = vi.hoisted(() => ({ goto: vi.fn() }));
+const { goto, leaveByFullLoad } = vi.hoisted(() => ({ goto: vi.fn(), leaveByFullLoad: vi.fn() }));
 
 // The other members stay the resolvable stubs: components the page reaches import them too.
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
+
+// The document's `location` cannot be replaced here, so the departure is observed at the module that performs it.
+vi.mock('$lib/components/preventNavigation/navigationGuards', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  leaveByFullLoad
+}));
 
 type Modes = Array<'identity_provider' | 'email' | 'code'>;
 
@@ -101,6 +108,23 @@ const NOTICE = '[data-testid="login-notice"]';
 const LOCKED_INFO = '[data-testid="login-answers-locked-info"]';
 const HELP = '[data-testid="login-help-link"]';
 const VOTER_APP = '[data-testid="login-voter-app-link"]';
+const PROVIDER_SIGN_IN = '[data-testid="login-identity-provider-sign-in"]';
+
+const AUTHORIZE_ENDPOINT = '/api/oidc/authorize';
+const AUTHORIZE_URL = 'https://provider.example/authorize?request=signed';
+
+const fetchMock = vi.fn();
+
+/** A response of the authorize endpoint. */
+function answer(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+}
+
+/** Let the press's promises settle and the DOM follow. */
+async function settle(): Promise<void> {
+  for (let i = 0; i < 5; i += 1) await Promise.resolve();
+  flushSync();
+}
 
 const LOGIN_ADDRESS = 'http://localhost/en/contestant/login';
 const SIGN_IN_ROUTE = buildRoute({ route: 'ContestantAppLoginEmail' }, { params: {} });
@@ -117,6 +141,8 @@ beforeEach(() => {
   box.current = DEFAULT_SETTINGS;
   setAddress(LOGIN_ADDRESS);
   goto.mockResolvedValue(undefined);
+  vi.stubGlobal('fetch', fetchMock);
+  fetchMock.mockResolvedValue(answer(200, { authorizeUrl: AUTHORIZE_URL }));
   // Every message shown is also logged as an error: keep the log out of the test output.
   vi.spyOn(log, 'error').mockImplementation(() => undefined);
 });
@@ -127,6 +153,7 @@ afterEach(() => {
   setAddress('http://localhost/');
   vi.restoreAllMocks();
   vi.resetAllMocks();
+  vi.unstubAllGlobals();
 });
 
 /** What the page's server load answers. */
@@ -289,6 +316,100 @@ describe('the entries', () => {
     expect(target.querySelector('[data-testid="login-show"]')).toBeNull();
     expect(target.querySelector('[data-testid="login-forgot-password-link"]')).toBeNull();
     expect(target.textContent).not.toContain('common.account.forgotPassword');
+  });
+});
+
+describe('signing in with the identity provider', () => {
+  it("is offered after the email entry while the provider's mode is served, as a button and not a link", () => {
+    box.set({ candidate: ['identity_provider', 'email'] });
+    const target = render();
+    const button = one<HTMLButtonElement>(target, PROVIDER_SIGN_IN);
+    expect(button.tagName).toBe('BUTTON');
+    expect(button.getAttribute('type')).toBe('button');
+    expect(labelOf(button)).toBe('contestantApp.login.signInWithIdentityProvider');
+    expect(button.disabled).toBe(false);
+    expect(precedes(one(target, SIGN_IN), button), 'it follows the email entry').toBe(true);
+    expect(precedes(button, one(target, REGISTER)), 'it comes before Register').toBe(true);
+  });
+
+  it('is offered for the provider served to organizations alone', () => {
+    box.set({ candidate: ['email'], organization: ['identity_provider'] });
+    expect(render().querySelectorAll(PROVIDER_SIGN_IN)).toHaveLength(1);
+  });
+
+  it('is offered while answers are locked, when nothing offers registration', () => {
+    box.set({ candidate: ['identity_provider'], answersLocked: true });
+    const target = render();
+    expect(target.querySelector(REGISTER)).toBeNull();
+    expect(target.querySelectorAll(PROVIDER_SIGN_IN)).toHaveLength(1);
+  });
+
+  it("is not offered where the provider's mode is served for no type", () => {
+    const target = render();
+    expect(target.querySelector(PROVIDER_SIGN_IN)).toBeNull();
+    expect(target.textContent).not.toContain('contestantApp.login.signInWithIdentityProvider');
+  });
+
+  it('is disabled until the page has mounted', () => {
+    box.set({ candidate: ['identity_provider'] });
+    expect(one<HTMLButtonElement>(renderUnmounted(), PROVIDER_SIGN_IN).disabled).toBe(true);
+  });
+
+  it('posts the sign-in intent, and no type, to the authorize endpoint and leaves for the address it answers', async () => {
+    box.set({ candidate: ['identity_provider'] });
+    const target = render();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe(AUTHORIZE_ENDPOINT);
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(String(init.body))).toEqual({ intent: 'sign_in' });
+    expect(leaveByFullLoad.mock.calls).toEqual([[AUTHORIZE_URL]]);
+    expect(goto).not.toHaveBeenCalled();
+    expect(one<HTMLButtonElement>(target, PROVIDER_SIGN_IN).disabled).toBe(true);
+  });
+
+  it('sends nothing more for a second press while the page is being left', async () => {
+    box.set({ candidate: ['identity_provider'] });
+    fetchMock.mockReturnValue(new Promise(() => undefined));
+    const target = render();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each<[string, () => void]>([
+    ['a refusal', () => fetchMock.mockResolvedValue(answer(403, { error: 'mode_not_allowed' }))],
+    ['a failed request', () => fetchMock.mockRejectedValue(new TypeError('offline'))],
+    ['an answer with no address', () => fetchMock.mockResolvedValue(answer(200, {}))]
+  ])('leads to the error screen with registration_failed on %s', async (_name, arrange) => {
+    box.set({ candidate: ['identity_provider'] });
+    arrange();
+    const target = render();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
+    expect(goto.mock.calls).toEqual([
+      [buildRoute({ route: 'ContestantAppIdentityProviderError', error: 'registration_failed' }, { params: {} })]
+    ]);
+  });
+
+  it('ends the loading form when the page is restored from the page cache', async () => {
+    box.set({ candidate: ['identity_provider'] });
+    fetchMock.mockReturnValue(new Promise(() => undefined));
+    const target = render();
+    one(target, PROVIDER_SIGN_IN).click();
+    await settle();
+    expect(one<HTMLButtonElement>(target, PROVIDER_SIGN_IN).disabled).toBe(true);
+
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    flushSync();
+    expect(one<HTMLButtonElement>(target, PROVIDER_SIGN_IN).disabled).toBe(false);
   });
 });
 

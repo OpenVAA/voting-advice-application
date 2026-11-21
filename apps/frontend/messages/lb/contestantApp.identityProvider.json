@@ -16,6 +16,10 @@
         "support": "Wann Dir Hëllef braucht, {contactSupportLink}.",
         "title": "Identifikatioun ofgebrach"
       },
+      "noAccount": {
+        "content": "Mat der Identitéit, déi Dir benotzt hutt, ass kee Kont ageschriwwen. Wann Dir Iech mat enger E-Mail-Adress ageschriwwen hutt, mellt Iech amplaz domat un.",
+        "title": "Kee Kont fonnt"
+      },
       "noRetry": {
         "content": "Et deet eis leed, dat ass e Problem bei eis, an et nach eng Kéier ze probéieren hëlleft net. Kontaktéiert wgl. de Support.",
         "title": "D’Aschreiwung ass grad net méiglech"

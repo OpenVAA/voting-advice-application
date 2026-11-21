@@ -7,6 +7,7 @@
     "passwordRequired": "Saisissez votre mot de passe.",
     "signedOut": "Vous avez été déconnecté·e, car les informations de votre compte n’ont pas pu être lues. Veuillez vous reconnecter. Si cela se reproduit, veuillez contacter l’assistance.",
     "signInWithEmail": "Se connecter par e-mail",
+    "signInWithIdentityProvider": "Se connecter avec un Bank ID",
     "title": "Se connecter",
     "unknownError": "Une erreur est survenue avec vos données utilisateur. Veuillez contacter l’assistance si le problème persiste.",
     "answersLockedInfo": "L’inscription ou la modification des réponses n’est plus possible, mais vous pouvez encore vous connecter pour consulter vos informations."

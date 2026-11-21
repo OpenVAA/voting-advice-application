@@ -17,11 +17,17 @@ const REQUEST = { id_token: TOKEN, project_id: PROJECT };
 
 describe('parseIdentityCallbackRequest: well-formed bodies', () => {
   it('parses a token and a project, with no entity type', () => {
-    expect(parseIdentityCallbackRequest(REQUEST)).toEqual({ idToken: TOKEN, projectId: PROJECT, entityType: null });
+    expect(parseIdentityCallbackRequest(REQUEST)).toEqual({
+      intent: 'register',
+      idToken: TOKEN,
+      projectId: PROJECT,
+      entityType: null
+    });
   });
 
   it('lower-cases the project', () => {
     expect(parseIdentityCallbackRequest({ id_token: TOKEN, project_id: UPPER_PROJECT })).toEqual({
+      intent: 'register',
       idToken: TOKEN,
       projectId: UPPER_PROJECT.toLowerCase(),
       entityType: null
@@ -30,6 +36,7 @@ describe('parseIdentityCallbackRequest: well-formed bodies', () => {
 
   it.each(['candidate', 'organization'])('parses the entity type %s', (entityType) => {
     expect(parseIdentityCallbackRequest({ ...REQUEST, entity_type: entityType })).toEqual({
+      intent: 'register',
       idToken: TOKEN,
       projectId: PROJECT,
       entityType
@@ -38,6 +45,7 @@ describe('parseIdentityCallbackRequest: well-formed bodies', () => {
 
   it('reads a null entity type as none', () => {
     expect(parseIdentityCallbackRequest({ ...REQUEST, entity_type: null })).toEqual({
+      intent: 'register',
       idToken: TOKEN,
       projectId: PROJECT,
       entityType: null
@@ -47,6 +55,7 @@ describe('parseIdentityCallbackRequest: well-formed bodies', () => {
   it('accepts a token of the greatest length', () => {
     const idToken = 'a'.repeat(TOKEN_MAX_LENGTH);
     expect(parseIdentityCallbackRequest({ ...REQUEST, id_token: idToken })).toEqual({
+      intent: 'register',
       idToken,
       projectId: PROJECT,
       entityType: null
@@ -55,10 +64,32 @@ describe('parseIdentityCallbackRequest: well-formed bodies', () => {
 
   it('ignores keys it does not read', () => {
     expect(parseIdentityCallbackRequest({ ...REQUEST, operation: 'anything', extra: 1 })).toEqual({
+      intent: 'register',
       idToken: TOKEN,
       projectId: PROJECT,
       entityType: null
     });
+  });
+
+  it.each([
+    ['absent', undefined],
+    ['null', null],
+    ['register', 'register']
+  ])('reads an intent that is %s as a registration', (_label, intent) => {
+    expect(parseIdentityCallbackRequest({ ...REQUEST, intent })?.intent).toBe('register');
+  });
+
+  it('parses a sign-in, which names no entity type', () => {
+    expect(parseIdentityCallbackRequest({ ...REQUEST, intent: 'sign_in' })).toEqual({
+      intent: 'sign_in',
+      idToken: TOKEN,
+      projectId: PROJECT,
+      entityType: null
+    });
+  });
+
+  it('reads a null entity type on a sign-in as none', () => {
+    expect(parseIdentityCallbackRequest({ ...REQUEST, intent: 'sign_in', entity_type: null })?.entityType).toBeNull();
   });
 
   it('does not trim the token', () => {
@@ -119,6 +150,22 @@ describe('parseIdentityCallbackRequest: malformed bodies', () => {
   ])('refuses an entity type that is %s', (_label, entityType) => {
     expect(parseIdentityCallbackRequest({ ...REQUEST, entity_type: entityType })).toBeNull();
   });
+
+  it.each([
+    ['empty', ''],
+    ['another word', 'login'],
+    ['in another case', 'SIGN_IN'],
+    ['with a space around it', ' sign_in'],
+    ['a list of intents', ['sign_in']],
+    ['a number', 0],
+    ['true', true]
+  ])('refuses an intent that is %s', (_label, intent) => {
+    expect(parseIdentityCallbackRequest({ ...REQUEST, intent })).toBeNull();
+  });
+
+  it.each(['candidate', 'organization'])('refuses a sign-in that names the entity type %s', (entityType) => {
+    expect(parseIdentityCallbackRequest({ ...REQUEST, intent: 'sign_in', entity_type: entityType })).toBeNull();
+  });
 });
 
 describe('the results', () => {
@@ -126,7 +173,9 @@ describe('the results', () => {
     created: 200,
     found: 200,
     no_entity: 200,
+    signed_in: 200,
     mode_not_allowed: 403,
+    no_account: 404,
     invalid_token: 401,
     refused: 401,
     bad_request: 400,
@@ -134,7 +183,7 @@ describe('the results', () => {
     unavailable: 503
   };
 
-  it('holds exactly the nine results, each keyed by its own spelling', () => {
+  it('holds exactly the eleven results, each keyed by its own spelling', () => {
     expect(Object.keys(IDENTITY_CALLBACK_RESULT).sort()).toEqual(Object.keys(EXPECTED_STATUS).sort());
     for (const [key, value] of Object.entries(IDENTITY_CALLBACK_RESULT)) expect(value).toBe(key);
   });
@@ -147,7 +196,7 @@ describe('the results', () => {
     expect(resultStatus(result as IdentityCallbackResult)).toBe(status);
   });
 
-  it.each(['created', 'found', 'no_entity'] as const)(
+  it.each(['created', 'found', 'no_entity', 'signed_in'] as const)(
     'gives the success %s a body of the result and the token',
     (result) => {
       const body = resultBody(result, 'the-token');
@@ -156,13 +205,18 @@ describe('the results', () => {
     }
   );
 
-  it.each(['mode_not_allowed', 'invalid_token', 'refused', 'bad_request', 'configuration', 'unavailable'] as const)(
-    'gives the failure %s a body of the result alone',
-    (result) => {
-      expect(resultBody(result)).toEqual({ result });
-      expect(Object.keys(resultBody(result))).toEqual(['result']);
-    }
-  );
+  it.each([
+    'mode_not_allowed',
+    'no_account',
+    'invalid_token',
+    'refused',
+    'bad_request',
+    'configuration',
+    'unavailable'
+  ] as const)('gives the failure %s a body of the result alone', (result) => {
+    expect(resultBody(result)).toEqual({ result });
+    expect(Object.keys(resultBody(result))).toEqual(['result']);
+  });
 
   it('never puts a token on a failure, even when one is passed', () => {
     const body = resultBody('invalid_token', 'the-token');

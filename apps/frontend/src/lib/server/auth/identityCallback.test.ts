@@ -46,6 +46,66 @@ describe('invokeIdentityCallback', () => {
     });
   });
 
+  it('refuses the sign-in result signed_in to a registration', async () => {
+    const { client } = clientAnswering({ data: { result: 'signed_in', token: TOKEN } });
+    await expect(invokeIdentityCallback({ supabase: client, ...ARGS })).resolves.toMatchObject({
+      ok: false,
+      error: 'registration_failed'
+    });
+  });
+
+  describe('a sign-in', () => {
+    const SIGN_IN = { serverSecret: SERVER_SECRET, idToken: 'test.id.token', projectId: 'project-1' } as const;
+
+    it('asks for a sign-in and names no entity type', async () => {
+      const { invoke, client } = clientAnswering({ data: { result: 'signed_in', token: TOKEN } });
+      await invokeIdentityCallback({ supabase: client, ...SIGN_IN, intent: 'sign_in' });
+      expect(invoke.mock.calls).toEqual([
+        [
+          'identity-callback',
+          {
+            headers: { 'x-identity-callback-secret': SERVER_SECRET },
+            body: { id_token: 'test.id.token', project_id: 'project-1', intent: 'sign_in' }
+          }
+        ]
+      ]);
+    });
+
+    it('reads signed_in as a success that leaves no arrival marker, with its token', async () => {
+      const { client } = clientAnswering({ data: { result: 'signed_in', token: TOKEN } });
+      await expect(invokeIdentityCallback({ supabase: client, ...SIGN_IN, intent: 'sign_in' })).resolves.toEqual({
+        ok: true,
+        arrival: null,
+        token: TOKEN
+      });
+    });
+
+    it('answers no_account as no_account', async () => {
+      const { client } = clientAnswering({ error: httpError(404, { result: 'no_account' }) });
+      await expect(invokeIdentityCallback({ supabase: client, ...SIGN_IN, intent: 'sign_in' })).resolves.toEqual({
+        ok: false,
+        error: 'no_account',
+        cause: 'function result no_account, status 404'
+      });
+    });
+
+    it.each(['created', 'found', 'no_entity'])('refuses the registration result %s', async (result) => {
+      const { client } = clientAnswering({ data: { result, token: TOKEN } });
+      await expect(invokeIdentityCallback({ supabase: client, ...SIGN_IN, intent: 'sign_in' })).resolves.toMatchObject({
+        ok: false,
+        error: 'registration_failed'
+      });
+    });
+
+    it('answers signed_in without a sign-in token as registration_failed', async () => {
+      const { client } = clientAnswering({ data: { result: 'signed_in' } });
+      await expect(invokeIdentityCallback({ supabase: client, ...SIGN_IN, intent: 'sign_in' })).resolves.toMatchObject({
+        ok: false,
+        error: 'registration_failed'
+      });
+    });
+  });
+
   it('answers a successful result without a sign-in token as registration_failed', async () => {
     const { client } = clientAnswering({ data: { result: 'created' } });
     await expect(invokeIdentityCallback({ supabase: client, ...ARGS })).resolves.toEqual({

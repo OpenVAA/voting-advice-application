@@ -16,6 +16,10 @@
         "support": "Jos tarvitset apua, {contactSupportLink}.",
         "title": "Tunnistautuminen peruttiin"
       },
+      "noAccount": {
+        "content": "Käyttämälläsi tunnistautumisella ei ole rekisteröity tiliä. Jos rekisteröidyit sähköpostiosoitteella, kirjaudu sen sijaan sillä.",
+        "title": "Tiliä ei löytynyt"
+      },
       "noRetry": {
         "content": "Pahoittelemme, kyseessä on ongelma meidän päässämme, eikä uudelleen yrittäminen auta. Ota yhteyttä tukeen.",
         "title": "Rekisteröityminen ei ole juuri nyt mahdollista"

@@ -417,6 +417,47 @@ describe('identity-callback flow conformance', () => {
     });
   });
 
+  describe('a sign-in', () => {
+    /** The body of the function that answers a sign-in, from its declaration to its closing brace. */
+    function signInBody(): string {
+      const at = firstAt('async function signInExistingAccount(');
+      return CODE.slice(at, CODE.indexOf('\n}\n', at));
+    }
+
+    it('leaves the registration path after the token and its claims are read, and before the entity type is decided', () => {
+      const branchAt = firstAt('if (request.intent === IDENTITY_CALLBACK_INTENT.sign_in)');
+      expect(branchAt).toBeGreaterThan(firstAt('extractIdentityClaims(payload, config)'));
+      expect(branchAt).toBeLessThan(firstAt("rpc('identity_provider_entity_types'"));
+      expect(CODE.slice(branchAt, CODE.indexOf(';', branchAt) + 1).replace(/\s+/g, ' ')).toBe(
+        'if (request.intent === IDENTITY_CALLBACK_INTENT.sign_in) return await signInExistingAccount(supabaseAdmin, matchValue);'
+      );
+      expect(occurrences('signInExistingAccount(')).toBe(2);
+    });
+
+    it('signs in only an account that holds this identity, and answers no_account otherwise', () => {
+      const body = signInBody();
+      expect(body).toContain('findIdentityAccount(supabaseAdmin, matchValue, placeholderEmailFor(matchValue))');
+      expect(body).toMatch(
+        /if \(!existing \|\| existingAccountSetup\(existing\.appMetadata, matchValue\)\.kind !== 'keep'\) \{\s*return respond\(IDENTITY_CALLBACK_RESULT\.no_account\);/
+      );
+      expect(body).toContain(
+        'respond(IDENTITY_CALLBACK_RESULT.signed_in, await signInToken(supabaseAdmin, existing.id))'
+      );
+    });
+
+    it.each(['generateLink(', 'updateUserById(', '.rpc(', 'identityAppMetadata(', 'resolveEntityType('])(
+      'invites, confirms, writes and decides nothing itself: %s',
+      (call) => {
+        expect(signInBody()).not.toContain(call);
+      }
+    );
+
+    it('mints its token with the registration, through the one sign-in link', () => {
+      expect(occurrences('await signInToken(supabaseAdmin, ')).toBe(2);
+      expect(CODE).toContain('return respond(result, await signInToken(supabaseAdmin, userId));');
+    });
+  });
+
   it('writes no grant and no entity row itself', () => {
     expect(CODE).not.toContain("from('grants')");
     expect(CODE).not.toContain("from('candidates')");

@@ -3,7 +3,7 @@
  *
  * Turns an identity provider's ID token (Signicat or Idura) into an account, the entity the identity registered, and a sign-in token, in this order:
  * 0. Refuse every caller but the frontend server, which proves itself with the secret it sends in the `x-identity-callback-secret` header.
- * 1. Read the request: the ID token, the project, and the entity type asked for.
+ * 1. Read the request: the ID token, the project, the intent and the entity type asked for.
  * 2. Decrypt the token when it is a JWE, and verify its signature, audience and issuer against the configured provider.
  * 3. Read the provider's persistent subject identifier and the two name parts from the verified claims, a name sent all in capitals smart-cased.
  * 4. Decide the entity type among the types `public.identity_provider_entity_types` allows for the project, before any account or row is touched. The database is the authority on that decision: a caller's own check only selects, and a type the project's registration modes do not allow for the identity provider, or any type while the project's Contestant App is switched off, is refused here whoever asks.
@@ -13,15 +13,17 @@
  *
  * The entity, its grant and the record are written before the link is generated, so the session the caller obtains already carries the grant.
  *
+ * A SIGN-IN CREATES NOTHING. A request whose intent is `sign_in` runs steps 0 to 3 and then signs in the identity's existing account alone: it decides no entity type, so neither the registration modes nor the answers lock refuse it, invites no account, finds or creates no entity, writes no identity metadata and confirms nothing. The account is the one `public.identity_account_find` answers, and only when it already holds this identity's match value, as an earlier registration of the identity left it; with no such account the answer is `no_account`. A sign-in token is then generated as in step 7.
+ *
  * SIGN-INS THAT ARRIVE TOGETHER. Several first sign-ins of one identity can reach the function at once, from tabs or retries. The invites race for the one placeholder email and all but one fail, so a failed invite is followed by a second look-up of the account. The entity is found or created in one transaction under a lock on the account, so the requests make one entity between them. The identity metadata is written by that call too, under the same lock, and no admin update carries `app_metadata`: the auth service writes the whole of `app_metadata` from the copy it read when the update began, so such an update could undo what another request had just written.
  *
  * WHY THE FUNCTION ANSWERS THE FRONTEND SERVER ALONE. The function turns a verified ID token into a sign-in token for the identity's account. It is reachable directly at its public address, so without the server's secret anyone holding a stolen or replayed ID token could present it here and sign in as its holder, bypassing the frontend's binding of the token to the browser that started the flow. A request without the header is refused before anything else is read, so an anonymous caller makes the function do no work and learns nothing about its configuration.
  *
- * POST /functions/v1/identity-callback Header: x-identity-callback-secret. Body: { id_token: string, project_id: uuid, entity_type?: 'candidate' | 'organization' }
+ * POST /functions/v1/identity-callback Header: x-identity-callback-secret. Body: { id_token: string, project_id: uuid, intent?: 'register' | 'sign_in', entity_type?: 'candidate' | 'organization' }
  *
- * The project is the one the request names; the function reads none from its environment. A request that names no entity type is for the one type the database allows; with none or several such types it is refused.
+ * The project is the one the request names; the function reads none from its environment. A request that names no intent is a registration. A registration that names no entity type is for the one type the database allows; with none or several such types it is refused. A sign-in names no entity type.
  *
- * Every answer is one result of the closed set in `requestContract.ts`, built by `resultBody` and sent with `resultStatus`: `created`, `found` and `no_entity` (200) carry the sign-in token; `refused` (401), `mode_not_allowed` (403), `invalid_token` (401), `bad_request` (400), `configuration` (500) and `unavailable` (503) carry nothing else. No caught message leaves the function.
+ * Every answer is one result of the closed set in `requestContract.ts`, built by `resultBody` and sent with `resultStatus`: `created`, `found`, `no_entity` and `signed_in` (200) carry the sign-in token; `refused` (401), `mode_not_allowed` (403), `no_account` (404), `invalid_token` (401), `bad_request` (400), `configuration` (500) and `unavailable` (503) carry nothing else. No caught message leaves the function.
  *
  * Environment variables (set via Supabase secrets):
  * - IDENTITY_PROVIDER_TYPE: Provider type; required, and one of 'signicat-ftn' or 'idura-ftn' (there is no default -- an unset value throws)
@@ -45,7 +47,13 @@ import { findOrCreateOutcome } from './ownEntity.ts';
 import { existingAccountSetup, identityAccountOf } from './placeholderAccount.ts';
 import type { IdentityAccount } from './placeholderAccount.ts';
 import { allowedEntityTypes, resolveEntityType } from './registrationMatrix.ts';
-import { IDENTITY_CALLBACK_RESULT, parseIdentityCallbackRequest, resultBody, resultStatus } from './requestContract.ts';
+import {
+  IDENTITY_CALLBACK_INTENT,
+  IDENTITY_CALLBACK_RESULT,
+  parseIdentityCallbackRequest,
+  resultBody,
+  resultStatus
+} from './requestContract.ts';
 import type { IdentityCallbackResult } from './requestContract.ts';
 import { presentsServerCredential, SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
 import { requireVerifyClaimBinding } from './verifyConfig.ts';
@@ -150,6 +158,10 @@ async function handleRequest(req: Request): Promise<Response> {
 
     const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
+    // A sign-in leaves the steps below to a registration: see the module header.
+    if (request.intent === IDENTITY_CALLBACK_INTENT.sign_in)
+      return await signInExistingAccount(supabaseAdmin, matchValue);
+
     // 4. The entity type, chosen among the types the database allows for the project. A failed read throws and is answered as `unavailable`; an answer of no type, as while the Contestant App is switched off, refuses every type.
     const { data: allowedAnswer, error: allowedError } = await supabaseAdmin.rpc('identity_provider_entity_types', {
       p_project_id: projectId
@@ -219,23 +231,8 @@ async function handleRequest(req: Request): Promise<Response> {
       if (confirmError) throw failure('ERR_ACCOUNT_CONFIRM_FAILED', `Confirmation failed: ${confirmError.message}`);
     }
 
-    // 7. The sign-in link, for the account's current address: once the person has proved an address of their own, the placeholder belongs to no account, and a link for it would create a stray one.
-    const { data: current, error: currentError } = await supabaseAdmin.auth.admin.getUserById(userId);
-    const currentAddress = current?.user?.email;
-    if (currentError || typeof currentAddress !== 'string' || currentAddress === '') {
-      throw failure('ERR_ACCOUNT_LOOKUP_FAILED', 'The account has no current address.');
-    }
-
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
-      email: currentAddress
-    });
-    if (linkError) throw failure('ERR_LINK_FAILED', `Sign-in link failed: ${linkError.message}`);
-
-    const token = actionLinkToken(linkData?.properties?.action_link);
-    if (!token) throw failure('ERR_LINK_FAILED', 'The sign-in link carries no token.');
-
-    return respond(result, token);
+    // 7. The sign-in token.
+    return respond(result, await signInToken(supabaseAdmin, userId));
   } catch (e) {
     // Logged, never returned. This arm catches the auth service's and the database's failures, whose messages carry Postgres error text and schema detail, and the four ERR_ENV_UNCONFIGURED throws for IDENTITY_CALLBACK_SERVER_SECRET, IDENTITY_PROVIDER_TYPE, IDENTITY_PROVIDER_DECRYPTION_JWKS and IDENTITY_PROVIDER_JWKS_URI, with the two claim-binding throws. A configuration failure is told from an outage by its code alone, and the answer is one result with nothing interpolated into it.
     console.error('identity-callback error:', e);
@@ -311,6 +308,49 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
   const { payload } = await jose.jwtVerify(jwt, jose.createRemoteJWKSet(new URL(jwksUri)), { audience, issuer });
 
   return payload;
+}
+
+/**
+ * Sign in the identity's existing account, for a request whose intent is `sign_in`.
+ *
+ * Only an account that holds this identity's match value is signed in: one an earlier registration of the identity finished. No account, one no registration has finished yet and one of another identity are each answered `no_account`, and nothing is invited, confirmed or written.
+ *
+ * @param supabaseAdmin - The service-role client.
+ * @param matchValue - The identity's match value.
+ * @returns `signed_in` with the sign-in token, or `no_account`.
+ * @throws {Error & { code: string }} When the look-up or the sign-in link fails.
+ */
+async function signInExistingAccount(supabaseAdmin: SupabaseClient, matchValue: string): Promise<Response> {
+  const existing = await findIdentityAccount(supabaseAdmin, matchValue, placeholderEmailFor(matchValue));
+  if (!existing || existingAccountSetup(existing.appMetadata, matchValue).kind !== 'keep') {
+    return respond(IDENTITY_CALLBACK_RESULT.no_account);
+  }
+  return respond(IDENTITY_CALLBACK_RESULT.signed_in, await signInToken(supabaseAdmin, existing.id));
+}
+
+/**
+ * The token of a sign-in link for the account's current address: once the person has proved an address of their own, the placeholder belongs to no account, and a link for it would create a stray one.
+ *
+ * @param supabaseAdmin - The service-role client.
+ * @param userId - The account's id.
+ * @throws {Error & { code: string }} `ERR_ACCOUNT_LOOKUP_FAILED` when the account has no current address, `ERR_LINK_FAILED` when the link fails or carries no token.
+ */
+async function signInToken(supabaseAdmin: SupabaseClient, userId: string): Promise<string> {
+  const { data: current, error: currentError } = await supabaseAdmin.auth.admin.getUserById(userId);
+  const currentAddress = current?.user?.email;
+  if (currentError || typeof currentAddress !== 'string' || currentAddress === '') {
+    throw failure('ERR_ACCOUNT_LOOKUP_FAILED', 'The account has no current address.');
+  }
+
+  const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+    type: 'magiclink',
+    email: currentAddress
+  });
+  if (linkError) throw failure('ERR_LINK_FAILED', `Sign-in link failed: ${linkError.message}`);
+
+  const token = actionLinkToken(linkData?.properties?.action_link);
+  if (!token) throw failure('ERR_LINK_FAILED', 'The sign-in link carries no token.');
+  return token;
 }
 
 /** An error carrying a code and the client-reported text only: no address, no user id, no project id. */

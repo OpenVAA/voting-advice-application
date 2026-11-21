@@ -16,6 +16,10 @@
         "support": "Kui vajad abi, {contactSupportLink}.",
         "title": "Tuvastamine katkestati"
       },
+      "noAccount": {
+        "content": "Kasutatud isikusamasusega ei ole ühtegi kontot registreeritud. Kui registreerusid e-posti aadressiga, logi selle asemel sisse sellega.",
+        "title": "Kontot ei leitud"
+      },
       "noRetry": {
         "content": "Vabandame, tegemist on probleemiga meie poolel ja uuesti proovimine ei aita. Palun võta ühendust toega.",
         "title": "Registreerumine ei ole praegu võimalik"

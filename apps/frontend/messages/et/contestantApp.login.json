@@ -7,6 +7,7 @@
     "passwordRequired": "Sisesta oma parool.",
     "signedOut": "Sind logiti välja, sest sinu konto andmeid ei õnnestunud lugeda. Palun logi uuesti sisse. Kui see kordub, võta palun ühendust toega.",
     "signInWithEmail": "Logi sisse e-postiga",
+    "signInWithIdentityProvider": "Logi sisse pangatunnustega",
     "title": "Logi sisse",
     "unknownError": "Sinu kasutajaandmete päring ebaõnnestus. Palun võta ühendust toega, kui viga kordub.",
     "answersLockedInfo": "Registreerumine või vastuste muutmine ei ole enam võimalik, kuid saad siiski sisse logida, et oma andmeid vaadata."

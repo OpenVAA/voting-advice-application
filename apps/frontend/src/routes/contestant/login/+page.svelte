@@ -5,10 +5,11 @@
 The Contestant App's entry screen. It offers the ways into the app and holds no fields of its own.
 
 - "Sign in with email" leads to the sign-in screen. "Register" leads to the registration screen, and is rendered only when the settings list at least one registration mode. Both are links, so the screen is whole and works before the page's script has loaded.
+- "Sign in with Bank ID" follows "Sign in with email" while the identity provider's mode is served for at least one entity type, as `identityProviderSignInOffered` answers: also while answers are locked and while no type allows the mode, because a sign-in creates nothing. It posts `{ intent: 'sign_in' }` to the authorize endpoint, under the page's locale, and on its answer the browser leaves for the provider; the callback then signs in the account the identity already has, or reports that it has none on the identity provider's error screen. It needs the page's script, so it is natively disabled until the page has mounted, and stays in its loading form until the page is left. Any failure to start leads to the error screen with `registration_failed`. A page restored from the browser's page cache, by Back from the provider, ends the loading form.
 - The `/contestant` routes redirect here when there is no session, with the path that was asked for as `redirectTo`. The first entry carries that value on to the sign-in screen, whose server action validates it where it is consumed. This page does not navigate by it, show it or validate it, and "Register" carries nothing.
 - A notice under the title says why a visitor was sent here, for the reasons `$contestant/utils/loginError` knows: the user was signed out because their account's information could not be read, a mailed link could not be used, a link that confirms a new address was opened after another account took that address, a logout count ran out with no one to cancel it, or the user logged out in another tab or window. The reason is read from `errorMessage`, else from the page's load, which answers the automatic logout when the request hook has just ended the session at a count's end. Any other value shows nothing, and no text from the address bar is rendered.
 - While the notice is shown, the heading names it as its description, so a screen reader that lands on the heading after a navigation is given the sentence with it.
-- While answers are locked the sentence that says so is shown, and nothing lists a registration mode, so there is no "Register".
+- While answers are locked the sentence that says so is shown, and nothing lists a registration mode, so there is no "Register". "Sign in with Bank ID" is still offered.
 - Uses the shaded frame with the contestant poster in the top bar.
 
 ## Params
@@ -22,22 +23,25 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
 
 ## Settings
 
-- `contestantApp.servedEntityTypes`: The entity types the project serves and the registration modes of each, which decide the app's name in the heading and whether "Register" is offered, as `listedRegistrationModes` reads them.
+- `contestantApp.servedEntityTypes`: The entity types the project serves and the registration modes of each, which decide the app's name in the heading, whether "Register" is offered, as `listedRegistrationModes` reads them, and whether "Sign in with Bank ID" is, as `identityProviderSignInOffered` reads them.
 - `access.contestantEditing`: Whether the locked sentence is shown, which it is under `locked`. While it is, no registration mode is listed.
 - `access.voterApp`: Whether a link to the voter app is shown.
 
 -->
 
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { getContestantAppName } from '$contestant/utils/contestantAppName';
   import { getErrorTranslationKey } from '$contestant/utils/loginError';
-  import { listedRegistrationModes } from '$contestant/utils/registrationOffer';
+  import { OIDC_ERROR } from '$contestant/utils/oidcError';
+  import { identityProviderSignInOffered, listedRegistrationModes } from '$contestant/utils/registrationOffer';
   import { MainContent } from '$layouts/main';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup } from '$lib/components/headingGroup';
+  import { leaveByFullLoad } from '$lib/components/preventNavigation/navigationGuards';
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
@@ -54,6 +58,7 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
   const { appCustomization, darkMode, getRoute, t } = contestantCtx;
   const contestantAppName = $derived(getContestantAppName({ appSettings: contestantCtx.appSettings, t }));
   const registerOffered = $derived(listedRegistrationModes(contestantCtx.appSettings).length > 0);
+  const providerSignInOffered = $derived(identityProviderSignInOffered(contestantCtx.appSettings));
   const { pageStyles, topBarSettings } = getLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -79,6 +84,49 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
   });
 
   ////////////////////////////////////////////////////////////////////
+  // Signing in with the identity provider
+  ////////////////////////////////////////////////////////////////////
+
+  let mounted = $state(false);
+  /** Whether the identity provider's flow has been started and the page is being left. */
+  let leaving = $state(false);
+
+  onMount(() => {
+    mounted = true;
+  });
+
+  /**
+   * Start the identity provider's flow to sign in. On the endpoint's answer the browser leaves for the provider, and the loading form is kept until it has. Every failure leads to the identity provider's error screen.
+   */
+  async function handleProviderSignIn(): Promise<void> {
+    if (leaving) return;
+    leaving = true;
+    const response = await fetch(getRoute.current('ContestantAppIdentityProviderAuthorize'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ intent: 'sign_in' })
+    }).catch(() => undefined);
+    const authorizeUrl = response?.ok
+      ? await response
+          .json()
+          .then((body: { authorizeUrl?: unknown }) => body?.authorizeUrl)
+          .catch(() => undefined)
+      : undefined;
+    if (typeof authorizeUrl === 'string' && authorizeUrl) {
+      void leaveByFullLoad(authorizeUrl);
+      return;
+    }
+    await goto(getRoute.current({ route: 'ContestantAppIdentityProviderError', error: OIDC_ERROR.registrationFailed }));
+  }
+
+  /**
+   * End the loading form when the page is shown again from the browser's page cache, as Back from the provider can do.
+   */
+  function handlePageShow(event: PageTransitionEvent): void {
+    if (event.persisted) leaving = false;
+  }
+
+  ////////////////////////////////////////////////////////////////////
   // Top bar and styling
   ////////////////////////////////////////////////////////////////////
 
@@ -91,6 +139,8 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
       : (appCustomization.current.contestantPoster?.url ?? '/images/hero-contestant.png')
   });
 </script>
+
+<svelte:window onpageshow={handlePageShow} />
 
 <MainContent
   title={contestantAppName}
@@ -126,6 +176,16 @@ The Contestant App's entry screen. It offers the ways into the app and holds no 
       href={signInRoute}
       text={t('contestantApp.login.signInWithEmail')}
       data-testid="login-sign-in-link" />
+    {#if providerSignInOffered}
+      <Button
+        type="button"
+        variant="main"
+        text={t('contestantApp.login.signInWithIdentityProvider')}
+        disabled={!mounted}
+        loading={leaving}
+        onclick={handleProviderSignIn}
+        data-testid="login-identity-provider-sign-in" />
+    {/if}
     {#if registerOffered}
       <div class="divider">{t('common.or')}</div>
       <Button

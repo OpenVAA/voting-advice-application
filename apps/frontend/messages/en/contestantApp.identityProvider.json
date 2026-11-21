@@ -16,6 +16,10 @@
         "support": "If you need help, {contactSupportLink}.",
         "title": "Identification cancelled"
       },
+      "noAccount": {
+        "content": "No account has been registered with the identity you used. If you registered with an email address, sign in with it instead.",
+        "title": "No account found"
+      },
       "noRetry": {
         "content": "We’re sorry, this is a problem on our side, and trying again will not help. Please contact support.",
         "title": "Registration is not possible right now"

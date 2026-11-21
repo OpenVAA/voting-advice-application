@@ -77,7 +77,8 @@ describe('the class', () => {
     ['registration_failed', 'retry'],
     ['invalid_token', 'noRetry'],
     ['mode_not_allowed', 'noRetry'],
-    ['configuration_error', 'noRetry']
+    ['configuration_error', 'noRetry'],
+    ['no_account', 'noAccount']
   ])('answers %s with the class %s', async (code, errorClass) => {
     expect((await run(code)).errorClass).toBe(errorClass);
   });

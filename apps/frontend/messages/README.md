@@ -51,7 +51,7 @@ A locale directory must be complete even if no current deployment offers it.
 
 ## Messages that name the identity provider
 
-These keys name the identity provider ("Bank ID" in `en`) inside whole sentences; a deployment with another provider overrides them in every locale: `contestantApp.identityProvider.alreadyRegistered.pending`, `contestantApp.identityProvider.emailIntro`, `contestantApp.login.emailTaken`, `contestantApp.nothingToEdit.nextStepsNoAddress`, `contestantApp.register.identityProvider.intro.candidate`, `contestantApp.register.identityProvider.intro.candidateAndOrganization`, `contestantApp.register.identityProvider.intro.organization`, `contestantApp.register.identityProvider.redirectInfo`, `contestantApp.register.modes.identityProvider` and `contestantApp.settings.emailPendingInfo`.
+These keys name the identity provider ("Bank ID" in `en`) inside whole sentences; a deployment with another provider overrides them in every locale: `contestantApp.identityProvider.alreadyRegistered.pending`, `contestantApp.identityProvider.emailIntro`, `contestantApp.login.emailTaken`, `contestantApp.login.signInWithIdentityProvider`, `contestantApp.nothingToEdit.nextStepsNoAddress`, `contestantApp.register.identityProvider.intro.candidate`, `contestantApp.register.identityProvider.intro.candidateAndOrganization`, `contestantApp.register.identityProvider.intro.organization`, `contestantApp.register.identityProvider.redirectInfo`, `contestantApp.register.modes.identityProvider` and `contestantApp.settings.emailPendingInfo`.
 
 ## Checking your work
 

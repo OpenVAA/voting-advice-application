@@ -48,6 +48,7 @@ const HTTP_ONLY_COOKIE_NAMES = [
   'oidc_nonce',
   'oidc_code_verifier',
   'oidc_entity_type',
+  'oidc_intent',
   'oidc_locale',
   'identity_provider_arrival',
   'registered'

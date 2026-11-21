@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   identityProviderEntityType,
   identityProviderEntityTypes,
+  identityProviderSignInOffered,
   listedRegistrationModes,
   signInLinkOffered
 } from './registrationOffer';
@@ -334,5 +335,36 @@ describe('signInLinkOffered', () => {
 
   it.each(CASES)('answers for %s', (_name, settings, expected) => {
     expect(signInLinkOffered(settings)).toBe(expected);
+  });
+});
+
+describe('identityProviderSignInOffered', () => {
+  const CASES: Array<[string, RegistrationOfferSettings, boolean]> = [
+    ['undefined settings', undefined, false],
+    ['settings that store nothing', {}, false],
+    [
+      'the email and code modes alone',
+      { contestantApp: { servedEntityTypes: { candidate: { registrationModes: ['email', 'code'] } } } },
+      false
+    ],
+    ['every mode for both types', FULL, true],
+    [
+      'the provider for organizations alone',
+      {
+        contestantApp: {
+          servedEntityTypes: {
+            candidate: { registrationModes: ['email'] },
+            organization: { registrationModes: ['identity_provider'] }
+          }
+        }
+      },
+      true
+    ],
+    ['the provider while answers are locked', { ...FULL, access: { contestantEditing: 'locked' } }, true],
+    ['the provider while the Contestant App is closed', { ...FULL, access: { contestantApp: false } }, true]
+  ];
+
+  it.each(CASES)('answers for %s', (_name, settings, expected) => {
+    expect(identityProviderSignInOffered(settings)).toBe(expected);
   });
 });
