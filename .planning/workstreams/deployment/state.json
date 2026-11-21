@@ -46,13 +46,13 @@
     {
       "number": "189",
       "name": "Documentation and Closure",
-      "status": "in_progress"
+      "status": "complete"
     }
   ],
   "next": {
-    "command": "/gsd-progress --next",
-    "label": "Advance to the next step (verify)",
-    "reason": "Phase 10 of 10 · 80% · ready to verify"
+    "command": "/gsd-new-milestone",
+    "label": "Start a new milestone",
+    "reason": "All phases complete — start a new milestone"
   },
-  "updated_at": "2026-11-21T12:45:14.794Z"
+  "updated_at": "2026-11-21T13:26:13.391Z"
 }
