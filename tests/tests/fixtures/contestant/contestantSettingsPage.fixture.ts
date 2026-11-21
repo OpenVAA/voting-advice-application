@@ -38,7 +38,7 @@ import type { Page } from '@playwright/test';
 const MESSAGES = Object.freeze({
   pendingInfo: messageOf('contestantApp.settings', 'emailPendingInfo'),
   emailInUse: messageOf('contestantApp.identityProvider', 'emailInUse'),
-  requested: messageOf('contestantApp.emailSent', 'resendRequested')
+  requested: messageOf('common', 'account.emailSent.resendRequested')
 });
 
 export function createContestantSettingsPage(page: Page) {

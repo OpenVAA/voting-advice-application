@@ -35,7 +35,7 @@ Accesses the component context for its translations, and nothing of any app's co
 
 ```tsx
 <PasswordSaveForm
-  title={t('contestantApp.setPassword.title')}
+  title={t('common.account.setPassword.title')}
   {email}
   {setPassword}
   afterSave={invalidateAll}
@@ -123,7 +123,7 @@ Accesses the component context for its translations, and nothing of any app's co
   {@render children?.()}
 
   {#if email}
-    <AccountAddress label={t('contestantApp.nothingToEdit.signedInAs')} address={email} data-testid={emailTestId} />
+    <AccountAddress label={t('common.account.signedInAs')} address={email} data-testid={emailTestId} />
   {/if}
 
   <PasswordSetter id={formId} username={email} bind:password bind:this={setter} {onShadedBg} onsubmit={handleSubmit} />
@@ -133,7 +133,7 @@ Accesses the component context for its translations, and nothing of any app's co
       inline
       role="alert"
       class="my-md"
-      message={t('contestantApp.setPassword.error')}
+      message={t('common.account.setPassword.error')}
       data-testid={errorTestId} />
   {/if}
 
@@ -142,7 +142,7 @@ Accesses the component context for its translations, and nothing of any app's co
       type="submit"
       form={formId}
       variant="main"
-      text={t('contestantApp.setPassword.setPassword')}
+      text={t('common.account.setPassword.setPassword')}
       disabled={!mounted}
       loading={status === 'saving'}
       loadingText={t('common.saving')}

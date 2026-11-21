@@ -110,9 +110,9 @@ const KEY = {
   emailPendingInfo: 'contestantApp.settings.emailPendingInfo',
   saveEmail: 'contestantApp.settings.saveEmail',
   changeAddress: 'common.account.emailSent.changeAddress',
-  resend: 'contestantApp.emailSent.resend',
-  resendRequested: 'contestantApp.emailSent.resendRequested',
-  resendReady: 'contestantApp.emailSent.resendReady',
+  resend: 'common.account.emailSent.resend',
+  resendRequested: 'common.account.emailSent.resendRequested',
+  resendReady: 'common.account.emailSent.resendReady',
   emailInUse: 'contestantApp.identityProvider.emailInUse',
   emailInvited: 'contestantApp.identityProvider.emailInvited',
   saveFailed: 'contestantApp.identityProvider.saveFailed'
@@ -267,7 +267,7 @@ describe('the settings page — an address awaiting its link', () => {
     const countdown = one(target, SEL.countdown);
     expect(resend.hasAttribute('aria-describedby'), 'the count is in the name alone').toBe(false);
     expect(resend.contains(countdown), 'the count is inside Send again').toBe(true);
-    expect(countdown.textContent).toContain('contestantApp.emailSent.resendIn');
+    expect(countdown.textContent).toContain('common.account.emailSent.resendIn');
     expect(countdown.textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS}`);
     expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendRequested);
 

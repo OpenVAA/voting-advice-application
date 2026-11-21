@@ -42,7 +42,7 @@ Contains the dynamic `PasswordValidator` component, and judges a password with `
     event.preventDefault();
     if (setter.validate()) save();
   }} />
-<Button type="submit" form="set-password" variant="main" text={t('contestantApp.setPassword.setPassword')} />
+<Button type="submit" form="set-password" variant="main" text={t('common.account.setPassword.setPassword')} />
 ```
 -->
 
@@ -79,12 +79,12 @@ Contains the dynamic `PasswordValidator` component, and judges a password with `
     passwordError = undefined;
     confirmationError = undefined;
     if (!validatePasswordDetails(password, username ?? '').status) {
-      passwordError = t('contestantApp.setPassword.passwordNotValid');
+      passwordError = t('common.account.setPassword.passwordNotValid');
       passwordField?.focus();
       return false;
     }
     if (password !== passwordConfirmation) {
-      confirmationError = t('contestantApp.setPassword.passwordsDontMatch');
+      confirmationError = t('common.account.setPassword.passwordsDontMatch');
       confirmationField?.focus();
       return false;
     }
@@ -130,8 +130,8 @@ Contains the dynamic `PasswordValidator` component, and judges a password with `
 
   // Total over the same inputs — every path through the ladder yields a value — so it is likewise derived. The branches return translation keys, never credential material.
   const errorMessage = $derived.by(() => {
-    if (!validPassword) return t('contestantApp.setPassword.passwordNotValid');
-    if (password !== passwordConfirmation) return t('contestantApp.setPassword.passwordsDontMatch');
+    if (!validPassword) return t('common.account.setPassword.passwordNotValid');
+    if (password !== passwordConfirmation) return t('common.account.setPassword.passwordsDontMatch');
     return undefined;
   });
 
@@ -160,7 +160,7 @@ Contains the dynamic `PasswordValidator` component, and judges a password with `
       class="hidden" />
   {/if}
   <div class="mx-md self-stretch">
-    {t('contestantApp.setPassword.ingress')}
+    {t('common.account.setPassword.ingress')}
   </div>
   <!-- The rule list is as wide as the form and has margins of its own, so the stack centres its blocks to keep the list's edges on the form's. -->
   <PasswordValidator bind:validPassword {password} {username} />

@@ -58,7 +58,7 @@ Accesses the component context for its translations, and nothing of any app's co
 </script>
 
 <PasswordSaveForm
-  title={t('contestantApp.setPassword.title')}
+  title={t('common.account.setPassword.title')}
   {email}
   {setPassword}
   {afterSave}
@@ -67,7 +67,7 @@ Accesses the component context for its translations, and nothing of any app's co
   errorTestId="set-password-error"
   bind:status
   data-set-password-state={status}>
-  <p class="text-center">{t('contestantApp.setPassword.why')}</p>
+  <p class="text-center">{t('common.account.setPassword.why')}</p>
 
   {#snippet secondaryAction()}
     <LogoutButton {logout} icon={undefined} data-testid="set-password-logout" />

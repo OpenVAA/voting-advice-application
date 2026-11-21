@@ -125,7 +125,7 @@ describe('NothingToEdit — a user with an email', () => {
     const list = value!.closest('dl');
     expect(list).not.toBeNull();
     const label = list!.querySelector('dt');
-    expect(label?.textContent?.trim()).toBe('contestantApp.nothingToEdit.signedInAs');
+    expect(label?.textContent?.trim()).toBe('common.account.signedInAs');
     expect(label!.classList).toContain('small-label');
   });
 
@@ -189,7 +189,7 @@ describe('NothingToEdit — a user without an email', () => {
     expect(target.querySelector(CONTAINER)).not.toBeNull();
     expect(target.querySelector('dl')).toBeNull();
     expect(target.querySelector(EMAIL_VALUE)).toBeNull();
-    expect(target.textContent).not.toContain('contestantApp.nothingToEdit.signedInAs');
+    expect(target.textContent).not.toContain('common.account.signedInAs');
   });
 
   it.each([

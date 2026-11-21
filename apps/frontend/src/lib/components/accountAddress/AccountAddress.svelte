@@ -16,7 +16,7 @@
 
 ```tsx
 <AccountAddress
-  label={t('contestantApp.nothingToEdit.signedInAs')}
+  label={t('common.account.signedInAs')}
   address={email}
   data-testid="set-password-email" />
 ```

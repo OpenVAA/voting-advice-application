@@ -231,9 +231,9 @@ describe('contestant protected layout — a load gated on the password', () => {
     const target = render(gatedData());
 
     const heading = one<HTMLHeadingElement>(target, 'h1');
-    expect(heading.textContent?.trim()).toBe('contestantApp.setPassword.title');
+    expect(heading.textContent?.trim()).toBe('common.account.setPassword.title');
     expect(heading.getAttribute('tabindex')).toBe('-1');
-    expect(one(target, GATE).textContent).toContain('contestantApp.setPassword.why');
+    expect(one(target, GATE).textContent).toContain('common.account.setPassword.why');
     expect(target.querySelector('figure')).toBeNull();
   });
 
@@ -244,7 +244,7 @@ describe('contestant protected layout — a load gated on the password', () => {
     expect(shown.tagName).toBe('DD');
     expect(shown.textContent?.trim()).toBe(ADDRESS);
     expect(shown.getAttribute('translate')).toBe('no');
-    expect(shown.previousElementSibling?.textContent?.trim()).toBe('contestantApp.nothingToEdit.signedInAs');
+    expect(shown.previousElementSibling?.textContent?.trim()).toBe('common.account.signedInAs');
     const username = one<HTMLInputElement>(formOf(target), 'input[name="username"]');
     expect(username.value).toBe(ADDRESS);
     expect(username.readOnly).toBe(true);
@@ -286,7 +286,7 @@ describe('contestant protected layout — the set-password view’s main button'
     expect(form.contains(submit), 'the button stands outside the form it names').toBe(false);
     expect(form.contains(one(target, PASSWORD))).toBe(true);
     expect(form.contains(one(target, CONFIRMATION))).toBe(true);
-    expect(submit.textContent).toContain('contestantApp.setPassword.setPassword');
+    expect(submit.textContent).toContain('common.account.setPassword.setPassword');
     expect(submit.disabled).toBe(false);
   });
 
@@ -300,7 +300,7 @@ describe('contestant protected layout — the set-password view’s main button'
     expect(prevented).toBe(true);
     expect(setPassword).not.toHaveBeenCalled();
     expect(invalidateAll).not.toHaveBeenCalled();
-    expect(one(target, PASSWORD_ERROR).textContent).toContain('contestantApp.setPassword.passwordNotValid');
+    expect(one(target, PASSWORD_ERROR).textContent).toContain('common.account.setPassword.passwordNotValid');
     expect(one(target, GATE).getAttribute('data-set-password-state')).toBe('idle');
     expect(target.querySelector(SAVE_ERROR)).toBeNull();
   });
@@ -407,7 +407,7 @@ describe('contestant protected layout — a password that could not be saved', (
     expect(one(target, GATE).getAttribute('data-set-password-state')).toBe('failed');
     const alert = one<HTMLElement>(target, SAVE_ERROR);
     expect(alert.getAttribute('role')).toBe('alert');
-    expect(alert.textContent).toContain('contestantApp.setPassword.error');
+    expect(alert.textContent).toContain('common.account.setPassword.error');
     expect(one<HTMLInputElement>(target, PASSWORD).value).toBe(VALID_PASSWORD);
     expect(one<HTMLInputElement>(target, CONFIRMATION).value).toBe(VALID_PASSWORD);
     expect(one<HTMLButtonElement>(target, SUBMIT).disabled).toBe(false);

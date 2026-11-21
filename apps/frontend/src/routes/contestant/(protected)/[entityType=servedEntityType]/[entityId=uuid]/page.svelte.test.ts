@@ -1137,7 +1137,7 @@ describe('the contestant home page — the email task of an address awaiting its
     expect(follows(shown(target, EMAIL_TASK), heading)).toBe(true);
     expect(shown(target, LOCKED_WARNING).textContent).not.toContain(PENDING_ADDRESS);
     expect(target.textContent).not.toContain('contestantApp.home.emailPending');
-    expect(target.textContent).not.toContain('contestantApp.emailSent.resend');
+    expect(target.textContent).not.toContain('common.account.emailSent.resend');
     expect(target.querySelector('[role="status"]')).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });

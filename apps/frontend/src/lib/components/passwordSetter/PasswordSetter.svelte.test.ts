@@ -64,8 +64,8 @@ const ADDRESS = 'person@example.test';
 const PASSWORD_WITH_ADDRESS = `A1!${ADDRESS}`;
 
 /** The two translation keys the message ladder can produce. Asserted as keys, never as rendered prose. */
-const NOT_VALID_KEY = 'contestantApp.setPassword.passwordNotValid';
-const DONT_MATCH_KEY = 'contestantApp.setPassword.passwordsDontMatch';
+const NOT_VALID_KEY = 'common.account.setPassword.passwordNotValid';
+const DONT_MATCH_KEY = 'common.account.setPassword.passwordsDontMatch';
 
 const PASSWORD_BLOCK = '[data-testid="password-setter-password"]';
 const CONFIRMATION_BLOCK = '[data-testid="password-setter-confirmation"]';
@@ -407,7 +407,7 @@ describe('PasswordSetter', () => {
       const address = form.querySelector(ADDRESS_FIELD);
       const sentence = Array.from(form.querySelectorAll('*')).find(
         (element) =>
-          element.children.length === 0 && element.textContent?.trim() === 'contestantApp.setPassword.ingress'
+          element.children.length === 0 && element.textContent?.trim() === 'common.account.setPassword.ingress'
       );
       const ruleList = form.querySelector('progress');
       expect(address).not.toBeNull();

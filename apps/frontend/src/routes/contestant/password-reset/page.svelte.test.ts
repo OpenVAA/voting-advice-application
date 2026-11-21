@@ -233,7 +233,7 @@ describe('the account', () => {
     expect(address.tagName).toBe('DD');
     expect(address.textContent?.trim()).toBe(ADDRESS);
     expect(address.getAttribute('translate')).toBe('no');
-    expect(one(target, 'dt').textContent?.trim()).toBe('contestantApp.nothingToEdit.signedInAs');
+    expect(one(target, 'dt').textContent?.trim()).toBe('common.account.signedInAs');
   });
 
   it("hands the address to the form's user-name field, which is read-only and not rendered", () => {
@@ -271,7 +271,7 @@ describe('the main button', () => {
     expect(button.getAttribute('form')).toBe(form.id);
     expect(form.contains(button)).toBe(false);
     expect(button.closest('section')?.getAttribute('aria-label')).toBe('common.primaryActions');
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
   });
 
   it('is natively disabled until the page has mounted', () => {
@@ -287,10 +287,10 @@ describe('the main button', () => {
     expect(button.disabled).toBe(false);
     typeBoth(target, RULE_BREAKING_PASSWORD);
     expect(button.disabled).toBe(false);
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
     typeBoth(target, VALID_PASSWORD);
     expect(button.disabled).toBe(false);
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
   });
 });
 
@@ -333,13 +333,13 @@ describe('a failed save', () => {
     expect(setPassword).toHaveBeenCalledTimes(1);
     expect(goto).not.toHaveBeenCalled();
     const error = one(target, SAVE_ERROR);
-    expect(messageOf(error)).toBe('contestantApp.setPassword.error');
+    expect(messageOf(error)).toBe('common.account.setPassword.error');
     expect(error.getAttribute('role')).toBe('alert');
     expect(one<HTMLInputElement>(target, PASSWORD).value).toBe(VALID_PASSWORD);
     expect(one<HTMLInputElement>(target, CONFIRMATION).value).toBe(VALID_PASSWORD);
     const button = one<HTMLButtonElement>(target, SUBMIT);
     expect(button.disabled).toBe(false);
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
   });
 
   it('is cleared by the next press, which saves again', async () => {
@@ -398,7 +398,7 @@ describe('a saved password', () => {
 
     navigations[0]();
     await settle();
-    expect(labelOf(button)).toBe('contestantApp.setPassword.setPassword');
+    expect(labelOf(button)).toBe('common.account.setPassword.setPassword');
   });
 });
 

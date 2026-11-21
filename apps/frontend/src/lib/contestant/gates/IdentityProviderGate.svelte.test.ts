@@ -156,9 +156,9 @@ const KEY = {
   saveFailed: 'contestantApp.identityProvider.saveFailed',
   hero: 'contestantApp.identityProvider.heroEmoji',
   nameSentence: 'dynamic.contestantAppBasicInfo.identity.name.editable.organization',
-  resendRequested: 'contestantApp.emailSent.resendRequested',
-  resendReady: 'contestantApp.emailSent.resendReady',
-  resendIn: 'contestantApp.emailSent.resendIn'
+  resendRequested: 'common.account.emailSent.resendRequested',
+  resendReady: 'common.account.emailSent.resendReady',
+  resendIn: 'common.account.emailSent.resendIn'
 };
 
 /** User-level data of an identity-provider account with no address, changed by `overrides`. */

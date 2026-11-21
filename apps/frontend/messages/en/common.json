@@ -3,8 +3,35 @@
     "account": {
       "emailRequired": "Enter your email address.",
       "emailSent": {
+        "askedAgain": "If you asked for another email less than a minute ago, this one may not have been sent. Wait until you can send again, then press Send again.",
         "changeAddress": "Use another email address",
         "heroEmoji": "✉️",
+        "intro": {
+          "code": "We’ve sent an email to the address you registered with. Click on the link in it to sign in.",
+          "recovery": "We’ve sent an email to the address you provided. Click on the link in it to sign in and set a new password.",
+          "recoveryTo": "We’ve sent an email to <strong>{email}</strong>. Click on the link in it to sign in and set a new password.",
+          "signIn": "We’ve sent an email to the address you provided. Click on the link in it to sign in.",
+          "signInTo": "We’ve sent an email to <strong>{email}</strong>. Click on the link in it to sign in."
+        },
+        "newest": "If you have asked for more than one email, only the link in the newest one works.",
+        "notFound": {
+          "withAddress": "If you can’t find the email, check your spam folder and that you typed your email address correctly.",
+          "withoutAddress": "If you can’t find the email, check your spam folder."
+        },
+        "resend": "Send again",
+        "resendIn": [
+          {
+            "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
+            "selectors": ["secondsPlural"],
+            "match": {
+              "secondsPlural=one": "(in {seconds}s)",
+              "secondsPlural=*": "(in {seconds}s)"
+            }
+          }
+        ],
+        "resendReady": "You can now ask for a new email.",
+        "resendRequested": "A new email has been requested.",
+        "support": "If you have problems receiving the email, {contactSupportLink}.",
         "title": "Check your email"
       },
       "forgotPassword": "Forgot Password?",
@@ -14,7 +41,17 @@
         "ingress": "To reset your password, please enter your email address below:",
         "sendLink": "Send reset link",
         "title": "Forgot Password?"
-      }
+      },
+      "setPassword": {
+        "error": "We couldn’t save that password. Choose a different one and try again. If the problem persists, please contact support.",
+        "ingress": "Set a secure password according to the requirements below:",
+        "passwordNotValid": "The password does not meet the requirements above.",
+        "passwordsDontMatch": "Passwords don't match",
+        "setPassword": "Set password",
+        "title": "Choose a password",
+        "why": "Your account has no password yet. Choose one so that you can sign in with your email address and password."
+      },
+      "signedInAs": "Signed in as"
     },
     "alliance": {
       "plural": "alliances",

@@ -49,7 +49,7 @@ import type { ScreenShape } from '../shared/screenShape.fixture';
 export type ContestantEmailSentStatus = 'requested' | 'ready';
 
 /** The messages of the screen, read from the English message source rather than copied. */
-const EMAIL_SENT_MESSAGES = messagesOf('contestantApp.emailSent');
+const EMAIL_SENT_MESSAGES = (messagesOf('common').account as Record<string, Record<string, unknown>>).emailSent;
 
 /** The messages shared by the screens of the app, read from the English message source rather than copied. */
 const COMMON_MESSAGES = messagesOf('common');

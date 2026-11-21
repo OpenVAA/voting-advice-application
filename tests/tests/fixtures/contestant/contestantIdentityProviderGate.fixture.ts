@@ -54,7 +54,7 @@ const MESSAGES = messagesOf('contestantApp.identityProvider') as Record<
 };
 
 /** The sentence the status region holds once a new email has been asked for. */
-const RESEND_REQUESTED = messageOf('contestantApp.emailSent', 'resendRequested');
+const RESEND_REQUESTED = messageOf('common', 'account.emailSent.resendRequested');
 
 /** The name of the default locale as the name's error names it. */
 const NAME_LOCALE_NAME = messageOf('lang', NAME_LOCALE);

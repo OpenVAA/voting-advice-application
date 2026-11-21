@@ -102,7 +102,7 @@ export function createContestantSetPasswordGate(page: Page, scope: Page | Locato
      */
     async expectTitle(locale: string): Promise<void> {
       await expect(page.getByTestId(ids.container).getByRole('heading', { level: 1 })).toHaveText(
-        messageOf('contestantApp.setPassword', 'title', locale)
+        messageOf('common', 'account.setPassword.title', locale)
       );
     },
 

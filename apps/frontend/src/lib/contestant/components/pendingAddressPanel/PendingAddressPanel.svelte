@@ -62,9 +62,9 @@ Accesses `ContestantContext`: `registerIdentityProviderAccount` and `t`.
 
   const statusText = $derived(
     resend.status === 'requested'
-      ? t('contestantApp.emailSent.resendRequested')
+      ? t('common.account.emailSent.resendRequested')
       : resend.status === 'ready'
-        ? t('contestantApp.emailSent.resendReady')
+        ? t('common.account.emailSent.resendReady')
         : ''
   );
 
