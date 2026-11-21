@@ -1,0 +1,26 @@
+# 189-16 evidence: the unobserved statements of the DNS-and-mail and Supabase runbooks, the module comments and the authentication page (C-01)
+
+Recorded 2026-11-21 (UTC) by the plan executor of plan 189-16. Every disposition below is read from a tracked record: the runbooks' own dated Observations rows and the evidence of plan 189-05 (`189-05-staging-reads.md`, read 2026-11-20T13:34Z). No AWS, Supabase, DNS or GitHub call was made. Each statement is matched by its text, as numbered in `189-RESEARCH.md` § C-01. A `todo` disposition is carried, with its check, into `.planning/todos/pending/2026-11-20-189-unobserved-statements-about-the-deployed-stack.md`.
+
+## `infra/envs/staging/dns-mail/README.md`
+
+```
+C01_S14=todo For an account still in the sandbox, the production-access request is accepted as filed, and how Support answers it. Not applicable to staging: the 2026-10-22 row (Step 8, item 2) records production access already enabled in eu-north-1, so no request was filed. Removed with the section; carried with its check.
+C01_S15=todo For an account still in the sandbox, create-email-identity for a single address sends a verification mail with a link. Not applicable to staging for the same reason (no mailbox verified for the sandbox). Removed with the section; carried with its check.
+C01_S16=row 2026-11-11 SES accepts an SMTP send under the scoped send policy. Settled by the Supabase runbook's 2026-11-11 row on the sign-in mail from the served account-access, sent through SES on port 2587, which arrived. Row added in the DNS-and-mail runbook, dated 2026-11-11, pointing to the Supabase runbook's Observations, after the table's last 2026-10-22 row so the table stays in date order.
+C01_S17=row 2026-11-11 A received mail passes DKIM, SPF and DMARC, aligned with the From domain. Settled by the Supabase runbook's 2026-11-11 row on the mail's Authentication-Results (dkim=pass for staging.openvaa.org, aligned, and amazonses.com; spf=pass for mail.staging.openvaa.org; dmarc=pass under p=QUARANTINE). Row added, dated 2026-11-11, pointing to it.
+C01_S18=row 2026-11-20 The staging name's DMARC record takes the place of the organisation's policy for mail from that name. Settled by plan 189-05's read (S1_DMARC_ORG_POLICY=none, S1_DMARC_STAGING_POLICY=quarantine, S1_DMARC_DIFFERS=yes, already a 2026-11-20 row) together with the 2026-11-11 mail passing DMARC under p=QUARANTINE: the policy applied is the zone's own. Row added, dated 2026-11-20, after the existing 2026-11-20 row.
+C01_S19=rewritten The Step 6 sentence that pointed the delegation checks at the unobserved section now states what each of the four commands shows, citing the 2026-10-22 Step 6 row.
+C01_S29=rewritten The overview's sentence that the first SES mail comes in a later stage now says the hosted account-access sends the mail through SES, its first mail on 2026-11-11 recorded in the Supabase runbook's Observations (linked).
+```
+
+The section "Not yet observed" is deleted. Back-links: 8 `← guide:` lines under Step 1, Step 5, Step 7, Step 8, Step 9 and Observations, one per citing section of the deployment and operations pages.
+
+## `infra/envs/staging/supabase/README.md`
+
+```
+C01_S20=deleted The empty section "Not yet observed" is deleted.
+C01_S28=rewritten The sentence of § Settings and their guard that the root's terraform.tfvars gains its smtp object in a later stage now says Step 18 applies the SMTP settings when a root's terraform.tfvars sets its smtp object, as the staging root's does (infra/envs/staging/supabase/terraform.tfvars sets smtp; 2026-11-11 rows on the plan with smtp set and the apply).
+```
+
+Back-links: 25 `← guide:` lines under Steps 8, 9 and 15 to 24 and Observations, one per citing section of the deployment, hosted-settings and operations pages.

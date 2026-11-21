@@ -409,6 +409,8 @@ into this root, and its settings are applied.
 
 ### Step 8: Choose the region and create the project
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 Choose the region before the project exists, and treat the choice as final: a project's region cannot
 be changed later, and moving means a new project and a migration of the database, the storage and
 every key. The AWS stack is in `eu-north-1`; Step 1 recorded whether the dashboard offered it.
@@ -426,6 +428,8 @@ shows it, the project's name, and the region the dashboard shows for it. If the 
 the one chosen, say so and stop. Do not paste the password.
 
 ### Step 9: Import the project and make the first plan
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
 
 The lines that begin the sitting, from the repository root, signed in to AWS. Export the token and the
 persistent project's database password with the two `read -rs` lines of "Before you start", and set
@@ -744,6 +748,8 @@ The work directory is kept for the steps that follow and for later sittings.
 
 ### Step 15: The connection psql uses
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 The bootstrap, the drift check, the grant and the probe's catalog reads connect through the libpq
 variables. The direct connection is tried first; when it fails, the session pooler on port 5432 is
 used. **Port 6543, the transaction pooler, is never used**: it gives each transaction a backend of
@@ -797,6 +803,8 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
 
 ### Step 16: The migrations
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 The deploy workflow runs this step itself, in the gated `staging` job: it links a work directory of
 its own under the runner's temporary directory, reaches the database through the session pooler, and
 calls `push-migrations.sh` with `--confirmed-ref`, the environment's approval standing in for the
@@ -841,6 +849,8 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
    ```
 
 ### Step 17: The functions
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
 
 The deploy workflow deploys the three functions the same way, in the gated `staging` job, and fails
 unless the read-back of item 2 shows three `ACTIVE` functions, each with `verify_jwt` as
@@ -887,6 +897,12 @@ Secrets: `SUPABASE_ACCESS_TOKEN`.
    ```
 
 ### Step 18: The settings and the function secrets
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
+← guide: [Hosted Supabase settings § How to verify](https://openvaa.org/developers-guide/deployment/hosted-settings#how-to-verify)
+
+← guide: [Operations § The function secrets](https://openvaa.org/developers-guide/deployment/operations#the-function-secrets)
 
 The root's settings resources and its function secrets are applied by the protocol of Steps 9 to 12,
 for `R=scratch` and for `R=staging` alike: a saved plan and its named lines, the go-ahead, the apply
@@ -1037,6 +1053,8 @@ it was given for. If the reading says stop, nothing is applied and the plan file
 
 ### Step 19: The server's logging settings
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 The bootstrap sends the service-role key as a bound parameter and keeps it out of the log entry of a
 statement that fails. A server that logs the parameters of a statement that succeeds, or of a slow
 one, logs the key all the same, and the script cannot change that. These seven settings say whether
@@ -1084,6 +1102,10 @@ When no row would log the parameters, Step 20 may run. When one would, the boots
 whoever asked for the step has decided what to do.
 
 ### Step 20: The bootstrap
+
+← guide: [Deployment § Feedback rate limit and Cloudflare](https://openvaa.org/developers-guide/deployment#feedback-rate-limit-and-cloudflare)
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
 
 `infra/scripts/bootstrap.sql` writes the rows no migration can hold: the account, the project, its
 settings row, the two rows of `public.storage_config` and the row of
@@ -1196,6 +1218,8 @@ Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and
 
 ### Step 21: The first administrator
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 The project's first administrator is a user with the project-scope `admin` grant on the project.
 The user is created in the dashboard and the grant is written by
 `infra/scripts/grant-project-admin.sql`; a sign-in then shows the claims the access-token hook puts
@@ -1275,6 +1299,10 @@ neither it nor the token is ever printed or pasted.
    ```
 
 ### Step 22: The smoke dataset
+
+← guide: [Deployment § Checking the instance](https://openvaa.org/developers-guide/deployment#checking-the-instance)
+
+← guide: [Operations § The GitHub secrets](https://openvaa.org/developers-guide/deployment/operations#the-github-secrets)
 
 The `smoke` template of `@openvaa/dev-seed` writes 1001 candidates and 1001 nominations into the
 project, every row's external id beginning `smoke_`, and no auth user. It is seeded once per project:
@@ -1623,6 +1651,16 @@ database, `evidence/186-04-grant-script.md` of phase 186). Begin with the lines 
 
 ### Step 23: The conformance probe
 
+← guide: [Deployment § Auth settings of a hosted project](https://openvaa.org/developers-guide/deployment#auth-settings-of-a-hosted-project)
+
+← guide: [Deployment § Checking the instance](https://openvaa.org/developers-guide/deployment#checking-the-instance)
+
+← guide: [Hosted Supabase settings § How to verify](https://openvaa.org/developers-guide/deployment/hosted-settings#how-to-verify)
+
+← guide: [Operations § Restoring to a new project](https://openvaa.org/developers-guide/deployment/operations#restoring-to-a-new-project)
+
+← guide: [Operations § The service-role key and the anon key](https://openvaa.org/developers-guide/deployment/operations#the-service-role-key-and-the-anon-key)
+
 `infra/scripts/probe-hosted.mjs` compares what the project serves with what the repository declares
 for it, through the Management API, the project's public API with the anon key only, and the
 catalog over psql. It writes nothing to the project and never takes the service-role key. Each line
@@ -1656,6 +1694,8 @@ named with the ruling. The role must bypass row-level security, or the seed chec
    ```
 
 ### Step 24: The backups, read
+
+← guide: [Operations § What Supabase keeps](https://openvaa.org/developers-guide/deployment/operations#what-supabase-keeps)
 
 This step reads the project's list of backups and its point-in-time recovery (PITR) state from the
 Management API, with one `GET` of `/v1/projects/<ref>/database/backups`, an endpoint for which
@@ -1793,10 +1833,10 @@ the guard's report.
 The send-email hook's function takes every mail the auth service would send and sends none; the
 application's own function sends the mails. So while the send-email hook is on, the hosted auth service
 sends no mail of its own, and the SMTP settings and the mail rate limit `rate_limit_email_sent` govern
-no mail the auth service sends. No step of this runbook applies the SMTP settings; the root's
-`terraform.tfvars` gains its `smtp` object in a later stage of the deployment work. That object holds
-no user name and no password: the SMTP user name, which for SES is the access key id of the SMTP user
-and half of the mail credential, is `TF_VAR_smtp_user`, and the password is `TF_VAR_smtp_password`.
+no mail the auth service sends. Step 18 applies the SMTP settings when a root's `terraform.tfvars`
+sets its `smtp` object, as the staging root's does. That object holds no user name and no password:
+the SMTP user name, which for SES is the access key id of the SMTP user and half of the mail
+credential, is `TF_VAR_smtp_user`, and the password is `TF_VAR_smtp_password`.
 Both are exported in the shell that plans, from the dns-mail root's outputs, and written to no file;
 the module sends them through a settings resource of their own, so no plan diff shows them.
 
@@ -1833,13 +1873,17 @@ moves it.
 > `terraform.tfvars`, with the comment `# hook off until <reason>`, and start again from a new plan,
 > which is read again before it is applied.
 
-## Not yet observed
-
-Both roots have been applied, the throwaway root and the persistent root. Nothing this runbook relies on
-is listed here now: every statement that was has been seen and is in "Observations", with its date. A
-statement added later moves there in the same way once the step named beside it has shown it.
-
 ## Observations
+
+← guide: [Deployment § Auth settings of a hosted project](https://openvaa.org/developers-guide/deployment#auth-settings-of-a-hosted-project)
+
+← guide: [Deployment § Feedback rate limit and Cloudflare](https://openvaa.org/developers-guide/deployment#feedback-rate-limit-and-cloudflare)
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
+← guide: [Deployment § The per-caller limit of account-access](https://openvaa.org/developers-guide/deployment#the-per-caller-limit-of-account-access)
+
+← guide: [Hosted Supabase settings § The staging instance as observed](https://openvaa.org/developers-guide/deployment/hosted-settings#the-staging-instance-as-observed)
 
 | Date (UTC)    | Observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
