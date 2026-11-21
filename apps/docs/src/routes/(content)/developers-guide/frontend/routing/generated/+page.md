@@ -70,12 +70,12 @@ This is an automatically generated map of the route directories under `apps/fron
         │           │   ├── profile/
         │           │   └── questions/
         │           │       └── [questionId]/
-        │           ├── nominations/
-        │           │   └── (edit)/
-        │           │       ├── constituencies/
-        │           │       ├── details/
-        │           │       └── elections/
-        │           └── settings/
+        │           └── nominations/
+        │               └── (edit)/
+        │                   ├── constituencies/
+        │                   ├── details/
+        │                   │   └── __tests__/
+        │                   └── elections/
         ├── email-sent/
         ├── forgot-password/
         ├── help/
@@ -84,8 +84,9 @@ This is an automatically generated map of the route directories under `apps/fron
         ├── password-reset/
         ├── privacy/
         └── register/
-            ├── email/
-            ├── identity-provider/
-            │   └── error/
-            └── sign-in/
+            ├── code/
+            │   ├── email/
+            │   └── sign-in/
+            └── identity-provider/
+                └── error/
 ```
