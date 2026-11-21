@@ -27,13 +27,16 @@ const ROUTES_DIR = path.join(__dirname, '../src/routes');
 const CONFIG_FILE = path.join(__dirname, '../src/lib/navigation.config.ts');
 
 /**
- * Internal working item with status tracking
+ * Whether a working item is kept from the current config, newly discovered or no longer present
  */
-export type WorkingItem = {
-  item: NavigationSection | NavigationItem;
-  status: 'existing' | 'new' | 'removed';
-  children?: Array<WorkingItem>;
-};
+type WorkingStatus = 'existing' | 'new' | 'removed';
+
+/**
+ * Internal working item with status tracking. A section carries its children; a leaf carries the children it had as a section in the current config, each marked as removed.
+ */
+export type WorkingItem =
+  | { status: WorkingStatus; item: NavigationSection; children: Array<WorkingItem> }
+  | { status: WorkingStatus; item: NavigationItem; removedChildren?: Array<WorkingItem> };
 
 /**
  * Main function
@@ -183,7 +186,7 @@ function compareSection(current: NavigationSection, discovered: NavigationSectio
         workingChildren.push({
           item: updatedChild,
           status: 'existing',
-          children: markAllAsRemoved(currentChild.children)
+          removedChildren: markAllAsRemoved(currentChild.children)
         });
       } else if (!('children' in currentChild) && 'children' in discoveredChild) {
         // Current is simple but discovered has children - convert to section
@@ -242,7 +245,7 @@ function compareSection(current: NavigationSection, discovered: NavigationSectio
  * Mark all items in a tree as removed
  */
 function markAllAsRemoved(items: Array<NavigationSection | NavigationItem>): Array<WorkingItem> {
-  return items.map((item) => {
+  return items.map((item): WorkingItem => {
     if ('children' in item) {
       return {
         item,
@@ -261,7 +264,7 @@ function markAllAsRemoved(items: Array<NavigationSection | NavigationItem>): Arr
  * Mark all items in a tree as new
  */
 function markAllAsNew(items: Array<NavigationSection | NavigationItem>): Array<WorkingItem> {
-  return items.map((item) => {
+  return items.map((item): WorkingItem => {
     if ('children' in item) {
       return {
         item,
@@ -521,12 +524,13 @@ function appendWorkingItem(lines: Array<string>, workingItem: WorkingItem, inden
 
   // Serialize the item
   const item = workingItem.item;
+  const children = 'children' in workingItem ? workingItem.children : [];
 
   // An item that was a section keeps no children: each of them is recorded as removed
-  if (!('children' in item)) {
-    for (const child of workingItem.children ?? []) appendWorkingItem(lines, child, indent, false);
+  if ('removedChildren' in workingItem) {
+    for (const child of workingItem.removedChildren ?? []) appendWorkingItem(lines, child, indent, false);
   }
-  const hasChildren = 'children' in item && workingItem.children && workingItem.children.length > 0;
+  const hasChildren = children.length > 0;
 
   lines.push(`${indentStr}{`);
   lines.push(`${indentStr}\ttitle: ${JSON.stringify(item.title)},`);
@@ -546,9 +550,9 @@ function appendWorkingItem(lines: Array<string>, workingItem: WorkingItem, inden
 
   if (hasChildren) {
     lines.push(`${indentStr}\tchildren: [`);
-    for (let i = 0; i < workingItem.children!.length; i++) {
-      const child = workingItem.children![i];
-      const isLastChild = i === workingItem.children!.length - 1;
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      const isLastChild = i === children.length - 1;
       appendWorkingItem(lines, child, indent + 2, isLastChild);
     }
     lines.push(`${indentStr}\t]`);
@@ -568,9 +572,7 @@ function logChanges(workingNav: Array<WorkingItem>): void {
     for (const item of items) {
       if (item.status === 'new') newCount++;
       if (item.status === 'removed') removedCount++;
-      if (item.children) {
-        countChanges(item.children);
-      }
+      countChanges('children' in item ? item.children : (item.removedChildren ?? []));
     }
   }
 
