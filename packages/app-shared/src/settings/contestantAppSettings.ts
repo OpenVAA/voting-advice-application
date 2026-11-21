@@ -86,11 +86,11 @@ export const CONTESTANT_EDITING_VALUES = [
 export type ContestantAppNameKey = 'candidate' | 'organization' | 'candidateAndOrganization';
 
 /**
- * What the accessors in this module read: any value that may carry a `contestantApp` settings root and an `access` root. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid. The roots and their members may be absent, and an absent member, or a `servedEntityTypes` with no key, reads as the shipped default. A served type whose entry has no `registrationModes` allows no registration mode.
+ * What the accessors in this module read: any value that may carry a `contestantApp` settings root and an `access` root. Of `access`, these accessors read `contestantEditing` alone; `contestantApp` is typed so that a caller can pass the same value to a check of its own. The merged application settings, the stored settings as a data provider returns them and `{}` are all valid. The roots and their members may be absent, and an absent member, or a `servedEntityTypes` with no key, reads as the shipped default. A served type whose entry has no `registrationModes` allows no registration mode.
  */
 export type ContestantAppSettingsInput =
   | {
-      access?: { readonly contestantEditing?: ContestantEditing } | null;
+      access?: { readonly contestantApp?: boolean | null; readonly contestantEditing?: ContestantEditing } | null;
       contestantApp?: {
         servedEntityTypes?: {
           readonly [TType in ServedEntityType]?: { readonly registrationModes?: ReadonlyArray<RegistrationMode> };

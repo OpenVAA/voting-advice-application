@@ -113,7 +113,18 @@ describe('listedRegistrationModes', () => {
       { ...FULL, access: { contestantEditing: 'open' } },
       ['identity_provider', 'email', 'code']
     ],
-    ['a full matrix with no stored lock', { ...FULL, access: null }, ['identity_provider', 'email', 'code']]
+    ['a full matrix with no stored lock', { ...FULL, access: null }, ['identity_provider', 'email', 'code']],
+    ['a full matrix while the Contestant App is closed', { ...FULL, access: { contestantApp: false } }, []],
+    [
+      'a full matrix while the Contestant App is open',
+      { ...FULL, access: { contestantApp: true } },
+      ['identity_provider', 'email', 'code']
+    ],
+    [
+      'a full matrix with no stored Contestant App switch',
+      { ...FULL, access: { contestantApp: null } },
+      ['identity_provider', 'email', 'code']
+    ]
   ];
 
   it.each(CASES)('lists the offered modes for %s', (_name, settings, expected) => {
@@ -197,6 +208,12 @@ describe('identityProviderEntityTypes', () => {
       'a full matrix while answers are not locked',
       { ...FULL, access: { contestantEditing: 'open' } },
       ['candidate', 'organization']
+    ],
+    ['a full matrix while the Contestant App is closed', { ...FULL, access: { contestantApp: false } }, []],
+    [
+      'a full matrix while the Contestant App is open',
+      { ...FULL, access: { contestantApp: true } },
+      ['candidate', 'organization']
     ]
   ];
 
@@ -238,6 +255,12 @@ describe('identityProviderEntityType', () => {
     [
       'a named type while answers are locked',
       { ...FULL, access: { contestantEditing: 'locked' } },
+      'candidate',
+      undefined
+    ],
+    [
+      'a named type while the Contestant App is closed',
+      { ...FULL, access: { contestantApp: false } },
       'candidate',
       undefined
     ],
