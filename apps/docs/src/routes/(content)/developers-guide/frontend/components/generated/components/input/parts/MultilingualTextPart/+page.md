@@ -2,7 +2,7 @@
 
 The per-locale field stack `Input` renders for its multilingual text kinds. One field per supported locale, in the order displayed locale, required locale, the rest: the displayed locale and the `requiredLocale` are always shown, the others appear when translations are revealed. A language label is visible whenever more than one field is.
 
-Each field and its language label carry `lang` set to their locale. Every field names `describedBy` in its `aria-describedby`, and the `requiredLocale`'s field is marked `aria-required`.
+Each field and its language label carry `lang` set to their locale. Every field names `describedBy` in its `aria-describedby` and is marked `aria-invalid` while `invalid`, and the `requiredLocale`'s field is marked `aria-required`.
 
 Internal to the `input` package — not exported from its barrel. See `./README.md`.
 

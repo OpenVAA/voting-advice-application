@@ -4,7 +4,7 @@ Show buttons opting in or out of data collection and possibly information about 
 
 ### Dynamic component
 
-Accesses `AppContext` to set and read `userPreferences`. The description names no analytics provider: its note is `privacy.dataCollection.info`. Whether the component is offered at all is decided by the page that renders it.
+Accesses `AppContext` to set and read `userPreferences`. The choice shown and changed is the one of the app the current route belongs to (`consentPreferenceKey`): the Contestant App's own choice on its routes, the voter app's elsewhere. The description names no analytics provider: its note is `privacy.dataCollection.info`. Whether the component is offered at all is decided by the page that renders it.
 
 ### Properties
 
