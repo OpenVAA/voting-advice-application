@@ -52,13 +52,50 @@ SCRIPT_PATH="${BASH_SOURCE[0]}"
 WORK=""
 OUT=""
 ERR_CODE=""
+ST_CASES=0
+ST_FAILED=0
+
+main() {
+  local status=0
+  case "${1:-}" in
+    --assert-no-inline-user-policies)
+      [ "$#" -eq 1 ] || { usage_line; exit 2; }
+      make_workdir
+      collect_users > "$WORK/collected.txt"
+      scrub < "$WORK/collected.txt" > "$WORK/scrubbed.txt"
+      evaluate users < "$WORK/scrubbed.txt" || status=$?
+      exit "$status"
+      ;;
+    --assert-managed-only)
+      [ "$#" -eq 2 ] || { usage_line; exit 2; }
+      case "$2" in
+        /*/ | /) ;;
+        *) echo "check-inline-policies.sh: the path prefix must begin and end with /" >&2; exit 2 ;;
+      esac
+      make_workdir
+      { collect_users; collect_roles; } > "$WORK/collected.txt"
+      scrub < "$WORK/collected.txt" > "$WORK/scrubbed.txt"
+      evaluate managed "$2" < "$WORK/scrubbed.txt" || status=$?
+      exit "$status"
+      ;;
+    --self-test)
+      [ "$#" -eq 1 ] || { usage_line; exit 2; }
+      self_test || exit 1
+      exit 0
+      ;;
+    -h | --help)
+      print_header
+      exit 0
+      ;;
+    *)
+      usage_line
+      exit 2
+      ;;
+  esac
+}
 
 usage_line() {
   echo "usage: check-inline-policies.sh [--assert-no-inline-user-policies | --assert-managed-only <path-prefix> | --self-test | -h | --help]" >&2
-}
-
-print_header() {
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
 }
 
 make_workdir() {
@@ -67,27 +104,83 @@ make_workdir() {
 }
 
 # ---------------------------------------------------------------------------------------------------
-# Formatting. These functions turn raw values into output lines. They are what the self-test feeds.
+# Collecting. Each AWS call goes through `call`, which keeps the output in OUT and the error code in
+# ERR_CODE, and drops the error message.
 # ---------------------------------------------------------------------------------------------------
 
-# A field that holds an "@" is never printed.
-redact() {
-  case "$1" in
-    *@*) printf 'redacted' ;;
-    *) printf '%s' "$1" ;;
-  esac
+collect_users() {
+  local list position=0 path name inline attached groups tags
+  if ! call aws iam list-users --query 'Users[].[Path,UserName]' --output text; then
+    echo "error users $ERR_CODE"
+    return 0
+  fi
+  list="$OUT"
+  while IFS=$'\t' read -r path name; do
+    [ -n "$name" ] || continue
+    position=$((position + 1))
+    inline="$(list_or_error aws iam list-user-policies --user-name "$name" --query 'PolicyNames' --output text)"
+    attached="$(list_or_error aws iam list-attached-user-policies --user-name "$name" --query 'AttachedPolicies[].PolicyName' --output text)"
+    groups="$(list_or_error aws iam list-groups-for-user --user-name "$name" --query 'Groups[].GroupName' --output text)"
+    if call aws iam list-user-tags --user-name "$name" --query 'Tags[].[Key,Value]' --output text; then
+      tags="$(fmt_tags "$OUT")"
+    else
+      tags="error($ERR_CODE)"
+    fi
+    fmt_user "$position" "$path" "$name" "$inline" "$attached" "$groups" "$tags"
+  done <<< "$list"
+  echo "users examined=$position"
 }
 
-# Whitespace-separated names, as the CLI's text output gives them, joined into [a,b,c].
-join_list() {
-  local out="" item
-  for item in $1; do
-    [ "$item" = "None" ] && continue
-    item="$(redact "$item")"
-    out="${out:+$out,}$item"
-  done
-  printf '[%s]' "$out"
+collect_roles() {
+  local list count=0 path name inline
+  if ! call aws iam list-roles --query 'Roles[?!starts_with(Path, `/aws-service-role/`)].[Path,RoleName]' --output text; then
+    echo "error roles $ERR_CODE"
+    return 0
+  fi
+  list="$OUT"
+  while IFS=$'\t' read -r path name; do
+    [ -n "$name" ] || continue
+    count=$((count + 1))
+    inline="$(list_or_error aws iam list-role-policies --role-name "$name" --query 'PolicyNames' --output text)"
+    fmt_role "$path" "$name" "$inline"
+  done <<< "$list"
+  echo "roles examined=$count"
 }
+
+call() {
+  local status=0
+  OUT="$("$@" 2> "$WORK/stderr" < /dev/null)" || status=$?
+  if [ "$status" -eq 0 ]; then
+    ERR_CODE=""
+  else
+    ERR_CODE="$(err_code_of "$WORK/stderr")"
+  fi
+  : > "$WORK/stderr"
+  return "$status"
+}
+
+list_or_error() {
+  if call "$@"; then
+    join_list "$OUT"
+  else
+    printf 'error(%s)' "$ERR_CODE"
+  fi
+}
+
+# The error code of a failed call: the word in parentheses after "An error occurred", never the
+# message, which names the caller's session.
+err_code_of() {
+  local code
+  code="$(awk 'match($0, /An error occurred \([A-Za-z][A-Za-z0-9.]*\)/) { print substr($0, RSTART + 19, RLENGTH - 20); exit }' "$1")"
+  if [ -z "$code" ] && grep -q 'Unable to locate credentials' "$1"; then
+    code="NoCredentials"
+  fi
+  printf '%s' "${code:-Unknown}"
+}
+
+# ---------------------------------------------------------------------------------------------------
+# Formatting. These functions turn raw values into output lines. They are what the self-test feeds.
+# ---------------------------------------------------------------------------------------------------
 
 # Tag lines "Key<TAB>Value" printed as [Key,InvokedBy=Value]: keys only, except InvokedBy.
 fmt_tags() {
@@ -131,85 +224,29 @@ fmt_role() {
   printf 'role %s path=%s inline=%s\n' "$(redact "$2")" "$(redact "$1")" "$3"
 }
 
-# The error code of a failed call: the word in parentheses after "An error occurred", never the
-# message, which names the caller's session.
-err_code_of() {
-  local code
-  code="$(awk 'match($0, /An error occurred \([A-Za-z][A-Za-z0-9.]*\)/) { print substr($0, RSTART + 19, RLENGTH - 20); exit }' "$1")"
-  if [ -z "$code" ] && grep -q 'Unable to locate credentials' "$1"; then
-    code="NoCredentials"
-  fi
-  printf '%s' "${code:-Unknown}"
+# Whitespace-separated names, as the CLI's text output gives them, joined into [a,b,c].
+join_list() {
+  local out="" item
+  for item in $1; do
+    [ "$item" = "None" ] && continue
+    item="$(redact "$item")"
+    out="${out:+$out,}$item"
+  done
+  printf '[%s]' "$out"
+}
+
+# A field that holds an "@" is never printed.
+redact() {
+  case "$1" in
+    *@*) printf 'redacted' ;;
+    *) printf '%s' "$1" ;;
+  esac
 }
 
 # Second barrier over every printed line: a token holding an "@" becomes "redacted", and anything after
 # an assumed role's name is cut off.
 scrub() {
   sed -E -e 's/[^[:space:]]*@[^[:space:]]*/redacted/g' -e 's#(assumed-role/[^/[:space:]]+)/[^[:space:]]*#\1#g'
-}
-
-# ---------------------------------------------------------------------------------------------------
-# Collecting. Each AWS call goes through `call`, which keeps the output in OUT and the error code in
-# ERR_CODE, and drops the error message.
-# ---------------------------------------------------------------------------------------------------
-
-call() {
-  local status=0
-  OUT="$("$@" 2> "$WORK/stderr" < /dev/null)" || status=$?
-  if [ "$status" -eq 0 ]; then
-    ERR_CODE=""
-  else
-    ERR_CODE="$(err_code_of "$WORK/stderr")"
-  fi
-  : > "$WORK/stderr"
-  return "$status"
-}
-
-list_or_error() {
-  if call "$@"; then
-    join_list "$OUT"
-  else
-    printf 'error(%s)' "$ERR_CODE"
-  fi
-}
-
-collect_users() {
-  local list position=0 path name inline attached groups tags
-  if ! call aws iam list-users --query 'Users[].[Path,UserName]' --output text; then
-    echo "error users $ERR_CODE"
-    return 0
-  fi
-  list="$OUT"
-  while IFS=$'\t' read -r path name; do
-    [ -n "$name" ] || continue
-    position=$((position + 1))
-    inline="$(list_or_error aws iam list-user-policies --user-name "$name" --query 'PolicyNames' --output text)"
-    attached="$(list_or_error aws iam list-attached-user-policies --user-name "$name" --query 'AttachedPolicies[].PolicyName' --output text)"
-    groups="$(list_or_error aws iam list-groups-for-user --user-name "$name" --query 'Groups[].GroupName' --output text)"
-    if call aws iam list-user-tags --user-name "$name" --query 'Tags[].[Key,Value]' --output text; then
-      tags="$(fmt_tags "$OUT")"
-    else
-      tags="error($ERR_CODE)"
-    fi
-    fmt_user "$position" "$path" "$name" "$inline" "$attached" "$groups" "$tags"
-  done <<< "$list"
-  echo "users examined=$position"
-}
-
-collect_roles() {
-  local list count=0 path name inline
-  if ! call aws iam list-roles --query 'Roles[?!starts_with(Path, `/aws-service-role/`)].[Path,RoleName]' --output text; then
-    echo "error roles $ERR_CODE"
-    return 0
-  fi
-  list="$OUT"
-  while IFS=$'\t' read -r path name; do
-    [ -n "$name" ] || continue
-    count=$((count + 1))
-    inline="$(list_or_error aws iam list-role-policies --role-name "$name" --query 'PolicyNames' --output text)"
-    fmt_role "$path" "$name" "$inline"
-  done <<< "$list"
-  echo "roles examined=$count"
 }
 
 # ---------------------------------------------------------------------------------------------------
@@ -264,42 +301,6 @@ evaluate() {
 # ---------------------------------------------------------------------------------------------------
 # Self-test. No credentials, no AWS call.
 # ---------------------------------------------------------------------------------------------------
-
-ST_CASES=0
-ST_FAILED=0
-
-st_result() {
-  ST_CASES=$((ST_CASES + 1))
-  if [ "$2" = "pass" ]; then
-    echo "self-test: PASS $1"
-  else
-    echo "self-test: FAIL $1"
-    ST_FAILED=$((ST_FAILED + 1))
-  fi
-}
-
-# st_judge <case> <expected status> <mode> <prefix> <input lines>
-st_judge() {
-  local got=0
-  printf '%s\n' "$5" | evaluate "$3" "$4" > /dev/null 2>&1 || got=$?
-  if [ "$got" -eq "$2" ]; then st_result "$1" pass; else st_result "$1 (status $got, expected $2)" fail; fi
-}
-
-# st_absent <case> <haystack> <needle>
-st_absent() {
-  case "$2" in
-    *"$3"*) st_result "$1" fail ;;
-    *) st_result "$1" pass ;;
-  esac
-}
-
-# st_present <case> <haystack> <needle>
-st_present() {
-  case "$2" in
-    *"$3"*) st_result "$1" pass ;;
-    *) st_result "$1" fail ;;
-  esac
-}
 
 self_test() {
   local clean inline_user formatted errfile scrubbed tab
@@ -380,45 +381,43 @@ users examined=4"
   [ "$ST_FAILED" -eq 0 ]
 }
 
+st_result() {
+  ST_CASES=$((ST_CASES + 1))
+  if [ "$2" = "pass" ]; then
+    echo "self-test: PASS $1"
+  else
+    echo "self-test: FAIL $1"
+    ST_FAILED=$((ST_FAILED + 1))
+  fi
+}
+
+# st_judge <case> <expected status> <mode> <prefix> <input lines>
+st_judge() {
+  local got=0
+  printf '%s\n' "$5" | evaluate "$3" "$4" > /dev/null 2>&1 || got=$?
+  if [ "$got" -eq "$2" ]; then st_result "$1" pass; else st_result "$1 (status $got, expected $2)" fail; fi
+}
+
+# st_absent <case> <haystack> <needle>
+st_absent() {
+  case "$2" in
+    *"$3"*) st_result "$1" fail ;;
+    *) st_result "$1" pass ;;
+  esac
+}
+
+# st_present <case> <haystack> <needle>
+st_present() {
+  case "$2" in
+    *"$3"*) st_result "$1" pass ;;
+    *) st_result "$1" fail ;;
+  esac
+}
+
 # ---------------------------------------------------------------------------------------------------
 
-main() {
-  local status=0
-  case "${1:-}" in
-    --assert-no-inline-user-policies)
-      [ "$#" -eq 1 ] || { usage_line; exit 2; }
-      make_workdir
-      collect_users > "$WORK/collected.txt"
-      scrub < "$WORK/collected.txt" > "$WORK/scrubbed.txt"
-      evaluate users < "$WORK/scrubbed.txt" || status=$?
-      exit "$status"
-      ;;
-    --assert-managed-only)
-      [ "$#" -eq 2 ] || { usage_line; exit 2; }
-      case "$2" in
-        /*/ | /) ;;
-        *) echo "check-inline-policies.sh: the path prefix must begin and end with /" >&2; exit 2 ;;
-      esac
-      make_workdir
-      { collect_users; collect_roles; } > "$WORK/collected.txt"
-      scrub < "$WORK/collected.txt" > "$WORK/scrubbed.txt"
-      evaluate managed "$2" < "$WORK/scrubbed.txt" || status=$?
-      exit "$status"
-      ;;
-    --self-test)
-      [ "$#" -eq 1 ] || { usage_line; exit 2; }
-      self_test || exit 1
-      exit 0
-      ;;
-    -h | --help)
-      print_header
-      exit 0
-      ;;
-    *)
-      usage_line
-      exit 2
-      ;;
-  esac
+print_header() {
+  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$SCRIPT_PATH"
 }
 
 main "$@"
