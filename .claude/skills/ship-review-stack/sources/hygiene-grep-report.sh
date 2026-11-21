@@ -17,7 +17,7 @@
 #   --save-baseline P  Also write the machine-readable TSV (id, occ, files) to P.
 #
 # SCOPE IS LOAD-BEARING (D-15, threat T-151-02-01). Every git grep in this script carries
-# the pathspec `-- apps/ packages/ tests/`, written out at each call site rather than hidden
+# the pathspec `-- apps/ packages/ tests/ infra/`, written out at each call site rather than hidden
 # behind a variable, so the scope is auditable by eye and cannot be widened in one edit.
 # `CLAUDE.md`, `.agents/` and `.claude/` are agent-facing planning infrastructure, exempt from
 # hygiene, and must never appear in these counts: an unscoped grep would count `.planning/`
@@ -119,18 +119,18 @@ scan_row() {
 # raw text greps, so no syntax is privileged and none is missed.
 
 BARE_PAT='(?i)(?<!see\s)\bphases?\s+\d+'
-scan_row phase-ref        survivor '(?i)\bphases?\s+\d+'          -- apps/ packages/ tests/
+scan_row phase-ref        survivor '(?i)\bphases?\s+\d+'          -- apps/ packages/ tests/ infra/
 
 BARE_PAT='(?i)(?<!see\s)\bspikes?[\s\-/]\d+'
-scan_row spike-ref        survivor '(?i)\bspikes?[\s\-/]\d+'      -- apps/ packages/ tests/
+scan_row spike-ref        survivor '(?i)\bspikes?[\s\-/]\d+'      -- apps/ packages/ tests/ infra/
 
-scan_row decision-id-long strip    '\bD-\d{2,3}-\d{2}\b'          -- apps/ packages/ tests/
-scan_row decision-id-bare strip    '\bD-\d{2}\b(?!-\d{2})'        -- apps/ packages/ tests/
-scan_row section-anchor   strip    '§'                            -- apps/ packages/ tests/
-scan_row planning-path    strip    '\.planning/'                  -- apps/ packages/ tests/
-scan_row plan-number      strip    '(?i)\bplans?\s+\d+[-.]\d+'    -- apps/ packages/ tests/
-scan_row milestone-ver    report   '\bv\d+\.\d+\b'                -- apps/ packages/ tests/
-scan_row task-id          strip    '\b[A-Z]{3,}-\d{2}\b'          -- apps/ packages/ tests/
+scan_row decision-id-long strip    '\bD-\d{2,3}-\d{2}\b'          -- apps/ packages/ tests/ infra/
+scan_row decision-id-bare strip    '\bD-\d{2}\b(?!-\d{2})'        -- apps/ packages/ tests/ infra/
+scan_row section-anchor   strip    '§'                            -- apps/ packages/ tests/ infra/
+scan_row planning-path    strip    '\.planning/'                  -- apps/ packages/ tests/ infra/
+scan_row plan-number      strip    '(?i)\bplans?\s+\d+[-.]\d+'    -- apps/ packages/ tests/ infra/
+scan_row milestone-ver    report   '\bv\d+\.\d+\b'                -- apps/ packages/ tests/ infra/
+scan_row task-id          strip    '\b[A-Z]{3,}-\d{2}\b'          -- apps/ packages/ tests/ infra/
 
 # ---------------------------------------------------------------------------------------
 
@@ -143,7 +143,7 @@ SUPPLEMENTARY=0
 echo ""
 echo "Planning-Reference Hygiene Report -- criterion 3"
 echo "==============================================="
-echo "scope   : apps/ packages/ tests/   (CLAUDE.md, .agents/, .claude/ exempt per D-15)"
+echo "scope   : apps/ packages/ tests/ infra/   (CLAUDE.md, .agents/, .claude/ exempt per D-15)"
 echo "mode    : $([ "$ASSERT" -eq 1 ] && echo "assert-clean (gate)" || echo "report")"
 [ -n "$BASELINE" ] && echo "baseline: $BASELINE"
 echo ""
@@ -215,10 +215,10 @@ if [ "$ERRORS" -gt 0 ]; then
   echo "Comment hygiene does not hold (criterion 3)."
   echo "  - a strip row above zero: the codemod has not run over those files, or its"
   echo "    residue was left to the Stage-2 agent pass. Locate them with, for example:"
-  echo "      git grep -I -n -P '\\bD-\\d{2}\\b(?!-\\d{2})' -- apps/ packages/ tests/"
+  echo "      git grep -I -n -P '\\bD-\\d{2}\\b(?!-\\d{2})' -- apps/ packages/ tests/ infra/"
   echo "  - a survivor row with bare > 0: the reference survives but not in the collapsed"
   echo "    form D-14 authorises. Rewrite it as 'see phase N' / 'see spike N':"
-  echo "      git grep -I -n -P '(?i)(?<!see\\s)\\bphases?\\s+\\d+' -- apps/ packages/ tests/"
+  echo "      git grep -I -n -P '(?i)(?<!see\\s)\\bphases?\\s+\\d+' -- apps/ packages/ tests/ infra/"
   echo "  - milestone-ver is deliberately NOT a gate. Do not mechanically strip it;"
   echo "    it matches genuine tool and package versions. Route it to the agent pass."
   exit 1

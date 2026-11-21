@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 #
-# check-proxy-sigterm.sh -- Run the frontend production image behind the reverse proxy of
-#                           docker-compose.proxy.yml, stop its container during a request in flight,
-#                           and check, with a negative control, that the server drains that request
-#                           and exits by itself.
+# check-proxy-sigterm.sh -- Run the frontend production image behind the reverse proxy of docker-compose.proxy.yml, stop its container during a request in flight, and check, with a negative control, that the server drains that request and exits by itself.
 #
 # A deployment stops the container with SIGTERM, which reaches the server only when node is process 1, and adapter-node then finishes the requests in flight before it exits. This script reaches the server as the public origin only, as check-proxy-topology.sh does: every request names http://vaa.example.test:<port> and is sent to 127.0.0.1 with curl --resolve.
 #
@@ -28,8 +25,7 @@
 #   PROXY_CHECK_PORT               The host port of the proxy, on 127.0.0.1. Default 8181. The public origin is http://vaa.example.test:<this port>.
 #   PROXY_CHECK_ADDRESS_HEADER     Passed to the container as ADDRESS_HEADER. Default x-forwarded-for.
 #   PROXY_CHECK_XFF_DEPTH          Passed as XFF_DEPTH: the number of proxies in front of the server. Default 1.
-#   PROXY_CHECK_SUPABASE_URL, PROXY_CHECK_SUPABASE_ANON_KEY, PROXY_CHECK_PROJECT_ID
-#                                  Passed as the three PUBLIC_ variables. Unset, the URL names a closed port and every read of the backend fails, which this check does not need; an unset project id defaults to the seed project 00000000-0000-0000-0000-000000000001.
+#   PROXY_CHECK_SUPABASE_URL, PROXY_CHECK_SUPABASE_ANON_KEY, PROXY_CHECK_PROJECT_ID  Passed as the three PUBLIC_ variables. Unset, the URL names a closed port and every read of the backend fails, which this check does not need; an unset project id defaults to the seed project 00000000-0000-0000-0000-000000000001.
 #   PROXY_CHECK_ORIGIN and PROXY_CHECK_DIAGNOSTICS are set by this script; a value in the caller's environment is not used.
 #
 # Prerequisites. This script ASSERTS them; it never performs them:

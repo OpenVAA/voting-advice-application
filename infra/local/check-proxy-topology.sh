@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 #
-# check-proxy-topology.sh -- Run the frontend production image behind a reverse proxy and check, with a
-#                            negative control for every observation, that the server resolves the public
-#                            origin and the client's address as a deployment needs.
+# check-proxy-topology.sh -- Run the frontend production image behind a reverse proxy and check, with a negative control for every observation, that the server resolves the public origin and the client's address as a deployment needs.
 #
 # ORIGIN, ADDRESS_HEADER and XFF_DEPTH configure the Node adapter, not the application. Only a run behind a proxy shows that a form post passes the origin check and that a forwarded address cannot be spoofed. This script builds the image, starts it behind the nginx of docker-compose.proxy.yml and reaches it as the public origin only: every request names http://vaa.example.test:<port> and is sent to 127.0.0.1 with curl --resolve, while the proxy reaches the container under the name `frontend`. For each variant it recreates the containers with other environment values; it never rebuilds for a variant.
 #
@@ -33,10 +31,8 @@
 #   PROXY_CHECK_PORT               The host port of the proxy, on 127.0.0.1. Default 8181. The public origin is http://vaa.example.test:<this port>.
 #   PROXY_CHECK_ADDRESS_HEADER     Passed to the container as ADDRESS_HEADER. Default x-forwarded-for.
 #   PROXY_CHECK_XFF_DEPTH          Passed as XFF_DEPTH: the number of proxies in front of the server. Default 1. The spoof control runs with one more.
-#   PROXY_CHECK_SUPABASE_URL, PROXY_CHECK_SUPABASE_ANON_KEY, PROXY_CHECK_PROJECT_ID
-#                                  Passed as the three PUBLIC_ variables. Unset, the URL names a closed port, so the server starts and every read of the backend fails, which the observations other than the login do not need; an unset project id defaults to the seed project 00000000-0000-0000-0000-000000000001.
-#   PROXY_CHECK_LOGIN_EMAIL, PROXY_CHECK_LOGIN_PASSWORD
-#                                  The account of the login leg.
+#   PROXY_CHECK_SUPABASE_URL, PROXY_CHECK_SUPABASE_ANON_KEY, PROXY_CHECK_PROJECT_ID  Passed as the three PUBLIC_ variables. Unset, the URL names a closed port, so the server starts and every read of the backend fails, which the observations other than the login do not need; an unset project id defaults to the seed project 00000000-0000-0000-0000-000000000001.
+#   PROXY_CHECK_LOGIN_EMAIL, PROXY_CHECK_LOGIN_PASSWORD  The account of the login leg.
 #   PROXY_CHECK_ORIGIN and PROXY_CHECK_DIAGNOSTICS are set by this script for each variant; a value in the caller's environment is not used.
 #
 # Neither the key nor the password is printed or written to --out: the password reaches curl through a file in a private temporary directory, the login's response headers and cookies stay in that directory, and it is removed on every way out. Shell tracing must stay off.

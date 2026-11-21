@@ -16,8 +16,7 @@ resource "aws_budgets_budget" "monthly" {
   limit_amount = tostring(var.limit_usd)
   limit_unit   = "USD"
 
-  # Credits and refunds are left out by default, so that an account running on credits still shows
-  # its usage and the alerts follow usage rather than the net bill.
+  # Credits and refunds are left out by default, so that an account running on credits still shows its usage and the alerts follow usage rather than the net bill.
   cost_types {
     include_credit = var.include_credits
     include_refund = var.include_credits

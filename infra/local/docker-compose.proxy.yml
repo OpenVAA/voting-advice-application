@@ -1,7 +1,7 @@
-# Reverse-proxy topology compose
-# Purpose: run the frontend production image behind a reverse proxy that appends to X-Forwarded-For and keeps Host, to check ORIGIN, ADDRESS_HEADER and XFF_DEPTH as a deployment sets them
-# Usage: infra/local/check-proxy-topology.sh --out <dir> (the scripted check), or by hand: docker compose --env-file /dev/null -f infra/local/docker-compose.proxy.yml up --build
-# Prerequisites: Docker, and the proxy image below present locally (docker pull <the reference>); a login through the proxy also needs a Supabase API the container can reach, named by PROXY_CHECK_SUPABASE_URL
+# Reverse-proxy topology compose.
+# Purpose: run the frontend production image behind a reverse proxy that appends to X-Forwarded-For and keeps Host, to check ORIGIN, ADDRESS_HEADER and XFF_DEPTH as a deployment sets them.
+# Usage: `infra/local/check-proxy-topology.sh --out <dir>` runs the scripted check; by hand, `docker compose --env-file /dev/null -f infra/local/docker-compose.proxy.yml up --build`.
+# Prerequisites: Docker, and the proxy image below present locally (docker pull <the reference>); a login through the proxy also needs a Supabase API the container can reach, named by PROXY_CHECK_SUPABASE_URL.
 name: openvaa-proxy-check
 services:
   frontend:

@@ -1,7 +1,4 @@
-# The throwaway Supabase project. This root uses the same module as the persistent project's root, so
-# an import here rehearses that one: key discovery, the first plan, the settings apply, the second
-# plan and the destroy refusal are all seen here first. Its state is local and ignored by Git. The
-# root is removed once the throwaway project is deleted.
+# The throwaway Supabase project. This root uses the same module as the persistent project's root, so an import here rehearses that one: key discovery, the first plan, the settings apply, the second plan and the destroy refusal are all seen here first. Its state is local and ignored by Git. The root is removed once the throwaway project is deleted.
 terraform {
   required_version = "~> 1.16"
 

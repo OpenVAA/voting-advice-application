@@ -1,5 +1,4 @@
-# Tracked on purpose: the public record of this root's inputs. Nothing secret belongs here. The budget
-# alert address is not set here: it is given per session as TF_VAR_alert_email.
+# Tracked on purpose: the public record of this root's inputs. Nothing secret belongs here. The budget alert address is not set here: it is given per session as TF_VAR_alert_email.
 aws_account_id = "471112560111"
 aws_region     = "eu-north-1"
 name_prefix    = "openvaa"
@@ -13,9 +12,7 @@ registry_name     = "openvaa-frontend"
 # -var budget_limit_usd=1, to see an alert arrive, and is then applied again with this value.
 budget_limit_usd = 100
 
-# The subjects are name-based (repo:OWNER/REPO:...): a rename or transfer of the repository, or an
-# opt-in to the id-bearing subject form, stops both roles being assumable until the subjects are
-# changed and this root is applied again.
+# The subjects are name-based (repo:OWNER/REPO:...): a rename or transfer of the repository, or an opt-in to the id-bearing subject form, stops both roles being assumable until the subjects are changed and this root is applied again.
 deploy_environment = "staging"
 plan_subjects      = ["repo:OpenVAA/voting-advice-application:pull_request"]
 deploy_subjects    = ["repo:OpenVAA/voting-advice-application:environment:staging"]

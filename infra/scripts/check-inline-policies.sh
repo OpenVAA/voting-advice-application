@@ -1,21 +1,15 @@
 #!/usr/bin/env bash
 #
-# check-inline-policies.sh -- Judge, over the AWS account, the rule that no IAM identity carries an
-# inline policy.
+# check-inline-policies.sh -- Judge, over the AWS account, the rule that no IAM identity carries an inline policy.
 #
 # Usage (from a shell signed in to the account, with the AWS CLI on the PATH):
-#   infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies    # exit 1 if any IAM user has an inline policy
-#   infra/scripts/check-inline-policies.sh --assert-managed-only /openvaa/     # exit 1 if a role or user under the path has one
-#   infra/scripts/check-inline-policies.sh --self-test                         # judge canned lines; needs no credentials
+#   $ infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies    # exit 1 if any IAM user has an inline policy
+#   $ infra/scripts/check-inline-policies.sh --assert-managed-only /openvaa/     # exit 1 if a role or user under the path has one
+#   $ infra/scripts/check-inline-policies.sh --self-test                         # judge canned lines; needs no credentials
 #
-#   --assert-no-inline-user-policies    Read every IAM user. Exit 0 when the user list was read and no
-#                                       user has an inline policy, also when the account has no IAM user.
-#   --assert-managed-only <path-prefix> Read every IAM user and role. Exit 0 when at least one role or
-#                                       user lies under the path and none of them has an inline policy.
-#                                       A user is seen under a path only when it lies under /openvaa/.
-#   --self-test                         Feed canned lines to the judge and canned values to the line
-#                                       formatting, and fail if a case is judged wrongly or if an address,
-#                                       a session name or a person's user name reaches the output.
+#   --assert-no-inline-user-policies    Read every IAM user. Exit 0 when the user list was read and no user has an inline policy, also when the account has no IAM user.
+#   --assert-managed-only <path-prefix> Read every IAM user and role. Exit 0 when at least one role or user lies under the path and none of them has an inline policy. A user is seen under a path only when it lies under /openvaa/.
+#   --self-test                         Feed canned lines to the judge and canned values to the line formatting, and fail if a case is judged wrongly or if an address, a session name or a person's user name reaches the output.
 #   -h, --help                          Print this header and exit 0.
 #
 # Exit codes:
@@ -26,19 +20,9 @@
 #
 # Every AWS call this script makes is a read: list- only. It changes nothing.
 #
-# It prints names and no credential, and it never echoes a value it was given; `set -x` must not be
-# added, because tracing would print the raw user names.
+# It prints names and no credential, and it never echoes a value it was given; `set -x` must not be added, because tracing would print the raw user names.
 #
-# The lines it prints are written to be pasted into a public record: every user or role that carries
-# an inline policy or whose inline policies could not be read, then a one-line verdict on standard
-# error. It prints no e-mail address, no session name and no error message of a failed call: a failed
-# call prints the error code alone (for example AccessDenied), because the message names the caller's
-# session. An IAM user is printed by name only when it lies under the path /openvaa/, where this
-# project creates its own service users; any other user is printed as user-<n>, n being its position
-# in the order the user list gives, because a user name is often a person's name or address. Run
-# aws iam list-users --query 'Users[].UserName' on your own machine to see which user a line means. A
-# tag is printed by its key alone, except InvokedBy, whose value is one of AWS's own words. Any field
-# that still holds an "@" is printed as "redacted".
+# The lines it prints are written to be pasted into a public record: every user or role that carries an inline policy or whose inline policies could not be read, then a one-line verdict on standard error. It prints no e-mail address, no session name and no error message of a failed call: a failed call prints the error code alone (for example AccessDenied), because the message names the caller's session. An IAM user is printed by name only when it lies under the path /openvaa/, where this project creates its own service users; any other user is printed as user-<n>, n being its position in the order the user list gives, because a user name is often a person's name or address. Run aws iam list-users --query 'Users[].UserName' on your own machine to see which user a line means. A tag is printed by its key alone, except InvokedBy, whose value is one of AWS's own words. Any field that still holds an "@" is printed as "redacted".
 
 set -euo pipefail
 set -f
@@ -104,8 +88,7 @@ make_workdir() {
 }
 
 # ---------------------------------------------------------------------------------------------------
-# Collecting. Each AWS call goes through `call`, which keeps the output in OUT and the error code in
-# ERR_CODE, and drops the error message.
+# Collecting. Each AWS call goes through `call`, which keeps the output in OUT and the error code in ERR_CODE, and drops the error message.
 # ---------------------------------------------------------------------------------------------------
 
 collect_users() {
@@ -167,8 +150,7 @@ list_or_error() {
   fi
 }
 
-# The error code of a failed call: the word in parentheses after "An error occurred", never the
-# message, which names the caller's session.
+# The error code of a failed call: the word in parentheses after "An error occurred", never the message, which names the caller's session.
 err_code_of() {
   local code
   code="$(awk 'match($0, /An error occurred \([A-Za-z][A-Za-z0-9.]*\)/) { print substr($0, RSTART + 19, RLENGTH - 20); exit }' "$1")"
@@ -202,8 +184,7 @@ fmt_tags() {
   printf '[%s]' "$out"
 }
 
-# One IAM user. Arguments: position, path, name, and the inline, attached, groups and tags fields as
-# already formatted ([..] or error(<code>)).
+# One IAM user. Arguments: position, path, name, and the inline, attached, groups and tags fields as already formatted ([..] or error(<code>)).
 fmt_user() {
   local position="$1" path="$2" name="$3" label shown_path
   case "$path" in
@@ -243,19 +224,16 @@ redact() {
   esac
 }
 
-# Second barrier over every printed line: a token holding an "@" becomes "redacted", and anything after
-# an assumed role's name is cut off.
+# Second barrier over every printed line: a token holding an "@" becomes "redacted", and anything after an assumed role's name is cut off.
 scrub() {
   sed -E -e 's/[^[:space:]]*@[^[:space:]]*/redacted/g' -e 's#(assumed-role/[^/[:space:]]+)/[^[:space:]]*#\1#g'
 }
 
 # ---------------------------------------------------------------------------------------------------
-# Judging. Reads the collected lines on standard input. Offending lines go to standard output and the
-# one-line verdict to standard error.
-#   evaluate users            no IAM user has an inline policy, and the user list was read
-#   evaluate managed <prefix> no role or user under the prefix has one, and at least one exists
-# An inline list that could not be read counts as offending: a check that examined nothing does not
-# report success.
+# Judging. Reads the collected lines on standard input. Offending lines go to standard output and the one-line verdict to standard error.
+#   - `evaluate users`: no IAM user has an inline policy, and the user list was read.
+#   - `evaluate managed <prefix>`: no role or user under the prefix has one, and at least one exists.
+# An inline list that could not be read counts as offending: a check that examined nothing does not report success.
 # ---------------------------------------------------------------------------------------------------
 
 evaluate() {

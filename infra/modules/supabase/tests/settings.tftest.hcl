@@ -1,13 +1,8 @@
 # The settings the module sends keep their types, and what they hold is hosted-settings.json.
 #
-# A conditional whose other branch is an empty object makes Terraform unify both branches into a map
-# of strings: booleans and numbers then arrive as "true" and "3600", `validate` still passes, and the
-# hosted API refuses or misreads the value. The assertions compare the decoded settings with `==`,
-# which is type-strict, so a quoted value fails them. The provider is mocked: no run needs
-# credentials, state or network beyond `init`.
+# A conditional whose other branch is an empty object makes Terraform unify both branches into a map of strings: booleans and numbers then arrive as "true" and "3600", `validate` still passes, and the hosted API refuses or misreads the value. The assertions compare the decoded settings with `==`, which is type-strict, so a quoted value fails them. The provider is mocked: no run needs credentials, state or network beyond `init`.
 #
-# Run with `terraform -chdir=infra/modules/supabase init -backend=false` and then
-# `terraform -chdir=infra/modules/supabase test`.
+# Run with `terraform -chdir=infra/modules/supabase init -backend=false` and then `terraform -chdir=infra/modules/supabase test`.
 
 mock_provider "supabase" {}
 

@@ -228,6 +228,9 @@ const FAMILY_BY_EXT = {
   toml: { hash: true },
   yml: { hash: true },
   yaml: { hash: true },
+  tf: { c: true, hash: true },
+  tfvars: { c: true, hash: true },
+  hcl: { c: true, hash: true },
   // Markdown is prose end to end (exclusion e). Listed with NO comment family so every
   // occurrence in a `.md` file lands in the residue report under `markdown-file`.
   md: {}
@@ -237,7 +240,8 @@ const SCAN_EXTS = Object.keys(FAMILY_BY_EXT);
 const DEFAULT_GLOBS = [
   `apps/**/*.{${SCAN_EXTS.join(',')}}`,
   `packages/**/*.{${SCAN_EXTS.join(',')}}`,
-  `tests/**/*.{${SCAN_EXTS.join(',')}}`
+  `tests/**/*.{${SCAN_EXTS.join(',')}}`,
+  `infra/**/*.{${SCAN_EXTS.join(',')}}`
 ];
 
 // ── The pattern set ───────────────────────────────────────────────────────
@@ -807,7 +811,7 @@ const byExt = raw.filter((f) => {
 let tracked;
 try {
   tracked = new Set(
-    execFileSync('git', ['ls-files', '-z', '--', 'apps', 'packages', 'tests'], {
+    execFileSync('git', ['ls-files', '-z', '--', 'apps', 'packages', 'tests', 'infra'], {
       cwd: REPO_ROOT,
       maxBuffer: 64 * 1024 * 1024
     })

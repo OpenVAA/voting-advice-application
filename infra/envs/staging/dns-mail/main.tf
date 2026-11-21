@@ -8,9 +8,7 @@ terraform {
     }
   }
 
-  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this
-  # root can never be paired with another root's state key. The key sits under hand/: this root is
-  # applied by hand, never by the pipeline, and its state holds the SMTP secret in clear text.
+  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this root can never be paired with another root's state key. The key sits under hand/: this root is applied by hand, never by the pipeline, and its state holds the SMTP secret in clear text.
   backend "s3" {
     bucket       = "openvaa-tfstate-471112560111"
     key          = "hand/staging/dns-mail/terraform.tfstate"
@@ -20,8 +18,7 @@ terraform {
   }
 }
 
-# The provider's region is also the region the SMTP password is derived for, so it is the region the
-# mail is sent from.
+# The provider's region is also the region the SMTP password is derived for, so it is the region the mail is sent from.
 provider "aws" {
   region = var.aws_region
 
@@ -38,8 +35,7 @@ provider "aws" {
   }
 }
 
-# The zone and the mail identity live in this root so that they outlive any root that is destroyed and
-# created again. This root reads no other root's state.
+# The zone and the mail identity live in this root so that they outlive any root that is destroyed and created again. This root reads no other root's state.
 module "dns_zone" {
   source = "../../../modules/dns-zone"
 

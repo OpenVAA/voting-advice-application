@@ -1,7 +1,4 @@
-# A template zone and mail root that a forker copies to start a deployment of their own. CI validates
-# it; nothing applies it. It has the same wiring as the staging root and differs only in its backend
-# and its variable file. Replace the bucket below with your own state bucket and the stand-in values
-# in terraform.tfvars with your own before the first apply.
+# A template zone and mail root that a forker copies to start a deployment of their own. CI validates it; nothing applies it. It has the same wiring as the staging root and differs only in its backend and its variable file. Replace the bucket below with your own state bucket and the stand-in values in terraform.tfvars with your own before the first apply.
 terraform {
   required_version = "~> 1.16"
 
@@ -12,9 +9,7 @@ terraform {
     }
   }
 
-  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this
-  # root can never be paired with another root's state key. The key sits under hand/: this root is
-  # applied by hand, never by the pipeline, and its state holds the SMTP secret in clear text.
+  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this root can never be paired with another root's state key. The key sits under hand/: this root is applied by hand, never by the pipeline, and its state holds the SMTP secret in clear text.
   backend "s3" {
     bucket       = "REPLACE-ME-tfstate"
     key          = "hand/example/dns-mail/terraform.tfstate"
@@ -24,8 +19,7 @@ terraform {
   }
 }
 
-# The provider's region is also the region the SMTP password is derived for, so it is the region the
-# mail is sent from.
+# The provider's region is also the region the SMTP password is derived for, so it is the region the mail is sent from.
 provider "aws" {
   region = var.aws_region
 
@@ -42,8 +36,7 @@ provider "aws" {
   }
 }
 
-# The zone and the mail identity live in this root so that they outlive any root that is destroyed and
-# created again. This root reads no other root's state.
+# The zone and the mail identity live in this root so that they outlive any root that is destroyed and created again. This root reads no other root's state.
 module "dns_zone" {
   source = "../../../modules/dns-zone"
 

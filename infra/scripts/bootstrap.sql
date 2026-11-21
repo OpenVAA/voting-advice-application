@@ -17,23 +17,22 @@
 --
 -- Environment. A value is used exactly as given; one that is empty or holds only whitespace counts as not set.
 --   Required:
---     PUBLIC_PROJECT_ID            The project's id, a uuid. The frontend is scoped to the same value under the same name.
---     BOOTSTRAP_STORAGE_URL        The address the database uses to reach the Storage API, stored as the storage_config key `supabase_url`. On a hosted project it is the project's own URL; on a local stack it is the gateway's address inside the Docker network, the value seed.sql writes.
---     SUPABASE_SERVICE_ROLE_KEY    The key the storage cleanup triggers send to the Storage API.
---     BOOTSTRAP_BEHIND_CLOUDFLARE  `true` when every request reaches the API through Cloudflare, otherwise `false`.
+--     PUBLIC_PROJECT_ID:           The project's id, a uuid. The frontend is scoped to the same value under the same name.
+--     BOOTSTRAP_STORAGE_URL:       The address the database uses to reach the Storage API, stored as the storage_config key `supabase_url`. On a hosted project it is the project's own URL; on a local stack it is the gateway's address inside the Docker network, the value seed.sql writes.
+--     SUPABASE_SERVICE_ROLE_KEY:   The key the storage cleanup triggers send to the Storage API.
+--     BOOTSTRAP_BEHIND_CLOUDFLARE: `true` when every request reaches the API through Cloudflare, otherwise `false`.
 --   Optional, with the value used when not set:
---     BOOTSTRAP_ACCOUNT_NAME       Default Account
---     BOOTSTRAP_PROJECT_NAME       Default Project
---     BOOTSTRAP_DEFAULT_LOCALE     en
---     BOOTSTRAP_OPEN_FOR_VOTERS    false
---     BOOTSTRAP_CANDIDATE_REGISTRATION_MODES
---                                  none
+--     BOOTSTRAP_ACCOUNT_NAME:      Default Account
+--     BOOTSTRAP_PROJECT_NAME:      Default Project
+--     BOOTSTRAP_DEFAULT_LOCALE:    en
+--     BOOTSTRAP_OPEN_FOR_VOTERS:   false
+--     BOOTSTRAP_CANDIDATE_REGISTRATION_MODES:  none
 --                                  A comma-separated list of the modes by which a candidate may claim an invitation: any of `identity_provider`, `email` and `code`. With none, no candidate invitation can be claimed until an administrator allows a mode. It is written into the settings row, as `contestantApp.servedEntityTypes.candidate.registrationModes`, only when that row is created.
 --
 -- Exit status, which is psql's own:
---   0  every row is in place
---   2  the connection was refused or lost
---   3  a required variable is not set or BOOTSTRAP_CANDIDATE_REGISTRATION_MODES names an unknown mode, each named on standard error, or another value is malformed. Nothing has been written.
+--   0:  every row is in place
+--   2:  the connection was refused or lost
+--   3:  a required variable is not set or BOOTSTRAP_CANDIDATE_REGISTRATION_MODES names an unknown mode, each named on standard error, or another value is malformed. Nothing has been written.
 --
 -- The script holds no secret and prints no value it was given, except that psql quotes a malformed project id or boolean in its error. The key travels as a bound parameter and is in no statement's text. A server that is set to log the parameters of statements that succeed, or of slow ones, logs it all the same; those settings are the server's and this script cannot change them.
 \set ON_ERROR_STOP on

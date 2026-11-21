@@ -1,7 +1,4 @@
-# A template pipeline root that a forker copies to start a deployment of their own. CI validates it;
-# nothing applies it. It has the same wiring as the staging root and differs only in its backend and
-# its variable file. Replace the bucket below with your own state bucket and the stand-in values in
-# terraform.tfvars with your own before the first apply.
+# A template pipeline root that a forker copies to start a deployment of their own. CI validates it; nothing applies it. It has the same wiring as the staging root and differs only in its backend and its variable file. Replace the bucket below with your own state bucket and the stand-in values in terraform.tfvars with your own before the first apply.
 terraform {
   required_version = "~> 1.16"
 
@@ -12,8 +9,7 @@ terraform {
     }
   }
 
-  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this
-  # root can never be paired with another root's state key.
+  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this root can never be paired with another root's state key.
   backend "s3" {
     bucket       = "REPLACE-ME-tfstate"
     key          = "pipeline/example/aws/terraform.tfstate"
