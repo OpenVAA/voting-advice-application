@@ -15,11 +15,11 @@
       "label": "Évaluation globale de l’application",
       "valueLabel": [
         {
-          "declarations": ["input rating", "input ratingMax", "local ratingPlural = rating: plural"],
-          "selectors": ["ratingPlural"],
+          "declarations": ["input rating", "input ratingMax"],
+          "selectors": ["rating"],
           "match": {
-            "ratingPlural=zero": "Aucune note",
-            "ratingPlural=other": "Note {rating} sur {ratingMax}"
+            "rating=0": "Aucune note",
+            "rating=*": "Note {rating} sur {ratingMax}"
           }
         }
       ]

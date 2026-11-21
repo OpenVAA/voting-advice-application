@@ -1,28 +1,28 @@
 {
   "adminApp.argumentCondensation": {
-    "title": "Argument Condensation",
-    "description": "Condense and manage arguments for election questions.",
+    "title": "Zesummefaassung vun Argumenter",
+    "description": "Fasst d’Argumenter zu de Wahlfroen zesummen a verwalt se.",
     "jobs": {
-      "noActiveJobs": "No active jobs",
-      "startProcess": "Start an argument condensation process to see real-time monitoring"
+      "noActiveJobs": "Keng aktiv Aufgaben",
+      "startProcess": "Start eng Zesummefaassung vun Argumenter, fir de Verlaf an Echtzäit ze verfollegen"
     },
     "generate": {
-      "allQuestions": "Generate arguments for all opinion questions",
-      "button": "Generate Arguments",
-      "buttonLoading": "Generating...",
-      "error": "An error occurred while generating arguments",
-      "mayTakeTime": "This process may take several minutes",
-      "noElectionsAvailable": "No elections are currently available. Please check your data configuration.",
-      "noElectionSelected": "Please select an election first",
-      "noQuestionsForElection": "No opinion questions found for the selected election.",
-      "noQuestionSelected": "Please select at least one question",
-      "selectElection": "Select Election",
-      "selectElectionPlaceholder": "Choose an election...",
-      "selectedQuestions": "Generate arguments for selected questions only",
-      "questionType": "Question Selection",
-      "selectAll": "Select all",
-      "unselectAll": "Unselect all",
-      "errorLoadingQuestions": "Error loading questions: {error}"
+      "allQuestions": "Argumenter fir all Aussoe generéieren",
+      "button": "Argumenter generéieren",
+      "buttonLoading": "Gëtt generéiert…",
+      "error": "Beim Generéiere vun den Argumenter ass e Feeler opgetrueden",
+      "mayTakeTime": "Dëse Prozess kann e puer Minutten daueren",
+      "noElectionsAvailable": "Momentan si keng Wahlen disponibel. Iwwerpréift wgl. d’Konfiguratioun vun Ären Donnéeën.",
+      "noElectionSelected": "Wielt wgl. als éischt eng Wahl aus",
+      "noQuestionsForElection": "Fir déi ausgewielte Wahl goufe keng Aussoe fonnt.",
+      "noQuestionSelected": "Wielt wgl. op d’mannst eng Fro aus",
+      "selectElection": "Wahl auswielen",
+      "selectElectionPlaceholder": "Wielt eng Wahl aus…",
+      "selectedQuestions": "Argumenter nëmme fir déi ausgewielte Froe generéieren",
+      "questionType": "Auswiel vun de Froen",
+      "selectAll": "All auswielen",
+      "unselectAll": "All deselektéieren",
+      "errorLoadingQuestions": "Feeler beim Luede vun de Froen: {error}"
     }
   }
 }

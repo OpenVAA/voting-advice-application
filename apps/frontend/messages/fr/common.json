@@ -14,11 +14,11 @@
       "plural": "candidat·es",
       "singular": "candidat·e"
     },
-    "candidatePortrait": "Portrait",
     "clear": "Effacer",
     "close": "Fermer",
     "closeDialog": "Fermer la boîte de dialogue",
     "closeMenu": "Fermer le menu",
+    "color": "Couleur",
     "confirmed": "Confirmé",
     "constituency": "Circonscription",
     "continue": "Continuer",
@@ -31,7 +31,12 @@
       "organization": "Symbole électoral"
     },
     "email": "E-mail",
+    "emailConfirmation": "Confirmer l’e-mail",
     "emailPlaceholder": "E-mail",
+    "entityImage": {
+      "candidate": "Portrait",
+      "organization": "Logo"
+    },
     "expandOrCollapse": "Développer ou réduire cette section",
     "faction": {
       "plural": "factions",
@@ -46,12 +51,17 @@
     "lastName": "Nom",
     "loading": "Chargement…",
     "locked": "Verrouillé",
+    "loggedOutAutomatically": "Vous avez été déconnecté·e automatiquement, car une déconnexion que vous aviez lancée n’a pas été annulée à temps.",
+    "loggedOutElsewhere": "Vous avez été déconnecté·e dans un autre onglet ou une autre fenêtre.",
     "login": "Se connecter",
     "logout": "Se déconnecter",
+    "logoutFailed": "Nous n’avons pas pu confirmer votre déconnexion. Vous êtes peut-être encore connecté·e, veuillez donc réessayer.",
+    "logoutUnsavedChanges": "Vous avez des modifications non enregistrées. Elles seront perdues si vous vous déconnectez.",
     "madeWithPrefix": "Créé avec",
     "madeWithSuffix": "",
     "missingAnswer": "—",
     "multipleAnswerSeparator": " • ",
+    "name": "Nom",
     "nomination": "Nomination",
     "openCloseMenu": "Ouvrir/fermer le menu",
     "openMenu": "Ouvrir le menu",
@@ -63,7 +73,6 @@
     },
     "password": "Mot de passe",
     "passwordConfirmation": "Confirmer le mot de passe",
-    "pending": "En attente",
     "primaryActions": "Actions principales",
     "privacy": {
       "dataCollection": {
@@ -82,9 +91,9 @@
     "saveAndContinue": "Enregistrer et continuer",
     "saveAndReturn": "Enregistrer et revenir",
     "saving": "Enregistrement…",
+    "shortName": "Abréviation",
     "showFullImage": "Afficher l’image complète",
     "skipToMain": "Aller au contenu principal",
-    "state": "État",
     "success": "Action réussie !",
     "thanksNo": "Non merci",
     "unaffiliated": "Sans étiquette",

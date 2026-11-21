@@ -6,7 +6,7 @@
     "filters": "Filter",
     "missingValue": "Inget svar",
     "numeric": {
-      "maxLabel": "Maximum",
+      "maxLabel": "Högst",
       "minLabel": "Åtminstone"
     },
     "reset": "Återställ filter",

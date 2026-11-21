@@ -14,9 +14,11 @@
       "addImage": "Lisää kuva",
       "allSelected": "Kaikki valittu",
       "changeImage": "Vaihda kuva",
+      "colorPicker": "Värivalitsin",
       "deleteOption": "Poista valinta: {option}",
       "error": {
         "fileLoadingError": "Tiedoston lataaminen ei onnistunut.",
+        "invalidColor": "Väri ei kelpaa. Anna heksakoodi, esimerkiksi #2546a8.",
         "invalidEmail": "Sähköpostiosoite ei kelpaa.",
         "invalidFile": "Tiedosto on vääränlainen.",
         "invalidUrl": "Verkko-osoite ei ole kelvollinen.",
@@ -25,7 +27,9 @@
       "hideTranslations": "Piilota",
       "imageInfo": "Kuvan enimmäiskoko on {maxFilesize} Mt. Olethan kärsivällinen tallennettaessa, sillä kuvan latautuminen voi kestää hetken.",
       "multilingualInfo": "Voit syöttää vastauksesi halutessasi kaikilla vaalikoneen kielillä.",
+      "noColor": "Ei väriä",
       "noImage": "Ei kuvaa",
+      "requiredLocaleInfo": "Vaadittava kieli: {language}. Muut kielet ovat vapaaehtoisia.",
       "selectAnother": "Valitse lisää",
       "selectFirst": "Valitse ensimmäinen",
       "selectOne": "Valitse",
@@ -42,7 +46,6 @@
       "remove": "Poista kohde"
     },
     "passwordInput": {
-      "hidePassword": "Piilota salasana",
       "password": "Salasana",
       "placeholder": "Salasana",
       "showPassword": "Näytä salasana"
@@ -72,28 +75,6 @@
       "showTranscript": "Näytä video tekstinä",
       "showVideo": "Näytä video",
       "subtitles": "Tekstitykset",
-      "timeLeft": [
-        {
-          "declarations": [
-            "input minutes",
-            "local minutesPlural = minutes: plural",
-            "input seconds",
-            "local secondsPlural = seconds: plural"
-          ],
-          "selectors": ["minutesPlural", "secondsPlural"],
-          "match": {
-            "minutesPlural=zero secondsPlural=zero": "  jäljellä",
-            "minutesPlural=zero secondsPlural=one": " yksi sekunta jäljellä",
-            "minutesPlural=zero secondsPlural=other": " {seconds} sekuntia jäljellä",
-            "minutesPlural=one secondsPlural=zero": "yksi minuutti  jäljellä",
-            "minutesPlural=one secondsPlural=one": "yksi minuutti yksi sekunta jäljellä",
-            "minutesPlural=one secondsPlural=other": "yksi minuutti {seconds} sekuntia jäljellä",
-            "minutesPlural=other secondsPlural=zero": "{minutes} minuuttia  jäljellä",
-            "minutesPlural=other secondsPlural=one": "{minutes} minuuttia yksi sekunta jäljellä",
-            "minutesPlural=other secondsPlural=other": "{minutes} minuuttia {seconds} sekuntia jäljellä"
-          }
-        }
-      ],
       "transcript": "Teksti",
       "transcriptToggleLabel": "Vaihda teksti- ja videonäkymän välillä",
       "unmute": "Äänet päälle",

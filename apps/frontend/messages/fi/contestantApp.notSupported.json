@@ -1,0 +1,7 @@
+{
+  "contestantApp.notSupported": {
+    "content": "{contestantAppName}: tämä vaalikoneen versio ei valitettavasti mahdollista palvelun käyttöä.",
+    "heroEmoji": "🐣",
+    "title": "{contestantAppName}: ei käytössä"
+  }
+}

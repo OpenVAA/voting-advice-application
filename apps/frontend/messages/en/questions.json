@@ -16,11 +16,12 @@
     "category": {
       "numQuestions": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=other": "{numQuestions} questions",
-            "numQuestionsPlural=one": "1 question"
+            "numQuestions=-1": "",
+            "numQuestions=1": "1 question",
+            "numQuestions=*": "{numQuestions} questions"
           }
         }
       ],
@@ -31,31 +32,23 @@
       "ingress": {
         "withCategorySelection": [
           {
-            "declarations": [
-              "input minQuestions",
-              "input numCategories",
-              "local minQuestionsPlural = minQuestions: plural"
-            ],
-            "selectors": ["minQuestionsPlural"],
+            "declarations": ["input minQuestions", "input numCategories"],
+            "selectors": ["minQuestions"],
             "match": {
-              "minQuestionsPlural=zero": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. ",
-              "minQuestionsPlural=one": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. ",
-              "minQuestionsPlural=other": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. However, select enough categories to get at least {minQuestions} questions in total."
+              "minQuestions=0": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. ",
+              "minQuestions=1": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. ",
+              "minQuestions=*": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. However, select enough categories to get at least {minQuestions} questions in total."
             }
           }
         ],
         "withoutCategorySelection": [
           {
-            "declarations": [
-              "input numCategories",
-              "input numQuestions",
-              "local numCategoriesPlural = numCategories: plural"
-            ],
-            "selectors": ["numCategoriesPlural"],
+            "declarations": ["input numCategories", "input numQuestions"],
+            "selectors": ["numCategories"],
             "match": {
-              "numCategoriesPlural=zero": "Next, answer {numQuestions} questions regarding politics and values. ",
-              "numCategoriesPlural=one": "Next, answer {numQuestions} questions regarding politics and values. ",
-              "numCategoriesPlural=other": "Next, answer {numQuestions} questions regarding politics and values. The questions are divided into {numCategories} categories."
+              "numCategories=0": "Next, answer {numQuestions} questions regarding politics and values. ",
+              "numCategories=1": "Next, answer {numQuestions} questions regarding politics and values. ",
+              "numCategories=*": "Next, answer {numQuestions} questions regarding politics and values. The questions are divided into {numCategories} categories."
             }
           }
         ]
@@ -68,8 +61,8 @@
           "declarations": ["input count", "local countPlural = count: plural"],
           "selectors": ["countPlural"],
           "match": {
-            "countPlural=other": "Select {count} options.",
-            "countPlural=one": "Select 1 option."
+            "countPlural=one": "Select 1 option.",
+            "countPlural=*": "Select {count} options."
           }
         }
       ],

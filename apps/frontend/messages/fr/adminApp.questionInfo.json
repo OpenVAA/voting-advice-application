@@ -1,41 +1,41 @@
 {
   "adminApp.questionInfo": {
-    "title": "Question Info",
-    "description": "Generate contextual information for VAA questions including term definitions and informational sections to help voters better understand the questions.",
-    "selectElection": "Select Election",
-    "selectQuestions": "Select Questions",
-    "noQuestions": "No opinion questions found for this election",
+    "title": "Informations sur les questions",
+    "description": "Générez des informations de contexte pour les questions de la boussole électorale, notamment des définitions de termes et des sections d’information, afin d’aider les électeur·rice·s à mieux comprendre les questions.",
+    "selectElection": "Sélectionner une élection",
+    "selectQuestions": "Sélectionner les questions",
+    "noQuestions": "Aucune affirmation trouvée pour cette élection",
     "generate": {
-      "button": "Generate Question Info",
-      "buttonLoading": "Generating...",
-      "allQuestions": "All opinion questions",
-      "selectedQuestions": "Selected questions"
+      "button": "Générer les informations sur les questions",
+      "buttonLoading": "Génération…",
+      "allQuestions": "Toutes les affirmations",
+      "selectedQuestions": "Questions sélectionnées"
     },
     "options": {
-      "heading": "Generation Options",
-      "whatToGenerate": "What to generate:",
-      "terms": "Term Definitions",
-      "infoSections": "Info Sections"
+      "heading": "Options de génération",
+      "whatToGenerate": "Éléments à générer :",
+      "terms": "Définitions de termes",
+      "infoSections": "Sections d’information"
     },
     "sectionTopics": {
-      "label": "Section Topics (optional)",
-      "help": "Comma-separated list of topics for info sections. Leave empty to use defaults.",
-      "placeholder": "Background, Current situation, Key stakeholders"
+      "label": "Thèmes des sections (facultatif)",
+      "help": "Liste de thèmes pour les sections d’information, séparés par des virgules. Laissez vide pour utiliser les thèmes par défaut.",
+      "placeholder": "Contexte, Situation actuelle, Principales parties prenantes"
     },
     "customInstructions": {
-      "label": "Custom Instructions (optional)",
-      "help": "Additional guidance for the LLM about how to generate the content.",
-      "placeholder": "Focus on local governance and municipal policy aspects"
+      "label": "Instructions personnalisées (facultatif)",
+      "help": "Indications supplémentaires pour le LLM sur la manière de générer le contenu.",
+      "placeholder": "Mettre l’accent sur la gouvernance locale et les aspects de politique municipale"
     },
     "questionContext": {
-      "label": "Question Context (optional)",
-      "help": "Context about the election or topic area to help the LLM generate more relevant content.",
-      "placeholder": "Finnish municipal elections 2025"
+      "label": "Contexte des questions (facultatif)",
+      "help": "Contexte sur l’élection ou le domaine thématique, pour aider le LLM à générer un contenu plus pertinent.",
+      "placeholder": "Élections municipales finlandaises 2025"
     },
     "validation": {
-      "noElection": "Please select an election",
-      "noQuestions": "Please select at least one question",
-      "noOperations": "Please select at least one generation option"
+      "noElection": "Veuillez sélectionner une élection",
+      "noQuestions": "Veuillez sélectionner au moins une question",
+      "noOperations": "Veuillez sélectionner au moins une option de génération"
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "adminApp.notSupported": {
-    "title": "Admin App Not Supported",
-    "content": "The admin app is not supported with the current data adapter.",
+    "title": "Application d’administration non prise en charge",
+    "content": "L’application d’administration n’est pas prise en charge avec l’adaptateur de données actuel.",
     "heroEmoji": "🔧"
   }
 }

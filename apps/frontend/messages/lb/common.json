@@ -14,11 +14,11 @@
       "plural": "Kandidat*inne",
       "singular": "Kandidat*in"
     },
-    "candidatePortrait": "Portrait",
     "clear": "Läschen",
     "close": "Zoumaachen",
     "closeDialog": "Dialog zoumaachen",
     "closeMenu": "Menü zoumaachen",
+    "color": "Faarf",
     "confirmed": "Confirméiert",
     "constituency": "Walbezierk",
     "continue": "Weider",
@@ -31,7 +31,12 @@
       "organization": "Wahlsymbol"
     },
     "email": "E-Mail",
+    "emailConfirmation": "E-Mail bestätegen",
     "emailPlaceholder": "E-Mail",
+    "entityImage": {
+      "candidate": "Portrait",
+      "organization": "Logo"
+    },
     "expandOrCollapse": "Dës Sektioun op- oder zouklappen",
     "faction": {
       "plural": "Fraktiounen",
@@ -46,12 +51,17 @@
     "lastName": "Familljennumm",
     "loading": "Lueden…",
     "locked": "Gesperrt",
+    "loggedOutAutomatically": "Dir gouft automatesch ausgeloggt, well en Ausloggen, deen Dir ugefaangen hutt, net rechtzäiteg ofgebrach gouf.",
+    "loggedOutElsewhere": "Dir gouft an engem aneren Tab oder an enger anerer Fënster ausgeloggt.",
     "login": "Umellen",
     "logout": "Ausloggen",
+    "logoutFailed": "Mir konnten net confirméieren, datt Dir ausgeloggt sidd. Dir sidd eventuell nach ëmmer ageloggt, probéiert dofir nach eng Kéier.",
+    "logoutUnsavedChanges": "Dir hutt ongespäichert Ännerungen. Si gi verluer, wann Dir Iech auslogged.",
     "madeWithPrefix": "Gemaach mat",
     "madeWithSuffix": "",
     "missingAnswer": "—",
     "multipleAnswerSeparator": " • ",
+    "name": "Numm",
     "nomination": "Nominatioun",
     "openCloseMenu": "Menü op/zoumaachen",
     "openMenu": "Menü opmaachen",
@@ -63,7 +73,6 @@
     },
     "password": "Passwuert",
     "passwordConfirmation": "Passwuert bestätegen",
-    "pending": "Astehend",
     "primaryActions": "Primäraktiounen",
     "privacy": {
       "dataCollection": {
@@ -82,9 +91,9 @@
     "saveAndContinue": "Späicheren a weidergoen",
     "saveAndReturn": "Späicheren a zréckgoen",
     "saving": "Späicheren…",
+    "shortName": "Ofkierzung",
     "showFullImage": "Ganze Bild weisen",
     "skipToMain": "Zum Haaptinhalt sprangen",
-    "state": "Bundesland",
     "success": "Aktioun erfollegräich!",
     "thanksNo": "Nee merci",
     "unaffiliated": "Onofhängeg",

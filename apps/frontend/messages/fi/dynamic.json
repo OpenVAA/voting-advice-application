@@ -4,19 +4,39 @@
       "heroEmoji": "⚙️"
     },
     "appName": "Vaalikone",
-    "candidateAppBasicInfo": {
-      "immutableData": {
-        "title": "Henkilötiedot",
-        "ingress": "Nimesi ja eräät muut tiedot on täytetty valmiiksi tai täydennetään, kun vaaliluettelot vahvistetaan. Et voi itse muuttaa näitä tietoja, mutta jos tiedoissa on virheitä, ota yhteyttä ehdokastukeen.",
-        "emptyPlaceholder": "Vaaliluettelon mukaan"
+    "contestantAppBasicInfo": {
+      "identity": {
+        "title": {
+          "candidate": "Henkilötiedot",
+          "organization": "Puolueen tiedot"
+        },
+        "name": {
+          "locked": {
+            "candidate": "Ylläpitäjä on asettanut nimesi tai se on saatu tunnistautumisestasi, etkä voi muuttaa sitä täällä. Jos nimessä on virhe, ota yhteyttä tukeen.",
+            "organization": "Ylläpitäjä on vahvistanut puolueesi nimen ja lyhenteen, etkä voi muuttaa niitä täällä. Jos niissä on virhe, ota yhteyttä tukeen."
+          },
+          "editable": {
+            "candidate": "Voit muuttaa nimeäsi, kunnes ylläpitäjä on vahvistanut profiilisi.",
+            "organization": "Voit muuttaa puolueesi nimeä ja lyhennettä, kunnes ylläpitäjä on vahvistanut puolueesi."
+          }
+        },
+        "lockedInfo": "Eräät muut tiedot on täytetty valmiiksi tai ylläpitäjä täydentää ne. Et voi itse muuttaa näitä tietoja, mutta jos niissä on virheitä, ota yhteyttä tukeen.",
+        "emptyPlaceholder": {
+          "candidate": "Vaaliluettelon mukaan",
+          "organization": "Ylläpitäjän asettama"
+        }
       }
     },
-    "candidateAppName": "Ehdokkaiden vaalikone",
-    "candidateAppNotAccessible": {
-      "content": "Ehdokkaiden vaalikonetta ei ole vielä julkaistu. Palaa tähän osoitteeseen, kun se on käytettävissä.",
-      "title": "Pahoittelut, ehdokkaiden vaalikone ei ole vielä käytössä"
+    "contestantAppName": {
+      "candidate": "Ehdokkaiden sovellus",
+      "candidateAndOrganization": "Ehdokkaiden ja puolueiden sovellus",
+      "organization": "Puolueiden sovellus"
     },
-    "candidateAppPrivacy": {
+    "contestantAppNotAccessible": {
+      "content": "{contestantAppName}: palvelua ei ole vielä julkaistu. Palaa tähän osoitteeseen, kun se on käytettävissä.",
+      "title": "{contestantAppName}: ei vielä käytössä"
+    },
+    "contestantAppPrivacy": {
       "heroEmoji": "🛡️",
       "consent": {
         "acceptLabel": "Hyväksyn tietojeni tallentamisen ja käytön käyttöehtojen mukaisesti.",
@@ -25,7 +45,7 @@
         "title": "Käyttöehdot"
       },
       "registryStatement": {
-        "content": "<h3>1. Rekisterinpitäjä</h3><p>DATA_CONTROLLER</p><h3>2. Rekisteristä vastaava yhteyshenkilö</h3><p>DATA_CONTACT_PERSON, <a href=\"mailto:first.last@openvaa.org\">first.last@openvaa.org</a>.</p><h3>3. Rekisterin nimi</h3><p>{appName} - ehdokastietojärjestelmä.</p><h3>4. Oikeusperuste ja henkilötietojen käsittelyn tarkoitus</h3><p>EU:n yleisen tietosuoja-asetuksen mukainen oikeusperuste henkilötietojen käsittelylle on henkilön suostumus. Henkilötietojen käsittelyn tarkoitus on käyttö vaalikoneessa.</p><h3>5. Rekisterin tietosisältö</h3><p>Rekisteriin tallennettavia tietoja ovat: henkilön nimi, puoluetausta, sähköpostisoite, syntymäaika, www-sivustojen osoitteet, sosiaalisen median profiilien osoitteet, muut vapaaehtoiset vastaukset vaalikoneen kysymyksiin sekä julkisista vaaliluetteloista saatavat tiedot.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Palvelun toiminnoille välttämättömiä evästeitä käsitellään oikeutetun edun perusteella mm. tietoturvasta huolehtimiseksi.</p><h3>6. Säännönmukaiset tietolähteet</h3><p>Rekisteriin tallennettavat tietoja saadaan ehdokkailta verkkolomakkeen kautta, heidän pankkitunnistautumisensa yhteydessä sekä julkisista vaaliluetteloista.</p><h3>7. Tietojen säännönmukaiset luovutukset ja tietojen siirto EU:n tai ETA:n ulkopuolelle</h3><p>Tietoja ei luovuteta säännönmukaisesti muille tahoille, mutta vaalikoneen julkaisun päätyttyä tietoja saatetaan käyttää tutkimustarkoituksiin ja vaalikoneen kehittämiseen.</p><h3>8. Rekisterin suojauksen periaatteet</h3><p>Rekisterin käsittelyssä noudatetaan huolellisuutta ja tietojärjestelmien avulla käsiteltävät tiedot suojataan asianmukaisesti. Kun rekisteritietoja säilytetään Internet-palvelimilla, niiden laitteiston fyysisestä ja digitaalisesta tietoturvasta huolehditaan asiaankuuluvasti. Rekisterinpitäjä huolehtii siitä, että tallennettuja tietoja sekä palvelimien käyttöoikeuksia ja muita henkilötietojen turvallisuuden kannalta kriittisiä tietoja käsitellään luottamuksellisesti ja vain niiden työntekijöiden toimesta, joiden työnkuvaan se kuuluu.</p><h3>9. Tarkastusoikeus ja oikeus vaatia tiedon korjaamista</h3><p>Jokaisella rekisterissä olevalla henkilöllä on oikeus tarkistaa rekisteriin tallennetut tietonsa ja vaatia mahdollisen virheellisen tiedon korjaamista tai puutteellisen tiedon täydentämistä. Mikäli henkilö haluaa tarkistaa hänestä tallennetut tiedot tai vaatia niihin oikaisua, pyyntö tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p><h3>10. Muut henkilötietojen käsittelyyn liittyvät oikeudet</h3><p>Rekisterissä olevalla henkilöllä on oikeus pyytää häntä koskevien henkilötietojen poistamiseen rekisteristä (”oikeus tulla unohdetuksi”). Niin ikään rekisteröidyillä on muut EU:n yleisen tietosuoja-asetuksen mukaiset oikeudet, kuten henkilötietojen käsittelyn rajoittaminen tietyissä tilanteissa. Pyynnöt tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p>",
+        "content": "<h3>1. Rekisterinpitäjä</h3><p>DATA_CONTROLLER</p><h3>2. Rekisteristä vastaava yhteyshenkilö</h3><p>DATA_CONTACT_PERSON, <a href=\"mailto:first.last@openvaa.org\">first.last@openvaa.org</a>.</p><h3>3. Rekisterin nimi</h3><p>{appName} - ehdokkaiden ja puolueiden tietojärjestelmä.</p><h3>4. Oikeusperuste ja henkilötietojen käsittelyn tarkoitus</h3><p>EU:n yleisen tietosuoja-asetuksen mukainen oikeusperuste henkilötietojen käsittelylle on henkilön suostumus. Henkilötietojen käsittelyn tarkoitus on käyttö vaalikoneessa.</p><h3>5. Rekisterin tietosisältö</h3><p>Rekisteriin tallennettavia tietoja palvelun käyttäjistä sekä heidän edustamistaan ehdokkaista ja puolueista ovat: nimi, puoluetausta, sähköpostisoite, www-sivustojen osoitteet, sosiaalisen median profiilien osoitteet, muut vapaaehtoiset vastaukset vaalikoneen kysymyksiin sekä julkisista vaaliluetteloista saatavat tiedot. Henkilöstä, joka on tunnistautunut pankin tai muun tunnistautumispalvelun kautta, rekisteriin tallennetaan myös syntymäaika tai henkilötunnus. Näitä tunnistetietoja ei luovuteta julkisuuteen. Niitä käytetään vain henkilön vaalipäivän mukaisen iän laskemiseen ja hänen ehdokkuutensa varmentamiseen.</p><p>DATA_STORAGE_TERM_EG_5_YRS</p><p>Palvelun toiminnoille välttämättömiä evästeitä käsitellään oikeutetun edun perusteella mm. tietoturvasta huolehtimiseksi.</p><h3>6. Säännönmukaiset tietolähteet</h3><p>Rekisteriin tallennettavia tietoja saadaan palvelun käyttäjiltä verkkolomakkeen kautta, tunnistautumispalvelusta, kun käyttäjä tunnistautuu sellaisen kautta, sekä julkisista vaaliluetteloista.</p><h3>7. Tietojen säännönmukaiset luovutukset ja tietojen siirto EU:n tai ETA:n ulkopuolelle</h3><p>Tietoja ei luovuteta säännönmukaisesti muille tahoille, mutta vaalikoneen julkaisun päätyttyä tietoja saatetaan käyttää tutkimustarkoituksiin ja vaalikoneen kehittämiseen.</p><h3>8. Rekisterin suojauksen periaatteet</h3><p>Rekisterin käsittelyssä noudatetaan huolellisuutta ja tietojärjestelmien avulla käsiteltävät tiedot suojataan asianmukaisesti. Kun rekisteritietoja säilytetään Internet-palvelimilla, niiden laitteiston fyysisestä ja digitaalisesta tietoturvasta huolehditaan asiaankuuluvasti. Rekisterinpitäjä huolehtii siitä, että tallennettuja tietoja sekä palvelimien käyttöoikeuksia ja muita henkilötietojen turvallisuuden kannalta kriittisiä tietoja käsitellään luottamuksellisesti ja vain niiden työntekijöiden toimesta, joiden työnkuvaan se kuuluu.</p><h3>9. Tarkastusoikeus ja oikeus vaatia tiedon korjaamista</h3><p>Jokaisella rekisterissä olevalla henkilöllä on oikeus tarkistaa rekisteriin tallennetut tietonsa ja vaatia mahdollisen virheellisen tiedon korjaamista tai puutteellisen tiedon täydentämistä. Mikäli henkilö haluaa tarkistaa hänestä tallennetut tiedot tai vaatia niihin oikaisua, pyyntö tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p><h3>10. Muut henkilötietojen käsittelyyn liittyvät oikeudet</h3><p>Rekisterissä olevalla henkilöllä on oikeus pyytää häntä koskevien henkilötietojen poistamiseen rekisteristä (”oikeus tulla unohdetuksi”). Niin ikään rekisteröidyillä on muut EU:n yleisen tietosuoja-asetuksen mukaiset oikeudet, kuten henkilötietojen käsittelyn rajoittaminen tietyissä tilanteissa. Pyynnöt tulee lähettää sähköpostitse rekisterinpitäjälle. Rekisterinpitäjä voi pyytää tarvittaessa pyynnön esittäjää todistamaan henkilöllisyytensä. Rekisterinpitäjä vastaa asiakkaalle EU:n tietosuoja-asetuksessa säädetyssä ajassa.</p>",
         "title": "Rekisteri- ja tietosuojaseloste"
       },
       "otherTermsOfUse": {

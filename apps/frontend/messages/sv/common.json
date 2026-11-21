@@ -14,11 +14,11 @@
       "plural": "kandidater",
       "singular": "kandidat"
     },
-    "candidatePortrait": "Porträtt",
     "clear": "Klart",
     "close": "Stäng",
     "closeDialog": "Stäng dialogrutan",
     "closeMenu": "Stäng menyn",
+    "color": "Färg",
     "confirmed": "Bekräftat",
     "constituency": "Valkrets",
     "continue": "Fortsätt",
@@ -31,7 +31,12 @@
       "organization": "Valsymbol"
     },
     "email": "E-post",
+    "emailConfirmation": "Bekräfta e-post",
     "emailPlaceholder": "E-post",
+    "entityImage": {
+      "candidate": "Porträtt",
+      "organization": "Logotyp"
+    },
     "expandOrCollapse": "Expandera eller kollapsa detta avsnitt",
     "faction": {
       "plural": "fraktioner",
@@ -46,12 +51,17 @@
     "lastName": "Efternamn",
     "loading": "Laddar…",
     "locked": "Låst",
-    "login": "Registrera dig",
+    "loggedOutAutomatically": "Du har loggats ut automatiskt, eftersom en utloggning som du påbörjade inte avbröts i tid.",
+    "loggedOutElsewhere": "Du har loggats ut i en annan flik eller ett annat fönster.",
+    "login": "Logga in",
     "logout": "Logga ut",
+    "logoutFailed": "Vi kunde inte bekräfta att du loggades ut. Du kan fortfarande vara inloggad, så försök igen.",
+    "logoutUnsavedChanges": "Du har osparade ändringar. De går förlorade om du loggar ut.",
     "madeWithPrefix": "Gjord med",
     "madeWithSuffix": "",
     "missingAnswer": "—",
     "multipleAnswerSeparator": "•",
+    "name": "Namn",
     "nomination": "Utnämning",
     "openCloseMenu": "Växla meny",
     "openMenu": "Öppna menyn",
@@ -63,7 +73,6 @@
     },
     "password": "Lösenord",
     "passwordConfirmation": "Bekräfta lösenord",
-    "pending": "Väntar",
     "primaryActions": "Primära åtgärder",
     "privacy": {
       "dataCollection": {
@@ -82,9 +91,9 @@
     "saveAndContinue": "Spara och fortsätt",
     "saveAndReturn": "Spara och returnera",
     "saving": "Sparar",
+    "shortName": "Förkortning",
     "showFullImage": "Visa hela bilden",
     "skipToMain": "Hoppa till huvudinnehåll",
-    "state": "Stat",
     "success": "Åtgärden lyckades!",
     "thanksNo": "Nej tack",
     "unaffiliated": "Oberoende",

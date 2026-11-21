@@ -14,9 +14,11 @@
       "addImage": "Lägga till en bild",
       "allSelected": "Alla valda",
       "changeImage": "Ändra bilden",
+      "colorPicker": "Färgväljare",
       "deleteOption": "Välj bort {option}",
       "error": {
         "fileLoadingError": "Det gick inte att ladda filen.",
+        "invalidColor": "Färgen är ogiltig. Ange en hexkod, till exempel #2546a8.",
         "invalidEmail": "E-postadressen är ogiltig.",
         "invalidFile": "Filen är ogiltig.",
         "invalidUrl": "Webbadressen är inte giltig.",
@@ -25,7 +27,9 @@
       "hideTranslations": "Dölja",
       "imageInfo": "Den maximala storleken för bilden är {maxFilesize} MB. Ha tålamod vid sparande, det kan ta en stund att ladda upp bilden.",
       "multilingualInfo": "Du kan skriva in ditt svar på alla valkomatens språk om du vill.",
+      "noColor": "Ingen färg",
       "noImage": "Ingen bild",
+      "requiredLocaleInfo": "Obligatoriskt språk: {language}. Övriga språk är valfria.",
       "selectAnother": "Välj en annan",
       "selectFirst": "Välj först",
       "selectOne": "Välj",
@@ -42,7 +46,6 @@
       "remove": "Ta bort objekt"
     },
     "passwordInput": {
-      "hidePassword": "Dölj lösenord",
       "password": "Lösenord",
       "placeholder": "Lösenord",
       "showPassword": "Visa lösenord"
@@ -63,37 +66,15 @@
       "hideCaptions": "Dölj undertexter",
       "jumpBack": "Hoppa tillbaka",
       "jumpForward": "Hoppa framåt",
-      "mute": "Mute",
+      "mute": "Ljud av",
       "pause": "Paus",
       "play": "Spela",
       "progessbarLabel": "Återstående tid",
-      "replay": "Replay",
+      "replay": "Spela igen",
       "showCaptions": "Visa undertexter",
       "showTranscript": "Visa video som text",
       "showVideo": "Visa video",
       "subtitles": "Undertexter",
-      "timeLeft": [
-        {
-          "declarations": [
-            "input minutes",
-            "local minutesPlural = minutes: plural",
-            "input seconds",
-            "local secondsPlural = seconds: plural"
-          ],
-          "selectors": ["minutesPlural", "secondsPlural"],
-          "match": {
-            "minutesPlural=zero secondsPlural=zero": "  kvar",
-            "minutesPlural=zero secondsPlural=one": " en sekund kvar",
-            "minutesPlural=zero secondsPlural=other": " {seconds} sekunder kvar",
-            "minutesPlural=one secondsPlural=zero": "en minut  kvar",
-            "minutesPlural=one secondsPlural=one": "en minut en sekund kvar",
-            "minutesPlural=one secondsPlural=other": "en minut {seconds} sekunder kvar",
-            "minutesPlural=other secondsPlural=zero": "{minutes} minuter  kvar",
-            "minutesPlural=other secondsPlural=one": "{minutes} minuter en sekund kvar",
-            "minutesPlural=other secondsPlural=other": "{minutes} minuter {seconds} sekunder kvar"
-          }
-        }
-      ],
       "transcript": "Text",
       "transcriptToggleLabel": "Växla mellan video och text",
       "unmute": "Avslöja",

@@ -14,11 +14,11 @@
       "plural": "kandidater",
       "singular": "kandidat"
     },
-    "candidatePortrait": "Portræt",
     "clear": "Ryd",
     "close": "Luk",
     "closeDialog": "Luk dialog",
     "closeMenu": "Luk menu",
+    "color": "Farve",
     "confirmed": "Bekræftet",
     "constituency": "Valgkreds",
     "continue": "Fortsæt",
@@ -31,7 +31,12 @@
       "organization": "Valgsymbol"
     },
     "email": "E-mail",
+    "emailConfirmation": "Bekræft e-mail",
     "emailPlaceholder": "E-mail",
+    "entityImage": {
+      "candidate": "Portræt",
+      "organization": "Logo"
+    },
     "expandOrCollapse": "Udvid eller skjul denne sektion",
     "faction": {
       "plural": "fraktioner",
@@ -46,12 +51,17 @@
     "lastName": "Efternavn",
     "loading": "Indlæser…",
     "locked": "Låst",
+    "loggedOutAutomatically": "Du er blevet logget ud automatisk, fordi en udlogning, du startede, ikke blev annulleret i tide.",
+    "loggedOutElsewhere": "Du er blevet logget ud i en anden fane eller et andet vindue.",
     "login": "Log ind",
     "logout": "Log ud",
+    "logoutFailed": "Vi kunne ikke bekræfte, at du er logget ud. Du er muligvis stadig logget ind, så prøv igen.",
+    "logoutUnsavedChanges": "Du har ændringer, der ikke er gemt. De går tabt, hvis du logger ud.",
     "madeWithPrefix": "Lavet med",
     "madeWithSuffix": "",
     "missingAnswer": "—",
     "multipleAnswerSeparator": " • ",
+    "name": "Navn",
     "nomination": "Opstilling",
     "openCloseMenu": "Skift menu",
     "openMenu": "Åbn menu",
@@ -63,7 +73,6 @@
     },
     "password": "Adgangskode",
     "passwordConfirmation": "Bekræft adgangskode",
-    "pending": "Afventer",
     "primaryActions": "Primære handlinger",
     "privacy": {
       "dataCollection": {
@@ -82,12 +91,12 @@
     "saveAndContinue": "Gem og fortsæt",
     "saveAndReturn": "Gem og vend tilbage",
     "saving": "Gemmer…",
+    "shortName": "Forkortelse",
     "showFullImage": "Vis fuldt billede",
     "skipToMain": "Spring til hovedindhold",
-    "state": "Delstat",
     "success": "Handling gennemført!",
     "thanksNo": "Nej tak",
     "unaffiliated": "Uden tilhørsforhold",
-    "website": "Website"
+    "website": "Websted"
   }
 }

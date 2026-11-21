@@ -16,11 +16,12 @@
     "category": {
       "numQuestions": [
         {
-          "declarations": ["input numQuestions", "local numQuestionsPlural = numQuestions: plural"],
-          "selectors": ["numQuestionsPlural"],
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
           "match": {
-            "numQuestionsPlural=other": "{numQuestions} kysymystä",
-            "numQuestionsPlural=one": "1 kysymys"
+            "numQuestions=-1": "",
+            "numQuestions=1": "1 kysymys",
+            "numQuestions=*": "{numQuestions} kysymystä"
           }
         }
       ],
@@ -31,31 +32,23 @@
       "ingress": {
         "withCategorySelection": [
           {
-            "declarations": [
-              "input minQuestions",
-              "input numCategories",
-              "local minQuestionsPlural = minQuestions: plural"
-            ],
-            "selectors": ["minQuestionsPlural"],
+            "declarations": ["input minQuestions", "input numCategories"],
+            "selectors": ["minQuestions"],
             "match": {
-              "minQuestionsPlural=zero": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. ",
-              "minQuestionsPlural=one": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. ",
-              "minQuestionsPlural=other": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. Valitse kuitenkin teemat siten, että niissä on ainakin {minQuestions} kysymystä."
+              "minQuestions=0": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. ",
+              "minQuestions=1": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. ",
+              "minQuestions=*": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. Valitse kuitenkin teemat siten, että niissä on ainakin {minQuestions} kysymystä."
             }
           }
         ],
         "withoutCategorySelection": [
           {
-            "declarations": [
-              "input numCategories",
-              "input numQuestions",
-              "local numCategoriesPlural = numCategories: plural"
-            ],
-            "selectors": ["numCategoriesPlural"],
+            "declarations": ["input numCategories", "input numQuestions"],
+            "selectors": ["numCategories"],
             "match": {
-              "numCategoriesPlural=zero": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. ",
-              "numCategoriesPlural=one": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. ",
-              "numCategoriesPlural=other": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. Ne on jaettu {numCategories} teemaan."
+              "numCategories=0": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. ",
+              "numCategories=1": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. ",
+              "numCategories=*": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. Ne on jaettu {numCategories} teemaan."
             }
           }
         ]
@@ -68,8 +61,8 @@
           "declarations": ["input count", "local countPlural = count: plural"],
           "selectors": ["countPlural"],
           "match": {
-            "countPlural=other": "Valitse {count} vaihtoehtoa.",
-            "countPlural=one": "Valitse 1 vaihtoehto."
+            "countPlural=one": "Valitse 1 vaihtoehto.",
+            "countPlural=*": "Valitse {count} vaihtoehtoa."
           }
         }
       ],

@@ -1,0 +1,26 @@
+{
+  "contestantApp.basicInfo": {
+    "colorInfo": "Kuvatakse sinu erakonna lühendi taustal, kui erakonnal logo puudub, ning erakonna sümbolil erakonna kandidaatide juures. Sisesta hex-kood, näiteks #2546a8, või kasuta värvivalijat; kui sa värvi ei soovi, jäta väli tühjaks. Värvi võidakse loetavuse tagamiseks automaatselt kohandada; tulemust näitab eelvaade.",
+    "editableInfos": {
+      "description": "See teave kuvatakse sinu profiililehel.",
+      "title": "Sinu profiil"
+    },
+    "error": {
+      "invalidQuestion": "Küsimuse või vastuse tüüp on vigane küsimuse {questionId} puhul."
+    },
+    "instructions": {
+      "candidate": "Täida esmalt oma põhiandmed ja soovi korral laadi üles foto. Seejärel küsitakse sinult poliitilisi arvamusi.",
+      "organization": "Täida esmalt oma erakonna põhiandmed ja soovi korral laadi üles logo. Seejärel küsitakse sinult erakonna poliitilisi arvamusi."
+    },
+    "instructionsNoQuestions": {
+      "candidate": "Täida oma põhiandmed ja soovi korral laadi üles foto.",
+      "organization": "Täida oma erakonna põhiandmed ja soovi korral laadi üles logo."
+    },
+    "logoInfo": "Kõige paremini sobib ruudukujuline pilt: logo kuvatakse väikeses ruudus ja sellest välja jääv osa lõigatakse ära.",
+    "removeImage": "Eemalda portree",
+    "removeLogo": "Eemalda logo",
+    "requiredInfo": "Selleks et sinu profiili valimisnõustajas kuvataks, pead täitma selle ikooniga märgitud väljad. Siiski saad oma senised vastused salvestada ja jätkata hiljem.",
+    "shortNameInfo": "Nime lühivorm, näiteks akronüüm. Seda kuvatakse seal, kus ruumi on vähe, näiteks erakonna kandidaatide juures. Valikuline.",
+    "title": "Põhiandmed"
+  }
+}

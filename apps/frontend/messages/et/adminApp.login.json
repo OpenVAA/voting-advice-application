@@ -11,9 +11,10 @@
     "errors": {
       "invalidCredentials": "Vale e-post või parool",
       "genericError": "Sisselogimisel tekkis viga. Palun proovi uuesti.",
-      "unauthorized": "Sellesse piirkonda pääsemiseks vajate administraatori õigusi",
-      "sessionExpired": "Teie seanss on aegunud, palun logige uuesti sisse",
-      "unknown": "Tekkis tundmatu viga"
+      "unauthorized": "Sellesse piirkonda pääsemiseks vajad administraatori õigusi",
+      "sessionExpired": "Sinu seanss on aegunud, palun logi uuesti sisse",
+      "unknown": "Tekkis tundmatu viga",
+      "linkFailed": "Seda linki ei saa enam kasutada. Link toimib ühe korra ja toimib ainult kõige uuem link, mille oled küsinud. Palun küsi uus link samal viisil nagu enne."
     }
   }
 }
