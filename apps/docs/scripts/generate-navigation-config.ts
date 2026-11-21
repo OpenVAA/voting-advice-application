@@ -215,13 +215,18 @@ function compareSection(current: NavigationSection, discovered: NavigationSectio
     }
   }
 
-  // Add new children that weren't in current config
+  // Add new children that weren't in current config; a section's Overview child goes first
   for (const [, child] of discoveredChildrenMap) {
     if ('children' in child) {
       workingChildren.push({
         item: child,
         status: 'new',
         children: markAllAsNew(child.children)
+      });
+    } else if (child.route === current.route) {
+      workingChildren.unshift({
+        item: child,
+        status: 'new'
       });
     } else {
       workingChildren.push({
@@ -302,9 +307,11 @@ function populateChildrenMap(
 }
 
 /**
- * Build hierarchical navigation structure from flat routes list
+ * Build the hierarchical navigation structure from the flat list of discovered routes.
+ * @param routes - The discovered routes, each with the title read from its page.
+ * @returns One section per top-level route segment; the root page is left out.
  */
-function buildNavigationStructure(routes: Array<RouteInfo>): Navigation {
+export function buildNavigationStructure(routes: Array<RouteInfo>): Navigation {
   const navigation: Navigation = [];
 
   // Group routes by top-level section
@@ -422,7 +429,8 @@ function buildSection(sectionName: string, routes: Array<RouteInfo>): Navigation
 }
 
 /**
- * Build children for a subsection
+ * Build children for a subsection.
+ * A subsection with a page of its own lists that page first, as an Overview child, because an item with children renders in the nav as a disclosure with no link.
  */
 function buildSubsectionChildren(
   parentPath: string,
@@ -431,6 +439,10 @@ function buildSubsectionChildren(
 ): Array<NavigationSection | NavigationItem> {
   const children: Array<NavigationSection | NavigationItem> = [];
   const parentDepth = parentPath.split('/').filter(Boolean).length;
+
+  if (allRoutes.some((r) => r.route === parentPath)) {
+    children.push({ title: 'Overview', route: parentPath, fixedTitle: true });
+  }
 
   // Group by immediate children and deeper descendants
   const directChildren = routes.filter((r) => {

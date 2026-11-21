@@ -118,6 +118,7 @@ Step 20 the bootstrap, twice, and the seed check
 Step 21 the first administrator: the user, the grant, the claims of a token
 Step 22 the smoke dataset, once per project; the smoke contestant, once
 Step 23 the conformance probe
+Step 24 the backups and the PITR state, read                <- nothing is restored
 ```
 
 The persistent project is created only once the rehearsal has passed: its first plan was read and
@@ -408,6 +409,8 @@ into this root, and its settings are applied.
 
 ### Step 8: Choose the region and create the project
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 Choose the region before the project exists, and treat the choice as final: a project's region cannot
 be changed later, and moving means a new project and a migration of the database, the storage and
 every key. The AWS stack is in `eu-north-1`; Step 1 recorded whether the dashboard offered it.
@@ -425,6 +428,8 @@ shows it, the project's name, and the region the dashboard shows for it. If the 
 the one chosen, say so and stop. Do not paste the password.
 
 ### Step 9: Import the project and make the first plan
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
 
 The lines that begin the sitting, from the repository root, signed in to AWS. Export the token and the
 persistent project's database password with the two `read -rs` lines of "Before you start", and set
@@ -617,7 +622,8 @@ Steps 14 to 23 deploy the repository to a project. Each step is run first on the
 with `R=scratch`, and then, unchanged, on the persistent project, with `R=staging`, so that the
 persistent project gets the rehearsed commands and nothing else. The order is the deploy order: the
 migrations, the functions, the settings and the secrets, the rows, and last the check of what the
-project serves. A step that is run again later, in another sitting, is run as written here.
+project serves. Step 24, after them, only reads the project's backups. A step that is run again
+later, in another sitting, is run as written here.
 
 Every command is run from the repository root. In this part every named line begins with the
 number of its step, not of its item: Step 16 prints `s16_` lines whatever item prints them, because
@@ -742,6 +748,8 @@ The work directory is kept for the steps that follow and for later sittings.
 
 ### Step 15: The connection psql uses
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 The bootstrap, the drift check, the grant and the probe's catalog reads connect through the libpq
 variables. The direct connection is tried first; when it fails, the session pooler on port 5432 is
 used. **Port 6543, the transaction pooler, is never used**: it gives each transaction a backend of
@@ -795,6 +803,8 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
 
 ### Step 16: The migrations
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 The deploy workflow runs this step itself, in the gated `staging` job: it links a work directory of
 its own under the runner's temporary directory, reaches the database through the session pooler, and
 calls `push-migrations.sh` with `--confirmed-ref`, the environment's approval standing in for the
@@ -839,6 +849,8 @@ Secrets: `SUPABASE_DB_PASSWORD`, exported also as `PGPASSWORD`.
    ```
 
 ### Step 17: The functions
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
 
 The deploy workflow deploys the three functions the same way, in the gated `staging` job, and fails
 unless the read-back of item 2 shows three `ACTIVE` functions, each with `verify_jwt` as
@@ -885,6 +897,12 @@ Secrets: `SUPABASE_ACCESS_TOKEN`.
    ```
 
 ### Step 18: The settings and the function secrets
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
+← guide: [Hosted Supabase settings § How to verify](https://openvaa.org/developers-guide/deployment/hosted-settings#how-to-verify)
+
+← guide: [Operations § The function secrets](https://openvaa.org/developers-guide/deployment/operations#the-function-secrets)
 
 The root's settings resources and its function secrets are applied by the protocol of Steps 9 to 12,
 for `R=scratch` and for `R=staging` alike: a saved plan and its named lines, the go-ahead, the apply
@@ -1035,6 +1053,8 @@ it was given for. If the reading says stop, nothing is applied and the plan file
 
 ### Step 19: The server's logging settings
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 The bootstrap sends the service-role key as a bound parameter and keeps it out of the log entry of a
 statement that fails. A server that logs the parameters of a statement that succeeds, or of a slow
 one, logs the key all the same, and the script cannot change that. These seven settings say whether
@@ -1083,10 +1103,18 @@ whoever asked for the step has decided what to do.
 
 ### Step 20: The bootstrap
 
+← guide: [Deployment § Feedback rate limit and Cloudflare](https://openvaa.org/developers-guide/deployment#feedback-rate-limit-and-cloudflare)
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 `infra/scripts/bootstrap.sql` writes the rows no migration can hold: the account, the project, its
 settings row, the two rows of `public.storage_config` and the row of
 `private.deployment_settings`. It runs twice, and both runs must leave the same rows. It runs only
 after Step 19's settings were read and found safe, or the decision on them was made.
+
+The deploy pipeline's `settings` stage runs `infra/scripts/check-deployment-settings.sql` after
+every migration push and stops the run unless this step has left `behind_cloudflare` true
+([`../../../README.md` § The gated job and its order](../../../README.md#the-gated-job-and-its-order)).
 
 Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and
 `SUPABASE_SERVICE_ROLE_KEY`.
@@ -1194,6 +1222,8 @@ Secrets: `SUPABASE_DB_PASSWORD` (as `PGPASSWORD`, with Step 15's variables) and
 
 ### Step 21: The first administrator
 
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
 The project's first administrator is a user with the project-scope `admin` grant on the project.
 The user is created in the dashboard and the grant is written by
 `infra/scripts/grant-project-admin.sql`; a sign-in then shows the claims the access-token hook puts
@@ -1273,6 +1303,10 @@ neither it nor the token is ever printed or pasted.
    ```
 
 ### Step 22: The smoke dataset
+
+← guide: [Deployment § Checking the instance](https://openvaa.org/developers-guide/deployment#checking-the-instance)
+
+← guide: [Operations § The GitHub secrets](https://openvaa.org/developers-guide/deployment/operations#the-github-secrets)
 
 The `smoke` template of `@openvaa/dev-seed` writes 1001 candidates and 1001 nominations into the
 project, every row's external id beginning `smoke_`, and no auth user. It is seeded once per project:
@@ -1621,6 +1655,16 @@ database, `evidence/186-04-grant-script.md` of phase 186). Begin with the lines 
 
 ### Step 23: The conformance probe
 
+← guide: [Deployment § Auth settings of a hosted project](https://openvaa.org/developers-guide/deployment#auth-settings-of-a-hosted-project)
+
+← guide: [Deployment § Checking the instance](https://openvaa.org/developers-guide/deployment#checking-the-instance)
+
+← guide: [Hosted Supabase settings § How to verify](https://openvaa.org/developers-guide/deployment/hosted-settings#how-to-verify)
+
+← guide: [Operations § Restoring to a new project](https://openvaa.org/developers-guide/deployment/operations#restoring-to-a-new-project)
+
+← guide: [Operations § The service-role key and the anon key](https://openvaa.org/developers-guide/deployment/operations#the-service-role-key-and-the-anon-key)
+
 `infra/scripts/probe-hosted.mjs` compares what the project serves with what the repository declares
 for it, through the Management API, the project's public API with the anon key only, and the
 catalog over psql. It writes nothing to the project and never takes the service-role key. Each line
@@ -1651,6 +1695,59 @@ named with the ruling. The role must bypass row-level security, or the seed chec
 
    ```bash
    test -n "$L" && rm -rf "$L" && echo "s23_logs_removed=yes"
+   ```
+
+### Step 24: The backups, read
+
+← guide: [Operations § What Supabase keeps](https://openvaa.org/developers-guide/deployment/operations#what-supabase-keeps)
+
+This step reads the project's list of backups and its point-in-time recovery (PITR) state from the
+Management API, with one `GET` of `/v1/projects/<ref>/database/backups`, an endpoint for which
+Supabase's API reference names the scope `database:read`. It changes nothing on the project. A
+restore is not part of it: this runbook starts no restore, neither from the API nor from the
+dashboard. It can be run with either root; the persistent project's answer, with `R=staging`, is
+the one the operations guide relies on.
+
+Secrets: `SUPABASE_ACCESS_TOKEN`, and no other.
+
+1. The read. The token is given to `curl` on its standard input, as a one-line configuration, by a
+   shell builtin, as in Step 6.
+
+   ```bash
+   echo "s24_read_at=$(date -u +%Y-%m-%dT%H:%MZ)"
+   printf 'header = "Authorization: Bearer %s"\n' \
+       "$SUPABASE_ACCESS_TOKEN" \
+     | curl -sS -K - -o "$L/s24-backups.json" \
+       -w 's24_backups_http=%{http_code}\n' \
+       "https://api.supabase.com/v1/projects/$REF/database/backups"
+   ```
+
+   If the status is not 200, paste the `s24_backups_http=` line, skip item 2 and run item 3.
+
+2. What the answer says. It prints the region, whether PITR and the WAL-G archiving are on, the number
+   of backups and how many of them are `COMPLETED`, and the times of the earliest and the latest
+   physical backup, in Unix seconds. A field the answer lacks prints `null`, which is itself the
+   observation.
+
+   ```bash
+   jq -r '"s24_region=\(.region)",
+     "s24_pitr_enabled=\(.pitr_enabled)",
+     "s24_walg_enabled=\(.walg_enabled)",
+     "s24_backups=\(.backups | if . == null then null
+       else length end)",
+     "s24_completed=\(.backups | if . == null then null
+       else map(select(.status == "COMPLETED")) | length end)",
+     "s24_earliest_unix=\(.physical_backup_data
+       .earliest_physical_backup_date_unix)",
+     "s24_latest_unix=\(.physical_backup_data
+       .latest_physical_backup_date_unix)"' \
+     "$L/s24-backups.json"
+   ```
+
+3. Last item:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s24_logs_removed=yes"
    ```
 
 ### Fault steps on the throwaway project
@@ -1740,10 +1837,10 @@ the guard's report.
 The send-email hook's function takes every mail the auth service would send and sends none; the
 application's own function sends the mails. So while the send-email hook is on, the hosted auth service
 sends no mail of its own, and the SMTP settings and the mail rate limit `rate_limit_email_sent` govern
-no mail the auth service sends. No step of this runbook applies the SMTP settings; the root's
-`terraform.tfvars` gains its `smtp` object in a later stage of the deployment work. That object holds
-no user name and no password: the SMTP user name, which for SES is the access key id of the SMTP user
-and half of the mail credential, is `TF_VAR_smtp_user`, and the password is `TF_VAR_smtp_password`.
+no mail the auth service sends. Step 18 applies the SMTP settings when a root's `terraform.tfvars`
+sets its `smtp` object, as the staging root's does. That object holds no user name and no password:
+the SMTP user name, which for SES is the access key id of the SMTP user and half of the mail
+credential, is `TF_VAR_smtp_user`, and the password is `TF_VAR_smtp_password`.
 Both are exported in the shell that plans, from the dns-mail root's outputs, and written to no file;
 the module sends them through a settings resource of their own, so no plan diff shows them.
 
@@ -1780,13 +1877,17 @@ moves it.
 > `terraform.tfvars`, with the comment `# hook off until <reason>`, and start again from a new plan,
 > which is read again before it is applied.
 
-## Not yet observed
-
-Both roots have been applied, the throwaway root and the persistent root. Nothing this runbook relies on
-is listed here now: every statement that was has been seen and is in "Observations", with its date. A
-statement added later moves there in the same way once the step named beside it has shown it.
-
 ## Observations
+
+← guide: [Deployment § Auth settings of a hosted project](https://openvaa.org/developers-guide/deployment#auth-settings-of-a-hosted-project)
+
+← guide: [Deployment § Feedback rate limit and Cloudflare](https://openvaa.org/developers-guide/deployment#feedback-rate-limit-and-cloudflare)
+
+← guide: [Deployment § The Supabase project](https://openvaa.org/developers-guide/deployment#the-supabase-project)
+
+← guide: [Deployment § The per-caller limit of account-access](https://openvaa.org/developers-guide/deployment#the-per-caller-limit-of-account-access)
+
+← guide: [Hosted Supabase settings § The staging instance as observed](https://openvaa.org/developers-guide/deployment/hosted-settings#the-staging-instance-as-observed)
 
 | Date (UTC)    | Observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1886,3 +1987,6 @@ statement added later moves there in the same way once the step named beside it 
 | 2026-11-17    | Step 18 was applied by hand to the persistent project (`R=staging`) by the operator, in the sitting of the pipeline's first green deploy and before its approval. The first plan exited 1: the provider answered 401 `Invalid access token` on `supabase_project.this`. A plan file left from an earlier sitting was found and removed unapplied, and the token was read again. The second plan exited 0 with one update in place of `module.supabase.supabase_settings.this` (`Plan: 0 to add, 1 to change, 0 to destroy.`), but its apply exited 1 with `Error: Project Services Unhealthy` (the services did not become active within the provider's timeout). The plan file was removed; `mailer_otp_length` still read `6` and `uri_allow_list` was unchanged, so nothing had been applied, and the eight services the provider waits on (auth, db, db_postgres_user, pg_bouncer, pooler, realtime, rest, storage) then read `ACTIVE_HEALTHY`. That this failure was transient has not been confirmed. The third plan showed the same single update: `mailer_otp_length` 6 to 10, and `uri_allow_list` from the two `/api/auth/callback` paths to `https://staging.openvaa.org/auth/confirm,https://staging.openvaa.org/*/auth/confirm`. The apply of the plan file whose sha256 the go-ahead named completed (`Apply complete! Resources: 0 added, 1 changed, 0 destroyed.`), the plan after it read `No changes`, and the served auth settings (status 200) read `mailer_otp_length` 10 and that `uri_allow_list`. |
 | 2026-11-19    | The deploy workflow's run 44491292876 on `deploy/staging`, commit `a7003b490`, pushed the appended migration `00023_invitation_caller_limit` to the persistent project under the `staging` review, before it deployed the functions. The dry run printed one pending version, `push_pending=00023`; the push was confirmed by the environment (`push_status=0`). The drift check after it read the manifest and the database's history both `00001` to `00023` and the schema diff empty, `drift_status=0`. The functions step then deployed `account-access`, `identity-callback` and `send-email` from the commit, each `ACTIVE` with `verify_jwt` as configured.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | 2026-11-19    | The per-caller limit of migration `00023_invitation_caller_limit` was seen on the hosted `account-access` (plan 188-16, attempt `20261119T095140Z.b5b5ecf9f`), every caller on `curl -4` with fresh unknown codes to `check-code`. AWS CloudShell was answered 200 thirty times and refused with 429 and `Retry-After: 593` at its 31st call (09:59:32Z). The workstation was answered 200 at 10:00:11Z, inside that window, was refused at its own 31st call with `Retry-After: 589` and the same body, `{"error":"too-many-requests"}`, and was answered 200 again at 10:10:18Z, after its window. Addresses were not recorded, and the throttle rows were left to expire.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 2026-11-20    | At a read-only sitting the operator approved, the first probe run after the function deploy of 2026-11-19, the conformance probe (Step 23) passed every check on the persistent project: status 0, twenty-two `PASS` lines, no `FAIL` and no `COULD NOT RUN`, with the publishable key, the catalog role `postgres` through the session pooler (Step 15 item 2) and no service-role key. Among them `functions.verify-jwt` and `functions.identity-callback-unverified` passed, so the hosted `identity-callback` was deployed with `verify_jwt` as configured and, called with no key, answered 400 to a GET and 401 to a POST of an empty object. Its note again named the legacy keys enabled. The lines are in `189-05-staging-reads.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2026-11-20    | At the same sitting, through the session pooler, `select has_table_privilege('postgres', 'auth.users', 'UPDATE')` returned `t`: the role `postgres` held `UPDATE` on `auth.users` on the persistent project. The line is in `189-05-staging-reads.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2026-11-20    | At a read-only sitting the operator approved, the persistent project answered the backups read of Step 24 (`R=staging`, read at 13:55Z) with status 200: region `eu-north-1`, PITR off (`pitr_enabled=false`), WAL-G archiving on (`walg_enabled=true`), and eight backups, all eight `COMPLETED`. The earliest and the latest physical backup times both printed `null`, so the answer gave no physical-backup range, and the read prints no backup dates, so the span of the eight is not known from it. No restore was started and nothing on the project changed. The lines are in `189-06-backups.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |

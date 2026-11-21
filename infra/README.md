@@ -37,6 +37,8 @@ of `envs/staging/dns-mail` and of `envs/staging/supabase` for those roots, and
 
 ## Order
 
+← guide: [Deployment § From an empty account to a tested instance](https://openvaa.org/developers-guide/deployment#from-an-empty-account-to-a-tested-instance)
+
 The first apply of each root, in this order:
 
 ```
@@ -77,6 +79,8 @@ budget. The staging Supabase project is in
 
 ## Prerequisites
 
+← guide: [Deployment § From an empty account to a tested instance](https://openvaa.org/developers-guide/deployment#from-an-empty-account-to-a-tested-instance)
+
 - Terraform 1.16.5, the version pinned in `infra/.terraform-version`. Check with `terraform version`.
 - The AWS CLI version 2, `jq`, `dig`, `curl`, `shasum` and `git`.
 - An identity that applies by hand and carries no inline policy: an IAM Identity Center permission set
@@ -90,6 +94,8 @@ budget. The staging Supabase project is in
   policy, a repository setting and not code, is what keeps `main` and every other branch out.
 
 ## Rules of every apply
+
+← guide: [Deployment § From an empty account to a tested instance](https://openvaa.org/developers-guide/deployment#from-an-empty-account-to-a-tested-instance)
 
 - An exit status is read on the line after the command, as `echo "…_exit=$?"`, and never through a
   pipe, because a pipe reports the status of its last command and not of the one that matters.
@@ -153,6 +159,10 @@ nothing, and its one credentialed job only shows that both roles refuse it.
 
 ### The gated job and its order
 
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
+← guide: [Operations § Rollback](https://openvaa.org/developers-guide/deployment/operations#rollback)
+
 A no-credential job, `checks`, runs first: Terraform formatting, the validation of the staging AWS
 root and `yarn test:unit:infra`. The `deploy` job needs it, runs in the `staging` environment and
 waits for its reviewer. Once approved, in this order:
@@ -173,22 +183,30 @@ waits for its reviewer. Once approved, in this order:
    guards against a mistake and proves no environment: a repository variable of the same name, or
    any shell that sets those variables, passes it. The boundary is `SUPABASE_DB_PASSWORD`, an
    environment secret of `staging` alone.
-4. **Functions.** All three are deployed from the linked directory, and the Management API's list
+4. **Settings check.** `infra/scripts/check-deployment-settings.sql` is run with psql as
+   `postgres.<ref>` through the session pooler, with the database password in `PGPASSWORD` alone,
+   and fails the run before the functions and the apply unless
+   `private.deployment_settings.behind_cloudflare` is `true`: the per-caller limit of
+   `account-access` and the feedback limit trust `cf-connecting-ip` only then. The setting is
+   written by the operator's bootstrap
+   ([`infra/envs/staging/supabase/README.md` § Step 20](envs/staging/supabase/README.md#step-20-the-bootstrap))
+   and never by the pipeline, which only reads it.
+5. **Functions.** All three are deployed from the linked directory, and the Management API's list
    must then show three `ACTIVE` functions, each with `verify_jwt` as `config.toml` says, whose
    slugs are the function directories of the commit.
-5. **Apply** of the saved plan, with the role assumed again so that its credentials outlive it.
-6. **Stable check.** The step reads the service up to 60 times, 15 s apart, until the primary
+6. **Apply** of the saved plan, with the role assumed again so that its credentials outlive it.
+7. **Stable check.** The step reads the service up to 60 times, 15 s apart, until the primary
    deployment on the task definition just applied has `rolloutState` `COMPLETED` with at least
    `task_floor` tasks running. Another task definition, `FAILED` or another state, or fewer tasks
    fail it at once, and a rollout still `IN_PROGRESS` at the last read fails it.
-7. **Smoke run.** `yarn test:e2e:deployed` against `https://staging.openvaa.org`, with
+8. **Smoke run.** `yarn test:e2e:deployed` against `https://staging.openvaa.org`, with
    `SMOKE_EXPECTED_SHA` set to the built commit, the two contestant secrets, and no AWS credential.
-8. **`/api/health` re-read.** It must still serve the built commit, so that a deploy landing while
+9. **`/api/health` re-read.** It must still serve the built commit, so that a deploy landing while
    the specs ran cannot leave a `PASS sha` line speaking for a build the specs never drove.
-9. **Failure alert.** The plan, the smoke output and the step files are removed whatever the
-   outcome. When a step failed or the run was cancelled, the role is assumed once more and one
-   message goes to the SNS topic `openvaa-staging-frontend-deployments`, naming the stage, the
-   commit, the trigger and the run.
+10. **Failure alert.** The plan, the smoke output and the step files are removed whatever the
+    outcome. When a step failed or the run was cancelled, the role is assumed once more and one
+    message goes to the SNS topic `openvaa-staging-frontend-deployments`, naming the stage, the
+    commit, the trigger and the run.
 
 A failed step stops every later one but the cleanup and the alert. `deploy.yml` and `destroy.yml`
 share the concurrency group `staging-aws` with `cancel-in-progress: false`: a run waiting for the
@@ -196,6 +214,10 @@ group is replaced by a newer one, and a running one is never cancelled. The grou
 so a run whose gated job waits for approval is already running and holds it.
 
 ### The environments and their settings
+
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
+← guide: [Operations § The GitHub secrets](https://openvaa.org/developers-guide/deployment/operations#the-github-secrets)
 
 | Setting                              | `staging`                                                                                                             | `staging-destroy`          |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | -------------------------- |
@@ -238,6 +260,8 @@ and on a push to a `deploy-evidence/**` branch.
 
 ### The destroy workflow
 
+← guide: [Operations § Teardown](https://openvaa.org/developers-guide/deployment/operations#teardown)
+
 `destroy.yml` starts on a push to the one branch `deploy-evidence/destroy-staging`, which the deploy
 workflow excludes, or on a dispatch from the `deploy/staging` ref whose `confirm` input is
 `destroy staging aws`. It has two jobs, each in `staging-destroy` and each waiting for its own
@@ -265,10 +289,13 @@ prints `running_image_digest=`, and the plan takes it as `-var "image_digest=$DI
 
 ### Reading a red run
 
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
 The alert mail's subject names the stage that failed. Every step of the gated job belongs to the
 stage it follows: `setup` is the checkout and the first role assumption, before anything is built;
 `plan` is every step after the image push up to the printed plan, the Node, Yarn, psql and
 Terraform setup among them; `migrations` begins where the plan's credentials are dropped;
+`settings` is the settings check alone, after the migrations;
 `rollout` includes the role assumption before the apply, after the functions are deployed; `smoke`
 includes the Playwright install; `cleanup` is the removal of the step files, after everything else. `cancelled` means a cancelled
 run, and `unknown` a failed job in which no step reads as failed. A stage at or after `migrations`
@@ -276,16 +303,17 @@ means the persistent Supabase project may already hold that run's migrations. A 
 sends no alert, because it holds no credential and the gated job never starts. The stage's step
 log then says why:
 
-| Stage        | What to read in the step's log                                                                                                                                                                                                                                                                                                                                                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `build`      | The `refused=` or `failed=` line of `build-push-image.sh`, and `build_exit=`                                                                                                                                                                                                                                                                                                                            |
-| `plan`       | `plan_exit=` and Terraform's own error. `does not match any of the checksums recorded in the dependency lock file`, after an init that printed `Provider lock file not updated`, means the root's lock has no hash for the runner's platform                                                                                                                                                            |
-| `migrations` | `link_exit=` and `linked_ref=` of the link step; then the `push_*` lines of `push-migrations.sh` (`push_connection=`, `push_pending=`, `push_confirmation=`, `push_status=`) and `drift_status=`                                                                                                                                                                                                        |
-| `functions`  | `functions_deploy_exit=`, `functions_list_http=`, the `function=` lines, one per function with its `status=`, `verify_jwt=` and `expected_verify_jwt=`, then `functions_expected=` and `functions_served=`                                                                                                                                                                                              |
-| `rollout`    | The second role assumption's error, or `apply_exit=`; a rollout the circuit breaker stops also sends the stack's own rollout alert through the same topic                                                                                                                                                                                                                                               |
-| `stable`     | One `stable_poll=<n>` line opens each read's lines: `stable_describe_exit=`, `stable_task_definition_matches=`, `stable_rollout_state=`, `stable_running=`, `stable_desired=`. The last read's lines say why it failed. The error line `still IN_PROGRESS after 60 reads` means the rollout neither completed nor failed within the bound; the ECS service's deployments and events say where it stands |
-| `smoke`      | The smoke gate's `PASS` and `FAIL` lines and `smoke_exit=`, or `served_build_after_smoke=` of the re-read                                                                                                                                                                                                                                                                                               |
-| `cleanup`    | The `rm` error of the removal step; every stage before it passed                                                                                                                                                                                                                                                                                                                                        |
+| Stage        | What to read in the step's log                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `build`      | The `refused=` or `failed=` line of `build-push-image.sh`, and `build_exit=`                                                                                                                                                                                                                                                                                                                                                                      |
+| `plan`       | `plan_exit=` and Terraform's own error. `does not match any of the checksums recorded in the dependency lock file`, after an init that printed `Provider lock file not updated`, means the root's lock has no hash for the runner's platform                                                                                                                                                                                                      |
+| `migrations` | `link_exit=` and `linked_ref=` of the link step; then the `push_*` lines of `push-migrations.sh` (`push_connection=`, `push_pending=`, `push_confirmation=`, `push_status=`) and `drift_status=`                                                                                                                                                                                                                                                  |
+| `settings`   | `settings_exit=` and psql's error. Status 3 with an error beginning `check-deployment-settings:` is a finding: the project does not trust `cf-connecting-ip`, fixed by the bootstrap of [Step 20](envs/staging/supabase/README.md#step-20-the-bootstrap) with `BOOTSTRAP_BEHIND_CLOUDFLARE=true`. Status 3 with any other error means the check could not run, and status 2 a refused or lost connection. The run's migrations are already pushed |
+| `functions`  | `functions_deploy_exit=`, `functions_list_http=`, the `function=` lines, one per function with its `status=`, `verify_jwt=` and `expected_verify_jwt=`, then `functions_expected=` and `functions_served=`                                                                                                                                                                                                                                        |
+| `rollout`    | The second role assumption's error, or `apply_exit=`; a rollout the circuit breaker stops also sends the stack's own rollout alert through the same topic                                                                                                                                                                                                                                                                                         |
+| `stable`     | One `stable_poll=<n>` line opens each read's lines: `stable_describe_exit=`, `stable_task_definition_matches=`, `stable_rollout_state=`, `stable_running=`, `stable_desired=`. The last read's lines say why it failed. The error line `still IN_PROGRESS after 60 reads` means the rollout neither completed nor failed within the bound; the ECS service's deployments and events say where it stands                                           |
+| `smoke`      | The smoke gate's `PASS` and `FAIL` lines and `smoke_exit=`, or `served_build_after_smoke=` of the re-read                                                                                                                                                                                                                                                                                                                                         |
+| `cleanup`    | The `rm` error of the removal step; every stage before it passed                                                                                                                                                                                                                                                                                                                                                                                  |
 
 The lines this table lists are printed because every step reads a command's status as
 `cmd || name=$?`, which the runner's `bash -e` lets run, while any other failing command ends the
@@ -295,6 +323,10 @@ No report, plan or output directory is uploaded from any job, on a green run or 
 is all there is. An alert that could not be sent prints `alert_error=` in the alert step.
 
 ### Recovery
+
+← guide: [Operations § Rollback](https://openvaa.org/developers-guide/deployment/operations#rollback)
+
+← guide: [Operations § Teardown](https://openvaa.org/developers-guide/deployment/operations#teardown)
 
 - An apply cut short by a timeout, a cancel or a lost runner can leave the state lock held. Once no
   run is applying, release it from the operator's shell with
@@ -350,6 +382,8 @@ fast-forwarded to a `main` commit.
   manages.
 
 ## Example environment
+
+← guide: [Deployment § Fork and configure](https://openvaa.org/developers-guide/deployment#fork-and-configure)
 
 `envs/example/` is what a fork copies to start a deployment of its own. Nothing applies it; the
 validation job validates it, so it stays in step with the staging roots, and the pull-request

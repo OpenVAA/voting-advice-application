@@ -84,5 +84,6 @@ apps/supabase/supabase/migrations/
 # beside them stays in scope.
 infra/scripts/bootstrap.sql
 infra/scripts/check-seed.sql
+infra/scripts/check-deployment-settings.sql
 infra/scripts/grant-project-admin.sql
 infra/scripts/grant-smoke-contestant.sql

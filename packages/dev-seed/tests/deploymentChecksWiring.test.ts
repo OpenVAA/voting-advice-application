@@ -1,7 +1,7 @@
 /**
  * The on-demand deployment checks' WIRING, asserted rather than described.
  *
- * Four checks answer questions that only a running database or Docker can answer: whether migrations/ and schema/ build the same database, whether a deployed database still matches its migrations, whether a database holds anything of the local seed, and whether the frontend image behaves behind a reverse proxy. Each has a root script key so that a later step calls it by name, and the key must name the committed file it claims to run.
+ * Five checks answer questions that only a running database or Docker can answer: whether migrations/ and schema/ build the same database, whether a deployed database still matches its migrations, whether a database holds anything of the local seed, whether a deployed database trusts `cf-connecting-ip`, and whether the frontend image behaves behind a reverse proxy. Each has a root script key so that a later step calls it by name, and the key must name the committed file it claims to run.
  *
  * None of them may be a link of `lint:check`. That chain runs with Node alone. A check that needs a database, placed in it, would either fail every run or be made to pass when it can compare nothing, and a green `lint:check` would then be read as a green check. The keys are `check:*`, not `assert:*`, because every `assert:*` key is a chain link.
  *
@@ -43,6 +43,11 @@ const CHECKS = [
     file: 'infra/scripts/check-seed.sql'
   },
   {
+    key: 'check:deployment-settings',
+    command: 'psql -X -f infra/scripts/check-deployment-settings.sql',
+    file: 'infra/scripts/check-deployment-settings.sql'
+  },
+  {
     key: 'check:proxy-topology',
     command: 'bash infra/local/check-proxy-topology.sh',
     file: 'infra/local/check-proxy-topology.sh'
@@ -62,6 +67,10 @@ describe('the on-demand deployment checks are callable by key and stay outside l
 
   it('runs the seed check from `check:seed`', () => {
     expect(SCRIPTS['check:seed']).toBe('psql -X -f infra/scripts/check-seed.sql');
+  });
+
+  it('runs the deployment settings check from `check:deployment-settings`', () => {
+    expect(SCRIPTS['check:deployment-settings']).toBe('psql -X -f infra/scripts/check-deployment-settings.sql');
   });
 
   it('runs the proxy topology check from `check:proxy-topology`', () => {

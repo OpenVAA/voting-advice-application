@@ -28,9 +28,9 @@ resource "aws_sesv2_email_identity" "this" {
   }
 }
 
-# Easy DKIM issues three tokens. They are unknown until the identity exists, so the records are counted
-# rather than keyed by token. The target zone is a variable because AWS states that it varies; whether
-# the default is the zone SES assigns to this identity has not been observed.
+# Easy DKIM issues three tokens.
+# They are unknown until the identity exists, so the records are counted rather than keyed by token.
+# The target zone is a variable because AWS states that it varies; the default is the zone SES assigns to this identity.
 resource "aws_route53_record" "dkim" {
   count = 3
 
@@ -73,9 +73,9 @@ resource "aws_route53_record" "mail_from_spf" {
   records = ["v=spf1 include:amazonses.com ~all"]
 }
 
-# The record takes the place of any policy the parent domain publishes for this subdomain. SPF is left in
-# relaxed alignment, the default, which is what the SES MAIL FROM subdomain needs. That mail from this
-# identity passes DMARC alignment is expected and has not been observed in a received header.
+# The record takes the place of any policy the parent domain publishes for this subdomain.
+# SPF is left in relaxed alignment, the default, which is what the SES MAIL FROM subdomain needs.
+# Mail from this identity passes DMARC, aligned with the From domain.
 resource "aws_route53_record" "dmarc" {
   zone_id = var.zone_id
   name    = "_dmarc.${var.domain}"

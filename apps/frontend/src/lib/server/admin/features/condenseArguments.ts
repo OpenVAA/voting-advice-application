@@ -43,10 +43,10 @@ export async function condenseArguments({
   // THE IDENTIFIER GUARD, AND IT IS FIRST — ahead of the pipeline controller, ahead of the job recorder, and ahead of the writer construction below, so an invalid start does no credential work and makes no outbound call. Order is the property here: the same rejection placed after the writer would let exactly the same work happen and only change what is reported afterwards. This line owns whether the identifier the job was handed is usable at all; the writer construction under it owns where that writer's credentials come from — two edits, one under the other, neither inside the other.
   assertValidJobId(jobId);
 
-  // THIS JOB'S OWN CREDENTIAL, RESOLVED ONCE AND FIXED FOR THE WHOLE RUN — after the guard above and ahead of everything else, so an invalid start still does no credential work. `locals.safeGetSession` is this application's ONE verification path: it calls `getSession()` and then the `getUser()` round-trip that checks the token against Supabase Auth, and hands back nothing when that fails. Reading a jar or a header here instead would be a second verification path and a second thing to get wrong. Nothing below resolves it again — resolving mid-run would put the job back on the request's clock under a different name, which is the coupling this removes.
+  // THIS JOB'S OWN CREDENTIAL, RESOLVED ONCE AND FIXED FOR THE WHOLE RUN — after the guard above and ahead of everything else, so an invalid start still does no credential work. `locals.safeGetSession` is this application's ONE verification path: it calls `getSession()` and then the `getUser()` round-trip that checks the token against Supabase Auth, and hands back nothing when that fails. Reading a jar or a header here instead would be a second verification path and a second thing to get wrong. Nothing below resolves it again: resolving mid-run would put the job back on the request's clock.
   const { session } = await source.locals.safeGetSession();
 
-  // The job's own source, and it names a CLIENT rather than the request's `locals`. `createSupabaseJobClient` raises if the lookup above found no session, so a job that nobody authorised does not proceed anonymously. The transport is the plain global `fetch` rather than `source.fetch`: the request's `fetch` is scoped to a response this job outlives, and the point of the whole change is that nothing the job does depends on that response still being there.
+  // The job's own source, and it names a CLIENT rather than the request's `locals`. `createSupabaseJobClient` raises if the lookup above found no session, so a job that nobody authorised does not proceed anonymously. The transport is the plain global `fetch` rather than `source.fetch`: the request's `fetch` is scoped to a response this job outlives, and nothing the job does may depend on that response still being there.
   const jobSource: AdapterSource = {
     fetch: globalThis.fetch,
     client: createSupabaseJobClient({ accessToken: session?.access_token })
@@ -55,12 +55,8 @@ export async function condenseArguments({
   // Create controller immediately - it will be initialized with pipeline later
   const controller = new PipelineController(jobId);
 
-  // This job's own writer, over this job's own credential, constructed here and held for the whole run — so neither a second admin's job nor the initiating request's own lifetime can reach it.
-  //
-  // reason: the writer used to be built from the initiating request's client, which carries an adapter onto that request's jar, while the action awaits this call for the job's whole multi-minute duration. Two failure modes followed from that, and BOTH ARE NOW CLOSED by the client above rather than by care taken here — they stay named because a reader arriving after the next incident needs to know what was considered, not only what was chosen:
-  //   1. A refreshed session emitted as a `Set-Cookie` on a response that is only generated when the job finishes reaches nobody once the platform gateway has timed the connection out (Render's default is 100s; these jobs run for minutes), and the initiating admin's session silently regresses to the tokens it held before. CLOSED: the job's client renews nothing on its own and has no adapter to write through, so no such emission is ever attempted.
-  //   2. Once the response HAS been generated, `@sveltejs/kit` replaces `event.cookies.set` with a thrower ("Cannot use 'cookies.set(...)' after the response has been generated"), so any path outliving its response — a late `insertJobResult` on an aborted job, or a future move to fire-and-forget — raised inside the Supabase client's own renewal rather than at an obvious call site. CLOSED: there is no such path left for it to raise on.
-  // What this does NOT settle is what a job should do when the initiating admin's session expires partway through the run: the crash mode is gone, the authority question is open.
+  // This job's own writer, over this job's own credential, constructed here and held for the whole run, so neither a second admin's job nor the initiating request's lifetime can reach it. The job's client renews no session and has no cookie adapter, so it never emits a `Set-Cookie`: a gateway that times the connection out before the job ends cannot lose a renewed session, and a write after the response has been generated, such as a late `insertJobResult` on an aborted job, cannot meet the `cookies.set` that `@sveltejs/kit` makes throw at that point.
+  // Open: what a job should do when the initiating admin's session expires partway through the run.
   const adminWriter = createAdminWriter(jobSource);
 
   // Track start time and input parameters for job record
@@ -78,7 +74,7 @@ export async function condenseArguments({
     results: Array<CondensationRunResult>;
   }> = [];
 
-  // The job-record half — the `AdminJobRecord` assembly and the abort/fail branch — lives in `createJobRecorder`, which `generateQuestionInfo` shares. Only the `output` thunk and the two prefixes below differ between the two features; everything else was duplicated verbatim until it moved.
+  // The job-record half — the `AdminJobRecord` assembly and the abort/fail branch — lives in `createJobRecorder`, which `generateQuestionInfo` shares. Only the `output` thunk and the two prefixes below differ between the two features.
   const jobRecord = createJobRecorder({
     jobId,
     electionId,

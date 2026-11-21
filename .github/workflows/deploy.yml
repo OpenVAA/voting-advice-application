@@ -5,11 +5,12 @@ name: "Deploy staging"
 #      tests of the infrastructure scripts;
 #   2. job deploy, in the `staging` environment, which waits for its reviewer: builds and pushes the commit's image
 #      and takes its digest; plans the staging AWS root with that digest into a saved plan and prints it; pushes the
-#      migrations to the Supabase project and deploys its functions; applies the saved plan; waits until the service's
-#      primary deployment, on the task definition just applied, has completed its rollout; runs the deployed smoke entry
-#      against https://staging.openvaa.org; and reads /api/health again to confirm the commit is still the one
-#      served. A failed step stops every later one but the cleanup and the alert. When a step fails or the run is
-#      cancelled, the last step mails the operator through the deployment topic, naming the stage.
+#      migrations to the Supabase project; checks its deployment settings, failing unless the project trusts
+#      cf-connecting-ip; deploys its functions; applies the saved plan; waits until the service's primary deployment, on
+#      the task definition just applied, has completed its rollout; runs the deployed smoke entry against
+#      https://staging.openvaa.org; and reads /api/health again to confirm the commit is still the one served. A
+#      failed step stops every later one but the cleanup and the alert. When a step fails or the run is cancelled,
+#      the last step mails the operator through the deployment topic, naming the stage.
 #
 # A push to `deploy/staging` and a push to a `deploy-evidence/*` branch both deploy and apply. The environment's
 # branch policy matches one path segment only, so an evidence branch name holds no further `/`: a nested name would
@@ -335,6 +336,37 @@ jobs:
             exit "$push_exit"
           fi
 
+      # The per-caller limit of account-access and the feedback limit trust cf-connecting-ip only when
+      # private.deployment_settings.behind_cloudflare is true, which the operator's bootstrap writes and no migration
+      # can. This step reads it after the push, so it sees the state the functions and the rollout will see, and stops
+      # the run before both unless it is true. It writes nothing. Status 3 with an error beginning
+      # `check-deployment-settings:` is a finding; status 3 with any other error means the check could not run. The
+      # step holds the database password as PGPASSWORD alone.
+      - name: "Check the deployment settings"
+        id: settings
+        env:
+          REF: ${{ steps.link.outputs.ref }}
+          PGHOST: ${{ vars.SUPABASE_POOLER_HOST }}
+          PGPORT: "5432"
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "10"
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -uo pipefail
+          if [ -z "$PGHOST" ]; then
+            echo "::error::The environment variable SUPABASE_POOLER_HOST is not set."
+            exit 1
+          fi
+          export PGUSER="postgres.$REF"
+          unset PGHOSTADDR PGSERVICE
+          settings_exit=0
+          psql -X -f infra/scripts/check-deployment-settings.sql || settings_exit=$?
+          echo "settings_exit=$settings_exit"
+          if [ "$settings_exit" -ne 0 ]; then
+            echo "::error::check-deployment-settings.sql exited $settings_exit."
+            exit 1
+          fi
+
       # The functions are deployed from the linked work directory, so the CLI reads each one's verify_jwt from
       # config.toml. The read-back fails unless the project serves three ACTIVE functions, each with verify_jwt as
       # config.toml says, true for a function it names no block for, and their slugs are the function directories of
@@ -592,6 +624,7 @@ jobs:
           DROP_PLAN_CREDENTIALS_OUTCOME: ${{ steps.drop-plan-credentials.outcome }}
           LINK_OUTCOME: ${{ steps.link.outcome }}
           MIGRATIONS_OUTCOME: ${{ steps.migrations.outcome }}
+          SETTINGS_OUTCOME: ${{ steps.settings.outcome }}
           FUNCTIONS_OUTCOME: ${{ steps.functions.outcome }}
           REASSUME_OUTCOME: ${{ steps.reassume.outcome }}
           APPLY_OUTCOME: ${{ steps.apply.outcome }}
@@ -620,6 +653,7 @@ jobs:
             "migrations:$DROP_PLAN_CREDENTIALS_OUTCOME" \
             "migrations:$LINK_OUTCOME" \
             "migrations:$MIGRATIONS_OUTCOME" \
+            "settings:$SETTINGS_OUTCOME" \
             "functions:$FUNCTIONS_OUTCOME" \
             "rollout:$REASSUME_OUTCOME" \
             "rollout:$APPLY_OUTCOME" \

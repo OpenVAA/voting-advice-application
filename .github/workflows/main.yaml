@@ -179,9 +179,9 @@ jobs:
 
   docker-image-build:
     # Builds the `production` target of `apps/frontend/Dockerfile` from the repo root. That is the
-    # image `docker-compose.dev.yml` deploys (`target: production`) and the one `render.example.yaml`
-    # deploys (no target, so the final stage, which is `production`), both with the repo root as the
-    # build context.
+    # image `docker-compose.dev.yml` runs (`target: production`) and the one the AWS deploy pipeline
+    # deploys (`infra/scripts/build-push-image.sh` builds `--target production`), both with the repo
+    # root as the build context.
     #
     # It runs on every change, with no paths-filter and no `if:`. The image copies `apps/`,
     # `packages/`, `scripts/` and the root manifests, and runs the root lifecycle scripts during its

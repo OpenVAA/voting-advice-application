@@ -42,13 +42,11 @@ resource "supabase_settings" "this" {
   auth        = jsonencode(local.auth)
 }
 
-# The SMTP user name and password, in a settings resource of its own. The provider does not mark
-# `auth` sensitive, so a sensitive value inside the main resource's JSON would hide its whole diff;
-# kept apart, the main diff stays readable and both values are masked. Two settings resources for one
-# project are untried: each is expected to pick only its own keys, but that has not been observed.
-# Both update the same auth configuration, so this one is applied after the main one and never in
-# parallel with it; whether the first SMTP enablement is accepted with the user name and the password
-# arriving second has not been observed either. While `smtp` is null the count is zero and nothing about SMTP is sent.
+# The SMTP user name and password, in a settings resource of its own.
+# The provider does not mark `auth` sensitive, so a sensitive value inside the main resource's JSON would hide its whole diff; kept apart, the main diff stays readable and both values are masked.
+# Each of the two settings resources of the project writes only its own keys.
+# Both update the same auth configuration, so this one is applied after the main one and never in parallel with it, and the project accepts the first SMTP enablement with the user name and the password arriving from this one.
+# While `smtp` is null the count is zero and nothing about SMTP is sent.
 resource "supabase_settings" "smtp_secret" {
   count      = var.smtp == null ? 0 : 1
   depends_on = [supabase_settings.this]

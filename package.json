@@ -47,6 +47,7 @@
     "check:schema-equivalence": "bash apps/supabase/scripts/check-schema-equivalence.sh",
     "check:migration-drift": "bash infra/scripts/check-drift.sh",
     "check:seed": "psql -X -f infra/scripts/check-seed.sql",
+    "check:deployment-settings": "psql -X -f infra/scripts/check-deployment-settings.sql",
     "check:proxy-topology": "bash infra/local/check-proxy-topology.sh",
     "preinstall": "node scripts/assert-node-engine.mjs",
     "test:unit": "yarn assert:unit-coverage && turbo run test:unit && yarn test:unit:tests && yarn test:unit:infra",

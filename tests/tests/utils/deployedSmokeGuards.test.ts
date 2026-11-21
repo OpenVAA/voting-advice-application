@@ -201,7 +201,7 @@ describe('the token scan', () => {
   it('finds no remote-seed switch under .github/ or in the smoke entry, and no env-file loader in the entry', () => {
     const entry = smokeEntryFiles();
     expect(entry.map((file) => path.basename(file))).toEqual(
-      expect.arrayContaining(['voter.smoke.ts', 'contestant.smoke.ts', 'smokeContent.ts'])
+      expect.arrayContaining(['voter.smoke.ts', 'contestant.smoke.ts', 'caller-limit.smoke.ts', 'smokeContent.ts'])
     );
     expect(tokenFindingsIn([...listFiles(GITHUB_DIR), ...entry], REMOTE_SEED_SWITCH)).toEqual([]);
     expect(tokenFindingsIn(entry, ENV_FILE_LOADER)).toEqual([]);
@@ -253,6 +253,24 @@ describe('the deployed config', () => {
   it('turns tracing, screenshots and video off in the contestant spec', () => {
     const text = fs.readFileSync(path.join(DEPLOYED_DIR, 'contestant.smoke.ts'), 'utf8');
     expect(text).toContain("test.use({ trace: 'off', screenshot: 'off', video: 'off' });");
+  });
+
+  it('turns tracing off in the caller-limit spec and sends its calls through the probe', () => {
+    const text = fs.readFileSync(path.join(DEPLOYED_DIR, 'caller-limit.smoke.ts'), 'utf8');
+    expect(text).toContain("test.use({ trace: 'off' });");
+    expect(text).toContain('checkCodeRequest(');
+    expect(text).toContain('probeCallerLimit(');
+  });
+
+  it('declines the consent prompt in the voter spec through a handler installed before it navigates, and the shared navigation installs none', () => {
+    const text = fs.readFileSync(path.join(DEPLOYED_DIR, 'voter.smoke.ts'), 'utf8');
+    const handler = text.indexOf('page.addLocatorHandler(');
+    expect(handler).toBeGreaterThan(-1);
+    expect(text.indexOf('navigateToFirstQuestion(page)')).toBeGreaterThan(handler);
+    expect(text).toContain('collecting usage data');
+    expect(text).toContain('don.t want to share my data');
+    const navigation = fs.readFileSync(path.join(TESTS_ROOT, 'tests', 'utils', 'voterNavigation.ts'), 'utf8');
+    expect(navigation).not.toContain('addLocatorHandler');
   });
 
   it('refuses every origin but public_origin in the contestant spec before it signs in', () => {
@@ -325,7 +343,8 @@ describe('the value-import walk', () => {
     expect(reached).toEqual(
       expect.arrayContaining([
         'tests/tests/fixtures/contestant/contestantLoginPage.fixture.ts',
-        'packages/dev-seed/src/templates/smoke.ts'
+        'packages/dev-seed/src/templates/smoke.ts',
+        'tests/tests/utils/callerLimitProbe.ts'
       ])
     );
     expect(forbiddenReach(walk)).toEqual([]);

@@ -105,6 +105,10 @@ export const navigation: Navigation = [
           {
             title: 'App customization',
             route: '/developers-guide/configuration/app-customization'
+          },
+          {
+            title: 'Analytics',
+            route: '/developers-guide/configuration/analytics'
           }
         ]
       },
@@ -243,7 +247,22 @@ export const navigation: Navigation = [
       },
       {
         title: 'Deployment',
-        route: '/developers-guide/deployment'
+        route: '/developers-guide/deployment',
+        children: [
+          {
+            title: 'Overview',
+            route: '/developers-guide/deployment',
+            fixedTitle: true
+          },
+          {
+            title: 'Hosted Supabase settings',
+            route: '/developers-guide/deployment/hosted-settings'
+          },
+          {
+            title: 'Operations',
+            route: '/developers-guide/deployment/operations'
+          }
+        ]
       },
       {
         title: 'Contributing',

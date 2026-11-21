@@ -2,8 +2,14 @@ import { mkdtemp, rm, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import * as path from 'path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { compareNavigations, generateTypeScript, loadCurrentConfig } from './generate-navigation-config';
-import type { Navigation } from '../src/lib/navigation.type';
+import {
+  buildNavigationStructure,
+  compareNavigations,
+  generateTypeScript,
+  loadCurrentConfig
+} from './generate-navigation-config';
+import type { Navigation, NavigationItem, NavigationSection } from '../src/lib/navigation.type';
+import type { RouteInfo } from './utils/routes';
 
 let root: string;
 
@@ -64,5 +70,79 @@ describe('a section that becomes an item', () => {
 
     expect(output).toContain('// Removed: /guide/topic/deep');
     expect(output).toContain('route: "/guide/topic"');
+  });
+});
+
+describe('a nested section with a page of its own', () => {
+  function routes(...paths: Array<string>): Array<RouteInfo> {
+    return paths.map((route) => ({ route, fullPath: route, title: route.split('/').pop(), hasPage: true }));
+  }
+
+  function findChild(navigation: Navigation, route: string): NavigationSection | NavigationItem | undefined {
+    return navigation[0].children.find((child) => child.route === route);
+  }
+
+  it('lists its own page first, as an Overview child with a fixed title', () => {
+    const navigation = buildNavigationStructure(routes('/guide', '/guide/topic', '/guide/topic/deep'));
+
+    const topic = findChild(navigation, '/guide/topic');
+    expect(topic && 'children' in topic ? topic.children[0] : undefined).toEqual({
+      title: 'Overview',
+      route: '/guide/topic',
+      fixedTitle: true
+    });
+  });
+
+  it('gets no Overview child when the section has no page of its own', () => {
+    const navigation = buildNavigationStructure(routes('/guide', '/guide/topic/deep'));
+
+    const topic = findChild(navigation, '/guide/topic');
+    expect(topic && 'children' in topic ? topic.children.map((child) => child.route) : undefined).toEqual([
+      '/guide/topic/deep'
+    ]);
+  });
+
+  it('keeps an Overview child already in the config as an existing entry', () => {
+    const current: Navigation = [
+      {
+        title: 'Guide',
+        route: '/guide',
+        children: [
+          {
+            title: 'Topic',
+            route: '/guide/topic',
+            children: [
+              { title: 'Overview', route: '/guide/topic', fixedTitle: true },
+              { title: 'deep', route: '/guide/topic/deep' }
+            ]
+          }
+        ]
+      }
+    ];
+    const discovered = buildNavigationStructure(routes('/guide', '/guide/topic', '/guide/topic/deep'));
+
+    const output = generateTypeScript(compareNavigations(current, discovered));
+
+    expect(output).not.toContain('// Removed');
+    expect(output).not.toContain('// New');
+    expect(output).toMatch(/title: "Overview",\s+route: "\/guide\/topic",\s+fixedTitle: true/);
+  });
+
+  it('puts an Overview child the config does not list yet before the children it does list', () => {
+    const current: Navigation = [
+      {
+        title: 'Guide',
+        route: '/guide',
+        children: [{ title: 'Topic', route: '/guide/topic', children: [{ title: 'deep', route: '/guide/topic/deep' }] }]
+      }
+    ];
+    const discovered = buildNavigationStructure(routes('/guide', '/guide/topic', '/guide/topic/deep'));
+
+    const [topic] = compareNavigations(current, discovered)[0].children ?? [];
+
+    expect(topic.children?.map(({ item, status }) => [item.route, status])).toEqual([
+      ['/guide/topic', 'new'],
+      ['/guide/topic/deep', 'existing']
+    ]);
   });
 });

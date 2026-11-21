@@ -7,6 +7,7 @@
  * `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
  */
 
+import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -20,7 +21,28 @@ const WORKFLOW = join(REPO_ROOT, '.github', 'workflows', 'deploy.yml');
 const { doc, text } = loadWorkflow(WORKFLOW);
 
 /** The ids of the gated job's stage steps, in the order they must run. */
-const STAGE_ORDER = ['build', 'plan', 'migrations', 'functions', 'apply', 'stable', 'smoke', 'served-build', 'alert'];
+const STAGE_ORDER = [
+  'build',
+  'plan',
+  'migrations',
+  'settings',
+  'functions',
+  'apply',
+  'stable',
+  'smoke',
+  'served-build',
+  'alert'
+];
+
+/** The exact environment of the settings check: the session pooler connection and the database password alone. */
+const SETTINGS_ENV = {
+  REF: '${{ steps.link.outputs.ref }}',
+  PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
+  PGPORT: '5432',
+  PGDATABASE: 'postgres',
+  PGCONNECT_TIMEOUT: '10',
+  PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}'
+};
 
 /** The job `id` of a workflow; fails the test when it is absent. */
 function jobOf(source: WorkflowDocument, id: string): WorkflowJob {
@@ -56,6 +78,14 @@ function envOf(step: WorkflowStep): Record<string, unknown> {
   return typeof step.env === 'object' && step.env !== null && !Array.isArray(step.env)
     ? (step.env as Record<string, unknown>)
     : {};
+}
+
+/** Whether the settings step of a workflow text has exactly the environment `SETTINGS_ENV`. */
+function settingsEnvHolds(source: string): boolean {
+  const settings = stepWithId(stepsOf(parseWorkflow(source), 'deploy'), 'settings');
+  const env = envOf(settings);
+  const keys = Object.keys(SETTINGS_ENV) as Array<keyof typeof SETTINGS_ENV>;
+  return Object.keys(env).length === keys.length && keys.every((key) => env[key] === SETTINGS_ENV[key]);
 }
 
 /** The positions of the stage step ids in a list of steps, in the order they appear. */
@@ -403,6 +433,24 @@ describe('the migrations and the functions of the deploy job', () => {
     expect(text).not.toContain('6543');
   });
 
+  it('checks the deployment settings with psql over the session pooler, after the migrations and before the functions', () => {
+    const settings = stepWithId(steps, 'settings');
+    expect(existsSync(join(REPO_ROOT, 'infra', 'scripts', 'check-deployment-settings.sql'))).toBe(true);
+    expect(steps.indexOf(settings)).toBe(steps.indexOf(migrations) + 1);
+    expect(steps.indexOf(settings)).toBeLessThan(steps.indexOf(functions));
+    expect(settingsEnvHolds(text)).toBe(true);
+    const script = runOf(settings);
+    for (const line of [
+      'export PGUSER="postgres.$REF"',
+      'unset PGHOSTADDR PGSERVICE',
+      'settings_exit=0',
+      'psql -X -f infra/scripts/check-deployment-settings.sql || settings_exit=$?',
+      'echo "settings_exit=$settings_exit"'
+    ]) {
+      expect(script).toContain(line);
+    }
+  });
+
   it('deploys the functions from the linked work directory and reads back three ACTIVE with verify_jwt as configured', () => {
     const script = runOf(functions);
     expect(script).toContain('node_modules/.bin/supabase functions deploy --project-ref "$REF" --workdir "$WORKDIR"');
@@ -428,7 +476,7 @@ describe('the migrations and the functions of the deploy job', () => {
     });
   });
 
-  it('gives the Supabase and database secrets to the link, migrations and functions steps only, through env', () => {
+  it('gives the Supabase and database secrets to the link, migrations, settings and functions steps only, through env', () => {
     const holders = steps.flatMap((step) =>
       Object.values(envOf(step)).some((value) =>
         /secrets\.(SUPABASE_ACCESS_TOKEN|SUPABASE_DB_PASSWORD)\b/.test(String(value))
@@ -436,12 +484,12 @@ describe('the migrations and the functions of the deploy job', () => {
         ? [String(step.id)]
         : []
     );
-    expect(holders).toEqual(['link', 'migrations', 'functions']);
+    expect(holders).toEqual(['link', 'migrations', 'settings', 'functions']);
     const mentions = text
       .split('\n')
       .filter((line) => /secrets\.(SUPABASE_ACCESS_TOKEN|SUPABASE_DB_PASSWORD)\b/.test(line));
     expect(mentions.every((line) => /^ {10}[A-Z_]+: \$\{\{ secrets\./.test(line))).toBe(true);
-    expect(mentions).toHaveLength(6);
+    expect(mentions).toHaveLength(7);
     expect('env' in jobOf(doc, 'deploy')).toBe(false);
     expect('env' in doc).toBe(false);
   });
@@ -482,7 +530,18 @@ function idsHoldingCredentials(steps: Array<WorkflowStep>): Set<string> {
 
 describe('the credentials of the deploy job', () => {
   /** The steps that run code the job did not write: tool, package and browser installs and the Supabase CLI. */
-  const WITHOUT = ['node', 'yarn', 'psql', 'terraform', 'link', 'migrations', 'functions', 'playwright', 'smoke'];
+  const WITHOUT = [
+    'node',
+    'yarn',
+    'psql',
+    'terraform',
+    'link',
+    'migrations',
+    'settings',
+    'functions',
+    'playwright',
+    'smoke'
+  ];
   /** The steps that call AWS. */
   const WITH = ['build', 'init', 'plan', 'apply', 'stable', 'alert'];
 
@@ -545,6 +604,7 @@ describe('the alert of the deploy job', () => {
     expect(stageOf('show')).toBe('plan');
     expect(stageOf('psql')).toBe('plan');
     expect(stageOf('drop-plan-credentials')).toBe('migrations');
+    expect(stageOf('settings')).toBe('settings');
     expect(stageOf('reassume')).toBe('rollout');
     expect(stageOf('playwright')).toBe('smoke');
   });
@@ -584,6 +644,32 @@ describe('the deploy-specific guards are red on a faulty copy', () => {
     );
     expect(orderHolds(text)).toBe(true);
     expect(orderHolds(swapped)).toBe(false);
+  });
+
+  it('sees the settings check removed', () => {
+    const removed = mutate(text, 'id: settings\n', 'id: settings-removed\n');
+    expect(orderHolds(text)).toBe(true);
+    expect(orderHolds(removed)).toBe(false);
+  });
+
+  it('sees the settings check moved after the apply', () => {
+    const swapped = mutate(
+      mutate(mutate(text, 'id: settings\n', 'id: settings-swap\n'), 'id: apply\n', 'id: settings\n'),
+      'id: settings-swap\n',
+      'id: apply\n'
+    );
+    expect(orderHolds(text)).toBe(true);
+    expect(orderHolds(swapped)).toBe(false);
+  });
+
+  it('sees the access token given to the settings check', () => {
+    const mutated = mutate(
+      text,
+      'id: settings\n        env:\n',
+      'id: settings\n        env:\n          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}\n'
+    );
+    expect(settingsEnvHolds(text)).toBe(true);
+    expect(settingsEnvHolds(mutated)).toBe(false);
   });
 
   it('sees a secret added to the smoke step', () => {

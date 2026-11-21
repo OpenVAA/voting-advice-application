@@ -196,6 +196,8 @@ and the three `s5b_` lines.
 
 ## Step 2: First apply with local state
 
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
+
 The apply creates the state bucket, the OIDC provider, the two roles and their four policies, the
 registry and the budget. The bucket has a global name and is protected from destruction, and later
 workflows name the roles, so undoing this step means emptying a versioned bucket and removing roles
@@ -295,6 +297,8 @@ by hand. Run it in one terminal, signed in with the identity of Step 1.
 Return: the `s3_`, `s5_`, `s6_`, `s7_`, `s9_`, `s10_` and `s11_` lines, and `answer_fallback=`.
 
 ## Step 3: Migrate the state and plan again
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
 
 Steps 3 to 6 run in one sitting. The local state files of Step 2 are in `infra/bootstrap` and do not
 depend on the terminal. Begin with these lines, from the repository root, signed in; leave the export
@@ -680,6 +684,10 @@ Return: `answer_outcome=fired`, `answer_outcome=no-alert-can-fire` or `answer_ou
 `s6_second_plan_exit=`; and in every outcome `s7_logs_removed=yes`. Do not paste your address.
 
 ## Step 8: The frontend execution role
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
+
+← guide: [Deployment § The two parameters](https://openvaa.org/developers-guide/deployment#the-two-parameters)
 
 This step adds the execution role of the frontend's ECS task to this root: the identity the ECS agent
 uses to pull the image, write the container's logs and read the task's parameters. It comes from the
@@ -1171,24 +1179,9 @@ shell profile already exports `TF_VAR_alert_email`, or if you track the address.
 Return: every `s9_` and `s9a_` to `s9e_` line, in order, and `answer_step9=applied` or
 `answer_step9=stopped-at-<item>`. Do not paste your address.
 
-## Not yet observed
-
-This root was first applied on 2026-10-21. Each statement below is something this runbook relies on and that
-has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
-it.
-
-| Statement                                                                                                                        | Checked by                                                                |
-| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| The actual alert of the budget reaches the operator's mailbox, and how long it takes after the spend passes the threshold        | Step 7, item 3                                                            |
-| A forecast alert fires (AWS documents that it needs about five weeks of usage data, so it is not expected in the first month)    | A later stage of the deployment work                                      |
-| AWS accepts a budget limit below 1 USD as a test amount                                                                          | Step 7, item 2                                                            |
-| The spend of a quiet account, such as the hosted zone's monthly charge, shows in the budget's computed spend within a day or two | Step 6, item 10, and Step 7, item 1                                       |
-| An account holds one OIDC provider per URL, so a second create for GitHub's URL fails                                            | Step 1, item 4, shows whether one exists; if it does, the root imports it |
-| The AWS-managed read-only policy lets a plan of the pipeline root read all it must                                               | A later stage of the deployment work                                      |
-| A refused list call for the prefix `env:/` does not stop a plan or an apply of the pipeline root                                 | A later stage of the deployment work                                      |
-| A workflow can assume the plan role                                                                                              | The plan role on a pull request                                           |
-
 ## Observations
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
 
 | Date (UTC) | Observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1216,5 +1209,7 @@ it.
 | 2026-11-17 | Deploy workflow run 44042442257, on `deploy-evidence/187-red`, after the `staging` review was approved: `aws-actions/configure-aws-credentials` assumed `openvaa-staging-deploy` with the token of `environment:staging`, the trust's `StringEquals` conditions on `repository_id` and `repository_owner_id` being set, twice (the deploy step and the alert step). A `StringEquals` on a claim the token did not carry, or with another value, would have refused the call, so AWS reads both id claims and this repository's values satisfy them.                                                                                                                               |
 | 2026-11-17 | Infrastructure plan run 44042442267, on the same push: the `wrong-subject` job ended `failure` before either STS call. Its step runs under the runner's default `bash -e`, and `IFS=. read -r _ payload _ < "$token_file"` returns 1 at the end of a token file with no trailing newline, which ended the step at once, with no line printed (reproduced locally). A branch subject's refusal by either role is not yet observed.                                                                                                                                                                                                                                                 |
 | 2026-11-17 | Infrastructure plan run 44088753527, on `deploy-evidence/187-red-2`: the `wrong-subject` job concluded `success`. It asked STS for `openvaa-staging-deploy` and `openvaa-plan` with a token of the subject `repo:OpenVAA/voting-advice-application:ref:refs/heads/deploy-evidence/187-red-2`, which neither trust admits, and both refused it: `deploy_role_assume_status=254` with `deploy_role_error=AccessDenied`, and `plan_role_assume_status=254` with `plan_role_error=AccessDenied`. A token with a wrong subject is refused by both roles.                                                                                                                               |
+| 2026-11-17 | Infrastructure plan run 44104573552, on a same-repository pull request from `pr-evidence/187-head`: the `plan` job assumed `openvaa-plan`, which holds `ReadOnlyAccess` and `openvaa-plan-deny`, and planned the staging AWS root without the lock. Every step succeeded; the plan refreshed the root's resources and ended `plan_exit=2` with `Plan: 1 to add, 1 to change, 1 to destroy.`, no refused call in the log. So the AWS-managed read-only policy lets a plan of the pipeline root read all it must.                                                                                                                                                                   |
+| 2026-11-17 | The same run 44104573552: its `Assume the read-only plan role` step printed `Assuming role with OIDC` and `Authenticated as assumedRoleId …:pr-plan-44104573552`, the session name the workflow gives the plan role on a pull request. So a workflow can assume the plan role.                                                                                                                                                                                                                                                                                                                                                                                                    |
 | 2026-11-18 | The deploy role's policies held every call a pipeline plan, apply, destroy and create of the AWS root made, with the policies of Step 9: the deploy workflow's run 44270824581 (plan and apply of the task definition's replacement and the rollout), the destroy workflow's run 44285713407, attempt 2 (a plan and an apply destroying all 40 resources), and attempt 2 of the deploy workflow's run 44276384977 (a plan and an apply creating all 40 again from an empty state, `Apply complete! Resources: 40 added, 0 changed, 0 destroyed.`). Each assumed `openvaa-staging-deploy`, each job concluded `success`, and no log holds a refused call.                          |
 | 2026-11-18 | Attempt 2 of the deploy workflow's run 44276384977, the first pipeline deploy from nothing after the real destroy: the deploy role created the CloudFront distribution and both ACM certificates carrying the root's tags (`Project=openvaa`, `Root=aws`, `Environment=staging`, `ManagedBy=terraform`), with their tags, and the apply succeeded. So a distribution and a certificate created with the root's tags pass the edge tag calls' `aws:ResourceTag` test.                                                                                                                                                                                                              |

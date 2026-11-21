@@ -145,7 +145,13 @@ yarn test:unit                    # every workspace's unit tests, then these
 
 ## Deployed smoke run
 
-`yarn test:e2e:deployed` drives an application that is already deployed, by default `https://staging.openvaa.org`, instead of a dev server of this checkout. It is a second Playwright entry, [`tests/playwright.deployed.config.ts`](./playwright.deployed.config.ts), with its own global setup, [`tests/deployed-global-setup.ts`](./deployed-global-setup.ts). It has one project, `deployed-smoke`, on Desktop Chrome, whose specs are `tests/tests/deployed/*.smoke.ts`; there is no setup or teardown project, one worker runs the specs in order, and `retries: 0` holds on CI too. The run is read-mostly: it seeds nothing, clears nothing and holds no service-role client. `voter.smoke.ts` answers the questions of the hosted `smoke` dataset anonymously, in the browser, and reaches the candidate results; `contestant.smoke.ts` signs one contestant in with a password, sees a home on which every task is complete and signs out, editing nothing.
+`yarn test:e2e:deployed` drives an application that is already deployed, by default `https://staging.openvaa.org`, instead of a dev server of this checkout. It is a second Playwright entry, [`tests/playwright.deployed.config.ts`](./playwright.deployed.config.ts), with its own global setup, [`tests/deployed-global-setup.ts`](./deployed-global-setup.ts). It has one project, `deployed-smoke`, on Desktop Chrome, whose specs are `tests/tests/deployed/*.smoke.ts`; there is no setup or teardown project, one worker runs the specs in order, and `retries: 0` holds on CI too. The run is read-mostly: it seeds nothing, clears nothing and holds no service-role client. Its one write is made by the hosted `account-access` function itself, which keeps one `caller:` row of the calling address in `private.invitation_throttle` for the 10-minute window of `caller-limit.smoke.ts`. There are three specs:
+
+- `caller-limit.smoke.ts` calls `check-code` with fresh codes no invitation holds until the function refuses it, at most 31 times, and passes only on a 429 with the body `{ "error": "too-many-requests" }` and a `Retry-After` of 1 to 600 seconds. It sends no client-address header, so the address limited is the caller's own.
+- `voter.smoke.ts` answers the questions of the hosted `smoke` dataset anonymously, in the browser, and reaches the candidate results. When the project's `analytics.trackEvents` shows the usage-data consent prompt, the spec declines it.
+- `contestant.smoke.ts` signs one contestant in with a password, sees a home on which every task is complete and signs out, editing nothing.
+
+**The side effect on the caller's address.** For up to 10 minutes after a run of the whole entry, `check-code`, `request-link` and `request-recovery` refuse the calling address on the staging project, so a sign-in-link mail asked for from that address in that window is refused. A workstation run that must leave its address unlimited runs `voter.smoke.ts` alone, as step 4 below describes.
 
 The entry is separate from the local suite and is no way around its gate. It imports nothing from `tests/playwright.config.ts`, `tests/global-setup.ts` or `tests/tests/support/preflight.ts`, and the local suite, its [preflight](#preflight--every-run-proves-it-is-driving-this-checkout) and its `.spec.ts` projects are unchanged by it: `yarn test:e2e` and `tests/scripts/e2e-run.sh` still run every local spec behind the preflight. The deployed entry runs the `.smoke.ts` files and nothing else. When the configuration loads, `assertSmokeProjects` in [`tests/tests/utils/deployedTarget.ts`](./tests/utils/deployedTarget.ts) refuses, as `DEPLOYED SMOKE CONFIG REFUSED: <reason>`, a configuration with a second project, a dependency, a teardown, or a project name or `testMatch` that mentions setup or teardown.
 
@@ -235,7 +241,7 @@ Every step runs in the same shell, at the root of this checkout, with Node 24 on
    echo "smoke_exit=$?"
    ```
 
-   It must print `smoke_exit=0`, and `$RUN/smoke.log` then holds the gate's lines followed by `2 passed`:
+   It must print `smoke_exit=0`, and `$RUN/smoke.log` then holds the gate's lines followed by `3 passed`:
 
    ```
    DEPLOYED SMOKE GATE https://staging.openvaa.org
@@ -253,12 +259,13 @@ Every step runs in the same shell, at the root of this checkout, with Node 24 on
 
    ```bash
    node tests/scripts/e2e-spec-verdict.mjs "$RUN" \
+     --passed caller-limit.smoke.ts \
      --passed voter.smoke.ts \
      --passed contestant.smoke.ts --no-flaky
    echo "verdict_exit=$?"
    ```
 
-   It must print `VERDICT OK: 2 tests -- passed 2, failed 0, flaky 0, skipped 0, did not run 0` and `verdict_exit=0`. For a voter-only run, leave out `--passed contestant.smoke.ts`; the line then counts 1 test.
+   It must print `VERDICT OK: 3 tests -- passed 3, failed 0, flaky 0, skipped 0, did not run 0` and `verdict_exit=0`. For a voter-only run, leave out `--passed caller-limit.smoke.ts` and `--passed contestant.smoke.ts`; the line then counts 1 test.
 
 6. The credentials, out of the shell again:
 
@@ -283,7 +290,7 @@ List the entry's tests without a target:
 yarn test:e2e:deployed --list --reporter=list
 ```
 
-The last line must be `Total: 2 tests in 2 files`. `--list` stops before global setup, so the gate does not run and no input is needed. `--reporter=list` replaces the configured reporters, so the listing writes no report, even with `PLAYWRIGHT_JSON_OUTPUT_FILE` exported, and the count is its last line.
+The last line must be `Total: 3 tests in 3 files`. `--list` stops before global setup, so the gate does not run and no input is needed. `--reporter=list` replaces the configured reporters, so the listing writes no report, even with `PLAYWRIGHT_JSON_OUTPUT_FILE` exported, and the count is its last line.
 
 ### Reading the gate
 
@@ -322,8 +329,8 @@ These cover a refused sign-in, an action that never completes and a test that ti
 
 ### What keeps it read-mostly
 
-- **The ESLint block** at the end of [`tests/eslint.config.mjs`](./eslint.config.mjs) covers the smoke specs, `tests/tests/utils/deployedTarget.ts` and `tests/deployed-global-setup.ts`. It refuses a value import of a module that creates a service-role client, of the `@openvaa/dev-seed` barrel, of a Supabase client package and of `dotenv`; a type import is allowed.
-- **`tests/tests/utils/deployedSmokeGuards.test.ts`** covers what lint cannot see. The deployed configuration is outside lint (the `playwright*` ignore), so the test checks its text and its shape: it collects only `tests/tests/deployed/*.smoke.ts` and no project sets its own `testDir` or `testMatch`, one project, no setup, teardown, dependency, web server or retry, no reporter but `list` and `json`, and `PLAYWRIGHT_NO_COPY_PROMPT=1` set when it loads. The lint rule sees direct imports only, so the test also walks the entry's whole value-import closure for a forbidden module, and it scans `.github/` and the entry for the remote-seed switch (`DEV_SEED_ALLOW_REMOTE`, `allow-remote`, `allowRemote`).
+- **The ESLint block** at the end of [`tests/eslint.config.mjs`](./eslint.config.mjs) covers the smoke specs, `tests/tests/utils/deployedTarget.ts`, `tests/tests/utils/callerLimitProbe.ts` and `tests/deployed-global-setup.ts`. It refuses a value import of a module that creates a service-role client, of the `@openvaa/dev-seed` barrel, of a Supabase client package and of `dotenv`; a type import is allowed.
+- **`tests/tests/utils/deployedSmokeGuards.test.ts`** covers what lint cannot see. The deployed configuration is outside lint (the `playwright*` ignore), so the test checks its text and its shape: it collects only `tests/tests/deployed/*.smoke.ts` and no project sets its own `testDir` or `testMatch`, one project, no setup, teardown, dependency, web server or retry, no reporter but `list` and `json`, and `PLAYWRIGHT_NO_COPY_PROMPT=1` set when it loads. It also pins the specs' own measures: the voter spec declines the consent prompt through a handler of its own, installed before it navigates, while the shared navigation installs none, and the caller-limit spec turns tracing off and sends its calls through the probe of `callerLimitProbe.ts`. The lint rule sees direct imports only, so the test also walks the entry's whole value-import closure for a forbidden module, and it scans `.github/` and the entry for the remote-seed switch (`DEV_SEED_ALLOW_REMOTE`, `allow-remote`, `allowRemote`).
 - **`tests/tests/utils/deployedTarget.test.ts`** holds the gate's refusal matrix: foreign, production and local Supabase addresses, base URLs that do not parse, are not https off a loopback host or are answered from another origin, served documents without an environment block, and environments in which every variable names another project, none of which widens the ref, and the base URLs the contestant spec refuses to send its credentials to.
 
 All three run in `yarn test:unit`, through its last link, `yarn test:unit:tests`.
