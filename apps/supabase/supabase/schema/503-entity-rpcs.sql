@@ -211,7 +211,7 @@ EXECUTE ON FUNCTION private.caller_registered_organization (uuid) TO authenticat
 --
 -- Returns one jsonb object whose `entities` array holds one entry per candidate and per organization of p_project_id the caller holds an `(entity, <type>, <id>, editor)` grant on, read from public.grants through private.caller_entity_ids. Each entry carries what a card shows: `entity_type`, `id`, the names of its type (`first_name` and `last_name` for a candidate, `name` for an organization), `short_name`, `image`, `color` and `confirmed`. Candidates come first, then organizations, each by id.
 --
--- The answer is one object, not a set of rows, so a caller with no entity still gets one row, whose `entities` is an empty array.
+-- The answer is one object, not a set of rows, so a caller with no entity still gets one row, whose `entities` is an empty array. Facts about the caller's account are not in it: get_caller_account_state below answers them.
 --
 -- `organization` is there only when the caller's identity registered an organization in the project through an identity provider, as private.caller_registered_organization answers it: the id of that organization, whether or not the caller still edits it. The frontend asks it whether the organization still needs a name.
 --
@@ -588,7 +588,7 @@ EXECUTE ON FUNCTION public.get_nomination_parent_options (uuid, public.entity_ty
 --
 -- SECURITY INVOKER: the UPDATE is gated by the named table's RLS policies, so a caller can update only the answers of an entity those policies let them edit. An id that matches no row the caller may update raises the not-found exception.
 --
--- While the entity's project's contestant editing is `locked` (`private.project_contestant_editing`), a caller that does not hold `project.edit_entities` on the project is refused before any table is written, with SQLSTATE 42501 and `upsert_answers: answers are locked in this project`, so the lock is told apart from a row the caller may not write. The entity's project is read as the caller: an entity the caller cannot read is not judged here and meets the not-found exception.
+-- While the entity's project's contestant editing is `locked` (`private.project_contestant_editing`), a caller that does not hold `project.edit_entities` on the project is refused before any table is written, with SQLSTATE OV002 and `upsert_answers: answers are locked in this project`. OV002 is raised for the contestant-editing lock alone, so a client tells the lock apart from a row the caller may not write by the code. The entity's project is read as the caller: an entity the caller cannot read is not judged here and meets the not-found exception.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.upsert_answers (
   p_entity_type public.entity_type,
@@ -609,7 +609,7 @@ BEGIN
      AND private.project_contestant_editing(v_project_id) = 'locked'
      AND NOT COALESCE(public.user_can('project', v_project_id, 'project.edit_entities'), false) THEN
     RAISE EXCEPTION 'upsert_answers: answers are locked in this project'
-      USING ERRCODE = '42501';
+      USING ERRCODE = 'OV002';
   END IF;
 
   CASE p_entity_type
@@ -947,9 +947,9 @@ service_role;
 --
 -- p_nominations states every nomination the candidate or organization named by p_entity_type and p_entity_id is to hold among the rows this function may write. The call inserts the nominations the set adds, updates the ones whose values differ, creates the nomination of a named party or alliance that has none at the contest, and deletes the ones the set leaves out. It is one statement of the caller's transaction, so either all of it is stored or none of it is.
 --
--- SECURITY INVOKER: every statement runs as the caller, so the policies of public.nominations, its column grants and its triggers stay the only gate, and a direct write of the same rows meets the same refusals. The body holds one authority question, asked through `user_can` before anything is read: a caller that does not hold `nomination.edit` on the entity is refused with SQLSTATE 42501. While the entity's project's contestant editing (`private.project_contestant_editing`) is anything but `open`, a caller that does not hold `project.edit_nominations` on the project is refused next, with SQLSTATE 42501 and `set_entity_nominations: editing is locked in this project` under `locked` or `set_entity_nominations: nominations are locked in this project` under `nominationsLocked`, whatever the set would write. search_path is pinned and every name in the body is schema-qualified.
+-- SECURITY INVOKER: every statement runs as the caller, so the policies of public.nominations, its column grants and its triggers stay the only gate, and a direct write of the same rows meets the same refusals. The body holds one authority question, asked through `user_can` before anything is read: a caller that does not hold `nomination.edit` on the entity is refused with SQLSTATE 42501. While the entity's project's contestant editing (`private.project_contestant_editing`) is anything but `open`, a caller that does not hold `project.edit_nominations` on the project is refused next, whatever the set would write: under `locked` with SQLSTATE OV002 and `set_entity_nominations: editing is locked in this project`, and under `nominationsLocked` with SQLSTATE OV006 and `set_entity_nominations: nominations are locked in this project`. Each code is raised for its lock alone, so a client tells the two locks apart, and either from a row the caller may not write, by the code. search_path is pinned and every name in the body is schema-qualified.
 --
--- p_expected_versions is the writable nominations as the caller read them, the read its set was computed from: a JSON object that maps the id of every writable nomination to its `updated_at`, as `get_entity_nominations` states both on the nominations whose `writable` is true, and `{}` for an entity with none. It is required and is refused with SQLSTATE 22023 when it is not such an object. Right after the writable nominations are read, before any object of the set is checked, the two are compared: a writable nomination that the expectation does not name, an id it names that is no writable nomination, and an `updated_at` that differs from the stored one each refuse the call with SQLSTATE 40001 and `set_entity_nominations: the nominations have changed since they were read`. A set computed from an older read therefore never deletes a nomination created since, and never writes back the values of one moved, edited or confirmed since. The writable nominations are read without a lock, so a write committed by another transaction between that read and this call's own statements is not seen by the comparison.
+-- p_expected_versions is the writable nominations as the caller read them, the read its set was computed from: a JSON object that maps the id of every writable nomination to its `updated_at`, as `get_entity_nominations` states both on the nominations whose `writable` is true, and `{}` for an entity with none. It is required and is refused with SQLSTATE 22023 when it is not such an object. Right after the writable nominations are read, before any object of the set is checked, the two are compared: a writable nomination that the expectation does not name, an id it names that is no writable nomination, and an `updated_at` that differs from the stored one each refuse the call with SQLSTATE OV003 and `set_entity_nominations: the nominations have changed since they were read`. A set computed from an older read therefore never deletes a nomination created since, and never writes back the values of one moved, edited or confirmed since. The writable nominations are read without a lock, so a write committed by another transaction between that read and this call's own statements is not seen by the comparison.
 --
 -- p_nominations is a JSON array of objects, and an empty array is a valid set. The keys of one object:
 --   id              - a uuid: the object describes that nomination of the entity. Absent: it describes a new one.
@@ -970,7 +970,7 @@ service_role;
 -- An entity may hold several nominations of one election, at different constituencies or under different parents. The set holds them as it holds any others; what bounds them is the uniqueness key `nominations_entity_parent_contest_key`, which refuses a second nomination of the entity under the same parent at the same contest (SQLSTATE 23505), and the contest rules `validate_nomination` judges.
 --
 -- The order of the statements:
---   1. Delete the writable nominations that the set does not name, and the stored row of every move. A changed constituency is a delete and an insert, never an update of the row's contest, so the foreign key on `parent_nomination_id` refuses to move, as it refuses to delete, a nomination that has nominations listed under it (SQLSTATE 23503). The new row of a move carries the symbol and the parent the object states and nothing else of the old row.
+--   1. Delete the writable nominations that the set does not name, and the stored row of every move. A changed constituency is a delete and an insert, never an update of the row's contest, so a nomination that has nominations listed under it can be neither moved nor deleted. Before the delete, `private.nominations_listed_under` is asked whether any row to be deleted has such a nomination, and the call is then refused with SQLSTATE OV005, so the foreign key on `parent_nomination_id` is not what refuses it. The new row of a move carries the symbol and the parent the object states and nothing else of the old row.
 --   2. Update each kept nomination whose symbol, parent or requested name differs from what is stored, naming only the columns that differ, and the confirmation wherever the custom data is written. A nomination whose values did not change is not written, so it keeps its confirmation and its updated_at; `enforce_nomination_confirmation` turns the confirmation of every row an entity's editor does write off.
 --   3. Insert each new nomination with no parent, and then link it.
 -- For `entity`, the parent's nomination at the contest is asked of `private.parent_nomination_resolved`, which runs as the caller and reads the row through `private.nomination_id_in_contest`, because the caller's own policies do not let it read that row. Where there is none, the parent's nomination is inserted, unconfirmed and carrying nothing but its contest, and asked for again. The caller's own row comes first because `entity_insert_parent_nominations` admits a parent's row only to a caller that already holds a nomination at that contest. Two callers that create the same parent's nomination at once are not reconciled: the second call is refused whole on the uniqueness key and succeeds when it is made again.
@@ -1065,7 +1065,7 @@ BEGIN
         WHEN 'nominationsLocked' THEN 'set_entity_nominations: nominations are locked in this project'
         ELSE 'set_entity_nominations: editing is locked in this project'
       END,
-      ERRCODE = '42501';
+      ERRCODE = CASE v_contestant_editing WHEN 'nominationsLocked' THEN 'OV006' ELSE 'OV002' END;
   END IF;
 
   PERFORM private.nomination_list_checked(p_nominations, 'set_entity_nominations', 'p_nominations');
@@ -1121,7 +1121,7 @@ BEGIN
       OR (r.value ->> 'updated_at')::timestamptz IS DISTINCT FROM x.value::timestamptz
   ) THEN
     RAISE EXCEPTION 'set_entity_nominations: the nominations have changed since they were read'
-      USING ERRCODE = '40001';
+      USING ERRCODE = 'OV003';
   END IF;
 
   -- Validate every object before anything is written, and note what each one asks for.
@@ -1199,6 +1199,11 @@ BEGIN
   SELECT COALESCE(array_agg(k.id), ARRAY[]::uuid[]) INTO v_delete_ids
   FROM (SELECT r.key::uuid AS id FROM jsonb_object_keys(v_writable) AS r (key)) k
   WHERE k.id <> ALL (v_kept_ids);
+
+  IF private.nominations_listed_under(v_delete_ids) THEN
+    RAISE EXCEPTION 'set_entity_nominations: a nomination the set removes or moves has other nominations listed under it'
+      USING ERRCODE = 'OV005';
+  END IF;
 
   IF cardinality(v_delete_ids) > 0 THEN
     DELETE FROM public.nominations n
