@@ -309,6 +309,10 @@ Return: every `s1_` line. Expected: every status 0, `s1_terraform_version` equal
 
 ### Step 2: The two parameters
 
+← guide: [Deployment § The two parameters](https://openvaa.org/developers-guide/deployment#the-two-parameters)
+
+← guide: [Operations § The two parameters](https://openvaa.org/developers-guide/deployment/operations#the-two-parameters)
+
 The operator runs this step in their own terminal and types each value at its prompt. The parameters
 are created outside Terraform, under `/openvaa/staging/frontend/`, as SecureStrings with the
 parameter store's default key, `alias/aws/ssm`, which AWS creates on the first SecureString that uses
@@ -524,6 +528,8 @@ Return: the `s8_` lines of item 1 and every `s3_` line. Expected: `s3_role_path=
 every status 0.
 
 ### Step 4: The image
+
+← guide: [Deployment § The AWS root and its image](https://openvaa.org/developers-guide/deployment#the-aws-root-and-its-image)
 
 The image's tag is the full id of a commit anyone can fetch from `origin`, and the image's build id
 is the same string. The commit is a source-only one: the tree of `HEAD` without `.planning`, built
@@ -764,6 +770,8 @@ Return: every `s4_` line, in order.
 
 ### Step 5: The first plan and the one apply
 
+← guide: [Deployment § The AWS root and its image](https://openvaa.org/developers-guide/deployment#the-aws-root-and-its-image)
+
 There is one plan and one apply of the whole root, with `image_digest` set, no `-target` and no
 switch that brings the stack up in stages, because a stack that comes up in pieces is not the stack
 the workflow will later plan against. The apply waits for both certificates to be validated, for the
@@ -925,6 +933,8 @@ destroy.`, every `s5_planned_` line is `s5_planned_create=` (or `s5_planned_read
 Return: every `s5_` line, in order. Never paste the plan's or the apply's log.
 
 ### Step 6: The operator's confirmations
+
+← guide: [Deployment § The AWS root and its image](https://openvaa.org/developers-guide/deployment#the-aws-root-and-its-image)
 
 The first two items are the operator's and are done in a browser.
 
@@ -1778,6 +1788,8 @@ pasted.
 
 ### Step 10: A rollout that fails, its rollback and its alert
 
+← guide: [Operations § Rollback](https://openvaa.org/developers-guide/deployment/operations#rollback)
+
 A revision of the running image without `ORIGIN` starts tasks that refuse to start: the server's
 start-up check throws `Required environment variables are not set: ORIGIN` before it listens, and the
 task exits. The service's circuit breaker counts the tasks that fail to start and rolls the service
@@ -2071,6 +2083,8 @@ old revision while the state names the failed one; Step 11 is the next step and 
 
 ### Step 11: The restore and the stop signal
 
+← guide: [Operations § Rollback](https://openvaa.org/developers-guide/deployment/operations#rollback)
+
 A plain apply puts `ORIGIN` back. Its rollout starts a new task, waits for it to serve, then
 deregisters the old task, waits out the deregistration delay and signals it with `SIGTERM`. The server
 drains what it holds and writes one record, `The server is exiting after its stop.`, with the signal's
@@ -2235,6 +2249,8 @@ T=infra/envs/staging/aws
 Return: every `s11_` line, in order.
 
 ### Step 12: The floor raised ahead of time and lowered again
+
+← guide: [Operations § Election-day scaling](https://openvaa.org/developers-guide/deployment/operations#election-day-scaling)
 
 Two scheduled actions, given on the command line for one apply: the first raises the scalable
 target's floor to 2 six minutes ahead, the second lowers it to 1 ten minutes later, both with the
@@ -2824,6 +2840,8 @@ Return: every `s14_` line and the `answer_` lines of item 5. Keep `s14_invitatio
 
 ## The destroy, the re-apply and the cost
 
+← guide: [Operations § Teardown](https://openvaa.org/developers-guide/deployment/operations#teardown)
+
 Steps 15 and 16 destroy this root once, on purpose, and show that nothing it made is left in either
 region while everything outside it is where it was. Step 17 applies it again from the same commit,
 and Step 18 reads its cost over full days of that second stack.
@@ -3011,6 +3029,8 @@ Return: every `s15_` line. The destroy runs only when the three `_after=` counts
 `_plan_exit=` lines are 0 and `s15_running_digest_exit=0`.
 
 ### Step 16: The destroy
+
+← guide: [Operations § Teardown](https://openvaa.org/developers-guide/deployment/operations#teardown)
 
 The root is destroyed once, by applying a saved destroy plan whose count equals the managed resources
 the state holds, which is what `terraform destroy` does after its prompt. Then the Resource Groups
@@ -3251,6 +3271,8 @@ Return: every `s16_` line and the operator's `s16_` and `s23_` lines.
 
 ### Step 17: The re-apply
 
+← guide: [Operations § Teardown](https://openvaa.org/developers-guide/deployment/operations#teardown)
+
 The root is applied again from the same image, by the digest Step 15 read, with one plan and one
 apply, as Step 5 did: the image is still in the registry under that digest and its tag, no file of
 the root names an image, and the files of the root are as committed. The stack must come back
@@ -3439,6 +3461,8 @@ Return: every `s17_` line, in order, and the two `answer_subscription_confirmed`
 `s17_apply_completed_utc=` is the start of the stack whose cost Step 18 measures.
 
 ### Step 18: The cost
+
+← guide: [Operations § Cost](https://openvaa.org/developers-guide/deployment/operations#cost)
 
 The stack's cost is measured from Cost Explorer, filtered by the cost-allocation tag `Root` = `aws`,
 which the three roots' tags tell apart: they share `Project` and `Environment`. It is read over a
@@ -3656,6 +3680,8 @@ each with its date, and never one in place of the other.
 ## Secret rotation
 
 ### Step 19: The origin header secret, rotated
+
+← guide: [Operations § The origin header secret](https://openvaa.org/developers-guide/deployment/operations#the-origin-header-secret)
 
 The load balancer forwards a request to the tasks only when it carries the origin header with the
 value CloudFront sends, and answers 403 to every other request (Step 9). That value is one
@@ -3995,6 +4021,8 @@ record.
 
 ## Election day
 
+← guide: [Operations § Election-day scaling](https://openvaa.org/developers-guide/deployment/operations#election-day-scaling)
+
 On a day whose peak is known in advance, such as an election day, the floor is raised before the
 peak by a scheduled action, so that the tasks are running when the voters arrive rather than when the
 target tracking notices them. Step 12 is the rehearsal of this section.
@@ -4038,6 +4066,14 @@ election's time zone, to UTC before writing them.
    once, and commit the change.
 
 ## Observations
+
+← guide: [Deployment § The AWS root and its image](https://openvaa.org/developers-guide/deployment#the-aws-root-and-its-image)
+
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
+← guide: [Operations § Capacity](https://openvaa.org/developers-guide/deployment/operations#capacity)
+
+← guide: [Operations § The origin header secret](https://openvaa.org/developers-guide/deployment/operations#the-origin-header-secret)
 
 | Date (UTC) | Observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

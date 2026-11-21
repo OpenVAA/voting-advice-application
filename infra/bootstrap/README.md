@@ -196,6 +196,8 @@ and the three `s5b_` lines.
 
 ## Step 2: First apply with local state
 
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
+
 The apply creates the state bucket, the OIDC provider, the two roles and their four policies, the
 registry and the budget. The bucket has a global name and is protected from destruction, and later
 workflows name the roles, so undoing this step means emptying a versioned bucket and removing roles
@@ -295,6 +297,8 @@ by hand. Run it in one terminal, signed in with the identity of Step 1.
 Return: the `s3_`, `s5_`, `s6_`, `s7_`, `s9_`, `s10_` and `s11_` lines, and `answer_fallback=`.
 
 ## Step 3: Migrate the state and plan again
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
 
 Steps 3 to 6 run in one sitting. The local state files of Step 2 are in `infra/bootstrap` and do not
 depend on the terminal. Begin with these lines, from the repository root, signed in; leave the export
@@ -680,6 +684,10 @@ Return: `answer_outcome=fired`, `answer_outcome=no-alert-can-fire` or `answer_ou
 `s6_second_plan_exit=`; and in every outcome `s7_logs_removed=yes`. Do not paste your address.
 
 ## Step 8: The frontend execution role
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
+
+← guide: [Deployment § The two parameters](https://openvaa.org/developers-guide/deployment#the-two-parameters)
 
 This step adds the execution role of the frontend's ECS task to this root: the identity the ECS agent
 uses to pull the image, write the container's logs and read the task's parameters. It comes from the
@@ -1172,6 +1180,8 @@ Return: every `s9_` and `s9a_` to `s9e_` line, in order, and `answer_step9=appli
 `answer_step9=stopped-at-<item>`. Do not paste your address.
 
 ## Observations
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
 
 | Date (UTC) | Observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

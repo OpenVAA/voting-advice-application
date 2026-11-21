@@ -37,6 +37,8 @@ of `envs/staging/dns-mail` and of `envs/staging/supabase` for those roots, and
 
 ## Order
 
+← guide: [Deployment § From an empty account to a tested instance](https://openvaa.org/developers-guide/deployment#from-an-empty-account-to-a-tested-instance)
+
 The first apply of each root, in this order:
 
 ```
@@ -77,6 +79,8 @@ budget. The staging Supabase project is in
 
 ## Prerequisites
 
+← guide: [Deployment § From an empty account to a tested instance](https://openvaa.org/developers-guide/deployment#from-an-empty-account-to-a-tested-instance)
+
 - Terraform 1.16.5, the version pinned in `infra/.terraform-version`. Check with `terraform version`.
 - The AWS CLI version 2, `jq`, `dig`, `curl`, `shasum` and `git`.
 - An identity that applies by hand and carries no inline policy: an IAM Identity Center permission set
@@ -90,6 +94,8 @@ budget. The staging Supabase project is in
   policy, a repository setting and not code, is what keeps `main` and every other branch out.
 
 ## Rules of every apply
+
+← guide: [Deployment § From an empty account to a tested instance](https://openvaa.org/developers-guide/deployment#from-an-empty-account-to-a-tested-instance)
 
 - An exit status is read on the line after the command, as `echo "…_exit=$?"`, and never through a
   pipe, because a pipe reports the status of its last command and not of the one that matters.
@@ -153,6 +159,10 @@ nothing, and its one credentialed job only shows that both roles refuse it.
 
 ### The gated job and its order
 
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
+← guide: [Operations § Rollback](https://openvaa.org/developers-guide/deployment/operations#rollback)
+
 A no-credential job, `checks`, runs first: Terraform formatting, the validation of the staging AWS
 root and `yarn test:unit:infra`. The `deploy` job needs it, runs in the `staging` environment and
 waits for its reviewer. Once approved, in this order:
@@ -197,6 +207,10 @@ so a run whose gated job waits for approval is already running and holds it.
 
 ### The environments and their settings
 
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
+← guide: [Operations § The GitHub secrets](https://openvaa.org/developers-guide/deployment/operations#the-github-secrets)
+
 | Setting                              | `staging`                                                                                                             | `staging-destroy`          |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | Required reviewer                    | The operator                                                                                                          | The operator               |
@@ -238,6 +252,8 @@ and on a push to a `deploy-evidence/**` branch.
 
 ### The destroy workflow
 
+← guide: [Operations § Teardown](https://openvaa.org/developers-guide/deployment/operations#teardown)
+
 `destroy.yml` starts on a push to the one branch `deploy-evidence/destroy-staging`, which the deploy
 workflow excludes, or on a dispatch from the `deploy/staging` ref whose `confirm` input is
 `destroy staging aws`. It has two jobs, each in `staging-destroy` and each waiting for its own
@@ -264,6 +280,8 @@ prints `running_image_digest=`, and the plan takes it as `-var "image_digest=$DI
 [`envs/staging/aws/README.md`](envs/staging/aws/README.md) gives the commands.
 
 ### Reading a red run
+
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
 
 The alert mail's subject names the stage that failed. Every step of the gated job belongs to the
 stage it follows: `setup` is the checkout and the first role assumption, before anything is built;
@@ -295,6 +313,10 @@ No report, plan or output directory is uploaded from any job, on a green run or 
 is all there is. An alert that could not be sent prints `alert_error=` in the alert step.
 
 ### Recovery
+
+← guide: [Operations § Rollback](https://openvaa.org/developers-guide/deployment/operations#rollback)
+
+← guide: [Operations § Teardown](https://openvaa.org/developers-guide/deployment/operations#teardown)
 
 - An apply cut short by a timeout, a cancel or a lost runner can leave the state lock held. Once no
   run is applying, release it from the operator's shell with
@@ -350,6 +372,8 @@ fast-forwarded to a `main` commit.
   manages.
 
 ## Example environment
+
+← guide: [Deployment § Fork and configure](https://openvaa.org/developers-guide/deployment#fork-and-configure)
 
 `envs/example/` is what a fork copies to start a deployment of its own. Nothing applies it; the
 validation job validates it, so it stays in step with the staging roots, and the pull-request
