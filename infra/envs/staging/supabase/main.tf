@@ -3,7 +3,7 @@
 # replacement is never applied. This root is applied by hand from an operator's shell, and its state
 # key sits under the hand/ prefix, which the pipeline's roles cannot read.
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     supabase = {

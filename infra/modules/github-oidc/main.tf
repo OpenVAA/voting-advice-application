@@ -2,7 +2,7 @@
 # allows one provider per issuer URL in an account, so the module is called once per account.
 
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     aws = {

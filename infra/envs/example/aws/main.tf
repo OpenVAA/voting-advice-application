@@ -3,7 +3,7 @@
 # its variable file. Replace the bucket below with your own state bucket and the stand-in values in
 # terraform.tfvars with your own before the first apply.
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     aws = {

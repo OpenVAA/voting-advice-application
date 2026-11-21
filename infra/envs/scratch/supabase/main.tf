@@ -3,7 +3,7 @@
 # plan and the destroy refusal are all seen here first. Its state is local and ignored by Git. The
 # root is removed once the throwaway project is deleted.
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     supabase = {

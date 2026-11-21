@@ -4,7 +4,7 @@
 # shows a destroy or a replacement is never applied, and the root is applied by hand from an
 # operator's shell with its state key under the hand/ prefix.
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     supabase = {
