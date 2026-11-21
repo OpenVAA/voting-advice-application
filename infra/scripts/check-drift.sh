@@ -19,6 +19,8 @@
 #   - Role settings: ALTER ROLE ... SET.
 # A table privilege and a policy whose USING expression was changed are reported. The four above are compared between migrations/ and schema/ by apps/supabase/scripts/check-schema-equivalence.sh, in two built databases. On a deployed database only a probe that queries the catalog sees them, and this script is not that probe. The history part compares versions only: a migration whose file was edited after it was applied keeps its version, and the edit is found only as far as it changed something the diff sees.
 #
+# This check has no automated run: no CI job calls it, so it runs only when an operator runs it.
+#
 # Usage:
 #   ```sh
 #   set -a; eval "$(apps/supabase/scripts/isolated-instance.sh env --name probe)"; set +a

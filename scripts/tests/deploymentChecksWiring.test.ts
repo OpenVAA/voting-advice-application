@@ -7,6 +7,8 @@
  *
  * The schema-equivalence check runs in CI all the same, as a step of the `sql-lint` job, whose runner has Docker and the Supabase CLI. It is the only tie between `schema/` and `migrations/`, so a migration written without its `schema/` edit, or the reverse, reddens that job.
  *
+ * The seed check runs in CI too, as a step of the `supabase-tests` job after `supabase start`. That stack holds the local seed, so the step requires the check to refuse it; a check that went blind reddens the job. The drift check has no automated run.
+ *
  * The bootstrap script writes rows into a deployment's database. It gets no script key, so that no convenient name can run it against whatever database the environment happens to point at; an operator runs it by hand.
  *
  * ⚠ The invariant asserted about `lint:check` is MEMBERSHIP of its `&&` links, never position, never the whole string, never the link count. Links may be appended to the chain freely.
@@ -54,21 +56,28 @@ const CHECKS = [
 const BOOTSTRAP_FILE = 'infra/scripts/bootstrap.sql';
 
 /**
- * The `run:` commands of the `sql-lint` job in `.github/workflows/main.yaml`, in order: from its key down to the next top-level job key, with whole-line comments dropped.
+ * The `run:` commands of a job in `.github/workflows/main.yaml`, in order: from its key down to the next top-level job key, with whole-line comments dropped. A multi-line `run: |` block yields `|`; its commands are read from `jobLines`.
  */
-const SQL_LINT_RUNS: Array<string> = (() => {
-  const lines = readFileSync(resolve(REPO_ROOT, '.github/workflows/main.yaml'), 'utf8')
-    .split('\n')
-    .filter((line) => !/^\s*#/.test(line));
-  const start = lines.indexOf('  sql-lint:');
-  if (start === -1) return [];
-  const after = lines.slice(start + 1);
-  const next = after.findIndex((line) => /^ {2}\S/.test(line));
-  return (next === -1 ? after : after.slice(0, next))
+function jobRuns(job: string): Array<string> {
+  return jobLines(job)
     .map((line) => line.trim())
     .filter((line) => /^(-\s+)?run:/.test(line))
     .map((line) => line.replace(/^(-\s+)?run:\s*/, ''));
-})();
+}
+
+/** The lines of a job in `.github/workflows/main.yaml`, from its key down to the next top-level job key, with whole-line comments dropped. */
+function jobLines(job: string): Array<string> {
+  const lines = readFileSync(resolve(REPO_ROOT, '.github/workflows/main.yaml'), 'utf8')
+    .split('\n')
+    .filter((line) => !/^\s*#/.test(line));
+  const start = lines.indexOf(`  ${job}:`);
+  if (start === -1) return [];
+  const after = lines.slice(start + 1);
+  const next = after.findIndex((line) => /^ {2}\S/.test(line));
+  return next === -1 ? after : after.slice(0, next);
+}
+
+const SQL_LINT_RUNS = jobRuns('sql-lint');
 
 describe('the on-demand deployment checks are callable by key and stay outside lint:check', () => {
   it.each(CHECKS)('runs `$command` from `$key` and keeps the file `$file` present', ({ key, command, file }) => {
@@ -101,5 +110,25 @@ describe('the schema-equivalence check runs in CI', () => {
     expect(install).toBeGreaterThan(-1);
     expect(check).toBeGreaterThan(install);
     expect(stackStart).toBeGreaterThan(check);
+  });
+});
+
+describe('the seed check runs in CI against the seeded stack', () => {
+  const lines = jobLines('supabase-tests').map((line) => line.trim());
+  const stackStart = lines.indexOf('run: supabase start');
+  const seedCheck = lines.findIndex((line) => line.includes('psql -X -f infra/scripts/check-seed.sql'));
+
+  it('runs `check-seed.sql` in the supabase-tests job after `supabase start`', () => {
+    expect(stackStart).toBeGreaterThan(-1);
+    expect(seedCheck).toBeGreaterThan(stackStart);
+  });
+
+  it('requires status 3 and every finding class, and reruns when the check changes', () => {
+    const step = lines.slice(seedCheck);
+    expect(step.some((line) => /-ne 3\b/.test(line))).toBe(true);
+    for (const finding of ['seed user:', 'local address:', 'demo key:']) {
+      expect(lines.join('\n')).toContain(`'${finding}'`);
+    }
+    expect(lines).toContain("- 'infra/scripts/check-seed.sql'");
   });
 });

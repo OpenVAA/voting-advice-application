@@ -211,6 +211,7 @@ jobs:
             supabase:
               - 'apps/supabase/**'
               - 'packages/supabase-types/**'
+              - 'infra/scripts/check-seed.sql'
 
       - uses: supabase/setup-cli@v3
         if: steps.changes.outputs.supabase == 'true'
@@ -221,6 +222,33 @@ jobs:
         if: steps.changes.outputs.supabase == 'true'
         working-directory: apps/supabase
         run: supabase start
+
+      # `supabase start` applies seed.sql, so this database holds a seed user, a local address and the
+      # demo key. The seed check must refuse it with status 3 and name all three; a pass here means the
+      # check has gone blind.
+      - name: "Run the seed check against the seeded stack (it must report every finding)"
+        if: steps.changes.outputs.supabase == 'true'
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 54322
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: |
+          stderr_file="$RUNNER_TEMP/check-seed.stderr"
+          status=0
+          psql -X -f infra/scripts/check-seed.sql 2> "$stderr_file" || status=$?
+          cat "$stderr_file"
+          if [ "$status" -ne 3 ]; then
+            echo "::error::check-seed.sql exited $status on the seeded stack; expected 3"
+            exit 1
+          fi
+          for finding in 'seed user:' 'local address:' 'demo key:'; do
+            if ! grep -qF -- "$finding" "$stderr_file"; then
+              echo "::error::check-seed.sql did not report '$finding' on the seeded stack"
+              exit 1
+            fi
+          done
 
       - name: "Run pgTAP tests"
         if: steps.changes.outputs.supabase == 'true'
