@@ -14,7 +14,7 @@ Continue with a form sends nothing while a field is in error: it says what is wr
 
 The view cannot be put aside: only a rerun load that reads an address or a name removes it. Logging out is always available and asks nothing.
 
-Its Log out is the shared `LogoutButton`.
+Its Log out is the shared `LogoutButton`, and "Send again", "Use another email address" and the status region are the `PendingAddressPanel`.
 
 ### Dynamic component
 
@@ -51,11 +51,10 @@ None.
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Input } from '$lib/components/input';
+  import { PendingAddressPanel } from '$lib/contestant/components/pendingAddressPanel';
   import { hasDefaultLocaleName } from '$lib/contestant/utils/identityProviderAccount';
   import { requiredNameLocale } from '$lib/contestant/utils/nameRule';
-  import { PendingAddressResend } from '$lib/contestant/utils/pendingAddressResend.svelte';
   import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
-  import { EmailSentResend } from '$lib/dynamic-components/emailSentPanel';
   import { LogoutButton } from '$lib/dynamic-components/logoutButton';
   import { assertTranslationKey } from '$lib/i18n/utils';
   import { getUUID } from '$lib/utils/components';
@@ -243,25 +242,8 @@ None.
     if (focused instanceof HTMLElement && document.activeElement === document.body) focused.focus();
   }
 
-  ////////////////////////////////////////////////////////////////////
-  // Send again
-  ////////////////////////////////////////////////////////////////////
-
-  /** The request for the link and the count of `RESEND_WAIT_SECONDS` that runs from its settlement. */
-  const resend = new PendingAddressResend(registerIdentityProviderAccount);
-
-  const resendStatus = $derived(
-    resend.status === 'requested'
-      ? t('contestantApp.emailSent.resendRequested')
-      : resend.status === 'ready'
-        ? t('contestantApp.emailSent.resendReady')
-        : ''
-  );
-
   onMount(() => {
     mounted = true;
-    resend.start();
-    return () => resend.stop();
   });
 </script>
 
@@ -328,26 +310,17 @@ None.
     </form>
   {/if}
 
-  {#if waitsForLink}
-    <div class="flex w-full flex-col items-center">
-      <EmailSentResend
-        secondsLeft={resend.secondsLeft}
-        loading={resend.requesting}
-        onresend={() => resend.resend()}
-        resendTestId="identity-provider-gate-resend"
-        countdownTestId="identity-provider-gate-countdown" />
-      <Button
-        type="button"
-        text={t('contestantApp.emailSent.changeAddress')}
-        onclick={handleChangeAddress}
-        data-testid="identity-provider-gate-change-address" />
-    </div>
-  {/if}
-
   {#if addressState === 'pending'}
-    <p class="sr-only" role="status" aria-live="polite" data-testid="identity-provider-gate-status">
-      {resendStatus}
-    </p>
+    <!-- Mounted for as long as the address is pending, so that the count of Send again survives the switch to the form. -->
+    <PendingAddressPanel
+      hideActions={!waitsForLink}
+      onchangeaddress={handleChangeAddress}
+      testIds={{
+        resend: 'identity-provider-gate-resend',
+        countdown: 'identity-provider-gate-countdown',
+        change: 'identity-provider-gate-change-address',
+        status: 'identity-provider-gate-status'
+      }} />
   {/if}
 
   {#if status === 'failed'}

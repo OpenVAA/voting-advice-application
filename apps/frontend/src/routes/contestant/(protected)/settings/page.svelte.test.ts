@@ -7,7 +7,7 @@
  *
  * 1. **A proved address** — the account's address in the locked field with its description, nothing of a pending address, and the address given to the change-password form as its user name.
  * 2. **An address awaiting its link** — the pending address in the locked field with the sentence that it has not been confirmed, Send again with its count and status, and no user name for the change-password form.
- * 3. **Another address** — "Use another email address" shows the address fields and the save button; an incomplete pair sends nothing; a valid pair is saved and the loads rerun; an address another account holds is told at the address field; any other failure is told under the fields.
+ * 3. **Another address** — "Use another email address" shows the address fields and the save button; an incomplete pair sends nothing; a valid pair is saved and the loads rerun; an address another account holds is told at the address field; any other failure is told under the fields; the count of Send again runs on while the fields are shown and after a new address is saved.
  * 4. **No address** — no address anywhere.
  * 5. **The way back** — Return leads to the app's root, which names no entity: the page is the user's own and is reached from every state, with no entity, one or several.
  * 6. **A password change** — its failure is put into an alert region, and its success into a status region, each rendered before the press, so that the message is announced.
@@ -331,6 +331,37 @@ describe('the settings page — another address', () => {
     expect(addressControl(target).value).toBe(TYPED);
     expect(target.querySelector(SEL.entryEmail)).toBeNull();
     one(target, SEL.change);
+  });
+
+  it('keeps the count of Send again running while the address fields are shown and after a new address is saved', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
+    register.mockResolvedValue('sent');
+    const target = render(PENDING_USER);
+    await press(target, SEL.resend);
+
+    vi.advanceTimersByTime(1000);
+    flushSync();
+    await press(target, SEL.change);
+
+    expect(one(target, SEL.resend).getAttribute('aria-disabled')).toBe('true');
+    expect(one(target, SEL.countdown).textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS - 1}`);
+    expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendRequested);
+
+    register.mockResolvedValue('saved');
+    type(one<HTMLInputElement>(target, SEL.entryEmail), TYPED);
+    type(one<HTMLInputElement>(target, SEL.entryConfirmation), TYPED);
+    await press(target, SEL.save);
+    currentUser = userWith({ address: { state: 'pending', email: TYPED } });
+    flushSync();
+
+    expect(target.querySelector(SEL.entryEmail)).toBeNull();
+    expect(one(target, SEL.resend).getAttribute('aria-disabled')).toBe('true');
+    expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendRequested);
+
+    vi.advanceTimersByTime((RESEND_WAIT_SECONDS - 1) * 1000);
+    flushSync();
+    expect(one(target, SEL.resend).hasAttribute('aria-disabled')).toBe(false);
+    expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendReady);
   });
 
   it('tells an address another account holds at the address field, with focus there, and reruns nothing', async () => {
