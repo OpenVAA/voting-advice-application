@@ -1,6 +1,5 @@
-# The settings this module sends, built from hosted-settings.json and the variables. This file holds
-# only locals, with no resource and no provider reference, so that it can be evaluated on its own
-# (infra/scripts/check-settings-types.sh does that with `terraform console`).
+# The settings this module sends, built from hosted-settings.json and the variables.
+# tests/settings.tftest.hcl checks that they keep their types and hold the JSON's values.
 #
 # hosted-settings.json holds every hosted value that is compared with the local configuration. The
 # HCL adds only what depends on the environment: the site address and the redirect allow list built

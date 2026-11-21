@@ -782,7 +782,10 @@ jobs:
   # moved to other code. `terraform_wrapper: false` keeps the wrapper from hiding exit statuses.
   #
   # `-lockfile=readonly` fails `init` when a tracked lock file lacks the hashes of this runner's
-  # platform, instead of rewriting the lock file in the runner.
+  # platform, instead of rewriting the lock file in the runner. The module tracks no lock file, so its
+  # test step initialises without the flag.
+  #
+  # `terraform test` plans the module against a mocked provider, so it needs no credentials either.
   #
   # The roots are found by glob, so a root added later is validated without an edit here. The loop
   # then fails if any root named below was not among those validated, so an empty or short glob
@@ -840,4 +843,7 @@ jobs:
 
       - name: "Check the settings types of the Supabase module"
         if: ${{ !cancelled() }}
-        run: bash infra/scripts/check-settings-types.sh
+        run: |
+          set -euo pipefail
+          terraform -chdir=infra/modules/supabase init -backend=false -input=false
+          terraform -chdir=infra/modules/supabase test -no-color
