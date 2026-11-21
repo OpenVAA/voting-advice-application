@@ -51,10 +51,10 @@ paragraph, which state its delta against the previous migration; the full descri
 re-issues stays in `schema/`. So a schema change is **one commit with three parts** -- the `schema/`
 edit, the numbered migration, and its manifest line -- after which `yarn check:schema-equivalence`
 builds one database from `schema/` and one from the migrations and fails when they differ; it needs
-Docker and is not part of `yarn lint:check`. **A gate keeps the migrations frozen**:
-`yarn assert:schema-migration-parity`, a link of `yarn lint:check`, fails when a listed migration's
-bytes change, when a migration has no manifest line, and when versions repeat, go down or leave a gap;
-`yarn schema:regenerate` refuses and prints the three steps. Two obligations no tool enforces: **read
+Docker, and runs in CI in the `sql-lint` job. **A gate keeps the migrations frozen**:
+`yarn assert:migrations-frozen`, a link of `yarn lint:check`, fails when a listed migration's
+bytes change, when a migration has no manifest line, and when versions repeat, go down or leave a gap.
+Two obligations no tool enforces: **read
 the migration you wrote** in that same commit, and run `yarn db:types` so `packages/supabase-types/`
 matches. The two storage buckets are created by the migration; a deployment's own rows are written by
 `infra/scripts/bootstrap.sql`. Full treatment: `apps/supabase/README.md`.
@@ -867,7 +867,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `x-identity-callback-secret` header, or with a value other than
      `IDENTITY_CALLBACK_SERVER_SECRET` (constant-time compare, `serverCredential.ts`), is answered
      401 `refused` before the body, the configuration or the token is read. Body:
-     `{ id_token, project_id (uuid, required), entity_type? }`; the project comes from the REQUEST
+     `{ id_token, project_id (uuid, required), intent?, entity_type? }`; the project comes from the REQUEST
      and the function reads none from its environment. It verifies the JWE/JWT and, BEFORE any
      account or row is touched, asks `public.identity_provider_entity_types(p_project_id)` which
      entity types the project lets an identity provider register (the rule is the database's,
@@ -893,8 +893,11 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `identity_match_value` (`appMetadata.ts`); the registrations are never part of it, and the
      identity metadata the Edge Function hands the database function sends `hetu` and `birthdate` as
      null, which removes them. Every answer is one closed `result` (`requestContract.ts`):
-     `created`, `found`, `no_entity` (200, with `token`), `refused` (401), `mode_not_allowed` (403),
-     `invalid_token` (401), `bad_request` (400), `configuration` (500), `unavailable` (503).
+     `created`, `found`, `no_entity`, `signed_in` (200, with `token`), `refused` (401),
+     `mode_not_allowed` (403), `no_account` (404), `invalid_token` (401), `bad_request` (400),
+     `configuration` (500), `unavailable` (503). A request with `intent: 'sign_in'` creates
+     nothing: after the token is verified it signs in only the account that already holds this
+     identity's match value, answering `signed_in`, and answers `no_account` when there is none.
    - `send-email`: gated as above; resolves per-recipient email variables in the configured
      project and sends via SMTP (nodemailer).
 
