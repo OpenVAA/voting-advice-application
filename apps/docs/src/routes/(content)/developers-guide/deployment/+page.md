@@ -15,12 +15,12 @@ Fork the repository and make the changes your instance needs. At least edit the 
 
 Create a project in Supabase. The Supabase CLI comes with `yarn install` and runs as `yarn workspace @openvaa/supabase supabase <command>`; Supabase's [deployment guide](https://supabase.com/docs/guides/deployment) explains how to link it to a hosted project and push changes.
 
-1. **Schema.** Push the migrations in [`apps/supabase/supabase/migrations/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/migrations). They are generated from the files in `schema/`; see [Schema and migrations](/developers-guide/backend/intro#schema-and-migrations).
-2. **Storage buckets.** Create the two buckets that `apps/supabase/supabase/config.toml` declares for the local stack: `public-assets` (public) and `private-assets` (private). The migrations create the bucket policies, not the buckets.
+1. **Schema.** Push the migrations in [`apps/supabase/supabase/migrations/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/migrations). They are appended one per schema change; see [Schema and migrations](/developers-guide/backend/intro#schema-and-migrations).
+2. **Storage buckets.** The baseline migration creates both buckets, `public-assets` (public) and `private-assets` (private). Check in the project's Storage settings that both exist.
 3. **Auth.** Apply on the hosted project what `config.toml` sets locally:
-   - Enable the custom access token hook, `public.custom_access_token_hook` (`[auth.hook.custom_access_token]`). It puts the user's grants into the access token, and the authorisation model depends on it; see [Authentication and authorisation](/developers-guide/backend/authentication).
+   - Enable the custom access token hook, `public.custom_access_token_hook` (`[auth.hook.custom_access_token]`). It puts the user's grants into the access token for the app-entry gates; see [Authentication and authorisation](/developers-guide/backend/authentication).
    - Set the site URL to the frontend's origin, and allow two redirect URLs: `<frontend origin>/auth/confirm` and `<frontend origin>/*/auth/confirm`. The second admits the confirm page behind one locale segment, which every mailed link carries; see [The sign-in link of an invitation](#the-sign-in-link-of-an-invitation).
-   - Configure an SMTP server for Auth email. The local stack delivers mail to its email testing server instead; see [Email](/developers-guide/backend/email).
+   - Enable the Send Email hook, so that the auth service sends no mail of its own; see the Send Email hook row of [Auth settings of a hosted project](#auth-settings-of-a-hosted-project).
    - Turn public sign-up off and email confirmation on; see [Auth settings of a hosted project](#auth-settings-of-a-hosted-project).
 4. **API row limit.** Make the API's maximum rows setting equal `dataAdapter.pageSize` in the static settings. Locally both are set to 50000.
 5. **Account and project.** `apps/supabase/supabase/seed.sql` is local-development data. It creates two test users with a known password, so do not run it on a production database. Instead, create one row in `accounts` and one in `projects` in the SQL editor, modelled on the default account and project in `seed.sql`. A project is closed to voters by default (`open_for_voters` is `false`); set it to `true` when the voter app should open. The project's id becomes `PUBLIC_PROJECT_ID`.
@@ -29,9 +29,9 @@ Create a project in Supabase. The Supabase CLI comes with `yarn install` and run
 8. **Edge Functions.** Deploy the three functions in [`apps/supabase/supabase/functions/`](https://github.com/OpenVAA/voting-advice-application/tree/main/apps/supabase/supabase/functions) and set their variables as secrets of the project (see Supabase's [Edge Functions guide](https://supabase.com/docs/guides/functions)):
    - `PUBLIC_PROJECT_ID` and `SITE_URL` (the frontend's origin)
    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, and `SMTP_USER` and `SMTP_PASS` for a server that needs a login
-   - for bank authentication: `IDENTITY_PROVIDER_TYPE`, `IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_DECRYPTION_JWKS`, `IDENTITY_PROVIDER_JWKS_URI` and `IDENTITY_PROVIDER_ISSUER`
+   - for bank authentication: `IDENTITY_PROVIDER_TYPE`, `IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_DECRYPTION_JWKS`, `IDENTITY_PROVIDER_JWKS_URI` and `IDENTITY_PROVIDER_ISSUER`, and `IDENTITY_CALLBACK_SERVER_SECRET`, the same value as the frontend's
 
-   Supabase sets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` for the functions itself. `identity-callback` is called by the browser without a Supabase session, so it runs without JWT verification (`--no-verify-jwt`), as it does locally. `account-access` is called with the anon key and no user token. The local gateway accepts such a call; whether a hosted project's gateway does is unverified, so check it with one `check-code` request after deploying. [Edge Functions](/developers-guide/backend/edge-functions) describes each function.
+   Supabase sets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` for the functions itself. `identity-callback` is called by the frontend server's `/api/oidc/callback` route, which proves itself with `IDENTITY_CALLBACK_SERVER_SECRET`, so it runs without JWT verification (`--no-verify-jwt`), as it does locally. `account-access` is called with the anon key and no user token. The local gateway accepts such a call; whether a hosted project's gateway does is unverified, so check it with one `check-code` request after deploying. [Edge Functions](/developers-guide/backend/edge-functions) describes each function.
 
    `account-access` mails sign-in links, and it refuses to until the project's auth settings and these variables are right; see [The sign-in link of an invitation](#the-sign-in-link-of-an-invitation).
 
@@ -94,7 +94,7 @@ The answer must hold `"disable_signup": true` and `"mailer_autoconfirm": false`.
 
 Turning sign-up off closes both. Confirmation stays on as well, so that a sign-up switched back on by mistake does not confirm addresses without a mail.
 
-The names of the dashboard settings above are unverified against a hosted project's dashboard. The request above does not depend on a label: whatever the dashboard calls the two sign-up switches, the served settings must hold those two values. The other three settings are not in that answer; read them in the dashboard.
+The names of the dashboard settings above are unverified against a hosted project's dashboard. The request above does not depend on a label: whatever the dashboard calls the two sign-up switches, the served settings must hold those two values. The other five settings are not in that answer; read them in the dashboard.
 
 ### The sign-in link of an invitation
 
@@ -107,9 +107,9 @@ The `account-access` Edge Function mails the sign-in link of an invitation. Four
 | `SITE_URL`                                                                              | a secret of the project, read by the function | the frontend's public origin, with no path. It is the origin of every mailed link; no request can change it |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, and `SMTP_USER` and `SMTP_PASS` where they apply | secrets of the project, read by the function  | the mail server the link is sent through                                                                    |
 
-Before it issues a link the function asks the auth service whether public sign-up is closed and whether `<SITE_URL>/<locale>/auth/confirm` is an admitted redirect target. When either answer is no it issues no link, mails nothing and logs one line that says which: `account-access: public sign-up is not disabled on this deployment; no link issued`, or `account-access: SITE_URL is not admitted by the auth redirect allowlist; no link issued`. The caller's answer does not change, so an invited person on a misconfigured deployment simply receives no mail. Read the function's log after the first link request of a new deployment. [The two deployment checks](/developers-guide/backend/edge-functions#the-two-deployment-checks) describes both.
+Before it issues a link the function checks the first two rows with the auth service, and on a misconfigured deployment it mails nothing and logs why; read the function's log after the first link request of a new deployment, as [The two deployment checks](/developers-guide/backend/edge-functions#the-two-deployment-checks) describes.
 
-**The function's refusal does not protect the claim.** It stops the legitimate flow on a misconfigured project and makes the mistake visible. `claim_invitations` runs in the database, has no guard on the auth service's sign-up setting and does not ask the function, so on a project whose dashboard still allows public sign-up a visitor can sign up with an invited address and claim its invitations. Only the dashboard setting prevents that.
+**The function's refusal does not protect the claim:** only the dashboard setting does, as [The database has no guard of its own](#auth-settings-of-a-hosted-project) above explains.
 
 Both refusals are held by unit tests of the function's modules, with injected answers; no test runs the served function against an auth service that fails either check, and the local stack is configured to pass both. [What this does not protect against](/developers-guide/backend/authentication#what-this-does-not-protect-against) lists what else an operator accepts with the invitation model: unlimited anonymous code checks, one sign-in mail per minute to any eligible address, and limits that do not use the caller's identity. A deployment that needs a bound on either puts a rate limit in front of the function at its gateway.
 
