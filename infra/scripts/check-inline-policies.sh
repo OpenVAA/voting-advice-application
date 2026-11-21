@@ -1,20 +1,13 @@
 #!/usr/bin/env bash
 #
-# account-inventory.sh -- Print a read-only inventory of the AWS account, or judge one rule over it.
+# check-inline-policies.sh -- Judge, over the AWS account, the rule that no IAM identity carries an
+# inline policy.
 #
 # Usage (from a shell signed in to the account, with the AWS CLI on the PATH):
-#   infra/scripts/account-inventory.sh                                     # the full inventory
-#   infra/scripts/account-inventory.sh --assert-no-inline-user-policies    # exit 1 if any IAM user has an inline policy
-#   infra/scripts/account-inventory.sh --assert-managed-only /openvaa/     # exit 1 if a role or user under the path has one
-#   infra/scripts/account-inventory.sh --self-test                         # judge canned lines; needs no credentials
+#   infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies    # exit 1 if any IAM user has an inline policy
+#   infra/scripts/check-inline-policies.sh --assert-managed-only /openvaa/     # exit 1 if a role or user under the path has one
+#   infra/scripts/check-inline-policies.sh --self-test                         # judge canned lines; needs no credentials
 #
-#   (no argument)                       Print, section by section: the caller as account id and role
-#                                       name; whether the account belongs to an organisation; the
-#                                       account summary counts; every IAM user, group and role that is
-#                                       not service-linked, with its inline policy names; the OIDC
-#                                       providers; the hosted zones; for four regions the SES account
-#                                       state, the domain identities and a count of address identities;
-#                                       the budgets; the image repositories; the bucket names.
 #   --assert-no-inline-user-policies    Read every IAM user. Exit 0 when the user list was read and no
 #                                       user has an inline policy, also when the account has no IAM user.
 #   --assert-managed-only <path-prefix> Read every IAM user and role. Exit 0 when at least one role or
@@ -25,30 +18,27 @@
 #                                       a session name or a person's user name reaches the output.
 #   -h, --help                          Print this header and exit 0.
 #
-# Environment: OPENVAA_ACCOUNT_ID (default 471112560111) is the account the budgets are read for and
-# that the caller is compared with; AWS_REGION (default eu-north-1) is the region of the repositories
-# and the first SES region.
-#
 # Exit codes:
-#   0:  the inventory was printed, the assertion holds, or every self-test case passed
-#   1:  a call that must succeed failed (the caller, the user list or the role list), the assertion
-#       does not hold, a list the assertion needs could not be read, the assertion examined nothing,
-#       or a self-test case failed
+#   0:  the assertion holds, or every self-test case passed
+#   1:  the assertion does not hold, a list the assertion needs could not be read, the assertion
+#       examined nothing, or a self-test case failed
 #   2:  usage error
 #
-# Every AWS call this script makes is a read: get-, list- and describe- only. It changes nothing.
+# Every AWS call this script makes is a read: list- only. It changes nothing.
 #
-# It prints names and counts and no credential, and it never echoes a value it was given; `set -x`
-# must not be added, because tracing would print the raw caller identity.
+# It prints names and no credential, and it never echoes a value it was given; `set -x` must not be
+# added, because tracing would print the raw user names.
 #
-# Its output is written to be pasted into a public record. It prints no e-mail address, no session
-# name and no error message of a failed call: a failed call prints the error code alone (for example
-# AccessDenied), because the message names the caller's session. An IAM user is printed by name only
-# when it lies under the path /openvaa/, where this project creates its own service users; any other
-# user is printed as user-<n>, n being its position in the order the user list gives, because a user
-# name is often a person's name or address. Run aws iam list-users --query 'Users[].UserName' on your
-# own machine to see which user a line means. A tag is printed by its key alone, except InvokedBy,
-# whose value is one of AWS's own words. Any field that still holds an "@" is printed as "redacted".
+# The lines it prints are written to be pasted into a public record: every user or role that carries
+# an inline policy or whose inline policies could not be read, then a one-line verdict on standard
+# error. It prints no e-mail address, no session name and no error message of a failed call: a failed
+# call prints the error code alone (for example AccessDenied), because the message names the caller's
+# session. An IAM user is printed by name only when it lies under the path /openvaa/, where this
+# project creates its own service users; any other user is printed as user-<n>, n being its position
+# in the order the user list gives, because a user name is often a person's name or address. Run
+# aws iam list-users --query 'Users[].UserName' on your own machine to see which user a line means. A
+# tag is printed by its key alone, except InvokedBy, whose value is one of AWS's own words. Any field
+# that still holds an "@" is printed as "redacted".
 
 set -euo pipefail
 set -f
@@ -56,20 +46,15 @@ set -f
 export AWS_PAGER=""
 export LC_ALL=C
 
-ACCOUNT_ID="${OPENVAA_ACCOUNT_ID:-471112560111}"
-REGION="${AWS_REGION:-eu-north-1}"
-export AWS_REGION="$REGION"
 OWN_PATH="/openvaa/"
-SES_REGIONS="$REGION eu-west-1 eu-central-1 us-east-1"
 
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 WORK=""
 OUT=""
 ERR_CODE=""
-MUST_FAILED=0
 
 usage_line() {
-  echo "usage: account-inventory.sh [--assert-no-inline-user-policies | --assert-managed-only <path-prefix> | --self-test | -h | --help]" >&2
+  echo "usage: check-inline-policies.sh [--assert-no-inline-user-policies | --assert-managed-only <path-prefix> | --self-test | -h | --help]" >&2
 }
 
 print_header() {
@@ -77,7 +62,7 @@ print_header() {
 }
 
 make_workdir() {
-  WORK="$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-inventory.XXXXXX")"
+  WORK="$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-inline-policies.XXXXXX")"
   trap 'rm -rf "$WORK"' EXIT
 }
 
@@ -124,25 +109,6 @@ fmt_tags() {
   printf '[%s]' "$out"
 }
 
-# The caller as account id and principal kind: an assumed role by its role name with the session name
-# cut off, an IAM user as the word "user". The raw ARN is never printed.
-fmt_caller() {
-  local account="$1" arn="$2" principal rest match
-  case "$arn" in
-    arn:aws*:sts::*:assumed-role/*)
-      rest="${arn#*:assumed-role/}"
-      principal="assumed-role/${rest%%/*}"
-      ;;
-    arn:aws*:iam::*:user/*) principal="user" ;;
-    arn:aws*:iam::*:root) principal="root" ;;
-    arn:aws*:sts::*:federated-user/*) principal="federated-user" ;;
-    *) principal="other" ;;
-  esac
-  if [ "$account" = "$ACCOUNT_ID" ]; then match="yes"; else match="no"; fi
-  printf 'caller account=%s principal=%s expected-account=%s match=%s\n' \
-    "$(redact "$account")" "$(redact "$principal")" "$ACCOUNT_ID" "$match"
-}
-
 # One IAM user. Arguments: position, path, name, and the inline, attached, groups and tags fields as
 # already formatted ([..] or error(<code>)).
 fmt_user() {
@@ -163,23 +129,6 @@ fmt_user() {
 
 fmt_role() {
   printf 'role %s path=%s inline=%s\n' "$(redact "$2")" "$(redact "$1")" "$3"
-}
-
-fmt_group() {
-  printf 'group %s inline=%s\n' "$(redact "$1")" "$2"
-}
-
-# SES identity lines "Type<TAB>Name<TAB>Status": a domain by name, address identities as a count.
-fmt_ses_identities() {
-  local region="$1" count=0 kind name status
-  while IFS=$'\t' read -r kind name status; do
-    [ -n "$name" ] || continue
-    case "$kind" in
-      EMAIL_ADDRESS) count=$((count + 1)) ;;
-      *) printf 'ses-domain %s %s status=%s\n' "$region" "$(redact "$name")" "$(redact "$status")" ;;
-    esac
-  done <<< "$2"
-  printf 'ses-address-identities %s count=%s\n' "$region" "$count"
 }
 
 # The error code of a failed call: the word in parentheses after "An error occurred", never the
@@ -224,46 +173,10 @@ list_or_error() {
   fi
 }
 
-section() {
-  printf '== %s\n' "$1"
-}
-
-collect_caller() {
-  local account arn
-  if call aws sts get-caller-identity --query '[Account,Arn]' --output text; then
-    IFS=$'\t' read -r account arn <<< "$OUT"
-    fmt_caller "$account" "$arn"
-  else
-    echo "error caller $ERR_CODE"
-    MUST_FAILED=1
-  fi
-}
-
-collect_organisation() {
-  if call aws organizations describe-organization --query 'Organization.Id' --output text; then
-    echo "organisation member=yes"
-  elif [ "$ERR_CODE" = "AWSOrganizationsNotInUseException" ]; then
-    echo "organisation member=no"
-  else
-    echo "error organisation $ERR_CODE"
-  fi
-}
-
-collect_summary() {
-  local users groups roles policies providers
-  if call aws iam get-account-summary --query 'SummaryMap.[Users,Groups,Roles,Policies,Providers]' --output text; then
-    IFS=$'\t' read -r users groups roles policies providers <<< "$OUT"
-    echo "summary users=$users groups=$groups roles=$roles policies=$policies providers=$providers"
-  else
-    echo "error account-summary $ERR_CODE"
-  fi
-}
-
 collect_users() {
   local list position=0 path name inline attached groups tags
   if ! call aws iam list-users --query 'Users[].[Path,UserName]' --output text; then
     echo "error users $ERR_CODE"
-    MUST_FAILED=1
     return 0
   fi
   list="$OUT"
@@ -283,27 +196,10 @@ collect_users() {
   echo "users examined=$position"
 }
 
-collect_groups() {
-  local list count=0 group inline
-  if ! call aws iam list-groups --query 'Groups[].GroupName' --output text; then
-    echo "error groups $ERR_CODE"
-    return 0
-  fi
-  list="$OUT"
-  for group in $list; do
-    [ "$group" = "None" ] && continue
-    count=$((count + 1))
-    inline="$(list_or_error aws iam list-group-policies --group-name "$group" --query 'PolicyNames' --output text)"
-    fmt_group "$group" "$inline"
-  done
-  echo "groups examined=$count"
-}
-
 collect_roles() {
   local list count=0 path name inline
   if ! call aws iam list-roles --query 'Roles[?!starts_with(Path, `/aws-service-role/`)].[Path,RoleName]' --output text; then
     echo "error roles $ERR_CODE"
-    MUST_FAILED=1
     return 0
   fi
   list="$OUT"
@@ -316,133 +212,8 @@ collect_roles() {
   echo "roles examined=$count"
 }
 
-collect_oidc() {
-  local arn count=0
-  if ! call aws iam list-open-id-connect-providers --query 'OpenIDConnectProviderList[].Arn' --output text; then
-    echo "error oidc-providers $ERR_CODE"
-    return 0
-  fi
-  for arn in $OUT; do
-    [ "$arn" = "None" ] && continue
-    count=$((count + 1))
-    echo "oidc-provider $(redact "$arn")"
-  done
-  echo "oidc-providers count=$count"
-}
-
-collect_zones() {
-  local list count=0 name id private records
-  if ! call aws route53 list-hosted-zones --query 'HostedZones[].[Name,Id,Config.PrivateZone,ResourceRecordSetCount]' --output text; then
-    echo "error hosted-zones $ERR_CODE"
-    return 0
-  fi
-  list="$OUT"
-  while IFS=$'\t' read -r name id private records; do
-    [ -n "$name" ] || continue
-    [ "$name" = "None" ] && continue
-    count=$((count + 1))
-    echo "zone $(redact "$name") id=$(redact "$id") private=$private records=$records"
-  done <<< "$list"
-  echo "hosted-zones count=$count"
-}
-
-collect_ses() {
-  local region="$1" production sending max24h suppression
-  if call aws sesv2 get-account --region "$region" --query '[ProductionAccessEnabled,SendingEnabled,SendQuota.Max24HourSend]' --output text; then
-    IFS=$'\t' read -r production sending max24h <<< "$OUT"
-    suppression="$(list_or_error aws sesv2 get-account --region "$region" --query 'SuppressionAttributes.SuppressedReasons' --output text)"
-    echo "ses $region production=$production sending=$sending max24h=$max24h suppression=$suppression"
-  else
-    echo "error ses-$region $ERR_CODE"
-  fi
-  if call aws sesv2 list-email-identities --region "$region" --query 'EmailIdentities[].[IdentityType,IdentityName,VerificationStatus]' --output text; then
-    fmt_ses_identities "$region" "$OUT"
-  else
-    echo "error ses-identities-$region $ERR_CODE"
-  fi
-}
-
-collect_budgets() {
-  local list count=0 name limit actual
-  if ! call aws budgets describe-budgets --account-id "$ACCOUNT_ID" --query 'Budgets[].[BudgetName,BudgetLimit.Amount,CalculatedSpend.ActualSpend.Amount]' --output text; then
-    echo "error budgets $ERR_CODE"
-    return 0
-  fi
-  list="$OUT"
-  while IFS=$'\t' read -r name limit actual; do
-    [ -n "$name" ] || continue
-    [ "$name" = "None" ] && continue
-    count=$((count + 1))
-    name="$(redact "$name")"
-    echo "budget ${name// /_} limit=$limit actual=$actual"
-  done <<< "$list"
-  echo "budgets count=$count"
-}
-
-collect_repositories() {
-  local list count=0 name mutability
-  if ! call aws ecr describe-repositories --region "$REGION" --query 'repositories[].[repositoryName,imageTagMutability]' --output text; then
-    echo "error repositories $ERR_CODE"
-    return 0
-  fi
-  list="$OUT"
-  while IFS=$'\t' read -r name mutability; do
-    [ -n "$name" ] || continue
-    [ "$name" = "None" ] && continue
-    count=$((count + 1))
-    echo "repository $(redact "$name") tags=$mutability"
-  done <<< "$list"
-  echo "repositories $REGION count=$count"
-}
-
-collect_buckets() {
-  local bucket count=0
-  if ! call aws s3api list-buckets --query 'Buckets[].Name' --output text; then
-    echo "error buckets $ERR_CODE"
-    return 0
-  fi
-  for bucket in $OUT; do
-    [ "$bucket" = "None" ] && continue
-    count=$((count + 1))
-    echo "bucket $(redact "$bucket")"
-  done
-  echo "buckets count=$count"
-}
-
-collect_all() {
-  local region seen=" "
-  section caller
-  collect_caller
-  section organisation
-  collect_organisation
-  section account-summary
-  collect_summary
-  section iam-users
-  collect_users
-  section iam-groups
-  collect_groups
-  section iam-roles
-  collect_roles
-  section oidc-providers
-  collect_oidc
-  section hosted-zones
-  collect_zones
-  for region in $SES_REGIONS; do
-    case "$seen" in *" $region "*) continue ;; esac
-    seen="$seen$region "
-    section "ses $region"
-    collect_ses "$region"
-  done
-  section budgets
-  collect_budgets
-  section "repositories $REGION"
-  collect_repositories
-  section buckets
-  collect_buckets
-}
-
 # ---------------------------------------------------------------------------------------------------
-# Judging. Reads inventory lines on standard input. Offending lines go to standard output and the
+# Judging. Reads the collected lines on standard input. Offending lines go to standard output and the
 # one-line verdict to standard error.
 #   evaluate users            no IAM user has an inline policy, and the user list was read
 #   evaluate managed <prefix> no role or user under the prefix has one, and at least one exists
@@ -570,9 +341,6 @@ roles examined=1"
 error roles AccessDenied"
 
   formatted="$(
-    fmt_caller 471112560111 "arn:aws:sts::471112560111:assumed-role/AWSReservedSSO_AdministratorAccess_0a1b/matti.meikalainen@example.org"
-    fmt_caller 471112560111 "arn:aws:sts::471112560111:assumed-role/openvaa-admin/botocore-session-1712345678"
-    fmt_caller 471112560111 "arn:aws:iam::471112560111:user/maija.virtanen@example.org"
     fmt_user 1 / "pekka.example@example.org" "[]" "[AdministratorAccess]" "[admins]" "$(fmt_tags "Owner${tab}someone@example.org")"
     fmt_user 2 / "Teppo.Testaaja" "[AmazonSesSendingAccess]" "[]" "[]" "$(fmt_tags "InvokedBy${tab}SESConsole
 Contact${tab}teppo@example.org
@@ -580,33 +348,21 @@ cost center${tab}42")"
     fmt_user 3 /openvaa/ "openvaa-staging-smtp" "[]" "[openvaa-ses-send]" "[]" "$(fmt_tags "Project${tab}openvaa")"
     fmt_user 4 /openvaa/ "svc@example.org" "$(join_list "Inline@example.org")" "[]" "[]" "[]"
     fmt_role /openvaa/ "openvaa-plan" "[]"
-    fmt_group "admins" "[]"
-    fmt_ses_identities eu-north-1 "DOMAIN${tab}staging.openvaa.org${tab}SUCCESS
-EMAIL_ADDRESS${tab}someone.else@example.org${tab}SUCCESS
-EMAIL_ADDRESS${tab}third@example.org${tab}PENDING"
   )"
 
   st_absent "format: no @ reaches the output" "$formatted" "@"
-  st_absent "format: no address session name reaches the output" "$formatted" "matti"
-  st_absent "format: no plain session name reaches the output" "$formatted" "botocore-session"
-  st_absent "format: an IAM user's own name is not printed for the caller" "$formatted" "maija"
   st_absent "format: a user outside /openvaa/ named by address is not printed" "$formatted" "pekka"
   st_absent "format: a user outside /openvaa/ named like a person is not printed" "$formatted" "Teppo"
   st_absent "format: a tag value other than InvokedBy is not printed" "$formatted" "someone"
-  st_absent "format: an address identity is not printed" "$formatted" "someone.else"
-  st_present "format: an assumed role prints its role name" "$formatted" "principal=assumed-role/AWSReservedSSO_AdministratorAccess_0a1b "
-  st_present "format: an IAM user caller prints the word user" "$formatted" "principal=user "
   st_present "format: a user outside /openvaa/ prints as user-<n>" "$formatted" "user user-2 path=other inline=[AmazonSesSendingAccess]"
   st_present "format: InvokedBy keeps its value, other tags their key" "$formatted" "tags=[InvokedBy=SESConsole,Contact,cost_center]"
   st_present "format: a user under /openvaa/ prints by name" "$formatted" "user openvaa-staging-smtp path=/openvaa/"
   st_present "format: a name with an @ under /openvaa/ is redacted" "$formatted" "user redacted path=/openvaa/ inline=[redacted]"
-  st_present "format: a domain identity prints by name" "$formatted" "ses-domain eu-north-1 staging.openvaa.org status=SUCCESS"
-  st_present "format: address identities print as a count" "$formatted" "ses-address-identities eu-north-1 count=2"
 
   st_judge "format: the formatted lines, users with an inline policy among them, fail the judge" 1 users "" "$formatted
 users examined=4"
 
-  errfile="${TMPDIR:-/tmp}/openvaa-inventory-selftest.$$"
+  errfile="${TMPDIR:-/tmp}/openvaa-inline-policies-selftest.$$"
   printf '%s\n' "An error occurred (AccessDenied) when calling the ListUsers operation: User: arn:aws:sts::471112560111:assumed-role/Admin/matti@example.org is not authorized" > "$errfile"
   st_present "error: the code is taken from the parentheses" "$(err_code_of "$errfile")" "AccessDenied"
   st_absent "error: the message is not passed on" "$(err_code_of "$errfile")" "matti"
@@ -629,19 +385,11 @@ users examined=4"
 main() {
   local status=0
   case "${1:-}" in
-    "")
-      [ "$#" -eq 0 ] || { usage_line; exit 2; }
-      make_workdir
-      collect_all > "$WORK/inventory.txt"
-      scrub < "$WORK/inventory.txt"
-      [ "$MUST_FAILED" -eq 0 ] || exit 1
-      exit 0
-      ;;
     --assert-no-inline-user-policies)
       [ "$#" -eq 1 ] || { usage_line; exit 2; }
       make_workdir
-      collect_users > "$WORK/inventory.txt"
-      scrub < "$WORK/inventory.txt" > "$WORK/scrubbed.txt"
+      collect_users > "$WORK/collected.txt"
+      scrub < "$WORK/collected.txt" > "$WORK/scrubbed.txt"
       evaluate users < "$WORK/scrubbed.txt" || status=$?
       exit "$status"
       ;;
@@ -649,11 +397,11 @@ main() {
       [ "$#" -eq 2 ] || { usage_line; exit 2; }
       case "$2" in
         /*/ | /) ;;
-        *) echo "account-inventory.sh: the path prefix must begin and end with /" >&2; exit 2 ;;
+        *) echo "check-inline-policies.sh: the path prefix must begin and end with /" >&2; exit 2 ;;
       esac
       make_workdir
-      { collect_users; collect_roles; } > "$WORK/inventory.txt"
-      scrub < "$WORK/inventory.txt" > "$WORK/scrubbed.txt"
+      { collect_users; collect_roles; } > "$WORK/collected.txt"
+      scrub < "$WORK/collected.txt" > "$WORK/scrubbed.txt"
       evaluate managed "$2" < "$WORK/scrubbed.txt" || status=$?
       exit "$status"
       ;;

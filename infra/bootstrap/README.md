@@ -80,10 +80,11 @@ UTC, in the form `date -u +%Y-%m-%dT%H:%MZ` prints.
 
 ## Step 1: Inventory of the account
 
-Nothing in this step changes the account. The inventory script makes read-only calls only and prints
-names and counts: no session name, no e-mail address, no error text of a failed call, and no IAM user
-name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see which one that is, run
-`aws iam list-users --query 'Users[].UserName'` on your own machine and count.
+Nothing in this step changes the account. Every command in it is a read, and none of them prints an
+IAM user name, a session name or an e-mail address: the users are counted, and an e-mail identity is
+counted rather than named. The inline-policy check prints no error text of a failed call and no IAM
+user name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see which one that
+is, run `aws iam list-users --query 'Users[].UserName'` on your own machine and count.
 
 1. Say which identity applies Terraform by hand, `identity-center` or `iam-user`, and name its
    managed policies, each on the `answer_` line you were given for it.
@@ -118,17 +119,37 @@ name outside the path `/openvaa/`. Such a user is printed as `user-<n>`; to see 
 
    `s3_account` must be `471112560111`. Any other account means stop: the shell is signed in elsewhere.
 
-4. From the repository root, the full inventory:
+4. The account as it stands: whether it belongs to an organisation, the IAM counts, the groups, the
+   roles that are not service-linked, the OIDC providers, the hosted zones, for four regions the SES
+   account state, its domain identities and a count of its address identities, the budgets, the
+   image repositories and the buckets. Error text goes to a log and is not pasted; a line that is
+   empty after its `=`, or a list that prints no line, is empty or could not be read.
+   `s4_organisation_error=AWSOrganizationsNotInUseException` means the account belongs to no
+   organisation.
 
    ```bash
-   infra/scripts/account-inventory.sh > "$L/s4.log" 2>&1; echo "s4_inventory_exit=$?"
-   sed 's/^/s4_inv=/' "$L/s4.log"
+   aws organizations describe-organization --query Organization.Id --output text > /dev/null 2> "$L/s4.log" && echo "s4_organisation=member"
+   grep -o 'An error occurred ([A-Za-z]*)' "$L/s4.log" | sed -E 's/^An error occurred \((.*)\)$/s4_organisation_error=\1/'
+   echo "s4_summary_users_groups_roles_policies_providers=$(aws iam get-account-summary --query 'SummaryMap.[Users,Groups,Roles,Policies,Providers]' --output text 2>> "$L/s4.log" | tr '\t' ',')"
+   aws iam list-groups --query 'Groups[].GroupName' --output text 2>> "$L/s4.log" | tr '\t' '\n' | sed 's/^/s4_group=/'
+   aws iam list-roles --query 'Roles[?!starts_with(Path, `/aws-service-role/`)].[Path,RoleName]' --output text 2>> "$L/s4.log" | tr '\t' ',' | sed 's/^/s4_role=/'
+   aws iam list-open-id-connect-providers --query 'OpenIDConnectProviderList[].Arn' --output text 2>> "$L/s4.log" | tr '\t' '\n' | sed 's/^/s4_oidc_provider=/'
+   aws route53 list-hosted-zones --query 'HostedZones[].[Name,Config.PrivateZone,ResourceRecordSetCount]' --output text 2>> "$L/s4.log" | tr '\t' ',' | sed 's/^/s4_zone=/'
+   for r in eu-north-1 eu-west-1 eu-central-1 us-east-1; do
+     echo "s4_ses_${r}_production_sending_max24h=$(aws sesv2 get-account --region "$r" --query '[ProductionAccessEnabled,SendingEnabled,SendQuota.Max24HourSend]' --output text 2>> "$L/s4.log" | tr '\t' ',')"
+     aws sesv2 list-email-identities --region "$r" --query "EmailIdentities[?IdentityType!='EMAIL_ADDRESS'].[IdentityName,VerificationStatus]" --output text 2>> "$L/s4.log" | tr '\t' ',' | sed "s/^/s4_ses_${r}_domain=/"
+     echo "s4_ses_${r}_address_identities=$(aws sesv2 list-email-identities --region "$r" --query "length(EmailIdentities[?IdentityType=='EMAIL_ADDRESS'])" --output text 2>> "$L/s4.log")"
+   done
+   aws budgets describe-budgets --account-id 471112560111 --query 'Budgets[].[BudgetName,BudgetLimit.Amount,CalculatedSpend.ActualSpend.Amount]' --output text 2>> "$L/s4.log" | tr '\t' ',' | sed 's/^/s4_budget=/'
+   aws ecr describe-repositories --region eu-north-1 --query 'repositories[].[repositoryName,imageTagMutability]' --output text 2>> "$L/s4.log" | tr '\t' ',' | sed 's/^/s4_repository=/'
+   aws s3api list-buckets --query 'Buckets[].Name' --output text 2>> "$L/s4.log" | tr '\t' '\n' | sed 's/^/s4_bucket=/'
    ```
 
-5. The assert mode, which exits 1 when any IAM user carries an inline policy:
+5. From the repository root, the inline-policy check, which exits 1 when any IAM user carries an
+   inline policy:
 
    ```bash
-   infra/scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s5.log" 2>&1; echo "s5_assert_users_exit=$?"
+   infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s5.log" 2>&1; echo "s5_assert_users_exit=$?"
    sed 's/^/s5_inv=/' "$L/s5.log"
    ```
 
@@ -152,7 +173,7 @@ Return: the `s2_`, `s3_`, `s4_`, `s5_` and `s9_` lines, and the `answer_` lines 
 
 ### If an IAM user carries an inline policy
 
-If `s5_assert_users_exit` is 1, decide for each user the inventory lists with a non-empty `inline=[…]`
+If `s5_assert_users_exit` is 1, decide for each user the check lists with a non-empty `inline=[…]`
 what happens to it. The choice is per user, and deleting cannot be undone.
 
 - **Convert.** Keep the user and move the permission to a customer-managed policy: save the document
@@ -160,24 +181,24 @@ what happens to it. The choice is per user, and deleting cannot be undone.
   one. Nothing that uses the user's key stops. Do not paste the policy document.
 - **Delete the user.** Check first with `aws iam list-access-keys` and `aws iam get-access-key-last-used`
   that nothing has used its key recently.
-- **Leave it for now.** The rule stays broken and the assert mode keeps exiting 1.
+- **Leave it for now.** The rule stays broken and the check keeps exiting 1.
 
 AWS documents that SMTP credentials created in the SES console carry an inline user policy named
-`AmazonSesSendingAccess`, on a user tagged `InvokedBy=SESConsole`; the inventory prints that tag's
+`AmazonSesSendingAccess`, on a user tagged `InvokedBy=SESConsole`; the check prints that tag's
 value. Such a user may still be sending mail for something.
 
-After a conversion or a deletion, run the assert mode again in a new sitting:
+After a conversion or a deletion, run the check again in a new sitting:
 
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
 L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
-infra/scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s5b.log" 2>&1; echo "s5b_assert_users_exit=$?"
+infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s5b.log" 2>&1; echo "s5b_assert_users_exit=$?"
 sed 's/^/s5b_inv=/' "$L/s5b.log"
 test -n "$L" && rm -rf "$L" && echo "s5b_logs_removed=yes"
 ```
 
-Return: one `answer_` line per user naming your choice and the label the inventory printed for it,
+Return: one `answer_` line per user naming your choice and the label the check printed for it,
 and the three `s5b_` lines.
 
 ## Step 2: First apply with local state
@@ -365,7 +386,7 @@ Step 6.
    ```
 
 7. The registry, the OIDC providers, the inline and attached policies of both roles, and the
-   inventory's assert mode over everything under the path `/openvaa/`:
+   inline-policy check over everything under the path `/openvaa/`:
 
    ```bash
    echo "s7_registry=$(aws ecr describe-repositories --region eu-north-1 --repository-names openvaa-frontend --query 'repositories[0].[repositoryName,imageTagMutability]' --output text | tr '\t' ',')"
@@ -374,7 +395,7 @@ Step 6.
    echo "s7_deploy_inline_count=$(aws iam list-role-policies --role-name openvaa-staging-deploy --query 'length(PolicyNames)' --output text)"
    echo "s7_plan_attached=$(aws iam list-attached-role-policies --role-name openvaa-plan --query 'sort(AttachedPolicies[].PolicyName)' --output text | tr '\t' ',')"
    echo "s7_deploy_attached=$(aws iam list-attached-role-policies --role-name openvaa-staging-deploy --query 'sort(AttachedPolicies[].PolicyName)' --output text | tr '\t' ',')"
-   ../scripts/account-inventory.sh --assert-managed-only /openvaa/ > "$L/s7.log" 2>&1; echo "s7_assert_managed_exit=$?"
+   ../scripts/check-inline-policies.sh --assert-managed-only /openvaa/ > "$L/s7.log" 2>&1; echo "s7_assert_managed_exit=$?"
    ```
 
    Expected: `s7_registry=openvaa-frontend,IMMUTABLE`, one provider for

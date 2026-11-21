@@ -186,8 +186,8 @@ Step 3.
    policy, and the send policy attached.
 
    ```bash
-   ../../../scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s9a.log" 2>&1; echo "s9_assert_users_exit=$?"
-   ../../../scripts/account-inventory.sh --assert-managed-only /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_managed_exit=$?"
+   ../../../scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s9a.log" 2>&1; echo "s9_assert_users_exit=$?"
+   ../../../scripts/check-inline-policies.sh --assert-managed-only /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_managed_exit=$?"
    echo "s9_smtp_inline_count=$(aws iam list-user-policies --user-name openvaa-staging-ses-smtp --query 'length(PolicyNames)' --output text)"
    echo "s9_smtp_attached=$(aws iam list-attached-user-policies --user-name openvaa-staging-ses-smtp --query 'AttachedPolicies[].PolicyName' --output text)"
    ```
