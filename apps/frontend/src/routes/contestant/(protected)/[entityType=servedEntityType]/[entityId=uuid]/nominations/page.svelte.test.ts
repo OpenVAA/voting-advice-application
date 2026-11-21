@@ -1112,6 +1112,32 @@ describe('the nominations page — Edit and Delete on a card', () => {
     }
   });
 
+  it("for an organization, leads Edit to the details step with each constituency chosen in its own nomination's election alone", () => {
+    const third = nomination({
+      id: 'nomination-3',
+      constituencyId: 'constituency-2',
+      constituencyName: 'Southern District'
+    });
+    const target = render(
+      { selectedEntity: PARTY, nominations: [FIRST, SECOND, third], taskState: STATE.profileNext },
+      { ...EDITABLE, severalConstituencies: true, writableNominationIds: [FIRST.id, SECOND.id, third.id] }
+    );
+
+    const details = `/route/ContestantAppNominationDetails?${JSON.stringify(
+      selectionSearch({
+        electionIds: ['election-1', 'election-2'],
+        constituencyIds: ['constituency-1', 'constituency-2'],
+        constituencyIdsByElection: {
+          'election-1': ['constituency-1', 'constituency-2'],
+          'election-2': ['constituency-1']
+        }
+      })
+    )}`;
+    for (const card of cardsOf(target)) expect(one(card, CARD_EDIT).getAttribute('href')).toBe(details);
+    expect(details).toContain('nominationContest');
+    expect(details).not.toContain('nominationConstituencyId');
+  });
+
   it('offers neither on a card of a nomination that is not writable', () => {
     const target = render(
       { selectedEntity: CANDIDATE, nominations: [FIRST, SECOND], taskState: STATE.profileNext },

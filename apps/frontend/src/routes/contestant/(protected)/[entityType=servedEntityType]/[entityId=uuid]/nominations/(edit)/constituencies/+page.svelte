@@ -5,11 +5,11 @@
 Asks for the constituency the entity the user edits stands in, one for each election, or for an organization, which stands in several constituencies of one election, the constituencies it stands in. See `+page.ts` for the redirects that pass the step over.
 
 - **What is listed**: one selector for each chosen election that has several constituencies. An election with a single constituency has nothing to choose and is not listed. While a constituency group is chosen first, one selector over that group stands for every election that admits the entity's type.
-- **Several constituencies in one election**: for an organization the selector is a list of checkboxes, so that several constituencies can be selected in each election. A constituency two elections share is selected for both.
+- **Several constituencies in one election**: for an organization the selector is a list of checkboxes, so that several constituencies can be selected in each election. Each election has a list of its own, also where two elections share a constituency group, and what is selected in one is not selected in the other.
 - **An election in which the entity holds several nominations** has no selector, unless the entity is an organization. In its place a section headed by the election says that those nominations are kept as they are and are changed on the next step. No further constituency can be added in that election.
 - **What is selected on arrival**: for each election listed, the constituency of it that the address names; otherwise the constituency of the entity's one nomination in that election; and otherwise none. For an organization, every constituency of the election the address names, and otherwise those of all its nominations in that election. While a constituency group is chosen first, the one selector shows a constituency as selected only where its group holds it.
 - **Selecting another constituency than the stored one** writes nothing: the details step shows the nomination at the new constituency and names the previous one.
-- **Continue** is enabled once every selector has a constituency, at least one in each election. It leads to the details step and passes the chosen elections and constituencies on in the address. While a constituency group is chosen first it leads to the election step when several elections are held in the chosen constituency, and it is disabled when none is.
+- **Continue** is enabled once every selector has a constituency, at least one in each election. It leads to the details step and passes the chosen elections and constituencies on in the address; for an organization each constituency with the election it was selected in. While a constituency group is chosen first it leads to the election step when several elections are held in the chosen constituency, and it is disabled when none is.
 - **A constituency with no election**: while a constituency group is chosen first and no election that admits the entity's type is held in the selected constituency, nor in a constituency it lies in, one sentence under the selector says so. It stays until another constituency is selected.
 - **Cancel** leads to the nominations view.
 - **While the constituencies are not on the page**, which is the case in the server-rendered markup, a loading indicator stands in the selectors' place and Continue is in its loading form, so a selector that is shown is one a user can operate.
@@ -112,8 +112,8 @@ Everything that differs between entity types is a text whose key the page builds
   /** The id of the constituency selected for each election, where one is selected in each. It starts from what the step's load answers, and is the user's from then on. */
   let selected = $state<{ [electionId: Id]: Id }>(constituencyOnArrival());
 
-  /** The ids of the constituencies selected, where several are selected in one election. It starts from what the step's load answers, and is the user's from then on. */
-  let selectedMany = $state<Array<Id>>(constituenciesOnArrival());
+  /** The ids of the constituencies selected in each election, by the election's id, where several are selected in one election. It starts from what the step's load answers, and is the user's from then on. */
+  let selectedMany = $state<Record<Id, Array<Id>>>(constituenciesOnArrival());
 
   /** Whether every selector has a constituency. Bound to the selector. */
   let selectionComplete = $state(false);
@@ -129,10 +129,12 @@ Everything that differs between entity types is a text whose key the page builds
   }
 
   /**
-   * The constituencies selected on arrival in every election the selector is handed, each once.
+   * The constituencies selected on arrival in each election the selector is handed.
    */
-  function constituenciesOnArrival(): Array<Id> {
-    return [...new Set(Object.values(data.nominationConstituencyChoice.onArrival).flat())];
+  function constituenciesOnArrival(): Record<Id, Array<Id>> {
+    return Object.fromEntries(
+      Object.entries(data.nominationConstituencyChoice.onArrival).map(([electionId, ids]) => [electionId, [...ids]])
+    );
   }
 
   /** The ids of the constituencies the selector offers: those of the group chosen first, or those of the elections it is handed. */
@@ -144,12 +146,31 @@ Everything that differs between entity types is a text whose key the page builds
     )
   );
 
+  /** Where several are selected in one election and each election has a selector of its own: the ids of the constituencies selected in each election the selector is handed, by the election's id, only those of the election's groups. `undefined` otherwise. */
+  const chosenByElection = $derived.by(() => {
+    if (!severalConstituencies || useSingleGroup) return undefined;
+    const byElection: Record<Id, Array<Id>> = {};
+    for (const election of toChoose) {
+      const own = new Set(election.constituencyGroups.flatMap((group) => group.data.constituencyIds));
+      const ids = (selectedMany[election.id] ?? []).filter((id) => own.has(id));
+      if (ids.length) byElection[election.id] = ids;
+    }
+    return byElection;
+  });
+
   /** The ids of the selected constituencies, each once. Where several are selected in one election, only those the selector offers. */
   const chosenConstituencyIds = $derived(
     severalConstituencies
-      ? selectedMany.filter((id) => offeredIds.has(id))
+      ? [...new Set(Object.values(chosenByElection ?? selectedMany).flat())].filter((id) => offeredIds.has(id))
       : [...new Set(Object.values(selected).filter((id) => id))]
   );
+
+  /** The selection Continue goes on with: the elections of the address and the constituencies selected, with the election each was selected in where each election has a selector of its own. */
+  const chosenSelection = $derived({
+    electionIds: data.nominationSelection.electionIds,
+    constituencyIds: chosenConstituencyIds,
+    ...(chosenByElection ? { constituencyIdsByElection: chosenByElection } : {})
+  });
 
   /** Where Continue leads. `undefined` when a constituency group is chosen first and no admissible election is held in the selected constituency or in a constituency it lies in. */
   const forward = $derived(
@@ -158,7 +179,7 @@ Everything that differs between entity types is a text whose key the page builds
           appSettings: contestantCtx.appSettings,
           dataRoot: contestantCtx.dataRoot,
           admissible,
-          selection: { electionIds: data.nominationSelection.electionIds, constituencyIds: chosenConstituencyIds }
+          selection: chosenSelection
         })
       : undefined
   );

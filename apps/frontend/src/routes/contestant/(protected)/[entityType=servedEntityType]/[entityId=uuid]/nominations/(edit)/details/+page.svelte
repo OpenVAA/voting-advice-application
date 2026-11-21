@@ -75,7 +75,13 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
   import { getLayoutContext } from '$lib/contexts/layout';
   import { EntitySelector } from '$lib/dynamic-components/entitySelector';
   import { CONTESTANT_NOMINATION_EDITOR } from '$lib/routes';
-  import { EDITOR_STEP_ROUTE, hasSelectionStep, managedNominationsOf, selectionSearch } from '../stepSelection';
+  import {
+    EDITOR_STEP_ROUTE,
+    hasSelectionStep,
+    managedNominationsOf,
+    selectionOfContests,
+    selectionSearch
+  } from '../stepSelection';
   import type { NominationCardRow } from '$contestant/components/nominationCard';
   import type {
     EntityNomination,
@@ -342,15 +348,13 @@ In cases 2 to 6 the message is the page's own, never the text the save was refus
     if (!selectable) return undefined;
     return getRoute.current({
       route: EDITOR_STEP_ROUTE.elections,
-      ...selectionSearch({
-        electionIds: [
-          ...new Set([
-            ...data.nominationContests.map((contest) => contest.electionId),
-            ...data.nominationKeptElectionIds
-          ])
-        ],
-        constituencyIds: [...new Set(data.nominationContests.map((contest) => contest.constituencyId))]
-      })
+      ...selectionSearch(
+        selectionOfContests({
+          contests: data.nominationContests,
+          keptElectionIds: data.nominationKeptElectionIds,
+          severalConstituencies: !!data.nominationScope?.severalConstituencies
+        })
+      )
     });
   });
 

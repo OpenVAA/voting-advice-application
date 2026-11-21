@@ -41,6 +41,11 @@ export const NOMINATION_ELECTION_PARAM = 'nominationElectionId';
  * The search param that carries the constituencies chosen in the nomination editor from one step to the next. It may be repeated, and like the election param it is not persistent.
  */
 export const NOMINATION_CONSTITUENCY_PARAM = 'nominationConstituencyId';
+
+/**
+ * The search param that carries, for an entity that chooses several constituencies in one election, each chosen election and constituency as one value: the election's id and the constituency's id, joined by the editor's contest separator. It may be repeated, and like the editor's other two params it is not persistent.
+ */
+export const NOMINATION_CONTEST_PARAM = 'nominationContest';
 /** Root route id of the Voter App. */
 export const VOTER = '/(voters)';
 /** Route-id prefix of the Voter App routes that require a selected election and constituency. */

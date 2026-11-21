@@ -16,9 +16,9 @@ export type MultiConstituencySelectorProps = SvelteHTMLElements['div'] & {
    */
   onShadedBg?: boolean;
   /**
-   * Bindable value for the `Id`s of the selected `Constituency`s, each once. A `Constituency` that several of the `Election`s are held in is selected for all of them.
+   * Bindable value for the `Id`s of the selected `Constituency`s of each `Election`, by the `Election`'s `Id`. A `Constituency` that several of the `Election`s are held in is selected for each of them on its own, apart from `useSingleGroup`, where what is selected is selected for every `Election`.
    */
-  selected?: Array<Id>;
+  selected?: Record<Id, Array<Id>>;
   /**
    * If specified, only this group is offered for selection, as one list for every `Election`. To be used when the `elections.startFromConstituencyGroup` setting is set.
    */
@@ -30,5 +30,5 @@ export type MultiConstituencySelectorProps = SvelteHTMLElements['div'] & {
   /**
    * Callback triggered when the selection changes.
    */
-  onChange?: (details: { selected: Array<Id>; selectionComplete: boolean }) => void;
+  onChange?: (details: { selected: Record<Id, Array<Id>>; selectionComplete: boolean }) => void;
 };

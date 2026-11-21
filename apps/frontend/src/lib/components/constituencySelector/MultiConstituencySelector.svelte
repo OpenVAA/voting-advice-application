@@ -4,16 +4,16 @@
 
 Display, for each election, the constituencies to select from, each with a checkbox, so that several constituencies can be selected in one election. Use it where one entity stands in several constituencies of an election, as a party does; `ConstituencySelector` selects one constituency in each election.
 
-- Each election has a section of its own, headed by the election's name when there are several. In it each constituency group of the election is a group of checkboxes, labelled by a prompt that names the group.
-- The selection is one list of constituencies: a constituency that two elections share is selected in both sections at once.
-- With `useSingleGroup` the one group is offered as one list for every election.
+- Each election has a section of its own, headed by the election's name when there are several, also where two elections share a constituency group. In it each constituency group of the election is a group of checkboxes, labelled by a prompt that names the group.
+- The selection is kept for each election: a constituency that two elections share is selected in one section without being selected in the other.
+- With `useSingleGroup` the one group is offered as one list for every election, and what is selected in it is selected for every election.
 
 ### Properties
 
 - `elections`: The `Election`s for which to show the `Constituency`s.
 - `disableSorting`: If `true`, the `Constituency`s are not ordered alphabetically. Default: `false`
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. Default: `false`
-- `selected`: Bindable value for the `Id`s of the selected `Constituency`s, each once.
+- `selected`: Bindable value for the `Id`s of the selected `Constituency`s of each `Election`, by the `Election`'s `Id`.
 - `useSingleGroup`: If specified, only this group is offered for selection, as one list for every `Election`. To be used when the `elections.startFromConstituencyGroup` setting is set.
 - `selectionComplete`: A utility bindable value which is `true` when at least one `Constituency` is selected for each `Election`, or in the single group if `useSingleGroup` is set.
 - `onChange`: Callback triggered when the selection changes.
@@ -45,7 +45,7 @@ Display, for each election, the constituencies to select from, each with a check
     elections,
     disableSorting,
     onShadedBg,
-    selected = $bindable([]),
+    selected = $bindable({}),
     useSingleGroup,
     // eslint-disable-next-line no-useless-assignment -- false positive on write-only $bindable prop; remove when https://github.com/sveltejs/eslint-plugin-svelte/issues/1478 is fixed
     selectionComplete = $bindable(false),
@@ -70,7 +70,7 @@ Display, for each election, the constituencies to select from, each with a check
     groups: Array<ConstituencyGroup>;
   };
 
-  /** One section for each election, or one for every election over the single group. */
+  /** One section for each election, or one for every election over the single group. A section's selection is kept under the id of each of its elections. */
   const sections = $derived<Array<Section>>(
     useSingleGroup
       ? [{ applicableElections: elections, groups: [useSingleGroup] }]
@@ -83,18 +83,31 @@ Display, for each election, the constituencies to select from, each with a check
   });
 
   /**
-   * Whether a constituency of the section's groups is among those selected.
+   * Whether a constituency of the section's groups is among those selected for it.
    */
-  function hasSelection({ groups }: Section, ids: Array<Id>): boolean {
-    return groups.some((group) => group.data.constituencyIds.some((id) => ids.includes(id)));
+  function hasSelection(section: Section, selection: Record<Id, Array<Id>>): boolean {
+    const ids = selectedIn(section, selection);
+    return section.groups.some((group) => group.data.constituencyIds.some((id) => ids.includes(id)));
+  }
+
+  /**
+   * The ids of the constituencies selected for a section: those selected for any of its elections, each once.
+   */
+  function selectedIn({ applicableElections }: Section, selection: Record<Id, Array<Id>>): Array<Id> {
+    return [...new Set(applicableElections.flatMap((election) => selection[election.id] ?? []))];
   }
 
   ////////////////////////////////////////////////////////////////////
   // Selecting constituencies
   ////////////////////////////////////////////////////////////////////
 
-  function handleChange(id: Id, checked: boolean): void {
-    selected = checked ? [...selected.filter((other) => other !== id), id] : selected.filter((other) => other !== id);
+  function handleChange(section: Section, id: Id, checked: boolean): void {
+    const others = selectedIn(section, selected).filter((other) => other !== id);
+    const ids = checked ? [...others, id] : others;
+    selected = {
+      ...selected,
+      ...Object.fromEntries(section.applicableElections.map((election) => [election.id, [...ids]]))
+    };
     onChange?.({
       selected,
       selectionComplete: sections.every((section) => hasSelection(section, selected))
@@ -110,7 +123,9 @@ Display, for each election, the constituencies to select from, each with a check
 
 {#if sections.length}
   <div data-testid="multi-constituency-selector" {...concatClass(restProps, 'mb-md grid gap-lg self-stretch')}>
-    {#each sections as { applicableElections, groups }, sectionIndex}
+    {#each sections as section, sectionIndex}
+      {@const { applicableElections, groups } = section}
+      {@const sectionSelected = selectedIn(section, selected)}
       <div class="mt-md gap-md grid" data-testid="multi-constituency-selector-section">
         {#if sections.length > 1}
           <h3 class="relative pl-[2rem]">
@@ -135,8 +150,8 @@ Display, for each election, the constituencies to select from, each with a check
                   type="checkbox"
                   class="checkbox"
                   value={constituency.id}
-                  checked={selected.includes(constituency.id)}
-                  onchange={(event) => handleChange(constituency.id, event.currentTarget.checked)}
+                  checked={sectionSelected.includes(constituency.id)}
+                  onchange={(event) => handleChange(section, constituency.id, event.currentTarget.checked)}
                   data-testid="multi-constituency-selector-option" />
                 <span>{constituency.name}</span>
               </label>

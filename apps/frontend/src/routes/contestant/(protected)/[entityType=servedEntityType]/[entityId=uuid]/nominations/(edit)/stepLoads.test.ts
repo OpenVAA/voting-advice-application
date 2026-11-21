@@ -15,7 +15,10 @@ import {
   afterElections,
   constituenciesStoodFor,
   hasSelectionStep,
-  selectionOfAddress
+  selectionOfAddress,
+  selectionOfContests,
+  selectionSearch,
+  stepAddress
 } from './stepSelection';
 import type { ElectionData } from '@openvaa/data';
 import type { NominationSelection, StepInput } from './stepSelection';
@@ -126,22 +129,26 @@ async function forwardOf(run: Promise<unknown>): Promise<{ step: string; selecti
     step: target.pathname.slice(EDITOR.length + 1),
     selection: {
       electionIds: [...selection.electionIds].sort(),
-      constituencyIds: [...selection.constituencyIds].sort()
+      constituencyIds: [...selection.constituencyIds].sort(),
+      ...(selection.constituencyIdsByElection ? { constituencyIdsByElection: selection.constituencyIdsByElection } : {})
     }
   };
 }
 
-/** The search of an address that names the elections and constituencies given, each param repeated. */
+/** The search of an address that names the elections and constituencies given, and the constituencies given with their elections as `electionId:constituencyId`, each param repeated. */
 function searchOf({
   elections = [],
-  constituencies = []
+  constituencies = [],
+  contests = []
 }: {
   elections?: Array<string>;
   constituencies?: Array<string>;
+  contests?: Array<string>;
 }): string {
   const search = new URLSearchParams();
   for (const id of elections) search.append('nominationElectionId', id);
   for (const id of constituencies) search.append('nominationConstituencyId', id);
+  for (const pair of contests) search.append('nominationContest', pair);
   const query = search.toString();
   return query ? `?${query}` : '';
 }
@@ -794,6 +801,155 @@ describe('every step, for an entity that chooses several constituencies in one e
         severalConstituencies: true
       })
     ).toEqual({ step: 'constituencies', selection });
+  });
+});
+
+describe('every step, for an organization in two elections over one constituency group', () => {
+  /** Nominated in both regions in the regional election, and in the first region alone in the county election, which shares the regional election's group. */
+  const ORGANIZATION: World = {
+    elections: ['regional', 'county'],
+    severalConstituencies: true,
+    nominations: [
+      { electionId: 'regional', constituencyId: 'region-1' },
+      { electionId: 'regional', constituencyId: 'region-2' },
+      { electionId: 'county', constituencyId: 'region-1' }
+    ]
+  };
+  const BOTH = ['regional', 'county'];
+
+  it('the constituency step selects on arrival the stored constituencies of each election, and those of no other', async () => {
+    const result = await constituenciesLoad(
+      eventOf('constituencies', searchOf({ elections: BOTH }), parentDataOf(ORGANIZATION))
+    );
+    expect(result).toMatchObject({
+      nominationConstituencyChoice: {
+        toChoose: BOTH,
+        onArrival: { regional: ['region-1', 'region-2'], county: ['region-1'] }
+      }
+    });
+  });
+
+  it('the constituency step selects on arrival the constituencies its address carries with each election', async () => {
+    const result = await constituenciesLoad(
+      eventOf(
+        'constituencies',
+        searchOf({ elections: BOTH, contests: ['regional:region-2', 'county:region-1', 'county:region-2'] }),
+        parentDataOf(ORGANIZATION)
+      )
+    );
+    expect(result).toMatchObject({
+      nominationSelection: {
+        electionIds: BOTH,
+        constituencyIds: ['region-2', 'region-1'],
+        constituencyIdsByElection: { regional: ['region-2'], county: ['region-1', 'region-2'] }
+      },
+      nominationConstituencyChoice: { onArrival: { regional: ['region-2'], county: ['region-1', 'region-2'] } }
+    });
+  });
+
+  it('the details step is served with the contests its address carries, and none for a constituency of another election', async () => {
+    const result = await detailsLoad(
+      eventOf(
+        'details',
+        searchOf({ elections: BOTH, contests: ['regional:region-1', 'regional:region-2', 'county:region-1'] }),
+        parentDataOf(ORGANIZATION)
+      )
+    );
+    expect(result).toEqual({
+      nominationContests: [
+        { electionId: 'regional', constituencyId: 'region-1' },
+        { electionId: 'regional', constituencyId: 'region-2' },
+        { electionId: 'county', constituencyId: 'region-1' }
+      ],
+      nominationKeptElectionIds: []
+    });
+  });
+
+  it('the details step forwards to the constituency step, with what its address carries, for an election it carries no constituency with', async () => {
+    const run = detailsLoad(
+      eventOf('details', searchOf({ elections: BOTH, contests: ['regional:region-1'] }), parentDataOf(ORGANIZATION))
+    );
+    expect(await forwardOf(run)).toEqual({
+      step: 'constituencies',
+      selection: {
+        electionIds: ['county', 'regional'],
+        constituencyIds: ['region-1'],
+        constituencyIdsByElection: { regional: ['region-1'] }
+      }
+    });
+  });
+
+  it('Edit of the nominations view and the link back from the details step carry each constituency with its own election', () => {
+    const selection = selectionOfContests({
+      contests: [
+        { electionId: 'regional', constituencyId: 'region-1' },
+        { electionId: 'regional', constituencyId: 'region-2' },
+        { electionId: 'county', constituencyId: 'region-1' }
+      ],
+      severalConstituencies: true
+    });
+    expect(selection).toEqual({
+      electionIds: BOTH,
+      constituencyIds: ['region-1', 'region-2'],
+      constituencyIdsByElection: { regional: ['region-1', 'region-2'], county: ['region-1'] }
+    });
+    expect(selectionSearch(selection)).toEqual({
+      nominationElectionId: BOTH,
+      nominationContest: ['regional:region-1', 'regional:region-2', 'county:region-1']
+    });
+    const address = stepAddress({ forward: { step: 'details', selection }, params: ENTITY_PARAMS, locale: 'en' });
+    const carried = selectionOfAddress(new URL(address, 'http://localhost'));
+    expect(carried.constituencyIdsByElection).toEqual(selection.constituencyIdsByElection);
+    expect([...carried.constituencyIds].sort()).toEqual(selection.constituencyIds);
+    expect([...carried.electionIds].sort()).toEqual([...BOTH].sort());
+  });
+
+  it("a candidate's selection carries no constituency with its election", () => {
+    expect(
+      selectionOfContests({
+        contests: [
+          { electionId: 'regional', constituencyId: 'region-1' },
+          { electionId: 'county', constituencyId: 'region-1' }
+        ],
+        keptElectionIds: ['municipal']
+      })
+    ).toEqual({ electionIds: ['regional', 'county', 'municipal'], constituencyIds: ['region-1'] });
+  });
+
+  it("Continue of the constituency step leads to the details step with each election's own constituencies", () => {
+    const dataRoot = new DataRoot();
+    dataRoot.provideElectionData(ORGANIZATION.elections.map((id) => ELECTIONS[id]));
+    dataRoot.provideConstituencyData(CONSTITUENCY_DATA);
+    const selection = {
+      electionIds: BOTH,
+      constituencyIds: ['region-1', 'region-2'],
+      constituencyIdsByElection: { regional: ['region-1', 'region-2'], county: ['region-1'] }
+    };
+    expect(
+      afterConstituencies({
+        appSettings: { ...staticSettings, ...dynamicSettings },
+        dataRoot,
+        admissible: ORGANIZATION.elections.map((id) => dataRoot.getElection(id)),
+        selection
+      })
+    ).toEqual({ step: 'details', selection });
+  });
+
+  it('drops a value of the address that does not name both an election and a constituency, and one that names nothing the entity may choose', async () => {
+    const result = await constituenciesLoad(
+      eventOf(
+        'constituencies',
+        searchOf({
+          elections: BOTH,
+          contests: ['county:region-2', 'county:', ':region-1', 'regional', 'county:nowhere']
+        }),
+        parentDataOf(ORGANIZATION)
+      )
+    );
+    expect(result).toMatchObject({
+      nominationSelection: { constituencyIds: ['region-2'], constituencyIdsByElection: { county: ['region-2'] } },
+      nominationConstituencyChoice: { onArrival: { regional: ['region-1', 'region-2'], county: ['region-2'] } }
+    });
   });
 });
 

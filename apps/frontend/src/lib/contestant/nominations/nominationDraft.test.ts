@@ -232,6 +232,36 @@ describe('buildCards', () => {
     ]);
   });
 
+  it('for an entity that chooses several constituencies in two elections over one constituency group, keeps each election to its own chosen pairs', () => {
+    const stored = [
+      nomination({ id: 'n1', electionId: CLOSED.id, constituencyId: 'c1' }),
+      nomination({ id: 'n2', electionId: CLOSED.id, constituencyId: 'c2' }),
+      nomination({ id: 'n3', electionId: OPEN.id, constituencyId: 'c1' })
+    ];
+
+    const asStored = cardsOf('organization', stored, [pair(CLOSED, 'c1'), pair(CLOSED, 'c2'), pair(OPEN, 'c1')]);
+    expect(asStored.map((card) => `${card.electionId}/${card.constituencyId}/${card.state}`)).toEqual([
+      'closed/c1/kept',
+      'closed/c2/kept',
+      'open/c1/kept'
+    ]);
+    expect(somethingToWrite(asStored)).toBe(false);
+
+    const withAnother = cardsOf('organization', stored, [
+      pair(CLOSED, 'c1'),
+      pair(CLOSED, 'c2'),
+      pair(OPEN, 'c1'),
+      pair(OPEN, 'c2')
+    ]);
+    expect(withAnother.map((card) => `${card.electionId}/${card.constituencyId}/${card.state}`)).toEqual([
+      'closed/c1/kept',
+      'closed/c2/kept',
+      'open/c1/kept',
+      'open/c2/new'
+    ]);
+    expect(somethingToWrite(withAnother)).toBe(true);
+  });
+
   it('orders the cards by the elections’ given order, then as stored', () => {
     const stored = [
       nomination({ id: 'in-candidates', electionId: CANDIDATES.id, constituencyId: 'c1' }),

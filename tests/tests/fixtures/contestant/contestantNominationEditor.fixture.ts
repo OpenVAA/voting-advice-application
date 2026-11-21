@@ -1285,7 +1285,6 @@ function describeCard(ref: EditorCardRef): string {
   return `the card of ${ref.election}${constituency}${nth}`;
 }
 
-/** A text with every run of whitespace as one space, and none at either end. */
 /** The text of `element` without its `aria-hidden` parts, such as an error message's decorative emoji: the text a description built from it holds. */
 function spokenTextOf(element: Locator): Promise<string> {
   return element.evaluate((node) => {
@@ -1295,6 +1294,7 @@ function spokenTextOf(element: Locator): Promise<string> {
   });
 }
 
+/** A text with every run of whitespace as one space, and none at either end. */
 function normalized(text: string | null): string {
   return (text ?? '').replace(/\s+/g, ' ').trim();
 }

@@ -7,7 +7,7 @@
  * 2. **No sentence otherwise.** With an admissible election held in the selected constituency, in the constituency itself or in the one it lies in, and without a constituency group chosen first, the page holds no sentence and Continue follows the selection.
  * 3. **The loading form.** While the data root holds no constituency, a loading indicator stands in the selector's place and the page holds no sentence.
  * 4. **An entity that has nominations.** The constituency of its one nomination in an election is selected on arrival. An election in which it holds several nominations has no selector: a section headed by the election says that they are kept, and the selector is given the other elections alone.
- * 5. **An organization.** It chooses several constituencies in one election, each with a checkbox: every stored constituency is checked on arrival, no election is kept, and Continue goes on with every checked constituency once each election has one.
+ * 5. **An organization.** It chooses several constituencies in one election, each with a checkbox: every stored constituency is checked on arrival, no election is kept, and Continue goes on with every checked constituency, each with its election, once each election has one. Two elections over one constituency group each have a list of their own, and what is checked in one is not checked in the other.
  *
  * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are, and its data root is a real `DataRoot`. The page's data is what the step's real load answers for the same elections, settings, nominations and address. A constituency is selected as a user selects it: the selector's field is focused and an option of its list is pressed. Messages are their keys, and a route is the options it was asked for.
  */
@@ -43,10 +43,14 @@ const CANDIDATE: UserEntity = {
 
 const PARTY: UserEntity = { type: 'organization', id: ENTITY_ID, name: 'Alpha Party', confirmed: true };
 
-/** The election held by region, and the election held by municipality in the shape given. */
-function electionsOf(municipalShape: ElectionData['nominationShape']): Array<ElectionData> {
+/** The election held by region, and the election held by municipality in the shape given. With `withCounty`, a county election held by region too, over the same group as the regional one, between the two. */
+function electionsOf({
+  municipalShape,
+  withCounty
+}: Pick<World, 'municipalShape' | 'withCounty'>): Array<ElectionData> {
   return [
     { id: 'regional', name: 'Regional', constituencyGroupIds: ['regions'] },
+    ...(withCounty ? [{ id: 'county', name: 'County', constituencyGroupIds: ['regions'] }] : []),
     { id: 'municipal', name: 'Municipal', constituencyGroupIds: ['municipalities'], nominationShape: municipalShape }
   ];
 }
@@ -70,10 +74,10 @@ const CONSTITUENCY_DATA = {
   ]
 };
 
-/** A data root that holds the two elections and their constituencies. A candidate can stand in the municipal election only in a shape that admits one. */
-function dataRootOf(municipalShape: ElectionData['nominationShape']): DataRoot {
+/** A data root that holds the elections and their constituencies. A candidate can stand in the municipal election only in a shape that admits one. */
+function dataRootOf(world: Pick<World, 'municipalShape' | 'withCounty'>): DataRoot {
   const dataRoot = new DataRoot();
-  dataRoot.provideElectionData(electionsOf(municipalShape));
+  dataRoot.provideElectionData(electionsOf(world));
   dataRoot.provideConstituencyData(CONSTITUENCY_DATA);
   return dataRoot;
 }
@@ -155,17 +159,21 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
-/** What a case states: the entity, a candidate unless stated otherwise, the shape of the municipal election, the constituency group that is chosen first, if any, the entity's nominations, and whether the context's data root holds nothing yet. */
+/** What a case states: the entity, a candidate unless stated otherwise, the shape of the municipal election, whether a county election shares the regional one's group, the constituency group that is chosen first, if any, the entity's nominations, and whether the context's data root holds nothing yet. */
 type World = {
   entity?: UserEntity;
   municipalShape: ElectionData['nominationShape'];
+  withCounty?: boolean;
   startFromConstituencyGroup?: string;
   nominations?: Array<{ electionId: string; constituencyId: string }>;
   emptyDataRoot?: boolean;
 };
 
 /** The data the step's load answers for a world and the selection of an address. */
-async function pageDataOf(world: World, { electionIds, constituencyIds }: NominationSelection): Promise<unknown> {
+async function pageDataOf(
+  world: World,
+  { electionIds, constituencyIds, constituencyIdsByElection = {} }: NominationSelection
+): Promise<unknown> {
   const nominations = (world.nominations ?? []).map((nomination, index) => ({
     id: `nomination-${index}`,
     ...nomination
@@ -173,6 +181,8 @@ async function pageDataOf(world: World, { electionIds, constituencyIds }: Nomina
   const search = new URLSearchParams();
   for (const id of electionIds) search.append('nominationElectionId', id);
   for (const id of constituencyIds) search.append('nominationConstituencyId', id);
+  for (const [electionId, ids] of Object.entries(constituencyIdsByElection))
+    for (const id of ids) search.append('nominationContest', `${electionId}:${id}`);
   const entityType = (world.entity ?? CANDIDATE).type;
   const event = {
     params: { entityType, entityId: ENTITY_ID },
@@ -180,7 +190,7 @@ async function pageDataOf(world: World, { electionIds, constituencyIds }: Nomina
       gate: null,
       nominationScope: {
         editable: true,
-        admissibleElectionIds: admissibleElectionsOf(dataRootOf(world.municipalShape).elections, entityType).map(
+        admissibleElectionIds: admissibleElectionsOf(dataRootOf(world).elections, entityType).map(
           (election) => election.id
         ),
         writableNominationIds: nominations.map((nomination) => nomination.id),
@@ -188,7 +198,7 @@ async function pageDataOf(world: World, { electionIds, constituencyIds }: Nomina
       },
       contestantUserData: { nominations },
       appSettingsData: { elections: { startFromConstituencyGroup: world.startFromConstituencyGroup } },
-      electionData: electionsOf(world.municipalShape),
+      electionData: electionsOf(world),
       constituencyData: CONSTITUENCY_DATA
     }),
     url: new URL(`http://localhost/contestant/candidate/${ENTITY_ID}/nominations/constituencies?${search}`)
@@ -201,7 +211,7 @@ async function render(world: World, selection: NominationSelection): Promise<HTM
   const data = await pageDataOf(world, selection);
   box.current = {
     selectedEntity: world.entity ?? CANDIDATE,
-    dataRoot: world.emptyDataRoot ? new DataRoot() : dataRootOf(world.municipalShape),
+    dataRoot: world.emptyDataRoot ? new DataRoot() : dataRootOf(world),
     appSettings: settingsOf(world.startFromConstituencyGroup)
   };
   const target = document.createElement('div');
@@ -546,7 +556,81 @@ describe('for an organization, which chooses several constituencies in one elect
     expect(wentOnWith()).toEqual({
       route: 'ContestantAppNominationDetails',
       nominationElectionId: ['regional', 'municipal'],
-      nominationConstituencyId: ['region-2', 'municipality-1a', 'municipality-x']
+      nominationContest: ['regional:region-2', 'municipal:municipality-1a', 'municipal:municipality-x']
+    });
+  });
+
+  it("gives two elections over one group a list each, checks in each only its own stored constituencies, and goes on with each election's own", async () => {
+    const root = await render(
+      {
+        entity: PARTY,
+        municipalShape: OPEN,
+        withCounty: true,
+        nominations: [
+          { electionId: 'regional', constituencyId: 'region-1' },
+          { electionId: 'regional', constituencyId: 'region-2' },
+          { electionId: 'county', constituencyId: 'region-1' }
+        ]
+      },
+      { electionIds: ['regional', 'county'], constituencyIds: [] }
+    );
+    await tick();
+    flushSync();
+
+    const sections = [...root.querySelectorAll<HTMLElement>('[data-testid="multi-constituency-selector-section"]')];
+    expect(sections.map((section) => textOf(one(section, 'h3')))).toEqual(['1 Regional', '2 County']);
+    expect(sections.map(checkedNames)).toEqual([['Region 1', 'Region 2'], ['Region 1']]);
+
+    const countyRegion2 = [...sections[1].querySelectorAll<HTMLInputElement>(CHECKBOX)].find(
+      (box) => textOf(box.closest('label') as HTMLElement) === 'Region 2'
+    );
+    countyRegion2?.click();
+    await tick();
+    flushSync();
+    const regionalRegion1 = [...sections[0].querySelectorAll<HTMLInputElement>(CHECKBOX)].find(
+      (box) => textOf(box.closest('label') as HTMLElement) === 'Region 1'
+    );
+    regionalRegion1?.click();
+    await tick();
+    flushSync();
+    expect(sections.map(checkedNames)).toEqual([['Region 2'], ['Region 1', 'Region 2']]);
+
+    one<HTMLButtonElement>(root, CONTINUE).click();
+    flushSync();
+    expect(wentOnWith()).toEqual({
+      route: 'ContestantAppNominationDetails',
+      nominationElectionId: ['regional', 'county'],
+      nominationContest: ['regional:region-2', 'county:region-1', 'county:region-2']
+    });
+  });
+
+  it("goes on with each election's own stored constituencies when nothing is changed, over one shared group", async () => {
+    const root = await render(
+      {
+        entity: PARTY,
+        municipalShape: OPEN,
+        withCounty: true,
+        nominations: [
+          { electionId: 'regional', constituencyId: 'region-1' },
+          { electionId: 'regional', constituencyId: 'region-2' },
+          { electionId: 'county', constituencyId: 'region-1' }
+        ]
+      },
+      {
+        electionIds: ['regional', 'county'],
+        constituencyIds: [],
+        constituencyIdsByElection: { regional: ['region-1', 'region-2'], county: ['region-1'] }
+      }
+    );
+    await tick();
+    flushSync();
+
+    one<HTMLButtonElement>(root, CONTINUE).click();
+    flushSync();
+    expect(wentOnWith()).toEqual({
+      route: 'ContestantAppNominationDetails',
+      nominationElectionId: ['regional', 'county'],
+      nominationContest: ['regional:region-1', 'regional:region-2', 'county:region-1']
     });
   });
 

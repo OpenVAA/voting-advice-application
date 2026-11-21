@@ -25,7 +25,7 @@ One card per nomination, in the order they were read. A card is headed by the el
 
 A card of a nomination the editor manages offers Edit and Delete while an entry to the editor is offered and neither lock is on; any other card holds no control.
 
-- **Edit** leads to the editor's details step with the election and the constituency of every nomination the editor manages chosen, so that the card's nomination is shown with the others and none of them is about to be removed.
+- **Edit** leads to the editor's details step with the election and the constituency of every nomination the editor manages chosen, so that the card's nomination is shown with the others and none of them is about to be removed. For an organization each constituency is chosen in its own nomination's election alone, so two elections over one constituency group are not given each other's constituencies.
 - **Delete** writes nothing and opens no dialog: it is a `ButtonWithConfirmation` that confirms inline. The card then asks whether the nomination is to be deleted, holds no Edit, and offers Confirm and Cancel; Cancel takes the question back.
 - **Confirm** writes the nominations the editor manages, as the page shows them, without the card's own: each of the others with its symbol and with its parent kept. The write is checked against the nominations shown, so a set changed since they were read is refused and nothing is written. The page's data is then read again, whatever the outcome.
 - **Add a nomination** follows the cards while `canAddAnother` of the facts says another can be added and neither lock is on, and leads to the editor's entry, where the elections of the entity's nominations are chosen already. It is never shown in place of the nominations: there the main button leads into the editor.
@@ -73,7 +73,7 @@ Return follows it and leads to the entity's home wherever the main button leads 
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { ContactSupport } from '$lib/dynamic-components/contactSupport';
-  import { managedNominationsOf, selectionSearch } from './(edit)/stepSelection';
+  import { managedNominationsOf, selectionOfContests, selectionSearch } from './(edit)/stepSelection';
   import type { NominationCardRow } from '$contestant/components/nominationCard';
   import type { DesiredNomination, EntityNomination } from '$lib/api/base/dataWriter.type';
   import type { NominationRefusal } from '$lib/contestant/nominations';
@@ -165,14 +165,16 @@ Return follows it and leads to the entity's home wherever the main button leads 
   /** The ids of the nominations whose cards offer Edit and Delete. */
   const actionIds = $derived(new Set(cardActionsOffered ? writable.map((nomination) => nomination.id) : []));
 
-  /** Where Edit leads: the details step, with the election and the constituency of every nomination the editor manages chosen. */
+  /** Where Edit leads: the details step, with the election and the constituency of every nomination the editor manages chosen. For an entity that chooses several constituencies in one election, each constituency is chosen in its own nomination's election alone. */
   const editHref = $derived(
     getRoute.current({
       route: 'ContestantAppNominationDetails',
-      ...selectionSearch({
-        electionIds: [...new Set(writable.map((nomination) => nomination.electionId))],
-        constituencyIds: [...new Set(writable.map((nomination) => nomination.constituencyId))]
-      })
+      ...selectionSearch(
+        selectionOfContests({
+          contests: writable.map(({ electionId, constituencyId }) => ({ electionId, constituencyId })),
+          severalConstituencies: !!facts?.severalConstituencies
+        })
+      )
     })
   );
 
