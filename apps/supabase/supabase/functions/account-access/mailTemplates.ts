@@ -113,7 +113,7 @@ export const SIGN_IN_MAIL_TEMPLATES: Readonly<Record<SignInMailLocale, SignInMai
 /**
  * The recovery mail per locale, in the five parts of the sign-in mail. No template states a duration, a name or an address.
  *
- * Each names the control that asks for a new link by the label the locale's message catalogue gives it, `contestantApp.login.forgotPassword`, which the login pages of the Contestant App and the Admin App both show, so the mail fits a request made in either.
+ * Each names the control that asks for a new link by the label the locale's message catalogue gives it, `common.account.forgotPassword`, which the login pages of the Contestant App and the Admin App both show, so the mail fits a request made in either.
  */
 export const RECOVERY_MAIL_TEMPLATES: Readonly<Record<SignInMailLocale, SignInMailTemplate>> = Object.freeze({
   da: template(

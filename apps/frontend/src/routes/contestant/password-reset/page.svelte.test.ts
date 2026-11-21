@@ -206,7 +206,7 @@ describe('the frame', () => {
   it("has the page's first-level heading, which can take focus, under the app's name", () => {
     const target = render();
     const heading = one<HTMLElement>(target, 'h1');
-    expect(heading.textContent?.trim()).toBe('contestantApp.resetPassword.createNewPassword');
+    expect(heading.textContent?.trim()).toBe('common.account.resetPassword.createNewPassword');
     expect(heading.getAttribute('tabindex')).toBe('-1');
     expect(target.textContent).toContain('dynamic.contestantAppName.');
     heading.focus();

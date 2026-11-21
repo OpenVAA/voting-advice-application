@@ -36,7 +36,6 @@
       "./messages/{locale}/contestantApp.privacy.json",
       "./messages/{locale}/contestantApp.questions.json",
       "./messages/{locale}/contestantApp.register.json",
-      "./messages/{locale}/contestantApp.resetPassword.json",
       "./messages/{locale}/contestantApp.setPassword.json",
       "./messages/{locale}/contestantApp.settings.json",
       "./messages/{locale}/common.json",

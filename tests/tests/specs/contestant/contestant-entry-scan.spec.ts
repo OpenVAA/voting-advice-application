@@ -395,7 +395,7 @@ test('menu: a signed-out visitor is offered Sign in, Register and Forgot Passwor
     buildRoute({ route: 'ContestantAppRegister', locale: 'en' })
   );
   await navMenu.expectItemLeadsTo(
-    messageOf('contestantApp.login', 'forgotPassword'),
+    messageOf('common', 'account.forgotPassword'),
     buildRoute({ route: 'ContestantAppForgotPassword', locale: 'en' })
   );
   await navMenu.expectItemLeadsTo(

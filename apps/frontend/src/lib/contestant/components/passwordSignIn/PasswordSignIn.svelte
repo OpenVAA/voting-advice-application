@@ -124,8 +124,8 @@ Accesses `ContestantContext`.
   {#if failure}
     <ErrorMessage inline message={failure} role="alert" data-status={failureStatus} {...failureTestIdProps} />
   {/if}
-  <Button href={forgotPasswordHref} text={t('contestantApp.login.forgotPassword')} {...forgotPasswordTestIdProps} />
+  <Button href={forgotPasswordHref} text={t('common.account.forgotPassword')} {...forgotPasswordTestIdProps} />
   {#if noPasswordYetOffered}
-    <Button href={forgotPasswordHref} text={t('contestantApp.login.noPasswordYet')} {...noPasswordYetTestIdProps} />
+    <Button href={forgotPasswordHref} text={t('common.account.noPasswordYet')} {...noPasswordYetTestIdProps} />
   {/if}
 </div>

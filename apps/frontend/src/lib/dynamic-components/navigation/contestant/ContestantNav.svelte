@@ -193,7 +193,7 @@
       <NavItem
         href={getRoute.current('ContestantAppForgotPassword')}
         icon="help"
-        text={t('contestantApp.login.forgotPassword')} />
+        text={t('common.account.forgotPassword')} />
       <NavItem href={getRoute.current('ContestantAppHelp')} icon="help" text={t('contestantApp.help.title')} />
       <NavItem
         href={getRoute.current('ContestantAppPrivacy')}

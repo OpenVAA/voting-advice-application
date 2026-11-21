@@ -1,5 +1,21 @@
 {
   "common": {
+    "account": {
+      "emailRequired": "Ange din e-postadress.",
+      "emailSent": {
+        "changeAddress": "Använd en annan e-postadress",
+        "heroEmoji": "✉️",
+        "title": "Kontrollera din e-post"
+      },
+      "forgotPassword": "Glömt lösenord?",
+      "noPasswordYet": "Jag har inte ställt in något lösenord än",
+      "resetPassword": {
+        "createNewPassword": "Ställ in ett nytt lösenord",
+        "ingress": "För att återställa ditt lösenord, ange din e-postadress nedan:",
+        "sendLink": "Skicka återställningslänk",
+        "title": "Glömt lösenord?"
+      }
+    },
     "alliance": {
       "plural": "valallianser",
       "singular": "valallians"

@@ -7,7 +7,6 @@
     "email": "E-Mail",
     "password": "Passwuert",
     "button": "Umellen",
-    "forgotPassword": "Passwuert vergiess?",
     "errors": {
       "invalidCredentials": "Ongëlteg E-Mail oder Passwuert",
       "genericError": "Beim Umellen ass e Feeler opgetrueden. Probéiert wgl. nach eng Kéier.",

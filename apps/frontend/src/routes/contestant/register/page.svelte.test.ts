@@ -581,8 +581,8 @@ describe('the forms', () => {
 
 describe('the email mode', () => {
   it.each<[string, string, string]>([
-    ['an empty field', '', 'contestantApp.login.emailRequired'],
-    ['a field holding spaces alone', '   ', 'contestantApp.login.emailRequired'],
+    ['an empty field', '', 'common.account.emailRequired'],
+    ['a field holding spaces alone', '   ', 'common.account.emailRequired'],
     ['an address the control reports invalid', 'not-an-address', 'components.input.error.invalidEmail']
   ])('sends nothing for %s, says what to enter at the field and focuses it', async (_name, typed, message) => {
     const target = render(['email', 'code']);
@@ -1169,7 +1169,7 @@ describe('the notice for a browser that has confirmed an address', () => {
     expect(login.textContent).toContain('common.login');
     const forgotPassword = one<HTMLAnchorElement>(notice, NOTICE_FORGOT_PASSWORD);
     expect(forgotPassword.getAttribute('href')).toBe(FORGOT_PASSWORD_ROUTE);
-    expect(forgotPassword.textContent).toContain('contestantApp.login.forgotPassword');
+    expect(forgotPassword.textContent).toContain('common.account.forgotPassword');
   });
 
   it('offers a Dismiss that posts to the action dismissRegistered, in a form of its own inside the notice', () => {

@@ -239,7 +239,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
     const address = email.trim();
     // Emptiness is asked first: the control reports an empty field as invalid too, and the two have different messages.
     if (!address || !emailField?.checkValidity()) {
-      emailError = address ? t('components.input.error.invalidEmail') : t('contestantApp.login.emailRequired');
+      emailError = address ? t('components.input.error.invalidEmail') : t('common.account.emailRequired');
       emailField?.focus();
       return;
     }
@@ -322,7 +322,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
           data-testid="contestant-register-registered-notice-login" />
         <Button
           href={getRoute.current('ContestantAppForgotPassword')}
-          text={t('contestantApp.login.forgotPassword')}
+          text={t('common.account.forgotPassword')}
           data-testid="contestant-register-registered-notice-forgot-password" />
         <form method="POST" action="?/dismissRegistered" use:enhance={handleDismissRegistered}>
           <Button type="submit" text={t('common.close')} data-testid="contestant-register-registered-notice-dismiss" />

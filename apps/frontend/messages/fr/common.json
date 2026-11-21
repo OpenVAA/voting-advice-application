@@ -1,5 +1,21 @@
 {
   "common": {
+    "account": {
+      "emailRequired": "Saisissez votre adresse e-mail.",
+      "emailSent": {
+        "changeAddress": "Utiliser une autre adresse e-mail",
+        "heroEmoji": "✉️",
+        "title": "Consultez vos e-mails"
+      },
+      "forgotPassword": "Mot de passe oublié ?",
+      "noPasswordYet": "Je n’ai pas encore défini de mot de passe",
+      "resetPassword": {
+        "createNewPassword": "Définir un nouveau mot de passe",
+        "ingress": "Pour réinitialiser votre mot de passe, veuillez saisir votre adresse e-mail ci-dessous :",
+        "sendLink": "Envoyer le lien de réinitialisation",
+        "title": "Mot de passe oublié ?"
+      }
+    },
     "alliance": {
       "plural": "alliances",
       "singular": "alliance"

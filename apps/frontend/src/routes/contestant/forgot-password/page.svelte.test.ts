@@ -169,7 +169,7 @@ describe('the frame', () => {
   it("has the page's first-level heading, which can take focus, under the app's name", () => {
     const target = render();
     const heading = one(target, 'h1');
-    expect(heading.textContent?.trim()).toBe('contestantApp.resetPassword.title');
+    expect(heading.textContent?.trim()).toBe('common.account.resetPassword.title');
     expect(heading.getAttribute('tabindex')).toBe('-1');
     expect(target.textContent).toContain('dynamic.contestantAppName.');
     heading.focus();
@@ -178,7 +178,7 @@ describe('the frame', () => {
 
   it('says what the address is for', () => {
     const target = render();
-    expect(target.textContent).toContain('contestantApp.resetPassword.ingress');
+    expect(target.textContent).toContain('common.account.resetPassword.ingress');
   });
 
   it('leads back to the sign-in screen', () => {
@@ -249,7 +249,7 @@ describe('the form', () => {
     expect(button.getAttribute('form')).toBe(form.id);
     expect(form.contains(button)).toBe(false);
     expect(button.closest('section')?.getAttribute('aria-label')).toBe('common.primaryActions');
-    expect(button.textContent?.trim()).toBe('contestantApp.resetPassword.sendLink');
+    expect(button.textContent?.trim()).toBe('common.account.resetPassword.sendLink');
   });
 
   it('has a submit button that is natively disabled until the page has mounted', () => {
@@ -269,7 +269,7 @@ describe('the main button', () => {
     expect(goto).not.toHaveBeenCalled();
     const email = one<HTMLInputElement>(target, EMAIL);
     const error = one(target, EMAIL_ERROR);
-    expect(messageOf(error)).toBe('contestantApp.login.emailRequired');
+    expect(messageOf(error)).toBe('common.account.emailRequired');
     expect(error.getAttribute('role')).toBe('alert');
     expect(email.getAttribute('aria-invalid')).toBe('true');
     expect(document.activeElement).toBe(email);
@@ -281,7 +281,7 @@ describe('the main button', () => {
     press(target, SUBMIT);
     await settle();
     expect(sendEntryLink).not.toHaveBeenCalled();
-    expect(messageOf(one(target, EMAIL_ERROR))).toBe('contestantApp.login.emailRequired');
+    expect(messageOf(one(target, EMAIL_ERROR))).toBe('common.account.emailRequired');
   });
 
   it('asks for nothing with text that is no address, and says so at the field', async () => {

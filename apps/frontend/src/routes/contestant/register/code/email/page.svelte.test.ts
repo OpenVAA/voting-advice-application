@@ -306,8 +306,8 @@ describe('Continue', () => {
     await settle();
     expect(sendEntryLink).not.toHaveBeenCalled();
     expect(goto).not.toHaveBeenCalled();
-    expect(messageOf(one(target, EMAIL_ERROR))).toBe('contestantApp.login.emailRequired');
-    expect(messageOf(one(target, CONFIRMATION_ERROR))).toBe('contestantApp.login.emailRequired');
+    expect(messageOf(one(target, EMAIL_ERROR))).toBe('common.account.emailRequired');
+    expect(messageOf(one(target, CONFIRMATION_ERROR))).toBe('common.account.emailRequired');
     expect(document.activeElement).toBe(one(target, EMAIL));
     expect(labelOf(one(target, SUBMIT))).toBe('common.continue');
   });

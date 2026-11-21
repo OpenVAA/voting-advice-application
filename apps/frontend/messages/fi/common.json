@@ -1,5 +1,21 @@
 {
   "common": {
+    "account": {
+      "emailRequired": "Kirjoita sähköpostiosoitteesi.",
+      "emailSent": {
+        "changeAddress": "Käytä toista sähköpostiosoitetta",
+        "heroEmoji": "✉️",
+        "title": "Tarkista sähköpostisi"
+      },
+      "forgotPassword": "Unohditko salasanan?",
+      "noPasswordYet": "En ole vielä asettanut salasanaa",
+      "resetPassword": {
+        "createNewPassword": "Aseta uusi salasana",
+        "ingress": "Jos haluat palauttaa salasanasi, kirjoita sähköpostiosoitteesi alla olevaan kenttään:",
+        "sendLink": "Lähetä palautuslinkki",
+        "title": "Unohditko salasanasi?"
+      }
+    },
     "alliance": {
       "plural": "vaaliliitot",
       "singular": "vaaliliitto"

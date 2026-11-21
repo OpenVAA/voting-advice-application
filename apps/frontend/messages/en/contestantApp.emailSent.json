@@ -1,8 +1,6 @@
 {
   "contestantApp.emailSent": {
     "askedAgain": "If you asked for another email less than a minute ago, this one may not have been sent. Wait until you can send again, then press Send again.",
-    "changeAddress": "Use another email address",
-    "heroEmoji": "✉️",
     "intro": {
       "code": "We’ve sent an email to the address you registered with. Click on the link in it to sign in.",
       "recovery": "We’ve sent an email to the address you provided. Click on the link in it to sign in and set a new password.",
@@ -28,7 +26,6 @@
     ],
     "resendReady": "You can now ask for a new email.",
     "resendRequested": "A new email has been requested.",
-    "support": "If you have problems receiving the email, {contactSupportLink}.",
-    "title": "Check your email"
+    "support": "If you have problems receiving the email, {contactSupportLink}."
   }
 }

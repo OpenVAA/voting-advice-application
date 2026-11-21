@@ -99,7 +99,7 @@ const CODE_UNCONFIRMED_MESSAGE = messageOf('contestantApp.register', 'codeUnconf
 
 /** The sentence under the email field for each reason it can be in error, read from the message source rather than copied. */
 const EMAIL_ERROR_MESSAGES: Readonly<Record<ContestantRegisterFieldReason['email'], string>> = Object.freeze({
-  required: messageOf('contestantApp.login', 'emailRequired'),
+  required: messageOf('common', 'account.emailRequired'),
   invalid: messageOf('components', 'input.error.invalidEmail')
 });
 

@@ -1,8 +1,6 @@
 {
   "contestantApp.emailSent": {
     "askedAgain": "Jos pyysit toista viestiä alle minuutti sitten, tätä viestiä ei ehkä lähetetty. Odota, kunnes voit lähettää uudelleen, ja paina sitten Lähetä uudelleen.",
-    "changeAddress": "Käytä toista sähköpostiosoitetta",
-    "heroEmoji": "✉️",
     "intro": {
       "code": "Olemme lähettäneet sähköpostiviestin osoitteeseen, jolla rekisteröidyit. Klikkaa viestissä olevaa linkkiä kirjautuaksesi.",
       "recovery": "Olemme lähettäneet sähköpostiviestin antamaasi osoitteeseen. Klikkaa viestissä olevaa linkkiä kirjautuaksesi ja asettaaksesi uuden salasanan.",
@@ -28,7 +26,6 @@
     ],
     "resendReady": "Voit nyt pyytää uuden viestin.",
     "resendRequested": "Uutta viestiä on pyydetty.",
-    "support": "Jos sinulla on ongelmia viestin vastaanottamisessa, {contactSupportLink}.",
-    "title": "Tarkista sähköpostisi"
+    "support": "Jos sinulla on ongelmia viestin vastaanottamisessa, {contactSupportLink}."
   }
 }

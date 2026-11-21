@@ -183,11 +183,11 @@
       <div class="mt-md flex flex-col items-center">
         <Button
           href={forgotPasswordHref}
-          text={t('contestantApp.login.forgotPassword')}
+          text={t('common.account.forgotPassword')}
           data-testid="admin-login-forgot-password" />
         <Button
           href={forgotPasswordHref}
-          text={t('contestantApp.login.noPasswordYet')}
+          text={t('common.account.noPasswordYet')}
           data-testid="admin-login-no-password-yet" />
       </div>
     </div>

@@ -29,7 +29,7 @@ const Input = (await import('./Input.svelte')).default;
 
 /** The id every subject is mounted with, so that derived ids are literals. */
 const ID = 'subject';
-const ERROR = 'contestantApp.login.emailRequired';
+const ERROR = 'common.account.emailRequired';
 /** The shared test id of an `Input`'s inline error. */
 const DEFAULT_ERROR_TEST_ID = 'input-error';
 

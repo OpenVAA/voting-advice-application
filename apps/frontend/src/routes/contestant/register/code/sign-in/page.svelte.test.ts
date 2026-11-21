@@ -585,7 +585,7 @@ describe('the links to the forgot-password page', () => {
       expect(link.tagName).toBe('A');
       expect(link.getAttribute('href')).toBe(FORGOT_PASSWORD_ROUTE);
     }
-    expect(one(target, NO_PASSWORD_YET).textContent?.trim()).toBe('contestantApp.login.noPasswordYet');
+    expect(one(target, NO_PASSWORD_YET).textContent?.trim()).toBe('common.account.noPasswordYet');
   });
 
   it.each<[string, Modes, boolean]>([

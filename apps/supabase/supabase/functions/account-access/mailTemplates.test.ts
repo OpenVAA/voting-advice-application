@@ -60,8 +60,8 @@ function count(haystack: string, needle: string): number {
  * @param locale - The message directory to read
  */
 function forgotPasswordLabel(locale: SignInMailLocale): string {
-  const catalogue = JSON.parse(readFileSync(new URL(`${locale}/contestantApp.login.json`, MESSAGES), 'utf8'));
-  return catalogue['contestantApp.login'].forgotPassword;
+  const catalogue = JSON.parse(readFileSync(new URL(`${locale}/common.json`, MESSAGES), 'utf8'));
+  return catalogue.common.account.forgotPassword;
 }
 
 describe('the locale set', () => {

@@ -47,11 +47,11 @@ function handleSubmit(event: SubmitEvent): void {
    */
   export function validate(): boolean {
     emailErrorReason = undefined;
-    if (!email.trim()) emailError = t('contestantApp.login.emailRequired');
+    if (!email.trim()) emailError = t('common.account.emailRequired');
     else if (!emailField?.checkValidity()) emailError = t('components.input.error.invalidEmail');
     else emailError = undefined;
 
-    if (!confirmation.trim()) showAtConfirmation(t('contestantApp.login.emailRequired'), false);
+    if (!confirmation.trim()) showAtConfirmation(t('common.account.emailRequired'), false);
     else if (!sameAddress()) showAtConfirmation(t('contestantApp.register.emailEntry.mismatch'), true);
     else showAtConfirmation(undefined, false);
 

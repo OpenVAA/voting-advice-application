@@ -1,5 +1,21 @@
 {
   "common": {
+    "account": {
+      "emailRequired": "Sisesta oma e-posti aadress.",
+      "emailSent": {
+        "changeAddress": "Kasuta teist e-posti aadressi",
+        "heroEmoji": "✉️",
+        "title": "Kontrolli oma e-posti"
+      },
+      "forgotPassword": "Unustasid salasõna?",
+      "noPasswordYet": "Ma ei ole veel parooli määranud",
+      "resetPassword": {
+        "createNewPassword": "Määra uus parool",
+        "ingress": "Parooli lähtestamiseks sisesta oma e-posti aadress allolevasse välja:",
+        "sendLink": "Saada lähtestamislink",
+        "title": "Unustasid parooli?"
+      }
+    },
     "alliance": {
       "plural": "valimisliidud",
       "singular": "valimisliit"

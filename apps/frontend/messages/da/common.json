@@ -1,5 +1,21 @@
 {
   "common": {
+    "account": {
+      "emailRequired": "Indtast din e-mailadresse.",
+      "emailSent": {
+        "changeAddress": "Brug en anden e-mailadresse",
+        "heroEmoji": "✉️",
+        "title": "Tjek din e-mail"
+      },
+      "forgotPassword": "Glemt adgangskode?",
+      "noPasswordYet": "Jeg har ikke valgt en adgangskode endnu",
+      "resetPassword": {
+        "createNewPassword": "Vælg en ny adgangskode",
+        "ingress": "For at nulstille din adgangskode skal du indtaste din e-mailadresse nedenfor:",
+        "sendLink": "Send nulstillingslink",
+        "title": "Glemt adgangskode?"
+      }
+    },
     "alliance": {
       "plural": "alliancer",
       "singular": "alliance"

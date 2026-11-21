@@ -404,7 +404,7 @@ describe('the links to the forgot-password page', () => {
       expect(link.tagName).toBe('A');
       expect(new URL(link.getAttribute('href')!, 'http://localhost').pathname).toBe(FORGOT_PASSWORD_ROUTE);
     }
-    expect(one(target, NO_PASSWORD_YET).textContent?.trim()).toBe('contestantApp.login.noPasswordYet');
+    expect(one(target, NO_PASSWORD_YET).textContent?.trim()).toBe('common.account.noPasswordYet');
   });
 
   it('carry no address while none is typed', () => {
@@ -443,7 +443,7 @@ describe('signing in', () => {
     press(target, SUBMIT);
     expect(posts.length).toBe(1);
     expect(posts[0].cancelled).toBe(true);
-    expect(messageOf(one(target, EMAIL_ERROR))).toBe('contestantApp.login.emailRequired');
+    expect(messageOf(one(target, EMAIL_ERROR))).toBe('common.account.emailRequired');
     expect(messageOf(one(target, PASSWORD_ERROR))).toBe('contestantApp.login.passwordRequired');
     expect(document.activeElement).toBe(one(target, EMAIL));
     expect(stateOf(target)).toBe('idle');

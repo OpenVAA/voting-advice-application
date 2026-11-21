@@ -300,7 +300,7 @@ describe('the entries', () => {
     expect(addresses).not.toContain(buildRoute({ route: 'ContestantAppForgotPassword' }, { params: {} }));
     expect(target.querySelector('[data-testid="login-show"]')).toBeNull();
     expect(target.querySelector('[data-testid="login-forgot-password-link"]')).toBeNull();
-    expect(target.textContent).not.toContain('contestantApp.login.forgotPassword');
+    expect(target.textContent).not.toContain('common.account.forgotPassword');
   });
 });
 

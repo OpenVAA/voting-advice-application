@@ -1,8 +1,6 @@
 {
   "contestantApp.emailSent": {
     "askedAgain": "Si vous avez demandé un autre e-mail il y a moins d’une minute, celui-ci n’a peut-être pas été envoyé. Attendez de pouvoir renvoyer, puis appuyez sur Renvoyer.",
-    "changeAddress": "Utiliser une autre adresse e-mail",
-    "heroEmoji": "✉️",
     "intro": {
       "code": "Nous avons envoyé un e-mail à l’adresse avec laquelle vous vous êtes inscrit·e. Cliquez sur le lien que contient cet e-mail pour vous connecter.",
       "recovery": "Nous avons envoyé un e-mail à l’adresse que vous avez indiquée. Cliquez sur le lien que contient cet e-mail pour vous connecter et définir un nouveau mot de passe.",
@@ -28,7 +26,6 @@
     ],
     "resendReady": "Vous pouvez maintenant demander un nouvel e-mail.",
     "resendRequested": "Un nouvel e-mail a été demandé.",
-    "support": "Si vous avez des difficultés à recevoir l’e-mail, {contactSupportLink}.",
-    "title": "Consultez vos e-mails"
+    "support": "Si vous avez des difficultés à recevoir l’e-mail, {contactSupportLink}."
   }
 }

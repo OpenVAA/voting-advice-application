@@ -1,5 +1,21 @@
 {
   "common": {
+    "account": {
+      "emailRequired": "Enter your email address.",
+      "emailSent": {
+        "changeAddress": "Use another email address",
+        "heroEmoji": "✉️",
+        "title": "Check your email"
+      },
+      "forgotPassword": "Forgot Password?",
+      "noPasswordYet": "I have not set a password yet",
+      "resetPassword": {
+        "createNewPassword": "Set a new password",
+        "ingress": "To reset your password, please enter your email address below:",
+        "sendLink": "Send reset link",
+        "title": "Forgot Password?"
+      }
+    },
     "alliance": {
       "plural": "alliances",
       "singular": "alliance"

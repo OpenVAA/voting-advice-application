@@ -87,7 +87,7 @@ Accesses `ContestantContext`: `registerIdentityProviderAccount` and `t`.
     {:else}
       <Button
         type="button"
-        text={t('contestantApp.emailSent.changeAddress')}
+        text={t('common.account.emailSent.changeAddress')}
         onclick={onchangeaddress}
         data-testid={testIds.change} />
     {/if}

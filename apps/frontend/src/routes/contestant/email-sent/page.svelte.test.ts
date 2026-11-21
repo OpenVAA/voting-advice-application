@@ -267,7 +267,7 @@ describe('the frame', () => {
     const target = render(requestWith());
     const heading = one(target, 'h1');
     expect(heading.getAttribute('tabindex')).toBe('-1');
-    expect(heading.textContent?.trim()).toBe('contestantApp.emailSent.title');
+    expect(heading.textContent?.trim()).toBe('common.account.emailSent.title');
     expect(target.textContent).toContain('dynamic.contestantAppName.');
     heading.focus();
     expect(document.activeElement).toBe(heading);
@@ -275,7 +275,7 @@ describe('the frame', () => {
 
   it('shows the envelope as a presentational figure', () => {
     const target = render(requestWith());
-    expect(one(target, 'figure[role="presentation"]').textContent?.trim()).toBe('contestantApp.emailSent.heroEmoji');
+    expect(one(target, 'figure[role="presentation"]').textContent?.trim()).toBe('common.account.emailSent.heroEmoji');
   });
 
   it('says that the request was asked again when the held request says so', () => {
@@ -312,7 +312,7 @@ describe('the address and the way back to it', () => {
     const target = render(requestWith({ origin, wording: origin === 'forgotPassword' ? 'recovery' : 'signIn' }));
     const link = one(target, CHANGE_ADDRESS);
     expect(link.getAttribute('href')).toBe(routeOf(route));
-    expect(link.textContent?.trim()).toBe('contestantApp.emailSent.changeAddress');
+    expect(link.textContent?.trim()).toBe('common.account.emailSent.changeAddress');
   });
 
   it('links back to the screen that took the address for a code the flow still holds', () => {

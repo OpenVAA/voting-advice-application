@@ -116,7 +116,7 @@ const KEY = {
   emailDescription: 'contestantApp.settings.emailDescription',
   emailPendingInfo: 'contestantApp.settings.emailPendingInfo',
   saveEmail: 'contestantApp.settings.saveEmail',
-  changeAddress: 'contestantApp.emailSent.changeAddress',
+  changeAddress: 'common.account.emailSent.changeAddress',
   resend: 'contestantApp.emailSent.resend',
   resendRequested: 'contestantApp.emailSent.resendRequested',
   resendReady: 'contestantApp.emailSent.resendReady',
