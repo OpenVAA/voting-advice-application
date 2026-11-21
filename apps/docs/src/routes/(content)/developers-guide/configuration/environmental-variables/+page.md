@@ -113,7 +113,7 @@ For the local stack, `yarn workspace @openvaa/supabase supabase status -o env` p
 
 ### Edge Functions
 
-- `SITE_URL`: the site origin of post-login redirects and of the sign-in links `account-access` mails. There is no fallback.
+- `SITE_URL`: the site origin of the sign-in links `account-access` mails. There is no fallback.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`: the mail server that `send-email` and `account-access` use (the local email testing server in the template).
 
 The functions read these from their own `.env`. The root `.env` carries them too, for serving a function directly against the root file, as the comments in `.env.example` describe.
