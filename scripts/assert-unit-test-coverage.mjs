@@ -27,8 +27,9 @@
  *             claim. (UNIT-02 / D-17)
  *   Check 3 — suites outside the workspaces: a Vitest suite kept under a directory that is not a
  *             workspace MUST be run by a root script of its own, and the root `test:unit` script
- *             MUST chain that script. Turbo fans out to workspaces only, so Checks 1 and 2 cannot
- *             see such a suite at all.
+ *             MUST chain that script; and every tracked `.test.` file outside the workspaces MUST
+ *             sit under the `include` prefix of one such suite. Turbo fans out to workspaces only,
+ *             so Checks 1 and 2 cannot see such a suite at all.
  *
  * Check 1 alone would pass a tree where every workspace declares the script and turbo runs none
  * of them; Check 2 alone would pass a tree where the test-bearing workspaces declare nothing at
@@ -69,6 +70,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { trackedFiles } from './lib/text-guard.mjs';
 
 // ---------------------------------------------------------------------------
 // Config
@@ -172,17 +174,37 @@ const TEST_FILE_PATTERN = /\.(test|spec)\.(c|m)?[jt]sx?$/;
 const TEST_RUNNER = /(^|[\s&|;])vitest(\s|$)/;
 
 /**
- * The Vitest suites that live outside every workspace, each with the root script that runs it.
+ * The Vitest suites that live outside every workspace, each with the root script that runs it and
+ * `include`, the repository-relative path prefix its config's `include` selects test files under.
  *
  * `tests/` holds the E2E harness and is not a workspace, so `turbo run test:unit` never reaches
- * the unit tests of the harness's own utilities. `TEST_FILE_PATTERN` cannot find them by walking
- * either: the Playwright specs beside them carry the same suffixes and are not Vitest's to run.
- * The suite is therefore NAMED here, by the config that selects its files.
+ * the unit tests of the harness's own utilities. The suite is therefore NAMED here, by the config
+ * that selects its files.
  *
  * A suite added under another non-workspace directory gets an entry here and a link in the root
  * `test:unit` script; Check 3 then holds the two together.
  */
-const NON_WORKSPACE_SUITES = [{ config: 'tests/vitest.config.ts', script: 'test:unit:tests' }];
+const NON_WORKSPACE_SUITES = [
+  { config: 'tests/vitest.config.ts', script: 'test:unit:tests', include: 'tests/tests/utils/' }
+];
+
+/**
+ * A Vitest test file. Outside the workspaces the Playwright specs are `.spec.` files, so this
+ * selects exactly the files a Vitest suite there must run.
+ */
+const VITEST_FILE_PATTERN = /\.test\.(c|m)?[jt]sx?$/;
+
+/** Tracked trees outside the workspaces that hold no test file a suite runs. */
+const NON_SUITE_TREES = ['.planning/'];
+
+/** Whether a repository-relative path is in a workspace or in `NON_SUITE_TREES`, where Check 3 looks for no suite. */
+function excludedFromSuiteSearch(file) {
+  return (
+    WORKSPACE_ROOTS.some((root) => file.startsWith(`${root}/`)) ||
+    WORKSPACE_DIRS.some((dir) => file.startsWith(`${dir}/`)) ||
+    NON_SUITE_TREES.some((tree) => file.startsWith(tree))
+  );
+}
 
 /**
  * Directory names the walk never descends into. Excluding `node_modules` is D-09's explicit
@@ -833,7 +855,8 @@ function checkTurboExecution(workspaces) {
 
 /**
  * Every suite in NON_WORKSPACE_SUITES MUST be run by its root script, and the root `test:unit`
- * script MUST chain that script as an `&&` link of its own.
+ * script MUST chain that script as an `&&` link of its own. Every tracked `.test.` file outside
+ * the workspaces and `NON_SUITE_TREES` MUST sit under one suite's `include` prefix.
  *
  * The link is compared whole, so `yarn test:unit:tests || true`, which runs the suite and discards
  * its status, does not satisfy it.
@@ -871,6 +894,25 @@ function checkNonWorkspaceSuites() {
           `its own, so the tests ${suite.config} selects run in no gate. It is ${JSON.stringify(composed)}.`
       );
     }
+  }
+
+  let files;
+  try {
+    files = trackedFiles({ skip: (file) => excludedFromSuiteSearch(file) || !VITEST_FILE_PATTERN.test(file) });
+  } catch (error) {
+    fail(`could not list the tracked files for Check 3 (${error.message}).`);
+  }
+  for (const file of files) {
+    if (NON_WORKSPACE_SUITES.some((suite) => file.startsWith(suite.include))) continue;
+    const owner = NON_WORKSPACE_SUITES.find((suite) => file.startsWith(`${path.posix.dirname(suite.config)}/`));
+    problems.push(
+      owner
+        ? `${file} is a Vitest test file that no suite runs: add it to the \`include\` of ${owner.config} ` +
+            `and widen that entry's \`include\` prefix in NON_WORKSPACE_SUITES in ${SELF}, or move it under ` +
+            `${owner.include}.`
+        : `${file} is a Vitest test file that no suite runs: give its directory a Vitest config of its ` +
+            `own, with a root script chained into \`test:unit\` and an entry in NON_WORKSPACE_SUITES in ${SELF}.`
+    );
   }
 
   if (problems.length > 0) {

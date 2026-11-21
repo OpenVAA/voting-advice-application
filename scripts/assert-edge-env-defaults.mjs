@@ -12,13 +12,13 @@
  * intended one. In both cases the misconfiguration becomes a wrong RESULT rather than a loud
  * failure, and nothing else in the tree says so.
  *
- * Removing the instances without a guard leaves the class open to the next Edge Function
- * (decision D-D2): this file is what closes the class rather than its instances.
+ * Removing the instances without a guard leaves the class open to the next Edge Function:
+ * this file is what closes the class rather than its instances.
  *
  * TWO checks, each a distinct way the tree could silently regress:
  *
- *   Check 1 (REVIEW-EDGE-02) — no environment read anywhere under the functions tree is
- *     followed by a defaulting operator. This is the class D-D2 names.
+ *   Check 1 — no environment read anywhere under the functions tree is followed by a
+ *     defaulting operator.
  *   Check 2 — every module that has a test beside it stays reachable from vitest, meaning no
  *     remote-URL import and no reference to the Deno global. That property is the ONLY reason
  *     vitest can import these files at all (`claimConfig.ts` was created to establish it and
@@ -239,7 +239,7 @@ function main() {
           'naming the variable, not be papered over: the same shape addressed invite links at the ' +
           'wrong host and seeded candidates into a default tenant, and reported no error either ' +
           'time. Replace the default with a throw naming the variable — see `requireEnv` in ' +
-          '`_shared/envConfig.ts` (REVIEW-EDGE-02).'
+          '`_shared/envConfig.ts`.'
       );
     }
   }

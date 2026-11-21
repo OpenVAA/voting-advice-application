@@ -25,3 +25,23 @@ updates:
       - "Github Actions"
     # Create PRs for security updates only
     open-pull-requests-limit: 0
+
+  # Maintain the Terraform provider pins in the infra lock files
+  - package-ecosystem: "terraform"
+    directories:
+      - "/infra/bootstrap"
+      - "/infra/envs/staging/*"
+      - "/infra/envs/example/*"
+      - "/infra/envs/scratch/*"
+    schedule:
+      interval: "monthly"
+    target-branch: "main"
+    open-pull-requests-limit: 1
+
+  # Maintain the image digest pins of the local proxy stack
+  - package-ecosystem: "docker-compose"
+    directory: "/infra/local"
+    schedule:
+      interval: "monthly"
+    target-branch: "main"
+    open-pull-requests-limit: 1

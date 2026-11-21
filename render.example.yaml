@@ -31,7 +31,7 @@ services:
         value: 'false'
       - key: PUBLIC_LOG_LEVEL # debug | info | warn | error; anything else logs one error and falls back to warn
         value: 'warn'
-      - key: ANALYTICS_PROVIDER # none | log | posthog; a bad value, or posthog with no key, is reported at start and nothing is sent
+      - key: ANALYTICS_PROVIDER # none | log | posthog; a bad value, or posthog with no key, stops the server from starting
         value: 'none'
       - key: ANALYTICS_CONSENT_MODE # gated | free; whether consent is needed is for the deployer to determine
         value: 'gated'
@@ -55,8 +55,27 @@ services:
       - key: XFF_DEPTH # Check
         value: '1'
 
-      # Uncomment these if using pre-registration
-      # - fromGroup: IDENTITY PROVIDER - PRODUCTION CLIENT
+      # Bank authentication (identity provider): uncomment and enter each value in Render
+      # A provider type other than Signicat adds its own variables (the IDURA_* keys): see the
+      # provider-specific block of .env.example.
+      # - key: IDENTITY_CALLBACK_SERVER_SECRET # the same value as the function secret
+      #   sync: false
+      # - key: PUBLIC_IDENTITY_PROVIDER_TYPE
+      #   sync: false
+      # - key: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID
+      #   sync: false
+      # - key: PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT
+      #   sync: false
+      # - key: IDENTITY_PROVIDER_CLIENT_SECRET
+      #   sync: false
+      # - key: IDENTITY_PROVIDER_DECRYPTION_JWKS
+      #   sync: false
+      # - key: IDENTITY_PROVIDER_JWKS_URI
+      #   sync: false
+      # - key: IDENTITY_PROVIDER_ISSUER
+      #   sync: false
+      # - key: IDENTITY_PROVIDER_TOKEN_ENDPOINT
+      #   sync: false
 
     region: frankfurt
     dockerContext: .

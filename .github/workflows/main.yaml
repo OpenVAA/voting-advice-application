@@ -211,6 +211,7 @@ jobs:
             supabase:
               - 'apps/supabase/**'
               - 'packages/supabase-types/**'
+              - 'infra/scripts/check-seed.sql'
 
       - uses: supabase/setup-cli@v3
         if: steps.changes.outputs.supabase == 'true'
@@ -221,6 +222,33 @@ jobs:
         if: steps.changes.outputs.supabase == 'true'
         working-directory: apps/supabase
         run: supabase start
+
+      # `supabase start` applies seed.sql, so this database holds a seed user, a local address and the
+      # demo key. The seed check must refuse it with status 3 and name all three; a pass here means the
+      # check has gone blind.
+      - name: "Run the seed check against the seeded stack (it must report every finding)"
+        if: steps.changes.outputs.supabase == 'true'
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: 54322
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: |
+          stderr_file="$RUNNER_TEMP/check-seed.stderr"
+          status=0
+          psql -X -f infra/scripts/check-seed.sql 2> "$stderr_file" || status=$?
+          cat "$stderr_file"
+          if [ "$status" -ne 3 ]; then
+            echo "::error::check-seed.sql exited $status on the seeded stack; expected 3"
+            exit 1
+          fi
+          for finding in 'seed user:' 'local address:' 'demo key:'; do
+            if ! grep -qF -- "$finding" "$stderr_file"; then
+              echo "::error::check-seed.sql did not report '$finding' on the seeded stack"
+              exit 1
+            fi
+          done
 
       - name: "Run pgTAP tests"
         if: steps.changes.outputs.supabase == 'true'
@@ -282,6 +310,12 @@ jobs:
 
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
+
+      # Builds one database from migrations/ and one from schema/, each in an isolated instance
+      # with ports of its own, and fails when the two differ. It stops both instances before it
+      # exits, so it runs before the shared stack starts.
+      - name: "Run yarn check:schema-equivalence (schema/ and migrations/ build the same database)"
+        run: yarn check:schema-equivalence
 
       - name: "Assert psql is available (lint-schema.mjs shells out to it)"
         run: command -v psql || { echo "::error::psql not found on the runner - lint-schema.mjs cannot reach the database without it"; exit 1; }
@@ -585,9 +619,9 @@ jobs:
       - name: "Write the local Supabase keys into .env"
         run: tests/scripts/ci-write-local-keys.sh
 
-      # The two guards `yarn test:e2e` runs before Playwright; the wrapper below runs Playwright only.
+      # The three guards `yarn test:e2e` runs before Playwright; the wrapper below runs Playwright only.
       - name: "Run the E2E wiring guards"
-        run: yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring
+        run: yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && yarn assert:e2e-coverage-tags
 
       # The same wrapper as a local run. It spawns and owns the dev server on the project the suite
       # seeds, runs the preflight, and writes the dev-server log, the reports and the verdict into
@@ -782,7 +816,10 @@ jobs:
   # moved to other code. `terraform_wrapper: false` keeps the wrapper from hiding exit statuses.
   #
   # `-lockfile=readonly` fails `init` when a tracked lock file lacks the hashes of this runner's
-  # platform, instead of rewriting the lock file in the runner.
+  # platform, instead of rewriting the lock file in the runner. The module tracks no lock file, so its
+  # test step initialises without the flag.
+  #
+  # `terraform test` plans the module against a mocked provider, so it needs no credentials either.
   #
   # The roots are found by glob, so a root added later is validated without an edit here. The loop
   # then fails if any root named below was not among those validated, so an empty or short glob
@@ -840,4 +877,7 @@ jobs:
 
       - name: "Check the settings types of the Supabase module"
         if: ${{ !cancelled() }}
-        run: bash infra/scripts/check-settings-types.sh
+        run: |
+          set -euo pipefail
+          terraform -chdir=infra/modules/supabase init -backend=false -input=false
+          terraform -chdir=infra/modules/supabase test -no-color

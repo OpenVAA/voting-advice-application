@@ -17,7 +17,7 @@
  *
  * The read is line-oriented and has no comment blanker, so a comment that names a banned form is a finding. Comments under `infra/` say "an inline policy" rather than naming the resource type.
  *
- * What this guard cannot see: a module sourced from outside `infra/` (the layout uses none); anything created through a CloudFormation stack resource, which can create any IAM object; and policies that already exist in an account, which an operator's read-only inventory script covers. Directories named `.terraform` (downloaded providers and modules) are skipped.
+ * What this guard cannot see: a module sourced from outside `infra/` (the layout uses none); anything created through a CloudFormation stack resource, which can create any IAM object; and policies that already exist in an account, which an operator's read-only inline-policy check, `infra/scripts/check-inline-policies.sh`, covers. Directories named `.terraform` (downloaded providers and modules) are skipped.
  *
  * A check that examined nothing must not report success: a root holding no `.tf` file exits 1.
  *
@@ -26,7 +26,9 @@
  *   node scripts/assert-no-inline-iam-policies.mjs --root <dir>   # the same over another directory
  *   node scripts/assert-no-inline-iam-policies.mjs --self-test    # the fixture roots against their committed findings
  *
- * Output: one finding per line on stdout, as `<path>:<line>: <pattern-name>` for contents or `<path>: path matches <pattern-name>` for a path, with paths relative to the repository root. The closing summary line goes to stderr, so stdout holds findings and nothing else.
+ * Output: one finding per line on stdout, as `<path>:<line>: <pattern-name>` for contents or `<path>: path matches <pattern-name>` for a path, with paths relative to the repository root. The closing summary line, and on a finding the line naming the allowed form, go to stderr, so stdout holds findings and nothing else.
+ *
+ * Its fixtures run in `scripts/tests/noInlineIamPoliciesGate.test.ts`, so a gate invocation does not run the self-test again.
  *
  * Exit codes:
  *   0 - no finding; or --self-test passed
@@ -37,9 +39,11 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compareWithExpected } from './lib/text-guard.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SELF = 'scripts/assert-no-inline-iam-policies.mjs';
+const GUARD_NAME = 'No-inline-IAM-policies guard';
 const DEFAULT_ROOT = 'infra';
 const FIXTURE_DIR = 'scripts/fixtures/no-inline-iam-policies';
 const FIXTURE_OK = `${FIXTURE_DIR}/ok`;
@@ -63,6 +67,9 @@ const EXCLUSIVE = {
   name: 'aws_iam_*_policies_exclusive not empty',
   start: /^\s*resource\s+"aws_iam_(?:user|role|group)_policies_exclusive"/
 };
+
+/** What a failing run tells the reader to do instead. */
+const REMEDY = `${GUARD_NAME} — attach an AWS-managed or customer-managed policy with aws_iam_role_policy_attachment, aws_iam_user_policy_attachment or aws_iam_group_policy_attachment; an exclusive-policies resource must keep policy_names = [].`;
 
 /** The path finding: a JSON configuration file. */
 const TF_JSON = { name: '.tf.json file', test: (file) => file.endsWith('.tf.json') };
@@ -91,10 +98,66 @@ if (selfTest && root !== null) fail('--self-test takes no other flag');
 /** A root given on the command line is read relative to where the command was run; the default is the repository's `infra/`. */
 const rootAbs = root === null ? path.join(REPO_ROOT, DEFAULT_ROOT) : path.resolve(process.cwd(), root);
 
-/** A path as findings print it: relative to the repository root when inside it, absolute otherwise. */
-function display(abs) {
-  const rel = path.relative(REPO_ROOT, abs);
-  return rel.startsWith('..') || path.isAbsolute(rel) ? abs : rel.split(path.sep).join('/');
+if (selfTest) runSelfTest();
+else gate();
+
+// ── Gate ──
+// The exit status is set rather than forced: writes to a pipe are asynchronous, and an immediate exit would drop findings that are still queued.
+function gate() {
+  const result = scanRoot(rootAbs);
+  if (result.error) {
+    console.error(`${GUARD_NAME} — ${result.error}; nothing was examined.`);
+    process.exitCode = 1;
+    return;
+  }
+  for (const f of result.findings) console.log(f);
+  if (result.read === 0) {
+    console.error(
+      `${GUARD_NAME} — no .tf file under '${display(rootAbs)}', so nothing was examined. A check that examined nothing must not report success.`
+    );
+    process.exitCode = 1;
+    return;
+  }
+  console.error(
+    `${GUARD_NAME} — ${result.read} .tf file(s) read under '${display(rootAbs)}'; ${result.findings.length} finding(s).`
+  );
+  if (result.findings.length > 0) console.error(REMEDY);
+  process.exitCode = result.findings.length > 0 ? 1 : 0;
+}
+
+// ── Self-test: the fixture roots against their committed findings ──
+function runSelfTest() {
+  const bad = scanRoot(path.join(REPO_ROOT, FIXTURE_VIOLATIONS));
+  const good = scanRoot(path.join(REPO_ROOT, FIXTURE_OK));
+  if (bad.error || good.error) {
+    console.error(`${GUARD_NAME} — self-test FAILED: ${bad.error ?? good.error}.`);
+    process.exitCode = 1;
+    return;
+  }
+  const ok = compareWithExpected(GUARD_NAME, bad.findings, FIXTURE_EXPECTED, {
+    where: 'on the violating root',
+    extraLines: good.findings.map((l) => `self-test: reported on the clean root: ${l}`),
+    extraOk: good.findings.length === 0 && bad.read > 0 && good.read > 0,
+    suffix: `; ${good.findings.length} on the clean root; ${bad.read + good.read} .tf file(s) read`
+  });
+  process.exitCode = ok ? 0 : 1;
+}
+
+// ── Scanning ──
+/** Scan one root: the findings, and how many `.tf` files were read. */
+function scanRoot(dirAbs) {
+  let stat;
+  try {
+    stat = statSync(dirAbs);
+  } catch {
+    return { error: `cannot read '${display(dirAbs)}'` };
+  }
+  if (!stat.isDirectory()) return { error: `'${display(dirAbs)}' is not a directory` };
+  const { tf, tfJson } = walk(dirAbs);
+  const findings = [];
+  for (const abs of tfJson) findings.push(`${display(abs)}: path matches ${TF_JSON.name}`);
+  for (const abs of tf) findings.push(...findingsOf(abs));
+  return { findings, read: tf.length };
 }
 
 /** Every `.tf` and `.tf.json` file under `dir`, sorted, skipping directories named `.terraform`. Symbolic links are not followed. */
@@ -109,6 +172,19 @@ function walk(dir, out = { tf: [], tfJson: [] }) {
     }
   }
   return out;
+}
+
+/** The findings of one `.tf` file, in line order. */
+function findingsOf(abs) {
+  const shown = display(abs);
+  const lines = readFileSync(abs, 'utf8').split('\n');
+  const found = [];
+  lines.forEach((line, i) => {
+    for (const p of PATTERNS) if (p.re.test(line)) found.push(`${shown}:${i + 1}: ${p.name}`);
+    if (EXCLUSIVE.start.test(line) && !exclusiveIsEmpty(blockFrom(lines, i)))
+      found.push(`${shown}:${i + 1}: ${EXCLUSIVE.name}`);
+  });
+  return found;
 }
 
 /**
@@ -137,95 +213,8 @@ function exclusiveIsEmpty(block) {
   return assignments.every((m) => /^\[\s*\]/.test(block.slice(m.index + m[0].length)));
 }
 
-/** The findings of one `.tf` file, in line order. */
-function findingsOf(abs) {
-  const shown = display(abs);
-  const lines = readFileSync(abs, 'utf8').split('\n');
-  const found = [];
-  lines.forEach((line, i) => {
-    for (const p of PATTERNS) if (p.re.test(line)) found.push(`${shown}:${i + 1}: ${p.name}`);
-    if (EXCLUSIVE.start.test(line) && !exclusiveIsEmpty(blockFrom(lines, i)))
-      found.push(`${shown}:${i + 1}: ${EXCLUSIVE.name}`);
-  });
-  return found;
-}
-
-/** Scan one root: the findings, and how many `.tf` files were read. */
-function scanRoot(dirAbs) {
-  let stat;
-  try {
-    stat = statSync(dirAbs);
-  } catch {
-    return { error: `cannot read '${display(dirAbs)}'` };
-  }
-  if (!stat.isDirectory()) return { error: `'${display(dirAbs)}' is not a directory` };
-  const { tf, tfJson } = walk(dirAbs);
-  const findings = [];
-  for (const abs of tfJson) findings.push(`${display(abs)}: path matches ${TF_JSON.name}`);
-  for (const abs of tf) findings.push(...findingsOf(abs));
-  return { findings, read: tf.length };
-}
-
-if (selfTest) runSelfTest();
-else gate();
-
-// ── Gate ──
-// The exit status is set rather than forced: writes to a pipe are asynchronous, and an immediate exit would drop findings that are still queued.
-function gate() {
-  const result = scanRoot(rootAbs);
-  if (result.error) {
-    console.error(`No-inline-IAM-policies guard — ${result.error}; nothing was examined.`);
-    process.exitCode = 1;
-    return;
-  }
-  for (const f of result.findings) console.log(f);
-  if (result.read === 0) {
-    console.error(
-      `No-inline-IAM-policies guard — no .tf file under '${display(rootAbs)}', so nothing was examined. A check that examined nothing must not report success.`
-    );
-    process.exitCode = 1;
-    return;
-  }
-  console.error(
-    `No-inline-IAM-policies guard — ${result.read} .tf file(s) read under '${display(rootAbs)}'; ${result.findings.length} finding(s).`
-  );
-  process.exitCode = result.findings.length > 0 ? 1 : 0;
-}
-
-// ── Self-test: the fixture roots against their committed findings ──
-function runSelfTest() {
-  const bad = scanRoot(path.join(REPO_ROOT, FIXTURE_VIOLATIONS));
-  const good = scanRoot(path.join(REPO_ROOT, FIXTURE_OK));
-  let expected;
-  try {
-    expected = readFileSync(path.join(REPO_ROOT, FIXTURE_EXPECTED), 'utf8')
-      .split('\n')
-      .filter((l) => l.trim() !== '' && !l.startsWith('#'));
-  } catch {
-    console.error(`No-inline-IAM-policies guard — self-test FAILED: cannot read ${FIXTURE_EXPECTED}.`);
-    process.exitCode = 1;
-    return;
-  }
-  if (bad.error || good.error) {
-    console.error(`No-inline-IAM-policies guard — self-test FAILED: ${bad.error ?? good.error}.`);
-    process.exitCode = 1;
-    return;
-  }
-  const observed = bad.findings;
-  const missing = expected.filter((l) => !observed.includes(l));
-  const unexpected = observed.filter((l) => !expected.includes(l));
-  for (const l of missing) console.log(`self-test: expected but not reported: ${l}`);
-  for (const l of unexpected) console.log(`self-test: reported but not expected: ${l}`);
-  for (const l of good.findings) console.log(`self-test: reported on the clean root: ${l}`);
-  const ok =
-    missing.length === 0 &&
-    unexpected.length === 0 &&
-    observed.length === expected.length &&
-    good.findings.length === 0 &&
-    bad.read > 0 &&
-    good.read > 0;
-  console.error(
-    `No-inline-IAM-policies guard — self-test ${ok ? 'passed' : 'FAILED'}: ${observed.length} finding(s) on the violating root, ${expected.length} expected; ${good.findings.length} on the clean root; ${bad.read + good.read} .tf file(s) read.`
-  );
-  process.exitCode = ok ? 0 : 1;
+/** A path as findings print it: relative to the repository root when inside it, absolute otherwise. */
+function display(abs) {
+  const rel = path.relative(REPO_ROOT, abs);
+  return rel.startsWith('..') || path.isAbsolute(rel) ? abs : rel.split(path.sep).join('/');
 }

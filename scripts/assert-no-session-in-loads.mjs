@@ -34,7 +34,7 @@
  *   Check 1 (the primary assertion) — the destructure-and-return PAIR. A binding taken from the
  *     verified-session call AND put into the load's returned object. It is matched as a pair, and
  *     never as two independent searches, because EITHER HALF ALONE IS LEGITIMATE: the protected
- *     candidate loader destructures a session for its own guard and returns none of it, and a
+ *     contestant loader destructures a session for its own guard and returns none of it, and a
  *     load may legitimately return an unrelated member that happens to be spelled `session`.
  *     Two greps would flag both of those and be switched off within a week.
  *   Check 2 (the spelling backstop) — a credential field name appearing in CODE in any corpus
