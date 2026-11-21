@@ -1,6 +1,6 @@
 import { configureLogger, log } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ADMIN_GRANTS, CONTESTANT_GRANTS } from './roles';
+import { ADMIN_GRANTS, CONTESTANT_GRANTS, readGrants } from './roles';
 import { admitSession, claimAndRefresh } from './sessionAdmission';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
 import type { GrantClaim, GrantShape } from './roles';
@@ -28,7 +28,7 @@ const PROJECT_ADMIN: GrantClaim = { scope: 'project', target_type: null, target_
 const NOTHING_CLAIMED: InvitationClaimResult = { claimed: [], skipped: [] };
 
 /**
- * Build the request-context fake an admission acts through. Every member records its call, in order.
+ * Build the request-context fake an admission acts through. Every member but the read of the project's grants records its call, in order; that read answers the grants of the token as it is when read, and `contextReadingProject` replaces it.
  * @param options.grantsBefore - The grants the token carries until a refresh succeeds.
  * @param options.grantsAfterRefresh - The grants the token carries once a refresh has succeeded.
  * @param options.claim - What the claim resolves to, or the error it rejects with.
@@ -81,7 +81,9 @@ function contextWith({
         calls.push('claimInvitations');
         if (claim instanceof Error) throw claim;
         return claim;
-      }
+      },
+      // The grants the user holds at the time of the read, which reach the project unless a case says otherwise.
+      getProjectGrants: async () => readGrants(accessToken)
     }
   };
 }
@@ -272,6 +274,19 @@ describe('admitSession with the grants that reach the project', () => {
 
     expect(await admit(context, ADMIN_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
     expect(calls).toEqual(['claimInvitations', 'getSession', 'getProjectGrants', 'signOut']);
+  });
+
+  it("refuses an entity editor of another project only, though the token carries the editor's grant", async () => {
+    const { context, calls } = contextReadingProject([], [ENTITY_EDITOR]);
+
+    expect(await admit(context, CONTESTANT_GRANTS)).toEqual({ ok: false, status: 403, reason: 'grantNotAllowed' });
+    expect(calls).toEqual(['claimInvitations', 'getSession', 'getProjectGrants', 'signOut']);
+  });
+
+  it('admits on an entity editor grant that reaches the project', async () => {
+    const { context } = contextReadingProject([ENTITY_EDITOR], [ENTITY_EDITOR]);
+
+    expect((await admit(context, CONTESTANT_GRANTS)).ok).toBe(true);
   });
 
   it('admits on an admin grant that reaches the project', async () => {

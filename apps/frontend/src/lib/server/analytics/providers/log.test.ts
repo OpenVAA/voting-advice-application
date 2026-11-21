@@ -25,7 +25,7 @@ const EVENTS: ReadonlyArray<AnalyticsEvent> = [
     name: 'answer',
     time: 1_792_400_001_000,
     app: 'voter',
-    id: PLANTED_VISIT_ID,
+    visitId: PLANTED_VISIT_ID,
     attributes: { questionId: '3b241101-e2bb-4255-8caf-4136c566a962', value: 'line one\nline two' }
   }
 ];

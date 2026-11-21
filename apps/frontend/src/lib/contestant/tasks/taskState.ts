@@ -150,36 +150,6 @@ export type QuestionSaveFacts = {
   wasUnanswered: boolean;
 };
 
-/** The route of one question. */
-function questionRoute(questionId: string): TaskRoute {
-  return { route: 'ContestantAppQuestion', questionId };
-}
-
-/** A copy of a route, so that no two results hold one object. */
-function copyOf(route: TaskRoute): TaskRoute {
-  return { ...route };
-}
-
-/**
- * Whether an entity has a nomination. One is enough, confirmed or not.
- * @param nominations - The entity's nominations, or nothing when no list was read.
- * @returns `true` for a list with at least one element.
- */
-export function hasNomination(nominations: ReadonlyArray<unknown> | null | undefined): boolean {
-  return !!nominations && nominations.length > 0;
-}
-
-/**
- * Whether the entity's preview can be opened: it has a nomination, no required info question is unanswered and no opinion question is unanswered. A missing name does not close the preview, and an entity that is asked no opinion question has none unanswered.
- *
- * The counts must be those of loaded question lists: a count of zero read before the lists are loaded says nothing.
- * @param facts - Whether the entity has a nomination, and the two counts of unanswered questions.
- * @returns Whether the preview is open.
- */
-export function previewOpenOf(facts: PreviewOpenInput): boolean {
-  return facts.hasNomination && facts.unansweredRequiredInfoCount === 0 && facts.unansweredOpinionCount === 0;
-}
-
 /**
  * The state of an entity's tasks. The rules are applied in this order and the first that applies decides:
  *
@@ -266,6 +236,36 @@ export function taskStateOf(input: TaskStateInput): TaskState {
     known: true,
     allComplete: tasks.every((task) => task.status === 'complete')
   };
+}
+
+/** A copy of a route, so that no two results hold one object. */
+function copyOf(route: TaskRoute): TaskRoute {
+  return { ...route };
+}
+
+/** The route of one question. */
+function questionRoute(questionId: string): TaskRoute {
+  return { route: 'ContestantAppQuestion', questionId };
+}
+
+/**
+ * Whether the entity's preview can be opened: it has a nomination, no required info question is unanswered and no opinion question is unanswered. A missing name does not close the preview, and an entity that is asked no opinion question has none unanswered.
+ *
+ * The counts must be those of loaded question lists: a count of zero read before the lists are loaded says nothing.
+ * @param facts - Whether the entity has a nomination, and the two counts of unanswered questions.
+ * @returns Whether the preview is open.
+ */
+export function previewOpenOf(facts: PreviewOpenInput): boolean {
+  return facts.hasNomination && facts.unansweredRequiredInfoCount === 0 && facts.unansweredOpinionCount === 0;
+}
+
+/**
+ * Whether an entity has a nomination. One is enough, confirmed or not.
+ * @param nominations - The entity's nominations, or nothing when no list was read.
+ * @returns `true` for a list with at least one element.
+ */
+export function hasNomination(nominations: ReadonlyArray<unknown> | null | undefined): boolean {
+  return !!nominations && nominations.length > 0;
 }
 
 /**

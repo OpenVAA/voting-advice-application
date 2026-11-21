@@ -1,18 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  askedAgainTooSoon,
-  LINK_REQUEST_SETTLE_BOUND_MS,
-  RESEND_WAIT_SECONDS,
-  secondsLeft,
-  settledOrBounded,
-  wordingOf
-} from './entryFlow';
+import { askedAgainTooSoon, secondsLeft, settledOrBounded, wordingOf } from './entryFlow';
 import type { EntryHeldRequest, EntryOrigin, EntryWording } from './entryFlow';
 
 /**
- * The entry flow's constants and arithmetic: how long the wait is, how many seconds of it are left, when a link request counts as settled, which wording a request gets, and whether the same request was repeated inside the wait.
+ * The entry flow's arithmetic: how long the wait is, how many seconds of it are left, when a link request counts as settled, which wording a request gets, and whether the same request was repeated inside the wait.
  *
- * Every time below is a literal number of milliseconds, so a case reads without the constants it checks.
+ * Every time below is a literal number of milliseconds, so a case reads without the module's constants.
  */
 
 /** An epoch time in milliseconds, of the size `Date.now()` answers with. */
@@ -22,16 +15,6 @@ const SETTLED_AT = 1_791_831_809_000;
 function held(request: Partial<EntryHeldRequest> = {}): EntryHeldRequest {
   return { origin: 'signIn', wording: 'signIn', settledAt: SETTLED_AT, askedAgain: false, ...request };
 }
-
-describe('the constants', () => {
-  it('waits 65 seconds before another email may be asked for', () => {
-    expect(RESEND_WAIT_SECONDS).toBe(65);
-  });
-
-  it('treats a link request as settled after 10 000 milliseconds', () => {
-    expect(LINK_REQUEST_SETTLE_BOUND_MS).toBe(10_000);
-  });
-});
 
 describe('wordingOf', () => {
   const CASES: Array<[EntryOrigin, EntryWording]> = [

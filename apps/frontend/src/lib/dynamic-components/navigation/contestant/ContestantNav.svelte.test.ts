@@ -131,9 +131,6 @@ vi.mock('$lib/contexts/contestant', () => ({
     get taskState() {
       return state.taskState;
     },
-    get previewOpen() {
-      return state.taskState.previewOpen;
-    },
     get dataRoot() {
       return dataRoot;
     },

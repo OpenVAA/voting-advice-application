@@ -1,13 +1,13 @@
-import type { TrackingEvent, TrackingEventData, TrackingEventName } from './trackingEvent.type';
+import type { TrackingEventData, TrackingEventName } from './trackingEvent.type';
 
 /**
  * A service provider for tracking functions.
  *
  * This is the ONE tracking-service type: the producer (`trackingService.svelte.ts`) implements it directly and `appContext` forwards it.
  *
- * CONSUMER-FACING SURFACE — deliberately narrower than the producer. The producer owns two further handle members: the gate input, which `appContext` forwards under its own name `analyticsGate`, and the survey link's session id, which is read only producer to producer — `appContext` passes it into the survey-link producer and forwards it onto NO context. Both are therefore ABSENT from this type; see the selective forward in `appContext.svelte.ts`.
+ * CONSUMER-FACING SURFACE — the producer is wider than this type, and `appContext` forwards part of it; see the forwarding block in `appContext.svelte.ts`.
  *
- * Every event goes into one buffer, and `submitAllEvents` sends the view's pageview and the buffered events the gates allow as one batch to the relay.
+ * Every event goes into one buffer, and `submitAllEvents` sends the view's pageview and the buffered events the send policy allows as one batch to the relay.
  */
 export type TrackingService = {
   /**
@@ -17,20 +17,13 @@ export type TrackingService = {
    */
   startPageview: (routeId: string | null, params: Readonly<Record<string, string | undefined>> | null) => void;
   /**
-   * Buffer an analytics event, to be sent with the next flush.
-   * @param name - Event name, one of the vocabulary
-   * @param data - The event's attributes. Required when the event has a required attribute, optional when it has none.
-   * @returns The buffered event object.
-   */
-  startEvent: <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>) => TrackingEvent;
-  /**
-   * Buffer an analytics event, to be sent with the next flush, like `startEvent`. Nothing is sent by this call.
+   * Buffer an analytics event, to be sent with the next flush. Nothing is sent by this call.
    * @param name - Event name, one of the vocabulary
    * @param data - The event's attributes. Required when the event has a required attribute, optional when it has none.
    */
   track: <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>) => void;
   /**
-   * Flush: send the current view's pageview, when it has not been sent, and the buffered events the gates allow, in one request to the relay. The buffer is empty afterwards; events the gates did not allow are discarded.
+   * Flush: send the current view's pageview, when it has not been sent, and the buffered events the send policy allows, in one request to the relay. The buffer is empty afterwards; events the send policy did not allow are discarded.
    */
   submitAllEvents: () => void;
   /**

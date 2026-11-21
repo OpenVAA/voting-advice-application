@@ -1,12 +1,12 @@
 import type { AnalyticsEvent } from '$lib/analytics/analyticsEvent.type';
-import type { ProviderName } from '../config';
+import type { AnalyticsProviderName } from '../config';
 
 /**
  * One destination for usage events. A provider receives events only, never the request that carried them, so nothing about the visitor's request can reach it.
  */
 export type AnalyticsProvider = {
   /** Which provider this is. */
-  readonly name: ProviderName;
+  readonly name: AnalyticsProviderName;
   /**
    * Hand a batch of events on. The promise always resolves: a failure is logged without any event content and is not passed to the caller.
    *
@@ -16,7 +16,7 @@ export type AnalyticsProvider = {
 };
 
 /** What a provider may use from its surroundings, passed in so that a test can hand it stand-ins. */
-export type ProviderDeps = {
+export type AnalyticsProviderDeps = {
   /** The function a provider makes outbound requests with. */
   fetch: typeof fetch;
   /** Writes one output line, including its trailing newline, to the server's output stream. */

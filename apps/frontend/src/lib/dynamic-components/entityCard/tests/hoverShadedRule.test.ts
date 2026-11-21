@@ -11,7 +11,7 @@ vi.mock('$lib/contexts/app', () => ({
   getAppContext: () => ({
     appType: { current: 'contestant' },
     getRoute: { current: () => '/results/candidate/c1' },
-    startEvent: () => undefined,
+    track: () => undefined,
     t: (key: string) => key,
     appSettings: { results: { cardContents: {} } },
     dataRoot: {}

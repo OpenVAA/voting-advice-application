@@ -3,9 +3,12 @@
  *
  * The order a full load leaves in, with `location` stubbed and `PreventNavigation` mounted for real. One engine fires `beforeunload` while `location.assign` runs and another after it has returned, so the guards must stay stood down past that return.
  *
+ * `leaveTo`, with `page` faked: a navigation that moved the page ends it, and one that did not move it, or that rejected, is followed by the caller's `onStuck` and a full load.
+ *
  * The full-load case comes last, because a full load keeps the guards stood down for the life of the module, as it does for the life of the document.
  */
 
+import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -14,6 +17,7 @@ import {
   isLeavingUnasked,
   isNavigationHeld,
   leaveByFullLoad,
+  leaveTo,
   leaveUnasked
 } from './navigationGuards';
 import PreventNavigation from './PreventNavigation.svelte';
@@ -36,6 +40,9 @@ vi.mock('$app/navigation', async (importOriginal) => ({
   },
   goto
 }));
+
+const { pageBox } = vi.hoisted(() => ({ pageBox: { url: new URL('http://localhost/home') } }));
+vi.mock('$app/state', () => ({ page: pageBox }));
 
 // The guard removes its `beforeunload` listener only in the browser, and the tests' stub of this module reads as the server.
 vi.mock('$app/environment', () => ({ browser: true }));
@@ -266,6 +273,62 @@ describe('navigationGuards — navigations held while a run is pending', () => {
     holdNavigation(navigation);
 
     expect(result.cancelled).toBe(false);
+  });
+});
+
+describe('navigationGuards — leaveTo', () => {
+  const BEFORE = 'http://localhost/home';
+
+  afterEach(() => {
+    pageBox.url = new URL(BEFORE);
+    goto.mockReset();
+    goto.mockImplementation(async () => undefined);
+  });
+
+  /** Let settled promises' reactions run. */
+  async function settle(): Promise<void> {
+    for (let i = 0; i < 10; i += 1) await Promise.resolve();
+  }
+
+  it('resolves once the navigation has moved the page, with no full load and no onStuck', async () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { assign });
+    goto.mockImplementationOnce(async (address: string) => {
+      pageBox.url = new URL(address, BEFORE);
+    });
+    const onStuck = vi.fn();
+
+    await leaveTo(ADDRESS, BEFORE, onStuck);
+
+    expect(goto).toHaveBeenCalledWith(ADDRESS, { invalidateAll: true });
+    expect(onStuck).not.toHaveBeenCalled();
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('calls onStuck and then makes a full load when the navigation did not move the page', async () => {
+    const order: Array<string> = [];
+    vi.stubGlobal('location', { assign: (address: string) => order.push(`assign ${address}`) });
+
+    void leaveTo(ADDRESS, BEFORE, () => order.push('onStuck'));
+    await settle();
+
+    expect(order).toEqual(['onStuck', `assign ${ADDRESS}`]);
+  });
+
+  it('logs a rejection and makes a full load, also when the address changed before it', async () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { assign });
+    const logError = vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    goto.mockImplementationOnce(async (address: string) => {
+      pageBox.url = new URL(address, BEFORE);
+      throw new Error('the navigation failed');
+    });
+
+    void leaveTo(ADDRESS, BEFORE);
+    await settle();
+
+    expect(logError).toHaveBeenCalledTimes(1);
+    expect(assign).toHaveBeenCalledWith(ADDRESS);
   });
 });
 

@@ -34,7 +34,7 @@ If not provided, the `video` element will be hidden until these properties are p
 
 ### Callbacks
 
-- `onTrack`: A callback triggered when the video tracking event should be sent. Send to `TrackingService.startEvent` or `track` to track.
+- `onTrack`: A callback triggered when the video tracking event should be sent. Send to `TrackingService.track` to track.
 - `onEnded`: Forwarded from the `<video>` element.
 
 ### Bindable properties

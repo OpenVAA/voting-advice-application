@@ -58,5 +58,5 @@ export const SET_PASSWORD_GATE: Gate<'setPassword', UserGateFacts> = Object.free
   id: 'setPassword',
   // Exactly `false`: the gate is for an account the user-level data says has no password, and for no other answer.
   // And only on a proved address: an account an identity provider made has no password, and until its holder proves an address of their own it is asked for that address first.
-  isNeeded: ({ user }: UserGateFacts) => user.passwordSet === false && user.addressState === 'proved'
+  isNeeded: ({ user }: UserGateFacts) => user.passwordSet === false && user.address.state === 'proved'
 });

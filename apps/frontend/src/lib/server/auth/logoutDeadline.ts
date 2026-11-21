@@ -13,7 +13,7 @@ import type { RequestEvent } from '@sveltejs/kit';
  *
  * @param event - The request's cookies, its `Cookie` header and its address.
  */
-export function withdrawLogoutCount({
+export function withdrawLogoutDeadline({
   cookies,
   request,
   url

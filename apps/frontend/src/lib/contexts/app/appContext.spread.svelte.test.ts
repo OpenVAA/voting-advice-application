@@ -21,7 +21,7 @@ const { stubs, dataRootHolder, initialDataRoot, trackingLog } = vi.hoisted(() =>
   // What appContext hands the tracking and survey producers, and what it calls on the tracking stand-in.
   const trackingLog: {
     input: { projection: { current: unknown }; locale: () => string } | undefined;
-    surveyInput: { sessionId: unknown } | undefined;
+    surveyInput: { visitId: unknown } | undefined;
     calls: Array<string>;
     buffer: Array<string>;
     flushed: Array<Array<string>>;
@@ -53,14 +53,13 @@ const { stubs, dataRootHolder, initialDataRoot, trackingLog } = vi.hoisted(() =>
       },
       // tracking producer: own-enumerable handle objects + arrow-field methods, the producer's whole surface.
       //
-      // The stand-in records what appContext does with it: `startEvent` / `resetAllEvents` / `submitAllEvents` keep a stand-in buffer and a call log, and `gate` reads the projection handle appContext passes in, so a case can check the order of the consent writes and the projection fallback. `surveySessionId` is on the stand-in because the producer has it; appContext must withhold it, which the forward case below asserts.
+      // The stand-in records what appContext does with it: `track` / `resetAllEvents` / `submitAllEvents` keep a stand-in buffer and a call log, and `analyticsPolicy` reads the projection handle appContext passes in, so a case can check the order of the consent writes and the projection fallback. `visitId` is on the stand-in because the producer has it; appContext must withhold it, which the forward case below asserts.
       tracking: {
         startPageview: (_routeId: string | null, _params: Readonly<Record<string, string | undefined>> | null) => {},
-        startEvent: (name: string) => {
-          trackingLog.calls.push(`startEvent:${name}`);
+        track: (name: string, _data?: unknown) => {
+          trackingLog.calls.push(`track:${name}`);
           trackingLog.buffer.push(name);
         },
-        track: (_name: string, _data?: unknown) => {},
         submitAllEvents: () => {
           trackingLog.flushed.push([...trackingLog.buffer]);
           trackingLog.buffer.length = 0;
@@ -70,7 +69,7 @@ const { stubs, dataRootHolder, initialDataRoot, trackingLog } = vi.hoisted(() =>
           trackingLog.buffer.length = 0;
         },
         setPageVisible: (_visible: boolean) => {},
-        gate: {
+        analyticsPolicy: {
           get current() {
             return {
               projection: trackingLog.input?.projection.current,
@@ -80,7 +79,7 @@ const { stubs, dataRootHolder, initialDataRoot, trackingLog } = vi.hoisted(() =>
             };
           }
         },
-        surveySessionId: handle<string | undefined>('visit-id')
+        visitId: handle<string | undefined>('visit-id')
       },
       // survey producer: `{ readonly current }` handle.
       survey: handle('https://example.invalid/survey' as string | undefined),
@@ -127,7 +126,7 @@ vi.mock('./tracking', () => ({
   }
 }));
 vi.mock('./survey.svelte', () => ({
-  surveyLink: (input: { sessionId: unknown }) => {
+  surveyLink: (input: { visitId: unknown }) => {
     trackingLog.surveyInput = input;
     return stubs.survey;
   }
@@ -196,14 +195,13 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     // forwarded dataCtx members
     'dataRoot',
     'setDataRoot',
-    // forwarded tracking members — the six consumer-facing functions and the producer's `gate` under the name `analyticsGate`. The producer's `surveySessionId` is withheld, and its `gate` is not forwarded under its own name; the tracking-forward case below asserts both.
+    // forwarded tracking members — the five consumer-facing functions and the producer's `analyticsPolicy` handle. The producer's `visitId` is withheld; the tracking-forward case below asserts it.
     'startPageview',
-    'startEvent',
     'track',
     'submitAllEvents',
     'resetAllEvents',
     'setPageVisible',
-    'analyticsGate'
+    'analyticsPolicy'
   ] as const;
 
   // Test 1 — own-enumerability: `Object.keys(spread)` is a superset of the AppContext member list. A per-key loop names any missing member in the failure.
@@ -257,14 +255,13 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
   });
 
   describe('tracking wiring', () => {
-    it('forwards exactly the consumer-facing tracking members, by reference, and the gate as analyticsGate', () => {
+    it('forwards exactly the consumer-facing tracking members, by reference, and the send-policy handle', () => {
       const instance = setup();
       const keys = Object.keys(instance);
-      expect(keys).not.toContain('surveySessionId');
-      expect(keys).not.toContain('gate');
+      expect(keys).not.toContain('visitId');
       // No send handler of any name: the only `send*` member of the context is its own `sendFeedback`.
       expect(keys.filter((key) => key.startsWith('send'))).toEqual(['sendFeedback']);
-      expect(instance.analyticsGate).toBe(stubs.tracking.gate);
+      expect(instance.analyticsPolicy).toBe(stubs.tracking.analyticsPolicy);
       expect(instance.setPageVisible).toBe(stubs.tracking.setPageVisible);
       expect(instance.startPageview).toBe(stubs.tracking.startPageview);
       expect(instance.resetAllEvents).toBe(stubs.tracking.resetAllEvents);
@@ -273,28 +270,28 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     it('falls back to INACTIVE_PROJECTION when page.data has no analytics member', () => {
       const instance = setup();
       expect(trackingLog.input?.projection.current).toEqual(INACTIVE_PROJECTION);
-      expect(instance.analyticsGate.current.projection).toEqual(INACTIVE_PROJECTION);
+      expect(instance.analyticsPolicy.current.projection).toEqual(INACTIVE_PROJECTION);
       expect(typeof trackingLog.input?.locale()).toBe('string');
     });
 
-    it("fills the survey link from the producer's surveySessionId", () => {
+    it("fills the survey link from the producer's visitId", () => {
       setup();
-      expect(trackingLog.surveyInput?.sessionId).toBe(stubs.tracking.surveySessionId);
+      expect(trackingLog.surveyInput?.visitId).toBe(stubs.tracking.visitId);
     });
 
     it("setDataConsent('granted') writes the choice, clears the buffer, then starts dataConsent_granted", () => {
       const instance = setup();
-      instance.startEvent('menu_open');
+      instance.track('menu_open');
       trackingLog.calls.length = 0;
       instance.setDataConsent('granted');
       instance.submitAllEvents();
-      expect(trackingLog.calls).toEqual(['userPreferences.update', 'resetAllEvents', 'startEvent:dataConsent_granted']);
+      expect(trackingLog.calls).toEqual(['userPreferences.update', 'resetAllEvents', 'track:dataConsent_granted']);
       expect(trackingLog.flushed).toEqual([['dataConsent_granted']]);
     });
 
     it("setDataConsent('denied') writes the choice and clears the buffer", () => {
       const instance = setup();
-      instance.startEvent('menu_open');
+      instance.track('menu_open');
       trackingLog.calls.length = 0;
       instance.setDataConsent('denied');
       instance.submitAllEvents();

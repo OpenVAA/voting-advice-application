@@ -1,10 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import * as entityDescriptor from './entityDescriptor';
+import { describe, expect, it } from 'vitest';
 import { isHiddenIfMissingAnswers } from './hideIfMissingAnswers';
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
 
 /** The settings with the two keys as given. */
 function settings(hideIfMissingAnswers: { candidate?: boolean; organization?: boolean }): {
@@ -43,18 +38,6 @@ describe('isHiddenIfMissingAnswers', () => {
       isHiddenIfMissingAnswers({
         entityType: undefined,
         appSettings: settings({ candidate: false, organization: true })
-      })
-    ).toBe(false);
-  });
-
-  it('is false for a type whose descriptor names no key, whatever the setting holds', () => {
-    const { hideIfMissingAnswersKey: _, ...withoutKey } = entityDescriptor.ENTITY_DESCRIPTORS.organization;
-    vi.spyOn(entityDescriptor, 'entityDescriptorOf').mockReturnValue(withoutKey);
-
-    expect(
-      isHiddenIfMissingAnswers({
-        entityType: 'organization',
-        appSettings: settings({ candidate: true, organization: true })
       })
     ).toBe(false);
   });

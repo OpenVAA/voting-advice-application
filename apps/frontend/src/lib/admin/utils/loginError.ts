@@ -1,27 +1,25 @@
+import { loginErrorKey, SESSION_ENDED_MESSAGES } from '$lib/auth/loginError';
 import type { TranslationKey } from '$types';
 
 /**
  * Get the translation key for the given error code.
  *
- * The code arrives on the address bar, so it is any text at all. Only a code the map holds as its own member has a message: a name every object inherits, such as `constructor`, has none.
+ * The code arrives on the address bar, so it is any text at all: see `loginErrorKey`.
  */
 export function getErrorTranslationKey(error: LoginError | null): TranslationKey | undefined {
-  if (error == null || !Object.hasOwn(LOGIN_ERROR, error)) return undefined;
-  return LOGIN_ERROR[error];
+  return loginErrorKey(LOGIN_ERROR, error);
 }
 
 /**
  * The message of each reason. None names a user name, an address, a password or the cause of the failure.
  *
- * - `loggedOutAutomatically` has `common.loggedOutAutomatically`, which says the logout the user started was not cancelled in time.
- * - `loggedOutElsewhere` has `common.loggedOutElsewhere`, which says the user was logged out in another tab or window.
+ * - `loggedOutAutomatically` and `loggedOutElsewhere` have the shared `SESSION_ENDED_MESSAGES`.
  * - `authError` has `adminApp.login.errors.linkFailed`, which says that a link works once and only the newest one works, and asks for a new one.
  */
 const LOGIN_ERROR: Record<LoginError, TranslationKey> = {
   loginFailed: 'error.loginFailed',
   userNotAuthorized: 'error.403',
-  loggedOutAutomatically: 'common.loggedOutAutomatically',
-  loggedOutElsewhere: 'common.loggedOutElsewhere',
+  ...SESSION_ENDED_MESSAGES,
   authError: 'adminApp.login.errors.linkFailed'
 } as const;
 

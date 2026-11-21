@@ -28,7 +28,7 @@ vi.mock('$lib/contexts/app', () => ({
   getAppContext: () => ({
     appType: { current: 'contestant' },
     getRoute: { current: () => '/results/somewhere' },
-    startEvent: () => undefined,
+    track: () => undefined,
     t: (key: string) => key,
     get appSettings() {
       return {

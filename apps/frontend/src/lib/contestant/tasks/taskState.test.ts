@@ -1536,9 +1536,14 @@ describe('fresh results', () => {
 });
 
 describe('answers to questions the entity is not asked', () => {
+  /** A question the entity is asked, which counts any saved value as an answer. */
+  function askedQuestion(id: string) {
+    return { id, isAnswered: (answer: SavedAnswers[string]) => answer?.value != null };
+  }
+
   /** The questions the entity is asked, and stored answers to two it is not: those of an election it is no longer nominated in. */
-  const ASKED_OPINIONS = [{ id: 'opinion-shared' }, { id: 'opinion-of-election-a' }];
-  const ASKED_REQUIRED_INFO = [{ id: 'info-required' }];
+  const ASKED_OPINIONS = [askedQuestion('opinion-shared'), askedQuestion('opinion-of-election-a')];
+  const ASKED_REQUIRED_INFO = [askedQuestion('info-required')];
   const NOT_ASKED = { 'opinion-of-election-b': { value: 4 }, 'info-of-election-b': { value: 'kept' } };
 
   /** The state an entity with a nomination is in, with the counts the stored answers give over the questions it is asked. */

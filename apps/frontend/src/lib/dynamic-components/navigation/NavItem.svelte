@@ -13,7 +13,7 @@ Accesses `LayoutContext`.
 
 - `icon`: The optional name of the icon to use with the navigation item. See the `Icon` component for more details.
 - `text`: The text to display in the navigation item.
-- `disabled`: Whether the button is disabled. This can also be used with items rendered as `<a>` elements.
+- `disabled`: Whether the button is disabled, which dims it. This can also be used with items rendered as `<a>` elements.
 - `disabledReason`: The sentence a click on the disabled item shows under it. With it, the disabled item stays operable.
 - `disabledReasonProps`: Any valid attributes of the `<p>` element that holds the shown reason.
 - `autoCloseNav`: Whether the menu available from the page context should be closed when the item is clicked. Default: `true`
@@ -72,6 +72,7 @@ Accesses `LayoutContext`.
       'flex items-center gap-md px-10 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200',
       // The width of an icon (24/16 rem) plus the gap between the icon and the text (md = 10/16 rem)
       !icon && 'pl-[2.75rem]',
+      disabled && '!text-neutral/20',
       disabled && !closedWithReason && 'pointer-events-none hover:bg-transparent'
     )
   );
@@ -115,7 +116,7 @@ Accesses `LayoutContext`.
     </div>
   {:else}
     <!--
-      `disabled` is non-standard on `<a>`. On the `<a>` branch we set `aria-disabled="true"` and drop `href` so the link is observably disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible). On the `<button>` branch we keep native `disabled`.
+      `disabled` is non-standard on `<a>`. On the `<a>` branch we set `aria-disabled="true"` and drop `href` so the link is observably disabled (WCAG 2.1 AA + Playwright `toBeDisabled()`-compatible), and keep the link role, which an `<a>` without `href` loses, so that the unavailable state is announced on it. On the `<button>` branch we keep native `disabled`.
     -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <svelte:element
@@ -124,6 +125,7 @@ Accesses `LayoutContext`.
       onclick={handleClick}
       disabled={href == null && disabled ? true : undefined}
       aria-disabled={href != null && disabled ? 'true' : undefined}
+      role={href != null && disabled ? 'link' : undefined}
       data-testid="nav-menu-item"
       {...concatClass(restProps, classes)}>
       {#if icon}

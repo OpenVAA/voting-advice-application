@@ -1,12 +1,5 @@
-import { ADMIN, CONTESTANT, VOTER } from '$lib/routes/route';
+import { isAdminRoute, isContestantRoute, isVoterRoute } from '$lib/routes';
 import type { AnalyticsApp } from './modes';
-
-/** The root route id of each app. */
-const APP_ROOTS: ReadonlyArray<readonly [root: string, app: AnalyticsApp]> = [
-  [VOTER, 'voter'],
-  [CONTESTANT, 'contestant'],
-  [ADMIN, 'admin']
-];
 
 /**
  * The app a route belongs to, read from the first segment of its route id.
@@ -17,6 +10,8 @@ const APP_ROOTS: ReadonlyArray<readonly [root: string, app: AnalyticsApp]> = [
  * @returns The app whose root is the id or holds it, or `undefined` for a route outside the three apps, such as an endpoint.
  */
 export function appOfRoute(routeId: string): AnalyticsApp | undefined {
-  for (const [root, app] of APP_ROOTS) if (routeId === root || routeId.startsWith(`${root}/`)) return app;
+  if (isVoterRoute(routeId)) return 'voter';
+  if (isContestantRoute(routeId)) return 'contestant';
+  if (isAdminRoute(routeId)) return 'admin';
   return undefined;
 }

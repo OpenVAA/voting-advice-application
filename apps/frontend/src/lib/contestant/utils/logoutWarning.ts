@@ -9,7 +9,7 @@ export type ContestantLogoutWarningSource = Pick<
   ContestantContext,
   | 'userData'
   | 'answersLocked'
-  | 'tasks'
+  | 'taskState'
   | 'unansweredOpinionQuestions'
   | 'unansweredRequiredInfoQuestions'
   | 'selectedEntity'
@@ -30,7 +30,7 @@ export function contestantLogoutWarning(ctx: ContestantLogoutWarningSource): Log
   const countedTaskLeft =
     !!ctx.userData.savedEntityData &&
     !ctx.answersLocked &&
-    ctx.tasks.some(
+    ctx.taskState.tasks.some(
       (task) =>
         (task.id === 'profile' || task.id === 'questions') && task.status === 'incomplete' && (task.count ?? 0) > 0
     );

@@ -1,40 +1,57 @@
-import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
+import { DataRoot, ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { describe, expect, it } from 'vitest';
 import { nominationAndQuestionState } from './nominationAndQuestionState.svelte';
-import type { Constituency, DataRoot, Election, EntityType, QuestionCategoryType } from '@openvaa/data';
+import type { Constituency, Election, EntityType, QuestionCategoryType } from '@openvaa/data';
 
 /**
- * The filter that hides entities with missing answers, over plain objects shaped like the surface the module reads: an election's applicable constituency, its nominations by entity type and its questions by entity type and category type.
+ * The filter that hides entities with missing answers, over plain objects shaped like the surface the module reads: an election's most specific constituency, its nominations by entity type and its questions by entity type and category type. The constituency an election resolves to is tested over a real data root, in the last block.
  */
 
 type HideIfMissingAnswers = AppSettings['entities']['hideIfMissingAnswers'];
 
 /** A question as far as the module reads one. `entityType`, when set, is the one type the question is addressed to. */
-type FakeQuestion = { id: string; type: QuestionCategoryType; entityType?: EntityType };
+type FakeQuestion = {
+  id: string;
+  type: QuestionCategoryType;
+  entityType?: EntityType;
+  isAnswered: (answer?: { value: unknown } | null) => boolean;
+};
 
 type FakeNomination = {
   id: string;
-  entity: { getAnswer: (question: { id: string }) => { value: unknown } | undefined };
+  entity: { answers: Record<string, { value: unknown }> };
   data: { candidateNominationIds?: Array<string> };
 };
+
+/** A fake question's `isAnswered`: any saved value answers it. */
+function anyValueAnswers(answer?: { value: unknown } | null): boolean {
+  return answer?.value != null;
+}
 
 const CONSTITUENCY = { id: 'constituency-1' } as unknown as Constituency;
 
 const ORGANIZATION_OPINION: FakeQuestion = {
   id: 'q-organization',
   type: QUESTION_CATEGORY_TYPE.Opinion,
-  entityType: ENTITY_TYPE.Organization
+  entityType: ENTITY_TYPE.Organization,
+  isAnswered: anyValueAnswers
 };
 const CANDIDATE_OPINION: FakeQuestion = {
   id: 'q-candidate',
   type: QUESTION_CATEGORY_TYPE.Opinion,
-  entityType: ENTITY_TYPE.Candidate
+  entityType: ENTITY_TYPE.Candidate,
+  isAnswered: anyValueAnswers
 };
-const SHARED_OPINION: FakeQuestion = { id: 'q-any', type: QUESTION_CATEGORY_TYPE.Opinion };
+const SHARED_OPINION: FakeQuestion = {
+  id: 'q-any',
+  type: QUESTION_CATEGORY_TYPE.Opinion,
+  isAnswered: anyValueAnswers
+};
 const ORGANIZATION_INFO: FakeQuestion = {
   id: 'q-info',
   type: QUESTION_CATEGORY_TYPE.Info,
-  entityType: ENTITY_TYPE.Organization
+  entityType: ENTITY_TYPE.Organization,
+  isAnswered: anyValueAnswers
 };
 const QUESTIONS = [ORGANIZATION_OPINION, CANDIDATE_OPINION, SHARED_OPINION, ORGANIZATION_INFO];
 
@@ -50,10 +67,9 @@ function nomination({
   answered: Array<FakeQuestion>;
   candidateNominationIds?: Array<string>;
 }): FakeNomination {
-  const answeredIds = new Set(answered.map((q) => q.id));
   return {
     id,
-    entity: { getAnswer: (question) => (answeredIds.has(question.id) ? { value: 'answer' } : undefined) },
+    entity: { answers: Object.fromEntries(answered.map((q) => [q.id, { value: 'answer' }])) },
     data: { candidateNominationIds }
   };
 }
@@ -85,7 +101,7 @@ function setup({
   const election = {
     id: 'election-1',
     constituencyGroups: [],
-    getApplicableConstituency: () => CONSTITUENCY,
+    getMostSpecificConstituency: () => CONSTITUENCY,
     getNominations: (entityType: EntityType) => nominations[entityType] ?? [],
     getQuestions: ({ entityType, type }: { entityType: EntityType; type: QuestionCategoryType }) =>
       questions.filter((q) => q.type === type && (!q.entityType || q.entityType === entityType))
@@ -250,5 +266,70 @@ describe('nominationAndQuestionState, the candidate key of hideIfMissingAnswers'
 
     expect(candidateIds).toEqual(['ca-complete']);
     expect(organizationIds).toEqual(['or-complete-with-candidate']);
+  });
+});
+
+describe('nominationAndQuestionState, the constituency an election resolves to', () => {
+  /** A data root with one election over regions and municipalities, a candidate nominated in a region and one in a municipality of that region. */
+  function regionAndMunicipalityRoot(): DataRoot {
+    const dataRoot = new DataRoot();
+    dataRoot.provideElectionData([{ id: 'mixed', name: 'Mixed', constituencyGroupIds: ['regions', 'municipalities'] }]);
+    dataRoot.provideConstituencyData({
+      groups: [
+        { id: 'regions', constituencyIds: ['region-1', 'region-2'] },
+        { id: 'municipalities', constituencyIds: ['municipality-1a', 'municipality-1b', 'municipality-2a'] }
+      ],
+      constituencies: [
+        { id: 'region-1', name: 'Region 1' },
+        { id: 'region-2', name: 'Region 2' },
+        { id: 'municipality-1a', name: 'Municipality 1a', parentId: 'region-1' },
+        { id: 'municipality-1b', name: 'Municipality 1b', parentId: 'region-1' },
+        { id: 'municipality-2a', name: 'Municipality 2a', parentId: 'region-2' }
+      ]
+    });
+    dataRoot.provideEntityData([
+      { type: ENTITY_TYPE.Candidate, id: 'in-region', firstName: 'In', lastName: 'Region' },
+      { type: ENTITY_TYPE.Candidate, id: 'in-municipality', firstName: 'In', lastName: 'Municipality' }
+    ]);
+    dataRoot.provideNominationData([
+      {
+        id: 'nom-region',
+        entityType: ENTITY_TYPE.Candidate,
+        entityId: 'in-region',
+        electionId: 'mixed',
+        constituencyId: 'region-1'
+      },
+      {
+        id: 'nom-municipality',
+        entityType: ENTITY_TYPE.Candidate,
+        entityId: 'in-municipality',
+        electionId: 'mixed',
+        constituencyId: 'municipality-1a'
+      }
+    ]);
+    return dataRoot;
+  }
+
+  /** The ids of the candidate nominations the tree holds for the election, over the constituencies named. */
+  function candidateNominationIds(dataRoot: DataRoot, constituencyIds: Array<string>): Array<string> | undefined {
+    const state = nominationAndQuestionState({
+      dataRoot: () => dataRoot,
+      constituencies: () => constituencyIds.map((id) => dataRoot.getConstituency(id)),
+      elections: () => dataRoot.elections,
+      entityTypes: () => [ENTITY_TYPE.Candidate],
+      hideIfMissingAnswers: () => undefined as unknown as HideIfMissingAnswers
+    });
+    return state.value['mixed']?.[ENTITY_TYPE.Candidate]?.nominations.map((n) => n.id);
+  }
+
+  it.each([
+    ['the region first', ['region-1', 'municipality-1a']],
+    ['the municipality first', ['municipality-1a', 'region-1']]
+  ])('resolves a municipality selected with its parent region to the municipality, given %s', (_, ids) => {
+    expect(candidateNominationIds(regionAndMunicipalityRoot(), ids)).toEqual(['nom-municipality']);
+  });
+
+  it('resolves a region selected alone to the region', () => {
+    expect(candidateNominationIds(regionAndMunicipalityRoot(), ['region-1'])).toEqual(['nom-region']);
   });
 });

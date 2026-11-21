@@ -2,4 +2,4 @@
 export type { ContestantContextProvider } from './contestantContext.svelte';
 export { getContestantContext, initContestantContext } from './contestantContext.svelte';
 export * from './contestantContext.type';
-export * from './contestantUserDataState.type';
+export * from './entityUserDataState.type';

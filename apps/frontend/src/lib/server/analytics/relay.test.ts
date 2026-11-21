@@ -77,11 +77,11 @@ const FORBIDDEN = [
 /**
  * Give a wire event the visit id, or the one given.
  *
- * @param event - A wire event that may carry an id.
- * @param id - The id to give it.
+ * @param event - A wire event that may carry a visit id.
+ * @param visitId - The visit id to give it.
  */
-function withId<TEvent extends object>(event: TEvent, id = VISIT_ID): TEvent & { id: string } {
-  return { ...event, id };
+function withVisitId<TEvent extends object>(event: TEvent, visitId = VISIT_ID): TEvent & { visitId: string } {
+  return { ...event, visitId };
 }
 
 /**
@@ -117,7 +117,10 @@ function post(body: unknown, headers: Record<string, string | undefined> = {}): 
 
 /** A valid request with a pageview and two events that carry the visit id. */
 function validRequest(headers: Record<string, string | undefined> = {}): Request {
-  return post(batch([VALID_EVENTS.pageview, withId(VALID_EVENTS.answer), withId(VALID_EVENTS.menu_open)]), headers);
+  return post(
+    batch([VALID_EVENTS.pageview, withVisitId(VALID_EVENTS.answer), withVisitId(VALID_EVENTS.menu_open)]),
+    headers
+  );
 }
 
 /** The outcome of one relay call: its status and every batch handed to `enqueue`. */
@@ -405,7 +408,7 @@ describe('relay: the events it builds', () => {
 
   it('derives the app from the envelope route id', async () => {
     const { queued } = await call(
-      post(batch([VALID_EVENTS.pageview, withId(VALID_EVENTS.menu_open)], ROUTE.ContestantAppHelp))
+      post(batch([VALID_EVENTS.pageview, withVisitId(VALID_EVENTS.menu_open)], ROUTE.ContestantAppHelp))
     );
     expect(queued.map(({ app }) => app)).toEqual(['contestant', 'contestant']);
   });
@@ -420,7 +423,7 @@ describe('relay: the events it builds', () => {
     };
     const { queued } = await call(post(batch([pageview])));
     expect(queued).toHaveLength(1);
-    expect(queued[0]).not.toHaveProperty('id');
+    expect(queued[0]).not.toHaveProperty('visitId');
     expect(queued[0].attributes).toEqual({
       routeId: VOTER_ROUTE,
       locale: 'en',
@@ -442,19 +445,21 @@ describe('relay: the events it builds', () => {
     for (const value of recorded) expect(value % PAGEVIEW_DURATION_ROUNDING_MS).toBe(0);
   });
 
-  it('never queues a pageview with an id, even when a changed client sends one', async () => {
+  it('never queues a pageview with a visit id, even when a changed client sends one', async () => {
     const { status, queued } = await call(
-      post(batch([withId(VALID_EVENTS.pageview), VALID_EVENTS.pageview, withId(VALID_EVENTS.answer)]))
+      post(batch([withVisitId(VALID_EVENTS.pageview), VALID_EVENTS.pageview, withVisitId(VALID_EVENTS.answer)]))
     );
     expect(status).toBe(204);
     const pageviews = queued.filter(({ name }) => name === 'pageview');
     expect(pageviews).toHaveLength(1);
-    for (const pageview of pageviews) expect(pageview).not.toHaveProperty('id');
+    for (const pageview of pageviews) expect(pageview).not.toHaveProperty('visitId');
   });
 
   it('queues the valid events of a batch with one invalid event, and logs only the count', async () => {
     const bad = { ...VALID_EVENTS.feedback_sent, attributes: { rating: 4, description: REJECTED_MARKER } };
-    const { status, queued } = await call(post(batch([VALID_EVENTS.pageview, bad, withId(VALID_EVENTS.menu_open)])));
+    const { status, queued } = await call(
+      post(batch([VALID_EVENTS.pageview, bad, withVisitId(VALID_EVENTS.menu_open)]))
+    );
     expect(status).toBe(204);
     expect(queued.map(({ name }) => name)).toEqual(['pageview', 'menu_open']);
     expect(log.debug).toHaveBeenCalledTimes(1);
@@ -470,35 +475,35 @@ describe('relay: the events it builds', () => {
   });
 });
 
-describe('relay: the id rules', () => {
+describe('relay: the visit-id rules', () => {
   /** Every sample of the vocabulary, each that may carry one given the visit id. */
-  const everyEvent = Object.values(VALID_EVENTS).map((event) => ('id' in event ? withId(event) : event));
+  const everyEvent = Object.values(VALID_EVENTS).map((event) => ('visitId' in event ? withVisitId(event) : event));
 
-  /** The names of the queued events that carry an id. */
+  /** The names of the queued events that carry a visit id. */
   function namesWithId(queued: Array<AnalyticsEvent>): Array<string> {
-    return queued.filter((event) => event.id !== undefined).map(({ name }) => name);
+    return queued.filter((event) => event.visitId !== undefined).map(({ name }) => name);
   }
 
   it('memory and gated: an answer keeps a current visit id, and so does every event but the pageview', async () => {
     const { queued } = await call(post(batch(everyEvent)));
     expect(queued).toHaveLength(everyEvent.length);
-    expect(queued.find(({ name }) => name === 'answer')?.id).toBe(VISIT_ID);
+    expect(queued.find(({ name }) => name === 'answer')?.visitId).toBe(VISIT_ID);
     expect(namesWithId(queued)).toEqual(everyEvent.map(({ name }) => name).filter((name) => name !== 'pageview'));
   });
 
-  it('visit-id mode none: no queued event has an id', async () => {
+  it('visit-id mode none: no queued event has a visit id', async () => {
     const { queued } = await call(post(batch(everyEvent)), { ...LOG_CONFIG, visitIdMode: 'none' });
     expect(queued).toHaveLength(everyEvent.length);
     expect(namesWithId(queued)).toEqual([]);
   });
 
-  it('consent mode free: every sensitive event loses its id and every other event keeps it', async () => {
+  it('consent mode free: every sensitive event loses its visit id and every other event keeps it', async () => {
     const { queued } = await call(post(batch(everyEvent)), { ...LOG_CONFIG, consentMode: 'free' });
-    expect(queued.find(({ name }) => name === 'answer')).not.toHaveProperty('id');
-    expect(queued.find(({ name }) => name === 'menu_open')?.id).toBe(VISIT_ID);
+    expect(queued.find(({ name }) => name === 'answer')).not.toHaveProperty('visitId');
+    expect(queued.find(({ name }) => name === 'menu_open')?.visitId).toBe(VISIT_ID);
     for (const event of queued) {
       const sensitive = isSensitiveEvent(event.name as EventName);
-      expect(event.id === undefined).toBe(sensitive || event.name === 'pageview');
+      expect(event.visitId === undefined).toBe(sensitive || event.name === 'pageview');
     }
   });
 
@@ -506,16 +511,16 @@ describe('relay: the id rules', () => {
     ['older than the skew allows', NOW - MAX_VISIT_ID_SKEW_MS - 1, false],
     ['newer than the skew allows', NOW + MAX_VISIT_ID_SKEW_MS + 1, false],
     ['at the edge of the skew', NOW - MAX_VISIT_ID_SKEW_MS, true]
-  ])('an id stamped %s is kept: %s', async (_, stampedAt, kept) => {
+  ])('a visit id stamped %s is kept: %s', async (_, stampedAt, kept) => {
     const id = uuidv7(stampedAt, new Uint8Array(10).fill(0x33));
-    const { queued } = await call(post(batch([withId(VALID_EVENTS.menu_open, id)])));
+    const { queued } = await call(post(batch([withVisitId(VALID_EVENTS.menu_open, id)])));
     expect(queued).toHaveLength(1);
-    expect(queued[0].id).toBe(kept ? id : undefined);
+    expect(queued[0].visitId).toBe(kept ? id : undefined);
   });
 
   it('an id that is not a UUIDv7 never reaches the queue', async () => {
     const { queued } = await call(
-      post(batch([withId(VALID_EVENTS.menu_open, SAMPLE_OTHER_ID), VALID_EVENTS.pageview]))
+      post(batch([withVisitId(VALID_EVENTS.menu_open, SAMPLE_OTHER_ID), VALID_EVENTS.pageview]))
     );
     expect(queued.map(({ name }) => name)).toEqual(['pageview']);
     expect(JSON.stringify(queued)).not.toContain(SAMPLE_OTHER_ID);
@@ -526,7 +531,10 @@ describe('relay: nothing of the request but the validated events crosses', () =>
   /** A request with every planted header, every sample event and one rejected event, so the log path runs too. */
   function plantedRequest(): Request {
     const bad = { ...VALID_EVENTS.feedback_sent, attributes: { rating: 4, description: REJECTED_MARKER } };
-    const events = [...Object.values(VALID_EVENTS).map((event) => ('id' in event ? withId(event) : event)), bad];
+    const events = [
+      ...Object.values(VALID_EVENTS).map((event) => ('visitId' in event ? withVisitId(event) : event)),
+      bad
+    ];
     const request = post(batch(events), PLANTED_HEADERS);
     for (const [name, value] of Object.entries(PLANTED_HEADERS)) expect(request.headers.get(name)).toBe(value);
     return request;

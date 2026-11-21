@@ -150,9 +150,77 @@ describe('AuthContextProvider', () => {
     expect(writer.setPassword).toHaveBeenCalledWith({ password: 'a-new-password' });
   });
 
-  it('offers the session flag, logout and setPassword, and no other member', () => {
+  it('a sign-out that succeeds holds no failure', async () => {
     const { auth } = setup();
-    expect(Object.keys(auth).sort()).toEqual(['isAuthenticated', 'logout', 'setPassword']);
+    await auth.logout();
+    expect(auth.logoutFailed).toBe(false);
+  });
+
+  it('a sign-out that fails holds the failure', async () => {
+    const { auth } = setup();
+    writer.logout.mockRejectedValueOnce(new Error('the sign-out failed'));
+    await expect(auth.logout()).rejects.toThrow('the sign-out failed');
+    expect(auth.logoutFailed).toBe(true);
+  });
+
+  it('the next sign-out clears the failure as it starts and, resolving, leaves it cleared', async () => {
+    const { auth } = setup();
+    writer.logout.mockRejectedValueOnce(new Error('the sign-out failed'));
+    await expect(auth.logout()).rejects.toThrow('the sign-out failed');
+
+    let endSignOut!: () => void;
+    writer.logout.mockImplementationOnce(
+      () =>
+        new Promise<undefined>((resolve) => {
+          endSignOut = () => resolve(undefined);
+        })
+    );
+    const running = auth.logout();
+    expect(auth.logoutFailed).toBe(false);
+
+    endSignOut();
+    await running;
+    expect(auth.logoutFailed).toBe(false);
+  });
+
+  it('clearLogoutFailure clears the failure, also detached from the instance', async () => {
+    const { auth } = setup();
+    const { clearLogoutFailure } = auth;
+    writer.logout.mockRejectedValueOnce(new Error('the sign-out failed'));
+    await expect(auth.logout()).rejects.toThrow('the sign-out failed');
+
+    clearLogoutFailure();
+
+    expect(auth.logoutFailed).toBe(false);
+  });
+
+  it('an effect that reads the failure flag follows it', async () => {
+    const { auth } = setup();
+    const seen: Array<boolean> = [];
+    const stop = $effect.root(() => {
+      $effect(() => {
+        seen.push(auth.logoutFailed);
+      });
+    });
+    flushSync();
+
+    writer.logout.mockRejectedValueOnce(new Error('the sign-out failed'));
+    await expect(auth.logout()).rejects.toThrow('the sign-out failed');
+    flushSync();
+
+    stop();
+    expect(seen).toEqual([false, true]);
+  });
+
+  it('offers the session flag, the failure flag, logout, clearLogoutFailure and setPassword, and no other member', () => {
+    const { auth } = setup();
+    expect(Object.keys(auth).sort()).toEqual([
+      'clearLogoutFailure',
+      'isAuthenticated',
+      'logout',
+      'logoutFailed',
+      'setPassword'
+    ]);
   });
 
   // Behavior 3 — own-enumerable members survive the `{ ...authContext }` spread (the contestantContext line ~367 contract).

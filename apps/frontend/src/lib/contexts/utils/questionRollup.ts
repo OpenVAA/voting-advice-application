@@ -1,5 +1,7 @@
+import { log } from '@openvaa/app-shared';
 import { QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
+import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import type { Id } from '@openvaa/core';
 import type { Constituency, Election, EntityType, QuestionCategoryType } from '@openvaa/data';
 
@@ -103,4 +105,56 @@ export function rollUpQuestionCategories<TCategory extends RollupCategory>({
     infoQuestions,
     opinionQuestions
   };
+}
+
+/** The part of a nomination `contestsOfNominations` reads: the ids of its election and its constituency. */
+export type NominationContestIds = {
+  readonly electionId: Id;
+  readonly constituencyId: Id;
+};
+
+/** The lookups `contestsOfNominations` makes. A `DataRoot` satisfies it; each lookup throws for an id the data root does not hold. */
+export type ContestLookup = {
+  getElection(id: Id): Election;
+  getConstituency(id: Id): Constituency;
+};
+
+/**
+ * The elections and constituencies an entity's nominations name, resolved on a data root: the targets of the entity's question rollup.
+ *
+ * An id the data root does not hold is logged and skipped, so it costs the entity none of the others; `unresolved` says that one was. The Contestant App's context and the server's preview gate both call this, so both ask an entity the same questions.
+ *
+ * @param dataRoot - The data root, passed BY VALUE from inside the caller's effect body, as for `rollUpQuestionCategories`.
+ * @param nominations - The entity's nominations.
+ * @returns The elections and the constituencies, each without duplicates and in the order the nominations name them, and whether any id was not found.
+ */
+export function contestsOfNominations({
+  dataRoot,
+  nominations
+}: {
+  dataRoot: ContestLookup;
+  nominations: ReadonlyArray<NominationContestIds>;
+}): { elections: Array<Election>; constituencies: Array<Constituency>; unresolved: boolean } {
+  let unresolved = false;
+
+  function resolve<TObject>(id: Id, lookup: (id: Id) => TObject, label: string): Array<TObject> {
+    try {
+      return [lookup(id)];
+    } catch (e) {
+      unresolved = true;
+      log.error(`[contestsOfNominations] A nomination names ${label} the data root does not hold: ${e}`);
+      return [];
+    }
+  }
+
+  const elections = removeDuplicates(
+    nominations.flatMap(({ electionId }) => resolve(electionId, (id) => dataRoot.getElection(id), 'an election'))
+  );
+  const constituencies = removeDuplicates(
+    nominations.flatMap(({ constituencyId }) =>
+      resolve(constituencyId, (id) => dataRoot.getConstituency(id), 'a constituency')
+    )
+  );
+
+  return { elections, constituencies, unresolved };
 }

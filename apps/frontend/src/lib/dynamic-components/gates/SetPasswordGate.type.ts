@@ -1,6 +1,5 @@
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { LogoutButtonProps } from '$lib/dynamic-components/logoutButton';
-import type { Route } from '$lib/routes';
 
 export type SetPasswordGateProps = {
   /**
@@ -15,10 +14,6 @@ export type SetPasswordGateProps = {
    * The app's own sign-out, as the shared `LogoutButton` takes it. A rejection is logged and the view stays.
    */
   logout: LogoutButtonProps['logout'];
-  /**
-   * Where the Log out leaves to after a sign-out that worked, for an app whose `logout` does not navigate.
-   */
-  redirectTo?: Route;
   /**
    * Called once a password has been saved, before the page's loads are rerun.
    */

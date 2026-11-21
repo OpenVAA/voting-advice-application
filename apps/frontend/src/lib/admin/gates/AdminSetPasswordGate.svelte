@@ -1,5 +1,5 @@
 <!--
-@component The Admin App's set-password view: the shared set-password view, given the Admin App's address, its `setPassword` and its sign-out, with the Admin App's login to leave to after a sign-out that worked. A sign-out that fails stays on the view, and the Admin App's layout shows that it failed.
+@component The Admin App's set-password view: the shared set-password view, given the Admin App's address, its `setPassword` and its sign-out, which goes to the Admin App's login after a sign-out that worked. A sign-out that fails stays on the view, and the Admin App's layout shows that it failed.
 
 ### Dynamic component
 
@@ -25,9 +25,4 @@ None.
   const { logout, setPassword } = adminCtx;
 </script>
 
-<SetPasswordGate
-  email={adminCtx.userData?.email}
-  {setPassword}
-  {logout}
-  redirectTo="AdminAppLogin"
-  testId="admin-set-password-gate" />
+<SetPasswordGate email={adminCtx.userData?.email} {setPassword} {logout} testId="admin-set-password-gate" />

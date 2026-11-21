@@ -5,7 +5,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { navigating } from './__mocks__/app-state';
+import { navigating } from './app-state';
 
 describe('the $app/state stub', () => {
   it('holds no navigation in flight', () => {

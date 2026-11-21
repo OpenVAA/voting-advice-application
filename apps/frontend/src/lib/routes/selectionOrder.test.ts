@@ -5,7 +5,6 @@ import {
   constituenciesStepOutcome,
   electionsHeldIn,
   electionsStepOutcome,
-  mostSpecificConstituency,
   usesSingleConstituencyGroup
 } from './selectionOrder';
 import type { Constituency, Election, ElectionData } from '@openvaa/data';
@@ -564,56 +563,6 @@ describe('usesSingleConstituencyGroup', () => {
         appSettings: REGIONS_FIRST,
         constituencyGroups: new DataRoot().constituencyGroups
       })
-    ).toBeUndefined();
-  });
-});
-
-describe('mostSpecificConstituency', () => {
-  const dataRoot = rootWith('regional', 'mixed', 'paired');
-
-  it('answers the one constituency of the election among those given', () => {
-    expect(
-      mostSpecificConstituency({
-        election: dataRoot.getElection('regional'),
-        constituencies: constituenciesOf(dataRoot, 'municipality-1a', 'region-2')
-      })?.id
-    ).toBe('region-2');
-  });
-
-  it.each([
-    ['first', ['region-1', 'municipality-1a']],
-    ['last', ['municipality-1a', 'region-1']]
-  ])('answers the constituency of the group with the fewest constituencies, given %s', (_, ids) => {
-    expect(
-      mostSpecificConstituency({
-        election: dataRoot.getElection('mixed'),
-        constituencies: constituenciesOf(dataRoot, ...ids)
-      })?.id
-    ).toBe('region-1');
-  });
-
-  it.each([
-    [['district-x', 'region-1'], 'district-x'],
-    [['region-1', 'district-x'], 'region-1'],
-    [['region-2', 'region-1'], 'region-2']
-  ])('answers the first of %j, whose groups are of one size', (ids, first) => {
-    expect(
-      mostSpecificConstituency({
-        election: dataRoot.getElection('paired'),
-        constituencies: constituenciesOf(dataRoot, ...ids)
-      })?.id
-    ).toBe(first);
-  });
-
-  it('answers nothing when the election has none of the constituencies given', () => {
-    expect(
-      mostSpecificConstituency({
-        election: dataRoot.getElection('regional'),
-        constituencies: constituenciesOf(dataRoot, 'municipality-1a', 'whole-country')
-      })
-    ).toBeUndefined();
-    expect(
-      mostSpecificConstituency({ election: dataRoot.getElection('regional'), constituencies: [] })
     ).toBeUndefined();
   });
 });

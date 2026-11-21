@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { firstNeededGate, SET_PASSWORD_GATE } from '$lib/auth/gates';
 import { ADMIN_GATES } from './adminGates';
 import type { BasicUserData } from '$lib/api/base/dataWriter.type';
-import type { AddressState } from '$lib/contestant/utils/identityProviderAccount';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 
 /**
  * User-level data of an admin.
@@ -19,7 +19,7 @@ import type { AddressState } from '$lib/contestant/utils/identityProviderAccount
  */
 function adminWith(
   passwordSet: boolean,
-  addressState: AddressState = 'proved',
+  addressState: AddressStateName = 'proved',
   termsOfUseAccepted: string | null = null
 ): BasicUserData {
   return {
@@ -30,11 +30,14 @@ function adminWith(
     settings: {},
     termsOfUseAccepted,
     passwordSet,
-    addressState,
-    pendingEmail: addressState === 'pending' ? 'pending@example.test' : null,
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: 'pending@example.test' }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
     ownOrganizationId: null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    ownOrganizationUnnamed: false
   };
 }
 

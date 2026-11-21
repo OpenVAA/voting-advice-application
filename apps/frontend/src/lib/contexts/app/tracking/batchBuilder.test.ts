@@ -42,10 +42,10 @@ function rawEvents(body: string | undefined): Array<Record<string, unknown>> {
   return (JSON.parse(body ?? '{"events":[]}') as { events: Array<Record<string, unknown>> }).events;
 }
 
-function idOf(body: string | undefined, name: EventName): unknown {
+function visitIdOf(body: string | undefined, name: EventName): unknown {
   const event = rawEvents(body).find((e) => e.name === name);
   expect(event).toBeDefined();
-  return event?.id;
+  return event?.visitId;
 }
 
 describe('buildBatch', () => {
@@ -86,7 +86,7 @@ describe('buildBatch', () => {
     });
     const pageview = rawEvents(body)[0];
     expect(pageview.name).toBe('pageview');
-    expect(Object.hasOwn(pageview, 'id')).toBe(false);
+    expect(Object.hasOwn(pageview, 'visitId')).toBe(false);
   });
 
   describe('the visit id', () => {
@@ -100,8 +100,8 @@ describe('buildBatch', () => {
         projection: projection(),
         now: NOW
       });
-      expect(idOf(body, 'answer')).toBe(SAMPLE_VISIT_ID);
-      expect(idOf(body, 'menu_open')).toBe(SAMPLE_VISIT_ID);
+      expect(visitIdOf(body, 'answer')).toBe(SAMPLE_VISIT_ID);
+      expect(visitIdOf(body, 'menu_open')).toBe(SAMPLE_VISIT_ID);
     });
 
     it('goes only on non-sensitive events in free mode with visit-id mode memory', () => {
@@ -112,9 +112,9 @@ describe('buildBatch', () => {
         projection: projection('free', 'memory'),
         now: NOW
       });
-      expect(idOf(body, 'menu_open')).toBe(SAMPLE_VISIT_ID);
-      expect(idOf(body, 'answer')).toBeUndefined();
-      expect(Object.hasOwn(rawEvents(body)[0], 'id')).toBe(false);
+      expect(visitIdOf(body, 'menu_open')).toBe(SAMPLE_VISIT_ID);
+      expect(visitIdOf(body, 'answer')).toBeUndefined();
+      expect(Object.hasOwn(rawEvents(body)[0], 'visitId')).toBe(false);
     });
 
     it.each(['gated', 'free'] as const)('goes on no event in visit-id mode none (consent mode %s)', (consentMode) => {
@@ -125,14 +125,14 @@ describe('buildBatch', () => {
         projection: projection(consentMode, 'none'),
         now: NOW
       });
-      expect(rawEvents(body).every((e) => !Object.hasOwn(e, 'id'))).toBe(true);
+      expect(rawEvents(body).every((e) => !Object.hasOwn(e, 'visitId'))).toBe(true);
       expect(body).not.toContain(SAMPLE_VISIT_ID);
     });
 
     it('goes on no event when no visit id is given', () => {
       const body = buildBatch({ view: VIEW, events: EVENTS, projection: projection(), now: NOW });
       expect(rawEvents(body)).toHaveLength(2);
-      expect(rawEvents(body).every((e) => !Object.hasOwn(e, 'id'))).toBe(true);
+      expect(rawEvents(body).every((e) => !Object.hasOwn(e, 'visitId'))).toBe(true);
     });
   });
 
@@ -191,7 +191,7 @@ describe('buildBatch', () => {
     const uncapped = {
       routeId: VIEW.routeId,
       locale: VIEW.locale,
-      events: events.map((e) => ({ name: e.name, ago: 0, id: SAMPLE_VISIT_ID, attributes: e.attributes }))
+      events: events.map((e) => ({ name: e.name, ago: 0, visitId: SAMPLE_VISIT_ID, attributes: e.attributes }))
     };
     expect(new TextEncoder().encode(JSON.stringify(uncapped)).length).toBeGreaterThan(MAX_BATCH_BYTES);
 
@@ -207,7 +207,7 @@ describe('buildBatch', () => {
     // Only as many were dropped as needed: the next one would not have fitted.
     const next = events[kept.length];
     const nextSize = new TextEncoder().encode(
-      JSON.stringify({ name: next.name, ago: 0, id: SAMPLE_VISIT_ID, attributes: next.attributes })
+      JSON.stringify({ name: next.name, ago: 0, visitId: SAMPLE_VISIT_ID, attributes: next.attributes })
     ).length;
     expect(new TextEncoder().encode(body).length + 1 + nextSize).toBeGreaterThan(MAX_BATCH_BYTES);
   });

@@ -10,10 +10,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildRoute } from '$lib/routes';
 import { signOutToLogin } from './signOutToLogin';
 
-const { withdrawLogoutCount } = vi.hoisted(() => ({ withdrawLogoutCount: vi.fn() }));
+const { withdrawLogoutDeadline } = vi.hoisted(() => ({ withdrawLogoutDeadline: vi.fn() }));
 
 // Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
-vi.mock('$lib/server/auth/logoutCount', () => ({ withdrawLogoutCount }));
+vi.mock('$lib/server/auth/logoutDeadline', () => ({ withdrawLogoutDeadline }));
 
 type HelperEvent = Parameters<typeof signOutToLogin>[0];
 
@@ -126,7 +126,7 @@ describe('signOutToLogin', () => {
 describe('the logout count', () => {
   /** The names of the sign-out, the session read and the withdrawal, in the order of their first calls; one never called is left out. */
   function callOrder(): Array<string> {
-    const calls = { signOut, getSession, withdrawLogoutCount };
+    const calls = { signOut, getSession, withdrawLogoutDeadline };
     return Object.entries(calls)
       .filter(([, mock]) => mock.mock.invocationCallOrder.length > 0)
       .sort(([, a], [, b]) => a.mock.invocationCallOrder[0] - b.mock.invocationCallOrder[0])
@@ -139,9 +139,9 @@ describe('the logout count', () => {
 
     const redirected = await thrownBy(() => signOutToLogin(event, 'en', 'loginFailed'));
 
-    expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-    expect(withdrawLogoutCount.mock.calls[0][0]).toBe(event);
-    expect(callOrder()).toEqual(['signOut', 'withdrawLogoutCount']);
+    expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+    expect(withdrawLogoutDeadline.mock.calls[0][0]).toBe(event);
+    expect(callOrder()).toEqual(['signOut', 'withdrawLogoutDeadline']);
     expect(redirected.status).toBe(307);
     expect(redirected.location).toBe(
       buildRoute({ route: 'ContestantAppLogin', locale: 'en', errorMessage: 'loginFailed' })
@@ -158,9 +158,9 @@ describe('the logout count', () => {
 
       const redirected = await thrownBy(() => signOutToLogin(event, 'en', 'loginFailed'));
 
-      expect(withdrawLogoutCount).toHaveBeenCalledTimes(1);
-      expect(withdrawLogoutCount.mock.calls[0][0]).toBe(event);
-      expect(callOrder()).toEqual(['signOut', 'getSession', 'withdrawLogoutCount']);
+      expect(withdrawLogoutDeadline).toHaveBeenCalledTimes(1);
+      expect(withdrawLogoutDeadline.mock.calls[0][0]).toBe(event);
+      expect(callOrder()).toEqual(['signOut', 'getSession', 'withdrawLogoutDeadline']);
       expect(redirected.status).toBe(307);
       expect(redirected.location).toBe(
         buildRoute({ route: 'ContestantAppLogin', locale: 'en', errorMessage: 'loginFailed' })
@@ -187,7 +187,7 @@ describe('the logout count', () => {
 
       const failed = await thrownBy(() => signOutToLogin(makeEvent(), 'en', 'loginFailed'));
 
-      expect(withdrawLogoutCount).not.toHaveBeenCalled();
+      expect(withdrawLogoutDeadline).not.toHaveBeenCalled();
       expect(isRedirect(failed)).toBe(false);
       expect(isHttpError(failed, 503)).toBe(true);
     }

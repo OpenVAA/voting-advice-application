@@ -137,9 +137,7 @@ export function constituenciesStepOutcome(input: SelectionInput): SelectionOutco
 }
 
 /**
- * The elections held in the constituencies given: those with an applicable constituency among them. This is the list of the election step while a constituency group comes first.
- *
- * `Election.getApplicableConstituency` throws when more than one of the constituencies matches the election's groups, e.g. a municipality and its parent region for an election whose groups include both regions and municipalities. Such an election matches something in the selection, so it counts as held.
+ * The elections held in the constituencies given: those to which `Election.getApplicableConstituencies` finds one or more of them applicable. This is the list of the election step while a constituency group comes first.
  *
  * @param elections - The elections to choose among.
  * @param constituencies - The chosen constituencies.
@@ -152,13 +150,7 @@ export function electionsHeldIn({
   elections: Array<Election>;
   constituencies: Array<Constituency>;
 }): Array<Election> {
-  return elections.filter((election) => {
-    try {
-      return !!election.getApplicableConstituency(constituencies);
-    } catch {
-      return true;
-    }
-  });
+  return elections.filter((election) => election.getApplicableConstituencies(constituencies).length > 0);
 }
 
 /**
@@ -180,33 +172,6 @@ export function usesSingleConstituencyGroup({
   const id = appSettings.elections?.startFromConstituencyGroup;
   if (!id) return undefined;
   return constituencyGroups.find((group) => group.id === id);
-}
-
-/**
- * The one constituency an election takes from those given: among the constituencies that are in one of the election's groups, the one whose group has the fewest constituencies, and the first of them when several groups are of that size. A caller prefills an election's selector with it.
- *
- * Unlike `Election.getApplicableConstituency`, it does not throw when several of the constituencies are in the election's groups, as when two elections share a group and a different member was chosen for each, or when a constituency is given together with its parent.
- *
- * @param election - The election.
- * @param constituencies - The chosen constituencies.
- * @returns The constituency, or `undefined` when none of those given is in the election's groups.
- */
-export function mostSpecificConstituency({
-  election,
-  constituencies
-}: {
-  election: Election;
-  constituencies: Array<Constituency>;
-}): Constituency | undefined {
-  const groups = election.constituencyGroups;
-  let best: { constituency: Constituency; groupSize: number } | undefined;
-  for (const constituency of constituencies) {
-    const group = groups.find((g) => g.data.constituencyIds.includes(constituency.id));
-    if (!group) continue;
-    const groupSize = group.constituencies.length;
-    if (!best || groupSize < best.groupSize) best = { constituency, groupSize };
-  }
-  return best?.constituency;
 }
 
 /**

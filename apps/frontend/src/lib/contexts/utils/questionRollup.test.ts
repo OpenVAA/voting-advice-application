@@ -1,8 +1,9 @@
+import { log as appLog } from '@openvaa/app-shared';
 import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
-import { describe, expect, test } from 'vitest';
-import { rollUpQuestionCategories } from './questionRollup';
-import type { QuestionCategoryType } from '@openvaa/data';
-import type { QuestionRollupTargets } from './questionRollup';
+import { afterEach, describe, expect, test, vi } from 'vitest';
+import { contestsOfNominations, rollUpQuestionCategories } from './questionRollup';
+import type { Constituency, Election, QuestionCategoryType } from '@openvaa/data';
+import type { ContestLookup, QuestionRollupTargets } from './questionRollup';
 
 /**
  * Contract guard for the shared question-category rollup.
@@ -320,5 +321,56 @@ describe('rollUpQuestionCategories', () => {
     expect(result.opinionCategories).toEqual([]);
     expect(result.infoQuestions).toEqual([]);
     expect(result.opinionQuestions).toEqual([]);
+  });
+});
+
+describe('contestsOfNominations', () => {
+  const electionA = { id: 'election-a' } as Election;
+  const electionB = { id: 'election-b' } as Election;
+  const constituencyA = { id: 'constituency-a' } as Constituency;
+
+  /** A lookup that holds the given objects and throws for any other id, as a data root does. */
+  function lookupOf(elections: Array<Election>, constituencies: Array<Constituency>): ContestLookup {
+    function find<TObject extends { id: string }>(objects: Array<TObject>, id: string): TObject {
+      const found = objects.find((o) => o.id === id);
+      if (!found) throw new Error(`no such object: ${id}`);
+      return found;
+    }
+    return {
+      getElection: (id) => find(elections, id),
+      getConstituency: (id) => find(constituencies, id)
+    };
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('resolves every id once, in the order the nominations name them', () => {
+    const result = contestsOfNominations({
+      dataRoot: lookupOf([electionA, electionB], [constituencyA]),
+      nominations: [
+        { electionId: 'election-b', constituencyId: 'constituency-a' },
+        { electionId: 'election-a', constituencyId: 'constituency-a' },
+        { electionId: 'election-b', constituencyId: 'constituency-a' }
+      ]
+    });
+
+    expect(result).toEqual({ elections: [electionB, electionA], constituencies: [constituencyA], unresolved: false });
+  });
+
+  test('skips and logs an id the data root does not hold, and keeps the others', () => {
+    const logged = vi.spyOn(appLog, 'error').mockImplementation(() => undefined);
+
+    const result = contestsOfNominations({
+      dataRoot: lookupOf([electionA], [constituencyA]),
+      nominations: [
+        { electionId: 'election-unknown', constituencyId: 'constituency-unknown' },
+        { electionId: 'election-a', constituencyId: 'constituency-a' }
+      ]
+    });
+
+    expect(result).toEqual({ elections: [electionA], constituencies: [constituencyA], unresolved: true });
+    expect(logged).toHaveBeenCalledTimes(2);
   });
 });

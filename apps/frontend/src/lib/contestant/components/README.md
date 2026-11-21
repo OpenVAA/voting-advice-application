@@ -1,4 +1,4 @@
-# Candidate Components
+# Contestant Components
 
 > See also the online doc [Components](https://openvaa.org/developers-guide/frontend/components) (or [locally](</apps/docs/src/routes/(content)/developers-guide/frontend/components/+page.md>))
 

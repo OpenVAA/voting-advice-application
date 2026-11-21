@@ -1,4 +1,3 @@
-import { entityDescriptorOf } from './entityDescriptor';
 import type { ServedEntityType } from '@openvaa/app-shared';
 
 /**
@@ -9,8 +8,8 @@ export type HideIfMissingAnswersSettings = {
 };
 
 /**
- * Whether an entity of a type is hidden from voters while it has unanswered opinion questions: what `entities.hideIfMissingAnswers` holds under the key the type's descriptor names. It is `false` for a type whose descriptor names no key, so such an entity is never told that it is hidden.
- * @param entityType - The type of the entity the user edits. While it is not known the candidate's descriptor is read, as on every page.
+ * Whether an entity of a type is hidden from voters while it has unanswered opinion questions: what `entities.hideIfMissingAnswers` holds under the type. It is `false` for a type the setting does not name, so such an entity is never told that it is hidden.
+ * @param entityType - The type of the entity the user edits. While it is not known the candidate's setting is read, as on every page.
  * @param appSettings - The application settings.
  * @returns Whether missing opinion answers hide the entity.
  */
@@ -21,6 +20,5 @@ export function isHiddenIfMissingAnswers({
   entityType: ServedEntityType | undefined;
   appSettings: HideIfMissingAnswersSettings;
 }): boolean {
-  const key = entityDescriptorOf(entityType).hideIfMissingAnswersKey;
-  return !!key && !!appSettings.entities?.hideIfMissingAnswers?.[key];
+  return !!appSettings.entities?.hideIfMissingAnswers?.[entityType ?? 'candidate'];
 }

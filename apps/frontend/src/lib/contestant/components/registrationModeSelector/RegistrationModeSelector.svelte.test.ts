@@ -11,6 +11,7 @@
  * 4. **The group's error** — an alert under the options that describes the group, cleared by a choice.
  * 5. **What the group does not add** — no role, no `tabindex`, no form.
  * 6. **The export and the ids** — `focusFirst()`, and ids that two instances never share.
+ * 7. **Tracking** — `registration_modeChosen` with the mode, once per choice, and nothing without a choice.
  */
 
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
@@ -20,6 +21,10 @@ import type { RegistrationMode } from '@openvaa/app-shared';
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({ t: (key: string) => key, darkMode: false })
 }));
+
+const { track } = vi.hoisted(() => ({ track: vi.fn() }));
+
+vi.mock('$lib/contexts/app', () => ({ getAppContext: () => ({ track }) }));
 
 /** The props each `Radio` of the input library was rendered with, read when it was rendered. */
 const { radiosRendered } = vi.hoisted(() => ({
@@ -62,6 +67,7 @@ afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
   radiosRendered.length = 0;
+  track.mockClear();
 });
 
 type Harness = {
@@ -387,5 +393,28 @@ describe('RegistrationModeSelector — the export and the ids', () => {
 
     expect(target.querySelector('fieldset')?.id).toBe('modes');
     expect(target.querySelector(GROUP_ERROR)?.id).toBe('modes-error');
+  });
+});
+
+describe('RegistrationModeSelector — tracking', () => {
+  it('sends registration_modeChosen with the mode each time a mode is chosen', () => {
+    const { target } = render();
+
+    choose(target, 'email');
+    choose(target, 'code');
+
+    expect(track.mock.calls).toEqual([
+      ['registration_modeChosen', { mode: 'email' }],
+      ['registration_modeChosen', { mode: 'code' }]
+    ]);
+  });
+
+  it('sends nothing on arrival, for a mode the parent selected, or with a single mode', () => {
+    const { parent } = render({ selected: 'identity_provider' });
+    parent.selected = 'code';
+    flushSync();
+    render({ modes: ['email'] });
+
+    expect(track).not.toHaveBeenCalled();
   });
 });

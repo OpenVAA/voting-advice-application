@@ -48,9 +48,9 @@ export const CONTESTANT_GATES: ReadonlyArray<ContestantGate> = Object.freeze([
     id: 'identityProvider',
     // Three reasons, any one of which asks: no address to sign in with; the identity's own party has no name and answers are not locked, so the name can still be typed; and, once after the provider found the account, a notice for an account that has given an address.
     isNeeded: ({ user, arrival, answersLocked }: ContestantGateFacts) =>
-      user.addressState === 'none' ||
+      user.address.state === 'none' ||
       (user.ownOrganizationUnnamed === true && answersLocked !== true) ||
-      (arrival === 'existing' && (user.addressState === 'pending' || user.addressState === 'proved'))
+      arrival === 'existing'
   }),
   Object.freeze({
     id: 'termsOfUse',

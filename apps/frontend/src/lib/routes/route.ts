@@ -51,6 +51,18 @@ export const ADMIN = '/admin';
 export const ADMIN_PROT = `${ADMIN}/${PROTECTED_GROUP}`;
 
 /**
+ * True when `routeId` names a route inside the Voter App.
+ *
+ * Takes a SvelteKit ROUTE ID, never a pathname, for the reasons given on `isContestantRoute`.
+ *
+ * @param routeId - A SvelteKit route id, e.g. `page.route.id`.
+ * @returns `true` when the id is the Voter App root or sits below it.
+ */
+export function isVoterRoute(routeId: string): boolean {
+  return routeId === VOTER || routeId.startsWith(`${VOTER}/`);
+}
+
+/**
  * True when `routeId` names a route inside the Contestant App.
  *
  * Takes a SvelteKit ROUTE ID, never a pathname. A route id carries no base path and no locale prefix, and its dynamic segments are placeholders rather than values, so this cannot be tripped by serving the app from a `/contestant/…` subpath, nor by a voter route whose params happen to contain the word (an entity id, a constituency slug).

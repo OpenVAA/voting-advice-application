@@ -35,7 +35,7 @@ Defines the outer layout for the application, including the header and menu.
   // Layout and navigation menu management
   ////////////////////////////////////////////////////////////////////
 
-  const { startEvent, t, track } = getAppContext();
+  const { t, track } = getAppContext();
   const { pageStyles, navigation, navigationSettings, video } = getLayoutContext();
   navigation.close = closeDrawer;
 
@@ -50,7 +50,7 @@ Defines the outer layout for the application, including the header and menu.
     isDrawerOpen = true;
     // We need a small timeout for drawerCloseButton to be focusable
     setTimeout(() => document.getElementById('drawerCloseButton')?.focus(), 50);
-    startEvent('menu_open');
+    track('menu_open');
   }
 
   /**

@@ -29,7 +29,7 @@ import type {
 /**
  * Idura claim mapping for Finnish Trust Network authentication.
  *
- * Idura Finnish Trust Network authentication returns a stable `sub` claim as the primary identifier. Additional Finnish-specific claims (`birthdate`, `hetu`, `country`) are extracted and returned to the caller, and stored nowhere. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person -- see `AuthConfig.identityMatchProp` in `types.ts` for what goes wrong when it is not.
+ * Idura Finnish Trust Network authentication returns a stable `sub` claim as the primary identifier. Additional Finnish-specific claims (`birthdate`, `hetu`, `country`) are extracted and returned to the caller, and stored nowhere. `identityMatchProp` names the claim used to match a returning user to their existing account and MUST be unique per person -- see `AuthConfig.identityMatchProp` in `types.ts` for what goes wrong when it is not.
  *
  * - Identity matching: `sub` (stable OIDC subject identifier)
  * - Name claims: Standard OIDC `given_name` and `family_name`

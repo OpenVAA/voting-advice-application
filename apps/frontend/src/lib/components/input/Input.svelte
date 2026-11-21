@@ -37,6 +37,7 @@ Multilingual features are only available if the `locales` store contains more th
 - `value`: Bindable: the value of the input. Depends on the `type` prop.
 - `error`: Bindable: the message shown as the inline error. A caller sets it to put the input in error, and the input sets it itself when it refuses an entry. Cleared when the user edits the input.
 - `validate`: Whether the `url` and `email` kinds judge an entry when it is committed: refuse one that is not a URL or an address with their own error, and store a usable one without its spaces. With `false` the caller judges the entry and every entry is stored as typed. @default true
+- `commitOn`: When the single-line text kinds (`text`, `url`, `email`) take an entry in: `'change'` when it is committed, or `'input'` on every keystroke, as typed and without the judgement `validate` asks for, which then waits for the commit. @default 'change'
 - `errorTestId`: The test id of the inline error. @default 'input-error'
 - `errorReason`: A word naming why the input is in error, written on the inline error as `data-reason`. Nothing is written without one.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
@@ -116,6 +117,7 @@ Multilingual features are only available if the `locales` store contains more th
   import type { TranslationKey } from '$types';
   import type { InputProps } from './Input.type';
 
+  // `validate` belongs to the `url` and `email` arms only; widened here so that it can be destructured from every arm.
   let {
     type,
     label,
@@ -128,6 +130,7 @@ Multilingual features are only available if the `locales` store contains more th
     value = $bindable(),
     error = $bindable(),
     validate = true,
+    commitOn = 'change',
     errorTestId = 'input-error',
     errorReason,
     onShadedBg,
@@ -143,7 +146,7 @@ Multilingual features are only available if the `locales` store contains more th
     maxItems,
     'aria-describedby': callerDescribedBy,
     ...restProps
-  }: InputProps = $props();
+  }: InputProps & { validate?: boolean } = $props();
 
   // reason: pragmatic regex catches obvious typos; server-side does final validation. The 3 disjoint [^\s@]+ groups have no nested quantifiers, so this regex is ReDoS-safe by construction.
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -423,10 +426,14 @@ Multilingual features are only available if the `locales` store contains more th
   }
 
   /**
-   * Called on every edit of a text-like control: an edit clears the error, whoever set it, and reaches an `oninput` the caller gave.
+   * Called on every edit of a text-like control: an edit clears the error, whoever set it, and reaches an `oninput` the caller gave. A single-line text kind with `commitOn: 'input'` also takes the text in as typed and reports it, without the judgement a commit makes.
    */
   function handleInput(event: Event & { currentTarget: EventTarget & (HTMLInputElement | HTMLTextAreaElement) }): void {
     error = undefined;
+    if (isTextKind && commitOn === 'input' && event.currentTarget instanceof HTMLInputElement) {
+      value = event.currentTarget.value;
+      onChange?.(value);
+    }
     restProps.oninput?.(event);
   }
 
@@ -573,6 +580,7 @@ Multilingual features are only available if the `locales` store contains more th
       {minItems}
       {maxItems}
       {describedBy}
+      invalid={!!error}
       onChange={handleMultipleTextChange} />
 
     <!-- 2. Multilingual text inputs and textareas -->
@@ -587,6 +595,7 @@ Multilingual features are only available if the `locales` store contains more th
       {isTranslationsVisible}
       requiredLocale={effectiveRequiredLocale}
       {describedBy}
+      invalid={!!error}
       {restProps}
       onChange={handleChange} />
 
@@ -620,6 +629,7 @@ Multilingual features are only available if the `locales` store contains more th
       {showRequired}
       {required}
       {describedBy}
+      invalid={!!error}
       {options}
       {selectedOptions}
       {unselectedOptions}

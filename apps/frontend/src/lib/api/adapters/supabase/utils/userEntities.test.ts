@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  parseCallerPasswordSet,
-  parseCallerPendingEmailTaken,
-  parseRegisteredOrganization,
-  parseUserEntities
-} from './userEntities';
+import { parseCallerAccountState, parseRegisteredOrganization, parseUserEntities } from './userEntities';
 
 const SECRET = 'value-that-must-not-be-in-the-message';
 
@@ -47,11 +42,15 @@ describe('parseUserEntities', () => {
   });
 
   it('throws for an answer without entities', () => {
-    expect(() => parseUserEntities({})).toThrow(/did not match its schema at: entities$/);
+    expect(() => parseUserEntities({})).toThrow(
+      /^The answer of get_user_entities did not match its schema at: entities$/
+    );
   });
 
   it('throws for an absent answer', () => {
-    expect(() => parseUserEntities(null)).toThrow(/did not match its schema at: \(root\)$/);
+    expect(() => parseUserEntities(null)).toThrow(
+      /^The answer of get_user_entities did not match its schema at: \(root\)$/
+    );
     expect(() => parseUserEntities(undefined)).toThrow(/did not match its schema/);
   });
 
@@ -82,26 +81,55 @@ describe('parseUserEntities', () => {
   });
 });
 
-describe('parseCallerPasswordSet', () => {
-  it('returns true for an answer whose password_set is true', () => {
-    expect(parseCallerPasswordSet({ password_set: true })).toBe(true);
-  });
+describe('parseCallerAccountState', () => {
+  it.each([
+    [true, false],
+    [false, true],
+    [true, true],
+    [false, false]
+  ])(
+    'returns password_set %s and pending_email_taken %s as the answer holds them',
+    (password_set, pending_email_taken) => {
+      expect(parseCallerAccountState({ password_set, pending_email_taken })).toEqual({
+        passwordSet: password_set,
+        pendingEmailTaken: pending_email_taken
+      });
+    }
+  );
 
-  it('returns false for an answer whose password_set is false', () => {
-    expect(parseCallerPasswordSet({ password_set: false })).toBe(false);
-  });
-
-  it('reads the fact beside the other fact of the answer', () => {
-    expect(parseCallerPasswordSet({ password_set: true, pending_email_taken: true })).toBe(true);
+  it('drops members the schema does not know', () => {
+    expect(parseCallerAccountState({ password_set: true, pending_email_taken: false, added_later: 1 })).toEqual({
+      passwordSet: true,
+      pendingEmailTaken: false
+    });
   });
 
   it.each([
-    ['absent', {}],
-    ['null', { password_set: null }],
-    ['a string', { password_set: 'true' }],
-    ['a number', { password_set: 1 }]
+    ['absent', { pending_email_taken: false }],
+    ['null', { password_set: null, pending_email_taken: false }],
+    ['a string', { password_set: 'true', pending_email_taken: false }],
+    ['a number', { password_set: 1, pending_email_taken: false }]
   ])('throws when password_set is %s', (_label, answer) => {
-    expect(() => parseCallerPasswordSet(answer)).toThrow(/password fact did not match its schema at: password_set$/);
+    expect(() => parseCallerAccountState(answer)).toThrow(
+      /^The answer of get_caller_account_state did not match its schema at: password_set$/
+    );
+  });
+
+  it.each([
+    ['absent', { password_set: true }],
+    ['null', { password_set: true, pending_email_taken: null }],
+    ['a string', { password_set: true, pending_email_taken: 'false' }],
+    ['a number', { password_set: true, pending_email_taken: 0 }]
+  ])('throws when pending_email_taken is %s', (_label, answer) => {
+    expect(() => parseCallerAccountState(answer)).toThrow(
+      /^The answer of get_caller_account_state did not match its schema at: pending_email_taken$/
+    );
+  });
+
+  it('names each refused path once', () => {
+    expect(() => parseCallerAccountState({})).toThrow(
+      /^The answer of get_caller_account_state did not match its schema at: password_set, pending_email_taken$/
+    );
   });
 
   it.each([
@@ -111,52 +139,13 @@ describe('parseCallerPasswordSet', () => {
     ['a string', 'true'],
     ['an array', [true]]
   ])('throws for an answer that is %s and no object', (_label, answer) => {
-    expect(() => parseCallerPasswordSet(answer)).toThrow(/password fact did not match its schema at: \(root\)$/);
-  });
-
-  it('names the refused path and never a stored value', () => {
-    const error = (() => {
-      try {
-        parseCallerPasswordSet({ password_set: SECRET });
-      } catch (e) {
-        return e;
-      }
-    })();
-
-    expect(error).toBeInstanceOf(Error);
-    expect((error as Error).message).toContain('password_set');
-    expect((error as Error).message).not.toContain(SECRET);
-  });
-});
-
-describe('parseCallerPendingEmailTaken', () => {
-  it.each([true, false])('returns pending_email_taken as the answer holds it: %s', (pending_email_taken) => {
-    expect(parseCallerPendingEmailTaken({ password_set: true, pending_email_taken })).toBe(pending_email_taken);
-  });
-
-  it.each([
-    ['absent', { password_set: true }],
-    ['null', { password_set: true, pending_email_taken: null }],
-    ['a string', { password_set: true, pending_email_taken: 'false' }],
-    ['a number', { password_set: true, pending_email_taken: 0 }]
-  ])('throws when pending_email_taken is %s', (_label, answer) => {
-    expect(() => parseCallerPendingEmailTaken(answer)).toThrow(
-      /pending-address fact did not match its schema at: pending_email_taken$/
-    );
-  });
-
-  it.each([
-    ['null', null],
-    ['a boolean', false],
-    ['an array', [false]]
-  ])('throws for an answer that is %s and no object', (_label, answer) => {
-    expect(() => parseCallerPendingEmailTaken(answer)).toThrow(
-      /pending-address fact did not match its schema at: \(root\)$/
+    expect(() => parseCallerAccountState(answer)).toThrow(
+      /^The answer of get_caller_account_state did not match its schema at: \(root\)$/
     );
   });
 
   it('names the refused path and never a stored value', () => {
-    expect(() => parseCallerPendingEmailTaken({ pending_email_taken: SECRET })).toThrow(
+    expect(() => parseCallerAccountState({ password_set: SECRET, pending_email_taken: SECRET })).toThrow(
       expect.objectContaining({ message: expect.not.stringContaining(SECRET) })
     );
   });
@@ -181,7 +170,7 @@ describe('parseRegisteredOrganization', () => {
     ['null', null]
   ])('throws when organization is %s', (_label, organization) => {
     expect(() => parseRegisteredOrganization({ entities: [], organization })).toThrow(
-      /registered organization did not match its schema at: organization$/
+      /^The answer of get_user_entities did not match its schema at: organization$/
     );
   });
 

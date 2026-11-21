@@ -36,7 +36,7 @@ Accesses `AppContext`. The app it is rendered in decides the Help page's link an
 -->
 
 <script lang="ts">
-  import { getContestantAppNameKey } from '@openvaa/app-shared';
+  import { getContestantAppName } from '$contestant/utils/contestantAppName';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
@@ -78,7 +78,11 @@ Accesses `AppContext`. The app it is rendered in decides the Help page's link an
   // appSettings is a reactive accessor: read via ctx.appSettings inside the derived, never destructured.
   const supportMailto = $derived(
     getEmailUrl({
-      subject: `${t('contestantApp.help.supportEmailSubject')}: ${inContestantApp ? t(`dynamic.contestantAppName.${getContestantAppNameKey(ctx.appSettings)}`) : t('adminApp.login.appSubtitle')}`,
+      subject: t('contestantApp.help.supportEmailSubject', {
+        appName: inContestantApp
+          ? getContestantAppName({ appSettings: ctx.appSettings, t })
+          : t('adminApp.login.appSubtitle')
+      }),
       to: ctx.appSettings.admin.email
     })
   );

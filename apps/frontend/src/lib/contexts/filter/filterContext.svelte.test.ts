@@ -1,6 +1,6 @@
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-// Import the test stub directly. The vitest.config alias rewrites `$app/state` → `src/lib/i18n/tests/__mocks__/app-state.ts`, so the `page` singleton seen by `filterContext.svelte.ts` IS the same object as `mockPage` here.
+// Import the test stub directly. The vitest.config alias rewrites `$app/state` → `src/lib/testing/__mocks__/app-state.ts`, so the `page` singleton seen by `filterContext.svelte.ts` IS the same object as `mockPage` here.
 import { page as mockPage } from '$app/state';
 import FilterContextHarness from './__tests__/FilterContextHarness.svelte';
 import GetFilterContextHarness from './__tests__/GetFilterContextHarness.svelte';

@@ -1,7 +1,7 @@
 /**
  * `LogoutButton`, mounted for real with the app's sign-out and its warning passed as props, with the real `Button` and `TimedModal` below it.
  *
- * The cases of the Contestant App pass the warning the Contestant App passes, `contestantLogoutWarning` over a fake contestant context, read through a getter so that it follows the context as the app's `$derived` does. One case at the end passes what the Admin App passes: a `redirectTo` and no warning.
+ * The cases of the Contestant App pass the warning the Contestant App passes, `contestantLogoutWarning` over a fake contestant context, read through a getter so that it follows the context as the app's `$derived` does.
  *
  * What this file holds: when the button opens its modal before logging out. It does so for the entity that is loaded, while answers are not locked, when the profile or the questions task is incomplete with a count of what is left: that count is what the modal's sentences say. A blocked task, the nomination and a profile that lacks nothing a sentence can count open nothing, and the user is logged out at once. It also does so whenever a guard of unsaved edits is active, and then what the modal says, and what each of its answers does to the guard. A navigation closes the modal before SvelteKit writes the new page, so the header reads no page's guard across the route change.
  *
@@ -17,7 +17,6 @@ import { cookieValues } from '$lib/auth/logoutDeadline';
 import { isNavigationHeld, registerNavigationGuard } from '$lib/components/preventNavigation/navigationGuards';
 import { contestantLogoutWarning } from '$lib/contestant/utils/logoutWarning';
 import { COOKIE } from '$lib/cookies';
-import { buildRoute } from '$lib/routes';
 import type { Mock } from 'vitest';
 import type { Task } from '$lib/contestant/tasks/taskState';
 import type { ContestantLogoutWarningSource } from '$lib/contestant/utils/logoutWarning';
@@ -36,6 +35,10 @@ const { afterNavigateCallbacks, fakePage, goto, onNavigateCallbacks } = vi.hoist
 });
 
 vi.mock('$app/state', () => ({ page: fakePage }));
+
+const { track } = vi.hoisted(() => ({ track: vi.fn() }));
+
+vi.mock('$lib/contexts/app', () => ({ getAppContext: () => ({ track }) }));
 
 vi.mock('$app/navigation', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
@@ -96,8 +99,8 @@ const contestantCtx = {
   get answersLocked() {
     return state.answersLocked;
   },
-  get tasks() {
-    return state.tasks;
+  get taskState() {
+    return { tasks: state.tasks };
   },
   get unansweredOpinionQuestions() {
     return state.unansweredOpinionQuestions;
@@ -175,6 +178,7 @@ afterEach(() => {
   afterNavigateCallbacks.length = 0;
   onNavigateCallbacks.length = 0;
   logout.mockClear();
+  track.mockClear();
   state.savedEntityData = undefined;
   state.answersLocked = false;
   state.tasks = [];
@@ -902,6 +906,60 @@ describe('LogoutButton — a page with a guard', () => {
       expect(logout).not.toHaveBeenCalled();
     });
   });
+
+  describe('what it tracks', () => {
+    it.each(CLOSES)('%s sends `logout_warned` once, with `proceeded` false', async (_name, close) => {
+      registerGuard(() => true);
+      const target = await pressLogout();
+
+      close(target);
+      flushSync();
+
+      expect(track.mock.calls).toEqual([['logout_warned', { proceeded: false }]]);
+    });
+
+    it("the modal's Log out sends `logout_warned` once, with `proceeded` true", async () => {
+      registerGuard(() => true);
+      const target = await pressLogout();
+
+      dialogButton(target, 'common.logout').click();
+      await settle();
+
+      expect(track.mock.calls).toEqual([['logout_warned', { proceeded: true }]]);
+    });
+
+    it("the count's end sends `logout_warned` once, with `proceeded` true", async () => {
+      registerGuard(() => true);
+      await pressLogout();
+
+      await passTheCount();
+
+      expect(track.mock.calls).toEqual([['logout_warned', { proceeded: true }]]);
+    });
+
+    it('a navigation that closes it sends nothing', async () => {
+      registerGuard(() => true);
+      await pressLogout();
+
+      navigate();
+
+      expect(track).not.toHaveBeenCalled();
+    });
+
+    it('opening it sends nothing', async () => {
+      registerGuard(() => true);
+      await pressLogout();
+
+      expect(track).not.toHaveBeenCalled();
+    });
+
+    it('a logout no modal asks about sends nothing', async () => {
+      nothingCounted();
+
+      expectLoggedOutAtOnce(await pressLogout());
+      expect(track).not.toHaveBeenCalled();
+    });
+  });
 });
 
 describe("LogoutButton — the deadline's cookie", () => {
@@ -1025,61 +1083,8 @@ describe("LogoutButton — the deadline's cookie", () => {
   });
 });
 
-describe('LogoutButton — an app whose logout does not navigate', () => {
-  it('signs out once on one press, with no reason, and then leaves to the route it is given', async () => {
-    const appLogout = vi.fn(async (): Promise<void> => undefined);
-    fakePage.url = new URL('http://localhost/admin');
-    const target = document.createElement('div');
-    document.body.appendChild(target);
-    const component = mount(LogoutButton, {
-      target,
-      props: { logout: appLogout, redirectTo: 'AdminAppLogin', 'data-testid': 'app-logout' } as never
-    });
-    flushSync();
-    teardown.push(() => {
-      unmount(component);
-      target.remove();
-    });
-
-    target.querySelector<HTMLButtonElement>('[data-testid="app-logout"]')!.click();
-    await settle();
-
-    expect(appLogout).toHaveBeenCalledTimes(1);
-    expect(appLogout.mock.calls[0]).toEqual([]);
-    expect(goto).toHaveBeenCalledTimes(1);
-    expect(goto.mock.calls[0][0]).toBe(buildRoute({ route: 'AdminAppLogin' }));
-    expect(target.querySelector('dialog[open]')).toBeNull();
-    goto.mockClear();
-  });
-
-  it('holds no navigation while that sign-out runs, so the app navigates as it would', async () => {
-    const pending = held();
-    const appLogout = vi.fn(() => pending.promise);
-    const target = document.createElement('div');
-    document.body.appendChild(target);
-    const component = mount(LogoutButton, {
-      target,
-      props: { logout: appLogout, redirectTo: 'AdminAppLogin', 'data-testid': 'app-logout' } as never
-    });
-    flushSync();
-    teardown.push(() => {
-      unmount(component);
-      target.remove();
-    });
-
-    target.querySelector<HTMLButtonElement>('[data-testid="app-logout"]')!.click();
-    await settle();
-    expect(appLogout).toHaveBeenCalledTimes(1);
-    expect(isNavigationHeld(), 'a navigation would wait for the sign-out').toBe(false);
-
-    const logError = vi.spyOn(log, 'error').mockImplementation(() => undefined);
-    pending.reject(new Error('the sign-out failed'));
-    await settle();
-    expect(goto).not.toHaveBeenCalled();
-    logError.mockRestore();
-  });
-
-  it('holds navigations while the sign-out of an app whose logout navigates runs', async () => {
+describe('LogoutButton — the navigations while a sign-out runs', () => {
+  it('holds navigations while the sign-out runs', async () => {
     const pending = held();
     logout.mockImplementationOnce(() => pending.promise);
     await pressLogout();

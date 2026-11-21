@@ -69,11 +69,6 @@ A code may be typed or pasted with or without separators and in either case. The
   const id = $derived(idProp ?? fallbackId);
 
   let field: Input | undefined = $state();
-
-  // `Input` takes an entry in when it is committed; the caller is handed every keystroke, exactly as typed.
-  function handleInput({ currentTarget }: { currentTarget: EventTarget & HTMLElement }): void {
-    if (currentTarget instanceof HTMLInputElement) value = currentTarget.value;
-  }
 </script>
 
 <Input
@@ -94,4 +89,4 @@ A code may be typed or pasted with or without separators and in either case. The
   {errorReason}
   onShadedBg
   containerProps={restProps}
-  oninput={handleInput} />
+  commitOn="input" />

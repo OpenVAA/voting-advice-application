@@ -78,7 +78,9 @@ function contextWith({
     context: {
       auth: { signInWithPassword, signOut, refreshSession },
       getSession: async () => ({ session, user }),
-      claimInvitations
+      claimInvitations,
+      // The session's grants reach the project here; the admission spec covers a grant in another project.
+      getProjectGrants: async () => (session ? readGrants(session.access_token) : [])
     },
     signInWithPassword,
     signOut,

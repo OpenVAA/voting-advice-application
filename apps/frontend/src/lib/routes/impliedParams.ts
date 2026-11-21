@@ -21,17 +21,10 @@ export function getImpliedElectionIds({
   elections?: Array<Election>;
   honourDisallowSelection?: boolean;
 }): Array<Id> | undefined {
-  // Filter to applicable elections.
-  // `getApplicableConstituency` throws when more than one of the passed constituencies match the election's groups, e.g. a municipality and its parent region for an election whose groups include both regions and municipalities. Such an election matches something in the selection, so the throw is treated as "applicable".
+  // Filter to applicable elections: those to which one or more of the selected constituencies apply.
   if (selectedConstituencyIds?.length) {
     const constituencies = selectedConstituencyIds.map((id) => dataRoot.getConstituency(id));
-    elections = elections.filter((e) => {
-      try {
-        return !!e.getApplicableConstituency(constituencies);
-      } catch {
-        return true;
-      }
-    });
+    elections = elections.filter((e) => e.getApplicableConstituencies(constituencies).length > 0);
   }
   // Elections can be implied if there is only one election or if the app settings disallow selection and the caller honours that setting
   if (elections.length === 1 || (honourDisallowSelection && appSettings.elections?.disallowSelection))

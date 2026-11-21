@@ -14,7 +14,7 @@ Internal to the `input` package — not exported from its barrel. See `./README.
 - Values are opaque strings: no numeric coercion, no dedup, no sorting, no case
   folding, no Unicode normalization.
 
-- When `multilingual`, each field and its language label carry `lang` set to their locale. Every field names `describedBy` in its `aria-describedby`.
+- When `multilingual`, each field and its language label carry `lang` set to their locale. Every field names `describedBy` in its `aria-describedby`, and is marked `aria-invalid` while `invalid`.
 
 ### Properties
 See `MultipleTextPart.type.ts`.
@@ -44,6 +44,7 @@ See `MultipleTextPart.type.ts`.
     minItems,
     maxItems,
     describedBy,
+    invalid,
     onChange
   }: MultipleTextPartProps = $props();
 
@@ -210,6 +211,7 @@ See `MultipleTextPart.type.ts`.
               lang={multilingual ? locale : undefined}
               aria-labelledby={multilingual ? `${id}-label ${id}-label-${index}-${locale}` : `${id}-label`}
               aria-describedby={describedBy}
+              aria-invalid={invalid ? 'true' : undefined}
               disabled={isDisabled}
               class={rowInputClass}
               bind:this={fields[index * fieldLocales.length + localeIndex]}

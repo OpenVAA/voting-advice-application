@@ -1,9 +1,11 @@
+import { API_ROOT } from '../api/base/universalApiRoutes';
+
 /**
  * The same-origin path the browser sends usage events to and the relay serves.
  *
  * The path is a plain descriptive name chosen to stay outside the usual blocker patterns. A content blocker may still block it, and nothing works around that, so every count the relay produces is a lower bound.
  */
-export const RELAY_PATH = '/api/usage';
+export const RELAY_PATH = `${API_ROOT}/usage`;
 
 /** The most events one batch may hold. */
 export const MAX_BATCH_EVENTS = 50;

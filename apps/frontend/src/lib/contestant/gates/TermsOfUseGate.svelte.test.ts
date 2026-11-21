@@ -8,17 +8,18 @@
  * 3. **A stored refusal is kept.** When this browser already holds `denied`, the box starts ticked, so accepting writes `denied` again.
  * 4. **The choice is written before the load is rerun.**
  * 5. **A rerun that fails after a recorded acceptance is not a failed save.** It is logged as the rerun's failure and the save-failed message is not shown.
+ * 6. **A failed acceptance gives the focus back to Continue** when the browser dropped it to the page body while Continue was disabled.
  */
 
 import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AnalyticsProjection } from '$lib/analytics/modes';
-import type { GateInput } from '$lib/contexts/app/tracking/gates';
+import type { SendPolicyInput } from '$lib/contexts/app/tracking/sendPolicy';
 import type { ConsentStatus } from '$lib/contexts/app/userPreferences.type';
 
 const { acceptTermsOfUse, box, context, invalidateAll, setDataConsent } = vi.hoisted(() => {
-  const box = { gate: undefined as unknown as GateInput };
+  const box = { policy: undefined as unknown as SendPolicyInput };
   const acceptTermsOfUse = vi.fn();
   const invalidateAll = vi.fn();
   const setDataConsent = vi.fn();
@@ -29,11 +30,11 @@ const { acceptTermsOfUse, box, context, invalidateAll, setDataConsent } = vi.hoi
     acceptTermsOfUse,
     setDataConsent,
     get appSettings() {
-      return { analytics: { trackEvents: box.gate.trackEvents } };
+      return { analytics: { trackEvents: box.policy.trackEvents } };
     },
-    analyticsGate: {
+    analyticsPolicy: {
       get current() {
-        return box.gate;
+        return box.policy;
       }
     }
   };
@@ -78,10 +79,10 @@ const TermsOfUseGate = (await import('./TermsOfUseGate.svelte')).default;
 
 const OPT_OUT = '[data-testid="terms-tracking-opt-out"]';
 
-/** A gate input with tracking on in gated mode, a provider configured, no Global Privacy Control and no stored choice, changed by `overrides`. */
-function gateInput(
-  overrides: Partial<Omit<GateInput, 'projection'>> & { projection?: Partial<AnalyticsProjection> } = {}
-): GateInput {
+/** A send-policy input with tracking on in gated mode, a provider configured, no Global Privacy Control and no stored choice, changed by `overrides`. */
+function policyInput(
+  overrides: Partial<Omit<SendPolicyInput, 'projection'>> & { projection?: Partial<AnalyticsProjection> } = {}
+): SendPolicyInput {
   const { projection, ...rest } = overrides;
   return {
     projection: { active: true, consentMode: 'gated', visitIdMode: 'memory', ...projection },
@@ -95,7 +96,7 @@ function gateInput(
 let teardown: Array<() => void> = [];
 
 beforeEach(() => {
-  box.gate = gateInput();
+  box.policy = policyInput();
   acceptTermsOfUse.mockResolvedValue({ type: 'success' });
   invalidateAll.mockResolvedValue(undefined);
 });
@@ -176,14 +177,14 @@ describe('TermsOfUseGate — the tracking opt-out', () => {
   it.each<ConsentStatus>(['granted', 'indetermined'])(
     'offers the box unticked when the stored choice is %s',
     (consent) => {
-      box.gate = gateInput({ consent });
+      box.policy = policyInput({ consent });
 
       expect(optOutOf(render())?.checked).toBe(false);
     }
   );
 
   it('offers the box ticked when this browser holds denied, so accepting writes denied again', async () => {
-    box.gate = gateInput({ consent: 'denied' });
+    box.policy = policyInput({ consent: 'denied' });
     const target = render();
 
     expect(optOutOf(target)?.checked).toBe(true);
@@ -195,12 +196,12 @@ describe('TermsOfUseGate — the tracking opt-out', () => {
   });
 
   it.each([
-    { name: 'trackEvents is off', input: () => gateInput({ trackEvents: false }) },
-    { name: 'the consent mode is free', input: () => gateInput({ projection: { consentMode: 'free' } }) },
-    { name: 'Global Privacy Control is set', input: () => gateInput({ globalPrivacyControl: true }) },
-    { name: 'no provider is configured', input: () => gateInput({ projection: { active: false } }) }
+    { name: 'trackEvents is off', input: () => policyInput({ trackEvents: false }) },
+    { name: 'the consent mode is free', input: () => policyInput({ projection: { consentMode: 'free' } }) },
+    { name: 'Global Privacy Control is set', input: () => policyInput({ globalPrivacyControl: true }) },
+    { name: 'no provider is configured', input: () => policyInput({ projection: { active: false } }) }
   ])('shows no box and writes nothing on acceptance when $name', async ({ input }) => {
-    box.gate = input();
+    box.policy = input();
     const target = render();
 
     expect(optOutOf(target)).toBeNull();
@@ -250,6 +251,29 @@ describe('TermsOfUseGate — a rerun that fails after the acceptance is recorded
     expect(logError.mock.calls[0][0]).toMatch(/rerun/);
     const submit = target.querySelector<HTMLButtonElement>('[data-testid="terms-of-use-submit"]');
     expect(submit?.textContent, 'Continue leaves its loading state').not.toContain('common.loading');
+  });
+});
+
+describe('TermsOfUseGate — the focus after a failed acceptance', () => {
+  it('moves the focus back to Continue when it fell to the page body', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => undefined);
+    // jsdom keeps the focus on a button that becomes disabled; a browser may not, so the drop is made here by hand.
+    acceptTermsOfUse.mockImplementation(async () => {
+      (document.activeElement as HTMLElement | null)?.blur();
+      throw new Error('save failed');
+    });
+    const target = render();
+    const terms = target.querySelector<HTMLInputElement>('[data-testid="terms-checkbox"]');
+    setChecked(terms!, true);
+    const submit = target.querySelector<HTMLButtonElement>('[data-testid="terms-of-use-submit"]');
+    expect(submit, 'the Continue button should be rendered').not.toBeNull();
+
+    submit!.focus();
+    submit!.click();
+    await settle();
+
+    expect(target.querySelector('[data-testid="tou-save-error"]'), 'the failure is reported').not.toBeNull();
+    expect(document.activeElement).toBe(submit);
   });
 });
 

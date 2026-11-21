@@ -9,7 +9,7 @@
  *
  * ## What it keeps
  *
- * Only events rebuilt from the fields the closed vocabulary admits. The pageview is built here from the batch's route id and locale, its allowed parameters and a coarsened duration, and it never has an id. Every other event keeps its visit id only when the deployment's modes allow it and the id is a current UUIDv7, whatever the browser sent.
+ * Only events rebuilt from the fields the closed vocabulary admits. The pageview is built here from the batch's route id and locale, its allowed parameters and a coarsened duration, and it never has a visit id. Every other event keeps its visit id only when the deployment's modes allow it and the visit id is a current UUIDv7, whatever the browser sent.
  *
  * ## When it answers
  *
@@ -27,6 +27,7 @@ import {
 import { isSensitiveEvent } from '$lib/analytics/events.schema';
 import { allowedPageviewParams } from '$lib/analytics/pageviewRoutes';
 import { isUuidV7, uuidV7TimestampMs } from '$lib/analytics/uuidv7';
+import { isJsonRequest, isSameOriginRequest } from '$lib/server/http/sameOriginJson';
 import type { AnalyticsEvent } from '$lib/analytics/analyticsEvent.type';
 import type { WireEvent } from '$lib/analytics/events.schema';
 import type { AnalyticsApp } from '$lib/analytics/modes';
@@ -53,9 +54,6 @@ export type RelayDeps = {
 /** The statuses the relay answers with: 204 accepted or dropped silently, 400 not a valid batch, 403 not same-origin, 413 too large, 415 not JSON. */
 export type RelayStatus = 204 | 400 | 403 | 413 | 415;
 
-/** The only media type the relay reads. */
-const JSON_MEDIA_TYPE = 'application/json';
-
 /** The outcome of reading the body: its text, or the status to refuse it with. */
 type BodyRead = { text: string } | { status: 400 | 413 };
 
@@ -77,8 +75,8 @@ export async function relay(
 
   const { headers } = request;
   if (headers.get('sec-gpc') !== null) return 204;
-  if (!isSameOrigin(headers.get('sec-fetch-site'), headers.get('origin'), origin)) return 403;
-  if (mediaType(headers.get('content-type')) !== JSON_MEDIA_TYPE) return 415;
+  if (!isSameOriginRequest(headers, origin)) return 403;
+  if (!isJsonRequest(headers)) return 415;
   const declaredLength = headers.get('content-length');
   if (declaredLength !== null && Number(declaredLength) > MAX_BODY_BYTES) return 413;
 
@@ -105,27 +103,6 @@ export async function relay(
   const context: BuildContext = { config, app, routeId: batch.routeId, locale: batch.locale, receivedAt };
   enqueue(batch.events.map((event) => buildEvent(event, context)));
   return 204;
-}
-
-/**
- * Whether the request comes from a page of this origin: by `Sec-Fetch-Site` when the browser sent it, otherwise by `Origin`.
- *
- * @param fetchSite - The `Sec-Fetch-Site` value, or `null`.
- * @param requestOrigin - The `Origin` value, or `null`.
- * @param ownOrigin - The server's own origin.
- */
-function isSameOrigin(fetchSite: string | null, requestOrigin: string | null, ownOrigin: string): boolean {
-  if (fetchSite !== null) return fetchSite === 'same-origin';
-  return requestOrigin !== null && requestOrigin === ownOrigin;
-}
-
-/**
- * The media type of a `Content-Type` value: the part before any parameter, trimmed and in lower case.
- *
- * @param contentType - The header value, or `null`.
- */
-function mediaType(contentType: string | null): string | undefined {
-  return contentType?.split(';', 1)[0].trim().toLowerCase();
 }
 
 /**
@@ -197,8 +174,8 @@ function buildEvent(event: WireEvent, { config, app, routeId, locale, receivedAt
     };
   }
   const built: AnalyticsEvent = { name: event.name, time, app, attributes: { ...event.attributes } };
-  const id = keptId(event, config, receivedAt);
-  if (id !== undefined) built.id = id;
+  const visitId = keptVisitId(event, config, receivedAt);
+  if (visitId !== undefined) built.visitId = visitId;
   return built;
 }
 
@@ -208,21 +185,21 @@ function buildEvent(event: WireEvent, { config, app, routeId, locale, receivedAt
  * @param event - An event other than the pageview.
  * @param config - The configuration, for its two modes.
  * @param receivedAt - The relay's clock.
- * @returns The id, or `undefined` when the event has none or must not keep it.
+ * @returns The visit id, or `undefined` when the event has none or must not keep it.
  */
-function keptId(
+function keptVisitId(
   event: Exclude<WireEvent, { name: 'pageview' }>,
   config: AnalyticsConfig,
   receivedAt: number
 ): string | undefined {
-  const { id } = event;
-  if (id === undefined) return undefined;
+  const { visitId } = event;
+  if (visitId === undefined) return undefined;
   if (config.visitIdMode !== 'memory') return undefined;
   if (config.consentMode === 'free' && isSensitiveEvent(event.name)) return undefined;
-  if (!isUuidV7(id)) return undefined;
-  // A negated comparison, so that a NaN timestamp removes the id too.
-  if (!(Math.abs(receivedAt - uuidV7TimestampMs(id)) <= MAX_VISIT_ID_SKEW_MS)) return undefined;
-  return id;
+  if (!isUuidV7(visitId)) return undefined;
+  // A negated comparison, so that a NaN timestamp removes the visit id too.
+  if (!(Math.abs(receivedAt - uuidV7TimestampMs(visitId)) <= MAX_VISIT_ID_SKEW_MS)) return undefined;
+  return visitId;
 }
 
 /**
