@@ -1,7 +1,7 @@
 /**
  * The screen that takes an email address for a registration code, mounted for real with its real fields against a fake contestant context.
  *
- * The fake context's `entryFlow` is reactive behind a getter and replaced whole on every write, as the real accessor is. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `entryFlow` is reactive behind a getter and replaced whole on every write, as the real accessor is. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -14,6 +14,7 @@
 import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { EntryFlow, EntryHeldCode, EntryHeldRequest } from '$lib/auth/entryFlow';
 import type { RouteOptions } from '$lib/routes';
@@ -23,18 +24,17 @@ const { goto, sendEntryLink } = vi.hoisted(() => ({ goto: vi.fn(), sendEntryLink
 // The other members stay the resolvable stubs: components the page reaches import them too.
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
 
-/** What the fake context holds. Replaced whole on every write, never changed in place. */
-let heldFlow = $state.raw<EntryFlow | undefined>(undefined);
-
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  sendEntryLink,
-  appSettings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } },
-  get entryFlow() {
-    return heldFlow;
-  }
-};
+/** What the fake context holds. Its entry flow is replaced whole on every write, never changed in place. */
+const { context, box } = fakeContestantContext(
+  {
+    entryFlow: undefined as EntryFlow | undefined,
+    appSettings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } }
+  },
+  () => ({
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    sendEntryLink
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -101,7 +101,7 @@ function flowWith(status: EntryHeldCode['status']): EntryFlow {
 let teardown: Array<() => void> = [];
 
 beforeEach(() => {
-  heldFlow = undefined;
+  box.set({ entryFlow: undefined });
   goto.mockResolvedValue(undefined);
   sendEntryLink.mockResolvedValue(undefined);
   // Every message shown is also logged as an error: keep the log out of the test output.
@@ -121,7 +121,7 @@ afterEach(() => {
  * @returns The element the page was mounted into.
  */
 function renderUnmounted(held: EntryFlow | undefined): HTMLElement {
-  heldFlow = held;
+  box.set({ entryFlow: held });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(EmailEntryPage, { target, props: {} as never });
@@ -219,7 +219,7 @@ describe('without a valid code held', () => {
 
   it('leaves the screen when the held code goes while it is shown', () => {
     const target = render();
-    heldFlow = undefined;
+    box.set({ entryFlow: undefined });
     flushSync();
     expect(target.querySelector(FRAME)).toBeNull();
     expect(goto).toHaveBeenCalledTimes(1);

@@ -1,7 +1,7 @@
 /**
  * The login screen, mounted for real against a fake contestant context.
  *
- * The fake context's `t` returns its key, its `getRoute` builds routes with the real `buildRoute` over the stubbed page's address, as the real one does, and its `appSettings` and `answersLocked` are reactive behind getters, as the real accessors are. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `t` returns its key, its `getRoute` builds routes with the real `buildRoute` over the stubbed page's address, as the real one does, and its `appSettings` and `answersLocked` are reactive behind getters, as the real accessors are. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -17,6 +17,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
@@ -27,26 +28,21 @@ vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal
 
 type Modes = Array<'identity_provider' | 'email' | 'code'>;
 
-const settings = $state<{
-  entityTypes: Array<'candidate' | 'organization'>;
-  candidate: Modes;
-  organization: Modes;
-  answersLocked: boolean;
-  voterApp: boolean;
-}>({
-  entityTypes: ['candidate', 'organization'],
-  candidate: ['email', 'code'],
-  organization: [],
+/** The settings the fake context answers with, as the facts the cases vary. */
+const DEFAULT_SETTINGS = {
+  entityTypes: ['candidate', 'organization'] as Array<'candidate' | 'organization'>,
+  candidate: ['email', 'code'] as Modes,
+  organization: [] as Modes,
   answersLocked: false,
   voterApp: false
-});
+};
 
-const context = {
-  t: (key: string) => key,
+const { context, box } = fakeContestantContext(DEFAULT_SETTINGS, (held) => ({
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {}, url: page.url }) },
   appCustomization: { current: {} },
   darkMode: { current: false },
   get appSettings() {
+    const settings = held.current;
     return {
       contestantApp: {
         servedEntityTypes: Object.fromEntries(
@@ -55,11 +51,8 @@ const context = {
       },
       access: { contestantEditing: settings.answersLocked ? 'locked' : 'open', voterApp: settings.voterApp }
     };
-  },
-  get answersLocked() {
-    return settings.answersLocked;
   }
-};
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -121,11 +114,7 @@ function setAddress(address: string): void {
 }
 
 beforeEach(() => {
-  settings.entityTypes = ['candidate', 'organization'];
-  settings.candidate = ['email', 'code'];
-  settings.organization = [];
-  settings.answersLocked = false;
-  settings.voterApp = false;
+  box.current = DEFAULT_SETTINGS;
   setAddress(LOGIN_ADDRESS);
   goto.mockResolvedValue(undefined);
   // Every message shown is also logged as an error: keep the log out of the test output.
@@ -208,7 +197,7 @@ describe('the frame', () => {
   });
 
   it('names the app after the entity types the project serves', () => {
-    settings.entityTypes = ['organization'];
+    box.set({ entityTypes: ['organization'] });
     const target = render();
     expect(one(target, 'h1').textContent?.trim()).toBe('dynamic.contestantAppName.organization');
   });
@@ -256,14 +245,14 @@ describe('the entries', () => {
     ['the code mode alone', ['code']],
     ["the identity provider's mode alone", ['identity_provider']]
   ])('offers Register for %s', (_, modes) => {
-    settings.candidate = modes;
+    box.set({ candidate: modes });
     const target = render();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('true');
     expect(target.querySelectorAll(REGISTER)).toHaveLength(1);
   });
 
   it('offers sign-in alone where no mode is listed: no Register, no "Or" and nothing in their place', () => {
-    settings.candidate = [];
+    box.set({ candidate: [] });
     const target = render();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('false');
     expect(one(target, SIGN_IN).getAttribute('href')).toBe(SIGN_IN_ROUTE);
@@ -275,18 +264,17 @@ describe('the entries', () => {
   });
 
   it("offers Register where the identity provider's mode is allowed for organizations alone", () => {
-    settings.candidate = [];
-    settings.organization = ['identity_provider'];
+    box.set({ candidate: [], organization: ['identity_provider'] });
     const target = render();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('true');
     expect(one(target, REGISTER).getAttribute('href')).toBe(REGISTER_ROUTE);
   });
 
   it('follows the registration modes when they change', () => {
-    settings.candidate = [];
+    box.set({ candidate: [] });
     const target = render();
     expect(target.querySelector(REGISTER)).toBeNull();
-    settings.candidate = ['code'];
+    box.set({ candidate: ['code'] });
     flushSync();
     expect(one(target, FRAME).getAttribute('data-register-offered')).toBe('true');
     expect(target.querySelectorAll(REGISTER)).toHaveLength(1);
@@ -294,7 +282,7 @@ describe('the entries', () => {
   });
 
   it('leads nowhere else: not to the forgot-password page', () => {
-    settings.candidate = ['identity_provider', 'email', 'code'];
+    box.set({ candidate: ['identity_provider', 'email', 'code'] });
     const target = render();
     const addresses = Array.from(target.querySelectorAll('a[href]')).map((link) => link.getAttribute('href'));
     expect(addresses).not.toContain(buildRoute({ route: 'ContestantAppForgotPassword' }, { params: {} }));
@@ -306,7 +294,7 @@ describe('the entries', () => {
 
 describe('while answers are locked', () => {
   it('says so under the title, and offers sign-in alone', () => {
-    settings.answersLocked = true;
+    box.set({ answersLocked: true });
     const target = render();
     const frame = one(target, FRAME);
     expect(frame.getAttribute('data-answers-locked')).toBe('true');
@@ -327,7 +315,7 @@ describe('while answers are locked', () => {
 
   it('follows the answers lock when it changes', () => {
     const target = render();
-    settings.answersLocked = true;
+    box.set({ answersLocked: true });
     flushSync();
     expect(one(target, FRAME).getAttribute('data-answers-locked')).toBe('true');
     expect(target.querySelectorAll(LOCKED_INFO)).toHaveLength(1);
@@ -498,7 +486,7 @@ describe('the links under the entries', () => {
   it('leads to the voter app only where it is accessible', () => {
     const target = render();
     expect(target.querySelector(VOTER_APP)).toBeNull();
-    settings.voterApp = true;
+    box.set({ voterApp: true });
     flushSync();
     one(target, VOTER_APP).click();
     expect(goto).toHaveBeenCalledWith(buildRoute({ route: 'Home' }, { params: {} }), { invalidateAll: true });

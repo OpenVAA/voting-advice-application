@@ -11,7 +11,7 @@
  * 6. **A save that is not stored.** Which of its four messages the page shows, or the note that nominations can no longer be changed because answers are locked, that the message is the page's own, what becomes of the cards and of what was typed, where focus is, and that the page navigates nowhere. And a re-read that led away from the page: nothing further when it led out of the editor, the nominations view when a stored save's re-read led to another step.
  * 7. **Leaving.** The navigation guard asks while the draft differs from what is stored, and not for an untouched set, after Cancel or while a save is under way.
  *
- * The fake context's members are reactive behind getters over one raw state box, as the real accessors are, its data root is a real `DataRoot`, and its two nomination functions are spies. The page state is the suite's stub, whose route a case sets, and the navigation guards the page registers are kept so that a case can run them as a navigation does. The page's data is what the step's real load answers for the same elections, nominations and address, with the facts of the nominations beside it. No entity is listed as a parent option, so every option of a parent group is a plain row. Messages are their keys, followed by their payload when they have one, and a route is the options it was asked for.
+ * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are, its data root is a real `DataRoot`, and its two nomination functions are spies. The page state is the suite's stub, whose route a case sets, and the navigation guards the page registers are kept so that a case can run them as a navigation does. The page's data is what the step's real load answers for the same elections, nominations and address, with the facts of the nominations beside it. No entity is listed as a parent option, so every option of a parent group is a plain row. Messages are their keys, followed by their payload when they have one, and a route is the options it was asked for.
  */
 
 import { dynamicSettings, log, staticSettings } from '@openvaa/app-shared';
@@ -19,6 +19,7 @@ import { DataRoot, NOMINATION_SHAPE } from '@openvaa/data';
 import { flushSync, mount, tick, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { ROUTE } from '$lib/routes';
 import { load } from './+page';
 import type { ElectionData } from '@openvaa/data';
@@ -153,8 +154,6 @@ const EMPTY_BOX: Box = {
   taskState: NOT_KNOWN
 };
 
-let box = $state.raw<Box>(EMPTY_BOX);
-
 const goto = vi.fn<(address: string) => Promise<void>>();
 const invalidateAll = vi.fn<() => Promise<void>>();
 const setEntityNominations =
@@ -169,32 +168,14 @@ const getNominationParentOptions = vi.fn<(contests: ReadonlyArray<NominationCont
 /** The guards the page registered for a navigation away from it. */
 const guards: Array<(navigation: { cancel: () => void }) => void> = [];
 
-const context = {
+const { context, box } = fakeContestantContext(EMPTY_BOX, (held) => ({
   t: (key: string, payload?: Record<string, unknown>) => (payload ? `${key} ${JSON.stringify(payload)}` : key),
   getRoute: { current: (options: RouteOptions) => JSON.stringify(options) },
-  setDataRoot: (updater: (dataRoot: DataRoot) => void) => updater(box.dataRoot),
+  setDataRoot: (updater: (dataRoot: DataRoot) => void) => updater(held.current.dataRoot),
   setEntityNominations: (nominations: ReadonlyArray<DesiredNomination>, readFrom: ReadonlyArray<EntityNomination>) =>
     setEntityNominations(nominations, readFrom),
-  getNominationParentOptions: (contests: ReadonlyArray<NominationContest>) => getNominationParentOptions(contests),
-  get appSettings() {
-    return box.appSettings;
-  },
-  get dataRoot() {
-    return box.dataRoot;
-  },
-  get locale() {
-    return box.locale;
-  },
-  get nominations() {
-    return box.nominations;
-  },
-  get selectedEntity() {
-    return box.selectedEntity;
-  },
-  get taskState() {
-    return box.taskState;
-  }
-};
+  getNominationParentOptions: (contests: ReadonlyArray<NominationContest>) => getNominationParentOptions(contests)
+}));
 
 vi.mock('$app/navigation', () => ({
   goto: (address: string) => goto(address),
@@ -301,7 +282,7 @@ afterEach(() => {
   teardown = [];
   guards.length = 0;
   page.route.id = null;
-  box = EMPTY_BOX;
+  box.current = EMPTY_BOX;
   vi.restoreAllMocks();
   vi.resetAllMocks();
 });
@@ -368,7 +349,7 @@ async function render(world: World): Promise<HTMLElement> {
 /** Mount the page in a world, wait until its cards are shown, and hand over the function that takes the page away, as a navigation to another page does. */
 async function renderRemovable(world: World): Promise<{ root: HTMLElement; takeAway: () => void }> {
   const data = await pageDataOf(world);
-  box = {
+  box.current = {
     ...EMPTY_BOX,
     selectedEntity: world.entity ?? PARTY,
     dataRoot: dataRootOf(),
@@ -585,7 +566,7 @@ describe('which cards there are', () => {
 
   it('builds no card and reads no option while the nominations of the entity are not known', async () => {
     const data = await pageDataOf({ nominations: [REGIONAL], elections: ['regional'], constituencies: ['region-1'] });
-    box = { ...EMPTY_BOX, selectedEntity: PARTY, dataRoot: dataRootOf(), nominations: undefined };
+    box.current = { ...EMPTY_BOX, selectedEntity: PARTY, dataRoot: dataRootOf(), nominations: undefined };
     const target = document.createElement('div');
     document.body.appendChild(target);
     const component = mount(Page, { target, props: { data: data as never } });
@@ -599,7 +580,7 @@ describe('which cards there are', () => {
     expect(count(target, CARD)).toBe(0);
     expect(getNominationParentOptions).not.toHaveBeenCalled();
 
-    box = { ...box, nominations: [REGIONAL] };
+    box.set({ nominations: [REGIONAL] });
     await settled(target);
     expect(summaryOf(target)).toEqual([['Regional', 'Region 1', 'kept']]);
   });
@@ -608,7 +589,7 @@ describe('which cards there are', () => {
     const root = await render({ nominations: [NATIONAL], elections: ['national'] });
     commit(one<HTMLInputElement>(root, SYMBOL), '99');
 
-    box = { ...box, nominations: [{ ...NATIONAL }] };
+    box.set({ nominations: [{ ...NATIONAL }] });
     await afterPress();
 
     expect(one<HTMLInputElement>(root, SYMBOL).value).toBe('99');
@@ -621,7 +602,7 @@ describe('a name a card cannot be shown with', () => {
     const logged = vi.spyOn(log, 'error').mockImplementation(() => undefined);
     const stray = nomination('nomination-stray', 'national', 'constituency-not-in-the-data');
     const data = await pageDataOf({ nominations: [stray], elections: ['national'] });
-    box = {
+    box.current = {
       ...EMPTY_BOX,
       selectedEntity: PARTY,
       dataRoot: dataRootOf(),
@@ -861,7 +842,7 @@ describe('the main button', () => {
     const root = await render(STORED);
     commit(one<HTMLInputElement>(cardsOf(root)[1], SYMBOL), '22');
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, taskState };
+      box.set({ taskState });
     });
 
     await press(root, SUBMIT);
@@ -975,7 +956,7 @@ describe('what the main button says', () => {
     const root = await render(STORED);
     expect(buttonOf(root)).toEqual({ label: 'common.continue', action: 'continue' });
 
-    box = { ...box, taskState: NOTHING_LEFT };
+    box.set({ taskState: NOTHING_LEFT });
     flushSync();
     expect(buttonOf(root)).toEqual({ label: 'common.return', action: 'return' });
   });
@@ -986,7 +967,7 @@ describe('what the main button says', () => {
     commit(symbol, '22');
     expect(buttonOf(root)).toEqual({ label: 'common.saveAndContinue', action: 'continue' });
 
-    box = { ...box, taskState: NOTHING_LEFT };
+    box.set({ taskState: NOTHING_LEFT });
     flushSync();
     expect(buttonOf(root)).toEqual({ label: 'common.saveAndReturn', action: 'return' });
 
@@ -1035,7 +1016,7 @@ describe('a save that is not stored', () => {
   /** The re-read that follows a save: the context holds the nominations given, as new objects. */
   function rereadAs(nominations: Array<EntityNomination>): void {
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, nominations: nominations.map((row) => ({ ...row })) };
+      box.set({ nominations: nominations.map((row) => ({ ...row })) });
     });
   }
 

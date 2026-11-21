@@ -16,28 +16,25 @@
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
 
-const { box, context, invalidateAll, register } = vi.hoisted(() => {
-  /** Reads the user-level data; pointed at a reactive value once the module's runes are available. */
-  const box = { readUser: (): BasicUserData | undefined => undefined };
-  const invalidateAll = vi.fn();
-  const register = vi.fn<DataWriter['registerIdentityProviderAccount']>();
-  /** A message with a payload renders as its key followed by the payload. */
-  function t(key: string, payload?: Record<string, unknown>): string {
-    return payload ? `${key} ${JSON.stringify(payload)}` : key;
-  }
-  const context = {
-    t,
-    getRoute: { current: (route: string) => `/route/${route}` },
-    setPassword: vi.fn(),
-    registerIdentityProviderAccount: register,
-    get user() {
-      return box.readUser();
-    }
-  };
-  return { box, context, invalidateAll, register };
-});
+const { invalidateAll, register } = vi.hoisted(() => ({
+  invalidateAll: vi.fn(),
+  register: vi.fn<DataWriter['registerIdentityProviderAccount']>()
+}));
+
+/** A message with a payload renders as its key followed by the payload. */
+function t(key: string, payload?: Record<string, unknown>): string {
+  return payload ? `${key} ${JSON.stringify(payload)}` : key;
+}
+
+// The box's `user` is the user-level data the fake context answers with, reactive as the real accessor is.
+const { context, box } = fakeContestantContext({ user: undefined as BasicUserData | undefined }, () => ({
+  t,
+  setPassword: vi.fn(),
+  registerIdentityProviderAccount: register
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -88,10 +85,6 @@ if (typeof window.matchMedia !== 'function') {
 }
 
 const Page = (await import('./+page.svelte')).default;
-
-/** The user-level data the fake context answers with, reactive as the real accessor is. */
-let currentUser = $state.raw<BasicUserData | undefined>(undefined);
-box.readUser = () => currentUser;
 
 const PENDING = 'waiting@example.org';
 const PROVED = 'proved@example.org';
@@ -160,7 +153,7 @@ afterEach(() => {
 
 /** Mount the page for a user. */
 function render(user: BasicUserData | undefined): HTMLElement {
-  currentUser = user;
+  box.set({ user });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(Page, { target, props: {} });
@@ -326,7 +319,7 @@ describe('the settings page — another address', () => {
     expect(requests()).toEqual([{ intent: 'save', email: TYPED }]);
     expect(invalidateAll).toHaveBeenCalledTimes(1);
 
-    currentUser = userWith({ address: { state: 'pending', email: TYPED } });
+    box.set({ user: userWith({ address: { state: 'pending', email: TYPED } }) });
     flushSync();
     expect(addressControl(target).value).toBe(TYPED);
     expect(target.querySelector(SEL.entryEmail)).toBeNull();
@@ -351,7 +344,7 @@ describe('the settings page — another address', () => {
     type(one<HTMLInputElement>(target, SEL.entryEmail), TYPED);
     type(one<HTMLInputElement>(target, SEL.entryConfirmation), TYPED);
     await press(target, SEL.save);
-    currentUser = userWith({ address: { state: 'pending', email: TYPED } });
+    box.set({ user: userWith({ address: { state: 'pending', email: TYPED } }) });
     flushSync();
 
     expect(target.querySelector(SEL.entryEmail)).toBeNull();

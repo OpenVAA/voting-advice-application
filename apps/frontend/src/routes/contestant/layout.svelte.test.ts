@@ -1,11 +1,12 @@
 /**
  * The Contestant App's outermost layout, mounted for real against a fake contestant context and a fake page, with the real `Alert` below it.
  *
- * What this file holds: when the layout withdraws the message that a sign-out could not be confirmed. While the session reads as alive and the route is no entry route of the app's gate the message stays. On an entry route, or once the session reads as gone, the layout asks the context to clear it. The context's flags and the page's route are rune state behind getters, as the real accessors are.
+ * What this file holds: when the layout withdraws the message that a sign-out could not be confirmed. While the session reads as alive and the route is no entry route of the app's gate the message stays. On an entry route, or once the session reads as gone, the layout asks the context to clear it. The context is the shared `fakeContestantContext`, whose flags are raw state behind getters, as the real accessors are, and the page's route is rune state behind a getter.
  */
 
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { APP_GATES } from '$lib/routes/appGates';
 import { ROUTE } from '$lib/routes/route';
 
@@ -19,16 +20,19 @@ const ENTRY_ROUTES = APP_GATES.find((gate) => gate.loginRoute === 'ContestantApp
 
 const MESSAGE = 'common.logoutFailed';
 
-const state = $state({
-  logoutFailed: false,
-  isAuthenticated: true,
-  routeId: PROTECTED_ROUTE as string | null
-});
+/** The page's route, rune state behind a getter of the stubbed page. */
+const state = $state({ routeId: PROTECTED_ROUTE as string | null });
 
-/** What the real context does when the flag is cleared, as a spy. */
-const clearLogoutFailure = vi.fn(() => {
-  state.logoutFailed = false;
-});
+/** The context's flags as they are before a case changes them. */
+const SIGNED_IN = { logoutFailed: false, isAuthenticated: true };
+
+const { context, box } = fakeContestantContext(SIGNED_IN, (held) => ({
+  /** What the real context does when the flag is cleared, as a spy. */
+  clearLogoutFailure: vi.fn(() => {
+    held.set({ logoutFailed: false });
+  })
+}));
+const { clearLogoutFailure } = context;
 
 vi.mock('$app/state', () => ({
   page: {
@@ -51,17 +55,7 @@ vi.mock('$lib/contexts/app', () => ({
   })
 }));
 
-vi.mock('$lib/contexts/contestant', () => ({
-  initContestantContext: () => ({
-    clearLogoutFailure,
-    get logoutFailed() {
-      return state.logoutFailed;
-    },
-    get isAuthenticated() {
-      return state.isAuthenticated;
-    }
-  })
-}));
+vi.mock('$lib/contexts/contestant', () => ({ initContestantContext: () => context }));
 
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({ t: (key: string) => key, darkMode: { current: false } })
@@ -105,14 +99,13 @@ afterEach(() => {
   teardown?.();
   teardown = undefined;
   clearLogoutFailure.mockClear();
-  state.logoutFailed = false;
-  state.isAuthenticated = true;
+  box.current = SIGNED_IN;
   state.routeId = PROTECTED_ROUTE;
 });
 
 describe('the contestant layout and the message of a failed sign-out', () => {
   it('shows the message and leaves it there while the session reads as alive on a protected route', () => {
-    state.logoutFailed = true;
+    box.set({ logoutFailed: true });
 
     const target = mountLayout();
 
@@ -121,7 +114,7 @@ describe('the contestant layout and the message of a failed sign-out', () => {
   });
 
   it('leaves the message there across a route change while the session reads as alive', () => {
-    state.logoutFailed = true;
+    box.set({ logoutFailed: true });
     const target = mountLayout();
 
     state.routeId = OTHER_PROTECTED_ROUTE;
@@ -138,7 +131,7 @@ describe('the contestant layout and the message of a failed sign-out', () => {
   it.each(ENTRY_ROUTES)(
     'withdraws the message on the entry route %s, where only a request with no session arrives, though the page data still reads as signed in',
     (entryRoute) => {
-      state.logoutFailed = true;
+      box.set({ logoutFailed: true });
       const target = mountLayout();
 
       state.routeId = ROUTE[entryRoute];
@@ -152,7 +145,7 @@ describe('the contestant layout and the message of a failed sign-out', () => {
   it.each([ROUTE.ContestantAppHelp, ROUTE.ContestantAppPrivacy, ROUTE.ContestantAppForgotPassword])(
     'leaves the message on %s, which has no server load and is no entry route, so nothing there can tell whether the session has gone',
     (route) => {
-      state.logoutFailed = true;
+      box.set({ logoutFailed: true });
       const target = mountLayout();
 
       state.routeId = route;
@@ -164,7 +157,7 @@ describe('the contestant layout and the message of a failed sign-out', () => {
   );
 
   it('leaves the message on the "email sent" screen, which is no entry route, while the page data reads as signed in', () => {
-    state.logoutFailed = true;
+    box.set({ logoutFailed: true });
     const target = mountLayout();
 
     state.routeId = ROUTE.ContestantAppEmailSent;
@@ -175,10 +168,10 @@ describe('the contestant layout and the message of a failed sign-out', () => {
   });
 
   it('withdraws the message on a protected route once the session reads as gone', () => {
-    state.logoutFailed = true;
+    box.set({ logoutFailed: true });
     const target = mountLayout();
 
-    state.isAuthenticated = false;
+    box.set({ isAuthenticated: false });
     flushSync();
 
     expect(clearLogoutFailure).toHaveBeenCalledTimes(1);
@@ -187,7 +180,7 @@ describe('the contestant layout and the message of a failed sign-out', () => {
 
   it('asks nothing of the context on the login route when no sign-out has failed', () => {
     state.routeId = ROUTE.ContestantAppLogin;
-    state.isAuthenticated = false;
+    box.set({ isAuthenticated: false });
 
     mountLayout();
 

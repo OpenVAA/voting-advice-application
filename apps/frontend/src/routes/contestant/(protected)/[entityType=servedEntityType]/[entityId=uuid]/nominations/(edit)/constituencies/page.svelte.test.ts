@@ -9,7 +9,7 @@
  * 4. **An entity that has nominations.** The constituency of its one nomination in an election is selected on arrival. An election in which it holds several nominations has no selector: a section headed by the election says that they are kept, and the selector is given the other elections alone.
  * 5. **An organization.** It chooses several constituencies in one election, each with a checkbox: every stored constituency is checked on arrival, no election is kept, and Continue goes on with every checked constituency once each election has one.
  *
- * The fake context's members are reactive behind getters over one raw state box, as the real accessors are, and its data root is a real `DataRoot`. The page's data is what the step's real load answers for the same elections, settings, nominations and address. A constituency is selected as a user selects it: the selector's field is focused and an option of its list is pressed. Messages are their keys, and a route is the options it was asked for.
+ * The fake context is the shared `fakeContestantContext`: its members are reactive behind getters over one raw state box, as the real accessors are, and its data root is a real `DataRoot`. The page's data is what the step's real load answers for the same elections, settings, nominations and address. A constituency is selected as a user selects it: the selector's field is focused and an option of its list is pressed. Messages are their keys, and a route is the options it was asked for.
  */
 
 import { dynamicSettings, staticSettings } from '@openvaa/app-shared';
@@ -17,6 +17,7 @@ import { DataRoot, NOMINATION_SHAPE } from '@openvaa/data';
 import { flushSync, mount, tick, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { admissibleElectionsOf } from '$lib/contestant/nominations';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { load } from './+page';
 import type { ElectionData } from '@openvaa/data';
 import type { UserEntity } from '$lib/api/base/dataWriter.type';
@@ -88,23 +89,11 @@ function settingsOf(startFromConstituencyGroup?: string): AppSettings {
 
 const EMPTY_BOX: Box = { selectedEntity: undefined, dataRoot: new DataRoot(), appSettings: settingsOf() };
 
-let box = $state.raw<Box>(EMPTY_BOX);
-
 const goto = vi.fn(async (_address: string) => undefined);
 
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => JSON.stringify(options) },
-  get appSettings() {
-    return box.appSettings;
-  },
-  get dataRoot() {
-    return box.dataRoot;
-  },
-  get selectedEntity() {
-    return box.selectedEntity;
-  }
-};
+const { context, box } = fakeContestantContext(EMPTY_BOX, () => ({
+  getRoute: { current: (options: RouteOptions) => JSON.stringify(options) }
+}));
 
 vi.mock('$app/navigation', () => ({ goto: (address: string) => goto(address) }));
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
@@ -161,7 +150,7 @@ beforeEach(() => {
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  box = EMPTY_BOX;
+  box.current = EMPTY_BOX;
   vi.restoreAllMocks();
   vi.resetAllMocks();
 });
@@ -210,7 +199,7 @@ async function pageDataOf(world: World, { electionIds, constituencyIds }: Nomina
 /** Mount the page in a world, with the data the step's load answers for the selection of its address. */
 async function render(world: World, selection: NominationSelection): Promise<HTMLElement> {
   const data = await pageDataOf(world, selection);
-  box = {
+  box.current = {
     selectedEntity: world.entity ?? CANDIDATE,
     dataRoot: world.emptyDataRoot ? new DataRoot() : dataRootOf(world.municipalShape),
     appSettings: settingsOf(world.startFromConstituencyGroup)

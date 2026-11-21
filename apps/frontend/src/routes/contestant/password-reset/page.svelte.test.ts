@@ -1,7 +1,7 @@
 /**
  * The password-reset page, mounted for real with the real password setter and support block against a fake contestant context.
  *
- * The page is given the data its server load returns: the address of the signed-in user. The fake context's `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. `$app/state` is replaced by a page whose address holds a `code` and a link `type`, and which counts every read of it. Assertions are on the DOM rather than on component state.
+ * The page is given the data its server load returns: the address of the signed-in user. The fake context is the shared `fakeContestantContext`. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. `$app/state` is replaced by a page whose address holds a `code` and a link `type`, and which counts every read of it. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -17,6 +17,7 @@
 import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
@@ -41,15 +42,18 @@ vi.mock('$app/state', () => ({
   }
 }));
 
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  setPassword,
-  appSettings: {
-    admin: { email: 'support@example.test' },
-    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
-  }
-};
+const { context } = fakeContestantContext(
+  {
+    appSettings: {
+      admin: { email: 'support@example.test' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    }
+  },
+  () => ({
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    setPassword
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 

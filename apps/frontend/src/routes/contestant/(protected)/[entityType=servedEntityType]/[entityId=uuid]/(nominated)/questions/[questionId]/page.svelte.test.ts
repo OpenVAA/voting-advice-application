@@ -10,7 +10,7 @@
  * 5. **A save the answers lock refuses.** The page says that answers can no longer be edited rather than that the save failed, and reads its data again: when the save rejects with the answers-locked error, and when any other failed save is followed by a read of the lock alone that finds answers locked. A failed save after which the lock is read as open, or cannot be read, runs no load again: the page stays as it is, with the draft, and says that the save failed.
  * 6. **The open answer before the answer.** The open answer of a question that allows one can be written while the question is unanswered; Save stays disabled, and the sentence that says why is beside it and describes it. What is written is held by the page and staged with the answer once one is chosen, never on its own, so no save can store an open answer with no answer.
  *
- * The fake context's task state is the real `taskStateOf` over the facts of one raw state box, behind a getter, as the real accessor is a derived value over the store. A fake save rewrites the box before it resolves, as the real save takes the saved question out of the unanswered ones. A case can therefore tell a page that reads the state after the save, with `wasUnanswered` read before it, from one that reads both at one moment. Messages are their keys, and a route is its name, followed by the question's id where it has one.
+ * The fake context is the shared `fakeContestantContext`, and its task state is the real `taskStateOf` over the facts of its raw state box, behind a getter of this file's own, as the real accessor is a derived value over the store. A fake save rewrites the box before it resolves, as the real save takes the saved question out of the unanswered ones. A case can therefore tell a page that reads the state after the save, with `wasUnanswered` read before it, from one that reads both at one moment. Messages are their keys, and a route is its name, followed by the question's id where it has one.
  */
 
 import { log } from '@openvaa/app-shared';
@@ -19,6 +19,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnswersLockedError } from '$lib/api/base/answersLockedError';
 import { hasActiveNavigationGuard } from '$lib/components/preventNavigation/navigationGuards';
 import { taskStateOf } from '$lib/contestant/tasks/taskState';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 
 /** A question as the page reads one. */
 type FakeQuestion = {
@@ -63,8 +64,6 @@ const EMPTY_BOX: Box = {
   unansweredRequiredInfoQuestions: []
 };
 
-let box = $state.raw<Box>(EMPTY_BOX);
-
 /** The page state the page reads its question's id from, reactive as the real one is, so a case can show the mounted page another question as SvelteKit does. */
 const routePage = $state({ params: {} as Record<string, string | undefined> });
 vi.mock('$app/state', async (importOriginal) => ({
@@ -85,8 +84,7 @@ const { getQuestion, setAnswer, save, resetUnsaved, goto, invalidateAll, readAns
   invalidateAll: vi.fn()
 }));
 
-const context = {
-  t: (key: string) => key,
+const { context, box } = fakeContestantContext(EMPTY_BOX, (held) => ({
   getRoute: {
     current: (route: RouteArgument) =>
       typeof route === 'string'
@@ -99,41 +97,30 @@ const context = {
   nominations: [{ id: 'nomination' }],
   userData: {
     get current() {
-      return { entity: { answers: box.answers } };
+      return { entity: { answers: held.current.answers } };
     },
     get hasUnsaved() {
-      return box.hasUnsaved;
+      return held.current.hasUnsaved;
     },
     setAnswer,
     save,
     resetUnsaved
   },
-  get answersLocked() {
-    return box.answersLocked;
-  },
-  get opinionQuestions() {
-    return box.opinionQuestions;
-  },
-  get unansweredOpinionQuestions() {
-    return box.unansweredOpinionQuestions;
-  },
-  get unansweredRequiredInfoQuestions() {
-    return box.unansweredRequiredInfoQuestions;
-  },
   /** The state of an entity that has a nomination and whose question lists are loaded, over the box's saved facts. */
   get taskState() {
+    const facts = held.current;
     return taskStateOf({
       entityKnown: true,
       hasNomination: true,
       questionsReady: true,
-      unansweredRequiredInfoCount: box.unansweredRequiredInfoQuestions.length,
+      unansweredRequiredInfoCount: facts.unansweredRequiredInfoQuestions.length,
       requiredNameMissing: false,
-      opinionCount: box.opinionQuestions.length,
-      unansweredOpinionCount: box.unansweredOpinionQuestions.length,
-      firstUnansweredOpinionId: box.unansweredOpinionQuestions[0]?.id
+      opinionCount: facts.opinionQuestions.length,
+      unansweredOpinionCount: facts.unansweredOpinionQuestions.length,
+      firstUnansweredOpinionId: facts.unansweredOpinionQuestions[0]?.id
     });
   }
-};
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -236,7 +223,7 @@ beforeEach(() => {
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  box = EMPTY_BOX;
+  box.current = EMPTY_BOX;
   routePage.params = {};
   vi.restoreAllMocks();
   vi.resetAllMocks();
@@ -244,7 +231,7 @@ afterEach(() => {
 
 /** Mount the page of `shown` for a state of the context. The store holds an answer to the question, so the Save button is enabled. */
 function render(shown: FakeQuestion, state: Partial<Box>): HTMLElement {
-  box = { ...EMPTY_BOX, ...state, answers: { [shown.id]: ANSWER, ...state.answers } };
+  box.current = { ...EMPTY_BOX, ...state, answers: { [shown.id]: ANSWER, ...state.answers } };
   routePage.params = { questionId: shown.id };
   const target = document.createElement('div');
   document.body.appendChild(target);
@@ -280,10 +267,12 @@ async function pressSave(target: HTMLElement): Promise<void> {
  */
 function storeOnSave(saved: FakeQuestion): void {
   save.mockImplementation(async () => {
-    box = {
-      ...box,
+    box.current = {
+      ...box.current,
       hasUnsaved: false,
-      unansweredOpinionQuestions: box.unansweredOpinionQuestions.filter((candidate) => candidate.id !== saved.id)
+      unansweredOpinionQuestions: box.current.unansweredOpinionQuestions.filter(
+        (candidate) => candidate.id !== saved.id
+      )
     };
     return { type: 'success' };
   });
@@ -375,7 +364,7 @@ describe('question page — where a stored save leads', () => {
 
     await pressSave(target);
 
-    expect(box.unansweredOpinionQuestions).toEqual([]);
+    expect(box.current.unansweredOpinionQuestions).toEqual([]);
     expect(goto).toHaveBeenCalledTimes(1);
     expect(goto).toHaveBeenCalledWith(PROFILE_ROUTE);
   });
@@ -386,7 +375,7 @@ describe('question page — where a stored save leads', () => {
 
     await pressSave(target);
 
-    expect(box.unansweredOpinionQuestions).toEqual([]);
+    expect(box.current.unansweredOpinionQuestions).toEqual([]);
     expect(goto).toHaveBeenCalledTimes(1);
     expect(goto).toHaveBeenCalledWith(HOME_ROUTE);
     expect(goto).not.toHaveBeenCalledWith(LIST_ROUTE);
@@ -599,7 +588,7 @@ describe('question page — a save the answers lock refuses', () => {
   function lockOnRead(): void {
     readAnswersLocked.mockResolvedValue(true);
     invalidateAll.mockImplementation(async () => {
-      box = { ...box, answersLocked: true };
+      box.set({ answersLocked: true });
     });
   }
 

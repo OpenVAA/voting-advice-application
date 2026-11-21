@@ -12,34 +12,36 @@
  * 7. **Log Out calls the context's `logout`** and saves nothing.
  * 8. **An ungated load renders the page and no gate.**
  *
- * The fake context's `user` is the user of the load data the layout was given, which is how the real context derives it. The assertions are on the DOM rather than on component state: what matters is what the user is shown.
+ * The fake context is the shared `fakeContestantContext`; its `user` is the user of the load data the layout was given, which is how the real context derives it. The assertions are on the DOM rather than on component state: what matters is what the user is shown.
  */
 
 import { log } from '@openvaa/app-shared';
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 
-const { clearEntryFlow, context, initUserData, invalidateAll, logout, setDataRoot, setPassword } = vi.hoisted(() => {
-  const mocks = {
-    clearEntryFlow: vi.fn(),
-    initUserData: vi.fn(),
-    invalidateAll: vi.fn(),
-    logout: vi.fn(),
-    setDataRoot: vi.fn(),
-    setPassword: vi.fn()
-  };
-  /** The load data the layout was last given, whose user the context hands on. */
-  const held: { data: { user?: unknown } } = { data: {} };
-  const context = {
-    held,
-    t: (key: string) => key,
-    setDataRoot: mocks.setDataRoot,
-    logout: mocks.logout,
-    setPassword: mocks.setPassword,
-    clearEntryFlow: mocks.clearEntryFlow,
+const { clearEntryFlow, initUserData, invalidateAll, logout, setDataRoot, setPassword } = vi.hoisted(() => ({
+  clearEntryFlow: vi.fn(),
+  initUserData: vi.fn(),
+  invalidateAll: vi.fn(),
+  logout: vi.fn(),
+  setDataRoot: vi.fn(),
+  setPassword: vi.fn()
+}));
+
+const { context, box } = fakeContestantContext(
+  {
+    /** The load data the layout was last given, whose user the context hands on. */
+    data: {} as { user?: unknown },
+    appSettings: { analytics: { trackEvents: false } }
+  },
+  (held) => ({
+    setDataRoot,
+    logout,
+    setPassword,
+    clearEntryFlow,
     acceptTermsOfUse: async () => ({ type: 'success' }),
-    userData: { init: mocks.initUserData },
-    appSettings: { analytics: { trackEvents: false } },
+    userData: { init: initUserData },
     // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
     analyticsPolicy: {
       current: {
@@ -50,11 +52,10 @@ const { clearEntryFlow, context, initUserData, invalidateAll, logout, setDataRoo
       }
     },
     get user() {
-      return held.data.user;
+      return held.current.data.user;
     }
-  };
-  return { ...mocks, context };
-});
+  })
+);
 
 vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({ getContestantContext: () => context }));
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
@@ -140,7 +141,7 @@ beforeEach(() => {
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
-  context.held.data = {};
+  box.set({ data: {} });
   vi.restoreAllMocks();
   vi.resetAllMocks();
 });
@@ -149,7 +150,7 @@ afterEach(() => {
 const page = createRawSnippet(() => ({ render: () => '<div data-testid="page"></div>' }));
 
 function render(data: { gate: string | null; user?: unknown; arrival?: unknown }): HTMLElement {
-  context.held.data = data;
+  box.set({ data });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(ProtectedLayout, {

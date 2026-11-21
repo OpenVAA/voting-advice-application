@@ -1,7 +1,7 @@
 /**
  * The forgot-password page, mounted for real with its real email field against a fake contestant context.
  *
- * The fake context's `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -15,6 +15,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
@@ -23,12 +24,13 @@ const { goto, sendEntryLink } = vi.hoisted(() => ({ goto: vi.fn(), sendEntryLink
 // The other members stay the resolvable stubs: components the page reaches import them too.
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
 
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  sendEntryLink,
-  appSettings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } }
-};
+const { context } = fakeContestantContext(
+  { appSettings: { contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } } } },
+  () => ({
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    sendEntryLink
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 

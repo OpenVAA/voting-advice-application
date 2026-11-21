@@ -1,7 +1,7 @@
 /**
  * The identity provider's error screen, mounted for real with its real support block against a fake contestant context.
  *
- * The page receives what its server load returns: the class and whether Try again is offered. The fake context's `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The page receives what its server load returns: the class and whether Try again is offered. The fake context is the shared `fakeContestantContext`. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -15,19 +15,24 @@
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { OidcErrorClass } from '$lib/contestant/utils/oidcError';
 import type { RouteOptions } from '$lib/routes';
 
-const context = {
-  // A key translates to itself, followed by the values of its parameters, so a link given to a sentence is rendered with it.
-  t: (key: string, params: Record<string, unknown> = {}) => [key, ...Object.values(params)].join(' '),
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  appSettings: {
-    admin: { email: 'support@example.test' },
-    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
-  }
-};
+const { context } = fakeContestantContext(
+  {
+    appSettings: {
+      admin: { email: 'support@example.test' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    }
+  },
+  () => ({
+    // A key translates to itself, followed by the values of its parameters, so a link given to a sentence is rendered with it.
+    t: (key: string, params: Record<string, unknown> = {}) => [key, ...Object.values(params)].join(' '),
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) }
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 

@@ -1,7 +1,7 @@
 /**
  * The registration page, mounted for real with the real mode selector and fields against a fake contestant context.
  *
- * The fake context's `appSettings` is reactive behind a getter, as the real accessor is, and each case sets the registration matrix it reads. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `appSettings` is reactive behind a getter, as the real accessor is, and each case sets the registration matrix it reads. Its `t` returns its key, and its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -23,6 +23,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RegistrationMode } from '@openvaa/app-shared';
 import type { RouteOptions } from '$lib/routes';
@@ -102,22 +103,16 @@ type FakeSettings = {
   access?: { contestantEditing: 'open' | 'nominationsLocked' | 'locked' };
 };
 
-/** The settings the fake context holds. Replaced whole on every write, never changed in place. */
-let heldSettings = $state.raw<FakeSettings>(settingsFor([]));
-
 /** The page's data, as its server load answers it. */
 let heldData: { registered: boolean } = { registered: false };
 
-const context = {
-  t: (key: string) => key,
+/** The fake context. Its settings are replaced whole on every write, never changed in place. */
+const { context, box } = fakeContestantContext({ appSettings: settingsFor([]) }, () => ({
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
   checkInvitationCode,
   holdEntryCode,
-  sendEntryLink,
-  get appSettings() {
-    return heldSettings;
-  }
-};
+  sendEntryLink
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -233,7 +228,7 @@ beforeEach(() => {
   localizeHref.mockImplementation((href: string) => href);
   vi.stubGlobal('fetch', fetchMock);
   fetchMock.mockResolvedValue(answer(200, { authorizeUrl: AUTHORIZE_URL }));
-  heldSettings = settingsFor([]);
+  box.set({ appSettings: settingsFor([]) });
   heldData = { registered: false };
   goto.mockResolvedValue(undefined);
   sendEntryLink.mockResolvedValue(undefined);
@@ -258,7 +253,7 @@ afterEach(() => {
  * @returns The element the page was mounted into.
  */
 function renderUnmounted(modes: Array<RegistrationMode>): HTMLElement {
-  heldSettings = settingsFor(modes);
+  box.set({ appSettings: settingsFor(modes) });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(RegisterPage, { target, props: { data: heldData } as never });
@@ -278,7 +273,7 @@ function render(modes: Array<RegistrationMode>): HTMLElement {
 
 /** Mount the page for the given settings, and run its effects. */
 function renderWith(settings: FakeSettings): HTMLElement {
-  heldSettings = settings;
+  box.set({ appSettings: settings });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(RegisterPage, { target, props: { data: heldData } as never });
@@ -397,7 +392,7 @@ describe('the frame', () => {
   it('follows a matrix that changes under the mounted page', () => {
     const target = render(['email', 'code']);
     choose(target, 'code');
-    heldSettings = settingsFor(['email']);
+    box.set({ appSettings: settingsFor(['email']) });
     flushSync();
     const frame = one(target, FRAME);
     expect(frame.getAttribute('data-modes')).toBe('email');

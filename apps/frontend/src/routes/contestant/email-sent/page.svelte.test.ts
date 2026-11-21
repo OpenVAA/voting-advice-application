@@ -1,7 +1,7 @@
 /**
  * The "email sent" screen, mounted for real with its real body, resend control and support block against a fake contestant context, under a fake clock.
  *
- * The fake context's `entryFlow` is reactive behind a getter and replaced whole on every write, as the real accessor is. Its `t` returns its key, followed by its parameters when it has any; the two first sentences that name an address return their key and the address in `<strong>`, as their translations hold it. Its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `entryFlow` is reactive behind a getter and replaced whole on every write, as the real accessor is. Its `t` returns its key, followed by its parameters when it has any; the two first sentences that name an address return their key and the address in `<strong>`, as their translations hold it. Its `getRoute` builds routes with the real `buildRoute` from an empty set of route params. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -16,6 +16,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { EntryFlow, EntryHeldRequest } from '$lib/auth/entryFlow';
 import type { Route, RouteOptions } from '$lib/routes';
@@ -44,21 +45,21 @@ const { goto, resendEntryLink, fakeT } = vi.hoisted(() => {
 // The other members stay the resolvable stubs: components the page reaches import them too.
 vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal<object>()), goto }));
 
-/** What the fake context holds. Replaced whole on every write, never changed in place. */
-let heldFlow = $state.raw<EntryFlow | undefined>(undefined);
-
-const context = {
-  t: fakeT,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  resendEntryLink,
-  appSettings: {
-    admin: { email: 'support@example.test' },
-    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+/** What the fake context holds. Its entry flow is replaced whole on every write, never changed in place. */
+const { context, box } = fakeContestantContext(
+  {
+    entryFlow: undefined as EntryFlow | undefined,
+    appSettings: {
+      admin: { email: 'support@example.test' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    }
   },
-  get entryFlow() {
-    return heldFlow;
-  }
-};
+  () => ({
+    t: fakeT,
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    resendEntryLink
+  })
+);
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -150,7 +151,7 @@ let teardown: Array<() => void> = [];
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(SETTLED_AT);
-  heldFlow = undefined;
+  box.set({ entryFlow: undefined });
   goto.mockResolvedValue(undefined);
   resendEntryLink.mockResolvedValue(undefined);
   // Every error message shown is also logged: keep the log out of the test output.
@@ -171,7 +172,7 @@ afterEach(() => {
  * @returns The element the page was mounted into.
  */
 function renderOver(held: EntryFlow | undefined): HTMLElement {
-  heldFlow = held;
+  box.set({ entryFlow: held });
   const target = document.createElement('div');
   document.body.appendChild(target);
   const component = mount(EmailSentPage, { target, props: {} as never });
@@ -243,7 +244,7 @@ describe('with nothing held', () => {
     const target = render(requestWith());
     expect(target.querySelector(FRAME)).not.toBeNull();
     expect(goto).not.toHaveBeenCalled();
-    heldFlow = undefined;
+    box.set({ entryFlow: undefined });
     flushSync();
     expect(target.querySelector(FRAME)).toBeNull();
     expect(goto).toHaveBeenCalledTimes(1);
@@ -285,7 +286,7 @@ describe('the frame', () => {
 
   it('follows a request that replaces the held one', () => {
     const target = render(requestWith());
-    heldFlow = { request: requestWith({ origin: 'forgotPassword', wording: 'recovery' }) };
+    box.set({ entryFlow: { request: requestWith({ origin: 'forgotPassword', wording: 'recovery' }) } });
     flushSync();
     expect(one(target, FRAME).getAttribute('data-wording')).toBe('recovery');
   });
@@ -392,7 +393,7 @@ describe('asking again', () => {
     press(target, RESEND);
     expect(resendEntryLink, 'a press while the request runs calls nothing').toHaveBeenCalledTimes(1);
 
-    heldFlow = { request: requestWith({ settledAt: Date.now() }) };
+    box.set({ entryFlow: { request: requestWith({ settledAt: Date.now() }) } });
     settlers[0]();
     await settle();
     expect(one(target, RESEND).hasAttribute('aria-busy')).toBe(false);

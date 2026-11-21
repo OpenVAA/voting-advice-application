@@ -1,7 +1,7 @@
 /**
  * The sign-in screen, mounted for real with its real fields against a fake contestant context.
  *
- * The fake context's `t` returns its key, its `getRoute` builds routes with the real `buildRoute` from an empty set of route params, and its `appSettings` and `answersLocked` are reactive behind getters, as the real accessors are. `$app/forms` is replaced: the fake `enhance` listens for the form's submit event as the real one does, hands the page's callback the posted form data and a `cancel`, and keeps what the callback returned so that a test can answer the post with a result of its choice. Assertions are on the DOM rather than on component state.
+ * The fake context is the shared `fakeContestantContext`. Its `t` returns its key, its `getRoute` builds routes with the real `buildRoute` from an empty set of route params, and its `appSettings` and `answersLocked` are reactive behind getters, as the real accessors are. `$app/forms` is replaced: the fake `enhance` listens for the form's submit event as the real one does, hands the page's callback the posted form data and a `cancel`, and keeps what the callback returned so that a test can answer the post with a result of its choice. Assertions are on the DOM rather than on component state.
  *
  * What this file holds:
  *
@@ -17,6 +17,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
@@ -77,18 +78,15 @@ vi.mock('$app/navigation', async (importOriginal) => ({ ...(await importOriginal
 
 type Modes = Array<'identity_provider' | 'email' | 'code'>;
 
-const settings = $state<{ candidate: Modes; organization: Modes; answersLocked: boolean }>({
-  candidate: ['email'],
-  organization: [],
-  answersLocked: false
-});
+/** The settings the fake context answers with, as the facts the cases vary. */
+const DEFAULT_SETTINGS = { candidate: ['email'] as Modes, organization: [] as Modes, answersLocked: false };
 
-const context = {
-  t: (key: string) => key,
+const { context, box } = fakeContestantContext(DEFAULT_SETTINGS, (held) => ({
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
   sendEntryLink,
   clearEntryFlow,
   get appSettings() {
+    const settings = held.current;
     return {
       contestantApp: {
         servedEntityTypes: {
@@ -98,11 +96,8 @@ const context = {
       },
       access: { contestantEditing: settings.answersLocked ? 'locked' : 'open' }
     };
-  },
-  get answersLocked() {
-    return settings.answersLocked;
   }
-};
+}));
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
 
@@ -164,9 +159,7 @@ function setAddress(address: string): void {
 }
 
 beforeEach(() => {
-  settings.candidate = ['email'];
-  settings.organization = [];
-  settings.answersLocked = false;
+  box.current = DEFAULT_SETTINGS;
   setAddress('http://localhost/en/contestant/login/email');
   sendEntryLink.mockResolvedValue(undefined);
   goto.mockResolvedValue(undefined);
@@ -278,7 +271,7 @@ describe('the frame', () => {
   });
 
   it('says that answers are locked while they are, in place of that sentence', () => {
-    settings.answersLocked = true;
+    box.set({ answersLocked: true });
     const target = render();
     expect(one(target, LOCKED_INFO).textContent?.trim()).toBe('contestantApp.login.answersLockedInfo');
     expect(target.textContent).not.toContain('contestantApp.login.enterEmailAndPassword');
@@ -286,7 +279,7 @@ describe('the frame', () => {
 
   it('follows the answers lock when it changes', () => {
     const target = render();
-    settings.answersLocked = true;
+    box.set({ answersLocked: true });
     flushSync();
     expect(target.querySelector(LOCKED_INFO)).not.toBeNull();
   });
@@ -376,9 +369,7 @@ describe('when the link for a user without a password is offered', () => {
   ];
 
   it.each(CASES)('with %s', (_name, { candidate, organization, answersLocked = false }, offered) => {
-    settings.candidate = candidate;
-    settings.organization = organization;
-    settings.answersLocked = answersLocked;
+    box.set({ candidate, organization, answersLocked });
     const target = render();
     one(target, SUBMIT);
     expect(target.querySelectorAll(NO_PASSWORD_YET).length).toBe(offered ? 1 : 0);
@@ -386,10 +377,10 @@ describe('when the link for a user without a password is offered', () => {
   });
 
   it('follows the settings when they change', () => {
-    settings.candidate = ['code'];
+    box.set({ candidate: ['code'] });
     const target = render();
     expect(target.querySelector(NO_PASSWORD_YET)).toBeNull();
-    settings.candidate = ['code', 'email'];
+    box.set({ candidate: ['code', 'email'] });
     flushSync();
     expect(target.querySelector(NO_PASSWORD_YET)).not.toBeNull();
   });

@@ -6,6 +6,7 @@
 
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RouteOptions } from '$lib/routes';
 
@@ -15,21 +16,23 @@ const { init, leaveEntity, setDataRoot } = vi.hoisted(() => ({
   setDataRoot: vi.fn()
 }));
 
-const context = {
-  t: (key: string) => key,
-  getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  logout: async () => undefined,
-  setDataRoot,
-  userData: { init, leaveEntity, savedEntityData: undefined },
-  appSettings: {
-    admin: { email: 'support@example.org' },
-    contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+const { context } = fakeContestantContext(
+  {
+    appSettings: {
+      admin: { email: 'support@example.org' },
+      contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
+    },
+    answersLocked: false,
+    unansweredRequiredInfoQuestions: [],
+    unansweredOpinionQuestions: []
   },
-  answersLocked: false,
-  tasks: [],
-  unansweredRequiredInfoQuestions: [],
-  unansweredOpinionQuestions: []
-};
+  () => ({
+    getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
+    logout: async () => undefined,
+    setDataRoot,
+    userData: { init, leaveEntity, savedEntityData: undefined }
+  })
+);
 
 vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({ getContestantContext: () => context }));
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
