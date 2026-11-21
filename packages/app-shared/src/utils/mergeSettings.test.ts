@@ -58,4 +58,44 @@ describe('mergeSettings', () => {
     const result = mergeSettings({ servedEntityTypes: { a: 1 } }, { servedEntityTypes: { b: 2 } });
     expect(result.servedEntityTypes).toEqual({ a: 1, b: 2 });
   });
+
+  test('Should share the subtrees the source does not touch, and the values it supplies, by reference', () => {
+    const untouched = { b: 1 };
+    const supplied = [1, 2];
+    const target = { a: untouched, c: { d: 1 } };
+    const result = mergeSettings(target, { c: { e: supplied } });
+    expect(result.a).toBe(untouched);
+    expect(result.c.e).toBe(supplied);
+    expect(result.c).not.toBe(target.c);
+    expect(result).not.toBe(target);
+  });
+
+  test('Should skip an undefined source member at every depth', () => {
+    const result = mergeSettings({ a: { b: 1 }, c: 2 }, { a: { b: undefined }, c: undefined });
+    expect(result).toEqual({ a: { b: 1 }, c: 2 });
+  });
+
+  test('Should let a null replace the value beneath it, at the root only without `skipNullAtRoot`', () => {
+    const target = { a: { b: { c: 1 } }, d: { e: 1 } };
+    const source = { a: { b: null }, d: null };
+    expect(mergeSettings(target, source)).toEqual({ a: { b: null }, d: null });
+    expect(mergeSettings(target, source, { skipNullAtRoot: true })).toEqual({ a: { b: null }, d: { e: 1 } });
+  });
+
+  test('Should let a source object replace a null in the target, without throwing', () => {
+    const result = mergeSettings({ a: null as null | { b: number } }, { a: { b: 1 } });
+    expect(result.a).toEqual({ b: 1 });
+  });
+
+  test('Should never merge `__proto__`, `constructor` or `prototype`', () => {
+    const source = JSON.parse(
+      '{"__proto__": {"polluted": true}, "a": {"constructor": {"x": 1}, "prototype": 1, "b": 2}}'
+    );
+    const result = mergeSettings({ a: { b: 1 } }, source) as Record<string, unknown>;
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(result.polluted).toBeUndefined();
+    expect(Object.prototype.hasOwnProperty.call(result, '__proto__')).toBe(false);
+    expect(result.a).toEqual({ b: 2 });
+    expect(Object.prototype.hasOwnProperty.call(result.a, 'constructor')).toBe(false);
+  });
 });
