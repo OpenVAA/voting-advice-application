@@ -4,22 +4,26 @@ import { toHexColor } from '$lib/utils/color/toHexColor';
 import { normalizeLocalizedName, sameLocalizedName } from '$lib/utils/localizedText';
 import { discardContestantDrafts, EDITED_ANSWERS_KEY_STEM } from './contestantDrafts';
 import { localStorageState, removePersistedByPrefix } from '../utils/persistedState.svelte';
-import type { LocalizedAnswer } from '@openvaa/app-shared';
+import type { LocalizedAnswer, ServedEntityType } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
-import type { Colors, Image } from '@openvaa/data';
+import type { Colors } from '@openvaa/data';
 import type {
-  ContestantUserData,
+  CandidateEditableProps,
   EditableEntityColor,
-  EditableEntityProps,
+  EditableEntityProperty,
+  EditablePropsOf,
+  EntityUserData,
   LocalizedAnswers,
   LocalizedEntityData,
   LocalizedEntityNames,
+  OrganizationEditableProps,
   SetAnswersResult,
+  SetPropertiesOptions,
   UpdateEntityPropertiesResult
 } from '$lib/api/base/dataWriter.type';
 import type { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import type { PersistedState } from '../utils/persistedState.svelte';
-import type { ContestantUserDataState, SaveUserDataResult } from './contestantUserDataState.type';
+import type { EntityUserDataState, SaveUserDataResult } from './entityUserDataState.type';
 
 export { EDITED_ANSWERS_KEY_STEM } from './contestantDrafts';
 
@@ -41,84 +45,31 @@ type EntityDraft = {
 };
 
 /**
+ * The staged properties of the loaded entity, of whichever served type it is. Only `setProperty` stages a property, and only one of the loaded entity's type, and `save()` writes the members of that type alone.
+ */
+type StagedProps = CandidateEditableProps & OrganizationEditableProps;
+
+/**
  * The editable properties that are names. The backend freezes them once the entity is confirmed, so `save()` writes them apart from the other properties.
  */
-const NAME_PROPERTIES = ['name', 'shortName', 'firstName', 'lastName'] as const satisfies ReadonlyArray<
-  keyof EditableEntityProps
->;
-
-/**
- * The names of the properties an object of editable properties holds a value for.
- * @param properties - The editable properties.
- * @returns The names, in the order the object holds them.
- */
-function givenProperties(properties: EditableEntityProps): Array<keyof EditableEntityProps> {
-  return (Object.keys(properties) as Array<keyof EditableEntityProps>).filter(
-    (property) => properties[property] !== undefined
-  );
-}
-
-/**
- * Whether an editable property is one of the {@link NAME_PROPERTIES}.
- * @param property - The name of the property.
- */
-function isNameProperty(property: keyof EditableEntityProps): boolean {
-  return NAME_PROPERTIES.some((nameProperty) => nameProperty === property);
-}
-
-/**
- * The form two colours are compared in: the default-theme colour as lowercase `#rrggbb`, so that the letter case and the three-digit form of a hex colour make no difference. The colour of the dark theme is not part of it, and a colour with no default-theme colour is no colour.
- * @param color - A stored colour, a staged one, or nothing.
- * @returns The hex colour, the colour as written when it is not one, or `null` for no colour.
- */
-function comparableColor(color: Colors | EditableEntityColor | null | undefined): string | null {
-  const normal: unknown = color?.normal;
-  if (typeof normal !== 'string' || normal === '') return null;
-  return toHexColor(normal) ?? normal;
-}
-
-/**
- * The part of an edit that differs from the saved data, in the form it is saved in. A name is compared and held normalised, a colour is compared by its hex colour, a person's name is compared and held without surrounding whitespace, and the removal of an image differs only from a stored one. Every value returned is a new plain value, never the object that was handed in, except for an image, which is held as it is.
- * @param saved - The saved data of the loaded entity.
- * @param edit - The edited properties.
- * @returns The properties of the edit that differ from the saved ones. A property that is the same as the saved one is left out.
- */
-function changedProperties(saved: ContestantUserData<true>, edit: EditableEntityProps): EditableEntityProps {
-  const { entity, localizedNames } = saved;
-  const changed: EditableEntityProps = {};
-  if (edit.image !== undefined && (edit.image !== null || entity.image)) changed.image = edit.image;
-  if (edit.name !== undefined) {
-    const name = normalizeLocalizedName(edit.name);
-    if (!sameLocalizedName(name, localizedNames?.name)) changed.name = name;
-  }
-  if (edit.shortName !== undefined) {
-    const shortName = normalizeLocalizedName(edit.shortName);
-    if (!sameLocalizedName(shortName, localizedNames?.shortName)) changed.shortName = shortName;
-  }
-  if (edit.color !== undefined && comparableColor(edit.color) !== comparableColor(entity.color))
-    changed.color = edit.color === null ? null : { normal: edit.color.normal };
-  if (edit.firstName !== undefined) {
-    const firstName = edit.firstName.trim();
-    if (firstName !== ('firstName' in entity ? entity.firstName : '').trim()) changed.firstName = firstName;
-  }
-  if (edit.lastName !== undefined) {
-    const lastName = edit.lastName.trim();
-    if (lastName !== ('lastName' in entity ? entity.lastName : '').trim()) changed.lastName = lastName;
-  }
-  return changed;
-}
+const NAME_PROPERTIES = [
+  'name',
+  'shortName',
+  'firstName',
+  'lastName'
+] as const satisfies ReadonlyArray<EditableEntityProperty>;
 
 /**
  * A Svelte 5 class implementation of the composite user-data store of the entity the user edits.
  * Holds all data owned by the user; when reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. The edited `Answer`s are stored in `localStorage` for persistence, under a key that names the entity, so each entity keeps its own draft (the persistence + version bridge is INHERITED from `localStorageState`/`PersistedStateImpl` — this class does NOT own a `#version`; the `{ version, data }` payload lives in `persistedState.svelte.ts`). The edited properties are held in memory alone: a name staged in one session is never restored into a later one, where the entity may have been confirmed since.
  *
- * The public surface is the TYPE `ContestantUserDataState` that this class `implements`, which is why the class itself is named `ContestantUserDataStateImpl` (the same suffix as `AnswerStateImpl`) — a class sharing the type's name would clash with it — and the consumer entry point is the `contestantUserDataState(...)` factory.
+ * The public surface is the TYPE `EntityUserDataState` that this class `implements`, which is why the class itself is named `EntityUserDataStateImpl` (the same suffix as `AnswerStateImpl`) — a class sharing the type's name would clash with it — and the consumer entry point is the `entityUserDataState(...)` factory.
  *
  * The public methods are ARROW-FUNCTION FIELDS so they survive being held as `userData.X` on the contestant context and called detached. The reactive members (`current`/`hasUnsaved`/`savedEntityData`/`savedLocalizedNames`/`unsavedQuestionIds`/ `unsavedProperties`) are prototype getters read in-place (this store is NOT spread by any consumer, so prototype getters are safe).
  *
- * @internal Construct via the `contestantUserDataState(...)` factory at component init. The constructor installs an `$effect` (reacting to `answersLocked` to clear unsaved edits), so constructing outside an effect context throws `effect_orphan`.
+ * @internal Construct via the `entityUserDataState(...)` factory at component init. The constructor installs an `$effect` (reacting to `answersLocked` to clear unsaved edits), so constructing outside an effect context throws `effect_orphan`.
  */
-class ContestantUserDataStateImpl implements ContestantUserDataState {
+class EntityUserDataStateImpl implements EntityUserDataState {
   #answersLocked: () => boolean;
   // A getter, not an instance: the store builds a writer for each backend call and holds none between them.
   #dataWriter: () => UniversalDataWriter;
@@ -129,7 +80,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
   ////////////////////////////////////////////////////////////////////
 
   // An internal $state for holding the user data loaded from the backend
-  #savedData = $state<ContestantUserData<true> | undefined>(undefined);
+  #savedData = $state<EntityUserData<true> | undefined>(undefined);
 
   // The persisted edited answers of the loaded entity. A handle's key is fixed when it is constructed, so loading another entity replaces the handle; it is held raw so that the derived values below follow the replacement.
   #draft = $state.raw<EntityDraft | undefined>(undefined);
@@ -137,7 +88,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
   #userId: Id | undefined;
 
   // The edited properties of the loaded entity that differ from the saved ones, each in the form it is saved in. Held raw and replaced whole on every change, so what it holds is plain values. It has no storage handle: the properties live in memory alone.
-  #staged = $state.raw<EditableEntityProps>({});
+  #staged = $state.raw<StagedProps>({});
 
   // A derived value holding the effective user data, including unsaved data
   #current = $derived.by(() => {
@@ -169,7 +120,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
           : undefined,
         nominations
       })
-    ) as ContestantUserData<true>;
+    ) as EntityUserData<true>;
   });
 
   constructor({
@@ -231,7 +182,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
   /**
    * Replace the staged values of the properties in `edit` by the ones that differ from the saved data, so that a property handed in as it is saved is no longer staged.
    */
-  #stage(edit: EditableEntityProps): void {
+  #stage(edit: StagedProps): void {
     // Read untracked: this writes the staged properties it reads, so an effect that stages a property must not depend on them.
     const saved = untrack(() => this.#savedData);
     if (!saved) throw new Error('Cannot set a property before user data is loaded');
@@ -243,7 +194,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
   /**
    * Discard the staged values of the named properties.
    */
-  #unstage(properties: ReadonlyArray<keyof EditableEntityProps>): void {
+  #unstage(properties: ReadonlyArray<EditableEntityProperty>): void {
     const staged = { ...untrack(() => this.#staged) };
     for (const property of properties) delete staged[property];
     this.#staged = staged;
@@ -289,7 +240,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
 
   #hasUnsaved = $derived(this.#unsavedQuestionIds.length > 0 || this.#unsavedProperties.length > 0);
 
-  get current(): ContestantUserData<true> | undefined {
+  get current(): EntityUserData<true> | undefined {
     return this.#current;
   }
 
@@ -309,7 +260,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
     return this.#unsavedQuestionIds;
   }
 
-  get unsavedProperties(): Array<keyof EditableEntityProps> {
+  get unsavedProperties(): Array<EditableEntityProperty> {
     return this.#unsavedProperties;
   }
 
@@ -317,7 +268,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
   // Exported methods
   ////////////////////////////////////////////////////////////////////
 
-  init = (data: ContestantUserData<true>, userId: Id): void => {
+  init = (data: EntityUserData<true>, userId: Id): void => {
     // The drafts another user left in this browser are removed before any is restored, and so is a draft under a key that names no user.
     removePersistedByPrefix('localStorage', `${EDITED_ANSWERS_KEY_STEM}-`, `${EDITED_ANSWERS_KEY_STEM}-${userId}-`);
     this.#userId = userId;
@@ -366,25 +317,23 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
     this.#draft?.answers.set({});
   };
 
-  setProperty = <TProperty extends keyof EditableEntityProps>(
+  setProperty = <TType extends ServedEntityType, TProperty extends keyof EditablePropsOf<TType>>(
+    type: TType,
     property: TProperty,
-    value: Exclude<EditableEntityProps[TProperty], undefined>
+    value: Exclude<EditablePropsOf<TType>[TProperty], undefined>
   ): void => {
-    const edit: EditableEntityProps = {};
+    const loadedType = untrack(() => this.#savedData)?.entity.type;
+    if (loadedType !== undefined && loadedType !== type)
+      throw new Error(
+        `Cannot set a property of an entity of type '${type}' while one of type '${loadedType}' is loaded`
+      );
+    const edit: Partial<EditablePropsOf<TType>> = {};
     edit[property] = value;
     this.#stage(edit);
   };
 
-  resetProperty = (property: keyof EditableEntityProps): void => {
+  resetProperty = (property: EditableEntityProperty): void => {
     this.#unstage([property]);
-  };
-
-  setImage = (image: Image | null): void => {
-    this.#stage({ image });
-  };
-
-  resetImage = (): void => {
-    this.#unstage(['image']);
   };
 
   reloadEntityData = async (): Promise<LocalizedEntityData> => {
@@ -447,12 +396,14 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
       else delete nameProperties[property];
     const writes = [otherProperties, nameProperties];
 
-    const savedProperties = new Array<keyof EditableEntityProps>();
+    const savedProperties = new Array<EditableEntityProperty>();
     let nameRefused = false;
     for (const properties of writes) {
       const given = givenProperties(properties);
       if (given.length === 0) continue;
-      const result = await dataWriter.updateEntityProperties({ ...updateArgs, properties, locale: this.#locale() });
+      const result = await dataWriter.updateEntityProperties(
+        writeOptionsOf({ target: { type, id }, properties, locale: this.#locale() })
+      );
       if (result.type === 'nameRefused') {
         // Only a write that carries a name can be refused for one.
         if (!given.some(isNameProperty)) throw new Error('save: a write that carries no name was refused for a name');
@@ -492,7 +443,7 @@ class ContestantUserDataStateImpl implements ContestantUserDataState {
  * @param dataWriter - A getter returning a `UniversalDataWriter` built for the call that is about to be made.
  * @param locale - The current locale string, used for translating some data when it's fetched.
  */
-export function contestantUserDataState({
+export function entityUserDataState({
   answersLocked,
   dataWriter,
   locale
@@ -500,6 +451,107 @@ export function contestantUserDataState({
   answersLocked: () => boolean;
   dataWriter: () => UniversalDataWriter;
   locale: () => string;
-}): ContestantUserDataState {
-  return new ContestantUserDataStateImpl({ answersLocked, dataWriter, locale });
+}): EntityUserDataState {
+  return new EntityUserDataStateImpl({ answersLocked, dataWriter, locale });
+}
+
+/**
+ * The names of the properties an object of editable properties holds a value for.
+ * @param properties - The editable properties.
+ * @returns The names, in the order the object holds them.
+ */
+function givenProperties(properties: StagedProps): Array<EditableEntityProperty> {
+  return (Object.keys(properties) as Array<EditableEntityProperty>).filter(
+    (property) => properties[property] !== undefined
+  );
+}
+
+/**
+ * The part of an edit that differs from the saved data, in the form it is saved in. A name is compared and held normalised, a colour is compared by its hex colour, a person's name is compared and held without surrounding whitespace, and the removal of an image differs only from a stored one. Every value returned is a new plain value, never the object that was handed in, except for an image, which is held as it is.
+ * @param saved - The saved data of the loaded entity.
+ * @param edit - The edited properties.
+ * @returns The properties of the edit that differ from the saved ones. A property that is the same as the saved one is left out.
+ */
+function changedProperties(saved: EntityUserData<true>, edit: StagedProps): StagedProps {
+  const { entity, localizedNames } = saved;
+  const changed: StagedProps = {};
+  if (edit.image !== undefined && (edit.image !== null || entity.image)) changed.image = edit.image;
+  if (edit.name !== undefined) {
+    const name = normalizeLocalizedName(edit.name);
+    if (!sameLocalizedName(name, localizedNames?.name)) changed.name = name;
+  }
+  if (edit.shortName !== undefined) {
+    const shortName = normalizeLocalizedName(edit.shortName);
+    if (!sameLocalizedName(shortName, localizedNames?.shortName)) changed.shortName = shortName;
+  }
+  if (edit.color !== undefined && comparableColor(edit.color) !== comparableColor(entity.color))
+    changed.color = edit.color === null ? null : { normal: edit.color.normal };
+  if (edit.firstName !== undefined) {
+    const firstName = edit.firstName.trim();
+    if (firstName !== ('firstName' in entity ? entity.firstName : '').trim()) changed.firstName = firstName;
+  }
+  if (edit.lastName !== undefined) {
+    const lastName = edit.lastName.trim();
+    if (lastName !== ('lastName' in entity ? entity.lastName : '').trim()) changed.lastName = lastName;
+  }
+  return changed;
+}
+
+/**
+ * The form two colours are compared in: the default-theme colour as lowercase `#rrggbb`, so that the letter case and the three-digit form of a hex colour make no difference. The colour of the dark theme is not part of it, and a colour with no default-theme colour is no colour.
+ * @param color - A stored colour, a staged one, or nothing.
+ * @returns The hex colour, the colour as written when it is not one, or `null` for no colour.
+ */
+function comparableColor(color: Colors | EditableEntityColor | null | undefined): string | null {
+  const normal: unknown = color?.normal;
+  if (typeof normal !== 'string' || normal === '') return null;
+  return toHexColor(normal) ?? normal;
+}
+
+/**
+ * Whether an editable property is one of the {@link NAME_PROPERTIES}.
+ * @param property - The name of the property.
+ */
+function isNameProperty(property: EditableEntityProperty): boolean {
+  return NAME_PROPERTIES.some((nameProperty) => nameProperty === property);
+}
+
+/**
+ * What a write of staged properties carries: the entity, and those of the properties that its type has.
+ * @param target - The type and id of the entity.
+ * @param properties - The staged properties to write.
+ * @param locale - The locale the written names are translated to in the result.
+ */
+function writeOptionsOf({
+  target,
+  properties,
+  locale
+}: {
+  target: Pick<LocalizedEntityData, 'type' | 'id'>;
+  properties: StagedProps;
+  locale: string;
+}): SetPropertiesOptions {
+  const { id } = target;
+  const { image, firstName, lastName, name, shortName, color } = properties;
+  if (target.type === 'candidate')
+    return {
+      target: { type: 'candidate', id },
+      properties: definedMembers<CandidateEditableProps>({ image, firstName, lastName }),
+      locale
+    };
+  return {
+    target: { type: 'organization', id },
+    properties: definedMembers<OrganizationEditableProps>({ image, name, shortName, color }),
+    locale
+  };
+}
+
+/**
+ * An object of optional properties without its members that are `undefined`.
+ * @param properties - The properties.
+ * @returns A new object holding the members that have a value.
+ */
+function definedMembers<TProps extends object>(properties: TProps): TProps {
+  // Leaving out optional members whose value is `undefined` keeps the object of its type.
+  return Object.fromEntries(Object.entries(properties).filter(([, value]) => value !== undefined)) as TProps;
 }

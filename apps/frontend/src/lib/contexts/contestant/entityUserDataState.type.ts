@@ -1,8 +1,9 @@
-import type { LocalizedAnswer } from '@openvaa/app-shared';
+import type { LocalizedAnswer, ServedEntityType } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type {
-  ContestantUserData,
-  EditableEntityProps,
+  EditableEntityProperty,
+  EditablePropsOf,
+  EntityUserData,
   LocalizedEntityData,
   LocalizedEntityNames
 } from '$lib/api/base/dataWriter.type';
@@ -26,19 +27,19 @@ export type SaveUserDataResult =
 /**
  * An extended reactive object that holds all data owned by the user. When reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. Dedicated methods are provided for loading, saving, setting or resetting data.
  *
- * NB. Before using the object, its `init` method must be called with the initial `ContestantUserData`.
+ * NB. Before using the object, its `init` method must be called with the initial `EntityUserData`.
  */
-export type ContestantUserDataState = {
+export type EntityUserDataState = {
   /**
    * The effective user data, including any unsaved edits. An unsaved image, colour, first name or last name is shown on `entity`. An unsaved name or short name of an organization is shown in `localizedNames`, by locale, while `entity.name` and `entity.shortName` stay the saved ones in one locale. The value is a plain copy, safe to hand to an input.
    */
-  readonly current: ContestantUserData<true> | undefined;
+  readonly current: EntityUserData<true> | undefined;
   /**
-   * Initialize the store with the full `ContestantUserData`. The unsaved answers shown are the ones the signed-in user left for the entity the data names: loading another entity brings up that entity's own draft and drops the unsaved properties, while loading the same entity again keeps both. The drafts any other user left in the browser are removed first, so an editor is never shown, and never saves, unsaved answers someone else typed.
+   * Initialize the store with the full `EntityUserData`. The unsaved answers shown are the ones the signed-in user left for the entity the data names: loading another entity brings up that entity's own draft and drops the unsaved properties, while loading the same entity again keeps both. The drafts any other user left in the browser are removed first, so an editor is never shown, and never saves, unsaved answers someone else typed.
    * @param data - The entity's data.
    * @param userId - The id of the signed-in user.
    */
-  init: (data: ContestantUserData<true>, userId: Id) => void;
+  init: (data: EntityUserData<true>, userId: Id) => void;
   /**
    * Empty the store of the entity it holds: the saved data and the unsaved properties are dropped, and `current` becomes `undefined`. The entity's persisted unsaved answers are left in the browser, so a later `init` for the same entity shows them again. Call this when the user leaves the entity without logging out.
    */
@@ -95,28 +96,21 @@ export type ContestantUserDataState = {
 
   /**
    * Set an editable property of the loaded entity. The property is unsaved only while its value differs from the saved one: a name is compared with its entries trimmed and its blank entries left out, a colour by its hex colour, and a first or last name without surrounding whitespace, so setting a property to what is saved makes it saved again. The value is copied, and is held in memory alone: it does not survive a reload of the page.
-   * @param property - The name of the property. Which properties an entity has depends on its type, and the backend refuses one that the loaded entity does not have when the data is saved.
-   * @param value - The value. `null` clears an organization's name, short name or colour.
-   * @throws An error if no entity is loaded.
+   * @param type - The type of the loaded entity, which decides the properties it has. A type known only as either served type admits only the properties both have: the image.
+   * @param property - The name of the property.
+   * @param value - The value. `null` clears an organization's name, short name or colour, and removes the stored image when the data is saved; for an entity with no stored image it stages nothing and only drops an unsaved one.
+   * @throws An error if no entity is loaded, or if the loaded entity is not of the given type.
    */
-  setProperty: <TProperty extends keyof EditableEntityProps>(
+  setProperty: <TType extends ServedEntityType, TProperty extends keyof EditablePropsOf<TType>>(
+    type: TType,
     property: TProperty,
-    value: Exclude<EditableEntityProps[TProperty], undefined>
+    value: Exclude<EditablePropsOf<TType>[TProperty], undefined>
   ) => void;
   /**
    * Delete the unsaved value of one editable property.
    * NB. This does not intend to delete the property in the backend.
    */
-  resetProperty: (property: keyof EditableEntityProps) => void;
-  /**
-   * Set the image of the loaded entity: a candidate's portrait or an organization's logo. `null` removes the stored image when the data is saved, and stages nothing for an entity with no stored image, where it only drops an unsaved one.
-   */
-  setImage: (image: ImageWithFile | null) => void;
-  /**
-   * Delete the unsaved image of the loaded entity.
-   * NB. This does not intend to delete the image in the backend.
-   */
-  resetImage: () => void;
+  resetProperty: (property: EditableEntityProperty) => void;
 
   ////////////////////////////////////////////////////////////
   // Reactive values
@@ -129,7 +123,7 @@ export type ContestantUserDataState = {
   /**
    * An `Array` of names of unsaved properties.
    */
-  readonly unsavedProperties: Array<keyof EditableEntityProps>;
+  readonly unsavedProperties: Array<EditableEntityProperty>;
   /**
    * `true` if there are any unsaved data.
    */

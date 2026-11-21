@@ -169,6 +169,8 @@ describe('NavItem — a disabled item without a reason', () => {
     const item = itemOf(target);
     expect(item.tagName).toBe('A');
     expect(item.hasAttribute('href')).toBe(false);
+    // An `<a>` without `href` is no longer a link to assistive technology; the role keeps it one, named by its text.
+    expect(item.getAttribute('role')).toBe('link');
     expect(item.getAttribute('aria-disabled')).toBe('true');
     expect([...item.classList]).toContain('pointer-events-none');
     expect(item.hasAttribute('aria-expanded')).toBe(false);

@@ -55,7 +55,6 @@ const { stubs, prefsHolder, pushed } = vi.hoisted(() => {
       // tracking producer: the producer's members, inert.
       tracking: {
         startPageview: (_routeId: string | null, _params: Readonly<Record<string, string | undefined>> | null) => {},
-        startEvent: (_name: string) => {},
         track: (_name: string, _data?: unknown) => {},
         submitAllEvents: () => {},
         resetAllEvents: () => {},
@@ -68,7 +67,7 @@ const { stubs, prefsHolder, pushed } = vi.hoisted(() => {
             consent: undefined
           }
         },
-        surveySessionId: { current: undefined as string | undefined }
+        visitId: { current: undefined as string | undefined }
       },
       // survey-link producer: `{ readonly current }` handle.
       survey: { current: 'https://example.invalid/survey' as string | undefined },

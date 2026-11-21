@@ -21,7 +21,7 @@ export function toLogRecord(event: AnalyticsEvent): LogRecord {
     attributes: {
       ...event.attributes,
       'openvaa.app': event.app,
-      ...(event.id === undefined ? {} : { 'session.id': event.id })
+      ...(event.visitId === undefined ? {} : { 'session.id': event.visitId })
     }
   };
 }

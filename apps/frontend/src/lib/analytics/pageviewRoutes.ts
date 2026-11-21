@@ -3,7 +3,7 @@
  *
  * A page route added to the tree must be listed here before it ships; a unit test walks the route tree and fails until it is. Listing a route with no names sends its pageview with no parameter. A parameter that identifies an entity or a nomination, or that carries a free path, is never listed, and a listed parameter travels only when its value passes the validator beside it.
  */
-import { ROUTE } from '$lib/routes/route';
+import { ADMIN_PROT, CONTESTANT_PROT, ROUTE } from '$lib/routes/route';
 import { ID_PATTERN } from './constants';
 import { match as isEntityTypePlural } from '../../params/etPl';
 import { match as isEntityTypeSingular } from '../../params/etSg';
@@ -33,7 +33,7 @@ const CONTESTANT_ENTITY_PARAMS: Readonly<Record<string, ParamValidator>> = Objec
 /**
  * Every page route of the three apps, mapped to the parameter names its pageview may carry, each with the validator its value must pass.
  *
- * A key is written with its `ROUTE` constant where `ROUTE` holds that id, and as the literal route id otherwise.
+ * A key is written with its `ROUTE` constant, or with the route-id constant of `$lib/routes/route` for the two protected roots, which `ROUTE` does not hold.
  */
 export const PAGEVIEW_ROUTES: Readonly<Record<string, Readonly<Record<string, ParamValidator>>>> = Object.freeze({
   // Voter App
@@ -57,7 +57,7 @@ export const PAGEVIEW_ROUTES: Readonly<Record<string, Readonly<Record<string, Pa
   [ROUTE.Statistics]: NO_PARAMS,
 
   // Contestant App
-  '/contestant/(protected)': NO_PARAMS,
+  [CONTESTANT_PROT]: NO_PARAMS,
   // The rest parameter is left out: it can hold any one path segment, and the route only redirects.
   [ROUTE.ContestantAppEntityResolver]: NO_PARAMS,
   [ROUTE.ContestantAppEntityHome]: CONTESTANT_ENTITY_PARAMS,
@@ -85,7 +85,7 @@ export const PAGEVIEW_ROUTES: Readonly<Record<string, Readonly<Record<string, Pa
   [ROUTE.ContestantAppIdentityProviderError]: NO_PARAMS,
 
   // Admin App
-  '/admin/(protected)': NO_PARAMS,
+  [ADMIN_PROT]: NO_PARAMS,
   [ROUTE.AdminAppArgumentCondensation]: NO_PARAMS,
   [ROUTE.AdminAppJobs]: NO_PARAMS,
   [ROUTE.AdminAppQuestionInfo]: NO_PARAMS,

@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   isGlobalPrivacyControlSet,
   mayAttachVisitId,
-  mayFillSessionId,
+  mayFillVisitId,
   maySendEvents,
   maySendPageview,
   relayUsable,
   shouldShowContestantOptOut,
   shouldShowVoterPrompt
-} from './gates';
+} from './sendPolicy';
 import type { AnalyticsProjection, ConsentMode, VisitIdMode } from '$lib/analytics/modes';
 import type { ConsentStatus } from '../userPreferences.type';
-import type { GateInput } from './gates';
+import type { SendPolicyInput } from './sendPolicy';
 
 const ACTIVE = [true, false] as const;
 const CONSENT_MODES: ReadonlyArray<ConsentMode> = ['gated', 'free'];
@@ -21,9 +21,9 @@ const TRACK_EVENTS = [true, false] as const;
 const CONSENTS: ReadonlyArray<ConsentStatus | undefined> = ['granted', 'denied', 'indetermined', undefined];
 const VOTER_APP_ACCESSIBLE = [true, false] as const;
 
-type Row = GateInput & { voterAppAccessible: boolean };
+type Row = SendPolicyInput & { voterAppAccessible: boolean };
 
-/** Every combination of the gate inputs: 2 × 2 × 2 × 2 × 2 × 4 × 2 = 256 rows. */
+/** Every combination of the send-policy inputs: 2 × 2 × 2 × 2 × 2 × 4 × 2 = 256 rows. */
 const ALL_ROWS: ReadonlyArray<Row> = ACTIVE.flatMap((active) =>
   CONSENT_MODES.flatMap((consentMode) =>
     VISIT_ID_MODES.flatMap((visitIdMode) =>
@@ -72,8 +72,8 @@ function input(overrides: Partial<Row> = {}): Row {
   };
 }
 
-describe('the gate truth table, written out', () => {
-  // Each row states the expected value of every gate for one input, by hand.
+describe('the send-policy truth table, written out', () => {
+  // Each row states the expected value of every rule for one input, by hand.
   const TABLE: ReadonlyArray<
     [
       name: string,
@@ -84,79 +84,79 @@ describe('the gate truth table, written out', () => {
         events: boolean;
         voterPrompt: boolean;
         optOut: boolean;
-        sessionId: boolean;
+        visitId: boolean;
       }
     ]
   > = [
     [
       'gated, granted',
       input(),
-      { relay: true, pageview: true, events: true, voterPrompt: false, optOut: true, sessionId: true }
+      { relay: true, pageview: true, events: true, voterPrompt: false, optOut: true, visitId: true }
     ],
     [
       'gated, undecided',
       input({ consent: 'indetermined' }),
-      { relay: true, pageview: true, events: false, voterPrompt: true, optOut: true, sessionId: false }
+      { relay: true, pageview: true, events: false, voterPrompt: true, optOut: true, visitId: false }
     ],
     [
       'gated, no stored choice',
       input({ consent: undefined }),
-      { relay: true, pageview: true, events: false, voterPrompt: true, optOut: true, sessionId: false }
+      { relay: true, pageview: true, events: false, voterPrompt: true, optOut: true, visitId: false }
     ],
     [
       'gated, denied',
       input({ consent: 'denied' }),
-      { relay: true, pageview: true, events: false, voterPrompt: false, optOut: true, sessionId: false }
+      { relay: true, pageview: true, events: false, voterPrompt: false, optOut: true, visitId: false }
     ],
     [
       'gated, undecided, voter app closed',
       input({ consent: undefined, voterAppAccessible: false }),
-      { relay: true, pageview: true, events: false, voterPrompt: false, optOut: true, sessionId: false }
+      { relay: true, pageview: true, events: false, voterPrompt: false, optOut: true, visitId: false }
     ],
     [
       'gated, trackEvents off',
       input({ trackEvents: false, consent: undefined }),
-      { relay: true, pageview: true, events: false, voterPrompt: false, optOut: false, sessionId: false }
+      { relay: true, pageview: true, events: false, voterPrompt: false, optOut: false, visitId: false }
     ],
     [
       'free, denied',
       input({ projection: projection({ consentMode: 'free' }), consent: 'denied' }),
-      { relay: true, pageview: true, events: true, voterPrompt: false, optOut: false, sessionId: true }
+      { relay: true, pageview: true, events: true, voterPrompt: false, optOut: false, visitId: true }
     ],
     [
       'free, no stored choice, visit id none',
       input({ projection: projection({ consentMode: 'free', visitIdMode: 'none' }), consent: undefined }),
-      { relay: true, pageview: true, events: true, voterPrompt: false, optOut: false, sessionId: false }
+      { relay: true, pageview: true, events: true, voterPrompt: false, optOut: false, visitId: false }
     ],
     [
       'free, trackEvents off',
       input({ projection: projection({ consentMode: 'free' }), trackEvents: false }),
-      { relay: true, pageview: true, events: false, voterPrompt: false, optOut: false, sessionId: false }
+      { relay: true, pageview: true, events: false, voterPrompt: false, optOut: false, visitId: false }
     ],
     [
       'gated, granted, visit id none',
       input({ projection: projection({ visitIdMode: 'none' }) }),
-      { relay: true, pageview: true, events: true, voterPrompt: false, optOut: true, sessionId: false }
+      { relay: true, pageview: true, events: true, voterPrompt: false, optOut: true, visitId: false }
     ],
     [
       'Global Privacy Control set',
       input({ globalPrivacyControl: true }),
-      { relay: false, pageview: false, events: false, voterPrompt: false, optOut: false, sessionId: false }
+      { relay: false, pageview: false, events: false, voterPrompt: false, optOut: false, visitId: false }
     ],
     [
       'Global Privacy Control set, free mode, undecided',
       input({ globalPrivacyControl: true, projection: projection({ consentMode: 'free' }), consent: undefined }),
-      { relay: false, pageview: false, events: false, voterPrompt: false, optOut: false, sessionId: false }
+      { relay: false, pageview: false, events: false, voterPrompt: false, optOut: false, visitId: false }
     ],
     [
       'no provider',
       input({ projection: projection({ active: false }), consent: undefined }),
-      { relay: false, pageview: false, events: false, voterPrompt: false, optOut: false, sessionId: false }
+      { relay: false, pageview: false, events: false, voterPrompt: false, optOut: false, visitId: false }
     ],
     [
       'no provider, granted',
       input({ projection: projection({ active: false }) }),
-      { relay: false, pageview: false, events: false, voterPrompt: false, optOut: false, sessionId: false }
+      { relay: false, pageview: false, events: false, voterPrompt: false, optOut: false, visitId: false }
     ]
   ];
 
@@ -167,12 +167,12 @@ describe('the gate truth table, written out', () => {
       events: maySendEvents(row),
       voterPrompt: shouldShowVoterPrompt(row),
       optOut: shouldShowContestantOptOut(row),
-      sessionId: mayFillSessionId(row)
+      visitId: mayFillVisitId(row)
     }).toEqual(expected);
   });
 });
 
-describe('the gate truth table, over every combination of inputs', () => {
+describe('the send-policy truth table, over every combination of inputs', () => {
   it('covers 256 combinations', () => {
     expect(ALL_ROWS).toHaveLength(256);
   });
@@ -194,7 +194,7 @@ describe('the gate truth table, over every combination of inputs', () => {
       usable && row.trackEvents && consentMode === 'gated' && row.voterAppAccessible && undecided
     );
     expect(shouldShowContestantOptOut(row)).toBe(usable && row.trackEvents && consentMode === 'gated');
-    expect(mayFillSessionId(row)).toBe(visitIdMode === 'memory' && events);
+    expect(mayFillVisitId(row)).toBe(visitIdMode === 'memory' && events);
   });
 });
 

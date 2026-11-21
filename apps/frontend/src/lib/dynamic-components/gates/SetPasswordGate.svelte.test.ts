@@ -11,6 +11,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const logout = vi.fn();
 const setPassword = vi.fn();
 
+vi.mock('$lib/contexts/app', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getAppContext: () => ({ track: () => undefined })
+}));
+
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({ t: (key: string) => key, locale: 'en', locales: ['en'], darkMode: false })
 }));

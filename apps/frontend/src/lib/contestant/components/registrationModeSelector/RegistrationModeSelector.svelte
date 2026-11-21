@@ -17,6 +17,10 @@ The radios are in no form. They choose and are never sent: the snippet holds the
 - `focusFirst`: Bindable: Function to set focus to the first radio.
 - Any valid attributes of a `<fieldset>` element. They reach the fieldset, which is rendered only with several modes.
 
+### Tracking events
+
+- `registration_modeChosen`: Sent with the chosen `mode` each time the user chooses a mode among several. Nothing is sent with a single mode.
+
 ### Accessibility
 
 - The group is a `<fieldset>` named by its `<legend>`, with native radios and no added role.
@@ -43,6 +47,7 @@ The radios are in no form. They choose and are never sent: the snippet holds the
 <script lang="ts">
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Radio } from '$lib/components/input';
+  import { getAppContext } from '$lib/contexts/app';
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { RegistrationMode } from '@openvaa/app-shared';
@@ -64,6 +69,7 @@ The radios are in no form. They choose and are never sent: the snippet holds the
   }
 
   const { t } = getComponentContext();
+  const { track } = getAppContext();
 
   /** The text of each mode's option. */
   const OPTION_TEXT: Record<RegistrationMode, TranslationKey> = {
@@ -82,8 +88,9 @@ The radios are in no form. They choose and are never sent: the snippet holds the
   /** What describes the group: whatever the caller named, then the error while it is rendered. */
   const describedBy = $derived([describedByProp, error ? errorId : undefined].filter(Boolean).join(' ') || undefined);
 
-  function clearError(): void {
+  function handleChoose(mode: RegistrationMode): void {
     error = undefined;
+    track('registration_modeChosen', { mode });
   }
 </script>
 
@@ -105,7 +112,7 @@ The radios are in no form. They choose and are never sent: the snippet holds the
           label={t(OPTION_TEXT[mode])}
           containerProps={{ class: 'p-lg' }}
           data-testid="register-mode-input"
-          onchange={clearError} />
+          onchange={() => handleChoose(mode)} />
         {#if selected === mode}
           <div class="px-lg pb-lg" data-testid="register-mode-panel" data-mode={mode}>
             {@render panel(mode)}

@@ -13,7 +13,7 @@ export type AnalyticsEvent<TName extends string = string> = {
   /** The app the event belongs to, derived from the route id of the view it belongs to. */
   app: AnalyticsApp;
   /** The visit id, present only when the event may carry it. */
-  id?: string;
+  visitId?: string;
   /** The event's attributes, as its vocabulary entry admits them. */
   attributes: Record<string, JSONData>;
 };

@@ -119,7 +119,7 @@ describe('NothingToEdit — a user with an email', () => {
     expect(value!.children).toHaveLength(0);
     expect(value!.getAttribute('translate')).toBe('no');
     expect(value!.classList).toContain('hyphens-none');
-    expect(value!.classList).toContain('[overflow-wrap:anywhere]');
+    expect(value!.classList).toContain('wrap-anywhere');
     expect(value!.classList).not.toContain('truncate');
 
     const list = value!.closest('dl');

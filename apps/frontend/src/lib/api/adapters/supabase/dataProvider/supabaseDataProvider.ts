@@ -1,4 +1,10 @@
-import { dynamicSettings, getLocalized, staticSettings, StoredSettingsSchema } from '@openvaa/app-shared';
+import {
+  dynamicSettings,
+  getLocalized,
+  isPlainObject,
+  staticSettings,
+  StoredSettingsSchema
+} from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
 import { parseAnswers } from '$lib/api/utils/parseAnswers';
@@ -45,15 +51,6 @@ import type {
 } from './supabaseDataProvider.type';
 
 /**
- * Whether a value read from a `jsonb` answer is an object with members, as opposed to a list, a scalar or `null`.
- * @param value - The value to narrow.
- * @returns `true` for a non-null, non-list object.
- */
-function isJsonObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
  * Place the four values `get_public_app_settings` answers at their storage paths, as a value for `StoredSettingsSchema` to validate.
  *
  * Only `access.contestantApp`, `access.contestantEditing`, `contestantApp.servedEntityTypes` and `analytics.trackEvents` are copied, whatever else the answer carries. A `null` member is left out: the function answers `null` where nothing is stored, and the schema's members are optional, not nullable.
@@ -61,9 +58,9 @@ function isJsonObject(value: unknown): value is Record<string, unknown> {
  * @returns The unvalidated stored settings, holding at most those four members.
  */
 function storedPublicSettings(answer: Record<string, unknown>): Record<string, unknown> {
-  const access = isJsonObject(answer.access) ? answer.access : {};
-  const contestantApp = isJsonObject(answer.contestantApp) ? answer.contestantApp : {};
-  const analytics = isJsonObject(answer.analytics) ? answer.analytics : {};
+  const access = isPlainObject(answer.access) ? answer.access : {};
+  const contestantApp = isPlainObject(answer.contestantApp) ? answer.contestantApp : {};
+  const analytics = isPlainObject(answer.analytics) ? answer.analytics : {};
 
   const gates: Record<string, unknown> = {};
   if (access.contestantApp != null) gates.contestantApp = access.contestantApp;
@@ -122,7 +119,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
           p_project_id: this.projectId
         });
         if (settingsError) throw new Error(`getAppSettings: ${settingsError.message}`);
-        if (!isJsonObject(publicSettings)) {
+        if (!isPlainObject(publicSettings)) {
           throw new Error('getAppSettings: get_public_app_settings returned a non-object');
         }
 

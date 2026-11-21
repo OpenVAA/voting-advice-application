@@ -9,9 +9,17 @@ export type InputProps =
     } & InputPropsBase<string>)
   | ({
       type: 'url';
+      /**
+       * Whether the input judges an entry when it is committed. While `true`, one that is not a URL shows the input's own error and leaves the value as it was, and a usable one is stored without its spaces. Set it to `false` where the caller judges the entry itself, for example when the form is submitted: every entry is then stored as typed. @default true
+       */
+      validate?: boolean;
     } & InputPropsBase<string>)
   | ({
       type: 'email';
+      /**
+       * Whether the input judges an entry when it is committed. While `true`, one that is not an address shows the input's own error and leaves the value as it was, and a usable one is stored without its spaces. Set it to `false` where the caller judges the entry itself, for example when the form is submitted: every entry is then stored as typed. @default true
+       */
+      validate?: boolean;
     } & InputPropsBase<string>)
   | ({
       type: 'password';
@@ -130,9 +138,9 @@ export type InputPropsBase<TValue, TElement extends string = 'input'> = Omit<
    */
   error?: string;
   /**
-   * Whether the `url` and `email` kinds judge an entry when it is committed. While `true`, one that is not a URL or an address shows the input's own error and leaves the value as it was, and a usable one is stored without its spaces. Set it to `false` where the caller judges the entry itself, for example when the form is submitted: every entry is then stored as typed. @default true
+   * When the single-line text kinds (`text`, `url`, `email`) take an entry in. With `'change'`, when it is committed. With `'input'`, on every keystroke: the value is set to the text as typed and `onChange` is called, without the judgement a commit makes, which still runs when the entry is committed. Other kinds ignore it. @default 'change'
    */
-  validate?: boolean;
+  commitOn?: 'change' | 'input';
   /**
    * The test id of the inline error. @default 'input-error'
    */

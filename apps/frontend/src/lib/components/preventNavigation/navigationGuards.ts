@@ -1,7 +1,12 @@
 import { log } from '@openvaa/app-shared';
 import { SvelteSet } from 'svelte/reactivity';
 import { goto } from '$app/navigation';
+import { page } from '$app/state';
+import { leaveByFullLoad } from './fullLoad';
 import type { BeforeNavigate } from '@sveltejs/kit';
+
+// Kept in a module of its own, so that a test can stand in for the full load that `leaveTo` makes.
+export { leaveByFullLoad };
 
 // A guard registers in `onMount`, which the server never runs, so the server's copy of this module holds no guard and nothing of one visitor reaches another.
 
@@ -81,13 +86,24 @@ export async function leaveUnasked(navigate: () => Promise<void>): Promise<void>
 }
 
 /**
- * Leave the page by a full load of the address. `location.assign` only starts the load, and an engine may fire `beforeunload` after it has returned, so whoever awaits this stands by until the document has gone.
+ * Leave the page for the address after a sign-out: by a navigation or, when that rejects or does not move the page, by a full load. A page that did not move would go on reading as signed in, with no session behind it.
  * @param address - Where to go.
- * @returns A `Promise` that never settles.
+ * @param addressBefore - The page's address when the sign-out started, which the navigation must have moved away from.
+ * @param onStuck - Called before the full load, when the navigation did not move the page.
+ * @returns A `Promise` resolving once the navigation has moved the page, and never settling when the full load is made.
  */
-export function leaveByFullLoad(address: string): Promise<void> {
-  location.assign(address);
-  return new Promise<void>(() => undefined);
+export async function leaveTo(address: string, addressBefore: string, onStuck?: () => void): Promise<void> {
+  let moved = false;
+  try {
+    await goto(address, { invalidateAll: true });
+    moved = page.url.href !== addressBefore;
+  } catch (e) {
+    // A rejection can come after the address changed, so the address says nothing here.
+    log.error(`Error navigating after a sign-out: ${(e as Error)?.message}`);
+  }
+  if (moved) return;
+  onStuck?.();
+  await leaveByFullLoad(address);
 }
 
 /**

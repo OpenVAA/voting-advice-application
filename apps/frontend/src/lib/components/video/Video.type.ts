@@ -44,7 +44,7 @@ export type OptionalVideoProps = {
    */
   onEnded?: () => void;
   /**
-   * A callback triggered when the video tracking event should be sent. Send to `TrackingService.startEvent` or `track` to track.
+   * A callback triggered when the video tracking event should be sent. Send to `TrackingService.track` to track.
    */
   onTrack?: (event: TrackingEvent<'video'>) => void;
 };

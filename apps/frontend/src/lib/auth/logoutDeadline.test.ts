@@ -56,8 +56,8 @@ afterEach(() => {
 describe('cookieValues', () => {
   it('returns every value of one name, in order', () => {
     expect(
-      cookieValues(`a=1; ${COOKIE.logoutPending}=${ID}; b=2; ${COOKIE.logoutPending}=passed`, COOKIE.logoutPending)
-    ).toEqual([ID, 'passed']);
+      cookieValues(`a=1; ${COOKIE.logoutPending}=${ID}; b=2; ${COOKIE.logoutPending}=settled`, COOKIE.logoutPending)
+    ).toEqual([ID, 'settled']);
   });
 
   it('returns none for another name, or for a name that ends with the one asked for', () => {
@@ -240,7 +240,7 @@ describe('withdrawAnyCount', () => {
 
 describe('LOGOUT_DEADLINE_SETTLED', () => {
   it('is a value never read as an id of a count', () => {
-    expect(LOGOUT_DEADLINE_SETTLED).toBe('passed');
+    expect(LOGOUT_DEADLINE_SETTLED).toBe('settled');
     expect(LOGOUT_DEADLINE_SETTLED).not.toMatch(ID_SHAPE);
   });
 });

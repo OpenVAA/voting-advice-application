@@ -39,6 +39,10 @@ export type MultilingualTextPartProps = {
    */
   describedBy?: string;
   /**
+   * Whether `Input` is showing an error, which marks every field `aria-invalid`. @default false
+   */
+  invalid?: boolean;
+  /**
    * Any remaining attributes the caller passed to `Input`, spread onto every locale's field. @default {}
    */
   restProps?: HTMLAttributes<HTMLElement>;

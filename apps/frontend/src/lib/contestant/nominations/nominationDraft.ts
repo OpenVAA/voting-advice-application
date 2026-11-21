@@ -12,6 +12,7 @@
 
 import { allowedParentTypes, ENTITY_TYPE } from '@openvaa/data';
 import { admissibleElectionsOf } from './editorFacts';
+import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { EntityType, NominationShape } from '@openvaa/data';
 import type {
@@ -28,7 +29,7 @@ export const NO_PARENT_CHOICE = 'none';
 export const OTHER_PARENT_CHOICE = 'other';
 
 /** The key of a nomination's custom data that holds a typed parent name. */
-const TYPED_NAME_KEY = 'requestedParentOrganization';
+const TYPED_PARENT_NAME_KEY: keyof CustomData['Nomination'] = 'requestedParentOrganization';
 
 /** What a card's election asks of the entity's parent. */
 export type ParentRule = {
@@ -154,96 +155,6 @@ export type DraftFacts = {
 };
 
 /**
- * Whether an entity of the given type answers its parent group itself. A candidate does: nothing is chosen for it, since a group it left untouched must never be read as standing without a party. Every other entity type starts at the option that names no parent.
- */
-function answersParentGroupItself(entityType: EntityType): boolean {
-  return entityType === ENTITY_TYPE.Candidate;
-}
-
-/**
- * What an election of the given shape asks of the parent of an entity of the given type. An election whose shape is not known asks for none.
- */
-function parentRuleOf(shape: NominationShape | undefined, entityType: EntityType): ParentRule {
-  const allowed = shape === undefined ? undefined : allowedParentTypes(shape, entityType);
-  if (!allowed || allowed.types.length === 0) return { types: [], parentRequired: false, choiceRequired: false };
-  return {
-    types: [...allowed.types],
-    parentRequired: allowed.required,
-    choiceRequired: allowed.required || answersParentGroupItself(entityType)
-  };
-}
-
-/** The parent choice a new card starts with: nothing where the user must choose or no group is shown, and otherwise the option that names no parent. */
-function newCardChoice(rule: ParentRule): string | undefined {
-  return rule.types.length === 0 || rule.choiceRequired ? undefined : NO_PARENT_CHOICE;
-}
-
-/** Whether a card carries its stored parent: always on a card that stays in its constituency, and on a moved card only where the parent's type is one the election pairs with the entity. */
-function carriesStoredParent(rule: ParentRule, parentType: EntityType, moved: boolean): boolean {
-  return !moved || rule.types.includes(parentType);
-}
-
-/**
- * The name of a parent that a nomination's editor typed, for a party or an alliance the application does not list.
- * @param nomination - A nomination, as the caller has read it.
- * @returns The stored name, trimmed. Empty when the nomination's custom data holds none.
- */
-export function typedParentNameOf(nomination: Pick<EntityNomination, 'customData'>): string {
-  const value = nomination.customData?.[TYPED_NAME_KEY];
-  return typeof value === 'string' ? value.trim() : '';
-}
-
-/** Whether a card is a moved one: its nomination is stored in another constituency than the card's. */
-function isMoved(card: EditorCard): boolean {
-  return card.previousConstituencyId !== undefined;
-}
-
-/**
- * The card of a stored nomination.
- * @param movedTo - The constituency the nomination is moved to, on a moved card.
- */
-function existingCardOf({
-  nomination,
-  rule,
-  state,
-  movedTo
-}: {
-  nomination: EntityNomination;
-  rule: ParentRule;
-  state: 'kept' | 'removed';
-  movedTo: Id | undefined;
-}): EditorCard {
-  const otherName = typedParentNameOf(nomination);
-  const parent = nomination.parent;
-  let parentChoice: string | undefined;
-  if (rule.types.length === 0) parentChoice = undefined;
-  else if (parent)
-    parentChoice = carriesStoredParent(rule, parent.entityType, movedTo !== undefined)
-      ? parent.entityId
-      : newCardChoice(rule);
-  else if (otherName) parentChoice = OTHER_PARENT_CHOICE;
-  else parentChoice = rule.parentRequired ? undefined : NO_PARENT_CHOICE;
-
-  const stored: StoredCardValues = { electionSymbol: nomination.electionSymbol, parentChoice, otherName };
-  if (parent) stored.parent = { entityType: parent.entityType, entityId: parent.entityId };
-  const card: EditorCard = {
-    key: nomination.id,
-    nominationId: nomination.id,
-    electionId: nomination.electionId,
-    constituencyId: movedTo ?? nomination.constituencyId,
-    confirmed: nomination.confirmed,
-    state,
-    electionSymbol: nomination.electionSymbol,
-    parentChoice,
-    otherName,
-    parentRule: rule,
-    stored
-  };
-  if (movedTo !== undefined) card.previousConstituencyId = nomination.constituencyId;
-  return card;
-}
-
-/**
  * The cards of the details step.
  *
  * - Every stored nomination has a card, whatever the selection holds: `kept` when its election is among the chosen ones and `removed` when it is not. A nomination whose election is not among those given has one too, after the others, with no parent group.
@@ -323,6 +234,91 @@ export function buildCards({
 }
 
 /**
+ * What an election of the given shape asks of the parent of an entity of the given type. An election whose shape is not known asks for none.
+ */
+function parentRuleOf(shape: NominationShape | undefined, entityType: EntityType): ParentRule {
+  const allowed = shape === undefined ? undefined : allowedParentTypes(shape, entityType);
+  if (!allowed || allowed.types.length === 0) return { types: [], parentRequired: false, choiceRequired: false };
+  return {
+    types: [...allowed.types],
+    parentRequired: allowed.required,
+    choiceRequired: allowed.required || answersParentGroupItself(entityType)
+  };
+}
+
+/**
+ * Whether an entity of the given type answers its parent group itself. A candidate does: nothing is chosen for it, since a group it left untouched must never be read as standing without a party. Every other entity type starts at the option that names no parent.
+ */
+function answersParentGroupItself(entityType: EntityType): boolean {
+  return entityType === ENTITY_TYPE.Candidate;
+}
+
+/** The parent choice a new card starts with: nothing where the user must choose or no group is shown, and otherwise the option that names no parent. */
+function newCardChoice(rule: ParentRule): string | undefined {
+  return rule.types.length === 0 || rule.choiceRequired ? undefined : NO_PARENT_CHOICE;
+}
+
+/**
+ * The card of a stored nomination.
+ * @param movedTo - The constituency the nomination is moved to, on a moved card.
+ */
+function existingCardOf({
+  nomination,
+  rule,
+  state,
+  movedTo
+}: {
+  nomination: EntityNomination;
+  rule: ParentRule;
+  state: 'kept' | 'removed';
+  movedTo: Id | undefined;
+}): EditorCard {
+  const otherName = typedParentNameOf(nomination);
+  const parent = nomination.parent;
+  let parentChoice: string | undefined;
+  if (rule.types.length === 0) parentChoice = undefined;
+  else if (parent)
+    parentChoice = carriesStoredParent(rule, parent.entityType, movedTo !== undefined)
+      ? parent.entityId
+      : newCardChoice(rule);
+  else if (otherName) parentChoice = OTHER_PARENT_CHOICE;
+  else parentChoice = rule.parentRequired ? undefined : NO_PARENT_CHOICE;
+
+  const stored: StoredCardValues = { electionSymbol: nomination.electionSymbol, parentChoice, otherName };
+  if (parent) stored.parent = { entityType: parent.entityType, entityId: parent.entityId };
+  const card: EditorCard = {
+    key: nomination.id,
+    nominationId: nomination.id,
+    electionId: nomination.electionId,
+    constituencyId: movedTo ?? nomination.constituencyId,
+    confirmed: nomination.confirmed,
+    state,
+    electionSymbol: nomination.electionSymbol,
+    parentChoice,
+    otherName,
+    parentRule: rule,
+    stored
+  };
+  if (movedTo !== undefined) card.previousConstituencyId = nomination.constituencyId;
+  return card;
+}
+
+/**
+ * The name of a parent that a nomination's editor typed, for a party or an alliance the application does not list.
+ * @param nomination - A nomination, as the caller has read it.
+ * @returns The stored name, trimmed. Empty when the nomination's custom data holds none.
+ */
+export function typedParentNameOf(nomination: Pick<EntityNomination, 'customData'>): string {
+  const value = nomination.customData?.[TYPED_PARENT_NAME_KEY];
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+/** Whether a card carries its stored parent: always on a card that stays in its constituency, and on a moved card only where the parent's type is one the election pairs with the entity. */
+function carriesStoredParent(rule: ParentRule, parentType: EntityType, moved: boolean): boolean {
+  return !moved || rule.types.includes(parentType);
+}
+
+/**
  * The parent group of one card: its options in order, the option chosen on arrival, and whether the user must choose.
  *
  * - Where the card's election asks the entity for no parent the answer is empty, and no group is shown.
@@ -386,14 +382,9 @@ export function parentChoicesOf({
   };
 }
 
-/** Whether a save would write anything for one card. */
-function isToBeWritten(card: EditorCard): boolean {
-  if (card.state === 'removed') return card.nominationId !== undefined;
-  const stored = card.stored;
-  if (card.state === 'new' || !stored || isMoved(card)) return true;
-  if (card.electionSymbol.trim() !== stored.electionSymbol.trim()) return true;
-  if (card.parentChoice !== stored.parentChoice) return true;
-  return card.parentChoice === OTHER_PARENT_CHOICE && card.otherName.trim() !== stored.otherName.trim();
+/** Whether a card is a moved one: its nomination is stored in another constituency than the card's. */
+function isMoved(card: EditorCard): boolean {
+  return card.previousConstituencyId !== undefined;
 }
 
 /**
@@ -403,6 +394,16 @@ function isToBeWritten(card: EditorCard): boolean {
  */
 export function somethingToWrite(cards: ReadonlyArray<EditorCard>): boolean {
   return cards.some(isToBeWritten);
+}
+
+/** Whether a save would write anything for one card. */
+function isToBeWritten(card: EditorCard): boolean {
+  if (card.state === 'removed') return card.nominationId !== undefined;
+  const stored = card.stored;
+  if (card.state === 'new' || !stored || isMoved(card)) return true;
+  if (card.electionSymbol.trim() !== stored.electionSymbol.trim()) return true;
+  if (card.parentChoice !== stored.parentChoice) return true;
+  return card.parentChoice === OTHER_PARENT_CHOICE && card.otherName.trim() !== stored.otherName.trim();
 }
 
 /**
@@ -446,36 +447,6 @@ export function validateCards(
 }
 
 /**
- * What one card's nomination is to stand under after the save.
- * @param card - The card.
- * @param listed - The entities the card's parent group lists, from which a chosen entity's type is read.
- * @throws For a card that has a parent group with nothing chosen, for the typed-name option with a blank name, and for a chosen entity that is not listed under a type the card's rule names.
- */
-function desiredParentOf(card: EditorCard, listed: ReadonlyArray<ListedParent>): NominationParentChoice {
-  const existing = card.nominationId !== undefined;
-  const moved = isMoved(card);
-  if (card.parentRule.types.length === 0) return existing && !moved ? { kind: 'keep' } : { kind: 'none' };
-  if (card.parentChoice === undefined)
-    throw new Error('nominationDraft: a card with nothing chosen in its parent group has no desired nomination');
-  if (card.parentChoice === NO_PARENT_CHOICE) return { kind: 'none' };
-  if (card.parentChoice === OTHER_PARENT_CHOICE) {
-    const name = card.otherName.trim();
-    if (name === '') throw new Error('nominationDraft: a card with a blank typed name has no desired nomination');
-    return { kind: 'other', name };
-  }
-  const storedParent = card.stored?.parent;
-  if (storedParent && storedParent.entityId === card.parentChoice)
-    return moved
-      ? { kind: 'entity', entityType: storedParent.entityType, entityId: storedParent.entityId }
-      : { kind: 'keep' };
-  const chosen = listed.find(
-    (entity) => entity.id === card.parentChoice && card.parentRule.types.includes(entity.entityType)
-  );
-  if (!chosen) throw new Error('nominationDraft: a card whose chosen entity is not listed has no desired nomination');
-  return { kind: 'entity', entityType: chosen.entityType, entityId: chosen.id };
-}
-
-/**
  * The set of nominations handed to the writer: one for every card that is not removed, in the cards' order. A stored nomination the set leaves out is deleted by the write.
  *
  * - `id` is stated on an existing card and left out on a new one. A moved card states its `id` and the constituency it is moved to.
@@ -506,6 +477,36 @@ export function desiredSetOf(
 }
 
 /**
+ * What one card's nomination is to stand under after the save.
+ * @param card - The card.
+ * @param listed - The entities the card's parent group lists, from which a chosen entity's type is read.
+ * @throws For a card that has a parent group with nothing chosen, for the typed-name option with a blank name, and for a chosen entity that is not listed under a type the card's rule names.
+ */
+function desiredParentOf(card: EditorCard, listed: ReadonlyArray<ListedParent>): NominationParentChoice {
+  const existing = card.nominationId !== undefined;
+  const moved = isMoved(card);
+  if (card.parentRule.types.length === 0) return existing && !moved ? { kind: 'keep' } : { kind: 'none' };
+  if (card.parentChoice === undefined)
+    throw new Error('nominationDraft: a card with nothing chosen in its parent group has no desired nomination');
+  if (card.parentChoice === NO_PARENT_CHOICE) return { kind: 'none' };
+  if (card.parentChoice === OTHER_PARENT_CHOICE) {
+    const name = card.otherName.trim();
+    if (name === '') throw new Error('nominationDraft: a card with a blank typed name has no desired nomination');
+    return { kind: 'other', name };
+  }
+  const storedParent = card.stored?.parent;
+  if (storedParent && storedParent.entityId === card.parentChoice)
+    return moved
+      ? { kind: 'entity', entityType: storedParent.entityType, entityId: storedParent.entityId }
+      : { kind: 'keep' };
+  const chosen = listed.find(
+    (entity) => entity.id === card.parentChoice && card.parentRule.types.includes(entity.entityType)
+  );
+  if (!chosen) throw new Error('nominationDraft: a card whose chosen entity is not listed has no desired nomination');
+  return { kind: 'entity', entityType: chosen.entityType, entityId: chosen.id };
+}
+
+/**
  * What the label of the details step's main button asks of the draft.
  * @param cards - The cards, as the page holds them.
  * @param hadNomination - Whether the entity had a nomination when the cards were built.
@@ -517,6 +518,37 @@ export function draftFactsOf(cards: ReadonlyArray<EditorCard>, hadNomination: bo
     anyKeptOrNew: cards.some((card) => card.state !== 'removed'),
     hadNomination
   };
+}
+
+/**
+ * Whether two lists of an entity's nominations are the same rows with the same values: the same ids, and for each id the same election, constituency, round, symbol, confirmation, parent entity, custom data and time of the last update. A row updated since, whatever it was updated to, is a change, as it is to the write, which is refused when one is. The order of the rows is not compared, nor are the names a nomination is shown with.
+ * @param a - One list, as the caller has read it.
+ * @param b - The other list.
+ * @returns `true` for two empty lists.
+ */
+export function sameNominations(a: ReadonlyArray<EntityNomination>, b: ReadonlyArray<EntityNomination>): boolean {
+  if (a.length !== b.length) return false;
+  const rowsOfB = new Map(b.map((nomination) => [nomination.id, nomination]));
+  if (rowsOfB.size !== b.length || new Set(a.map((nomination) => nomination.id)).size !== a.length) return false;
+  return a.every((nomination) => {
+    const other = rowsOfB.get(nomination.id);
+    return other !== undefined && sameValues(nomination, other);
+  });
+}
+
+/** Whether two nominations with one id hold the same values. */
+function sameValues(a: EntityNomination, b: EntityNomination): boolean {
+  return (
+    a.electionId === b.electionId &&
+    a.constituencyId === b.constituencyId &&
+    a.electionRound === b.electionRound &&
+    a.electionSymbol === b.electionSymbol &&
+    a.confirmed === b.confirmed &&
+    a.parent?.entityType === b.parent?.entityType &&
+    a.parent?.entityId === b.parent?.entityId &&
+    sameContent(a.customData, b.customData) &&
+    a.updatedAt === b.updatedAt
+  );
 }
 
 /** Whether two values of stored custom data hold the same content, whatever the order of an object's keys. */
@@ -536,35 +568,4 @@ function sameContent(a: unknown, b: unknown): boolean {
     entriesOfA.length === contentOfB.size &&
     entriesOfA.every(([key, value]) => contentOfB.has(key) && sameContent(value, contentOfB.get(key)))
   );
-}
-
-/** Whether two nominations with one id hold the same values. */
-function sameValues(a: EntityNomination, b: EntityNomination): boolean {
-  return (
-    a.electionId === b.electionId &&
-    a.constituencyId === b.constituencyId &&
-    a.electionRound === b.electionRound &&
-    a.electionSymbol === b.electionSymbol &&
-    a.confirmed === b.confirmed &&
-    a.parent?.entityType === b.parent?.entityType &&
-    a.parent?.entityId === b.parent?.entityId &&
-    sameContent(a.customData, b.customData) &&
-    a.updatedAt === b.updatedAt
-  );
-}
-
-/**
- * Whether two lists of an entity's nominations are the same rows with the same values: the same ids, and for each id the same election, constituency, round, symbol, confirmation, parent entity, custom data and time of the last update. A row updated since, whatever it was updated to, is a change, as it is to the write, which is refused when one is. The order of the rows is not compared, nor are the names a nomination is shown with.
- * @param a - One list, as the caller has read it.
- * @param b - The other list.
- * @returns `true` for two empty lists.
- */
-export function sameNominations(a: ReadonlyArray<EntityNomination>, b: ReadonlyArray<EntityNomination>): boolean {
-  if (a.length !== b.length) return false;
-  const rowsOfB = new Map(b.map((nomination) => [nomination.id, nomination]));
-  if (rowsOfB.size !== b.length || new Set(a.map((nomination) => nomination.id)).size !== a.length) return false;
-  return a.every((nomination) => {
-    const other = rowsOfB.get(nomination.id);
-    return other !== undefined && sameValues(nomination, other);
-  });
 }

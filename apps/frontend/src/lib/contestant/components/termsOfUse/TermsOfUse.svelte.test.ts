@@ -7,10 +7,10 @@
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { INACTIVE_PROJECTION } from '$lib/analytics/modes';
-import type { GateInput } from '$lib/contexts/app/tracking/gates';
+import type { SendPolicyInput } from '$lib/contexts/app/tracking/sendPolicy';
 
 const { box } = vi.hoisted(() => ({
-  box: { trackEvents: true, gate: undefined as unknown as GateInput }
+  box: { trackEvents: true, policy: undefined as unknown as SendPolicyInput }
 }));
 
 vi.mock('$lib/contexts/app', () => ({
@@ -19,9 +19,9 @@ vi.mock('$lib/contexts/app', () => ({
     get appSettings() {
       return { analytics: { trackEvents: box.trackEvents } };
     },
-    analyticsGate: {
+    analyticsPolicy: {
       get current() {
-        return box.gate;
+        return box.policy;
       }
     }
   })
@@ -36,8 +36,14 @@ const { TermsOfUse } = await import('.');
 const TITLE = 'privacy.usageData.title';
 const CONTENT = 'privacy.usageData.content';
 
-/** A gate input with a provider configured or not, and the Global Privacy Control signal on or off. */
-function gateInput({ active, globalPrivacyControl }: { active: boolean; globalPrivacyControl: boolean }): GateInput {
+/** A send-policy input with a provider configured or not, and the Global Privacy Control signal on or off. */
+function policyInput({
+  active,
+  globalPrivacyControl
+}: {
+  active: boolean;
+  globalPrivacyControl: boolean;
+}): SendPolicyInput {
   return {
     projection: { ...INACTIVE_PROJECTION, active },
     globalPrivacyControl,
@@ -76,7 +82,7 @@ describe('TermsOfUse — the usage-data section', () => {
     'trackEvents $trackEvents, provider configured $active, Global Privacy Control $globalPrivacyControl: shown $shown',
     ({ trackEvents, active, globalPrivacyControl, shown }) => {
       box.trackEvents = trackEvents;
-      box.gate = gateInput({ active, globalPrivacyControl });
+      box.policy = policyInput({ active, globalPrivacyControl });
 
       const text = renderText();
 
@@ -87,7 +93,7 @@ describe('TermsOfUse — the usage-data section', () => {
 
   it('keeps the two dynamic sections whether or not it shows the usage-data section', () => {
     box.trackEvents = false;
-    box.gate = gateInput({ active: true, globalPrivacyControl: false });
+    box.policy = policyInput({ active: true, globalPrivacyControl: false });
 
     const text = renderText();
 
