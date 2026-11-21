@@ -56,7 +56,7 @@ It compares each pair between the root `.env` and the functions' `.env`, and che
 
 Every query the frontend makes on a project-scoped table is limited to the project named by `PUBLIC_PROJECT_ID`. The variable is mandatory and has no fallback: if it is empty, or is not a canonical UUID, the Supabase adapter throws when it is constructed, and the message names the variable and the local default. The local value in `.env.example` is `00000000-0000-0000-0000-000000000001`, the default project that `seed.sql` creates.
 
-`send-email` reads the same name and refuses a request for another project, so the Edge Function `.env` carries it too.
+`account-access` and `send-email` read the same name and refuse a request for another project, so the Edge Function `.env` carries it too.
 
 ## Reading variables in the frontend
 

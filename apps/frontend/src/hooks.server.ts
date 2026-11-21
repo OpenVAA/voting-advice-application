@@ -136,7 +136,7 @@ export const handle: Handle = sequence(
 
 /**
  * The error the error page renders for an unexpected error or a page that does not exist.
- * Its `message` is the response's status, which the error page shows as its title, so a missing page is titled 404 and a server error 500. The error never reaches the page.
+ * Its `message` is the response's status; the error page replaces a bare status with that status's translated message, `error.default` when there is none. The error never reaches the page.
  * A server error, status 500 or above, is logged through the shared logger with the error's name, message and stack. A status below 500, such as a missing page, is the client's request and is not logged.
  */
 export const handleError: HandleServerError = async ({ error, status }) => {

@@ -17,7 +17,7 @@
  *
  * The read is line-oriented and has no comment blanker, so a comment that names a banned form is a finding. Comments under `infra/` say "an inline policy" rather than naming the resource type.
  *
- * What this guard cannot see: a module sourced from outside `infra/` (the layout uses none); anything created through a CloudFormation stack resource, which can create any IAM object; and policies that already exist in an account, which an operator's read-only inventory script covers. Directories named `.terraform` (downloaded providers and modules) are skipped.
+ * What this guard cannot see: a module sourced from outside `infra/` (the layout uses none); anything created through a CloudFormation stack resource, which can create any IAM object; and policies that already exist in an account, which an operator's read-only inline-policy check, `infra/scripts/check-inline-policies.sh`, covers. Directories named `.terraform` (downloaded providers and modules) are skipped.
  *
  * A check that examined nothing must not report success: a root holding no `.tf` file exits 1.
  *

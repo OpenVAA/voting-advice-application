@@ -867,7 +867,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `x-identity-callback-secret` header, or with a value other than
      `IDENTITY_CALLBACK_SERVER_SECRET` (constant-time compare, `serverCredential.ts`), is answered
      401 `refused` before the body, the configuration or the token is read. Body:
-     `{ id_token, project_id (uuid, required), entity_type? }`; the project comes from the REQUEST
+     `{ id_token, project_id (uuid, required), intent?, entity_type? }`; the project comes from the REQUEST
      and the function reads none from its environment. It verifies the JWE/JWT and, BEFORE any
      account or row is touched, asks `public.identity_provider_entity_types(p_project_id)` which
      entity types the project lets an identity provider register (the rule is the database's,
@@ -893,8 +893,11 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      `identity_match_value` (`appMetadata.ts`); the registrations are never part of it, and the
      identity metadata the Edge Function hands the database function sends `hetu` and `birthdate` as
      null, which removes them. Every answer is one closed `result` (`requestContract.ts`):
-     `created`, `found`, `no_entity` (200, with `token`), `refused` (401), `mode_not_allowed` (403),
-     `invalid_token` (401), `bad_request` (400), `configuration` (500), `unavailable` (503).
+     `created`, `found`, `no_entity`, `signed_in` (200, with `token`), `refused` (401),
+     `mode_not_allowed` (403), `no_account` (404), `invalid_token` (401), `bad_request` (400),
+     `configuration` (500), `unavailable` (503). A request with `intent: 'sign_in'` creates
+     nothing: after the token is verified it signs in only the account that already holds this
+     identity's match value, answering `signed_in`, and answers `no_account` when there is none.
    - `send-email`: gated as above; resolves per-recipient email variables in the configured
      project and sends via SMTP (nodemailer).
 

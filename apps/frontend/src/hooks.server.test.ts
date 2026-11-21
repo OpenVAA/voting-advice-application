@@ -1,7 +1,7 @@
 /**
  * The server's error hook.
  *
- * `handleError` answers the error the error page renders: its `message` is the response's status, which the page shows as its title. A server error is logged through the shared logger and never reaches the page; a missing page is not logged.
+ * `handleError` answers the error the error page renders: its `message` is the response's status, which the page replaces with that status's translated message, `error.default` when there is none. A server error is logged through the shared logger and never reaches the page; a missing page is not logged.
  *
  * @vitest-environment node
  */

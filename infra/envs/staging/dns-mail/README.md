@@ -180,7 +180,7 @@ Step 3.
    terraform plan -input=false -no-color -detailed-exitcode > "$L/s8.log" 2>&1; echo "s8_second_plan_exit=$?"
    ```
 
-9. The account, now that the SMTP user exists. Both assert modes of the inventory script must print 0:
+9. The account, now that the SMTP user exists. Both assert modes of `check-inline-policies.sh` must print 0:
    no IAM user in the account carries an inline policy, and everything under the path `/openvaa/` has
    customer-managed policies only. The last two lines read the SMTP user's own policies: no inline
    policy, and the send policy attached.
@@ -396,7 +396,7 @@ it.
 | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | The DKIM signing zone of this identity, as `SigningHostedZone` reports it, equals the default `dkim.amazonses.com` in the variable file     | Step 2, item 7                                                               |
 | A second plan right after the first apply shows no change                                                                                   | Step 3, item 8                                                               |
-| The SMTP user carries no inline policy and only the customer-managed send policy, and both assert modes of the inventory script pass        | Step 3, item 9                                                               |
+| The SMTP user carries no inline policy and only the customer-managed send policy, and both assert modes of `check-inline-policies.sh` pass  | Step 3, item 9                                                               |
 | The Cloudflare dashboard accepts four NS records named `staging` beside the zone's other records                                            | Step 5, item 3                                                               |
 | The referral from the parent zone's name servers names the four name servers of this zone, and a public resolver answers with the same four | Step 6                                                                       |
 | The identity reaches verified for sending, with DKIM `SUCCESS` and the MAIL FROM domain `SUCCESS`                                           | Step 7, item 1                                                               |
