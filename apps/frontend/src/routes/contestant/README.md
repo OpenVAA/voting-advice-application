@@ -2,7 +2,7 @@
 
 > See also the online docs:
 >
-> - [Contestant app](https://openvaa.org/developers-guide/contestant-app/pre-registration-and-invitation) (or [locally](</apps/docs/src/routes/(content)/developers-guide/contestant-app/pre-registration-and-invitation/+page.md>))
+> - [Contestant app](https://openvaa.org/developers-guide/contestant-app/invitation) (or [locally](</apps/docs/src/routes/(content)/developers-guide/contestant-app/invitation/+page.md>))
 > - [Registration](https://openvaa.org/developers-guide/contestant-app/registration) (or [locally](</apps/docs/src/routes/(content)/developers-guide/contestant-app/registration/+page.md>))
 > - [Login and password reset](https://openvaa.org/developers-guide/contestant-app/login-and-password-reset) (or [locally](</apps/docs/src/routes/(content)/developers-guide/contestant-app/login-and-password-reset/+page.md>))
 > - [Entity selection and the entity routes](https://openvaa.org/developers-guide/contestant-app/entity-selection) (or [locally](</apps/docs/src/routes/(content)/developers-guide/contestant-app/entity-selection/+page.md>))

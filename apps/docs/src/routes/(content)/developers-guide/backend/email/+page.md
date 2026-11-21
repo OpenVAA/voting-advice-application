@@ -9,7 +9,7 @@ Two Edge Functions send email, and Supabase Auth sends none:
 | The address-confirmation link         | the `account-access` Edge Function's `confirm-address` operation, over SMTP, for an account an identity provider created; see [Bank authentication](/developers-guide/contestant-app/bank-authentication#the-confirmation-mail) |
 | Templated messages to a list of users | the `send-email` Edge Function, over SMTP                                                                                                                                                                                       |
 
-Creating an invitation sends nothing. A link is mailed when somebody asks for one, and only to an address the database returns for the request; see [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation#asking-for-a-sign-in-link).
+Creating an invitation sends nothing. A link is mailed when somebody asks for one, and only to an address the database returns for the request; see [Invitation](/developers-guide/contestant-app/invitation#asking-for-a-sign-in-link).
 
 ## Supabase Auth sends no mail
 

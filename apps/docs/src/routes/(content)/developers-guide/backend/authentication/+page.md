@@ -119,11 +119,11 @@ An invitation is a row of `public.invitations` that promises one grant, stated i
 
 `public.claim_invitations(p_project_id)` then writes the promised grants. It reads the caller's own confirmed address from `auth.users` and takes no address, user id or invitation id, so a caller can claim only the invitations addressed to them. It relies on the meaning of a confirmed address described under [Who can create an account](#who-can-create-an-account): an address counts as proven only when `auth.users.email_confirmed_at` is set, and that is sound only while the auth service refuses public sign-up and confirms an address by a mailed link alone.
 
-An open invitation for a candidate or an organization is honoured only under a registration mode the project allows for that type; the database judges it (see [The registration modes](/developers-guide/contestant-app/pre-registration-and-invitation#the-registration-modes)).
+An open invitation for a candidate or an organization is honoured only under a registration mode the project allows for that type; the database judges it (see [The registration modes](/developers-guide/contestant-app/invitation#the-registration-modes)).
 
 A grant reaches a token only when one is issued, and the app-entry gates read the token's claim, so the session is refreshed after a claim and before a gate is asked. The database itself serves the grant at once. The confirm page's action and the sign-in actions therefore run in one order: session, claim, refresh, then gates.
 
-See [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation) for the table, who may promise which grant, the code, the link request, the claim, the order of the entry points and the limits.
+See [Invitation](/developers-guide/contestant-app/invitation) for the table, who may promise which grant, the code, the link request, the claim, the order of the entry points and the limits.
 
 ### The address of an identity-provider account
 

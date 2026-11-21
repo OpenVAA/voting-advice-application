@@ -205,7 +205,7 @@ export const navigation: Navigation = [
         children: [
           {
             title: 'Invitation',
-            route: '/developers-guide/contestant-app/pre-registration-and-invitation'
+            route: '/developers-guide/contestant-app/invitation'
           },
           {
             title: 'Registration',

@@ -70,7 +70,7 @@ Both `hooks.server.ts` and `hooks.client.ts` also set the shared logger's level 
 | Admin App      | `src/routes/admin/`      | `admin/(protected)/` needs a signed-in session                                                         |
 | Server routes  | `src/routes/api/`        | Each endpoint makes its own checks                                                                     |
 
-See [Routing](/developers-guide/frontend/routing), the Contestant App pages, starting with [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation), and the [Admin app](/developers-guide/admin-app).
+See [Routing](/developers-guide/frontend/routing), the Contestant App pages, starting with [Invitation](/developers-guide/contestant-app/invitation), and the [Admin app](/developers-guide/admin-app).
 
 ## Workspace scripts
 

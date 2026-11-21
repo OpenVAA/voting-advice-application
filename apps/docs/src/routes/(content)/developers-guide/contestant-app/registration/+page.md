@@ -2,7 +2,7 @@
 
 There are three ways to register in the Contestant App, and the registration screen, `/contestant/register`, is the one tree they all start from. Each is a registration mode the project allows per entity type:
 
-- **`email`.** The user proves an email address that an invitation names, signs in by the link mailed to it and chooses a password. The account and its grant come from the invitation: an administrator creates it, and the claim writes the grant when its addressee signs in (see [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation)).
+- **`email`.** The user proves an email address that an invitation names, signs in by the link mailed to it and chooses a password. The account and its grant come from the invitation: an administrator creates it, and the claim writes the grant when its addressee signs in (see [Invitation](/developers-guide/contestant-app/invitation)).
 - **`code`.** The same, starting from a registration code the invitation holds.
 - **`identity_provider`.** The user identifies with a bank identity, and the `identity-callback` Edge Function creates the account and the entity it registers, a candidate or a party, with its grant. The user then gives the address they will sign in with. See [Bank authentication (OIDC)](/developers-guide/contestant-app/bank-authentication).
 
@@ -35,7 +35,7 @@ The login screen holds no field. "Sign in with email" leads to the sign-in scree
 - `email` and `code` are listed when any entity type the project serves allows them, because the invitation they redeem names its own entity.
 - While `access.contestantEditing` is `'locked'`, nothing is listed: the login screen shows the locked sentence and no "Register". The database's rule allows no mode then either.
 
-The database applies the same matrix to the invitation itself: an open invitation for a candidate or an organization is honoured only under a mode its project allows for that type (see [Invitation](/developers-guide/contestant-app/pre-registration-and-invitation#the-registration-modes)).
+The database applies the same matrix to the invitation itself: an open invitation for a candidate or an organization is honoured only under a mode its project allows for that type (see [Invitation](/developers-guide/contestant-app/invitation#the-registration-modes)).
 
 ## The guard of the registration routes
 
