@@ -13,6 +13,10 @@ import { SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
 const RAW_INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
 const ENUM_SOURCE = readFileSync(new URL('../../schema/000-enums.sql', import.meta.url), 'utf8');
 const CALLBACK_SOURCE = readFileSync(
+  new URL('../../../../frontend/src/lib/server/auth/identityCallback.ts', import.meta.url),
+  'utf8'
+);
+const CALLBACK_ROUTE_SOURCE = readFileSync(
   new URL('../../../../frontend/src/routes/api/oidc/callback/+server.ts', import.meta.url),
   'utf8'
 );
@@ -173,7 +177,7 @@ describe('identity-callback flow conformance', () => {
 
     it("is the frontend's callback, which sends the credential under the header the function reads", () => {
       expect(CALLBACK_SOURCE).toContain(`'${SERVER_CREDENTIAL_HEADER}': `);
-      expect(CALLBACK_SOURCE).toContain('constants.IDENTITY_CALLBACK_SERVER_SECRET');
+      expect(CALLBACK_ROUTE_SOURCE).toContain('constants.IDENTITY_CALLBACK_SERVER_SECRET');
     });
   });
 
