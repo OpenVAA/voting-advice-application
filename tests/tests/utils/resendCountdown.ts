@@ -3,7 +3,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { messageOf, messagesOf } from './messages';
+import { messageOf } from './messages';
 import { escapeRegExp } from '../../../apps/frontend/src/lib/utils/regexp';
 import type { Locator } from '@playwright/test';
 
@@ -11,11 +11,7 @@ import type { Locator } from '@playwright/test';
 const RESEND_LABEL = messageOf('common', 'account.emailSent.resend');
 
 /** The count's English wording, with the seconds' place marked by `{seconds}`. */
-const COUNT_TEMPLATE = (
-  (messagesOf('common').account as Record<string, Record<string, unknown>>).emailSent.resendIn as Array<{
-    match: Record<string, string>;
-  }>
-)[0].match['secondsPlural=*'];
+const COUNT_TEMPLATE = messageOf('common', 'account.emailSent.resendIn');
 
 /** The count as a pattern: its wording with any number of seconds in the place of `{seconds}`. */
 const COUNT_PATTERN = escapeRegExp(COUNT_TEMPLATE).replace(escapeRegExp('{seconds}'), '\\d+');

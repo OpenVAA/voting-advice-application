@@ -25,12 +25,14 @@ Driving your own server — for `--grep`, a different reporter, or a debugging s
 # In another shell. Without the prefix the served-project preflight aborts the run, naming both ids.
 PUBLIC_PROJECT_ID=00000000-0000-0000-0000-0000000000e2 yarn dev
 
-yarn test:e2e                              # the gate suite — 6 workers (1 on CI); EXCLUDES the @probe specs
+yarn test:e2e                              # the gate suite — 6 workers (4 under GitHub Actions, 1 with CI set); EXCLUDES the @probe specs
 yarn test:e2e:probes                       # the isolation probe, run on its own
 yarn test:e2e --project=voter-journey      # one project (still pulls in its dependency chain)
 yarn test:e2e --grep "result card"         # filter by title substring
 yarn test:e2e --reporter=line              # less noisy output
 ```
+
+`yarn test:e2e`, and the CI step before the wrapper, first run the coverage-tag census, [`scripts/assert-e2e-coverage-tags.mjs`](../scripts/assert-e2e-coverage-tags.mjs) (`yarn assert:e2e-coverage-tags`): from `playwright test --list` alone, with no stack and no server, it fails when any of `@registration-identity-provider`, `@registration-email`, `@registration-code`, `@organization-registration`, `@entity-selection` and `@nomination-definition` has no test in the default run.
 
 ### The identity provider's environment — prepared, served and put back by the wrapper
 
@@ -184,7 +186,8 @@ yarn test:unit                    # every workspace's unit tests, then these
 
 ## Concurrency model
 
-- `workers: 6` (non-CI default; `1` on CI). The 6-worker pool is **global** across all projects.
+- `workers: 6` locally, `4` under GitHub Actions (the wrapper unsets `CI`, so `GITHUB_ACTIONS` selects it; the runner has 4 vCPUs), `3` with `E2E_SLOW_HOST=1` and `1` with `CI` set. The worker pool is **global** across all projects.
+- `E2E_SLOW_HOST=1` declares a host too small for the developer-machine posture, such as a 4-CPU cloud container: 3 workers and the GitHub Actions per-test ceiling of 180 s (`TIMEOUTS.testMax`). Unset, nothing changes.
 - `fullyParallel: true` is the global default — files within a project run concurrently unless the project overrides `fullyParallel: false`. The journey + perm spec projects set `fullyParallel: false` (single serial test each).
 - Project-level `dependencies: [...]` enforces "runs after". A project becomes eligible the moment all its dependencies finish; multiple eligible projects then share the worker pool.
 - `teardown: '<project>'` runs the named teardown project after this project and all its transitive dependents complete.

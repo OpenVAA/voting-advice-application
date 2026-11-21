@@ -1,7 +1,7 @@
 /**
  * @file contestantIdentityProviderError fixture.
  *
- * Function-fixture for the screen an identification failure in the identity provider's flow lands on. The screen shows one of three classes — `cancelled`, `retry` and `noRetry` — chosen by the code on its address, and nothing else of that code.
+ * Function-fixture for the screen an identification failure in the identity provider's flow lands on. The screen shows one of four classes — `cancelled`, `retry`, `noRetry` and `noAccount` — chosen by the code on its address, and nothing else of that code.
  *
  * Surface:
  *  - open(code)              — open the screen by its address with a code, as the callback's redirect does, and wait for it.
@@ -23,8 +23,8 @@ import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
 import type { Page } from '@playwright/test';
 
-/** The three classes the screen can be shown in. */
-export type IdentityProviderErrorClass = 'cancelled' | 'retry' | 'noRetry';
+/** The four classes the screen can be shown in. */
+export type IdentityProviderErrorClass = 'cancelled' | 'retry' | 'noRetry' | 'noAccount';
 
 /** The fragment of the support section on the Help page. */
 const SUPPORT_SECTION = '#support';

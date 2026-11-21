@@ -5,11 +5,13 @@
  * 1. A new identity gets an account, a confirmed candidate with the token's names, one editor grant and a registration of the candidate, and an `app_metadata` that holds the provider, the match property and the match value and neither a record of registrations, `hetu` nor `birthdate`.
  * 2. The same identity is found again, and the two claims an older account still holds are removed.
  * 3. The same identity registers an organization beside the candidate: unconfirmed, nameless, its own grant and registration, which the account's own session reads back through `get_user_entities`.
- * 4. A registration whose grant is gone answers `no_entity` and creates nothing.
- * 5. A type the project does not allow is refused before any account is created.
- * 6. A token the function cannot decrypt or verify, and a body without a token, get the one result each.
- * 7. A call without the server's secret, and a call with another secret, are refused before anything is read, and create no account.
- * 8. Five first sign-ins of one new identity sent at once make one account, one candidate and one editor grant.
+ * 4. A sign-in of the same identity answers `signed_in` with a token that opens the account's own session, and writes no account, entity, grant or registration.
+ * 5. A registration whose grant is gone answers `no_entity` and creates nothing.
+ * 6. A type the project does not allow is refused before any account is created.
+ * 7. A sign-in of an identity no account holds answers `no_account` and creates no account.
+ * 8. A token the function cannot decrypt or verify, and a body without a token, get the one result each.
+ * 9. A call without the server's secret, and a call with another secret, are refused before anything is read, and create no account.
+ * 10. Five first sign-ins of one new identity sent at once make one account, one candidate and one editor grant.
  *
  * The spec owns two projects of its own, so the registration-mode matrices it needs never touch the settings row of the project the rest of the suite seeds: one allows the identity provider's mode for candidates and organizations, the other for neither. Both are removed, with every account and row the tests created, before and after the tests.
  *
@@ -97,6 +99,9 @@ const CONCURRENT_IDENTITY = {
   family_name: 'Kirjautuja'
 };
 
+/** A fifth synthetic identity, which signs in without having registered. */
+const UNREGISTERED_IDENTITY = { ...TEST_IDENTITY, sub: 'test-bank-auth-sub-005' };
+
 /** How many first sign-ins of the fourth identity are sent at once. */
 const CONCURRENT_SIGN_INS = 5;
 
@@ -152,6 +157,32 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     return callFunction({ id_token: idToken, project_id: projectId, entity_type: entityType });
   }
 
+  /** POST a fresh token of an identity to sign in to a project, with no entity type. */
+  async function signIn(identity: typeof TEST_IDENTITY, projectId: string): Promise<FunctionAnswer> {
+    const idToken = await buildTestIdToken(identity, testKeys.sigPriv, testKeys.encPubJwk);
+    return callFunction({ id_token: idToken, project_id: projectId, intent: 'sign_in' });
+  }
+
+  /** The ids of every account whose `app_metadata` holds the match value. Other projects of a run make accounts of their own meanwhile, so the accounts are counted by identity, never all of them. */
+  async function accountIdsOf(sub: string): Promise<Array<string>> {
+    const ids = new Array<string>();
+    for (let page = 1; ; page++) {
+      const { data, error } = await adminClient.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) throw new Error(`listUsers failed: ${error.message}`);
+      ids.push(...data.users.filter((user) => user.app_metadata?.identity_match_value === sub).map((user) => user.id));
+      if (data.users.length < 1000) return ids;
+    }
+  }
+
+  /** The entities the database records the account as having registered, which the test-only `test_identity_registrations` lists for the service role. */
+  async function registrationsOf(id: string): Promise<Array<Record<string, unknown>>> {
+    const { data, error } = await adminClient.rpc('test_identity_registrations', { p_user_ids: [id] });
+    if (error) throw new Error(`test_identity_registrations failed: ${error.message}`);
+    return ((data ?? []) as Array<Record<string, unknown>>).sort((a, b) =>
+      String(a.entity_type).localeCompare(String(b.entity_type))
+    );
+  }
+
   /** The account whose `app_metadata` holds the match value, or undefined. */
   async function accountOf(sub: string): Promise<User | undefined> {
     for (let page = 1; ; page++) {
@@ -204,7 +235,13 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
 
   /** Remove both identities' accounts and grants, and both projects with every row in them. */
   async function removeEverything(): Promise<void> {
-    for (const identity of [TEST_IDENTITY, REFUSED_IDENTITY, UNCREDENTIALLED_IDENTITY, CONCURRENT_IDENTITY]) {
+    for (const identity of [
+      TEST_IDENTITY,
+      REFUSED_IDENTITY,
+      UNCREDENTIALLED_IDENTITY,
+      CONCURRENT_IDENTITY,
+      UNREGISTERED_IDENTITY
+    ]) {
       const account = await accountOf(identity.sub);
       if (!account) continue;
       const { error: grantError } = await adminClient.from('grants').delete().eq('user_id', account.id);
@@ -342,6 +379,41 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(await registeredOrganizationOf(answer.body.token, OPEN_PROJECT_ID)).toBe(organizationId);
   });
 
+  test("signs in the same identity's account with a sign-in and writes no account, entity, grant or registration", async () => {
+    expect(organizationId, 'the organization test ran').toBeTruthy();
+    const before = {
+      accounts: await accountIdsOf(TEST_IDENTITY.sub),
+      candidates: await rowsIn('candidates', OPEN_PROJECT_ID, 'id'),
+      organizations: await rowsIn('organizations', OPEN_PROJECT_ID, 'id'),
+      grants: await grantsOf(userId),
+      registrations: await registrationsOf(userId)
+    };
+    expect(before.accounts).toEqual([userId]);
+    expect(before.registrations).toEqual([
+      { entity_type: 'candidate', entity_id: candidateId },
+      { entity_type: 'organization', entity_id: organizationId }
+    ]);
+
+    const answer = await signIn(TEST_IDENTITY, OPEN_PROJECT_ID);
+
+    expect(answer.status).toBe(200);
+    expect(answer.body.result).toBe('signed_in');
+    expect(typeof answer.body.token).toBe('string');
+    expect(answer.body.token).not.toBe('');
+    expect(Object.keys(answer.body).sort()).toEqual(['result', 'token']);
+
+    const session = await verifyTokenHash({ tokenHash: String(answer.body.token), type: 'magiclink' });
+    expect(jose.decodeJwt(session.accessToken).sub, 'the user the token signs in').toBe(userId);
+
+    expect({
+      accounts: await accountIdsOf(TEST_IDENTITY.sub),
+      candidates: await rowsIn('candidates', OPEN_PROJECT_ID, 'id'),
+      organizations: await rowsIn('organizations', OPEN_PROJECT_ID, 'id'),
+      grants: await grantsOf(userId),
+      registrations: await registrationsOf(userId)
+    }).toEqual(before);
+  });
+
   test('answers no_entity and creates nothing when the grant on the recorded candidate is gone', async () => {
     expect(organizationId, 'the organization test ran').toBeTruthy();
     const { error: revokeError } = await adminClient
@@ -370,6 +442,14 @@ test.describe('candidate bank authentication', { tag: ['@bank-auth'] }, () => {
     expect(answer.body).toEqual({ result: 'mode_not_allowed' });
     expect(await accountOf(REFUSED_IDENTITY.sub)).toBeUndefined();
     expect(await rowsIn('candidates', CLOSED_PROJECT_ID, 'id')).toEqual([]);
+  });
+
+  test('answers a sign-in of an identity no account holds with the no-account result alone and creates no account', async () => {
+    const answer = await signIn(UNREGISTERED_IDENTITY, OPEN_PROJECT_ID);
+
+    expect(answer.status).toBe(404);
+    expect(answer.body).toEqual({ result: 'no_account' });
+    expect(await accountIdsOf(UNREGISTERED_IDENTITY.sub)).toEqual([]);
   });
 
   test('should handle CORS preflight correctly', async () => {

@@ -73,6 +73,7 @@ export const ALLOWED_DEVICE_STATE: Readonly<Record<DeviceStore, StoreAllowlist>>
       'oidc_nonce',
       'oidc_code_verifier',
       'oidc_entity_type',
+      'oidc_intent',
       'identity_provider_arrival',
       'registered',
       'logout-pending',

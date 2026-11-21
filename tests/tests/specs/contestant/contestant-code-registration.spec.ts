@@ -76,7 +76,7 @@ test.describe('registering with a registration code', () => {
 
   test(
     'register: an invited organization registers with a code',
-    { tag: ['@reg-code', '@org-registration'] },
+    { tag: ['@registration-code', '@organization-registration'] },
     async ({
       page,
       invitationFlow,

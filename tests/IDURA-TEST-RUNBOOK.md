@@ -256,6 +256,7 @@ cookie `mock_oidc_ui_locales` on its own origin to the request object's `ui_loca
   | `invalid_token`         | `noRetry`   | The id_token was rejected: issuer, audience or JWKS mismatch (`IDENTITY_PROVIDER_ISSUER`, `client_id`, `IDENTITY_PROVIDER_JWKS_URI`), or decryption failed.                                                                                    |
   | `mode_not_allowed`      | `noRetry`   | The project does not allow registration with the identity provider for the chosen entity type.                                                                                                                                                 |
   | `configuration_error`   | `noRetry`   | `identity-callback` refused the request or is misconfigured (its environment, or the server's credential).                                                                                                                                     |
+  | `no_account`            | `noAccount` | A sign-in found no account the identity provider made for this identity.                                                                                                                                                                       |
 
   The server log names the stage of a rejected token without any value of it
   (`[oidc/callback] ID token claims rejected; …`).

@@ -34,14 +34,17 @@
  *   - **A mode switched off**: the registration screen shows the provider's panel, the settings stop allowing the provider's mode for any type, and Continue leads to the error screen in its `noRetry` class with `mode_not_allowed` in its address, Return and no Try again; no account exists for the identity.
  * - **An account given a second candidate** — an identity that registered a candidate and gave an address signs out, an administrator gives its account a second candidate, and the identity comes back: it is shown its address once, no candidate is made, and the profile selection lists the two candidates, the only entities the account edits.
  * - **An address an open invitation holds** — a new identity types an address an open invitation of the project holds: the field says the address is in use, no mail goes to it, and the invitation stays unclaimed. An account the provider made claims no invitation, so the person is meant to sign in by email instead.
+ * - **A sign-in with the identity provider**, from the login screen's entry that signs in with Bank ID:
+ *   - **an identity that registered**, with an address it has not proved, and signed out: back from the provider it lands on its candidate's home, with no view telling it that it has already registered.
+ *   - **an identity no account holds**: the error screen in its `noAccount` class with `no_account` in its address, and no account made for the identity.
  *
  * ## What it writes
  *
- * What the flow itself writes: a successful identification makes an account and its candidate or organization, a typed address is recorded and proved, a password is saved, a party's names are saved, the terms acceptance is stored; a failed identification makes nothing. Beside it, the test of a removed grant removes its own account's editor grant on its candidate, a press of Send again first gives the pending address's one-mail-a-minute slot back, as do the second identity that gives an address the first gave and the link asked for on the forgot-password page just after an address was proved, the tests of a link that confirms an address open browsers of their own and close them, and the scan of an address in use and the test that replaces a pending address each make an account of their own holding a fresh address under the prefix the specs type, and the describe of both entity types writes the settings row's matrix before its tests and writes the candidates-only matrix back after them. The describe of what is refused writes the candidates-only matrix before its tests and again after each of them, since one of them switches the provider's mode off; the test of a forged type overwrites the type cookie in its own browser context; the test of a second candidate makes a candidate and its account's editor grant on it, which the project's teardown removes with the account's other entities; and the test of an invited address seeds an open invitation for a fresh address on the dataset's one candidate and removes it after itself. The project's setup seeds its own dataset with settings that offer the provider's mode, and its setup and teardown remove that dataset, the entities the application made for the users under the prefixes the specs mint and type, and those users.
+ * What the flow itself writes: a successful identification makes an account and its candidate or organization, a typed address is recorded and proved, a password is saved, a party's names are saved, the terms acceptance is stored; a failed identification makes nothing. Beside it, the test of a removed grant removes its own account's editor grant on its candidate, a press of Send again first gives the pending address's one-mail-a-minute slot back, as do the second identity that gives an address the first gave and the link asked for on the forgot-password page just after an address was proved, the tests of a link that confirms an address open browsers of their own and close them, and the scan of an address in use and the test that replaces a pending address each make an account of their own holding a fresh address under the prefix the specs type, and the describe of both entity types writes the settings row's matrix before its tests and writes the candidates-only matrix back after them. The describe of what is refused writes the candidates-only matrix before its tests and again after each of them, since one of them switches the provider's mode off; the test of a forged type overwrites the type cookie in its own browser context; the test of a second candidate makes a candidate and its account's editor grant on it, which the project's teardown removes with the account's other entities; and the test of an invited address seeds an open invitation for a fresh address on the dataset's one candidate and removes it after itself. A sign-in writes nothing. The project's setup seeds its own dataset with settings that offer the provider's mode, and its setup and teardown remove that dataset, the entities the application made for the users under the prefixes the specs mint and type, and those users.
  *
  * ## How much it asks of the auth service
  *
- * A registration verifies three tokens: the sign-in token of the callback, the confirmation of the account's current address that the address-confirmation operation makes, and the mailed link. Each other arrival through the provider verifies one, and each address given or mailed again one more; an address another account holds, or an open invitation, is refused before anything is verified. A failed verification is a verification too. A registration whose mailed link is not opened verifies two. The spec's tests together verify about ninety-seven: about forty-one before the describe of a pending address, thirty-three in it (five for the identity that comes back, four for the one that replaces its address, six for the scans of the view, four each for the scans of the home and of settings, and ten at the phone widths), seventeen in the describe of a link that confirms an address (seven for two identities and one address in two signed-in browsers, two registrations, two links and the second address; six for the same with the second link opened with no session; four for the sign-in by email, a registration, the confirmation link and the recovery link), none in the describe of what is refused, where no flow reaches a sign-in, three for the account given a second candidate, a registration and the identity's return, and one for the identity that types an invited address, its arrival. The local stack answers more than thirty verifications in five minutes from one address of origin without refusing any, so the spec waits for nothing but what it asserts.
+ * A registration verifies three tokens: the sign-in token of the callback, the confirmation of the account's current address that the address-confirmation operation makes, and the mailed link. Each other arrival through the provider verifies one, and each address given or mailed again one more; an address another account holds, or an open invitation, is refused before anything is verified. A failed verification is a verification too. A registration whose mailed link is not opened verifies two. The spec's tests together verify about a hundred: about forty-one before the describe of a pending address, thirty-three in it (five for the identity that comes back, four for the one that replaces its address, six for the scans of the view, four each for the scans of the home and of settings, and ten at the phone widths), seventeen in the describe of a link that confirms an address (seven for two identities and one address in two signed-in browsers, two registrations, two links and the second address; six for the same with the second link opened with no session; four for the sign-in by email, a registration, the confirmation link and the recovery link), none in the describe of what is refused, where no flow reaches a sign-in, three for the account given a second candidate, a registration and the identity's return, one for the identity that types an invited address, its arrival, and three in the describe of a sign-in (two for the registration whose link is not opened and one for the sign-in; the sign-in of an identity no account holds verifies none). The local stack answers more than thirty verifications in five minutes from one address of origin without refusing any, so the spec waits for nothing but what it asserts.
  *
  * The tests run in the order they are written, in one worker: the settings row the describe of both entity types writes is the project's one.
  *
@@ -135,7 +138,7 @@ async function returnWithProvedAddress(page: Page): Promise<{ sub: string; addre
 }
 
 test.describe('registration', () => {
-  test('a new candidate identifies at the provider, gives the address they will sign in with and goes straight to editing; the mailed link proves the address @reg-idp', async ({
+  test('a new candidate identifies at the provider, gives the address they will sign in with and goes straight to editing; the mailed link proves the address @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -167,7 +170,10 @@ test.describe('registration', () => {
     await setPasswordGate.expectAddress(address);
   });
 
-  test('the identity provider receives the locale of the registration @reg-idp', async ({ page, context }) => {
+  test('the identity provider receives the locale of the registration @registration-identity-provider', async ({
+    page,
+    context
+  }) => {
     await identityProviderFlow.mintIdentity(context, { outcome: 'success' });
     await identityProviderFlow.startIdentityProviderFlow(page, { locale: 'fi' });
     await createContestantIdentityProviderGate(page).expectShown({
@@ -180,7 +186,7 @@ test.describe('registration', () => {
 });
 
 test.describe('identification failures', () => {
-  test('a cancel at the provider shows the cancel, offers Try again and makes no account @reg-idp', async ({
+  test('a cancel at the provider shows the cancel, offers Try again and makes no account @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -194,7 +200,10 @@ test.describe('identification failures', () => {
     await identityProviderFlow.expectNoAccountFor(sub);
   });
 
-  test('an error at the provider shows a failure that trying again may cure @reg-idp', async ({ page, context }) => {
+  test('an error at the provider shows a failure that trying again may cure @registration-identity-provider', async ({
+    page,
+    context
+  }) => {
     const sub = await identityProviderFlow.mintIdentity(context, { outcome: 'provider-error' });
     await identityProviderFlow.startIdentityProviderFlow(page);
     const errorPage = createContestantIdentityProviderErrorPage(page);
@@ -226,7 +235,7 @@ test.describe('accessibility scans', () => {
 });
 
 test.describe('a returning identity', () => {
-  test('an identity with a proved address and a password is told that it has registered and to sign in with its address next time, and goes on to its home without being asked for an address @reg-idp', async ({
+  test('an identity with a proved address and a password is told that it has registered and to sign in with its address next time, and goes on to its home without being asked for an address @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -242,7 +251,7 @@ test.describe('a returning identity', () => {
     await gate.expectGone();
   });
 
-  test('an identity that gave no address is told that it has registered and asked for an address before any protected page, its settings page opened directly included @reg-idp', async ({
+  test('an identity that gave no address is told that it has registered and asked for an address before any protected page, its settings page opened directly included @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -267,7 +276,7 @@ test.describe('a returning identity', () => {
     await identityProviderFlow.expectSettings(page);
   });
 
-  test('an identity whose grant an administrator removed is shown its pending address once, gets no new candidate and is told there is nothing to edit, with no address shown @reg-idp', async ({
+  test('an identity whose grant an administrator removed is shown its pending address once, gets no new candidate and is told there is nothing to edit, with no address shown @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -361,7 +370,7 @@ async function returnWithPendingAddress(page: Page): Promise<{ sub: string; addr
 }
 
 test.describe('an address awaiting its link', () => {
-  test('an identity that gave an address and did not open its link is shown the address once, can have the link sent again, and is reminded of it on its home @reg-idp', async ({
+  test('an identity that gave an address and did not open its link is shown the address once, can have the link sent again, and is reminded of it on its home @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -387,7 +396,7 @@ test.describe('an address awaiting its link', () => {
     await home.expectEmailTask(address);
   });
 
-  test('an identity whose address awaits its link opens its settings from the reminder, is refused another account’s address and saves a fresh one, which is mailed and reminded @reg-idp', async ({
+  test('an identity whose address awaits its link opens its settings from the reminder, is refused another account’s address and saves a fresh one, which is mailed and reminded @registration-identity-provider', async ({
     page
   }) => {
     const home = createContestantHomePage(page);
@@ -527,7 +536,7 @@ test.describe('a link that confirms an address', () => {
     for (const context of openedContexts.splice(0)) await context.close();
   });
 
-  test('two identities give one address and the first opens its link; the second’s link, confirmed in the browser where it is signed in, signs that browser out and ends on the login page, which says the address is now another account’s @reg-idp', async ({
+  test('two identities give one address and the first opens its link; the second’s link, confirmed in the browser where it is signed in, signs that browser out and ends on the login page, which says the address is now another account’s @registration-identity-provider', async ({
     page,
     browser
   }) => {
@@ -550,7 +559,7 @@ test.describe('a link that confirms an address', () => {
     await createContestantLoginPage(secondPage).expectNotice('emailTaken');
   });
 
-  test('two identities give one address and the first opens its link; the second’s link opened with no session ends on the login page, which says the address is now another account’s @reg-idp', async ({
+  test('two identities give one address and the first opens its link; the second’s link opened with no session ends on the login page, which says the address is now another account’s @registration-identity-provider', async ({
     page,
     browser
   }) => {
@@ -566,7 +575,7 @@ test.describe('a link that confirms an address', () => {
     await createContestantLoginPage(pageWithNoSession).expectNotice('emailTaken');
   });
 
-  test('an identity that proved its address signs out, follows the sign-in screen to the forgot-password page with it, and the mailed recovery link leads to the password-reset page and then to its home @reg-idp', async ({
+  test('an identity that proved its address signs out, follows the sign-in screen to the forgot-password page with it, and the mailed recovery link leads to the password-reset page and then to its home @registration-identity-provider', async ({
     page
   }) => {
     const setPasswordGate = createContestantSetPasswordGate(page);
@@ -612,7 +621,7 @@ test.describe('both entity types registered with the provider', () => {
     await identityProviderFlow.setIdentityProviderMatrix(['candidate']);
   });
 
-  test('a party is chosen, identified, named in the default locale and given an address, and waits unconfirmed for an administrator @reg-idp @org-registration', async ({
+  test('a party is chosen, identified, named in the default locale and given an address, and waits unconfirmed for an administrator @registration-identity-provider @organization-registration', async ({
     page,
     context
   }) => {
@@ -640,7 +649,7 @@ test.describe('both entity types registered with the provider', () => {
     expect(organization.shortName?.en, 'the party’s abbreviation in the default locale').toBe(PARTY_NAMES.shortName);
   });
 
-  test('an identity that registered a candidate and gave an address comes back choosing a party, names it, and meets the profile selection with both @reg-idp', async ({
+  test('an identity that registered a candidate and gave an address comes back choosing a party, names it, and meets the profile selection with both @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -746,7 +755,7 @@ test.describe('what the type cookie and the matrix refuse', () => {
     await identityProviderFlow.setIdentityProviderMatrix(['candidate']);
   });
 
-  test('a type forged in the type cookie while the browser is at the provider is refused, and nothing is written for the identity @reg-idp', async ({
+  test('a type forged in the type cookie while the browser is at the provider is refused, and nothing is written for the identity @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -770,7 +779,7 @@ test.describe('what the type cookie and the matrix refuse', () => {
     expect(await identityProviderFlow.entitiesOf(sub)).toEqual({ candidate: [], organization: [] });
   });
 
-  test('a mode switched off while the registration screen shows it is refused on Continue, in the class trying again cannot cure, with Return and no Try again @reg-idp', async ({
+  test('a mode switched off while the registration screen shows it is refused on Continue, in the class trying again cannot cure, with Return and no Try again @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -799,7 +808,7 @@ test.describe('what the type cookie and the matrix refuse', () => {
 });
 
 test.describe('an account given a second candidate', () => {
-  test('an identity whose account an administrator gave a second candidate comes back to its own, gets no third, and meets the profile selection listing both @reg-idp', async ({
+  test('an identity whose account an administrator gave a second candidate comes back to its own, gets no third, and meets the profile selection listing both @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -840,7 +849,7 @@ test.describe('an address an open invitation holds', () => {
     await identityProviderFlow.removeInvitationsOf(invitedAddresses.splice(0));
   });
 
-  test('an identity that types an address an open invitation holds is told to sign in with the invitation, and the invitation stays open @reg-idp', async ({
+  test('an identity that types an address an open invitation holds is told to sign in with the invitation, and the invitation stays open @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -859,5 +868,39 @@ test.describe('an address an open invitation holds', () => {
     // The refusal is the answer of a request that answers once its work is done: no mail went to the address, and the invitation waits for its own holder.
     await identityProviderFlow.expectNoMailFor(address);
     await identityProviderFlow.expectInvitationOpen(address);
+  });
+});
+
+test.describe('a sign-in with the identity provider', () => {
+  test('an identity that registered signs in from the login screen and lands on its home, with no view telling it that it has registered @registration-identity-provider', async ({
+    page
+  }) => {
+    const gate = createContestantIdentityProviderGate(page);
+
+    // The identity registers a candidate with an address it does not prove, and signs out.
+    const sub = await identityProviderFlow.registerWithIdentityProvider(page, {
+      address: identityProviderFlow.freshAddress()
+    });
+    await identityProviderFlow.signOut(page);
+
+    // Signed in through the provider, it lands on its candidate's home: a sign-in leaves no arrival marker, so the view a returning registration meets is not shown.
+    await identityProviderFlow.signInWithIdentityProvider(page);
+    await identityProviderFlow.expectOwnEntityHome(page, sub);
+    await gate.expectGone();
+  });
+
+  test('an identity no account holds signs in from the login screen and is told that it has no account, and none is made @registration-identity-provider', async ({
+    page,
+    context
+  }) => {
+    const errorPage = createContestantIdentityProviderErrorPage(page);
+
+    const sub = await identityProviderFlow.mintIdentity(context, { outcome: 'success' });
+    await identityProviderFlow.signInWithIdentityProvider(page);
+
+    await errorPage.expectShown('noAccount');
+    await errorPage.expectCode('no_account');
+    await identityProviderFlow.expectNoAccountFor(sub);
+    expect(await identityProviderFlow.entitiesOf(sub)).toEqual({ candidate: [], organization: [] });
   });
 });

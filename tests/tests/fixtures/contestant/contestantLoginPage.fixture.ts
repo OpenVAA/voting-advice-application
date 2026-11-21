@@ -20,6 +20,7 @@
  *  - expectAnswersLocked(locked)   — the screen says whether answers are locked, and the sentence about it is there or is not.
  *  - followSignIn()                — press the entry that leads to the sign-in screen.
  *  - followSignInInsideTheApp()    — wait until the screen's script has loaded, then press that entry, a navigation inside the application.
+ *  - continueWithIdentityProvider() — press the entry that signs in with the identity provider, and wait until the browser is back in the application from the provider.
  *  - followRegister()              — press the entry that leads to registration.
  *  - expectNotice(reason)          — the notice under the title is shown, with the sentence of its reason: a user who was signed out, a link that could not be used, a link whose address another account took, a logout count that ran out, or a logout in another tab or window.
  *  - expectHeadingDescribedByNotice(reason) — the screen's heading has focus, and its accessible description is the sentence of the notice's reason.
@@ -242,6 +243,19 @@ export function createContestantLoginPage(page: Page) {
     async followSignInInsideTheApp(): Promise<void> {
       await waitForNavigationFocusReset(page);
       await this.followSignIn();
+    },
+
+    /**
+     * Press the login screen's entry that signs in with the identity provider, once the screen's script has enabled it, and wait until the browser has left for the provider and come back to the application: on the provider's answer the callback leads to the Contestant App's root, and a failure leads to the error screen. The caller asserts which screen it is.
+     */
+    async continueWithIdentityProvider(): Promise<void> {
+      const signIn = page.getByTestId(ids.identityProviderSignIn);
+      await expect(signIn).toBeEnabled({ timeout: TIMEOUTS.slowPage });
+      const loginPage = new URL(page.url());
+      await signIn.click();
+      await page.waitForURL((url) => url.origin === loginPage.origin && url.pathname !== loginPage.pathname, {
+        timeout: TIMEOUTS.slowPage
+      });
     },
 
     /**

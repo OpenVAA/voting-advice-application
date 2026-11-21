@@ -87,7 +87,7 @@ export interface ContestantRegisterFieldReason {
 const IDENTITY_PROVIDER_MESSAGES = (
   messagesOf('contestantApp.register') as {
     identityProvider: {
-      intro: Record<'candidate' | 'organization' | 'both', string>;
+      intro: Record<'candidate' | 'organization' | 'candidateAndOrganization', string>;
       redirectInfo: string;
       types: Record<'candidate' | 'organization' | 'legend' | 'required', string>;
     };
@@ -263,7 +263,7 @@ export function createContestantRegisterPage(page: Page) {
       const form = page.getByTestId(ids.identityProviderForm);
       await expect(form).toBeVisible();
       await expect(form).toHaveAttribute('data-entity-types', types.join(' '));
-      const intro = types.length > 1 ? 'both' : types[0];
+      const intro = types.length > 1 ? 'candidateAndOrganization' : types[0];
       await expect(form).toContainText(IDENTITY_PROVIDER_MESSAGES.intro[intro]);
       await expect(form).toContainText(IDENTITY_PROVIDER_MESSAGES.redirectInfo);
       const group = form.getByTestId(ids.entityTypes);
