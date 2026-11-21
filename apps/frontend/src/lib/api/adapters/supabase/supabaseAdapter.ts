@@ -1,4 +1,5 @@
 import { constants } from '$lib/utils/constants';
+import { isCanonicalUuid } from '$lib/utils/uuid';
 import type { Database } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
@@ -8,9 +9,6 @@ import type {
   SupabaseAdapter,
   SupabaseAdapterConfig
 } from './supabaseAdapter.type';
-
-/** The canonical 8-4-4-4-12 lower-case hexadecimal uuid shape, applied after trimming and lower-casing so a padded or upper-case configuration value normalises rather than fails. */
-const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /** The project id created by `apps/supabase/supabase/seed.sql`, quoted in the throw below so an operator reading the error knows what to put in the file. It is a message ingredient only, and is never used as a value. */
 const DOCUMENTED_DEFAULT_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
@@ -31,7 +29,8 @@ function resolveProjectId(configured: string | undefined): string {
   const raw = configured && configured.trim() !== '' ? configured : constants.PUBLIC_PROJECT_ID;
   const normalised = (raw ?? '').trim().toLowerCase();
   if (normalised === '') throw new Error(`PUBLIC_PROJECT_ID is required but not set. ${PROJECT_ID_REMEDY}`);
-  if (!CANONICAL_UUID.test(normalised))
+  // Tested after trimming and lower-casing, so a padded or upper-case configuration value normalises rather than fails.
+  if (!isCanonicalUuid(normalised))
     throw new Error(
       `PUBLIC_PROJECT_ID must be a canonical 8-4-4-4-12 hexadecimal uuid; got '${normalised}'. ${PROJECT_ID_REMEDY}`
     );

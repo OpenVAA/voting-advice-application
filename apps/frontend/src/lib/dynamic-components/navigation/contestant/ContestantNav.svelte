@@ -31,7 +31,7 @@
 
 <script lang="ts">
   import { InfoBadge } from '$lib/components/infoBadge';
-  import { entityDescriptorOf } from '$lib/contestant/utils/entityDescriptor';
+  import { servedEntityTypeOf } from '$lib/contestant/utils/entityDescriptor';
   import { listedRegistrationModes } from '$lib/contestant/utils/registrationOffer';
   import { userEntityDisplayName } from '$lib/contestant/utils/userEntityDisplayName';
   import { getContestantContext } from '$lib/contexts/contestant';
@@ -58,12 +58,14 @@
     const nomination = taskState.tasks.find((task) => task.id === 'nomination');
     const profile = taskState.tasks.find((task) => task.id === 'profile');
     const questions = taskState.tasks.find((task) => task.id === 'questions');
-    const previewClosed = !contestantCtx.previewOpen;
+    const previewClosed = !taskState.previewOpen;
     let reason: { reason: 'noNomination' | 'previewNotReady'; sentence: string } | undefined;
     if (nomination?.status === 'incomplete') {
       reason = {
         reason: 'noNomination',
-        sentence: t(entityDescriptorOf(contestantCtx.selectedEntity?.type).closedReasonNoNomination)
+        sentence: t(
+          `contestantApp.common.closedReason.noNomination.${servedEntityTypeOf(contestantCtx.selectedEntity?.type)}`
+        )
       };
     } else if (taskState.known && previewClosed) {
       reason = {
@@ -92,17 +94,6 @@
       name: userEntityDisplayName(selected, contestantCtx.dataRoot)
     });
   });
-
-  /**
-   * What an item is passed beside `disabled` while it is closed: the dimming of a disabled label, and, while no reason is known, the link role, on which its unavailable state is announced although it has no link target. An item closed for a known reason is a button that shows the reason, so it is passed no role. An open item is passed nothing, because its link target gives it its role.
-   * @param closed - Whether the item is closed.
-   * @returns The attributes to spread onto the item.
-   */
-  function closedItemProps(closed: boolean) {
-    if (!closed) return {};
-    if (entityItems.reason) return { class: '!text-neutral/20' } as const;
-    return { role: 'link', class: '!text-neutral/20' } as const;
-  }
 
   /**
    * The reason a closed item shows, while one is known, or nothing.
@@ -143,7 +134,6 @@
           disabled={entityItems.profileClosed}
           disabledReason={reasonOf(entityItems.profileClosed)}
           disabledReasonProps={reasonProps}
-          {...closedItemProps(entityItems.profileClosed)}
           data-testid="contestant-nav-profile" />
         {#if entityItems.questionsOffered}
           <NavItem
@@ -153,7 +143,6 @@
             disabled={entityItems.questionsClosed}
             disabledReason={reasonOf(entityItems.questionsClosed)}
             disabledReasonProps={reasonProps}
-            {...closedItemProps(entityItems.questionsClosed)}
             data-testid="contestant-nav-questions">
             {#if entityItems.unansweredQuestions > 0}
               <InfoBadge text={String(entityItems.unansweredQuestions)} classes="-left-8 -top-4" />
@@ -167,7 +156,6 @@
           disabled={entityItems.previewClosed}
           disabledReason={reasonOf(entityItems.previewClosed)}
           disabledReasonProps={reasonProps}
-          {...closedItemProps(entityItems.previewClosed)}
           data-testid="contestant-nav-preview" />
         <!-- The app root is where a user with several entities chooses one. -->
         {#if contestantCtx.entities.length > 1}

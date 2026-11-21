@@ -6,21 +6,22 @@
  * 1. **The rule.** Closed while a required info question or an opinion question is unanswered, open once both are filled; a saved `false` or `0` is an answer; an entity that is asked no opinion question is open on its required info alone.
  * 2. **What is not counted.** A question addressed to the other entity type, a question of another election and a locked required question.
  * 3. **No nomination.** Closed, and nothing is read.
- * 4. **No answer.** Question data that is an error, a nomination whose election the election data does not hold, and a failed read each give `undefined`, logged once, and nothing is thrown.
- * 5. **Nothing of one call reaches the next.** Two calls, one after the other, for two entities of two elections that share no question, in both orders.
+ * 4. **No answer.** Question data that is an error and a failed read each give `undefined`, logged once, and nothing is thrown.
+ * 5. **An id the data does not hold.** A nomination's election or constituency that the data does not hold is skipped and logged, as the Contestant App's context skips it, and the answer comes from the others.
+ * 6. **Nothing of one call reaches the next.** Two calls, one after the other, for two entities of two elections that share no question, in both orders.
  */
 
 import { log } from '@openvaa/app-shared';
 import { QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isPreviewOpen } from './previewGate';
+import { isPreviewOpen } from './previewOpen';
 import type { DPDataType } from '$lib/api/base/dataTypes';
-import type { PreviewGateEntity, PreviewGateReader } from './previewGate';
+import type { PreviewOpenEntity, PreviewOpenReader } from './previewOpen';
 
 type QuestionData = DPDataType['questions'];
 type QuestionRow = QuestionData['questions'][number];
 type CategoryRow = QuestionData['categories'][number];
-type Answers = NonNullable<PreviewGateEntity['entity']['answers']>;
+type Answers = NonNullable<PreviewOpenEntity['entity']['answers']>;
 
 const ELECTIONS: DPDataType['elections'] = [
   { id: 'election-a', name: 'Election A', constituencyGroupIds: ['group-a'] },
@@ -92,7 +93,7 @@ const STANDARD_ANSWERS: Answers = {
 };
 
 /** A reader that answers each read with its own copy of the election and constituency rows. */
-function readerOf(): PreviewGateReader & {
+function readerOf(): PreviewOpenReader & {
   getElectionData: ReturnType<typeof vi.fn>;
   getConstituencyData: ReturnType<typeof vi.fn>;
 } {
@@ -105,13 +106,13 @@ function readerOf(): PreviewGateReader & {
 /** A candidate with the given answers, nominated in election A unless told otherwise. */
 function candidateWith(
   answers: Answers | null | undefined,
-  nominations: PreviewGateEntity['nominations'] = [NOMINATION_A]
-): PreviewGateEntity {
+  nominations: PreviewOpenEntity['nominations'] = [NOMINATION_A]
+): PreviewOpenEntity {
   return { entity: { type: 'candidate', answers }, nominations };
 }
 
 /** The helper's answer for an entity and its question data, read through a fresh reader. */
-function answerFor(userData: PreviewGateEntity, questionData: unknown): Promise<boolean | undefined> {
+function answerFor(userData: PreviewOpenEntity, questionData: unknown): Promise<boolean | undefined> {
   return isPreviewOpen({ dataProvider: readerOf(), locale: 'en', userData, questionData });
 }
 
@@ -125,7 +126,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('previewGate — the rule', () => {
+describe('previewOpen — the rule', () => {
   it('answers closed while a required info question is unanswered', async () => {
     const answers = { 'opinion-1': { value: 'choice-1' }, 'opinion-2': { value: 'choice-2' } };
 
@@ -183,7 +184,7 @@ describe('previewGate — the rule', () => {
   });
 });
 
-describe('previewGate — what is not counted', () => {
+describe('previewOpen — what is not counted', () => {
   it('leaves out a question addressed to the other entity type, a question of another election and a locked required question', async () => {
     const questions = [
       ...standardQuestions(),
@@ -203,7 +204,7 @@ describe('previewGate — what is not counted', () => {
       opinionQuestion('opinion-organization', { entityType: ['organization'] }),
       opinionQuestion('opinion-election-b', { electionIds: ['election-b'] })
     ];
-    const organization: PreviewGateEntity = {
+    const organization: PreviewOpenEntity = {
       entity: { type: 'organization', answers: STANDARD_ANSWERS },
       nominations: [NOMINATION_A]
     };
@@ -214,7 +215,7 @@ describe('previewGate — what is not counted', () => {
   });
 });
 
-describe('previewGate — an entity with no nomination', () => {
+describe('previewOpen — an entity with no nomination', () => {
   it('answers closed and reads nothing', async () => {
     const reader = readerOf();
 
@@ -234,7 +235,30 @@ describe('previewGate — an entity with no nomination', () => {
   });
 });
 
-describe('previewGate — no answer', () => {
+describe('previewOpen — an id the data does not hold', () => {
+  const UNKNOWN_NOMINATION = { electionId: 'election-unknown', constituencyId: 'constituency-unknown' };
+
+  it('skips and logs it, and answers from the other nominations', async () => {
+    const questions = standardQuestions();
+
+    expect(await answerFor(candidateWith({}, [UNKNOWN_NOMINATION, NOMINATION_A]), questionDataOf(questions))).toBe(
+      false
+    );
+    expect(
+      await answerFor(candidateWith(STANDARD_ANSWERS, [UNKNOWN_NOMINATION, NOMINATION_A]), questionDataOf(questions))
+    ).toBe(true);
+    expect(logError).toHaveBeenCalled();
+  });
+
+  it('asks nothing of an entity whose nominations name no election the data holds, so its preview is open', async () => {
+    const userData = candidateWith({}, [{ ...UNKNOWN_NOMINATION, constituencyId: NOMINATION_A.constituencyId }]);
+
+    expect(await answerFor(userData, questionDataOf(standardQuestions()))).toBe(true);
+    expect(logError).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('previewOpen — no answer', () => {
   it('gives no answer and throws nothing when the question data is an error', async () => {
     const open = await answerFor(candidateWith(STANDARD_ANSWERS), new Error('the question read failed'));
 
@@ -246,15 +270,6 @@ describe('previewGate — no answer', () => {
     for (const questionData of [undefined, null, {}, { categories: [] }]) {
       expect(await answerFor(candidateWith(STANDARD_ANSWERS), questionData)).toBeUndefined();
     }
-  });
-
-  it('gives no answer and throws nothing for a nomination whose election the election data does not hold', async () => {
-    const userData = candidateWith(STANDARD_ANSWERS, [
-      { electionId: 'election-unknown', constituencyId: 'constituency-a' }
-    ]);
-
-    expect(await answerFor(userData, questionDataOf(standardQuestions()))).toBeUndefined();
-    expect(logError).toHaveBeenCalledTimes(1);
   });
 
   it('gives no answer and throws nothing when a read fails', async () => {
@@ -287,7 +302,7 @@ describe('previewGate — no answer', () => {
   });
 });
 
-describe('previewGate — two calls for two entities', () => {
+describe('previewOpen — two calls for two entities', () => {
   /** The question data of each election as its own read returns it: no question of the other election is in it. */
   const QUESTIONS_OF = {
     a: () => [infoQuestion('a-info-required', { required: true }), opinionQuestion('a-opinion')],

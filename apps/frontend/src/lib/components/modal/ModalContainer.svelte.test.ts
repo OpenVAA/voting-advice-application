@@ -3,7 +3,7 @@
  *
  * What this file holds: how a `close` event of the dialog reaches `onClose`. A close the platform makes arrives with no `keydown`, and the component closes as it does for any other close. A `close` event that follows the component's own close adds nothing, and one that arrives after the dialog was opened again closes nothing.
  *
- * And what `holdOpen` refuses: while it is up, neither Escape, nor the dialog's `cancel` event, nor a close the platform forces closes the modal, while `closeModal()` still does.
+ * And what `holdOpen` refuses: while it is up, neither Escape, nor the dialog's `cancel` event, nor a close the platform forces closes the modal, while `closeModal()` still does, and the backdrop's close button is `aria-disabled`.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
@@ -165,6 +165,18 @@ describe('ModalContainer — held open', () => {
 
     expect(dialog.hasAttribute('open')).toBe(false);
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("the backdrop's close button reads as unavailable while held, and as available once the hold is lifted", () => {
+    const { dialog, props } = mountOpen(true);
+    const backdropClose = dialog.querySelector('.modal-backdrop button');
+
+    expect(backdropClose?.getAttribute('aria-disabled')).toBe('true');
+
+    props.holdOpen = false;
+    flushSync();
+
+    expect(backdropClose?.hasAttribute('aria-disabled')).toBe(false);
   });
 
   it('once the hold is lifted, Escape closes the modal and runs `onClose`', () => {

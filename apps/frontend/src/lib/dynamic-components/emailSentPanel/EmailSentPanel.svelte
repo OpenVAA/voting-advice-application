@@ -59,8 +59,7 @@ Accesses `AppContext` through the support sentence.
   const { t } = getComponentContext();
 
   /** The attributes of the bold address inside the first sentence: its test id, and the marks that keep it untranslated, unhyphenated and wrapping anywhere. */
-  const ADDRESS_ATTRIBUTES =
-    'data-testid="email-sent-address" translate="no" class="[overflow-wrap:anywhere] hyphens-none"';
+  const ADDRESS_ATTRIBUTES = 'data-testid="email-sent-address" translate="no" class="wrap-anywhere hyphens-none"';
 
   /** The address to show, or nothing for an absent or blank one, and nothing for the code wording, whose sentence names none. */
   const address = $derived(wording === 'code' ? undefined : email?.trim() || undefined);

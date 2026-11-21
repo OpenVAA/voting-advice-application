@@ -67,7 +67,7 @@ const EVENTS: ReadonlyArray<AnalyticsEvent> = [
     name: 'answer',
     time: Date.UTC(2026, 9, 19, 10, 0, 1, 500),
     app: 'voter',
-    id: VISIT_ID,
+    visitId: VISIT_ID,
     attributes: { questionId: '3b241101-e2bb-4255-8caf-4136c566a962', value: ATTRIBUTE_MARKER }
   },
   {
@@ -239,7 +239,7 @@ describe('toPostHogBatchItem', () => {
   });
 
   it('never gives a pageview the visit id, even when one reaches it', () => {
-    const item = toPostHogBatchItem({ ...EVENTS[0], id: VISIT_ID }, () => 'fresh-random-id');
+    const item = toPostHogBatchItem({ ...EVENTS[0], visitId: VISIT_ID }, () => 'fresh-random-id');
     expect(item.distinct_id).toBe('fresh-random-id');
     expect(item.properties).not.toHaveProperty('$session_id');
     expect(JSON.stringify(item)).not.toContain(VISIT_ID);
@@ -307,7 +307,7 @@ describe('createPostHogProvider', () => {
 
   it('gives every event with no visit id its own distinct_id', async () => {
     const { fetch, calls } = recordingFetch();
-    const anonymous = EVENTS.map(({ id: _id, ...event }) => event);
+    const anonymous = EVENTS.map(({ visitId: _visitId, ...event }) => event);
     await createPostHogProvider({ host: HOST, key: KEY, fetch, randomId: countingRandomId() }).capture([
       ...anonymous,
       ...anonymous

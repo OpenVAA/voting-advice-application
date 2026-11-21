@@ -74,11 +74,6 @@ The field holds no rule of its own about what an acceptable address is, and `Inp
   const id = $derived(idProp ?? fallbackId);
 
   let field: Input | undefined = $state();
-
-  // `Input` takes an entry in when it is committed; the caller is handed every keystroke.
-  function handleInput({ currentTarget }: { currentTarget: EventTarget & HTMLElement }): void {
-    if (currentTarget instanceof HTMLInputElement) value = currentTarget.value;
-  }
 </script>
 
 <Input
@@ -101,4 +96,4 @@ The field holds no rule of its own about what an acceptable address is, and `Inp
   {errorReason}
   onShadedBg
   containerProps={restProps}
-  oninput={handleInput} />
+  commitOn="input" />

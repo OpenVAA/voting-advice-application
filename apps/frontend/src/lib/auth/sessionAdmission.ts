@@ -1,5 +1,5 @@
 import { log } from '@openvaa/app-shared';
-import { hasAnyGrant, readGrants } from './roles';
+import { hasAnyGrant } from './roles';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
 import type { GrantClaim, GrantShape } from './roles';
 
@@ -11,13 +11,13 @@ import type { GrantClaim, GrantShape } from './roles';
  * 1. `claimInvitations()` turns the user's open invitations into grants.
  * 2. `refreshSession()` runs when the claim wrote at least one grant.
  * 3. `getSession()` reads the session.
- * 4. The grant-shape gate reads that session's access token, or, for an entry point whose context reads them, the grants that reach this project. Those are read from the database, which knows which project an account and an entity belong to; a read that fails refuses the session and signs it out.
+ * 4. The grant-shape gate reads the grants that reach this project. They are read from the database, which knows which project an account and an entity belong to, and not from the access token, which lists the user's grants in every project; a read that fails refuses the session and signs it out.
  *
- * An access token lists the grants its user held when it was issued. A grant the claim writes is therefore in no token until the session is refreshed, and a gate that read the session before the refresh would refuse a first-time invitee whose only grant is the one just claimed. The refresh is skipped when nothing was claimed: the token was issued by this same request and already lists every grant the user holds.
+ * The gate reads the grants table, so a gate that ran before the claim would refuse a first-time invitee whose only grant is the one the claim writes. An access token lists the grants its user held when it was issued, so a grant the claim writes is in no token until the session is refreshed, and the session the caller goes on with is refreshed first. The refresh is skipped when nothing was claimed: the token was issued by this same request and already lists every grant the user holds.
  *
- * ## A claim that fails admits on what the token already carries
+ * ## A claim that fails admits on the grants the user already holds
  *
- * A claim that throws is logged and treated as a claim of nothing, so one failing claim locks nobody out of a sign-in that would otherwise be admitted. A refresh that fails is logged in the same way, and the gate reads the session as it is.
+ * A claim that throws is logged and treated as a claim of nothing, so one failing claim locks nobody out of a sign-in that would otherwise be admitted. A refresh that fails is logged in the same way, and the gate reads the grants as they are.
  *
  * ## What it deliberately does not take
  *
@@ -46,12 +46,10 @@ export async function admitSession({
     return { ok: false, status: 500, reason: 'noSession' };
   }
 
-  const grants = context.getProjectGrants
-    ? await context.getProjectGrants().catch((e: Error | undefined) => {
-        log.error(`${logLabel}: reading the grants that reach this project failed: ${e?.message ?? '-'}`);
-        return undefined;
-      })
-    : readGrants(session.access_token);
+  const grants = await context.getProjectGrants().catch((e: Error | undefined) => {
+    log.error(`${logLabel}: reading the grants that reach this project failed: ${e?.message ?? '-'}`);
+    return undefined;
+  });
   if (!grants) {
     await context.auth.signOut({ scope: 'local' });
     return { ok: false, status: 500, reason: 'grantsUnread' };
@@ -117,10 +115,10 @@ export type SessionAdmissionContext = {
    */
   claimInvitations(): Promise<InvitationClaimResult>;
   /**
-   * Read the signed-in user's grants that reach this project, on this request's own client. When given, the gate reads these instead of the token's, which lists the user's grants in every project. Called after the session read.
+   * Read the signed-in user's grants that reach this project, on this request's own client. The gate reads these, never the token's, which lists the user's grants in every project. Called after the session read.
    * @returns The grants. May throw.
    */
-  getProjectGrants?(): Promise<Array<GrantClaim>>;
+  getProjectGrants(): Promise<Array<GrantClaim>>;
 };
 
 /**

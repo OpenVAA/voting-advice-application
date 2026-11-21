@@ -18,9 +18,10 @@ import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
 import { requiredNameLocale } from '$lib/contestant/utils/nameRule';
-import type { BasicUserData } from '$lib/api/base/dataWriter.type';
+import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
+import type { IdentityProviderRegistrationResult } from '$lib/server/contestant/identityProviderRegistration';
 
-const { box, context, fetchMock, invalidateAll, logout } = vi.hoisted(() => {
+const { box, context, invalidateAll, logout, register } = vi.hoisted(() => {
   const box = {
     user: undefined as unknown as BasicUserData | undefined,
     answersLocked: false,
@@ -29,7 +30,7 @@ const { box, context, fetchMock, invalidateAll, logout } = vi.hoisted(() => {
   };
   const invalidateAll = vi.fn();
   const logout = vi.fn();
-  const fetchMock = vi.fn();
+  const register = vi.fn<DataWriter['registerIdentityProviderAccount']>();
   /** A message with a payload renders as its key followed by the payload. */
   function t(key: string, payload?: Record<string, unknown>): string {
     return payload ? `${key} ${JSON.stringify(payload)}` : key;
@@ -37,6 +38,7 @@ const { box, context, fetchMock, invalidateAll, logout } = vi.hoisted(() => {
   const context = {
     t,
     logout,
+    registerIdentityProviderAccount: register,
     get user() {
       return box.user;
     },
@@ -44,10 +46,15 @@ const { box, context, fetchMock, invalidateAll, logout } = vi.hoisted(() => {
       return box.answersLocked;
     }
   };
-  return { box, context, fetchMock, invalidateAll, logout };
+  return { box, context, invalidateAll, logout, register };
 });
 
 vi.mock('$lib/contexts/contestant/contestantContext.svelte', () => ({ getContestantContext: () => context }));
+
+vi.mock('$lib/contexts/app', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getAppContext: () => ({ track: () => undefined })
+}));
 
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({
@@ -67,11 +74,13 @@ vi.mock('$lib/contexts/layout', () => ({
   getLayoutContext: () => ({ video: { hasContent: false }, setRouteTitle: () => undefined })
 }));
 
+// `url` is read by the shared Log out when a sign-out starts.
 vi.mock('$app/state', () => ({
   page: {
     get data() {
       return box.pageData;
-    }
+    },
+    url: new URL('http://localhost/contestant')
   }
 }));
 
@@ -104,7 +113,6 @@ const DEFAULT_LOCALE = requiredNameLocale();
 /** A supported locale other than the default one, displayed first, so that the default locale's field is not the first control. */
 const OTHER_LOCALE = DEFAULT_LOCALE === 'fi' ? 'sv' : 'fi';
 
-const ENDPOINT = '/api/contestant/identity-provider';
 const PLACEHOLDER_DOMAIN = 'bank-auth.placeholder';
 const PENDING = 'waiting@example.org';
 const PROVED = 'proved@example.org';
@@ -161,17 +169,10 @@ function userWith(overrides: Partial<BasicUserData> = {}): BasicUserData {
     username: '',
     termsOfUseAccepted: null,
     passwordSet: false,
-    addressState: 'none',
-    pendingEmail: null,
+    address: { state: 'none', pendingTaken: false },
     ownOrganizationUnnamed: false,
-    pendingEmailTaken: false,
     ...overrides
   } as BasicUserData;
-}
-
-/** The endpoint answering `result`. */
-function answer(result: string): Response {
-  return new Response(JSON.stringify({ result }), { status: 200, headers: { 'content-type': 'application/json' } });
 }
 
 let teardown: Array<() => void> = [];
@@ -183,15 +184,13 @@ beforeEach(() => {
   box.locales = [OTHER_LOCALE, DEFAULT_LOCALE];
   invalidateAll.mockResolvedValue(undefined);
   logout.mockResolvedValue(undefined);
-  fetchMock.mockResolvedValue(answer('saved'));
-  vi.stubGlobal('fetch', fetchMock);
+  register.mockResolvedValue('saved');
 });
 
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
   vi.useRealTimers();
-  vi.unstubAllGlobals();
   vi.resetAllMocks();
 });
 
@@ -271,12 +270,9 @@ async function press(target: HTMLElement, selector: string): Promise<void> {
   await settle();
 }
 
-/** The parsed bodies of the requests the view made. */
-function requests(): Array<{ url: unknown; init: RequestInit; body: Record<string, unknown> }> {
-  return fetchMock.mock.calls.map((call) => {
-    const [url, init] = call as [unknown, RequestInit];
-    return { url, init, body: JSON.parse(String(init.body)) as Record<string, unknown> };
-  });
+/** The intents the view posted, in order. */
+function requests(): Array<Parameters<DataWriter['registerIdentityProviderAccount']>[0]> {
+  return register.mock.calls.map(([opts]) => opts);
 }
 
 describe('IdentityProviderGate — the variants', () => {
@@ -338,7 +334,7 @@ describe('IdentityProviderGate — the variants', () => {
 
   it('shows a returning user the address awaiting confirmation, with Send again and Use another email address, and no form', () => {
     const target = render({
-      user: userWith({ addressState: 'pending', pendingEmail: PENDING }),
+      user: userWith({ address: { state: 'pending', email: PENDING } }),
       arrival: 'existing'
     });
 
@@ -356,7 +352,7 @@ describe('IdentityProviderGate — the variants', () => {
 
   it('shows a returning user with a proved address the address to sign in with next time', () => {
     const target = render({
-      user: userWith({ addressState: 'proved', email: PROVED, username: PROVED }),
+      user: userWith({ address: { state: 'proved' }, email: PROVED, username: PROVED }),
       arrival: 'existing'
     });
 
@@ -370,10 +366,10 @@ describe('IdentityProviderGate — the variants', () => {
   });
 
   it.each([
-    { state: 'pending' as const, extra: { pendingEmail: PENDING } },
-    { state: 'proved' as const, extra: { email: PROVED, username: PROVED } }
+    { state: 'pending' as const, extra: { address: { state: 'pending' as const, email: PENDING } } },
+    { state: 'proved' as const, extra: { address: { state: 'proved' as const }, email: PROVED, username: PROVED } }
   ])('asks only for the party’s name when the address is $state and the party is unnamed', ({ state, extra }) => {
-    const target = render({ user: userWith({ addressState: state, ownOrganizationUnnamed: true, ...extra }) });
+    const target = render({ user: userWith({ ownOrganizationUnnamed: true, ...extra }) });
 
     expect(attributes(target)).toEqual({ variant: 'new', addressState: state, asks: 'name', gateState: 'idle' });
     expect(one(target, SEL.lead).textContent).toBe(KEY.nameIntro);
@@ -384,7 +380,7 @@ describe('IdentityProviderGate — the variants', () => {
   });
 
   it('leads with the notice when the address the user gave is now another account’s', () => {
-    const target = render({ user: userWith({ pendingEmailTaken: true }), arrival: 'existing' });
+    const target = render({ user: userWith({ address: { state: 'none', pendingTaken: true } }), arrival: 'existing' });
 
     expect(attributes(target).asks).toBe('email');
     expect(one(target, SEL.lead).textContent).toBe(KEY.takenNotice);
@@ -411,12 +407,12 @@ describe('IdentityProviderGate — what is never shown', () => {
     { name: 'no address, returning', user: placeholderUser({}), arrival: 'existing' as const },
     {
       name: 'pending',
-      user: placeholderUser({ addressState: 'pending', pendingEmail: PENDING }),
+      user: placeholderUser({ address: { state: 'pending', email: PENDING } }),
       arrival: 'existing' as const
     },
     {
       name: 'pending, party unnamed',
-      user: placeholderUser({ addressState: 'pending', pendingEmail: PENDING, ownOrganizationUnnamed: true }),
+      user: placeholderUser({ address: { state: 'pending', email: PENDING }, ownOrganizationUnnamed: true }),
       arrival: undefined
     }
   ])('renders no placeholder address for an account with $name', ({ user, arrival }) => {
@@ -426,7 +422,7 @@ describe('IdentityProviderGate — what is never shown', () => {
   });
 
   it('shows the pending address only while the view waits for its link', async () => {
-    const pending = { addressState: 'pending' as const, pendingEmail: PENDING };
+    const pending = { address: { state: 'pending' as const, email: PENDING } };
 
     expect(render({ user: userWith(pending), arrival: 'existing' }).innerHTML).toContain(PENDING);
     expect(render({ user: userWith({ ...pending, ownOrganizationUnnamed: true }) }).innerHTML).not.toContain(PENDING);
@@ -443,7 +439,7 @@ describe('IdentityProviderGate — Continue with a form', () => {
 
     await press(target, SEL.submit);
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
     const nameError = one(target, SEL.nameError);
     expect(nameError.getAttribute('role')).toBe('alert');
     expect(nameError.textContent).toContain(KEY.nameRequired);
@@ -461,7 +457,7 @@ describe('IdentityProviderGate — Continue with a form', () => {
 
     await press(target, SEL.submit);
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
     expect(target.querySelector(SEL.nameError)).toBeNull();
     expect(document.activeElement).toBe(one(target, SEL.email));
   });
@@ -473,7 +469,7 @@ describe('IdentityProviderGate — Continue with a form', () => {
 
     await press(target, SEL.submit);
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
     one(target, SEL.nameError);
     expect(document.activeElement).toBe(nameControl(target, DEFAULT_LOCALE));
   });
@@ -489,8 +485,8 @@ describe('IdentityProviderGate — Continue with a form', () => {
   });
 
   it('saves the names and the address as JSON to the endpoint, shows that it is saving, then reruns the loads', async () => {
-    const { promise, resolve } = Promise.withResolvers<Response>();
-    fetchMock.mockReturnValue(promise);
+    const { promise, resolve } = Promise.withResolvers<IdentityProviderRegistrationResult | undefined>();
+    register.mockReturnValue(promise);
     const target = render({ user: userWith({ ownOrganizationUnnamed: true }), arrival: 'created' });
     type(nameControl(target, DEFAULT_LOCALE), 'A Party');
     // The abbreviation is not required, so only the displayed locale's field is on screen.
@@ -501,22 +497,20 @@ describe('IdentityProviderGate — Continue with a form', () => {
 
     expect(attributes(target).gateState).toBe('saving');
     expect(invalidateAll).not.toHaveBeenCalled();
-    const [request] = requests();
-    expect(request.url).toBe(ENDPOINT);
-    expect(request.init.method).toBe('POST');
-    expect(new Headers(request.init.headers).get('content-type')).toBe('application/json');
-    expect(request.body).toEqual({
-      intent: 'save',
-      name: { [DEFAULT_LOCALE]: 'A Party' },
-      shortName: { [OTHER_LOCALE]: 'AP' },
-      email: TYPED
-    });
+    expect(requests()).toEqual([
+      {
+        intent: 'save',
+        name: { [DEFAULT_LOCALE]: 'A Party' },
+        shortName: { [OTHER_LOCALE]: 'AP' },
+        email: TYPED
+      }
+    ]);
 
-    resolve(answer('saved'));
+    resolve('saved');
     await settle();
 
     expect(invalidateAll).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(register).toHaveBeenCalledTimes(1);
   });
 
   it('saves the address alone when no name is asked', async () => {
@@ -525,22 +519,24 @@ describe('IdentityProviderGate — Continue with a form', () => {
 
     await press(target, SEL.submit);
 
-    expect(requests().map(({ body }) => body)).toEqual([{ intent: 'save', email: TYPED }]);
+    expect(requests()).toEqual([{ intent: 'save', email: TYPED }]);
     expect(invalidateAll).toHaveBeenCalledTimes(1);
   });
 
   it('saves the name alone when only the name is asked', async () => {
-    const target = render({ user: userWith({ addressState: 'proved', email: PROVED, ownOrganizationUnnamed: true }) });
+    const target = render({
+      user: userWith({ address: { state: 'proved' }, email: PROVED, ownOrganizationUnnamed: true })
+    });
     type(nameControl(target, DEFAULT_LOCALE), 'A Party');
 
     await press(target, SEL.submit);
 
-    expect(requests().map(({ body }) => body)).toEqual([{ intent: 'save', name: { [DEFAULT_LOCALE]: 'A Party' } }]);
+    expect(requests()).toEqual([{ intent: 'save', name: { [DEFAULT_LOCALE]: 'A Party' } }]);
     expect(invalidateAll).toHaveBeenCalledTimes(1);
   });
 
   it('tells at the address field that another account holds the address, and focuses it', async () => {
-    fetchMock.mockResolvedValue(answer('in-use'));
+    register.mockResolvedValue('in-use');
     const target = render();
     fillAddress(target);
 
@@ -556,7 +552,7 @@ describe('IdentityProviderGate — Continue with a form', () => {
   });
 
   it('tells at the address field that an open invitation is addressed to the address, to be signed in with by email, and focuses it', async () => {
-    fetchMock.mockResolvedValue(answer('invited'));
+    register.mockResolvedValue('invited');
     const target = render();
     fillAddress(target);
 
@@ -572,13 +568,13 @@ describe('IdentityProviderGate — Continue with a form', () => {
   });
 
   it.each([
-    { name: 'answers failed', reply: () => Promise.resolve(answer('failed')) },
-    { name: 'answers something unknown', reply: () => Promise.resolve(answer('maybe')) },
-    { name: 'cannot be reached', reply: () => Promise.reject(new TypeError('Failed to fetch')) }
+    { name: 'answers failed', reply: () => Promise.resolve('failed' as const) },
+    { name: 'answers something unknown', reply: () => Promise.resolve('maybe' as IdentityProviderRegistrationResult) },
+    { name: 'cannot be reached', reply: () => Promise.resolve(undefined) }
   ])(
     'says the save failed when the endpoint $name, keeps what was typed, and retries on a second press',
     async ({ reply }) => {
-      fetchMock.mockImplementation(reply);
+      register.mockImplementation(reply);
       const target = render();
       fillAddress(target);
 
@@ -593,10 +589,10 @@ describe('IdentityProviderGate — Continue with a form', () => {
       expect(document.activeElement).toBe(one(target, SEL.submit));
       expect(invalidateAll).not.toHaveBeenCalled();
 
-      fetchMock.mockResolvedValue(answer('saved'));
+      register.mockResolvedValue('saved');
       await press(target, SEL.submit);
 
-      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(register).toHaveBeenCalledTimes(2);
       expect(invalidateAll).toHaveBeenCalledTimes(1);
     }
   );
@@ -604,22 +600,22 @@ describe('IdentityProviderGate — Continue with a form', () => {
 
 describe('IdentityProviderGate — Continue without a form', () => {
   it.each([
-    { state: 'pending' as const, extra: { pendingEmail: PENDING } },
-    { state: 'proved' as const, extra: { email: PROVED, username: PROVED } }
+    { state: 'pending' as const, extra: { address: { state: 'pending' as const, email: PENDING } } },
+    { state: 'proved' as const, extra: { address: { state: 'proved' as const }, email: PROVED, username: PROVED } }
   ])('acknowledges the arrival and reruns the loads when the address is $state', async ({ state, extra }) => {
-    fetchMock.mockResolvedValue(answer('acknowledged'));
-    const target = render({ user: userWith({ addressState: state, ...extra }), arrival: 'existing' });
+    register.mockResolvedValue('acknowledged');
+    const target = render({ user: userWith(extra), arrival: 'existing' });
 
     await press(target, SEL.submit);
 
-    expect(requests().map(({ body }) => body)).toEqual([{ intent: 'acknowledge' }]);
+    expect(requests()).toEqual([{ intent: 'acknowledge' }]);
     expect(invalidateAll).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.invocationCallOrder[0]).toBeLessThan(invalidateAll.mock.invocationCallOrder[0]);
+    expect(register.mock.invocationCallOrder[0]).toBeLessThan(invalidateAll.mock.invocationCallOrder[0]);
   });
 
   it('says the request failed and reruns nothing when the acknowledgement fails', async () => {
-    fetchMock.mockResolvedValue(answer('failed'));
-    const target = render({ user: userWith({ addressState: 'proved', email: PROVED }), arrival: 'existing' });
+    register.mockResolvedValue('failed');
+    const target = render({ user: userWith({ address: { state: 'proved' }, email: PROVED }), arrival: 'existing' });
 
     await press(target, SEL.submit);
 
@@ -630,7 +626,7 @@ describe('IdentityProviderGate — Continue without a form', () => {
 
 describe('IdentityProviderGate — Send again', () => {
   function pendingUser(): BasicUserData {
-    return userWith({ addressState: 'pending', pendingEmail: PENDING });
+    return userWith({ address: { state: 'pending', email: PENDING } });
   }
 
   it('is available on arrival, with no count and nothing announced', () => {
@@ -643,27 +639,27 @@ describe('IdentityProviderGate — Send again', () => {
     expect(one(target, SEL.status).textContent?.trim()).toBe('');
   });
 
-  it('asks for the link again, announces it, and is unavailable but focused and described by its count until the count ends', async () => {
+  it('asks for the link again, announces it, and is unavailable but focused, with its count in its name, until the count ends', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
-    fetchMock.mockResolvedValue(answer('sent'));
+    register.mockResolvedValue('sent');
     const target = render({ user: pendingUser(), arrival: 'existing' });
 
     await press(target, SEL.resend);
 
-    expect(requests().map(({ body }) => body)).toEqual([{ intent: 'resend' }]);
+    expect(requests()).toEqual([{ intent: 'resend' }]);
     const resend = one(target, SEL.resend);
     expect(document.activeElement).toBe(resend);
     expect(resend.getAttribute('aria-disabled')).toBe('true');
     expect(resend.tabIndex).toBe(0);
     const countdown = one(target, SEL.countdown);
-    expect(resend.getAttribute('aria-describedby')).toBe(countdown.id);
+    expect(resend.hasAttribute('aria-describedby'), 'the count is in the name alone').toBe(false);
     expect(resend.contains(countdown), 'the count is inside Send again').toBe(true);
     expect(countdown.textContent).toContain(KEY.resendIn);
     expect(countdown.textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS}`);
     expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendRequested);
 
     await press(target, SEL.resend);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(register).toHaveBeenCalledTimes(1);
 
     vi.advanceTimersByTime((RESEND_WAIT_SECONDS - 1) * 1000);
     flushSync();
@@ -678,13 +674,13 @@ describe('IdentityProviderGate — Send again', () => {
     expect(document.activeElement).toBe(one(target, SEL.resend));
 
     await press(target, SEL.resend);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(register).toHaveBeenCalledTimes(2);
   });
 });
 
 describe('IdentityProviderGate — another address and Log Out', () => {
   it('replaces the pending address by the email form in place and focuses its first field', async () => {
-    const target = render({ user: userWith({ addressState: 'pending', pendingEmail: PENDING }), arrival: 'existing' });
+    const target = render({ user: userWith({ address: { state: 'pending', email: PENDING } }), arrival: 'existing' });
 
     await press(target, SEL.changeAddress);
 
@@ -694,12 +690,12 @@ describe('IdentityProviderGate — another address and Log Out', () => {
     expect(one(target, SEL.lead).textContent).toBe(KEY.pending);
     expect(document.activeElement).toBe(one(target, SEL.email));
     expect(one<HTMLButtonElement>(target, SEL.submit).getAttribute('type')).toBe('submit');
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
 
     fillAddress(target);
     await press(target, SEL.submit);
 
-    expect(requests().map(({ body }) => body)).toEqual([{ intent: 'save', email: TYPED }]);
+    expect(requests()).toEqual([{ intent: 'save', email: TYPED }]);
   });
 
   it('logs out on Log Out and sends nothing', async () => {
@@ -709,7 +705,7 @@ describe('IdentityProviderGate — another address and Log Out', () => {
     await press(target, SEL.logout);
 
     expect(logout).toHaveBeenCalledTimes(1);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
   });
 
   it('logs a failed Log Out and gives the button back', async () => {

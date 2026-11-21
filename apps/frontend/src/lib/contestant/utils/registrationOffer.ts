@@ -27,7 +27,7 @@ export type RegistrationOfferSettings = ContestantAppSettingsInput;
  *
  * Each mode is listed when any served entity type allows it. Registering through the identity provider creates an entity of a type the user chooses among those {@link identityProviderEntityTypes} answers, and the invitation the email and code modes redeem names its own entity.
  *
- * While `access.contestantEditing` is `locked` nothing is listed, as `isRegistrationModeAllowed` answers.
+ * While `access.contestantEditing` is `locked` nothing is listed, as `isRegistrationModeAllowed` answers. The database applies the same rule: `private.registration_mode_allowed` is false while contestant editing is `locked`, so an invitation is neither claimed nor answered with a link then, whichever form the address or code is typed into.
  * @param settings - The application settings to read.
  * @returns The offered modes in listing order. Empty when registration is not offered.
  */
@@ -73,7 +73,9 @@ export function identityProviderEntityType(
 }
 
 /**
- * Whether the sign-in form offers to mail a sign-in link: the email mode or the identity provider's mode is served for at least one entity type. An account made under either may have no password yet, and a user who cannot edit can still sign in, so `access.contestantEditing` does not close it.
+ * Whether the sign-in form offers to mail a sign-in link: the email mode or the identity provider's mode is served for at least one entity type. An account made under either may have no password yet.
+ *
+ * `access.contestantEditing` is not read: a user who cannot edit can still sign in. A link the form requests while contestant editing is `locked` reaches only an address that already holds a grant in the project, because the database answers no open invitation then.
  * @param settings - The application settings to read.
  */
 export function signInLinkOffered(settings: RegistrationOfferSettings): boolean {

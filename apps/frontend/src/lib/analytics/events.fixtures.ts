@@ -26,105 +26,113 @@ export const VALID_EVENTS = {
   answer: {
     name: 'answer',
     ago: 1_500,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { questionId: SAMPLE_ID, value: 'choice_1,choice_3' }
   },
   answer_delete: {
     name: 'answer_delete',
     ago: 1_200,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { questionId: SAMPLE_ID }
   },
-  answer_resetAll: { name: 'answer_resetAll', ago: 900, id: SAMPLE_VISIT_ID, attributes: {} },
-  dataConsent_granted: { name: 'dataConsent_granted', ago: 0, id: SAMPLE_VISIT_ID, attributes: {} },
+  answer_resetAll: { name: 'answer_resetAll', ago: 900, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  dataConsent_granted: { name: 'dataConsent_granted', ago: 0, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  emailSent_resend: { name: 'emailSent_resend', ago: 0, visitId: SAMPLE_VISIT_ID, attributes: {} },
   entityCard_expandSubcards: {
     name: 'entityCard_expandSubcards',
     ago: 300,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { length: 4 }
   },
   entityDetails_changeTab: {
     name: 'entityDetails_changeTab',
     ago: 300,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { section: 'opinions' }
   },
-  feedback_error: { name: 'feedback_error', ago: 50, id: SAMPLE_VISIT_ID, attributes: { rating: 2 } },
-  feedback_sent: { name: 'feedback_sent', ago: 50, id: SAMPLE_VISIT_ID, attributes: { rating: 5 } },
-  filters_active: { name: 'filters_active', ago: 700, id: SAMPLE_VISIT_ID, attributes: { count: 2 } },
-  filters_reset: { name: 'filters_reset', ago: 600, id: SAMPLE_VISIT_ID, attributes: {} },
-  maintenance_shown: { name: 'maintenance_shown', ago: 0, id: SAMPLE_VISIT_ID, attributes: {} },
-  menu_open: { name: 'menu_open', ago: 2_000, id: SAMPLE_VISIT_ID, attributes: {} },
-  question_next: { name: 'question_next', ago: 400, id: SAMPLE_VISIT_ID, attributes: { questionIndex: 3 } },
+  feedback_error: { name: 'feedback_error', ago: 50, visitId: SAMPLE_VISIT_ID, attributes: { rating: 2 } },
+  feedback_sent: { name: 'feedback_sent', ago: 50, visitId: SAMPLE_VISIT_ID, attributes: { rating: 5 } },
+  filters_active: { name: 'filters_active', ago: 700, visitId: SAMPLE_VISIT_ID, attributes: { count: 2 } },
+  filters_reset: { name: 'filters_reset', ago: 600, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  logout_warned: { name: 'logout_warned', ago: 200, visitId: SAMPLE_VISIT_ID, attributes: { proceeded: true } },
+  maintenance_shown: { name: 'maintenance_shown', ago: 0, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  menu_open: { name: 'menu_open', ago: 2_000, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  question_next: { name: 'question_next', ago: 400, visitId: SAMPLE_VISIT_ID, attributes: { questionIndex: 3 } },
   question_previous: {
     name: 'question_previous',
     ago: 400,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { questionIndex: 2 }
   },
-  question_skip: { name: 'question_skip', ago: 400, id: SAMPLE_VISIT_ID, attributes: { questionIndex: 4 } },
+  question_skip: { name: 'question_skip', ago: 400, visitId: SAMPLE_VISIT_ID, attributes: { questionIndex: 4 } },
   question_startFrom: {
     name: 'question_startFrom',
     ago: 100,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { questionId: '__first__' }
   },
-  questionInfo_collapse: { name: 'questionInfo_collapse', ago: 100, id: SAMPLE_VISIT_ID, attributes: {} },
-  questionInfo_expand: { name: 'questionInfo_expand', ago: 100, id: SAMPLE_VISIT_ID, attributes: {} },
+  questionInfo_collapse: { name: 'questionInfo_collapse', ago: 100, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  questionInfo_expand: { name: 'questionInfo_expand', ago: 100, visitId: SAMPLE_VISIT_ID, attributes: {} },
   questionExtendedInfo_collapseSection: {
     name: 'questionExtendedInfo_collapseSection',
     ago: 100,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { title: 'Arguments for' }
   },
   questionExtendedInfo_expandSection: {
     name: 'questionExtendedInfo_expandSection',
     ago: 100,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { title: 'Background' }
   },
-  questionExtendedInfo_open: { name: 'questionExtendedInfo_open', ago: 100, id: SAMPLE_VISIT_ID, attributes: {} },
+  questionExtendedInfo_open: { name: 'questionExtendedInfo_open', ago: 100, visitId: SAMPLE_VISIT_ID, attributes: {} },
+  registration_modeChosen: {
+    name: 'registration_modeChosen',
+    ago: 100,
+    visitId: SAMPLE_VISIT_ID,
+    attributes: { mode: 'email' }
+  },
   results_browse: {
     name: 'results_browse',
     ago: 800,
-    id: SAMPLE_VISIT_ID,
-    attributes: { election: SAMPLE_ID, entityType: 'candidate', numAnswers: 0 }
+    visitId: SAMPLE_VISIT_ID,
+    attributes: { electionId: SAMPLE_ID, entityType: 'candidate', numAnswers: 0 }
   },
   results_browse_entity: {
     name: 'results_browse_entity',
     ago: 800,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { entityType: 'organization', entityId: SAMPLE_OTHER_ID }
   },
   results_changeElection: {
     name: 'results_changeElection',
     ago: 800,
-    id: SAMPLE_VISIT_ID,
-    attributes: { election: SAMPLE_OTHER_ID }
+    visitId: SAMPLE_VISIT_ID,
+    attributes: { electionId: SAMPLE_OTHER_ID }
   },
   results_changeTab: {
     name: 'results_changeTab',
     ago: 800,
-    id: SAMPLE_VISIT_ID,
-    attributes: { section: 'alliance' }
+    visitId: SAMPLE_VISIT_ID,
+    attributes: { entityType: 'alliance' }
   },
   results_ranked: {
     name: 'results_ranked',
     ago: 800,
-    id: SAMPLE_VISIT_ID,
-    attributes: { election: SAMPLE_ID, entityType: 'candidate', numAnswers: 17 }
+    visitId: SAMPLE_VISIT_ID,
+    attributes: { electionId: SAMPLE_ID, entityType: 'candidate', numAnswers: 17 }
   },
   results_ranked_entity: {
     name: 'results_ranked_entity',
     ago: 800,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: { entityType: 'candidate', entityId: SAMPLE_OTHER_ID, score: 73 }
   },
-  survey_opened: { name: 'survey_opened', ago: 0, id: SAMPLE_VISIT_ID, attributes: {} },
+  survey_opened: { name: 'survey_opened', ago: 0, visitId: SAMPLE_VISIT_ID, attributes: {} },
   video: {
     name: 'video',
     ago: 0,
-    id: SAMPLE_VISIT_ID,
+    visitId: SAMPLE_VISIT_ID,
     attributes: {
       startMuted: true,
       startWithTranscript: false,
