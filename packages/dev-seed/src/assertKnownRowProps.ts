@@ -17,7 +17,7 @@
  *
  * ## First offence, not an aggregate
  *
- * `bulkImport`'s and `linkJoinTables`' failures are all first-failure, and an aggregate over the rows a built-in run emits would bury the signal under its own volume. The guard's spec pins this.
+ * `bulkImport`'s and `linkQuestionScopes`' failures are all first-failure, and an aggregate over the rows a built-in run emits would bury the signal under its own volume. The guard's spec pins this.
  *
  * ## The `external_id` it does NOT require
  *

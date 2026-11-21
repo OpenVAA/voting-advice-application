@@ -23,40 +23,27 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
 import { contestantHomeUrlRe, contestantSettingsUrlRe } from '../../utils/contestantEntityUrl';
+import { messageOf } from '../../utils/messages';
+import { expectCountInName } from '../../utils/resendCountdown';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Page } from '@playwright/test';
-
-/**
- * Read one message of the English message source.
- * @param file - The file's name under `apps/frontend/messages/en`, without its extension; the namespace is the file's single top-level key.
- * @param key - The message's key inside the namespace.
- */
-function englishMessage(file: string, key: string): string {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, unknown>>;
-  return String(source[file][key]);
-}
 
 /** The page's sentences that a step asserts, read from the message source rather than copied. */
 const MESSAGES = Object.freeze({
-  pendingInfo: englishMessage('contestantApp.settings', 'emailPendingInfo'),
-  emailInUse: englishMessage('contestantApp.identityProvider', 'emailInUse'),
-  requested: englishMessage('contestantApp.emailSent', 'resendRequested')
+  pendingInfo: messageOf('contestantApp.settings', 'emailPendingInfo'),
+  emailInUse: messageOf('contestantApp.identityProvider', 'emailInUse'),
+  requested: messageOf('contestantApp.emailSent', 'resendRequested')
 });
 
 export function createContestantSettingsPage(page: Page) {
   const ids = testIds.contestant.settings;
-  const entryIds = testIds.contestant.emailEntry;
+  const entryIds = testIds.shared.account.emailEntry;
   const addressControl = page.getByTestId(ids.email);
 
   return {
@@ -120,14 +107,12 @@ export function createContestantSettingsPage(page: Page) {
     },
 
     /**
-     * Assert what follows a press of "Send again": the button is marked unavailable and is described by the count of the wait in its label, and the status region says that a new email was requested.
+     * Assert what follows a press of "Send again": the button is marked unavailable, the count of the wait is shown in its label and read in its name alone (see {@link expectCountInName}), and the status region says that a new email was requested.
      */
     async expectResendRequested(): Promise<void> {
       const resend = page.getByTestId(ids.emailPendingResend);
       await expect(resend).toHaveAttribute('aria-disabled', 'true', { timeout: TIMEOUTS.slowPage });
-      const countdownId = (await page.getByTestId(ids.emailPendingCountdown).getAttribute('id')) ?? '';
-      expect(countdownId, 'the id of the count of the wait').not.toBe('');
-      await expect(resend).toHaveAttribute('aria-describedby', countdownId);
+      await expectCountInName({ resend, countdown: page.getByTestId(ids.emailPendingCountdown) });
       await expect(page.getByTestId(ids.emailPendingStatus)).toHaveText(MESSAGES.requested);
     },
 

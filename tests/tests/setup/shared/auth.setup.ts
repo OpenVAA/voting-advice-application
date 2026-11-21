@@ -19,7 +19,7 @@ import {
   TERMS_PENDING_STORAGE_STATE,
   TEST_CANDIDATE_EMAIL,
   TEST_CANDIDATE_EXTERNAL_ID,
-  TEST_CANDIDATE_PASSWORD,
+  TEST_PASSWORD,
   TEST_TERMS_PENDING_CANDIDATE_EMAIL,
   TEST_TERMS_PENDING_CANDIDATE_EXTERNAL_ID
 } from '../../utils/testCredentials';
@@ -33,9 +33,9 @@ setup('register + authenticate as base candidate', async ({ page }) => {
   setup.setTimeout(TIMEOUTS.testMax);
 
   await registerAndStoreSession(page, {
-    externalId: TEST_CANDIDATE_EXTERNAL_ID,
+    entityGrants: [{ entityType: 'candidate', externalId: TEST_CANDIDATE_EXTERNAL_ID }],
     email: TEST_CANDIDATE_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: authFile,
     acceptTermsOfUse: true
   });
@@ -47,9 +47,9 @@ setup('register + authenticate as a user who has not accepted the terms of use',
 
   // Settled on the terms-of-use view's submit button: the session is stored only once that view has rendered for this user.
   await registerAndStoreSession(page, {
-    externalId: TEST_TERMS_PENDING_CANDIDATE_EXTERNAL_ID,
+    entityGrants: [{ entityType: 'candidate', externalId: TEST_TERMS_PENDING_CANDIDATE_EXTERNAL_ID }],
     email: TEST_TERMS_PENDING_CANDIDATE_EMAIL,
-    password: TEST_CANDIDATE_PASSWORD,
+    password: TEST_PASSWORD,
     storageStatePath: TERMS_PENDING_STORAGE_STATE,
     acceptTermsOfUse: false,
     settledTestId: testIds.contestant.terms.submit

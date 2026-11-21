@@ -7,11 +7,11 @@
  */
 
 import { expect, test as teardown } from '@playwright/test';
-import fs from 'fs';
 import { clearWrittenNominations } from '../../fixtures/contestant/perm-startfromcg';
-import { CANDIDATE_EDITOR_EMAIL, CANDIDATE_STORAGE_STATE, START_FROM_CG_PREFIX } from '../../utils/permStartFromCgData';
+import { EDITORS, START_FROM_CG_PREFIX } from '../../utils/permStartFromCgData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { runTeardownAsserted } from '../shared/assertTeardown';
+import { removeEditorSessions } from '../shared/registerAndStoreSession';
 
 // A plain string literal: the Playwright configuration reads it from this file's text to check that no two teardowns own overlapping prefixes.
 const PREFIX = 'e2e-perm-startfromcg-';
@@ -22,9 +22,7 @@ teardown('delete perm-startfromcg dataset', async () => {
   await clearWrittenNominations();
 
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(CANDIDATE_EDITOR_EMAIL);
+  await removeEditorSessions(client, EDITORS);
 
   await runTeardownAsserted(PREFIX, client);
-
-  if (fs.existsSync(CANDIDATE_STORAGE_STATE)) fs.unlinkSync(CANDIDATE_STORAGE_STATE);
 });

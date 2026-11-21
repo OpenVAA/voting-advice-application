@@ -37,7 +37,7 @@ function source(
   return {
     userData: { savedEntityData: { answers: {} } },
     answersLocked: false,
-    tasks: [QUESTIONS_LEFT],
+    taskState: { tasks: [QUESTIONS_LEFT] },
     unansweredOpinionQuestions: [{ id: 'o1' }, { id: 'o2' }],
     unansweredRequiredInfoQuestions: [{ id: 'i1' }],
     selectedEntity: { type: 'candidate' },
@@ -63,7 +63,7 @@ describe('contestantLogoutWarning — no warning', () => {
     ['a blocked questions task', [{ ...QUESTIONS_LEFT, status: 'blocked' } as Task]],
     ['an incomplete nomination task with a count', [{ ...PROFILE_LEFT, id: 'nomination' } as Task]]
   ])('gives none for %s', (_, tasks) => {
-    expect(contestantLogoutWarning(source({ tasks }))).toBeUndefined();
+    expect(contestantLogoutWarning(source({ taskState: { tasks } }))).toBeUndefined();
   });
 });
 
@@ -77,7 +77,7 @@ describe('contestantLogoutWarning — a warning', () => {
   });
 
   it('gives a warning for an incomplete profile task', () => {
-    expect(contestantLogoutWarning(source({ tasks: [PROFILE_LEFT] }))).toEqual({
+    expect(contestantLogoutWarning(source({ taskState: { tasks: [PROFILE_LEFT] } }))).toEqual({
       opinionQuestionsLeft: 2,
       infoQuestionsLeft: 1,
       hiddenIfMissing: true

@@ -26,7 +26,7 @@ vi.mock('$lib/contexts/contestant', () => ({
       contestantApp: { servedEntityTypes: { candidate: { registrationModes: [] } } }
     },
     answersLocked: false,
-    tasks: [],
+    taskState: { tasks: [] },
     userData: { savedEntityData: undefined },
     unansweredRequiredInfoQuestions: [],
     unansweredOpinionQuestions: []

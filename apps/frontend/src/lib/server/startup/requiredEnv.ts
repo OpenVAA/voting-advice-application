@@ -19,7 +19,11 @@ export const REQUIRED_ENV: ReadonlyArray<string> = [
 /**
  * The rules the start-up check applies, in order. A requirement that depends on more than one variable is a further rule in this list.
  */
-export const STARTUP_RULES: ReadonlyArray<StartupRule> = [unsetRequiredEnv, analyticsStartupProblems];
+export const STARTUP_RULES: ReadonlyArray<StartupRule> = [
+  unsetRequiredEnv,
+  analyticsStartupProblems,
+  identityProviderStartupProblems
+];
 
 /**
  * List the variables the start-up rules find missing. It reads nothing but its arguments, and it neither throws nor logs for any environment value: the caller decides what a non-empty result means.
@@ -40,6 +44,17 @@ export function missingRequiredEnv(env: StartupEnv, rules: ReadonlyArray<Startup
  */
 function unsetRequiredEnv(env: StartupEnv): Array<string> {
   return REQUIRED_ENV.filter((name) => isUnset(env[name]));
+}
+
+/**
+ * The rule over identity-provider sign-in. With an identity provider set up, which `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID` says, its callback calls the `identity-callback` Edge Function, which answers only a request that carries `IDENTITY_CALLBACK_SERVER_SECRET`.
+ *
+ * @param env - The environment to check.
+ * @returns `IDENTITY_CALLBACK_SERVER_SECRET` when a provider is set up and the secret is unset, else nothing.
+ */
+export function identityProviderStartupProblems(env: StartupEnv): Array<string> {
+  if (isUnset(env.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID)) return [];
+  return isUnset(env.IDENTITY_CALLBACK_SERVER_SECRET) ? ['IDENTITY_CALLBACK_SERVER_SECRET'] : [];
 }
 
 /**

@@ -4,7 +4,7 @@
  * Every `data-testid` attribute used in the application must be defined here.
  * Tests import from this file to ensure testId strings are consistent between the Svelte components and Playwright locators.
  *
- * Structure: `testIds.<app>.<page>.<element>` Naming: kebab-case for values (matches existing conventions)
+ * Structure: `testIds.<app>.<page>.<element>`, with kebab-case values. A routed page's root is `page`, a gate view's root is `container`.
  */
 export const testIds = {
   contestant: {
@@ -203,12 +203,14 @@ export const testIds = {
       cardAction: 'contestant-questions-card-action',
       list: 'contestant-questions-list',
       start: 'contestant-questions-start',
+      // The overview's shortcut to the next unanswered question, shown while some but not all are answered.
+      continue: 'contestant-questions-continue',
       answerInput: 'contestant-questions-answer',
       commentInput: 'contestant-questions-comment',
       saveButton: 'contestant-questions-save',
       // The sentence beside the Save button that says why it is disabled while the question is unanswered.
       saveReason: 'contestant-questions-save-reason',
-      // testids supporting the candidate fixture library's strict locator surface. Placement:
+      // testids supporting the contestant fixture library's strict locator surface. Placement:
       //  - categoryExpander: questions overview <Expander> wrapper (un-keyed, filtered by hasText per category in fixture).
       //  - hero: figure inside the {#snippet hero()} block on the question page (parity with voter-questions-hero).
       //  - intro: the empty-state intro <div> shown when no answers exist.
@@ -221,7 +223,7 @@ export const testIds = {
     },
     settings: {
       newPassword: 'settings-new-password',
-      // The password confirmation input's id is `contestant.passwordSetter.confirm`, which PasswordSetter.svelte sets itself.
+      // The password confirmation input's id is `shared.account.passwordSetter.confirm`, which PasswordSetter.svelte sets itself.
       updateButton: 'settings-update-password',
       // The locked control holding the account's address, or the pending address while it awaits its link.
       email: 'settings-email',
@@ -258,13 +260,7 @@ export const testIds = {
     },
     forgotPassword: {
       // The forgot-password page's root.
-      page: 'contestant-forgot-password',
-      email: 'forgot-password-email',
-      submit: 'forgot-password-submit',
-      // The error of the page's email field.
-      emailError: 'forgot-password-email-error',
-      // The page's way back to where sign-in is.
-      return: 'forgot-password-return'
+      page: 'contestant-forgot-password'
     },
     register: {
       // The registration screen's root. Carries data-modes (the listed modes, space-separated, in order), data-mode-selected and data-register-state="idle" | "checking".
@@ -312,42 +308,13 @@ export const testIds = {
       signInNoPasswordYetLink: 'register-sign-in-no-password-yet-link',
       signInReturn: 'register-sign-in-return'
     },
-    // The two fields of the email-entry component, the address and its confirmation, each with its error.
-    emailEntry: {
-      email: 'email-entry-email',
-      confirmation: 'email-entry-confirmation',
-      emailError: 'email-entry-email-error',
-      confirmationError: 'email-entry-confirmation-error'
-    },
     emailSent: {
       // The "email sent" screen's root. Carries data-wording="signIn" | "recovery" | "code", data-address="shown" | "none" and data-resend="waiting" | "ready".
-      page: 'contestant-email-sent',
-      // The screen's body: its sentences, the support sentence and "Send again".
-      panel: 'email-sent-panel',
-      // The screen's first sentence, which says that the email was sent.
-      intro: 'email-sent-intro',
-      // The sentence whose own words are the link to support.
-      support: 'email-sent-support',
-      // The address the request was made for, where one was typed: the bold text inside the first sentence.
-      address: 'email-sent-address',
-      // The button that repeats the request, and the count of the wait at the end of its label.
-      resend: 'email-sent-resend',
-      countdown: 'email-sent-countdown',
-      // The polite status region.
-      status: 'email-sent-status',
-      // The sentence shown when this tab asked for the same address, or with the same code, before the wait had passed.
-      askedAgain: 'email-sent-asked-again',
-      // The link to the screen that asked for the address, and the way back.
-      changeAddress: 'email-sent-change-address',
-      return: 'email-sent-return'
+      page: 'contestant-email-sent'
     },
     setPasswordGate: {
       // The set-password view's root. Carries data-set-password-state="idle" | "saving" | "failed".
-      container: 'contestant-set-password-gate',
-      // The account's address, the message of a failed save, and the button that signs the user out.
-      email: 'set-password-email',
-      error: 'set-password-error',
-      logout: 'set-password-logout'
+      container: 'contestant-set-password-gate'
     },
     identityProviderError: {
       // The identity provider's error screen. Carries data-error-class="cancelled" | "retry" | "noRetry".
@@ -383,10 +350,7 @@ export const testIds = {
     },
     passwordReset: {
       // The password-reset page's root.
-      page: 'contestant-password-reset',
-      // The account's address, and the message of a failed save. The page's main button is the password setter's `password.submit`.
-      email: 'password-reset-email',
-      error: 'password-reset-error'
+      page: 'contestant-password-reset'
     },
     terms: {
       checkbox: 'terms-checkbox',
@@ -400,20 +364,6 @@ export const testIds = {
     },
     privacy: {
       home: 'contestant-privacy-home'
-    },
-    password: {
-      field: 'password-field',
-      // The button of the password kind of `Input` that shows and hides the typed text.
-      toggle: 'password-field-toggle',
-      /** A shared test id for reset and register password setters */
-      submit: 'set-password-submit'
-    },
-    passwordSetter: {
-      password: 'password-setter-password',
-      confirm: 'password-setter-confirmation',
-      // The error of the password field, and of its confirmation.
-      passwordError: 'password-setter-password-error',
-      confirmationError: 'password-setter-confirmation-error'
     }
   },
   admin: {
@@ -423,19 +373,19 @@ export const testIds = {
       noPasswordYet: 'admin-login-no-password-yet'
     },
     forgotPassword: {
-      // The forgot-password page's root. Its inner ids are the shared ones under `contestant.forgotPassword`.
-      container: 'admin-forgot-password'
+      // The forgot-password page's root.
+      page: 'admin-forgot-password'
     },
     emailSent: {
-      // The "email sent" page's root, with the attributes of `contestant.emailSent.page`. Its inner ids are the shared ones under `contestant.emailSent`.
-      container: 'admin-email-sent'
+      // The "email sent" page's root, with the attributes of `contestant.emailSent.page`.
+      page: 'admin-email-sent'
     },
     passwordReset: {
-      // The password-reset page's root. Its inner ids are the shared ones under `contestant.passwordReset`.
-      container: 'admin-password-reset'
+      // The password-reset page's root.
+      page: 'admin-password-reset'
     },
     setPasswordGate: {
-      // The Admin App's set-password view's root. Carries data-set-password-state="idle" | "saving" | "failed". Its inner ids are the shared ones under `contestant.setPasswordGate`.
+      // The Admin App's set-password view's root. Carries data-set-password-state="idle" | "saving" | "failed".
       container: 'admin-set-password-gate'
     }
   },
@@ -609,6 +559,69 @@ export const testIds = {
     }
   },
   shared: {
+    // The inner ids of the account screens both the Contestant App and the Admin App render. Each screen's root id is in the app's own group.
+    account: {
+      forgotPassword: {
+        email: 'forgot-password-email',
+        submit: 'forgot-password-submit',
+        // The error of the page's email field.
+        emailError: 'forgot-password-email-error',
+        // The page's way back to where sign-in is.
+        return: 'forgot-password-return'
+      },
+      emailSent: {
+        // The screen's body: its sentences, the support sentence and "Send again".
+        panel: 'email-sent-panel',
+        // The screen's first sentence, which says that the email was sent.
+        intro: 'email-sent-intro',
+        // The sentence whose own words are the link to support.
+        support: 'email-sent-support',
+        // The address the request was made for, where one was typed: the bold text inside the first sentence.
+        address: 'email-sent-address',
+        // The button that repeats the request, and the count of the wait at the end of its label.
+        resend: 'email-sent-resend',
+        countdown: 'email-sent-countdown',
+        // The polite status region.
+        status: 'email-sent-status',
+        // The sentence shown when this tab asked for the same address, or with the same code, before the wait had passed.
+        askedAgain: 'email-sent-asked-again',
+        // The link to the screen that asked for the address, and the way back.
+        changeAddress: 'email-sent-change-address',
+        return: 'email-sent-return'
+      },
+      passwordReset: {
+        // The account's address, and the message of a failed save. The page's main button is the password setter's `password.submit`.
+        email: 'password-reset-email',
+        error: 'password-reset-error'
+      },
+      setPasswordGate: {
+        // The account's address, the message of a failed save, and the button that signs the user out.
+        email: 'set-password-email',
+        error: 'set-password-error',
+        logout: 'set-password-logout'
+      },
+      // The two fields of the email-entry component, the address and its confirmation, each with its error.
+      emailEntry: {
+        email: 'email-entry-email',
+        confirmation: 'email-entry-confirmation',
+        emailError: 'email-entry-email-error',
+        confirmationError: 'email-entry-confirmation-error'
+      },
+      password: {
+        field: 'password-field',
+        // The button of the password kind of `Input` that shows and hides the typed text.
+        toggle: 'password-field-toggle',
+        /** A shared test id for reset and register password setters */
+        submit: 'set-password-submit'
+      },
+      passwordSetter: {
+        password: 'password-setter-password',
+        confirm: 'password-setter-confirmation',
+        // The error of the password field, and of its confirmation.
+        passwordError: 'password-setter-password-error',
+        confirmationError: 'password-setter-confirmation-error'
+      }
+    },
     errorMessage: 'error-message',
     maintenancePage: 'maintenance-page',
     loading: 'loading-indicator',

@@ -7,6 +7,7 @@
  *  - clickStart()                          — click the contestant-questions-start button (empty-state primary action).
  *  - expectIntroMessage()                  — assert the contestant-questions-intro wrapper is visible.
  *  - expectContinuePrompt()                — assert the contestant-questions-continue button is visible (partial-completion shortcut to next unanswered).
+ *  - expectNoContinuePrompt()              — assert the contestant-questions-continue button is absent (every question answered).
  *  - clickContinuePrompt()                 — click contestant-questions-continue.
  *  - expectCompletionMessage()             — assert the contestant-questions-home button is visible AND the completion ingress text is shown.
  *  - getCategoryExpander(name)             — returns an object with click() + expectExpanded(state) methods scoped to the matching category.
@@ -102,14 +103,21 @@ export function createContestantQuestionsOverviewPage(page: Page) {
      * Assert the partial-completion contestant-questions-continue shortcut is visible.
      */
     async expectContinuePrompt(): Promise<void> {
-      await expect(page.getByTestId('contestant-questions-continue')).toBeVisible();
+      await expect(page.getByTestId(testIds.contestant.questions.continue)).toBeVisible();
+    },
+
+    /**
+     * Assert the partial-completion contestant-questions-continue shortcut is absent, as it is once every question is answered.
+     */
+    async expectNoContinuePrompt(): Promise<void> {
+      await expect(page.getByTestId(testIds.contestant.questions.continue)).toHaveCount(0);
     },
 
     /**
      * Click the contestant-questions-continue partial-completion shortcut.
      */
     async clickContinuePrompt(): Promise<void> {
-      await page.getByTestId('contestant-questions-continue').click();
+      await page.getByTestId(testIds.contestant.questions.continue).click();
     },
 
     /**

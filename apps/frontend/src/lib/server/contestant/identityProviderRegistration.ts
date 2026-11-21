@@ -1,5 +1,6 @@
-import { log } from '@openvaa/app-shared';
+import { isPlainObject, log } from '@openvaa/app-shared';
 import { hasDefaultLocaleName } from '$lib/contestant/utils/identityProviderAccount';
+import { isJsonRequest, isSameOriginRequest } from '$lib/server/http/sameOriginJson';
 import type { LocalizedString } from '@openvaa/app-shared';
 import type {
   AddressConfirmationResult,
@@ -54,7 +55,7 @@ export type VerifiedRegistrationUser = {
 
 /** The effects and facts of one request. */
 export interface IdentityProviderRegistrationDeps {
-  /** The endpoint's own origin, which a request's `Origin` header must equal. */
+  /** The endpoint's own origin, which a request without `Sec-Fetch-Site` must name in its `Origin` header. */
   origin: string;
   /** The locale a name must have text in. */
   defaultLocale: string;
@@ -90,28 +91,60 @@ const MAX_EMAIL_LENGTH = 254;
 /** The longest text a name may have in one locale. */
 const MAX_NAME_LENGTH = 200;
 
+/**
+ * Serve one request of the endpoint.
+ *
+ * Never rejects: a read or write that throws is logged by its message alone and answered `failed`.
+ * @param request - The request.
+ * @param deps - The request's effects and facts.
+ * @returns The status and the body to answer with.
+ */
+export async function handleIdentityProviderRegistration(
+  request: Request,
+  deps: IdentityProviderRegistrationDeps
+): Promise<IdentityProviderRegistrationReply> {
+  const { saved, inUse, invited, failed, sent, acknowledged } = IDENTITY_PROVIDER_REGISTRATION_RESULT;
+  try {
+    const verified = await deps.getVerifiedUser();
+    if (!verified) return reply(401, failed);
+    if (!isSameOriginRequest(request.headers, deps.origin) || !isJsonRequest(request.headers))
+      return reply(403, failed);
+
+    const intent = parseIntent(await request.json().catch(() => undefined), deps.supportedLocales);
+    if (!intent) return reply(400, failed);
+
+    if (intent.intent === 'acknowledge') {
+      deps.deleteArrivalMarker();
+      return reply(200, acknowledged);
+    }
+
+    const user = await deps.getBasicUserData();
+
+    if (intent.intent === 'resend') {
+      if (user.address.state !== 'pending') return reply(200, failed);
+      const outcome = await deps.requestAddressConfirmation({ email: user.address.email, locale: deps.locale });
+      return reply(200, outcome === 'sent' ? sent : failed);
+    }
+
+    if (intent.email !== undefined && user.address.state === 'proved') return reply(200, failed);
+    if (intent.name !== undefined && !(await saveNames(deps, user, intent.name, intent.shortName)))
+      return reply(200, failed);
+    if (intent.email !== undefined) {
+      const outcome = await deps.requestAddressConfirmation({ email: intent.email, locale: deps.locale });
+      if (outcome === 'in-use') return reply(200, inUse);
+      if (outcome === 'invited') return reply(200, invited);
+      if (outcome !== 'sent') return reply(200, failed);
+    }
+    deps.deleteArrivalMarker();
+    return reply(200, saved);
+  } catch (e) {
+    log.error(`Identity-provider registration failed: ${e instanceof Error ? e.message : 'No error message'}`);
+    return reply(200, failed);
+  }
+}
+
 function reply(status: IdentityProviderRegistrationReply['status'], result: IdentityProviderRegistrationResult) {
   return { status, body: { result } };
-}
-
-function isObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-/**
- * Whether a value is a name the endpoint passes on: an object of texts, each in a supported locale and no longer than {@link MAX_NAME_LENGTH}.
- * @param value - The value.
- * @param supportedLocales - The locales a text may be in.
- * @returns `true` when it is.
- */
-function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>): value is LocalizedString {
-  return (
-    isObject(value) &&
-    Object.entries(value).every(
-      ([locale, text]) =>
-        supportedLocales.includes(locale) && typeof text === 'string' && text.length <= MAX_NAME_LENGTH
-    )
-  );
 }
 
 /**
@@ -121,7 +154,7 @@ function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>):
  * @returns The intent, or `null`.
  */
 function parseIntent(body: unknown, supportedLocales: ReadonlyArray<string>): RegistrationIntent | null {
-  if (!isObject(body)) return null;
+  if (!isPlainObject(body)) return null;
   if (body.intent === 'resend' || body.intent === 'acknowledge') return { intent: body.intent };
   if (body.intent !== 'save') return null;
 
@@ -145,15 +178,18 @@ function parseIntent(body: unknown, supportedLocales: ReadonlyArray<string>): Re
 }
 
 /**
- * Whether a request may be served at all: JSON, from the endpoint's own origin.
- * @param request - The request.
- * @param origin - The endpoint's own origin.
- * @returns `true` when both hold.
+ * Whether a value is a name the endpoint passes on: an object of texts, each in a supported locale and no longer than {@link MAX_NAME_LENGTH}.
+ * @param value - The value.
+ * @param supportedLocales - The locales a text may be in.
+ * @returns `true` when it is.
  */
-function isSameOriginJson(request: Request, origin: string): boolean {
-  const contentType = request.headers.get('content-type') ?? '';
+function isBoundedName(value: unknown, supportedLocales: ReadonlyArray<string>): value is LocalizedString {
   return (
-    request.headers.get('origin') === origin && contentType.split(';')[0].trim().toLowerCase() === 'application/json'
+    isPlainObject(value) &&
+    Object.entries(value).every(
+      ([locale, text]) =>
+        supportedLocales.includes(locale) && typeof text === 'string' && text.length <= MAX_NAME_LENGTH
+    )
   );
 }
 
@@ -177,55 +213,4 @@ async function saveNames(
   if (shortName !== undefined) properties.shortName = shortName;
   const saved = await deps.updateEntityProperties({ target: { type: 'organization', id: ownId }, properties });
   return saved.type === 'saved';
-}
-
-/**
- * Serve one request of the endpoint.
- *
- * Never rejects: a read or write that throws is logged by its message alone and answered `failed`.
- * @param request - The request.
- * @param deps - The request's effects and facts.
- * @returns The status and the body to answer with.
- */
-export async function handleIdentityProviderRegistration(
-  request: Request,
-  deps: IdentityProviderRegistrationDeps
-): Promise<IdentityProviderRegistrationReply> {
-  const { saved, inUse, invited, failed, sent, acknowledged } = IDENTITY_PROVIDER_REGISTRATION_RESULT;
-  try {
-    const verified = await deps.getVerifiedUser();
-    if (!verified) return reply(401, failed);
-    if (!isSameOriginJson(request, deps.origin)) return reply(403, failed);
-
-    const intent = parseIntent(await request.json().catch(() => undefined), deps.supportedLocales);
-    if (!intent) return reply(400, failed);
-
-    if (intent.intent === 'acknowledge') {
-      deps.deleteArrivalMarker();
-      return reply(200, acknowledged);
-    }
-
-    const user = await deps.getBasicUserData();
-
-    if (intent.intent === 'resend') {
-      if (user.addressState !== 'pending' || !user.pendingEmail) return reply(200, failed);
-      const outcome = await deps.requestAddressConfirmation({ email: user.pendingEmail, locale: deps.locale });
-      return reply(200, outcome === 'sent' ? sent : failed);
-    }
-
-    if (intent.email !== undefined && user.addressState === 'proved') return reply(200, failed);
-    if (intent.name !== undefined && !(await saveNames(deps, user, intent.name, intent.shortName)))
-      return reply(200, failed);
-    if (intent.email !== undefined) {
-      const outcome = await deps.requestAddressConfirmation({ email: intent.email, locale: deps.locale });
-      if (outcome === 'in-use') return reply(200, inUse);
-      if (outcome === 'invited') return reply(200, invited);
-      if (outcome !== 'sent') return reply(200, failed);
-    }
-    deps.deleteArrivalMarker();
-    return reply(200, saved);
-  } catch (e) {
-    log.error(`Identity-provider registration failed: ${e instanceof Error ? e.message : 'No error message'}`);
-    return reply(200, failed);
-  }
 }

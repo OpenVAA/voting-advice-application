@@ -15,13 +15,13 @@
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RESEND_WAIT_SECONDS } from '$lib/auth/entryFlow';
-import type { BasicUserData } from '$lib/api/base/dataWriter.type';
+import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
 
-const { box, context, fetchMock, invalidateAll } = vi.hoisted(() => {
+const { box, context, invalidateAll, register } = vi.hoisted(() => {
   /** Reads the user-level data; pointed at a reactive value once the module's runes are available. */
   const box = { readUser: (): BasicUserData | undefined => undefined };
   const invalidateAll = vi.fn();
-  const fetchMock = vi.fn();
+  const register = vi.fn<DataWriter['registerIdentityProviderAccount']>();
   /** A message with a payload renders as its key followed by the payload. */
   function t(key: string, payload?: Record<string, unknown>): string {
     return payload ? `${key} ${JSON.stringify(payload)}` : key;
@@ -30,14 +30,20 @@ const { box, context, fetchMock, invalidateAll } = vi.hoisted(() => {
     t,
     getRoute: { current: (route: string) => `/route/${route}` },
     setPassword: vi.fn(),
+    registerIdentityProviderAccount: register,
     get user() {
       return box.readUser();
     }
   };
-  return { box, context, fetchMock, invalidateAll };
+  return { box, context, invalidateAll, register };
 });
 
 vi.mock('$lib/contexts/contestant', () => ({ getContestantContext: () => context }));
+
+vi.mock('$lib/contexts/app', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  getAppContext: () => ({ track: () => undefined })
+}));
 
 vi.mock('$lib/contexts/component', () => ({
   getComponentContext: () => ({
@@ -86,7 +92,6 @@ const Page = (await import('./+page.svelte')).default;
 let currentUser = $state.raw<BasicUserData | undefined>(undefined);
 box.readUser = () => currentUser;
 
-const ENDPOINT = '/api/contestant/identity-provider';
 const PENDING = 'waiting@example.org';
 const PROVED = 'proved@example.org';
 const TYPED = 'typed@example.org';
@@ -128,36 +133,27 @@ function userWith(overrides: Partial<Omit<BasicUserData, 'settings'>> = {}): Bas
     username: '',
     termsOfUseAccepted: '2026-01-01T00:00:00Z',
     passwordSet: false,
-    addressState: 'none',
-    pendingEmail: null,
+    address: { state: 'none', pendingTaken: false },
     ownOrganizationId: null,
     ownOrganizationUnnamed: false,
-    pendingEmailTaken: false,
     ...overrides
   };
 }
 
-const PENDING_USER = userWith({ addressState: 'pending', pendingEmail: PENDING });
-const PROVED_USER = userWith({ addressState: 'proved', email: PROVED, username: PROVED, passwordSet: true });
-
-/** The endpoint answering `result`. */
-function answer(result: string): Response {
-  return new Response(JSON.stringify({ result }), { status: 200, headers: { 'content-type': 'application/json' } });
-}
+const PENDING_USER = userWith({ address: { state: 'pending', email: PENDING } });
+const PROVED_USER = userWith({ address: { state: 'proved' }, email: PROVED, username: PROVED, passwordSet: true });
 
 let teardown: Array<() => void> = [];
 
 beforeEach(() => {
   invalidateAll.mockResolvedValue(undefined);
-  fetchMock.mockResolvedValue(answer('saved'));
-  vi.stubGlobal('fetch', fetchMock);
+  register.mockResolvedValue('saved');
 });
 
 afterEach(() => {
   for (const fn of teardown.reverse()) fn();
   teardown = [];
   vi.useRealTimers();
-  vi.unstubAllGlobals();
   vi.resetAllMocks();
 });
 
@@ -212,13 +208,9 @@ function type(input: HTMLInputElement, value: string): void {
   flushSync();
 }
 
-/** The bodies of the requests made to the endpoint. */
-function requests(): Array<unknown> {
-  return fetchMock.mock.calls.map((call) => {
-    const [url, init] = call as [string, RequestInit];
-    expect(url).toBe(ENDPOINT);
-    return JSON.parse(String(init.body));
-  });
+/** The intents the page posted, in order. */
+function requests(): Array<Parameters<DataWriter['registerIdentityProviderAccount']>[0]> {
+  return register.mock.calls.map(([opts]) => opts);
 }
 
 describe('the settings page — a proved address', () => {
@@ -267,9 +259,9 @@ describe('the settings page — an address awaiting its link', () => {
     expect(target.innerHTML).not.toContain('autocomplete="username"');
   });
 
-  it('asks for the link again, announces it, and is unavailable but focused and described by its count until the count ends', async () => {
+  it('asks for the link again, announces it, and is unavailable but focused, with its count in its name, until the count ends', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
-    fetchMock.mockResolvedValue(answer('sent'));
+    register.mockResolvedValue('sent');
     const target = render(PENDING_USER);
 
     await press(target, SEL.resend);
@@ -279,14 +271,14 @@ describe('the settings page — an address awaiting its link', () => {
     expect(document.activeElement).toBe(resend);
     expect(resend.getAttribute('aria-disabled')).toBe('true');
     const countdown = one(target, SEL.countdown);
-    expect(resend.getAttribute('aria-describedby')).toBe(countdown.id);
+    expect(resend.hasAttribute('aria-describedby'), 'the count is in the name alone').toBe(false);
     expect(resend.contains(countdown), 'the count is inside Send again').toBe(true);
     expect(countdown.textContent).toContain('contestantApp.emailSent.resendIn');
     expect(countdown.textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS}`);
     expect(one(target, SEL.status).textContent?.trim()).toBe(KEY.resendRequested);
 
     await press(target, SEL.resend);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(register).toHaveBeenCalledTimes(1);
 
     vi.advanceTimersByTime(RESEND_WAIT_SECONDS * 1000);
     flushSync();
@@ -307,7 +299,7 @@ describe('the settings page — another address', () => {
     expect(one<HTMLButtonElement>(target, SEL.save).getAttribute('type')).toBe('submit');
     expect(target.querySelector(SEL.change)).toBeNull();
     expect(addressControl(target).value).toBe(PENDING);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
   });
 
   it('sends nothing for a pair of fields in error', async () => {
@@ -318,7 +310,7 @@ describe('the settings page — another address', () => {
     type(one<HTMLInputElement>(target, SEL.entryConfirmation), 'other@example.org');
     await press(target, SEL.save);
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
     expect(invalidateAll).not.toHaveBeenCalled();
   });
 
@@ -333,7 +325,7 @@ describe('the settings page — another address', () => {
     expect(requests()).toEqual([{ intent: 'save', email: TYPED }]);
     expect(invalidateAll).toHaveBeenCalledTimes(1);
 
-    currentUser = userWith({ addressState: 'pending', pendingEmail: TYPED });
+    currentUser = userWith({ address: { state: 'pending', email: TYPED } });
     flushSync();
     expect(addressControl(target).value).toBe(TYPED);
     expect(target.querySelector(SEL.entryEmail)).toBeNull();
@@ -341,7 +333,7 @@ describe('the settings page — another address', () => {
   });
 
   it('tells an address another account holds at the address field, with focus there, and reruns nothing', async () => {
-    fetchMock.mockResolvedValue(answer('in-use'));
+    register.mockResolvedValue('in-use');
     const target = render(PENDING_USER);
     await press(target, SEL.change);
 
@@ -359,7 +351,7 @@ describe('the settings page — another address', () => {
   });
 
   it('tells an address an open invitation is addressed to at the address field, with focus there, and reruns nothing', async () => {
-    fetchMock.mockResolvedValue(answer('invited'));
+    register.mockResolvedValue('invited');
     const target = render(PENDING_USER);
     await press(target, SEL.change);
 
@@ -377,7 +369,7 @@ describe('the settings page — another address', () => {
   });
 
   it('tells any other failure under the fields, keeps what was typed and reruns nothing', async () => {
-    fetchMock.mockResolvedValue(answer('failed'));
+    register.mockResolvedValue('failed');
     const target = render(PENDING_USER);
     await press(target, SEL.change);
 
@@ -395,7 +387,7 @@ describe('the settings page — another address', () => {
 
 describe('the settings page — no address', () => {
   it('shows no address, nothing of a pending address and no user name', () => {
-    const target = render(userWith({ addressState: 'none' }));
+    const target = render(userWith({ address: { state: 'none', pendingTaken: false } }));
 
     expect(addressControl(target).value).toBe('');
     for (const selector of [SEL.resend, SEL.status, SEL.change, SEL.username])
@@ -407,7 +399,7 @@ describe('the settings page — the way back', () => {
   it.each([
     ['a proved address', PROVED_USER],
     ['an address awaiting its link', PENDING_USER],
-    ['no address', userWith({ addressState: 'none' })]
+    ['no address', userWith({ address: { state: 'none', pendingTaken: false } })]
   ] as const)('leads Return to the app root, for %s', (_, user) => {
     const target = render(user);
 

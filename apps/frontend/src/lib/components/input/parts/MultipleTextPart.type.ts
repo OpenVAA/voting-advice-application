@@ -40,6 +40,10 @@ export type MultipleTextPartProps = {
    */
   describedBy?: string;
   /**
+   * Whether `Input` is showing an error, which marks every field `aria-invalid`. @default false
+   */
+  invalid?: boolean;
+  /**
    * Event handler triggered on every edit, add, remove or reorder with the new value: the on-screen rows with empty rows dropped, order preserved and duplicates kept. An array of plain strings, or — when `multilingual` — an array of localized strings carrying only the locales actually written.
    */
   onChange?: (value: Array<string> | Array<LocalizedString>) => void;

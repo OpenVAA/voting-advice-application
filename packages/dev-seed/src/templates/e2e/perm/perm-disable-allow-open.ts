@@ -11,7 +11,7 @@
  *
  * Prefix: 'e2e-perm-no-allowopen-'.
  *
- * The spec uses TWO describe blocks — one authenticated (storageState via contestantSessionMinter) for the candidate-side assertions + one unauthenticated for the voter walk to /results → cand-1 detail.
+ * The spec uses TWO describe blocks — one authenticated (the storage state perm-disable-allow-open.setup.ts saves) for the candidate-side assertions + one unauthenticated for the voter walk to /results → cand-1 detail.
  */
 
 import { buildMinimal } from '../../_helpers/buildMinimal';

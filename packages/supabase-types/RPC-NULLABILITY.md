@@ -204,8 +204,9 @@ edge.
 **Whole-RPC disposition: 4 columns widened, 9 dispositioned "no change needed"** — 7 of those are
 `jsonb`/`Json` and already nullable by type, and 2 are scalars both branches select from a real row.
 
-`get_user_entities` has no section here: it returns one `jsonb` object, is not a `RETURNS TABLE`
-function, and its generated type is `Json`, which already includes `null`.
+`get_user_entities` and `get_caller_account_state` have no section here: each returns one `jsonb`
+object, is not a `RETURNS TABLE` function, and has the generated type `Json`, which already includes
+`null`. The frontend narrows each answer with `parseRpcAnswer`.
 
 | #   | Column        | SQL type  | Generated TS | Semantically nullable? | Evidence                                                                                                                                                                                  | Disposition                                                    |
 | --- | ------------- | --------- | ------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |

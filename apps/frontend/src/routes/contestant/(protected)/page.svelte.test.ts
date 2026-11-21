@@ -61,7 +61,7 @@ const context = {
   appType: { current: 'contestant' },
   t: (key: string) => key,
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  startEvent: () => undefined,
+  track: () => undefined,
   logout: async () => undefined,
   setDataRoot: (updater: (dr: DataRoot) => void) =>
     untrack(() => {

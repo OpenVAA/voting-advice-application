@@ -23,7 +23,7 @@ import { formatOidcFailure } from '$lib/api/utils/auth/oidcFailure';
 import { getActiveProvider } from '$lib/api/utils/auth/providers';
 import { COOKIE } from '$lib/cookies';
 import { buildRoute } from '$lib/routes';
-import { withdrawLogoutCount } from '$lib/server/auth/logoutCount';
+import { withdrawLogoutDeadline } from '$lib/server/auth/logoutDeadline';
 import { constants } from '$lib/server/constants';
 import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
@@ -208,7 +208,7 @@ async function register({
     return failed(OIDC_ERROR.registrationFailed);
   }
 
-  withdrawLogoutCount({ cookies, request, url });
+  withdrawLogoutDeadline({ cookies, request, url });
   cookies.set(COOKIE.identityProviderArrival, arrival, ARRIVAL_COOKIE_OPTIONS);
   return buildRoute({ route: 'ContestantAppHome', locale });
 }

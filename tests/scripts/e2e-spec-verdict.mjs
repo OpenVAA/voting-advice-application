@@ -2,7 +2,7 @@
 /**
  * e2e-spec-verdict.mjs -- decide, by its exit status alone, whether a run directory's Playwright report is the evidence a caller claims it is.
  *
- * Usage: node tests/scripts/e2e-spec-verdict.mjs <run-dir> [--passed <spec file>]... [--passed-test <title part>]... [--failed-test <title part> [--failure-contains <text>]...]... [--no-other-failures] [--no-flaky] [--allow-did-not-run] [--skipped-baseline <file>] [--print-skipped]
+ * Usage: node tests/scripts/e2e-spec-verdict.mjs <run-dir> [--passed <spec file>]... [--passed-test <title part>]... [--failed-test <title part> [--failure-contains <text>]...]... [--skipped-baseline <file>] [--print-skipped]
  *
  * WHY COUNTS ARE NOT ENOUGH. `e2e-evidence.mjs` rolls `results.json` up into totals. A total cannot say that the spec files a change adds were in the run and passed, that a red control failed in the test it was meant to fail in and for the reason it was meant to fail for, or that the set of declaratively skipped tests is the one recorded before. This script answers exactly those questions, from the report alone, and prints one `VERDICT FAIL:` line for every condition that does not hold, so one run reports all of them.
  *
@@ -10,26 +10,29 @@
  *   --passed <name>          the spec file whose base name equals <name> (exactly; a common ending is not enough) has at least one test in the report, and every one of its tests passed. A declared skip, a flaky test and a test that did not run are not passes. A name that matches two spec files of the report fails; a name holding a path separator is unusable.
  *   --passed-test <part>     at least one test title contains <part>, and every such test passed.
  *   --failed-test <part>     at least one test whose title contains <part> failed. Each --failure-contains <text> directly after it must be found in the error text of one and the same failed test, so a test that failed for another reason (a timeout, say) is not the red control.
- *   --no-other-failures      no test failed whose title matches no --failed-test value.
- *   --no-flaky               no test of the report is flaky.
  *   --skipped-baseline <f>   the sorted declared-skip lines (`project › file › title`) equal the non-blank lines of <f>.
  *   --print-skipped          write the sorted declared-skip lines to standard output, and the verdict lines to standard error instead.
- *   --allow-did-not-run      a test that did not run no longer fails the run by itself.
  *
- * Two rules hold before any flag is looked at, so that no combination of flags can call an empty or truncated run green: a report whose `stats` count more tests than its `suites` tree holds is not a report (status 3), and a report that holds no test fails (status 1). With no condition flag at all the script still fails on a test that did not run, so it doubles as a bare did-not-run check.
+ * RULES THAT ALWAYS APPLY, whatever flags are given, so that no combination of flags can call a red, empty or truncated run green:
+ *   - a report whose `stats` count more tests than its `suites` tree holds is not a report (status 3);
+ *   - a report that holds no test fails (status 1);
+ *   - a test that did not run fails the run;
+ *   - a failed test whose title matches no --failed-test value fails the run;
+ *   - a flaky test fails the run.
+ * With no condition flag at all the script is therefore a bare check that every test passed or was declared skipped.
  *
- * DID-NOT-RUN IS NOT A SKIP. The classification of a `skipped` test is the rule `e2e-evidence.mjs` uses, written the same way: a test with an empty `results` list and neither a `skip` nor a `fixme` annotation did not run (a project it depends on failed, or the run was cut short); any other skipped test is a declared skip. The two scripts must keep the same rule, or they will disagree about one report.
+ * The report is read, and its tests classified, by `e2e-report.mjs`, the module `e2e-evidence.mjs` reads it with, so the two scripts cannot disagree about one report. A test with an empty `results` list and neither a `skip` nor a `fixme` annotation did not run; any other skipped test is a declared skip.
  *
- * The script only reads: the report in the run directory and the baseline file it is given. It starts no process and writes no file. A relative path is read against the repository root, as `e2e-evidence.mjs` reads its run directory.
+ * The script only reads: the report in the run directory and the baseline file it is given. It starts no process and writes no file. A relative path is read against the repository root.
  *
  * Exit statuses: 0 every condition holds; 1 at least one condition fails; 2 the arguments are unusable; 3 `results.json` is missing, cannot be parsed, or is cut off.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { readReport, ReportError, resolveFromRepo, TITLE_SEPARATOR } from './e2e-report.mjs';
 
 const NAME = 'e2e-spec-verdict.mjs';
-const SEP = ' › ';
 
 /** Stop on arguments that cannot be used. */
 function usage(message) {
@@ -42,9 +45,6 @@ let runDir = '';
 const passedFiles = [];
 const passedTests = [];
 const failedTests = [];
-let noOtherFailures = false;
-let noFlaky = false;
-let allowDidNotRun = false;
 let printSkipped = false;
 let baselinePath = '';
 
@@ -88,15 +88,6 @@ for (let i = 0; i < args.length; i += 1) {
       baselinePath = valueOf(i);
       i += 1;
       break;
-    case '--no-other-failures':
-      noOtherFailures = true;
-      break;
-    case '--no-flaky':
-      noFlaky = true;
-      break;
-    case '--allow-did-not-run':
-      allowDidNotRun = true;
-      break;
     case '--print-skipped':
       printSkipped = true;
       break;
@@ -108,17 +99,11 @@ for (let i = 0; i < args.length; i += 1) {
 }
 if (runDir === '') usage('<run-dir> is required');
 
-const repoRoot = path.resolve(path.dirname(decodeURIComponent(new URL(import.meta.url).pathname)), '..', '..');
-/** A path as given, or read against the repository root when it is relative. */
-function resolve(p) {
-  return path.isAbsolute(p) ? p : path.join(repoRoot, p);
-}
-
 let baselineLines = null;
 if (baselinePath !== '') {
   try {
     baselineLines = fs
-      .readFileSync(resolve(baselinePath), 'utf8')
+      .readFileSync(resolveFromRepo(baselinePath), 'utf8')
       .split('\n')
       .map((line) => line.replace(/\r$/, ''))
       .filter((line) => line.trim() !== '')
@@ -128,80 +113,21 @@ if (baselinePath !== '') {
   }
 }
 
-/** Stop on a report that is not one. */
-function noReport(message) {
-  console.error(`${NAME}: ${message}`);
+let classified;
+try {
+  classified = readReport(runDir).tests;
+} catch (error) {
+  if (!(error instanceof ReportError)) throw error;
+  console.error(`${NAME}: ${error.message}${error.code === 'missing' ? ' -- there is no run to judge' : ''}`);
   process.exit(3);
 }
 
-const resultsPath = path.join(resolve(runDir), 'results.json');
-if (!fs.existsSync(resultsPath)) noReport(`${resultsPath} is missing -- there is no run to judge`);
-let report;
-try {
-  report = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
-} catch (error) {
-  noReport(`${resultsPath} cannot be parsed: ${error.message}`);
-}
-if (report === null || typeof report !== 'object' || report.stats === null || typeof report.stats !== 'object') {
-  noReport(`${resultsPath} is not a Playwright JSON report: it has no stats object`);
-}
-
-/** Colour sequences, removed from error text before a --failure-contains text is looked for. */
-const COLOUR = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*[A-Za-z]`, 'g');
-
-/** Every test of the report, classified once. */
-const tests = [];
-
-/** Walk the report's recursive suite tree the way `e2e-evidence.mjs` does, carrying the describe titles down so that a test is named by its full title. */
-function walk(suites, titles) {
-  for (const suite of suites ?? []) {
-    const own = suite.title && suite.title !== suite.file ? [...titles, suite.title] : titles;
-    for (const spec of suite.specs ?? []) {
-      for (const test of spec.tests ?? []) {
-        const results = test.results ?? [];
-        const annotations = (test.annotations ?? []).map((a) => a.type);
-        const declarativeSkip = annotations.includes('skip') || annotations.includes('fixme');
-        let kind;
-        if (test.status === 'skipped') {
-          kind = results.length === 0 && !declarativeSkip ? 'didNotRun' : 'skipped';
-        } else if (test.status === 'expected') {
-          kind = 'passed';
-        } else if (test.status === 'flaky') {
-          kind = 'flaky';
-        } else {
-          kind = 'failed';
-        }
-        const messages = results.flatMap((r) => [r.error?.message, ...(r.errors ?? []).map((e) => e?.message)]);
-        const file = spec.file ?? suite.file ?? '(no file)';
-        const title = [...own, spec.title ?? '(no title)'].join(SEP);
-        const project = test.projectName || '(no project)';
-        tests.push({
-          project,
-          file,
-          base: path.basename(file.replace(/\\/g, '/')),
-          title,
-          kind,
-          id: [project, file, title].join(SEP),
-          errorText: messages
-            .filter((m) => typeof m === 'string')
-            .join('\n')
-            .replace(COLOUR, '')
-        });
-      }
-    }
-    walk(suite.suites, own);
-  }
-}
-walk(Array.isArray(report.suites) ? report.suites : [], []);
-
-const stats = report.stats;
-const statsTotal = ['expected', 'unexpected', 'flaky', 'skipped'].reduce(
-  (sum, key) => sum + (Number.isFinite(stats[key]) ? stats[key] : 0),
-  0
-);
-if (tests.length < statsTotal) {
-  noReport(`${resultsPath} is cut off: its stats count ${statsTotal} tests and its suites hold ${tests.length}`);
-}
+/** Every test of the report, with the base name of its file and the one line that names it. */
+const tests = classified.map((t) => ({
+  ...t,
+  base: path.basename(t.file.replace(/\\/g, '/')),
+  id: [t.project, t.file, t.title].join(TITLE_SEPARATOR)
+}));
 
 /** Verdict lines go to standard error when standard output carries the declared-skip lines. */
 function say(line) {
@@ -233,9 +159,7 @@ if (printSkipped) {
   for (const line of declaredSkips) console.info(line);
 }
 
-if (!allowDidNotRun) {
-  for (const t of tests.filter((x) => x.kind === 'didNotRun')) fail(`did not run: ${t.id}`);
-}
+for (const t of tests.filter((x) => x.kind === 'didNotRun')) fail(`did not run: ${t.id}`);
 
 for (const name of passedFiles) {
   const files = [...new Set(tests.filter((t) => t.base === name).map((t) => t.file))].sort();
@@ -276,15 +200,11 @@ for (const { part, contains } of failedTests) {
   }
 }
 
-if (noOtherFailures) {
-  for (const t of tests.filter((x) => x.kind === 'failed' && !failedTests.some(({ part }) => x.title.includes(part)))) {
-    fail(`failed outside the red controls: ${t.id}`);
-  }
+for (const t of tests.filter((x) => x.kind === 'failed' && !failedTests.some(({ part }) => x.title.includes(part)))) {
+  fail(`failed outside the red controls: ${t.id}`);
 }
 
-if (noFlaky) {
-  for (const t of tests.filter((x) => x.kind === 'flaky')) fail(`flaky: ${t.id}`);
-}
+for (const t of tests.filter((x) => x.kind === 'flaky')) fail(`flaky: ${t.id}`);
 
 /** The lines of `a` not matched one for one by a line of `b`. */
 function minus(a, b) {

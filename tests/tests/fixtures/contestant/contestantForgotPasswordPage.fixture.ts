@@ -39,7 +39,7 @@ export function createContestantForgotPasswordPage(
     emailSentContainer = testIds.contestant.emailSent.page
   }: ForgotPasswordPageOf = {}
 ) {
-  const ids = testIds.contestant.forgotPassword;
+  const ids = testIds.shared.account.forgotPassword;
 
   return {
     /**
@@ -84,7 +84,7 @@ export function createContestantForgotPasswordPage(
      * @param address - The address that was typed.
      */
     async expectLedToEmailSent(address: string): Promise<void> {
-      const sent = testIds.contestant.emailSent;
+      const sent = testIds.shared.account.emailSent;
       const screen = page.getByTestId(emailSentContainer);
       await expect(screen).toBeVisible({ timeout: TIMEOUTS.slowPage });
       await expect(screen).toHaveAttribute('data-wording', 'recovery');

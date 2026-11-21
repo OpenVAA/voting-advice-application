@@ -1,7 +1,7 @@
 /**
  * A recursively optional version of `TObject`: every property at every depth becomes optional, so a partial settings override can be typed against the full settings shape without restating it.
  *
- * NB. Only plain object properties are recursed into. Arrays and constructed objects (e.g. `Date`) match the `extends object` branch too, so their own properties are also made optional — which is consistent with how {@link mergeSettings} treats them (replaced wholesale, never element-merged).
+ * NB. Only plain object properties are recursed into. Arrays and constructed objects (e.g. `Date`) match the `extends object` branch too, so their own properties are also made optional — and {@link mergeSettings} replaces an array wholesale, never element-merged.
  */
 export type DeepPartial<TObject> = {
   [K in keyof TObject]?: TObject[K] extends object ? DeepPartial<TObject[K]> : TObject[K];
@@ -13,60 +13,82 @@ export type DeepPartial<TObject> = {
 export const SETTINGS_REPLACED_WHOLE: ReadonlyArray<string> = ['contestantApp.servedEntityTypes'];
 
 /**
- * Deep merge two plain (non-constructed) objects with settings.
+ * Keys that are never merged, so that a stored value cannot reach an object's prototype through the merge.
+ */
+const UNMERGED_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype']);
+
+/**
+ * Options of {@link mergeSettings}.
+ */
+export type MergeSettingsOptions = {
+  /**
+   * Skip a member of `source` whose value is `null` at the root, so that it keeps the value `target` has. Below the root a `null` always replaces the value beneath it.
+   */
+  skipNullAtRoot?: boolean;
+};
+
+/**
+ * Deep merge settings over other settings, member by member at every depth.
  *
- * Lives in `@openvaa/app-shared` so that `@openvaa/dev-seed` and the frontend import a single source of truth. `mergeAppSettings` in `apps/frontend/src/lib/utils/settings.ts` is a separate deep merge with different semantics — do not confuse the two: it skips a nullish member at the root, skips a nested `undefined`, lets a source object replace a `null` in the target, and clones nothing, so it accepts a reactive proxy as its target. This function throws in the last two cases.
+ * Lives in `@openvaa/app-shared` so that `@openvaa/dev-seed` and the frontend import a single source of truth; the frontend's `mergeAppSettings` is this merge with `skipNullAtRoot`.
  *
- * NB. Does NOT support constructed objects (e.g. `Date`) or arrays containing functions. Arrays, and the objects at the paths of {@link SETTINGS_REPLACED_WHOLE}, are replaced wholesale via `structuredClone` (NOT element-merged).
+ * - Where both sides hold a plain object, the two are merged member by member, so a member that `source` does not name keeps the value `target` has.
+ * - In every other case the value from `source` replaces the value from `target` whole: lists, scalars, functions, an object over a `null`, and the objects at the paths of {@link SETTINGS_REPLACED_WHOLE}.
+ * - A member of `source` whose value is `undefined` is skipped at every depth; a `null` at the root is skipped only with `skipNullAtRoot`.
+ * - A key named `__proto__`, `constructor` or `prototype` is never merged.
  *
- * @param target - The target.
- * @param source - The source.
- * @returns A new plain object that contains a deep merge of target and source.
+ * Neither input is mutated and nothing is cloned: every merged level is a new object, and the subtrees `source` does not touch, as well as the values it supplies, are shared by reference. `target` may therefore be a reactive proxy.
+ *
+ * NB. A constructed object (e.g. `Date`) is merged as if it were a plain one, so settings must hold none.
+ *
+ * @param target - The target, which is left as it is.
+ * @param source - The source merged over it.
+ * @param options - See {@link MergeSettingsOptions}.
+ * @returns A new object that contains a deep merge of target and source.
  */
 export function mergeSettings<TTarget extends object, TSource extends object>(
   target: TTarget,
-  source: TSource
+  source: TSource,
+  { skipNullAtRoot = false }: MergeSettingsOptions = {}
 ): TTarget & TSource {
-  const result = deepMergeRecursively({}, target, '');
-  return deepMergeRecursively(result, source, '');
+  return mergeLevel({ target, source, path: '', skipNullAtRoot }) as TTarget & TSource;
 }
 
-/*
- * reason: the four `(target as any)[key]` writes below cannot be typed without `any`, and `@ts-expect-error` is not an alternative here.
- *
- * `TTarget` is an unconstrained `object`, so `key` — which `for…in` types as `keyof TSource` — is not a known key of `TTarget`, and TypeScript rejects the write with "expression of type 'string' can't be used to index type 'TTarget'". That is correct as far as the type system can see: this function is deliberately widening `target` by writing keys it does not yet declare, which is the whole operation `mergeSettings` performs. There is no assertion that expresses "index by an arbitrary key of the other type parameter" — `Record<string, unknown>` would compile but discards `TTarget`, and the caller-visible return type `TTarget & TSource` is what actually carries the safety, asserted once at the end of the function and covered by `mergeSettings.test.ts`.
- *
- * `@ts-expect-error` was considered and rejected: it suppresses the whole line rather than the single index expression, and it would fail the build the day the underlying error changes shape, turning a documented cast into an unrelated build break.
- *
- * The disable is scoped to this one function and re-enabled immediately after it.
+/**
+ * Merge one level of `source` over `target` and answer a new object. Members of `target` that `source` does not name are carried over by reference.
+ * @param options.target - The object merged into, which is left as it is.
+ * @param options.source - The object merged over it.
+ * @param options.path - The dotted path of this level, empty at the root.
+ * @param options.skipNullAtRoot - Whether a `null` member is skipped at the root.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function deepMergeRecursively<TTarget extends object, TSource extends object>(
-  target: TTarget,
-  source: TSource,
-  path: string
-): TTarget & TSource {
-  for (const key in source) {
+function mergeLevel({
+  target,
+  source,
+  path,
+  skipNullAtRoot
+}: {
+  target: object;
+  source: object;
+  path: string;
+  skipNullAtRoot: boolean;
+}): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...target };
+  for (const [key, value] of Object.entries(source)) {
+    if (value === undefined || UNMERGED_KEYS.has(key)) continue;
+    if (!path && skipNullAtRoot && value === null) continue;
     const keyPath = path ? `${path}.${key}` : key;
-    if (
-      source[key] &&
-      typeof source[key] === 'object' &&
-      !Array.isArray(source[key]) &&
-      !SETTINGS_REPLACED_WHOLE.includes(keyPath)
-    ) {
-      // If the key doesn't exist on the target, initialize it as an object
-      if (!(key in target)) {
-        (target as any)[key] = {};
-      }
-      // Recursively merge objects
-      (target as any)[key] = deepMergeRecursively((target as any)[key], source[key], keyPath);
-    } else if (typeof source[key] === 'function') {
-      (target as any)[key] = source[key];
-    } else {
-      // For non-objects, arrays and members replaced whole, overwrite the value with a deep copy
-      (target as any)[key] = structuredClone(source[key]);
-    }
+    const existing = result[key];
+    result[key] =
+      isMergeable(existing) && isMergeable(value) && !SETTINGS_REPLACED_WHOLE.includes(keyPath)
+        ? mergeLevel({ target: existing, source: value, path: keyPath, skipNullAtRoot })
+        : value;
   }
-  return target as TTarget & TSource;
+  return result;
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/**
+ * Whether a value is an object that the merge descends into: neither `null` nor a list.
+ */
+function isMergeable(value: unknown): value is object {
+  return value != null && typeof value === 'object' && !Array.isArray(value);
+}

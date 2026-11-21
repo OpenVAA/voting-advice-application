@@ -12,19 +12,20 @@ import path from 'path';
 import { createContestantLoginPage } from '../../fixtures/contestant/contestantLoginPage.fixture';
 import { TIMEOUTS } from '../../helpers';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import type { Page } from '@playwright/test';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
+import { testIds } from '../../utils/testIds';
+import { TESTS_DIR } from '../../utils/testsDir';
+import type { Browser, Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
 
 /**
  * A user `registerAndStoreSession` registers and signs in.
  *
- * The entities the user edits are `externalId`'s candidate, when stated, followed by `entityGrants` in their order. An identity must name at least one: the sign-in refuses a user with no entity to edit.
+ * The entities the user edits are `entityGrants`, in their order. The list cannot be empty: the sign-in refuses a user with no entity to edit.
  */
 export interface StoredSessionIdentity {
-  /** external_id of the candidate the user is registered as the editor of, in the suite's project. Omitted by an identity that states `entityGrants` alone. */
-  externalId?: string;
-  /** Further entities of the suite's project the user is registered as the editor of, each a type and an external id. Written between registration and sign-in, so the session's token carries them. */
-  entityGrants?: ReadonlyArray<EntityGrantTarget>;
+  /** The entities of the suite's project the user is registered as the editor of, each a type and an external id. Written between registration and sign-in, so the session's token carries them. */
+  entityGrants: readonly [EntityGrantTarget, ...Array<EntityGrantTarget>];
   /** Email of the auth user. Any auth user already holding it is unregistered first. */
   email: string;
   /** Password of the auth user, typed into the sign-in form. */
@@ -38,23 +39,6 @@ export interface StoredSessionIdentity {
 }
 
 /**
- * The entities an identity edits, in the order they are granted.
- *
- * @throws Error if the identity names no entity.
- */
-function entityGrantsOf(identity: StoredSessionIdentity): Array<EntityGrantTarget> {
-  const grants: Array<EntityGrantTarget> = [];
-  if (identity.externalId) grants.push({ entityType: 'candidate', externalId: identity.externalId });
-  grants.push(...(identity.entityGrants ?? []));
-  if (grants.length === 0) {
-    throw new Error(
-      `registerAndStoreSession: the identity ${identity.email} names no entity. State \`externalId\` or \`entityGrants\`: a user with no entity to edit cannot pass the sign-in.`
-    );
-  }
-  return grants;
-}
-
-/**
  * Register a user as the editor of one or more entities of the suite's project, sign them in on the sign-in screen and store the session.
  *
  * Each setup test that stores a session is a single call, and its identity argument is all that differs between them.
@@ -63,18 +47,16 @@ function entityGrantsOf(identity: StoredSessionIdentity): Array<EntityGrantTarge
  *
  * The grants are written by the registration itself, before the sign-in, so the token the stored session holds carries every one of them.
  *
- * The branches on the identity's optional fields live here rather than in a setup body, so the setup bodies stay free of conditionals.
+ * The branch on the identity's optional settled test id lives here rather than in a setup body, so the setup bodies stay free of conditionals.
  */
 export async function registerAndStoreSession(page: Page, identity: StoredSessionIdentity): Promise<void> {
-  const entityGrants = entityGrantsOf(identity);
-
   // `recursive: true` is idempotent: it does NOT throw if the directory already exists (Node fs docs), so no existence check is needed.
   fs.mkdirSync(path.dirname(identity.storageStatePath), { recursive: true });
 
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(identity.email);
+  await client.unregisterUser(identity.email);
   await client.forceRegisterUser(identity.email, identity.password, {
-    entityGrants,
+    entityGrants: identity.entityGrants,
     acceptTermsOfUse: identity.acceptTermsOfUse
   });
 
@@ -91,4 +73,77 @@ export async function registerAndStoreSession(page: Page, identity: StoredSessio
 
   // Save authenticated state for downstream tests
   await page.context().storageState({ path: identity.storageStatePath });
+}
+
+/**
+ * An editor of a permutation dataset: the one entity the user edits, the user's address and where the user's session is stored. Built by `permEditor`, so that the three cannot drift apart.
+ */
+export interface PermEditor {
+  /** The entity the editor is registered on. */
+  grant: EntityGrantTarget;
+  /** Email of the editor's auth user. */
+  email: string;
+  /** Absolute path of the file the editor's session is stored in. */
+  storageStatePath: string;
+}
+
+/**
+ * The editor of one entity of a permutation dataset. The address is the entity's external id on the E2E-only `test.openvaa.local` domain, and the session is stored under the suite's `playwright/.auth/` directory.
+ *
+ * @param entityType - The type of the entity the editor edits.
+ * @param externalId - The entity's `external_id`.
+ * @param sessionFile - The name of the file the editor's session is stored in.
+ */
+export function permEditor(
+  entityType: EntityGrantTarget['entityType'],
+  externalId: string,
+  sessionFile: string
+): PermEditor {
+  return Object.freeze({
+    grant: Object.freeze({ entityType, externalId }),
+    email: `${externalId}@test.openvaa.local`,
+    storageStatePath: path.join(TESTS_DIR, '../playwright/.auth', sessionFile)
+  });
+}
+
+/**
+ * Register each editor of a permutation dataset and store the editor's session.
+ *
+ * Each editor has accepted the terms of use and edits one entity alone, so signing in sends the user straight to that entity's home, and the session is stored only once the home has rendered its status message. Each registration runs in a browser context of its own, because a page that is already signed in is never shown the login form.
+ */
+export async function storeEditorSessions(
+  browser: Browser,
+  baseURL: string | undefined,
+  editors: ReadonlyArray<PermEditor>
+): Promise<void> {
+  for (const editor of editors) {
+    const context = await browser.newContext({ baseURL });
+    try {
+      await registerAndStoreSession(await context.newPage(), {
+        entityGrants: [editor.grant],
+        email: editor.email,
+        password: TEST_PASSWORD,
+        storageStatePath: editor.storageStatePath,
+        acceptTermsOfUse: true,
+        settledTestId: testIds.contestant.home.statusMessage
+      });
+    } finally {
+      await context.close();
+    }
+  }
+}
+
+/**
+ * Unregister each editor of a permutation dataset, with the user's grants, and delete the editor's stored session.
+ *
+ * A dataset's teardown deletes the seeded rows and not the auth users, so an editor left behind would hold a real editor grant under a known password.
+ */
+export async function removeEditorSessions(
+  client: SupabaseAdminClient,
+  editors: ReadonlyArray<PermEditor>
+): Promise<void> {
+  for (const editor of editors) {
+    await client.unregisterUser(editor.email);
+    fs.rmSync(editor.storageStatePath, { force: true });
+  }
 }

@@ -2,21 +2,24 @@
 
 Logs the user out, with the app's own sign-out passed in. Both apps' Log out is this button.
 
-Before logging out it opens a modal when the app passes a `warning`, which says what is left undone, or when the page holds unsaved changes; otherwise the user is logged out at once. The Contestant App passes a warning while a counted task of the entity being edited is incomplete: the modal then says how many questions are left and lets the user go on entering data. A navigation closes the modal, so it never counts down on a page it was not opened on. While the modal is open its count is also kept in two cookies whose deadline the browser keeps, so a tab closed during the count is signed out at the browser's next request after its end; every close of the modal, and the start of a sign-out, removes them. With unsaved changes on the page the modal opens whatever is left, says they will be lost, and its count ends in a logout that discards them; Continue, its close button and Escape keep them. While the sign-out the modal's Log out or its count's end started runs, the close button and Escape do nothing, and the modal stays until the sign-out settles. For an app whose `logout` navigates, a link followed while a sign-out it started runs asks nothing and waits: after a sign-out that worked the user is on the login page, and after one that failed the link is followed.
+Before logging out it opens a modal when the app passes a `warning`, which says what is left undone, or when the page holds unsaved changes; otherwise the user is logged out at once. The Contestant App passes a warning while a counted task of the entity being edited is incomplete: the modal then says how many questions are left and lets the user go on entering data. A navigation closes the modal, so it never counts down on a page it was not opened on. While the modal is open its count is also kept in two cookies whose deadline the browser keeps, so a tab closed during the count is signed out at the browser's next request after its end; every close of the modal, and the start of a sign-out, removes them. With unsaved changes on the page the modal opens whatever is left, says they will be lost, and its count ends in a logout that discards them; Continue, its close button and Escape keep them. While the sign-out the modal's Log out or its count's end started runs, the close button and Escape do nothing, and the modal stays until the sign-out settles. A link followed while a sign-out it started runs asks nothing and waits: after a sign-out that worked the user is on the login page, and after one that failed the link is followed.
 
-Where the user lands depends on the app's sign-out. Without `redirectTo` the app's `logout` navigates to its login itself, and the count's end hands it the reason `loggedOutAutomatically`. With `redirectTo` navigations are not held while the sign-out runs, and the button leaves after a sign-out that worked: by a navigation to the route, carrying `errorMessage: 'loggedOutAutomatically'` when the count ran out, or, when that rejects or does not move the page, by a full load of it. A sign-out that fails is logged and the page stays. A press while one runs does nothing.
+The app's `logout` navigates to its login itself, and the count's end hands it the reason `loggedOutAutomatically`. A sign-out that fails is logged and the page stays. A press while one runs does nothing.
 
 ### Dynamic component
 
-Accesses the component context for its translations, and nothing of any app's context: the app's sign-out and what is left undone come in as props.
+Accesses the component context for its translations and the app context for its tracking, and nothing of the Contestant App's or the Admin App's context: the app's sign-out and what is left undone come in as props.
 
 ### Properties
 
-- `logout`: The app's own sign-out. It rejects when the sign-out failed.
-- `redirectTo`: Where the button leaves to after a sign-out that worked, for an app whose `logout` does not navigate.
+- `logout`: The app's own sign-out, which navigates to the app's login after a sign-out that worked. It rejects when the sign-out failed.
 - `warning`: What is left undone: the unanswered opinion and required info questions and whether the entity is hidden while opinion questions are unanswered. When it is set the modal opens before logging out.
 - `logoutModalTimer`: The duration in seconds a logout modal will wait before automatically logging the user out. Default: `30`
 - Any valid properties of a `Button` component
+
+### Tracking events
+
+- `logout_warned`: Sent when the modal is answered, with `proceeded` true when its Log out or the count's end starts the logout and false when Continue, its close button or Escape keeps the user in. A navigation that closes the modal sends nothing.
 
 ### Accessibility
 
@@ -26,7 +29,7 @@ With unsaved changes on the page the modal's dialog is named by the sentence say
 
 ```tsx
 <LogoutButton logout={contestantCtx.logout} warning={contestantLogoutWarning(contestantCtx)} />
-<LogoutButton logout={adminCtx.logout} redirectTo="AdminAppLogin" />
+<LogoutButton logout={adminCtx.logout} />
 ```
 
 ## Source

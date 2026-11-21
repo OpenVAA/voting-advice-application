@@ -6,6 +6,10 @@ export type AuthContext = {
    * Reactive via `$derived` — access as a plain boolean property.
    */
   readonly isAuthenticated: boolean;
+  /**
+   * Whether the last logout's sign-out failed. `logout` clears it as it starts and sets it when the sign-out rejects. A reactive accessor: read it as `ctx.logoutFailed`, never destructure.
+   */
+  readonly logoutFailed: boolean;
 
   ////////////////////////////////////////////////////////////////////
   // Wrappers for DataWriter methods NB. These automatically handle authentication via Supabase sessions.
@@ -16,6 +20,10 @@ export type AuthContext = {
    * @returns A Promise resolving when logout is complete.
    */
   logout: () => Promise<void>;
+  /**
+   * Forget that the last logout's sign-out failed. A stable function, safe to destructure.
+   */
+  clearLogoutFailure: () => void;
 
   /**
    * Change the current user's password.

@@ -24,8 +24,9 @@
 -- - private.caller_unconfirmed_originated_count() - how many unconfirmed organization and alliance nominations the caller has originated
 -- - private.caller_entity_ids(uuid, entity_type) - the entities of one type, in one project, the caller holds an editor grant on; called by get_user_entities and get_entity_user_data
 -- - private.user_password_set(uuid) - whether an account holds a password; executable by no API role
--- - private.caller_password_set() - whether the caller's own account holds a password; called by get_user_entities
--- - private.caller_pending_email_taken() - whether the address the caller's own account is changing to is another account's; called by get_user_entities
+-- - private.caller_password_set() - whether the caller's own account holds a password; called by get_caller_account_state
+-- - private.caller_pending_email_taken() - whether the address the caller's own account is changing to is another account's; called by get_caller_account_state
+-- - private.nominations_listed_under(uuid[]) - whether another nomination is listed under one of the given nominations; called by set_entity_nominations
 -- - private.registration_mode_allowed_in(jsonb, text, text) - the registration-mode rule over stored settings; reads no table
 -- - private.registration_mode_allowed(uuid, text, text) - the rule over one project's settings row; executable by no API role
 -- - identity_provider_entity_types(uuid) - the entity types an identity provider may register in a project; executable by the service role alone
@@ -635,8 +636,8 @@ $$;
 --
 -- The app setting `access.contestantEditing`, stored in the project's row of public.app_settings. It is a stored setting rather than a member of the permission matrix, so it is a conjunct of the policies it binds and this function is the hop they call. It answers one of three words:
 --   'open'              - an entity's own editor edits everything of the entity.
---   'nominationsLocked' - it can no longer add, change or delete the entity's nominations: the four entity-scope nomination policies and `set_entity_nominations` ask for 'open'.
---   'locked'            - it writes nothing of the entity: the entity self-update policies of the four entity tables ask for anything but 'locked', the nomination policies for 'open', `upsert_answers` and `set_entity_nominations` refuse an entity's editor with SQLSTATE 42501, `storage_path_can` (400-storage.sql) refuses an entity-scope write, reading the same key through private.contestant_editing_in, and private.registration_mode_allowed_in allows no registration.
+--   'nominationsLocked' - it can no longer add, change or delete the entity's nominations: the four entity-scope nomination policies and `set_entity_nominations` ask for 'open', and `set_entity_nominations` refuses an entity's editor with SQLSTATE OV006, a code no other refusal raises.
+--   'locked'            - it writes nothing of the entity: the entity self-update policies of the four entity tables ask for anything but 'locked', the nomination policies for 'open', `upsert_answers` and `set_entity_nominations` refuse an entity's editor with SQLSTATE OV002, a code no other refusal raises, `storage_path_can` (400-storage.sql) refuses an entity-scope write, reading the same key through private.contestant_editing_in, and private.registration_mode_allowed_in allows no registration.
 -- The project-scope policies do not read it, so a project editor and a project admin still write whatever it says.
 --
 -- It answers at two levels. The outer one answers 'locked' when the project row is not found, so a missing project never opens anything; project_open_for_voters denies with false because its sense is the other way round. The inner one answers 'open' when the project has no settings row, when the row does not hold the key and when the key holds anything but one of the three words as a JSON string (private.contestant_editing_in, 106-app-settings.sql), which is the shipped default of the setting: a boolean, a number, a JSON null and an `access` member that is not an object all read as 'open'.
@@ -975,6 +976,37 @@ FROM
 
 GRANT
 EXECUTE ON FUNCTION private.caller_pending_email_taken () TO authenticated;
+
+--------------------------------------------------------------------------------
+-- nominations_listed_under: is another nomination listed under one of these?
+--
+-- True when a nomination whose `parent_nomination_id` is one of p_ids exists and is not itself one of p_ids; false otherwise, and for a NULL or empty array. set_entity_nominations asks it before it deletes the given rows, so a delete the foreign key on `parent_nomination_id` would refuse is refused first, with a code of its own.
+--
+-- The nominations listed under a row are mostly other entities' rows, which the caller may not read, so the question cannot be asked as the caller. It says only whether such a row exists, never which, and only of the rows the caller is about to delete; the foreign key's own refusal would say as much.
+--
+-- `authenticated` alone holds EXECUTE: set_entity_nominations runs with its caller's rights, and the grant on the `private` schema above does not reach a function defined after it.
+--
+-- SECURITY DEFINER because row-level security hides other entities' nominations from the caller.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.nominations_listed_under (p_ids uuid[]) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.nominations c
+    WHERE c.parent_nomination_id = ANY (p_ids)
+      AND c.id <> ALL (p_ids)
+  );
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION private.nominations_listed_under (uuid[])
+FROM
+  PUBLIC,
+  anon;
+
+GRANT
+EXECUTE ON FUNCTION private.nominations_listed_under (uuid[]) TO authenticated;
 
 --------------------------------------------------------------------------------
 -- registration_mode_allowed_in: may entities of this type register with this mode, under these stored settings?

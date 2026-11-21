@@ -34,11 +34,6 @@ type ViewState = {
   sent: boolean;
 };
 
-/** A copy of a view, so a caller cannot change the stored one. */
-function copyView(view: View): View {
-  return { routeId: view.routeId, locale: view.locale, params: { ...view.params } };
-}
-
 /**
  * Create a tracker for the current view.
  *
@@ -91,4 +86,9 @@ export function createViewTracker(deps: { now: () => number }): {
       return state ? copyView(state.view) : undefined;
     }
   };
+}
+
+/** A copy of a view, so a caller cannot change the stored one. */
+function copyView(view: View): View {
+  return { routeId: view.routeId, locale: view.locale, params: { ...view.params } };
 }

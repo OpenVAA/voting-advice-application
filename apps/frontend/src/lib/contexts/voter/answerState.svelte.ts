@@ -17,10 +17,10 @@ import type { AnswerState } from './answerState.type';
 class AnswerStateImpl implements AnswerState {
   // The persistence + version bridge is inherited from `localStorageState` unchanged: the `{ version, data }` payload + expiry live in `persistedState.svelte.ts`, not here.
   #store = localStorageState('VoterContext-answerStore', Object.freeze({}) as Frozen<Answers>);
-  #startEvent: TrackingService['startEvent'];
+  #track: TrackingService['track'];
 
-  constructor(startEvent: TrackingService['startEvent']) {
-    this.#startEvent = startEvent;
+  constructor(track: TrackingService['track']) {
+    this.#track = track;
   }
 
   get answers(): Frozen<Answers> {
@@ -33,10 +33,10 @@ class AnswerStateImpl implements AnswerState {
       const updated = JSON.parse(JSON.stringify(answers)) as Answers;
       if (value === undefined) {
         delete updated[questionId];
-        this.#startEvent('answer_delete', { questionId });
+        this.#track('answer_delete', { questionId });
       } else {
         updated[questionId] = { value };
-        this.#startEvent('answer', {
+        this.#track('answer', {
           questionId,
           value: typeof value === 'number' || typeof value === 'boolean' ? value : `${value}`
         });
@@ -50,7 +50,7 @@ class AnswerStateImpl implements AnswerState {
 
   reset = (): void => {
     this.#store.set(Object.freeze({}));
-    this.#startEvent('answer_resetAll');
+    this.#track('answer_resetAll');
     log.debug('answerState.reset()');
   };
 }
@@ -59,6 +59,6 @@ class AnswerStateImpl implements AnswerState {
  * Create an extended reactive store saved in `localStorage` for holding the voter's `Answer`s. The answers can be read via the `answers` getter, but setting and deleting them can only be done using the dedicated methods.
  * The returned `Answers` are frozen to prevent accidental modifications.
  */
-export function answerState({ startEvent }: { startEvent: TrackingService['startEvent'] }): AnswerState {
-  return new AnswerStateImpl(startEvent);
+export function answerState({ track }: { track: TrackingService['track'] }): AnswerState {
+  return new AnswerStateImpl(track);
 }

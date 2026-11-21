@@ -76,7 +76,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   ////////////////////////////////////////////////////////////////////
 
   const ctx = getAppContext();
-  const { sendFeedback, setFeedbackStatus, t, startEvent } = ctx;
+  const { sendFeedback, setFeedbackStatus, t, track } = ctx;
   // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
@@ -108,13 +108,13 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     status = 'sending';
     sendFeedback({ description, rating }).then((res) => {
       if (res?.type !== 'success') {
-        startEvent('feedback_error', { rating });
+        track('feedback_error', { rating });
         status = 'error';
         onError?.();
         return;
       }
       clearErrorTimeout();
-      startEvent('feedback_sent', { rating });
+      track('feedback_sent', { rating });
       status = 'sent';
       onSent?.();
     });

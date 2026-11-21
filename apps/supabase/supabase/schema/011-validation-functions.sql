@@ -535,7 +535,7 @@ $$ LANGUAGE plpgsql;
 --
 -- A project editor holds `nomination.edit` but not `nomination.confirm`, so its edits also turn confirmation off and only an admin can restore the flag. That is the review gate.
 --
--- On INSERT it also repeats the policy cap on originated unconfirmed parent nominations, so the caller is told the limit.
+-- On INSERT it also repeats the policy cap on originated unconfirmed parent nominations, so the caller is told the limit. That refusal raises SQLSTATE OV004, a code no other refusal raises, so a client recognises it by the code alone.
 --
 -- SECURITY INVOKER, unlike validate_nomination: the role test must see the caller's effective role, which owner rights would replace. It reads no table directly; its authority questions go through `user_can` and the private cap-count helper.
 --------------------------------------------------------------------------------
@@ -572,7 +572,8 @@ BEGIN
      AND NOT public.user_can('project', NEW.project_id, 'project.edit_nominations')
      AND private.caller_unconfirmed_originated_count() >= 10 THEN
     RAISE EXCEPTION 'A caller may originate at most 10 unconfirmed parent nominations; this caller already holds %. An administrator must confirm or reject some before more can be created.',
-      private.caller_unconfirmed_originated_count();
+      private.caller_unconfirmed_originated_count()
+      USING ERRCODE = 'OV004';
   END IF;
 
   -- Rule 3: the supplied value stands.
@@ -686,7 +687,7 @@ $$;
 --
 -- The body names no entity type and no protected column. The protected columns arrive per registration in TG_ARGV and are compared through a JSONB projection of both rows, and the entity type is derived from TG_TABLE_NAME, so one body serves all four entity tables. The confirmation column is not a parameter: it has the same name on every entity table and is the subject of rule 1.
 --
--- Each refusal starts with a stable prefix, so `throws_like` can match it and a seed log can tell the two apart. Both name the table, the row and both values; the immutability refusal also names the column, and its prefix says "name" for every protected column, the short name included.
+-- Each refusal starts with a stable prefix, so `throws_like` can match it and a seed log can tell the two apart. Both name the table, the row and both values; the immutability refusal also names the column, and its prefix says "name" for every protected column, the short name included. The immutability refusal raises SQLSTATE OV001, a code no other refusal raises, so a client recognises it by the code alone and never by its text.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_entity_immutability () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
@@ -720,7 +721,8 @@ BEGIN
          AND NOT public.user_can('entity', NEW.id, 'entity.edit_immutable', v_entity_type) THEN
         RAISE EXCEPTION 'Entity name is immutable once confirmed: column %.%.% on row % cannot be changed (current: %, attempted: %); changing it requires the entity.edit_immutable permission',
           TG_TABLE_SCHEMA, TG_TABLE_NAME, v_col, NEW.id,
-          COALESCE(v_old_row ->> v_col, '(none)'), COALESCE(v_new_row ->> v_col, '(none)');
+          COALESCE(v_old_row ->> v_col, '(none)'), COALESCE(v_new_row ->> v_col, '(none)')
+          USING ERRCODE = 'OV001';
       END IF;
     END LOOP;
   END IF;

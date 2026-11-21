@@ -195,24 +195,123 @@ describe('withhold-stack-keys.mjs', () => {
 const STACK_COMMAND = /\b(yarn db:(start|reset)|supabase (start|status))\b/;
 /** A redirect of standard output into a file: `>` or `>>` that is neither a descriptor duplication nor the null device. */
 const FILE_REDIRECT = /(^|[^0-9&])>>?\s*(?!&|\/dev\/null)\S/;
+/** A pipe into `tee` that names a file, which writes what it reads to that file. */
+const TEE_WRITE = /\|\s*tee\b(\s+-\S+)*\s+(?!\/dev\/null)[^\s|;&]/;
 
-/** Whether a line of a shell script writes the stack's status to a file without the filter. */
-function writesStatusUnfiltered(line: string): boolean {
-  const code = line.trim();
-  if (code.startsWith('#')) return false;
-  return STACK_COMMAND.test(code) && FILE_REDIRECT.test(code) && !code.includes(FILTER_NAME);
+/** One command of a shell script as the shell reads it, and the script line it begins on. */
+interface ScriptCommand {
+  code: string;
+  line: number;
+}
+
+/**
+ * A line of shell with its comment removed: a `#` outside quotes that begins a word starts a comment.
+ *
+ * @param line - One physical line of a script.
+ */
+function stripComment(line: string): string {
+  let quote: string | undefined;
+  for (let index = 0; index < line.length; index++) {
+    const char = line[index];
+    if (quote) {
+      if (char === '\\' && quote === '"') index++;
+      else if (char === quote) quote = undefined;
+    } else if (char === '\\') index++;
+    else if (char === '"' || char === "'") quote = char;
+    else if (char === '#' && (index === 0 || /\s/.test(line[index - 1]))) return line.slice(0, index);
+  }
+  return line;
+}
+
+/**
+ * The commands of a shell script: comments removed, a line ending in a backslash joined to the next, and a `{ ... }` group whose braces stand on lines of their own read as one command, so that a redirect after its closing brace counts for every command inside it.
+ *
+ * @param text - The script.
+ */
+function scriptCommands(text: string): Array<ScriptCommand> {
+  const joined: Array<ScriptCommand> = [];
+  let pending: ScriptCommand | undefined;
+  text.split('\n').forEach((raw, index) => {
+    const code = stripComment(raw).trimEnd();
+    const continued = code.endsWith('\\');
+    const part = continued ? code.slice(0, -1) : code;
+    pending = pending
+      ? { code: `${pending.code} ${part.trim()}`, line: pending.line }
+      : { code: part.trim(), line: index + 1 };
+    if (!continued) {
+      joined.push(pending);
+      pending = undefined;
+    }
+  });
+  if (pending) joined.push(pending);
+
+  const commands: Array<ScriptCommand> = [];
+  const groups: Array<ScriptCommand> = [];
+  for (const command of joined) {
+    if (command.code === '{') {
+      groups.push({ code: '{', line: command.line });
+      continue;
+    }
+    const group = groups.at(-1);
+    if (!group) {
+      commands.push(command);
+      continue;
+    }
+    group.code = `${group.code} ${command.code}`;
+    if (command.code.startsWith('}')) {
+      groups.pop();
+      const outer = groups.at(-1);
+      if (outer) outer.code = `${outer.code} ${group.code}`;
+      else commands.push(group);
+    }
+  }
+  commands.push(...groups);
+  return commands;
+}
+
+/** Whether a command of a shell script writes the stack's status to a file without the filter. */
+function writesStatusUnfiltered(command: string): boolean {
+  const writesFile = FILE_REDIRECT.test(command) || TEE_WRITE.test(command);
+  return STACK_COMMAND.test(command) && writesFile && !command.includes(FILTER_NAME);
+}
+
+/** Whether any command of a script writes the stack's status to a file without the filter. */
+function scriptWritesStatusUnfiltered(text: string): boolean {
+  return scriptCommands(text).some(({ code }) => writesStatusUnfiltered(code));
 }
 
 describe('harness scripts that write the output of starting the stack', () => {
   it('recognises an unfiltered redirect and accepts a filtered one', () => {
-    expect(writesStatusUnfiltered('yarn db:start > "$RUN_DIR/db-start.log" 2>&1')).toBe(true);
-    expect(writesStatusUnfiltered('(cd apps/supabase && supabase status -o env) >> "$LOG"')).toBe(true);
+    expect(scriptWritesStatusUnfiltered('yarn db:start > "$RUN_DIR/db-start.log" 2>&1')).toBe(true);
+    expect(scriptWritesStatusUnfiltered('(cd apps/supabase && supabase status -o env) >> "$LOG"')).toBe(true);
+    expect(scriptWritesStatusUnfiltered(`yarn db:start > "$RUN_DIR/db-start.log" # not ${FILTER_NAME}`)).toBe(true);
+    expect(scriptWritesStatusUnfiltered('yarn db:start 2>&1 | tee "$RUN_DIR/db-start.log"')).toBe(true);
+    expect(scriptWritesStatusUnfiltered('yarn db:start 2>&1 | tee -a "$RUN_DIR/db-start.log" > /dev/null')).toBe(true);
+    expect(scriptWritesStatusUnfiltered('yarn db:start \\\n  > "$RUN_DIR/db-start.log" 2>&1')).toBe(true);
+    expect(scriptWritesStatusUnfiltered('{\n  echo starting\n  yarn db:start 2>&1\n} > "$RUN_DIR/db-start.log"')).toBe(
+      true
+    );
+
     expect(
-      writesStatusUnfiltered(`yarn db:start 2>&1 | node "$SCRIPT_DIR/${FILTER_NAME}" > "$RUN_DIR/db-start.log"`)
+      scriptWritesStatusUnfiltered(`yarn db:start 2>&1 | node "$SCRIPT_DIR/${FILTER_NAME}" > "$RUN_DIR/db-start.log"`)
     ).toBe(false);
-    expect(writesStatusUnfiltered('yarn db:start > /dev/null 2>&1')).toBe(false);
-    expect(writesStatusUnfiltered('echo "FATAL -- yarn db:start failed; see $RUN_DIR/db-start.log" >&2')).toBe(false);
-    expect(writesStatusUnfiltered('# yarn db:start > "$RUN_DIR/db-start.log"')).toBe(false);
+    expect(
+      scriptWritesStatusUnfiltered(
+        `yarn db:start 2>&1 \\\n  | node "$SCRIPT_DIR/${FILTER_NAME}" > "$RUN_DIR/db-start.log"`
+      )
+    ).toBe(false);
+    expect(
+      scriptWritesStatusUnfiltered(
+        `{\n  yarn db:start 2>&1 | node "$SCRIPT_DIR/${FILTER_NAME}"\n} > "$RUN_DIR/db-start.log"`
+      )
+    ).toBe(false);
+    expect(scriptWritesStatusUnfiltered('yarn db:start > /dev/null 2>&1')).toBe(false);
+    expect(scriptWritesStatusUnfiltered('yarn db:start 2>&1 | tee /dev/null')).toBe(false);
+    expect(scriptWritesStatusUnfiltered('echo "FATAL -- yarn db:start failed; see $RUN_DIR/db-start.log" >&2')).toBe(
+      false
+    );
+    expect(scriptWritesStatusUnfiltered('# yarn db:start > "$RUN_DIR/db-start.log"')).toBe(false);
+    expect(scriptWritesStatusUnfiltered('yarn db:start  # then > "$RUN_DIR/db-start.log"')).toBe(false);
   });
 
   it('all go through the filter', () => {
@@ -222,11 +321,10 @@ describe('harness scripts that write the output of starting the stack', () => {
     const offending: Array<string> = [];
     let filtered = 0;
     for (const name of scripts) {
-      const lines = fs.readFileSync(path.join(SCRIPTS_DIR, name), 'utf8').split('\n');
-      lines.forEach((line, index) => {
-        if (writesStatusUnfiltered(line)) offending.push(`${name}:${index + 1}`);
-        if (STACK_COMMAND.test(line) && line.includes(FILTER_NAME)) filtered++;
-      });
+      for (const { code, line } of scriptCommands(fs.readFileSync(path.join(SCRIPTS_DIR, name), 'utf8'))) {
+        if (writesStatusUnfiltered(code)) offending.push(`${name}:${line}`);
+        if (STACK_COMMAND.test(code) && code.includes(FILTER_NAME)) filtered++;
+      }
     }
     expect(offending).toEqual([]);
     // The wrapper writes the output of both `yarn db:start` and `yarn db:reset`; a count of zero would mean this test no longer reads the lines it is about.
@@ -235,15 +333,13 @@ describe('harness scripts that write the output of starting the stack', () => {
 
   it('never spawn root `yarn dev`, which starts the stack and prints its status into the dev server log', () => {
     const rootScripts = JSON.parse(fs.readFileSync(path.join(SCRIPTS_DIR, '../../package.json'), 'utf8')).scripts;
-    expect(rootScripts.dev).toBe('yarn db:start && yarn _dev:concurrent');
+    expect(rootScripts.dev).toMatch(/\bdb:start\b/);
 
     const offending: Array<string> = [];
     for (const name of fs.readdirSync(SCRIPTS_DIR).filter((file) => file.endsWith('.sh'))) {
-      const lines = fs.readFileSync(path.join(SCRIPTS_DIR, name), 'utf8').split('\n');
-      lines.forEach((line, index) => {
-        const code = line.trim();
-        if (!code.startsWith('#') && /\byarn dev(?![:\w-])/.test(code)) offending.push(`${name}:${index + 1}`);
-      });
+      for (const { code, line } of scriptCommands(fs.readFileSync(path.join(SCRIPTS_DIR, name), 'utf8'))) {
+        if (/\byarn dev(?![:\w-])/.test(code)) offending.push(`${name}:${line}`);
+      }
     }
     expect(offending).toEqual([]);
   });

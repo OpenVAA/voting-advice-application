@@ -22,7 +22,8 @@ vi.mock('$lib/contexts/app', () => ({
     t: fakes.t,
     appType: { current: 'admin' },
     appSettings: { admin: { email: 'support@example.test' } },
-    getRoute: { current: (route: string) => `/route/${route}` }
+    getRoute: { current: (route: string) => `/route/${route}` },
+    track: () => undefined
   })
 }));
 

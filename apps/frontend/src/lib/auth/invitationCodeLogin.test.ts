@@ -1,7 +1,7 @@
 import { configureLogger, log } from '@openvaa/app-shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { invitationCodeLogin } from './invitationCodeLogin';
-import { CONTESTANT_GRANTS } from './roles';
+import { CONTESTANT_GRANTS, readGrants } from './roles';
 import type { InvitationClaimResult } from '$lib/api/base/dataWriter.type';
 import type { InvitationCodeLoginContext } from './invitationCodeLogin';
 import type { GrantClaim } from './roles';
@@ -9,7 +9,7 @@ import type { GrantClaim } from './roles';
 /**
  * The code-login helper: a code sign-in on the caller's context, then the admission every sign-in goes through.
  *
- * The context is a structural fake, as in the password-login spec. Its token changes only when `refreshSession` is called.
+ * The context is a structural fake, as in the password-login spec. Its token changes only when `refreshSession` is called, and its read of the grants that reach the project answers the token's grants as they are when read.
  */
 
 const CODE = 'ABCD-EFGH-JKLM';
@@ -72,7 +72,8 @@ function contextWith({
       claimInvitations: async () => {
         calls.push('claimInvitations');
         return claim;
-      }
+      },
+      getProjectGrants: async () => readGrants(accessToken)
     }
   };
 }

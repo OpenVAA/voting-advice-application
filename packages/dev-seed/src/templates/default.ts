@@ -216,15 +216,15 @@ export const defaultTemplate: Template = {
             showSurveyPopup: 500,
             sections: ['candidate', 'organization', 'alliance']
           },
-          // Serves both entity types and allows every registration mode for both, so the local registration screen offers the identity provider's mode, which is refused at the authorize step when no identity provider is configured.
+          // Serves both entity types by email and by code. The identity provider's mode is left out because it needs the provider's environment variables; the identity-provider E2E setup adds it for its own run.
           contestantApp: {
             questions: {
               hideHero: false,
               hideVideo: false
             },
             servedEntityTypes: {
-              candidate: { registrationModes: ['identity_provider', 'email', 'code'] },
-              organization: { registrationModes: ['identity_provider', 'email', 'code'] }
+              candidate: { registrationModes: ['email', 'code'] },
+              organization: { registrationModes: ['email', 'code'] }
             }
           }
         }

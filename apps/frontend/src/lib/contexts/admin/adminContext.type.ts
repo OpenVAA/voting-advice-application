@@ -17,10 +17,11 @@ export type AdminContext = AppContext &
      */
     userData: BasicUserData | undefined;
     /**
-     * Logout the user. It rejects when the sign-out failed, in which case the session may still be alive. It shows nothing itself: the failure is held in `logoutFailed`, and the next attempt clears it as it starts.
-     * @returns A Promise resolving when logout is complete.
+     * Logout the user and go to the Admin App's login page. It rejects when the sign-out failed, in which case the session may still be alive, and goes nowhere: the failure is held in `logoutFailed`.
+     * @param options - `reason`: why the session ends, which the login page receives as its `errorMessage`, such as `loggedOutAutomatically` at the end of a logout count.
+     * @returns A Promise resolving when the navigation to the login page is complete.
      */
-    logout: () => Promise<void>;
+    logout: (options?: { reason?: 'loggedOutAutomatically' }) => Promise<void>;
     /**
      * Whether the last sign-out failed, which is what the Admin App's layout shows a message for. A reactive accessor: read it as `ctx.logoutFailed`, never destructure.
      */

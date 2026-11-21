@@ -1,12 +1,11 @@
 /**
  * The real `AdminContextProvider`, over fakes of the two contexts it reads and of the writers it would build.
  *
- * What this file holds: the context's `logout` holds a sign-out's failure and rejects with it, and the failure goes when the next attempt starts or when `clearLogoutFailure` is called. The entry flow of the forgot-password page asks for a recovery link made for the Admin App, in the context's locale, and a Log out that worked lets the flow go. A sign-out that works, here or in another tab, removes the Contestant App's drafts from `localStorage`; one that fails leaves them. A sign-out in another tab sends a page that reads as signed in to the login page, which says why only when another tab announced its Log out.
+ * What this file holds: the context's `logout` rejects with a sign-out's failure and does nothing after it, and after a sign-out that worked goes to the login page, carrying the reason it was given, by a full load when the navigation does not move the page. `logoutFailed` and `clearLogoutFailure` are the auth context's, read live. The entry flow of the forgot-password page asks for a recovery link made for the Admin App, in the context's locale, and a Log out that worked lets the flow go. A sign-out that works, here or in another tab, removes the Contestant App's drafts from `localStorage`; one that fails leaves them. A sign-out in another tab sends a page that reads as signed in to the login page, which says why only when another tab announced its Log out.
  *
  * `$app/environment` answers that the cases run in the browser, where the drafts are stored.
  */
 
-import { flushSync } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { leaveByFullLoad } from '$lib/components/preventNavigation/navigationGuards';
 import { AdminContextProvider } from './adminContext.svelte';
@@ -16,7 +15,7 @@ const authLogout = vi.fn(async (): Promise<void> => undefined);
 
 // Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
 const { auth, mounted, signOutHandlers } = vi.hoisted(() => ({
-  auth: { signedIn: true },
+  auth: { signedIn: true, logoutFailed: false, clearLogoutFailure: vi.fn() },
   mounted: new Array<() => unknown>(),
   signOutHandlers: new Array<(origin: SignOutOrigin) => void>()
 }));
@@ -74,6 +73,10 @@ vi.mock('../auth', () => ({
     get isAuthenticated() {
       return auth.signedIn;
     },
+    get logoutFailed() {
+      return auth.logoutFailed;
+    },
+    clearLogoutFailure: () => auth.clearLogoutFailure(),
     logout: () => authLogout(),
     setPassword: async () => ({ type: 'success' })
   })
@@ -90,8 +93,7 @@ vi.mock('svelte', (importOriginal) =>
 );
 
 // A real full load never settles, and the bare test document has nowhere to go.
-vi.mock('$lib/components/preventNavigation/navigationGuards', async (importOriginal) => ({
-  ...(await importOriginal<Record<string, unknown>>()),
+vi.mock('$lib/components/preventNavigation/fullLoad', () => ({
   leaveByFullLoad: vi.fn(async () => undefined)
 }));
 
@@ -160,6 +162,8 @@ afterEach(() => {
   authLogout.mockReset();
   authLogout.mockImplementation(async () => undefined);
   auth.signedIn = true;
+  auth.logoutFailed = false;
+  auth.clearLogoutFailure.mockClear();
   mounted.length = 0;
   signOutHandlers.length = 0;
   localStorage.clear();
@@ -240,85 +244,76 @@ describe('the admin context’s entry flow', () => {
   });
 });
 
-describe('the admin context’s logout and the failure it holds', () => {
-  it('a sign-out that succeeds holds no failure', async () => {
+describe('the admin context’s logout', () => {
+  const LOGIN = '/route/AdminAppLogin';
+
+  it('after a sign-out that works, goes to the login page', async () => {
     const provider = new AdminContextProvider();
 
     await provider.logout();
 
-    expect(provider.logoutFailed).toBe(false);
+    expect(navigationBox.goto).toHaveBeenCalledTimes(1);
+    expect(navigationBox.goto).toHaveBeenCalledWith(LOGIN, { invalidateAll: true });
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
   });
 
-  it('a sign-out that fails rejects with its error and holds the failure', async () => {
+  it('carries the reason it is given to the login page as its errorMessage', async () => {
+    const provider = new AdminContextProvider();
+
+    await provider.logout({ reason: 'loggedOutAutomatically' });
+
+    expect(navigationBox.goto).toHaveBeenCalledWith(`${LOGIN}?errorMessage=loggedOutAutomatically`, {
+      invalidateAll: true
+    });
+  });
+
+  it('leaves to the login page by a full load when the navigation does not move the page', async () => {
+    navigationBox.goto.mockImplementation(async () => undefined);
+    const provider = new AdminContextProvider();
+
+    await provider.logout();
+
+    expect(leaveByFullLoad).toHaveBeenCalledTimes(1);
+    expect(leaveByFullLoad).toHaveBeenCalledWith(LOGIN);
+  });
+
+  it('leaves to the login page by a full load when the navigation rejects', async () => {
+    navigationBox.goto.mockRejectedValue(new Error('the navigation failed'));
+    const provider = new AdminContextProvider();
+
+    await provider.logout();
+
+    expect(leaveByFullLoad).toHaveBeenCalledWith(LOGIN);
+  });
+
+  it('a sign-out that fails rejects with its error and goes nowhere', async () => {
     authLogout.mockRejectedValueOnce(FAILURE);
     const provider = new AdminContextProvider();
 
     await expect(provider.logout()).rejects.toBe(FAILURE);
 
-    expect(provider.logoutFailed).toBe(true);
+    expect(navigationBox.goto).not.toHaveBeenCalled();
+    expect(leaveByFullLoad).not.toHaveBeenCalled();
   });
 
-  it('the next sign-out clears the failure as it starts and, resolving, leaves it cleared', async () => {
-    authLogout.mockRejectedValueOnce(FAILURE);
+  it('reads the auth context’s failure flag at every access', () => {
     const provider = new AdminContextProvider();
-    await expect(provider.logout()).rejects.toBe(FAILURE);
+    expect(provider.logoutFailed).toBe(false);
+
+    auth.logoutFailed = true;
+
     expect(provider.logoutFailed).toBe(true);
-
-    let endSignOut!: () => void;
-    authLogout.mockImplementationOnce(
-      () =>
-        new Promise<void>((resolve) => {
-          endSignOut = resolve;
-        })
-    );
-    const running = provider.logout();
-
-    expect(provider.logoutFailed).toBe(false);
-
-    endSignOut();
-    await running;
-    expect(provider.logoutFailed).toBe(false);
   });
 
-  it('clearLogoutFailure clears the failure', async () => {
-    authLogout.mockRejectedValueOnce(FAILURE);
-    const provider = new AdminContextProvider();
-    await expect(provider.logout()).rejects.toBe(FAILURE);
-    expect(provider.logoutFailed).toBe(true);
-
-    provider.clearLogoutFailure();
-
-    expect(provider.logoutFailed).toBe(false);
-  });
-
-  it('logout and clearLogoutFailure work detached from the instance', async () => {
+  it('logout and clearLogoutFailure work detached from the instance, clearLogoutFailure as the auth context’s', async () => {
     authLogout.mockRejectedValueOnce(FAILURE);
     const provider = new AdminContextProvider();
     const { logout, clearLogoutFailure } = provider;
 
     await expect(logout()).rejects.toBe(FAILURE);
-    expect(provider.logoutFailed).toBe(true);
-
     clearLogoutFailure();
-    expect(provider.logoutFailed).toBe(false);
-  });
 
-  it('an effect that reads the flag follows it', async () => {
-    authLogout.mockRejectedValueOnce(FAILURE);
-    const provider = new AdminContextProvider();
-    const seen: Array<boolean> = [];
-    const cleanup = $effect.root(() => {
-      $effect(() => {
-        seen.push(provider.logoutFailed);
-      });
-    });
-    flushSync();
-
-    await expect(provider.logout()).rejects.toBe(FAILURE);
-    flushSync();
-
-    cleanup();
-    expect(seen).toEqual([false, true]);
+    expect(auth.clearLogoutFailure).toHaveBeenCalledTimes(1);
   });
 });
 

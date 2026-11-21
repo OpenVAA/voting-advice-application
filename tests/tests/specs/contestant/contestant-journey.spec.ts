@@ -1,7 +1,7 @@
 /**
- * Candidate journey end-to-end spec.
+ * Contestant journey end-to-end spec.
  *
- * Structure: ONE serial-describe → ONE long test('full candidate journey end-to-end', ...) → 22 named `test.step` segments, followed by short tests that sign the journey's candidate in again and go on from where the walk left it. The walk covers:
+ * Structure: ONE serial-describe → ONE long test('full contestant journey end-to-end', ...) → 22 named `test.step` segments, followed by short tests that sign the journey's candidate in again and go on from where the walk left it. The walk covers:
  *   1-2.  Public static pages (/contestant/help + /contestant/privacy) reachable while unauthenticated.
  *   3.    Seed an email invitation for the unregistered candidate that confirms it and states its one nomination unconfirmed, and ask the `account-access` function for a sign-in link — between the two, no account and no editor grant exists; then read the mailed link from Mailpit, assert its shape and move it to the run's origin.
  *   4.    Open the mailed link: the auth callback verifies it, claims the invitation and lands in the app, where a user with no password is shown the set-password view in place of the page; set initial password (PASSWORD_1).
@@ -77,9 +77,9 @@ import {
 } from '../../utils/contestantJourneyConstants';
 import { SIGN_IN_LINK_EMAIL_SUBJECT } from '../../utils/invitationConstants';
 import { assertSignInLinkShape, openMailedLink, runOriginFromEnv, toRunOrigin } from '../../utils/mailedLink';
+import { messageOf } from '../../utils/messages';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import type { Locator, Page } from '@playwright/test';
 import type { ContestantQuestionPageFixture } from '../../fixtures/contestant/contestantQuestionPage.fixture';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
@@ -102,9 +102,7 @@ const JOURNEY_CANDIDATE: EntityGrantTarget = Object.freeze({
 /**
  * The name the contestant app shows when the project serves candidates and organizations, as the base dataset declares. Read from the English message source rather than copied.
  */
-const BASE_DATASET_APP_NAME: string = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/dynamic.json'), 'utf8')
-).dynamic.contestantAppName.candidateAndOrganization;
+const BASE_DATASET_APP_NAME = messageOf('dynamic', 'contestantAppName.candidateAndOrganization');
 
 // ====================================================================
 // candidate nav-menu auth-state item sets
@@ -114,7 +112,7 @@ const BASE_DATASET_APP_NAME: string = JSON.parse(
 // NOTE: the AUTHENTICATED candidate nav items (Start / Nominations / Basic Information / Your Opinions / Preview / Settings) carry their OWN `contestant-nav-*` testids — NavItem.svelte spreads the caller's `data-testid` over its default `nav-menu-item`, so those items are invisible to the `nav-menu-item` reader and are asserted separately via `assertContestantAuthNavPresent`.
 // ====================================================================
 
-// The active-locale language item (`en`, since this walk runs on `/en`) is `disabled={loc === currentLocale}` in LanguageSelection.svelte. NavItem drops `href` and sets `aria-disabled` for a disabled link, so the current-locale item computes an EMPTY accessible name (`/^$/`) — the other languages are real links carrying their language name.
+// The active-locale language item (`en`, since this walk runs on `/en`) is `disabled={loc === currentLocale}` in LanguageSelection.svelte. NavItem drops `href` from a disabled link but keeps its link role and marks it `aria-disabled`, so the current-locale item is named by its language like the others and is told apart by being unavailable (`assertActiveLocaleItemDisabled`).
 const CONTESTANT_NAV_LOGGED_OUT: ReadonlyArray<RegExp> = Object.freeze([
   /^Close menu$/,
   /^Sign in$/,
@@ -123,7 +121,7 @@ const CONTESTANT_NAV_LOGGED_OUT: ReadonlyArray<RegExp> = Object.freeze([
   /^Support$/,
   /^Privacy$/,
   /^Send feedback$/,
-  /^$/, // active locale (English) — disabled, empty accessible name
+  /^English$/, // active locale — disabled, see assertActiveLocaleItemDisabled
   /^Suomi$/,
   /^Svenska$/
 ]);
@@ -133,10 +131,22 @@ const CONTESTANT_NAV_LOGGED_IN: ReadonlyArray<RegExp> = Object.freeze([
   /^Support$/,
   /^Privacy$/,
   /^Send feedback$/,
-  /^$/, // active locale (English) — disabled, empty accessible name
+  /^English$/, // active locale — disabled, see assertActiveLocaleItemDisabled
   /^Suomi$/,
   /^Svenska$/
 ]);
+
+/**
+ * Assert that the menu's item for the active locale, English, is an unavailable link, and that the other languages' items are available.
+ */
+async function assertActiveLocaleItemDisabled(menu: Locator): Promise<void> {
+  const languageItem = (name: string) => menu.getByTestId('nav-menu-item').filter({ hasText: name });
+  await expect(languageItem('English')).toHaveRole('link');
+  await expect(languageItem('English')).toHaveAttribute('aria-disabled', 'true');
+  await expect(languageItem('English')).not.toHaveAttribute('href');
+  await expect(languageItem('Suomi')).not.toHaveAttribute('aria-disabled');
+  await expect(languageItem('Svenska')).not.toHaveAttribute('aria-disabled');
+}
 
 /**
  * Assert the authenticated candidate nav items are present in the open drawer with every item open: the home, nominations, profile, questions and preview items, each a link into the entity the URL names, and the settings item. The profile, questions and preview items have a link target only while the entity can open their pages, so this is the menu of an entity that has a nomination and nothing left to answer.
@@ -308,28 +318,10 @@ function currentQuestionId(page: Page): string {
   );
 }
 
-/**
- * Id-scoped `question-choice` inputs for the question currently in the editor.
- * The `name="questionChoices-<id>"` conjunction with the `question-choice` testid is not expressible via getByTestId, so a raw attribute locator is used (same idiom as contestantQuestionPage.answerCurrentQuestion).
- */
-function scopedChoices(page: Page, questionId: string): Locator {
-  // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId
-  return page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
-}
-
-/**
- * Id-scoped `question-choice` inputs further filtered by native input `type`.
- * The input `type` is the render discriminant asserted by the type-specific steps: multi-choice categorical → `checkbox` (QuestionChoices.svelte multi branch), single-choice categorical / boolean / ordinal → `radio`.
- */
-function scopedChoicesByType(page: Page, questionId: string, inputType: 'checkbox' | 'radio'): Locator {
-  // eslint-disable-next-line playwright/no-restricted-locators -- testid+name+type conjunction not expressible via getByTestId
-  return page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"][type="${inputType}"]`);
-}
-
 // Start every test in this file UNAUTHENTICATED.
 test.use({ storageState: { cookies: [], origins: [] } });
 
-test.describe('candidate journey', { tag: ['@candidate'] }, () => {
+test.describe('contestant journey', { tag: ['@contestant-journey'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   // Build the oversized PNG once per file (used by step 13's portrait upload error-path assertions). Avoids committing a 21MB binary fixture.
@@ -342,7 +334,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     fs.rmSync(OVERSIZED_PNG_PATH, { force: true });
   });
 
-  test('full candidate journey end-to-end', async ({
+  test('full contestant journey end-to-end', async ({
     page,
     emailBucket,
     invitationFlow,
@@ -390,6 +382,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       const navMenu = createNavMenu(page);
       await navMenu.openMobileNav();
       await navMenu.expectNavMenuItems([...CONTESTANT_NAV_LOGGED_OUT]);
+      await assertActiveLocaleItemDisabled(navMenu.menu);
       // Close the drawer so the subsequent registration flow starts clean.
       await page.keyboard.press('Escape');
     });
@@ -400,7 +393,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
 
     await test.step('3. registration: seed an invitation + ask for a sign-in link + read the mailed link', async () => {
       // A retry of this walk in the same run reuses this run's address: a user an earlier attempt left behind would turn this first-time registration into a returning user's sign-in, which is not asked to set a password, and a nomination it left behind would meet the one this invitation creates. Users of earlier runs hold addresses of their own and are removed by the setup.
-      await client.unregisterCandidate(UNREGISTERED_CANDIDATE_EMAIL);
+      await client.unregisterUser(UNREGISTERED_CANDIDATE_EMAIL);
       await client.bulkDelete({ nominations: { external_ids: [UNREGISTERED_CANDIDATE_NOMINATION.externalId] } });
 
       // The invitation is seeded, and only then is the link asked for. Between the two, the seeding alone has created no account for the address and no editor of the candidate.
@@ -812,8 +805,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       const qid = currentQuestionId(page);
 
       // Type-specific render: 4 CHECKBOX choices and ZERO radios (the categorical / likert questions render radios — the input type is the discriminant, mirroring contestantQuestionPage.answerCurrentQuestion's detection idiom).
-      await expect(scopedChoicesByType(page, qid, 'checkbox')).toHaveCount(4);
-      await expect(scopedChoicesByType(page, qid, 'radio')).toHaveCount(0);
+      await expect(contestantQuestionPage.choicesFor(qid, 'checkbox')).toHaveCount(4);
+      await expect(contestantQuestionPage.choicesFor(qid, 'radio')).toHaveCount(0);
 
       // The min/max helper text renders — it is a TYPE-SPECIFIC contract element: QuestionChoices.svelte only emits `question-choice-helper` for a multi-choice question carrying authored min/max constraints (`{#if mode === 'answer' && multiConstraints}`), so its mere presence discriminates multi-choice from the categorical/boolean radios below.
       //
@@ -823,7 +816,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await expect(helper).toHaveText(/2.*3/);
 
       // save gating across the 2..3 window. QuestionChoices.svelte never disables unchecked boxes (its `handleToggle`); over/under-selection surfaces on the caller's Save button via `isMultiChoiceCountValid` in multiChoiceValidity.ts (valid iff the count is within [effectiveMin=2, effectiveMax=3]).
-      const boxes = scopedChoices(page, qid);
+      const boxes = contestantQuestionPage.choicesFor(qid);
       // 1 selected → below min → Save DISABLED.
       await boxes.nth(0).click();
       await expect(boxes.nth(0)).toBeChecked();
@@ -862,8 +855,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await contestantQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-4-categorical\]/);
       await expect(page).toHaveURL(contestantUrlRe('/questions', 'child'), { timeout: TIMEOUTS.slowPage });
       const catId = currentQuestionId(page);
-      await expect(scopedChoicesByType(page, catId, 'radio')).toHaveCount(3);
-      await expect(scopedChoicesByType(page, catId, 'checkbox')).toHaveCount(0);
+      await expect(contestantQuestionPage.choicesFor(catId, 'radio')).toHaveCount(3);
+      await expect(contestantQuestionPage.choicesFor(catId, 'checkbox')).toHaveCount(0);
       // Answer (first choice) + save; a single radio selection is immediately valid.
       await contestantQuestionPage.selectChoice(0);
       await contestantQuestionPage.expectContinueEnabled();
@@ -877,8 +870,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await contestantQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-5-boolean\]/);
       await expect(page).toHaveURL(contestantUrlRe('/questions', 'child'), { timeout: TIMEOUTS.slowPage });
       const boolId = currentQuestionId(page);
-      await expect(scopedChoicesByType(page, boolId, 'radio')).toHaveCount(2);
-      await expect(scopedChoicesByType(page, boolId, 'checkbox')).toHaveCount(0);
+      await expect(contestantQuestionPage.choicesFor(boolId, 'radio')).toHaveCount(2);
+      await expect(contestantQuestionPage.choicesFor(boolId, 'checkbox')).toHaveCount(0);
       // OpinionQuestionInput synthesizes boolean choices as ['no'→false, 'yes'→true], so index 0 saves the FALSY value deliberately: the overview must still show a falsy answer as answered. If it did not, the card below would render no display markup and its action would read "Answer this question", so all three assertions would fail.
       await contestantQuestionPage.selectChoice(0);
       await contestantQuestionPage.expectContinueEnabled();
@@ -923,6 +916,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await navMenu.openMobileNav();
       // (a) The `nav-menu-item` set: login / register / forgot-password GONE.
       await navMenu.expectNavMenuItems([...CONTESTANT_NAV_LOGGED_IN]);
+      await assertActiveLocaleItemDisabled(navMenu.menu);
       // (b) The authenticated nav group is present (own testids), every item open: each task is complete at this point of the walk. The nominations item is the group's second, after the home item.
       await assertContestantAuthNavPresent(navMenu.menu);
       await navMenu.expectNominationsItem();
@@ -937,7 +931,7 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
       await page.goto('/en/contestant/questions');
       await contestantQuestionsOverviewPage.expectCompletionMessage();
       // No partial-completion continue prompt (all questions answered).
-      await expect(page.getByTestId('contestant-questions-continue')).toHaveCount(0);
+      await contestantQuestionsOverviewPage.expectNoContinuePrompt();
     });
 
     // ============== Step 21: preview =====================================
@@ -982,7 +976,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     contestantQuestionPage
   }) => {
     await removeStoredAnswer(new SupabaseAdminClient(), OPEN_ANSWER_QUESTION_EXTERNAL_ID);
-    await contestantLoginPage.signInFromCold(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
+    await contestantLoginPage.goToPage();
+    await contestantLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
     await contestantHomePage.expectStatusMessage();
     await page.goto('/en/contestant/questions');
     await contestantQuestionsOverviewPage.goToQuestion(/\[qu-opin-base-1-likert5\]/);
@@ -1014,7 +1009,8 @@ test.describe('candidate journey', { tag: ['@candidate'] }, () => {
     contestantHomePage,
     contestantProfilePage
   }) => {
-    await contestantLoginPage.signInFromCold(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
+    await contestantLoginPage.goToPage();
+    await contestantLoginPage.login(UNREGISTERED_CANDIDATE_EMAIL, PASSWORD_2);
     await contestantHomePage.expectStatusMessage();
     await contestantProfilePage.open();
     const portraitUrl = await contestantProfilePage.shownImageUrl();

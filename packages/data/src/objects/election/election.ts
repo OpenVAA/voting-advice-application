@@ -19,6 +19,7 @@ import type {
   EntityType,
   FactionNomination,
   FilterValue,
+  Id,
   NominationShape,
   NominationVariant,
   OrganizationNomination,
@@ -165,17 +166,68 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
   //////////////////////////////////////////////////////////////////////////////
 
   /**
+   * The `Constituency`s in an array that are in one of this `Election`'s `ConstituencyGroup`s. Several may match, e.g., a municipality and its parent region for an election whose groups include both regions and municipalities.
+   * @param constituencies - The `Constituency`s to choose from.
+   * @returns Every match, in the order given. Empty when none matches.
+   */
+  getApplicableConstituencies(constituencies: Array<Constituency>): Array<Constituency> {
+    const groups = this.constituencyGroups;
+    return constituencies.filter(({ id }) => groups.some((group) => group.data.constituencyIds.includes(id)));
+  }
+
+  /**
    * Return the `Constituency` in an array that applies to this `Election`.
-   * @throws If more than one `Constituency`s matches the criteria.
+   * @throws If more than one `Constituency`s matches the criteria. Use `getApplicableConstituencies` or `getMostSpecificConstituency` when several may.
    */
   getApplicableConstituency(constituencies: Array<Constituency>): Constituency | undefined {
-    const matches = constituencies.filter(({ id }) =>
-      this.constituencyGroups.some((group) => group.data.constituencyIds.includes(id))
-    );
+    const matches = this.getApplicableConstituencies(constituencies);
     if (matches.length > 1)
       throw new DataTypeError(
         `More than one constituency matches the election: ${matches.map((m) => m.id).join(', ')}`
       );
     return matches[0];
   }
+
+  /**
+   * The one `Constituency` of an array this `Election` resolves to when several of them apply to it (see `getApplicableConstituencies`). A match that is an ancestor of another match is passed over, so a municipality is chosen over its parent region. Among the rest, the one whose `ConstituencyGroup` has the fewest `Constituency`s is chosen, and the first of them in the order given when several groups are of that size. Never throws.
+   * @param constituencies - The `Constituency`s to choose from.
+   * @returns The `Constituency`, or `undefined` when none of those given applies to this `Election`.
+   */
+  getMostSpecificConstituency(constituencies: Array<Constituency>): Constituency | undefined {
+    const matches = this.getApplicableConstituencies(constituencies);
+    const parentIds = new Map(this.root.constituencies.map((c) => [c.id, c.data.parentId]));
+    const leaves = matches.filter(
+      (candidate) => !matches.some((other) => isAncestorOf({ ancestorId: candidate.id, descendant: other, parentIds }))
+    );
+    const groups = this.constituencyGroups;
+    let best: { constituency: Constituency; groupSize: number } | undefined;
+    for (const constituency of leaves) {
+      const group = groups.find((g) => g.data.constituencyIds.includes(constituency.id));
+      const groupSize = group?.data.constituencyIds.length ?? Infinity;
+      if (!best || groupSize < best.groupSize) best = { constituency, groupSize };
+    }
+    return best?.constituency;
+  }
+}
+
+/**
+ * Whether the `Constituency` with `ancestorId` is a parent, grandparent or further ancestor of `descendant`, following the parent ids the root holds.
+ */
+function isAncestorOf({
+  ancestorId,
+  descendant,
+  parentIds
+}: {
+  ancestorId: Id;
+  descendant: Constituency;
+  parentIds: Map<Id, Id | null | undefined>;
+}): boolean {
+  const seen = new Set<Id>();
+  let parentId = descendant.data.parentId;
+  while (parentId && !seen.has(parentId)) {
+    if (parentId === ancestorId) return true;
+    seen.add(parentId);
+    parentId = parentIds.get(parentId);
+  }
+  return false;
 }

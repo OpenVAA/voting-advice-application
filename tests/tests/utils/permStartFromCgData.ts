@@ -1,8 +1,6 @@
-import path from 'path';
-import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
-import { TESTS_DIR } from './testsDir';
-import type { NominationShapeName } from './permContestantNominationsData';
-import type { EntityGrantTarget } from './supabaseAdminClient';
+import { permEditor } from '../setup/shared/registerAndStoreSession';
+import type { Enums } from '@openvaa/supabase-types';
+import type { PermEditor } from '../setup/shared/registerAndStoreSession';
 
 /**
  * The start-from-constituency dataset as the suite's contestant tests name it: the rows of the `perm-startfromcg` template they address, and the one user that edits a candidate of it.
@@ -16,9 +14,6 @@ import type { EntityGrantTarget } from './supabaseAdminClient';
 
 /** The `external_id` prefix of every row of the dataset, and the prefix its teardown deletes. */
 export const START_FROM_CG_PREFIX = 'e2e-perm-startfromcg-';
-
-/** The password of the candidate's editor: the suite's shared test password. */
-export const START_FROM_CG_PASSWORD = TEST_CANDIDATE_PASSWORD;
 
 // ---------------------------------------------------------------------------
 // The constituency group that is chosen first, and three of the constituencies.
@@ -65,7 +60,7 @@ export const MUNICIPALITIES_ELECTION_EXTERNAL_ID = `${START_FROM_CG_PREFIX}el-2`
 export const MUNICIPALITIES_ELECTION_NAME = '[EL2] CG-2 leaves';
 
 /** The nomination shape each election is seeded with, by the election's `external_id`: what a test that changes a shape puts back. */
-export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, NominationShapeName>> = Object.freeze({
+export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, Enums<'nomination_shape'>>> = Object.freeze({
   [REGIONS_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents',
   [MUNICIPALITIES_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents'
 });
@@ -77,14 +72,8 @@ export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, NominationShapeNa
 /** `external_id` of the candidate whose editor the contestant tests sign in as. It is seeded with one nomination, in the regions' election. */
 export const CANDIDATE_EXTERNAL_ID = `${START_FROM_CG_PREFIX}ca-1-1b`;
 
-/** The entity the candidate's editor is registered on. */
-export const CANDIDATE_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'candidate',
-  externalId: CANDIDATE_EXTERNAL_ID
-});
+/** The candidate's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const CANDIDATE_EDITOR = permEditor('candidate', CANDIDATE_EXTERNAL_ID, 'perm-startfromcg-candidate.json');
 
-/** Email of the candidate's editor. */
-export const CANDIDATE_EDITOR_EMAIL = `${CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the candidate's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const CANDIDATE_STORAGE_STATE = path.join(TESTS_DIR, '../playwright/.auth/perm-startfromcg-candidate.json');
+/** The dataset's one editor, as its setup stores the session and its teardown removes it. */
+export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([CANDIDATE_EDITOR]);

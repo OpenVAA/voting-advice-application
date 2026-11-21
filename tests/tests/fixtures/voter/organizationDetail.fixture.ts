@@ -42,17 +42,6 @@ const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 const ENTITY_SELECTED_MARKER = 'entity-selected';
 
 /**
- * A hex colour in the `rgb(r, g, b)` form in which a browser reports a computed colour.
- * @param hex - A colour as `#rrggbb`, in either case.
- * @throws If `hex` is not a six-digit hex colour.
- */
-function hexToRgb(hex: string): string {
-  if (!HEX_COLOR.test(hex)) throw new Error(`organizationDetail: "${hex}" is not a colour of the form #rrggbb`);
-  const channel = (start: number): number => parseInt(hex.slice(start, start + 2), 16);
-  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
-}
-
-/**
  * Create the fixture for an organization as an anonymous voter finds it in the results.
  *
  * @param page - The page the fixture drives. It walks the voter flow from the home page, so the page carries no voter state before `openList` or `openFromResults`.
@@ -222,3 +211,14 @@ export function createOrganizationDetail(page: Page) {
 
 /** The steps of the organization-detail fixture. */
 export type OrganizationDetailFixture = ReturnType<typeof createOrganizationDetail>;
+
+/**
+ * A hex colour in the `rgb(r, g, b)` form in which a browser reports a computed colour.
+ * @param hex - A colour as `#rrggbb`, in either case.
+ * @throws If `hex` is not a six-digit hex colour.
+ */
+function hexToRgb(hex: string): string {
+  if (!HEX_COLOR.test(hex)) throw new Error(`organizationDetail: "${hex}" is not a colour of the form #rrggbb`);
+  const channel = (start: number): number => parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+}

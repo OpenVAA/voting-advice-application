@@ -45,18 +45,14 @@ The same module holds the functions the rules are built from: `hasNomination(nom
 
 ### On the context
 
-`getContestantContext()` computes the state once, in a single derived value, and exposes it with its parts:
+`getContestantContext()` computes the state once, in a single derived value, and exposes it with the entity's nominations:
 
-| Accessor          | Value                                                                                                                                                     |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `taskState`       | The whole state of the entity the route names.                                                                                                            |
-| `tasks`           | `taskState.tasks`.                                                                                                                                        |
-| `nextStep`        | `taskState.nextStep`.                                                                                                                                     |
-| `previewOpen`     | `taskState.previewOpen`.                                                                                                                                  |
-| `profileComplete` | `taskState.allComplete`.                                                                                                                                  |
-| `nominations`     | The entity's nominations as the entity-level load read them: an empty list for an entity with none, and `undefined` on a page whose data holds no entity. |
+| Accessor      | Value                                                                                                                                                     |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `taskState`   | The whole state of the entity the route names. A page reads its parts off it, such as `contestantCtx.taskState.allComplete`.                              |
+| `nominations` | The entity's nominations as the entity-level load read them: an empty list for an entity with none, and `undefined` on a page whose data holds no entity. |
 
-All six are reactive accessors: read them as `contestantCtx.taskState`, never destructured. The state is replaced by a fresh object on every change, so `$derived(contestantCtx.taskState)` follows it. See [Contexts](/developers-guide/frontend/contexts).
+Both are reactive accessors: read them as `contestantCtx.taskState`, never destructured. The state is replaced by a fresh object on every change, so `$derived(contestantCtx.taskState)` follows it. See [Contexts](/developers-guide/frontend/contexts).
 
 Whether the entity has a nomination is read from the page data, so it is known on the server and on the first frame. The counts are read from the user data store and the question lists, which are loaded in the browser. The state follows a saved answer without a load, and it follows a changed nomination only when the entity-level load runs again. The nomination editor's save runs it again with `invalidateAll()`.
 
@@ -112,7 +108,7 @@ Both loads answer from rows the server read in the request, and neither signs an
 
 The preview's rule reads the elections and the constituencies itself. When it cannot read them, or a nomination names one that was not read, it gives no answer: nothing is redirected and the preview is served, with no error view. The page shows the user's own entity only.
 
-The preview's rule is in the page's own load, and not in the group's, because a layout's load does not run again on a navigation between two pages below it. The page's load runs on every arrival, and its `await parent()` runs the parent loads again on the server, so it sees an answer the user saved a moment before. The rule itself is `isPreviewOpen` in [`previewGate.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/contestant/previewGate.ts), which calls the same `hasNomination`, `previewOpenOf`, `requiredInfoQuestionsOf` and `unansweredQuestionsOf` the browser's task state does.
+The preview's rule is in the page's own load, and not in the group's, because a layout's load does not run again on a navigation between two pages below it. The page's load runs on every arrival, and its `await parent()` runs the parent loads again on the server, so it sees an answer the user saved a moment before. The rule itself is `isPreviewOpen` in [`previewOpen.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/contestant/previewOpen.ts), which calls the same `hasNomination`, `previewOpenOf`, `requiredInfoQuestionsOf` and `unansweredQuestionsOf` the browser's task state does.
 
 The gate is a rule about pages. The database's own rules decide what an entity's editor may write.
 
@@ -150,4 +146,4 @@ The list follows the load and not the store. A change to an entity's nominations
 
 ## In tests
 
-`taskState.test.ts` and `unanswered.test.ts` beside the module hold the cases of each rule. The E2E project `perm-no-nomination` ([`perm-no-nomination.spec.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/tests/tests/specs/perm/perm-no-nomination.spec.ts)) seeds a candidate and an organization with no nomination beside a nominated candidate, and drives the home, the closed pages, the menu, the nominations view and the buttons that continue; `perm-contestant-nominations` drives the nominations view's six states and the editor (see [Defining nominations](/developers-guide/contestant-app/defining-nominations#in-tests)); `contestant-journey` takes one candidate from registration through its profile and its questions.
+`taskState.test.ts` and `unanswered.test.ts` beside the module hold the cases of each rule. The E2E project `perm-unnominated-entities` ([`perm-unnominated-entities.spec.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/tests/tests/specs/perm/perm-unnominated-entities.spec.ts)) seeds a candidate and an organization with no nomination beside a nominated candidate, and drives the home, the closed pages, the menu, the nominations view and the buttons that continue; `perm-contestant-nominations` drives the nominations view's six states and the editor (see [Defining nominations](/developers-guide/contestant-app/defining-nominations#in-tests)); `contestant-journey` takes one candidate from registration through its profile and its questions.

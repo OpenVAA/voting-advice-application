@@ -21,18 +21,15 @@ export interface ParamSegment {
 }
 
 /**
- * Read one segment of a route id as a param segment.
- * @param segment - One slash-separated segment of a route id.
- * @returns The param it declares, or `undefined` when the segment is static text or a route group.
+ * A limited route builder to use in testing because we cannot use the real `buildRoute` that depends on Svelte kit.
+ * @param route - The name of the route.
+ * @param locale - The value of the locale segment, where the route id holds one.
+ * @param params - Values for the route's param segments. An optional segment without a value is dropped.
+ * @returns The path, without route groups and without any bracketed segment.
+ * @throws If a required or rest param segment has no value.
  */
-export function parseParamSegment(segment: string): ParamSegment | undefined {
-  const optional = /^\[\[([^\]=]+)(?:=[^\]]+)?\]\]$/.exec(segment);
-  if (optional) return { name: optional[1], kind: 'optional' };
-  const rest = /^\[\.\.\.([^\]=]+)(?:=[^\]]+)?\]$/.exec(segment);
-  if (rest) return { name: rest[1], kind: 'rest' };
-  const required = /^\[([^\]=]+)(?:=[^\]]+)?\]$/.exec(segment);
-  if (required) return { name: required[1], kind: 'required' };
-  return undefined;
+export function buildRoute({ route, locale, params }: { route: Route; locale: string; params?: RouteParams }): string {
+  return fillRouteId({ route, routeId: ROUTE[route], locale, params });
 }
 
 /**
@@ -74,13 +71,16 @@ export function fillRouteId({
 }
 
 /**
- * A limited route builder to use in testing because we cannot use the real `buildRoute` that depends on Svelte kit.
- * @param route - The name of the route.
- * @param locale - The value of the locale segment, where the route id holds one.
- * @param params - Values for the route's param segments. An optional segment without a value is dropped.
- * @returns The path, without route groups and without any bracketed segment.
- * @throws If a required or rest param segment has no value.
+ * Read one segment of a route id as a param segment.
+ * @param segment - One slash-separated segment of a route id.
+ * @returns The param it declares, or `undefined` when the segment is static text or a route group.
  */
-export function buildRoute({ route, locale, params }: { route: Route; locale: string; params?: RouteParams }): string {
-  return fillRouteId({ route, routeId: ROUTE[route], locale, params });
+export function parseParamSegment(segment: string): ParamSegment | undefined {
+  const optional = /^\[\[([^\]=]+)(?:=[^\]]+)?\]\]$/.exec(segment);
+  if (optional) return { name: optional[1], kind: 'optional' };
+  const rest = /^\[\.\.\.([^\]=]+)(?:=[^\]]+)?\]$/.exec(segment);
+  if (rest) return { name: rest[1], kind: 'rest' };
+  const required = /^\[([^\]=]+)(?:=[^\]]+)?\]$/.exec(segment);
+  if (required) return { name: required[1], kind: 'required' };
+  return undefined;
 }

@@ -15,9 +15,9 @@ const FIXED_TIME = 1_792_400_000_123;
  * @returns The event, carrying the sample's visit id when the sample has one.
  */
 function eventOf(name: EventName): AnalyticsEvent {
-  const sample: { name: string; id?: string; attributes: Record<string, JSONData> } = VALID_EVENTS[name];
+  const sample: { name: string; visitId?: string; attributes: Record<string, JSONData> } = VALID_EVENTS[name];
   const event: AnalyticsEvent = { name: sample.name, time: FIXED_TIME, app: 'voter', attributes: sample.attributes };
-  if (sample.id !== undefined) event.id = sample.id;
+  if (sample.visitId !== undefined) event.visitId = sample.visitId;
   return event;
 }
 
@@ -64,8 +64,8 @@ describe('toLogRecord', () => {
       expect(record.time).toBe(FIXED_TIME);
       expect(record.msg).toBe(name);
       expect(record.attributes).toMatchObject({ ...event.attributes, 'openvaa.app': 'voter' });
-      if (event.id === undefined) expect(record.attributes).not.toHaveProperty(['session.id']);
-      else expect(record.attributes).toHaveProperty(['session.id'], event.id);
+      if (event.visitId === undefined) expect(record.attributes).not.toHaveProperty(['session.id']);
+      else expect(record.attributes).toHaveProperty(['session.id'], event.visitId);
     });
   });
 });

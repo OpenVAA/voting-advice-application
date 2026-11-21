@@ -14,6 +14,7 @@
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BasicUserData } from '$lib/api/base/dataWriter.type';
+import type { AddressStateName } from '$lib/contestant/utils/identityProviderAccount';
 
 const { box, context, navigating } = vi.hoisted(() => {
   const box = { data: {} as { user?: unknown } };
@@ -27,7 +28,7 @@ const { box, context, navigating } = vi.hoisted(() => {
     appSettings: { analytics: { trackEvents: false } },
     answersLocked: false,
     // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
-    analyticsGate: {
+    analyticsPolicy: {
       current: {
         projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
         globalPrivacyControl: false,
@@ -93,7 +94,7 @@ const TERMS = '[data-testid="terms-of-use-submit"]';
 const PAGE = '[data-testid="page"]';
 
 /** User-level data of an identity-provider account with no password. */
-function providerUser(addressState: BasicUserData['addressState']): BasicUserData {
+function providerUser(addressState: AddressStateName): BasicUserData {
   const proved = addressState === 'proved';
   return {
     id: 'user-1',
@@ -103,11 +104,14 @@ function providerUser(addressState: BasicUserData['addressState']): BasicUserDat
     settings: {},
     termsOfUseAccepted: null,
     passwordSet: false,
-    addressState,
-    pendingEmail: addressState === 'pending' ? 'waiting@example.org' : null,
+    address:
+      addressState === 'pending'
+        ? { state: 'pending', email: 'waiting@example.org' }
+        : addressState === 'none'
+          ? { state: 'none', pendingTaken: false }
+          : { state: 'proved' },
     ownOrganizationId: null,
-    ownOrganizationUnnamed: false,
-    pendingEmailTaken: false
+    ownOrganizationUnnamed: false
   };
 }
 

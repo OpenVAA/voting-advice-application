@@ -112,7 +112,7 @@ Our suggestion is to collect and position both party and candidate responses to 
 
 The final detail about the elections themselves is who can the voters cast their ballot for. In most cases it is either a candidate or a party or both.
 
-Thus, if the elections follow a closed-list model in which the voters can only vote a party list, not an individual candidate, there’s usually no point in showing the candidates in the VAA either and there will be no use for the VAA’s Candidate Application.
+Thus, if the elections follow a closed-list model in which the voters can only vote a party list, not an individual candidate, there’s usually no point in showing the candidates in the VAA either and there will be no use for the VAA’s Contestant App.
 
 ### Do candidates or parties have election symbols?
 

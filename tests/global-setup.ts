@@ -12,8 +12,6 @@ import type { FullConfig } from '@playwright/test';
  * This hook was measured to run on every invocation shape that executes specs — a full run, `--project=X`, `--grep` (including a `--grep` that matches nothing), and `--shard`. It deliberately does NOT run on `--list`, which `tests/README.md` advertises as usable without a dev server; the config-load orphan-probe guard in `playwright.config.ts` covers that path instead.
  *
  * There is no bypass here by design: no environment variable skips the gate and there is no CI early return. `FRONTEND_PORT` is the legitimate escape hatch — it points the suite at the operator's OWN server on another port, which the gate then verifies rather than trusts.
- *
- * Ordering note: the `webServer` entry (the mock OIDC issuer) starts BEFORE this hook in every run. So a failing preflight has already spawned that issuer — Playwright tears it down cleanly, no orphan process, no operator action. Expected, not a leak.
  */
 /**
  * The attribute the served application publishes its configured project id on, and the placeholder `app.html` declares it with.

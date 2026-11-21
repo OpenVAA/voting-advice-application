@@ -15,6 +15,10 @@ export type CustomData = {
      * A nomination can be marked as unconfirmed if the candidate registers in the app before the official electoral lists are published.
      */
     unconfirmed?: boolean;
+    /**
+     * The name of a parent organization or alliance that the nomination's editor typed in the Contestant App because the application does not list it.
+     */
+    requestedParentOrganization?: string;
   };
   /**
    * Typing of `customData` for any `Question` objects.

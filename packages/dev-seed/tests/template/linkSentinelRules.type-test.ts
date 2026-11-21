@@ -9,7 +9,7 @@
  *
  * ## What it controls for
  *
- * `linkJoinTables`' docblock claims "adding a pair to the const cannot leave it unresolved" and "a new `LinkTarget.kind` is a COMPILE error here". A `never` arm covers `target.kind` only. Widen `LinkSentinelRule.collections` to `ReadonlyArray<CollectionKey>`, all twelve, and `linkJoinTables` has to launder `entry.collection` through `as` casts — so a rule naming a collection the resolver cannot handle compiles clean and dies at seed time as `TypeError: LINK_LOOKUP_ERRORS[table] is not a function`, MASKING the real lookup failure instead of reporting it with the greppable message `LINK_LOOKUP_ERRORS` exists to preserve.
+ * Widen `LinkSentinelRule.collections` to `ReadonlyArray<CollectionKey>`, all twelve, and a rule naming a collection the resolvers cannot handle compiles clean: a `join` rule on a collection whose `bulk_import` items carry no link key has its links silently dropped, and a `jsonb` rule on a table with no scoping column makes `linkQuestionScopes` fail with a PostgREST error on a table nobody meant to touch.
  *
  * `LinkSentinelRule` is a union over the two target kinds, so `collections` and `target` are checked as a pair at the DECLARATION. The two illegal rules below are the control; the two legal ones beside them are what stops a green from meaning "the type rejects everything".
  */
@@ -29,12 +29,7 @@ export const illegalJoinRule = {
   // @ts-expect-error TS2322 — 'organizations' is not a JoinParentCollection; a `join` target may only be declared on 'elections' or 'constituency_groups'.
   collections: ['organizations'],
   keys: ['_foo'],
-  refTable: 'elections',
-  target: {
-    kind: 'join',
-    table: 'election_constituency_groups',
-    importKey: 'constituency_groups'
-  }
+  target: { kind: 'join', linkKey: 'constituency_groups' }
 } as const satisfies LinkSentinelRule;
 
 /**
@@ -53,12 +48,7 @@ export const illegalJsonbRule = {
 export const legalJoinRule = {
   collections: ['constituency_groups'],
   keys: ['_constituencies'],
-  refTable: 'constituencies',
-  target: {
-    kind: 'join',
-    table: 'constituency_group_constituencies',
-    importKey: 'constituencies'
-  }
+  target: { kind: 'join', linkKey: 'constituencies' }
 } as const satisfies LinkSentinelRule;
 
 /** Legality case — a correctly paired `jsonb` rule, over BOTH collections the real one covers. */

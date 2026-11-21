@@ -401,15 +401,16 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      - **`'nominationsLocked'` and `'locked'` stop an entity's nominations.** `entity_insert_nominations`,
        `entity_insert_parent_nominations`, `entity_update_nominations` and `entity_delete_nominations`
        each ask `= 'open'`; `set_entity_nominations` refuses a caller without
-       `project.edit_nominations` on the project with `42501`, before it reads the set:
+       `project.edit_nominations` on the project before it reads the set: with `OV006` and
        `set_entity_nominations: nominations are locked in this project` under `'nominationsLocked'`,
-       `set_entity_nominations: editing is locked in this project` under `'locked'`.
+       with `OV002` and `set_entity_nominations: editing is locked in this project` under `'locked'`.
      - **`'locked'` stops every entity-scope write.** The four `entity_update_own_*` policies ask
        `<> 'locked'`; `storage_path_can` refuses an entity-scope write, reading the key through the invoker
        helper `private.contestant_editing_in`, so no second definer call is nested in it; `upsert_answers` refuses a caller without
-       `project.edit_entities` on the project with `42501` and `upsert_answers: answers are locked in
-       this project`, so the data writer can tell the lock from a row it may not write; and
-       `private.registration_mode_allowed_in` allows no registration.
+       `project.edit_entities` on the project with `OV002` and `upsert_answers: answers are locked in
+       this project`, so the data writer can tell the lock from a row it may not write by the code; and
+       `private.registration_mode_allowed_in` allows no registration, so no open candidate or
+       organization invitation is valid, earns a link or is claimed while it holds (§ 10).
      - **Project grant holders pass it**: no admin, project-scope or storage project-scope policy reads
        it, so a project editor and a project admin keep editing answers, profiles, nominations and files
        whatever it says. `55-answers-lock.test.sql` asserts both sides on every site, and
@@ -527,7 +528,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
        its `updated_at`, as `get_entity_nominations` states both on the elements whose `writable` is
        true (`{}` for none); anything else is refused with `22023`. A writable nomination it does not
        name, an id it names that is no writable nomination, and a differing `updated_at` refuse the call
-       with `40001` and `set_entity_nominations: the nominations have changed since they were read`, so
+       with `OV003` and `set_entity_nominations: the nominations have changed since they were read`, so
        a set computed from an older read deletes nothing created since and writes back nothing changed
        since.
      - An entity may hold several nominations of one election, at different constituencies or under
@@ -535,14 +536,25 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
        `nominations_entity_parent_contest_key` (a second nomination of the entity under the same parent
        at the same contest, `23505`) and the contest rules of `validate_nomination`.
      - Its own refusals are `22023` (a malformed argument or object, the message beginning
-       `set_entity_nominations: ` and naming `p_nominations[<index>]`) and `42501` (no
-       'nomination.edit' on the entity; for a caller without `project.edit_nominations` on the project,
-       `set_entity_nominations: nominations are locked in this project` while contestant editing is
-       `'nominationsLocked'` and `set_entity_nominations: editing is locked in this project` while it is
-       `'locked'`, asked right after the first and before the set is read; a row that could not be
-       written). The guards' refusals pass
-       through: `23503` for a removed or moved nomination with nominations listed under it, `P0001`
-       beginning `A caller may originate at most ` for the cap, `23514` for the two nomination-shape rules and the constituency rule.
+       `set_entity_nominations: ` and naming `p_nominations[<index>]`), `42501` (no
+       'nomination.edit' on the entity; a row that could not be written), `OV002`
+       (`set_entity_nominations: editing is locked in this project` for a caller without
+       `project.edit_nominations` on the project while contestant editing is `'locked'`) and `OV006`
+       (`set_entity_nominations: nominations are locked in this project` for the same caller while it is
+       `'nominationsLocked'`), both asked right after the first and before the set is read, `OV003` (the
+       writable nominations as stored are not the ones read) and `OV005` (a removed or moved nomination
+       has nominations listed under it, asked of the SECURITY DEFINER
+       `private.nominations_listed_under(uuid[])` before the delete, so the parent foreign key never
+       fires). The guards' refusals pass through: `OV004` beginning `A caller may originate at most `
+       for the cap, `23514` for the two nomination-shape rules and the constituency rule.
+     - **The refusal codes.** The six refusals the frontend tells apart carry SQLSTATEs of class `OV`,
+       which no PostgreSQL error uses: `OV001` the frozen name (`enforce_entity_immutability`), `OV002`
+       contestant editing `'locked'` (`upsert_answers`, `set_entity_nominations`), `OV003` the changed
+       writable nominations, `OV004` the pending-parent cap (`enforce_nomination_confirmation`), `OV005`
+       listed-under and `OV006` contestant editing `'nominationsLocked'` (`set_entity_nominations`). The
+       data writer exports them as `REFUSAL_CODES` and matches on the code alone, never on the message;
+       each is asserted with `throws_ok(..., 'OV00n')`. A new refusal the app must recognise takes the
+       next code.
      - **RLS refuses an UPDATE and a DELETE silently**, so the function reads the row count of each and
        raises `42501` on a shortfall. A function that writes under invoker rights and reports success
        must do the same.
@@ -564,8 +576,8 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
        runs two calls in parallel), and a move leaves behind the parent's nomination an earlier call
        created at the old contest.
      - `43-set-entity-nominations.test.sql` pins it; the frontend's one caller is the data writer's
-       `setEntityNominations`, which maps the `23503` and the cap's `P0001` to the named refusals
-       `hasCandidates` and `tooManyPending`. The call is listed as scoped by identity in
+       `setEntityNominations`, which maps `OV003`, `OV005`, `OV004`, `OV002` and `OV006` to the named
+       refusals `changed`, `hasCandidates`, `tooManyPending`, `answersLocked` and `nominationsLocked`. The call is listed as scoped by identity in
        `scripts/assert-project-scoped-queries.mjs`: the function takes no project.
    - The first two are SECURITY INVOKER, `LANGUAGE sql`, with no parameter default, refused to `anon` by
      privilege. Both resolve the caller's entities through
@@ -680,7 +692,7 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       nothing; `seed.sql`'s default project serves candidates alone and allows them `email` and `code`):
       a pgTAP file with projects of its own writes the setting in its setup.
       `45-registration-mode-matrix.test.sql` is the rule's truth table, and
-      `packages/dev-seed/tests/registrationModeMatrixParity.test.ts` holds the client's
+      `packages/app-shared/src/settings/contestantAppSettings.matrix.test.ts` holds the client's
       `isRegistrationModeAllowed` (`@openvaa/app-shared`) to the same table. The identity provider's
       entry asks the same rule through `public.identity_provider_entity_types(p_project_id)` (service
       role only): `candidate` and `organization`, in that order, where the project allows the mode
@@ -1463,6 +1475,13 @@ the same names. Measured on this date:
 | files in `functions/_shared/` | 12: six modules and their tests | `git ls-files apps/supabase/supabase/functions/_shared` |
 
 No pgTAP run was made for this entry, so the run total is not stated.
+
+**Updated 2026-11-21** (review follow-up): the refusal codes. RLS and Auth Patterns § 6 and § 9 state the
+`OV001`–`OV006` refusal codes, `get_user_entities` without the account's facts and
+`private.nominations_listed_under`; § 10 states that `'locked'` contestant editing closes registration.
+`schema-reference.md` and `rls-policy-map.md` carry the same. Migration `00002_refusal_codes.sql` makes
+the change. Re-measured on this date: 2964 planned pgTAP assertions, 42 functions created in `private`,
+and 2 migration files and manifest entries; no other count was re-measured and no pgTAP run was made.
 
 ### What changed under the targets, and what it did to this skill
 

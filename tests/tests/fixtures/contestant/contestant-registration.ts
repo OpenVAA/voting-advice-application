@@ -41,89 +41,6 @@ import type { ContestantRegisterPageFixture } from './contestantRegisterPage.fix
 import type { ContestantSetPasswordGateFixture } from './contestantSetPasswordGate.fixture';
 import type { ContestantTermsOfUsePageFixture } from './contestantTermsOfUsePage.fixture';
 
-/** A text as itself and with its percent escapes resolved, where it has any that resolve. */
-function withEscapesResolved(text: string): Array<string> {
-  try {
-    return [text, decodeURIComponent(text)];
-  } catch {
-    return [text];
-  }
-}
-
-/**
- * Create the steps that look at what a page keeps outside the memory of its scripts.
- *
- * @param page - The page to look at.
- */
-export function createFlowState(page: Page) {
-  return {
-    /**
-     * Assert that nothing a browser keeps or shows outside the page's own memory holds one of the given values: not the address bar, not either web storage, not the cookies the page can read, not the history state.
-     *
-     * For the values a visitor types into the entry flow — an address, a registration code — which the application holds in memory alone. Each place is searched as it is and with its percent escapes resolved, for each value as it is and percent-escaped, without regard to case.
-     *
-     * A failure names the places that hold a value. It never names the value, and no value is the subject of an expectation: a registration code would otherwise end up in the report.
-     *
-     * @param values - The values to look for. At least one, none of them empty.
-     * @throws Error when given no value or an empty one, which would make the step assert nothing or match everything.
-     */
-    async expectNothingOutsideMemory(values: ReadonlyArray<string>): Promise<void> {
-      if (values.length === 0 || values.some((value) => value === '')) {
-        throw new Error('flowState: expectNothingOutsideMemory needs at least one value, and none of them empty');
-      }
-      const needles = values.flatMap((value) => [value, encodeURIComponent(value)]).map((text) => text.toLowerCase());
-
-      const places = await page.evaluate(() => ({
-        'the address bar': window.location.href,
-        'local storage': JSON.stringify(Object.entries(window.localStorage)),
-        'session storage': JSON.stringify(Object.entries(window.sessionStorage)),
-        'the cookies the page can read': document.cookie,
-        'the history state': JSON.stringify(window.history.state) ?? ''
-      }));
-
-      const holding = Object.entries(places)
-        .filter(([, content]) =>
-          withEscapesResolved(content)
-            .map((text) => text.toLowerCase())
-            .some((text) => needles.some((needle) => text.includes(needle)))
-        )
-        .map(([place]) => place);
-      expect(holding, 'places outside the page’s memory that hold a value of the flow').toEqual([]);
-    },
-
-    /**
-     * Assert that the page shows none of the given values: not in the text of the document, and not in a field.
-     *
-     * For the page a reload or a visit by address has led to, which must show nothing of what was typed before. The text and the fields' values are searched without regard to case. A failure names where a value was found, never the value.
-     *
-     * @param values - The values to look for. At least one, none of them empty.
-     * @throws Error when given no value or an empty one, which would make the step assert nothing or match everything.
-     */
-    async expectNothingShown(values: ReadonlyArray<string>): Promise<void> {
-      if (values.length === 0 || values.some((value) => value === '')) {
-        throw new Error('flowState: expectNothingShown needs at least one value, and none of them empty');
-      }
-      const needles = values.map((value) => value.toLowerCase());
-
-      const places = await page.evaluate(() => ({
-        'the text of the document': document.documentElement.innerText,
-        'the fields of the document': JSON.stringify(
-          Array.from(document.querySelectorAll('input, textarea, select')).map(
-            (control) => (control as HTMLInputElement).value
-          )
-        )
-      }));
-
-      const showing = Object.entries(places)
-        .filter(([, content]) => needles.some((needle) => content.toLowerCase().includes(needle)))
-        .map(([place]) => place);
-      expect(showing, 'places of the page that show a value of the flow').toEqual([]);
-    }
-  };
-}
-
-export type FlowStateFixture = ReturnType<typeof createFlowState>;
-
 /**
  * A visitor beside the test's own: a page in a browser context of its own, with the page objects of the screens a visitor who starts signed out meets, up to the home a sign-in or a mailed link leads to.
  *
@@ -242,5 +159,88 @@ export function createRegistrationTest({
 
 /** The `test` of one spec of the entry flow, as {@link createRegistrationTest} builds it. */
 export type RegistrationTest = ReturnType<typeof createRegistrationTest>;
+
+/**
+ * Create the steps that look at what a page keeps outside the memory of its scripts.
+ *
+ * @param page - The page to look at.
+ */
+export function createFlowState(page: Page) {
+  return {
+    /**
+     * Assert that nothing a browser keeps or shows outside the page's own memory holds one of the given values: not the address bar, not either web storage, not the cookies the page can read, not the history state.
+     *
+     * For the values a visitor types into the entry flow — an address, a registration code — which the application holds in memory alone. Each place is searched as it is and with its percent escapes resolved, for each value as it is and percent-escaped, without regard to case.
+     *
+     * A failure names the places that hold a value. It never names the value, and no value is the subject of an expectation: a registration code would otherwise end up in the report.
+     *
+     * @param values - The values to look for. At least one, none of them empty.
+     * @throws Error when given no value or an empty one, which would make the step assert nothing or match everything.
+     */
+    async expectNothingOutsideMemory(values: ReadonlyArray<string>): Promise<void> {
+      if (values.length === 0 || values.some((value) => value === '')) {
+        throw new Error('flowState: expectNothingOutsideMemory needs at least one value, and none of them empty');
+      }
+      const needles = values.flatMap((value) => [value, encodeURIComponent(value)]).map((text) => text.toLowerCase());
+
+      const places = await page.evaluate(() => ({
+        'the address bar': window.location.href,
+        'local storage': JSON.stringify(Object.entries(window.localStorage)),
+        'session storage': JSON.stringify(Object.entries(window.sessionStorage)),
+        'the cookies the page can read': document.cookie,
+        'the history state': JSON.stringify(window.history.state) ?? ''
+      }));
+
+      const holding = Object.entries(places)
+        .filter(([, content]) =>
+          withEscapesResolved(content)
+            .map((text) => text.toLowerCase())
+            .some((text) => needles.some((needle) => text.includes(needle)))
+        )
+        .map(([place]) => place);
+      expect(holding, 'places outside the page’s memory that hold a value of the flow').toEqual([]);
+    },
+
+    /**
+     * Assert that the page shows none of the given values: not in the text of the document, and not in a field.
+     *
+     * For the page a reload or a visit by address has led to, which must show nothing of what was typed before. The text and the fields' values are searched without regard to case. A failure names where a value was found, never the value.
+     *
+     * @param values - The values to look for. At least one, none of them empty.
+     * @throws Error when given no value or an empty one, which would make the step assert nothing or match everything.
+     */
+    async expectNothingShown(values: ReadonlyArray<string>): Promise<void> {
+      if (values.length === 0 || values.some((value) => value === '')) {
+        throw new Error('flowState: expectNothingShown needs at least one value, and none of them empty');
+      }
+      const needles = values.map((value) => value.toLowerCase());
+
+      const places = await page.evaluate(() => ({
+        'the text of the document': document.documentElement.innerText,
+        'the fields of the document': JSON.stringify(
+          Array.from(document.querySelectorAll('input, textarea, select')).map(
+            (control) => (control as HTMLInputElement).value
+          )
+        )
+      }));
+
+      const showing = Object.entries(places)
+        .filter(([, content]) => needles.some((needle) => content.toLowerCase().includes(needle)))
+        .map(([place]) => place);
+      expect(showing, 'places of the page that show a value of the flow').toEqual([]);
+    }
+  };
+}
+
+export type FlowStateFixture = ReturnType<typeof createFlowState>;
+
+/** A text as itself and with its percent escapes resolved, where it has any that resolve. */
+function withEscapesResolved(text: string): Array<string> {
+  try {
+    return [text, decodeURIComponent(text)];
+  } catch {
+    return [text];
+  }
+}
 
 export { expect };

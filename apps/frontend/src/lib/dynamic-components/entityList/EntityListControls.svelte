@@ -40,7 +40,7 @@ TODO: Consider moving the tracking events away from the component and just addin
   let { entities, filterGroup, searchProperty = 'name', onUpdate, ...restProps }: EntityListControlsProps = $props();
 
   const ctx = getAppContext();
-  const { startEvent, t } = ctx;
+  const { track, t } = ctx;
   // locale is a reactive accessor — read via ctx.locale, never destructure.
   const locale = $derived(ctx.locale);
   let filtersModalRef: Modal | undefined = $state();
@@ -92,12 +92,12 @@ TODO: Consider moving the tracking events away from the component and just addin
   }
   function resetFilters() {
     filterGroup?.reset();
-    if (filterGroup) startEvent('filters_reset');
+    if (filterGroup) track('filters_reset');
     filtersModalRef?.closeModal();
   }
   function trackActiveFilters() {
     const count = filterGroup?.filters.filter((f) => f.active).length ?? 0;
-    if (count > 0) startEvent('filters_active', { count });
+    if (count > 0) track('filters_active', { count });
   }
 </script>
 

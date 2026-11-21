@@ -5,7 +5,7 @@
  */
 import { log } from '@openvaa/app-shared';
 import { toLogRecord } from '$lib/analytics/mappers/toLogRecord';
-import type { AnalyticsProvider, ProviderDeps } from './provider.type';
+import type { AnalyticsProvider, AnalyticsProviderDeps } from './provider.type';
 
 /**
  * Create the log provider.
@@ -13,7 +13,7 @@ import type { AnalyticsProvider, ProviderDeps } from './provider.type';
  * @param deps - `write`, which receives each line with its trailing newline.
  * @returns A provider whose `capture` writes one line per event and always resolves.
  */
-export function createLogProvider({ write }: Pick<ProviderDeps, 'write'>): AnalyticsProvider {
+export function createLogProvider({ write }: Pick<AnalyticsProviderDeps, 'write'>): AnalyticsProvider {
   return {
     name: 'log',
     capture(events) {

@@ -114,4 +114,41 @@ describe('missingRequiredEnv', () => {
     expect(missingRequiredEnv({ ...COMPLETE_ENV, ANALYTICS_PROVIDER: 'posthog' })).toEqual(['ANALYTICS_POSTHOG_KEY']);
     expect(missingRequiredEnv({ ...COMPLETE_ENV, ANALYTICS_PROVIDER: 'log' })).toEqual([]);
   });
+
+  // `STARTUP_RULES` holds the identity-provider rule, so a start that sets up a provider without the callback's shared secret is refused.
+  it.each([
+    ['absent', undefined],
+    ['empty', ''],
+    ['only spaces', '   ']
+  ])(
+    'reports IDENTITY_CALLBACK_SERVER_SECRET when an identity provider is set up and the secret is %s',
+    (_label, secret) => {
+      const env = { ...COMPLETE_ENV, PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'value-of-client-id' } as Record<
+        string,
+        string | undefined
+      >;
+      if (secret !== undefined) env.IDENTITY_CALLBACK_SERVER_SECRET = secret;
+      expect(missingRequiredEnv(env)).toEqual(['IDENTITY_CALLBACK_SERVER_SECRET']);
+    }
+  );
+
+  it('reports nothing for identity-provider sign-in when a provider is set up with the secret', () => {
+    expect(
+      missingRequiredEnv({
+        ...COMPLETE_ENV,
+        PUBLIC_IDENTITY_PROVIDER_CLIENT_ID: 'value-of-client-id',
+        IDENTITY_CALLBACK_SERVER_SECRET: 'value-of-secret'
+      })
+    ).toEqual([]);
+  });
+
+  it.each([
+    ['absent', undefined],
+    ['empty', ''],
+    ['only spaces', '   ']
+  ])('does not ask for IDENTITY_CALLBACK_SERVER_SECRET when the provider client id is %s', (_label, clientId) => {
+    const env = { ...COMPLETE_ENV } as Record<string, string | undefined>;
+    if (clientId !== undefined) env.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID = clientId;
+    expect(missingRequiredEnv(env)).toEqual([]);
+  });
 });
