@@ -2,11 +2,12 @@
   "privacy": {
     "analytics": {
       "content": {
-        "free": "Den här applikationen samlar in användningsdata utan att fråga dig separat. Den omfattar dina svar på frågorna, tiden du tillbringar i applikationen och de resultat du tittar på. Varje händelse som avslöjar ett svar eller en preferens skickas för sig och bär ingen identifierare, men liksom alla andra händelser registrerar den tidpunkten då den inträffade. Uppgifterna skickas via webbplatsens egen server, som varken vidarebefordrar din nätverksadress eller din webbläsares identifiering. Inget om detta lagras på din enhet.",
+        "free": "Den här applikationen samlar in användningsdata utan att fråga dig separat. Den omfattar dina svar på frågorna, tiden du tillbringar i applikationen och de resultat du tittar på. Varje händelse som avslöjar ett svar eller en preferens bär ingen identifierare som delas med någon annan händelse, och sidvisningar bär inte heller någon. Liksom alla andra händelser registrerar den dock tidpunkten då den inträffade. Uppgifterna skickas via webbplatsens egen server, som varken vidarebefordrar din nätverksadress eller din webbläsares identifiering. Inget om detta lagras på din enhet.",
         "gated": "Användningsdata samlas in endast om du samtycker till det. Den omfattar dina svar på frågorna, tiden du tillbringar i applikationen och de resultat du tittar på. Händelserna under ett besök kopplas som mest ihop med en identifierare som bara finns i sidans minne och försvinner när sidan laddas om eller stängs. Uppgifterna skickas via webbplatsens egen server, som varken vidarebefordrar din nätverksadress eller din webbläsares identifiering. Inget om detta lagras på din enhet utom ditt val. Ett val som görs i den här webbläsaren gäller den del av applikationen där det gjordes: kandidat- och partiapplikationen har ett eget val, och väljarapplikationen och administrationsapplikationen delar ett annat. Du kan ändra vilket som helst av dem på integritetssidan."
       },
       "gpc": "Om din webbläsare skickar signalen Global Privacy Control samlas ingenting in, inte ens antalet sidvisningar, och du tillfrågas inte. Ingenting lagras för att komma ihåg signalen.",
       "pageviews": "Sidvisningar räknas även när inga andra användningsdata samlas in: vilken typ av sida som öppnades, på vilket språk och hur länge. Uppgifterna omfattar dock inte till exempel vilket partis eller vilken kandidats uppgifter som har visats. Räkningen har ingen identifierare.",
+      "survey": "Om du öppnar användarenkäten läggs besökets identifierare till i enkätlänken, så att dina enkätsvar kan kopplas till det här besökets användningsdata.",
       "title": "Analys"
     },
     "cookies": {
@@ -51,7 +52,10 @@
       "label": "Samla inte in användningsdata om hur jag använder applikationen"
     },
     "usageData": {
-      "content": "Användningen av applikationen mäts på samma sätt i väljarappen, kandidat- och partiappen och administrationsvyn. Genom att godkänna användarvillkoren tillåter du att användningsdata om din användning av kandidat- och partiappen samlas in, om du inte kryssar i rutan under villkoren. Sidvisningar räknas utan identifierare, så som beskrivs på integritetssidan. Ditt val gäller bara kandidat- och partiapplikationen som öppnas i den här webbläsaren, och du kan ändra det senare på integritetssidan.",
+      "content": {
+        "free": "Användningen av applikationen mäts på samma sätt i väljarappen, kandidat- och partiappen och administrationsvyn. Användningsdata om din användning av kandidat- och partiappen samlas in utan ett separat val. Sidvisningar räknas utan identifierare, så som beskrivs på integritetssidan.",
+        "gated": "Användningen av applikationen mäts på samma sätt i väljarappen, kandidat- och partiappen och administrationsvyn. Genom att godkänna användarvillkoren tillåter du att användningsdata om din användning av kandidat- och partiappen samlas in, om du inte kryssar i rutan under villkoren. Sidvisningar räknas utan identifierare, så som beskrivs på integritetssidan. Ditt val gäller bara kandidat- och partiapplikationen som öppnas i den här webbläsaren, och du kan ändra det senare på integritetssidan."
+      },
       "title": "Användningsdata"
     }
   }

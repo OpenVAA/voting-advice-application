@@ -15,15 +15,15 @@
     "heroEmoji": "🖋️",
     "identityProvider": {
       "intro": {
-        "both": "Tunnistaudu pankkitunnuksilla rekisteröityäksesi ehdokkaaksi tai rekisteröidäksesi puolueen.",
         "candidate": "Rekisteröityäksesi ehdokkaaksi tunnistaudu pankkitunnuksilla. Ehdokasprofiilisi luodaan tunnistautumisessa saadulla nimellä.",
+        "candidateAndOrganization": "Tunnistaudu pankkitunnuksilla rekisteröityäksesi ehdokkaaksi tai rekisteröidäksesi puolueen.",
         "organization": "Rekisteröidäksesi puolueen tunnistaudu pankkitunnuksilla ja kirjoita sitten puolueen nimi. Ylläpitäjä vahvistaa puolueen ennen kuin se näytetään äänestäjille."
       },
       "redirectInfo": "Sinut ohjataan pankkitunnistautumispalveluun. Kun olet tunnistautunut, palaat takaisin tähän sovellukseen.",
       "types": {
         "candidate": "Itseni ehdokkaaksi",
         "legend": "Mitä haluat rekisteröidä?",
-        "organization": "Puolue tai valitsijayhdistys",
+        "organization": "Puolue",
         "required": "Valitse, mitä haluat rekisteröidä."
       }
     },
@@ -35,7 +35,6 @@
       "required": "Valitse, miten haluat rekisteröityä."
     },
     "passwordValidation": {
-      "commonPatterns": "Sisältää yleisiä merkkisarjoja",
       "length": "Vähintään {minPasswordLength} merkkiä",
       "lowercase": "Pieni kirjain",
       "number": "Numero",
@@ -46,7 +45,7 @@
     },
     "register": "Rekisteröidy",
     "registeredNotice": {
-      "content": "Kirjaudu sisään sähköpostilla ja salasanalla tai tarkista sähköpostisi vahvistuslinkin varalta.",
+      "content": "Tällä selaimella on rekisteröidytty aiemmin. Kirjaudu sen sijaan sisään tai vaihda salasanasi, jos olet unohtanut sen tai et ole koskaan asettanut sitä.",
       "title": "Näyttää siltä, että olet jo rekisteröitynyt"
     },
     "signIn": {

@@ -15,15 +15,15 @@
     "heroEmoji": "🖋️",
     "identityProvider": {
       "intro": {
-        "both": "Tuvasta end pangatunnustega, et registreeruda kandidaadiks või registreerida erakond.",
         "candidate": "Kandidaadiks registreerumiseks tuvasta end pangatunnustega. Sinu kandidaadiprofiil luuakse tuvastamisel saadud nimega.",
+        "candidateAndOrganization": "Tuvasta end pangatunnustega, et registreeruda kandidaadiks või registreerida erakond.",
         "organization": "Erakonna registreerimiseks tuvasta end pangatunnustega ja sisesta seejärel erakonna nimi. Administraator kinnitab erakonna enne, kui seda valijatele näidatakse."
       },
       "redirectInfo": "Sind suunatakse pangatuvastuse teenusesse. Kui oled end tuvastanud, tuled tagasi sellesse rakendusse.",
       "types": {
         "candidate": "Ennast kandidaadiks",
         "legend": "Mida soovid registreerida?",
-        "organization": "Erakonna või valimisliidu",
+        "organization": "Erakonna",
         "required": "Vali, mida soovid registreerida."
       }
     },
@@ -35,7 +35,6 @@
       "required": "Vali, kuidas soovid registreeruda."
     },
     "passwordValidation": {
-      "commonPatterns": "Sisaldab levinud märgijadasid",
       "length": "Vähemalt {minPasswordLength} märki",
       "lowercase": "Väiketäht",
       "number": "Number",
@@ -46,7 +45,7 @@
     },
     "register": "Registreeru",
     "registeredNotice": {
-      "content": "Palun logi sisse oma e-posti ja parooliga või kontrolli oma e-posti kinnituslingi osas.",
+      "content": "Selle brauseriga on varem registreerutud. Logi selle asemel sisse või lähtesta oma parool, kui oled selle unustanud või pole seda kunagi määranud.",
       "title": "Paistab, et oled juba registreerunud"
     },
     "signIn": {

@@ -11,8 +11,8 @@
           "selectors": ["partyMatchingMethod"],
           "match": {
             "partyMatchingMethod=answersOnly": "<p>Puolueiden tulokset on laskettu puolueiden antamien vastausten perusteella.</p> ",
-            "partyMatchingMethod=impute": "<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vaalipiirikohtaisten vastausten mediaanista tai moodista.</p> ",
-            "partyMatchingMethod=*": "<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vaalipiirikohtaisten vastausten perusteella.</p> <p>Huomaa, että puolueen ehdokkaat saattavat olla puolueensa kanssa eri mieltä kysymyksistä, joten näin laskettu kanta ei välttämättä vastaa puolueen kantaa.</p>"
+            "partyMatchingMethod=impute": "<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vaalipiirikohtaisten vastausten mediaanista tai moodista.</p> <p>Huomaa, että puolueen ehdokkaat saattavat olla puolueensa kanssa eri mieltä kysymyksistä, joten näin laskettu kanta ei välttämättä vastaa puolueen kantaa.</p>",
+            "partyMatchingMethod=*": "<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vaalipiirikohtaisten vastausten perusteella.</p>"
           }
         }
       ],

@@ -15,15 +15,15 @@
     "heroEmoji": "🖋️",
     "identityProvider": {
       "intro": {
-        "both": "Identifizéiert Iech mat engem Bank ID, fir Iech als Kandidat*in anzeschreiwen oder fir eng Partei anzeschreiwen.",
         "candidate": "Fir Iech als Kandidat*in anzeschreiwen, identifizéiert Iech mat engem Bank ID. Äre Kandidateprofil gëtt mam Numm aus Ärer Identifikatioun erstallt.",
+        "candidateAndOrganization": "Identifizéiert Iech mat engem Bank ID, fir Iech als Kandidat*in anzeschreiwen oder fir eng Partei anzeschreiwen.",
         "organization": "Fir eng Partei anzeschreiwen, identifizéiert Iech mat engem Bank ID a gitt duerno den Numm vun der Partei an. En Administrateur confirméiert d’Partei, ier se de Wieler gewise gëtt."
       },
       "redirectInfo": "Dir gitt op de Bank-ID-Service weidergeleet. Wann Dir Iech identifizéiert hutt, kommt Dir zréck an dës Applikatioun.",
       "types": {
         "candidate": "Mech selwer als Kandidat*in",
         "legend": "Wat wëllt Dir aschreiwen?",
-        "organization": "Eng Partei oder eng Wielervereenegung",
+        "organization": "Eng Partei",
         "required": "Wielt, wat Dir aschreiwe wëllt."
       }
     },
@@ -35,7 +35,6 @@
       "required": "Wielt, wéi Dir Iech aschreiwe wëllt."
     },
     "passwordValidation": {
-      "commonPatterns": "Enthält heefeg Sequenzen oder Musteren",
       "length": "Op d’mannst {minPasswordLength} Zeechen",
       "lowercase": "Kleng Buschtaf",
       "number": "Zuel",
@@ -46,7 +45,7 @@
     },
     "register": "Aschreiwen",
     "registeredNotice": {
-      "content": "Loggt Iech éischter mat Ärer E-Mail an Ärem Passwuert an oder kuckt an Ärer E-Mail no dem Confirmatiounslink.",
+      "content": "Dëse Browser gouf scho fir eng Aschreiwung benotzt. Mellt Iech amplaz un, oder setzt Äert Passwuert zréck, wann Dir et vergiess hutt oder nach ni eent festgeluecht hutt.",
       "title": "Et gesäit esou aus, wéi wann Dir scho registréiert sidd"
     },
     "signIn": {

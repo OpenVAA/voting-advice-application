@@ -2,11 +2,12 @@
   "privacy": {
     "analytics": {
       "content": {
-        "free": "Denne applikation indsamler brugsdata uden at spørge dig særskilt. De omfatter dine svar på spørgsmålene, den tid du bruger i applikationen, og de resultater, du ser. Hver hændelse, der afslører et svar eller en præference, sendes for sig og bærer ingen identifikator, men den registrerer ligesom alle andre hændelser tidspunktet, hvor den fandt sted. Dataene sendes via dette websteds egen server, som hverken videregiver din netværksadresse eller din browsers identifikation. Intet om dette gemmes på din enhed.",
+        "free": "Denne applikation indsamler brugsdata uden at spørge dig særskilt. De omfatter dine svar på spørgsmålene, den tid du bruger i applikationen, og de resultater, du ser. Hver hændelse, der afslører et svar eller en præference, bærer ingen identifikator, som deles med nogen anden hændelse, og sidevisninger bærer heller ingen. Ligesom alle andre hændelser registrerer den dog tidspunktet, hvor den fandt sted. Dataene sendes via dette websteds egen server, som hverken videregiver din netværksadresse eller din browsers identifikation. Intet om dette gemmes på din enhed.",
         "gated": "Brugsdata indsamles kun, hvis du giver dit samtykke. De omfatter dine svar på spørgsmålene, den tid du bruger i applikationen, og de resultater, du ser. Hændelserne under ét besøg forbindes højst med en identifikator, som kun findes i sidens hukommelse og forsvinder, når siden genindlæses eller lukkes. Dataene sendes via dette websteds egen server, som hverken videregiver din netværksadresse eller din browsers identifikation. Intet om dette gemmes på din enhed bortset fra dit valg. Et valg, der træffes i denne browser, gælder for den del af applikationen, hvor det blev truffet: kandidat- og partiapplikationen har sit eget valg, og vælgerapplikationen og administrationsapplikationen deler et andet. Du kan ændre dem begge på privatlivssiden."
       },
       "gpc": "Hvis din browser sender signalet Global Privacy Control, indsamles intet, heller ikke optællingen af sidevisninger, og du bliver ikke spurgt. Intet gemmes for at huske signalet.",
       "pageviews": "Sidevisninger tælles, også når der ikke indsamles andre brugsdata: hvilken slags side der blev åbnet, på hvilket sprog og hvor længe. Oplysningerne omfatter dog for eksempel ikke, hvilket partis eller hvilken kandidats oplysninger der er blevet set. Optællingen har ingen identifikator.",
+      "survey": "Hvis du åbner brugerundersøgelsen, tilføjes besøgets identifikator til linket til undersøgelsen, så dine svar i undersøgelsen kan forbindes med dette besøgs brugsdata.",
       "title": "Analyse"
     },
     "cookies": {
@@ -51,7 +52,10 @@
       "label": "Indsaml ikke brugsdata om min brug af applikationen"
     },
     "usageData": {
-      "content": "Brugen af applikationen måles på samme måde i vælgermodulet, kandidat- og partimodulet og admin-appen. Ved at acceptere brugerbetingelserne tillader du, at der indsamles brugsdata om din brug af kandidat- og partimodulet, medmindre du sætter kryds i feltet under betingelserne. Sidevisninger tælles uden identifikator, som beskrevet på privatlivssiden. Dit valg gælder kun for kandidat- og partiapplikationen, der åbnes i denne browser, og du kan ændre det senere på privatlivssiden.",
+      "content": {
+        "free": "Brugen af applikationen måles på samme måde i vælgermodulet, kandidat- og partimodulet og admin-appen. Der indsamles brugsdata om din brug af kandidat- og partimodulet uden et særskilt valg. Sidevisninger tælles uden identifikator, som beskrevet på privatlivssiden.",
+        "gated": "Brugen af applikationen måles på samme måde i vælgermodulet, kandidat- og partimodulet og admin-appen. Ved at acceptere brugerbetingelserne tillader du, at der indsamles brugsdata om din brug af kandidat- og partimodulet, medmindre du sætter kryds i feltet under betingelserne. Sidevisninger tælles uden identifikator, som beskrevet på privatlivssiden. Dit valg gælder kun for kandidat- og partiapplikationen, der åbnes i denne browser, og du kan ændre det senere på privatlivssiden."
+      },
       "title": "Brugsdata"
     }
   }

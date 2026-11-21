@@ -16,6 +16,10 @@
         "support": "Hvis du har brug for hjælp, {contactSupportLink}.",
         "title": "Identifikationen blev afbrudt"
       },
+      "noAccount": {
+        "content": "Der er ikke registreret nogen konto med den identitet, du brugte. Hvis du har registreret dig med en e-mailadresse, så log ind med den i stedet.",
+        "title": "Ingen konto fundet"
+      },
       "noRetry": {
         "content": "Vi beklager, det er et problem hos os, og det hjælper ikke at prøve igen. Kontakt support.",
         "title": "Registrering er ikke mulig lige nu"

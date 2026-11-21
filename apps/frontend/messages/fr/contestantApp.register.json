@@ -15,15 +15,15 @@
     "heroEmoji": "🖋️",
     "identityProvider": {
       "intro": {
-        "both": "Identifiez-vous avec un Bank ID pour vous inscrire en tant que candidat·e ou pour inscrire un parti.",
         "candidate": "Pour vous inscrire en tant que candidat·e, identifiez-vous avec un Bank ID. Votre profil de candidat·e est créé avec le nom figurant dans votre identification.",
+        "candidateAndOrganization": "Identifiez-vous avec un Bank ID pour vous inscrire en tant que candidat·e ou pour inscrire un parti.",
         "organization": "Pour inscrire un parti, identifiez-vous avec un Bank ID, puis saisissez le nom du parti. Un administrateur confirme le parti avant qu’il ne soit présenté aux électeurs."
       },
       "redirectInfo": "Vous serez redirigé·e vers le service Bank ID. Une fois identifié·e, vous reviendrez dans cette application.",
       "types": {
         "candidate": "Moi-même, en tant que candidat·e",
         "legend": "Que souhaitez-vous inscrire ?",
-        "organization": "Un parti ou une association de circonscription",
+        "organization": "Un parti",
         "required": "Choisissez ce que vous souhaitez inscrire."
       }
     },
@@ -35,7 +35,6 @@
       "required": "Choisissez comment vous souhaitez vous inscrire."
     },
     "passwordValidation": {
-      "commonPatterns": "Contient des séquences ou motifs courants",
       "length": "Au moins {minPasswordLength} caractères",
       "lowercase": "Lettre minuscule",
       "number": "Chiffre",
@@ -46,7 +45,7 @@
     },
     "register": "S’inscrire",
     "registeredNotice": {
-      "content": "Veuillez plutôt vous connecter avec votre e-mail et votre mot de passe ou vérifier votre e-mail pour le lien de confirmation.",
+      "content": "Ce navigateur a déjà servi à une inscription. Connectez-vous plutôt, ou réinitialisez votre mot de passe si vous l’avez oublié ou n’en avez jamais défini.",
       "title": "Il semble que vous soyez déjà inscrit·e"
     },
     "signIn": {

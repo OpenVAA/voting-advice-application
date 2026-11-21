@@ -19,16 +19,7 @@
           "withoutAddress": "If you can’t find the email, check your spam folder."
         },
         "resend": "Send again",
-        "resendIn": [
-          {
-            "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
-            "selectors": ["secondsPlural"],
-            "match": {
-              "secondsPlural=one": "(in {seconds}s)",
-              "secondsPlural=*": "(in {seconds}s)"
-            }
-          }
-        ],
+        "resendIn": "(in {seconds}s)",
         "resendReady": "You can now ask for a new email.",
         "resendRequested": "A new email has been requested.",
         "support": "If you have problems receiving the email, {contactSupportLink}.",

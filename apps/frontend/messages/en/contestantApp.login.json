@@ -7,6 +7,7 @@
     "passwordRequired": "Enter your password.",
     "signedOut": "You have been signed out, because your account’s information could not be read. Please sign in again. If this keeps happening, please contact support.",
     "signInWithEmail": "Sign in with email",
+    "signInWithIdentityProvider": "Sign in with Bank ID",
     "title": "Sign in",
     "unknownError": "There was an error with your user data. Please contact support if the issue persists.",
     "answersLockedInfo": "Registration or editing answers is no longer possible, but you can still sign in to view your information."

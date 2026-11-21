@@ -16,6 +16,10 @@
         "support": "Si vous avez besoin d’aide, {contactSupportLink}.",
         "title": "Identification annulée"
       },
+      "noAccount": {
+        "content": "Aucun compte n’a été créé avec l’identité que vous avez utilisée. Si vous vous êtes inscrit·e avec une adresse e-mail, connectez-vous plutôt avec celle-ci.",
+        "title": "Aucun compte trouvé"
+      },
       "noRetry": {
         "content": "Nous sommes désolés, il s’agit d’un problème de notre côté, et réessayer n’y changera rien. Veuillez contacter l’assistance.",
         "title": "L’inscription n’est pas possible pour le moment"

@@ -15,15 +15,15 @@
     "heroEmoji": "🖋️",
     "identityProvider": {
       "intro": {
-        "both": "Identifiera dig med bank-id för att registrera dig som kandidat eller för att registrera ett parti.",
         "candidate": "För att registrera dig som kandidat identifierar du dig med bank-id. Din kandidatprofil skapas med namnet i din identifiering.",
+        "candidateAndOrganization": "Identifiera dig med bank-id för att registrera dig som kandidat eller för att registrera ett parti.",
         "organization": "För att registrera ett parti identifierar du dig med bank-id och anger sedan partiets namn. En administratör bekräftar partiet innan det visas för väljarna."
       },
       "redirectInfo": "Du skickas vidare till bank-id-tjänsten. När du har identifierat dig kommer du tillbaka till den här applikationen.",
       "types": {
         "candidate": "Mig själv som kandidat",
         "legend": "Vad vill du registrera?",
-        "organization": "Ett parti eller en valmansförening",
+        "organization": "Ett parti",
         "required": "Välj vad du vill registrera."
       }
     },
@@ -35,7 +35,6 @@
       "required": "Välj hur du vill registrera dig."
     },
     "passwordValidation": {
-      "commonPatterns": "Innehåller vanliga sekvenser eller mönster",
       "length": "Minst {minPasswordLength} tecken",
       "lowercase": "Liten bokstav",
       "number": "Nummer",
@@ -46,7 +45,7 @@
     },
     "register": "Registrera",
     "registeredNotice": {
-      "content": "Logga in med din e-postadress och ditt lösenord istället eller kontrollera din e-post för bekräftelselänken.",
+      "content": "Den här webbläsaren har använts för att registrera sig tidigare. Logga in i stället, eller återställ ditt lösenord om du har glömt det eller aldrig har ställt in något.",
       "title": "Det verkar som att du redan är registrerad"
     },
     "signIn": {

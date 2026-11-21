@@ -19,16 +19,7 @@
           "withoutAddress": "Hvis du ikke kan finde e-mailen, så tjek din spammappe."
         },
         "resend": "Send igen",
-        "resendIn": [
-          {
-            "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
-            "selectors": ["secondsPlural"],
-            "match": {
-              "secondsPlural=one": "(om {seconds} s)",
-              "secondsPlural=*": "(om {seconds} s)"
-            }
-          }
-        ],
+        "resendIn": "(om {seconds} s)",
         "resendReady": "Du kan nu bede om en ny e-mail.",
         "resendRequested": "Der er bedt om en ny e-mail.",
         "support": "Hvis du har problemer med at modtage e-mailen, {contactSupportLink}.",

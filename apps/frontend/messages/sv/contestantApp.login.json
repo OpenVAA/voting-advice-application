@@ -7,6 +7,7 @@
     "passwordRequired": "Ange ditt lösenord.",
     "signedOut": "Du har loggats ut eftersom uppgifterna om ditt konto inte kunde läsas. Logga in igen. Kontakta supporten om detta upprepas.",
     "signInWithEmail": "Logga in med e-post",
+    "signInWithIdentityProvider": "Logga in med bank-id",
     "title": "Registrera dig",
     "unknownError": "Det uppstod ett fel med dina användardata. Kontakta supporten om problemet kvarstår.",
     "answersLockedInfo": "Registrering eller redigering av svar är inte längre möjligt, men du kan fortfarande logga in för att se din information."

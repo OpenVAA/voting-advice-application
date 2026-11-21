@@ -7,6 +7,7 @@
     "passwordRequired": "Kirjoita salasanasi.",
     "signedOut": "Sinut on kirjattu ulos, koska käyttäjätilisi tietoja ei voitu lukea. Kirjaudu uudelleen. Jos tämä toistuu, ota yhteyttä tukeen.",
     "signInWithEmail": "Kirjaudu sähköpostilla",
+    "signInWithIdentityProvider": "Kirjaudu pankkitunnuksilla",
     "title": "Kirjaudu",
     "unknownError": "Käyttäjätietojesi haku ei onnistunut. Ole hyvä ja ota yhteyttä tukeen, jos virhe toistuu.",
     "answersLockedInfo": "Rekisteröityminen tai vastausten muokkaaminen ei enää ole mahdollista, mutta voit silti kirjautua nähdäksesi omat tietosi."

@@ -19,16 +19,7 @@
           "withoutAddress": "Si vous ne trouvez pas l’e-mail, vérifiez votre dossier de courrier indésirable."
         },
         "resend": "Renvoyer",
-        "resendIn": [
-          {
-            "declarations": ["input seconds", "local secondsPlural = seconds: plural"],
-            "selectors": ["secondsPlural"],
-            "match": {
-              "secondsPlural=one": "(dans {seconds} s)",
-              "secondsPlural=*": "(dans {seconds} s)"
-            }
-          }
-        ],
+        "resendIn": "(dans {seconds} s)",
         "resendReady": "Vous pouvez maintenant demander un nouvel e-mail.",
         "resendRequested": "Un nouvel e-mail a été demandé.",
         "support": "Si vous avez des difficultés à recevoir l’e-mail, {contactSupportLink}.",

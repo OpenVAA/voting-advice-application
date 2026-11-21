@@ -16,23 +16,23 @@
         "template": "{candidates} iwwer {parties}",
         "candidates": [
           {
-            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "declarations": ["input numCandidates"],
+            "selectors": ["numCandidates"],
             "match": {
-              "numCandidates=0, numCandidatesPlural=*": "Keng Kandidaten",
-              "numCandidates=*, numCandidatesPlural=one": "1 Kandidat",
-              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} Kandidaten"
+              "numCandidates=0": "Keng Kandidaten",
+              "numCandidates=1": "1 Kandidat",
+              "numCandidates=*": "{numCandidates} Kandidaten"
             }
           }
         ],
         "parties": [
           {
-            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numParties", "numPartiesPlural"],
+            "declarations": ["input numParties"],
+            "selectors": ["numParties"],
             "match": {
-              "numParties=0, numPartiesPlural=*": "keng Parteien",
-              "numParties=*, numPartiesPlural=one": "1 Partei",
-              "numParties=*, numPartiesPlural=*": "{numParties} Parteien"
+              "numParties=0": "keng Parteien",
+              "numParties=1": "1 Partei",
+              "numParties=*": "{numParties} Parteien"
             }
           }
         ]

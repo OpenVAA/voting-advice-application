@@ -40,11 +40,11 @@
       "incomplete": "Nach net fäerdeg.",
       "incompleteCount": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Nach net fäerdeg: eng Positioun bleift iwwreg.",
-            "countPlural=*": "Nach net fäerdeg: {count} Positioune bleiwen iwwreg."
+            "count=1": "Nach net fäerdeg: eng Positioun bleift iwwreg.",
+            "count=*": "Nach net fäerdeg: {count} Positioune bleiwen iwwreg."
           }
         }
       ]

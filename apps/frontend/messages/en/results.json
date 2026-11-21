@@ -16,23 +16,23 @@
         "template": "{candidates} across {parties}",
         "candidates": [
           {
-            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "declarations": ["input numCandidates"],
+            "selectors": ["numCandidates"],
             "match": {
-              "numCandidates=0, numCandidatesPlural=*": "No candidates",
-              "numCandidates=*, numCandidatesPlural=one": "1 candidate",
-              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} candidates"
+              "numCandidates=0": "No candidates",
+              "numCandidates=1": "1 candidate",
+              "numCandidates=*": "{numCandidates} candidates"
             }
           }
         ],
         "parties": [
           {
-            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numParties", "numPartiesPlural"],
+            "declarations": ["input numParties"],
+            "selectors": ["numParties"],
             "match": {
-              "numParties=0, numPartiesPlural=*": "no parties",
-              "numParties=*, numPartiesPlural=one": "1 party",
-              "numParties=*, numPartiesPlural=*": "{numParties} parties"
+              "numParties=0": "no parties",
+              "numParties=1": "1 party",
+              "numParties=*": "{numParties} parties"
             }
           }
         ]

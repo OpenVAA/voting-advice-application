@@ -40,11 +40,11 @@
       "incomplete": "Ei vielä valmis.",
       "incompleteCount": [
         {
-          "declarations": ["input count", "local countPlural = count: plural"],
-          "selectors": ["countPlural"],
+          "declarations": ["input count"],
+          "selectors": ["count"],
           "match": {
-            "countPlural=one": "Ei vielä valmis: yksi kohta jäljellä.",
-            "countPlural=*": "Ei vielä valmis: {count} kohtaa jäljellä."
+            "count=1": "Ei vielä valmis: yksi kohta jäljellä.",
+            "count=*": "Ei vielä valmis: {count} kohtaa jäljellä."
           }
         }
       ]

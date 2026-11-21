@@ -16,23 +16,23 @@
         "template": "{candidates} kokku {parties}",
         "candidates": [
           {
-            "declarations": ["input numCandidates", "local numCandidatesPlural = numCandidates: plural"],
-            "selectors": ["numCandidates", "numCandidatesPlural"],
+            "declarations": ["input numCandidates"],
+            "selectors": ["numCandidates"],
             "match": {
-              "numCandidates=0, numCandidatesPlural=*": "Ühtegi kandidaati",
-              "numCandidates=*, numCandidatesPlural=one": "1 kandidaat",
-              "numCandidates=*, numCandidatesPlural=*": "{numCandidates} kandidaati"
+              "numCandidates=0": "Ühtegi kandidaati",
+              "numCandidates=1": "1 kandidaat",
+              "numCandidates=*": "{numCandidates} kandidaati"
             }
           }
         ],
         "parties": [
           {
-            "declarations": ["input numParties", "local numPartiesPlural = numParties: plural"],
-            "selectors": ["numParties", "numPartiesPlural"],
+            "declarations": ["input numParties"],
+            "selectors": ["numParties"],
             "match": {
-              "numParties=0, numPartiesPlural=*": "ühestki erakonnast",
-              "numParties=*, numPartiesPlural=one": "1 erakonnast",
-              "numParties=*, numPartiesPlural=*": "{numParties} erakonnast"
+              "numParties=0": "ühestki erakonnast",
+              "numParties=1": "1 erakonnast",
+              "numParties=*": "{numParties} erakonnast"
             }
           }
         ]
