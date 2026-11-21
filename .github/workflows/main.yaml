@@ -283,6 +283,12 @@ jobs:
       - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
 
+      # Builds one database from migrations/ and one from schema/, each in an isolated instance
+      # with ports of its own, and fails when the two differ. It stops both instances before it
+      # exits, so it runs before the shared stack starts.
+      - name: "Run yarn check:schema-equivalence (schema/ and migrations/ build the same database)"
+        run: yarn check:schema-equivalence
+
       - name: "Assert psql is available (lint-schema.mjs shells out to it)"
         run: command -v psql || { echo "::error::psql not found on the runner - lint-schema.mjs cannot reach the database without it"; exit 1; }
 

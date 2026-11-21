@@ -71,7 +71,7 @@ The four conflicts:
    with `supabase migration new`. Here neither command is used: the schema workflow is the one the
    database skill describes under "The schema is declarative: you edit one copy, the other is
    generated" (edit the schema source, regenerate the single migration file). Either upstream
-   command writes a second migration file, which `yarn assert:schema-migration-parity` rejects. The
+   command writes a second migration file, which `yarn assert:migrations-frozen` rejects. The
    database skill wins.
 2. **EXECUTE on the private helpers.** Upstream revokes EXECUTE on its `private` helper functions
    from PUBLIC, anon, authenticated and service_role and then calls them from policies. Here "private

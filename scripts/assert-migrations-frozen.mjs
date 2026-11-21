@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * SCHEMA-MIGRATION PARITY GUARD: the migrations are frozen.
+ * MIGRATION FREEZE GUARD: the migrations are frozen.
  *
  *   - `apps/supabase/supabase/migrations/` is what a database contains.
  *     `supabase db reset` and `supabase db push` apply these files and nothing
@@ -33,47 +33,47 @@
  *
  * A schema change is one commit holding three things: the `schema/` edit, the
  * same change as a new migration named by the next version, and that
- * migration's manifest line. `--write`, which `yarn schema:regenerate` runs,
- * refuses and prints these steps with the next file name.
+ * migration's manifest line. `apps/supabase/README.md` gives the steps.
  *
  * WHAT THIS CHECK CANNOT DO, stated so nobody over-reads a green run:
  *
  *   1. It does not compare `schema/` with the migrations. A `schema/` edit
  *      without its migration, or a migration without its `schema/` edit,
- *      passes here. `yarn check:schema-equivalence` builds one database from
- *      each and fails when they differ.
+ *      passes here. `yarn check:schema-equivalence`, which CI runs in the
+ *      `sql-lint` job, builds one database from each and fails when they
+ *      differ.
  *   2. It does not prove that a migration is correct, or that any database has
  *      applied it.
  *   3. An edit to a migration made together with its manifest line, in one
  *      commit, passes. It shows in review as a changed hash on a listed line.
  *
  * THE GUARD GUARDS ITSELF. A checker that reports nothing passes every tree, so
- * four defences run on every invocation:
+ * three defences run on every invocation:
  *
  *   1. The mode is fixed in this file. A missing or unreadable manifest is the
  *      finding `MALFORMED MANIFEST` and fails the run; there is no other mode
  *      for its absence to bring back.
- *   2. A SELF-TEST runs before the verdict. The checker is run over every
- *      fixture under `scripts/fixtures/schema-migration-freeze`, one for each
- *      rule and one clean, and must return each fixture's committed findings.
- *      A checker that has not been seen to fire has its verdict withheld.
- *   3. A CENSUS is printed on every run: the number of migrations in the
- *      manifest, the baseline's line count and the number of fixtures checked.
- *      A verdict over a truncated input is visible in it.
- *   4. A baseline of zero bytes, or one with no line beginning
+ *   2. A CENSUS is printed on every run: the number of migrations in the
+ *      manifest and the baseline's line count. A verdict over a truncated
+ *      input is visible in it.
+ *   3. A baseline of zero bytes, or one with no line beginning
  *      `CREATE TABLE public.`, is a finding.
+ *
+ * The checker's fixtures are proved by vitest, not here: the guard runs no
+ * self-test of its own. `scripts/tests/schemaMigrationFreezeGate.test.ts`, which
+ * `yarn test:unit` runs, checks every fixture under
+ * `scripts/fixtures/schema-migration-freeze` against its committed findings,
+ * and fails when a rule has no fixture or a fixture has no rule.
  *
  * Node built-ins only, no build step, in the house style of
  * `scripts/assert-a11y-scan-wiring.mjs` and `scripts/assert-i18n-catalog-namespaces.mjs`.
  *
  * Usage:
- *   yarn assert:schema-migration-parity   (verify)
- *   node scripts/assert-schema-migration-parity.mjs --self-test   (the self-test alone)
- *   yarn schema:regenerate                (refuses, and prints the steps of a schema change)
+ *   yarn assert:migrations-frozen
  *
  * Exit codes:
- *   0 - the migrations directory matches the manifest, and the self-test passed
- *   1 - a finding, a failed self-test, or `--write`
+ *   0 - the migrations directory matches the manifest
+ *   1 - a finding
  */
 
 import { createHash } from 'node:crypto';
@@ -84,21 +84,11 @@ import { fileURLToPath } from 'node:url';
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 
-const SCHEMA_DIR = 'apps/supabase/supabase/schema';
 const MIGRATIONS_DIR = 'apps/supabase/supabase/migrations';
 const MANIFEST_FILE = 'apps/supabase/supabase/migrations.manifest.json';
 
-/** Refuses: the baseline is frozen and is never regenerated. */
-const WRITE = process.argv.slice(2).includes('--write');
-/** Runs the frozen-mode self-test alone: the real migrations are not checked. */
-const SELF_TEST_ONLY = process.argv.slice(2).includes('--self-test');
-
-/** One directory for each rule of the frozen-mode checker, and a clean one. */
-const FREEZE_FIXTURE_DIR = 'scripts/fixtures/schema-migration-freeze';
-const CLEAN_FREEZE_FIXTURE = 'ok';
-
 function fail(message) {
-  console.error(`Schema-migration parity guard: ${message}`);
+  console.error(`Migration freeze guard: ${message}`);
   process.exit(1);
 }
 
@@ -414,142 +404,6 @@ export function checkFrozenMigrations({ migrationsDir, manifestPath }) {
   return findings;
 }
 
-/** The lines of a fixture's `expected.violations`, or null when the file cannot be read. */
-function readExpectedFindings(fixtureDir) {
-  try {
-    return readFileSync(path.join(fixtureDir, 'expected.violations'), 'utf8')
-      .split('\n')
-      .filter((line) => line.trim() !== '');
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Runs `checkFrozenMigrations` over every fixture directory and compares what
- * it returns with the findings committed beside the fixture. It runs in every
- * verifying invocation, before the verdict, and alone under `--self-test`.
- *
- * A checker that reports nothing passes a clean tree and every broken one, so
- * its verdict means nothing until each rule has been seen to fire. The
- * self-test fails when:
- *
- *   - the fixture directory cannot be read, holds no fixture, or lacks the
- *     clean fixture;
- *   - a fixture's findings differ from its `expected.violations`, compared as
- *     sets and reported in both directions;
- *   - the clean fixture produces a finding;
- *   - a seeded fixture's `expected.violations` does not hold exactly one line;
- *   - a rule of `FROZEN_RULES` names a fixture that is not there, or whose
- *     finding does not begin with the rule's kind;
- *   - a fixture other than the clean one is not named by exactly one rule.
- *
- * So a rule added without its fixture, and a fixture deleted or emptied, each
- * turn the guard red.
- *
- * @returns {{ passed: boolean, summary: string, report: Array<string>, problems: Array<string>, fixtureCount: number }}
- *   `report` holds one line for each fixture with what the checker returned, and `fixtureCount` the
- *   number of fixtures checked
- */
-function selfTestFrozenChecker() {
-  const fixtureRoot = path.join(REPO_ROOT, FREEZE_FIXTURE_DIR);
-  const report = [];
-  const problems = [];
-
-  let fixtures;
-  try {
-    fixtures = readdirSync(fixtureRoot, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .sort();
-  } catch (error) {
-    fixtures = [];
-    problems.push(`${FREEZE_FIXTURE_DIR} could not be read (${error.code ?? 'unknown error'})`);
-  }
-  if (fixtures.length === 0) {
-    problems.push(`${FREEZE_FIXTURE_DIR} holds no fixture directory, so the checker was run over nothing`);
-  } else if (!fixtures.includes(CLEAN_FREEZE_FIXTURE)) {
-    problems.push(`the clean fixture '${CLEAN_FREEZE_FIXTURE}' is missing, so nothing shows the checker can pass`);
-  }
-
-  /** What the checker returned for each fixture. */
-  const producedBy = new Map();
-  for (const fixture of fixtures) {
-    const fixtureDir = path.join(fixtureRoot, fixture);
-    let produced;
-    try {
-      produced = checkFrozenMigrations({
-        migrationsDir: path.join(fixtureDir, 'migrations'),
-        manifestPath: path.join(fixtureDir, 'manifest.json')
-      });
-    } catch (error) {
-      problems.push(`${fixture}: the checker threw (${error.message})`);
-      continue;
-    }
-    producedBy.set(fixture, produced);
-    if (produced.length === 0) report.push(`  ${fixture}: no finding`);
-    for (const finding of produced) report.push(`  ${fixture}: ${finding}`);
-
-    const expected = readExpectedFindings(fixtureDir);
-    if (expected === null) {
-      problems.push(`${fixture}: expected.violations could not be read`);
-      continue;
-    }
-    if (fixture === CLEAN_FREEZE_FIXTURE) {
-      if (produced.length > 0) {
-        problems.push(`${fixture}: the clean fixture produced ${produced.length} finding(s) and must produce none`);
-      }
-    } else if (expected.length !== 1) {
-      problems.push(
-        `${fixture}: expected.violations holds ${expected.length} line(s), and a seeded fixture commits exactly one`
-      );
-    }
-    for (const finding of produced) {
-      if (!expected.includes(finding)) problems.push(`${fixture}: produced but not expected: ${finding}`);
-    }
-    for (const finding of expected) {
-      if (!produced.includes(finding)) problems.push(`${fixture}: expected but not produced: ${finding}`);
-    }
-  }
-
-  for (const rule of FROZEN_RULES) {
-    if (!fixtures.includes(rule.fixture)) {
-      problems.push(
-        `rule '${rule.id}' names the fixture '${rule.fixture}', and ${FREEZE_FIXTURE_DIR} holds no such directory`
-      );
-      continue;
-    }
-    const produced = producedBy.get(rule.fixture) ?? [];
-    if (produced.length === 0 || !produced.every((finding) => finding.startsWith(`${rule.kind}: `))) {
-      problems.push(
-        `rule '${rule.id}': its fixture '${rule.fixture}' did not produce a finding that begins '${rule.kind}: '`
-      );
-    }
-  }
-
-  for (const fixture of fixtures) {
-    if (fixture === CLEAN_FREEZE_FIXTURE) continue;
-    const owners = FROZEN_RULES.filter((rule) => rule.fixture === fixture);
-    if (owners.length !== 1) {
-      problems.push(`fixture '${fixture}' is named by ${owners.length} rule(s), and each fixture belongs to one`);
-    }
-  }
-
-  const passed = problems.length === 0;
-  const summary = passed
-    ? `frozen-mode self-test: ${fixtures.length} fixture(s) checked, each produced its committed findings; ` +
-      `${FROZEN_RULES.length} rule(s), each with its fixture`
-    : `frozen-mode self-test: FAILED with ${problems.length} problem(s) over ${fixtures.length} fixture(s)`;
-  return { passed, summary, report, problems, fixtureCount: fixtures.length };
-}
-
-/** Prints each problem of a failed self-test on its own line. A problem that quotes a finding already ends in a full stop. */
-function printSelfTestProblems(problems) {
-  for (const problem of problems) {
-    console.error(`Schema-migration parity guard: self-test: ${problem}${problem.endsWith('.') ? '' : '.'}`);
-  }
-}
-
 /** What to do about a finding, for each kind of `FROZEN_RULES`. */
 const REMEDY_BY_KIND = Object.freeze({
   'MALFORMED MANIFEST':
@@ -570,68 +424,14 @@ const REMEDY_BY_KIND = Object.freeze({
   'EMPTY BASELINE': 'Restore the baseline from git.'
 });
 
-/** The version of a migration's file name, or null when the name is not one. */
-function versionOf(name) {
-  const match = typeof name === 'string' ? MIGRATION_NAME_RE.exec(name) : null;
-  return match ? Number(match[1]) : null;
-}
-
-/**
- * The versions of the manifest's entries, or of the migrations directory's
- * files when the manifest cannot be read.
- *
- * @returns {{ versions: Array<number>, source: string }}
- */
-function knownVersions() {
-  try {
-    const manifest = JSON.parse(readFileSync(path.join(REPO_ROOT, MANIFEST_FILE), 'utf8'));
-    if (Array.isArray(manifest?.migrations)) {
-      const versions = manifest.migrations.map((entry) => versionOf(entry?.file)).filter((v) => v !== null);
-      if (versions.length > 0) return { versions, source: 'the manifest' };
-    }
-  } catch {
-    // An unreadable manifest falls through to the directory listing.
-  }
-  let names;
-  try {
-    names = readdirSync(path.join(REPO_ROOT, MIGRATIONS_DIR));
-  } catch {
-    names = [];
-  }
-  return {
-    versions: names.map(versionOf).filter((v) => v !== null),
-    source: 'the migrations directory, because the manifest could not be read'
-  };
-}
-
-/** Prints why `--write` no longer writes, and the steps of a schema change. Exits 1. */
-function refuseWrite() {
-  const { versions, source } = knownVersions();
-  const next = String(Math.max(0, ...versions) + 1).padStart(5, '0');
-  console.error(
-    'Schema-migration parity guard: the baseline is frozen. `--write` (`yarn schema:regenerate`) no longer\n' +
-      'rewrites a migration, and a listed migration is never edited.\n\n' +
-      'A schema change is one commit, in three steps:\n' +
-      `  1. Edit the file under ${SCHEMA_DIR}/ that holds the object.\n` +
-      `  2. Write the same change as a new migration, ${MIGRATIONS_DIR}/${next}_<name>.sql,\n` +
-      '     where <name> is yours to choose (lower-case letters, digits and underscores).\n' +
-      `     ${next} is the next version after the highest in ${source}.\n` +
-      `  3. Add its line, with its sha256 (\`shasum -a 256 <file>\`), to the end of ${MANIFEST_FILE}.\n\n` +
-      `Then run \`yarn check:schema-equivalence\`: it builds one database from ${SCHEMA_DIR}/ and one from\n` +
-      `${MIGRATIONS_DIR}/ and fails when they differ.`
-  );
-  process.exit(1);
-}
-
 /**
  * The census of the real migrations: how many the manifest lists and how long
  * the baseline is. The baseline is looked up in the directory's own listing
  * before it is read, as the checker does.
  *
- * @param {number} fixtureCount
  * @returns {string}
  */
-function censusOf(fixtureCount) {
+function censusOf() {
   let listed = 'no readable manifest';
   let baseline = 'baseline unread';
   try {
@@ -645,32 +445,10 @@ function censusOf(fixtureCount) {
   } catch {
     // The checker reports the cause as a finding; the census says what it could not read.
   }
-  return `census: ${listed}; ${baseline}; ${fixtureCount} fixture(s) checked`;
+  return `census: ${listed}; ${baseline}`;
 }
 
 function main() {
-  if (WRITE) refuseWrite();
-
-  const frozen = selfTestFrozenChecker();
-
-  if (SELF_TEST_ONLY) {
-    console.log(`Schema-migration parity guard — the frozen-mode checker over ${FREEZE_FIXTURE_DIR}:`);
-    for (const line of frozen.report) console.log(line);
-    printSelfTestProblems(frozen.problems);
-    console.log(`Schema-migration parity guard — ${frozen.summary}.`);
-    process.exitCode = frozen.passed ? 0 : 1;
-    return;
-  }
-
-  if (!frozen.passed) {
-    printSelfTestProblems(frozen.problems);
-    fail(
-      `the frozen-mode self-test did not match its committed fixtures under ${FREEZE_FIXTURE_DIR} (printed ` +
-        `above). A checker that has not been seen to fire has not been shown to check anything, so the verdict ` +
-        `on ${MIGRATIONS_DIR} is withheld.`
-    );
-  }
-
   const unremedied = [...new Set(FROZEN_RULES.map((rule) => rule.kind))].filter((kind) => !REMEDY_BY_KIND[kind]);
   if (unremedied.length > 0) {
     fail(`no remedy is written for the finding kind(s) ${unremedied.join(', ')}; add one to REMEDY_BY_KIND.`);
@@ -680,23 +458,22 @@ function main() {
     migrationsDir: path.join(REPO_ROOT, MIGRATIONS_DIR),
     manifestPath: path.join(REPO_ROOT, MANIFEST_FILE)
   });
-  const census = censusOf(frozen.fixtureCount);
+  const census = censusOf();
 
   if (findings.length > 0) {
-    console.error(`Schema-migration parity guard — ${census}.\n`);
+    console.error(`Migration freeze guard — ${census}.\n`);
     for (const finding of findings) {
       const kind = finding.slice(0, finding.indexOf(':'));
       console.error(`${finding}\n  ${REMEDY_BY_KIND[kind]}\n`);
     }
     console.error(
       `${findings.length} finding(s) in ${MIGRATIONS_DIR} against ${MANIFEST_FILE}. A schema change is a new ` +
-        'numbered migration; `yarn schema:regenerate` prints the steps.'
+        'numbered migration; see apps/supabase/README.md for the steps of a schema change.'
     );
     process.exit(1);
   }
 
-  console.log(`Schema-migration parity guard — ${census}; the frozen migrations match the manifest.`);
-  console.log(`Schema-migration parity guard — ${frozen.summary}.`);
+  console.log(`Migration freeze guard — ${census}; the frozen migrations match the manifest.`);
 }
 
 /**

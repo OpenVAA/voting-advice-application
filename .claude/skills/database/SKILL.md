@@ -51,10 +51,10 @@ paragraph, which state its delta against the previous migration; the full descri
 re-issues stays in `schema/`. So a schema change is **one commit with three parts** -- the `schema/`
 edit, the numbered migration, and its manifest line -- after which `yarn check:schema-equivalence`
 builds one database from `schema/` and one from the migrations and fails when they differ; it needs
-Docker and is not part of `yarn lint:check`. **A gate keeps the migrations frozen**:
-`yarn assert:schema-migration-parity`, a link of `yarn lint:check`, fails when a listed migration's
-bytes change, when a migration has no manifest line, and when versions repeat, go down or leave a gap;
-`yarn schema:regenerate` refuses and prints the three steps. Two obligations no tool enforces: **read
+Docker, and runs in CI in the `sql-lint` job. **A gate keeps the migrations frozen**:
+`yarn assert:migrations-frozen`, a link of `yarn lint:check`, fails when a listed migration's
+bytes change, when a migration has no manifest line, and when versions repeat, go down or leave a gap.
+Two obligations no tool enforces: **read
 the migration you wrote** in that same commit, and run `yarn db:types` so `packages/supabase-types/`
 matches. The two storage buckets are created by the migration; a deployment's own rows are written by
 `infra/scripts/bootstrap.sql`. Full treatment: `apps/supabase/README.md`.

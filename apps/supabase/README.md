@@ -36,13 +36,12 @@ never reaches that database, and nothing says so.
    `supabase/migrations.manifest.json`.
 
 Then run `yarn check:schema-equivalence`. It builds one database from `schema/` and one from
-`migrations/`, each in an isolated instance, and fails when the two differ. It needs Docker and is
-not part of `yarn lint:check`.
+`migrations/`, each in an isolated instance, and fails when the two differ. It needs Docker, and
+runs in CI in the `sql-lint` job.
 
-**A gate keeps the migrations frozen.** `yarn assert:schema-migration-parity`, a link of
+**A gate keeps the migrations frozen.** `yarn assert:migrations-frozen`, a link of
 `yarn lint:check`, fails when a listed migration's bytes change, when a migration has no manifest
-line, and when versions repeat, go down or leave a gap. `yarn schema:regenerate` writes nothing: it
-refuses and prints the three steps above with the next file name.
+line, and when versions repeat, go down or leave a gap.
 
 **Two obligations that no tool can enforce for you.**
 
@@ -55,7 +54,7 @@ refuses and prints the three steps above with the next file name.
 The gate proves that the listed migrations are unchanged and that the sequence is whole. It does not
 compare `schema/` with the migrations, it does not prove either is **correct**, and it does not prove
 that a database has **applied** them — a database not reset since the change still carries the old
-schema. See the script header, `scripts/assert-schema-migration-parity.mjs`, for the full limits.
+schema. See the script header, `scripts/assert-migrations-frozen.mjs`, for the full limits.
 
 The two storage buckets, `public-assets` and `private-assets`, are created by the migration. A
 deployment's own rows — its account, its project and that project's settings, the storage
@@ -188,7 +187,6 @@ yarn db:reset                 # drop and recreate from migrations/, then seed.sq
 yarn db:reset-with-data       # the above, then the default dev-seed template
 yarn db:types                 # regenerate packages/supabase-types from the live schema
 yarn check:schema-equivalence # build a database from schema/ and one from migrations/, and compare them (Docker)
-yarn schema:regenerate        # writes nothing: prints the three steps of a schema change
 yarn db:lint:sql              # supabase db lint + scripts/lint-schema.mjs (see below)
 yarn db:status                # service status and local URLs
 ```
