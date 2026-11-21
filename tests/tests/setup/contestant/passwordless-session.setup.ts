@@ -1,9 +1,9 @@
 /**
  * passwordless-session data-setup project: the stored session of a user whose account has no password.
  *
- * The account is made the way the application makes one for a first-time invitee, and never with a password: a project-scope invitation promising the editor's role is seeded for `TEST_PASSWORDLESS_EMAIL`, a sign-in link is asked for through the `account-access` function, and the mailed link is opened in the page as received and confirmed on the confirm page. The function creates the account without a password, the confirm page signs the user in and claims the invitation, and every protected URL of the Contestant App then shows the set-password view. The session is stored at `PASSWORDLESS_STORAGE_STATE` once that view names the account.
+ * The account is made the way the application makes one for a first-time invitee, and never with a password: a project-scope invitation promising the editor's role is seeded for `TEST_PASSWORDLESS_EMAIL`, a sign-in link is asked for through the `account-access` function, the invitation is then withdrawn, and the mailed link is opened in the page as received and confirmed on the confirm page. The function creates the account without a password, the confirm page signs the user in and claims nothing, and every protected URL of the Contestant App then shows the set-password view. The session is stored at `PASSWORDLESS_STORAGE_STATE` once that view names the account.
  *
- * The promise is a project-scope one, so no entity row is written on. Its role is `editor`: the Admin App admits the `admin` role alone, so this session reaches no page of the Admin App.
+ * The promise is a project-scope one, so no entity row is written on. It is withdrawn before the link is opened, so the account holds no grant: a project role would send the session to the Admin App, and an entity role would need a dataset row, while an account that holds no grant opens neither app and meets the Contestant App's set-password view, which is the one its readers scan.
  *
  * The stored session is read-only for the run: no reader saves a password under it or signs it out, so every reader meets the set-password view.
  *
@@ -33,12 +33,14 @@ setup('store the session of a user who signed in through a mailed link and has n
   await flow.seedProjectInvitation('editor', TEST_PASSWORDLESS_EMAIL, { confirmEntity: true });
   const request = await flow.askForLink({ email: TEST_PASSWORDLESS_EMAIL });
   expect(request.outcome, 'the link request handed its mail over').toBe('sent');
+  expect(await flow.withdrawInvitationsOf(TEST_PASSWORDLESS_EMAIL), 'the invitations withdrawn').toBe(1);
 
   await openMailedLink(page, await flow.signInLinkToOpen(TEST_PASSWORDLESS_EMAIL));
 
   const setPasswordGate = createContestantSetPasswordGate(page);
   await setPasswordGate.expectShown();
   await setPasswordGate.expectAddress(TEST_PASSWORDLESS_EMAIL);
+  expect(await flow.grantRowsOf(TEST_PASSWORDLESS_EMAIL), 'the grants of the account').toEqual([]);
 
   fs.mkdirSync(path.dirname(PASSWORDLESS_STORAGE_STATE), { recursive: true });
   await page.context().storageState({ path: PASSWORDLESS_STORAGE_STATE });

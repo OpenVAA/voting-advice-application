@@ -619,15 +619,16 @@ export function createHeaderLogout(page: Page) {
     },
 
     /**
-     * Store one draft of the Contestant App in the page's `localStorage`, under the drafts' stem and in the shape an unsaved answer is stored in, and assert that it is the one draft there. The page must be on the application's origin.
+     * Store one draft of the Contestant App in the page's `localStorage`, under the drafts' stem and in the shape an unsaved answer is stored in, and assert that it is the one draft added: the drafts there are those held before and this one. A hydrated page of the Contestant App already holds the draft store of the entity it shows. The page must be on the application's origin.
      */
     async seedContestantDraft(): Promise<void> {
+      const before = await contestantDraftKeys();
       await page.evaluate(
         (key) =>
           window.localStorage.setItem(key, JSON.stringify({ version: 1, data: { 'seeded-question': { value: 1 } } })),
         SEEDED_DRAFT_KEY
       );
-      expect(await contestantDraftKeys()).toEqual([SEEDED_DRAFT_KEY]);
+      expect((await contestantDraftKeys()).sort()).toEqual([...before, SEEDED_DRAFT_KEY].sort());
     },
 
     /**

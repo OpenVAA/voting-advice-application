@@ -191,7 +191,7 @@ export async function recoverPasswordInTheAdminApp(
 }
 
 /**
- * A user who edits one entity signs in to the Contestant App and lands on the entity's home; a draft of the Contestant App is stored in the browser; and the user's one grant is then removed, so that the session's grants open neither app. The session's token still carries the removed grant, which the application reads from the grants table and not from the token.
+ * A user who edits one entity signs in to the Contestant App and lands on the entity's home, which is awaited until it has hydrated; a draft of the Contestant App is stored in the browser; and the user's one grant is then removed, so that the session's grants open neither app. The session's token still carries the removed grant, which the application reads from the grants table and not from the token.
  *
  * @param fixtures - The test's invitation flow, the Contestant App's login page and entity home, and the header's Log out, whose steps store the draft.
  * @param target - The entity the user edits until the grant is removed.
@@ -221,6 +221,8 @@ export async function signInThenLoseEveryGrant(
   await contestantLoginPage.goToPage();
   await contestantLoginPage.login(email, password);
   await contestantEntityHomePage.expectLanded(target);
+  // The caller follows a link inside the application from this home, which the application's router takes only once the home has hydrated.
+  await contestantEntityHomePage.expectHydrated();
   await headerLogout.seedContestantDraft();
 
   expect(await admin.revokeEntityGrant(email, target)).toBe(1);
