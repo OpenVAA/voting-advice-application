@@ -1,5 +1,5 @@
 /**
- * identity-provider minimal-data template.
+ * perm-identity-provider minimal-data template.
  *
  * The dataset of the identity-provider specs, seeded by `identity-provider.setup.ts` and removed by `identity-provider.teardown.ts`: the minimal topology and the minimal settings. The setup adds the identity provider's mode to the candidates' registration modes for its own run.
  *
@@ -9,10 +9,10 @@
 import { buildMinimal } from '../../_helpers/buildMinimal';
 import type { Template } from '../../../template/types';
 
-export const identityProviderTemplate: Template = buildMinimal({
+export const permIdentityProviderTemplate: Template = buildMinimal({
   externalIdPrefix: 'e2e-bankauth-idp-',
   candidates: 1,
   opinionQuestions: 1
 });
 
-export default identityProviderTemplate;
+export default permIdentityProviderTemplate;

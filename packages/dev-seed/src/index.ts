@@ -11,6 +11,7 @@
  *   - `createServiceRoleClient(url, key, options?)` — the one guarded supabase-js service-role client construction; refuses a non-local host unless opted out. The `SupabaseAdminClient` constructor and the E2E specs that need a raw client use it.
  *   - `TEST_PROJECT_ID` — bootstrap project UUID from seed.sql.
  *   - `E2E_PROJECT_ID` — the fixed project the E2E suite owns; deliberately not the bootstrap project.
+ *   - `E2E_ACCOUNT_ID` — the account the E2E project belongs to, apart from the default account.
  *   - `resolveE2eProjectId()` — reads the `E2E_PROJECT_ID` override, falling back to that constant; throws on a value colliding with the bootstrap project or on a non-canonical uuid.
  *   - `buildCtx(template)` — fresh ctx factory with seeded faker.
  *   - `validateTemplate(input)` — zod v4 validator with field-path errors.
@@ -51,7 +52,7 @@
  *   - `Fragment<TRow>` — per-entity template-fragment shape.
  *   - `Overrides` — override map shape.
  *   - `FindDataResult` — admin-client query result (consumed by the tests/subclass).
- *   - `InvitationSeedItem` (`EntityInvitationSeedItem` | `ProjectInvitationSeedItem`), `InvitationTargetType`, `InvitationNominationSeed`, `InvitationNominationParent`, `CreateInvitationsOptions`, `SeededInvitation`, `SeededInvitationNominations` — the argument, option and return shapes of `SupabaseAdminClient.createInvitations`.
+ *   - `InvitationSeedItem`, `InvitationNominationSeed`, `SeededInvitation` — the argument and return shapes of `SupabaseAdminClient.createInvitations`.
  *   - `TableName` — union of the 14 table names in TOPO_ORDER.
  *   - `LatentHooks` — swappable seam on `ctx.latent`.
  *   - `LocaleCode` — union of the `LOCALES` entries.
@@ -80,6 +81,7 @@ export { runPipeline, TOPO_ORDER } from './pipeline';
 export { resolveAppSettingsExternalIds, settingsContainsExternalIdRefs } from './resolveAppSettingsExternalIds';
 export {
   createServiceRoleClient,
+  E2E_ACCOUNT_ID,
   E2E_PROJECT_ID,
   resolveE2eProjectId,
   SupabaseAdminClient,
@@ -117,16 +119,10 @@ export type { LatentHooks } from './emitters/latent/latentTypes';
 export type { LocaleCode } from './locales';
 export type { TableName } from './pipeline';
 export type {
-  CreateInvitationsOptions,
-  EntityInvitationSeedItem,
   FindDataResult,
-  InvitationNominationParent,
   InvitationNominationSeed,
   InvitationSeedItem,
-  InvitationTargetType,
-  ProjectInvitationSeedItem,
-  SeededInvitation,
-  SeededInvitationNominations
+  SeededInvitation
 } from './supabaseAdminClient';
 export type { LinkSentinelRule, LinkTarget, SentinelPayload } from './template/linkSentinels';
 export type {

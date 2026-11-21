@@ -114,59 +114,26 @@ describe('SupabaseAdminClient.createInvitations', () => {
     expect(args.p_invitations).toEqual(ITEMS);
   });
 
-  it('states the confirmation as true when the caller says nothing', async () => {
+  it.each([
+    [undefined, true],
+    [{ confirmEntity: false }, false],
+    [{ confirmEntity: true }, true]
+  ])('states the confirmation for options %o as %s', async (options, expected) => {
     const client = new SupabaseAdminClient('http://localhost', 'key', PROJECT_ID);
 
-    await client.createInvitations(ITEMS);
+    await client.createInvitations(ITEMS, options);
 
-    expect(mockState.rpcCalls[0][1].p_confirm_entity).toBe(true);
+    expect(mockState.rpcCalls[0][1].p_confirm_entity).toBe(expected);
   });
 
-  it('states the confirmation as false when the caller says confirmEntity: false', async () => {
-    const client = new SupabaseAdminClient('http://localhost', 'key', PROJECT_ID);
-
-    await client.createInvitations(ITEMS, { confirmEntity: false });
-
-    expect(mockState.rpcCalls[0][1].p_confirm_entity).toBe(false);
-  });
-
-  it('states the confirmation as true when the caller says confirmEntity: true', async () => {
-    const client = new SupabaseAdminClient('http://localhost', 'key', PROJECT_ID);
-
-    await client.createInvitations(ITEMS, { confirmEntity: true });
-
-    expect(mockState.rpcCalls[0][1].p_confirm_entity).toBe(true);
-  });
-
-  it('passes the nominations of an item through unchanged', async () => {
-    const client = new SupabaseAdminClient('http://localhost', 'key', PROJECT_ID);
-
-    await client.createInvitations(ITEMS_WITH_NOMINATIONS, { confirmEntity: false });
-
-    const [, args] = mockState.rpcCalls[0];
-    expect(args.p_invitations).toEqual(ITEMS_WITH_NOMINATIONS);
-    expect((args.p_invitations as Array<{ nominations?: unknown }>)[0].nominations).toEqual(NOMINATIONS);
-  });
-
-  it('keeps entity_confirmed and the nomination counts as the function answered them', async () => {
+  it('sends the items, nominations included, unchanged and returns the array the function answers', async () => {
     mockState.rpcResult = { data: SEEDED_WITH_NOMINATIONS, error: null };
     const client = new SupabaseAdminClient('http://localhost', 'key', PROJECT_ID);
 
     const seeded = await client.createInvitations(ITEMS_WITH_NOMINATIONS, { confirmEntity: false });
 
+    expect(mockState.rpcCalls[0][1].p_invitations).toEqual(ITEMS_WITH_NOMINATIONS);
     expect(seeded).toEqual(SEEDED_WITH_NOMINATIONS);
-    expect(seeded[0].entity_confirmed).toBe(false);
-    expect(seeded[0].nominations).toEqual({ inserted: 1, updated: 0, unchanged: 0, parents_created: 1 });
-  });
-
-  it('returns the array the function answers, generated code included', async () => {
-    mockState.rpcResult = { data: SEEDED, error: null };
-    const client = new SupabaseAdminClient('http://localhost', 'key', PROJECT_ID);
-
-    const seeded = await client.createInvitations(ITEMS);
-
-    expect(seeded).toEqual(SEEDED);
-    expect(seeded[1].code).toBe('ABCD-EFGH-JKMN');
   });
 
   it('returns an empty array when the function answers no data', async () => {

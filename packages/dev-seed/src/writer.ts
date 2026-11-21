@@ -8,13 +8,13 @@
  *   - `app_settings` — routed through `updateAppSettings` (merge_jsonb_column RPC). Direct `bulk_import` of `app_settings` fails with duplicate-key on the `UNIQUE(project_id)` constraint because `seed.sql` pre-inserts a row. Every row is parsed with the shared `StoredSettingsSchema`, the schema the application reads the stored settings with, before the writer writes anything at all; a row the schema refuses is a defect of the template, and the write stops with the database untouched.
  *   - 10 other tables (elections, constituency_groups, constituencies, organizations, alliances, factions, question_categories, questions,
  *     candidates, nominations) — flow through `bulkImport` → `importAnswers`
- *     → `linkJoinTables`, the three-pass sequence.
+ *     → `linkQuestionScopes`, the three-pass sequence.
  *
  * Env enforcement: the constructor reads `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from `process.env` and THROWS with a descriptive error if either is missing. The admin client it then builds refuses a non-local `SUPABASE_URL` unless `WriterOptions.allowRemote` or `DEV_SEED_ALLOW_REMOTE=1` opts out. Env enforcement is intentionally at construction (not at module import) so pure generators remain env-free — `yarn test:unit` can exercise them without an env fixture. Callers that need the write path (the CLI, and the tests/ subclass integration tests) see a loud, actionable error before any admin client is created.
  *
  * Rollback semantics:
  *   - `bulk_import` runs as a SINGLE PL/pgSQL transaction (SECURITY INVOKER; migration line 2738). A mid-collection FK / constraint violation aborts the RPC and nothing commits — the 10 bulk-import tables roll back atomically.
- *   - `importAnswers` and `linkJoinTables` run in SEPARATE transactions. A failure there leaves `bulk_import` rows committed. That is acceptable because generators pre-validate refs in memory, so most orphan-FK cases are caught client-side before the RPC fires.
+ *   - `importAnswers` and `linkQuestionScopes` run in SEPARATE transactions. A failure there leaves `bulk_import` rows committed. That is acceptable because generators pre-validate refs in memory, so most orphan-FK cases are caught client-side before the RPC fires.
  *   - `updateAppSettings` runs one `merge_jsonb_column` RPC per row, or two for a row that names a `SETTINGS_REPLACED_WHOLE` member: first a merge that sets that path to `null`, then the row. Each RPC is its own transaction, so a failure between the two leaves that member `null`.
  *   - The settings are parsed before Pass 1, so a refused settings row writes nothing. A question reference that names no question is found only at Pass 5, once the questions are written, so it fails the write after the entity rows are committed.
  *
@@ -48,42 +48,6 @@ export interface WriterOptions {
   logger?: (msg: string) => void;
   /** Permit a non-local `SUPABASE_URL` for the service-role client. The seed CLI sets it from `--allow-remote`. */
   allowRemote?: boolean;
-}
-
-/**
- * What every question reference of an `app_settings` row stands for while the row is parsed before the first write: the questions have no ids yet, and the schema reads a question reference as any string.
- */
-const QUESTION_ID_PLACEHOLDER = '00000000-0000-0000-0000-000000000000';
-
-/**
- * A question external id → id map that answers {@link QUESTION_ID_PLACEHOLDER} for every external id, so that a row's question references can be resolved before any question is written.
- */
-class PlaceholderQuestionIds extends Map<string, string> {
-  override get(): string {
-    return QUESTION_ID_PLACEHOLDER;
-  }
-}
-
-/**
- * The message a refused `app_settings` row fails the write with: the template, the row and every refused path with the schema's reason.
- *
- * @param templateName - the template's name or path, when the caller gave it.
- * @param row - the refused row.
- * @param issues - the schema's issues for the row.
- * @returns the message.
- */
-function settingsRefusal(
-  templateName: string | undefined,
-  row: Record<string, unknown>,
-  issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }>
-): string {
-  const template = templateName ? `Template '${templateName}'` : 'The template';
-  const rowName = typeof row.external_id === 'string' ? ` '${row.external_id}'` : '';
-  const refused = issues.map((issue) => `${issue.path.map(String).join('.') || '(root)'}: ${issue.message}`).join('; ');
-  return (
-    `${template} writes app_settings row${rowName} with settings the shared StoredSettingsSchema refuses, ` +
-    `so nothing was written: ${refused}. Correct the template; the application reads the stored settings with this schema.`
-  );
 }
 
 export class Writer {
@@ -136,7 +100,7 @@ export class Writer {
    *   3. `bulkImport` — single transaction write of 10 tables (rollback is atomic; `bulk_import` runs inside a single transaction, so any collection-level failure rolls back the entire batch).
    *      `bulk_import`'s internal `processing_order` resolves ref sentinels between collections. An election's constituency groups and a constituency group's constituencies travel as the items' link keys, and `bulk_import` writes `election_constituency_groups` and `constituency_group_constituencies` after the constituencies and before the first nomination, in the same transaction.
    *   4. `importAnswers` — stitches `candidate.answersByExternalId` → `candidate.answers` JSONB by resolving question external_ids to UUIDs (separate transaction).
-   *   5. `linkJoinTables` — processes the `_elections` / `_constituencies` sentinels of question categories and questions: updates their `election_ids` / `constituency_ids` JSONB (separate transaction). The constituency join tables are already written by step 3.
+   *   5. `linkQuestionScopes` — processes the `_elections` / `_constituencies` sentinels of question categories and questions: updates their `election_ids` / `constituency_ids` JSONB (separate transaction). The constituency join tables are already written by step 3.
    *   6. **Pass 5** — the question references of every `app_settings` row are resolved to the ids of the questions written by step 3, and `updateAppSettings` writes each row (`merge_jsonb_column` RPC) — routes around the `UNIQUE(project_id)` conflict that `bulk_import` cannot handle for this table. The rows are written as the template states them, not as the schema's parse normalises them.
    *   7. `feedback` rows are SKIPPED with a logger warning.
    *   8. **Pass 7** — project openness: `setProjectOpenForVoters(options.openForVoters)`, ONLY when the caller passes the template's `openForVoters`. Absent, no `projects` write is issued. Runs last, so a closed project is closed only after every row is in place (162.1 D-21).
@@ -166,7 +130,7 @@ export class Writer {
 
     // Pass 0: unknown-property guard.
     //
-    // ⚠ Deliberately reads `data`, the PRE-DELETION map, not `bulkData`. The four `delete bulkData.*` statements above have already removed `accounts`, `projects`, `feedback` and `app_settings`, so a guard reading `bulkData` here cannot see any of them. `app_settings` is the one that matters: it is a first-class, template-authorable fragment and EVERY built-in template emits exactly one row of it (30 of 30, measured), so reading `bulkData` would leave the guard blind to a collection every single template uses. Guarding `data` covers all twelve template-declarable collections and picks up `accounts` / `projects` for free.
+    // ⚠ Deliberately reads `data`, the PRE-DELETION map, not `bulkData`. The four `delete bulkData.*` statements above have already removed `accounts`, `projects`, `feedback` and `app_settings`, so a guard reading `bulkData` here cannot see any of them. `app_settings` is the one that matters: it is a first-class, template-authorable fragment and every built-in template emits exactly one row of it, so reading `bulkData` would leave the guard blind to a collection every single template uses. Guarding `data` covers all twelve template-declarable collections and picks up `accounts` / `projects` for free.
     //
     // Placed above Pass 0b and Pass 1, so nothing reaches `bulkImport`'s two silent-strip rules unrecognised.
     assertKnownRowProps(data);
@@ -176,7 +140,7 @@ export class Writer {
       const settings = row.settings;
       if (!settings || typeof settings !== 'object' || Array.isArray(settings)) continue;
       const parsed = StoredSettingsSchema.safeParse(
-        resolveAppSettingsExternalIds(settings as Record<string, unknown>, new PlaceholderQuestionIds())
+        resolveAppSettingsExternalIds(settings as Record<string, unknown>, { get: () => QUESTION_ID_PLACEHOLDER })
       );
       if (!parsed.success) throw new Error(settingsRefusal(options.templateName, row, parsed.error.issues));
     }
@@ -188,10 +152,10 @@ export class Writer {
     await this.client.importAnswers(bulkData);
 
     // Pass 3: question category and question → election and constituency refs. The constituency join tables were written by Pass 1.
-    await this.client.linkJoinTables(bulkData);
+    await this.client.linkQuestionScopes(bulkData);
 
     // Pass 4: portrait upload.
-    // Runs AFTER linkJoinTables (candidates have UUIDs assigned by bulk_import) and BEFORE updateAppSettings. Skips silently if no candidates present; throws on upload/update errors to keep the run atomic.
+    // Runs AFTER linkQuestionScopes (candidates have UUIDs assigned by bulk_import) and BEFORE updateAppSettings. Skips silently if no candidates present; throws on upload/update errors to keep the run atomic.
     const portraits = await this.uploadPortraits(externalIdPrefix);
 
     // Pass 5: app_settings via merge_jsonb_column.
@@ -253,7 +217,7 @@ export class Writer {
    *   - Portrait filenames sorted alphabetically (`fs.readdirSync` order is platform-specific).
    *   - Cycling is simple `i % N` — reproducible. The object NAMES are random by design; which portrait a candidate gets is not.
    *
-   * Runs AFTER `linkJoinTables` (candidates have UUIDs assigned by `bulk_import`) and BEFORE `updateAppSettings`.
+   * Runs AFTER `linkQuestionScopes` (candidates have UUIDs assigned by `bulk_import`) and BEFORE `updateAppSettings`.
    *
    * @returns number of portraits uploaded (consumed by the CLI summary).
    */
@@ -302,4 +266,31 @@ export class Writer {
     }
     return uploaded;
   }
+}
+
+/**
+ * What every question reference of an `app_settings` row stands for while the row is parsed before the first write: the questions have no ids yet, and the schema reads a question reference as any string.
+ */
+const QUESTION_ID_PLACEHOLDER = '00000000-0000-0000-0000-000000000000';
+
+/**
+ * The message a refused `app_settings` row fails the write with: the template, the row and every refused path with the schema's reason.
+ *
+ * @param templateName - the template's name or path, when the caller gave it.
+ * @param row - the refused row.
+ * @param issues - the schema's issues for the row.
+ * @returns the message.
+ */
+function settingsRefusal(
+  templateName: string | undefined,
+  row: Record<string, unknown>,
+  issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }>
+): string {
+  const template = templateName ? `Template '${templateName}'` : 'The template';
+  const rowName = typeof row.external_id === 'string' ? ` '${row.external_id}'` : '';
+  const refused = issues.map((issue) => `${issue.path.map(String).join('.') || '(root)'}: ${issue.message}`).join('; ');
+  return (
+    `${template} writes app_settings row${rowName} with settings the shared StoredSettingsSchema refuses, ` +
+    `so nothing was written: ${refused}. Correct the template; the application reads the stored settings with this schema.`
+  );
 }

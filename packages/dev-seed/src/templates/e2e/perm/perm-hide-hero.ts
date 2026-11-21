@@ -5,7 +5,7 @@
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-hide-hero-'`.
  *
- * The spec consumes `mintContestantSession` to mint an authenticated candidate session — the protected questions route requires an authenticated candidate identity.
+ * The spec's setup, `perm-hide-hero.setup.ts`, stores the seeded candidate's session through `registerAndStoreSession` as a Playwright storage-state file — the protected questions route requires an authenticated candidate identity.
  */
 
 import { buildMinimal } from '../../_helpers/buildMinimal';

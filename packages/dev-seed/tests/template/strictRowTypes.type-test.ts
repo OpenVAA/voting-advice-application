@@ -56,7 +56,7 @@ export const illegalCandidatesRow: CandidatesFixedRow = {
 /**
  * **legality case** — `_elections` on a `questions` row. It carries **no** directive and MUST compile clean. A red here is a stop, not a catch: it would mean a shipped resolution path had been deleted.
  *
- * The pair is a first-class, resolved feature, not an oversight: the `_elections` sentinel resolver `electionResolve` was factored out of the `question_categories` block of `linkJoinTables` and called for **both** tables, extending `election_ids` JSONB scoping from `question_categories` alone to `questions` as well.
+ * The pair is a first-class, resolved feature, not an oversight: the `_elections` rule of `LINK_SENTINELS` declares **both** tables, so `linkQuestionScopes` writes `election_ids` JSONB scoping on `questions` as well as on `question_categories`.
  *
  * It lives in this file, beside the two exemplars, so it cannot rot: if `questions._elections` ever stopped compiling, this gate goes red.
  */
