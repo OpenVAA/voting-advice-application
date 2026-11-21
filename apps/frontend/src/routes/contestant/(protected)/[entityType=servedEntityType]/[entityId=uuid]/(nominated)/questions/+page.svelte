@@ -91,7 +91,7 @@ Shows the opinion questions the entity the user edits is asked, for answering.
           {t('contestantApp.common.isHiddenBecauseMissing')}
         {/if}
       </NotEditableNote>
-    {:else if contestantCtx.profileComplete}
+    {:else if contestantCtx.taskState.allComplete}
       <SuccessMessage inline message={t('contestantApp.common.fullyCompleted')} />
     {/if}
   {/snippet}

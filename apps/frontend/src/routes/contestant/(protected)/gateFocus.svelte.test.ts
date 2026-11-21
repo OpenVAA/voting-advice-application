@@ -76,7 +76,7 @@ const context = {
   appType: { current: 'contestant' },
   t: (key: string) => key,
   getRoute: { current: (options: RouteOptions) => buildRoute(options, { params: {} }) },
-  startEvent: () => undefined,
+  track: () => undefined,
   logout: async () => undefined,
   acceptTermsOfUse: async () => ({ type: 'success' }),
   setDataRoot: (updater: (dr: DataRoot) => void) =>
@@ -93,7 +93,7 @@ const context = {
     analytics: { trackEvents: false }
   },
   // No analytics provider and trackEvents off: the terms show no usage-data section and the gate offers no opt-out.
-  analyticsGate: {
+  analyticsPolicy: {
     current: {
       projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
       globalPrivacyControl: false,

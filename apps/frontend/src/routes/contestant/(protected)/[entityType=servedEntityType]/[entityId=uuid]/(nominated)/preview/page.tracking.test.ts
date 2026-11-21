@@ -29,7 +29,7 @@ const { createDataProvider, isPreviewOpen } = vi.hoisted(() => ({
 
 // Hoisted because `vi.mock`'s factory is lifted above every import and cannot close over an ordinary module-scope binding.
 vi.mock('$lib/api/dataProvider', () => ({ createDataProvider }));
-vi.mock('$lib/server/contestant/previewGate', () => ({ isPreviewOpen }));
+vi.mock('$lib/server/contestant/previewOpen', () => ({ isPreviewOpen }));
 
 const USER = {
   id: 'user-1',
