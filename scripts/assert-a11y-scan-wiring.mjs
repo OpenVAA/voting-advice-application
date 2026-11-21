@@ -3,75 +3,36 @@
 /**
  * A11Y-SCAN WIRING GUARD (phase 147, requirements CSCAN-02 / CSCAN-03).
  *
- * The incident this file exists for: Phase 147 wired the candidate half of the
- * axe/raw-key scan family (`contestant-a11y-scan`, 24 scans today) into
- * `tests/playwright.config.ts` and its shared scan core
- * (`tests/tests/utils/axeScan.ts`), but nothing STANDING re-asserts that
- * wiring. Phase 147's own ordering instrument
- * (`tests/e2e-runs/147/phases.mjs`) is gitignored, so it proves nothing about
- * future commits. Removing either the `contestant-a11y-scan` project or its
- * place in `PERM_CHAIN_ANCHOR` (the first perm setup's dependencies) drops 24 scans from the
- * suite; the suite then reports FEWER tests and STILL 0 failures — a green
- * that means nothing (CLAUDE.md's "did not run" == failure rule, restated as
- * a static config guard rather than a runtime one, because the tests simply
- * would not exist to fail).
+ * Removing either the `contestant-a11y-scan` project from
+ * `tests/playwright.config.ts` or its place in `PERM_CHAIN_ANCHOR` (the first
+ * perm setup's dependencies) drops its 24 scans from the suite, and the suite
+ * then reports FEWER tests and STILL 0 failures: a green that means nothing
+ * (CLAUDE.md's "did not run" == failure rule, restated as a static config
+ * guard rather than a runtime one, because the tests simply would not exist
+ * to fail). The shared scan core is `tests/tests/utils/axeScan.ts`.
  *
  * FOUR checks, each a distinct way that green-but-blind could reoccur:
  *
- *   Check 1 (CSCAN-02a) — `contestant-a11y-scan` remains a project in
+ *   Check 1 — `contestant-a11y-scan` remains a project in
  *     `tests/playwright.config.ts`, gated by the same `PLAYWRIGHT_NO_A11Y`
  *     opt-out as `a11y-smoke`, with an explicit `testMatch` for
  *     `contestant-a11y.spec.ts` and a `storageState`.
- *   Check 2 (CSCAN-02a) — `a11y-smoke` keeps its explicit `testMatch` for
+ *   Check 2 — `a11y-smoke` keeps its explicit `testMatch` for
  *     `a11y-smoke.spec.ts`. Without it, both specs sharing `testDir:
- *     './tests/specs/a11y'` means `a11y-smoke` collects the candidate spec
- *     too and runs it WITHOUT the stored session — every candidate route 307s
- *     to login, and the scan reports a confident, silently-wrong zero
+ *     './tests/specs/a11y'` means `a11y-smoke` collects the contestant spec
+ *     too and runs it WITHOUT the stored session — every Contestant App route
+ *     307s to login, and the scan reports a confident, silently-wrong zero
  *     (playwright.config.ts's own docblock at this site, restated as a check).
- *   Check 3 (CSCAN-02b) — `contestant-a11y-scan` is named in
- *     `PERM_CHAIN_ANCHOR`, which the first perm setup depends on, so the candidate scan
- *     runs BEFORE the perm family's `app_settings` singleton REPLACE.
- *   Check 4 (CSCAN-02 criterion 6 / CSCAN-03) — strictness parity + ordering.
- *     4a covers every file that declares an axe scan or helps declare one:
- *     the two specs of the scan family (`a11y-smoke.spec.ts`,
- *     `contestant-a11y.spec.ts`), the organization-editing spec
- *     (`specs/perm/perm-organization-editing.spec.ts`), the unnominated-entities
- *     spec (`specs/perm/perm-unnominated-entities.spec.ts`), the
- *     contestant-nominations specs (every file of
- *     `specs/perm/perm-contestant-nominations/`) and the closed-project
- *     spec (`specs/perm/perm-closed-project.spec.ts`), each of which scans its
- *     own dataset's surfaces in its own project, the entry-scan spec
- *     (`specs/contestant/contestant-entry-scan.spec.ts`), which scans the
- *     Contestant App's screens shown with no session in its own project,
- *     the identity-provider spec
- *     (`specs/contestant/contestant-identity-provider.spec.ts`), which scans
- *     the view an identity the mock issuer minted arrives at, the Admin App's
- *     account-flow spec (`specs/admin/admin-account-flows.spec.ts`), which
- *     scans the Admin App's entry screens in its own project,
- *     the two helper modules
- *     specs declare their scans through: the one for the Contestant App's
- *     signed-in surfaces (`tests/tests/utils/contestantAxeScan.ts`) and the
- *     one for its screens shown with no session
- *     (`tests/tests/utils/entryAxeScan.ts`), and the module both declare an
- *     entry's light scan and dark twin through
- *     (`tests/tests/utils/themedAxeScans.ts`). None of these files constructs
- *     its own `AxeBuilder`, calls `.withTags(` or imports the axe package:
- *     each must obtain its gate from the one shared `assertAxeScan` in
- *     `tests/tests/utils/axeScan.ts` — the voter spec and the shared
- *     declaration module by importing it, the two helper modules by
- *     importing `declareLightAndDarkScans` from that module, `contestant-a11y.spec.ts` and the
- *     identity-provider spec by importing `declareScans` from the first
- *     helper module, and the closed-project
- *     spec, the entry-scan spec and the Admin App's account-flow spec by
- *     importing `declareEntryScans` from the second. `contestant-a11y.spec.ts` imports `declareEntryScans` from the
- *     second as well, for the confirm page a mailed link opens: that page
- *     belongs to neither app, and the first module's reach proof requires an
- *     address inside the Contestant App. The entry-scan spec scans the same
- *     page with no session. The
- *     organization-editing spec, the unnominated-entities spec and the
- *     contestant-nominations specs hold tests other than scans, so no import
- *     is required of them; what they may not do is build a gate of their own.
- *     And in `axeScan.ts` itself, the raw-key verdict
+ *   Check 3 — `contestant-a11y-scan` is named in `PERM_CHAIN_ANCHOR`, which the
+ *     first perm setup depends on, so the contestant scan runs BEFORE the perm
+ *     family's `app_settings` singleton REPLACE.
+ *   Check 4 — strictness parity + ordering.
+ *     4a: no tracked file under `tests/tests/` except
+ *     `tests/tests/utils/axeScan.ts` constructs its own `AxeBuilder`, calls
+ *     `.withTags(` or imports the axe package, so every scan obtains its gate
+ *     from the one shared `assertAxeScan`; and each file `GATED_FILES` names
+ *     still imports the symbol that is its route to that gate.
+ *     4b: in `axeScan.ts` itself, the raw-key verdict
  *     (`collectRawI18nKeyFindings`) is computed and reported via
  *     `expect.soft` BEFORE `new AxeBuilder(...)` runs, and `assertAxeGates`
  *     always runs after — so a raw-key finding can never suppress the axe
@@ -93,98 +54,90 @@
  *       missing or unreadable)
  */
 
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { scanLines, trackedFiles } from './lib/text-guard.mjs';
 
 const SELF = 'scripts/assert-a11y-scan-wiring.mjs';
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '..', '..');
 
+const TESTS_TREE = 'tests/tests';
+const AXE_SCAN_UTIL_PATH = 'tests/tests/utils/axeScan.ts';
 const PLAYWRIGHT_CONFIG = path.resolve(REPO_ROOT, 'tests', 'playwright.config.ts');
-const AXE_SCAN_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'axeScan.ts');
-const A11Y_SMOKE_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'a11y', 'a11y-smoke.spec.ts');
-const CONTESTANT_A11Y_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'a11y', 'contestant-a11y.spec.ts');
-const CONTESTANT_AXE_SCAN_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'contestantAxeScan.ts');
-const ENTRY_AXE_SCAN_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'entryAxeScan.ts');
-const THEMED_AXE_SCANS_UTIL = path.resolve(REPO_ROOT, 'tests', 'tests', 'utils', 'themedAxeScans.ts');
-const ORGANIZATION_EDITING_SPEC = path.resolve(
-  REPO_ROOT,
-  'tests',
-  'tests',
-  'specs',
-  'perm',
-  'perm-organization-editing.spec.ts'
-);
-const UNNOMINATED_ENTITIES_SPEC = path.resolve(
-  REPO_ROOT,
-  'tests',
-  'tests',
-  'specs',
-  'perm',
-  'perm-unnominated-entities.spec.ts'
-);
-const CONTESTANT_NOMINATIONS_DIR = path.resolve(
-  REPO_ROOT,
-  'tests',
-  'tests',
-  'specs',
-  'perm',
-  'perm-contestant-nominations'
-);
-const CLOSED_PROJECT_SPEC = path.resolve(REPO_ROOT, 'tests', 'tests', 'specs', 'perm', 'perm-closed-project.spec.ts');
-const CONTESTANT_ENTRY_SCAN_SPEC = path.resolve(
-  REPO_ROOT,
-  'tests',
-  'tests',
-  'specs',
-  'contestant',
-  'contestant-entry-scan.spec.ts'
-);
-const ADMIN_ACCOUNT_FLOWS_SPEC = path.resolve(
-  REPO_ROOT,
-  'tests',
-  'tests',
-  'specs',
-  'admin',
-  'admin-account-flows.spec.ts'
-);
-const IDENTITY_PROVIDER_SPEC = path.resolve(
-  REPO_ROOT,
-  'tests',
-  'tests',
-  'specs',
-  'contestant',
-  'contestant-identity-provider.spec.ts'
-);
+const AXE_SCAN_UTIL = path.resolve(REPO_ROOT, AXE_SCAN_UTIL_PATH);
+
+/** The import from `../../utils/<module>` a spec two levels below `tests/tests/` names `symbol` through. */
+function fromSpec(module, symbol) {
+  return { from: new RegExp(`from\\s+'\\.\\./\\.\\./utils/${module}'`), source: `'../../utils/${module}'`, symbol };
+}
+
+/** The import from `./<module>` a helper module in `tests/tests/utils/` names `symbol` through. */
+function fromUtil(module, symbol) {
+  return { from: new RegExp(`from\\s+'\\./${module}'`), source: `'./${module}'`, symbol };
+}
 
 /**
- * Every TypeScript file of a directory, as `{ label, src }`, or null when the directory cannot be read or holds no spec.
+ * The files that must obtain the shared gate through one specific import: each entry names the file, the import it
+ * must hold and the symbol it must name.
  */
-function readSourceDir(dirPath) {
-  const relative = path.relative(REPO_ROOT, dirPath);
-  let names;
+const GATED_FILES = [
+  { file: 'tests/tests/specs/a11y/a11y-smoke.spec.ts', ...fromSpec('axeScan', 'assertAxeScan') },
+  { file: 'tests/tests/specs/a11y/contestant-a11y.spec.ts', ...fromSpec('contestantAxeScan', 'declareScans') },
+  {
+    file: 'tests/tests/specs/a11y/contestant-a11y.spec.ts',
+    label: 'the confirm page',
+    ...fromSpec('entryAxeScan', 'declareEntryScans')
+  },
+  { file: 'tests/tests/utils/themedAxeScans.ts', ...fromUtil('axeScan', 'assertAxeScan') },
+  { file: 'tests/tests/utils/contestantAxeScan.ts', ...fromUtil('themedAxeScans', 'declareLightAndDarkScans') },
+  { file: 'tests/tests/utils/entryAxeScan.ts', ...fromUtil('themedAxeScans', 'declareLightAndDarkScans') },
+  { file: 'tests/tests/specs/perm/perm-closed-project.spec.ts', ...fromSpec('entryAxeScan', 'declareEntryScans') },
+  {
+    file: 'tests/tests/specs/contestant/contestant-entry-scan.spec.ts',
+    ...fromSpec('entryAxeScan', 'declareEntryScans')
+  },
+  { file: 'tests/tests/specs/admin/admin-account-flows.spec.ts', ...fromSpec('entryAxeScan', 'declareEntryScans') },
+  {
+    file: 'tests/tests/specs/contestant/contestant-identity-provider.spec.ts',
+    ...fromSpec('contestantAxeScan', 'declareScans')
+  }
+];
+
+/** A source with its block comments and whole-line `//` comments removed, so a doc mention is not read as code. */
+function codeOnly(src) {
+  return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+}
+
+/**
+ * Every tracked text file under `tests/tests/`, as a map from its repository-relative path to its contents, or null
+ * when git fails or a file cannot be read.
+ */
+function readTestsTree() {
+  let files;
   try {
-    names = readdirSync(dirPath)
-      .filter((name) => name.endsWith('.ts'))
-      .sort();
+    files = trackedFiles({ trees: [TESTS_TREE] });
   } catch (error) {
+    console.error(`[ERROR] ${SELF}: could not list the tracked files under '${TESTS_TREE}' (${error.message}).`);
+    return null;
+  }
+  const lines = new Map();
+  const { unreadable } = scanLines(
+    files,
+    (file, line) => {
+      if (!lines.has(file)) lines.set(file, []);
+      lines.get(file).push(line);
+    },
+    { label: `[ERROR] ${SELF}` }
+  );
+  if (unreadable > 0) {
     console.error(
-      `[ERROR] ${SELF}: could not read the directory '${relative}' (${error.message}). ` +
+      `[ERROR] ${SELF}: ${unreadable} file(s) under '${TESTS_TREE}' could not be read. ` +
         'A file this guard cannot read is wiring it cannot verify — this fails closed.'
     );
     return null;
   }
-  if (!names.some((name) => name.endsWith('.spec.ts'))) {
-    console.error(`[ERROR] ${SELF}: the directory '${relative}' holds no spec — this fails closed.`);
-    return null;
-  }
-  const files = [];
-  for (const name of names) {
-    const src = readSource(path.join(dirPath, name));
-    if (src === null) return null;
-    files.push({ label: path.relative(path.resolve(REPO_ROOT, 'tests', 'tests'), path.join(dirPath, name)), src });
-  }
-  return files;
+  return new Map([...lines].map(([file, fileLines]) => [file, fileLines.join('\n')]));
 }
 
 function readSource(filePath) {
@@ -202,34 +155,9 @@ function readSource(filePath) {
 function main() {
   const configSrc = readSource(PLAYWRIGHT_CONFIG);
   const axeScanSrc = readSource(AXE_SCAN_UTIL);
-  const a11ySmokeSrc = readSource(A11Y_SMOKE_SPEC);
-  const contestantA11ySrc = readSource(CONTESTANT_A11Y_SPEC);
-  const contestantAxeScanSrc = readSource(CONTESTANT_AXE_SCAN_UTIL);
-  const entryAxeScanSrc = readSource(ENTRY_AXE_SCAN_UTIL);
-  const themedAxeScansSrc = readSource(THEMED_AXE_SCANS_UTIL);
-  const organizationEditingSrc = readSource(ORGANIZATION_EDITING_SPEC);
-  const unnominatedEntitiesSrc = readSource(UNNOMINATED_ENTITIES_SPEC);
-  const contestantNominationsFiles = readSourceDir(CONTESTANT_NOMINATIONS_DIR);
-  const closedProjectSrc = readSource(CLOSED_PROJECT_SPEC);
-  const contestantEntryScanSrc = readSource(CONTESTANT_ENTRY_SCAN_SPEC);
-  const identityProviderSrc = readSource(IDENTITY_PROVIDER_SPEC);
-  const adminAccountFlowsSrc = readSource(ADMIN_ACCOUNT_FLOWS_SPEC);
+  const testsTree = readTestsTree();
 
-  if (
-    configSrc === null ||
-    axeScanSrc === null ||
-    a11ySmokeSrc === null ||
-    contestantA11ySrc === null ||
-    contestantAxeScanSrc === null ||
-    entryAxeScanSrc === null ||
-    themedAxeScansSrc === null ||
-    organizationEditingSrc === null ||
-    unnominatedEntitiesSrc === null ||
-    contestantNominationsFiles === null ||
-    closedProjectSrc === null ||
-    contestantEntryScanSrc === null ||
-    identityProviderSrc === null
-  ) {
+  if (configSrc === null || axeScanSrc === null || testsTree === null) {
     process.exitCode = 1;
     return;
   }
@@ -247,8 +175,8 @@ function main() {
   if (!contestantProjectMatch) {
     violate(
       "tests/playwright.config.ts no longer declares a 'contestant-a11y-scan' project (or its shape " +
-        'changed enough that this guard cannot find it). Losing this project drops 24 candidate a11y ' +
-        'scans from the suite silently (CSCAN-02).'
+        'changed enough that this guard cannot find it). Losing this project drops 24 Contestant App ' +
+        'a11y scans from the suite silently (CSCAN-02).'
     );
   } else {
     const block = contestantProjectMatch[0];
@@ -261,7 +189,7 @@ function main() {
     if (!/storageState:\s*STORAGE_STATE/.test(block)) {
       violate(
         "'contestant-a11y-scan' project no longer supplies storageState: STORAGE_STATE. Without it, " +
-          'candidate (protected) routes are unreachable and every scan would 307 to login (CSCAN-01/02).'
+          'Contestant App (protected) routes are unreachable and every scan would 307 to login (CSCAN-01/02).'
       );
     }
   }
@@ -284,7 +212,7 @@ function main() {
     violate(
       "'a11y-smoke' project no longer has an explicit testMatch for a11y-smoke.spec.ts. Both a11y " +
         "specs share testDir: './tests/specs/a11y' — without the testMatch, 'a11y-smoke' would " +
-        'collect the candidate spec too and run it UNAUTHENTICATED: every candidate route 307s to ' +
+        'collect the contestant spec too and run it UNAUTHENTICATED: every Contestant App route 307s to ' +
         'login and the scan reports a silently-wrong-and-green zero (CSCAN-02).'
     );
   }
@@ -298,118 +226,35 @@ function main() {
   } else if (!anchorMatch[0].includes("'contestant-a11y-scan'")) {
     violate(
       "PERM_CHAIN_ANCHOR no longer names 'contestant-a11y-scan', so the first perm setup does not wait for it. " +
-        'Without the explicit edge, the candidate scan is only INCIDENTALLY ordered before the perm ' +
+        'Without the explicit edge, the contestant scan is only INCIDENTALLY ordered before the perm ' +
         "family's app_settings REPLACE (via 'contestant-journey' sharing its phase) — a later edit that " +
         'reorders phases could silently run the scan against a mutated singleton (CSCAN-02).'
     );
   }
 
-  // --- Check 4a: no file that declares a scan, or helps declare one, builds its own axe gate ---
-  // `gate` names where a file must obtain the shared gate from: the import it
-  // must hold and the symbol it must name. The organization-editing spec, the
-  // unnominated-entities spec and the contestant-nominations specs have none: each
-  // holds tests other than scans, so only the prohibition binds it.
-  for (const { label, src, gate } of [
-    {
-      label: 'a11y-smoke.spec.ts',
-      src: a11ySmokeSrc,
-      gate: { from: /from\s+'\.\.\/\.\.\/utils\/axeScan'/, source: "'../../utils/axeScan'", symbol: 'assertAxeScan' }
-    },
-    {
-      label: 'contestant-a11y.spec.ts',
-      src: contestantA11ySrc,
-      gate: {
-        from: /from\s+'\.\.\/\.\.\/utils\/contestantAxeScan'/,
-        source: "'../../utils/contestantAxeScan'",
-        symbol: 'declareScans'
-      }
-    },
-    {
-      label: 'contestant-a11y.spec.ts (the confirm page)',
-      src: contestantA11ySrc,
-      gate: {
-        from: /from\s+'\.\.\/\.\.\/utils\/entryAxeScan'/,
-        source: "'../../utils/entryAxeScan'",
-        symbol: 'declareEntryScans'
-      }
-    },
-    {
-      label: 'tests/tests/utils/themedAxeScans.ts',
-      src: themedAxeScansSrc,
-      gate: { from: /from\s+'\.\/axeScan'/, source: "'./axeScan'", symbol: 'assertAxeScan' }
-    },
-    {
-      label: 'tests/tests/utils/contestantAxeScan.ts',
-      src: contestantAxeScanSrc,
-      gate: {
-        from: /from\s+'\.\/themedAxeScans'/,
-        source: "'./themedAxeScans'",
-        symbol: 'declareLightAndDarkScans'
-      }
-    },
-    {
-      label: 'tests/tests/utils/entryAxeScan.ts',
-      src: entryAxeScanSrc,
-      gate: {
-        from: /from\s+'\.\/themedAxeScans'/,
-        source: "'./themedAxeScans'",
-        symbol: 'declareLightAndDarkScans'
-      }
-    },
-    { label: 'specs/perm/perm-organization-editing.spec.ts', src: organizationEditingSrc, gate: null },
-    { label: 'specs/perm/perm-unnominated-entities.spec.ts', src: unnominatedEntitiesSrc, gate: null },
-    ...contestantNominationsFiles.map(({ label, src }) => ({ label, src, gate: null })),
-    {
-      label: 'specs/perm/perm-closed-project.spec.ts',
-      src: closedProjectSrc,
-      gate: {
-        from: /from\s+'\.\.\/\.\.\/utils\/entryAxeScan'/,
-        source: "'../../utils/entryAxeScan'",
-        symbol: 'declareEntryScans'
-      }
-    },
-    {
-      label: 'specs/contestant/contestant-entry-scan.spec.ts',
-      src: contestantEntryScanSrc,
-      gate: {
-        from: /from\s+'\.\.\/\.\.\/utils\/entryAxeScan'/,
-        source: "'../../utils/entryAxeScan'",
-        symbol: 'declareEntryScans'
-      }
-    },
-    {
-      label: 'specs/admin/admin-account-flows.spec.ts',
-      src: adminAccountFlowsSrc,
-      gate: {
-        from: /from\s+'\.\.\/\.\.\/utils\/entryAxeScan'/,
-        source: "'../../utils/entryAxeScan'",
-        symbol: 'declareEntryScans'
-      }
-    },
-    {
-      label: 'specs/contestant/contestant-identity-provider.spec.ts',
-      src: identityProviderSrc,
-      gate: {
-        from: /from\s+'\.\.\/\.\.\/utils\/contestantAxeScan'/,
-        source: "'../../utils/contestantAxeScan'",
-        symbol: 'declareScans'
-      }
-    }
-  ]) {
-    // Strip comments/docblocks before scanning for real usage, so a doc mention
-    // of "new AxeBuilder" (as in a11y-smoke.spec.ts's own docblock) is not a
-    // false positive.
-    const codeOnly = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
-    if (/new AxeBuilder/.test(codeOnly) || /\.withTags\(/.test(codeOnly) || /@axe-core\/playwright/.test(codeOnly)) {
+  // --- Check 4a: no file under tests/tests/ but axeScan.ts builds its own axe gate ---
+  for (const [file, src] of testsTree) {
+    if (file === AXE_SCAN_UTIL_PATH) continue;
+    const code = codeOnly(src);
+    if (/new AxeBuilder/.test(code) || /\.withTags\(/.test(code) || /@axe-core\/playwright/.test(code)) {
       violate(
-        `${label} constructs its own AxeBuilder, calls .withTags(\`) or imports the axe package, instead of ` +
+        `${file} constructs its own AxeBuilder, calls .withTags( or imports the axe package, instead of ` +
           "obtaining the gate from the shared 'assertAxeScan' in tests/tests/utils/axeScan.ts. A gate built " +
           'outside that one function can relax the WCAG tag set independently of every other scan, breaking ' +
-          'strictness parity (CSCAN-02 criterion 6).'
+          'strictness parity.'
       );
     }
-    if (gate && (!gate.from.test(codeOnly) || !new RegExp(`\\b${gate.symbol}\\b`).test(codeOnly))) {
-      violate(`${label} no longer imports ${gate.symbol} from ${gate.source} — its route to the shared scan core.`);
+  }
+  for (const { file, label, from, source, symbol } of GATED_FILES) {
+    const name = label ? `${file} (${label})` : file;
+    const src = testsTree.get(file);
+    if (src === undefined) {
+      violate(`${name} is not a tracked file, so its route to the shared scan core cannot be verified.`);
+      continue;
+    }
+    const code = codeOnly(src);
+    if (!from.test(code) || !new RegExp(`\\b${symbol}\\b`).test(code)) {
+      violate(`${name} no longer imports ${symbol} from ${source} — its route to the shared scan core.`);
     }
   }
 
