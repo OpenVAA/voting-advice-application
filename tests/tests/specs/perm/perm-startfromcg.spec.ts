@@ -19,8 +19,7 @@ import {
   test as contestantTest
 } from '../../fixtures/contestant/perm-startfromcg';
 import {
-  CANDIDATE_GRANT,
-  CANDIDATE_STORAGE_STATE,
+  CANDIDATE_EDITOR,
   CHILD_CONSTITUENCY_NAME,
   FIRST_GROUP_NAME,
   MUNICIPALITIES_ELECTION_EXTERNAL_ID,
@@ -109,7 +108,7 @@ test.describe('perm-startfromcg', () => {
 
 contestantTest.describe('perm-startfromcg: the nomination editor of a candidate with no nomination', () => {
   contestantTest.describe.configure({ mode: 'serial' });
-  contestantTest.use({ storageState: CANDIDATE_STORAGE_STATE });
+  contestantTest.use({ storageState: CANDIDATE_EDITOR.storageStatePath });
 
   let priorGroup: string | null = null;
 
@@ -127,12 +126,12 @@ contestantTest.describe('perm-startfromcg: the nomination editor of a candidate 
     'contestant: the entry leads to the constituency step as one picker over the group',
     { tag: '@nomination-definition' },
     async ({ contestantNominationEditor, contestantNominationsPage }) => {
-      await contestantNominationsPage.open(CANDIDATE_GRANT);
+      await contestantNominationsPage.open(CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false });
       await contestantNominationsPage.expectCardCount(0);
 
       // The entry address, as a new document. Two elections admit a candidate, and the group is chosen before either.
-      await contestantNominationEditor.open(CANDIDATE_GRANT);
+      await contestantNominationEditor.open(CANDIDATE_EDITOR.grant);
       await contestantNominationEditor.expectStep('constituencies');
       await contestantNominationEditor.expectGroupPicker(FIRST_GROUP_NAME);
       await contestantNominationEditor.expectNoElectionSentence(false);
@@ -144,7 +143,7 @@ contestantTest.describe('perm-startfromcg: the nomination editor of a candidate 
     'contestant: a constituency with two admissible elections leads to the election step listing those two',
     { tag: '@nomination-definition' },
     async ({ contestantNominationEditor }) => {
-      await contestantNominationEditor.open(CANDIDATE_GRANT);
+      await contestantNominationEditor.open(CANDIDATE_EDITOR.grant);
       await contestantNominationEditor.expectStep('constituencies');
 
       // A municipality that lies in a region: the municipalities' election is held in it, and the regions' election in its region.
@@ -161,7 +160,7 @@ contestantTest.describe('perm-startfromcg: the nomination editor of a candidate 
     'contestant: a constituency with one admissible election leads to the details step',
     { tag: '@nomination-definition' },
     async ({ contestantNominationEditor }) => {
-      await contestantNominationEditor.open(CANDIDATE_GRANT);
+      await contestantNominationEditor.open(CANDIDATE_EDITOR.grant);
       await contestantNominationEditor.expectStep('constituencies');
 
       // The municipality that lies in no region: the municipalities' election alone is held in it, so no election is chosen.
@@ -188,7 +187,7 @@ contestantTest.describe('perm-startfromcg: the nomination editor of a candidate 
       try {
         // The one election held in the municipality that lies in no region admits parties alone. The step after the change is a full page load.
         await setNominationShape(MUNICIPALITIES_ELECTION_EXTERNAL_ID, 'organization_only');
-        await contestantNominationEditor.open(CANDIDATE_GRANT);
+        await contestantNominationEditor.open(CANDIDATE_EDITOR.grant);
         await contestantNominationEditor.expectStep('constituencies');
         await contestantNominationEditor.expectGroupPicker(FIRST_GROUP_NAME);
 

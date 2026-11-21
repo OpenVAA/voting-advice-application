@@ -1,7 +1,6 @@
-import path from 'path';
-import { TEST_CANDIDATE_PASSWORD } from './testCredentials';
-import { TESTS_DIR } from './testsDir';
-import type { EntityGrantTarget } from './supabaseAdminClient';
+import { permEditor } from '../setup/shared/registerAndStoreSession';
+import type { Enums } from '@openvaa/supabase-types';
+import type { PermEditor } from '../setup/shared/registerAndStoreSession';
 
 /**
  * The contestant-nominations dataset as the suite names it: the rows of the `perm-contestant-nominations` template a test addresses, what they are seeded with, and the four users that edit its entities.
@@ -18,13 +17,10 @@ import type { EntityGrantTarget } from './supabaseAdminClient';
 /** The `external_id` prefix of every row of the dataset, and the prefix its teardown deletes. */
 export const CONTESTANT_NOMINATIONS_PREFIX = 'e2e-perm-contestant-nominations-';
 
-/** The password of all four editors: the suite's shared test password. */
-export const CONTESTANT_NOMINATIONS_PASSWORD = TEST_CANDIDATE_PASSWORD;
-
 /** An entity of the dataset that can hold a nomination: its type and its `external_id`. */
 export interface NominationEntityTarget {
   /** The entity's type. */
-  entityType: 'candidate' | 'organization' | 'alliance';
+  entityType: Exclude<Enums<'entity_type'>, 'faction'>;
   /** The entity's `external_id`. */
   externalId: string;
 }
@@ -36,10 +32,6 @@ export interface NominationContestTarget {
   /** The constituency's `external_id`. */
   constituencyExternalId: string;
 }
-
-/** The nomination shape of an election, as the database names it. */
-export type NominationShapeName =
-  'candidate_only' | 'organization_list' | 'organization_list_and_independents' | 'organization_only';
 
 /** The election round of every nomination of the dataset. */
 export const NOMINATION_ELECTION_ROUND = 1;
@@ -76,7 +68,7 @@ export const CANDIDATE_ONLY_ELECTION_NAME = Object.freeze({
 });
 
 /** The nomination shape each election is seeded with, by the election's `external_id`. */
-export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, NominationShapeName>> = Object.freeze({
+export const SEEDED_NOMINATION_SHAPES: Readonly<Record<string, Enums<'nomination_shape'>>> = Object.freeze({
   [LIST_ELECTION_EXTERNAL_ID]: 'organization_list',
   [OPEN_ELECTION_EXTERNAL_ID]: 'organization_list_and_independents',
   [CANDIDATE_ONLY_ELECTION_EXTERNAL_ID]: 'candidate_only'
@@ -147,19 +139,11 @@ export const NEW_CANDIDATE_EXTERNAL_ID = `${CONTESTANT_NOMINATIONS_PREFIX}ca-new
 /** The first and last name the unnominated candidate is seeded with. */
 export const NEW_CANDIDATE_NAME = Object.freeze({ firstName: '[CA-NEW] Unnominated', lastName: 'Candidate' });
 
-/** The entity the unnominated candidate's editor is registered on. */
-export const NEW_CANDIDATE_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'candidate',
-  externalId: NEW_CANDIDATE_EXTERNAL_ID
-});
-
-/** Email of the unnominated candidate's editor. */
-export const NEW_CANDIDATE_EDITOR_EMAIL = `${NEW_CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the unnominated candidate's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const NEW_CANDIDATE_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-contestant-nominations-candidate-new.json'
+/** The unnominated candidate's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const NEW_CANDIDATE_EDITOR = permEditor(
+  'candidate',
+  NEW_CANDIDATE_EXTERNAL_ID,
+  'perm-contestant-nominations-candidate-new.json'
 );
 
 // ---------------------------------------------------------------------------
@@ -175,19 +159,11 @@ export const NEW_ORGANIZATION_NAME = Object.freeze({
   fi: '[OR-NEW] Ehdokkuudeton puolue'
 });
 
-/** The entity the unnominated party's editor is registered on. */
-export const NEW_ORGANIZATION_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'organization',
-  externalId: NEW_ORGANIZATION_EXTERNAL_ID
-});
-
-/** Email of the unnominated party's editor. */
-export const NEW_ORGANIZATION_EDITOR_EMAIL = `${NEW_ORGANIZATION_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the unnominated party's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const NEW_ORGANIZATION_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-contestant-nominations-organization-new.json'
+/** The unnominated party's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const NEW_ORGANIZATION_EDITOR = permEditor(
+  'organization',
+  NEW_ORGANIZATION_EXTERNAL_ID,
+  'perm-contestant-nominations-organization-new.json'
 );
 
 // ---------------------------------------------------------------------------
@@ -200,19 +176,11 @@ export const EDIT_CANDIDATE_EXTERNAL_ID = `${CONTESTANT_NOMINATIONS_PREFIX}ca-ed
 /** The first and last name the nominated candidate is seeded with. */
 export const EDIT_CANDIDATE_NAME = Object.freeze({ firstName: '[CA-EDIT] Nominated', lastName: 'Candidate' });
 
-/** The entity the nominated candidate's editor is registered on. */
-export const EDIT_CANDIDATE_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'candidate',
-  externalId: EDIT_CANDIDATE_EXTERNAL_ID
-});
-
-/** Email of the nominated candidate's editor. */
-export const EDIT_CANDIDATE_EDITOR_EMAIL = `${EDIT_CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the nominated candidate's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const EDIT_CANDIDATE_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-contestant-nominations-candidate-edit.json'
+/** The nominated candidate's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const EDIT_CANDIDATE_EDITOR = permEditor(
+  'candidate',
+  EDIT_CANDIDATE_EXTERNAL_ID,
+  'perm-contestant-nominations-candidate-edit.json'
 );
 
 /** `external_id` of the nominated candidate's one seeded nomination. */
@@ -220,9 +188,6 @@ export const EDIT_CANDIDATE_NOMINATION_EXTERNAL_ID = `${CONTESTANT_NOMINATIONS_P
 
 /** The election symbol the nominated candidate's nomination is seeded with. */
 export const EDIT_CANDIDATE_ELECTION_SYMBOL = '34';
-
-/** `external_id` of the nomination a state step writes for the nominated candidate in the closed-list election's southern region: its second in that election. No such row is seeded. */
-export const EDIT_CANDIDATE_SECOND_NOMINATION_EXTERNAL_ID = `${CONTESTANT_NOMINATIONS_PREFIX}nom-ca-edit-list-south`;
 
 // ---------------------------------------------------------------------------
 // The party with two nominations, and its editor.
@@ -237,20 +202,20 @@ export const EDIT_ORGANIZATION_NAME = Object.freeze({
   fi: '[OR-EDIT] Ehdolla oleva puolue'
 });
 
-/** The entity the nominated party's editor is registered on. */
-export const EDIT_ORGANIZATION_GRANT: EntityGrantTarget = Object.freeze({
-  entityType: 'organization',
-  externalId: EDIT_ORGANIZATION_EXTERNAL_ID
-});
-
-/** Email of the nominated party's editor. */
-export const EDIT_ORGANIZATION_EDITOR_EMAIL = `${EDIT_ORGANIZATION_EXTERNAL_ID}@test.openvaa.local`;
-
-/** Where the session of the nominated party's editor is stored. Written by the dataset's setup and removed by its teardown. */
-export const EDIT_ORGANIZATION_STORAGE_STATE = path.join(
-  TESTS_DIR,
-  '../playwright/.auth/perm-contestant-nominations-organization-edit.json'
+/** The nominated party's editor: the entity it is registered on, its address and where its session is stored. The session is written by the dataset's setup and removed by its teardown. */
+export const EDIT_ORGANIZATION_EDITOR = permEditor(
+  'organization',
+  EDIT_ORGANIZATION_EXTERNAL_ID,
+  'perm-contestant-nominations-organization-edit.json'
 );
+
+/** The dataset's four editors, as its setup stores their sessions and its teardown removes them. */
+export const EDITORS: ReadonlyArray<PermEditor> = Object.freeze([
+  NEW_CANDIDATE_EDITOR,
+  NEW_ORGANIZATION_EDITOR,
+  EDIT_CANDIDATE_EDITOR,
+  EDIT_ORGANIZATION_EDITOR
+]);
 
 /** `external_id` of the nominated party's nomination in the open election, which is seeded with an election symbol. */
 export const EDIT_ORGANIZATION_OPEN_NOMINATION_EXTERNAL_ID = `${CONTESTANT_NOMINATIONS_PREFIX}nom-or-edit-open`;
@@ -384,13 +349,13 @@ export const SEEDED_NOMINATIONS: ReadonlyArray<SeededNomination> = Object.freeze
   },
   {
     externalId: EDIT_ORGANIZATION_LIST_NOMINATION_EXTERNAL_ID,
-    entity: EDIT_ORGANIZATION_GRANT,
+    entity: EDIT_ORGANIZATION_EDITOR.grant,
     contest: LIST_NORTH_CONTEST,
     sortOrder: 3
   },
   {
     externalId: EDIT_ORGANIZATION_OPEN_NOMINATION_EXTERNAL_ID,
-    entity: EDIT_ORGANIZATION_GRANT,
+    entity: EDIT_ORGANIZATION_EDITOR.grant,
     contest: OPEN_NATION_CONTEST,
     sortOrder: 4,
     electionSymbol: EDIT_ORGANIZATION_ELECTION_SYMBOL
@@ -404,7 +369,7 @@ export const SEEDED_NOMINATIONS: ReadonlyArray<SeededNomination> = Object.freeze
   },
   {
     externalId: EDIT_CANDIDATE_NOMINATION_EXTERNAL_ID,
-    entity: EDIT_CANDIDATE_GRANT,
+    entity: EDIT_CANDIDATE_EDITOR.grant,
     contest: LIST_NORTH_CONTEST,
     sortOrder: 6,
     electionSymbol: EDIT_CANDIDATE_ELECTION_SYMBOL,
@@ -414,11 +379,11 @@ export const SEEDED_NOMINATIONS: ReadonlyArray<SeededNomination> = Object.freeze
 
 /** Every entity of the dataset that can hold a nomination. */
 export const NOMINATION_ENTITIES: ReadonlyArray<NominationEntityTarget> = Object.freeze([
-  NEW_CANDIDATE_GRANT,
-  EDIT_CANDIDATE_GRANT,
+  NEW_CANDIDATE_EDITOR.grant,
+  EDIT_CANDIDATE_EDITOR.grant,
   CHILD_CANDIDATE,
-  NEW_ORGANIZATION_GRANT,
-  EDIT_ORGANIZATION_GRANT,
+  NEW_ORGANIZATION_EDITOR.grant,
+  EDIT_ORGANIZATION_EDITOR.grant,
   GREEN_ORGANIZATION,
   LONG_ORGANIZATION,
   PENDING_ORGANIZATION,

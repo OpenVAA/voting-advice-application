@@ -1,10 +1,10 @@
 /**
- * Test constants for the candidate journey spec.
+ * Test constants for the contestant journey spec.
  *
  * Single source of truth for:
  *   - Unregistered candidate identity (email + external_id) — the `test-e2e-base-ca-aa-unregistered` row in the `e2e/base` dataset has NO `email` column (the candidates table has no email), so this file is the canonical home for the candidate's email string that the registration-via-email flow targets.
  *   - Passwords used by the registration → forgot-password → login flow. PASSWORD_1 is the initial password set after opening the mailed sign-in link; PASSWORD_2 is the new password set on the password-reset page, which the mailed recovery link leads to. Both meet the candidate password complexity gates (≥8 chars with mixed-case + number + special char per the PasswordValidator component).
- *   - OPEN_ANSWER_1 — the open-answer (info) text submitted on the first opinion question in the candidate journey.
+ *   - OPEN_ANSWER_1 — the open-answer (info) text submitted on the first opinion question in the contestant journey.
  *   - INFO_QUESTION_ANSWERS — externalId → value map for filling the editable info questions on the candidate profile page.
  *
  * The registration mail and the recovery mail are the `account-access` function's, whose exact subjects are `SIGN_IN_LINK_EMAIL_SUBJECT` and `RECOVERY_LINK_EMAIL_SUBJECT` in `invitationConstants.ts`.

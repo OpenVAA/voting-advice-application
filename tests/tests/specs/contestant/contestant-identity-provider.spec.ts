@@ -705,7 +705,7 @@ test.describe('both entity types registered with the provider', () => {
       fixture: 'raw',
       routeId: 'ContestantAppHome',
       contentTestId: testIds.contestant.identityProviderGate.container,
-      postLoginTestId: testIds.contestant.emailEntry.emailError,
+      postLoginTestId: testIds.shared.account.emailEntry.emailError,
       reach: async (page) => {
         const heldAddress = await identityProviderFlow.addressAnotherAccountHolds();
         await identityProviderFlow.mintIdentity(page.context(), { outcome: 'success' });

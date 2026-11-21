@@ -49,16 +49,6 @@ export interface RelayRecordingProxy {
 /** Headers that belong to the hop between the browser and the proxy, not to the request. */
 const HOP_HEADERS = new Set(['proxy-connection', 'proxy-authorization', 'keep-alive']);
 
-/** The request's headers without the proxy hop's own. */
-function forwardedHeaders(headers: http.IncomingHttpHeaders): http.OutgoingHttpHeaders {
-  return Object.fromEntries(Object.entries(headers).filter(([name]) => !HOP_HEADERS.has(name.toLowerCase())));
-}
-
-/** A URL's host name as a socket accepts it: an IPv6 literal loses its brackets. */
-function socketHost(hostname: string): string {
-  return hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname;
-}
-
 /**
  * Start a recording proxy on a free loopback port.
  * @returns The proxy, listening.
@@ -138,4 +128,14 @@ export async function startRelayRecordingProxy(): Promise<RelayRecordingProxy> {
         proxy.close(() => resolve());
       })
   };
+}
+
+/** A URL's host name as a socket accepts it: an IPv6 literal loses its brackets. */
+function socketHost(hostname: string): string {
+  return hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname;
+}
+
+/** The request's headers without the proxy hop's own. */
+function forwardedHeaders(headers: http.IncomingHttpHeaders): http.OutgoingHttpHeaders {
+  return Object.fromEntries(Object.entries(headers).filter(([name]) => !HOP_HEADERS.has(name.toLowerCase())));
 }

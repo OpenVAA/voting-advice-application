@@ -21,12 +21,12 @@ export type PasswordSetterField = 'password' | 'confirmation';
 /** The test ids of each field's block, which holds its control, and of its error. */
 const FIELD_TEST_IDS: Record<PasswordSetterField, { block: string; error: string }> = {
   password: {
-    block: testIds.contestant.passwordSetter.password,
-    error: testIds.contestant.passwordSetter.passwordError
+    block: testIds.shared.account.passwordSetter.password,
+    error: testIds.shared.account.passwordSetter.passwordError
   },
   confirmation: {
-    block: testIds.contestant.passwordSetter.confirm,
-    error: testIds.contestant.passwordSetter.confirmationError
+    block: testIds.shared.account.passwordSetter.confirm,
+    error: testIds.shared.account.passwordSetter.confirmationError
   }
 };
 
@@ -37,14 +37,14 @@ export function createContestantPasswordSetter(page: Page) {
      */
     async setPassword(password: string): Promise<void> {
       await page
-        .getByTestId(testIds.contestant.passwordSetter.password)
-        .getByTestId(testIds.contestant.password.field)
+        .getByTestId(testIds.shared.account.passwordSetter.password)
+        .getByTestId(testIds.shared.account.password.field)
         .fill(password);
       await page
-        .getByTestId(testIds.contestant.passwordSetter.confirm)
-        .getByTestId(testIds.contestant.password.field)
+        .getByTestId(testIds.shared.account.passwordSetter.confirm)
+        .getByTestId(testIds.shared.account.password.field)
         .fill(password);
-      await page.getByTestId(testIds.contestant.password.submit).click();
+      await page.getByTestId(testIds.shared.account.password.submit).click();
     },
     /**
      * Assert that a field shows its error and that its control is marked invalid.
@@ -54,7 +54,7 @@ export function createContestantPasswordSetter(page: Page) {
     async expectFieldError(field: PasswordSetterField): Promise<void> {
       const { block, error } = FIELD_TEST_IDS[field];
       await expect(page.getByTestId(error)).toBeVisible();
-      await expect(page.getByTestId(block).getByTestId(testIds.contestant.password.field)).toHaveAttribute(
+      await expect(page.getByTestId(block).getByTestId(testIds.shared.account.password.field)).toHaveAttribute(
         'aria-invalid',
         'true'
       );
@@ -63,7 +63,7 @@ export function createContestantPasswordSetter(page: Page) {
      * Assert the password setter widget is NOT rendered
      */
     async expectNotVisible(): Promise<void> {
-      await expect(page.getByTestId(testIds.contestant.passwordSetter.password)).toHaveCount(0, { timeout: 5_000 });
+      await expect(page.getByTestId(testIds.shared.account.passwordSetter.password)).toHaveCount(0, { timeout: 5_000 });
     }
   };
 }

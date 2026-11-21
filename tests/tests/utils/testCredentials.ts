@@ -6,7 +6,7 @@ import { TESTS_DIR } from './testsDir';
 /**
  * Shared credentials for the E2E identities registered on the base dataset.
  *
- * Used by the `auth-setup` project (tests/tests/setup/shared/auth.setup.ts), by the base teardown, by the contestant a11y spec and the Playwright configuration (the session path of the terms-pending identity, which the configuration gives to the `contestant-terms-gate-phone` project), by the entity-selection setup, teardown and spec (the three identities at the end of this file) and by the perm-* setups (TEST_CANDIDATE_PASSWORD only).
+ * Used by the `auth-setup` project (tests/tests/setup/shared/auth.setup.ts), by the base teardown, by the contestant a11y spec and the Playwright configuration (the session path of the terms-pending identity, which the configuration gives to the `contestant-terms-gate-phone` project), by the entity-selection setup, teardown and spec (the three identities at the end of this file) and by the perm-* setups (TEST_PASSWORD only).
  *
  * The values are self-contained literals rather than being derived at module load from a dev-seed template, so a change to a template can never make this module throw at import time and crash every consumer (including the default-suite perm-* setups that only need the password literal). The two addresses that are asked a mailed link on every run, `TEST_PASSWORDLESS_EMAIL` and `L10N_POSITIVE_CANDIDATE_EMAIL`, carry the run tag of `runAddressTag.ts` instead, and the module throws at import time only when `E2E_RUN_ADDRESS_TAG` holds a malformed tag.
  *
@@ -40,7 +40,7 @@ import { TESTS_DIR } from './testsDir';
  *
  * ## The analytics terms identities
  *
- * Two users of the `perm-analytics-tracking` dataset, one for each of its member candidates, registered by the terms-tracking spec (`specs/contestant/contestant-terms-tracking.spec.ts`) with `{ acceptTermsOfUse: false }` and unregistered by the dataset's teardown. The **granting** user (`ANALYTICS_TERMS_GRANTING_EMAIL`) accepts the terms of use with the opt-out unticked, and the **refusing** user (`ANALYTICS_TERMS_REFUSING_EMAIL`) accepts with it ticked. Both use `TEST_CANDIDATE_PASSWORD`.
+ * Two users of the `perm-analytics-tracking` dataset, one for each of its member candidates, registered by the terms-tracking spec (`specs/contestant/contestant-terms-tracking.spec.ts`) with `{ acceptTermsOfUse: false }` and unregistered by the dataset's teardown. The **granting** user (`ANALYTICS_TERMS_GRANTING_EMAIL`) accepts the terms of use with the opt-out unticked, and the **refusing** user (`ANALYTICS_TERMS_REFUSING_EMAIL`) accepts with it ticked. Both use `TEST_PASSWORD`.
  *
  * SECURITY: these are LOCAL/E2E-only credentials on the `test.openvaa.local` domain, same posture as the existing perm-* registered candidates. No production code path references them (`grep -rn TEST_CANDIDATE_EMAIL apps packages` → no hits), and `e2e/base` is seeded only against a local Supabase instance.
  */
@@ -54,8 +54,8 @@ export const TEST_CANDIDATE_EXTERNAL_ID = 'test-e2e-base-ca-aa-1';
 /** Email minted for the registered base candidate (perm-* naming convention). */
 export const TEST_CANDIDATE_EMAIL = `${TEST_CANDIDATE_EXTERNAL_ID}@test.openvaa.local`;
 
-/** tests/-only password constant used by forceRegister + UI login flows. */
-export const TEST_CANDIDATE_PASSWORD = 'Password1!';
+/** The password of every test user the suite registers, used by the registration helpers and the UI login flows. */
+export const TEST_PASSWORD = 'Password1!';
 
 /**
  * external_id of the base-dataset candidate edited by the user who has not accepted the terms of use.

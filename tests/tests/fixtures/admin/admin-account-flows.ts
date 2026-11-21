@@ -39,92 +39,6 @@ import type { InvitationFlowFixture } from '../shared/invitationFlow.fixture';
 import type { AdminLoginPageFixture } from './adminLoginPage.fixture';
 import type { AdminSetPasswordGateFixture } from './adminSetPasswordGate.fixture';
 
-/**
- * The Admin App's forgot-password page, which renders the shared screen under its own route and root test id and leads to its own "email sent" page.
- *
- * @param page - The page.
- */
-export function createAdminForgotPasswordPage(page: Page): ContestantForgotPasswordPageFixture {
-  return createContestantForgotPasswordPage(page, {
-    route: 'AdminAppForgotPassword',
-    container: testIds.admin.forgotPassword.container,
-    emailSentContainer: testIds.admin.emailSent.container
-  });
-}
-
-/**
- * The Admin App's "email sent" page, which renders the shared screen under its own route and root test id.
- *
- * @param page - The page.
- */
-export function createAdminEmailSentPage(page: Page): ContestantEmailSentPageFixture {
-  return createContestantEmailSentPage(page, new SupabaseAdminClient(), {
-    route: 'AdminAppEmailSent',
-    container: testIds.admin.emailSent.container
-  });
-}
-
-/**
- * The Admin App's password-reset page, which renders the shared screen under its own route and root test id.
- *
- * @param page - The page.
- */
-export function createAdminPasswordResetPage(page: Page): ContestantPasswordResetPageFixture {
-  return createContestantPasswordResetPage(page, {
-    route: 'AdminAppResetPassword',
-    container: testIds.admin.passwordReset.container
-  });
-}
-
-/** The password an admin chooses on the Admin App's password-reset page. A credential: it is typed and never asserted on. */
-const RECOVERED_PASSWORD = 'Rec0vered!Adm1n-Tp8w';
-
-/**
- * An admin with an account and a password who forgot it recovers it through the Admin App: "Forgot Password?" on the login, the request sent and witnessed, the "email sent" page, the mailed recovery link opened on the password-reset page, a new password and the Admin home. Signed out again, the old password is refused at the Admin login and the new one admitted.
- *
- * @param fixtures - The test's invitation flow and the Admin App's pages.
- * @param email - The admin's address.
- * @param oldPassword - The password the admin holds before the recovery.
- */
-export async function recoverPasswordInTheAdminApp(
-  {
-    page,
-    invitationFlow,
-    adminLoginPage,
-    adminForgotPasswordPage,
-    adminPasswordResetPage
-  }: {
-    page: Page;
-    invitationFlow: InvitationFlowFixture;
-    adminLoginPage: AdminLoginPageFixture;
-    adminForgotPasswordPage: ContestantForgotPasswordPageFixture;
-    adminPasswordResetPage: ContestantPasswordResetPageFixture;
-  },
-  email: string,
-  oldPassword: string
-): Promise<void> {
-  await adminLoginPage.goToPage();
-  await adminLoginPage.openForgotPassword();
-  const outcome = await invitationFlow.witnessPageRequest(page, () => adminForgotPasswordPage.submit(email));
-  expect(outcome, 'the page’s request handed a mail over').toBe('sent');
-  await adminForgotPasswordPage.expectLedToEmailSent(email);
-
-  await openMailedLink(page, await invitationFlow.recoveryLinkToOpen(email, { locale: 'en', next: '/admin' }));
-
-  await adminPasswordResetPage.expectShown();
-  await adminPasswordResetPage.expectAddress(email);
-  await adminPasswordResetPage.setPassword(RECOVERED_PASSWORD);
-  await adminLoginPage.expectAdminHome();
-
-  await page.context().clearCookies();
-  await adminLoginPage.goToPage();
-  await adminLoginPage.login(email, oldPassword);
-  await adminLoginPage.expectSignInRefused();
-  await adminLoginPage.goToPage();
-  await adminLoginPage.login(email, RECOVERED_PASSWORD);
-  await adminLoginPage.expectAdminHome();
-}
-
 type AdminAccountFlowsFixtures = {
   adminLoginPage: AdminLoginPageFixture;
   adminForgotPasswordPage: ContestantForgotPasswordPageFixture;
@@ -181,5 +95,91 @@ export const test = base.extend<AdminAccountFlowsFixtures, AdminAccountFlowsWork
     await use(createContestantEntityHomePage(page, new SupabaseAdminClient()));
   }
 });
+
+/**
+ * The Admin App's forgot-password page, which renders the shared screen under its own route and root test id and leads to its own "email sent" page.
+ *
+ * @param page - The page.
+ */
+export function createAdminForgotPasswordPage(page: Page): ContestantForgotPasswordPageFixture {
+  return createContestantForgotPasswordPage(page, {
+    route: 'AdminAppForgotPassword',
+    container: testIds.admin.forgotPassword.page,
+    emailSentContainer: testIds.admin.emailSent.page
+  });
+}
+
+/**
+ * The Admin App's "email sent" page, which renders the shared screen under its own route and root test id.
+ *
+ * @param page - The page.
+ */
+export function createAdminEmailSentPage(page: Page): ContestantEmailSentPageFixture {
+  return createContestantEmailSentPage(page, new SupabaseAdminClient(), {
+    route: 'AdminAppEmailSent',
+    container: testIds.admin.emailSent.page
+  });
+}
+
+/**
+ * The Admin App's password-reset page, which renders the shared screen under its own route and root test id.
+ *
+ * @param page - The page.
+ */
+export function createAdminPasswordResetPage(page: Page): ContestantPasswordResetPageFixture {
+  return createContestantPasswordResetPage(page, {
+    route: 'AdminAppResetPassword',
+    container: testIds.admin.passwordReset.page
+  });
+}
+
+/** The password an admin chooses on the Admin App's password-reset page. A credential: it is typed and never asserted on. */
+const RECOVERED_PASSWORD = 'Rec0vered!Adm1n-Tp8w';
+
+/**
+ * An admin with an account and a password who forgot it recovers it through the Admin App: "Forgot Password?" on the login, the request sent and witnessed, the "email sent" page, the mailed recovery link opened on the password-reset page, a new password and the Admin home. Signed out again, the old password is refused at the Admin login and the new one admitted.
+ *
+ * @param fixtures - The test's invitation flow and the Admin App's pages.
+ * @param email - The admin's address.
+ * @param oldPassword - The password the admin holds before the recovery.
+ */
+export async function recoverPasswordInTheAdminApp(
+  {
+    page,
+    invitationFlow,
+    adminLoginPage,
+    adminForgotPasswordPage,
+    adminPasswordResetPage
+  }: {
+    page: Page;
+    invitationFlow: InvitationFlowFixture;
+    adminLoginPage: AdminLoginPageFixture;
+    adminForgotPasswordPage: ContestantForgotPasswordPageFixture;
+    adminPasswordResetPage: ContestantPasswordResetPageFixture;
+  },
+  email: string,
+  oldPassword: string
+): Promise<void> {
+  await adminLoginPage.goToPage();
+  await adminLoginPage.openForgotPassword();
+  const outcome = await invitationFlow.witnessPageRequest(page, () => adminForgotPasswordPage.submit(email));
+  expect(outcome, 'the page’s request handed a mail over').toBe('sent');
+  await adminForgotPasswordPage.expectLedToEmailSent(email);
+
+  await openMailedLink(page, await invitationFlow.recoveryLinkToOpen(email, { locale: 'en', next: '/admin' }));
+
+  await adminPasswordResetPage.expectShown();
+  await adminPasswordResetPage.expectAddress(email);
+  await adminPasswordResetPage.setPassword(RECOVERED_PASSWORD);
+  await adminLoginPage.expectAdminHome();
+
+  await page.context().clearCookies();
+  await adminLoginPage.goToPage();
+  await adminLoginPage.login(email, oldPassword);
+  await adminLoginPage.expectSignInRefused();
+  await adminLoginPage.goToPage();
+  await adminLoginPage.login(email, RECOVERED_PASSWORD);
+  await adminLoginPage.expectAdminHome();
+}
 
 export { expect };

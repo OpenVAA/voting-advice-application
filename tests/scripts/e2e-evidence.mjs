@@ -8,15 +8,16 @@
  *
  * It is deliberately a SEPARATE, after-the-fact step rather than a block inside `e2e-run.sh`: it can be re-run against any historical run directory without re-running the suite, and a bug here can never change a run's outcome.
  *
- * A VOID RUN IS NOT A RED RUN. When the host is suspended during a run, `e2e-run.sh` ends it with exit 8 and leaves `VOID-host-suspend.txt` in the run directory. Such a run usually still has a `results.json`, full of interrupted and never-started tests, and its counts are not a verdict about the tree. The marker is therefore carried into both artifacts (`void` in `summary.json`, a `void:` line in `provenance.txt`) and into the console line, so that no reader of the counts can take them for one.
+ * A VOID RUN IS NOT A RED RUN. When the wrapper is not scheduled for its heartbeat's threshold or more during a run, as a rule because the host was suspended, `e2e-run.sh` ends it with exit 8 and leaves `VOID-host-suspend.txt` in the run directory. Such a run usually still has a `results.json`, full of interrupted and never-started tests, and its counts are not a verdict about the tree. The marker is therefore carried into both artifacts (`void` in `summary.json`, a `void:` line in `provenance.txt`) and into the console line, so that no reader of the counts can take them for one. A test that failed before the gap is not the gap's doing, though: every test with a result that ended `failed` before the marker's last beat is listed in `summary.json` (`failedBeforeGap`) and in `provenance.txt`, so that an intermittent failure is not lost with the void run.
  *
  * STATUS 9 IS NOT A GREEN RUN. `e2e-run.sh` prepares the identity provider's test environment before the dev server starts and restores the shared stack at its end. When either fails it exits 9 whatever Playwright reported, and records its own status in `wrapper-exit`, the preparation in `idp-env.txt` and the restore in `restore.txt`. The status and the last line of each record are carried into both artifacts (`wrapperExit` and `identityProvider` in `summary.json`, `wrapper-exit:`, `idp-prepare:` and `restore:` lines in `provenance.txt`) and a status 9 into the console line, so that no reader of the counts can take such a run for a green one.
  *
- * DID-NOT-RUN IS NOT A SKIP. Playwright reports both as `status: "skipped"`. The discriminator is `results.length`: a test the runner never executed -- because a project it depends on failed -- carries an EMPTY results array and no annotation, while a declaratively skipped test carries a `skip`/`fixme` annotation or a recorded skipped result. Under this project's cardinal E2E rule a did-not-run test counts as a FAILURE, so the ambiguous case (empty results, no annotation) is classified as `didNotRun`, never as `skipped`.
+ * The report is read, and every test classified, by `e2e-report.mjs`, the module `e2e-spec-verdict.mjs` reads it with; a test that did not run is counted as `didNotRun`, never as `skipped`.
  */
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { readReport, repoRoot, ReportError, resolveFromRepo, TITLE_SEPARATOR } from './e2e-report.mjs';
 
 const args = process.argv.slice(2);
 let runDir = '';
@@ -41,8 +42,7 @@ if (runDir === '') {
   process.exit(2);
 }
 
-const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
-const dir = path.isAbsolute(runDir) ? runDir : path.join(repoRoot, runDir);
+const dir = resolveFromRepo(runDir);
 
 /** Read a wrapper-written file, trimmed. Returns `fallback` when the file is absent, so a partial run still produces a readable record rather than a crash. */
 function readOr(name, fallback) {
@@ -67,7 +67,7 @@ const voidRun =
   voidText === ''
     ? null
     : {
-        reason: 'the host was suspended during the run',
+        reason: 'the wrapper was not scheduled for SUSPEND_THRESHOLD_MS or more during the run',
         marker: VOID_MARKER,
         gapMs: Number(voidFields.gap_ms ?? Number.NaN),
         lastBeatBeforeGapUtc: voidFields.last_beat_before_gap_utc ?? '',
@@ -96,16 +96,20 @@ const identityProvider = {
   restore: lastLine('restore.txt')
 };
 
-const resultsPath = path.join(dir, 'results.json');
-if (!fs.existsSync(resultsPath)) {
+let report;
+let tests;
+try {
+  ({ report, tests } = readReport(dir));
+} catch (error) {
+  if (!(error instanceof ReportError)) throw error;
+  const consequence = error.code === 'missing' ? 'there are no counts to summarise' : 'its counts cannot be summarised';
   console.error(
     voidRun
-      ? `e2e-evidence.mjs: ${resultsPath} is missing -- the run is VOID (${voidRun.reason}; see ${VOID_MARKER}), so there are no counts to summarise`
-      : `e2e-evidence.mjs: ${resultsPath} is missing -- there is no run to summarise`
+      ? `e2e-evidence.mjs: ${error.message} -- the run is VOID (${voidRun.reason}; see ${VOID_MARKER}), so ${consequence}`
+      : `e2e-evidence.mjs: ${error.message} -- ${consequence}`
   );
   process.exit(3);
 }
-const report = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
 
 /** A zero-filled tally, used for the run total and for each per-project bucket. */
 function blank() {
@@ -113,48 +117,35 @@ function blank() {
 }
 const counts = blank();
 const byProject = {};
-
-/** Walk the report's recursive suite tree and classify every test entry exactly once. */
-function walk(suites) {
-  for (const suite of suites ?? []) {
-    for (const spec of suite.specs ?? []) {
-      for (const test of spec.tests ?? []) {
-        const project = test.projectName || '(no project)';
-        byProject[project] = byProject[project] ?? blank();
-        const bucket = byProject[project];
-        const results = test.results ?? [];
-        const annotations = (test.annotations ?? []).map((a) => a.type);
-        const declarativeSkip = annotations.includes('skip') || annotations.includes('fixme');
-        const durationMs = results.reduce((sum, r) => sum + (r.duration ?? 0), 0);
-        let kind;
-        if (test.status === 'skipped') {
-          kind = results.length === 0 && !declarativeSkip ? 'didNotRun' : 'skipped';
-        } else if (test.status === 'expected') {
-          kind = 'passed';
-        } else if (test.status === 'flaky') {
-          kind = 'flaky';
-        } else {
-          kind = 'failed';
-        }
-        counts.total += 1;
-        counts[kind] += 1;
-        counts.durationMs += durationMs;
-        bucket.total += 1;
-        bucket[kind] += 1;
-        bucket.durationMs += durationMs;
-      }
-    }
-    walk(suite.suites);
+for (const test of tests) {
+  byProject[test.project] = byProject[test.project] ?? blank();
+  for (const bucket of [counts, byProject[test.project]]) {
+    bucket.total += 1;
+    bucket[test.kind] += 1;
+    bucket.durationMs += test.durationMs;
   }
 }
-walk(report.suites);
 delete counts.durationMs;
+
+/** In a void run, every test with a result that ended `failed` before the last beat before the gap, named `project › file › title`. */
+const lastBeatMs = voidRun ? Date.parse(voidRun.lastBeatBeforeGapUtc) : Number.NaN;
+const failedBeforeGap = voidRun
+  ? tests
+      .filter((t) => t.results.some((r) => r.status === 'failed' && r.endMs <= lastBeatMs))
+      .map((t) => [t.project, t.file, t.title].join(TITLE_SEPARATOR))
+  : null;
+if (voidRun && Number.isNaN(lastBeatMs)) {
+  console.error(
+    `e2e-evidence.mjs: ${VOID_MARKER} records no readable last_beat_before_gap_utc, so no failure can be placed before the gap`
+  );
+}
 
 const stats = report.stats ?? {};
 const wallClockMs = Math.round(stats.duration ?? 0);
 const summary = {
   runDir: path.relative(repoRoot, dir),
   void: voidRun,
+  failedBeforeGap,
   wrapperExit,
   identityProvider,
   counts,
@@ -200,6 +191,12 @@ const provenance = [
   `preflight-ok:   ${readOr('preflight-successes', '(not recorded)')}`,
   `preflight-fail: ${readOr('preflight-failures', '(not recorded)')}`,
   `void:           ${voidRun ? `YES -- ${voidRun.reason}, gap ${voidRun.gapMs} ms (${VOID_MARKER}); the counts are not a verdict` : 'no'}`,
+  ...(failedBeforeGap === null
+    ? []
+    : [
+        `failed-before-gap: ${failedBeforeGap.length}${failedBeforeGap.length > 0 ? ' -- diagnose each like any red test' : ''}`,
+        ...failedBeforeGap.map((id) => `  ${id}`)
+      ]),
   `wrapper-exit:   ${wrapperExit === null ? '(not recorded)' : wrapperExit === 9 ? `9 -- ${WRAPPER_STATUS_9}` : wrapperExit}`,
   `idp-prepare:    ${identityProvider.prepare ?? '(not recorded)'}`,
   `restore:        ${identityProvider.restore ?? '(not recorded)'}`
@@ -208,6 +205,8 @@ fs.writeFileSync(path.join(dir, 'provenance.txt'), `${provenance}\n`);
 
 console.info(
   `e2e-evidence.mjs: ${summary.runDir} -- total ${counts.total}, passed ${counts.passed}, failed ${counts.failed}, flaky ${counts.flaky}, skipped ${counts.skipped}, didNotRun ${counts.didNotRun}${
-    voidRun ? ` -- VOID: ${voidRun.reason} (gap ${voidRun.gapMs} ms); these counts are not a verdict` : ''
+    voidRun
+      ? ` -- VOID: ${voidRun.reason} (gap ${voidRun.gapMs} ms); these counts are not a verdict, but ${failedBeforeGap.length} failed before the gap`
+      : ''
   }${wrapperExit === 9 ? ` -- wrapper status 9: ${WRAPPER_STATUS_9}` : ''}`
 );

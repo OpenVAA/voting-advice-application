@@ -17,7 +17,7 @@
  *  - expectSupportThenResendInBody() — below the sentences, the body holds the sentence whose words lead to support, then "Send again", and the actions hold neither.
  *  - expectAskedAgain(shown)       — the sentence for a request made again too soon is there or is not.
  *  - shape(address)                — what the screen shows, as data to compare with another visit to it.
- *  - expectResendWaiting()         — the control is unavailable, can still be focused, and is described by the count of the wait in its label.
+ *  - expectResendWaiting()         — the control is unavailable, can still be focused, and carries the count of the wait in its label and its accessible name alone.
  *  - advancePastTheWait()          — move the page's clock past the wait.
  *  - expectResendReady()           — the wait is over: the control is available and its count is gone.
  *  - pressResend(address, { code }) — give the server's slot back, then press the control; focus stays on it.
@@ -31,13 +31,12 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { RESEND_WAIT_SECONDS } from '../../../../apps/frontend/src/lib/auth/entryFlow/entryFlow';
 import { TIMEOUTS } from '../../helpers';
 import { buildRoute } from '../../utils/buildRoute';
+import { messagesOf } from '../../utils/messages';
+import { expectCountInName } from '../../utils/resendCountdown';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
 import { readScreenShape } from '../shared/screenShape.fixture';
 import type { Page } from '@playwright/test';
@@ -50,26 +49,13 @@ import type { ScreenShape } from '../shared/screenShape.fixture';
 export type ContestantEmailSentStatus = 'requested' | 'ready';
 
 /** The messages of the screen, read from the English message source rather than copied. */
-const EMAIL_SENT_MESSAGES = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.emailSent.json'), 'utf8')
-  ) as Record<string, Record<string, unknown>>
-)['contestantApp.emailSent'];
+const EMAIL_SENT_MESSAGES = messagesOf('contestantApp.emailSent');
 
 /** The messages shared by the screens of the app, read from the English message source rather than copied. */
-const COMMON_MESSAGES = (
-  JSON.parse(fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/common.json'), 'utf8')) as Record<
-    string,
-    Record<string, unknown>
-  >
-)['common'];
+const COMMON_MESSAGES = messagesOf('common');
 
 /** The messages shared by the screens of the Contestant App, read from the English message source rather than copied. */
-const CONTESTANT_COMMON_MESSAGES = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.common.json'), 'utf8')
-  ) as Record<string, Record<string, unknown>>
-)['contestantApp.common'];
+const CONTESTANT_COMMON_MESSAGES = messagesOf('contestantApp.common');
 
 /** The first sentence of each wording that names the address, with the address's place marked by `{email}` inside `<strong>`. */
 const INTRO_WITH_ADDRESS: Readonly<Record<'signIn' | 'recovery', string>> = Object.freeze({
@@ -106,7 +92,7 @@ export function createContestantEmailSentPage(
   admin: SupabaseAdminClient,
   { route = 'ContestantAppEmailSent', container = testIds.contestant.emailSent.page }: EmailSentPageOf = {}
 ) {
-  const ids = { ...testIds.contestant.emailSent, page: container };
+  const ids = { ...testIds.shared.account.emailSent, page: container };
 
   return {
     /**
@@ -259,19 +245,13 @@ export function createContestantEmailSentPage(
     },
 
     /**
-     * Assert that the control that asks for another email is waiting: the screen states so, the control is marked unavailable, the count of the wait in its label is shown and is named as the control's description, and the control still takes focus.
+     * Assert that the control that asks for another email is waiting: the screen states so, the control is marked unavailable, the count of the wait is shown in its label and read in its name alone (see {@link expectCountInName}), and the control still takes focus.
      */
     async expectResendWaiting(): Promise<void> {
       await expect(page.getByTestId(ids.page)).toHaveAttribute('data-resend', 'waiting');
       const resend = page.getByTestId(ids.resend);
       await expect(resend).toHaveAttribute('aria-disabled', 'true');
-
-      const countdown = page.getByTestId(ids.countdown);
-      await expect(countdown).toBeVisible();
-      const countdownId = (await countdown.getAttribute('id')) ?? '';
-      expect(countdownId, 'the id of the count of the wait').not.toBe('');
-      const describedBy = ((await resend.getAttribute('aria-describedby')) ?? '').split(/\s+/);
-      expect(describedBy, 'the ids the control names as its description').toContain(countdownId);
+      await expectCountInName({ resend, countdown: page.getByTestId(ids.countdown) });
 
       await resend.focus();
       await expect(resend).toBeFocused();

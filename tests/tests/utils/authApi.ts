@@ -6,23 +6,15 @@
  * Nothing here logs or throws a token or a password. An error names the operation, the status and the service's error code.
  */
 
+import * as jose from 'jose';
 import { supabaseAnonKey } from './supabaseAnonKey';
-
-/** Same fallback the tests' admin client uses. */
-const SUPABASE_URL = process.env.SUPABASE_URL ?? 'http://localhost:54321';
+import { supabaseUrl } from './supabaseUrl';
+import type { GrantClaim } from '../../../apps/frontend/src/lib/auth/roles';
 
 /** The two tokens of a session. Both are credentials: neither goes into a log, a test title or an assertion message. */
 export interface SessionTokens {
   accessToken: string;
   refreshToken: string;
-}
-
-/** One grant as the access token's `grants` claim and `public.grants` both state it. */
-export interface GrantSpec {
-  scope: string;
-  target_type: string | null;
-  target_id: string | null;
-  role: string;
 }
 
 /** The answer of a PostgREST call: its status and its JSON body, as received. */
@@ -41,7 +33,7 @@ export interface RpcAnswer {
  */
 async function call(method: string, route: string, body: unknown, bearer?: string): Promise<Response> {
   const key = supabaseAnonKey();
-  return fetch(`${SUPABASE_URL}${route}`, {
+  return fetch(`${supabaseUrl()}${route}`, {
     method,
     headers: { 'Content-Type': 'application/json', apikey: key, Authorization: `Bearer ${bearer ?? key}` },
     body: JSON.stringify(body)
@@ -214,15 +206,14 @@ export async function userEntities({
  * @returns The claim's array. An empty array means the token states that its user holds no grant.
  * @throws Error when the token has no decodable payload, or when the payload carries no `grants` array: a token without the claim says nothing about grants, which is not the same as stating none.
  */
-export function readGrantsClaim(accessToken: string): Array<GrantSpec> {
-  const segment = accessToken.split('.')[1];
-  let payload: unknown;
+export function readGrantsClaim(accessToken: string): Array<GrantClaim> {
+  let payload: jose.JWTPayload;
   try {
-    payload = JSON.parse(Buffer.from(segment ?? '', 'base64url').toString('utf8'));
+    payload = jose.decodeJwt(accessToken);
   } catch {
     throw new Error('readGrantsClaim: the access token has no decodable payload');
   }
-  const grants = (payload as { grants?: unknown } | null)?.grants;
+  const grants = payload.grants;
   if (!Array.isArray(grants)) throw new Error('readGrantsClaim: the access token carries no grants array');
-  return grants as Array<GrantSpec>;
+  return grants as Array<GrantClaim>;
 }
