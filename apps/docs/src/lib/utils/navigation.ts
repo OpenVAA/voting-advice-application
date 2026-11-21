@@ -15,9 +15,9 @@ export function isActive(route: string, url: URL): boolean {
 }
 
 /**
- * Returns the leaf item of the menu that stands for the current page: the leaf whose route is the URL's path or, when
- * no leaf has that route, the leaf with the longest route the path lies below. A leaf's route can be a prefix of
- * another leaf's, as a subsection's Overview item is of its siblings, so the first active leaf is not enough.
+ * Returns the leaf item of the menu that stands for the current page: the leaf whose route is the URL's path or, when no leaf has that route, the leaf with the longest route the path lies below.
+ *
+ * A leaf's route can be a prefix of another leaf's, as a subsection's Overview item is of its siblings, so the first active leaf is not enough.
  */
 function findCurrentLeaf(items: Array<NavigationSection | NavigationItem>, url: URL): NavigationItem | null {
   let current: NavigationItem | null = null;
