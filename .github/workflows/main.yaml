@@ -619,9 +619,9 @@ jobs:
       - name: "Write the local Supabase keys into .env"
         run: tests/scripts/ci-write-local-keys.sh
 
-      # The two guards `yarn test:e2e` runs before Playwright; the wrapper below runs Playwright only.
+      # The three guards `yarn test:e2e` runs before Playwright; the wrapper below runs Playwright only.
       - name: "Run the E2E wiring guards"
-        run: yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring
+        run: yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && yarn assert:e2e-coverage-tags
 
       # The same wrapper as a local run. It spawns and owns the dev server on the project the suite
       # seeds, runs the preflight, and writes the dev-server log, the reports and the verdict into

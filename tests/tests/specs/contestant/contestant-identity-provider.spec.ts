@@ -135,7 +135,7 @@ async function returnWithProvedAddress(page: Page): Promise<{ sub: string; addre
 }
 
 test.describe('registration', () => {
-  test('a new candidate identifies at the provider, gives the address they will sign in with and goes straight to editing; the mailed link proves the address @reg-idp', async ({
+  test('a new candidate identifies at the provider, gives the address they will sign in with and goes straight to editing; the mailed link proves the address @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -167,7 +167,10 @@ test.describe('registration', () => {
     await setPasswordGate.expectAddress(address);
   });
 
-  test('the identity provider receives the locale of the registration @reg-idp', async ({ page, context }) => {
+  test('the identity provider receives the locale of the registration @registration-identity-provider', async ({
+    page,
+    context
+  }) => {
     await identityProviderFlow.mintIdentity(context, { outcome: 'success' });
     await identityProviderFlow.startIdentityProviderFlow(page, { locale: 'fi' });
     await createContestantIdentityProviderGate(page).expectShown({
@@ -180,7 +183,7 @@ test.describe('registration', () => {
 });
 
 test.describe('identification failures', () => {
-  test('a cancel at the provider shows the cancel, offers Try again and makes no account @reg-idp', async ({
+  test('a cancel at the provider shows the cancel, offers Try again and makes no account @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -194,7 +197,10 @@ test.describe('identification failures', () => {
     await identityProviderFlow.expectNoAccountFor(sub);
   });
 
-  test('an error at the provider shows a failure that trying again may cure @reg-idp', async ({ page, context }) => {
+  test('an error at the provider shows a failure that trying again may cure @registration-identity-provider', async ({
+    page,
+    context
+  }) => {
     const sub = await identityProviderFlow.mintIdentity(context, { outcome: 'provider-error' });
     await identityProviderFlow.startIdentityProviderFlow(page);
     const errorPage = createContestantIdentityProviderErrorPage(page);
@@ -226,7 +232,7 @@ test.describe('accessibility scans', () => {
 });
 
 test.describe('a returning identity', () => {
-  test('an identity with a proved address and a password is told that it has registered and to sign in with its address next time, and goes on to its home without being asked for an address @reg-idp', async ({
+  test('an identity with a proved address and a password is told that it has registered and to sign in with its address next time, and goes on to its home without being asked for an address @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -242,7 +248,7 @@ test.describe('a returning identity', () => {
     await gate.expectGone();
   });
 
-  test('an identity that gave no address is told that it has registered and asked for an address before any protected page, its settings page opened directly included @reg-idp', async ({
+  test('an identity that gave no address is told that it has registered and asked for an address before any protected page, its settings page opened directly included @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -267,7 +273,7 @@ test.describe('a returning identity', () => {
     await identityProviderFlow.expectSettings(page);
   });
 
-  test('an identity whose grant an administrator removed is shown its pending address once, gets no new candidate and is told there is nothing to edit, with no address shown @reg-idp', async ({
+  test('an identity whose grant an administrator removed is shown its pending address once, gets no new candidate and is told there is nothing to edit, with no address shown @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -361,7 +367,7 @@ async function returnWithPendingAddress(page: Page): Promise<{ sub: string; addr
 }
 
 test.describe('an address awaiting its link', () => {
-  test('an identity that gave an address and did not open its link is shown the address once, can have the link sent again, and is reminded of it on its home @reg-idp', async ({
+  test('an identity that gave an address and did not open its link is shown the address once, can have the link sent again, and is reminded of it on its home @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -387,7 +393,7 @@ test.describe('an address awaiting its link', () => {
     await home.expectEmailTask(address);
   });
 
-  test('an identity whose address awaits its link opens its settings from the reminder, is refused another account’s address and saves a fresh one, which is mailed and reminded @reg-idp', async ({
+  test('an identity whose address awaits its link opens its settings from the reminder, is refused another account’s address and saves a fresh one, which is mailed and reminded @registration-identity-provider', async ({
     page
   }) => {
     const home = createContestantHomePage(page);
@@ -527,7 +533,7 @@ test.describe('a link that confirms an address', () => {
     for (const context of openedContexts.splice(0)) await context.close();
   });
 
-  test('two identities give one address and the first opens its link; the second’s link, confirmed in the browser where it is signed in, signs that browser out and ends on the login page, which says the address is now another account’s @reg-idp', async ({
+  test('two identities give one address and the first opens its link; the second’s link, confirmed in the browser where it is signed in, signs that browser out and ends on the login page, which says the address is now another account’s @registration-identity-provider', async ({
     page,
     browser
   }) => {
@@ -550,7 +556,7 @@ test.describe('a link that confirms an address', () => {
     await createContestantLoginPage(secondPage).expectNotice('emailTaken');
   });
 
-  test('two identities give one address and the first opens its link; the second’s link opened with no session ends on the login page, which says the address is now another account’s @reg-idp', async ({
+  test('two identities give one address and the first opens its link; the second’s link opened with no session ends on the login page, which says the address is now another account’s @registration-identity-provider', async ({
     page,
     browser
   }) => {
@@ -566,7 +572,7 @@ test.describe('a link that confirms an address', () => {
     await createContestantLoginPage(pageWithNoSession).expectNotice('emailTaken');
   });
 
-  test('an identity that proved its address signs out, follows the sign-in screen to the forgot-password page with it, and the mailed recovery link leads to the password-reset page and then to its home @reg-idp', async ({
+  test('an identity that proved its address signs out, follows the sign-in screen to the forgot-password page with it, and the mailed recovery link leads to the password-reset page and then to its home @registration-identity-provider', async ({
     page
   }) => {
     const setPasswordGate = createContestantSetPasswordGate(page);
@@ -612,7 +618,7 @@ test.describe('both entity types registered with the provider', () => {
     await identityProviderFlow.setIdentityProviderMatrix(['candidate']);
   });
 
-  test('a party is chosen, identified, named in the default locale and given an address, and waits unconfirmed for an administrator @reg-idp @org-registration', async ({
+  test('a party is chosen, identified, named in the default locale and given an address, and waits unconfirmed for an administrator @registration-identity-provider @organization-registration', async ({
     page,
     context
   }) => {
@@ -640,7 +646,7 @@ test.describe('both entity types registered with the provider', () => {
     expect(organization.shortName?.en, 'the party’s abbreviation in the default locale').toBe(PARTY_NAMES.shortName);
   });
 
-  test('an identity that registered a candidate and gave an address comes back choosing a party, names it, and meets the profile selection with both @reg-idp', async ({
+  test('an identity that registered a candidate and gave an address comes back choosing a party, names it, and meets the profile selection with both @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -746,7 +752,7 @@ test.describe('what the type cookie and the matrix refuse', () => {
     await identityProviderFlow.setIdentityProviderMatrix(['candidate']);
   });
 
-  test('a type forged in the type cookie while the browser is at the provider is refused, and nothing is written for the identity @reg-idp', async ({
+  test('a type forged in the type cookie while the browser is at the provider is refused, and nothing is written for the identity @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -770,7 +776,7 @@ test.describe('what the type cookie and the matrix refuse', () => {
     expect(await identityProviderFlow.entitiesOf(sub)).toEqual({ candidate: [], organization: [] });
   });
 
-  test('a mode switched off while the registration screen shows it is refused on Continue, in the class trying again cannot cure, with Return and no Try again @reg-idp', async ({
+  test('a mode switched off while the registration screen shows it is refused on Continue, in the class trying again cannot cure, with Return and no Try again @registration-identity-provider', async ({
     page,
     context
   }) => {
@@ -799,7 +805,7 @@ test.describe('what the type cookie and the matrix refuse', () => {
 });
 
 test.describe('an account given a second candidate', () => {
-  test('an identity whose account an administrator gave a second candidate comes back to its own, gets no third, and meets the profile selection listing both @reg-idp', async ({
+  test('an identity whose account an administrator gave a second candidate comes back to its own, gets no third, and meets the profile selection listing both @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);
@@ -840,7 +846,7 @@ test.describe('an address an open invitation holds', () => {
     await identityProviderFlow.removeInvitationsOf(invitedAddresses.splice(0));
   });
 
-  test('an identity that types an address an open invitation holds is told to sign in with the invitation, and the invitation stays open @reg-idp', async ({
+  test('an identity that types an address an open invitation holds is told to sign in with the invitation, and the invitation stays open @registration-identity-provider', async ({
     page
   }) => {
     const gate = createContestantIdentityProviderGate(page);

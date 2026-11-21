@@ -32,6 +32,8 @@ yarn test:e2e --grep "result card"         # filter by title substring
 yarn test:e2e --reporter=line              # less noisy output
 ```
 
+`yarn test:e2e`, and the CI step before the wrapper, first run the coverage-tag census, [`scripts/assert-e2e-coverage-tags.mjs`](../scripts/assert-e2e-coverage-tags.mjs) (`yarn assert:e2e-coverage-tags`): from `playwright test --list` alone, with no stack and no server, it fails when any of `@registration-identity-provider`, `@registration-email`, `@registration-code`, `@organization-registration`, `@entity-selection` and `@nomination-definition` has no test in the default run.
+
 ### The identity provider's environment — prepared, served and put back by the wrapper
 
 The identity-provider projects — `bank-auth`, which calls the `identity-callback` Edge Function directly, and `contestant-identity-provider`, which walks the browser through a mock OIDC issuer — are part of every run, so every run prepares what they need. This section is the one full description of that preparation; the wrapper's header and [`IDURA-TEST-RUNBOOK.md`](./IDURA-TEST-RUNBOOK.md) point here.

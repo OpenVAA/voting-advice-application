@@ -80,7 +80,7 @@ test.describe('registering through a mailed link', () => {
 
   test(
     "tracer: an invited candidate follows the sign-in screen's link for a user without a password, asks for a link on the forgot-password page, opens the mailed link, sets a password and reaches the candidate's home",
-    { tag: '@reg-email' },
+    { tag: '@registration-email' },
     async ({
       page,
       invitationFlow,
@@ -144,7 +144,7 @@ test.describe('registering through a mailed link', () => {
 
   test(
     'register: an invited candidate registers by email through the mode selector',
-    { tag: '@reg-email' },
+    { tag: '@registration-email' },
     async ({
       page,
       invitationFlow,

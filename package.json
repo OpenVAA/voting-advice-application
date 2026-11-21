@@ -51,7 +51,7 @@
     "test:unit": "yarn assert:unit-coverage && turbo run test:unit && yarn test:unit:tests",
     "test:unit:tests": "vitest run --config tests/vitest.config.ts",
     "test:unit:watch": "echo '###################################\nNB! Running only tests in /packages\n###################################\n' && vitest",
-    "test:e2e": "yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && playwright test -c ./tests/playwright.config.ts ./tests --grep-invert @probe",
+    "test:e2e": "yarn assert:i18n-catalog-namespaces && yarn assert:a11y-scan-wiring && yarn assert:e2e-coverage-tags && playwright test -c ./tests/playwright.config.ts ./tests --grep-invert @probe",
     "test:e2e:probes": "playwright test -c ./tests/playwright.config.ts --project=_probes",
     "format": "turbo run build --filter=@openvaa/app-shared... && prettier --write . && yarn workspace @openvaa/docs format",
     "format:check": "turbo run build --filter=@openvaa/app-shared... && prettier --check . && yarn workspace @openvaa/docs format:check",

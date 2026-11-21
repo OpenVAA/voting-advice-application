@@ -5,12 +5,12 @@
  *
  * What it proves: every registration mode and every surface the contestant app's registration work names has at least one test in the default E2E run. Each is named by a tag the covering tests carry:
  *
- *   @reg-idp                registration with the identity provider
- *   @reg-email              registration by email, through the mailed link
- *   @reg-code               registration by registration code
- *   @org-registration       a party's own registration
- *   @entity-selection       the profile selection of an account with more than one entity
- *   @nomination-definition  the nominations editor
+ *   @registration-identity-provider  registration with the identity provider
+ *   @registration-email              registration by email, through the mailed link
+ *   @registration-code               registration by registration code
+ *   @organization-registration       a party's own registration
+ *   @entity-selection                the profile selection of an account with more than one entity
+ *   @nomination-definition           the nominations editor
  *
  * How it reads tags: from Playwright's own list of the default run, `playwright test --list --reporter=json` with the selection the root `test:e2e` script makes (`-c ./tests/playwright.config.ts ./tests --grep-invert @probe`). The JSON reporter gives each test its `tags`, which Playwright collects from the test's title, from its `{ tag }` option and from its enclosing describes, so a tag in a title and a tag in the options count alike, and a tag in a comment, or a tag-like word the parser does not take, does not count. A test is counted once per project it runs in. A test tagged `@probe` is never counted, so a list made without the default run's filter still yields the default run's census.
  *
@@ -47,10 +47,10 @@ const FIXTURE_EXPECTED = 'scripts/fixtures/assert-e2e-coverage-tags.expected.vio
 
 /** The tags whose presence in the default run this census asserts. */
 const REQUIRED_TAGS = [
-  '@reg-idp',
-  '@reg-email',
-  '@reg-code',
-  '@org-registration',
+  '@registration-identity-provider',
+  '@registration-email',
+  '@registration-code',
+  '@organization-registration',
   '@entity-selection',
   '@nomination-definition'
 ];
