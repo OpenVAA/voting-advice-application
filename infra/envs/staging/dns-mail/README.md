@@ -81,7 +81,7 @@ new terminal. Each step lists the ones it needs.
 cd infra/envs/staging/dns-mail
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 ```
 
 `LC_ALL=C` keeps every number and sort order independent of your workstation's locale. Give a time in
@@ -99,7 +99,7 @@ customer-managed send policy. Run Steps 1 to 3 in one terminal, signed in with t
    cd infra/envs/staging/dns-mail
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
    ```
 
 2. It must print `s2_account=471112560111`. Any other account means stop: the shell is signed in
@@ -180,14 +180,14 @@ Step 3.
    terraform plan -input=false -no-color -detailed-exitcode > "$L/s8.log" 2>&1; echo "s8_second_plan_exit=$?"
    ```
 
-9. The account, now that the SMTP user exists. Both assert modes of the inventory script must print 0:
+9. The account, now that the SMTP user exists. Both assert modes of `check-inline-policies.sh` must print 0:
    no IAM user in the account carries an inline policy, and everything under the path `/openvaa/` has
    customer-managed policies only. The last two lines read the SMTP user's own policies: no inline
    policy, and the send policy attached.
 
    ```bash
-   ../../../scripts/account-inventory.sh --assert-no-inline-user-policies > "$L/s9a.log" 2>&1; echo "s9_assert_users_exit=$?"
-   ../../../scripts/account-inventory.sh --assert-managed-only /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_managed_exit=$?"
+   ../../../scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s9a.log" 2>&1; echo "s9_assert_users_exit=$?"
+   ../../../scripts/check-inline-policies.sh --assert-managed-only /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_managed_exit=$?"
    echo "s9_smtp_inline_count=$(aws iam list-user-policies --user-name openvaa-staging-ses-smtp --query 'length(PolicyNames)' --output text)"
    echo "s9_smtp_attached=$(aws iam list-attached-user-policies --user-name openvaa-staging-ses-smtp --query 'AttachedPolicies[].PolicyName' --output text)"
    ```
@@ -228,7 +228,7 @@ The lines that begin the sitting, from the repository root, signed in:
 cd infra/envs/staging/dns-mail
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 ```
 
 Plan, and print the summary line and the resource headings:
@@ -322,7 +322,7 @@ The lines that begin the sitting, signed in:
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-183.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 ```
 
 1. The identity's three statuses:
@@ -396,7 +396,7 @@ it.
 | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | The DKIM signing zone of this identity, as `SigningHostedZone` reports it, equals the default `dkim.amazonses.com` in the variable file     | Step 2, item 7                                                               |
 | A second plan right after the first apply shows no change                                                                                   | Step 3, item 8                                                               |
-| The SMTP user carries no inline policy and only the customer-managed send policy, and both assert modes of the inventory script pass        | Step 3, item 9                                                               |
+| The SMTP user carries no inline policy and only the customer-managed send policy, and both assert modes of `check-inline-policies.sh` pass  | Step 3, item 9                                                               |
 | The Cloudflare dashboard accepts four NS records named `staging` beside the zone's other records                                            | Step 5, item 3                                                               |
 | The referral from the parent zone's name servers names the four name servers of this zone, and a public resolver answers with the same four | Step 6                                                                       |
 | The identity reaches verified for sending, with DKIM `SUCCESS` and the MAIL FROM domain `SUCCESS`                                           | Step 7, item 1                                                               |

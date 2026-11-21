@@ -1,14 +1,15 @@
 /**
- * The schema-migration guard is wired into `lint:check`, and its frozen-migration checker reports each way a frozen set of migrations can be wrong.
+ * The migration freeze guard is wired into `lint:check`, and its frozen-migration checker reports each way a frozen set of migrations can be wrong.
  *
  * A frozen migration set is a migrations directory beside a manifest that lists every file with its sha256. `checkFrozenMigrations` compares the two and returns one finding for each fault. Each rule of the checker has one fixture directory under `scripts/fixtures/schema-migration-freeze` that breaks that rule and no other, and `ok` breaks none. A fixture holds `migrations/`, `manifest.json` and `expected.violations`, the findings the checker must return for it.
  *
  * Both lists are read at run time: the fixtures from the directory, the rules from the guard's `FROZEN_RULES`. A rule added without a fixture, or a fixture left without a rule, fails here.
  *
- * The real migrations are frozen: `apps/supabase/supabase/migrations.manifest.json` lists them, the checker finds nothing wrong with them, and `--write`, which `yarn schema:regenerate` runs, refuses instead of rewriting the baseline.
+ * The guard runs no self-test of its own, so this file is where the fixtures are proved.
+ *
+ * The real migrations are frozen: `apps/supabase/supabase/migrations.manifest.json` lists them and the checker finds nothing wrong with them.
  */
 
-import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -28,7 +29,7 @@ interface FreezeGuard {
 const HERE = dirname(fileURLToPath(import.meta.url));
 /** `scripts/tests` → repo root. */
 const REPO_ROOT = resolve(HERE, '../..');
-const GUARD_FILE = 'scripts/assert-schema-migration-parity.mjs';
+const GUARD_FILE = 'scripts/assert-migrations-frozen.mjs';
 const FIXTURE_DIR = 'scripts/fixtures/schema-migration-freeze';
 const FIXTURE_ROOT = resolve(REPO_ROOT, FIXTURE_DIR);
 /** The one fixture that breaks no rule. */
@@ -71,18 +72,18 @@ function expectedOf(fixture: string): Array<string> {
     .filter((line) => line.trim() !== '');
 }
 
-describe('the schema-migration guard is wired so it actually runs', () => {
-  it('keeps `yarn assert:schema-migration-parity` a blocking link of lint:check', () => {
+describe('the migration freeze guard is wired so it actually runs', () => {
+  it('keeps `yarn assert:migrations-frozen` a blocking link of lint:check', () => {
     const links = ROOT_PACKAGE_JSON.scripts['lint:check'].split('&&').map((link) => link.trim());
-    expect(links).toContain('yarn assert:schema-migration-parity');
+    expect(links).toContain('yarn assert:migrations-frozen');
   });
 
   it('points the registered script at the guard, with no argument that could aim it at a fixture', () => {
-    expect(ROOT_PACKAGE_JSON.scripts['assert:schema-migration-parity']).toBe(`node ${GUARD_FILE}`);
+    expect(ROOT_PACKAGE_JSON.scripts['assert:migrations-frozen']).toBe(`node ${GUARD_FILE}`);
   });
 
   it('keeps the guard file itself present and recognisable', () => {
-    expect(readFileSync(resolve(REPO_ROOT, GUARD_FILE), 'utf8')).toContain('SCHEMA-MIGRATION PARITY GUARD');
+    expect(readFileSync(resolve(REPO_ROOT, GUARD_FILE), 'utf8')).toContain('MIGRATION FREEZE GUARD');
   });
 });
 
@@ -164,18 +165,5 @@ describe('the real migrations are frozen', () => {
     expect(manifest.migrations[0].file).toBe(BASELINE_FILE);
     expect(manifest.baseline.file).toBe(BASELINE_FILE);
     expect(manifest.baseline.commit).toMatch(/^[0-9a-f]{40}$/);
-  });
-
-  it('refuses `--write`: it exits non-zero and says the baseline is frozen', () => {
-    const result = spawnSync(process.execPath, [resolve(REPO_ROOT, GUARD_FILE), '--write'], {
-      cwd: REPO_ROOT,
-      encoding: 'utf8'
-    });
-    expect(result.status).not.toBe(0);
-    expect(`${result.stdout}${result.stderr}`).toContain('frozen');
-  });
-
-  it('keeps the `schema:regenerate` key, pointed at the refusing `--write`', () => {
-    expect(ROOT_PACKAGE_JSON.scripts['schema:regenerate']).toBe(`node ${GUARD_FILE} --write`);
   });
 });

@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     aws = {
@@ -27,11 +27,7 @@ provider "aws" {
   }
 }
 
-# The account-level root. It holds what every other root rests on: the bucket their state lives in,
-# the image registry, the monthly cost budget, and the OIDC trust with the two roles GitHub Actions
-# assumes. Every IAM resource of this layer comes from the github_oidc module, and this root is
-# applied by hand only, so no workflow role can create or change IAM. The root declares no resource
-# of its own and reads no other root's state.
+# The account-level root. It holds what every other root rests on: the bucket their state lives in, the image registry, the monthly cost budget, and the OIDC trust with the two roles GitHub Actions assumes. Every IAM resource of this layer comes from the github_oidc module, and this root is applied by hand only, so no workflow role can create or change IAM. The root declares no resource of its own and reads no other root's state.
 
 module "state_bucket" {
   source = "../modules/state-bucket"

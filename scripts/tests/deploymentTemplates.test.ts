@@ -3,7 +3,7 @@
  *
  * The production server refuses to start without `PUBLIC_PROJECT_ID` and `ORIGIN`, and it reads `ADDRESS_HEADER` and `XFF_DEPTH` to find the client address behind a proxy. This suite specifies where each of the four is written down:
  *
- * - `render.example.yaml` declares all four as `envVars` entries.
+ * - `render.example.yaml` declares all four as `envVars` entries, and lists the bank-authentication variables, `IDENTITY_CALLBACK_SERVER_SECRET` among them, as commented `sync: false` entries.
  * - `docker-compose.dev.yml` passes all four with a default, so an unset variable never reaches the container as an empty string by accident.
  * - `.env.example` lists the three proxy variables as commented lines only. CI copies that file to `.env` and Compose reads `.env`, so a live `ORIGIN` there would reach the production test image and make it refuse every form post.
  * - `apps/supabase/supabase/config.toml` declares `verify_jwt = false` for `identity-callback`, which verifies the identity provider's token itself.
@@ -22,6 +22,18 @@ const REPO_ROOT = resolve(HERE, '../..');
 const PROXY_VARIABLES: Array<string> = ['ORIGIN', 'ADDRESS_HEADER', 'XFF_DEPTH'];
 /** Everything a template that starts the production server has to name. */
 const SERVER_VARIABLES: Array<string> = ['PUBLIC_PROJECT_ID', ...PROXY_VARIABLES];
+/** The variables the frontend server needs for bank authentication with the Signicat provider type. */
+const IDENTITY_PROVIDER_VARIABLES: Array<string> = [
+  'IDENTITY_CALLBACK_SERVER_SECRET',
+  'PUBLIC_IDENTITY_PROVIDER_TYPE',
+  'PUBLIC_IDENTITY_PROVIDER_CLIENT_ID',
+  'PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT',
+  'IDENTITY_PROVIDER_CLIENT_SECRET',
+  'IDENTITY_PROVIDER_DECRYPTION_JWKS',
+  'IDENTITY_PROVIDER_JWKS_URI',
+  'IDENTITY_PROVIDER_ISSUER',
+  'IDENTITY_PROVIDER_TOKEN_ENDPOINT'
+];
 
 function read(path: string): string {
   return readFileSync(resolve(REPO_ROOT, path), 'utf8');
@@ -74,6 +86,12 @@ describe('deployment templates', () => {
 
     it.each(SERVER_VARIABLES)('declares - key: %s', (name) => {
       expect(capture(text, new RegExp(`^[ \\t]*(- key: ${name})(?=\\s|$)`, 'gm')).length).toBeGreaterThan(0);
+    });
+
+    it.each(IDENTITY_PROVIDER_VARIABLES)('lists %s as a commented sync: false entry', (name) => {
+      expect(
+        capture(text, new RegExp(`^[ \\t]*(# - key: ${name}(?:\\s.*)?\\n[ \\t]*#[ \\t]+sync: false)$`, 'gm'))
+      ).toHaveLength(1);
     });
   });
 

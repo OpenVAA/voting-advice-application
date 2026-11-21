@@ -1,5 +1,4 @@
-# None of these is a secret. The operator copies them into the repository's variables and into the
-# other roots after the apply.
+# None of these is a secret. The operator copies them into the repository's variables and into the other roots after the apply.
 
 output "state_bucket_name" {
   description = "Name of the bucket that holds the Terraform state of every root."

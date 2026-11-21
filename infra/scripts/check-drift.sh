@@ -19,6 +19,8 @@
 #   - Role settings: ALTER ROLE ... SET.
 # A table privilege and a policy whose USING expression was changed are reported. The four above are compared between migrations/ and schema/ by apps/supabase/scripts/check-schema-equivalence.sh, in two built databases. On a deployed database only a probe that queries the catalog sees them, and this script is not that probe. The history part compares versions only: a migration whose file was edited after it was applied keeps its version, and the edit is found only as far as it changed something the diff sees.
 #
+# This check has no automated run: no CI job calls it, so it runs only when an operator runs it.
+#
 # Usage:
 #   ```sh
 #   set -a; eval "$(apps/supabase/scripts/isolated-instance.sh env --name probe)"; set +a
@@ -59,6 +61,11 @@ export LC_ALL=C
 # Auto-detect paths from the script's location, so the script behaves identically from any working directory.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd -P)"
+SCRIPT_NAME="check-drift.sh"
+# shellcheck source=../../scripts/lib/cli.sh
+. "$REPO_ROOT/scripts/lib/cli.sh"
+# shellcheck source=../../scripts/lib/redact.sh
+. "$REPO_ROOT/scripts/lib/redact.sh"
 CLI="$REPO_ROOT/node_modules/.bin/supabase"
 
 DEFAULT_MANIFEST="apps/supabase/supabase/migrations.manifest.json"
@@ -77,71 +84,12 @@ OUT_DIR=""
 TEMP_OUT=""
 CLI_PID=""
 
-usage() {
-  # Delimit the header block rather than hardcoding a line range, so the exit-code table is never truncated when the header grows.
-  sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[0]}" | sed '$d'
-}
-
-fatal() {
-  echo "check-drift.sh: FATAL -- $1" >&2
-  exit "$2"
-}
-
-usage_error() {
-  usage >&2
-  fatal "$1" 2
-}
-
 note() {
   echo "check-drift.sh: $1" >&2
 }
 
 say() {
   echo "check-drift.sh: $1"
-}
-
-# A value-taking flag given as the LAST argument must be a usage error. `shift 2` with one positional left fails, and under `set -e` the script would die with status 1, which the table above gives to drift.
-#
-# $1 = flag name, $2 = the caller's remaining argument count ($#).
-require_value() {
-  if [ "$2" -lt 2 ]; then
-    usage_error "$1 requires a value"
-  fi
-}
-
-resolve_path() {
-  case "$1" in
-    /*) printf '%s\n' "$1" ;;
-    *) printf '%s\n' "$REPO_ROOT/$1" ;;
-  esac
-}
-
-# Prints the value of one key of a configuration file. $1 = file, $2 = section header without spaces, $3 = key.
-toml_value() {
-  awk -v want="$2" -v key="$3" '
-    BEGIN { section = "" }
-    /^[[:space:]]*\[/ { section = $0; gsub(/[[:space:]]/, "", section); next }
-    section == want {
-      line = $0
-      if (line ~ ("^[[:space:]]*" key "[[:space:]]*=")) {
-        sub(/^[^=]*=[[:space:]]*/, "", line)
-        sub(/[[:space:]]*(#.*)?$/, "", line)
-        gsub(/"/, "", line)
-        print line
-        exit
-      }
-    }
-  ' "$1"
-}
-
-# Prints a tool's output without credentials. A line that names a key or a secret, or that holds an address with a user part, is dropped whole; anything shaped like a JWT or a Supabase API key is removed from the lines that remain. The word `password` alone drops nothing: psql's commonest error is "password authentication failed", and it holds no password. $1 = file.
-print_redacted() {
-  sed -E \
-    -e '/[Ss][Ee][Cc][Rr][Ee][Tt]|_KEY/s/.*/<a line naming a key or a secret was removed>/' \
-    -e '/:\/\/[^[:space:]]*@/s/.*/<a line holding an address with a user part was removed>/' \
-    -e 's/eyJ[A-Za-z0-9_-]{10,}(\.[A-Za-z0-9_-]+)*/<redacted>/g' \
-    -e 's/sb_(secret|publishable)_[A-Za-z0-9_-]+/<redacted>/g' \
-    "$1"
 }
 
 on_exit() {

@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     aws = {
@@ -8,8 +8,7 @@ terraform {
     }
   }
 
-  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this
-  # root can never be paired with another root's state key.
+  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this root can never be paired with another root's state key.
   backend "s3" {
     bucket       = "openvaa-tfstate-471112560111"
     key          = "pipeline/staging/aws/terraform.tfstate"

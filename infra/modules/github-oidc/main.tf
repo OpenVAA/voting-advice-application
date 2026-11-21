@@ -1,5 +1,7 @@
+# The GitHub OIDC provider of one AWS account, the plan role and one environment's deploy role. AWS allows one provider per issuer URL in an account, so the module is called once per account.
+
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     aws = {
@@ -9,17 +11,14 @@ terraform {
   }
 }
 
-# No thumbprint list: for GitHub, AWS validates the provider against its own library of trusted
-# certificate authorities and ignores any configured thumbprint.
+# No thumbprint list: for GitHub, AWS validates the provider against its own library of trusted certificate authorities and ignores any configured thumbprint.
 resource "aws_iam_openid_connect_provider" "github" {
   url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
 }
 
-# A trust policy is a role's resource policy, so it is outside the repository's rule against an inline
-# policy. The subjects are name-based (repo:OWNER/REPO:...): a rename or transfer of the repository, or
-# an opt-in to the id-bearing subject format, stops both roles being assumable until the subjects are
-# changed and this module's root is applied again. Every condition is an exact match.
+# A trust policy is a role's resource policy, so it is outside the repository's rule against an inline policy. Every condition is an exact match on the subjects the caller gives, in either of GitHub's two subject forms. A name-based subject stops matching after a rename or transfer of the repository.
+# Setting github_repository_id and github_repository_owner_id adds conditions on the numeric ids, which survive a rename.
 data "aws_iam_policy_document" "plan_trust" {
   statement {
     effect  = "Allow"
@@ -104,8 +103,7 @@ data "aws_iam_policy_document" "deploy_trust" {
   }
 }
 
-# Neither role carries a permission of its own; every permission is a managed policy attached by a
-# separate resource in policies.tf.
+# Neither role carries a permission of its own; every permission is a managed policy attached by a separate resource in policies.tf.
 resource "aws_iam_role" "plan" {
   name               = "${var.name_prefix}-plan"
   path               = var.iam_path

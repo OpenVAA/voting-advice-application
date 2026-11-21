@@ -13,18 +13,12 @@ registry_name     = "openvaa-frontend"
 
 budget_limit_usd = 100
 
-# GitHub issues the OIDC subject in one of two forms. A repository created before 2026-07-15 keeps
-# the name-based form, repo:OWNER/REPO:..., until it is renamed, transferred or opted in to the new
-# form. A fork is a new repository, so it gets the id-bearing form shown here, with the numeric ids
-# of the owner and of the repository after the "@". Copy the exact subject your workflow's token
-# carries; a subject that differs by one character is refused.
+# GitHub issues the OIDC subject in one of two forms. A repository created before 2026-07-15 keeps the name-based form, repo:OWNER/REPO:..., until it is renamed, transferred or opted in to the new form. A fork is a new repository, so it gets the id-bearing form shown here, with the numeric ids of the owner and of the repository after the "@". Copy the exact subject your workflow's token carries; a subject that differs by one character is refused.
 deploy_environment = "production"
 plan_subjects      = ["repo:EXAMPLE-ORG@1234567/EXAMPLE-REPO@7654321:pull_request"]
 deploy_subjects    = ["repo:EXAMPLE-ORG@1234567/EXAMPLE-REPO@7654321:environment:production"]
 
-# Optional: pin the trust policies to the numeric ids as well.
-# github_repository_id       = "7654321"
-# github_repository_owner_id = "1234567"
+# Optional: to pin the trust policies to the numeric ids as well, set github_repository_id (here "7654321") and github_repository_owner_id (here "1234567").
 
 # Must equal the backend key of the root the pipeline applies.
 pipeline_state_key = "pipeline/production/aws/terraform.tfstate"

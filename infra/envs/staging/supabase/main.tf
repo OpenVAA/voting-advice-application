@@ -1,9 +1,6 @@
-# The persistent staging Supabase project. The project is created by hand and imported into this
-# root; Terraform never creates or deletes it. A plan of this root that shows a destroy or a
-# replacement is never applied. This root is applied by hand from an operator's shell, and its state
-# key sits under the hand/ prefix, which the pipeline's roles cannot read.
+# The persistent staging Supabase project. The project is created by hand and imported into this root; Terraform never creates or deletes it. A plan of this root that shows a destroy or a replacement is never applied. This root is applied by hand from an operator's shell, and its state key sits under the hand/ prefix, which the pipeline's roles cannot read.
 terraform {
-  required_version = ">= 1.10"
+  required_version = "~> 1.16"
 
   required_providers {
     supabase = {
@@ -12,9 +9,7 @@ terraform {
     }
   }
 
-  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this
-  # root can never be paired with another root's state key. The S3 backend reads AWS credentials
-  # from the operator's shell by itself, so this root declares no AWS provider.
+  # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this root can never be paired with another root's state key. The S3 backend reads AWS credentials from the operator's shell by itself, so this root declares no AWS provider.
   backend "s3" {
     bucket       = "openvaa-tfstate-471112560111"
     key          = "hand/staging/supabase/terraform.tfstate"

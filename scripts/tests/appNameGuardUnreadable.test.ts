@@ -1,9 +1,9 @@
 /**
  * The app-name guard, `scripts/assert-no-candidate-app-names.mjs`, fails closed on a tracked file it cannot read.
  *
- * The guard scans every path `git ls-files` lists. A file whose contents it cannot read is a file whose names it never saw, so in gate mode it is reported on stderr and fails the run. A tracked symbolic link to a directory is the one unreadable entry that is not reported: it has no contents of its own, and the files under its target are scanned where they are tracked.
+ * The guard scans every path `git ls-files` lists. A file whose contents it cannot read, a broken symbolic link among them, is a file whose names it never saw, so in gate mode it is reported on stderr and fails the run. Two entries are not reported: a tracked symbolic link to a directory, which has no contents of its own while the files under its target are scanned where they are tracked, and a tracked path deleted from the working tree, which holds nothing.
  *
- * The guard is copied into a throwaway repository of its own and run there as a child process, so the tracked set is exactly what each case states and the real tree is never touched.
+ * The guard, its module and its fixtures are copied into a throwaway repository of its own and run there as a child process, so the tracked set is exactly what each case states and the real tree is never touched.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -27,6 +27,12 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /** `scripts/tests` → repo root. */
 const REPO_ROOT = resolve(HERE, '../..');
 const GUARD = 'scripts/assert-no-candidate-app-names.mjs';
+/** The guard's module and the fixtures its gate runs its self-test over, copied beside it. */
+const GUARD_SUPPORT = [
+  'scripts/lib/text-guard.mjs',
+  'scripts/fixtures/assert-no-candidate-app-names.input.ts',
+  'scripts/fixtures/assert-no-candidate-app-names.expected.ts.violations'
+];
 
 const roots = new Array<string>();
 
@@ -39,15 +45,17 @@ afterEach(() => {
 });
 
 /**
- * A repository holding the guard, one readable file and whatever `populate` adds, every file tracked.
+ * A repository holding the guard with its module and fixtures, one readable file and whatever `populate` adds, every file tracked.
  * @param populate - Adds the case's own entries, given the repository's root.
  * @returns The repository's root.
  */
 function repositoryWith(populate: (root: string) => void): string {
   const root = mkdtempSync(join(tmpdir(), 'app-name-guard-'));
   roots.push(root);
-  mkdirSync(join(root, 'scripts'));
-  copyFileSync(resolve(REPO_ROOT, GUARD), join(root, GUARD));
+  for (const file of [GUARD, ...GUARD_SUPPORT]) {
+    mkdirSync(dirname(join(root, file)), { recursive: true });
+    copyFileSync(resolve(REPO_ROOT, file), join(root, file));
+  }
   writeFileSync(join(root, 'readable.ts'), 'export const contestant = 1;\n');
   populate(root);
   spawnSync('git', ['init', '-q'], { cwd: root });
@@ -89,6 +97,26 @@ describe('the app-name guard on a tracked file it cannot read', () => {
       writeFileSync(join(r, 'target', 'inside.ts'), 'export const y = 1;\n');
       symlinkSync('target', join(r, 'linked'));
     });
+
+    const result = runGuard(root);
+
+    expect(result.status).toBe(0);
+    expect(result.stderr).not.toMatch(/cannot read/);
+  });
+
+  it('fails and names a tracked symbolic link whose target is missing', () => {
+    const root = repositoryWith((r) => symlinkSync('nowhere.ts', join(r, 'broken.ts')));
+
+    const result = runGuard(root);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/cannot read broken\.ts: ENOENT/);
+    expect(result.stderr).toMatch(/1 unreadable/);
+  });
+
+  it('passes over a tracked file deleted from the working tree without a report', () => {
+    const root = repositoryWith((r) => writeFileSync(join(r, 'deleted.ts'), 'export const z = 1;\n'));
+    rmSync(join(root, 'deleted.ts'));
 
     const result = runGuard(root);
 

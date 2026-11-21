@@ -103,7 +103,8 @@ describe('the infra-validate job is read whole', () => {
 
   it('reaches the last step of the job, the settings type check', () => {
     // A slice cut short would pass the absence tests on what it did not read.
-    expect(JOB_BLOCK).toContain('bash infra/scripts/check-settings-types.sh');
+    expect(JOB_BLOCK).toContain('terraform -chdir=infra/modules/supabase init -backend=false');
+    expect(JOB_BLOCK).toContain('terraform -chdir=infra/modules/supabase test');
   });
 });
 
