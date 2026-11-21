@@ -53,7 +53,7 @@
           }
         ]
       },
-      "start": "Börja svara på frågor"
+      "start": "Svara på {numQuestions} frågor"
     },
     "multiChoice": {
       "selectExact": [
