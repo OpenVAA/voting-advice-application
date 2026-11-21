@@ -58,21 +58,23 @@ Posting is the purpose of the skill, so do it without asking again, unless `--lo
 
 Keep the orchestrator's own context light. Agents read the diff; you read their files. Subagent returns can arrive late or truncated, so every agent writes its result to a file in the run dir, and you read the file.
 
-The repository has several remotes (`origin` is the upstream `OpenVAA/voting-advice-application`; there is also a fork and a private repo) and `gh` has no default set, so **pass `--repo $REPO` to every `gh` call**. Read every exit status directly, never through a pipe.
+The repository has several remotes (`origin` is the upstream `OpenVAA/voting-advice-application`; there is also a fork and a private repo) and `gh` has no default set, so **name `$REPO` in every `gh` call**. Use only `gh api` REST routes: the `gh pr` / `gh repo` subcommands go through GraphQL, which cloud sessions refuse with HTTP 403. Read every exit status directly, never through a pipe.
 
 ### 1. Resolve the PR and its true base
 
 ```bash
 N=<pr>; REPO=$(git remote get-url origin | sed -E 's#.*github\.com[:/]##; s#\.git$##')
 REPO_ROOT=$(git rev-parse --show-toplevel); SKILL_DIR=$REPO_ROOT/.claude/skills/openvaa-review
-gh pr view $N --repo $REPO --json state,isDraft,title,body,baseRefName,headRefName,headRefOid,author,url > /dev/null   # stop if CLOSED/MERGED
+PR_JQ='{state: (if .merged then "MERGED" else (.state|ascii_upcase) end), isDraft: .draft, title, body,
+  author: {login: .user.login}, url: .html_url, baseRefName: .base.ref, headRefName: .head.ref, headRefOid: .head.sha}'
+PR=$(gh api repos/$REPO/pulls/$N --jq "$PR_JQ") || exit 1; echo "$PR" | jq -r .state   # stop if CLOSED/MERGED
 git fetch -q origin pull/$N/head:refs/remotes/pr/$N
-HEAD_SHA=$(git rev-parse pr/$N); BASE=$(gh pr view $N --repo $REPO --json baseRefName -q .baseRefName)
+HEAD_SHA=$(git rev-parse pr/$N); BASE=$(echo "$PR" | jq -r .baseRefName)
 MB=$(gh api repos/$REPO/compare/$BASE...$HEAD_SHA -q .merge_base_commit.sha); git fetch -q origin $MB
 RUN=${TMPDIR:-/tmp}/openvaa-review/pr-$N-${HEAD_SHA:0:10}; mkdir -p $RUN
 gh api --paginate repos/$REPO/pulls/$N/files -q '.[].filename' > $RUN/expected-files.txt
-gh pr view $N --repo $REPO --json title,body,author,url,baseRefName,headRefName > $RUN/pr.json
-[ "$(gh pr view $N --repo $REPO --json headRefOid -q .headRefOid)" = "$HEAD_SHA" ] || echo "HEAD MOVED — re-run step 1"
+echo "$PR" > $RUN/pr.json
+[ "$(gh api repos/$REPO/pulls/$N -q .head.sha)" = "$HEAD_SHA" ] || echo "HEAD MOVED — re-run step 1"
 ```
 
 **Why the file list and head check are done this way:**
@@ -217,7 +219,7 @@ The first part carries the `<!-- openvaa-review:v1 ` marker (note the trailing s
 ```bash
 IDS=$(gh api repos/$REPO/issues/$N/comments --paginate -q '.[] | select(.body | test("<!-- openvaa-review:v1[ -]")) | .id')
 # pair existing ids with comment.md, comment-2.md, … in posting order: PATCH the ones that exist,
-# create the missing ones with `gh pr comment $N --repo $REPO --body-file`, and delete leftover continuations
+# create the missing ones with `gh api repos/$REPO/issues/$N/comments -F body=@<file>`, and delete leftover continuations
 # from an earlier, longer review with `gh api -X DELETE repos/$REPO/issues/comments/<id>`
 gh api -X PATCH repos/$REPO/issues/comments/<id> -F body=@$RUN/comment.md
 ```
@@ -291,9 +293,9 @@ The run follows the Workflow with these steps replacing 1, 2, 7 and 8. Triage is
 ```bash
 T=<target>; REPO=$(git remote get-url origin | sed -E 's#.*github\.com[:/]##; s#\.git$##')
 REPO_ROOT=$(git rev-parse --show-toplevel); SKILL_DIR=$REPO_ROOT/.claude/skills/openvaa-review
-N=<the number, or: gh pr list --repo $REPO --head "$T" --state open --json number -q '.[0].number'>
+N=<the number, or: gh api "repos/$REPO/pulls?state=open&head=${REPO%%/*}:$T" -q '.[0].number'>
 if [ -n "$N" ]; then
-  BRANCH=$(gh pr view $N --repo $REPO --json headRefName -q .headRefName)
+  BRANCH=$(gh api repos/$REPO/pulls/$N -q .head.ref)
   git fetch -q origin pull/$N/head:refs/remotes/pr/$N; HEAD_SHA=$(git rev-parse pr/$N)
 else
   BRANCH=$T; git fetch -q origin "$BRANCH" 2>/dev/null
@@ -456,9 +458,10 @@ Write `$RUN/conflicts.json` as `[{ "findings": ["CMP-2", "PKG-1"], "kind": "orde
 **Ordinary PR:**
 
 ```bash
-gh pr checkout $N --repo $REPO
+BR=$(gh api repos/$REPO/pulls/$N -q .head.ref)   # a fork PR's head lives on the fork, not origin: stop and say so
+git fetch -q origin "$BR" && git checkout -B "$BR" FETCH_HEAD && git branch -u "origin/$BR"
 git status --porcelain   # must be empty: the fixes have to be separable from existing work
-gh pr view $N --repo $REPO --json headRefOid -q .headRefOid   # compare with `head` in decisions.json
+gh api repos/$REPO/pulls/$N -q .head.sha   # compare with `head` in decisions.json
 FIX_BASE=$(git rev-parse HEAD)
 ```
 
@@ -604,13 +607,13 @@ A test is never deleted, skipped, given `.only`, or loosened to pass. A failure 
 Push once step 7 has no blocking finding left and every gate in step 8 passes, without asking. The autosquash rewrote the PR's history at your request, so this is a force-push with lease (the user's standing rule). A gate still failing means no push: say which, and leave the commits local. Re-read the PR first, because it can be merged while the fixes run:
 
 ```bash
-read STATE PR_HEAD <<< "$(gh pr view $N --repo $REPO --json state,headRefOid -q '.state+" "+.headRefOid')"
+read STATE PR_HEAD <<< "$(gh api repos/$REPO/pulls/$N -q '(if .merged then "MERGED" else (.state|ascii_upcase) end)+" "+.head.sha')"
 [ "$STATE" = OPEN ] || echo "PR IS $STATE: do not push"
 [ "$PR_HEAD" = "$FIX_BASE" ] || echo "BRANCH MOVED: do not push"
 for c in $(git rev-list $MB..HEAD); do
   [ "$(git rev-parse $c^{tree})" = "$(git rev-parse $c~1^{tree})" ] && echo "EMPTY: $c"
 done
-BR=$(gh pr view $N --repo $REPO --json headRefName -q .headRefName)
+BR=$(gh api repos/$REPO/pulls/$N -q .head.ref)
 git push --force-with-lease="$BR:$FIX_BASE" origin HEAD:"$BR"
 ```
 
