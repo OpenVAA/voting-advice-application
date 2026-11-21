@@ -4,7 +4,6 @@
     "nextSteps": "Jos rekisteröidyit toisella sähköpostiosoitteella, kirjaudu ulos ja kirjaudu sisään sillä osoitteella. Muussa tapauksessa ota yhteyttä tukeen ja kerro heille yllä näkyvä osoite.",
     "nextStepsNoAddress": "Ota yhteyttä tukeen ja kerro, että rekisteröidyit pankkitunnuksilla.",
     "settings": "Tilin asetukset",
-    "signedInAs": "Kirjautuneena osoitteella",
     "title": "Ei muokattavaa"
   }
 }

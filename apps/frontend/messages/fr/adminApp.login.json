@@ -7,7 +7,6 @@
     "email": "E-mail",
     "password": "Mot de passe",
     "button": "Se connecter",
-    "forgotPassword": "Mot de passe oublié ?",
     "errors": {
       "invalidCredentials": "E-mail ou mot de passe non valide",
       "genericError": "Une erreur s’est produite lors de la connexion. Veuillez réessayer.",

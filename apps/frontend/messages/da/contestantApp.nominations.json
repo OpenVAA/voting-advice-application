@@ -4,7 +4,7 @@
     "constituencies": {
       "ingress": {
         "candidate": "Vælg den valgkreds, du stiller op i.",
-        "organization": "Vælg den valgkreds, dit parti stiller op i. Der kan vælges én valgkreds for hvert valg; kontakt support, hvis dit parti stiller op i flere."
+        "organization": "Vælg de valgkredse, dit parti stiller op i. Du kan vælge flere i hvert valg."
       },
       "noElection": {
         "candidate": "Der afholdes intet valg i denne valgkreds, som du kan opstilles til.",
@@ -13,7 +13,7 @@
       "severalKept": "Du har flere opstillinger i dette valg. De bevares, som de er; du kan ændre deres oplysninger i næste trin.",
       "title": {
         "candidate": "Hvad er din valgkreds?",
-        "organization": "Hvad er dit partis valgkreds?"
+        "organization": "Hvilke valgkredse stiller dit parti op i?"
       }
     },
     "delete": "Slet",

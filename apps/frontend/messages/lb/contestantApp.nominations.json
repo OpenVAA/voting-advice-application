@@ -4,7 +4,7 @@
     "constituencies": {
       "ingress": {
         "candidate": "Wielt de Walbezierk aus, an deem Dir kandidéiert.",
-        "organization": "Wielt de Walbezierk aus, an deem Är Partei kandidéiert. Fir all Wahl kann ee Walbezierk ausgewielt ginn; wann Är Partei a méi wéi engem kandidéiert, kontaktéiert wgl. de Support."
+        "organization": "Wielt d’Walbezierker aus, an deenen Är Partei kandidéiert. Dir kënnt der fir all Wahl e puer auswielen."
       },
       "noElection": {
         "candidate": "An dësem Walbezierk fënnt keng Wahl statt, bei där Dir nominéiert kënnt ginn.",
@@ -13,7 +13,7 @@
       "severalKept": "Dir hutt e puer Nominatioune bei dëser Wahl. Si bleiwen, wéi se sinn; hir Detailer kënnt Dir am nächste Schrëtt änneren.",
       "title": {
         "candidate": "Wat ass Äre Walbezierk?",
-        "organization": "Wat ass de Walbezierk vun Ärer Partei?"
+        "organization": "A wéi enge Walbezierker kandidéiert Är Partei?"
       }
     },
     "delete": "Läschen",

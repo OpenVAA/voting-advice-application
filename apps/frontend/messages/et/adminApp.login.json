@@ -7,7 +7,6 @@
     "email": "E-post",
     "password": "Parool",
     "button": "Logi sisse",
-    "forgotPassword": "Unustasid parooli?",
     "errors": {
       "invalidCredentials": "Vale e-post või parool",
       "genericError": "Sisselogimisel tekkis viga. Palun proovi uuesti.",

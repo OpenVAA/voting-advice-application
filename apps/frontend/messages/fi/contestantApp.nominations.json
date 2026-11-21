@@ -4,7 +4,7 @@
     "constituencies": {
       "ingress": {
         "candidate": "Valitse vaalipiiri, jossa olet ehdolla.",
-        "organization": "Valitse vaalipiiri, jossa puolueesi on ehdolla. Kuhunkin vaaliin voi valita yhden vaalipiirin; jos puolueesi on ehdolla useammassa, ota yhteyttä tukeen."
+        "organization": "Valitse vaalipiirit, joissa puolueesi on ehdolla. Kussakin vaalissa voi valita useita."
       },
       "noElection": {
         "candidate": "Tässä vaalipiirissä ei järjestetä vaalia, jossa voit olla ehdolla.",
@@ -13,7 +13,7 @@
       "severalKept": "Sinulla on tässä vaalissa useita ehdokkuuksia. Ne säilytetään sellaisinaan; voit muuttaa niiden tietoja seuraavassa vaiheessa.",
       "title": {
         "candidate": "Mikä on vaalipiirisi?",
-        "organization": "Mikä on puolueesi vaalipiiri?"
+        "organization": "Missä vaalipiireissä puolueesi on ehdolla?"
       }
     },
     "delete": "Poista",

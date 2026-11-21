@@ -7,7 +7,6 @@
     "email": "Sähköposti",
     "password": "Salasana",
     "button": "Kirjaudu",
-    "forgotPassword": "Unohditko salasanasi?",
     "errors": {
       "invalidCredentials": "Virheellinen sähköposti tai salasana",
       "genericError": "Kirjautumisessa tapahtui virhe. Yritä uudelleen.",
