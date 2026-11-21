@@ -187,3 +187,9 @@ What the login page offers follows the `registrationModes` of the served types:
     }
   }
   ```
+
+### `analytics`
+
+Settings related to collecting data about how voters use the app. See [What data should be collected from voters’ use of the VAA?](/publishers-guide/preparing/what-data-should-be-collected).
+
+- `trackEvents`: Whether usage events other than the anonymous page-view count are collected. By default, voters are asked for their consent first, and their events are collected only if they grant it. The analytics provider is chosen by the server configuration, not by this setting, and without a provider nothing is collected. Default: `false`.
