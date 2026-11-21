@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189
 current_phase_name: Documentation and Closure
-current_plan: 16
+current_plan: 17
 status: executing
-stopped_at: Completed 189-18-PLAN.md
-last_updated: "2026-11-20T22:08:40.397Z"
+stopped_at: Completed 189-07-PLAN.md
+last_updated: "2026-11-21T07:25:45.643Z"
 last_activity: 2026-11-20
 last_activity_desc: Phase 189 execution started
-state_head: 0c383261a80d412e80bfc7ca84b2f7a1f1982fcb
+state_head: 62c564a2df5641da5c2c54ec9885a98850f9195b
 progress:
   total_phases: 10
   completed_phases: 8
   total_plans: 208
-  completed_plans: 203
+  completed_plans: 204
   percent: 80
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189 (Documentation and Closure) — EXECUTING
-Plan: 16 of 20
+Plan: 17 of 20
 Status: Ready to execute
 Last activity: 2026-11-20 — Phase 189 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 16
+**Current Plan:** 17
 
 From 184 on, the numeric order is the dependency order.
 
@@ -212,6 +212,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189 P12 | 8 min | 2 tasks | 1 files |
 | Phase 189 P17 | 15 min | 3 tasks | 4 files |
 | Phase 189 P18 | 12min | 3 tasks | 6 files |
+| Phase 189 P07 | 15h (sitting wait) | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -462,6 +463,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189]: 189-17: G04 closing check re-measured 2026-11-20 — opaque replies, sub on all four claim-config sites, verify_jwt false (config.toml:436) and PASS hosted; drift guard none, todo filed
 - [Phase 189]: 189-18: the log-sink evaluation closes on the milestone's scoping (CloudWatch 90-day server sink, PostHog Cloud EU for analytics, self-hosting out of scope); the browser half is FUT-08
 - [Phase 189]: 189-18: the hosted-settings page has no row for the anon statement_timeout or db.anon-timeout; logged in deferred-items.md and cited under the API-limits closure's What remains
+- [Phase 189]: 189-07: origin header secret rotated on staging by Step 19 in one apply; 5 403s over 5 s, no 5xx, plan after reads No changes.
+- [Phase 189]: 189-07: direct load balancer checks recorded as observed (000, curl exit 28), never 403; the security group admits CloudFront only, so the listener rule's 403 stays Step 9's observation
 
 ### Pending Todos
 
@@ -528,6 +531,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-20T22:08:39.219Z
-**Stopped At:** Completed 189-18-PLAN.md
+Last session: 2026-11-21T07:25:44.520Z
+**Stopped At:** Completed 189-07-PLAN.md
 **Resume File:** None
