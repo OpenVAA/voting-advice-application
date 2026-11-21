@@ -1,5 +1,5 @@
 /**
- * Specification for the environment-variable reference of the docs site, `developers-guide/configuration/environmental-variables/+page.md`: it lists, each as a whole token in backticks, every name of the frontend task's environment list `infra/modules/frontend-service/task-environment.json`, every name of `REQUIRED_ENV`, every name of `ANALYTICS_ENV`, every key of the `constants` objects of `$lib/utils/constants` and `$lib/server/constants`, and every name `infra/scripts/bootstrap.sql` reads with `\getenv`. A name written without backticks, or inside a longer backticked text, does not count. In the other direction, every variable-shaped backticked token in a table row or a list item of the page is a name one of those sources, an Edge Function's `Deno.env.get` read, the root `.env.example` or the Edge Functions' `.env.example` declares, so a row for a variable nothing reads any more is a problem; while a source is absent that direction is not checked. An absent page, list or template, a malformed list, or a bootstrap script without a `\getenv` line is a problem naming that file. Every problem found names the variable or the file it concerns.
+ * Specification for the environment-variable reference of the docs site, `developers-guide/configuration/environmental-variables/+page.md`: it lists, each as a whole token in backticks, every name of the frontend task's environment list `infra/modules/frontend-service/task-environment.json`, every name of `REQUIRED_ENV`, every name of `ANALYTICS_ENV`, every key of the `constants` objects of `$lib/utils/constants` and `$lib/server/constants`, and every name `infra/scripts/bootstrap.sql` reads with `\getenv`. A name written without backticks, or inside a longer backticked text, does not count. In the other direction, every variable-shaped backticked token in a table row or a list item of the page is a name one of those sources, an Edge Function's `Deno.env.get` read, the root `.env.example` or the Edge Functions' `.env.example` declares, so a row for a variable nothing reads any more is a problem; while a source is absent that direction is not checked. An absent page, list or template, a malformed list, a bootstrap script without a `\getenv` line, or a line that begins with `\getenv` and is not exactly `\getenv <psql variable> <name>`, is a problem naming that file. Every problem found names the variable or the file it concerns.
  *
  * @vitest-environment node
  */
@@ -142,13 +142,18 @@ function taskEnvironmentNames(taskEnvironment: unknown): Array<string> | undefin
  * The environment variables the bootstrap script reads: the second argument of every `\getenv` line.
  *
  * @param bootstrap - The script's text.
- * @returns The names, in the order the script reads them.
+ * @returns The names, in the order the script reads them, and each line that begins with `\getenv` without being one plain `\getenv <psql variable> <name>`, with its line number.
  */
-function bootstrapEnvironmentNames(bootstrap: string): Array<string> {
-  return Array.from(
-    bootstrap.matchAll(/^\s*\\getenv\s+[A-Za-z_][A-Za-z0-9_]*\s+([A-Za-z_][A-Za-z0-9_]*)\s*$/gm),
-    (match) => match[1]
-  );
+function bootstrapEnvironmentNames(bootstrap: string): { names: Array<string>; unread: Array<string> } {
+  const names: Array<string> = [];
+  const unread: Array<string> = [];
+  bootstrap.split('\n').forEach((line, index) => {
+    if (!/^\s*\\getenv\b/.test(line)) return;
+    const name = /^\s*\\getenv\s+[A-Za-z_][A-Za-z0-9_]*\s+([A-Za-z_][A-Za-z0-9_]*)\s*$/.exec(line)?.[1];
+    if (name === undefined) unread.push(`line ${index + 1}, "${line.trim()}"`);
+    else names.push(name);
+  });
+  return { names, unread };
 }
 
 /**
@@ -172,9 +177,13 @@ function environmentReferenceProblems({
   const taskNames = taskEnvironmentNames(taskEnvironment);
   if (taskEnvironment === undefined) problems.push(`${TASK_ENVIRONMENT_PATH}: is missing`);
   else if (taskNames === undefined) problems.push(`${TASK_ENVIRONMENT_PATH}: has no \`variables\` array`);
-  const bootstrapNames = bootstrap === undefined ? [] : bootstrapEnvironmentNames(bootstrap);
+  const { names: bootstrapNames, unread } =
+    bootstrap === undefined ? { names: [], unread: [] } : bootstrapEnvironmentNames(bootstrap);
   if (bootstrap === undefined) problems.push(`${BOOTSTRAP_PATH}: is missing`);
-  else if (bootstrapNames.length === 0) problems.push(`${BOOTSTRAP_PATH}: has no \\getenv line`);
+  else if (bootstrapNames.length === 0 && unread.length === 0) problems.push(`${BOOTSTRAP_PATH}: has no \\getenv line`);
+  for (const line of unread) {
+    problems.push(`${BOOTSTRAP_PATH}: ${line} reads a variable in a form this check cannot parse`);
+  }
   if (rootTemplate === undefined) problems.push(`${ROOT_TEMPLATE_PATH}: is missing`);
   if (functionsTemplate === undefined) problems.push(`${FUNCTIONS_TEMPLATE_PATH}: is missing`);
   const sourcesReadable = problems.length === 0;
@@ -386,6 +395,17 @@ describe('environmentReferenceProblems', () => {
   it('reports an absent environment template, naming it', () => {
     expect(fixtureProblems({ rootTemplate: undefined })).toEqual([`${ROOT_TEMPLATE_PATH}: is missing`]);
     expect(fixtureProblems({ functionsTemplate: undefined })).toEqual([`${FUNCTIONS_TEMPLATE_PATH}: is missing`]);
+  });
+
+  it.each([
+    ["\\getenv default_locale 'BOOTSTRAP_DEFAULT_LOCALE'"],
+    ['\\getenv default_locale BOOTSTRAP_DEFAULT_LOCALE \\echo read'],
+    ['\\getenv default_locale']
+  ])('names a \\getenv line it cannot parse, %s, with its line number', (line) => {
+    const problems = fixtureProblems({ bootstrap: `${SOUND_BOOTSTRAP}${line}\n` });
+    expect(problems).toEqual([
+      `${BOOTSTRAP_PATH}: line 6, "${line}" reads a variable in a form this check cannot parse`
+    ]);
   });
 
   it('reports an absent bootstrap script, or one without a \\getenv line, naming it', () => {
