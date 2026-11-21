@@ -8,6 +8,8 @@
 --
 -- Cell 1 alone is satisfied by a rule that simply denies the entity user, and cell 3 alone by a rule that denies nobody. Cell 2 is the only cell that observes the conditionality: an absolute freeze, the trigger body with its OLD-flag guard removed, fails it on every table.
 --
+-- The protected columns are `name` and `short_name` on `organizations`, `factions` and `alliances`, and `first_name`, `last_name` and `short_name` on `candidates`. Every one of them carries the three cells on its table. Cell 1 of `short_name` also asserts that the refusal names that column, because the refusal's prefix says "name" for every protected column.
+--
 -- The fixture gives only one polarity, so this file makes the other one, per table, inside its own transaction. `create_test_data ()` confirms every project A entity, so the middle cell has no unconfirmed row to stand on. Each grid section therefore runs cells 1 and 3 on the confirmed row, then unconfirms that same row as the owner, runs cell 2, and re-confirms. The polarity guard in section 0 asserts the pre-state, because a middle cell run against a row that was confirmed all along would assert cell 1 twice under two names.
 --
 -- The faction and alliance grantees are built here. `create_test_data ()` gives entity grants to a candidate and an organization only, so this file inserts two auth users and two entity-scope grant rows directly and lets `set_test_user` project them into the session claims through `test_grants_claim`.
@@ -27,7 +29,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (70);
+  plan (91);
 
 SELECT
   create_test_data ();
@@ -190,7 +192,7 @@ SELECT
   );
 
 -- =====================================================================
--- Section 1: the grid on candidates -- the only entity table whose protected set has TWO members
+-- Section 1: the grid on candidates -- two personal-name columns and the short name
 -- =====================================================================
 SELECT
   set_test_user (
@@ -210,6 +212,17 @@ SELECT
   );
 
 SELECT
+  throws_ok (
+    format(
+      $$UPDATE candidates SET first_name = 'Renamed' WHERE id = '%s'$$,
+      test_id ('candidate_a')
+    ),
+    'OV001',
+    NULL,
+    'candidates cell 1 (first_name): the refusal raises SQLSTATE OV001, the code of the immutability refusal alone'
+  );
+
+SELECT
   throws_like (
     format(
       $$UPDATE candidates SET last_name = 'Renamed' WHERE id = '%s'$$,
@@ -217,6 +230,18 @@ SELECT
     ),
     'Entity name is immutable once confirmed:%',
     'candidates cell 1 (last_name): the second protected column on this table is refused too, so the rule is per column rather than per table'
+  );
+
+SELECT
+  matches (
+    pg_temp.capture_refusal (
+      format(
+        $$UPDATE candidates SET short_name = '{"en":"Renamed"}'::jsonb WHERE id = '%s'$$,
+        test_id ('candidate_a')
+      )
+    ),
+    '^Entity name is immutable once confirmed: column public\.candidates\.short_name on row ',
+    'candidates cell 1 (short_name): an entity grantee changing the short name of a CONFIRMED entity is refused, and the refusal names the column'
   );
 
 SELECT
@@ -242,6 +267,15 @@ SELECT
       test_id ('candidate_a')
     ),
     'candidates cell 3 (last_name): the same holder corrects the second protected column'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$UPDATE candidates SET short_name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
+      test_id ('candidate_a')
+    ),
+    'candidates cell 3 (short_name): a holder of entity.edit_immutable changes the short name of the CONFIRMED entity'
   );
 
 SELECT
@@ -273,6 +307,20 @@ SELECT
     ),
     'Corrected',
     'candidates cell 3 (last_name): the administrator''s correction is what is stored'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        short_name ->> 'en'
+      FROM
+        candidates
+      WHERE
+        id = test_id ('candidate_a')
+    ),
+    'Corrected',
+    'candidates cell 3 (short_name): the administrator''s correction is what is stored'
   );
 
 UPDATE candidates
@@ -307,6 +355,15 @@ SELECT
   );
 
 SELECT
+  lives_ok (
+    format(
+      $$UPDATE candidates SET short_name = '{"en":"SignedUp"}'::jsonb WHERE id = '%s'$$,
+      test_id ('candidate_a')
+    ),
+    'candidates cell 2 (short_name): the same grantee changing the short name of the same row once it is UNCONFIRMED is allowed'
+  );
+
+SELECT
   reset_role ();
 
 SELECT
@@ -337,6 +394,20 @@ SELECT
     'candidates cell 2 (last_name): the value the grantee wrote to the unconfirmed row is what is stored'
   );
 
+SELECT
+  is (
+    (
+      SELECT
+        short_name ->> 'en'
+      FROM
+        candidates
+      WHERE
+        id = test_id ('candidate_a')
+    ),
+    'SignedUp',
+    'candidates cell 2 (short_name): the value the grantee wrote to the unconfirmed row is what is stored'
+  );
+
 UPDATE candidates
 SET
   confirmed = true
@@ -364,6 +435,18 @@ SELECT
   );
 
 SELECT
+  matches (
+    pg_temp.capture_refusal (
+      format(
+        $$UPDATE organizations SET short_name = '{"en":"Renamed"}'::jsonb WHERE id = '%s'$$,
+        test_id ('org_a')
+      )
+    ),
+    '^Entity name is immutable once confirmed: column public\.organizations\.short_name on row ',
+    'organizations cell 1 (short_name): an entity grantee changing the short name of a CONFIRMED entity is refused, and the refusal names the column'
+  );
+
+SELECT
   set_test_user (
     'authenticated',
     test_user_id ('admin_a'),
@@ -377,6 +460,15 @@ SELECT
       test_id ('org_a')
     ),
     'organizations cell 3: a holder of entity.edit_immutable renames the CONFIRMED entity'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$UPDATE organizations SET short_name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
+      test_id ('org_a')
+    ),
+    'organizations cell 3 (short_name): a holder of entity.edit_immutable changes the short name of the CONFIRMED entity'
   );
 
 SELECT
@@ -394,6 +486,20 @@ SELECT
     ),
     'Corrected',
     'organizations cell 3: the administrator''s correction is what is stored'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        short_name ->> 'en'
+      FROM
+        organizations
+      WHERE
+        id = test_id ('org_a')
+    ),
+    'Corrected',
+    'organizations cell 3 (short_name): the administrator''s correction is what is stored'
   );
 
 UPDATE organizations
@@ -419,6 +525,15 @@ SELECT
   );
 
 SELECT
+  lives_ok (
+    format(
+      $$UPDATE organizations SET short_name = '{"en":"SignedUp"}'::jsonb WHERE id = '%s'$$,
+      test_id ('org_a')
+    ),
+    'organizations cell 2 (short_name): the same grantee changing the short name of the same row once it is UNCONFIRMED is allowed'
+  );
+
+SELECT
   reset_role ();
 
 SELECT
@@ -433,6 +548,20 @@ SELECT
     ),
     'SignedUp',
     'organizations cell 2: the value the grantee wrote to the unconfirmed row is what is stored'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        short_name ->> 'en'
+      FROM
+        organizations
+      WHERE
+        id = test_id ('org_a')
+    ),
+    'SignedUp',
+    'organizations cell 2 (short_name): the value the grantee wrote to the unconfirmed row is what is stored'
   );
 
 UPDATE organizations
@@ -462,6 +591,18 @@ SELECT
   );
 
 SELECT
+  matches (
+    pg_temp.capture_refusal (
+      format(
+        $$UPDATE factions SET short_name = '{"en":"Renamed"}'::jsonb WHERE id = '%s'$$,
+        test_id ('faction_a')
+      )
+    ),
+    '^Entity name is immutable once confirmed: column public\.factions\.short_name on row ',
+    'factions cell 1 (short_name): an entity grantee changing the short name of a CONFIRMED entity is refused, and the refusal names the column'
+  );
+
+SELECT
   set_test_user (
     'authenticated',
     test_user_id ('admin_a'),
@@ -475,6 +616,15 @@ SELECT
       test_id ('faction_a')
     ),
     'factions cell 3: a holder of entity.edit_immutable renames the CONFIRMED entity'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$UPDATE factions SET short_name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
+      test_id ('faction_a')
+    ),
+    'factions cell 3 (short_name): a holder of entity.edit_immutable changes the short name of the CONFIRMED entity'
   );
 
 SELECT
@@ -492,6 +642,20 @@ SELECT
     ),
     'Corrected',
     'factions cell 3: the administrator''s correction is what is stored'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        short_name ->> 'en'
+      FROM
+        factions
+      WHERE
+        id = test_id ('faction_a')
+    ),
+    'Corrected',
+    'factions cell 3 (short_name): the administrator''s correction is what is stored'
   );
 
 UPDATE factions
@@ -517,6 +681,15 @@ SELECT
   );
 
 SELECT
+  lives_ok (
+    format(
+      $$UPDATE factions SET short_name = '{"en":"SignedUp"}'::jsonb WHERE id = '%s'$$,
+      test_id ('faction_a')
+    ),
+    'factions cell 2 (short_name): the same grantee changing the short name of the same row once it is UNCONFIRMED is allowed'
+  );
+
+SELECT
   reset_role ();
 
 SELECT
@@ -531,6 +704,20 @@ SELECT
     ),
     'SignedUp',
     'factions cell 2: the value the grantee wrote to the unconfirmed row is what is stored'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        short_name ->> 'en'
+      FROM
+        factions
+      WHERE
+        id = test_id ('faction_a')
+    ),
+    'SignedUp',
+    'factions cell 2 (short_name): the value the grantee wrote to the unconfirmed row is what is stored'
   );
 
 UPDATE factions
@@ -560,6 +747,18 @@ SELECT
   );
 
 SELECT
+  matches (
+    pg_temp.capture_refusal (
+      format(
+        $$UPDATE alliances SET short_name = '{"en":"Renamed"}'::jsonb WHERE id = '%s'$$,
+        test_id ('alliance_a')
+      )
+    ),
+    '^Entity name is immutable once confirmed: column public\.alliances\.short_name on row ',
+    'alliances cell 1 (short_name): an entity grantee changing the short name of a CONFIRMED entity is refused, and the refusal names the column'
+  );
+
+SELECT
   set_test_user (
     'authenticated',
     test_user_id ('admin_a'),
@@ -573,6 +772,15 @@ SELECT
       test_id ('alliance_a')
     ),
     'alliances cell 3: a holder of entity.edit_immutable renames the CONFIRMED entity'
+  );
+
+SELECT
+  lives_ok (
+    format(
+      $$UPDATE alliances SET short_name = '{"en":"Corrected"}'::jsonb WHERE id = '%s'$$,
+      test_id ('alliance_a')
+    ),
+    'alliances cell 3 (short_name): a holder of entity.edit_immutable changes the short name of the CONFIRMED entity'
   );
 
 SELECT
@@ -590,6 +798,20 @@ SELECT
     ),
     'Corrected',
     'alliances cell 3: the administrator''s correction is what is stored'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        short_name ->> 'en'
+      FROM
+        alliances
+      WHERE
+        id = test_id ('alliance_a')
+    ),
+    'Corrected',
+    'alliances cell 3 (short_name): the administrator''s correction is what is stored'
   );
 
 UPDATE alliances
@@ -615,6 +837,15 @@ SELECT
   );
 
 SELECT
+  lives_ok (
+    format(
+      $$UPDATE alliances SET short_name = '{"en":"SignedUp"}'::jsonb WHERE id = '%s'$$,
+      test_id ('alliance_a')
+    ),
+    'alliances cell 2 (short_name): the same grantee changing the short name of the same row once it is UNCONFIRMED is allowed'
+  );
+
+SELECT
   reset_role ();
 
 SELECT
@@ -629,6 +860,20 @@ SELECT
     ),
     'SignedUp',
     'alliances cell 2: the value the grantee wrote to the unconfirmed row is what is stored'
+  );
+
+SELECT
+  is (
+    (
+      SELECT
+        short_name ->> 'en'
+      FROM
+        alliances
+      WHERE
+        id = test_id ('alliance_a')
+    ),
+    'SignedUp',
+    'alliances cell 2 (short_name): the value the grantee wrote to the unconfirmed row is what is stored'
   );
 
 UPDATE alliances
@@ -1093,8 +1338,8 @@ SELECT
         n.nspname = 'public'
         AND p.proname = 'enforce_entity_immutability'
     ),
-    'alliances=confirmed,name candidates=confirmed,first_name,last_name factions=confirmed,name organizations=confirmed,name',
-    'each registration is restricted to exactly that table''s protected name columns plus the confirmation column -- four SET comparisons, not four counts, because a list that omits the column it guards is a rule that silently never fires'
+    'alliances=confirmed,name,short_name candidates=confirmed,first_name,last_name,short_name factions=confirmed,name,short_name organizations=confirmed,name,short_name',
+    'each registration is restricted to exactly that table''s protected columns plus the confirmation column -- four SET comparisons, not four counts, because a list that omits the column it guards is a rule that silently never fires'
   );
 
 SELECT
@@ -1121,8 +1366,8 @@ SELECT
         n.nspname = 'public'
         AND p.proname = 'enforce_entity_immutability'
     ),
-    'alliances=''name'' candidates=''first_name'', ''last_name'' factions=''name'' organizations=''name''',
-    'the ARGUMENT list of each registration is that table''s protected name columns -- a registration whose UPDATE OF list names a column it does not pass as an argument is a rule that never fires for that column'
+    'alliances=''name'', ''short_name'' candidates=''first_name'', ''last_name'', ''short_name'' factions=''name'', ''short_name'' organizations=''name'', ''short_name''',
+    'the ARGUMENT list of each registration is that table''s protected columns -- a registration whose UPDATE OF list names a column it does not pass as an argument is a rule that never fires for that column'
   );
 
 SELECT
@@ -1190,8 +1435,8 @@ SELECT
         AND (t.tgtype & 16) <> 0
         AND (t.tgtype & 1) <> 0
     )::integer,
-    20,
-    'the row-level BEFORE UPDATE trigger population on the four entity tables is 20: on each table the entity-immutability, external-id immutability, updated_at and image-cleanup registrations, plus answer validation and answer-file cleanup on candidates and organizations. A future BEFORE trigger that modified a protected column without the statement naming it would escape the column restriction, so the population is bounded here'
+    24,
+    'the row-level BEFORE UPDATE trigger population on the four entity tables is 24: on each table the entity-immutability, external-id immutability, updated_at, image-cleanup and colour-validation registrations, plus answer validation and answer-file cleanup on candidates and organizations. The colour validation raises or returns the row as it received it. A future BEFORE trigger that modified a protected column without the statement naming it would escape the column restriction, so the population is bounded here'
   );
 
 -- =====================================================================
@@ -1213,10 +1458,10 @@ SELECT
           'factions',
           'alliances'
         )
-        AND column_name IN ('name', 'first_name', 'last_name')
+        AND column_name IN ('name', 'first_name', 'last_name', 'short_name')
     )::integer,
-    5,
-    'the protected-column population is DERIVED at 5 across the four entity tables -- one name column on three of them and two personal-name columns on the fourth -- so the census below is compared against a measurement'
+    9,
+    'the protected-column population is DERIVED at 9 across the four entity tables -- a name and a short name on three of them, and two personal-name columns and a short name on the fourth -- so the census below is compared against a measurement'
   );
 
 SELECT
@@ -1281,10 +1526,10 @@ SELECT
           'factions',
           'alliances'
         )
-        AND column_name IN ('name', 'first_name', 'last_name')
+        AND column_name IN ('name', 'first_name', 'last_name', 'short_name')
     )::integer,
-    5,
-    'every one of the five protected name columns is inside its table''s allow-list -- removing them would freeze a name on an unconfirmed entity and make sign-up impossible, and this is the assertion that would catch it'
+    9,
+    'every one of the nine protected columns is inside its table''s allow-list -- removing them would freeze a name on an unconfirmed entity and make sign-up impossible, and this is the assertion that would catch it'
   );
 
 SELECT
@@ -1352,7 +1597,7 @@ SELECT
 -- =====================================================================
 -- Section 9: the hot path, on BOTH tables that carry an answers column
 -- =====================================================================
--- `upsert_answers` is the candidate application's hottest write and it names only the answers column. A column-restricted trigger fires only when one of its columns appears in the statement's SET list, decided once per statement from the parse tree, so that write never enters this function. The refusal beside it is what makes the success evidence: a trigger that refused everything would also produce the refusal, and only the PAIR distinguishes the column restriction working from the rule being absent.
+-- `upsert_answers` is the contestant application's hottest write and it names only the answers column. A column-restricted trigger fires only when one of its columns appears in the statement's SET list, decided once per statement from the parse tree, so that write never enters this function. The refusal beside it is what makes the success evidence: a trigger that refused everything would also produce the refusal, and only the PAIR distinguishes the column restriction working from the rule being absent.
 SELECT
   set_test_user (
     'authenticated',

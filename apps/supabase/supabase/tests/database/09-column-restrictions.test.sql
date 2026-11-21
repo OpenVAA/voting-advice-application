@@ -9,7 +9,7 @@
 --
 -- The confirmation column is granted on all four entity tables and guarded by a trigger instead: rule 1 of `enforce_entity_immutability()` refuses any change to it by an authenticated caller who does not hold `entity.confirm` on the row. A column grant cannot tell a candidate from a project administrator of the same role, so the check lives in the trigger, and each confirmation assertion is paired with an SQLSTATE assertion showing that the statement reached it.
 --
--- The name columns are granted too, and their freeze once confirmed is the trigger's rule 2. Section 2 unconfirms and re-confirms its own row so that its two grant assertions measure the grant.
+-- The name columns and `short_name` are granted too, and their freeze once confirmed is the trigger's rule 2. Section 2 unconfirms and re-confirms its own row so that its two grant assertions measure the grant; the allow assertions on confirmed rows in sections 4 and 6 write columns the trigger does not freeze.
 --
 -- Depends on: 00-helpers.test.sql (set_test_user, create_test_data, test_id, etc.), 303-column-grants.sql (column-level REVOKE/GRANT) and 011-validation-functions.sql (enforce_entity_immutability).
 BEGIN;
@@ -328,10 +328,10 @@ SELECT
 SELECT
   lives_ok (
     format(
-      $$UPDATE organizations SET short_name = '{"en":"New Short"}'::jsonb WHERE id = '%s'$$,
+      $$UPDATE organizations SET custom_data = '{"note":"New note"}'::jsonb WHERE id = '%s'$$,
       test_id ('org_a')
     ),
-    'Organization admin can update short_name on own organization'
+    'Organization admin can update custom_data on own organization'
   );
 
 SELECT
@@ -406,7 +406,7 @@ SELECT
 SELECT
   lives_ok (
     format(
-      $$UPDATE candidates SET short_name = '{"en":"Trigger Control"}'::jsonb WHERE id = '%s'$$,
+      $$UPDATE candidates SET info = '{"en":"Trigger Control"}'::jsonb WHERE id = '%s'$$,
       test_id ('candidate_a')
     ),
     'Candidate can still update a permitted column while holding no privilege on updated_at'
@@ -449,8 +449,8 @@ SELECT
         AND table_schema = 'public'
         AND table_name = 'candidates'
     ),
-    11,
-    'authenticated holds UPDATE on exactly 11 columns of candidates'
+    10,
+    'authenticated holds UPDATE on exactly 10 columns of candidates'
   );
 
 SELECT
@@ -485,10 +485,10 @@ SELECT
 SELECT
   lives_ok (
     format(
-      $$UPDATE projects SET lock_nominations = true WHERE id = '%s'$$,
+      $$UPDATE projects SET default_locale = 'fi' WHERE id = '%s'$$,
       test_id ('project_a')
     ),
-    'control: a project admin can still update a settings column of its own project'
+    'control: a project admin can still update default_locale, a settings column of its own project'
   );
 
 SELECT

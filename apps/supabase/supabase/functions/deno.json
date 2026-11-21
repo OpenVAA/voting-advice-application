@@ -1,0 +1,5 @@
+{
+  "lock": false,
+  "exclude": ["**/*.test.ts"],
+  "lint": { "rules": { "exclude": ["no-import-prefix"] } }
+}

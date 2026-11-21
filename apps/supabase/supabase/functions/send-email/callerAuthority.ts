@@ -1,13 +1,13 @@
 /**
  * The Edge Functions' authority gate: ask the DATABASE whether the caller may do a thing, never re-derive the answer here.
  *
- * `public.user_can(scope, target_id, permission, target_type)` is the single place the role x permission matrix is encoded, and no second copy of it may exist. The two gates this replaced -- one in `invite-candidate`, one in `send-email` -- each hand-coded a subset of the matrix from the raw JWT `grants` claim, and they had already diverged from the matrix and from each other: both admitted an account admin of ANY account, because resolving which account owns the project is a reach rule only the database holds, and one refused a ProjectEditor that the matrix grants `project.edit_entities`.
+ * `public.user_can(scope, target_id, permission, target_type)` is the single place the role x permission matrix is encoded, and no second copy of it may exist. A gate that hand-codes a subset of the matrix from the raw JWT `grants` claim diverges from it: resolving which account owns a project is a reach rule only the database holds, so a TypeScript copy admits an account admin of ANY account or refuses a role the matrix grants the permission to.
  *
  * The call goes through the CALLER'S OWN client, so `user_can` reads the caller's own `grants` claim from their token -- the same claim every RLS policy reads. A service-role client must never be passed here: its token carries no grants claim, and the answer would describe the service role rather than the caller.
  *
  * Fails CLOSED: an RPC error, a non-boolean answer, or an absent/blank target id is a denial.
  *
- * ⚠ BYTE-IDENTICAL COPIES live in `invite-candidate/` and `send-email/`, because Supabase deploys each top-level function directory as its own unit and this repository has no shared module directory for Edge Functions (the `envConfig.ts` precedent). `scripts/assert-edge-env-defaults.mjs` (a `yarn lint:check` link) fails when the two copies differ. Edit both or neither.
+ * ONE FUNCTION, ONE DIRECTORY. `send-email` is the only Edge Function that gates on the caller's authority, so the module lives in `send-email/`. A second function that needs the gate moves it to `functions/_shared/` and imports it from there.
  *
  * Reaches no remote origin, so vitest can import it -- unlike `index.ts`, whose `npm:` specifiers only Deno resolves.
  */

@@ -15,7 +15,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (52);
+  plan (51);
 
 SELECT
   create_test_data ();
@@ -29,21 +29,13 @@ SELECT
   reset_role ();
 
 INSERT INTO
-  candidates (
-    id,
-    project_id,
-    first_name,
-    last_name,
-    terms_of_use_accepted,
-    confirmed
-  )
+  candidates (id, project_id, first_name, last_name, confirmed)
 VALUES
   (
     'eeeeeeee-eeee-eeee-eeee-000000000001'::uuid,
     test_id ('project_a'),
     'T',
     'Visible',
-    now() - interval '1 day',
     true
   ),
   (
@@ -51,7 +43,6 @@ VALUES
     test_id ('project_b'),
     'T',
     'ClosedProject',
-    now() - interval '1 day',
     true
   ),
   (
@@ -59,7 +50,6 @@ VALUES
     test_id ('project_a'),
     'T',
     'Unconfirmed',
-    now() - interval '1 day',
     false
   ),
   (
@@ -67,7 +57,6 @@ VALUES
     test_id ('project_a'),
     'T',
     'NominationUnconfirmed',
-    now() - interval '1 day',
     true
   ),
   (
@@ -75,15 +64,6 @@ VALUES
     test_id ('project_a'),
     'T',
     'NoNomination',
-    now() - interval '1 day',
-    true
-  ),
-  (
-    'eeeeeeee-eeee-eeee-eeee-000000000006'::uuid,
-    test_id ('project_a'),
-    'T',
-    'NoTermsOfUse',
-    NULL,
     true
   ),
   (
@@ -91,7 +71,6 @@ VALUES
     test_id ('project_a'),
     'T',
     'NullUnconfirmed',
-    now() - interval '1 day',
     true
   );
 
@@ -148,15 +127,6 @@ VALUES
     test_id ('constituency_a'),
     1,
     false
-  ),
-  (
-    'eeeeeeee-eeee-eeee-eeee-0000000000a6'::uuid,
-    test_id ('project_a'),
-    'eeeeeeee-eeee-eeee-eeee-000000000006'::uuid,
-    test_id ('election_a'),
-    test_id ('constituency_a'),
-    1,
-    true
   ),
   (
     'eeeeeeee-eeee-eeee-eeee-0000000000a7'::uuid,
@@ -371,7 +341,7 @@ SELECT
         id = 'eeeeeeee-eeee-eeee-eeee-000000000001'::uuid
     )::integer,
     1,
-    'anon CAN see a candidate with every conjunct true: project open, confirmed, a non-unconfirmed nomination in the same project, and terms of use accepted in the past'
+    'anon CAN see a candidate with every conjunct true: project open, confirmed, and a non-unconfirmed nomination in the same project'
   );
 
 SELECT
@@ -428,20 +398,6 @@ SELECT
     )::integer,
     0,
     'anon CANNOT see an otherwise-visible candidate with no nomination at all -- the nomination conjunct, flipped alone by absence'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)
-      FROM
-        candidates
-      WHERE
-        id = 'eeeeeeee-eeee-eeee-eeee-000000000006'::uuid
-    )::integer,
-    0,
-    'anon CANNOT see an otherwise-visible candidate whose terms_of_use_accepted is NULL -- the terms-of-use conjunct, flipped alone'
   );
 
 -- =====================================================================
@@ -529,7 +485,7 @@ SELECT
 -- =====================================================================
 -- Section 3: the biconditional, and the recursion asserted absent
 --
--- The biconditional is the mitigation for writing the terms-of-use rule in two expressions (task 2 Q3 = A): it fails when the nomination policy and the candidate policy DISAGREE, not merely when they differ.
+-- The candidate visibility rule is written in two expressions, the candidate policy and the candidate arm of nomination_entities_confirmed. The biconditional holds them to one answer: it fails when the nomination policy and the candidate policy DISAGREE, not merely when they differ.
 -- =====================================================================
 SELECT
   is (
@@ -1005,7 +961,7 @@ SELECT
 -- =====================================================================
 -- Section 9: the fixture's own natural negative control
 --
--- `candidate_a2` is confirmed, has accepted the terms of use in the past, sits in a project open for voters and is DELIBERATELY UNNOMINATED; `candidate_a` is identical in every other respect and carries `nomination_cand_a`. The pair isolates the nomination conjunct on rows the shared fixture already owns rather than on rows this file manufactures, which is what makes it a control on the real fixture rather than on a private one.
+-- `candidate_a2` is confirmed, sits in a project open for voters and is DELIBERATELY UNNOMINATED; `candidate_a` is identical in every other respect and carries `nomination_cand_a`. The pair isolates the nomination conjunct on rows the shared fixture already owns rather than on rows this file manufactures, which is what makes it a control on the real fixture rather than on a private one.
 -- =====================================================================
 SELECT
   is (
@@ -1018,7 +974,7 @@ SELECT
         id = test_id ('candidate_a')
     )::integer,
     1,
-    'anon CAN see candidate_a -- project open, confirmed, terms accepted, and nominated'
+    'anon CAN see candidate_a -- project open, confirmed and nominated'
   );
 
 SELECT

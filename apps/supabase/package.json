@@ -13,9 +13,11 @@
     "lint:schema": "node scripts/lint-schema.mjs",
     "lint:all": "yarn lint:sql && yarn lint:schema",
     "test:unit": "vitest run",
-    "test:db": "supabase test db"
+    "test:db": "supabase test db",
+    "typecheck": "cd supabase/functions && deno check ."
   },
   "devDependencies": {
+    "deno": "2.9.6",
     "jose": "^6.2.1",
     "supabase": "catalog:",
     "vite": "catalog:",

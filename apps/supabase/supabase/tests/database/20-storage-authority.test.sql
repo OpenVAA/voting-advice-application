@@ -18,7 +18,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (46);
+  plan (47);
 
 SELECT
   create_test_data ();
@@ -124,7 +124,7 @@ SELECT
   is (
     tracer_affected_rows (
       format(
-        $$UPDATE public.candidates SET short_name = '{"en":"Tracer"}'::jsonb WHERE id = '%s'$$,
+        $$UPDATE public.candidates SET info = '{"en":"Tracer"}'::jsonb WHERE id = '%s'$$,
         test_id ('candidate_a')::text
       )
     ),
@@ -279,7 +279,7 @@ SELECT
     'structural: the public-bucket INSERT pair reaches the authority helper and carries no other authority predicate, identity comparison or entity-type literal'
   );
 
--- The public-bucket INSERT policies are exactly the entity-scope and project-scope pair. Test 27 asserts the global form beside it: no storage policy name carries an entity type.
+-- The public-bucket INSERT policies are exactly the entity-scope and project-scope pair. Test 26 asserts the global form beside it: no storage policy name carries an entity type.
 SELECT
   is (
     (
@@ -324,14 +324,14 @@ SELECT
   );
 
 -- =====================================================================
--- 13-19: THE ANON EXPOSURE SET
+-- 13-18: THE ANON EXPOSURE SET
 --
--- The failure direction of the anon policy is EXPOSURE, and a read test cannot tell "correctly visible" from "should have been hidden" -- a passing read reports nothing either way. So the set is two positives and five negatives, each negative FLIPPING ONE CONJUNCT ALONE against an otherwise visible row, and each negative fails against a visibility helper that returns true unconditionally. The flips are made as postgres and reverted immediately; `enforce_entity_immutability` returns early for any caller that is not `authenticated`, so the fixture is not fighting the trigger.
+-- The failure direction of the anon policy is EXPOSURE, and a read test cannot tell "correctly visible" from "should have been hidden" -- a passing read reports nothing either way. So the set is two positives and four negatives, each negative FLIPPING ONE CONJUNCT ALONE against an otherwise visible row, and each negative fails against a visibility helper that returns true unconditionally. The flips are made as postgres and reverted immediately; `enforce_entity_immutability` returns early for any caller that is not `authenticated`, so the fixture is not fighting the trigger.
 -- =====================================================================
 SELECT
   reset_role ();
 
--- 13. ALLOW. Project A is open for voters, candidate_a is confirmed, its terms of use are accepted in the past, and nomination_cand_a confirms it in this project. All four conjuncts hold.
+-- 13. ALLOW. Project A is open for voters, candidate_a is confirmed, and nomination_cand_a confirms it in this project. All three conjuncts hold.
 SELECT
   set_test_user ('anon');
 
@@ -422,7 +422,7 @@ SELECT
     'anon: the project-level asset path IS readable while the project is open for voters'
   );
 
--- 17. DENY, entity confirmation flag flipped alone. Project open, nomination confirmed, terms accepted.
+-- 17. DENY, entity confirmation flag flipped alone. Project open, nomination confirmed.
 SELECT
   reset_role ();
 
@@ -459,7 +459,7 @@ SET
 WHERE
   id = test_id ('candidate_a');
 
--- 18. DENY, nomination conjunct flipped alone. candidate_a2 is the fixture's own negative control: it is confirmed, its terms are accepted, its project is open, and it carries NO nomination at all.
+-- 18. DENY, nomination conjunct flipped alone. candidate_a2 is the fixture's own negative control: it is confirmed, its project is open, and it carries NO nomination at all.
 INSERT INTO
   storage.objects (id, bucket_id, name, owner)
 VALUES
@@ -488,45 +488,8 @@ SELECT
     'anon: an asset of a confirmed entity with NO confirming nomination is NOT readable -- the nomination conjunct, flipped alone'
   );
 
--- 19. DENY, terms-of-use conjunct flipped alone. This is the conjunct that ONLY `candidates` carries, and the one a composition of the three visibility helpers alone would silently drop: the candidate ROW would stay hidden from anon while its PHOTO stayed fetchable -- storage disagreeing with tables, in the one direction a passing read test cannot report. `anon_select_candidates` carries both guards and so does storage_path_is_public's candidate branch.
-SELECT
-  reset_role ();
-
-UPDATE candidates
-SET
-  terms_of_use_accepted = NULL
-WHERE
-  id = test_id ('candidate_a');
-
-SELECT
-  set_test_user ('anon');
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)
-      FROM
-        storage.objects
-      WHERE
-        bucket_id = 'public-assets'
-        AND name LIKE '%/candidates/' || test_id ('candidate_a')::text || '/photo.jpg'
-    )::integer,
-    0,
-    'anon: an asset of an otherwise visible candidate whose terms of use are not accepted is NOT readable -- the terms-of-use conjunct, flipped alone'
-  );
-
-SELECT
-  reset_role ();
-
-UPDATE candidates
-SET
-  terms_of_use_accepted = now() - interval '1 day'
-WHERE
-  id = test_id ('candidate_a');
-
 -- =====================================================================
--- 20-23: the private bucket, and anon writes
+-- 19-22: the private bucket, and anon writes
 --
 -- The private-bucket SELECT carries NO visibility disjunct at all, by design, so a path that would be anon-visible in the public bucket confers nothing here. There is no anon policy on that bucket and no anon write policy on either.
 -- =====================================================================
@@ -587,7 +550,7 @@ SELECT
     'anon: cannot UPDATE any storage object'
   );
 
--- 23. The anon DELETE. `storage.objects` carries a Supabase-supplied guard that refuses direct deletion from EVERY role (`Direct deletion from storage tables is not allowed. Use the Storage API instead.`), so a DELETE-policy denial cannot be observed as an affected-row count of zero the way the UPDATE above can. What is asserted instead holds whichever mechanism does the refusing: the objects SURVIVE the attempt, counted as postgres on both sides of it.
+-- 22. The anon DELETE. `storage.objects` carries a Supabase-supplied guard that refuses direct deletion from EVERY role (`Direct deletion from storage tables is not allowed. Use the Storage API instead.`), so a DELETE-policy denial cannot be observed as an affected-row count of zero the way the UPDATE above can. What is asserted instead holds whichever mechanism does the refusing: the objects SURVIVE the attempt, counted as postgres on both sides of it.
 SELECT
   reset_role ();
 
@@ -637,12 +600,12 @@ SELECT
   );
 
 -- =====================================================================
--- 24-27: structural, read from the catalogue and never from a file
+-- 23-26: structural, read from the catalogue and never from a file
 -- =====================================================================
 SELECT
   reset_role ();
 
--- 24. One expression per verb per scope, across both buckets: with the bucket literal replaced by a placeholder, the expressions of each write verb collapse to exactly ONE string per scope. Six families (three verbs x two scopes), each of which must be one distinct normalised expression across its two buckets.
+-- 23. One expression per verb per scope, across both buckets: with the bucket literal replaced by a placeholder, the expressions of each write verb collapse to exactly ONE string per scope. Six families (three verbs x two scopes), each of which must be one distinct normalised expression across its two buckets.
 SELECT
   is (
     (
@@ -681,7 +644,7 @@ SELECT
     'structural: the twelve write policies are SIX distinct expressions modulo the bucket literal -- one per verb per scope, across both buckets'
   );
 
--- 25. The absence set. Read from pg_policies, so a source comment can neither satisfy nor invalidate it.
+-- 24. The absence set. Read from pg_policies, so a source comment can neither satisfy nor invalidate it.
 SELECT
   is (
     (
@@ -706,7 +669,7 @@ SELECT
     'absence: no storage policy expression carries can_access_project, has_role, an identity comparison, a publication flag or an entity-type literal'
   );
 
--- 26. Every one of the fifteen reaches one of the two helpers.
+-- 25. Every one of the fifteen reaches one of the two helpers.
 SELECT
   is (
     (
@@ -722,7 +685,7 @@ SELECT
     'routing: every storage policy reaches storage_path_can or storage_path_is_public, and none answers the authority question its own way'
   );
 
--- 27. The storage-local publication helper is ABSENT from pg_proc, not merely unused, and no storage policy name carries an entity type. Test 11 makes the narrower claim about the public-bucket INSERT pair.
+-- 26. The storage-local publication helper is ABSENT from pg_proc, not merely unused, and no storage policy name carries an entity type. Test 11 makes the narrower claim about the public-bucket INSERT pair.
 SELECT
   is (
     ARRAY[
@@ -756,7 +719,7 @@ SELECT
   );
 
 -- =====================================================================
--- 28-39: THE PAIRED ASSERTION -- four observations per verb per scope, TWO-DIRECTIONAL
+-- 27-38: THE PAIRED ASSERTION -- four observations per verb per scope, TWO-DIRECTIONAL
 --
 -- For each cell: an identity ALLOWED the operation at the TABLE level is allowed it at the STORAGE level, and an identity DENIED it at the table level is denied it at storage. The table half is always a real SELECT whose row count is asserted or a real UPDATE whose affected-row count is asserted -- NEVER a `user_can` or `storage_path_can` call. A pair whose two halves both call one function asserts that the function equals itself; it passes against any policy set at all, including two that both deny everything and two that both allow everything, so it cannot detect storage disagreeing with tables.
 --
@@ -774,7 +737,7 @@ SELECT
     test_user_grants ('candidate_a')
   );
 
--- 28-31: entity scope, READ.
+-- 27-30: entity scope, READ.
 SELECT
   is (
     (
@@ -833,7 +796,7 @@ SELECT
     'PAIR entity/read DENY, storage half: the same caller is DENIED that entity''s private-bucket folder'
   );
 
--- 32-35: project scope, READ.
+-- 31-34: project scope, READ.
 SELECT
   set_test_user (
     'authenticated',
@@ -899,7 +862,7 @@ SELECT
     'PAIR project/read DENY, storage half: the same grantee is DENIED the other project''s structure folder'
   );
 
--- 36-39: project scope, WRITE.
+-- 35-38: project scope, WRITE.
 SELECT
   is (
     tracer_affected_rows (
@@ -947,13 +910,13 @@ SELECT
   );
 
 -- =====================================================================
--- 40-44: SEPARABILITY -- two independent read-but-not-write identities, at two different scopes
+-- 39-43: SEPARABILITY -- two independent read-but-not-write identities, at two different scopes
 --
 -- A policy that honours `read` and `write` identically passes any grid that exercises only one of them. These are the assertions that fail if the verb argument is accepted and then discarded. Each description names the role and the permission it relies on, so a `grant_role_permissions` change that invalidates the identity reddens a test that says which entry it came from.
 --
--- ENTITY SCOPE (40-41). An entity grant carries `entity.read_answers` and `entity.edit_answers` on its own entity and neither on another, so the identity that separates is one reading ANOTHER entity's publicly visible asset, admitted through the visibility path, and writing it, which no permission admits.
+-- ENTITY SCOPE (39-40). An entity grant carries `entity.read_answers` and `entity.edit_answers` on its own entity and neither on another, so the identity that separates is one reading ANOTHER entity's publicly visible asset, admitted through the visibility path, and writing it, which no permission admits.
 --
--- PROJECT SCOPE (42-44). Every entity-editor role (candidate, organization, faction, alliance) holds `project.read_structure` and neither `project.edit_structure` nor `project.edit_questions`. So an entity grantee reads an election's banner and a question's diagram and may write neither. This identity exists ONLY because the type segment maps to a PERMISSION rather than to a boolean, and the two refusals are two DIFFERENT withheld permissions because `storage_path_can` maps elections and questions to different write permissions, as their own table policies do.
+-- PROJECT SCOPE (41-43). Every entity-editor role (candidate, organization, faction, alliance) holds `project.read_structure` and neither `project.edit_structure` nor `project.edit_questions`. So an entity grantee reads an election's banner and a question's diagram and may write neither. This identity exists ONLY because the type segment maps to a PERMISSION rather than to a boolean, and the two refusals are two DIFFERENT withheld permissions because `storage_path_can` maps elections and questions to different write permissions, as their own table policies do.
 -- =====================================================================
 SELECT
   set_test_user (
@@ -1029,7 +992,7 @@ SELECT
   );
 
 -- =====================================================================
--- 45: the two separability callers' TABLE answers equal their STORAGE answers, as the same four booleans on both sides. Both sides are measured by real operations; neither calls a predicate.
+-- 44: the two separability callers' TABLE answers equal their STORAGE answers, as the same four booleans on both sides. Both sides are measured by real operations; neither calls a predicate.
 -- =====================================================================
 SELECT
   reset_role ();
@@ -1220,7 +1183,7 @@ SELECT
   );
 
 -- =====================================================================
--- 46: structural. The verb argument is referenced AND resolves DISJOINT permission sets.
+-- 45: structural. The verb argument is referenced AND resolves DISJOINT permission sets.
 --
 -- A helper that accepted the verb and discarded it would reference p_verb nowhere, or would resolve one set for both verbs. The counts are falsifiable: three read permissions (entity.read_answers, project.read_entities, project.read_structure), six write permissions (entity.edit_answers, project.edit_entities, project.edit_structure, project.edit_questions, project.edit_nominations, project.edit_app_settings), and an empty intersection. A collapse in either direction moves at least one of the four numbers.
 -- =====================================================================
@@ -1305,6 +1268,45 @@ SELECT
     ],
     ARRAY[1::bigint, 3::bigint, 6::bigint, 0::bigint],
     'structural: storage_path_can references its verb argument and resolves 3 read permissions and 6 write permissions with an EMPTY intersection -- the verb changes which question is asked'
+  );
+
+SELECT
+  reset_role ();
+
+-- =====================================================================
+-- 46-47: the cross-type refusal in the other direction
+--
+-- Test 6 refuses a candidate grantee the folder of an organization of its own project. This is its mirror: an organization grantee is refused the folder of a candidate of its own project. The allowed write comes first, in the same session, so the refusal is of that folder and not of this caller's writes at large.
+-- =====================================================================
+SELECT
+  set_test_user (
+    'authenticated',
+    test_user_id ('organization_a'),
+    test_user_grants ('organization_a')
+  );
+
+-- 46. ALLOW. The organization grantee's own folder.
+SELECT
+  lives_ok (
+    format(
+      $$INSERT INTO storage.objects (id, bucket_id, name) VALUES (gen_random_uuid(), 'public-assets', '%s/organizations/%s/t46.png')$$,
+      test_id ('project_a')::text,
+      test_id ('org_a')::text
+    ),
+    'storage: an organization grantee still INSERTs under its own entity folder at the end of this file'
+  );
+
+-- 47. DENY. A candidate folder of the same project.
+SELECT
+  throws_ok (
+    format(
+      $$INSERT INTO storage.objects (id, bucket_id, name) VALUES (gen_random_uuid(), 'public-assets', '%s/candidates/%s/t47.jpg')$$,
+      test_id ('project_a')::text,
+      test_id ('candidate_a')::text
+    ),
+    '42501',
+    NULL,
+    'storage: an organization grantee is DENIED a write into a candidate folder of the same project -- because candidate_a is not this caller''s entity'
   );
 
 SELECT

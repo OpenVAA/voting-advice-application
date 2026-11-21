@@ -6,10 +6,15 @@
 -- - is_image(jsonb) - whether a JSONB value is a well-formed StoredImage object
 -- - validate_image(jsonb) - raise a rule-specific error if a JSONB value is not a well-formed StoredImage object
 -- - validate_answer_value(jsonb, question_type, jsonb) - validate an answer value against its question type
--- - validate_nomination() - enforce nomination tenancy, hierarchy and parent consistency
+-- - nomination_shape_rule(nomination_shape, entity_type) - which entity types a nomination shape admits, and where a candidate needs a parent
+-- - validate_nomination() - enforce nomination tenancy, the nomination-shape rule, the constituency rule, hierarchy and parent consistency
+-- - nomination_requests_parent(jsonb) - whether a nomination's custom data asks for a parent that is not in the system
+-- - validate_nomination_parent_required() - refuse, when the transaction ends, a candidate nomination that needs a parent and has none
 -- - enforce_nomination_confirmation() - refuse or clear a nomination's confirmation the caller may not set
 -- - enforce_nomination_entity_columns() - bound the nomination columns a non-admin may write
--- - enforce_entity_immutability() - gate the entity confirmation flag and freeze a confirmed entity's name
+-- - enforce_entity_immutability() - gate the entity confirmation flag and freeze a confirmed entity's name and short name
+-- - validate_entity_type_list() - refuse an entity type filter that is not null or a JSON array of entity types
+-- - validate_entity_color() - refuse an entity colour that is not null or an object of hex colours under normal and dark
 --------------------------------------------------------------------------------
 -- is_localized_string: check if a JSONB value is a localized string object
 --
@@ -226,7 +231,58 @@ END;
 $$;
 
 --------------------------------------------------------------------------------
--- validate_nomination: enforce hierarchy and election/constituency consistency
+-- nomination_shape_rule: the nomination shape x entity type matrix, encoded once
+--
+-- Answers, for one nomination shape and one entity type, one of the three members of `public.nomination_admission`:
+--   'admitted'        - the entity type may be nominated, with or without a parent nomination.
+--   'parent_required' - it may be nominated, and when the transaction ends its nomination must have a parent nomination or carry `requestedParentOrganization` in its custom data.
+--   'refused'         - it may not be nominated in an election of that type.
+--
+-- The CASE below is the table: one line per cell, one block per nomination shape, the entity types in the same order in each. A faction stands wherever a candidate may have a parent, and an alliance wherever an organization may stand.
+--
+-- A NULL argument answers NULL, and so would a pair the CASE does not name. Every caller treats NULL as a refusal, so a type added to either enum admits nothing until it is given a cell here.
+--
+-- This is the only statement of the matrix in SQL. `validate_nomination` and `validate_nomination_parent_required` ask it, and a function that writes nominations and needs the answer asks it too, never a copy.
+--
+-- Reads no table, so it is IMMUTABLE and not SECURITY DEFINER. search_path is pinned anyway, because the enum types it names are resolved at call time. It lives in `public` because this file is applied before the `private` schema exists.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.nomination_shape_rule (
+  p_shape public.nomination_shape,
+  p_entity_type public.entity_type
+) RETURNS public.nomination_admission LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT (CASE
+    WHEN (p_shape, p_entity_type) = ('organization_list', 'candidate') THEN 'parent_required'
+    WHEN (p_shape, p_entity_type) = ('organization_list', 'organization') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list', 'faction') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list', 'alliance') THEN 'admitted'
+
+    WHEN (p_shape, p_entity_type) = ('organization_list_and_independents', 'candidate') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list_and_independents', 'organization') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list_and_independents', 'faction') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_list_and_independents', 'alliance') THEN 'admitted'
+
+    WHEN (p_shape, p_entity_type) = ('candidate_only', 'candidate') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('candidate_only', 'organization') THEN 'refused'
+    WHEN (p_shape, p_entity_type) = ('candidate_only', 'faction') THEN 'refused'
+    WHEN (p_shape, p_entity_type) = ('candidate_only', 'alliance') THEN 'refused'
+
+    WHEN (p_shape, p_entity_type) = ('organization_only', 'candidate') THEN 'refused'
+    WHEN (p_shape, p_entity_type) = ('organization_only', 'organization') THEN 'admitted'
+    WHEN (p_shape, p_entity_type) = ('organization_only', 'faction') THEN 'refused'
+    WHEN (p_shape, p_entity_type) = ('organization_only', 'alliance') THEN 'admitted'
+  END)::public.nomination_admission;
+$$;
+
+--------------------------------------------------------------------------------
+-- validate_nomination: enforce the nomination-shape rule, hierarchy and election/constituency consistency
+--
+-- Nomination-shape rule:
+--   The row's entity type must be one its election's nomination shape admits, as `nomination_shape_rule` answers. A refusal is `Nomination shape refused: ...` with SQLSTATE 23514.
+--   It binds every writer, on INSERT and on UPDATE: an entity's own editor, an admin, the service role and the owner of the tables alike. The function reads no role.
+--   It is asked when a nomination is written. Nothing re-checks the nominations an election holds when its nomination shape is changed, so a later write of a row the new shape refuses is refused.
+--   Whether a candidate that needs a parent has one is not asked here: `validate_nomination_parent_required` asks it when the transaction ends.
 --
 -- Hierarchy rules:
 --   alliance    -> no parent allowed
@@ -236,7 +292,8 @@ $$;
 --
 -- Consistency rules:
 --   The nomination's election and constituency must belong to the nomination's own project.
---   If parent_nomination_id is set, election_id, constituency_id, and election_round must match the parent nomination.
+--   The nomination's constituency must be a constituency of its election: one a constituency group linked to the election holds. A refusal is `Nomination constituency <id> is no constituency of its election <id>` with SQLSTATE 23514. It binds every writer, as the nomination-shape rule does, and is asked on INSERT and on an UPDATE that changes the row's election or constituency. A stored nomination whose constituency is unlinked from its election later is not judged again until it is moved, so it can still be edited where it is.
+--   If parent_nomination_id is set, election_id, constituency_id, and election_round must match the parent nomination. A round that is not stored is round 1 on either side.
 --   A faction's parent must be the nomination of that faction's own organization, not merely of some organization. The exception names both organization ids.
 --
 -- SECURITY DEFINER with an empty search_path, because an entity user may insert nominations and cannot read every parent it may point at. Under invoker rights the parent lookup would run under that user's row-level security, and the `NOT FOUND` branch would report an unreadable parent as a missing one. 23-nominations-write.test.sql has an entity user insert a child under a parent that user cannot read.
@@ -254,6 +311,9 @@ DECLARE
   p_parent_organization_id uuid;
   p_child_type public.entity_type;
   p_faction_organization_id uuid;
+  p_nomination_shape public.nomination_shape;
+  p_shape_rule public.nomination_admission;
+  p_contest_judged boolean;
 BEGIN
   -- Derive entity_type from the FK columns
   p_child_type := CASE
@@ -274,6 +334,44 @@ BEGIN
     SELECT 1 FROM public.constituencies c WHERE c.id = NEW.constituency_id AND c.project_id = NEW.project_id
   ) THEN
     RAISE EXCEPTION 'Nomination constituency % does not belong to the nomination''s project %', NEW.constituency_id, NEW.project_id
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  -- The nomination-shape rule: the matrix is asked with the entity type derived above, because the generated `entity_type` column is NULL in a BEFORE trigger. Only 'admitted' and 'parent_required' let the row through, so an answer of NULL is a refusal. Checked for every writer, as the tenancy rule above is, and before the return below, which would otherwise let every row without a parent pass unasked.
+  SELECT e.nomination_shape INTO p_nomination_shape
+  FROM public.elections e
+  WHERE e.id = NEW.election_id;
+
+  p_shape_rule := public.nomination_shape_rule(p_nomination_shape, p_child_type);
+
+  IF p_shape_rule IS NULL OR p_shape_rule NOT IN ('admitted', 'parent_required') THEN
+    RAISE EXCEPTION 'Nomination shape refused: % cannot be nominated in an election whose nomination shape is % (election %)',
+      CASE
+        WHEN p_child_type IS NULL THEN 'a row that names no entity'
+        WHEN p_child_type IN ('organization', 'alliance') THEN 'an ' || p_child_type::text
+        ELSE 'a ' || p_child_type::text
+      END,
+      p_nomination_shape,
+      NEW.election_id
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  -- The constituency rule: the row's constituency must be held by a constituency group its election is linked to. Checked for every writer, an entity's editor, an admin, the service role and `bulk_import` alike, and before the return below, which would otherwise let every row without a parent pass unasked. An INSERT is judged, and an UPDATE only when it changes the row's election or constituency: a stored nomination that stays where it is is not judged again, so its editor can still edit it after its constituency is unlinked from its election.
+  IF TG_OP = 'INSERT' THEN
+    p_contest_judged := true;
+  ELSE
+    p_contest_judged := NEW.election_id IS DISTINCT FROM OLD.election_id
+      OR NEW.constituency_id IS DISTINCT FROM OLD.constituency_id;
+  END IF;
+
+  IF p_contest_judged AND NOT EXISTS (
+    SELECT 1
+    FROM public.election_constituency_groups ecg
+    JOIN public.constituency_group_constituencies cgc ON cgc.constituency_group_id = ecg.constituency_group_id
+    WHERE ecg.election_id = NEW.election_id
+      AND cgc.constituency_id = NEW.constituency_id
+  ) THEN
+    RAISE EXCEPTION 'Nomination constituency % is no constituency of its election %', NEW.constituency_id, NEW.election_id
       USING ERRCODE = 'check_violation';
   END IF;
 
@@ -346,7 +444,7 @@ BEGIN
       p_parent_constituency_id, NEW.constituency_id;
   END IF;
 
-  IF NEW.election_round IS DISTINCT FROM p_parent_election_round THEN
+  IF COALESCE(NEW.election_round, 1) <> COALESCE(p_parent_election_round, 1) THEN
     RAISE EXCEPTION 'Nomination election_round must match parent (expected %, got %)',
       p_parent_election_round, NEW.election_round;
   END IF;
@@ -356,11 +454,80 @@ END;
 $$ LANGUAGE plpgsql;
 
 --------------------------------------------------------------------------------
+-- nomination_requests_parent: whether a nomination asks for a parent that is not in the system
+--
+-- True when the custom data carries `requestedParentOrganization` as a string holding something other than white space. Such a nomination has no parent nomination yet: it waits for a parent an admin must resolve, a party for a candidate and an alliance for an organization. Any other value, an absent key and a NULL argument answer false.
+--
+-- `validate_nomination_parent_required` and `enforce_nomination_confirmation` ask it, so the two read the request alike.
+--
+-- Reads no table, so it is IMMUTABLE and not SECURITY DEFINER. It lives in `public` because this file is applied before the `private` schema exists.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.nomination_requests_parent (p_custom_data jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE
+SET
+  search_path = '' AS $$
+  SELECT COALESCE(
+    jsonb_typeof(p_custom_data -> 'requestedParentOrganization') = 'string'
+    AND (p_custom_data ->> 'requestedParentOrganization') ~ '[^[:space:]]',
+    false
+  );
+$$;
+
+--------------------------------------------------------------------------------
+-- validate_nomination_parent_required: a candidate that needs a parent has one when the transaction ends
+--
+-- The function of the constraint trigger of the same name (104-nominations.sql). Where `nomination_shape_rule` answers 'parent_required' for a candidate, the candidate's nomination must have a parent nomination or ask for one, as `nomination_requests_parent` answers. A refusal is `Nomination parent required: ...` with SQLSTATE 23514.
+--
+-- It runs at the end of the transaction and not at the statement, so a writer may insert the candidate's row, then its party's row, then point the first at the second: only a row that is still without a parent when the transaction ends is refused.
+--
+-- It reads the row again by its id and never judges the row the queued event carries. The event carries the row as that statement wrote it, so judging it would refuse the three-statement order above. A row that is gone by then is not judged at all.
+--
+-- A function that must report the refusal inside its own call forces the constraint and puts it back before it returns: `SET CONSTRAINTS public.validate_nomination_parent_required IMMEDIATE;` and then `SET CONSTRAINTS public.validate_nomination_parent_required DEFERRED;`. While the constraint is immediate, a candidate's row without a parent is refused at its own statement, so the second statement is not optional.
+--
+-- SECURITY DEFINER with an empty search_path, as `validate_nomination` is: the re-read must find the row whatever row-level security the writer carries. The rule binds every writer, and the function reads no role.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.validate_nomination_parent_required () RETURNS TRIGGER SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_candidate_id uuid;
+  v_parent_nomination_id uuid;
+  v_custom_data jsonb;
+  v_election_id uuid;
+  v_nomination_shape public.nomination_shape;
+BEGIN
+  -- Scalar variables, not a row of the table's type: this file is applied before the table exists, and a declaration is resolved when the function is created.
+  SELECT n.candidate_id, n.parent_nomination_id, n.custom_data, n.election_id
+  INTO v_candidate_id, v_parent_nomination_id, v_custom_data, v_election_id
+  FROM public.nominations n
+  WHERE n.id = NEW.id;
+
+  IF NOT FOUND
+     OR v_candidate_id IS NULL
+     OR v_parent_nomination_id IS NOT NULL
+     OR public.nomination_requests_parent(v_custom_data) THEN
+    RETURN NULL;
+  END IF;
+
+  SELECT e.nomination_shape INTO v_nomination_shape
+  FROM public.elections e
+  WHERE e.id = v_election_id;
+
+  IF public.nomination_shape_rule(v_nomination_shape, 'candidate') = 'parent_required' THEN
+    RAISE EXCEPTION 'Nomination parent required: candidate nomination % in election % has neither a parent nomination nor a requested parent organization',
+      NEW.id, v_election_id
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+--------------------------------------------------------------------------------
 -- enforce_nomination_confirmation: the confirmation transition
 --
 -- Editing a nomination turns its confirmation off. The system sets the flag, so this is a trigger rather than a policy: a policy can refuse a row but cannot rewrite one. Three rules, in order:
 --
---   1. On either verb, a row being confirmed while its custom_data carries `requestedParentOrganization` is refused. A candidate nomination with a NULL parent is either independent or waiting for a party that is not in the system yet, and that key is the only difference. Confirming such a row would publish as an independent a candidate who asked for a party.
+--   1. On either verb, a row being confirmed while `nomination_requests_parent` holds for its custom_data is refused. A nomination with a NULL parent either stands on its own or waits for a parent that is not in the system yet, a party for a candidate and an alliance for an organization, and that key is the only difference. Confirming such a row would publish as standing on its own a nominee that asked for a parent.
 --   2. On UPDATE, when the caller's effective database role is `authenticated` and the caller does not hold `nomination.confirm` on the row's project, an attempt to turn the flag on is refused by name, and any other edit has the flag forced off. The refusal is explicit so a client never believes an ignored request succeeded.
 --   3. Otherwise the supplied value stands. That makes an admin's edit-and-confirm a single statement, and keeps a service-role re-seed from unconfirming every row it touches.
 --
@@ -368,7 +535,7 @@ $$ LANGUAGE plpgsql;
 --
 -- A project editor holds `nomination.edit` but not `nomination.confirm`, so its edits also turn confirmation off and only an admin can restore the flag. That is the review gate.
 --
--- On INSERT it also repeats the policy cap on originated unconfirmed parent nominations, so the caller is told the limit.
+-- On INSERT it also repeats the policy cap on originated unconfirmed parent nominations, so the caller is told the limit. That refusal raises SQLSTATE OV004, a code no other refusal raises, so a client recognises it by the code alone.
 --
 -- SECURITY INVOKER, unlike validate_nomination: the role test must see the caller's effective role, which owner rights would replace. It reads no table directly; its authority questions go through `user_can` and the private cap-count helper.
 --------------------------------------------------------------------------------
@@ -376,9 +543,8 @@ CREATE OR REPLACE FUNCTION public.enforce_nomination_confirmation () RETURNS TRI
 BEGIN
   -- Rule 1: the free-text branch can never be confirmed, on either verb.
   IF NEW.confirmed
-     AND NEW.custom_data IS NOT NULL
-     AND NEW.custom_data ? 'requestedParentOrganization' THEN
-    RAISE EXCEPTION 'Nomination % cannot be confirmed while custom_data carries "requestedParentOrganization" (%): an admin must resolve the requested party first, or confirming would publish as an independent a candidate who asked for a party',
+     AND public.nomination_requests_parent(NEW.custom_data) THEN
+    RAISE EXCEPTION 'Nomination % cannot be confirmed while custom_data carries "requestedParentOrganization" (%): an admin must resolve the requested parent first, or confirming would publish as standing on its own a nominee who asked for a parent',
       COALESCE(NEW.id::text, '(new)'),
       NEW.custom_data ->> 'requestedParentOrganization';
   END IF;
@@ -398,15 +564,16 @@ BEGIN
   --
   -- The `entity_insert_parent_nominations` policy enforces the cap, but a row-level security refusal names the policy and never the limit. A BEFORE INSERT trigger runs ahead of the policy's check, so this message, which names the limit, is the one the caller sees.
   --
-  -- Scoped to the population the cap is about: an `authenticated` caller without `project.edit_nominations` inserting an unconfirmed organization nomination. Admins may create placeholder parents, and the service-role and owner paths run as other roles.
+  -- Scoped to the population the cap is about: an `authenticated` caller without `project.edit_nominations` inserting an unconfirmed nomination of an organization or of an alliance, the two kinds of row the count holds. Admins may create placeholder parents, and the service-role and owner paths run as other roles.
   IF TG_OP = 'INSERT'
      AND current_user = 'authenticated'
      AND NOT NEW.confirmed
-     AND NEW.organization_id IS NOT NULL
+     AND (NEW.organization_id IS NOT NULL OR NEW.alliance_id IS NOT NULL)
      AND NOT public.user_can('project', NEW.project_id, 'project.edit_nominations')
      AND private.caller_unconfirmed_originated_count() >= 10 THEN
-    RAISE EXCEPTION 'A caller may originate at most 10 unconfirmed parent organization nominations; this caller already holds %. An administrator must confirm or reject some before more can be created.',
-      private.caller_unconfirmed_originated_count();
+    RAISE EXCEPTION 'A caller may originate at most 10 unconfirmed parent nominations; this caller already holds %. An administrator must confirm or reject some before more can be created.',
+      private.caller_unconfirmed_originated_count()
+      USING ERRCODE = 'OV004';
   END IF;
 
   -- Rule 3: the supplied value stands.
@@ -420,26 +587,62 @@ $$;
 -- A column grant against `authenticated` cannot tell an entity user from a project admin, so the nominations grant in 303-column-grants.sql admits what an admin needs (including bulk_import through an authenticated admin session), and the entity-user bound lives here, where the caller can be told apart. `enforce_nomination_confirmation` and `enforce_entity_immutability` use the same arrangement.
 --
 -- Binds exactly one population: an `authenticated` caller who does not hold `project.edit_nominations` on the row's project. For that caller:
---   INSERT - the nine presentation and bookkeeping columns (name, short_name, info, color, image, sort_order, subtype, election_symbol, external_id) must be left unset.
---   UPDATE - those nine and the four entity foreign keys must be unchanged.
+--   INSERT - the eight presentation and bookkeeping columns an administrator alone writes (name, short_name, info, color, image, sort_order, subtype, external_id) must be left unset.
+--   UPDATE - those eight and the four entity foreign keys must be unchanged.
+--   Both   - `election_symbol` may be set or changed on the caller's own row and on no other.
 -- The owner and service-role paths are untouched (current_user is not `authenticated` there), and an admin passes through.
 --
--- Raises insufficient_privilege (42501), the code a column-grant refusal raises, so the caller sees the same error class either way.
+-- A row is the caller's own when the caller holds `nomination.edit` on the entity it nominates. That is the question `entity_insert_nominations` and `entity_update_nominations` ask, put to `user_can` at entity scope with the entity type derived from the four foreign keys, because the generated `entity_type` column is NULL in a BEFORE trigger. It is asked only when the symbol is set or changed, and an answer of NULL refuses.
+--
+-- A placeholder parent row, which `entity_insert_parent_nominations` lets a child nominee insert for an organization, is not the caller's own: the caller holds `nomination.edit` on its own entity and not on the organization that row nominates. So a candidate cannot set a party's symbol through the row it may create for that party.
+--
+-- A symbol changed by an entity's editor is an edit like any other: rule 2 of `enforce_nomination_confirmation` turns the row's confirmation off, so an administrator reviews the symbol before voters see it.
+--
+-- Raises insufficient_privilege (42501), the code a column-grant refusal raises, so the caller sees the same error class either way. Both messages begin `Only a holder of project.edit_nominations may `.
 --
 -- SECURITY INVOKER: a SECURITY DEFINER body reports the owner as current_user, and the role test would never match.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_nomination_entity_columns () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
+DECLARE
+  v_symbol_written boolean;
+  v_symbol_refused boolean := false;
 BEGIN
   IF current_user <> 'authenticated'
      OR public.user_can('project', NEW.project_id, 'project.edit_nominations') THEN
     RETURN NEW;
   END IF;
 
-  IF TG_OP = 'INSERT' AND num_nonnulls(
-       NEW.name, NEW.short_name, NEW.info, NEW.color, NEW.image,
-       NEW.sort_order, NEW.subtype, NEW.election_symbol, NEW.external_id
-     ) > 0 THEN
-    RAISE EXCEPTION 'Only a holder of project.edit_nominations may set a nomination''s name, short_name, info, color, image, sort_order, subtype, election_symbol or external_id'
+  IF TG_OP = 'INSERT' THEN
+    v_symbol_written := NEW.election_symbol IS NOT NULL;
+  ELSE
+    v_symbol_written := NEW.election_symbol IS DISTINCT FROM OLD.election_symbol;
+  END IF;
+
+  IF v_symbol_written THEN
+    v_symbol_refused := NOT COALESCE(
+      public.user_can(
+        'entity',
+        COALESCE(NEW.candidate_id, NEW.organization_id, NEW.faction_id, NEW.alliance_id),
+        'nomination.edit',
+        CASE
+          WHEN NEW.candidate_id IS NOT NULL THEN 'candidate'::public.entity_type
+          WHEN NEW.organization_id IS NOT NULL THEN 'organization'::public.entity_type
+          WHEN NEW.faction_id IS NOT NULL THEN 'faction'::public.entity_type
+          WHEN NEW.alliance_id IS NOT NULL THEN 'alliance'::public.entity_type
+        END
+      ),
+      false
+    );
+  END IF;
+
+  IF TG_OP = 'INSERT' AND (
+       num_nonnulls(
+         NEW.name, NEW.short_name, NEW.info, NEW.color, NEW.image,
+         NEW.sort_order, NEW.subtype, NEW.external_id
+       ) > 0
+       OR v_symbol_refused
+     ) THEN
+    RAISE EXCEPTION 'Only a holder of project.edit_nominations may set a nomination''s name, short_name, info, color, image, sort_order, subtype or external_id, or the election_symbol of a nomination that is not the caller''s own'
       USING ERRCODE = 'insufficient_privilege';
   END IF;
 
@@ -451,14 +654,14 @@ BEGIN
        OR NEW.image IS DISTINCT FROM OLD.image
        OR NEW.sort_order IS DISTINCT FROM OLD.sort_order
        OR NEW.subtype IS DISTINCT FROM OLD.subtype
-       OR NEW.election_symbol IS DISTINCT FROM OLD.election_symbol
        OR NEW.external_id IS DISTINCT FROM OLD.external_id
        OR NEW.candidate_id IS DISTINCT FROM OLD.candidate_id
        OR NEW.organization_id IS DISTINCT FROM OLD.organization_id
        OR NEW.faction_id IS DISTINCT FROM OLD.faction_id
        OR NEW.alliance_id IS DISTINCT FROM OLD.alliance_id
+       OR v_symbol_refused
      ) THEN
-    RAISE EXCEPTION 'Only a holder of project.edit_nominations may change a nomination''s presentation columns, external_id or entity'
+    RAISE EXCEPTION 'Only a holder of project.edit_nominations may change a nomination''s presentation columns, external_id or entity, or the election_symbol of a nomination that is not the caller''s own'
       USING ERRCODE = 'insufficient_privilege';
   END IF;
 
@@ -469,22 +672,22 @@ $$;
 --------------------------------------------------------------------------------
 -- enforce_entity_immutability: the confirmation gate and the conditional identity freeze
 --
--- A confirmed entity's name is frozen for the entity user and stays correctable by a holder of `entity.edit_immutable`. That is a rule about the transition between two row states, which neither a column grant (one global pair per role, blind to the row) nor a policy (`USING` sees only OLD, `WITH CHECK` only NEW) can express. A BEFORE UPDATE row trigger sees both rows in one scope. It follows the shape of `enforce_external_id_immutability` in 500-external-id.sql: an OLD-row condition, an `IS DISTINCT FROM` comparison, a named exception carrying both values, and one body registered on several tables.
+-- A confirmed entity's name and short name are frozen for the entity user and stay correctable by a holder of `entity.edit_immutable`. That is a rule about the transition between two row states, which neither a column grant (one global pair per role, blind to the row) nor a policy (`USING` sees only OLD, `WITH CHECK` only NEW) can express. A BEFORE UPDATE row trigger sees both rows in one scope. It follows the shape of `enforce_external_id_immutability` in 500-external-id.sql: an OLD-row condition, an `IS DISTINCT FROM` comparison, a named exception carrying both values, and one body registered on several tables.
 --
 -- Two rules, in a fixed order:
 --
 --   1. The confirmation gate. A change to the confirmation flag, in either direction, by an `authenticated` caller who does not hold `entity.confirm` on the row is refused by name. Turning the flag off is refused too, because an entity user who could unconfirm could then rename.
 --   2. The conditional freeze, read from the OLD row's flag. When the row was already confirmed before the statement, a change to any column named in TG_ARGV by an `authenticated` caller who does not hold `entity.edit_immutable` on the row is refused by name. Reading the OLD flag means a caller cannot unconfirm and rename in one statement, and because rule 1 runs first, such a statement is refused with the confirmation message.
 --
--- The freeze is not absolute: on an unconfirmed row the entity user may still set their own name, which the sign-up flow needs. 19-entity-immutability.test.sql asserts that outcome per protected column per table and pins the OLD-row guard on the function source.
+-- The freeze is not absolute: on an unconfirmed row the entity user may still set their own name and short name, which the sign-up flow needs. 19-entity-immutability.test.sql asserts that outcome per protected column per table and pins the OLD-row guard on the function source.
 --
--- Both rules bind only the effective `authenticated` role, as rule 2 of `enforce_nomination_confirmation` does. `user_can` reads the grant set from the JWT and a service-role token carries none, so an unscoped rule would refuse every re-seed, bulk import and pgTAP fixture write that changes a name or a confirmation flag. The cost is that the service role can rename a confirmed entity, the same latitude it has against row-level security and the column grants.
+-- Both rules bind only the effective `authenticated` role, as rule 2 of `enforce_nomination_confirmation` does. `user_can` reads the caller's rows of public.grants for `auth.uid()`, and the service role has no user id and so holds none, so an unscoped rule would refuse every re-seed, bulk import and pgTAP fixture write that changes a name or a confirmation flag. The cost is that the service role can rename a confirmed entity, the same latitude it has against row-level security and the column grants.
 --
 -- SECURITY INVOKER is required: a SECURITY DEFINER body reports the owner as `current_user`, so the role guard would never match and neither rule would bind.
 --
 -- The body names no entity type and no protected column. The protected columns arrive per registration in TG_ARGV and are compared through a JSONB projection of both rows, and the entity type is derived from TG_TABLE_NAME, so one body serves all four entity tables. The confirmation column is not a parameter: it has the same name on every entity table and is the subject of rule 1.
 --
--- Each refusal starts with a stable prefix, so `throws_like` can match it and a seed log can tell the two apart. Both name the table, the row and both values; the immutability refusal also names the column.
+-- Each refusal starts with a stable prefix, so `throws_like` can match it and a seed log can tell the two apart. Both name the table, the row and both values; the immutability refusal also names the column, and its prefix says "name" for every protected column, the short name included. The immutability refusal raises SQLSTATE OV001, a code no other refusal raises, so a client recognises it by the code alone and never by its text.
 --------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.enforce_entity_immutability () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER AS $$
 DECLARE
@@ -518,10 +721,105 @@ BEGIN
          AND NOT public.user_can('entity', NEW.id, 'entity.edit_immutable', v_entity_type) THEN
         RAISE EXCEPTION 'Entity name is immutable once confirmed: column %.%.% on row % cannot be changed (current: %, attempted: %); changing it requires the entity.edit_immutable permission',
           TG_TABLE_SCHEMA, TG_TABLE_NAME, v_col, NEW.id,
-          COALESCE(v_old_row ->> v_col, '(none)'), COALESCE(v_new_row ->> v_col, '(none)');
+          COALESCE(v_old_row ->> v_col, '(none)'), COALESCE(v_new_row ->> v_col, '(none)')
+          USING ERRCODE = 'OV001';
       END IF;
     END LOOP;
   END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+--------------------------------------------------------------------------------
+-- validate_entity_type_list: the shape of the entity type filter of a question and of a question category
+--
+-- `entity_type` on `questions` and `question_categories` is a filter list: null or an empty array addresses every entity type, and any other value addresses the types it names. The data model compares a member with an entity type by equality, so a member that names no entity type matches nothing, and the row disappears for every contestant and from every voter list that asks by type. A constraint could refuse such a value as widely; a trigger can also say which member was wrong.
+--
+-- Accepted: SQL null, an empty JSON array, and a JSON array whose every member is a string naming a value of the `entity_type` enum. Refused: every other JSON type, a JSON null included, a member that is not a string, and a string that names no enum value. The members are compared with the enum itself, so the accepted set follows 000-enums.sql.
+--
+-- The rule binds every writer: it reads no role and no grant, so an API write, a service-role write and bulk_import meet the same refusal. 40-entity-type-list.test.sql asserts each refused value beside an accepted one, per table and per verb.
+--
+-- Each refusal starts with a stable prefix and names the table, the row and what was found. A member is quoted as JSON and cut at 64 characters, because a member may be an object of any size.
+--
+-- SECURITY INVOKER with an empty search_path: the body reads only NEW and the enum, which it names with its schema.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.validate_entity_type_list () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_member jsonb;
+BEGIN
+  IF NEW.entity_type IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF jsonb_typeof(NEW.entity_type) <> 'array' THEN
+    RAISE EXCEPTION 'Invalid entity type list: column %.%.entity_type on row % must be null or a JSON array of entity types, got a JSON %',
+      TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, jsonb_typeof(NEW.entity_type);
+  END IF;
+
+  FOR v_member IN SELECT value FROM jsonb_array_elements(NEW.entity_type)
+  LOOP
+    IF jsonb_typeof(v_member) <> 'string'
+       OR NOT ((v_member #>> '{}') = ANY (enum_range(NULL::public.entity_type)::text[])) THEN
+      RAISE EXCEPTION 'Invalid entity type list: column %.%.entity_type on row % holds the member %, which is not one of the entity types %',
+        TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, left(v_member::text, 64), enum_range(NULL::public.entity_type);
+    END IF;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$;
+
+--------------------------------------------------------------------------------
+-- validate_entity_color: the shape of the stored colour of an organization, a candidate, a faction and an alliance
+--
+-- `color` is in the UPDATE grant of all four entity tables, so an entity's own editor writes it through the API, and the frontend interpolates the stored `normal` and `dark` into an inline `style` attribute on pages a voter opens. A value that is not a colour is therefore CSS of the editor's choosing in another user's browser. This function holds the stored value to one shape where every writer is bound: an API write, a service-role write and bulk_import alike.
+--
+-- Accepted: SQL null, and a JSON object whose only members are `normal` and `dark`, each absent, a JSON null, or a string that is `#` followed by exactly three or exactly six hexadecimal digits and nothing else. Refused: every other JSON type in place of the object, a JSON null included; a member under any other key; and a member that is not such a string, which covers colour names, functional notation, numbers, the empty string and a hex colour followed by anything at all.
+--
+-- The pattern is anchored at both ends, and in a PostgreSQL regular expression `$` matches only at the very end of the string, so a line break after the digits is refused as any other trailing character is. It is narrower than the frontend's parser, which also reads a colour without `#` and `rgb(r, g, b)`: every colour a shipped seed stores is of the accepted form, and a string of that form holds a colour and no other CSS.
+--
+-- The rule reads no role and no grant. 41-entity-color.test.sql asserts each refused value beside an accepted one.
+--
+-- Each refusal starts with a stable prefix and names the table, the row, the member and what was found. What was found is quoted as JSON and cut at 32 characters, and a key at 32, because the value is the writer's and may be of any length.
+--
+-- SECURITY INVOKER with an empty search_path: the body reads only NEW.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.validate_entity_color () RETURNS TRIGGER LANGUAGE plpgsql SECURITY INVOKER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_key text;
+  v_member jsonb;
+BEGIN
+  IF NEW.color IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF jsonb_typeof(NEW.color) <> 'object' THEN
+    RAISE EXCEPTION 'Invalid entity color: column %.%.color on row % must be null or a JSON object holding normal and dark, got a JSON %',
+      TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, jsonb_typeof(NEW.color);
+  END IF;
+
+  FOR v_key, v_member IN SELECT key, value FROM jsonb_each(NEW.color)
+  LOOP
+    IF v_key NOT IN ('normal', 'dark') THEN
+      RAISE EXCEPTION 'Invalid entity color: column %.%.color on row % holds the member %, and a color holds only normal and dark',
+        TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, left(v_key, 32);
+    END IF;
+
+    IF jsonb_typeof(v_member) = 'null' THEN
+      CONTINUE;
+    END IF;
+
+    IF jsonb_typeof(v_member) <> 'string'
+       OR (v_member #>> '{}') !~ '^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$' THEN
+      RAISE EXCEPTION 'Invalid entity color: column %.%.color on row % holds % as its member %, which must be null or # followed by three or six hexadecimal digits',
+        TG_TABLE_SCHEMA, TG_TABLE_NAME, NEW.id, left(v_member::text, 32), v_key;
+    END IF;
+  END LOOP;
 
   RETURN NEW;
 END;

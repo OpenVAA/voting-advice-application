@@ -29,9 +29,9 @@ CREATE TABLE IF NOT EXISTS private.feedback_rate_limits (
 --
 -- A single row: the `singleton` key admits only `true`. `behind_cloudflare` states that every request reaches the API through Cloudflare, which sets `cf-connecting-ip` itself to the connecting client. Its only reader is `check_feedback_rate_limit`, which trusts `cf-connecting-ip` only when it is true.
 --
--- The migration ships it false. Hosted Supabase is behind Cloudflare, so a hosted deployment sets it once in the SQL editor with `UPDATE private.deployment_settings SET behind_cloudflare = true;`. A self-hosted gateway qualifies only when its origin accepts connections from Cloudflare alone; otherwise a client can send its own `cf-connecting-ip`. The local stack sets it in seed.sql.
+-- The migration ships it false. Hosted Supabase is behind Cloudflare, so a hosted deployment needs it true. A self-hosted gateway qualifies only when its origin accepts connections from Cloudflare alone; otherwise a client can send its own `cf-connecting-ip`. A deployment's value is written by the bootstrap script `infra/scripts/bootstrap.sql`, and the local stack's by seed.sql.
 --
--- Only the owner reads or writes it: the SECURITY DEFINER trigger, the seed and an operator. RLS is enabled with no policy and every API role's privileges are revoked.
+-- Only the owner reads or writes it: the SECURITY DEFINER trigger reads it, seed.sql writes the local stack's row, and the bootstrap script writes a deployment's. RLS is enabled with no policy and every API role's privileges are revoked.
 --------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS private.deployment_settings (
   -- The primary key, which only `true` passes, so the table holds at most one row.

@@ -45,7 +45,11 @@ const AUTHORITY_SCHEMAS = ['public', 'storage'];
 // Each entry is [schema, table, permission]; only that one member is tolerated on that one table.
 const SAME_PERMISSION_ALLOW = [
   // § 3.2 enumerates no separate admin-jobs READ member. The operator ticked S-4 selecting `project.edit_questions`, and 162-11 put all three `admin_jobs` policies on it: the job queue's read and its write are ONE capability, held by whoever administers the project's questions. The intersection is the matrix's construction, not a collapse.
-  ['public', 'admin_jobs', 'project.edit_questions']
+  ['public', 'admin_jobs', 'project.edit_questions'],
+  // Whoever may promise a grant may read the promises; the matrix names no separate read member for grant administration. The invitation policies ask `project.manage_editors` for a project editor's promise on the read, the insert and the delete alike, so the intersection is that one capability and not a collapse. The entity arm does keep a read member (`project.read_entities`) apart from its write member (`project.edit_entities`) and needs no entry.
+  ['public', 'invitations', 'project.manage_editors'],
+  // Whoever may promise a grant may read the promises; the matrix names no separate read member for grant administration. The same construction one level up: `account.manage_admins` is asked for a project admin's promise on all three commands.
+  ['public', 'invitations', 'account.manage_admins']
   // `public.accounts` is deliberately ABSENT. C-11 cited it as known-legitimate because § 3.2 enumerated no separate account-read member; the operator's S-3 NOTE closed that gap, and 162-09 now gates the `accounts` SELECT on grant EXISTENCE via `user_has_account_grant(uuid)` while the UPDATE keeps `account.edit_settings`. Its derived read set is therefore empty and it needs no exemption. If it ever reappears here, that is a finding, not an entry.
 ];
 
@@ -77,7 +81,10 @@ const REACHES_NEITHER_ALLOW = [
   // Granted TO `supabase_auth_admin` only — the Access Token Hook's own read of the table it projects. A system role, not a user; the user authority model cannot be asked of it.
   ['public', 'grants', 'auth_admin_read_grants'],
   // Granted TO `service_role` only, which bypasses row-level security by definition. The Edge Functions write grants through it; gating it on a permission literal would be decoration.
-  ['public', 'grants', 'service_role_manage_grants']
+  ['public', 'grants', 'service_role_manage_grants'],
+  // A user's own acceptance of a project's terms of use. Acceptance is a statement a user makes about themself, so identity is the only question either policy can ask (`user_id = auth.uid()`), and the grant model has no permission for it: no grant decides whether a user may accept, or read back that they did. The rows unlock nothing, and what the caller may write is narrowed by a column-level INSERT grant, not by these policies.
+  ['public', 'terms_of_use_acceptances', 'authenticated_select_terms_of_use_acceptances'],
+  ['public', 'terms_of_use_acceptances', 'authenticated_insert_terms_of_use_acceptances']
 ];
 
 /** Render a JS list of strings as a SQL array literal. */

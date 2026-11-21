@@ -3,7 +3,7 @@
  *
  * Pure functions extracted from the send-email Edge Function for testability. This module has no Deno imports, no URL imports and no reference to the Deno global, so it can be imported by both the Edge Function and vitest.
  *
- * Not duplicated: unlike `jwtSegment.ts` and `envConfig.ts` in this directory, this renderer is used by one function only, so there is no sibling copy to hold identical.
+ * Used by one function only, so it lives in that function's directory rather than in `functions/_shared/`.
  */
 
 /**

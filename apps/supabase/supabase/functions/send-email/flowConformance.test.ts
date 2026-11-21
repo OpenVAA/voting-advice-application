@@ -87,7 +87,7 @@ describe('send-email flow conformance', () => {
   });
 
   it('asks the database for the authority decision rather than re-deriving it (SPEC section 9, 162-REVIEW WR-09)', () => {
-    // The gate this replaced read `payload.grants` and matched (scope, role) pairs in TypeScript. Its account arm admitted an account admin of ANY account, and it disagreed with invite-candidate's copy on the ProjectEditor. The decision is now one `user_can` call through the caller's own client, on the project the request names.
+    // The decision is one `user_can` call through the caller's own client, on the project the request names. A gate that reads `payload.grants` and matches (scope, role) pairs in TypeScript is the shape refused here: its account arm admits an account admin of ANY account, because which account owns a project is a reach rule only the database holds.
     //
     // AND THE GATE'S ANSWER IS THE SOLE INPUT TO THE REFUSAL (162-REVIEW CR-02). Asserting the call TEXT is present, and locating the assignment by its `const mayBulkSend = await callerMayOnProject(callerClient` PREFIX, constrains nothing about what else contributes to `mayBulkSend`: `const mayBulkSend = (await callerMayOnProject(...)) || body.debugBypass === true` satisfies both (`await X || Y` parses as `(await X) || Y`, so the prefix still matches), names no retired pattern, and leaves this file green while any authenticated caller posting `{"debugBypass": true}` bulk-sends. The WHOLE assignment statement is therefore bound, terminator included, and the number of assignments to the gate variable is pinned at one so a later re-assignment cannot widen it either.
     expect(INDEX_SOURCE).toContain("callerMayOnProject(callerClient, project_id, 'project.edit_entities')");
@@ -100,7 +100,7 @@ describe('send-email flow conformance', () => {
     expect(INDEX_SOURCE).not.toMatch(/g\.role\s*===/);
   });
 
-  it('takes its gate from the shared callerAuthority module and declares none of its own', () => {
+  it('takes its gate from the callerAuthority module and declares none of its own', () => {
     // Guards a LOCAL SHADOW of the helper (162-REVIEW WR-09): a same-named function declared in index.ts would satisfy every call-shape assertion here while answering whatever it likes.
     expect(INDEX_SOURCE).toContain("import { callerMayOnProject } from './callerAuthority.ts';");
     expect(INDEX_SOURCE).not.toMatch(/\bfunction\s*\*?\s*callerMayOnProject\b/);
@@ -144,17 +144,10 @@ describe('send-email flow conformance', () => {
     expect(adminAt).toBeGreaterThan(gateAt);
   });
 
-  it('shares ONE gate module with invite-candidate, byte for byte', () => {
-    const mine = readFileSync(new URL('./callerAuthority.ts', import.meta.url), 'utf8');
-    const theirs = readFileSync(new URL('../invite-candidate/callerAuthority.ts', import.meta.url), 'utf8');
-    expect(mine.length).toBeGreaterThan(500);
-    expect(mine).toBe(theirs);
-  });
-
   it('sends the HTML part with escaped variables and never as a caller-chosen sender (162-REVIEW WR-02)', () => {
     expect(INDEX_SOURCE).toContain('html: rendered.html');
     expect(INDEX_SOURCE).toContain('renderTemplateHtml(template.body, vars)');
-    expect(INDEX_SOURCE).toContain("const senderAddress = requireEnv('SMTP_FROM'");
+    expect(INDEX_SOURCE).toContain('const senderAddress = configuredSender(smtp);');
     expect(INDEX_SOURCE).toContain("JSON.stringify({ error: 'Invalid from' })");
     // THE SENDER ACTUALLY USED, POSITIVELY (162-REVIEW WR-06). The negative half of this test used to be `not.toMatch(/from\s*\|\|\s*requireEnv/)` alone -- ONE historical spelling of the defect WR-02 fixed. `from ?? senderAddress`, `from || senderAddress` and `from: body.from` at the `transport.sendMail` call all passed it, and nothing asserted the property that actually holds: the envelope sender is the configured one at the one line that decides it.
     expect(CODE_ONLY).toMatch(/await transport\.sendMail\(\{\s*from: senderAddress,/);

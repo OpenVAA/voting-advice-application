@@ -6,7 +6,7 @@
 --
 -- THE DEFAULTS ARE MEASURED, NEVER READ FROM THE FILE. `col_type_is` and a grep over `100-tenancy.sql` both state what the declaration says. The assertions below insert rows inside this transaction and read the column back, which states what the database did.
 --
--- lock_nominations SHIPS INERT and this file says so rather than implying activity it does not have. Nothing reads it until 162-12 writes the entity-user nomination policies whose `own, unless locked` cells are what it gates; nothing sets it; no behavioural assertion can observe it. Its claims here are existence, type, NOT NULL and default false -- and its default false IS today's behaviour rather than a new permissive setting, because section 3.3 grants admins `nomination.edit` unconditionally. Do not add an assertion here that pretends it is enforced.
+-- THE NOMINATIONS LOCK IS NOT A COLUMN OF `projects`. It is the value `nominationsLocked` of the app setting `access.contestantEditing`, and 23-nominations-write.test.sql holds its cells: the three entity-user policies in both directions, and which stored values lock. This file holds one assertion about it, in section 2: no column of `projects` names nominations, so the setting has no second source to disagree with.
 --
 -- pgTAP SHIPS ITS OWN has_role(). It is a role-existence assertion returning text, and under this estate's `search_path = public, extensions` it SHADOWS ours, so an unqualified one-argument call fails with `function ok(text, unknown) does not exist` rather than as a clean failed assertion. This file calls no permission predicate, but the rule stands for anything added to it: qualify every call `public.has_role(...)`. 13-shim-parity.test.sql is the reference.
 --
@@ -23,7 +23,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (33);
+  plan (31);
 
 SELECT
   create_test_data ();
@@ -65,20 +65,6 @@ SELECT
   is (
     (
       SELECT
-        lock_nominations
-      FROM
-        public.projects
-      WHERE
-        name = 'flag-probe bare'
-    ),
-    false,
-    'A project created naming no flag does NOT lock nominations'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
         open_for_voters
       FROM
         public.projects
@@ -108,20 +94,23 @@ SELECT
     'The openness flag is NOT NULL, so no row can carry an unknown visibility state'
   );
 
+-- The second term is the floor: it is true only when the query reached the columns of `projects`, so the zero beside it is a measurement and not an empty instrument.
 SELECT
   is (
     (
       SELECT
-        is_nullable
+        count(*) FILTER (
+          WHERE
+            column_name LIKE '%nomination%'
+        ) || '/' || bool_or(column_name = 'open_for_voters')
       FROM
         information_schema.columns
       WHERE
         table_schema = 'public'
         AND table_name = 'projects'
-        AND column_name = 'lock_nominations'
     ),
-    'NO',
-    'The lock flag is NOT NULL -- existence, type and default are the whole of what is claimed for it'
+    '0/true',
+    'No column of projects names nominations: the nominations lock is the app setting access.contestantEditing and has no column beside it'
   );
 
 -- =====================================================================
@@ -154,21 +143,6 @@ SELECT
     ),
     false,
     'Fixture project B is NOT open for voters -- the hidden half of the control group'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
-        count(*)
-      FROM
-        public.projects
-      WHERE
-        id IN (test_id ('project_a'), test_id ('project_b'))
-        AND lock_nominations
-    ),
-    0::bigint,
-    'Neither fixture project locks nominations -- the flag is seeded nowhere because it ships inert'
   );
 
 -- =====================================================================
@@ -308,23 +282,6 @@ SELECT
     ),
     4::bigint,
     'All four entity tables carry the confirmation column as a non-nullable boolean defaulting false'
-  );
-
--- The inert flag's remaining claims -- type and default. Nothing else is asserted for it anywhere, and nothing should be until 162-12 wires it.
-SELECT
-  is (
-    (
-      SELECT
-        data_type || '|' || coalesce(column_default, 'NONE')
-      FROM
-        information_schema.columns
-      WHERE
-        table_schema = 'public'
-        AND table_name = 'projects'
-        AND column_name = 'lock_nominations'
-    ),
-    'boolean|false',
-    'The lock flag is a boolean defaulting false -- the whole of what is claimed for an inert column'
   );
 
 -- =====================================================================
@@ -603,9 +560,9 @@ SELECT
   );
 
 -- =====================================================================
--- Section 7: the repurposed column -- the third term, and the only one that is a RETYPE rather than an addition
+-- Section 7: elections.nomination_shape
 -- =====================================================================
--- `elections.election_type` keeps its name and takes a new meaning (D-16, and the operator's section 8.2 note). What makes the removal of the old meaning COMPLETE is not the tree sweep that accompanies it -- that is the confirmation. It is this: the retired values are not members of the type, so a row carrying one is a PostgreSQL error rather than a stored string. The sweep can only prove the tree is clean today; the assertions below prove the tree cannot become dirty again without the database refusing it.
+-- `elections.nomination_shape` is of the enum `nomination_shape`, so a value that is not one of its four members is a PostgreSQL error rather than a stored string.
 SELECT
   is (
     (
@@ -616,13 +573,13 @@ SELECT
       WHERE
         table_schema = 'public'
         AND table_name = 'elections'
-        AND column_name = 'election_type'
+        AND column_name = 'nomination_shape'
     ),
     'USER-DEFINED|nomination_shape|NO',
-    'The repurposed column is the nomination-shape enum and is NOT NULL'
+    'elections.nomination_shape is the nomination-shape enum and is NOT NULL'
   );
 
--- Compared as a sorted array rather than as a count, so a FOURTH member reddens naming itself instead of reddening as an arithmetic surprise.
+-- Compared as a sorted array rather than as a count, so a fifth member reddens naming itself instead of reddening as an arithmetic surprise.
 SELECT
   is (
     (
@@ -641,34 +598,52 @@ SELECT
     ARRAY[
       'candidate_only',
       'organization_list',
+      'organization_list_and_independents',
       'organization_only'
     ]::text[],
-    'The nomination-shape enum has exactly the three ratified members and no fourth'
+    'The nomination-shape enum has exactly the four ratified members and no fifth'
   );
 
--- The three retired values Task 1 DERIVED from the tree -- not the two the canonical documents name. The third lives only in an adapter test fixture, and a rejection grid written against two literals would have left it representable.
+-- The default is read without its cast, whose schema qualification follows the search path.
+SELECT
+  is (
+    (
+      SELECT
+        split_part(column_default, '::', 1)
+      FROM
+        information_schema.columns
+      WHERE
+        table_schema = 'public'
+        AND table_name = 'elections'
+        AND column_name = 'nomination_shape'
+    ),
+    $$'organization_list_and_independents'$$,
+    'An election that states no type takes organization_list_and_independents, the column default'
+  );
+
+-- Three values that are not members of the enum.
 SELECT
   throws_ok (
-    $$INSERT INTO public.elections (project_id, election_type) SELECT id, 'general' FROM public.projects LIMIT 1$$,
+    $$INSERT INTO public.elections (project_id, nomination_shape) SELECT id, 'general' FROM public.projects LIMIT 1$$,
     '22P02',
     NULL,
-    'The database REJECTS the first retired value -- it is unrepresentable, not merely unused'
+    'The database rejects general, which is not a member of the enum'
   );
 
 SELECT
   throws_ok (
-    $$INSERT INTO public.elections (project_id, election_type) SELECT id, 'local' FROM public.projects LIMIT 1$$,
+    $$INSERT INTO public.elections (project_id, nomination_shape) SELECT id, 'local' FROM public.projects LIMIT 1$$,
     '22P02',
     NULL,
-    'The database REJECTS the second retired value'
+    'The database rejects local, which is not a member of the enum'
   );
 
 SELECT
   throws_ok (
-    $$INSERT INTO public.elections (project_id, election_type) SELECT id, 'presidential' FROM public.projects LIMIT 1$$,
+    $$INSERT INTO public.elections (project_id, nomination_shape) SELECT id, 'presidential' FROM public.projects LIMIT 1$$,
     '22P02',
     NULL,
-    'The database REJECTS the third retired value, the one the canonical documents never recorded'
+    'The database rejects presidential, which is not a member of the enum'
   );
 
 SELECT

@@ -2,7 +2,13 @@
  * Provider claim configuration and extraction logic.
  *
  * Pure functions of the identity-callback Edge Function, kept out of `index.ts` so they can be tested. This module has NO Deno imports (no Deno.env, no Deno.serve, no URL imports from deno.land) so it can be imported by both the Edge Function and vitest.
+ *
+ * WHAT IS READ FROM A TOKEN. The match value and the two name parts, and nothing else. The account stores the provider, the match property and the match value; the names go to the account's user metadata and to a candidate's row. No other claim of the token -- a personal identity code or a birth date among them -- is read here, so none can reach the account's `app_metadata`, which rides in every access token.
+ *
+ * THE NAMES ARE SMART-CASED. A provider may send a name all in capitals; {@link extractIdentityClaims} answers such a name name-cased, each word upper-case first, and any other name as it was sent (`nameCase.ts`). The match value is never changed.
  */
+
+import { smartNameCase } from './nameCase.ts';
 
 /**
  * Provider configuration interface.
@@ -15,8 +21,6 @@ export interface ProviderClaimConfig {
   firstNameProp: string;
   /** Which claim maps to last name */
   lastNameProp: string;
-  /** Additional claims to extract and store in app_metadata */
-  extractClaims: Array<string>;
 }
 
 /** The `IDENTITY_PROVIDER_TYPE` keywords this function accepts. */
@@ -25,12 +29,10 @@ export type ProviderKeyword = 'signicat-ftn' | 'idura-ftn';
 /**
  * Per-provider claim configurations, keyed by the `IDENTITY_PROVIDER_TYPE` keyword. Both are Finnish Trust Network mappings, hence the `-ftn` suffix.
  *
- * - `'signicat-ftn'`: Uses `sub` (stable OIDC subject) for identity matching. `birthdate` is
- *   captured as metadata only.
+ * - `'signicat-ftn'`: Uses `sub` (stable OIDC subject) for identity matching.
  * - `'idura-ftn'`: Uses `sub` (persistent pseudonym) for identity matching.
- *   Extracts `birthdate` and `hetu` (Finnish personal identity code) as metadata.
  *
- * `identityMatchProp` MUST name a claim that is unique per person. It is not merely a lookup hint: its value becomes `app_metadata.identity_match_value` (the key `findUserByIdentityMatch` matches on) AND the local part of the placeholder email the auth user is created with, so two people whose claim values collide resolve to ONE Supabase account -- the second to authenticate is silently logged in as the first.
+ * `identityMatchProp` MUST name a claim that is unique per person. It is not merely a lookup hint: its value becomes `app_metadata.identity_match_value` (the key `public.identity_account_find` matches on) AND the local part of the placeholder email the auth user is created with, so two people whose claim values collide resolve to ONE Supabase account -- the second to authenticate is silently logged in as the first.
  * `birthdate` is the worked counter-example: keying on it makes that collision a certainty for any realistic candidate population rather than a corner case. Never key on a claim that is not an identifier.
  *
  * Confirmed against the provider's documentation (retrieved 2026-08-29): Signicat's `sub` is the HASHED, PERSISTENT subject: the provider's Subject page lists Finnish Trust Network as returning a *transient* raw subject, and then states that for such an eID it substitutes a unique-and-consistent attribute -- the national identity number -- and hashes that instead, so the `sub` we receive is stable per person for a given Signicat organisation. Two consequences a change here must respect: the organisation identifier is an input to that hash, so moving to a different Signicat organisation re-keys every stored user, and the substitution is the provider's choice rather than an intrinsic property.
@@ -40,14 +42,12 @@ export const PROVIDER_CONFIGS = {
   'signicat-ftn': {
     identityMatchProp: 'sub',
     firstNameProp: 'given_name',
-    lastNameProp: 'family_name',
-    extractClaims: ['birthdate']
+    lastNameProp: 'family_name'
   },
   'idura-ftn': {
     identityMatchProp: 'sub',
     firstNameProp: 'given_name',
-    lastNameProp: 'family_name',
-    extractClaims: ['birthdate', 'hetu']
+    lastNameProp: 'family_name'
   }
 } satisfies Record<ProviderKeyword, ProviderClaimConfig>;
 
@@ -66,12 +66,12 @@ export function resolveProviderConfig(providerType: string): ProviderClaimConfig
 }
 
 /**
- * Extract identity claims from the JWT payload based on provider configuration.
- * Throws if required claims (identity match, first name, last name) are missing.
+ * Extract the match value and the two name parts from the JWT payload based on provider configuration.
+ * Throws if any of the three is missing. No other claim of the payload is read.
  *
  * @param payload - Decoded JWT payload as a record
  * @param config - Provider-specific claim configuration
- * @returns Extracted identity data with match value, names, and extra claims
+ * @returns The match value as sent and the two name parts smart-cased
  * @throws {Error} If any required claim (identity match, first name, last name) is missing
  */
 export function extractIdentityClaims(
@@ -81,7 +81,6 @@ export function extractIdentityClaims(
   matchValue: string;
   firstName: string;
   lastName: string;
-  extraClaims: Record<string, unknown>;
 } {
   const firstName = payload[config.firstNameProp] as string | undefined;
   const lastName = payload[config.lastNameProp] as string | undefined;
@@ -96,12 +95,5 @@ export function extractIdentityClaims(
     );
   }
 
-  const extraClaims: Record<string, unknown> = {};
-  for (const claimName of config.extractClaims) {
-    if (payload[claimName] !== undefined) {
-      extraClaims[claimName] = payload[claimName];
-    }
-  }
-
-  return { matchValue, firstName, lastName, extraClaims };
+  return { matchValue, firstName: smartNameCase(firstName), lastName: smartNameCase(lastName) };
 }
