@@ -22,13 +22,15 @@
  *
  * It reads the file through `scripts/lib/config-toml.mjs`, the line reader the hosted-settings parity guard also uses (Node built-ins only, no TOML parser): a table starts at its `[name]` header and ends at the next header, and a key is a `name = value` line with an optional trailing comment. The configuration file holds no multi-line value, which is what makes that reading exact.
  *
+ * The self-test also runs in every gate invocation, after the check and before the verdict: no unit test runs this guard's cases, and a guard whose fixtures run in no unit test runs them in its own gate. Only a failing case is printed there. A gate whose self-test fails is not trusted.
+ *
  * Usage:
  *   node scripts/assert-auth-signup-closed.mjs               # gate: exit 1 naming every key that does not hold
- *   node scripts/assert-auth-signup-closed.mjs --self-test   # run the same check over embedded configuration texts
+ *   node scripts/assert-auth-signup-closed.mjs --self-test   # run the same check over embedded configuration texts, printing every case
  *
  * Exit codes:
- *   0 - all eight keys hold; or --self-test passed
- *   1 - at least one key does not hold, or the file cannot be read; or --self-test found a difference
+ *   0 - all eight keys hold and the self-test passed; or --self-test passed
+ *   1 - at least one key does not hold, the file cannot be read, or the self-test found a difference
  *   2 - usage error
  */
 
@@ -288,7 +290,13 @@ const CASES = [
   }
 ];
 
-function selfTest() {
+/**
+ * Run every case. Each case's line is printed on stdout when `verbose` is true, and only a failing case's line otherwise.
+ *
+ * @param verbose - Whether a passing case's line is printed too.
+ * @returns Whether every case reported exactly its expected keys.
+ */
+function selfTest(verbose) {
   let ok = true;
   for (const { name, text, expected } of CASES) {
     if (name !== CASES[0].name && text === CORRECT) {
@@ -298,13 +306,14 @@ function selfTest() {
     }
     const observed = check(text).map((f) => `${f.table}/${f.key}`);
     const same = observed.length === expected.length && observed.every((o, i) => o === expected[i]);
-    console.log(
-      `self-test: ${same ? 'pass' : 'FAIL'}  ${name}: reported [${observed.join(', ')}], expected [${expected.join(', ')}]`
-    );
+    if (verbose || !same)
+      console.log(
+        `self-test: ${same ? 'pass' : 'FAIL'}  ${name}: reported [${observed.join(', ')}], expected [${expected.join(', ')}]`
+      );
     if (!same) ok = false;
   }
   console.error(`Auth-signup-closed guard — self-test ${ok ? 'passed' : 'FAILED'}: ${CASES.length} case(s).`);
-  process.exitCode = ok ? 0 : 1;
+  return ok;
 }
 
 function gate() {
@@ -325,12 +334,17 @@ function gate() {
       ? `Auth-signup-closed guard — ${REQUIRED.length} key(s) hold in ${CONFIG}.`
       : `Auth-signup-closed guard — ${findings.length} of ${REQUIRED.length} key(s) do not hold in ${CONFIG}. The auth container reads the file when the stack starts: after correcting it, run \`yarn db:stop\` then \`yarn db:start\`.`
   );
-  process.exitCode = findings.length === 0 ? 0 : 1;
+  const selfTestPassed = selfTest(false);
+  if (!selfTestPassed)
+    console.error(
+      `${SELF}: the self-test did not match its expected cases (printed above), so the result over ${CONFIG} cannot be trusted.`
+    );
+  process.exitCode = findings.length === 0 && selfTestPassed ? 0 : 1;
 }
 
 const args = process.argv.slice(2);
 if (args.length === 0) gate();
-else if (args.length === 1 && args[0] === '--self-test') selfTest();
+else if (args.length === 1 && args[0] === '--self-test') process.exitCode = selfTest(true) ? 0 : 1;
 else {
   console.error(`${SELF}: unexpected argument(s) '${args.join(' ')}'`);
   console.error(`usage: node ${SELF} [--self-test]`);

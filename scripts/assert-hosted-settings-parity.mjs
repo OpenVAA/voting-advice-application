@@ -96,13 +96,13 @@
  *   2 - usage error
  */
 
-import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CASES, correctInputs } from './fixtures/hosted-settings-parity/cases.mjs';
 import { readConfig } from './lib/config-toml.mjs';
 import { asWord, blocks, hclCode, lineAt } from './lib/hcl-text.mjs';
+import { trackedFiles } from './lib/text-guard.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SELF = 'scripts/assert-hosted-settings-parity.mjs';
@@ -1217,14 +1217,12 @@ function readModule(moduleDir) {
 function readWriters() {
   let tracked;
   try {
-    tracked = execFileSync('git', ['ls-files', '-z'], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 1 << 28 })
-      .split('\0')
-      .filter((f) => f !== '');
+    tracked = trackedFiles({ skip: (file) => !writerInScope(file) });
   } catch (error) {
     return { writers: [], error: `could not list the tracked files (${error.message.split('\n')[0]})` };
   }
   const writers = [];
-  for (const file of tracked.filter(writerInScope)) {
+  for (const file of tracked) {
     try {
       writers.push({ file, text: readFileSync(path.join(REPO_ROOT, file), 'utf8') });
     } catch (error) {
