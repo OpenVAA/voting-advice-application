@@ -12,7 +12,7 @@ export type DynamicSettings = {
    */
   survey?: {
     /**
-     * The link to the survey. This is passed to the translation function, which replaces `{sessionId}` with the in-memory visit id when this visitor's usage events carry it, and with nothing otherwise.
+     * The link to the survey. This is passed to the translation function, which replaces `{sessionId}` with the in-memory visit id when this visitor's usage events carry it, and with nothing otherwise. The placeholder keeps its published name: it is the one place the visit id is spelled `sessionId`.
      */
     linkTemplate: string;
     /**

@@ -2,6 +2,7 @@ import { haveSameId } from '@openvaa/core';
 import {
   DataTypeError,
   intersectFilters,
+  isEmptyAnswer,
   isMissingValue,
   MISSING_VALUE,
   QuestionAndCategoryBase
@@ -98,6 +99,16 @@ export abstract class Question<
     // AssertValue ensures that the answer value is of the correct type for the question
     const value = this.ensureValue(answer.value);
     return isMissingValue(value) ? undefined : { ...answer, value };
+  }
+
+  /**
+   * Whether an `Answer` answers this question: `ensureAnswer` accepts it and its value is not empty (see `isEmptyAnswer`). An answer whose value is not valid for the question's type is no answer. This is the one rule both apps read: the Voter App hides an entity by it and the Contestant App counts the questions an entity has left by it.
+   * @param answer - The `Answer` to check.
+   * @returns `true` when the answer answers the question.
+   */
+  isAnswered(answer?: Answer<unknown> | null): boolean {
+    const ensured = this.ensureAnswer(answer);
+    return ensured !== undefined && !isEmptyAnswer(ensured);
   }
 
   /**
