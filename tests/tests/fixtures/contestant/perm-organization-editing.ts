@@ -34,7 +34,6 @@ import {
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import { createOrganizationDetail } from '../voter/organizationDetail.fixture';
-import type { ContestantEditing } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
 import type { NavMenuFixture } from '../shared/navMenu.fixture';
@@ -105,6 +104,8 @@ export const test = base.extend<OrganizationEditingFixtures>({
 });
 
 export { expect };
+
+export { setContestantEditing } from '../../utils/permStateSteps';
 
 /**
  * The page fixtures a scan entry's `reach` speaks in, built over the page it is handed. They are the fixtures the `test` object offers under the same names.
@@ -194,14 +195,6 @@ export async function setCandidateState(externalId: string, state: CandidateStat
   if (state.firstName !== undefined) row.first_name = state.firstName;
   if (state.lastName !== undefined) row.last_name = state.lastName;
   if (Object.keys(row).length) await admin.update('candidates', id, row);
-}
-
-/**
- * Set how far the entities of the suite's project may edit their own data, as an administrator would: the one setting `access.contestantEditing` is written and no other. `'locked'` locks the answers, the profile and the nominations.
- * @param editing - The value written.
- */
-export async function setContestantEditing(editing: ContestantEditing): Promise<void> {
-  await new SupabaseAdminClient().updateAppSettings({ access: { contestantEditing: editing } });
 }
 
 /** The table that holds the rows of each entity type a state step writes. */

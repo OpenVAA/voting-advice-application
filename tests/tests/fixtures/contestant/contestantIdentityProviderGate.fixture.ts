@@ -30,34 +30,22 @@
  */
 
 import { expect } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 // Direct import, as `contestantEntityUrl.ts` makes it: the module depends on nothing of the application.
 import { escapeRegExp } from '../../../../apps/frontend/src/lib/utils/regexp';
 import { TIMEOUTS } from '../../helpers';
 import { contestantSettingsUrlRe } from '../../utils/contestantEntityUrl';
+import { messageOf, messagesOf } from '../../utils/messages';
+import { expectCountInName } from '../../utils/resendCountdown';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { createMultilingualTextField } from '../shared/multilingualTextFieldFixture.fixture';
 import type { Page } from '@playwright/test';
 
 /** The locale the party's name is required in: the project's default locale, in which the specs open every screen. */
 const NAME_LOCALE = 'en';
 
-/**
- * Read one namespace of the English message source.
- * @param file - The file's name under `apps/frontend/messages/en`, without its extension; the namespace is the file's single top-level key.
- */
-function readEnglishMessages(file: string): Record<string, unknown> {
-  const source = JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en', `${file}.json`), 'utf8')
-  ) as Record<string, Record<string, unknown>>;
-  return source[file];
-}
-
 /** The view's sentences that a step asserts, read from the message source rather than copied. */
-const MESSAGES = readEnglishMessages('contestantApp.identityProvider') as Record<
+const MESSAGES = messagesOf('contestantApp.identityProvider') as Record<
   'nameRequired' | 'emailInUse' | 'emailInvited' | 'emailTakenNotice' | 'signInEmail' | 'awaitingConfirmation',
   string
 > & {
@@ -66,10 +54,10 @@ const MESSAGES = readEnglishMessages('contestantApp.identityProvider') as Record
 };
 
 /** The sentence the status region holds once a new email has been asked for. */
-const RESEND_REQUESTED = String(readEnglishMessages('contestantApp.emailSent').resendRequested);
+const RESEND_REQUESTED = messageOf('contestantApp.emailSent', 'resendRequested');
 
 /** The name of the default locale as the name's error names it. */
-const NAME_LOCALE_NAME = String(readEnglishMessages('lang')[NAME_LOCALE]);
+const NAME_LOCALE_NAME = messageOf('lang', NAME_LOCALE);
 
 /** What the party is called: its name and abbreviation in the default locale. */
 export interface IdentityProviderGateNames {
@@ -89,7 +77,7 @@ export interface IdentityProviderGateState {
 
 export function createContestantIdentityProviderGate(page: Page) {
   const ids = testIds.contestant.identityProviderGate;
-  const entryIds = testIds.contestant.emailEntry;
+  const entryIds = testIds.shared.account.emailEntry;
   const container = page.getByTestId(ids.container);
   const nameField = page.getByTestId(ids.name);
   const shortNameField = page.getByTestId(ids.shortName);
@@ -247,14 +235,12 @@ export function createContestantIdentityProviderGate(page: Page) {
     },
 
     /**
-     * Assert what follows a press of "Send again": the button is marked unavailable and is described by the count of the wait in its label, and the status region says that a new email was requested.
+     * Assert what follows a press of "Send again": the button is marked unavailable, the count of the wait is shown in its label and read in its name alone (see {@link expectCountInName}), and the status region says that a new email was requested.
      */
     async expectResendRequested(): Promise<void> {
       const resend = page.getByTestId(ids.resend);
       await expect(resend).toHaveAttribute('aria-disabled', 'true', { timeout: TIMEOUTS.slowPage });
-      const countdownId = (await page.getByTestId(ids.countdown).getAttribute('id')) ?? '';
-      expect(countdownId, 'the id of the count of the wait').not.toBe('');
-      await expect(resend).toHaveAttribute('aria-describedby', countdownId);
+      await expectCountInName({ resend, countdown: page.getByTestId(ids.countdown) });
       await expect(page.getByTestId(ids.status)).toHaveText(RESEND_REQUESTED);
     },
 

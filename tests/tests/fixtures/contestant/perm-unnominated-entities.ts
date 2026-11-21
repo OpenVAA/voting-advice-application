@@ -1,13 +1,13 @@
 /**
- * @file Composition root for the no-nomination spec.
+ * @file Composition root for the unnominated-entities spec.
  *
- * Consumed by `specs/perm/perm-no-nomination.spec.ts`: the editor of a candidate and of an organization on their own entity's pages, with and without a nomination.
+ * Consumed by `specs/perm/perm-unnominated-entities.spec.ts`: the editor of a candidate and of an organization on their own entity's pages, with and without a nomination.
  *
  * Surface:
  *   - `test`   — Playwright test extended with the page fixtures the spec speaks in.
  *   - `expect` — re-exported from @playwright/test.
  *   - `setNominationState`, `setAnswers`, `setContestantEditing`, `setOrganizationName`, `clearWrittenNominations` — the state steps a test begins with, and the one the dataset's teardown ends with.
- *   - `noNominationPagesOf(page)` — the home, nomination-editor, nominations, entity-pages and menu fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
+ *   - `noNominationPagesOf(page)` — the home, logout-button, nomination-editor, nominations, entity-pages and menu fixtures over a page, for code that is handed a page alone, as a scan entry's `reach` is.
  *
  * The spec's body holds no locator: a step it needs is a method of a fixture registered here.
  *
@@ -31,26 +31,28 @@ import { createContestantProfilePage } from './contestantProfilePage.fixture';
 import { createContestantQuestionPage } from './contestantQuestionPage.fixture';
 import { createContestantQuestionsOverviewPage } from './contestantQuestionsOverviewPage.fixture';
 import { createNotEditableNote } from './notEditableNote.fixture';
-import { deleteNominationsWithDescendants } from './perm-contestant-nominations';
+import { clearWrittenNominations as clearWrittenNominationsOfEntities, questionId } from '../../utils/permStateSteps';
 import {
   CONSTITUENCY_EXTERNAL_ID,
   ELECTION_EXTERNAL_ID,
+  NOMINATED_CANDIDATE_EDITOR,
   NOMINATED_CANDIDATE_EXTERNAL_ID,
   NOMINATED_CANDIDATE_NOMINATION_EXTERNAL_ID,
   NOMINATION_ELECTION_ROUND,
   OPINION_QUESTION_EXTERNAL_IDS,
   REQUIRED_INFO_QUESTION_EXTERNAL_ID,
   SEEDED_NOMINATION_ELECTION_SYMBOL,
+  UNNOMINATED_CANDIDATE_EDITOR,
   UNNOMINATED_CANDIDATE_EXTERNAL_ID,
   UNNOMINATED_CANDIDATE_NOMINATION_EXTERNAL_ID,
+  UNNOMINATED_ORGANIZATION_EDITOR,
   UNNOMINATED_ORGANIZATION_EXTERNAL_ID,
   UNNOMINATED_ORGANIZATION_NOMINATION_EXTERNAL_ID,
   WRITTEN_NOMINATION_ELECTION_SYMBOL
-} from '../../utils/permNoNominationData';
+} from '../../utils/permUnnominatedEntitiesData';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import { createNavMenu } from '../shared/navMenu.fixture';
 import { createPageGeometry } from '../shared/pageGeometry.fixture';
-import type { ContestantEditing } from '@openvaa/app-shared';
 import type { Page } from '@playwright/test';
 import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
 import type { NavMenuFixture } from '../shared/navMenu.fixture';
@@ -99,7 +101,7 @@ type NoNominationFixtures = {
   pageGeometry: PageGeometryFixture;
 };
 
-/** Playwright's `test`, extended with the page fixtures of the no-nomination spec. */
+/** Playwright's `test`, extended with the page fixtures of the unnominated-entities spec. */
 export const test = base.extend<NoNominationFixtures>({
   contestantEntityHomePage: async ({ page }, use) => {
     await use(createContestantEntityHomePage(page, new SupabaseAdminClient()));
@@ -147,14 +149,17 @@ export const test = base.extend<NoNominationFixtures>({
 
 export { expect };
 
+export { setContestantEditing } from '../../utils/permStateSteps';
+
 /**
  * The page fixtures a scan entry's `reach` speaks in, built over the page it is handed. They are the fixtures the `test` object offers under the same names.
  * @param page - The page of the scan, already opened under the session the entry's describe sets.
- * @returns The entity-pages, home, nomination-editor, nominations and menu fixtures of that page.
+ * @returns The entity-pages, home, logout-button, nomination-editor, nominations and menu fixtures of that page.
  */
 export function noNominationPagesOf(page: Page): {
   contestantEntityPages: ContestantEntityPagesFixture;
   contestantHomePage: ContestantHomePageFixture;
+  contestantLogoutButton: ContestantLogoutButtonFixture;
   contestantNominationEditor: ContestantNominationEditorFixture;
   contestantNominationsPage: ContestantNominationsPageFixture;
   navMenu: NavMenuFixture;
@@ -163,6 +168,7 @@ export function noNominationPagesOf(page: Page): {
   return {
     contestantEntityPages: createContestantEntityPages(page, new SupabaseAdminClient()),
     contestantHomePage: createContestantHomePage(page),
+    contestantLogoutButton: createContestantLogoutButton(page),
     // Created when it is first read, and once: creating it registers a listener for browser dialogs on the page.
     get contestantNominationEditor(): ContestantNominationEditorFixture {
       editor ??= createContestantNominationEditor(page, new SupabaseAdminClient());
@@ -202,42 +208,18 @@ const NOMINATION_OF: Readonly<Record<string, Readonly<{ externalId: string; elec
   }
 );
 
-/** The external ids of the dataset's three entities, by entity type. */
-const ENTITY_EXTERNAL_IDS = Object.freeze({
-  candidate: [UNNOMINATED_CANDIDATE_EXTERNAL_ID, NOMINATED_CANDIDATE_EXTERNAL_ID],
-  organization: [UNNOMINATED_ORGANIZATION_EXTERNAL_ID]
-});
+/** The dataset's three entities. */
+const ENTITIES: ReadonlyArray<EntityGrantTarget> = Object.freeze([
+  UNNOMINATED_CANDIDATE_EDITOR.grant,
+  NOMINATED_CANDIDATE_EDITOR.grant,
+  UNNOMINATED_ORGANIZATION_EDITOR.grant
+]);
 
 /** The table of an entity type and the column of `nominations` that refers to it. */
 const TABLES = Object.freeze({
   candidate: { table: 'candidates', nominationColumn: 'candidate_id' },
   organization: { table: 'organizations', nominationColumn: 'organization_id' }
 });
-
-/**
- * The one nomination row of an entity of the dataset.
- * @throws If the entity is not one of the dataset's three.
- */
-function nominationOf(
-  step: string,
-  entity: EntityGrantTarget
-): Readonly<{ externalId: string; electionSymbol: string }> {
-  if (!Object.hasOwn(NOMINATION_OF, entity.externalId)) {
-    throw new Error(`${step}: ${entity.externalId} is not an entity of the no-nomination dataset`);
-  }
-  return NOMINATION_OF[entity.externalId];
-}
-
-/**
- * The table of an entity and the column of `nominations` that refers to it.
- * @throws If the entity's type is neither a candidate nor an organization.
- */
-function tablesOf(step: string, entity: EntityGrantTarget): Readonly<{ table: string; nominationColumn: string }> {
-  if (entity.entityType !== 'candidate' && entity.entityType !== 'organization') {
-    throw new Error(`${step}: the dataset holds no entity of type ${entity.entityType}`);
-  }
-  return TABLES[entity.entityType];
-}
 
 /**
  * Give an entity of the dataset no nomination, an unconfirmed one or a confirmed one, as an administrator would.
@@ -307,22 +289,7 @@ export async function setNominationState(entity: EntityGrantTarget, state: Nomin
  * @throws If a read or a delete fails.
  */
 export async function clearWrittenNominations(): Promise<void> {
-  const step = 'clearWrittenNominations';
-  const admin = new SupabaseAdminClient();
-  const written: Array<string> = [];
-
-  for (const entityType of ['candidate', 'organization'] as const) {
-    const { table, nominationColumn } = TABLES[entityType];
-    const entities = await admin.findData(table, { external_id: { $in: ENTITY_EXTERNAL_IDS[entityType] } });
-    if (entities.type !== 'success') throw new Error(`${step}: reading ${table} failed: ${entities.cause}`);
-    const entityIds = (entities.data ?? []).map((entity) => String(entity.id));
-    if (!entityIds.length) continue;
-    const rows = await admin.findData('nominations', { [nominationColumn]: { $in: entityIds } });
-    if (rows.type !== 'success') throw new Error(`${step}: reading the nominations failed: ${rows.cause}`);
-    written.push(...(rows.data ?? []).filter((row) => row.external_id == null).map((row) => String(row.id)));
-  }
-
-  if (written.length) await deleteNominationsWithDescendants(admin, step, written);
+  await clearWrittenNominationsOfEntities(ENTITIES);
 }
 
 /**
@@ -349,24 +316,13 @@ export async function setAnswers(entity: EntityGrantTarget, answers: AnswersStat
         : [];
   const stored: Record<string, { value: unknown }> = {};
   if (answers.requiredInfo) {
-    stored[await questionId(admin, REQUIRED_INFO_QUESTION_EXTERNAL_ID)] = {
+    stored[await questionId(admin, step, REQUIRED_INFO_QUESTION_EXTERNAL_ID)] = {
       value: { en: 'An answer the test wrote.' }
     };
   }
-  for (const externalId of answeredOpinions) stored[await questionId(admin, externalId)] = { value: '3' };
+  for (const externalId of answeredOpinions) stored[await questionId(admin, step, externalId)] = { value: '3' };
 
   await admin.update(table, entityId, { answers: stored });
-}
-
-/**
- * Set how far the entities of the suite's project may edit their own data, as an administrator would: the one setting `access.contestantEditing` is written and no other. `'nominationsLocked'` locks the nominations alone.
- *
- * A test that sets anything but `'open'` sets `'open'` again in a `finally`, because the setting is the project's and every later test reads it.
- *
- * @param editing - The value written.
- */
-export async function setContestantEditing(editing: ContestantEditing): Promise<void> {
-  await new SupabaseAdminClient().updateAppSettings({ access: { contestantEditing: editing } });
 }
 
 /**
@@ -384,21 +340,33 @@ export async function setOrganizationName(
 ): Promise<void> {
   const step = 'setOrganizationName';
   if (entity.entityType !== 'organization' || entity.externalId !== UNNOMINATED_ORGANIZATION_EXTERNAL_ID) {
-    throw new Error(`${step}: ${entity.externalId} is not the organization of the no-nomination dataset`);
+    throw new Error(`${step}: ${entity.externalId} is not the organization of the unnominated-entities dataset`);
   }
   const admin = new SupabaseAdminClient();
   await admin.update(TABLES.organization.table, await admin.entityId(entity), { name: { ...name } });
 }
 
 /**
- * The id of a question of the suite's project, by its external id.
- * @throws If the question is not found.
+ * The one nomination row of an entity of the dataset.
+ * @throws If the entity is not one of the dataset's three.
  */
-async function questionId(admin: SupabaseAdminClient, externalId: string): Promise<string> {
-  const found = await admin.findData('questions', { external_id: { $eq: externalId } });
-  const id = found.data?.[0]?.id;
-  if (found.type !== 'success' || typeof id !== 'string') {
-    throw new Error(`setAnswers: the question ${externalId} was not found`);
+function nominationOf(
+  step: string,
+  entity: EntityGrantTarget
+): Readonly<{ externalId: string; electionSymbol: string }> {
+  if (!Object.hasOwn(NOMINATION_OF, entity.externalId)) {
+    throw new Error(`${step}: ${entity.externalId} is not an entity of the unnominated-entities dataset`);
   }
-  return id;
+  return NOMINATION_OF[entity.externalId];
+}
+
+/**
+ * The table of an entity and the column of `nominations` that refers to it.
+ * @throws If the entity's type is neither a candidate nor an organization.
+ */
+function tablesOf(step: string, entity: EntityGrantTarget): Readonly<{ table: string; nominationColumn: string }> {
+  if (entity.entityType !== 'candidate' && entity.entityType !== 'organization') {
+    throw new Error(`${step}: the dataset holds no entity of type ${entity.entityType}`);
+  }
+  return TABLES[entity.entityType];
 }

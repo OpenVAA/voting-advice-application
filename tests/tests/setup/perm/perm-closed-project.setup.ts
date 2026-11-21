@@ -10,7 +10,7 @@
 
 import { test as setup } from '@playwright/test';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
-import { TEST_CANDIDATE_PASSWORD } from '../../utils/testCredentials';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { setupFromTemplate } from '../shared/setupFromTemplate';
 
 const PREFIX = 'e2e-perm-closed-project-';
@@ -21,6 +21,6 @@ setup('import perm-closed-project dataset', async () => {
   await setupFromTemplate('perm-closed-project');
 
   const client = new SupabaseAdminClient();
-  await client.unregisterCandidate(CANDIDATE_EMAIL);
-  await client.forceRegister(CANDIDATE_EXTERNAL_ID, CANDIDATE_EMAIL, TEST_CANDIDATE_PASSWORD);
+  await client.unregisterUser(CANDIDATE_EMAIL);
+  await client.forceRegister(CANDIDATE_EXTERNAL_ID, CANDIDATE_EMAIL, TEST_PASSWORD);
 });

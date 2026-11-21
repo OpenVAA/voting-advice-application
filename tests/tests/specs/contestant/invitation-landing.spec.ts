@@ -1,8 +1,6 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect, test } from '../../fixtures/contestant/invitation-landing';
 import { openMailedLink } from '../../utils/mailedLink';
-import { TESTS_DIR } from '../../utils/testsDir';
+import { messageOf } from '../../utils/messages';
 
 /**
  * # Where a claim lands
@@ -42,9 +40,7 @@ import { TESTS_DIR } from '../../utils/testsDir';
 /**
  * What the sign-in screen tells a user whose session carries none of the grants the app admits. Read from the English message source rather than copied.
  */
-const NO_PROFILE_MESSAGE: string = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.login.json'), 'utf8')
-)['contestantApp.login'].noProfile;
+const NO_PROFILE_MESSAGE = messageOf('contestantApp.login', 'noProfile');
 
 // Every test signs in from scratch.
 test.use({ storageState: { cookies: [], origins: [] } });

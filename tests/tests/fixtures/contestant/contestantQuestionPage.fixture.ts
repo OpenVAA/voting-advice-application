@@ -7,6 +7,7 @@
  *  - expectHeroVisible('emoji' | 'image') — assert the contestant-questions-hero figure contains an emoji glyph or an `<img>` descendant.
  *  - expectContinueDisabled()              — assert contestant-questions-save is disabled.
  *  - expectContinueEnabled()               — assert contestant-questions-save is enabled.
+ *  - choicesFor(questionId, inputType?)    — the question-choice inputs of the question `questionId`, optionally only those of the native input type `'checkbox'` or `'radio'`.
  *  - selectChoice(value)                   — pick an answer choice. Number = 0-indexed nth choice; string = choice label (substring match).
  *  - enterInfo(text)                       — fill the contestant-questions-comment open-answer textarea.
  *  - commitInfo(text)                      — fill the open answer and leave it, so that the page takes it into the draft.
@@ -24,22 +25,16 @@
  * **Rigidity contract:** NO `expect.soft`, NO `try/catch` wrapping `expect(...)`, NO `.catch(() => null)` on assertion-bearing locator interactions.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
 import { expect } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { contestantHomeUrlRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
+import { messageOf } from '../../utils/messages';
 import { selectSmallestValidMultiChoice } from '../../utils/multiChoice';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /** The sentence that says the question must be answered first, read from the English message source rather than copied. */
-const ANSWER_QUESTION_FIRST = (
-  JSON.parse(
-    fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/contestantApp.questions.json'), 'utf8')
-  ) as Record<string, Record<string, string>>
-)['contestantApp.questions'].answerQuestionFirst;
+const ANSWER_QUESTION_FIRST = messageOf('contestantApp.questions', 'answerQuestionFirst');
 
 /** A page a save of a question can lead to, other than another question. */
 export type QuestionSaveDestination = 'home' | 'list';
@@ -53,8 +48,22 @@ const SAVE_LABEL_TEXT: Readonly<Record<QuestionSaveLabel, RegExp>> = Object.free
   return: /Return/
 });
 
+/** The native input type of an answer choice: checkboxes for a multi-choice question, radios for every other choice question. */
+export type ChoiceInputType = 'checkbox' | 'radio';
+
 export function createContestantQuestionPage(page: Page) {
+  /**
+   * The `question-choice` inputs of the question `questionId`, optionally only those of the native input type `inputType`. Scoping by the question's id keeps a read from touching the choices of a question that is leaving the page. The conjunction of the testid with the `name` and `type` attributes is not expressible via getByTestId, so a raw attribute locator is used.
+   */
+  function choicesFor(questionId: string, inputType?: ChoiceInputType): Locator {
+    const typeSelector = inputType ? `[type="${inputType}"]` : '';
+    // eslint-disable-next-line playwright/no-restricted-locators -- testid+name(+type) conjunction not expressible via getByTestId
+    return page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]${typeSelector}`);
+  }
+
   return {
+    choicesFor,
+
     /**
      * Assert the hero figure carries the expected content variant.
      *
@@ -112,8 +121,7 @@ export function createContestantQuestionPage(page: Page) {
     async answerCurrentQuestion(questionId: string): Promise<void> {
       // Page-level locators: the candidate page remounts via `{#key question.id}` so exactly one question renders at a time. (The number input's root carries its own `number-scale-input` testid, which overrides the `contestant-questions-answer` restProp — so we cannot scope through that container for sliders; a page-level slider locator is correct.)
       const slider = page.getByTestId(testIds.voter.questions.numberSlider);
-      // eslint-disable-next-line playwright/no-restricted-locators -- testid+name conjunction not expressible via getByTestId
-      const scopedChoices = page.locator(`[data-testid="question-choice"][name="questionChoices-${questionId}"]`);
+      const scopedChoices = choicesFor(questionId);
       // Settle on THIS question's id-scoped choices first (reliable — a stale slider lingering from an outgoing number question can NOT satisfy an id-scoped choice wait). If they never appear, it is the number question.
       const isChoiceQuestion = await scopedChoices
         .first()
@@ -131,7 +139,7 @@ export function createContestantQuestionPage(page: Page) {
             choices: scopedChoices,
             validWhenEnabled: page.getByTestId(testIds.contestant.questions.saveButton)
           });
-          // Every box the helper ticked must actually be checked (unchanged strictness — the old code asserted this for its fixed pair).
+          // Every box the helper ticked must be checked.
           for (let i = 0; i < selected; i++) {
             await expect(scopedChoices.nth(i)).toBeChecked();
           }

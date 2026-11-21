@@ -3,7 +3,7 @@
  *
  * Function-fixture for the set-password view of the Admin App: the view a signed-in admin whose account has no password is shown in place of every protected page of the Admin App, until a password is saved or the admin signs out.
  *
- * The view is the shared set-password view, so its inner controls carry the same ids as the Contestant App's; only its root differs. Its form is the password setter every page that sets a password renders. A password is a credential: the steps type it and never assert on it.
+ * The view is the shared set-password view, so its inner controls carry the same ids as the Contestant App's and its steps are the Contestant App's set-password steps scoped to its root; only its root differs. Its form is the password setter every page that sets a password renders. A password is a credential: the steps type it and never assert on it.
  *
  * Surface:
  *  - expectShown()          — the view is shown.
@@ -16,12 +16,12 @@
 import { expect } from '@playwright/test';
 import { TIMEOUTS } from '../../helpers';
 import { testIds } from '../../utils/testIds';
+import { createContestantSetPasswordGate } from '../contestant/contestantSetPasswordGate.fixture';
 import type { Page } from '@playwright/test';
 
 export function createAdminSetPasswordGate(page: Page) {
   const root = page.getByTestId(testIds.admin.setPasswordGate.container);
-  const inner = testIds.contestant.setPasswordGate;
-  const setterIds = testIds.contestant.passwordSetter;
+  const sharedGate = createContestantSetPasswordGate(page, root);
 
   return {
     /**
@@ -34,21 +34,12 @@ export function createAdminSetPasswordGate(page: Page) {
     /**
      * Assert that the view names the account by an address, shown as text.
      */
-    async expectEmail(address: string): Promise<void> {
-      await expect(root.getByTestId(inner.email)).toHaveText(address);
-    },
+    expectEmail: sharedGate.expectAddress,
 
     /**
      * Type a password and the same password as its confirmation, then press the main button once the view's script runs. The caller asserts what follows.
      */
-    async setPassword(password: string): Promise<void> {
-      const field = testIds.contestant.password.field;
-      await root.getByTestId(setterIds.password).getByTestId(field).fill(password);
-      await root.getByTestId(setterIds.confirm).getByTestId(field).fill(password);
-      const submit = root.getByTestId(testIds.contestant.password.submit);
-      await expect(submit).toBeEnabled({ timeout: TIMEOUTS.slowPage });
-      await submit.click();
-    }
+    setPassword: sharedGate.setPassword
   };
 }
 

@@ -23,33 +23,26 @@
  */
 
 import { expect, test } from '@playwright/test';
-import fs from 'fs';
-import path from 'path';
 import { RELAY_PATH } from '../../../../apps/frontend/src/lib/analytics/constants';
 import { expectOnlyAllowedDeviceState } from '../../fixtures/shared/deviceStores.fixture';
-import { createRelayCapture } from '../../fixtures/shared/relayCapture.fixture';
+import {
+  CONSENT_PROMPT,
+  createRelayCapture,
+  flushTrackingBuffer,
+  GRANTED_BUTTON,
+  PREFS_KEY
+} from '../../fixtures/shared/relayCapture.fixture';
 import { answerAndAdvanceToResults } from '../../fixtures/voter/voter-journey.fixture';
 import { createVoterHomePage } from '../../fixtures/voter/voterHomePage.fixture';
-import { settleNetworkIdle, TIMEOUTS } from '../../helpers';
+import { settleNetworkIdle, TIMEOUTS, waitForNavigationFocusReset } from '../../helpers';
+import { messageOf } from '../../utils/messages';
 import { testIds } from '../../utils/testIds';
-import { TESTS_DIR } from '../../utils/testsDir';
 import { walkVoterStages } from '../../utils/voterNavigation';
 import type { Page } from '@playwright/test';
 import type { RelayCaptureFixture } from '../../fixtures/shared/relayCapture.fixture';
 
-/** The accessible name of the voter app's consent prompt (`common.privacy.dataCollection.title`, the title of DataConsentPopup's Alert). */
-const CONSENT_PROMPT = /collecting usage data/i;
-
-/** The accessible name of the consent control's button that grants consent. */
-const GRANTED_BUTTON = /agree to share my data/i;
-
-/** localStorage key the app persists `userPreferences` under. */
-const PREFS_KEY = 'appContext-userPreferences';
-
 /** The English text of `privacy.analytics.gpc`, read from the message source rather than copied, so a copy edit cannot turn this spec into an assertion about a stale string. */
-const GPC_TEXT: string = JSON.parse(
-  fs.readFileSync(path.join(TESTS_DIR, '../../apps/frontend/messages/en/privacy.json'), 'utf8')
-).privacy.analytics.gpc;
+const GPC_TEXT = messageOf('privacy', 'analytics.gpc');
 
 /** The message of the control's capture assertion, which fails when the relay forwards nothing. */
 const RELAY_INACTIVE_MESSAGE = `no request to the relay path ${RELAY_PATH} was captured without the signal: the server must run with ANALYTICS_PROVIDER=log, as .env.example sets it`;
@@ -66,34 +59,6 @@ async function startToFirstQuestion(page: Page): Promise<void> {
   await walkVoterStages(page, ['question']);
   await expect(page.getByTestId(testIds.voter.questions.answerOption).first()).toBeVisible({
     timeout: TIMEOUTS.slowPage
-  });
-}
-
-/**
- * Wait until the root layout's post-navigation focus reset has landed on the page's focus target (`[data-focus-on-nav] ?? h1`, the selector `focusNavigationTarget` uses). The reset runs in the root layout's `afterNavigate`, so on a page opened by its URL it shows that the page has hydrated: the voter layout has mounted, which is when the consent prompt is queued, and the flush points are registered.
- */
-async function waitForNavigationFocusReset(page: Page): Promise<void> {
-  await expect
-    .poll(
-      () =>
-        page.evaluate(() => {
-          const target = document.querySelector('[data-focus-on-nav]') ?? document.querySelector('h1');
-          return target !== null && document.activeElement === target;
-        }),
-      { message: 'the page did not hydrate: the post-navigation focus reset never landed', timeout: TIMEOUTS.page }
-    )
-    .toBe(true);
-}
-
-/**
- * Reach the hidden flush point on the SAME document. The root layout sends the pending batch when the document becomes hidden, so this overrides `document.visibilityState` with `'hidden'` and dispatches `visibilitychange`; it then removes the override, so the real value shows through again, and dispatches the event once more, which marks the page visible.
- */
-async function flushTrackingBuffer(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
-    document.dispatchEvent(new Event('visibilitychange'));
-    Reflect.deleteProperty(document, 'visibilityState');
-    document.dispatchEvent(new Event('visibilitychange'));
   });
 }
 

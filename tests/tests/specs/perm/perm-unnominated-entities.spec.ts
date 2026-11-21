@@ -1,7 +1,7 @@
 /**
- * @file perm-no-nomination.spec.ts — perm-chain spec.
+ * @file perm-unnominated-entities.spec.ts — perm-chain spec.
  *
- * The editor of a candidate and of an organization on their own entity's pages of the Contestant App, with and without a nomination, against the `perm-no-nomination` dataset (seeded by the data-setup-perm-no-nomination project): a candidate and an organization with no nomination row, and a candidate with one.
+ * The editor of a candidate and of an organization on their own entity's pages of the Contestant App, with and without a nomination, against the `perm-unnominated-entities` dataset (seeded by the data-setup-perm-unnominated-entities project): a candidate and an organization with no nomination row, and a candidate with one.
  *
  * Sessions: the file runs under three stored sessions, each selected by a describe — the editor of the unnominated candidate, of the unnominated organization and of the nominated candidate. All three sessions are this dataset's own: its setup writes them and nothing else reads them, so a test may edit and save under them. No test reads a session of the base dataset. A test that logs out signs in first, in a browser with no stored session: logging out ends the session the button is pressed in, and a stored session is every other test's.
  *
@@ -9,11 +9,11 @@
  *
  * Titles carry the prefix of the surface they are about. `dataset:` is the dataset and its identities; `gate:` is a URL that leads to the entity's home while the entity has no nomination; `holds:` is a page that opens; `questions:` is the questions of an entity that has a nomination, whatever its profile holds; `preview:` is the preview of an entity that has a nomination, which leads to the entity's home while a required info question or an opinion question is unanswered; `nominations:` is the nominations view, which opens for an entity with and without a nomination; `profile:` is the profile, which shows nothing of the entity's nominations; `home:` is the home, which lists the entity's tasks: `home: with` for an entity that has a nomination, and the others for one that has none; `menu:` is the navigation menu, which offers the nominations view and closes, with the reason, the items whose pages the entity cannot open; `continue:` is the save of the last unanswered opinion question, which leads to what is next for the entity. The two tests of the logout button are `holds:` tests, and so are the three of where the profile's save, an answer saved while questions remain and an edit of an answered question lead. `phone:` is a page at the width of a phone, where what is asserted is that the page fits the viewport and that a card, the note and the open menu hold what they show. The scans carry the titles the scan helper gives them, `axe accessibility scan — <entry>` and its dark twin.
  *
- * Scans: six states of the home, the nominations view and the open menu of the candidate that is seeded with no nomination, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds an entity with no nomination, and because two of the states need nominations locked for the whole project. Each entry's `reach` sets its state through the state steps, opens the page afresh and asserts the state through the fixtures' steps, before the reach proof and the scan. The organization's home, menu and nominations view are the candidate's markup with other sentences, asserted by the tests above them and not scanned a second time.
+ * Scans: seven states of the home, the logout dialog over it, the nominations view and the open menu of the candidate that is seeded with no nomination, each in the light and the dark theme, declared through `declareScans` of `tests/tests/utils/contestantAxeScan.ts` and so through the one shared gate. They are here and not in the scan project because only this dataset holds an entity with no nomination, and because two of the states need nominations locked for the whole project. Each entry's `reach` sets its state through the state steps, opens the page afresh and asserts the state through the fixtures' steps, before the reach proof and the scan. The organization's home, menu and nominations view are the candidate's markup with other sentences, asserted by the tests above them and not scanned a second time.
  *
  * Widths: the `phone:` tests run at 320 and at 390 pixels wide, in English. A page's width is measured against its viewport, and a box against the box that must hold it, through the steps of `fixtures/shared/pageGeometry.fixture.ts`: an accessibility scan reports neither.
  *
- * Rigidity contract: every assertion is hard, with no soft assertion, no try/catch around an assertion and no fallback on an assertion-bearing locator. Every locator sits behind a fixture: a test body speaks in the steps of `fixtures/contestant/perm-no-nomination.ts` and holds none of its own.
+ * Rigidity contract: every assertion is hard, with no soft assertion, no try/catch around an assertion and no fallback on an assertion-bearing locator. Every locator sits behind a fixture: a test body speaks in the steps of `fixtures/contestant/perm-unnominated-entities.ts` and holds none of its own.
  */
 
 import {
@@ -23,28 +23,24 @@ import {
   setNominationState,
   setOrganizationName,
   test
-} from '../../fixtures/contestant/perm-no-nomination';
+} from '../../fixtures/contestant/perm-unnominated-entities';
 import { declareScans } from '../../utils/contestantAxeScan';
 import {
   CONSTITUENCY_NAME,
   ELECTION_NAME,
-  NO_NOMINATION_PASSWORD,
-  NOMINATED_CANDIDATE_GRANT,
-  NOMINATED_CANDIDATE_STORAGE_STATE,
+  NOMINATED_CANDIDATE_EDITOR,
   OPINION_QUESTION_EXTERNAL_IDS,
   OPINION_QUESTION_LABELS,
   REQUIRED_INFO_QUESTION_LABEL,
   SEEDED_NOMINATION_ELECTION_SYMBOL,
-  UNNOMINATED_CANDIDATE_EDITOR_EMAIL,
-  UNNOMINATED_CANDIDATE_GRANT,
+  UNNOMINATED_CANDIDATE_EDITOR,
   UNNOMINATED_CANDIDATE_NAME,
-  UNNOMINATED_CANDIDATE_STORAGE_STATE,
-  UNNOMINATED_ORGANIZATION_GRANT,
+  UNNOMINATED_ORGANIZATION_EDITOR,
   UNNOMINATED_ORGANIZATION_NAME,
-  UNNOMINATED_ORGANIZATION_STORAGE_STATE,
   WRITTEN_NOMINATION_ELECTION_SYMBOL
-} from '../../utils/permNoNominationData';
+} from '../../utils/permUnnominatedEntitiesData';
 import { PHONE_VIEWPORTS, phoneUse } from '../../utils/phoneViewports';
+import { TEST_PASSWORD } from '../../utils/testCredentials';
 import { testIds } from '../../utils/testIds';
 import type { ContestantEntityPage } from '../../fixtures/contestant/contestantEntityPages.fixture';
 import type { ContestantAxeRoute } from '../../utils/contestantAxeScan';
@@ -79,185 +75,185 @@ const WRITTEN_PENDING_CARD = Object.freeze({
 const LONG_ORGANIZATION_NAME =
   '[OR-N] The Unnominated Party of the No-Nomination Dataset and of Every Constituency It Hopes to Stand In';
 
-test.describe('perm-no-nomination: the dataset and its identities', () => {
+test.describe('perm-unnominated-entities: the dataset and its identities', () => {
   test.describe("as the unnominated candidate's editor", () => {
-    test.use({ storageState: UNNOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test("dataset: the editor of a candidate with no nomination stays signed in and lands on that candidate's home", async ({
       contestantEntityHomePage
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await contestantEntityHomePage.open();
-      await contestantEntityHomePage.expectLanded(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantEntityHomePage.expectLanded(UNNOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 
   test.describe("as the unnominated organization's editor", () => {
-    test.use({ storageState: UNNOMINATED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath });
 
     test("dataset: the editor of an organization with no nomination stays signed in and lands on that organization's home", async ({
       contestantEntityHomePage
     }) => {
-      await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'none');
+      await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'none');
       await contestantEntityHomePage.open();
-      await contestantEntityHomePage.expectLanded(UNNOMINATED_ORGANIZATION_GRANT);
+      await contestantEntityHomePage.expectLanded(UNNOMINATED_ORGANIZATION_EDITOR.grant);
     });
   });
 
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test("dataset: the editor of a candidate with a confirmed nomination lands on that candidate's home", async ({
       contestantEntityHomePage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
       await contestantEntityHomePage.open();
-      await contestantEntityHomePage.expectLanded(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityHomePage.expectLanded(NOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 });
 
-test.describe('perm-no-nomination: the pages an entity needs a nomination for', () => {
+test.describe('perm-unnominated-entities: the pages an entity needs a nomination for', () => {
   test.describe("as the unnominated candidate's editor", () => {
-    test.use({ storageState: UNNOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('gate: a candidate with no nomination is led to its home from its profile, its questions and its preview', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       for (const entityPage of NOMINATION_PAGES) {
-        await contestantEntityPages.open(UNNOMINATED_CANDIDATE_GRANT, entityPage);
-        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+        await contestantEntityPages.open(UNNOMINATED_CANDIDATE_EDITOR.grant, entityPage);
+        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       }
       for (const entityPage of NOMINATION_PAGES) {
         await contestantEntityPages.openWithoutEntity(entityPage);
-        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       }
     });
 
     test('gate: an entry the browser still shows open is redirected to home, with focus on its heading', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
-      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await contestantEntityPages.clickHomeProfileEntry();
       // The click moved focus to the entry, and a heading has focus again only once the click's navigation has ended: the URL is read after that, so it says where the navigation led.
       await contestantEntityPages.expectHomeHeadingFocused();
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test('gate: a nomination the administrator adds opens the profile at the next full load, for a candidate', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await contestantEntityPages.open(UNNOMINATED_CANDIDATE_GRANT, 'profile');
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
-      await contestantEntityPages.open(UNNOMINATED_CANDIDATE_GRANT, 'profile');
-      await contestantEntityPages.expectOnProfile(UNNOMINATED_CANDIDATE_GRANT);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
+      await contestantEntityPages.open(UNNOMINATED_CANDIDATE_EDITOR.grant, 'profile');
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
+      await contestantEntityPages.open(UNNOMINATED_CANDIDATE_EDITOR.grant, 'profile');
+      await contestantEntityPages.expectOnProfile(UNNOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 
   test.describe("as the unnominated organization's editor", () => {
-    test.use({ storageState: UNNOMINATED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('gate: a party with no nomination is led to its home from its profile, its questions and its preview', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'none');
+      await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'none');
       for (const entityPage of NOMINATION_PAGES) {
-        await contestantEntityPages.open(UNNOMINATED_ORGANIZATION_GRANT, entityPage);
-        await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_GRANT);
+        await contestantEntityPages.open(UNNOMINATED_ORGANIZATION_EDITOR.grant, entityPage);
+        await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
       }
       for (const entityPage of NOMINATION_PAGES) {
         await contestantEntityPages.openWithoutEntity(entityPage);
-        await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_GRANT);
+        await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
       }
     });
 
     test('gate: a nomination the administrator adds opens the profile at the next full load, for a party', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'none');
-      await contestantEntityPages.open(UNNOMINATED_ORGANIZATION_GRANT, 'profile');
-      await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_GRANT);
-      await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'pending');
-      await contestantEntityPages.open(UNNOMINATED_ORGANIZATION_GRANT, 'profile');
-      await contestantEntityPages.expectOnProfile(UNNOMINATED_ORGANIZATION_GRANT);
+      await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'none');
+      await contestantEntityPages.open(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'profile');
+      await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
+      await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'pending');
+      await contestantEntityPages.open(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'profile');
+      await contestantEntityPages.expectOnProfile(UNNOMINATED_ORGANIZATION_EDITOR.grant);
     });
   });
 
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('holds: a candidate with a nomination opens its profile', async ({ contestantEntityPages }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await contestantEntityPages.open(NOMINATED_CANDIDATE_GRANT, 'profile');
-      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await contestantEntityPages.open(NOMINATED_CANDIDATE_EDITOR.grant, 'profile');
+      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 });
 
-test.describe('perm-no-nomination: the questions of an entity that has a nomination', () => {
+test.describe('perm-unnominated-entities: the questions of an entity that has a nomination', () => {
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('questions: a candidate with a nomination and required info missing opens its questions', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
-      await contestantEntityPages.open(NOMINATED_CANDIDATE_GRANT, 'questions');
-      await contestantEntityPages.expectOnQuestions(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+      await contestantEntityPages.open(NOMINATED_CANDIDATE_EDITOR.grant, 'questions');
+      await contestantEntityPages.expectOnQuestions(NOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 
   test.describe("as the unnominated organization's editor", () => {
-    test.use({ storageState: UNNOMINATED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('questions: a party that has just been given a nomination opens its questions without filling in its profile', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'pending');
-      await setAnswers(UNNOMINATED_ORGANIZATION_GRANT, { requiredInfo: false, opinions: 'none' });
-      await contestantEntityPages.open(UNNOMINATED_ORGANIZATION_GRANT, 'questions');
-      await contestantEntityPages.expectOnQuestions(UNNOMINATED_ORGANIZATION_GRANT);
+      await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'pending');
+      await setAnswers(UNNOMINATED_ORGANIZATION_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+      await contestantEntityPages.open(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'questions');
+      await contestantEntityPages.expectOnQuestions(UNNOMINATED_ORGANIZATION_EDITOR.grant);
     });
   });
 });
 
-test.describe('perm-no-nomination: the preview of an entity that has a nomination', () => {
+test.describe('perm-unnominated-entities: the preview of an entity that has a nomination', () => {
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('preview: stays closed while required info or an opinion question is unanswered', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'allButLast' });
-      await contestantEntityPages.open(NOMINATED_CANDIDATE_GRANT, 'preview');
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'allButLast' });
+      await contestantEntityPages.open(NOMINATED_CANDIDATE_EDITOR.grant, 'preview');
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
 
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'all' });
-      await contestantEntityPages.open(NOMINATED_CANDIDATE_GRANT, 'preview');
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'all' });
+      await contestantEntityPages.open(NOMINATED_CANDIDATE_EDITOR.grant, 'preview');
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test('preview: a browser that still shows the entry open is sent home by the server', async ({
       contestantEntityPages
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'all' });
-      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'all' });
+      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
 
       // No page is loaded from here on: an answer is removed behind the loaded home, whose preview entry stays as it was.
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'allButLast' });
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'allButLast' });
       await contestantEntityPages.clickHomePreviewEntry();
       // The click moved focus to the entry, and a heading has focus again only once the click's navigation has ended: the URL is read after that, so it says where the navigation led.
       await contestantEntityPages.expectHomeHeadingFocused();
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test('holds: the preview opens on the click that follows the last answer saved in the browser', async ({
@@ -266,8 +262,8 @@ test.describe('perm-no-nomination: the preview of an entity that has a nominatio
       contestantQuestionsOverviewPage,
       navMenu
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'allButLast' });
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'allButLast' });
       await contestantQuestionsOverviewPage.goToPage();
       await contestantQuestionsOverviewPage.expectContinuePrompt();
       await contestantQuestionsOverviewPage.clickContinuePrompt();
@@ -278,31 +274,31 @@ test.describe('perm-no-nomination: the preview of an entity that has a nominatio
       // No page is loaded from here on: the two steps to the preview are navigations inside the application.
       await navMenu.goHome();
       await contestantEntityPages.clickHomePreviewEntry();
-      await contestantEntityPages.expectOnPreview(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnPreview(NOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test('holds: a candidate with everything answered opens its preview by URL', async ({ contestantEntityPages }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'all' });
-      await contestantEntityPages.open(NOMINATED_CANDIDATE_GRANT, 'preview');
-      await contestantEntityPages.expectOnPreview(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'all' });
+      await contestantEntityPages.open(NOMINATED_CANDIDATE_EDITOR.grant, 'preview');
+      await contestantEntityPages.expectOnPreview(NOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 });
 
-test.describe('perm-no-nomination: the nominations view', () => {
+test.describe('perm-unnominated-entities: the nominations view', () => {
   test.describe("as the unnominated candidate's editor", () => {
-    test.use({ storageState: UNNOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('nominations: a candidate with no nomination sees the sentence that one can be defined, no support button and a button that leads into the editor', async ({
       contestantNominationEditor,
       contestantNominationsPage,
       notEditableNote
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await setContestantEditing('open');
-      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
       await contestantNominationsPage.expectCardCount(0);
       await contestantNominationsPage.expectEmptySentence(DEFINE_NOMINATION_SENTENCE.candidate, 'define');
@@ -318,11 +314,11 @@ test.describe('perm-no-nomination: the nominations view', () => {
       contestantNominationsPage,
       notEditableNote
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await setContestantEditing('nominationsLocked');
       try {
         // A full page load: the lock is a setting, read when a page is loaded.
-        await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
+        await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
         await contestantNominationsPage.expectState({ state: 'empty', locked: true });
         await contestantNominationsPage.expectLockedNote(true);
         await contestantNominationsPage.expectEmptySentence(NO_NOMINATION_SENTENCE.candidate);
@@ -342,17 +338,17 @@ test.describe('perm-no-nomination: the nominations view', () => {
         symbol: WRITTEN_NOMINATION_ELECTION_SYMBOL,
         parent: null
       };
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
       await setContestantEditing('open');
-      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'listed', locked: false });
       await contestantNominationsPage.expectCardCount(1);
       await contestantNominationsPage.expectCard(0, { ...card, confirmed: false });
       await contestantNominationsPage.expectPendingNote(0, true);
 
       // A full page load: an entity's nominations are read when a page is loaded.
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectCardCount(1);
       await contestantNominationsPage.expectCard(0, { ...card, confirmed: true });
       await contestantNominationsPage.expectPendingNote(0, false);
@@ -361,20 +357,20 @@ test.describe('perm-no-nomination: the nominations view', () => {
     test("nominations: the address without an entity leads to the entity's own view", async ({
       contestantNominationsPage
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await setContestantEditing('open');
       await contestantNominationsPage.openWithoutEntity();
-      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false });
     });
 
     test('nominations: a user who reads the view in Finnish is shown the election and the constituency by their Finnish names', async ({
       contestantNominationsPage
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
       await setContestantEditing('open');
-      await contestantNominationsPage.openInLocale(UNNOMINATED_CANDIDATE_GRANT, 'fi');
-      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantNominationsPage.openInLocale(UNNOMINATED_CANDIDATE_EDITOR.grant, 'fi');
+      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'listed', locked: false });
       await contestantNominationsPage.expectCardCount(1);
       await contestantNominationsPage.expectCard(0, {
@@ -386,17 +382,17 @@ test.describe('perm-no-nomination: the nominations view', () => {
   });
 
   test.describe("as the unnominated organization's editor", () => {
-    test.use({ storageState: UNNOMINATED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('nominations: a party with no nomination sees the same view in its own words', async ({
       contestantNominationEditor,
       contestantNominationsPage,
       notEditableNote
     }) => {
-      await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'none');
+      await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'none');
       await setContestantEditing('open');
-      await contestantNominationsPage.open(UNNOMINATED_ORGANIZATION_GRANT);
-      await contestantNominationsPage.expectShown(UNNOMINATED_ORGANIZATION_GRANT);
+      await contestantNominationsPage.open(UNNOMINATED_ORGANIZATION_EDITOR.grant);
+      await contestantNominationsPage.expectShown(UNNOMINATED_ORGANIZATION_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
       await contestantNominationsPage.expectCardCount(0);
       await contestantNominationsPage.expectEmptySentence(DEFINE_NOMINATION_SENTENCE.organization, 'define');
@@ -409,17 +405,17 @@ test.describe('perm-no-nomination: the nominations view', () => {
   });
 
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('nominations: with nominations locked, a listed nomination is shown under the note, with nothing to edit', async ({
       contestantNominationsPage,
       notEditableNote
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
       await setContestantEditing('nominationsLocked');
       try {
         // A full page load: the lock is a setting, read when a page is loaded.
-        await contestantNominationsPage.open(NOMINATED_CANDIDATE_GRANT);
+        await contestantNominationsPage.open(NOMINATED_CANDIDATE_EDITOR.grant);
         await contestantNominationsPage.expectState({ state: 'listed', locked: true });
         await contestantNominationsPage.expectLockedNote(true);
         await contestantNominationsPage.expectCardCount(1);
@@ -441,54 +437,54 @@ test.describe('perm-no-nomination: the nominations view', () => {
       contestantEntityPages,
       contestantNominationsPage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
       await setContestantEditing('open');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
-      await contestantNominationsPage.open(NOMINATED_CANDIDATE_GRANT);
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+      await contestantNominationsPage.open(NOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'listed', locked: false });
       await contestantNominationsPage.expectButton('continue');
       await contestantNominationsPage.pressButton();
-      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_EDITOR.grant);
 
       // A full page load: an entity's answers are read when a page is loaded.
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'all' });
-      await contestantNominationsPage.open(NOMINATED_CANDIDATE_GRANT);
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'all' });
+      await contestantNominationsPage.open(NOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'listed', locked: false });
       await contestantNominationsPage.expectButton('return');
       await contestantNominationsPage.pressButton();
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 });
 
-test.describe('perm-no-nomination: the profile of an entity that has a nomination', () => {
+test.describe('perm-unnominated-entities: the profile of an entity that has a nomination', () => {
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('profile: the profile of an entity with a nomination has no nominations section', async ({
       contestantEntityPages,
       contestantProfilePage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await contestantEntityPages.open(NOMINATED_CANDIDATE_GRANT, 'profile');
-      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await contestantEntityPages.open(NOMINATED_CANDIDATE_EDITOR.grant, 'profile');
+      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_EDITOR.grant);
       await contestantProfilePage.expectNoNominationsSection();
     });
   });
 });
 
-test.describe('perm-no-nomination: the home of an entity with no nomination', () => {
+test.describe('perm-unnominated-entities: the home of an entity with no nomination', () => {
   test.describe("as the unnominated candidate's editor", () => {
-    test.use({ storageState: UNNOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('home: a candidate with no nomination sees the nomination to define and the rest closed, with the reason', async ({
       contestantEntityPages,
       contestantHomePage,
       contestantNominationEditor
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantHomePage.expectTaskList({ nomination: 'incomplete', profile: 'blocked', questions: 'blocked' });
       await contestantHomePage.expectTaskCount('profile', null);
       await contestantHomePage.expectTaskCount('questions', null);
@@ -503,16 +499,16 @@ test.describe('perm-no-nomination: the home of an entity with no nomination', ()
   });
 
   test.describe("as the unnominated organization's editor", () => {
-    test.use({ storageState: UNNOMINATED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('home: a party with no nomination sees the same list under its own name', async ({
       contestantEntityPages,
       contestantHomePage,
       contestantNominationEditor
     }) => {
-      await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'none');
-      await contestantEntityPages.openHome(UNNOMINATED_ORGANIZATION_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_GRANT);
+      await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'none');
+      await contestantEntityPages.openHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
       await contestantHomePage.expectGreeting(UNNOMINATED_ORGANIZATION_NAME.en);
       await contestantHomePage.expectTaskList({ nomination: 'incomplete', profile: 'blocked', questions: 'blocked' });
       await contestantHomePage.expectTaskCount('profile', null);
@@ -528,15 +524,15 @@ test.describe('perm-no-nomination: the home of an entity with no nomination', ()
 
   test.describe("as the unnominated candidate's editor, in a browser that runs no script", () => {
     // With scripts off the browser shows the markup the server sent and nothing else.
-    test.use({ storageState: UNNOMINATED_CANDIDATE_STORAGE_STATE, javaScriptEnabled: false });
+    test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath, javaScriptEnabled: false });
 
     test('home: the no-nomination home is complete before any script runs', async ({
       contestantEntityPages,
       contestantHomePage
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantHomePage.expectGreeting(UNNOMINATED_CANDIDATE_NAME.firstName);
       await contestantHomePage.expectTaskList({ nomination: 'incomplete', profile: 'blocked', questions: 'blocked' });
       await contestantHomePage.expectReason('noNomination');
@@ -545,18 +541,18 @@ test.describe('perm-no-nomination: the home of an entity with no nomination', ()
   });
 });
 
-test.describe('perm-no-nomination: the home of an entity that has a nomination', () => {
+test.describe('perm-unnominated-entities: the home of an entity that has a nomination', () => {
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('home: with a nomination and nothing filled in, the questions are open and the preview is not', async ({
       contestantEntityPages,
       contestantHomePage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
-      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
       await contestantHomePage.expectTaskList({
         nomination: 'complete',
         profile: 'incomplete',
@@ -570,17 +566,17 @@ test.describe('perm-no-nomination: the home of an entity that has a nomination',
       await contestantHomePage.expectClosedEntryDescribed('preview');
       await contestantHomePage.expectNextStep('profile');
       await contestantHomePage.clickContinue();
-      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test('home: with the profile filled in, the main action leads to the questions list', async ({
       contestantEntityPages,
       contestantHomePage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'none' });
-      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'none' });
+      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
       await contestantHomePage.expectTaskList({ nomination: 'complete', profile: 'complete', questions: 'incomplete' });
       await contestantHomePage.expectTaskCount('profile', null);
       await contestantHomePage.expectTaskCount('questions', 2);
@@ -588,17 +584,17 @@ test.describe('perm-no-nomination: the home of an entity that has a nomination',
       await contestantHomePage.expectReason('previewNotReady');
       await contestantHomePage.expectNextStep('questions');
       await contestantHomePage.clickContinue();
-      await contestantEntityPages.expectOnQuestions(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnQuestions(NOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test('home: with everything answered every task is complete and the main action is the preview', async ({
       contestantEntityPages,
       contestantHomePage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'all' });
-      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'all' });
+      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
       await contestantHomePage.expectTaskList({ nomination: 'complete', profile: 'complete', questions: 'complete' });
       await contestantHomePage.expectTaskCount('nomination', null);
       await contestantHomePage.expectTaskCount('profile', null);
@@ -607,22 +603,22 @@ test.describe('perm-no-nomination: the home of an entity that has a nomination',
       await contestantHomePage.expectReason(null);
       await contestantHomePage.expectNextStep('preview');
       await contestantHomePage.clickContinue();
-      await contestantEntityPages.expectOnPreview(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnPreview(NOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 });
 
-test.describe('perm-no-nomination: the navigation menu', () => {
+test.describe('perm-unnominated-entities: the navigation menu', () => {
   test.describe("as the unnominated candidate's editor", () => {
-    test.use({ storageState: UNNOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('menu: a candidate with no nomination finds its profile, its questions and its preview closed, with the reason', async ({
       contestantEntityPages,
       navMenu
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await navMenu.openMobileNav();
       await navMenu.expectNominationsItem();
       await navMenu.expectClosedItems(['profile', 'questions', 'preview']);
@@ -638,25 +634,25 @@ test.describe('perm-no-nomination: the navigation menu', () => {
       contestantNominationsPage,
       navMenu
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await navMenu.openMobileNav();
       await navMenu.expectNominationsItem();
       // No page is loaded from here on: the item is a navigation inside the application, which leaves focus on the heading of the view it opens.
       await navMenu.openNominations();
-      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectHeadingFocused();
     });
   });
 
   test.describe("as the unnominated organization's editor", () => {
-    test.use({ storageState: UNNOMINATED_ORGANIZATION_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath });
 
     test('menu: a party with no nomination finds the same', async ({ contestantEntityPages, navMenu }) => {
-      await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'none');
-      await contestantEntityPages.openHome(UNNOMINATED_ORGANIZATION_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_GRANT);
+      await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'none');
+      await contestantEntityPages.openHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
       await navMenu.openMobileNav();
       await navMenu.expectNominationsItem();
       await navMenu.expectClosedItems(['profile', 'questions', 'preview']);
@@ -669,16 +665,16 @@ test.describe('perm-no-nomination: the navigation menu', () => {
   });
 
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('menu: with a nomination and required info missing the questions are open and the preview is closed', async ({
       contestantEntityPages,
       navMenu
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
-      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
       await navMenu.openMobileNav();
       await navMenu.expectNominationsItem();
       await navMenu.expectClosedItems(['preview']);
@@ -688,10 +684,10 @@ test.describe('perm-no-nomination: the navigation menu', () => {
     });
 
     test('menu: with everything answered nothing is closed', async ({ contestantEntityPages, navMenu }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'all' });
-      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'all' });
+      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
       await navMenu.openMobileNav();
       await navMenu.expectNominationsItem();
       await navMenu.expectClosedItems([]);
@@ -701,25 +697,25 @@ test.describe('perm-no-nomination: the navigation menu', () => {
   });
 });
 
-test.describe('perm-no-nomination: where a save leads', () => {
+test.describe('perm-unnominated-entities: where a save leads', () => {
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('continue: the last answer leads to the profile while required info is missing', async ({
       contestantEntityPages,
       contestantQuestionPage,
       contestantQuestionsOverviewPage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'allButLast' });
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'allButLast' });
       await contestantQuestionsOverviewPage.goToPage();
       await contestantQuestionsOverviewPage.clickContinuePrompt();
-      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_GRANT, OPINION_QUESTION_EXTERNAL_IDS[1]);
+      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_EDITOR.grant, OPINION_QUESTION_EXTERNAL_IDS[1]);
       await contestantQuestionPage.selectChoice(0);
       await contestantQuestionPage.expectContinueEnabled();
       await contestantQuestionPage.expectSaveLabel('continue');
       await contestantQuestionPage.clickContinue();
-      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnProfile(NOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test('continue: the last answer leads home once the profile is complete', async ({
@@ -727,29 +723,29 @@ test.describe('perm-no-nomination: where a save leads', () => {
       contestantQuestionPage,
       contestantQuestionsOverviewPage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'allButLast' });
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'allButLast' });
       await contestantQuestionsOverviewPage.goToPage();
       await contestantQuestionsOverviewPage.clickContinuePrompt();
-      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_GRANT, OPINION_QUESTION_EXTERNAL_IDS[1]);
+      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_EDITOR.grant, OPINION_QUESTION_EXTERNAL_IDS[1]);
       await contestantQuestionPage.selectChoice(0);
       await contestantQuestionPage.expectContinueEnabled();
       await contestantQuestionPage.expectSaveLabel('continue');
       await contestantQuestionPage.clickContinue();
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test("holds: the profile's save leads to the questions list once the required info is filled in", async ({
       contestantEntityPages,
       contestantProfilePage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
       await contestantProfilePage.open();
       await contestantProfilePage.commitQuestion(REQUIRED_INFO_QUESTION_LABEL, 'An answer the browser wrote.');
       await contestantProfilePage.expectSubmitLabel('continue');
       await contestantProfilePage.submit();
-      await contestantEntityPages.expectOnQuestions(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnQuestions(NOMINATED_CANDIDATE_EDITOR.grant);
     });
 
     test('holds: an answer saved while required info is missing leads to the next question', async ({
@@ -757,15 +753,15 @@ test.describe('perm-no-nomination: where a save leads', () => {
       contestantQuestionPage,
       contestantQuestionsOverviewPage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
       await contestantQuestionsOverviewPage.goToPage();
       await contestantQuestionsOverviewPage.clickStart();
-      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_GRANT, OPINION_QUESTION_EXTERNAL_IDS[0]);
+      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_EDITOR.grant, OPINION_QUESTION_EXTERNAL_IDS[0]);
       await contestantQuestionPage.selectChoice(0);
       await contestantQuestionPage.expectContinueEnabled();
       await contestantQuestionPage.clickContinue();
-      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_GRANT, OPINION_QUESTION_EXTERNAL_IDS[1]);
+      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_EDITOR.grant, OPINION_QUESTION_EXTERNAL_IDS[1]);
     });
 
     test('holds: saving an edit of an answered question returns to the questions list', async ({
@@ -773,17 +769,17 @@ test.describe('perm-no-nomination: where a save leads', () => {
       contestantQuestionPage,
       contestantQuestionsOverviewPage
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: true, opinions: 'all' });
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: true, opinions: 'all' });
       await contestantQuestionsOverviewPage.goToPage();
       await contestantQuestionsOverviewPage.goToQuestion(OPINION_QUESTION_LABELS[0]);
-      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_GRANT, OPINION_QUESTION_EXTERNAL_IDS[0]);
+      await contestantEntityPages.expectOnQuestion(NOMINATED_CANDIDATE_EDITOR.grant, OPINION_QUESTION_EXTERNAL_IDS[0]);
       // The stored answer is the middle step of the scale; the edit is made once the page shows it.
       await contestantQuestionPage.expectSelectedChoice(2);
       await contestantQuestionPage.selectChoice(0);
       await contestantQuestionPage.expectSaveLabel('return');
       await contestantQuestionPage.clickContinue();
-      await contestantEntityPages.expectOnQuestions(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnQuestions(NOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 });
@@ -803,10 +799,10 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.home.closedReason,
     reach: async (page) => {
       const { contestantEntityPages, contestantHomePage } = noNominationPagesOf(page);
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await setContestantEditing('open');
-      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantHomePage.expectTaskList({ nomination: 'incomplete', profile: 'blocked', questions: 'blocked' });
       await contestantHomePage.expectPreview('closed');
       await contestantHomePage.expectReason('noNomination');
@@ -823,10 +819,10 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominations.empty,
     reach: async (page) => {
       const { contestantNominationsPage } = noNominationPagesOf(page);
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await setContestantEditing('open');
-      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
       await contestantNominationsPage.expectEmptySentence(DEFINE_NOMINATION_SENTENCE.candidate, 'define');
       await contestantNominationsPage.expectLockedNote(false);
@@ -844,10 +840,10 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nav.profile,
     reach: async (page) => {
       const { contestantEntityPages, navMenu } = noNominationPagesOf(page);
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await setContestantEditing('open');
-      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await navMenu.openMobileNav();
       await navMenu.expectNominationsItem();
       await navMenu.expectClosedItems(['profile', 'questions', 'preview']);
@@ -864,11 +860,11 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.home.closedReason,
     reach: async (page) => {
       const { contestantEntityPages, contestantHomePage } = noNominationPagesOf(page);
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
-      await setAnswers(UNNOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
+      await setAnswers(UNNOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
       await setContestantEditing('open');
-      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantHomePage.expectTaskList({
         nomination: 'complete',
         profile: 'incomplete',
@@ -878,6 +874,28 @@ const UNLOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
       await contestantHomePage.expectTaskCount('questions', OPINION_QUESTION_EXTERNAL_IDS.length);
       await contestantHomePage.expectPreview('closed');
       await contestantHomePage.expectReason('previewNotReady');
+    }
+  },
+  {
+    // The logout dialog over the home of a candidate with a nomination and nothing answered: its title that says data is missing, the questions left, the sentence that the entity is hidden while they are, and the count.
+    // The dialog carries no test id, so the anchor is the home's Log out under it, and the reach's last step waits for the dialog to be open; the scan reads the document with the dialog in it.
+    // The page's clock is held still before the press, so the count never ends: its end would sign out the session every scan of this describe reads.
+    // Marker: the home's reason sentence, as on `nominated-home`.
+    name: 'nominated-home-logout-dialog',
+    fixture: 'raw',
+    routeId: 'ContestantAppHome',
+    contentTestId: testIds.contestant.home.logout,
+    postLoginTestId: testIds.contestant.home.closedReason,
+    reach: async (page) => {
+      const { contestantEntityPages, contestantHomePage, contestantLogoutButton } = noNominationPagesOf(page);
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
+      await setAnswers(UNNOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+      await setContestantEditing('open');
+      await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantHomePage.expectReason('previewNotReady');
+      await contestantLogoutButton.holdClockStill();
+      await contestantLogoutButton.openDialog();
     }
   }
 ];
@@ -896,11 +914,11 @@ const LOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominations.lockedNote,
     reach: async (page) => {
       const { contestantNominationsPage } = noNominationPagesOf(page);
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await setContestantEditing('nominationsLocked');
       // A full page load: the lock is a setting, read when a page is loaded.
-      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'empty', locked: true });
       await contestantNominationsPage.expectLockedNote(true);
       await contestantNominationsPage.expectEmptySentence(NO_NOMINATION_SENTENCE.candidate);
@@ -917,12 +935,12 @@ const LOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
     postLoginTestId: testIds.contestant.nominations.pendingNote,
     reach: async (page) => {
       const { contestantNominationsPage } = noNominationPagesOf(page);
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
-      await setAnswers(UNNOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
+      await setAnswers(UNNOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
       await setContestantEditing('nominationsLocked');
       // A full page load: the lock is a setting, read when a page is loaded.
-      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
-      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantNominationsPage.expectShown(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantNominationsPage.expectState({ state: 'listed', locked: true });
       await contestantNominationsPage.expectLockedNote(true);
       await contestantNominationsPage.expectCardCount(1);
@@ -934,9 +952,9 @@ const LOCKED_SCANS: ReadonlyArray<ContestantAxeRoute> = [
   }
 ];
 
-test.describe('perm-no-nomination: the accessibility scans', () => {
+test.describe('perm-unnominated-entities: the accessibility scans', () => {
   test.describe("as the unnominated candidate's editor", () => {
-    test.use({ storageState: UNNOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     // The lock is the one settings row of the suite's project: it is taken off whether or not a scan passed, after the scans that never turn it on as well.
     test.afterEach(async () => {
@@ -954,19 +972,19 @@ test.describe('perm-no-nomination: the accessibility scans', () => {
 });
 
 for (const viewport of PHONE_VIEWPORTS) {
-  test.describe(`perm-no-nomination: at ${viewport.width}px wide`, () => {
+  test.describe(`perm-unnominated-entities: at ${viewport.width}px wide`, () => {
     test.use(phoneUse(viewport));
 
     test.describe("as the unnominated candidate's editor", () => {
-      test.use({ storageState: UNNOMINATED_CANDIDATE_STORAGE_STATE });
+      test.use({ storageState: UNNOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
       test('phone: the home of a candidate with no nomination fits the viewport', async ({
         contestantEntityPages,
         contestantHomePage
       }) => {
-        await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-        await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+        await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
+        await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
         await contestantHomePage.expectTaskList({ nomination: 'incomplete', profile: 'blocked', questions: 'blocked' });
         await contestantHomePage.expectReason('noNomination');
         await contestantHomePage.expectFitsViewport();
@@ -976,10 +994,10 @@ for (const viewport of PHONE_VIEWPORTS) {
         contestantEntityPages,
         contestantHomePage
       }) => {
-        await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
-        await setAnswers(UNNOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
-        await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+        await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
+        await setAnswers(UNNOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+        await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
         await contestantHomePage.expectTaskList({
           nomination: 'complete',
           profile: 'incomplete',
@@ -990,9 +1008,9 @@ for (const viewport of PHONE_VIEWPORTS) {
       });
 
       test('phone: the empty nominations view fits the viewport', async ({ contestantNominationsPage }) => {
-        await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+        await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
         await setContestantEditing('open');
-        await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
+        await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
         await contestantNominationsPage.expectState({ state: 'empty', locked: false, editable: true });
         await contestantNominationsPage.expectEmptySentence(DEFINE_NOMINATION_SENTENCE.candidate, 'define');
         await contestantNominationsPage.expectButton('define');
@@ -1003,11 +1021,11 @@ for (const viewport of PHONE_VIEWPORTS) {
         contestantNominationsPage,
         notEditableNote
       }) => {
-        await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+        await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
         await setContestantEditing('nominationsLocked');
         try {
           // A full page load: the lock is a setting, read when a page is loaded.
-          await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
+          await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
           await contestantNominationsPage.expectState({ state: 'empty', locked: true });
           await contestantNominationsPage.expectLockedNote(true);
           await contestantNominationsPage.expectFitsViewport();
@@ -1021,11 +1039,11 @@ for (const viewport of PHONE_VIEWPORTS) {
         contestantNominationsPage,
         notEditableNote
       }) => {
-        await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'pending');
+        await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'pending');
         await setContestantEditing('nominationsLocked');
         try {
           // A full page load: the lock is a setting, read when a page is loaded.
-          await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_GRANT);
+          await contestantNominationsPage.open(UNNOMINATED_CANDIDATE_EDITOR.grant);
           await contestantNominationsPage.expectState({ state: 'listed', locked: true });
           await contestantNominationsPage.expectLockedNote(true);
           await contestantNominationsPage.expectCard(0, WRITTEN_PENDING_CARD);
@@ -1043,9 +1061,9 @@ for (const viewport of PHONE_VIEWPORTS) {
         navMenu,
         pageGeometry
       }) => {
-        await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
-        await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_GRANT);
-        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+        await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
+        await contestantEntityPages.openHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
+        await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
         await navMenu.openMobileNav();
         await navMenu.expectClosedItems(['profile', 'questions', 'preview']);
         await navMenu.expectNoReasonShown();
@@ -1055,24 +1073,24 @@ for (const viewport of PHONE_VIEWPORTS) {
     });
 
     test.describe("as the unnominated organization's editor", () => {
-      test.use({ storageState: UNNOMINATED_ORGANIZATION_STORAGE_STATE });
+      test.use({ storageState: UNNOMINATED_ORGANIZATION_EDITOR.storageStatePath });
 
       // The test stores a long name on the organization: its seeded name is put back whether or not the test passed.
       test.afterEach(async () => {
-        await setOrganizationName(UNNOMINATED_ORGANIZATION_GRANT, UNNOMINATED_ORGANIZATION_NAME);
+        await setOrganizationName(UNNOMINATED_ORGANIZATION_EDITOR.grant, UNNOMINATED_ORGANIZATION_NAME);
       });
 
       test('phone: the home of a party with a long name fits the viewport, and its greeting is shown whole', async ({
         contestantEntityPages,
         contestantHomePage
       }) => {
-        await setNominationState(UNNOMINATED_ORGANIZATION_GRANT, 'none');
-        await setOrganizationName(UNNOMINATED_ORGANIZATION_GRANT, {
+        await setNominationState(UNNOMINATED_ORGANIZATION_EDITOR.grant, 'none');
+        await setOrganizationName(UNNOMINATED_ORGANIZATION_EDITOR.grant, {
           ...UNNOMINATED_ORGANIZATION_NAME,
           en: LONG_ORGANIZATION_NAME
         });
-        await contestantEntityPages.openHome(UNNOMINATED_ORGANIZATION_GRANT);
-        await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_GRANT);
+        await contestantEntityPages.openHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
+        await contestantEntityPages.expectOnHome(UNNOMINATED_ORGANIZATION_EDITOR.grant);
         await contestantHomePage.expectGreeting(LONG_ORGANIZATION_NAME);
         await contestantHomePage.expectReason('noNomination');
         await contestantHomePage.expectFitsViewport();
@@ -1082,7 +1100,7 @@ for (const viewport of PHONE_VIEWPORTS) {
   });
 }
 
-test.describe('perm-no-nomination: logging out', () => {
+test.describe('perm-unnominated-entities: logging out', () => {
   test.describe("as the unnominated candidate's editor, signed in for the test alone", () => {
     // No stored session: the test signs in itself, and the session it logs out of is its own.
     test.use({ storageState: { cookies: [], origins: [] } });
@@ -1092,28 +1110,28 @@ test.describe('perm-no-nomination: logging out', () => {
       contestantLoginPage,
       contestantLogoutButton
     }) => {
-      await setNominationState(UNNOMINATED_CANDIDATE_GRANT, 'none');
+      await setNominationState(UNNOMINATED_CANDIDATE_EDITOR.grant, 'none');
       await contestantLoginPage.goToPage();
-      await contestantLoginPage.login(UNNOMINATED_CANDIDATE_EDITOR_EMAIL, NO_NOMINATION_PASSWORD);
-      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_GRANT);
+      await contestantLoginPage.login(UNNOMINATED_CANDIDATE_EDITOR.email, TEST_PASSWORD);
+      await contestantEntityPages.expectOnHome(UNNOMINATED_CANDIDATE_EDITOR.grant);
       await contestantLogoutButton.clickWithoutDialog();
     });
   });
 
   test.describe("as the nominated candidate's editor", () => {
-    test.use({ storageState: NOMINATED_CANDIDATE_STORAGE_STATE });
+    test.use({ storageState: NOMINATED_CANDIDATE_EDITOR.storageStatePath });
 
     test('holds: a user with unanswered questions is asked before logging out', async ({
       contestantEntityPages,
       contestantLogoutButton
     }) => {
-      await setNominationState(NOMINATED_CANDIDATE_GRANT, 'confirmed');
-      await setAnswers(NOMINATED_CANDIDATE_GRANT, { requiredInfo: false, opinions: 'none' });
-      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_GRANT);
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await setNominationState(NOMINATED_CANDIDATE_EDITOR.grant, 'confirmed');
+      await setAnswers(NOMINATED_CANDIDATE_EDITOR.grant, { requiredInfo: false, opinions: 'none' });
+      await contestantEntityPages.openHome(NOMINATED_CANDIDATE_EDITOR.grant);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
       // The dialog is dismissed, so the stored session is still signed in for the tests that follow.
       await contestantLogoutButton.clickAndStay();
-      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_GRANT);
+      await contestantEntityPages.expectOnHome(NOMINATED_CANDIDATE_EDITOR.grant);
     });
   });
 });
