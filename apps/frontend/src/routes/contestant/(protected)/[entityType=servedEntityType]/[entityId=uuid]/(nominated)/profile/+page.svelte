@@ -219,7 +219,9 @@ Which fields a profile has, and every text that differs between the two entity t
 
   /** The label of the button that removes the image, which names a candidate's portrait or an organization's logo, while an image is shown and can be removed. */
   const imageRemoveLabel = $derived(
-    contestantCtx.answersLocked || !userData.current?.entity.image ? undefined : t(descriptor.imageRemoveLabel)
+    contestantCtx.answersLocked || !userData.current?.entity.image
+      ? undefined
+      : t(`contestantApp.basicInfo.removeImage.${textType}`)
   );
 
   /**

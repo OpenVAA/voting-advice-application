@@ -823,6 +823,94 @@ describe('GET /api/oidc/callback', () => {
     });
   });
 
+  describe('a sign-in through identity-callback', () => {
+    /** A callback that passes the binding and the token check for a flow started as a sign-in, with the given extra cookies. */
+    function signInCallback(cookies: Record<string, string> = {}) {
+      return createEvent('code=c-1&state=s-1', {
+        [COOKIE.oidcState]: 's-1',
+        [COOKIE.oidcIntent]: 'sign_in',
+        ...cookies
+      });
+    }
+
+    beforeEach(() => {
+      mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'idura-ftn';
+      stubProvider(iduraProvider);
+      invoke.mockResolvedValue(functionAnswered({ result: 'signed_in', token: SIGN_IN_TOKEN }));
+    });
+
+    it('asks for a sign-in with no type, reading no settings, and sends the user to the app root with no arrival marker', async () => {
+      const event = signInCallback({ [COOKIE.oidcEntityType]: 'organization' });
+      await expect(GET(event)).rejects.toMatchObject({ status: 303, location: HOME });
+
+      expect(getAppSettings).not.toHaveBeenCalled();
+      expect(invoke.mock.calls).toEqual([
+        [
+          'identity-callback',
+          {
+            headers: { 'x-identity-callback-secret': SERVER_SECRET },
+            body: { id_token: 'test.id.token', project_id: PROJECT_ID, intent: 'sign_in' }
+          }
+        ]
+      ]);
+      expect(verifyOtp).toHaveBeenCalledWith({ token_hash: SIGN_IN_TOKEN, type: 'magiclink' });
+      expect(arrivalSet(event)).toBeUndefined();
+    });
+
+    it.each<[string, Record<string, unknown>]>([
+      [
+        'answers are locked',
+        {
+          ...settingsAllowing({ candidate: ['identity_provider'] }),
+          access: { contestantEditing: 'locked' }
+        }
+      ],
+      ['no served type allows the provider', settingsAllowing({ candidate: ['email'] })]
+    ])('signs in while %s', async (_name, settings) => {
+      getAppSettings.mockResolvedValue(settings);
+      await expect(GET(signInCallback())).rejects.toMatchObject({ status: 303, location: HOME });
+      expect(invoke).toHaveBeenCalledTimes(1);
+    });
+
+    it('reports an identity with no account as no_account, signing nobody in', async () => {
+      invoke.mockResolvedValue(functionFailed(404, { result: 'no_account' }));
+      vi.spyOn(log, 'error').mockImplementation(() => undefined);
+      const event = signInCallback();
+
+      await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('no_account') });
+      expect(verifyOtp).not.toHaveBeenCalled();
+      expect(arrivalSet(event)).toBeUndefined();
+    });
+
+    it('reads the intent cookie and deletes it', async () => {
+      const event = signInCallback();
+      await GET(event).catch(() => undefined);
+
+      expect(event.cookies.get).toHaveBeenCalledWith(COOKIE.oidcIntent);
+      expect(event.cookies.delete).toHaveBeenCalledWith(COOKIE.oidcIntent, { path: '/' });
+    });
+
+    it.each(['register', 'SIGN_IN', ''])('treats the intent cookie %j as a registration', async (intent) => {
+      invoke.mockResolvedValue(functionAnswered({ result: 'created', token: SIGN_IN_TOKEN }));
+      await GET(signInCallback({ [COOKIE.oidcIntent]: intent, [COOKIE.oidcEntityType]: 'candidate' })).catch(
+        () => undefined
+      );
+
+      expect(getAppSettings).toHaveBeenCalled();
+      expect((invoke.mock.calls[0][1] as { body: Record<string, unknown> }).body).toEqual({
+        id_token: 'test.id.token',
+        project_id: PROJECT_ID,
+        entity_type: 'candidate'
+      });
+    });
+
+    it("deletes the intent cookie on the provider's cancel", async () => {
+      const event = createEvent('error=access_denied', { [COOKIE.oidcIntent]: 'sign_in' });
+      await expect(GET(event)).rejects.toMatchObject({ status: 303, location: errorScreen('cancelled') });
+      expect(event.cookies.delete).toHaveBeenCalledWith(COOKIE.oidcIntent, { path: '/' });
+    });
+  });
+
   describe('the locale cookie', () => {
     beforeEach(() => {
       mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'idura-ftn';

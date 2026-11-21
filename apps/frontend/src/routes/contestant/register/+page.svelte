@@ -41,7 +41,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
   import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getUUID } from '$lib/utils/components';
-  import type { RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
+  import type { ContestantAppNameKey, RegistrationMode, ServedEntityType } from '@openvaa/app-shared';
   import type { SubmitFunction } from '@sveltejs/kit';
   import type { TranslationKey } from '$types';
   import type { PageData } from './$types';
@@ -113,10 +113,10 @@ Lists the ways the project lets a visitor register, and leads each where it must
   const providerEntityTypes = $derived(identityProviderEntityTypes(contestantCtx.appSettings));
 
   /** The panel's sentence for each set of types it can register. */
-  const PROVIDER_INTRO: Record<ServedEntityType | 'both', TranslationKey> = {
+  const PROVIDER_INTRO: Record<ContestantAppNameKey, TranslationKey> = {
     candidate: 'contestantApp.register.identityProvider.intro.candidate',
     organization: 'contestantApp.register.identityProvider.intro.organization',
-    both: 'contestantApp.register.identityProvider.intro.both'
+    candidateAndOrganization: 'contestantApp.register.identityProvider.intro.candidateAndOrganization'
   };
 
   /** The text of each type's option. */
@@ -125,7 +125,9 @@ Lists the ways the project lets a visitor register, and leads each where it must
     organization: 'contestantApp.register.identityProvider.types.organization'
   };
 
-  const providerIntro = $derived(t(PROVIDER_INTRO[providerEntityTypes.length === 1 ? providerEntityTypes[0] : 'both']));
+  const providerIntro = $derived(
+    t(PROVIDER_INTRO[providerEntityTypes.length === 1 ? providerEntityTypes[0] : 'candidateAndOrganization'])
+  );
 
   /** Whether the panel asks which type: only when it registers more than one. */
   const asksType = $derived(providerEntityTypes.length > 1);

@@ -9,16 +9,14 @@
   const description = $derived(page.error?.description || t('error.content'));
   const emoji = $derived(page.error?.emoji || t('dynamic.error.heroEmoji'));
 
-  let title = $derived.by(() => {
-    if (page.error) {
-      return page.error.message;
-    } else {
-      const key = assertTranslationKey(`error.${page.status}`);
-      const translated = t(key);
-      // This means, there was no error message defined for this status code.
-      if (translated === key) return t('error.default');
-      return translated;
-    }
+  // A load's own `error(status, message)` copy is shown as it is; the bare status string `handleError` returns is replaced by the status's translated message.
+  const title = $derived.by(() => {
+    const message = page.error?.message;
+    if (message && message !== String(page.status)) return message;
+    const key = assertTranslationKey(`error.${page.status}`);
+    const translated = t(key);
+    // A status with no message of its own in the catalogue.
+    return translated === key ? t('error.default') : translated;
   });
 </script>
 

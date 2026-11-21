@@ -367,6 +367,65 @@ describe('POST /api/oidc/authorize', () => {
     });
   });
 
+  describe('a sign-in', () => {
+    /** Whether a cookie was deleted for every path. */
+    function cookieDeleted(event: MockEvent, name: string): boolean {
+      return vi
+        .mocked(event.cookies.delete)
+        .mock.calls.some(([deleted, options]) => deleted === name && (options as { path?: string })?.path === '/');
+    }
+
+    it('starts the flow without reading the settings or deciding a type, and sets the intent cookie', async () => {
+      const event = createMockRequestEvent({ intent: 'sign_in' });
+      const response = await POST(event);
+
+      expect(response.status).toBe(200);
+      expect((await response.json()).authorizeUrl).toEqual(expect.any(String));
+      expect(getAppSettings).not.toHaveBeenCalled();
+      expect(identityProviderEntityType).not.toHaveBeenCalled();
+      expect(event.cookies.set).toHaveBeenCalledWith(COOKIE.oidcIntent, 'sign_in', FLOW_COOKIE_OPTIONS);
+      expect(cookieSet(event, COOKIE.oidcEntityType)).toBeUndefined();
+      expect(cookieDeleted(event, COOKIE.oidcEntityType)).toBe(true);
+      expect(cookieSet(event, COOKIE.oidcState)).toEqual(expect.any(String));
+      expect(cookieSet(event, COOKIE.oidcLocale)).toBe('en');
+    });
+
+    it.each<[string, ReturnType<typeof settingsFor>]>([
+      [
+        'answers are locked',
+        { ...BOTH_TYPES, access: { contestantEditing: 'locked' } } as ReturnType<typeof settingsFor>
+      ],
+      ['no served type allows the provider', NONE]
+    ])('is started while %s', async (_name, settings) => {
+      getAppSettings.mockResolvedValue(settings);
+      const response = await POST(createMockRequestEvent({ intent: 'sign_in' }));
+      expect(response.status).toBe(200);
+    });
+
+    it('ignores an entity type the body names beside it', async () => {
+      const event = createMockRequestEvent({ intent: 'sign_in', entityType: 'organization' });
+      const response = await POST(event);
+      expect(response.status).toBe(200);
+      expect(cookieSet(event, COOKIE.oidcEntityType)).toBeUndefined();
+    });
+
+    it('removes the intent cookie a registration finds', async () => {
+      const event = createMockRequestEvent({ entityType: 'candidate' });
+      await POST(event);
+      expect(cookieSet(event, COOKIE.oidcIntent)).toBeUndefined();
+      expect(cookieDeleted(event, COOKIE.oidcIntent)).toBe(true);
+    });
+
+    it.each([['register'], ['SIGN_IN'], [''], [null], [1], [['sign_in']]])(
+      'answers 400 for the intent %j, and sets no cookie',
+      async (intent) => {
+        const event = createMockRequestEvent({ intent, entityType: 'candidate' });
+        await expect(POST(event)).rejects.toMatchObject({ status: 400 });
+        expect(event.cookies.set).not.toHaveBeenCalled();
+      }
+    );
+  });
+
   describe('Signicat', () => {
     beforeEach(() => {
       mockPublicConstants.PUBLIC_IDENTITY_PROVIDER_TYPE = 'signicat-ftn';

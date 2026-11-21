@@ -16,7 +16,7 @@ const PROTECTED_ROUTE = ROUTE.ContestantAppSettings;
 const OTHER_PROTECTED_ROUTE = ROUTE.ContestantAppEntityHome;
 
 /** The entry routes of the Contestant App's row of the gate table. */
-const ENTRY_ROUTES = APP_GATES.find((gate) => gate.loginRoute === 'ContestantAppLogin')?.entryRoutes ?? [];
+const ENTRY_ROUTES = APP_GATES.find((gate) => gate.name === 'Contestant App')?.entryRoutes ?? [];
 
 const MESSAGE = 'common.logoutFailed';
 

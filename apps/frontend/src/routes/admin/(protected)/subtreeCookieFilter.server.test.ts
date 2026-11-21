@@ -104,6 +104,7 @@ describe('the registry this spec derives its forbidden set from', () => {
       'logout-pending',
       'oidc_code_verifier',
       'oidc_entity_type',
+      'oidc_intent',
       'oidc_locale',
       'oidc_nonce',
       'oidc_state',

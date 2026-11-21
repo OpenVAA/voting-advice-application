@@ -5,14 +5,14 @@
  * 2. A callback with no code is `missing_code`, and the flow cookies are cleared.
  * 3. The browser-bound proof the active provider declares in `callbackBinding` is demanded: a `state` equal to the `oidc_state` cookie (Idura), or the `oidc_code_verifier` cookie (Signicat PKCE). A callback without it is `invalid_state`, before any token request, and the flow cookies are cleared.
  * 4. The code is exchanged for an id_token and the token's claims are verified. A rejected token is `invalid_token`; any other failure of the exchange is `token_exchange_failed`.
- * 5. The entity type the flow was started for is checked against the registration matrix again, over the application settings read anonymously as the authorize endpoint reads them, by the function that endpoint decides by (`identityProviderEntityType`): a named type must be served and allow the provider's mode, an absent one is taken only when exactly one served type allows it, and while answers are locked every type is refused. A refusal is `mode_not_allowed`; a failed settings read is `registration_failed`.
- * 6. The `identity-callback` Edge Function is invoked with the id_token, the project and the type, and with this server's secret in the credential header: the function answers this server alone. It decides again, finds or creates the account and its entity, and answers one closed `result` with a sign-in token. A failed answer is mapped to a code by `oidcErrorFromFunction`; an unset or malformed project, and an unset secret, are `configuration_error`, and nothing is invoked.
+ * 5. For a registration, the entity type the flow was started for is checked against the registration matrix again, over the application settings read anonymously as the authorize endpoint reads them, by the function that endpoint decides by (`identityProviderEntityType`): a named type must be served and allow the provider's mode, an absent one is taken only when exactly one served type allows it, and while answers are locked every type is refused. A refusal is `mode_not_allowed`; a failed settings read is `registration_failed`. A flow the authorize endpoint started as a sign-in, which its intent cookie records, skips this step: it creates nothing, so neither the registration modes nor the answers lock refuse it.
+ * 6. The `identity-callback` Edge Function is invoked with the id_token, the project and the type, or for a sign-in with the intent `sign_in` and no type, and with this server's secret in the credential header: the function answers this server alone. For a registration it decides again, finds or creates the account and its entity, and answers one closed `result` with a sign-in token; for a sign-in it signs in the account the identity already has, or answers `no_account`, which is reported as `no_account`. A failed answer is mapped to a code by `oidcErrorFromFunction`; an unset or malformed project, and an unset secret, are `configuration_error`, and nothing is invoked.
  * 7. The session is established on this request's own client by verifying the function's token. A failure is `registration_failed`. Once it is set, and not before, every count of the logout modal the request carries is withdrawn in this response, so that no count a closed tab left can end the session just signed in. Every earlier failure leaves the count in place, because it signs nobody in.
- * 8. The arrival marker is set as an httpOnly cookie, `created` when the function made the account's entity and `existing` when it found one, and the browser is sent to the Contestant App's root, where the protected layout shows what the account still lacks.
+ * 8. For a registration, the arrival marker is set as an httpOnly cookie, `created` when the function made the account's entity and `existing` when it found one; a sign-in sets none. The browser is sent to the Contestant App's root, where the protected layout shows what the account still lacks.
  *
- * The id_token never reaches the browser: it is exchanged and handed on within this request. The entity type and locale cookies the authorize endpoint set are read once and deleted on every path, the successful one included. Every address this route sends the browser to is in the recorded locale when it is a supported one, and otherwise in the request's own, so a user who started in one locale returns in it.
+ * The id_token never reaches the browser: it is exchanged and handed on within this request. The entity type, intent and locale cookies the authorize endpoint set are read once and deleted on every path, the successful one included. Every address this route sends the browser to is in the recorded locale when it is a supported one, and otherwise in the request's own, so a user who started in one locale returns in it.
  *
- * Every failure redirects to the identity provider's error screen with one code of `OIDC_ERROR`, which the screen shows as one of three classes. Both Idura (JAR + private_key_jwt) and Signicat (PKCE + client_secret) flows converge here.
+ * Every failure redirects to the identity provider's error screen with one code of `OIDC_ERROR`, which the screen shows as one of four classes. Both Idura (JAR + private_key_jwt) and Signicat (PKCE + client_secret) flows converge here.
  */
 
 import { log } from '@openvaa/app-shared';
@@ -31,6 +31,10 @@ import { constants } from '$lib/server/constants';
 import type { ContestantAppSettingsInput } from '@openvaa/app-shared';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
 import type { OidcError } from '$contestant/utils/oidcError';
+import type { IdentityCallbackIntent } from '$lib/server/auth/identityCallback';
+
+/** The value of the intent cookie that marks a flow started to sign in. */
+const SIGN_IN_INTENT = 'sign_in';
 
 export async function GET(event: RequestEvent): Promise<never> {
   const { url, cookies, request, fetch, locals } = event;
@@ -38,9 +42,11 @@ export async function GET(event: RequestEvent): Promise<never> {
   const returnedState = url.searchParams.get('state');
   const errorParam = url.searchParams.get('error');
 
-  // The entity type and the locale the flow was started with select for this one return alone, so each is read once and removed on every path.
+  // The entity type, the intent and the locale the flow was started with select for this one return alone, so each is read once and removed on every path.
   const requestedType = cookies.get(COOKIE.oidcEntityType);
   cookies.delete(COOKIE.oidcEntityType, { path: '/' });
+  const signIn = cookies.get(COOKIE.oidcIntent) === SIGN_IN_INTENT;
+  cookies.delete(COOKIE.oidcIntent, { path: '/' });
   const locale = flowLocale(cookies.get(COOKIE.oidcLocale), locals.currentLocale);
   cookies.delete(COOKIE.oidcLocale, { path: '/' });
 
@@ -110,7 +116,17 @@ export async function GET(event: RequestEvent): Promise<never> {
 
     throw redirect(
       303,
-      await signInThroughIdentityCallback({ idToken, requestedType, cookies, request, url, fetch, locals, locale })
+      await signInThroughIdentityCallback({
+        idToken,
+        signIn,
+        requestedType,
+        cookies,
+        request,
+        url,
+        fetch,
+        locals,
+        locale
+      })
     );
   } catch (e) {
     // A SvelteKit redirect is thrown as an exception, and is passed on.
@@ -139,6 +155,7 @@ function clearFlowCookies(cookies: Cookies): void {
   cookies.delete(COOKIE.oidcNonce, { path: '/' });
   cookies.delete(COOKIE.oidcCodeVerifier, { path: '/' });
   cookies.delete(COOKIE.oidcEntityType, { path: '/' });
+  cookies.delete(COOKIE.oidcIntent, { path: '/' });
   cookies.delete(COOKIE.oidcLocale, { path: '/' });
 }
 
@@ -150,15 +167,16 @@ function errorScreen(error: OidcError, locale: string | undefined): string {
 }
 
 /**
- * Register the identified user through `identity-callback` and sign them in on this request's client.
+ * Register the identified user through `identity-callback`, or for a sign-in find the account the identity already has, and sign them in on this request's client.
  *
- * Once `verifyOtp` has set the session, the logout count the request carries is withdrawn, through `cookies`, `request` and `url`, before the arrival marker is set. A failure before that point leaves the count in place.
+ * A sign-in reads no settings and decides no type. Once `verifyOtp` has set the session, the logout count the request carries is withdrawn, through `cookies`, `request` and `url`, before the arrival marker is set. A failure before that point leaves the count in place.
  *
  * Never throws: every failure is answered with the error screen's address for one closed code. The log names that code and a fixed cause for the operator: the stage that failed, or the cause `invokeIdentityCallback` gives. No value of the tokens and no message the function or the auth service sent is logged.
  * @returns The address the browser is sent to: the Contestant App's root on success, the error screen otherwise.
  */
 async function signInThroughIdentityCallback({
   idToken,
+  signIn,
   requestedType,
   cookies,
   request,
@@ -168,6 +186,7 @@ async function signInThroughIdentityCallback({
   locale
 }: {
   idToken: string;
+  signIn: boolean;
   requestedType: string | undefined;
   cookies: Cookies;
   request: Request;
@@ -192,21 +211,27 @@ async function signInThroughIdentityCallback({
   if (!serverSecret)
     return failed(OIDC_ERROR.configurationError, 'IDENTITY_CALLBACK_SERVER_SECRET unset on the frontend server');
 
-  let settings: ContestantAppSettingsInput;
-  try {
-    settings = (await dataProvider.getAppSettings()) as ContestantAppSettingsInput;
-  } catch {
-    return failed(OIDC_ERROR.registrationFailed, 'app settings read failed');
+  let asked: IdentityCallbackIntent;
+  if (signIn) {
+    asked = { intent: SIGN_IN_INTENT };
+  } else {
+    let settings: ContestantAppSettingsInput;
+    try {
+      settings = (await dataProvider.getAppSettings()) as ContestantAppSettingsInput;
+    } catch {
+      return failed(OIDC_ERROR.registrationFailed, 'app settings read failed');
+    }
+    const entityType = identityProviderEntityType(settings, requestedType);
+    if (!entityType) return failed(OIDC_ERROR.modeNotAllowed, 'entity type not allowed');
+    asked = { entityType };
   }
-  const entityType = identityProviderEntityType(settings, requestedType);
-  if (!entityType) return failed(OIDC_ERROR.modeNotAllowed, 'entity type not allowed');
 
   const outcome = await invokeIdentityCallback({
     supabase: locals.supabase,
     serverSecret,
     idToken,
     projectId: dataProvider.projectId,
-    entityType
+    ...asked
   });
   if (!outcome.ok) return failed(outcome.error, outcome.cause);
 
@@ -219,6 +244,6 @@ async function signInThroughIdentityCallback({
   }
 
   withdrawLogoutDeadline({ cookies, request, url });
-  cookies.set(COOKIE.identityProviderArrival, outcome.arrival, OIDC_FLOW_COOKIE_OPTIONS);
+  if (outcome.arrival) cookies.set(COOKIE.identityProviderArrival, outcome.arrival, OIDC_FLOW_COOKIE_OPTIONS);
   return buildRoute({ route: 'ContestantAppHome', locale });
 }
