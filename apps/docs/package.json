@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "prepare": "svelte-kit sync || echo ''",
     "lint": "eslint .",
-    "typecheck": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "typecheck": "yarn run check",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "format": "prettier --write .",
@@ -21,7 +21,8 @@
     "generate:navigation": "tsx scripts/generate-navigation-config.ts",
     "generate:route-map": "tsx scripts/generate-route-map.ts",
     "validate:links": "tsx scripts/validate-links.ts",
-    "check:research-quotes": "tsx scripts/check-research-quotes.ts"
+    "check:research-quotes": "tsx scripts/check-research-quotes.ts",
+    "test:unit": "vitest run --project server"
   },
   "dependencies": {
     "@openvaa/app-shared": "workspace:^"
@@ -37,7 +38,6 @@
     "@vitest/browser-playwright": "catalog:",
     "daisyui": "catalog:",
     "eslint": "catalog:",
-    "eslint-config-prettier": "catalog:",
     "eslint-plugin-svelte": "catalog:",
     "glob": "^13.0.6",
     "mdsvex": "^0.12.6",

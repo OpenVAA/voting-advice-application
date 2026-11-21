@@ -1,0 +1,25 @@
+# AccountAddress
+
+An account's address under its label, centred and in bold, as the account screens show it.
+
+### Properties
+
+- `label`: The label shown above the address.
+- `address`: The address to show.
+- `data-testid`: The test id of the address, set on the `<dd>` holding it.
+- Any valid attributes of a `<dl>` element.
+
+### Accessibility
+
+- The address is a `<dd>` under its label, so it is announced with the label. It is never hyphenated or translated, and it wraps at any character rather than overflowing.
+
+### Usage
+
+```tsx
+<AccountAddress label={t('contestantApp.nothingToEdit.signedInAs')} address={email} data-testid="set-password-email" />
+```
+
+## Source
+
+- Component: [apps/frontend/src/lib/components/accountAddress/AccountAddress.svelte](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/accountAddress/AccountAddress.svelte)
+- Types: [apps/frontend/src/lib/components/accountAddress/AccountAddress.type.ts](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/components/accountAddress/AccountAddress.type.ts)

@@ -4,7 +4,7 @@ Show a button that opens a modal describing the data the app collects.
 
 ### Dynamic component
 
-Accesses `AppContext` to read `appSettings`.
+Accesses `AppContext` for the translations. The modal shows `common.privacy.dataCollection.content` and `privacy.dataCollection.info`, which name no analytics provider.
 
 ### Properties
 

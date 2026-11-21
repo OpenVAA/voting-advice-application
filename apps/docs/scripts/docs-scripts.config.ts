@@ -1,12 +1,13 @@
 /**
  * Shared configuration for documentation generation scripts
  */
-import { join } from 'path';
+import { dirname, join, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 /**
- * Base directories
+ * Base directories, anchored on this file's location so they do not depend on the directory a script is started from
  */
-export const DOCS_ROOT = process.cwd();
+export const DOCS_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const REPO_ROOT = join(DOCS_ROOT, '../..');
 export const FRONTEND_ROOT = join(REPO_ROOT, 'apps', 'frontend');
 
@@ -52,23 +53,26 @@ export const COPY_TARGETS = [
 ] as const;
 
 /**
- * Component directories for extraction
+ * Component directories for extraction. `categorySubdir` is where a directory's pages are written under the generated components route, and so where the table of contents links them.
  */
 export const COMPONENT_DIRS = [
   {
     dir: join(FRONTEND_ROOT, 'src', 'lib', 'components'),
     name: 'Static Components',
-    importPrefix: '$lib/components'
+    importPrefix: '$lib/components',
+    categorySubdir: 'components'
   },
   {
     dir: join(FRONTEND_ROOT, 'src', 'lib', 'dynamic-components'),
     name: 'Dynamic Components',
-    importPrefix: '$lib/dynamic-components'
+    importPrefix: '$lib/dynamic-components',
+    categorySubdir: 'dynamic-components'
   },
   {
-    dir: join(FRONTEND_ROOT, 'src', 'lib', 'candidate', 'components'),
-    name: 'Candidate App Components',
-    importPrefix: '$candidate/components'
+    dir: join(FRONTEND_ROOT, 'src', 'lib', 'contestant', 'components'),
+    name: 'Contestant App Components',
+    importPrefix: '$contestant/components',
+    categorySubdir: 'contestant/components'
   }
 ] as const;
 

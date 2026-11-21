@@ -139,7 +139,7 @@ The frontend uses Svelte 5 with runes: `apps/frontend/svelte.config.js` turns ru
 
 #### File structure
 
-Put each component in its own folder in `$lib/components`, in `$lib/dynamic-components` for [dynamic components](/developers-guide/frontend/components), or in `$candidate/components` for components used only by the Candidate App. Multiple components that are integrally tied together may be included in the same folder (but see the note below on exports). Put the property type in a `.type.ts` file next to the component and provide an `index.ts` for easy imports. Thus, the `$lib/components/myComponent` folder would have the files:
+Put each component in its own folder in `$lib/components`, in `$lib/dynamic-components` for [dynamic components](/developers-guide/frontend/components), or in `$contestant/components` for components used only by the Contestant App. Multiple components that are integrally tied together may be included in the same folder (but see the note below on exports). Put the property type in a `.type.ts` file next to the component and provide an `index.ts` for easy imports. Thus, the `$lib/components/myComponent` folder would have the files:
 
 - `MyComponent.svelte`: the component itself
 - `MyComponent.type.ts`: the type of the component's properties

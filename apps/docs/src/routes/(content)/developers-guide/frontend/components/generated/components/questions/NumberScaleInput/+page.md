@@ -31,7 +31,7 @@ Native `<input type="range">` is chosen deliberately so keyboard-arrow exact-val
   mode="display"
   {value}
   otherValue={entityValue}
-  otherLabel={t('candidateApp.common.candidateAnswerLabel')} />
+  otherLabel={t('contestantApp.common.candidateAnswerLabel')} />
 ```
 
 ## Source

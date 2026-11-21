@@ -4,7 +4,7 @@ Show a `Question`'s text and metadata, such as category and applicable elections
 
 ### Dynamic component
 
-This is a dynamic component, because it accesses the settings via `AppContext` and selected elections from `VoterContext` or `CandidateContext`.
+This is a dynamic component, because it accesses the settings via `AppContext` and selected elections from `VoterContext` or `ContestantContext`.
 
 ### Properties
 

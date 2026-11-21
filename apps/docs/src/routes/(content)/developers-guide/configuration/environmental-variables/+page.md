@@ -31,7 +31,7 @@ cp apps/supabase/supabase/functions/.env.example apps/supabase/supabase/function
 yarn db:stop && yarn db:start
 ```
 
-A running Edge runtime keeps the environment it started with, so restart the stack after every change. The template lists the ten variables the functions need: the identity-provider settings, `PUBLIC_PROJECT_ID`, `SITE_URL` and the SMTP settings. The runtime sets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` itself. [Edge Functions](/developers-guide/backend/edge-functions#configuration) shows which function reads which variable.
+A running Edge runtime keeps the environment it started with, so restart the stack after every change. The template lists the eleven variables the functions need: the identity-provider settings, `IDENTITY_CALLBACK_SERVER_SECRET`, `PUBLIC_PROJECT_ID`, `SITE_URL` and the SMTP settings. The runtime sets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` itself. [Edge Functions](/developers-guide/backend/edge-functions#configuration) shows which function reads which variable.
 
 ## Variables that exist twice
 
@@ -101,18 +101,19 @@ For the local stack, `yarn workspace @openvaa/supabase supabase status -o env` p
 
 ### Bank authentication (identity provider)
 
-[Bank authentication](/developers-guide/candidate-app/bank-authentication) describes the flow, and [`docs/key-generation.md`](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/key-generation.md) explains how to make the keys.
+[Bank authentication](/developers-guide/contestant-app/bank-authentication) describes the flow, and [`docs/key-generation.md`](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/key-generation.md) explains how to make the keys.
 
 - `PUBLIC_IDENTITY_PROVIDER_TYPE`, `IDENTITY_PROVIDER_TYPE`: `signicat-ftn` or `idura-ftn`.
 - `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_CLIENT_ID`: the client id at the provider. `identity-callback` checks it as the token's audience.
 - `IDENTITY_PROVIDER_DECRYPTION_JWKS`, `IDENTITY_PROVIDER_JWKS_URI`, `IDENTITY_PROVIDER_ISSUER`: the private decryption keys, the provider's key-set URL and its issuer. Both providers use them, so change them when you switch providers.
 - For Signicat: `PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT`, `IDENTITY_PROVIDER_TOKEN_ENDPOINT`, `IDENTITY_PROVIDER_CLIENT_SECRET`.
 - For Idura: `IDURA_DOMAIN`, `IDURA_SIGNING_JWKS`, `IDURA_SIGNING_KEY_KID`.
+- `IDENTITY_CALLBACK_SERVER_SECRET`: the secret the frontend server sends to `identity-callback` in the `x-identity-callback-secret` header. The function refuses every request without it. Generate one random value of at least 32 bytes per deployment (for example `openssl rand -hex 32`) and set the same value in the root `.env`, for the frontend server, and in the functions' `.env`; on a hosted project, as a function secret and as a private variable of the frontend service. It is not a `PUBLIC_` variable and never reaches a browser. Without it, bank authentication ends on the error screen with `configuration_error`. The E2E wrapper generates its own for each run.
 
 ### Edge Functions
 
-- `SITE_URL`: the site origin used in post-login redirects and invitation links. There is no fallback.
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`: the mail server that `send-email` uses (the local email testing server in the template).
+- `SITE_URL`: the site origin of post-login redirects and of the sign-in links `account-access` mails. There is no fallback.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`: the mail server that `send-email` and `account-access` use (the local email testing server in the template).
 
 The functions read these from their own `.env`. The root `.env` carries them too, for serving a function directly against the root file, as the comments in `.env.example` describe.
 

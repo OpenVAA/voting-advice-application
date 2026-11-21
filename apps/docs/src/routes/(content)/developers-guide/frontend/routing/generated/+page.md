@@ -28,7 +28,10 @@ This is an automatically generated map of the route directories under `apps/fron
     │   │   ├── argument-condensation/
     │   │   ├── jobs/
     │   │   └── question-info/
-    │   └── login/
+    │   ├── email-sent/
+    │   ├── forgot-password/
+    │   ├── login/
+    │   └── password-reset/
     ├── api/
     │   ├── admin/
     │   │   └── jobs/
@@ -41,37 +44,48 @@ This is an automatically generated map of the route directories under `apps/fron
     │   │       │       └── progress/
     │   │       └── start/
     │   ├── auth/
+    │   │   ├── callback/
     │   │   └── logout/
-    │   ├── candidate/
-    │   │   ├── auth/
-    │   │   │   ├── callback/
-    │   │   │   └── logout/
-    │   │   └── preregister/
+    │   ├── contestant/
+    │   │   └── identity-provider/
     │   ├── data/
     │   │   └── [collection]/
+    │   ├── diagnostics/
     │   ├── feedback/
-    │   └── oidc/
-    │       ├── authorize/
-    │       ├── callback/
-    │       └── token/
-    └── candidate/
+    │   ├── health/
+    │   ├── oidc/
+    │   │   ├── authorize/
+    │   │   └── callback/
+    │   └── usage/
+    ├── auth/
+    │   └── confirm/
+    └── contestant/
         ├── (protected)/
-        │   ├── preview/
-        │   ├── profile/
-        │   ├── questions/
-        │   │   └── [questionId]/
-        │   └── settings/
+        │   ├── settings/
+        │   ├── [...page=contestantEntityPage]/
+        │   └── [entityType=servedEntityType]/
+        │       └── [entityId=uuid]/
+        │           ├── (nominated)/
+        │           │   ├── preview/
+        │           │   ├── profile/
+        │           │   └── questions/
+        │           │       └── [questionId]/
+        │           ├── nominations/
+        │           │   └── (edit)/
+        │           │       ├── constituencies/
+        │           │       ├── details/
+        │           │       └── elections/
+        │           └── settings/
+        ├── email-sent/
         ├── forgot-password/
         ├── help/
         ├── login/
+        │   └── email/
         ├── password-reset/
-        ├── preregister/
-        │   ├── (authenticated)/
-        │   │   ├── constituencies/
-        │   │   ├── elections/
-        │   │   └── email/
-        │   └── status/
         ├── privacy/
         └── register/
-            └── password/
+            ├── email/
+            ├── identity-provider/
+            │   └── error/
+            └── sign-in/
 ```

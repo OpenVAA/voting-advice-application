@@ -47,7 +47,7 @@ The logo is rendered as a `<svg>` element, and you can also pass any valid attri
         c = 'h-28 pt-4';
     }
 
-    // Set fill color
+    // Set fill color. The predefined colours are spelled out in full so that Tailwind finds their classes.
     switch (color) {
       case 'primary':
         c += ' fill-primary inline';
@@ -59,9 +59,7 @@ The logo is rendered as a `<svg>` element, and you can also pass any valid attri
         c += ' fill-neutral inline';
         break;
       default:
-    }
-    if (color != null) {
-      c += ` fill-${color} inline`;
+        if (color != null) c += ` fill-${color} inline`;
     }
     return c;
   });

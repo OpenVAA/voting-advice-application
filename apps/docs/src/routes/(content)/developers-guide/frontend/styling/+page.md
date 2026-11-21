@@ -30,7 +30,7 @@ The components pass any attributes they receive on to their main element. This i
 | <div style="background: #d1ebee; width: 1.5rem; height: 1.5rem;"/>                                                   | `base-300`        | Default prominent background                                           |
 | <div style="background: #ffffff; outline: 1px solid #2546a8; outline-offset: -1px; width: 1.5rem; height: 1.5rem;"/> | `primary-content` | Text on `bg-primary`. Each colour has its associated `content` colour. |
 
-`StaticSettings` also has a `colors` object with the same light and dark values. The frontend reads it for the `theme-color` meta tags and as the background when it checks the contrast of the colours of entities and question categories. The theme colours themselves come from `app.css`, so a change of palette has to be made in both places. See [Static settings](/developers-guide/configuration/static-settings).
+`StaticSettings` also has a `colors` object with the same light and dark values. The frontend reads it for the `theme-color` meta tags and as the background when it checks the contrast of the colours of elections, entities and question categories. The theme colours themselves come from `app.css`, so a change of palette has to be made in both places. See [Static settings](/developers-guide/configuration/static-settings).
 
 #### Color contrast
 
