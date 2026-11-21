@@ -8,7 +8,7 @@
  *
  * It is deliberately a SEPARATE, after-the-fact step rather than a block inside `e2e-run.sh`: it can be re-run against any historical run directory without re-running the suite, and a bug here can never change a run's outcome.
  *
- * A VOID RUN IS NOT A RED RUN. When the host is suspended during a run, `e2e-run.sh` ends it with exit 8 and leaves `VOID-host-suspend.txt` in the run directory. Such a run usually still has a `results.json`, full of interrupted and never-started tests, and its counts are not a verdict about the tree. The marker is therefore carried into both artifacts (`void` in `summary.json`, a `void:` line in `provenance.txt`) and into the console line, so that no reader of the counts can take them for one. A test that failed before the gap is not the gap's doing, though: every test with a result that ended `failed` before the marker's last beat is listed in `summary.json` (`failedBeforeGap`) and in `provenance.txt`, so that an intermittent failure is not lost with the void run.
+ * A VOID RUN IS NOT A RED RUN. When the wrapper is not scheduled for its heartbeat's threshold or more during a run, as a rule because the host was suspended, `e2e-run.sh` ends it with exit 8 and leaves `VOID-host-suspend.txt` in the run directory. Such a run usually still has a `results.json`, full of interrupted and never-started tests, and its counts are not a verdict about the tree. The marker is therefore carried into both artifacts (`void` in `summary.json`, a `void:` line in `provenance.txt`) and into the console line, so that no reader of the counts can take them for one. A test that failed before the gap is not the gap's doing, though: every test with a result that ended `failed` before the marker's last beat is listed in `summary.json` (`failedBeforeGap`) and in `provenance.txt`, so that an intermittent failure is not lost with the void run.
  *
  * STATUS 9 IS NOT A GREEN RUN. `e2e-run.sh` prepares the identity provider's test environment before the dev server starts and restores the shared stack at its end. When either fails it exits 9 whatever Playwright reported, and records its own status in `wrapper-exit`, the preparation in `idp-env.txt` and the restore in `restore.txt`. The status and the last line of each record are carried into both artifacts (`wrapperExit` and `identityProvider` in `summary.json`, `wrapper-exit:`, `idp-prepare:` and `restore:` lines in `provenance.txt`) and a status 9 into the console line, so that no reader of the counts can take such a run for a green one.
  *
@@ -67,7 +67,7 @@ const voidRun =
   voidText === ''
     ? null
     : {
-        reason: 'the host was suspended during the run',
+        reason: 'the wrapper was not scheduled for SUSPEND_THRESHOLD_MS or more during the run',
         marker: VOID_MARKER,
         gapMs: Number(voidFields.gap_ms ?? Number.NaN),
         lastBeatBeforeGapUtc: voidFields.last_beat_before_gap_utc ?? '',

@@ -21,7 +21,7 @@
  *    hand-authored election and constituency-group row in the built-in templates uses `elections.constituency_groups` or `constituency_groups.constituencies`.
  *    They survive today only because `COLLECTION_NON_COLUMNS` strips them before the RPC sees them. Dropping them here moves them outside this const's authority — permitted somewhere no loop resolves.
  *
- * The literals below are the two join-table names of the election and constituency-group links, the two JSONB column names the election and constituency resolvers write (each for BOTH `question_categories` and `questions`), and the accepted key sets of each link.
+ * The literals below are the two `bulk_import` link keys of the election and constituency-group links, the two JSONB column names the election and constituency resolvers write (each for BOTH `question_categories` and `questions`), and the accepted key sets of each link.
  *
  * Declared `as const satisfies ReadonlyArray<LinkSentinelRule>` so every table and column name stays a narrow literal: a typo becomes a compile error here rather than a PostgREST 404 at seed time.
  */
@@ -102,8 +102,6 @@ export type LinkSentinelRule =
   | (LinkSentinelRuleBase & {
       /** Collections this rule applies to — canonical resolved snake_case table names. */
       readonly collections: ReadonlyArray<JoinParentCollection>;
-      /** Table whose `external_id`s the payload names. */
-      readonly refTable: 'constituency_groups' | 'constituencies';
       /** Where the resolved UUIDs go. */
       readonly target: Extract<LinkTarget, { kind: 'join' }>;
     })
@@ -125,13 +123,11 @@ export const LINK_SENTINELS = [
   {
     collections: ['elections'],
     keys: ['_constituencyGroups', '_constituency_groups', 'constituencyGroups', 'constituency_groups'],
-    refTable: 'constituency_groups',
     target: { kind: 'join', linkKey: 'constituency_groups' }
   },
   {
     collections: ['constituency_groups'],
     keys: ['_constituencies', 'constituencies'],
-    refTable: 'constituencies',
     target: { kind: 'join', linkKey: 'constituencies' }
   },
   {

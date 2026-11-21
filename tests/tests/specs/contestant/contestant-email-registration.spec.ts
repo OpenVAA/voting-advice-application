@@ -308,7 +308,7 @@ test.describe('registering through a mailed link', () => {
     await contestantEmailSentPage.expectShown({ wording: 'signIn', address });
     expect(first, 'the first request handed a mail over').toBe('sent');
 
-    // While the count runs the control is unavailable, still takes focus, and is described by the count in its label.
+    // While the count runs the control is unavailable, still takes focus, and carries the count in its label and its accessible name.
     await contestantEmailSentPage.expectResendWaiting();
 
     // Past the wait the control is available, its count is gone, and the status region says so.

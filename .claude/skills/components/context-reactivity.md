@@ -25,14 +25,12 @@ under destructuring**.
 
 The translation function `t`; the route helper `getRoute` (still a `{ current }` handle); `darkMode`;
 `answers`; the `userData` object (whose internal `$state` getters are accessed by property); and the
-lifecycle functions (`logout`, `preregister`, `startEvent`, `*Countdown`). On the contestant
+lifecycle functions (`logout`, `track`, `*Countdown`). On the contestant
 context also the two nomination functions, `setEntityNominations` and `getNominationParentOptions`:
 each is a stable arrow function that reads the selected entity when it is called, so a destructured
-copy acts on the entity the route names at that moment. And the seven functions of the entry flow:
-`checkInvitationCode`, `requestSignInLink` and `requestPasswordRecovery`, which forward to the data
-writer, and `holdEntryCode`, `sendEntryLink`, `resendEntryLink` and `clearEntryFlow`, which write the
-flow state (see `entryFlow` below). A screen calls `sendEntryLink`, never the two link forwards, so
-that the request is held for the "email sent" screen.
+copy acts on the entity the route names at that moment. And the five functions of the entry flow:
+`checkInvitationCode`, which forwards to the data writer, and `holdEntryCode`, `sendEntryLink`,
+`resendEntryLink` and `clearEntryFlow`, which write the flow state (see `entryFlow` below).
 
 ```ts
 const { t, getRoute } = getVoterContext();
@@ -106,17 +104,16 @@ re-invoke the getter inside the tracking scope each time, preserving the reactiv
 ## 2. Canonical pattern
 
 Reproduced verbatim from
-`apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:63-70`:
+`apps/frontend/src/routes/(voters)/(located)/results/[[electionTab]]/+layout.svelte:46-52`:
 
 ```ts
 const voterCtx = getVoterContext();
-const { answers, getRoute, startEvent, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
+const { answers, getRoute, track, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = voterCtx;
 // appSettings is value-replacing: a $derived read alias is safe and correct.
 const appSettings = $derived(voterCtx.appSettings);
-// dataRoot is identity-stable: read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias …
+// dataRoot is identity-stable: read `voterCtx.dataRoot.<prop>` directly inside the consuming tracking scope, never through an intermediate $derived alias (referential equality would suppress downstream notification and the cold/direct-URL snapshot would stay empty). See CLAUDE.md "Context Destructuring Rule" and its stable-reference carve-out.
 // Local aliases for template readability:
 const elections = $derived(voterCtx.selectedElections);
-const constituencies = $derived(voterCtx.selectedConstituencies);
 ```
 
 **Read what this example does NOT contain.** There is no `const dataRoot = $derived(voterCtx.dataRoot)`

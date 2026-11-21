@@ -108,7 +108,7 @@ Both loads answer from rows the server read in the request, and neither signs an
 
 The preview's rule reads the elections and the constituencies itself. When it cannot read them, or a nomination names one that was not read, it gives no answer: nothing is redirected and the preview is served, with no error view. The page shows the user's own entity only.
 
-The preview's rule is in the page's own load, and not in the group's, because a layout's load does not run again on a navigation between two pages below it. The page's load runs on every arrival, and its `await parent()` runs the parent loads again on the server, so it sees an answer the user saved a moment before. The rule itself is `isPreviewOpen` in [`previewGate.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/contestant/previewGate.ts), which calls the same `hasNomination`, `previewOpenOf`, `requiredInfoQuestionsOf` and `unansweredQuestionsOf` the browser's task state does.
+The preview's rule is in the page's own load, and not in the group's, because a layout's load does not run again on a navigation between two pages below it. The page's load runs on every arrival, and its `await parent()` runs the parent loads again on the server, so it sees an answer the user saved a moment before. The rule itself is `isPreviewOpen` in [`previewOpen.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/src/lib/server/contestant/previewOpen.ts), which calls the same `hasNomination`, `previewOpenOf`, `requiredInfoQuestionsOf` and `unansweredQuestionsOf` the browser's task state does.
 
 The gate is a rule about pages. The database's own rules decide what an entity's editor may write.
 

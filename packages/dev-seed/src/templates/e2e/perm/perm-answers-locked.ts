@@ -9,7 +9,7 @@
  *
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-answers-locked-'` (distinct from every other perm chain).
  *
- * The spec's setup, `perm-answers-locked.setup.ts`, signs the seeded candidate `cand-1` in through `createContestantLoginPage` and saves the session as a Playwright storage-state file, which the AUTHENTICATED sub-tests covering surfaces 2 + 3 use. The UNAUTHENTICATED sub-test (surface 1, /en/contestant login page) does not use storage state.
+ * The spec's setup, `perm-answers-locked.setup.ts`, stores the seeded candidate `cand-1`'s session through `registerAndStoreSession` as a Playwright storage-state file, which the AUTHENTICATED sub-tests covering surfaces 2 + 3 use. The UNAUTHENTICATED sub-test (surface 1, /en/contestant login page) does not use storage state.
  */
 
 import { buildMinimal } from '../../_helpers/buildMinimal';

@@ -29,7 +29,6 @@ export const illegalJoinRule = {
   // @ts-expect-error TS2322 — 'organizations' is not a JoinParentCollection; a `join` target may only be declared on 'elections' or 'constituency_groups'.
   collections: ['organizations'],
   keys: ['_foo'],
-  refTable: 'constituency_groups',
   target: { kind: 'join', linkKey: 'constituency_groups' }
 } as const satisfies LinkSentinelRule;
 
@@ -49,7 +48,6 @@ export const illegalJsonbRule = {
 export const legalJoinRule = {
   collections: ['constituency_groups'],
   keys: ['_constituencies'],
-  refTable: 'constituencies',
   target: { kind: 'join', linkKey: 'constituencies' }
 } as const satisfies LinkSentinelRule;
 

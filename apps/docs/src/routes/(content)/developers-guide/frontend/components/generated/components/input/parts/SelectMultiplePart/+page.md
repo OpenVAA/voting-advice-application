@@ -2,7 +2,7 @@
 
 The options dropdown and selected-chips region `Input` renders for its `select-multiple` kind. The dropdown offers only the not-yet-selected options; each selected one gets a row with a delete button.
 
-The dropdown names `describedBy` in its `aria-describedby` and is marked `aria-required` when `required`.
+The dropdown names `describedBy` in its `aria-describedby`, is marked `aria-required` when `required` and is marked `aria-invalid` while `invalid`.
 
 Internal to the `input` package — not exported from its barrel. See `./README.md`.
 

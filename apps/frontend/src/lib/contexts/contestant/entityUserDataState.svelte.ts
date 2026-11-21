@@ -60,46 +60,6 @@ const NAME_PROPERTIES = [
 ] as const satisfies ReadonlyArray<EditableEntityProperty>;
 
 /**
- * An object of optional properties without its members that are `undefined`.
- * @param properties - The properties.
- * @returns A new object holding the members that have a value.
- */
-function definedMembers<TProps extends object>(properties: TProps): TProps {
-  // Leaving out optional members whose value is `undefined` keeps the object of its type.
-  return Object.fromEntries(Object.entries(properties).filter(([, value]) => value !== undefined)) as TProps;
-}
-
-/**
- * What a write of staged properties carries: the entity, and those of the properties that its type has.
- * @param target - The type and id of the entity.
- * @param properties - The staged properties to write.
- * @param locale - The locale the written names are translated to in the result.
- */
-function writeOptionsOf({
-  target,
-  properties,
-  locale
-}: {
-  target: Pick<LocalizedEntityData, 'type' | 'id'>;
-  properties: StagedProps;
-  locale: string;
-}): SetPropertiesOptions {
-  const { id } = target;
-  const { image, firstName, lastName, name, shortName, color } = properties;
-  if (target.type === 'candidate')
-    return {
-      target: { type: 'candidate', id },
-      properties: definedMembers<CandidateEditableProps>({ image, firstName, lastName }),
-      locale
-    };
-  return {
-    target: { type: 'organization', id },
-    properties: definedMembers<OrganizationEditableProps>({ image, name, shortName, color }),
-    locale
-  };
-}
-
-/**
  * A Svelte 5 class implementation of the composite user-data store of the entity the user edits.
  * Holds all data owned by the user; when reading `current`, it returns a composite of the initial data and any unsaved `Answer`s and properties. The edited `Answer`s are stored in `localStorage` for persistence, under a key that names the entity, so each entity keeps its own draft (the persistence + version bridge is INHERITED from `localStorageState`/`PersistedStateImpl` — this class does NOT own a `#version`; the `{ version, data }` payload lives in `persistedState.svelte.ts`). The edited properties are held in memory alone: a name staged in one session is never restored into a later one, where the entity may have been confirmed since.
  *
@@ -554,4 +514,44 @@ function comparableColor(color: Colors | EditableEntityColor | null | undefined)
  */
 function isNameProperty(property: EditableEntityProperty): boolean {
   return NAME_PROPERTIES.some((nameProperty) => nameProperty === property);
+}
+
+/**
+ * What a write of staged properties carries: the entity, and those of the properties that its type has.
+ * @param target - The type and id of the entity.
+ * @param properties - The staged properties to write.
+ * @param locale - The locale the written names are translated to in the result.
+ */
+function writeOptionsOf({
+  target,
+  properties,
+  locale
+}: {
+  target: Pick<LocalizedEntityData, 'type' | 'id'>;
+  properties: StagedProps;
+  locale: string;
+}): SetPropertiesOptions {
+  const { id } = target;
+  const { image, firstName, lastName, name, shortName, color } = properties;
+  if (target.type === 'candidate')
+    return {
+      target: { type: 'candidate', id },
+      properties: definedMembers<CandidateEditableProps>({ image, firstName, lastName }),
+      locale
+    };
+  return {
+    target: { type: 'organization', id },
+    properties: definedMembers<OrganizationEditableProps>({ image, name, shortName, color }),
+    locale
+  };
+}
+
+/**
+ * An object of optional properties without its members that are `undefined`.
+ * @param properties - The properties.
+ * @returns A new object holding the members that have a value.
+ */
+function definedMembers<TProps extends object>(properties: TProps): TProps {
+  // Leaving out optional members whose value is `undefined` keeps the object of its type.
+  return Object.fromEntries(Object.entries(properties).filter(([, value]) => value !== undefined)) as TProps;
 }

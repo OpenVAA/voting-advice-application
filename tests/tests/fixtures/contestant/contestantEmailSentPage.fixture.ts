@@ -17,7 +17,7 @@
  *  - expectSupportThenResendInBody() — below the sentences, the body holds the sentence whose words lead to support, then "Send again", and the actions hold neither.
  *  - expectAskedAgain(shown)       — the sentence for a request made again too soon is there or is not.
  *  - shape(address)                — what the screen shows, as data to compare with another visit to it.
- *  - expectResendWaiting()         — the control is unavailable, can still be focused, and is described by the count of the wait in its label.
+ *  - expectResendWaiting()         — the control is unavailable, can still be focused, and carries the count of the wait in its label and its accessible name alone.
  *  - advancePastTheWait()          — move the page's clock past the wait.
  *  - expectResendReady()           — the wait is over: the control is available and its count is gone.
  *  - pressResend(address, { code }) — give the server's slot back, then press the control; focus stays on it.

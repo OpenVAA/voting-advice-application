@@ -102,7 +102,7 @@ describe.each(TEMPLATE_NAMES)('BUILT_IN_TEMPLATES[%s] — the contestantApp root
     checked.add(name);
     const root = rootOf(name);
     const wholeRootMessage =
-      '`mergeAppSettings` replaces the contestantApp root whole, so the template must state every key';
+      'every built-in states the whole contestantApp root (see the file docblock); a key added to dynamicSettings.contestantApp must be stated here too';
     expect(sortedKeys(root), wholeRootMessage).toBe(sortedKeys(dynamicSettings.contestantApp));
     expect(sortedKeys(root.questions), wholeRootMessage).toBe(sortedKeys(dynamicSettings.contestantApp.questions));
   });

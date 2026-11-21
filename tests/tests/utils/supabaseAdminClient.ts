@@ -730,29 +730,6 @@ export class SupabaseAdminClient extends DevSeedAdminClient {
     return (candidates ?? []).map((candidate) => candidate.id as string);
   }
 
-  /**
-   * The auth user holding the candidate-editor grant on a candidate, if any.
-   *
-   * At most one user can hold it: the schema admits one editor per candidate.
-   *
-   * @param candidateId - The candidate whose editor is looked up.
-   * @returns The user id, or null when no grant names the candidate.
-   * @throws Error if the query fails.
-   */
-  async userIdForCandidate(candidateId: string): Promise<string | null> {
-    const { data: grant, error } = await this.client
-      .from('grants')
-      .select('user_id')
-      .eq('scope', 'entity')
-      .eq('target_type', 'candidate')
-      .eq('target_id', candidateId)
-      .eq('role', 'editor')
-      .maybeSingle();
-    if (error) throw new Error(`userIdForCandidate: ${error.message}`);
-    const userId: unknown = grant?.user_id;
-    return typeof userId === 'string' ? userId : null;
-  }
-
   // ---------------------------------------------------------------------------
   // Entity-editor grants
   // ---------------------------------------------------------------------------

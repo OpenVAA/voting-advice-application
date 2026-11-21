@@ -14,7 +14,7 @@ Accesses `LayoutContext`.
 
 - `icon`: The optional name of the icon to use with the navigation item. See the `Icon` component for more details.
 - `text`: The text to display in the navigation item.
-- `disabled`: Whether the button is disabled. This can also be used with items rendered as `<a>` elements.
+- `disabled`: Whether the button is disabled, which dims it. This can also be used with items rendered as `<a>` elements.
 - `disabledReason`: The sentence a click on the disabled item shows under it. With it, the disabled item stays operable.
 - `disabledReasonProps`: Any valid attributes of the `<p>` element that holds the shown reason.
 - `autoCloseNav`: Whether the menu available from the page context should be closed when the item is clicked. Default: `true`
