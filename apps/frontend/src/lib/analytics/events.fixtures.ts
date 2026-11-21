@@ -102,7 +102,7 @@ export const VALID_EVENTS = {
     name: 'results_browse_entity',
     ago: 800,
     visitId: SAMPLE_VISIT_ID,
-    attributes: { entityType: 'organization', entityId: SAMPLE_OTHER_ID }
+    attributes: { entityType: 'organization' }
   },
   results_changeElection: {
     name: 'results_changeElection',
@@ -126,7 +126,7 @@ export const VALID_EVENTS = {
     name: 'results_ranked_entity',
     ago: 800,
     visitId: SAMPLE_VISIT_ID,
-    attributes: { entityType: 'candidate', entityId: SAMPLE_OTHER_ID, score: 73 }
+    attributes: { entityType: 'candidate', score: 73 }
   },
   survey_opened: { name: 'survey_opened', ago: 0, visitId: SAMPLE_VISIT_ID, attributes: {} },
   video: {

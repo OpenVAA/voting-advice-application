@@ -128,11 +128,10 @@ The sibling `+page.ts` guards the two impossible shapes: a matcher fallthrough (
   $effect(() => {
     if (!drawerVisible || !drawerEntity) return;
     const entityType = page.params.entity as EntityType;
-    const entityId = page.params.id!;
     if (isMatch(drawerEntity)) {
-      track('results_ranked_entity', { entityType, entityId, score: drawerEntity.score });
+      track('results_ranked_entity', { entityType, score: drawerEntity.score });
     } else {
-      track('results_browse_entity', { entityType, entityId });
+      track('results_browse_entity', { entityType });
     }
   });
 

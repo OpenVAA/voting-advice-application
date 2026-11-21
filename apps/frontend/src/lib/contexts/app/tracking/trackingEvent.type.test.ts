@@ -19,7 +19,9 @@ function vocabularyControls(tracking: TrackingService): void {
   // @ts-expect-error -- a name outside the vocabulary
   track('not_an_event');
   // @ts-expect-error -- a former template name in its expanded form
-  track('results_ranked_candidate', { entityType: 'candidate', entityId: 'c1', score: 50 });
+  track('results_ranked_candidate', { entityType: 'candidate', score: 50 });
+  // @ts-expect-error -- the drawer events never carry the id of the entity the voter opened
+  track('results_ranked_entity', { entityType: 'candidate', entityId: 'c1', score: 50 });
   // @ts-expect-error -- free text is not an attribute of the feedback events
   track('feedback_sent', { rating: 5, description: 'typed text' });
   // @ts-expect-error -- the filter names are not an attribute of filters_active

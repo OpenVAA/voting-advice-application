@@ -238,7 +238,7 @@ export const EventSchema = z.discriminatedUnion('name', [
   z.strictObject({
     name: z.literal('results_browse_entity'),
     ...COMMON,
-    attributes: z.strictObject({ entityType: EntityTypeSchema, entityId: IdSchema })
+    attributes: z.strictObject({ entityType: EntityTypeSchema })
   }),
   z.strictObject({
     name: z.literal('results_changeElection'),
@@ -264,7 +264,6 @@ export const EventSchema = z.discriminatedUnion('name', [
     ...COMMON,
     attributes: z.strictObject({
       entityType: EntityTypeSchema,
-      entityId: IdSchema,
       /** The match score, a whole percentage. */
       score: z.number().int().min(0).max(100)
     })
