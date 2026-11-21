@@ -407,6 +407,14 @@ Step 6.
    aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names secretsmanager:GetSecretValue kms:Decrypt --query "$Q" --output text | sed 's/^/s8b_decision=/'
    ```
 
+   (b2) The plan role, data reads outside the pipeline state: an object in another bucket and the
+   events of a log group:
+
+   ```bash
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject s3:GetObjectVersion --resource-arns "arn:aws:s3:::openvaa-example-bucket/any-object" --query "$Q" --output text | sed 's/^/s8b2a_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names logs:GetLogEvents logs:FilterLogEvents logs:StartQuery logs:GetQueryResults --query "$Q" --output text | sed 's/^/s8b2b_decision=/'
+   ```
+
    (c) The plan role, the lock object, which the backend reads, writes and deletes:
 
    ```bash
@@ -446,7 +454,8 @@ Step 6.
    ```
 
    Expected for the plan role: `explicitDeny` for the object under `hand/` and `allowed` for the
-   object under `pipeline/` in (a), `explicitDeny` twice in (b), `allowed` three times in (c), and
+   object under `pipeline/` in (a), `explicitDeny` twice in (b), `explicitDeny` twice in
+   `s8b2a_decision` and four times in `s8b2b_decision`, `allowed` three times in (c), and
    `allowed` in both lines of (d). Expected for the deploy role: `allowed` twice in (e), `allowed`
    three times in (f), `allowed` in `s8g1_decision` and `implicitDeny` in `s8g2_decision`, and
    `implicitDeny` in (h).

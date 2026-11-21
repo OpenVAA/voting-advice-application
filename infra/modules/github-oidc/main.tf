@@ -1,3 +1,6 @@
+# The GitHub OIDC provider of one AWS account, the plan role and one environment's deploy role. AWS
+# allows one provider per issuer URL in an account, so the module is called once per account.
+
 terraform {
   required_version = ">= 1.10"
 
@@ -17,9 +20,10 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 # A trust policy is a role's resource policy, so it is outside the repository's rule against an inline
-# policy. The subjects are name-based (repo:OWNER/REPO:...): a rename or transfer of the repository, or
-# an opt-in to the id-bearing subject format, stops both roles being assumable until the subjects are
-# changed and this module's root is applied again. Every condition is an exact match.
+# policy. Every condition is an exact match on the subjects the caller gives, in either of GitHub's two
+# subject forms. A name-based subject stops matching after a rename or transfer of the repository.
+# Setting github_repository_id and github_repository_owner_id adds conditions on the numeric ids, which
+# survive a rename.
 data "aws_iam_policy_document" "plan_trust" {
   statement {
     effect  = "Allow"

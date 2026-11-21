@@ -2,6 +2,8 @@
 # role attachment. Two consequences for the roots these roles work on:
 # - The plan role is denied secret reads and decryption, so the root it plans must hold no secret value
 #   that a refresh has to read; such a root refers to a secret by its ARN.
+# - The plan role is denied every S3 object outside the pipeline/ prefix and every log event, so the
+#   root it plans must not read an object or a log as a data source.
 # - The deploy role gains further permissions only through this module, which is applied by hand, so the
 #   pipeline can never widen its own access.
 
@@ -106,6 +108,23 @@ data "aws_iam_policy_document" "plan_deny" {
       "kms:Decrypt",
     ]
     resources = ["*"]
+  }
+
+  # The managed read-only policy also reads data: the objects of every bucket and the events of every
+  # log group. A plan needs neither, so the only objects left readable are those under the state
+  # bucket's pipeline/ prefix, and no log event is readable at all.
+  statement {
+    sid    = "DenyDataReads"
+    effect = "Deny"
+    actions = [
+      "logs:GetLogEvents",
+      "logs:FilterLogEvents",
+      "logs:StartQuery",
+      "logs:GetQueryResults",
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+    ]
+    not_resources = ["${var.state_bucket_arn}/pipeline/*"]
   }
 }
 
