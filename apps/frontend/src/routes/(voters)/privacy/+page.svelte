@@ -6,7 +6,7 @@ Displays information about the privacy policy of the app as well as the possible
 
 ### Settings
 
-- `analytics.trackEvents`: Affects whether the usage events are described and whether the `DataConsent` component is shown.
+- `analytics.trackEvents`: Affects whether the usage events and the survey notice are described and whether the `DataConsent` component is shown.
 - `survey.linkTemplate`: Affects whether the survey notice is shown.
 
 ### Analytics
@@ -16,7 +16,7 @@ Read from `ctx.analyticsPolicy.current`:
 - `projection.active`: Whether the analytics section is shown. The page-view count and the Global Privacy Control rule are always shown in it.
 - `trackEvents`: Whether the section describes the usage events at all. With it off only the page view is sent, so the section describes only the page-view count.
 - `projection.consentMode`: Which description of the usage events is shown, `privacy.analytics.content.gated` or `privacy.analytics.content.free`.
-- `projection.visitIdMode`: With `memory`, and a `survey.linkTemplate` that holds the `{sessionId}` placeholder, the section says that the visit id is added to the survey link (`privacy.analytics.survey`).
+- `projection.visitIdMode`: With `memory`, `trackEvents` on and a `survey.linkTemplate` that holds the `{sessionId}` placeholder, the section says that the visit id is added to the survey link (`privacy.analytics.survey`). With `trackEvents` off no visit id is filled into the link, so the notice is not shown.
 - The `DataConsent` component is shown only when the visitor has a choice to make: the relay is usable (`relayUsable`, so not under Global Privacy Control), `trackEvents` is on and the consent mode is `gated`.
 -->
 
@@ -26,6 +26,7 @@ Read from `ctx.analyticsPolicy.current`:
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getAppContext } from '$lib/contexts/app';
+  import { linkTemplateCarriesVisitId } from '$lib/contexts/app/survey.svelte';
   import { relayUsable } from '$lib/contexts/app/tracking/sendPolicy';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { DataConsent } from '$lib/dynamic-components/dataConsent';
@@ -39,9 +40,11 @@ Read from `ctx.analyticsPolicy.current`:
   const showConsentControl = $derived(
     policy.trackEvents && policy.projection.consentMode === 'gated' && relayUsable(policy)
   );
-  // The survey link carries the visit id only when its template holds the placeholder and the visit has an id.
+  // The survey link carries the visit id only when its template holds the placeholder, the visit has an id and events are tracked at all.
   const showSurveyNotice = $derived(
-    policy.projection.visitIdMode === 'memory' && /\{\s*sessionId\s*\}/.test(ctx.appSettings.survey?.linkTemplate ?? '')
+    policy.trackEvents &&
+      policy.projection.visitIdMode === 'memory' &&
+      linkTemplateCarriesVisitId(ctx.appSettings.survey?.linkTemplate)
   );
 
   const { topBarSettings } = getLayoutContext();

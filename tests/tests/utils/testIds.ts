@@ -317,7 +317,7 @@ export const testIds = {
       container: 'contestant-set-password-gate'
     },
     identityProviderError: {
-      // The identity provider's error screen. Carries data-error-class="cancelled" | "retry" | "noRetry".
+      // The identity provider's error screen. Carries data-error-class="cancelled" | "retry" | "noRetry" | "noAccount".
       page: 'contestant-identity-provider-error',
       // The class's sentence.
       message: 'identity-provider-error-message',

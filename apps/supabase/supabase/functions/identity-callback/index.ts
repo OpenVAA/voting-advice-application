@@ -13,7 +13,7 @@
  *
  * The entity, its grant and the record are written before the link is generated, so the session the caller obtains already carries the grant.
  *
- * A SIGN-IN CREATES NOTHING. A request whose intent is `sign_in` runs steps 0 to 3 and then signs in the identity's existing account alone: it decides no entity type, so neither the registration modes nor the answers lock refuse it, invites no account, finds or creates no entity, writes no identity metadata and confirms nothing. The account is the one `public.identity_account_find` answers, and only when it already holds this identity's match value, as an earlier registration of the identity left it; with no such account the answer is `no_account`. A sign-in token is then generated as in step 7.
+ * A SIGN-IN CREATES NOTHING. A request whose intent is `sign_in` runs steps 0 to 3 and then signs in the identity's existing account alone: it decides no entity type, so neither the registration modes nor the answers lock refuse it, invites no account, finds or creates no entity, writes no identity metadata and confirms nothing. The account is the one `public.identity_account_find` answers, and only when it already holds this identity's match value, as an earlier registration of the identity left it; with no such account the answer is `no_account`. A sign-in token is then generated as in step 7. The decision is `signInExistingAccount` in `signIn.ts`.
  *
  * SIGN-INS THAT ARRIVE TOGETHER. Several first sign-ins of one identity can reach the function at once, from tabs or retries. The invites race for the one placeholder email and all but one fail, so a failed invite is followed by a second look-up of the account. The entity is found or created in one transaction under a lock on the account, so the requests make one entity between them. The identity metadata is written by that call too, under the same lock, and no admin update carries `app_metadata`: the auth service writes the whole of `app_metadata` from the copy it read when the update began, so such an update could undo what another request had just written.
  *
@@ -56,6 +56,7 @@ import {
 } from './requestContract.ts';
 import type { IdentityCallbackResult } from './requestContract.ts';
 import { presentsServerCredential, SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
+import { signInExistingAccount } from './signIn.ts';
 import { requireVerifyClaimBinding } from './verifyConfig.ts';
 
 const corsHeaders = {
@@ -159,8 +160,16 @@ async function handleRequest(req: Request): Promise<Response> {
     const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
     // A sign-in leaves the steps below to a registration: see the module header.
-    if (request.intent === IDENTITY_CALLBACK_INTENT.sign_in)
-      return await signInExistingAccount(supabaseAdmin, matchValue);
+    if (request.intent === IDENTITY_CALLBACK_INTENT.sign_in) {
+      const signIn = await signInExistingAccount(
+        {
+          findAccount: (value) => findIdentityAccount(supabaseAdmin, value, placeholderEmailFor(value)),
+          signInToken: (userId) => signInToken(supabaseAdmin, userId)
+        },
+        matchValue
+      );
+      return respond(signIn.result, 'token' in signIn ? signIn.token : undefined);
+    }
 
     // 4. The entity type, chosen among the types the database allows for the project. A failed read throws and is answered as `unavailable`; an answer of no type, as while the Contestant App is switched off, refuses every type.
     const { data: allowedAnswer, error: allowedError } = await supabaseAdmin.rpc('identity_provider_entity_types', {
@@ -308,24 +317,6 @@ async function verifyJwt(jwt: string): Promise<jose.JWTPayload> {
   const { payload } = await jose.jwtVerify(jwt, jose.createRemoteJWKSet(new URL(jwksUri)), { audience, issuer });
 
   return payload;
-}
-
-/**
- * Sign in the identity's existing account, for a request whose intent is `sign_in`.
- *
- * Only an account that holds this identity's match value is signed in: one an earlier registration of the identity finished. No account, one no registration has finished yet and one of another identity are each answered `no_account`, and nothing is invited, confirmed or written.
- *
- * @param supabaseAdmin - The service-role client.
- * @param matchValue - The identity's match value.
- * @returns `signed_in` with the sign-in token, or `no_account`.
- * @throws {Error & { code: string }} When the look-up or the sign-in link fails.
- */
-async function signInExistingAccount(supabaseAdmin: SupabaseClient, matchValue: string): Promise<Response> {
-  const existing = await findIdentityAccount(supabaseAdmin, matchValue, placeholderEmailFor(matchValue));
-  if (!existing || existingAccountSetup(existing.appMetadata, matchValue).kind !== 'keep') {
-    return respond(IDENTITY_CALLBACK_RESULT.no_account);
-  }
-  return respond(IDENTITY_CALLBACK_RESULT.signed_in, await signInToken(supabaseAdmin, existing.id));
 }
 
 /**

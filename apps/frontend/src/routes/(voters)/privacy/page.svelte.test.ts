@@ -6,7 +6,7 @@
  * What this file holds:
  *
  * 1. **The heading** — the page's one heading can take focus, and the root layout's post-navigation focus reset lands on it.
- * 2. **The analytics section** — the description of the usage events is shown only with `trackEvents` on, while the page-view count and the Global Privacy Control rule are shown either way. The survey notice is shown only when the survey link template holds the `{sessionId}` placeholder and the visit-id mode is `memory`. Each case has its control.
+ * 2. **The analytics section** — the description of the usage events is shown only with `trackEvents` on, while the page-view count and the Global Privacy Control rule are shown either way. The survey notice is shown only when the survey link template holds the `{sessionId}` placeholder, the visit-id mode is `memory` and `trackEvents` is on. Each case has its control.
  */
 
 import { flushSync, mount, unmount } from 'svelte';
@@ -136,15 +136,17 @@ describe('the analytics section', () => {
 
   it.each([
     { linkTemplate: DEFAULT_LINK_TEMPLATE, visitIdMode: 'memory' as const, shown: true },
+    { linkTemplate: DEFAULT_LINK_TEMPLATE, visitIdMode: 'memory' as const, trackEvents: false, shown: false },
     { linkTemplate: 'https://survey.example/?visit={ sessionId }', visitIdMode: 'memory' as const, shown: true },
     { linkTemplate: 'https://survey.example/', visitIdMode: 'memory' as const, shown: false },
     { linkTemplate: undefined, visitIdMode: 'memory' as const, shown: false },
     { linkTemplate: DEFAULT_LINK_TEMPLATE, visitIdMode: 'none' as const, shown: false }
   ])(
-    'survey link template $linkTemplate, visit-id mode $visitIdMode: survey notice shown $shown',
-    ({ linkTemplate, visitIdMode, shown }) => {
+    'survey link template $linkTemplate, visit-id mode $visitIdMode, trackEvents $trackEvents: survey notice shown $shown',
+    ({ linkTemplate, visitIdMode, trackEvents = true, shown }) => {
       box.linkTemplate = linkTemplate;
       box.visitIdMode = visitIdMode;
+      box.trackEvents = trackEvents;
 
       const text = render().textContent ?? '';
 
