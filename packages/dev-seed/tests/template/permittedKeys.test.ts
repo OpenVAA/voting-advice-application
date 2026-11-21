@@ -4,7 +4,7 @@
  * `permittedKeys(collection)` is the union of FOUR derived sources:
  *
  *   1. DB columns — `TablesInsert<T>` from `@openvaa/supabase-types`, plus every legal camelCase form derived mechanically from `FIELD_MAP`.
- *   2. Sentinels — `LINK_SENTINELS`, the const `linkJoinTables` reads.
+ *   2. Sentinels — `LINK_SENTINELS`, the const `bulkImport` and `linkQuestionScopes` read.
  *   3. Non-column fields — `NON_COLUMN_FIELDS` + `COLLECTION_NON_COLUMNS`, moved out of `bulkImport` so one declaration serves both stripping and permission.
  *   4. RPC relationship references — the `_bulk_upsert_record` per-table relationship `CASE` block. Postgres cannot iterate a TypeScript const, so source (4) is PARITY-TESTED against `apps/supabase/supabase/schema/501-bulk-operations.sql` rather than derived. That test lives here, and it fails in BOTH directions.
  *
@@ -171,7 +171,7 @@ describe('permittedKeys — source (1): DB columns and their legal camelCase for
 
 describe('permittedKeys — source (2): sentinels from LINK_SENTINELS', () => {
   /**
-   * Re-derived from the four resolution sites in `supabaseAdminClient.ts` at execution HEAD (`linkJoinTables`, `:387`; the two join blocks at `:392-398` and `:446-451`; `electionResolve` and `constResolve` called for BOTH `question_categories` and `questions`). Ten `(collection, key)` pairs.
+   * Re-derived from the resolution sites in `supabaseAdminClient.ts`: `bulkImport`, through `importLinkFor`, for the two join rules; `linkQuestionScopes`, through `planLinks`, for `_elections` and `_constituencies` on BOTH `question_categories` and `questions`. Ten `(collection, key)` pairs.
    */
   const EXPECTED_PAIRS = [
     'elections/_constituencyGroups',

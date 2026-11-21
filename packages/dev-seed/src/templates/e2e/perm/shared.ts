@@ -18,6 +18,7 @@
  * Likert-5 choices for opinion questions. Mirrors the e2e/base shape so the latent-factor emitter (ordinal dispatch) treats perm-* opinion questions identically.
  */
 
+import { mergeSettings } from '@openvaa/app-shared';
 import type { Json } from '@openvaa/supabase-types';
 import type {
   CandidatesFixedRow,
@@ -120,6 +121,11 @@ export const MINIMAL_BASE_APP_SETTINGS = {
   // `satisfies Json`, not `as const`: this object is written straight into the `app_settings.settings` JSONB column, whose type is the MUTABLE `Json`.
   // `as const` would make every nested array a readonly tuple, which `Json` rejects.
 } satisfies Json;
+
+/** The minimal base's `contestantApp` root with organizations served too, registering by no mode: the root of the datasets on which an organization's editor works. */
+export const EDITOR_CONTESTANT_APP_SETTINGS = mergeSettings(MINIMAL_BASE_APP_SETTINGS.contestantApp, {
+  servedEntityTypes: { organization: { registrationModes: [] } }
+});
 
 /**
  * Build the standard 2 question_categories (1 info + 1 opinion).

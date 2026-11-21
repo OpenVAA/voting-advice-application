@@ -17,7 +17,7 @@
  *
  * `ctx.refs[table]` carries the FULL emitted rows after each step. The public `Ctx` type in `ctx.ts` narrows each ref to `Array<{ external_id: string }>` as a MINIMAL contract — generators that need more (CandidatesGenerator's answer emitter reads `question.type` / `question.choices`) cast up explicitly. The narrower public type keeps consumers untyped-accident-free while the pipeline uses a wider internal view.
  *
- * Post-topo sentinel enrichment pass: after every generator runs, this file attaches `_constituencyGroups` onto elections, `_constituencies` onto constituency_groups, and `_elections` onto question_categories. Sentinel emission is deliberately deferred to this pass so generators themselves stay simple and each sentinel is computed from the FINAL ref graph — not the partial mid-topo state. `bulkImport` strips these `_`-prefixed fields as written and sends the first two as the items' `bulk_import` link keys, which `bulk_import` writes before any nomination; `linkJoinTables` re-reads `_elections` from the same dataset in a second pass.
+ * Post-topo sentinel enrichment pass: after every generator runs, this file attaches `_constituencyGroups` onto elections, `_constituencies` onto constituency_groups, and `_elections` onto question_categories. Sentinel emission is deliberately deferred to this pass so generators themselves stay simple and each sentinel is computed from the FINAL ref graph — not the partial mid-topo state. `bulkImport` strips these `_`-prefixed fields as written and sends the first two as the items' `bulk_import` link keys, which `bulk_import` writes before any nomination; `linkQuestionScopes` re-reads `_elections` from the same dataset in a second pass.
  */
 
 import { buildCtx } from './ctx';
@@ -124,7 +124,7 @@ const GENERATOR_CLASSES: Record<TableName, GeneratorClass> = {
  *   - `_constituencies` on every constituency_group row
  *   - `_elections` on every question_category row
  *
- * `bulkImport` strips these `_`-prefixed fields as written and sends the first two as the items' `bulk_import` link keys, which `bulk_import` writes before any nomination; `linkJoinTables` re-reads `_elections` from the same dataset in a second pass.
+ * `bulkImport` strips these `_`-prefixed fields as written and sends the first two as the items' `bulk_import` link keys, which `bulk_import` writes before any nomination; `linkQuestionScopes` re-reads `_elections` from the same dataset in a second pass.
  */
 export function runPipeline(
   template: Template,
@@ -200,14 +200,14 @@ function assignNominationSortOrder(output: Record<string, Array<Record<string, u
 /**
  * Attach `_`-prefixed sentinel fields to the rows that need them.
  *
- * `bulkImport` strips these as written and sends the first two as the items' `bulk_import` link keys; `linkJoinTables` re-reads `_elections` from the SAME input dataset in a second pass.
+ * `bulkImport` strips these as written and sends the first two as the items' `bulk_import` link keys; `linkQuestionScopes` re-reads `_elections` from the SAME input dataset in a second pass.
  *
  * Sentinels:
  *   - `election._constituencyGroups = { externalId: [...constituency_group extIds] }`
  *   - `constituency_group._constituencies = { externalId: [...constituency extIds] }`
  *   - `question_category._elections = { externalId: [...election extIds] }`
  *
- * Per-row scoping: a row that already declares scoping — via `_<sentinel>`, `<sentinel>`, or `<snake_case_sentinel>` (the four shapes `linkJoinTables` accepts in supabaseAdminClient.ts:324-330) — is left untouched. Only rows that lack any declaration receive the full-fanout default. Templates that want a realistic election→cg→constituency hierarchy declare the relationships inline on the relevant fixed[] rows; templates that want everything wired to everything (the default) omit the declarations and inherit fanout.
+ * Per-row scoping: a row that already declares scoping — via `_<sentinel>`, `<sentinel>`, or `<snake_case_sentinel>` (the key forms `LINK_SENTINELS` declares) — is left untouched. Only rows that lack any declaration receive the full-fanout default. Templates that want a realistic election→cg→constituency hierarchy declare the relationships inline on the relevant fixed[] rows; templates that want everything wired to everything (the default) omit the declarations and inherit fanout.
  */
 function attachSentinels(output: Record<string, Array<Record<string, unknown>>>): void {
   const allGroupExtIds = (output.constituency_groups ?? [])
@@ -222,10 +222,10 @@ function attachSentinels(output: Record<string, Array<Record<string, unknown>>>)
 
   // ⚠ Read this before treating the next three lines as redundant.
   //
-  // The key lists below are DERIVED from `LINK_SENTINELS`, the same array `linkJoinTables` iterates, instead of being hand-written here. That makes the set of keys which SUPPRESSES the fanout byte-identical to the set the resolver READS, for all time, because both read one declaration. It also closes two latent defects that a hand-written list reopens:
+  // The key lists below are DERIVED from `LINK_SENTINELS`, the same array `bulkImport` and `linkQuestionScopes` read, instead of being hand-written here. That makes the set of keys which SUPPRESSES the fanout byte-identical to the set the resolver READS, for all time, because both read one declaration. It also closes two latent defects that a hand-written list reopens:
   //
-  //   1. The `_constituency_groups` override hole. `linkJoinTables` reads that key on an election row; the hand-written list here did NOT check it. An author scoping an election with `_constituency_groups` was therefore not recognised as having declared scope, got overwritten with a full-fanout `_constituencyGroups`, and the resolver's `??` chain then preferred the fanout because `_constituencyGroups` comes first — the author's explicit scoping silently replaced by everything-wired-to-everything.
-  //   2. The bare-`elections` phantom. The hand-written list treated a bare `elections` array on a question-category row as declared scope and suppressed the fanout, but `linkJoinTables` reads that key on no collection, so the row ended with `election_ids = null = "all"` anyway.
+  //   1. The `_constituency_groups` override hole. `bulkImport` reads that key on an election row; the hand-written list here did NOT check it. An author scoping an election with `_constituency_groups` was therefore not recognised as having declared scope, got overwritten with a full-fanout `_constituencyGroups`, and the resolver's `??` chain then preferred the fanout because `_constituencyGroups` comes first — the author's explicit scoping silently replaced by everything-wired-to-everything.
+  //   2. The bare-`elections` phantom. The hand-written list treated a bare `elections` array on a question-category row as declared scope and suppressed the fanout, but no resolver reads that key on any collection, so the row ended with `election_ids = null = "all"` anyway.
   //      The two agreed only because the fanout would have listed every election; change the election set and they diverge.
   //
   // ⚠ What this does NOT derive: the fanout POLICY — which collections get a default at all — is the hand-written table below and stays hand-written.

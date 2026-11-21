@@ -357,7 +357,7 @@ const NON_COLUMN_FIELD_LIST = ['answersByExternalId'] as const;
  *
  * On a `questions` row the key is not a typo a spell-checker would catch; it is a plausible key on the wrong table, and it is silently stripped with nothing written from it. That is exactly what the class-(2) negative control at `tests/fixtures/negctl-questions-answers.ts` asserts. Admitting the key globally would make that control **structurally unable to fire** — a guard that cannot fail.
  *
- * Measured cost of the scoping: **zero.** Across all 33 built-ins the key occurs on `candidates` (441 rows) and `organizations` (2 rows, one in `perm-org-matching` and one in `perm-organization-editing`) and nowhere else.
+ * Measured cost of the scoping: **zero.** Across every built-in, the key occurs only on candidates and organizations.
  */
 const NON_COLUMN_FIELD_READERS = {
   answersByExternalId: ['candidates', 'organizations']
