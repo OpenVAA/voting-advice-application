@@ -11,7 +11,7 @@ export const staticSettings: StaticSettings = {
   },
   dataAdapter: {
     type: 'supabase',
-    supportsCandidateApp: true,
+    supportsContestantApp: true,
     supportsAdminApp: true,
     // Must equal PostgREST `max_rows` in apps/supabase/supabase/config.toml (50000) or a hosted project's API setting.
     pageSize: 50000
@@ -59,8 +59,5 @@ export const staticSettings: StaticSettings = {
       code: 'sv',
       name: 'Svenska'
     }
-  ],
-  analytics: {
-    trackEvents: false
-  }
+  ]
 };

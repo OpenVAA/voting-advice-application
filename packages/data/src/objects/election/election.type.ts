@@ -1,4 +1,4 @@
-import type { DataObjectData, Id } from '../../internal';
+import type { DataObjectData, Id, NominationShape } from '../../internal';
 
 export interface ElectionData extends DataObjectData {
   // From HasId
@@ -35,4 +35,8 @@ export interface ElectionData extends DataObjectData {
    * The optional current round of the election if it has multiple rounds. Defaults to 1.
    */
   round?: number | null;
+  /**
+   * The optional nomination shape of the election: which entity types it admits as nominees and which parent each may name. Defaults to `organization_list_and_independents`.
+   */
+  nominationShape?: NominationShape | null;
 }

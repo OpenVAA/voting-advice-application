@@ -137,9 +137,9 @@ describe('log', () => {
     const records = new Array<LogRecord>();
 
     configureLogger({ level: 'info', sink: (record) => records.push(record) });
-    log.info('hit', { err: new Error('x'), route: '/candidate', status: 200 });
+    log.info('hit', { err: new Error('x'), route: '/contestant', status: 200 });
 
-    expect(records[0].attributes).toEqual({ route: '/candidate', status: 200 });
+    expect(records[0].attributes).toEqual({ route: '/contestant', status: 200 });
     expect(records[0].attributes).not.toHaveProperty('err');
   });
 

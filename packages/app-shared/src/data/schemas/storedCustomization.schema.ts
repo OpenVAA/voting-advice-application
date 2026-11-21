@@ -16,11 +16,11 @@ const LocalizedStringSchema = z.record(z.string(), z.string());
  * Four measured divergences between the two:
  *
  * 1. `publisherName` is a LOCALE OBJECT in storage and a `string` in the type.
- * 2. `publisherLogo`, `poster` and `candPoster` are {@link StoredImageSchema}-shaped — a storage **path** — in storage, and `Image` — a resolved **URL** — in the type.
+ * 2. `publisherLogo`, `poster` and `contestantPoster` are {@link StoredImageSchema}-shaped — a storage **path** — in storage, and `Image` — a resolved **URL** — in the type.
  * 3. `translationOverrides` values are locale objects in storage and plain strings in the type.
- * 4. `candidateAppFAQ[].question` and `.answer` are locale objects in storage and strings in the type.
+ * 4. `contestantAppFAQ[].question` and `.answer` are locale objects in storage and strings in the type.
  *
- * Every field is optional: the column is `DEFAULT '{}'::jsonb` (`apps/supabase/supabase/schema/106-app-settings.sql:19`) and the provider returns `{}` on `PGRST116`, so `{}` MUST parse.
+ * Every field is optional: the column is `DEFAULT '{}'::jsonb` (`apps/supabase/supabase/schema/106-app-settings.sql`), and `SupabaseDataProvider._getAppCustomization` reads the row with `maybeSingle` and returns `{}` when there is none, so `{}` MUST parse.
  *
  * ## Strict at every level
  *
@@ -33,12 +33,12 @@ export const StoredCustomizationSchema = z.strictObject({
   publisherLogo: StoredImageSchema.nullable().optional(),
   /** The Voter App frontpage poster, stored as a storage path. */
   poster: StoredImageSchema.nullable().optional(),
-  /** The Candidate App frontpage poster, stored as a storage path. */
-  candPoster: StoredImageSchema.nullable().optional(),
+  /** The Contestant App frontpage poster, stored as a storage path. */
+  contestantPoster: StoredImageSchema.nullable().optional(),
   /** Translation overrides keyed by translation key, each value a locale object. */
   translationOverrides: z.record(z.string(), LocalizedStringSchema).optional(),
-  /** Candidate App FAQ entries, each field a locale object. */
-  candidateAppFAQ: z
+  /** Contestant App FAQ entries, each field a locale object. */
+  contestantAppFAQ: z
     .array(
       z.strictObject({
         question: LocalizedStringSchema,

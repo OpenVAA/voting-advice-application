@@ -15,13 +15,17 @@ export type CustomData = {
      * A nomination can be marked as unconfirmed if the candidate registers in the app before the official electoral lists are published.
      */
     unconfirmed?: boolean;
+    /**
+     * The name of a parent organization or alliance that the nomination's editor typed in the Contestant App because the application does not list it.
+     */
+    requestedParentOrganization?: string;
   };
   /**
    * Typing of `customData` for any `Question` objects.
    */
   Question: {
     /**
-     * Whether an open answer can be added in the Candidate App.
+     * Whether an open answer can be added in the Contestant App.
      */
     allowOpen?: boolean;
     /**
@@ -41,7 +45,7 @@ export type CustomData = {
      */
     hero?: HeroContent;
     /**
-     * If `true`, the question will be hidden in the Voter App but still visible in the Candidate App. Default `false`.
+     * If `true`, the question will be hidden in the Voter App but still visible in the Contestant App. Default `false`.
      */
     hidden?: boolean;
     /**

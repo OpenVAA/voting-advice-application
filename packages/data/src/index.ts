@@ -4,6 +4,7 @@
 
 export type {
   AllianceData,
+  AllowedParentTypes,
   Answer,
   Answers,
   AnswerValue,
@@ -42,6 +43,7 @@ export type {
   MultipleChoiceQuestionData,
   MultipleChoiceQuestionType,
   NominationData,
+  NominationShape,
   NominationVariant,
   NominationVariantData,
   NominationVariantPublicData,
@@ -98,6 +100,7 @@ export {
   TextQuestion
 } from './internal';
 export {
+  allowedParentTypes,
   createQuestion,
   ensureArray,
   ensureBoolean,
@@ -116,6 +119,7 @@ export {
   isEntityType,
   isLocalizedValue,
   isMultipleChoiceQuestion,
+  isNominableInShape,
   isNomination,
   isNumberQuestion,
   isObjectType,
@@ -129,8 +133,10 @@ export {
 } from './internal';
 export {
   CHOICE_QUESTION_TYPE,
+  DEFAULT_NOMINATION_SHAPE,
   ENTITY_TYPE,
   MULTIPLE_CHOICE_QUESTION_TYPE,
+  NOMINATION_SHAPE,
   OBJECT_TYPE,
   QUESTION_CATEGORY_TYPE,
   QUESTION_TYPE,

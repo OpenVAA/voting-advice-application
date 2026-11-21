@@ -42,7 +42,7 @@ type WithReturns<F extends keyof GeneratedFunctions, Row> = Omit<GeneratedFuncti
 /**
  * The complete set of RPC return-row corrections. Consumed only by `database.merged.ts`.
  *
- * Columns absent from a member are non-null by evidence, not by omission. On `get_nominations` those are the primary key, the two scope keys, the entity discriminator, and the derived entity key — the last of which is non-null only because the function's WHERE clause drops every row whose entity joins all resolved to NULL. On `get_candidate_user_data` they are the primary key and the project key, which both UNION branches select from a real row.
+ * Columns absent from a member are non-null by evidence, not by omission. On `get_nominations` those are the primary key, the two scope keys, the entity discriminator, and the derived entity key — the last of which is non-null only because the function's WHERE clause drops every row whose entity joins all resolved to NULL. On `get_entity_user_data` they are the primary key and the project key, which both UNION branches select from a real row.
  */
 export type FunctionReturnOverrides = {
   get_nominations: WithReturns<
@@ -64,8 +64,8 @@ export type FunctionReturnOverrides = {
       | 'entity_last_name'
     >
   >;
-  get_candidate_user_data: WithReturns<
-    'get_candidate_user_data',
-    Nullable<'get_candidate_user_data', 'first_name' | 'last_name' | 'subtype' | 'sort_order' | 'terms_of_use_accepted'>
+  get_entity_user_data: WithReturns<
+    'get_entity_user_data',
+    Nullable<'get_entity_user_data', 'first_name' | 'last_name' | 'subtype' | 'sort_order'>
   >;
 };

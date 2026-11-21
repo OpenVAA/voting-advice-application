@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import {
+  canonicalMembersOf,
+  CONTESTANT_EDITING_VALUES,
+  REGISTRATION_MODES
+} from '../../settings/contestantAppSettings';
 
 /**
  * A localised string as it is stored: an object keyed by locale. Mirrors `LocalizedString` in `../localized.type`.
@@ -32,22 +37,41 @@ const CardContentSchema = z.union([
 ]);
 
 /**
+ * The stored form of one served entity type's entry under `contestantApp.servedEntityTypes`: the registration modes allowed for that type, possibly none. The parsed list holds each named mode once, in the order of `REGISTRATION_MODES`, so two lists that name the same modes parse to equal values. A value outside the vocabulary fails the parse; it is never dropped from the list.
+ */
+const ServedEntityTypeSchema = z.strictObject({
+  registrationModes: z
+    .array(z.enum(REGISTRATION_MODES))
+    .transform((modes) => canonicalMembersOf(REGISTRATION_MODES, modes))
+});
+
+/**
+ * The stored form of `contestantApp.servedEntityTypes`: a map keyed by served entity type, with at least one key. A key outside the vocabulary fails the parse.
+ */
+const ServedEntityTypesSchema = z
+  .strictObject({
+    candidate: ServedEntityTypeSchema.optional(),
+    organization: ServedEntityTypeSchema.optional()
+  })
+  .refine((served) => Object.keys(served).length > 0, { message: 'At least one entity type must be served' });
+
+/**
  * The stored shape of the `app_settings.settings` JSONB column.
  *
  * ## Stored, not application
  *
  * The APPLICATION type is `DynamicSettings` (`../../settings/dynamicSettings.type`), which stays hand-written because it is the published contract; this schema describes the STORED variant of it and is deliberately NOT the source of that type. The two differ in exactly two ways:
  *
- * 1. **Every field is optional here.** The column is `NOT NULL DEFAULT '{}'::jsonb` (`apps/supabase/supabase/schema/106-app-settings.sql:9`) and `SupabaseDataProvider._getAppSettings` returns `{}` on `PGRST116`, so `{}` MUST parse. The provider merges the parsed value over the shipped `dynamicSettings` defaults, which is where the required members come from.
+ * 1. **Every field is optional here.** The column is `NOT NULL DEFAULT '{}'::jsonb` (`apps/supabase/supabase/schema/106-app-settings.sql`), and `SupabaseDataProvider._getAppSettings` reads the row with `maybeSingle`, so `{}` MUST parse. The provider merges the parsed value over the shipped `dynamicSettings` defaults, which is where the required members come from.
  *
- *    The claim is load-bearing rather than decorative, so it is stated as a rule the schema is checked against: a required INNER member reopens the same failure mode as a missing top-level one, because the provider degrades a failed parse of any depth to `{}` and takes every sibling setting down with it. `analytics.platform.{name,code,infoUrl}` and `survey.{linkTemplate,showIn}` were required and are no longer; `storedSettings.schema.test.ts` pins a partial payload for each, asserting on a SIBLING setting. The one member that stays required is `CardContentSchema`'s `question`, which is not a settings field but the identifier of that union arm — optional there would make the arm match `{}`.
+ *    The claim is load-bearing rather than decorative, so it is stated as a rule the schema is checked against: a required INNER member that is missing fails its whole top-level member, because the provider parses with `parseWithPartialPreserve`, which drops the top-level member a failed parse at any depth lies under and keeps the other members. One rejected value inside `contestantApp.servedEntityTypes`, for example, drops the whole stored `contestantApp` root, and the shipped default applies to all of it. `contestantApp.questions` is the exception: an invalid one parses as absent, so it never resets the served entity types beside it. `survey.{linkTemplate,showIn}` are optional for this reason, and `storedSettings.schema.test.ts` pins a partial payload, asserting on a SIBLING setting. The one member that stays required is `CardContentSchema`'s `question`, which is not a settings field but the identifier of that union arm — optional there would make the arm match `{}`.
  *
  *    A member being optional does NOT mean an unknown member is tolerated; see the strictness note below. Optionality is about members this schema KNOWS and a writer may omit.
  * 2. **`notifications.*.title` and `.content` stay locale objects.** See {@link StoredNotificationSchema}.
  *
  * ## Strict at EVERY level
  *
- * Strictness is a PER-OBJECT setting and does not descend — measured at this tree's zod (4.3.6) and recorded verbatim at `packages/dev-seed/src/template/schema.ts:35-41`. This column is three levels deep at `settings` -> `notifications` -> `candidateApp`, so a top-level-only strict schema would parse an unknown key at either inner level with SUCCESS and silently strip it. `storedSettings.schema.test.ts` holds one rejection case per level.
+ * Strictness is a PER-OBJECT setting in zod and does not descend. This column nests objects three deep, as at `settings` -> `notifications` -> `contestantApp`, and four deep at `settings` -> `contestantApp` -> `servedEntityTypes` -> `candidate` and where a `results.cardContents` list holds a question object, so a top-level-only strict schema would parse an unknown key at any inner level with SUCCESS and silently strip it. Every object in this schema is therefore its own `z.strictObject`. `storedSettings.schema.test.ts` holds an unknown-key rejection case for the top level and for `notifications`, `notifications.contestantApp`, `analytics`, `contestantApp`, `contestantApp.servedEntityTypes` and `contestantApp.servedEntityTypes.candidate`.
  */
 export const StoredSettingsSchema = z.strictObject({
   survey: z
@@ -85,7 +109,9 @@ export const StoredSettingsSchema = z.strictObject({
     .optional(),
   entities: z
     .strictObject({
-      hideIfMissingAnswers: z.strictObject({ candidate: z.boolean().optional() }).optional(),
+      hideIfMissingAnswers: z
+        .strictObject({ candidate: z.boolean().optional(), organization: z.boolean().optional() })
+        .optional(),
       showAllNominations: z.boolean().optional()
     })
     .optional(),
@@ -129,42 +155,33 @@ export const StoredSettingsSchema = z.strictObject({
     .optional(),
   access: z
     .strictObject({
-      candidateApp: z.boolean().optional(),
+      contestantApp: z.boolean().optional(),
       voterApp: z.boolean().optional(),
       adminApp: z.boolean().optional(),
       underMaintenance: z.boolean().optional(),
-      answersLocked: z.boolean().optional()
+      contestantEditing: z.enum(CONTESTANT_EDITING_VALUES).optional()
     })
     .optional(),
   notifications: z
     .strictObject({
-      candidateApp: StoredNotificationSchema.nullable().optional(),
+      contestantApp: StoredNotificationSchema.nullable().optional(),
       voterApp: StoredNotificationSchema.nullable().optional()
     })
     .optional(),
-  candidateApp: z
+  contestantApp: z
     .strictObject({
-      questions: z.strictObject({ hideVideo: z.boolean().optional(), hideHero: z.boolean().optional() }).optional()
+      questions: z
+        .strictObject({ hideVideo: z.boolean().optional(), hideHero: z.boolean().optional() })
+        .optional()
+        .catch(undefined),
+      servedEntityTypes: ServedEntityTypesSchema.optional()
     })
     .optional(),
-  preRegistration: z.strictObject({ enabled: z.boolean().optional() }).optional(),
   /**
-   * `analytics` is declared on `StaticSettings` rather than on `DynamicSettings`, and it is nonetheless a REAL member of this column: the stored blob is merged over the shipped settings, so an operator overrides `trackEvents` — and supplies the `platform` object that makes the frontend mount its analytics integration at all — by writing this key here. `apps/frontend/src/routes/(voters)/(located)/+layout.svelte` documents both fields as settings that change behaviour, `trackingService.svelte.ts` reads `appSettings.current.analytics.trackEvents` in its consent gate, and `DataConsent.svelte` reads `appSettings.analytics.platform`.
-   *
-   * It was absent from this strict schema until `157-18`, which meant every stored blob carrying it was rejected WHOLESALE — and, because the provider degrades a failed parse to `{}`, silently stripped of every unrelated setting too. That is 23 `@openvaa/dev-seed` perm templates via `MINIMAL_BASE_APP_SETTINGS`, plus `perm-analytics-tracking`, plus any real deployment that has ever turned tracking on.
-   *
-   * `platform.name` is `z.string()` rather than `z.literal('umami')` deliberately, for the reason `CardContentSchema` above gives: a blob written against a newer app version that supports a second platform must not be rejected wholesale by an older reader, whose own switch already ignores a platform it does not implement.
+   * `analytics` is a dynamic setting stored in this column. Its one member, `trackEvents`, says whether usage events other than the identifier-free page-view count are collected; `trackingService.svelte.ts` reads it in its gate and `TermsOfUse.svelte` in its usage-data section. The analytics provider is server configuration and has no member here, so a stored row that names one fails this strict object at the path `analytics`, and the provider's partial-preserve parse drops the whole `analytics` member and keeps the sibling settings.
    */
   analytics: z
     .strictObject({
-      platform: z
-        .strictObject({
-          name: z.string().optional(),
-          code: z.string().optional(),
-          // Absent whenever an operator arms tracking without authoring a privacy URL, which is an ordinary act: `DataConsent.svelte` and `DataConsentInfoButton.svelte` both read this through `?.`, so the frontend tolerates its absence and this schema must too.
-          infoUrl: z.string().optional()
-        })
-        .optional(),
       trackEvents: z.boolean().optional()
     })
     .optional()

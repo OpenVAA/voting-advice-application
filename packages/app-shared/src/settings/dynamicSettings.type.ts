@@ -1,6 +1,7 @@
 import type { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 import type { LocalizedString } from '../data/localized.type';
+import type { ContestantEditing, RegistrationMode, ServedEntityType } from './contestantAppSettings';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
@@ -11,7 +12,7 @@ export type DynamicSettings = {
    */
   survey?: {
     /**
-     * The link to the survey. This is passed to the translation function, which will replace `{sessionId}` with the URL-encoded session id if available or an empty string otherwise.
+     * The link to the survey. This is passed to the translation function, which replaces `{sessionId}` with the in-memory visit id when this visitor's usage events carry it, and with nothing otherwise. The placeholder keeps its published name: it is the one place the visit id is spelled `sessionId`.
      */
     linkTemplate: string;
     /**
@@ -75,7 +76,7 @@ export type DynamicSettings = {
        */
       bgColor?: string;
       /**
-       * Background color of the header when it’s over an image.
+       * Background color of the header’s top bar on a page that sets a header image. The image is drawn below the top bar, in the header.
        */
       overImgBgColor?: string;
     };
@@ -88,7 +89,7 @@ export type DynamicSettings = {
        */
       bgColor?: string;
       /**
-       * Background color of the header when it’s over an image.
+       * Background color of the header’s top bar on a page that sets a header image. The image is drawn below the top bar, in the header.
        */
       overImgBgColor?: string;
     };
@@ -106,13 +107,17 @@ export type DynamicSettings = {
    */
   entities: {
     /**
-     * Settings controlling whether entites with missing answers should be shown. This is currently only supported for candidates.
+     * Settings controlling whether entites with missing answers should be shown. Each served entity type has a key of its own, and each key decides for its own type alone.
      */
     hideIfMissingAnswers: {
       /**
        * Whether to hide candidates with missing answers in the app.
        */
       [ENTITY_TYPE.Candidate]: boolean;
+      /**
+       * Whether to hide organizations that lack an answer to an opinion question addressed to organizations.
+       */
+      [ENTITY_TYPE.Organization]: boolean;
     };
     /**
      * Whether to show the `/nominations` route on which all nominations in the app are shown.
@@ -244,11 +249,11 @@ export type DynamicSettings = {
      */
     sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization | typeof ENTITY_TYPE.Alliance>;
     /**
-     * If defined, a feedback popup will be shown on the next page load, when the user has reached the results section and the number of seconds given by this value has passed. The popup will not be shown, if the user has already given some feedback.
+     * The delay in seconds after which a feedback popup will be shown on the next page load, when the user has reached the results section. The popup will not be shown, if the user has already given some feedback. A value of `0` disables the popup; a stored value that leaves this member out keeps the shipped default.
      */
     showFeedbackPopup?: number;
     /**
-     * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the relevant `analytics.survey` settings are defined and if the user has not already opened the survey.
+     * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the `survey` settings are defined and if the user has not already opened the survey. A value of `0` disables the popup; a stored value that leaves this member out keeps the shipped default.
      */
     showSurveyPopup?: number;
   };
@@ -274,9 +279,9 @@ export type DynamicSettings = {
    */
   access: {
     /**
-     * If `true`, the Candidate App can be accessed.
+     * If `true`, the Contestant App can be accessed. While it is `false`, entity invitations are not honoured and the identity provider registers no one.
      */
-    candidateApp: boolean;
+    contestantApp: boolean;
     /**
      * If `true`, the Voter App can be accessed.
      */
@@ -290,49 +295,58 @@ export type DynamicSettings = {
      */
     underMaintenance?: boolean;
     /**
-     * If `true`, candidates can no longer edit their answers.
+     * How far an entity's own users may edit the entity: `open`, everything; `nominationsLocked`, everything but its nominations; `locked`, nothing of it (its answers, profile, images and nominations), and no contestant may register. Project editors and admins are bound by none of these. The database enforces the value from this same stored key, so the app only reads it to say so.
+     * @default 'open'
      */
-    answersLocked?: boolean;
+    contestantEditing?: ContestantEditing;
   };
   /**
    * Settings related to important notifications shown to users.
    */
   notifications: {
     /**
-     * The notification shown to users of the Candidate App.
+     * The notification shown to users of the Contestant App.
      */
-    candidateApp?: NotificationData | null;
+    contestantApp?: NotificationData | null;
     /**
      * The notification shown to users of the Voter App.
      */
     voterApp?: NotificationData | null;
   };
   /**
-   * Settings related to the Candidate App.
+   * Settings related to the Contestant App.
    */
-  candidateApp: {
+  contestantApp: {
     /**
-     * Settings related to the question view in the Candidate App.
+     * Settings related to the question view in the Contestant App.
      */
     questions: {
       /**
-       * Whether to hide possible video content for questions in the Candidate App.
+       * Whether to hide possible video content for questions in the Contestant App.
        */
       hideVideo: boolean;
       /**
-       * Whether to hide possible hero content for questions in the Candidate App.
+       * Whether to hide possible hero content for questions in the Contestant App.
        */
       hideHero: boolean;
     };
+    /**
+     * The entity types the Contestant App serves, each with the registration modes allowed for it. A type is served when it has a key here: `candidate`, `organization` or both, and never none. The app's name follows the served types. Read the served types with `getServedEntityTypes` and the modes with `getEffectiveRegistrationModes` and `isRegistrationModeAllowed`.
+     *
+     * A type's `registrationModes` lists any of `identity_provider`, `email` and `code`. A mode named twice counts once, and the list is read in the order `identity_provider`, `email`, `code` whatever order it is stored in. An empty list allows no registration for that type, and with every list empty the app offers sign-in only. An empty list also leaves every open invitation of that entity type unusable until `email` or `code` is allowed (an invitation bound to an address needs `email`, one bound to a code needs `code`), so a new project must set at least one of them for invitations to work. Allowing `identity_provider` also needs the identity provider's environment variables.
+     *
+     * A stored value replaces the shipped default whole: a type the stored value has no key for is not served.
+     */
+    servedEntityTypes: Partial<Record<ServedEntityType, { registrationModes: Array<RegistrationMode> }>>;
   };
   /**
-   * Settings related to Candidate App pre-registration. If enabled, make sure to set the relevant env variables as well. Backend/per-instance controlled (moved from `StaticSettings` to `DynamicSettings`).
+   * Settings related to usage analytics.
    */
-  preRegistration?: {
+  analytics: {
     /**
-     * Whether pre-registration is enabled for the Candidate App.
+     * Whether usage events other than the identifier-free page-view count are collected. The analytics provider, the consent mode and the visit-id mode are deployment configuration of the server and are not settings.
      */
-    enabled?: boolean;
+    trackEvents: boolean;
   };
 };
 

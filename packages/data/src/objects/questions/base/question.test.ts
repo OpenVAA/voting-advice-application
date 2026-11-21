@@ -1,5 +1,11 @@
-import { expect, test } from 'vitest';
-import { DataRoot, FILTER_NONE_APPLICABLE, isFilterNoneApplicable, MultipleTextQuestion } from '../../../internal';
+import { describe, expect, test } from 'vitest';
+import {
+  DataRoot,
+  FILTER_NONE_APPLICABLE,
+  isFilterNoneApplicable,
+  MultipleTextQuestion,
+  NumberQuestion
+} from '../../../internal';
 import { getTestData, getTestDataRoot } from '../../../testUtils';
 import type { AnyQuestionVariantData, Constituency, Election, QuestionCategoryData } from '../../../internal';
 
@@ -31,6 +37,39 @@ test('Should format answer', () => {
   expect(question.formatAnswer({ answer: { value: ['Hello, World!'] }, map: (v: string) => `PREFIX ${v}` })).toBe(
     'PREFIX Hello, World!'
   );
+});
+
+describe('isAnswered', () => {
+  const question = new NumberQuestion({
+    root,
+    data: { id: 'id', type: 'number', name: 'name', categoryId: 'categoryId' }
+  });
+
+  test.each([
+    ['zero', { value: 0 }],
+    ['a number with an open answer', { value: 5, info: 'Because' }],
+    ['a numeric string that converts unequivocally', { value: '5' }]
+  ])('Should be true for %s', (_, answer) => {
+    expect(question.isAnswered(answer)).toBe(true);
+  });
+
+  test.each([
+    ['no answer', undefined],
+    ['a null answer', null],
+    ['a null value', { value: null }],
+    ['a value not valid for the question type', { value: 'not a number' }]
+  ])('Should be false for %s', (_, answer) => {
+    expect(question.isAnswered(answer)).toBe(false);
+  });
+
+  test('Should be false for an empty value the question type accepts', () => {
+    const multipleText = new MultipleTextQuestion({
+      root,
+      data: { id: 'id', type: 'multipleText', name: 'name', categoryId: 'categoryId' }
+    });
+    expect(multipleText.isAnswered({ value: ['Hello'] })).toBe(true);
+    expect(multipleText.isAnswered({ value: [] })).toBe(false);
+  });
 });
 
 test('Should test applicability of category as well', () => {

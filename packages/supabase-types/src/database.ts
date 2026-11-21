@@ -224,7 +224,6 @@ export type Database = {
           short_name: Json | null;
           sort_order: number | null;
           subtype: string | null;
-          terms_of_use_accepted: string | null;
           updated_at: string;
         };
         Insert: {
@@ -243,7 +242,6 @@ export type Database = {
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
-          terms_of_use_accepted?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -262,7 +260,6 @@ export type Database = {
           short_name?: Json | null;
           sort_order?: number | null;
           subtype?: string | null;
-          terms_of_use_accepted?: string | null;
           updated_at?: string;
         };
         Relationships: [
@@ -468,13 +465,13 @@ export type Database = {
           custom_data: Json | null;
           election_date: string | null;
           election_start_date: string | null;
-          election_type: Database['public']['Enums']['nomination_shape'];
           external_id: string | null;
           id: string;
           image: Json | null;
           info: Json | null;
           multiple_rounds: boolean | null;
           name: Json | null;
+          nomination_shape: Database['public']['Enums']['nomination_shape'];
           project_id: string;
           short_name: Json | null;
           sort_order: number | null;
@@ -488,13 +485,13 @@ export type Database = {
           custom_data?: Json | null;
           election_date?: string | null;
           election_start_date?: string | null;
-          election_type?: Database['public']['Enums']['nomination_shape'];
           external_id?: string | null;
           id?: string;
           image?: Json | null;
           info?: Json | null;
           multiple_rounds?: boolean | null;
           name?: Json | null;
+          nomination_shape?: Database['public']['Enums']['nomination_shape'];
           project_id: string;
           short_name?: Json | null;
           sort_order?: number | null;
@@ -508,13 +505,13 @@ export type Database = {
           custom_data?: Json | null;
           election_date?: string | null;
           election_start_date?: string | null;
-          election_type?: Database['public']['Enums']['nomination_shape'];
           external_id?: string | null;
           id?: string;
           image?: Json | null;
           info?: Json | null;
           multiple_rounds?: boolean | null;
           name?: Json | null;
+          nomination_shape?: Database['public']['Enums']['nomination_shape'];
           project_id?: string;
           short_name?: Json | null;
           sort_order?: number | null;
@@ -670,6 +667,68 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [];
+      };
+      invitations: {
+        Row: {
+          claimed_at: string | null;
+          claimed_by: string | null;
+          code_hash: string | null;
+          created_at: string;
+          created_by: string | null;
+          email: string | null;
+          expires_at: string | null;
+          id: string;
+          pending_email: string | null;
+          pending_email_at: string | null;
+          project_id: string;
+          role: Database['public']['Enums']['grant_role_type'];
+          scope: Database['public']['Enums']['grant_scope_type'];
+          target_id: string | null;
+          target_type: Database['public']['Enums']['entity_type'] | null;
+        };
+        Insert: {
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          code_hash?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          pending_email?: string | null;
+          pending_email_at?: string | null;
+          project_id: string;
+          role: Database['public']['Enums']['grant_role_type'];
+          scope: Database['public']['Enums']['grant_scope_type'];
+          target_id?: string | null;
+          target_type?: Database['public']['Enums']['entity_type'] | null;
+        };
+        Update: {
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          code_hash?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          pending_email?: string | null;
+          pending_email_at?: string | null;
+          project_id?: string;
+          role?: Database['public']['Enums']['grant_role_type'];
+          scope?: Database['public']['Enums']['grant_scope_type'];
+          target_id?: string | null;
+          target_type?: Database['public']['Enums']['entity_type'] | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'invitations_project_id_fkey';
+            columns: ['project_id'];
+            isOneToOne: false;
+            referencedRelation: 'projects';
+            referencedColumns: ['id'];
+          }
+        ];
       };
       nominations: {
         Row: {
@@ -880,7 +939,6 @@ export type Database = {
           created_at: string;
           default_locale: string;
           id: string;
-          lock_nominations: boolean;
           name: string;
           open_for_voters: boolean;
           updated_at: string;
@@ -890,7 +948,6 @@ export type Database = {
           created_at?: string;
           default_locale?: string;
           id?: string;
-          lock_nominations?: boolean;
           name: string;
           open_for_voters?: boolean;
           updated_at?: string;
@@ -900,7 +957,6 @@ export type Database = {
           created_at?: string;
           default_locale?: string;
           id?: string;
-          lock_nominations?: boolean;
           name?: string;
           open_for_voters?: boolean;
           updated_at?: string;
@@ -1094,6 +1150,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      terms_of_use_acceptances: {
+        Row: {
+          accepted_at: string;
+          project_id: string;
+          user_id: string;
+        };
+        Insert: {
+          accepted_at?: string;
+          project_id: string;
+          user_id?: string;
+        };
+        Update: {
+          accepted_at?: string;
+          project_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'terms_of_use_acceptances_project_id_fkey';
+            columns: ['project_id'];
+            isOneToOne: false;
+            referencedRelation: 'projects';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1102,10 +1184,30 @@ export type Database = {
       _bulk_upsert_record: { Args: { p_item: Json; p_project_id: string; p_table_name: string }; Returns: boolean };
       bulk_delete: { Args: { p_data: Json }; Returns: Json };
       bulk_import: { Args: { p_data: Json }; Returns: Json };
+      claim_invitations: { Args: { p_project_id: string }; Returns: Json };
+      create_invitations: {
+        Args: { p_confirm_entity: boolean; p_invitations: Json; p_project_id: string };
+        Returns: Json;
+      };
       custom_access_token_hook: { Args: { p_event: Json }; Returns: Json };
       delete_storage_object: { Args: { p_bucket: string; p_file_path: string }; Returns: undefined };
-      get_candidate_user_data: {
-        Args: { p_entity_type?: Database['public']['Enums']['entity_type']; p_project_id: string };
+      email_confirmation_release: { Args: { p_email: string }; Returns: undefined };
+      email_confirmation_request: {
+        Args: { p_email: string; p_project_id: string; p_user_id: string };
+        Returns: boolean;
+      };
+      email_invitation_hold: { Args: { p_email: string; p_project_id: string }; Returns: string };
+      get_caller_account_state: { Args: Record<PropertyKey, never>; Returns: Json };
+      get_entity_basic_data: {
+        Args: { p_entity_id: string; p_entity_type: Database['public']['Enums']['entity_type'] };
+        Returns: Json;
+      };
+      get_entity_nominations: {
+        Args: { p_entity_id: string; p_entity_type: Database['public']['Enums']['entity_type']; p_project_id: string };
+        Returns: Json;
+      };
+      get_entity_user_data: {
+        Args: { p_entity_id: string; p_entity_type: Database['public']['Enums']['entity_type']; p_project_id: string };
         Returns: {
           answers: Json;
           color: Json;
@@ -1120,14 +1222,18 @@ export type Database = {
           short_name: Json;
           sort_order: number;
           subtype: string;
-          terms_of_use_accepted: string;
         }[];
       };
-      get_entity_basic_data: {
-        Args: { p_entity_id: string; p_entity_type: Database['public']['Enums']['entity_type'] };
+      get_localized: { Args: { p_default_locale?: string; p_locale: string; p_val: Json }; Returns: string };
+      get_nomination_parent_options: {
+        Args: {
+          p_contests: Json;
+          p_entity_id: string;
+          p_entity_type: Database['public']['Enums']['entity_type'];
+          p_project_id: string;
+        };
         Returns: Json;
       };
-      get_localized: { Args: { p_default_locale?: string; p_locale: string; p_val: Json }; Returns: string };
       get_nominations: {
         Args: {
           p_constituency_id?: string;
@@ -1170,10 +1276,13 @@ export type Database = {
           subtype: string;
         }[];
       };
+      get_public_app_settings: { Args: { p_project_id: string }; Returns: Json };
       get_questions: {
         Args: { p_constituency_id?: string; p_election_id?: string; p_election_round?: number; p_project_id: string };
         Returns: Json;
       };
+      get_user_entities: { Args: { p_project_id: string }; Returns: Json };
+      get_user_project_grants: { Args: { p_project_id: string }; Returns: Json };
       grant_role_permissions: {
         Args: {
           p_role: Database['public']['Enums']['grant_role_type'];
@@ -1182,6 +1291,23 @@ export type Database = {
         };
         Returns: Database['public']['Enums']['grant_permission'][];
       };
+      identity_account_find: { Args: { p_match_value: string; p_placeholder_email: string }; Returns: Json };
+      identity_entity_find_or_create: {
+        Args: {
+          p_entity_type: Database['public']['Enums']['entity_type'];
+          p_first_name: string;
+          p_identity_metadata: Json;
+          p_last_name: string;
+          p_project_id: string;
+          p_user_id: string;
+        };
+        Returns: Json;
+      };
+      identity_provider_entity_types: { Args: { p_project_id: string }; Returns: string[] };
+      invitation_code_claimant_email: { Args: { p_code: string; p_project_id: string }; Returns: string };
+      invitation_code_status: { Args: { p_code: string; p_project_id: string }; Returns: string };
+      invitation_link_release: { Args: { p_code?: string; p_email: string; p_project_id: string }; Returns: undefined };
+      invitation_link_request: { Args: { p_code?: string; p_email?: string; p_project_id: string }; Returns: string };
       is_image: { Args: { p_val: Json }; Returns: boolean };
       is_localized_string: { Args: { p_val: Json }; Returns: boolean };
       is_valid_choice_id: { Args: { p_valid_choices: Json; p_value: Json }; Returns: boolean };
@@ -1191,7 +1317,16 @@ export type Database = {
         Returns: undefined;
       };
       merge_question_custom_data: { Args: { p_patch: Json; p_question_id: string }; Returns: Json };
+      nomination_requests_parent: { Args: { p_custom_data: Json }; Returns: boolean };
+      nomination_shape_rule: {
+        Args: {
+          p_entity_type: Database['public']['Enums']['entity_type'];
+          p_shape: Database['public']['Enums']['nomination_shape'];
+        };
+        Returns: Database['public']['Enums']['nomination_admission'];
+      };
       project_open_for_voters: { Args: { p_project_id: string }; Returns: boolean };
+      recovery_link_request: { Args: { p_email: string; p_project_id: string }; Returns: Json };
       referenced_storage_paths: { Args: { p_row: Json }; Returns: string[] };
       resolve_email_variables: {
         Args: { p_project_id: string; p_template_body?: string; p_template_subject?: string; p_user_ids: string[] };
@@ -1203,6 +1338,16 @@ export type Database = {
         }[];
       };
       resolve_external_ref: { Args: { p_project_id: string; p_ref: Json; p_target_table: string }; Returns: string };
+      send_email_hook: { Args: { event: Json }; Returns: Json };
+      set_entity_nominations: {
+        Args: {
+          p_entity_id: string;
+          p_entity_type: Database['public']['Enums']['entity_type'];
+          p_expected_versions: Json;
+          p_nominations: Json;
+        };
+        Returns: Json;
+      };
       storage_path_can: {
         Args: {
           p_id: string;
@@ -1268,7 +1413,9 @@ export type Database = {
         | 'nomination.create_parent';
       grant_role_type: 'admin' | 'editor';
       grant_scope_type: 'global' | 'account' | 'project' | 'entity';
-      nomination_shape: 'organization_only' | 'candidate_only' | 'organization_list';
+      nomination_admission: 'admitted' | 'parent_required' | 'refused';
+      nomination_shape:
+        'organization_only' | 'candidate_only' | 'organization_list' | 'organization_list_and_independents';
       question_type:
         | 'text'
         | 'number'
@@ -1419,7 +1566,13 @@ export const Constants = {
       ],
       grant_role_type: ['admin', 'editor'],
       grant_scope_type: ['global', 'account', 'project', 'entity'],
-      nomination_shape: ['organization_only', 'candidate_only', 'organization_list'],
+      nomination_admission: ['admitted', 'parent_required', 'refused'],
+      nomination_shape: [
+        'organization_only',
+        'candidate_only',
+        'organization_list',
+        'organization_list_and_independents'
+      ],
       question_type: [
         'text',
         'number',

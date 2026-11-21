@@ -40,7 +40,7 @@ export const COLUMN_MAP = {
   // ElectionData
   election_date: 'electionDate',
   election_start_date: 'electionStartDate',
-  election_type: 'electionType',
+  nomination_shape: 'nominationShape',
   multiple_rounds: 'multipleRounds',
   current_round: 'currentRound',
 
@@ -59,9 +59,6 @@ export const COLUMN_MAP = {
   // AnswerData (relational alternative)
   open_answer: 'openAnswer',
   question_id: 'questionId',
-
-  // Candidate columns
-  terms_of_use_accepted: 'termsOfUseAccepted',
 
   // External ID (used across all content tables)
   external_id: 'externalId'
