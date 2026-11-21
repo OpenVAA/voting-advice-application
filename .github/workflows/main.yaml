@@ -376,6 +376,8 @@ jobs:
       # Supabase wiring below turns CI red instead of silently reverting to a
       # green skip.
       DEV_SEED_INTEGRATION_REQUIRED: "1"
+      # The same declaration for the frontend's data writer integration test, run below.
+      CONTESTANT_WRITER_INTEGRATION_REQUIRED: "1"
 
     steps:
       - name: "Checkout source code"
@@ -409,8 +411,13 @@ jobs:
       - name: "Compile the frontend's Paraglide messages"
         run: yarn workspace @openvaa/frontend paraglide:compile
 
+      # The edge runtime reads PUBLIC_PROJECT_ID through `[edge_runtime.secrets]` in config.toml when the
+      # stack starts, and `account-access` answers every request with an internal error without it. The
+      # value is the default project of seed.sql, the one the data writer integration test works in.
       - name: "Start Supabase"
         working-directory: apps/supabase
+        env:
+          PUBLIC_PROJECT_ID: "00000000-0000-0000-0000-000000000001"
         run: supabase start
 
       # Read the connection details off the running instance rather than hard-coding the local demo
@@ -446,6 +453,18 @@ jobs:
       # row-count, relational and portrait assertions all execute.
       - name: "Run dev-seed tests (incl. the operation budget)"
         run: yarn workspace @openvaa/dev-seed test:unit
+
+      # With SUPABASE_URL set, `describe.skipIf` in the frontend's
+      # supabaseDataWriter.integration.test.ts is false, so the writer's grant scoping, frozen names
+      # and nomination-set writes execute against this instance. The frontend's workspace
+      # dependencies are built first because the test imports them as built packages, and
+      # `svelte-kit sync` writes the `.svelte-kit/tsconfig.json` the frontend's tsconfig extends,
+      # without which Vite cannot start.
+      - name: "Run the frontend data writer integration test"
+        run: |
+          yarn build --filter=@openvaa/frontend^...
+          yarn workspace @openvaa/frontend svelte-kit sync
+          yarn workspace @openvaa/frontend vitest run supabaseDataWriter.integration
 
       - name: "Stop Supabase"
         if: always()
@@ -578,12 +597,21 @@ jobs:
       - name: "Run E2E tests"
         run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch
 
+      # The consent-free spec needs the dev server in consent-free mode, and one run serves one mode,
+      # so no full-suite run collects it: the wrapper runs it alone, with the dev server started from
+      # the same environment. It runs after a failed suite too, so each verdict is reported.
+      - name: "Run the consent-free analytics E2E tests"
+        if: ${{ !cancelled() }}
+        run: PLAYWRIGHT_ANALYTICS_STANDALONE=1 ANALYTICS_PROVIDER=log ANALYTICS_CONSENT_MODE=free tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci-consent-free --no-db-reset --no-watch --project analytics-consent-free
+
       - name: "Upload the E2E run directory"
         uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-run
-          path: tests/e2e-runs/ci/
+          path: |
+            tests/e2e-runs/ci/
+            tests/e2e-runs/ci-consent-free/
           retention-days: 30
 
       - name: "Stop Supabase"
