@@ -7,7 +7,7 @@ import type { SupabaseAdapterConfig, SupabaseDatabase } from './adapters/supabas
 export type { UniversalCookie } from '$lib/supabase/universal';
 export { createSupabaseUniversalClient, SUPABASE_COOKIE_PREFIX } from '$lib/supabase/universal';
 
-// The route that deliberately runs without a session, `candidate/preregister/+layout.server.ts`, reaches the named anonymous client through this re-export for the same reason. `grep -rn 'createSupabaseAnonClient'` lists every site that runs without a session.
+// The code that deliberately runs without a session — the registration guard, the identity provider's endpoints and its error screen's load — reaches the named anonymous client through this re-export for the same reason. `grep -rn 'createSupabaseAnonClient'` lists every site that runs without a session.
 export { createSupabaseAnonClient } from '$lib/supabase/anon';
 
 // The admin job features reach the job client through this re-export for the same reason. `grep -rn 'createSupabaseJobClient'` lists every site that runs under a job's own credential rather than the request's.

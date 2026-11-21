@@ -12,6 +12,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 ### Properties
 
 - `entity`: A possibly ranked entity, e.g. candidate or a party.
+- `excludeTabs`: Tabs to leave out of the configured contents, e.g. `['children']` where the nomination graph is not loaded. When nothing is left, the `info` and `opinions` tabs are shown. Default: `[]`
 - Any valid attributes of an `<article>` element.
 
 ### Tracking events
@@ -44,10 +45,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import type { VoterContext } from '$lib/contexts/voter/voterContext.type';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
-  let { entity, ...restProps }: EntityDetailsProps = $props();
+  let { entity, excludeTabs = [], ...restProps }: EntityDetailsProps = $props();
 
   const ctx = getAppContext();
-  const { appType, startEvent, t } = ctx;
+  const { appType, track, t } = ctx;
   // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   // appType is determined at app boot and does not change at runtime; we read it once at init to decide whether voter context is available.
@@ -76,6 +77,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
           : nakedEntity.type === 'organization'
             ? ['info', 'opinions', 'children']
             : ['info', 'opinions'];
+    if (excludeTabs.length) {
+      tabs = tabs.filter((tab) => !excludeTabs.includes(tab));
+      if (!tabs.length) tabs = ['info', 'opinions'];
+    }
     return tabs.map((tab) => ({ id: tab, label: t(`entityDetails.tabs.${tab}`) }));
   });
 
@@ -126,7 +131,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   });
 
   function handleContentTabChange(tab: ContentTab): void {
-    startEvent('entityDetails_changeTab', { section: tab.id });
+    track('entityDetails_changeTab', { section: tab.id });
   }
 </script>
 

@@ -14,11 +14,11 @@ vi.mock('$app/environment', () => ({
 
 describe('answerState', () => {
   let cleanup: (() => void) | undefined;
-  let startEvent: ReturnType<typeof vi.fn>;
+  let track: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     localStorage.clear();
-    startEvent = vi.fn();
+    track = vi.fn();
   });
 
   afterEach(() => {
@@ -34,7 +34,7 @@ describe('answerState', () => {
   function setup(): AnswerState {
     let store!: AnswerState;
     cleanup = $effect.root(() => {
-      store = answerState({ startEvent: startEvent as unknown as TrackingService['startEvent'] });
+      store = answerState({ track: track as unknown as TrackingService['track'] });
     });
     flushSync();
     return store;
@@ -52,17 +52,17 @@ describe('answerState', () => {
     expect(parsed.data.q1).toEqual({ value: 3 });
   });
 
-  it('deleting an answer removes it from .answers and emits startEvent("answer_delete")', () => {
+  it('deleting an answer removes it from .answers and emits track("answer_delete")', () => {
     const store = setup();
     store.setAnswer('q1', 3);
     flushSync();
     store.deleteAnswer('q1');
     flushSync();
     expect(store.answers.q1).toBeUndefined();
-    expect(startEvent).toHaveBeenCalledWith('answer_delete', { questionId: 'q1' });
+    expect(track).toHaveBeenCalledWith('answer_delete', { questionId: 'q1' });
   });
 
-  it('reset clears .answers and emits startEvent("answer_resetAll")', () => {
+  it('reset clears .answers and emits track("answer_resetAll")', () => {
     const store = setup();
     store.setAnswer('q1', 3);
     store.setAnswer('q2', 5);
@@ -70,7 +70,7 @@ describe('answerState', () => {
     store.reset();
     flushSync();
     expect(Object.keys(store.answers)).toHaveLength(0);
-    expect(startEvent).toHaveBeenCalledWith('answer_resetAll');
+    expect(track).toHaveBeenCalledWith('answer_resetAll');
   });
 
   it('returned .answers is deep-frozen', () => {
@@ -83,18 +83,18 @@ describe('answerState', () => {
     expect(Object.isFrozen(store.answers.q1?.value)).toBe(true);
   });
 
-  it('startEvent receives the expected event names on set / delete / reset', () => {
+  it('track receives the expected event names on set / delete / reset', () => {
     const store = setup();
     store.setAnswer('q1', 7);
     flushSync();
-    expect(startEvent).toHaveBeenCalledWith('answer', { questionId: 'q1', value: 7 });
+    expect(track).toHaveBeenCalledWith('answer', { questionId: 'q1', value: 7 });
 
     store.deleteAnswer('q1');
     flushSync();
-    expect(startEvent).toHaveBeenCalledWith('answer_delete', { questionId: 'q1' });
+    expect(track).toHaveBeenCalledWith('answer_delete', { questionId: 'q1' });
 
     store.reset();
     flushSync();
-    expect(startEvent).toHaveBeenCalledWith('answer_resetAll');
+    expect(track).toHaveBeenCalledWith('answer_resetAll');
   });
 });

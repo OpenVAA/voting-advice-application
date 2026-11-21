@@ -1,0 +1,37 @@
+import { loginErrorKey, SESSION_ENDED_MESSAGES } from '$lib/auth/loginError';
+import type { TranslationKey } from '$types';
+
+/**
+ * The reasons the login screen of the Contestant App shows a notice for, as the `errorMessage` search parameter or the login page's load names them:
+ *
+ * - `loginFailed`: a signed-in user was signed out because their account's information could not be read.
+ * - `authError`: a mailed link could not be used.
+ * - `emailTaken`: a link that confirms a new address was opened with no session, and another account took that address after the link was mailed.
+ * - `loggedOutAutomatically`: a logout count ran out with no one to cancel it, and the session was ended.
+ * - `loggedOutElsewhere`: the user logged out in another tab or window.
+ */
+export type ContestantLoginError =
+  'loginFailed' | 'authError' | 'emailTaken' | 'loggedOutAutomatically' | 'loggedOutElsewhere';
+
+/**
+ * The message of each reason. None names a user name, an address, a password or the cause of the failure.
+ *
+ * - `loggedOutAutomatically` and `loggedOutElsewhere` have the shared `SESSION_ENDED_MESSAGES`.
+ */
+const CONTESTANT_LOGIN_ERROR: Record<ContestantLoginError, TranslationKey> = {
+  loginFailed: 'contestantApp.login.signedOut',
+  authError: 'contestantApp.login.linkFailed',
+  emailTaken: 'contestantApp.login.emailTaken',
+  ...SESSION_ENDED_MESSAGES
+} as const;
+
+/**
+ * Get the translation key of the notice for a reason.
+ *
+ * The reason may arrive on the address bar, so it is any text at all: see `loginErrorKey`.
+ * @param error - The value of the `errorMessage` search parameter, or the reason the login page's load answers, if any.
+ * @returns The key of the message, or `undefined` when the value is not one of the reasons.
+ */
+export function getErrorTranslationKey(error: string | null | undefined): TranslationKey | undefined {
+  return loginErrorKey(CONTESTANT_LOGIN_ERROR, error);
+}

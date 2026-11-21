@@ -1,5 +1,5 @@
 import type { Snippet } from 'svelte';
-import type { SvelteHTMLElements } from 'svelte/elements';
+import type { HTMLAttributes, SvelteHTMLElements } from 'svelte/elements';
 import type { IconName } from '$lib/components/icon';
 
 /**
@@ -22,6 +22,14 @@ export type NavItemProps = LinkOrButtonElementProps & {
    * Whether the button is disabled. This can also be used with items rendered as `<a>` elements.
    */
   disabled?: boolean;
+  /**
+   * The sentence a click on the disabled item shows under it, saying why it is disabled. With it, the disabled item stays operable: it is rendered as a button announced as unavailable, which shows and hides the sentence and neither navigates nor closes the menu.
+   */
+  disabledReason?: string;
+  /**
+   * Any valid attributes of the `<p>` element that holds the shown `disabledReason`.
+   */
+  disabledReasonProps?: HTMLAttributes<HTMLParagraphElement>;
   /**
    * Whether the menu available from the page context should be closed when the item is clicked. @default true
    */

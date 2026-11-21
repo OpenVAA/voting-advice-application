@@ -1,35 +1,34 @@
 import type { Id } from '@openvaa/core';
-import type { DataRoot } from '@openvaa/data';
+import type { DataRoot, Election } from '@openvaa/data';
 
 /**
  * Try to imply the `electionIds` in cases when they need not to be selected.
  * @param selectedConstituencyIds - If specified, only elections applicable to these constituencies will be considered.
+ * @param elections - The elections to consider, each an election of `dataRoot`. Every election of `dataRoot` when absent.
+ * @param honourDisallowSelection - Whether `appSettings.elections.disallowSelection` implies every election considered. `true` when absent; when `false`, only a single election is implied.
  * @returns An array of `Id`s if they can be implied, `undefined` otherwise.
  */
 export function getImpliedElectionIds({
   appSettings,
   dataRoot,
-  selectedConstituencyIds
+  selectedConstituencyIds,
+  elections = dataRoot.elections,
+  honourDisallowSelection = true
 }: {
   appSettings: AppSettings;
   dataRoot: DataRoot;
   selectedConstituencyIds?: Array<Id>;
+  elections?: Array<Election>;
+  honourDisallowSelection?: boolean;
 }): Array<Id> | undefined {
-  let elections = dataRoot.elections;
-  // Filter to applicable elections.
-  // `getApplicableConstituency` throws when more than one of the passed constituencies match the election's groups (e.g. a municipality and its parent region both end up in selectedConstituencyIds for an election whose cgs include both Regions and Municipalities). Treat that throw as "applicable" — the election clearly matches *something* in the selection — so that variant-startfromcg's hierarchical implied flow (variant-startfromcg.spec.ts:145) doesn't blow up the implied lookup.
+  // Filter to applicable elections: those to which one or more of the selected constituencies apply.
   if (selectedConstituencyIds?.length) {
     const constituencies = selectedConstituencyIds.map((id) => dataRoot.getConstituency(id));
-    elections = elections.filter((e) => {
-      try {
-        return !!e.getApplicableConstituency(constituencies);
-      } catch {
-        return true;
-      }
-    });
+    elections = elections.filter((e) => e.getApplicableConstituencies(constituencies).length > 0);
   }
-  // Elections can be implied if there is only one election or if the app settings disallow selection
-  if (elections.length === 1 || appSettings.elections?.disallowSelection) return elections.map((e) => e.id);
+  // Elections can be implied if there is only one election or if the app settings disallow selection and the caller honours that setting
+  if (elections.length === 1 || (honourDisallowSelection && appSettings.elections?.disallowSelection))
+    return elections.map((e) => e.id);
   return undefined;
 }
 

@@ -36,6 +36,18 @@
     {locked}
     {info} />
 
+  <Input
+    type="text-multilingual"
+    label="Text-ml (required locale)"
+    required
+    requiredLocale="en"
+    value={{ fi: 'Text in Finnish' }}
+    {onChange}
+    {locked}
+    {info} />
+
+  <Input type="password" label="Password" {locked} {info} />
+
   <Input type="textarea" label="Textarea" placeholder="This is a placeholder" {onChange} {locked} {info} />
 
   <Input
@@ -53,6 +65,8 @@
   <Input type="number" label="Number (empty)" value={undefined} {onChange} {locked} {info} />
 
   <Input type="date" label="Date" value="2024-10-13" {onChange} {locked} {info} />
+
+  <Input type="color" label="Colour" value="#2546a8" {onChange} {locked} {info} />
 
   <Input type="boolean" label="Boolean" value={true} {onChange} {locked} {info} />
 

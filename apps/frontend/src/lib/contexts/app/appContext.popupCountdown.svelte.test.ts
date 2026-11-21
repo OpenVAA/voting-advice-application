@@ -52,14 +52,22 @@ const { stubs, prefsHolder, pushed } = vi.hoisted(() => {
         },
         setDataRoot: (_v: unknown) => {}
       },
-      // tracking producer: only the six members appContext's selective forward takes.
+      // tracking producer: the producer's members, inert.
       tracking: {
-        sendTrackingEvent: { current: () => {}, set: (_v: unknown) => {} },
-        startPageview: (_href: string) => {},
-        startEvent: (_name: string) => {},
+        startPageview: (_routeId: string | null, _params: Readonly<Record<string, string | undefined>> | null) => {},
         track: (_name: string, _data?: unknown) => {},
         submitAllEvents: () => {},
-        resetAllEvents: () => {}
+        resetAllEvents: () => {},
+        setPageVisible: (_visible: boolean) => {},
+        gate: {
+          current: {
+            projection: { active: false, consentMode: 'gated', visitIdMode: 'memory' },
+            globalPrivacyControl: false,
+            trackEvents: false,
+            consent: undefined
+          }
+        },
+        visitId: { current: undefined as string | undefined }
       },
       // survey-link producer: `{ readonly current }` handle.
       survey: { current: 'https://example.invalid/survey' as string | undefined },

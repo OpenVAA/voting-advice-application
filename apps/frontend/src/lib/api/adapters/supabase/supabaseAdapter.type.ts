@@ -26,7 +26,8 @@ export type ProjectScopedTable =
   | 'nominations'
   | 'organizations'
   | 'question_categories'
-  | 'questions';
+  | 'questions'
+  | 'terms_of_use_acceptances';
 
 /**
  * The PostgREST query builder for one project-scoped table, read off `tableBuilder`'s inferred return rather than restated here, so there is one opinion about its shape rather than two.
@@ -34,9 +35,9 @@ export type ProjectScopedTable =
 type QueryBuilderFor<TTable extends ProjectScopedTable> = ReturnType<typeof tableBuilder<TTable>>;
 
 /**
- * The project-scoped view of one table: the same four operations the raw query builder offers, each with the project already applied.
+ * The project-scoped view of one table: five operations of the raw query builder, each with the project already applied.
  *
- * Reads, updates and deletes carry `project_id = <this adapter's project>` as a filter. Inserts carry it as a column instead, because an insert has no filter to carry it in, and the caller therefore does not supply `project_id` itself. No member of this type can express an operation that reaches another project's rows.
+ * Reads, updates and deletes carry `project_id = <this adapter's project>` as a filter. Inserts and upserts carry it as a column instead, because neither has a filter to carry it in, and the caller therefore does not supply `project_id` itself. No member of this type can express an operation that reaches another project's rows.
  */
 export type ScopedTableAccess<TTable extends ProjectScopedTable> = {
   /**
@@ -47,6 +48,8 @@ export type ScopedTableAccess<TTable extends ProjectScopedTable> = {
   select: QueryBuilderFor<TTable>['select'];
   /** Insert one row, with this adapter's project id supplied. */
   insert: (values: Omit<TablesInsert<TTable>, 'project_id'>) => ReturnType<QueryBuilderFor<TTable>['insert']>;
+  /** Insert one row, with this adapter's project id supplied, unless a row with the same key exists. An existing row is left as it is and is never updated. */
+  upsert: (values: Omit<TablesInsert<TTable>, 'project_id'>) => ReturnType<QueryBuilderFor<TTable>['upsert']>;
   /** Update rows of the table, filtered to this adapter's project. */
   update: (values: Omit<TablesUpdate<TTable>, 'project_id'>) => ReturnType<QueryBuilderFor<TTable>['update']>;
   /** Delete rows of the table, filtered to this adapter's project. */

@@ -9,11 +9,13 @@ Multilingual features are only available if the `locales` store contains more th
 
 - `type`: The type of input element to use. This also defines the type of the `value` prop, which of the other properties are allowed or required, and the HTML element rendered.
   - `boolean`: A boolean toggle.
+  - `color`: A colour as a hex code: a text field for the code, and the platform colour picker over a round swatch. The value is lowercase `#rrggbb` or nothing; an entry that is not a hex colour stays in the field, shows an error and leaves the value as it was.
   - `date`: A date input.
   - `image`: An image file input.
   - `multiple-text`: A row list of plain text inputs, one per value.
   - `multiple-text-multilingual`: A row list whose every row is a multilingual text input.
   - `number`: A numeric input.
+  - `password`: A masked single-line text input with a button that shows and hides what was typed. The value is written on every input event, and is masked as the server renders it. The control asks the platform not to capitalise, correct or spell-check what is typed, masked and revealed alike. The button keeps one name and says whether it is pressed with `aria-pressed`, pressed while what was typed is shown. A pointer press on the button does not take focus from the control and leaves focus on the control with the caret at the end and nothing selected; a press from the keyboard leaves focus on the button, so that the next press toggles again.
   - `select`: A select dropdown.
   - `select-multiple`: A select dropdown from which multiple options can be selected. See also the `ordered` prop.
   - `text`: A single-line text input.
@@ -26,8 +28,18 @@ Multilingual features are only available if the `locales` store contains more th
 - `info`: Additional info displayed below the input.
 - `disabled`: Works the same way as a normal `input`'s `disabled` attribute.
 - `locked`: If `locked` the input will be disabled and a lock icon is displayed.
-- `required`: If `true`, a badge will be displayed next to the input when its value is empty. @default false
+- `autocomplete`: The `autocomplete` token of the control, for an input that collects a value the browser can fill in, such as the user's own name. @default undefined
+- `name`: The name the control is submitted under in a form. @default undefined
+- `autocorrect`: Whether the browser may correct what is typed into the control, as Safari does. @default undefined
+- `passwordrules`: A rule string for browsers that suggest passwords, for the `password` kind. @default undefined
+- `required`: If `true`, a badge will be displayed next to the input when its value is empty, and the control of a kind that renders one control is marked `aria-required`. @default false
+- `requiredLocale`: The locale whose entry must not be blank, for the `text-multilingual` and `textarea-multilingual` kinds. On a `required` input, `required` is then judged on that entry instead of on the whole value, that locale's field is shown even while the translations are hidden, and the required language is named in the info line. A locale that is not a supported one is ignored. @default undefined
 - `value`: Bindable: the value of the input. Depends on the `type` prop.
+- `error`: Bindable: the message shown as the inline error. A caller sets it to put the input in error, and the input sets it itself when it refuses an entry. Cleared when the user edits the input.
+- `validate`: Whether the `url` and `email` kinds judge an entry when it is committed: refuse one that is not a URL or an address with their own error, and store a usable one without its spaces. With `false` the caller judges the entry and every entry is stored as typed. @default true
+- `commitOn`: When the single-line text kinds (`text`, `url`, `email`) take an entry in: `'change'` when it is committed, or `'input'` on every keystroke, as typed and without the judgement `validate` asks for, which then waits for the commit. @default 'change'
+- `errorTestId`: The test id of the inline error. @default 'input-error'
+- `errorReason`: A word naming why the input is in error, written on the inline error as `data-reason`. Nothing is written without one.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `options`: The options to show for a `select` or `select-multiple` input.
 - `ordered`: If `true`, enables ordering of the values of a `select-multiple` input. @default false
@@ -36,6 +48,21 @@ Multilingual features are only available if the `locales` store contains more th
 - `maxFilesize`: The maximum file size for `image` inputs. @default `20 * 1024**2` (20MB)
 - `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default t('components.input.multilingualInfo')
 - Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input, except in the case of `image` whose input is hidden.
+
+### Snippets
+
+- `imageAction`: A control for the `image` kind's row, rendered before the button that opens the file dialog, as that button's sibling.
+
+### Functions
+
+- `focus()`: Move focus to the control, or for a kind with several controls to its main one.
+- `checkValidity()`: Whether the control of a kind that renders one control reports its entry valid, as the element's own `checkValidity()` does. `false` for a kind that renders no single control.
+
+### Accessibility
+
+- The info line has the id `{id}-info` and the inline error the id `{id}-error`. Every control of the input names the ones that are rendered in its `aria-describedby`, after any `aria-describedby` the caller passed.
+- The inline error has `role="alert"`, and the control is `aria-invalid` while it is shown.
+- Each locale's field of a multilingual kind, and its language label, carries `lang`.
 
 ### Callbacks
 
@@ -59,12 +86,16 @@ Multilingual features are only available if the `locales` store contains more th
 <script lang="ts">
   import { isLocalizedString, log } from '@openvaa/app-shared';
   import { isEmptyValue } from '@openvaa/core';
+  import { flushSync, onMount } from 'svelte';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
   import { getComponentContext } from '$lib/contexts/component';
+  import { assertTranslationKey } from '$lib/i18n/utils';
+  import { toHexColor } from '$lib/utils/color/toHexColor';
   import { concatClass, getUUID } from '$lib/utils/components';
   import { checkUrl } from '$lib/utils/links';
+  import { missingRequiredLocale } from '$lib/utils/localizedText';
   import ImagePart from './parts/ImagePart.svelte';
   import MultilingualTextPart from './parts/MultilingualTextPart.svelte';
   import MultipleTextPart from './parts/MultipleTextPart.svelte';
@@ -86,6 +117,7 @@ Multilingual features are only available if the `locales` store contains more th
   import type { TranslationKey } from '$types';
   import type { InputProps } from './Input.type';
 
+  // `validate` belongs to the `url` and `email` arms only; widened here so that it can be destructured from every arm.
   let {
     type,
     label,
@@ -94,7 +126,13 @@ Multilingual features are only available if the `locales` store contains more th
     info,
     locked,
     required,
+    requiredLocale,
     value = $bindable(),
+    error = $bindable(),
+    validate = true,
+    commitOn = 'change',
+    errorTestId = 'input-error',
+    errorReason,
     onShadedBg,
     onChange,
     placeholder,
@@ -102,11 +140,13 @@ Multilingual features are only available if the `locales` store contains more th
     ordered,
     disabled,
     maxFilesize = 20 * 1024 * 1024,
+    imageAction,
     multilingualInfo,
     minItems,
     maxItems,
+    'aria-describedby': callerDescribedBy,
     ...restProps
-  }: InputProps = $props();
+  }: InputProps & { validate?: boolean } = $props();
 
   // reason: pragmatic regex catches obvious typos; server-side does final validation. The 3 disjoint [^\s@]+ groups have no nested quantifiers, so this regex is ReDoS-safe by construction.
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -133,27 +173,58 @@ Multilingual features are only available if the `locales` store contains more th
   /** Whether the label is above the field or inside it */
   const isLabelOutside = $derived(multilingual || isMultipleText || type.startsWith('textarea'));
 
+  /** The locale the `required` rule is judged on, when the per-locale rule is in effect: a `required` input of a multilingual text kind whose `requiredLocale` is a supported locale. */
+  const effectiveRequiredLocale = $derived(
+    required && multilingual && !isMultipleText && requiredLocale && locales.includes(requiredLocale)
+      ? requiredLocale
+      : undefined
+  );
+
   /*** Extend info — derived so the prop isn't mutated. */
   const effectiveMultilingualInfo = $derived(
     multilingual && locales.length > 1 && multilingualInfo != ''
       ? (multilingualInfo ?? t('components.input.multilingualInfo'))
       : ''
   );
+  const requiredLocaleInfo = $derived(
+    effectiveRequiredLocale && locales.length > 1
+      ? t('components.input.requiredLocaleInfo', {
+          language: t(assertTranslationKey(`lang.${effectiveRequiredLocale}`))
+        })
+      : ''
+  );
   const effectiveInfo = $derived.by(() => {
     let result = info ?? '';
     if (effectiveMultilingualInfo) result += ` ${effectiveMultilingualInfo}`;
+    if (requiredLocaleInfo) result += ` ${requiredLocaleInfo}`;
     if (type === 'image') {
       result += ` ${t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
     }
     return result || undefined;
   });
 
-  let error: string | undefined = $state(undefined);
   let isDisabled = $derived(!!(disabled || locked));
   /** For image input */
   let isLoading = $state(false);
   let isTranslationsVisible = $state(false);
-  let showRequired = $derived(!!required && isEmptyValue(value));
+  let showRequired = $derived(
+    effectiveRequiredLocale
+      ? !!required && missingRequiredLocale(value as LocalizedString | null | undefined, effectiveRequiredLocale)
+      : !!required && isEmptyValue(value)
+  );
+
+  /** The ids of what is rendered under the field, after any description the caller passed. */
+  const describedBy = $derived(
+    [callerDescribedBy, effectiveInfo ? `${id}-info` : undefined, error ? `${id}-error` : undefined]
+      .filter(Boolean)
+      .join(' ') || undefined
+  );
+  /** What the control of a kind that renders exactly one carries: its description, its error state and whether it is required. */
+  const controlAria = $derived({
+    'aria-describedby': describedBy,
+    'aria-invalid': error ? ('true' as const) : undefined,
+    'aria-required': required ? ('true' as const) : undefined
+  });
 
   function handleToggleTranslations(): void {
     isTranslationsVisible = !isTranslationsVisible;
@@ -188,7 +259,7 @@ Multilingual features are only available if the `locales` store contains more th
    */
   function ensureValue(): void {
     // Empty string values
-    if (type === 'text' || type === 'textarea' || type === 'url' || type === 'email') {
+    if (type === 'text' || type === 'textarea' || type === 'url' || type === 'email' || type === 'password') {
       value ??= '';
     }
     // Multi-text values are collections; the row list pads them to its own floor.
@@ -216,14 +287,48 @@ Multilingual features are only available if the `locales` store contains more th
   // Keyboard navigation
   ////////////////////////////////////////////////////////////////////
 
-  // `mainInputs` must be $state in Svelte 5 because `bind:this={mainInputs[i]}` mutates a property on it; a plain array triggers `binding_property_non_reactive`.
-  // QuestionChoices.svelte declares its `inputs` the same way and for the same reason.
-  const mainInputs: Array<HTMLElement> = $state([]);
+  /** The rendered part that holds the field focus returns to. Undefined for the kinds that render no such part. */
+  let focusablePart: MultilingualTextPart | MultipleTextPart | SelectMultiplePart | undefined = $state();
+
   /**
    * Return focus to the main input after a multilingual item has been expanded or an option has been deleted in select-multiple.
    */
   function refocus(): void {
-    mainInputs[0]?.focus();
+    focusablePart?.focus();
+  }
+
+  /** The one control of a kind that renders exactly one. */
+  let control: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | undefined = $state();
+
+  /** Whether the input is one of the single-line text kinds, whose field is bound to `fieldText`. */
+  const isTextKind = $derived(type === 'text' || type === 'url' || type === 'email');
+  /** The text in the field of a single-line text kind: the value, or what the user has typed since the value last changed. */
+  let fieldText = $derived(fieldTextOf(value));
+
+  // The binding keeps text typed before the page's script ran, which reached no handler: it is taken in as a commit once the input is mounted.
+  onMount(() => {
+    if (isTextKind && control instanceof HTMLInputElement && control.value !== fieldTextOf(value))
+      handleChange({ currentTarget: control });
+  });
+
+  function fieldTextOf(current: unknown): string {
+    return typeof current === 'string' ? current : '';
+  }
+
+  /**
+   * Move focus to the control, or for a kind with several controls to its main one.
+   */
+  export function focus(): void {
+    if (control) control.focus();
+    else refocus();
+  }
+
+  /**
+   * Whether the one control of the input reports its entry valid.
+   * @returns The control's own `checkValidity()`, or `false` for a kind that renders no single control.
+   */
+  export function checkValidity(): boolean {
+    return control?.checkValidity() ?? false;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -286,7 +391,7 @@ Multilingual features are only available if the `locales` store contains more th
         reader.readAsDataURL(file);
       }).catch(() => false);
       if (!success) return handleError('components.input.error.fileLoadingError');
-    } else if (type === 'url') {
+    } else if (type === 'url' && validate) {
       // Only update the value if it's an empty string or a valid URL
       const currentValue = currentTarget.value.replaceAll(/\s+/g, '');
       if (currentValue == '') {
@@ -296,7 +401,7 @@ Multilingual features are only available if the `locales` store contains more th
         if (url == null) return handleError('components.input.error.invalidUrl');
         value = url;
       }
-    } else if (type === 'email') {
+    } else if (type === 'email' && validate) {
       // Only update the value if it's an empty string or a valid email
       const currentValue = currentTarget.value.trim();
       if (currentValue === '') {
@@ -321,10 +426,94 @@ Multilingual features are only available if the `locales` store contains more th
   }
 
   /**
+   * Called on every edit of a text-like control: an edit clears the error, whoever set it, and reaches an `oninput` the caller gave. A single-line text kind with `commitOn: 'input'` also takes the text in as typed and reports it, without the judgement a commit makes.
+   */
+  function handleInput(event: Event & { currentTarget: EventTarget & (HTMLInputElement | HTMLTextAreaElement) }): void {
+    error = undefined;
+    if (isTextKind && commitOn === 'input' && event.currentTarget instanceof HTMLInputElement) {
+      value = event.currentTarget.value;
+      onChange?.(value);
+    }
+    restProps.oninput?.(event);
+  }
+
+  /**
    * Called by the multi-text row list, which owns its own rows and emits the whole collection.
    */
   function handleMultipleTextChange(next: Array<string> | Array<LocalizedString>): void {
     value = next;
+    error = undefined;
+    onChange?.(value);
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // The password kind
+  ////////////////////////////////////////////////////////////////////
+
+  /** Whether the password kind shows what was typed. It starts `false`, so that the server renders the control masked. */
+  let passwordRevealed = $state(false);
+
+  /**
+   * Called on every edit of the password control, and for text typed before the page's script ran.
+   */
+  function handlePasswordEdit(next: string): void {
+    value = next;
+    onChange?.(value);
+  }
+
+  /**
+   * Show or hide what was typed. For a pointer press, then focus the control with the caret at the end, so that no engine selects the entry; a press from the keyboard leaves focus on the button, which a browser reports as a click whose `detail` is `0`.
+   * @param options.focusControl - Whether to focus the control afterwards: `true` for a pointer press.
+   */
+  function togglePasswordRevealed({ focusControl }: { focusControl: boolean }): void {
+    passwordRevealed = !passwordRevealed;
+    flushSync();
+    if (!focusControl || !(control instanceof HTMLInputElement)) return;
+    const end = control.value.length;
+    control.focus();
+    control.setSelectionRange(end, end);
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // The colour kind
+  ////////////////////////////////////////////////////////////////////
+
+  /** A typed colour: three or six hexadecimal digits, with or without the leading `#`. Narrower than `toHexColor`, which also reads functional notation. */
+  const TYPED_COLOR_REGEX = /^#?(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+  /** Where the platform picker opens when there is no colour. */
+  const COLOR_PICKER_START = '#808080';
+
+  /** The text of the hex field while it holds an entry that was refused. */
+  let refusedColorText: string | undefined = $state();
+  /** The committed colour as lowercase `#rrggbb`, or `undefined` when there is none or the value is not a colour. The swatch is painted from this alone. */
+  const committedColor = $derived(type === 'color' && typeof value === 'string' ? toHexColor(value) : undefined);
+
+  /**
+   * Called when the hex field is committed. An entry that is not a hex colour stays in the field and changes neither the value nor the swatch.
+   */
+  function handleColorTextChange({ currentTarget }: { currentTarget: HTMLInputElement }): void {
+    const text = currentTarget.value.trim();
+    const color = TYPED_COLOR_REGEX.test(text) ? toHexColor(text) : undefined;
+    if (text !== '' && !color) {
+      refusedColorText = currentTarget.value;
+      return handleError('components.input.error.invalidColor');
+    }
+    // Written by hand: the field's bound expression does not change when the committed colour is entered again in another form.
+    currentTarget.value = color ?? '';
+    commitColor(color);
+  }
+
+  /**
+   * Called when a colour is chosen in the platform picker.
+   */
+  function handleColorPick({ currentTarget }: { currentTarget: HTMLInputElement }): void {
+    const color = toHexColor(currentTarget.value);
+    if (color) commitColor(color);
+  }
+
+  function commitColor(color: string | undefined): void {
+    value = color;
+    refusedColorText = undefined;
     error = undefined;
     onChange?.(value);
   }
@@ -382,6 +571,7 @@ Multilingual features are only available if the `locales` store contains more th
   <!-- 1. The multi-text row list -->
   {#if isMultipleText}
     <MultipleTextPart
+      bind:this={focusablePart}
       {id}
       value={value as Array<string> | Array<LocalizedString> | null | undefined}
       {multilingual}
@@ -389,19 +579,23 @@ Multilingual features are only available if the `locales` store contains more th
       disabled={isDisabled}
       {minItems}
       {maxItems}
-      {mainInputs}
+      {describedBy}
+      invalid={!!error}
       onChange={handleMultipleTextChange} />
 
     <!-- 2. Multilingual text inputs and textareas -->
   {:else if multilingual}
     <MultilingualTextPart
+      bind:this={focusablePart}
       {id}
       type={type as 'text-multilingual' | 'textarea-multilingual'}
       {value}
       {placeholder}
       disabled={isDisabled}
       {isTranslationsVisible}
-      {mainInputs}
+      requiredLocale={effectiveRequiredLocale}
+      {describedBy}
+      invalid={!!error}
       {restProps}
       onChange={handleChange} />
 
@@ -410,47 +604,66 @@ Multilingual features are only available if the `locales` store contains more th
     <div class="relative flex flex-col items-stretch">
       <!-- The actual textarea -->
       <textarea
+        bind:this={control}
         {id}
         aria-labelledby="{id}-label"
+        {...controlAria}
         {placeholder}
         disabled={isDisabled}
         rows="4"
         {...concatClass(restProps, `${textareaClass} vaa-group-join-item`)}
         onchange={handleChange}
+        oninput={handleInput}
         value={`${value}`}></textarea>
     </div>
 
     <!-- 4. Select multiple -->
   {:else if type === 'select-multiple'}
     <SelectMultiplePart
+      bind:this={focusablePart}
       {id}
       {label}
       {placeholder}
       disabled={isDisabled}
       {locked}
       {showRequired}
+      {required}
+      {describedBy}
+      invalid={!!error}
       {options}
       {selectedOptions}
       {unselectedOptions}
-      {mainInputs}
       {restProps}
       onChange={handleChange}
       onDeleteOption={handleDeleteOption} />
 
     <!-- 5. Image input -->
   {:else if type === 'image'}
-    <ImagePart {id} {label} {value} {isLoading} disabled={isDisabled} {locked} {showRequired} onChange={handleChange} />
+    <ImagePart
+      {id}
+      {label}
+      {value}
+      {isLoading}
+      disabled={isDisabled}
+      {locked}
+      {showRequired}
+      {describedBy}
+      invalid={!!error}
+      action={imageAction}
+      onChange={handleChange} />
 
     <!-- 6. Other single-row inputs -->
   {:else}
     <div class="{inputContainerClass} vaa-group-join-item">
-      <label class={inputLabelClass} for={id}>{label}</label>
+      <label id={type === 'color' ? `${id}-label` : undefined} class={inputLabelClass} for={id}>{label}</label>
       <div class={inputAndIconContainerClass}>
         <!-- 6.1 Boolean -->
         {#if type === 'boolean'}
           <input
+            bind:this={control}
             type="checkbox"
             {id}
+            {...controlAria}
             disabled={isDisabled}
             {placeholder}
             {...concatClass(restProps, 'toggle toggle-primary mr-md')}
@@ -460,7 +673,13 @@ Multilingual features are only available if the `locales` store contains more th
           <!-- 6.2 Select -->
         {:else if type === 'select'}
           {#if options?.length}
-            <select {id} disabled={isDisabled} {...concatClass(restProps, selectClass)} onchange={handleChange}>
+            <select
+              bind:this={control}
+              {id}
+              {...controlAria}
+              disabled={isDisabled}
+              {...concatClass(restProps, selectClass)}
+              onchange={handleChange}>
               <option disabled selected={!value}>{placeholder || t('components.input.selectOne')}</option>
               {#each options as { id, label }}
                 <option value={id} selected={value === id}>
@@ -472,16 +691,99 @@ Multilingual features are only available if the `locales` store contains more th
             <ErrorMessage message={t('error.general')} />
           {/if}
 
-          <!-- 6.3 All other inputs: date, number, text -->
-        {:else}
+          <!-- 6.3 Colour: a hex text field, and the platform picker laid over a decorative swatch -->
+        {:else if type === 'color'}
+          {#if isDisabled && !committedColor}
+            <div class="text-secondary me-8 flex items-center">{t('components.input.noColor')}</div>
+          {:else}
+            <input
+              bind:this={control}
+              type="text"
+              {id}
+              {...controlAria}
+              disabled={isDisabled}
+              maxlength="7"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              {...concatClass(restProps, inputClass)}
+              value={refusedColorText ?? committedColor ?? ''}
+              onchange={handleColorTextChange} />
+            <!-- The picker is transparent, so its wrapper shows the focus ring -->
+            <span
+              class="min-h-touch min-w-touch relative flex items-center justify-center rounded-full focus-within:ring focus-within:ring-offset-2">
+              <span
+                aria-hidden="true"
+                class="border-md border-secondary h-24 w-24 rounded-full"
+                class:border-dashed={!committedColor}
+                style:background-color={committedColor}></span>
+              <input
+                type="color"
+                id="{id}-picker"
+                aria-labelledby="{id}-label {id}-picker-label"
+                aria-describedby={controlAria['aria-describedby']}
+                aria-invalid={controlAria['aria-invalid']}
+                disabled={isDisabled}
+                class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                value={committedColor ?? COLOR_PICKER_START}
+                onchange={handleColorPick} />
+              <span id="{id}-picker-label" class="sr-only">{t('components.input.colorPicker')}</span>
+            </span>
+          {/if}
+
+          <!-- 6.4 The single-line text kinds: text, url, email -->
+        {:else if isTextKind}
           <input
+            bind:this={control}
+            bind:value={() => fieldText, (next: string) => (fieldText = next)}
             {type}
             {id}
+            {...controlAria}
+            disabled={isDisabled}
+            {placeholder}
+            {...concatClass(restProps, inputClass)}
+            onchange={handleChange}
+            oninput={handleInput} />
+
+          <!-- 6.5 The password kind: the control, and the button that shows and hides what was typed -->
+        {:else if type === 'password'}
+          <input
+            bind:this={control}
+            bind:value={() => fieldTextOf(value), handlePasswordEdit}
+            type={passwordRevealed ? 'text' : 'password'}
+            {id}
+            {...controlAria}
+            disabled={isDisabled}
+            {placeholder}
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
+            {...concatClass(restProps, inputClass)}
+            oninput={handleInput} />
+          <Button
+            type="button"
+            variant="icon"
+            text={t('components.passwordInput.showPassword')}
+            icon={passwordRevealed ? 'hide' : 'show'}
+            aria-pressed={passwordRevealed}
+            disabled={isDisabled}
+            data-testid="password-field-toggle"
+            onmousedown={(event: MouseEvent) => event.preventDefault()}
+            onclick={(event: MouseEvent) => togglePasswordRevealed({ focusControl: event.detail !== 0 })} />
+
+          <!-- 6.6 All other inputs: date, number -->
+        {:else}
+          <input
+            bind:this={control}
+            {type}
+            {id}
+            {...controlAria}
             disabled={isDisabled}
             {placeholder}
             {...concatClass(restProps, inputClass)}
             {value}
-            onchange={handleChange} />
+            onchange={handleChange}
+            oninput={handleInput} />
         {/if}
 
         {#if showRequired}
@@ -501,7 +803,14 @@ Multilingual features are only available if the `locales` store contains more th
   <!-- Error messages -->
 
   {#if error}
-    <ErrorMessage inline message={error} data-testid="input-error" class="my-sm text-center" />
+    <ErrorMessage
+      inline
+      message={error}
+      id="{id}-error"
+      role="alert"
+      data-testid={errorTestId}
+      data-reason={errorReason}
+      class="my-sm text-center" />
   {/if}
 
   <!-- Optional elements below the form widgets -->
@@ -511,7 +820,7 @@ Multilingual features are only available if the `locales` store contains more th
     <div class="gap-md flex {multilingual && effectiveInfo ? 'flex-row items-start' : 'flex-col'}">
       {#if effectiveInfo}
         <!-- pt-4 aligns the info more nicely with the multilingual button -->
-        <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{effectiveInfo}</div>
+        <div id="{id}-info" class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{effectiveInfo}</div>
       {/if}
       {#if multilingual && locales.length > 1}
         <Button

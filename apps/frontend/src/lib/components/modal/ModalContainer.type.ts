@@ -19,6 +19,10 @@ export type ModalContainerProps = SvelteHTMLElements['dialog'] & {
    */
   closeOnBackdropClick?: boolean;
   /**
+   * Whether the modal refuses every close but `closeModal`: Escape, a click on the backdrop and the dialog's `cancel` event close nothing, and a close the platform forces anyway opens the dialog again. Hold a modal only while something the user asked for in it runs. @default false
+   */
+  holdOpen?: boolean;
+  /**
    * Whether the modal is open. Use `bind:isOpen` to track this.
    */
   isOpen?: boolean;

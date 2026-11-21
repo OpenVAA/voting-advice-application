@@ -6,6 +6,7 @@ See `<ModalContainer>` component for more information.
 
 - `title`: The title of the modal
 - `boxClass`: Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
+- `holdOpen`: Whether the modal refuses every close but `closeModal`, its close button included, which does nothing while it is up and reads as unavailable: it is `aria-disabled` and greyed out, and stays a tab stop. @default `false`
 - Any valid properties of a `<ModalContainer>` component.
 
 ### Snippet Props
@@ -65,7 +66,15 @@ See the `<ModalContainer>` component documentation for more information.
   import ModalContainer from './ModalContainer.svelte';
   import type { ModalProps } from './Modal.type';
 
-  let { title, boxClass = '', isOpen = $bindable(false), actions, children, ...restProps }: ModalProps = $props();
+  let {
+    title,
+    boxClass = '',
+    holdOpen,
+    isOpen = $bindable(false),
+    actions,
+    children,
+    ...restProps
+  }: ModalProps = $props();
 
   let containerRef: ModalContainer | undefined = $state(undefined);
 
@@ -87,6 +96,7 @@ See the `<ModalContainer>` component documentation for more information.
   bind:this={containerRef}
   {...concatClass(restProps, 'modal-bottom sm:modal-middle')}
   {title}
+  holdOpen={holdOpen ?? false}
   bind:isOpen>
   <div class="modal-box {boxClass ?? ''}">
     <h2 class="mb-lg text-center">{title}</h2>
@@ -96,7 +106,12 @@ See the `<ModalContainer>` component documentation for more information.
         {@render actions()}
       </div>
     {/if}
-    <button class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2" onclick={() => closeModal()}>
+    <button
+      class="btn btn-circle btn-ghost btn-sm absolute top-2 right-2 {holdOpen ? 'text-neutral/20' : ''}"
+      aria-disabled={holdOpen ? 'true' : undefined}
+      onclick={() => {
+        if (!holdOpen) closeModal();
+      }}>
       <span aria-hidden="true">✕</span>
       <span class="sr-only">{t('common.closeDialog')}</span>
     </button>

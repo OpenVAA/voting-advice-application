@@ -1,11 +1,12 @@
 import { flushSync } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { INACTIVE_PROJECTION } from '$lib/analytics/modes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Own-enumerability spread regression guard for `AppContextProvider`.
 //
 // appContext is spread by ALL THREE downstream orchestrators:
-//   candidateContext.svelte.ts   ...appContext adminContext.svelte.ts       ...appContext voterContext.svelte.ts       ...appContext
+//   contestantContext.svelte.ts   ...appContext adminContext.svelte.ts       ...appContext voterContext.svelte.ts       ...appContext
 //
 // `{ ...instance }` copies only OWN-ENUMERABLE properties. Svelte 5 compiles bare `$state`/`$derived` class fields AND prototype `get` accessors to non-own members, which object spread silently DROPS. This test proves every AppContext member survives `{ ...new AppContextProvider() }` as an own-enumerable property (asserted via `Object.keys`, NOT `in` — `in` would also pass for prototype members, defeating the whole point).
 //
@@ -13,14 +14,23 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // `vi.mock` factories are hoisted; mutable holders they reference are created via `vi.hoisted` (also hoisted, evaluated first).
-const { stubs, dataRootHolder, initialDataRoot } = vi.hoisted(() => {
+const { stubs, dataRootHolder, initialDataRoot, trackingLog } = vi.hoisted(() => {
   function handle<TValue>(value: TValue): { current: TValue } {
     return { current: value };
   }
+  // What appContext hands the tracking and survey producers, and what it calls on the tracking stand-in.
+  const trackingLog: {
+    input: { projection: { current: unknown }; locale: () => string } | undefined;
+    surveyInput: { visitId: unknown } | undefined;
+    calls: Array<string>;
+    buffer: Array<string>;
+    flushed: Array<Array<string>>;
+  } = { input: undefined, surveyInput: undefined, calls: [], buffer: [], flushed: [] };
   // Mutable backing for the dataCtx stub's `dataRoot` ACCESSOR (below), so a case can replace the value AFTER construction and observe whether appContext re-reads the source or serves a construction-time snapshot.
   const initialDataRoot: unknown = { marker: 'dataRoot-initial' };
   const dataRootHolder: { value: unknown } = { value: initialDataRoot };
   return {
+    trackingLog,
     dataRootHolder,
     initialDataRoot,
     stubs: {
@@ -41,16 +51,35 @@ const { stubs, dataRootHolder, initialDataRoot } = vi.hoisted(() => {
         },
         setDataRoot: (_v: unknown) => {}
       },
-      // tracking producer: own-enumerable handle objects + arrow-field methods.
+      // tracking producer: own-enumerable handle objects + arrow-field methods, the producer's whole surface.
       //
-      // Only the SIX members appContext's selective forward actually takes. The producer's two internal-only handle members — the persistent analytics session id and the tracking-enabled gate — are deliberately absent from this fixture: offering members the context is not allowed to forward would let a re-widened forward pass this guard unnoticed.
+      // The stand-in records what appContext does with it: `track` / `resetAllEvents` / `submitAllEvents` keep a stand-in buffer and a call log, and `analyticsPolicy` reads the projection handle appContext passes in, so a case can check the order of the consent writes and the projection fallback. `visitId` is on the stand-in because the producer has it; appContext must withhold it, which the forward case below asserts.
       tracking: {
-        sendTrackingEvent: { current: () => {}, set: (_v: unknown) => {} },
-        startPageview: (_href: string) => {},
-        startEvent: (_name: string) => {},
-        track: (_name: string, _data?: unknown) => {},
-        submitAllEvents: () => {},
-        resetAllEvents: () => {}
+        startPageview: (_routeId: string | null, _params: Readonly<Record<string, string | undefined>> | null) => {},
+        track: (name: string, _data?: unknown) => {
+          trackingLog.calls.push(`track:${name}`);
+          trackingLog.buffer.push(name);
+        },
+        submitAllEvents: () => {
+          trackingLog.flushed.push([...trackingLog.buffer]);
+          trackingLog.buffer.length = 0;
+        },
+        resetAllEvents: () => {
+          trackingLog.calls.push('resetAllEvents');
+          trackingLog.buffer.length = 0;
+        },
+        setPageVisible: (_visible: boolean) => {},
+        analyticsPolicy: {
+          get current() {
+            return {
+              projection: trackingLog.input?.projection.current,
+              globalPrivacyControl: false,
+              trackEvents: true,
+              consent: undefined
+            };
+          }
+        },
+        visitId: handle<string | undefined>('visit-id')
       },
       // survey producer: `{ readonly current }` handle.
       survey: handle('https://example.invalid/survey' as string | undefined),
@@ -59,7 +88,14 @@ const { stubs, dataRootHolder, initialDataRoot } = vi.hoisted(() => {
       // getRoute producer: `{ readonly current: RouteBuilder }` handle.
       getRoute: handle((() => '/') as unknown),
       // localStorageState persisted handle.
-      userPreferences: { current: {}, set: (_v: unknown) => {}, update: (_fn: unknown) => {} }
+      // localStorageState persisted handle; `update` is logged so a case can check it runs before the buffer is cleared.
+      userPreferences: {
+        current: {},
+        set: (_v: unknown) => {},
+        update: (_fn: unknown) => {
+          trackingLog.calls.push('userPreferences.update');
+        }
+      }
     }
   };
 });
@@ -83,8 +119,18 @@ vi.mock('../component', () => ({ getComponentContext: () => stubs.component }));
 vi.mock('../data', () => ({ getDataContext: () => stubs.data }));
 
 // App producers — minimal own-enumerable handle stubs so construction runs.
-vi.mock('./tracking', () => ({ trackingService: () => stubs.tracking }));
-vi.mock('./survey.svelte', () => ({ surveyLink: () => stubs.survey }));
+vi.mock('./tracking', () => ({
+  trackingService: (input: { projection: { current: unknown }; locale: () => string }) => {
+    trackingLog.input = input;
+    return stubs.tracking;
+  }
+}));
+vi.mock('./survey.svelte', () => ({
+  surveyLink: (input: { visitId: unknown }) => {
+    trackingLog.surveyInput = input;
+    return stubs.survey;
+  }
+}));
 vi.mock('./popup', () => ({ popupState: () => stubs.popup }));
 vi.mock('./getRoute.svelte', () => ({ createGetRoute: () => stubs.getRoute }));
 vi.mock('../utils/persistedState.svelte', () => ({
@@ -104,6 +150,11 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     vi.clearAllMocks();
     // Reset the dataCtx stub backing so no case leaks its replacement into another.
     dataRootHolder.value = initialDataRoot;
+    trackingLog.input = undefined;
+    trackingLog.surveyInput = undefined;
+    trackingLog.calls.length = 0;
+    trackingLog.buffer.length = 0;
+    trackingLog.flushed.length = 0;
   });
 
   /**
@@ -144,13 +195,13 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     // forwarded dataCtx members
     'dataRoot',
     'setDataRoot',
-    // forwarded tracking members — SIX of the producer's eight. The other two (the analytics session id and the tracking-enabled gate) are deliberately withheld by appContext's selective forward because they are producer-internal, so they must NOT appear here.
-    'sendTrackingEvent',
+    // forwarded tracking members — the five consumer-facing functions and the producer's `analyticsPolicy` handle. The producer's `visitId` is withheld; the tracking-forward case below asserts it.
     'startPageview',
-    'startEvent',
     'track',
     'submitAllEvents',
-    'resetAllEvents'
+    'resetAllEvents',
+    'setPageVisible',
+    'analyticsPolicy'
   ] as const;
 
   // Test 1 — own-enumerability: `Object.keys(spread)` is a superset of the AppContext member list. A per-key loop names any missing member in the failure.
@@ -201,5 +252,51 @@ describe('AppContextProvider — own-enumerability spread guard', () => {
     expect(typeof spread.appType.update).toBe('function');
     spread.appType.set('voter');
     expect(spread.appType.current).toBe('voter');
+  });
+
+  describe('tracking wiring', () => {
+    it('forwards exactly the consumer-facing tracking members, by reference, and the send-policy handle', () => {
+      const instance = setup();
+      const keys = Object.keys(instance);
+      expect(keys).not.toContain('visitId');
+      // No send handler of any name: the only `send*` member of the context is its own `sendFeedback`.
+      expect(keys.filter((key) => key.startsWith('send'))).toEqual(['sendFeedback']);
+      expect(instance.analyticsPolicy).toBe(stubs.tracking.analyticsPolicy);
+      expect(instance.setPageVisible).toBe(stubs.tracking.setPageVisible);
+      expect(instance.startPageview).toBe(stubs.tracking.startPageview);
+      expect(instance.resetAllEvents).toBe(stubs.tracking.resetAllEvents);
+    });
+
+    it('falls back to INACTIVE_PROJECTION when page.data has no analytics member', () => {
+      const instance = setup();
+      expect(trackingLog.input?.projection.current).toEqual(INACTIVE_PROJECTION);
+      expect(instance.analyticsPolicy.current.projection).toEqual(INACTIVE_PROJECTION);
+      expect(typeof trackingLog.input?.locale()).toBe('string');
+    });
+
+    it("fills the survey link from the producer's visitId", () => {
+      setup();
+      expect(trackingLog.surveyInput?.visitId).toBe(stubs.tracking.visitId);
+    });
+
+    it("setDataConsent('granted') writes the choice, clears the buffer, then starts dataConsent_granted", () => {
+      const instance = setup();
+      instance.track('menu_open');
+      trackingLog.calls.length = 0;
+      instance.setDataConsent('granted');
+      instance.submitAllEvents();
+      expect(trackingLog.calls).toEqual(['userPreferences.update', 'resetAllEvents', 'track:dataConsent_granted']);
+      expect(trackingLog.flushed).toEqual([['dataConsent_granted']]);
+    });
+
+    it("setDataConsent('denied') writes the choice and clears the buffer", () => {
+      const instance = setup();
+      instance.track('menu_open');
+      trackingLog.calls.length = 0;
+      instance.setDataConsent('denied');
+      instance.submitAllEvents();
+      expect(trackingLog.calls).toEqual(['userPreferences.update', 'resetAllEvents']);
+      expect(trackingLog.flushed).toEqual([[]]);
+    });
   });
 });

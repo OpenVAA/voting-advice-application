@@ -198,6 +198,41 @@ describe('Signicat provider', () => {
 
       expect(fetchSpy).not.toHaveBeenCalled();
     });
+
+    it('asks the provider for the given locale as the ui_locales query parameter', async () => {
+      const result = await signicatProvider.getAuthorizeUrl({
+        redirectUri: 'http://localhost:5173/callback',
+        codeChallenge: 'test-challenge',
+        locale: 'fi'
+      });
+
+      expect(new URL(result.authorizeUrl).searchParams.getAll('ui_locales')).toEqual(['fi']);
+    });
+
+    it('sends the language subtag alone of a locale with a region', async () => {
+      const result = await signicatProvider.getAuthorizeUrl({
+        redirectUri: 'http://localhost:5173/callback',
+        codeChallenge: 'test-challenge',
+        locale: 'sv-FI'
+      });
+
+      expect(new URL(result.authorizeUrl).searchParams.getAll('ui_locales')).toEqual(['sv']);
+    });
+
+    it.each([
+      ['no locale', undefined],
+      ['a value that is no language tag', 'fi&prompt=none']
+    ])('sends no ui_locales for %s', async (_name, locale) => {
+      const result = await signicatProvider.getAuthorizeUrl({
+        redirectUri: 'http://localhost:5173/callback',
+        codeChallenge: 'test-challenge',
+        locale
+      });
+
+      const url = new URL(result.authorizeUrl);
+      expect(url.searchParams.has('ui_locales')).toBe(false);
+      expect(url.searchParams.getAll('prompt')).toEqual(['login']);
+    });
   });
 
   describe('getIdTokenClaims', () => {

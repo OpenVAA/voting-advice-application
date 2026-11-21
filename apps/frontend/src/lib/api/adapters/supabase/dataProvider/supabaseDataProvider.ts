@@ -1,4 +1,10 @@
-import { dynamicSettings, getLocalized, staticSettings, StoredSettingsSchema } from '@openvaa/app-shared';
+import {
+  dynamicSettings,
+  getLocalized,
+  isPlainObject,
+  staticSettings,
+  StoredSettingsSchema
+} from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
 import { parseAnswers } from '$lib/api/utils/parseAnswers';
@@ -45,6 +51,30 @@ import type {
 } from './supabaseDataProvider.type';
 
 /**
+ * Place the four values `get_public_app_settings` answers at their storage paths, as a value for `StoredSettingsSchema` to validate.
+ *
+ * Only `access.contestantApp`, `access.contestantEditing`, `contestantApp.servedEntityTypes` and `analytics.trackEvents` are copied, whatever else the answer carries. A `null` member is left out: the function answers `null` where nothing is stored, and the schema's members are optional, not nullable.
+ * @param answer - The function's answer, narrowed to an object.
+ * @returns The unvalidated stored settings, holding at most those four members.
+ */
+function storedPublicSettings(answer: Record<string, unknown>): Record<string, unknown> {
+  const access = isPlainObject(answer.access) ? answer.access : {};
+  const contestantApp = isPlainObject(answer.contestantApp) ? answer.contestantApp : {};
+  const analytics = isPlainObject(answer.analytics) ? answer.analytics : {};
+
+  const gates: Record<string, unknown> = {};
+  if (access.contestantApp != null) gates.contestantApp = access.contestantApp;
+  if (access.contestantEditing != null) gates.contestantEditing = access.contestantEditing;
+
+  const settings: Record<string, unknown> = {};
+  if (Object.keys(gates).length > 0) settings.access = gates;
+  if (contestantApp.servedEntityTypes != null)
+    settings.contestantApp = { servedEntityTypes: contestantApp.servedEntityTypes };
+  if (analytics.trackEvents != null) settings.analytics = { trackEvents: analytics.trackEvents };
+  return settings;
+}
+
+/**
  * Supabase implementation of the DataProvider.
  * Implements read methods that query Supabase PostgREST and transform the raw database rows into the domain types expected by DataRoot.
  */
@@ -61,11 +91,13 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
   /**
    * Fetch application settings from the `app_settings` table.
    *
-   * The row is read with `maybeSingle`, so zero rows is a value rather than an error. A readable row is parsed and returned. Zero rows asks `project_open_for_voters` for this provider's project: `false` returns the shipped `access` defaults with `voterApp: false`, which `(voters)/+layout.svelte` renders as MaintenancePage, and `true` returns `{}`. An RPC error or a non-boolean answer throws. The RPC decides rather than the missing row because nothing creates a settings row for a project, so an open project may have none.
+   * The row is read with `maybeSingle`, so zero rows is a value rather than an error. A readable row is parsed and returned. Zero rows asks `project_open_for_voters` for this provider's project: `true` returns `{}`, and `false` returns the closed-project answer described below, whose `voterApp: false` `(voters)/+layout.svelte` renders as MaintenancePage. An RPC error or a non-boolean answer throws. The RPC decides rather than the missing row because nothing creates a settings row for a project, so an open project may have none.
    *
    * Preview is decided by RLS, not by a role check. `authenticated_select_app_settings` returns the row to any grant holder of the project, so a signed-in admin or candidate gets the real voter app; anon, or a signed-in user with no grant, reads zero rows and gets the maintenance page.
    *
-   * Limitation: while a project is closed, anon cannot read `app_settings`, so the stored `access.candidateApp` and `access.underMaintenance` are not honoured on the anon candidate and admin login pages. The shipped defaults apply there.
+   * A closed project, for a caller who can read no settings row of it (anon, or a signed-in user with no grant there): the answer is the `access`, `analytics` and `contestantApp` roots, each built over the shipped defaults. Four stored values are honoured, read through `get_public_app_settings` and validated by `StoredSettingsSchema` like a readable row: `access.contestantApp`, how far contestants may edit in `access.contestantEditing`, the served entity types with their registration modes in `contestantApp.servedEntityTypes` and the tracking switch in `analytics.trackEvents`, which keeps its shipped default from `dynamicSettings.analytics` when nothing valid is stored. An invalid `servedEntityTypes` leaves the whole `contestantApp` root at the shipped defaults, is reported once with its path, and does not touch `access`. An RPC error or an answer that is not an object throws.
+   *
+   * Limitation: nothing else that is stored is honoured for that caller. `access.underMaintenance`, `contestantApp.questions` and every other stored setting stay at their shipped defaults on the sign-in pages of a closed project.
    *
    * The `settings` column is validated with `parseWithPartialPreserve`, so the members the schema accepts survive a malformed sibling, and a value with nothing to preserve answers `{}`. The parse outcome stays inside this method: the voter loaders (for example `(voters)/elections/+page.ts`) merge the result with no status guard, so an outcome object would put `status` and `issues` into the settings.
    *
@@ -83,9 +115,35 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
       if (rpcError) throw new Error(`getAppSettings: ${rpcError.message}`);
       if (open === true) return {};
       if (open === false) {
-        // The whole `access` object, because the app context's `mergeAppSettings` replaces settings by root key: a bare `{ voterApp: false }` would drop `candidateApp` and close the candidate app too.
-        // reason: `Partial<DynamicSettings>` is a shallow partial, so a partial `access` object does not satisfy it, although the value is merged over the shipped defaults.
-        return { access: { ...dynamicSettings.access, voterApp: false } } as DPDataType['appSettings'];
+        const { data: publicSettings, error: settingsError } = await this.supabase.rpc('get_public_app_settings', {
+          p_project_id: this.projectId
+        });
+        if (settingsError) throw new Error(`getAppSettings: ${settingsError.message}`);
+        if (!isPlainObject(publicSettings)) {
+          throw new Error('getAppSettings: get_public_app_settings returned a non-object');
+        }
+
+        // The same parse a readable row gets, so repeated modes collapse, they take their canonical order and an invalid value is rejected and reported in one place.
+        const closedOutcome = parseWithPartialPreserve<StoredSettings>(
+          StoredSettingsSchema,
+          storedPublicSettings(publicSettings),
+          { column: 'app_settings.settings' },
+          SETTINGS_PARSE_FAILURE_MESSAGE
+        );
+        const declared: StoredSettings = closedOutcome.value ?? {};
+        const shipped = dynamicSettings.contestantApp;
+
+        return {
+          // The whole `access` object over the shipped defaults, so that every other gate is stated in this answer itself. The voter route loaders merge it over the static settings only, with no shipped dynamic defaults beneath it. `voterApp: false` comes last, so nothing declared can open the voter app.
+          access: { ...dynamicSettings.access, ...declared.access, voterApp: false },
+          // The whole root over the shipped default for the same reason as `access`: the tracking switch is the only member the function answers.
+          analytics: { ...dynamicSettings.analytics, ...declared.analytics },
+          // The whole root for the same reason as `access`. `questions` is the shipped one: the stored one is not read for this caller. A stored `servedEntityTypes` replaces the shipped one as a whole.
+          contestantApp: {
+            ...shipped,
+            servedEntityTypes: declared.contestantApp?.servedEntityTypes ?? shipped.servedEntityTypes
+          }
+        };
       }
       throw new Error('getAppSettings: project_open_for_voters returned a non-boolean');
     }
@@ -106,7 +164,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     // `notifications` is optional in the schema, so this guard is still needed after the parse.
     if (settings.notifications && typeof settings.notifications === 'object') {
       const notifications: Record<string, unknown> = { ...stored.notifications };
-      for (const key of ['candidateApp', 'voterApp'] as const) {
+      for (const key of ['contestantApp', 'voterApp'] as const) {
         const notif = stored.notifications?.[key];
         if (notif && typeof notif === 'object') {
           notifications[key] = {
@@ -149,7 +207,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     // Convert image storage paths to URLs. The images are already validated members of the parsed value, so `parseStoredImage` receives its declared type with no cast.
     result.publisherLogo = parseStoredImage(stored.publisherLogo, supabaseUrl);
     result.poster = parseStoredImage(stored.poster, supabaseUrl);
-    result.candPoster = parseStoredImage(stored.candPoster, supabaseUrl);
+    result.contestantPoster = parseStoredImage(stored.contestantPoster, supabaseUrl);
 
     // Localize translation overrides (each value is a LocalizedString)
     if (stored.translationOverrides) {
@@ -163,8 +221,8 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     }
 
     // Localize FAQ entries
-    if (stored.candidateAppFAQ) {
-      result.candidateAppFAQ = stored.candidateAppFAQ.map((faq) => ({
+    if (stored.contestantAppFAQ) {
+      result.contestantAppFAQ = stored.contestantAppFAQ.map((faq) => ({
         question: getLocalized(faq.question, locale, this.defaultLocale) ?? '',
         answer: getLocalized(faq.answer, locale, this.defaultLocale) ?? ''
       }));
@@ -175,7 +233,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
 
   /**
    * Fetch elections with their constituency group join data.
-   * Maps DB columns to ElectionData properties (date, round, subtype).
+   * Maps DB columns to ElectionData properties (date, round, nominationShape, subtype).
    */
   protected async _getElectionData(options?: GetElectionsOptions): Promise<DPDataType['elections']> {
     const data = await fetchAllRows(
@@ -201,7 +259,6 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
         ...obj,
         date: row.election_date ? String(row.election_date) : undefined,
         round: row.current_round ?? undefined,
-        // `subtype` is read from the `subtype` column only. `election_type` holds the nomination shape, which is a separate axis.
         subtype: row.subtype ?? undefined,
         image: imageOf(parseImageColumn(row.image, supabaseUrl, { column: 'elections.image', id: row.id })),
         constituencyGroupIds: (
@@ -516,7 +573,7 @@ export class SupabaseDataProvider extends supabaseAdapterMixin(UniversalDataProv
     const locale = options?.locale ?? this.locale;
     const supabaseUrl = constants.PUBLIC_SUPABASE_URL;
 
-    // The `get_questions` RPC accepts a single uuid per election and constituency, so arrays from the caller fan out into one call per (election, constituency) pair and the payloads are merged. Arrays do reach this read: `candidate/(protected)/+layout.server.ts` derives `electionId` from the candidate's own nominations, which span two elections for a candidate nominated in both, and `(voters)/(located)/+layout.ts` threads the URL's multi-valued `electionId` through. Reading only the first id would drop the other election's scoped questions.
+    // The `get_questions` RPC accepts a single uuid per election and constituency, so arrays from the caller fan out into one call per (election, constituency) pair and the payloads are merged. Arrays do reach this read: `contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/+layout.server.ts` derives `electionId` from the candidate's own nominations, which span two elections for a candidate nominated in both, and `(voters)/(located)/+layout.ts` threads the URL's multi-valued `electionId` through. Reading only the first id would drop the other election's scoped questions.
     const electionIds = convertFilterValue(options?.electionId);
     const constituencyIds = convertFilterValue(options?.constituencyId);
     // The election round is a scalar rather than a `FilterValue`, so it adds no level to the fan-out and is passed through unchanged.

@@ -19,17 +19,17 @@ function sessionWith(accessToken: string): Session {
 }
 
 /**
- * Thrown when the helper touches a client member other than `auth.getSession` or `auth.getUser`.
+ * Thrown when the helper reaches the client other than by reading `auth.getSession` or `auth.getUser`: a read of another member, an `in` probe, a write, a delete or a key enumeration.
  */
 class UnexpectedClientAccess extends Error {
   override name = 'UnexpectedClientAccess';
 }
 
-/** Every client member touched other than `auth.getSession` and `auth.getUser`, in access order. */
+/** Every reach of the client other than a read of `auth.getSession` or `auth.getUser`, in access order. */
 const unexpectedAccesses: Array<string> = [];
 
 /**
- * Wrap a stub so that reading any member outside `allowed` is recorded and throws `UnexpectedClientAccess`.
+ * Wrap a stub so that reading any member outside `allowed`, probing any member with `in`, writing or deleting any member, or enumerating the keys is recorded and throws `UnexpectedClientAccess`.
  * @param target - The stub to wrap.
  * @param path - The member path reported for a stray access, such as `supabase.auth`.
  * @param allowed - The members the helper may read.
@@ -41,11 +41,31 @@ function strict<TTarget extends object>(target: TTarget, path: string, allowed: 
       if (allowed.has(prop)) return Reflect.get(obj, prop, receiver);
       // Symbols (inspection, `toStringTag`) and `then` (thenable probing) are not round trips.
       if (typeof prop === 'symbol' || prop === 'then') return undefined;
-      const member = `${path}.${String(prop)}`;
-      unexpectedAccesses.push(member);
-      throw new UnexpectedClientAccess(member);
+      return refuse(`${path}.${String(prop)}`);
+    },
+    has(obj, prop) {
+      if (allowed.has(prop)) return Reflect.has(obj, prop);
+      return refuse(`${path}.${String(prop)} (in)`);
+    },
+    set(_obj, prop) {
+      return refuse(`${path}.${String(prop)} (set)`);
+    },
+    deleteProperty(_obj, prop) {
+      return refuse(`${path}.${String(prop)} (delete)`);
+    },
+    ownKeys() {
+      return refuse(`${path} (keys)`);
     }
   });
+}
+
+/**
+ * Record a stray reach of the client and throw.
+ * @param access - The reach, as the member path and, for anything but a read, its kind.
+ */
+function refuse(access: string): never {
+  unexpectedAccesses.push(access);
+  throw new UnexpectedClientAccess(access);
 }
 
 /**
@@ -220,5 +240,26 @@ describe('createSafeGetSession', () => {
 
     expect(getUser).toHaveBeenCalledTimes(2);
     expect(getSession).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe('the strict client stub', () => {
+  it('records and refuses an `in` probe, a write, a delete and a key enumeration, not only a read', () => {
+    unexpectedAccesses.length = 0;
+    const client = fakeClient(null).supabase as unknown as Record<string, unknown>;
+
+    expect(() => 'from' in client).toThrow(UnexpectedClientAccess);
+    expect(() => {
+      client.from = () => undefined;
+    }).toThrow(UnexpectedClientAccess);
+    expect(() => delete client.auth).toThrow(UnexpectedClientAccess);
+    expect(() => Object.keys(client)).toThrow(UnexpectedClientAccess);
+    expect(unexpectedAccesses).toEqual([
+      'supabase.from (in)',
+      'supabase.from (set)',
+      'supabase.auth (delete)',
+      'supabase (keys)'
+    ]);
+    unexpectedAccesses.length = 0;
   });
 });

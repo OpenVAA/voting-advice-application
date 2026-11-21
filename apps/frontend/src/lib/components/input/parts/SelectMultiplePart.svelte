@@ -1,6 +1,8 @@
 <!--
 @component The options dropdown and selected-chips region `Input` renders for its `select-multiple` kind. The dropdown offers only the not-yet-selected options; each selected one gets a row with a delete button.
 
+The dropdown names `describedBy` in its `aria-describedby`, is marked `aria-required` when `required` and is marked `aria-invalid` while `invalid`.
+
 Internal to the `input` package — not exported from its barrel. See `./README.md`.
 
 ### Properties
@@ -9,6 +11,9 @@ See `SelectMultiplePart.type.ts`.
 ### Callbacks
 - `onChange`: triggered when an option is selected in the dropdown.
 - `onDeleteOption`: triggered when a selected option's delete button is pressed.
+
+### Bindable functions
+- `focus`: Moves focus to the dropdown.
 -->
 
 <script lang="ts">
@@ -33,16 +38,32 @@ See `SelectMultiplePart.type.ts`.
     disabled,
     locked,
     showRequired,
+    required,
+    describedBy,
+    invalid,
     options,
     selectedOptions,
     unselectedOptions,
-    mainInputs,
     restProps,
     onChange,
     onDeleteOption
   }: SelectMultiplePartProps = $props();
 
   const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Keyboard navigation
+  ////////////////////////////////////////////////////////////////////
+
+  /** The dropdown. Absent when there are no options to offer. */
+  let dropdown: HTMLSelectElement | undefined = $state();
+
+  /**
+   * Move focus to the dropdown. Does nothing when it is not rendered.
+   */
+  export function focus(): void {
+    dropdown?.focus();
+  }
 </script>
 
 <div class="join join-vertical items-stretch {joinGap}">
@@ -50,12 +71,14 @@ See `SelectMultiplePart.type.ts`.
     <label class={inputLabelClass} for={id}>{label}</label>
     <div class={inputAndIconContainerClass}>
       {#if options?.length}
-        <!-- bind: keep — $state target for bind:this; mainInputs is $state([]) in the owning Input. -->
         <select
           {id}
+          aria-describedby={describedBy}
+          aria-invalid={invalid ? 'true' : undefined}
+          aria-required={required ? 'true' : undefined}
           {disabled}
           {...concatClass(restProps ?? {}, selectClass)}
-          bind:this={mainInputs[0]}
+          bind:this={dropdown}
           onchange={(e) => onChange?.(e)}>
           <option disabled selected
             >{placeholder ||

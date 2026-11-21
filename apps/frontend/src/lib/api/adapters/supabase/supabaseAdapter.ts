@@ -1,4 +1,5 @@
 import { constants } from '$lib/utils/constants';
+import { isCanonicalUuid } from '$lib/utils/uuid';
 import type { Database } from '@openvaa/supabase-types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
@@ -8,9 +9,6 @@ import type {
   SupabaseAdapter,
   SupabaseAdapterConfig
 } from './supabaseAdapter.type';
-
-/** The canonical 8-4-4-4-12 lower-case hexadecimal uuid shape, applied after trimming and lower-casing so a padded or upper-case configuration value normalises rather than fails. */
-const CANONICAL_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 /** The project id created by `apps/supabase/supabase/seed.sql`, quoted in the throw below so an operator reading the error knows what to put in the file. It is a message ingredient only, and is never used as a value. */
 const DOCUMENTED_DEFAULT_PROJECT_ID = '00000000-0000-0000-0000-000000000001';
@@ -31,7 +29,8 @@ function resolveProjectId(configured: string | undefined): string {
   const raw = configured && configured.trim() !== '' ? configured : constants.PUBLIC_PROJECT_ID;
   const normalised = (raw ?? '').trim().toLowerCase();
   if (normalised === '') throw new Error(`PUBLIC_PROJECT_ID is required but not set. ${PROJECT_ID_REMEDY}`);
-  if (!CANONICAL_UUID.test(normalised))
+  // Tested after trimming and lower-casing, so a padded or upper-case configuration value normalises rather than fails.
+  if (!isCanonicalUuid(normalised))
     throw new Error(
       `PUBLIC_PROJECT_ID must be a canonical 8-4-4-4-12 hexadecimal uuid; got '${normalised}'. ${PROJECT_ID_REMEDY}`
     );
@@ -98,9 +97,9 @@ export function supabaseAdapterMixin<TBase extends Constructor>(base: TBase): Co
     /**
      * The project-scoped entry point to a table.
      *
-     * Every read and write against a table carrying a `project_id` foreign key to `public.projects` goes through here. Reads, updates and deletes get the project filter appended; inserts get the project column supplied, because an insert carries no filter. The union of tables this accepts is the set of tables holding that foreign key.
+     * Every read and write against a table carrying a `project_id` foreign key to `public.projects` goes through here. Reads, updates and deletes get the project filter appended; inserts and upserts get the project column supplied, because neither carries a filter. An upsert is always sent in the ignore-duplicates form, so it can add a row and can never change one. The union of tables this accepts is the set of tables holding that foreign key.
      * @param table - The project-scoped table to reach.
-     * @returns The four operations, each already carrying this adapter's project.
+     * @returns The five operations, each already carrying this adapter's project.
      */
     scopedFrom<TTable extends ProjectScopedTable>(table: TTable): ScopedTableAccess<TTable> {
       const builder = tableBuilder(this.#supabase, table);
@@ -111,15 +110,19 @@ export function supabaseAdapterMixin<TBase extends Constructor>(base: TBase): Co
        * @returns The same builder, now carrying the project filter.
        */
       function scoped<TBuilder>(builderToScope: TBuilder): TBuilder {
-        // reason: the ONE cast, and it is deliberately the narrowest possible. Inside a method generic over `TTable` the builder's row type is the UNION of all thirteen scoped tables, so PostgREST's `eq(column, value)` resolves its value parameter to an unresolvable conditional and rejects a plain `string`. The cast names only the call being made and returns `TBuilder` unchanged, so the builder's own static type — the caller's real table, its real columns — survives untouched. Widening to `any` here would erase it.
+        // reason: the ONE cast, and it is deliberately the narrowest possible. Inside a method generic over `TTable` the builder's row type is the UNION of all fourteen scoped tables, so PostgREST's `eq(column, value)` resolves its value parameter to an unresolvable conditional and rejects a plain `string`. The cast names only the call being made and returns `TBuilder` unchanged, so the builder's own static type — the caller's real table, its real columns — survives untouched. Widening to `any` here would erase it.
         return (builderToScope as unknown as { eq: (column: string, value: string) => TBuilder }).eq(
           'project_id',
           projectId
         );
       }
-      // reason: the second and last cast, for the same generic-union reason as `scoped` above. `insert` and `update` type their payload as a conditional over `TTable`, which does not resolve while `TTable` is still a type parameter, so a payload assembled here cannot be shown to match it. The cast names only the two write calls and preserves both their return types, so the caller still sees the real builder for the real table.
+      // reason: the second and last cast, for the same generic-union reason as `scoped` above. `insert`, `upsert` and `update` type their payload as a conditional over `TTable`, which does not resolve while `TTable` is still a type parameter, so a payload assembled here cannot be shown to match it. The cast names only the three write calls and preserves each of their return types, so the caller still sees the real builder for the real table.
       const writes = builder as unknown as {
         insert: (values: Record<string, unknown>) => ReturnType<ScopedTableAccess<TTable>['insert']>;
+        upsert: (
+          values: Record<string, unknown>,
+          options: { ignoreDuplicates: true }
+        ) => ReturnType<ScopedTableAccess<TTable>['upsert']>;
         update: (values: Record<string, unknown>) => ReturnType<ScopedTableAccess<TTable>['update']>;
       };
       return {
@@ -127,6 +130,8 @@ export function supabaseAdapterMixin<TBase extends Constructor>(base: TBase): Co
         select: ((...args: Parameters<typeof builder.select>) =>
           scoped(builder.select(...args))) as ScopedTableAccess<TTable>['select'],
         insert: (values) => writes.insert({ ...values, project_id: projectId }),
+        // The option is fixed here and no caller can pass one. The default form of an upsert updates the row it collides with, and a table reached through this member may grant its callers INSERT without UPDATE.
+        upsert: (values) => writes.upsert({ ...values, project_id: projectId }, { ignoreDuplicates: true }),
         update: (values) => scoped(writes.update({ ...values })),
         delete: () => scoped(builder.delete())
       };

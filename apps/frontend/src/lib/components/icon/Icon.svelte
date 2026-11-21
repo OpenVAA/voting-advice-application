@@ -32,14 +32,21 @@ Use the other properties to set the size and color of the icon. The icon is `ari
   let svgElement: SVGElement;
   // Use $effect to load SVG when svgElement or name changes
   $effect(() => {
-    loadSvg(svgElement, name);
+    // An import can resolve after a newer one, or after the unmount, and then it must write nothing.
+    let superseded = false;
+    loadSvg(svgElement, name, () => superseded);
+    return () => {
+      superseded = true;
+    };
   });
 
-  function loadSvg(svgElement: SVGElement, name: IconProps['name']) {
+  function loadSvg(svgElement: SVGElement, name: IconProps['name'], isSuperseded: () => boolean) {
     if (!svgElement || !name) return;
     // Validate name and split path We need this part-wise approach because of Vite's dynamic import limitations https://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations
     const [folder, filename] = name in ICONS ? ICONS[name] : ['custom', 'missing_icon'];
-    import(`./svg/${folder}/${filename}.ts`).then((svg) => (svgElement.innerHTML = svg.default));
+    import(`./svg/${folder}/${filename}.ts`).then((svg) => {
+      if (!isSuperseded()) svgElement.innerHTML = svg.default;
+    });
   }
 
   // Create styles

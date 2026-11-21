@@ -5,7 +5,7 @@
  *
  * Both close paths `Layout` owns are covered: `LayoutContext.navigation.close()`, which the nav menus' close buttons and links call, and the drawer overlay.
  *
- * The component is mounted for real against fake contexts, following `routes/candidate/(protected)/termsOfUseLayout.svelte.test.ts`. The assertion is on `document.activeElement`, because where focus lands is the behaviour under test.
+ * The component is mounted for real against fake contexts, following `routes/contestant/(protected)/termsOfUseLayout.svelte.test.ts`. The assertion is on `document.activeElement`, because where focus lands is the behaviour under test.
  */
 
 import { createRawSnippet, flushSync, mount, unmount } from 'svelte';
@@ -25,7 +25,6 @@ const video = $state<{ show: boolean; hasContent: boolean; player: unknown; mode
 vi.mock('$lib/contexts/app', () => ({
   getAppContext: () => ({
     t: (key: string) => key,
-    startEvent: () => undefined,
     track: () => undefined,
     darkMode: { current: false },
     appType: { current: 'admin' },
@@ -41,6 +40,11 @@ vi.mock('$lib/contexts/app', () => ({
     getRoute: { current: () => '' },
     openFeedbackModal: { current: () => undefined }
   })
+}));
+
+// The header's Log out reads the Admin App's context in the Admin App.
+vi.mock('$lib/contexts/admin', () => ({
+  getAdminContext: () => ({ logout: async () => undefined })
 }));
 
 vi.mock('$lib/contexts/layout', () => ({
@@ -93,7 +97,7 @@ afterAll(() => {
   media.load = originalMedia.load;
 });
 
-/** Stands in for `VoterNav` / `CandidateNav`: the element `openDrawer()` moves focus to. */
+/** Stands in for `VoterNav` / `ContestantNav`: the element `openDrawer()` moves focus to. */
 const menu = createRawSnippet(() => ({
   render: () => '<nav id="testMenu"><button id="drawerCloseButton" type="button">close</button></nav>'
 }));

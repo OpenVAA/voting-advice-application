@@ -26,8 +26,8 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 
 ### Tracking events
 
-- `feedback_sent`: Feedback is successfully sent. Contains `rating` and `description` properties.
-- `feedback_error`: There was an error sending the feedback. Contains `rating` and `description` properties.
+- `feedback_sent`: Feedback is successfully sent. Contains the `rating` property only.
+- `feedback_error`: There was an error sending the feedback. Contains the `rating` property only.
 
 ### Usage
 
@@ -76,7 +76,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   ////////////////////////////////////////////////////////////////////
 
   const ctx = getAppContext();
-  const { sendFeedback, setFeedbackStatus, t, startEvent } = ctx;
+  const { sendFeedback, setFeedbackStatus, t, track } = ctx;
   // appSettings is a reactive accessor — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
 
@@ -106,15 +106,15 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     // Set the user preference so that we won't ask for feedback again.
     setFeedbackStatus('received');
     status = 'sending';
-    sendFeedback({ rating, description }).then((res) => {
+    sendFeedback({ description, rating }).then((res) => {
       if (res?.type !== 'success') {
-        startEvent('feedback_error', { rating, description });
+        track('feedback_error', { rating });
         status = 'error';
         onError?.();
         return;
       }
       clearErrorTimeout();
-      startEvent('feedback_sent', { rating, description });
+      track('feedback_sent', { rating });
       status = 'sent';
       onSent?.();
     });

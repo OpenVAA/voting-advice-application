@@ -27,9 +27,9 @@ export type AdminIdentityVerdict = { outcome: 'allowed' } | { outcome: 'unauthen
  *
  * ## Why the authorisation vocabulary is not spelled here
  *
- * The shapes that open the admin door are declared once, as `ADMIN_GRANTS` in `$lib/auth/roles.ts`, and the normalisation from those shapes to the coarse `'candidate' | 'admin'` this function tests happens once, in `SupabaseDataWriter._getBasicUserData`, which consumes that declaration through `hasAnyGrant`. Testing the normalised role here therefore consumes the single declaration transitively. Re-spelling the admin shapes in this file — even inside this docstring — would be a third copy of a set whose drift fails silently in the permissive direction, and it would also trip the criterion-9 count, which is a substring match and cannot tell a mention from a declaration.
+ * The shapes that open the admin door are declared once, as `ADMIN_GRANTS` in `$lib/auth/roles.ts`, and the normalisation from those shapes to the coarse `UserRole` this function tests happens once, in `SupabaseDataWriter._getBasicUserData`, which consumes that declaration through `hasAnyGrant`. Testing the normalised role here therefore consumes the single declaration transitively. Re-spelling the admin shapes in this file — even inside this docstring — would be a third copy of a set whose drift fails silently in the permissive direction. The repository's count of the places that declare those shapes is a substring match, so it would also count such a mention as a declaration.
  *
- * The vocabulary itself moved in phase 162: the token now carries `(scope, target_type, target_id, role)` grants rather than role names, and a forged cookie is a forged GRANT claim. Nothing about this decision changed with it, because it never read the claim — only the verified round-trip and the normalised role.
+ * The token carries `(scope, target_type, target_id, role)` grants, so a forged cookie is a forged GRANT claim. The decision never reads the claim: it reads only the verified round-trip and the normalised role.
  *
  * ## Statelessness is a property, not an accident
  *

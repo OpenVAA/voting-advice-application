@@ -37,14 +37,14 @@ Accesses `AppContext` to set and read the current survey status and link.
 
   let { clicked = $bindable(false), onClick = undefined, ...restProps }: SurveyButtonProps = $props();
 
-  const { setSurveyStatus, startEvent, surveyLink, t } = getAppContext();
+  const { setSurveyStatus, track, surveyLink, t } = getAppContext();
 
   function handleClick() {
     if (clicked) return;
     clicked = true;
     setSurveyStatus('received');
     onClick?.();
-    startEvent('survey_opened');
+    track('survey_opened');
   }
 </script>
 

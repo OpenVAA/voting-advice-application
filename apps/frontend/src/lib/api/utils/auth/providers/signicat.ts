@@ -13,6 +13,7 @@
 import { constants } from '$lib/server/constants';
 import { constants as publicConstants } from '$lib/utils/constants';
 import { requireConfigured } from './requireConfigured';
+import { uiLocalesFor } from './uiLocales';
 import { decryptAndVerifyIdToken } from '../decryptAndVerifyIdToken';
 import type {
   AuthConfig,
@@ -27,11 +28,11 @@ import type {
 /**
  * Signicat claim mapping for Finnish Trust Network authentication.
  *
- * Signicat returns standard OIDC claims in the id_token. `identityMatchProp` names the claim used to match a returning user to their existing candidate record and MUST be unique per person; `extractClaims` are additional claims stored in user metadata for audit and verification purposes.
+ * Signicat returns standard OIDC claims in the id_token. `identityMatchProp` names the claim used to match a returning user to their existing account and MUST be unique per person; `extractClaims` are additional claims returned to the caller, and stored nowhere.
  *
  * - Identity matching: `sub` (stable OIDC subject identifier)
  * - Name claims: Standard OIDC `given_name` and `family_name`
- * - Extra claims: `birthdate` (Finnish date of birth), captured as metadata only
+ * - Extra claims: `birthdate` (Finnish date of birth), returned to the caller only
  *
  * Keyed on `sub`, and it MUST NOT be keyed on `birthdate`, which is NOT an identifier: the Edge Function twin of this config (`identity-callback/claimConfig.ts`) turns `identityMatchProp`'s value into both the `app_metadata.identity_match_value` lookup key and the placeholder email local part, so keying on a birthdate collapses every candidate sharing a date of birth into a single Supabase auth account. The two configs must stay in agreement -- a mismatch keys the frontend and the backend to different claims.
  */
@@ -49,7 +50,7 @@ export const signicatProvider: IdentityProvider = {
 
   callbackBinding: 'pkce',
 
-  async getAuthorizeUrl({ redirectUri, codeChallenge }: AuthorizeParams): Promise<AuthorizeResult> {
+  async getAuthorizeUrl({ redirectUri, codeChallenge, locale }: AuthorizeParams): Promise<AuthorizeResult> {
     const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID, PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT } = publicConstants;
 
     // Assert BEFORE concatenating, never after. An empty endpoint produces a string starting `?`, which is a valid RELATIVE url the browser resolves against the current document — so the failure mode is a silent same-origin reload, not an error. See `requireConfigured`.
@@ -63,6 +64,7 @@ export const signicatProvider: IdentityProvider = {
       throw new Error('Signicat authorization requires a PKCE `codeChallenge`, but none was supplied.');
     }
 
+    const uiLocales = uiLocalesFor(locale);
     const authorizeUrl =
       `${PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}` +
       `?client_id=${PUBLIC_IDENTITY_PROVIDER_CLIENT_ID}` +
@@ -71,7 +73,8 @@ export const signicatProvider: IdentityProvider = {
       '&scope=openid%20profile' +
       '&prompt=login' +
       `&code_challenge=${codeChallenge}` +
-      '&code_challenge_method=S256';
+      '&code_challenge_method=S256' +
+      (uiLocales ? `&ui_locales=${uiLocales}` : '');
 
     return { authorizeUrl, clientSideRedirect: true };
   },

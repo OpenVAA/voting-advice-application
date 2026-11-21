@@ -1,5 +1,7 @@
 <!--
-@component The image file input `Input` renders for its `image` kind: a hidden file input, a button that opens the file dialog, and a preview of the current image.
+@component The image file input `Input` renders for its `image` kind: a hidden file input, a button that opens the file dialog, a preview of the current image, and before that button any control the caller gives.
+
+The button is the control a user operates, so it names `describedBy` in its `aria-describedby`, as the file input does. The file input is marked `aria-invalid` while `invalid`.
 
 Internal to the `input` package — not exported from its barrel. See `./README.md`.
 
@@ -18,7 +20,19 @@ See `ImagePart.type.ts`.
   import type { Image } from '@openvaa/data';
   import type { ImagePartProps } from './ImagePart.type';
 
-  let { id, label, value, isLoading, disabled, locked, showRequired, onChange }: ImagePartProps = $props();
+  let {
+    id,
+    label,
+    value,
+    isLoading,
+    disabled,
+    locked,
+    showRequired,
+    describedBy,
+    invalid,
+    action,
+    onChange
+  }: ImagePartProps = $props();
 
   const { t } = getComponentContext();
 
@@ -52,9 +66,12 @@ See `ImagePart.type.ts`.
   <!-- svelte-ignore a11y_label_has_associated_control -->
   <label id="{id}-label" class={inputLabelClass}>{label}</label>
   <div class={inputAndIconContainerClass}>
+    {@render action?.()}
     <button
       type="button"
       id="{id}-image-label"
+      data-testid="input-image-upload"
+      aria-describedby={describedBy}
       class="text-primary flex h-60 justify-stretch"
       class:cursor-pointer={!disabled}
       {disabled}
@@ -84,6 +101,8 @@ See `ImagePart.type.ts`.
       type="file"
       {id}
       aria-labelledby="{id}-label {id}-image-label"
+      aria-describedby={describedBy}
+      aria-invalid={invalid ? 'true' : undefined}
       {disabled}
       class="hidden"
       onchange={(e) => onChange?.(e)}

@@ -16,6 +16,8 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 ### Properties
 
 - `text`: The required text of the button. If `variant` is `icon`, the text will be used as the `aria-label` and `title` for the button. You can override both by providing them as attributes, e.g. `aria-label="Another text"`.
+- `suffix`: Plain text shown after `text`, in normal weight and the secondary colour, e.g. how long until the button can be pressed. It is part of the button's name. Not shown for the `icon` and `floating-icon` variants.
+- `suffixProps`: Attributes of the element that holds `suffix`, e.g. an `id` that describes the button and a `data-testid`.
 - `icon`: The name of the icon to use in the button or `null` if no icon should be used. Default: `'next'` if `variant='main'`, otherwise `null`
 - `color`: The color of the button or text. Default: `'primary'`
 - `disabled`: Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
@@ -41,6 +43,8 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
 text="Continue"/>
 <Button onclick={skip} icon="skip" iconPos="top" color="secondary"
 text="Skip this question"/>
+<Button onclick={resend} aria-disabled="true"
+text="Send again" suffix="(in 12s)"/>
 <Button onclick={addToList} variant="icon" icon="addToList"
 text="Add to list">
  {#snippet badge()}<InfoBadge text="5" />{/snippet}
@@ -57,6 +61,8 @@ text="Add to list">
 
   let {
     text,
+    suffix = undefined,
+    suffixProps = undefined,
     variant = 'normal',
     icon = null,
     iconPos = 'right',
@@ -148,11 +154,12 @@ text="Add to list">
   // `disabled` is non-standard on `<a>`. The `<a>` branch uses `aria-disabled` and drops `href` when disabled (WCAG 2.1 AA + `toBeDisabled()`-compatible); the `<button>` branch keeps native `disabled`. `loading` also disables.
   const isDisabled = $derived(disabled || loading);
 
+  // The icon and the label are siblings under the root, whose text colour the icon's `fill-current` would otherwise follow, so each takes the disabled colour itself.
+  const DISABLED_TEXT_CLASS =
+    'group-disabled:text-neutral/20 group-aria-disabled:text-neutral/20 group-[.disabled]:text-neutral/20';
+
   let labelClass = $derived.by(() => {
-    let lc = cn(
-      'first-letter:uppercase',
-      'group-disabled:text-neutral/20 group-aria-disabled:text-neutral/20 group-[.disabled]:text-neutral/20'
-    );
+    let lc = cn('first-letter:uppercase', DISABLED_TEXT_CLASS);
 
     // 7. Finally, define the class for the text label
     switch (variant) {
@@ -194,9 +201,9 @@ text="Add to list">
   {#if loading || icon}
     <div class="relative">
       {#if loading}
-        <Loading inline size="sm" class="pe-2" />
+        <Loading inline size="sm" class="pe-2" aria-hidden="true" />
       {:else if icon}
-        <Icon name={icon} />
+        <Icon name={icon} class={DISABLED_TEXT_CLASS} />
       {/if}
       {#if variant !== 'main'}
         <div class="absolute -end-6 -top-8">
@@ -209,6 +216,9 @@ text="Add to list">
     <div class={labelClass}>
       <span class="uc-first relative">
         {effectiveText}
+        {#if suffix}
+          <span {...concatClass(suffixProps ?? {}, 'font-normal text-secondary')}>{suffix}</span>
+        {/if}
         {#if !icon && variant !== 'main'}
           <div class="absolute -end-20 -top-8">
             {@render badge?.()}

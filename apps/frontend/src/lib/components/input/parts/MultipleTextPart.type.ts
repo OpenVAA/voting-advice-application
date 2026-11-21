@@ -36,9 +36,13 @@ export type MultipleTextPartProps = {
    */
   maxItems?: number;
   /**
-   * The owning `Input`'s focus-target array, indexed by row and then by locale position. `Input` refocuses its first entry after the translation toggle is pressed.
+   * The ids of the elements that describe the input — the info line and the inline error `Input` renders, and any the caller passed — set as every row field's `aria-describedby`. @default undefined
    */
-  mainInputs: Array<HTMLElement>;
+  describedBy?: string;
+  /**
+   * Whether `Input` is showing an error, which marks every field `aria-invalid`. @default false
+   */
+  invalid?: boolean;
   /**
    * Event handler triggered on every edit, add, remove or reorder with the new value: the on-screen rows with empty rows dropped, order preserved and duplicates kept. An array of plain strings, or — when `multilingual` — an array of localized strings carrying only the locales actually written.
    */

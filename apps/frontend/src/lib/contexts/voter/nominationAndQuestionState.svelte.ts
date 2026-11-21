@@ -12,20 +12,18 @@ import type {
 import type { SelectionTree } from './selectionTree.type';
 
 /**
- * Create a reactive value that contains `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType` included in `entityTypes`. It is used internally by the `VoterContext`.
- *
- * @param dataRoot - A getter returning the data root.
- * @param constituencies - A getter returning the selected constituencies.
- * @param elections - A getter returning the selected elections.
- * @param entityTypes - A getter returning the entity types to include.
- * @param hideIfMissingAnswers - A getter defining which `EntityType`s to hide if any of their opinion question answers are missing.
- * @returns A reactive nomination and question tree value.
+ * What the nomination and question state reads, each through a getter so that a change reaches the tree.
  */
 type NominationAndQuestionStateDeps = {
+  /** The data root. */
   dataRoot: () => DataRoot;
+  /** The selected constituencies. */
   constituencies: () => Array<Constituency> | undefined;
+  /** The selected elections. */
   elections: () => Array<Election> | undefined;
+  /** The entity types to include. Every type is included when the list is empty. */
   entityTypes: () => Array<EntityType>;
+  /** The setting that names, by entity type, whose nominations are hidden while the entity lacks an answer to an opinion question asked of its type. The candidate key also removes such a candidate from its organization and hides an organization left with none. The organization key hides an organization for its own missing answers and decides nothing else. */
   hideIfMissingAnswers: () => AppSettings['entities']['hideIfMissingAnswers'];
 };
 
@@ -47,15 +45,8 @@ class NominationAndQuestionStateImpl {
     if (!types?.length) types = Object.values(ENTITY_TYPE);
     const tree: Partial<NominationAndQuestionTree> = {};
     for (const election of elecs) {
-      // `getApplicableConstituency` throws when more than one constituency matches the election's groups (hierarchical selection — a municipality and its parent region both end up in the selected list for an election whose cgs include both Regions and Municipalities). Pick the FIRST match deterministically (earlier in the array — the selector pushes the implied parent ahead of the child) so the election's nomination tree still resolves (variant-startfromcg.spec.ts:145 hierarchy edge case).
-      let constituency: Constituency | undefined;
-      try {
-        constituency = election.getApplicableConstituency(constits);
-      } catch {
-        constituency = constits.find(({ id }) =>
-          election.constituencyGroups.some((group) => group.data.constituencyIds.includes(id))
-        );
-      }
+      // A municipality and its parent region may both be selected for an election whose groups include both; the election resolves to the most specific of them, the municipality.
+      const constituency = election.getMostSpecificConstituency(constits);
       if (!constituency) continue;
 
       let candidateNominationsWithMissingAnswers: Set<Id> | undefined;
@@ -79,13 +70,16 @@ class NominationAndQuestionStateImpl {
             // Check that the entities have answers to all opinion questions
             if (entityType === ENTITY_TYPE.Candidate && hideIfMissing?.candidate) {
               nominations = nominations.filter((n) => {
-                const hasAllAnswers = opinionQuestions.every((q) => n.entity.getAnswer(q) != null);
+                const hasAllAnswers = answersEvery(n.entity, opinionQuestions);
                 if (!hasAllAnswers) {
                   candidateNominationsWithMissingAnswers ??= new Set();
                   candidateNominationsWithMissingAnswers.add(n.id);
                 }
                 return hasAllAnswers;
               });
+            }
+            if (entityType === ENTITY_TYPE.Organization && hideIfMissing?.organization) {
+              nominations = nominations.filter((n) => answersEvery(n.entity, opinionQuestions));
             }
             if (entityType === ENTITY_TYPE.Organization || entityType === ENTITY_TYPE.Faction) {
               // We need to also purge child nomination ids from the data if they don't have answers to all opinion questions
@@ -114,6 +108,19 @@ class NominationAndQuestionStateImpl {
   }
 }
 
+/**
+ * Whether an entity's saved answers answer every one of the questions, by each question's own `isAnswered`: the rule the Contestant App counts an entity's unanswered questions by.
+ */
+function answersEvery(entity: AnyNominationVariant['entity'], questions: Array<AnyQuestionVariant>): boolean {
+  return questions.every((q) => q.isAnswered(entity.answers[q.id]));
+}
+
+/**
+ * Create a reactive value that contains `Nomination`s, info and opinion `Question`s for each `Election` and each `EntityType` included in `entityTypes`. A nomination whose entity lacks an answer to an opinion question asked of its type is left out when `hideIfMissingAnswers` holds that type's key. It is used internally by the `VoterContext`.
+ *
+ * @param deps - The getters the tree is derived from: the data root, the selected constituencies and elections, the entity types to include and the `hideIfMissingAnswers` setting.
+ * @returns A reactive nomination and question tree value.
+ */
 export function nominationAndQuestionState(deps: NominationAndQuestionStateDeps): {
   readonly value: NominationAndQuestionTree;
 } {

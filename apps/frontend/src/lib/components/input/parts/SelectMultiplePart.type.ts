@@ -33,6 +33,18 @@ export type SelectMultiplePartProps = {
    */
   showRequired?: boolean;
   /**
+   * Whether the input is required, which marks the dropdown `aria-required` whether or not the badge is showing. @default false
+   */
+  required?: boolean;
+  /**
+   * The ids of the elements that describe the input — the info line and the inline error `Input` renders, and any the caller passed — set as the dropdown's `aria-describedby`. @default undefined
+   */
+  describedBy?: string;
+  /**
+   * Whether `Input` is showing an error, which marks every field `aria-invalid`. @default false
+   */
+  invalid?: boolean;
+  /**
    * Every selectable option. An empty or absent list renders the general error message instead of the dropdown. @default undefined
    */
   options?: ReadonlyArray<AnyChoice>;
@@ -44,10 +56,6 @@ export type SelectMultiplePartProps = {
    * The options not yet selected, which are the ones the dropdown offers.
    */
   unselectedOptions: ReadonlyArray<AnyChoice>;
-  /**
-   * The owning `Input`'s focus-target array. The dropdown binds its first entry, which is what `Input` refocuses after an option is deleted.
-   */
-  mainInputs: Array<HTMLElement>;
   /**
    * Any remaining attributes the caller passed to `Input`, spread onto the `select`. @default {}
    */

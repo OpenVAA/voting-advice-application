@@ -17,13 +17,14 @@ import { isProtectedRoute, PROTECTED_GROUP, ROUTE } from './route';
  *
  * The pattern being defined once was the construction half of that requirement. This file is the proof half: it imports the module AND walks the filesystem AND reads the hook as text, which is why it is a vitest spec and not one of the `scripts/assert-*.mjs` guards. `route.ts` imports only a constant from a dependency-free module, so it loads under the jsdom harness with no framework stub.
  *
- * ## The five checks
+ * ## The six checks
  *
  * - **C1.** Every addressable page directory inside a protected group has at least one `ROUTE` entry that addresses it or something below it. Catches: a new protected route is added and never registered, so the hook still gates it (the predicate is structural) but `buildRoute` cannot address it.
  * - **C2.** Every `ROUTE` value carrying the group segment names a directory that exists on disk. Catches: a `ROUTE` entry that rots after its route is deleted or renamed. Two entries fail this today and are carried in an explicit register below, which is itself asserted so it cannot rot in turn.
  * - **C3.** `isProtectedRoute` answers true for every route id the walk derives and false for a sample of unprotected ids. Catches: the predicate degenerating into a constant, which would make C1 and C2 pass while gating nothing.
  * - **C4.** The application session-gate handler's body does not read `pathname` at all. Catches: the reopening of the subpath-unsafe defect class, where serving the app under a path prefix, or a route parameter whose value happens to contain the word, makes the handler misfire.
  * - **C5.** Every gated application subtree the walk finds has a row in `APP_GATES`, every row claims exactly one such subtree, and the admin row's error-message value is the one the admin protected layout redirects with. Catches: a new application shipping with an auth gate in its route tree and no gate row, which is the shape the Admin App itself had before the table existed — protected in name, ungated by the hook.
+ * - **C6.** Every entry route listed in `APP_GATES` has a `+page.server.ts` that exports a load. Catches: an entry route added without one. A client-side navigation to a page with no server load sends no request, so the gate never sees it and a live session can stand on that entry route. A production client reads this from the build's metadata, while a dev server treats any `+page.server` as having a load, so a dev-server suite cannot meet the case. This check reads each file's text rather than importing its module, because those modules' imports reach server code, and because it has to hold for a route whose file is not yet written.
  *
  * ## What counts as a gated application subtree, and why the voter surface is not one
  *
@@ -35,11 +36,11 @@ import { isProtectedRoute, PROTECTED_GROUP, ROUTE } from './route';
  *
  * ## Correctness invariants, each one a distinct way this file could hand back a false pass
  *
- * 1. **The walk must find something.** An empty protected set makes C1 and C3 vacuous, so the count is asserted to be at least two before either check runs. Two is the measured truth: one group under the candidate app, one under the admin app.
+ * 1. **The walk must find something.** An empty protected set makes C1 and C3 vacuous, so the count is asserted to be at least two before either check runs. Two is the measured truth: one group under the contestant app, one under the admin app.
  * 2. **C4's scan is scoped to the handler body.** The body is extracted by brace matching from the handler's declared identifier.
  * 3. **C4's scan must be proved to have reached real source.** The extracted body is asserted to contain both the `isApiRoute` call and the `isProtectedRoute` call, so a body that came back empty, or that came back from the wrong region of the file, fails loudly instead of passing by finding nothing.
  * 4. **Nothing here anchors to a line or column number.** Every assertion binds to an identifier, a path or a message substring. The anchors into `hooks.server.ts` have drifted repeatedly under unrelated edits; identifiers do not drift.
- * 5. **Prefix comparisons are segment-safe.** A bare `startsWith` would let `/candidate/settings` satisfy a directory called `/candidate/set`. Every prefix test below either matches the whole string or requires a separator immediately after the prefix.
+ * 5. **Prefix comparisons are segment-safe.** A bare `startsWith` would let `/contestant/settings` satisfy a directory called `/contestant/set`. Every prefix test below either matches the whole string or requires a separator immediately after the prefix.
  * 6. **The literal-masking pass used by C4 is deliberately simple and does not model regular-expression literals.** It is safe here only because invariant 3 turns any mis-mask into a loud failure rather than a silent empty scan.
  * 7. **C5's subtree set must be derived, and must be non-empty.** It comes from the same walk C1 and C3 use, so a broken walk fails the shared non-vacuity check rather than making C5 pass by finding no subtrees to check. The non-vacuity assertion for it JOINS the existing block below rather than opening a second one.
  *
@@ -61,6 +62,12 @@ const APP_GATE_HANDLER = 'appGateHandle';
 
 /** Directory names that can never be part of a route id, pruned so a stray install or build output cannot enter the walk. */
 const PRUNED_DIRECTORIES = new Set(['node_modules', '.svelte-kit']);
+
+/** The file of a page's server load. */
+const PAGE_SERVER_FILE = '+page.server.ts';
+
+/** A declared export of `load`, anchored at the start of a line so that a comment naming one cannot satisfy it. */
+const EXPORTED_LOAD = /^export\s+(?:(?:async\s+)?function\s+load\b|const\s+load\b)/m;
 
 /** The files whose presence makes a directory an addressable page rather than a grouping or layout-only node. */
 const PAGE_FILES = ['+page.svelte', '+page.server.ts', '+page.ts'];
@@ -105,7 +112,7 @@ function collectDirectories(absoluteDirectory: string): Array<string> {
  * The SvelteKit route id a directory in the route tree corresponds to.
  *
  * @param absoluteDirectory - An absolute path inside the route tree.
- * @returns The route id, group segments included, e.g. `/candidate/(protected)/profile`.
+ * @returns The route id, group segments included, e.g. `/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/profile`.
  */
 function toRouteId(absoluteDirectory: string): string {
   return `/${path.relative(ROUTE_TREE_ROOT, absoluteDirectory).split(path.sep).join('/')}`;
@@ -114,7 +121,7 @@ function toRouteId(absoluteDirectory: string): string {
 /**
  * The served URL path of a route id, i.e. the id with its route-group segments removed.
  *
- * The normalisation is needed because `ROUTE` addresses the same page in two different shapes. A group-root page is addressed without its group (`/candidate` for `/candidate/(protected)`) while a page below it is addressed with it (`/candidate/(protected)/profile`). Comparing raw ids would report the two group roots as unaddressable, which is false.
+ * The normalisation is needed because `ROUTE` addresses the same page in two different shapes. A group-root page is addressed without its group (`/contestant` for `/contestant/(protected)`) while a page below it is addressed with it (`/contestant/(protected)/[entityType=servedEntityType]/[entityId=uuid]/(nominated)/profile`). Comparing raw ids would report the two group roots as unaddressable, which is false.
  *
  * @param routeId - A SvelteKit route id.
  * @returns The path the route is served at, always beginning with a separator.
@@ -307,7 +314,7 @@ describe('the walk is not vacuous (REVIEW-RT-04)', () => {
   it('finds at least the two protected route groups the tree is known to carry', () => {
     expect(
       PROTECTED_GROUP_DIRECTORIES.map(toRouteId),
-      `The walk of ${ROUTE_TREE_ROOT} found ${PROTECTED_GROUP_DIRECTORIES.length} directories named ${PROTECTED_GROUP}, and the tree is known to carry two, one under the candidate app and one under the admin app. Every check in this file measures that set, so a smaller one makes them pass by looking at nothing. Either the walk is broken or the protected groups have been renamed, and in both cases this file has stopped guarding what it claims to guard.`
+      `The walk of ${ROUTE_TREE_ROOT} found ${PROTECTED_GROUP_DIRECTORIES.length} directories named ${PROTECTED_GROUP}, and the tree is known to carry two, one under the contestant app and one under the admin app. Every check in this file measures that set, so a smaller one makes them pass by looking at nothing. Either the walk is broken or the protected groups have been renamed, and in both cases this file has stopped guarding what it claims to guard.`
     ).toHaveLength(2);
   });
 
@@ -321,7 +328,7 @@ describe('the walk is not vacuous (REVIEW-RT-04)', () => {
   it('derives at least the two gated application subtrees from the groups it found', () => {
     expect(
       APP_SUBTREE_ROUTE_IDS,
-      `The walk derived ${APP_SUBTREE_ROUTE_IDS.length} gated application subtree(s) from the ${PROTECTED_GROUP} directories it found, and the tree is known to carry two, the candidate app and the admin app. C5 below measures exactly this set, so a smaller one makes it pass by having nothing to hold the gate table to. Derived set: ${APP_SUBTREE_ROUTE_IDS.join(', ')}`
+      `The walk derived ${APP_SUBTREE_ROUTE_IDS.length} gated application subtree(s) from the ${PROTECTED_GROUP} directories it found, and the tree is known to carry two, the contestant app and the admin app. C5 below measures exactly this set, so a smaller one makes it pass by having nothing to hold the gate table to. Derived set: ${APP_SUBTREE_ROUTE_IDS.join(', ')}`
     ).not.toHaveLength(0);
     expect(APP_SUBTREE_ROUTE_IDS.length).toBeGreaterThanOrEqual(2);
   });
@@ -332,6 +339,16 @@ describe('the walk is not vacuous (REVIEW-RT-04)', () => {
       `No value in the ROUTE map contains the segment ${PROTECTED_GROUP}, so C2 below would pass by having nothing to check. Either the map has stopped addressing protected routes, or the group segment exported as PROTECTED_GROUP no longer matches the one the map is built from.`
     ).toBeGreaterThan(0);
   });
+
+  it.each(APP_GATES.map((gate) => [gate.name, gate] as [string, (typeof APP_GATES)[number]]))(
+    'finds at least one entry route in the %s row',
+    (name, gate) => {
+      expect(
+        gate.entryRoutes.length,
+        `The gate row ${name} lists no entry route, so C6 below would hold that row to nothing. A row's login route is one of its entry routes, so an empty list means the row or this file's reading of it is wrong.`
+      ).toBeGreaterThan(0);
+    }
+  );
 });
 
 describe('C1 — every protected route on disk is addressable through ROUTE (REVIEW-RT-04)', () => {
@@ -392,8 +409,8 @@ describe('C3 — isProtectedRoute agrees with the route tree and stays discrimin
 
   it.each([
     ['Home', ROUTE.Home],
-    ['CandAppLogin', ROUTE.CandAppLogin],
-    ['CandAppHome', ROUTE.CandAppHome],
+    ['ContestantAppLogin', ROUTE.ContestantAppLogin],
+    ['ContestantAppHome', ROUTE.ContestantAppHome],
     ['Results', ROUTE.Results],
     ['AdminAppLogin', ROUTE.AdminAppLogin]
   ])('isProtectedRoute answers false for ROUTE.%s', (key, routeId) => {
@@ -404,7 +421,7 @@ describe('C3 — isProtectedRoute agrees with the route tree and stays discrimin
   });
 
   it('rejects a route id that merely contains the group name inside a larger segment', () => {
-    const lookalike = `${ROUTE.CandAppHome}/xx${PROTECTED_GROUP}yy`;
+    const lookalike = `${ROUTE.ContestantAppHome}/xx${PROTECTED_GROUP}yy`;
     expect(
       isProtectedRoute(lookalike),
       `isProtectedRoute answered true for ${lookalike}, whose segments include no exact ${PROTECTED_GROUP}. That is a substring match rather than a segment match, and it is the escalation shape the predicate exists to rule out: a route parameter value carrying the group name would be treated as a protected route.`
@@ -486,5 +503,37 @@ describe('C5 — every gated application subtree has a row in the gate table (D1
       layoutSource.includes(`errorMessage: '${errorMessage}'`),
       `The admin gate row bounces an unauthenticated caller to the admin login page with errorMessage '${errorMessage}', and ${ADMIN_PROTECTED_LAYOUT_FILE} does not redirect with that value. The hook now bounces one layer earlier than the layout does, so the two must agree or an unauthenticated admin request starts rendering a different login page state than it rendered before the hook gained this row. Change one to match the other, deliberately.`
     ).toBe(true);
+  });
+});
+
+describe('C6 — every entry route has a server load, so a client-side navigation to it reaches the gate', () => {
+  it('every entry route of APP_GATES has a +page.server.ts that exports a load', () => {
+    const lacking = APP_GATES.flatMap((gate) => gate.entryRoutes.map((key) => ({ gate: gate.name, key })))
+      .filter(({ key }) => {
+        const file = path.join(ROUTE_TREE_ROOT, ROUTE[key].slice(1), PAGE_SERVER_FILE);
+        return !fs.existsSync(file) || !EXPORTED_LOAD.test(fs.readFileSync(file, 'utf8'));
+      })
+      .map(({ gate, key }) => `${ROUTE[key]} (${gate}, ROUTE.${key})`);
+    expect(
+      lacking,
+      `Every route an APP_GATES row lists among its entry routes needs a ${PAGE_SERVER_FILE} that exports a load: a client-side navigation to a page with none sends no request, so the gate never sees it and a live session can stand on the entry route. A load that exists for this alone returns an empty object. The routes that lack one: ${lacking.join(', ')}`
+    ).toEqual([]);
+  });
+});
+
+describe('the confirm page belongs to neither application', () => {
+  it('ROUTE.AuthConfirm names a page on disk that no gate row claims and no protected group holds', () => {
+    const routeId = ROUTE.AuthConfirm;
+    expect(routeId, 'ROUTE has no AuthConfirm key').toBeTypeOf('string');
+    const directory = path.join(ROUTE_TREE_ROOT, routeId.slice(1));
+    expect(
+      PAGE_FILES.some((file) => fs.existsSync(path.join(directory, file))),
+      `ROUTE.AuthConfirm is ${routeId}, and ${directory} holds none of ${PAGE_FILES.join(', ')}. A mailed link that opens the confirm page would meet a missing page.`
+    ).toBe(true);
+    expect(
+      APP_GATES.filter((gate) => gate.isRoute(routeId)).map((gate) => gate.name),
+      `A row of APP_GATES claims ${routeId}. The confirm page is opened by the links of both applications, from a browser that may hold no session or a session of either, so neither application's gate may stand in front of it.`
+    ).toEqual([]);
+    expect(isProtectedRoute(routeId)).toBe(false);
   });
 });

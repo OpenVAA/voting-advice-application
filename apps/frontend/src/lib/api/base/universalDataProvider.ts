@@ -33,7 +33,7 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
   }
 
   getElectionData(options?: GetElectionsOptions): DPReturnType<'elections'> {
-    return this._getElectionData(options);
+    return this._getElectionData(options).then((data) => this.ensureColors(data));
   }
 
   getConstituencyData(options?: GetConstituenciesOptions): DPReturnType<'constituencies'> {

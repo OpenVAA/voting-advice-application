@@ -45,12 +45,12 @@ This component reads `fctx.version` inside its `$derived` so that any filter-rul
   }: EntityListWithControlsProps<TEntity> = $props();
 
   const ctx = getAppContext();
-  const { startEvent, t } = ctx;
+  const { track, t } = ctx;
   const fctx = getFilterContext();
   // appContext exposes `locale` as a reactive accessor — read via `ctx.locale`, never destructure it (destructuring would capture the value once at init and stop updating). It is NOT a store, so `fromStore(ctx.locale)` would throw `store.subscribe is not a function`.
   const locale = $derived(ctx.locale);
 
-  // Active FilterGroup: prop override wins over context (additive contract for off-context use such as tests and the candidate-app migration).
+  // Active FilterGroup: prop override wins over context (additive contract for off-context use such as tests and the contestant-app migration).
   // The cast to FilterGroup<MaybeWrappedEntityVariant> handles the generic variance gap — FilterGroup<TEntity> is invariant in TEntity, but our consumers (EntityFilters, computeFiltered helper) treat the FilterGroup structurally and only call the contravariant `apply` and `filters` shapes.
   const activeFilterGroup = $derived(
     (filterGroupProp ?? fctx.filterGroup) as FilterGroup<MaybeWrappedEntityVariant> | undefined
@@ -107,17 +107,14 @@ This component reads `fctx.version` inside its `$derived` so that any filter-rul
 
   function resetAllFilters(): void {
     activeFilterGroup?.reset();
-    if (activeFilterGroup) startEvent('filters_reset');
+    if (activeFilterGroup) track('filters_reset');
     filtersModalRef?.closeModal();
     // No manual recompute — reset() fires onChange → version counter bumps → $derived re-runs.
   }
 
   function trackActiveFilters(): void {
-    const af = activeFilterGroup?.filters
-      .filter((f) => f.active)
-      .map((f) => f.name)
-      .join(',');
-    if (af) startEvent('filters_active', { activeFilters: af });
+    const count = activeFilterGroup?.filters.filter((f) => f.active).length ?? 0;
+    if (count > 0) track('filters_active', { count });
   }
 </script>
 

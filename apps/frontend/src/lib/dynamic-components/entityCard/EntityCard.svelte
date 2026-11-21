@@ -20,6 +20,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   - `'subcard'`: In a list of nested entity cards, e.g., the candidates for a party.
 - `maxSubcards`: The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. Default: `3`
 - `showElection`: Whether to show the possible nomination's election and constituency. Default: `false`
+- `headerOnly`: Whether to render the card header only: avatar, title and subtitle. Featured questions, sub-matches and sub-cards are neither rendered nor looked up, so the card needs no question data. Default: `false`
+- `showType`: Whether to show the entity's type, e.g. "candidate" or "party", in the subtitle. Not shown in the `'subcard'` variant. Default: `false`
+- `keepScroll`: Whether a link action keeps the scroll position. Set to `false` when the action navigates to another page rather than opening an overlay over the list. Default: `true`
 - Any valid attributes of an `<article>` element.
 
 ### Tracking events
@@ -68,6 +71,9 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     variant = 'list',
     maxSubcards = 3,
     showElection,
+    headerOnly = false,
+    showType = false,
+    keepScroll = true,
     children,
     ...restProps
   }: EntityCardProps = $props();
@@ -77,7 +83,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   ////////////////////////////////////////////////////////////////////
 
   const ctx = getAppContext();
-  const { appType, getRoute, startEvent, t } = ctx;
+  const { appType, getRoute, track, t } = ctx;
   // appSettings/dataRoot are reactive accessors — read via ctx.X, never destructure.
   const appSettings = $derived(ctx.appSettings);
   // dataRoot is identity-stable (#version-bridge): read `ctx.dataRoot` directly inside the consuming `$derived.by`, never via an intermediate `$derived` alias (stale on cold entry). See CLAUDE.md "Context Destructuring Rule".
@@ -117,7 +123,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // The questions and possible submatches to display in the card TODO: Add support for all entity types by expanding the setting type to cover all of them
     let cardQuestions: CardQuestions | undefined;
     let showSubMatches = false;
-    if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
+    // A header-only card makes no question lookup at all: the data root throws for a question it has not loaded.
+    if (!headerOnly && (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization)) {
       showSubMatches = appSettings.results?.cardContents?.[type]?.includes('submatches') ?? false;
       if (variant !== 'details') {
         cardQuestions = getCardQuestions({
@@ -128,10 +135,11 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       }
     }
 
-    // The possible subentities to display in the card, shown only in the list variant
+    // The possible subentities to display in the card, shown only in the list variant and never in a header-only card
     let subcards: Array<EntityCardProps> | undefined;
     let subcardsMaxOverride: number | undefined; // the alliance branch overrides maxSubcards to render all member orgs
     if (
+      !headerOnly &&
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.OrganizationNomination) &&
@@ -143,6 +151,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         })
       );
     } else if (
+      !headerOnly &&
       variant === 'list' &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
@@ -160,6 +169,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // The drawer-header surface is rendered by EntityDetails.svelte (which itself wraps EntityCard variant=details); rendering it only on `'list'` here avoids a visible duplicate when EntityCard is consumed inside EntityDetails.
     let allianceSummary: { numCandidates: number; numParties: number } | undefined;
     if (
+      !headerOnly &&
       unwrapped.nomination &&
       isObjectType(unwrapped.nomination, OBJECT_TYPE.AllianceNomination) &&
       variant === 'list'
@@ -190,7 +200,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 
   function handleSubcardsToggle(): void {
     showAllSubcards = !showAllSubcards;
-    if (showAllSubcards) startEvent('entityCard_expandSubcards', { length: parsed.subcards?.length ?? 0 });
+    if (showAllSubcards) track('entityCard_expandSubcards', { length: parsed.subcards?.length ?? 0 });
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -249,7 +259,7 @@ Possibly wraps `content` in a clickable action. The snippet is card-local and is
   {:else if typeof action === 'string'}
     <a
       href={action}
-      data-sveltekit-noscroll
+      data-sveltekit-noscroll={keepScroll ? true : undefined}
       data-testid="entity-card-action"
       {...concatClass({ class: extraClass }, cn('transition-all !text-neutral', shadeOnHover && HOVER_SHADE))}>
       {@render content()}
@@ -296,6 +306,11 @@ Possibly wraps `content` in a clickable action. The snippet is card-local and is
         <!-- Subtitle -->
         <div id="{baseId}_subtitle" class="gap-sm grid grid-flow-col items-center" style="grid-area: subtitle">
           {#if variant !== 'subcard'}
+            {#if showType}
+              <span class="small-label" data-testid="entity-card-type">
+                {t(`common.${parsed.nakedEntity.type}.singular`)}
+              </span>
+            {/if}
             {#if parsed.nomination?.parentNomination}
               <EntityTag entity={parsed.nomination.parentNomination} variant="short" />
             {/if}

@@ -1,6 +1,8 @@
 <!--
 @component A modal dialog that will automatically close after a set amount of time.
 
+The count follows the wall clock (`WallClock`): its end is the time the modal opened plus `timerDuration`, checked every second and whenever the document is shown, restored, focused or resumed again. A document that was frozen, suspended or asleep runs no timer, so on its return the count ends at once if its time has passed, rather than after the rest of it.
+
 ### Snippet Props
 
 - `actions`: The action buttons to display.
@@ -17,7 +19,7 @@
 
 - `onClose`: Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
 - `onOpen`: Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
-- `onTimeout`: Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
+- `onTimeout`: Callback triggered when the count ends, once per opening. The modal stays open until a promise it returns settles, and then closes if it is still open. Note that the `onClose` callback will be triggered after this.
 
 ### Bindable functions
 
@@ -50,8 +52,9 @@ See the `<Modal>` component documentation for more information.
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, untrack } from 'svelte';
   import { tweened } from 'svelte/motion';
+  import { WallClock } from '$lib/utils/wallClock.svelte';
   import Modal from '../Modal.svelte';
   import type { TimedModalProps } from './TimedModal.type';
 
@@ -85,8 +88,17 @@ See the `<Modal>` component documentation for more information.
   // Used for progress bar animation. Reading `timerDuration` here is the initial seed for the tweened store; the prop is also re-read inside `startTimeout()` to handle prop changes between mounts.
   // svelte-ignore state_referenced_locally
   let progressBarTimer = $state(tweened(timerDuration, { duration: 0 }));
-  // Timeout for triggering onTimeout()
-  let timer: ReturnType<typeof setTimeout> | undefined;
+  /** The present time, read while the count runs. */
+  const clock = new WallClock();
+
+  /** The count's end on the wall clock, in milliseconds since the epoch, while the modal is open. */
+  let deadline = $state<number | undefined>(undefined);
+
+  // End the count once its time on the wall clock has come.
+  $effect(() => {
+    if (deadline === undefined || clock.now < deadline) return;
+    untrack(() => void endCount());
+  });
 
   // Update timeLeft to an integer when progressBarTimer updates
   $effect(() => {
@@ -99,7 +111,7 @@ See the `<Modal>` component documentation for more information.
 
   // Clean up if the containing document is left
   onDestroy(() => {
-    if (timer) clearTimeout(timer);
+    stopChecking();
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -116,30 +128,38 @@ See the `<Modal>` component documentation for more information.
     onClose?.();
   }
 
-  /** Start or reset the timeout and the progress bar */
+  /** Start or reset the count and the progress bar */
   function startTimeout() {
-    if (timer) clearTimeout(timer);
-    progressBarTimer = tweened(timerDuration, {
-      duration: (timerDuration ?? DEFAULT_DURATION) * 1000
-    });
+    stopChecking();
+    const durationMs = (timerDuration ?? DEFAULT_DURATION) * 1000;
+    progressBarTimer = tweened(timerDuration, { duration: durationMs });
     timeLeft = timerDuration;
     $progressBarTimer = 0;
-    timer = setTimeout(
-      () => {
-        if (isOpen) {
-          onTimeout?.();
-          modalRef?.closeModal();
-        }
-      },
-      (timerDuration ?? DEFAULT_DURATION) * 1000
-    );
+    clock.start();
+    deadline = Date.now() + durationMs;
   }
 
-  /** Stop the timeout and the progress bar */
+  /** Stop the count and the progress bar */
   function stopTimeout() {
-    if (timer) clearTimeout(timer);
-    timer = undefined;
+    stopChecking();
     progressBarTimer.set($progressBarTimer, { duration: 0 });
+  }
+
+  /** Forget the count's end, and stop reading the clock. */
+  function stopChecking() {
+    deadline = undefined;
+    clock.stop();
+  }
+
+  /** End the count. The end is forgotten first, so a later reading of the clock ends nothing. */
+  async function endCount() {
+    stopChecking();
+    if (!isOpen) return;
+    try {
+      await onTimeout?.();
+    } finally {
+      if (isOpen) modalRef?.closeModal();
+    }
   }
 </script>
 

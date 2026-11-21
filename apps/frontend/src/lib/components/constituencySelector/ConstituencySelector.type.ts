@@ -20,7 +20,7 @@ export type ConstituencySelectorProps = SvelteHTMLElements['div'] & {
    */
   selected?: { [electionId: Id]: Id | '' };
   /**
-   * If specified, the only this group is offered for selection and the `Constituency`s for the `Election`s are implied from this one. Only meaningful when there are multiple `Election`s whose `ConstituencyGroup` hierarchies overlap only partially. To be used when the `elections.startFromConstituencyGroup` setting is set.
+   * If specified, only this group is offered for selection. With several `Election`s the `Constituency` of each is implied from the one picked; with a single `Election` the picked `Constituency` is passed on as it is, whether or not that election is held in it. Only meaningful when there are multiple `Election`s whose `ConstituencyGroup` hierarchies overlap only partially. To be used when the `elections.startFromConstituencyGroup` setting is set.
    */
   useSingleGroup?: ConstituencyGroup;
   /**

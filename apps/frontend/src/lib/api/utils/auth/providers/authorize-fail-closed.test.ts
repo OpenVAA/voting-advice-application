@@ -1,7 +1,7 @@
 /**
  * Fail-closed guards on the provider keyword (`getActiveProvider`) and on both providers' `getAuthorizeUrl`.
  *
- * The defect the `getAuthorizeUrl` cases pin: with a configuration variable unset, `$lib/utils/constants.ts` hands the builder an empty string (it flattens everything with `?? ''` and deliberately never throws). Concatenated, that makes `signicatProvider` return `?client_id=&response_type=code&…`, a well-formed RELATIVE url: `window.location.href = authorizeUrl` in `routes/candidate/preregister/+page.svelte` resolves it against the current document and navigates back to the same page, carrying the authorization request as a query string — endpoint 200, nothing thrown, no console error.
+ * The defect the `getAuthorizeUrl` cases pin: with a configuration variable unset, `$lib/utils/constants.ts` hands the builder an empty string (it flattens everything with `?? ''` and deliberately never throws). Concatenated, that makes `signicatProvider` return `?client_id=&response_type=code&…`, a well-formed RELATIVE url: the authorize endpoint would answer it, and the registration page, which sends the browser to whatever address that endpoint answers, would resolve it against the current document and navigate back to the same page, carrying the authorization request as a query string — endpoint 200, nothing thrown, no console error.
  *
  * So the property under test is NOT "rejects for some reason". It is that the url is never BUILT from a blank input, and that the error names the offending variable — that name is the entire difference between a five-second fix and a debugging session. Assertions therefore check the variable name appears in the message, and that no url is returned.
  *

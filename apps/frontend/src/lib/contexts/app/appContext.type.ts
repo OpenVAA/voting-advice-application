@@ -1,22 +1,29 @@
 import type { FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 import type { ComponentContext } from '../component';
 import type { DataContext } from '../data';
+import type { ReactiveHandle } from '../utils/reactiveHandle.type';
 import type { AppCustomization } from './appCustomization.type';
 import type { RouteBuilder } from './getRoute.svelte';
 import type { PopupState } from './popup';
 import type { TrackingService } from './tracking';
+import type { SendPolicyInput } from './tracking/sendPolicy';
 import type { UserPreferences } from './userPreferences.type';
 
 /**
  * The AppContext type.
  *
- * ComponentContext properties are overridden: `locale` is a BARE reactive accessor (read `ctx.locale`); `locales`/`darkMode` remain `{ readonly current }` rune handles for the downstream contexts (VoterContext, CandidateContext, AdminContext) which read them via `.current`.
+ * ComponentContext properties are overridden: `locale` is a BARE reactive accessor (read `ctx.locale`); `locales`/`darkMode` remain `{ readonly current }` rune handles for the downstream contexts (VoterContext, ContestantContext, AdminContext) which read them via `.current`.
  *
  * Plain function properties (`t`, `translate`) are kept as-is from ComponentContext.
  */
 export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode'> &
   DataContext &
   TrackingService & {
+    /**
+     * The tracking producer's send-policy input — the analytics projection, the Global Privacy Control signal, the `trackEvents` setting and the stored consent — so that layouts and components evaluate the send-policy functions of `tracking/sendPolicy.ts` against the one input the producer sends under.
+     * A reactive `{ readonly current }` handle: read it as `ctx.analyticsPolicy.current` inside a tracking scope, never through a destructured copy of `current`.
+     */
+    analyticsPolicy: ReactiveHandle<SendPolicyInput>;
     /**
      * The current locale, exposed as a BARE reactive accessor.
      * Read directly via `ctx.locale`. MUST be read off `ctx` (never destructured) — it is a reactive accessor per CLAUDE.md's Context Destructuring Rule.
@@ -95,7 +102,7 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
      */
     startSurveyPopupCountdown: (delay?: number) => void;
     /**
-     * Set the user's data consent together with the date of giving or denying the consent.
+     * Set the user's data consent together with the date of giving or denying the consent. On a Contestant App route the choice is stored as `contestantDataConsent`, elsewhere as `dataCollection` (`consentPreferenceKey`).
      * @param consent - The value for the consent
      */
     setDataConsent: (consent: UserDataCollectionConsent) => void;
@@ -114,4 +121,4 @@ export type AppContext = Omit<ComponentContext, 'locale' | 'locales' | 'darkMode
 /**
  * The possible types of the application
  */
-export type AppType = 'admin' | 'candidate' | 'voter' | undefined;
+export type AppType = 'admin' | 'contestant' | 'voter' | undefined;

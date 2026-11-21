@@ -1,15 +1,16 @@
+import { log as appLog } from '@openvaa/app-shared';
 import { ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '@openvaa/data';
-import { describe, expect, test } from 'vitest';
-import { rollUpQuestionCategories } from './questionRollup';
-import type { QuestionCategoryType } from '@openvaa/data';
-import type { QuestionRollupTargets } from './questionRollup';
+import { afterEach, describe, expect, test, vi } from 'vitest';
+import { contestsOfNominations, rollUpQuestionCategories } from './questionRollup';
+import type { Constituency, Election, QuestionCategoryType } from '@openvaa/data';
+import type { ContestLookup, QuestionRollupTargets } from './questionRollup';
 
 /**
- * Contract guard for the shared question-category rollup (phase 159, requirement REVIEW-CMP-05).
+ * Contract guard for the shared question-category rollup.
  *
- * The rollup used to be written twice — once in `candidateContext.svelte.ts` and once in `voterContext.svelte.ts` — with three deliberate differences that neither copy documented. This file pins the extracted contract so the three differences stay parameterised instead of quietly collapsing into whichever copy the extraction happened to start from.
+ * `contestantContext.svelte.ts` and `voterContext.svelte.ts` both call the rollup, with three deliberate differences. This file pins the contract so the three differences stay parameterised instead of quietly collapsing into one caller's behaviour.
  *
- * What a wrong implementation would have produced. Dropping the entity-type scope from the applicable-question lookup (it is passed to two calls, and only one of them is the obvious one) would widen the candidate app's question set past its entity scope while the applicability check still looked correct — a silent over-disclosure with no type error and no failing route. Applying the question filter to only the opinion list would leave hidden informational questions rendering in the voter app. Losing the opinion-matchability guard would let a non-matchable question reach the matching algorithm, where it fails far from its cause. Returning `undefined` rather than four empty collections on an empty category set would crash both callers on cold entry, when the data root is legitimately empty for the first frames.
+ * What a wrong implementation would have produced. Dropping the entity-type scope from the applicable-question lookup (it is passed to two calls, and only one of them is the obvious one) would widen the contestant app's question set past its entity scope while the applicability check still looked correct — a silent over-disclosure with no type error and no failing route. Applying the question filter to only the opinion list would leave hidden informational questions rendering in the voter app. Losing the opinion-matchability guard would let a non-matchable question reach the matching algorithm, where it fails far from its cause. Returning `undefined` rather than four empty collections on an empty category set would crash both callers on cold entry, when the data root is legitimately empty for the first frames.
  *
  * The fixtures are plain objects shaped like the surface the rollup actually reads — the category collection, the applicability predicate, the applicable-question lookup, the category type and the matchability flag — rather than instances of the real data model, so this stays a unit test of the rollup and not of `@openvaa/data`.
  */
@@ -78,6 +79,87 @@ function notHidden(q: FakeQuestion): boolean {
 }
 
 describe('rollUpQuestionCategories', () => {
+  test.each([
+    [ENTITY_TYPE.Candidate, ['o-candidate', 'o-any'], ['i-candidate']],
+    [ENTITY_TYPE.Organization, ['o-organization', 'o-any'], ['i-organization']]
+  ] as const)(
+    'returns a question addressed to one entity type for the %s scope alone, and an unscoped question for both',
+    (entityType, expectedOpinion, expectedInfo) => {
+      /** A category whose lookup answers by the scope it is handed, as the data model's does. */
+      function scopedCategory({
+        id,
+        type,
+        questions
+      }: {
+        id: string;
+        type: QuestionCategoryType;
+        questions: Array<FakeQuestion & { addressedTo?: string }>;
+      }): FakeCategory {
+        return {
+          id,
+          type,
+          appliesTo: () => true,
+          getApplicableQuestions: (targets) =>
+            questions.filter((q) => !q.addressedTo || !targets.entityType || q.addressedTo === targets.entityType)
+        };
+      }
+      const opinion = scopedCategory({
+        id: 'opinion-1',
+        type: QUESTION_CATEGORY_TYPE.Opinion,
+        questions: [
+          { ...question({ id: 'o-candidate' }), addressedTo: ENTITY_TYPE.Candidate },
+          { ...question({ id: 'o-organization' }), addressedTo: ENTITY_TYPE.Organization },
+          question({ id: 'o-any' })
+        ]
+      });
+      const info = scopedCategory({
+        id: 'info-1',
+        type: QUESTION_CATEGORY_TYPE.Info,
+        questions: [
+          { ...question({ id: 'i-candidate' }), addressedTo: ENTITY_TYPE.Candidate },
+          { ...question({ id: 'i-organization' }), addressedTo: ENTITY_TYPE.Organization }
+        ]
+      });
+
+      const result = rollUpQuestionCategories({
+        dataRoot: { questionCategories: [opinion, info] },
+        elections: [],
+        constituencies: [],
+        entityType
+      });
+
+      expect(result.opinionQuestions.map((q) => q.id)).toEqual(expectedOpinion);
+      expect(result.infoQuestions.map((q) => q.id)).toEqual(expectedInfo);
+    }
+  );
+
+  test('drops a category that holds no question for the scope, and keeps it for the scope it holds one for', () => {
+    const log = newCallLog();
+    const candidatesOnly: FakeCategory = {
+      ...category({ id: 'opinion-1', type: QUESTION_CATEGORY_TYPE.Opinion, log }),
+      getApplicableQuestions: (targets) =>
+        targets.entityType === ENTITY_TYPE.Candidate ? [question({ id: 'o-candidate' })] : []
+    };
+
+    const forOrganization = rollUpQuestionCategories({
+      dataRoot: { questionCategories: [candidatesOnly] },
+      elections: [],
+      constituencies: [],
+      entityType: ENTITY_TYPE.Organization
+    });
+    const forCandidate = rollUpQuestionCategories({
+      dataRoot: { questionCategories: [candidatesOnly] },
+      elections: [],
+      constituencies: [],
+      entityType: ENTITY_TYPE.Candidate
+    });
+
+    expect(forOrganization.opinionCategories).toEqual([]);
+    expect(forOrganization.opinionQuestions).toEqual([]);
+    expect(forCandidate.opinionCategories).toEqual([candidatesOnly]);
+    expect(forCandidate.opinionQuestions.map((q) => q.id)).toEqual(['o-candidate']);
+  });
+
   test('splits every applicable category into its informational and opinion groups', () => {
     const log = newCallLog();
     const info = category({
@@ -239,5 +321,56 @@ describe('rollUpQuestionCategories', () => {
     expect(result.opinionCategories).toEqual([]);
     expect(result.infoQuestions).toEqual([]);
     expect(result.opinionQuestions).toEqual([]);
+  });
+});
+
+describe('contestsOfNominations', () => {
+  const electionA = { id: 'election-a' } as Election;
+  const electionB = { id: 'election-b' } as Election;
+  const constituencyA = { id: 'constituency-a' } as Constituency;
+
+  /** A lookup that holds the given objects and throws for any other id, as a data root does. */
+  function lookupOf(elections: Array<Election>, constituencies: Array<Constituency>): ContestLookup {
+    function find<TObject extends { id: string }>(objects: Array<TObject>, id: string): TObject {
+      const found = objects.find((o) => o.id === id);
+      if (!found) throw new Error(`no such object: ${id}`);
+      return found;
+    }
+    return {
+      getElection: (id) => find(elections, id),
+      getConstituency: (id) => find(constituencies, id)
+    };
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test('resolves every id once, in the order the nominations name them', () => {
+    const result = contestsOfNominations({
+      dataRoot: lookupOf([electionA, electionB], [constituencyA]),
+      nominations: [
+        { electionId: 'election-b', constituencyId: 'constituency-a' },
+        { electionId: 'election-a', constituencyId: 'constituency-a' },
+        { electionId: 'election-b', constituencyId: 'constituency-a' }
+      ]
+    });
+
+    expect(result).toEqual({ elections: [electionB, electionA], constituencies: [constituencyA], unresolved: false });
+  });
+
+  test('skips and logs an id the data root does not hold, and keeps the others', () => {
+    const logged = vi.spyOn(appLog, 'error').mockImplementation(() => undefined);
+
+    const result = contestsOfNominations({
+      dataRoot: lookupOf([electionA], [constituencyA]),
+      nominations: [
+        { electionId: 'election-unknown', constituencyId: 'constituency-unknown' },
+        { electionId: 'election-a', constituencyId: 'constituency-a' }
+      ]
+    });
+
+    expect(result).toEqual({ elections: [electionA], constituencies: [constituencyA], unresolved: true });
+    expect(logged).toHaveBeenCalledTimes(2);
   });
 });

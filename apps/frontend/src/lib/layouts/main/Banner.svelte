@@ -2,7 +2,7 @@
 
 # Banner component
 
-Contains the secondary action buttons in the header.
+Contains the secondary action buttons in the header. The logout action is shown to a signed-in user of the Contestant App or the Admin App, read from the session the app's outermost load provides.
 
 ### TODO
 
@@ -10,18 +10,20 @@ Allow layouts to insert arbitrary content in the header and make this a static c
 
 ### Dynamic component
 
-Accesses `AppContext` and optionally `VoterContext`.
+Accesses `AppContext`, and `VoterContext`, `ContestantContext` or `AdminContext` in the app of that type. The Log out is the one shared `LogoutButton`, given the app's own sign-out: the Contestant App's with its warning of what is left undone, the Admin App's as it is. Each app's sign-out goes to that app's login itself.
 -->
 
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { LogoutButton as CandidateLogoutButton } from '$candidate/components/logoutButton';
+  import { contestantLogoutWarning } from '$contestant/utils/logoutWarning';
   import { Button } from '$lib/components/button';
+  import { getAdminContext } from '$lib/contexts/admin';
   import { getAppContext } from '$lib/contexts/app';
+  import { getContestantContext } from '$lib/contexts/contestant';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { LogoutButton as AdminLogoutButton } from '$lib/dynamic-components/logoutButton';
+  import { LogoutButton } from '$lib/dynamic-components/logoutButton';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -30,6 +32,10 @@ Accesses `AppContext` and optionally `VoterContext`.
   // `appType`, `getRoute` and `openFeedbackModal` are stable rune handles from AppContext; read `.current` directly.
   const { appType, getRoute, openFeedbackModal, t } = getAppContext();
   const voterCtx = appType.current === 'voter' ? getVoterContext() : undefined;
+  const contestantCtx = appType.current === 'contestant' ? getContestantContext() : undefined;
+  const adminCtx = appType.current === 'admin' ? getAdminContext() : undefined;
+  // Read inside the derived, so the warning follows the contestant context's accessors.
+  const logoutWarning = $derived(contestantCtx ? contestantLogoutWarning(contestantCtx) : undefined);
   const { topBarSettings, video } = getLayoutContext();
 </script>
 
@@ -45,11 +51,11 @@ Accesses `AppContext` and optionally `VoterContext`.
       text={video.mode === 'video' ? t('components.video.showTranscript') : t('components.video.showVideo')} />
   {/if}
 
-  {#if topBarSettings.current.actions.logout == 'show' && page.data.token}
-    {#if appType.current === 'candidate'}
-      <CandidateLogoutButton variant="icon" />
-    {:else if appType.current === 'admin'}
-      <AdminLogoutButton variant="icon" redirectTo="AdminAppLogin" />
+  {#if topBarSettings.current.actions.logout == 'show' && page.data.session}
+    {#if appType.current === 'contestant' && contestantCtx}
+      <LogoutButton logout={contestantCtx.logout} warning={logoutWarning} variant="icon" data-testid="header-logout" />
+    {:else if appType.current === 'admin' && adminCtx}
+      <LogoutButton logout={adminCtx.logout} variant="icon" data-testid="header-logout" />
     {/if}
   {/if}
 
@@ -88,7 +94,14 @@ Accesses `AppContext` and optionally `VoterContext`.
       icon="close"
       text={topBarSettings.current.actions.returnButtonLabel || t('common.return')}
       onclick={topBarSettings.current.actions.returnButtonCallback ||
-        (() => goto(appType.current === 'voter' ? getRoute.current('Home') : getRoute.current('CandAppHome')))} />
+        (() =>
+          goto(
+            appType.current === 'voter'
+              ? getRoute.current('Home')
+              : contestantCtx
+                ? contestantCtx.homeRoute
+                : getRoute.current('AdminAppHome')
+          ))} />
   {/if}
 
   {#if topBarSettings.current.actions.cancel === 'show' && topBarSettings.current.actions.cancelButtonCallback}

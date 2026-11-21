@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
  * Lock-in self-test — the `svelte/store` ESLint guard's APP-WIDE REACH, proven at four directories x two extensions rather than at a single probe path.
  *
  * Matrix axes:
- *   dir       — lib/components | lib/utils | lib/dynamic-components | lib/candidate/components extension — .ts | .svelte assertion — fires on a static store import | stays silent on clean rune code | parses without a fatal message 4 x 2 x 3 = 24 matrix assertions, plus 3 extension probes, 2 dynamic-import probes and 1 inherited-ban regression case = 30 cases.
+ *   dir       — lib/components | lib/utils | lib/dynamic-components | lib/contestant/components extension — .ts | .svelte assertion — fires on a static store import | stays silent on clean rune code | parses without a fatal message 4 x 2 x 3 = 24 matrix assertions, plus 3 extension probes, 2 dynamic-import probes and 1 inherited-ban regression case = 30 cases.
  *
  * The CONSTRUCTION half — widening the guard glob beyond `lib/contexts` + `routes`, clearing every real `svelte/store` import, and closing the dynamic `import()` form — is done and lives in the config. This spec supplies the PROOF half: the guard is asserted to FIRE on a deliberate store import — so a future reintroduction breaks the test suite rather than linting clean by accident — AND to stay SILENT on clean rune code, so "it fires" is a discriminating signal rather than a constant.
  *
@@ -31,7 +31,7 @@ const eslint = new ESLint();
 // asserted nowhere: the config is the source of truth, and the probes below measure it.
 const SRC = path.resolve(__dirname, '../..');
 
-const GUARDED_DIRS = ['lib/components', 'lib/utils', 'lib/dynamic-components', 'lib/candidate/components'] as const;
+const GUARDED_DIRS = ['lib/components', 'lib/utils', 'lib/dynamic-components', 'lib/contestant/components'] as const;
 
 const STORE_IMPORT = {
   '.ts': "import { writable } from 'svelte/store';\n\nexport const x = writable(0);\n",

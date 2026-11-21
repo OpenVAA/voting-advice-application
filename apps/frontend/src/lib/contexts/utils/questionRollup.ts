@@ -1,16 +1,18 @@
+import { log } from '@openvaa/app-shared';
 import { QUESTION_CATEGORY_TYPE } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
+import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import type { Id } from '@openvaa/core';
 import type { Constituency, Election, EntityType, QuestionCategoryType } from '@openvaa/data';
 
 /**
  * Roll a data root's question categories up into the four collections both orchestrator contexts need: the informational and opinion category groups, and the flattened question list for each group.
  *
- * see phase 159, requirement REVIEW-CMP-05. This logic was written twice — once in `candidateContext.svelte.ts` and once in `voterContext.svelte.ts` — and neither copy recorded that the two were deliberately different rather than accidentally divergent. The differences are exactly three, and this module PARAMETERISES all three rather than collapsing them:
+ * Both `contestantContext.svelte.ts` and `voterContext.svelte.ts` call it. Their rollups differ deliberately, in exactly three ways, and this module PARAMETERISES all three rather than collapsing them:
  *
- * 1. **Entity-type scope.** The candidate app scopes the rollup to `ENTITY_TYPE.Candidate` and must pass that scope into BOTH `appliesTo(...)` and `getApplicableQuestions(...)`; the voter app passes no scope at all. Passing it to only the first call would still yield a plausible category list while widening the question set past its entity scope, so the scope is built once here and reused for every call.
- * 2. **Question filter.** The voter app drops questions flagged hidden, from BOTH the informational and the opinion list; the candidate app filters nothing. The predicate is supplied by the caller because what counts as hidden is app-shaped custom data, not a property of the rollup.
- * 3. **Question blocks.** Deliberately NOT here. The candidate app builds blocks from every opinion category inside the same effect; the voter app builds them in a separate effect, filtered by the voter's selected category ids and reordered around a first-question id. Sharing that would produce a parameterised branch rather than shared logic, so each context keeps its own block computation.
+ * 1. **Entity-type scope.** The contestant app scopes the rollup to the type of the entity it has loaded, makes no call while it has none, and must pass that scope into BOTH `appliesTo(...)` and `getApplicableQuestions(...)`; the voter app passes no scope at all. Passing it to only the first call would still yield a plausible category list while widening the question set past its entity scope, so the scope is built once here and reused for every call.
+ * 2. **Question filter.** The voter app drops questions flagged hidden, from BOTH the informational and the opinion list; the contestant app filters nothing. The predicate is supplied by the caller because what counts as hidden is app-shaped custom data, not a property of the rollup.
+ * 3. **Question blocks.** Deliberately NOT here. The contestant app builds blocks from every opinion category inside the same effect; the voter app builds them in a separate effect, filtered by the voter's selected category ids and reordered around a first-question id. Sharing that would produce a parameterised branch rather than shared logic, so each context keeps its own block computation.
  *
  * ── The `dataRoot` contract (LANDMINE) ───────────────────────────────────────
  * This module takes the data root BY VALUE and is a plain, synchronous, rune-free function with no module-level mutable state — so two context classes calling it in the same tick cannot interleave, and neither call can observe the other's intermediate state. That is deliberate, and it is the whole safety property of the extraction.
@@ -49,8 +51,8 @@ type QuestionOf<TCategory extends RollupCategory> = ReturnType<TCategory['getApp
  * @param dataRoot - The data root, passed BY VALUE from inside the caller's effect body. Never an alias and never a thunk — see the module header.
  * @param elections - The currently selected elections.
  * @param constituencies - The currently selected constituencies.
- * @param entityType - Optional entity-type scope, applied to BOTH the applicability check and the applicable-question lookup. The candidate app passes one; the voter app does not.
- * @param questionFilter - Optional predicate applied to BOTH question kinds. The voter app passes its hidden-question filter; the candidate app passes none.
+ * @param entityType - Optional entity-type scope, applied to BOTH the applicability check and the applicable-question lookup. The contestant app passes one; the voter app does not.
+ * @param questionFilter - Optional predicate applied to BOTH question kinds. The voter app passes its hidden-question filter; the contestant app passes none.
  * @returns The two category groups and the two question lists. Empty collections, never `undefined`, when the data root holds no categories.
  * @throws A 500 when an opinion category holds a question that is not matchable — the question would otherwise reach the matching algorithm and fail far from its cause.
  */
@@ -103,4 +105,56 @@ export function rollUpQuestionCategories<TCategory extends RollupCategory>({
     infoQuestions,
     opinionQuestions
   };
+}
+
+/** The part of a nomination `contestsOfNominations` reads: the ids of its election and its constituency. */
+export type NominationContestIds = {
+  readonly electionId: Id;
+  readonly constituencyId: Id;
+};
+
+/** The lookups `contestsOfNominations` makes. A `DataRoot` satisfies it; each lookup throws for an id the data root does not hold. */
+export type ContestLookup = {
+  getElection(id: Id): Election;
+  getConstituency(id: Id): Constituency;
+};
+
+/**
+ * The elections and constituencies an entity's nominations name, resolved on a data root: the targets of the entity's question rollup.
+ *
+ * An id the data root does not hold is logged and skipped, so it costs the entity none of the others; `unresolved` says that one was. The Contestant App's context and the server's preview gate both call this, so both ask an entity the same questions.
+ *
+ * @param dataRoot - The data root, passed BY VALUE from inside the caller's effect body, as for `rollUpQuestionCategories`.
+ * @param nominations - The entity's nominations.
+ * @returns The elections and the constituencies, each without duplicates and in the order the nominations name them, and whether any id was not found.
+ */
+export function contestsOfNominations({
+  dataRoot,
+  nominations
+}: {
+  dataRoot: ContestLookup;
+  nominations: ReadonlyArray<NominationContestIds>;
+}): { elections: Array<Election>; constituencies: Array<Constituency>; unresolved: boolean } {
+  let unresolved = false;
+
+  function resolve<TObject>(id: Id, lookup: (id: Id) => TObject, label: string): Array<TObject> {
+    try {
+      return [lookup(id)];
+    } catch (e) {
+      unresolved = true;
+      log.error(`[contestsOfNominations] A nomination names ${label} the data root does not hold: ${e}`);
+      return [];
+    }
+  }
+
+  const elections = removeDuplicates(
+    nominations.flatMap(({ electionId }) => resolve(electionId, (id) => dataRoot.getElection(id), 'an election'))
+  );
+  const constituencies = removeDuplicates(
+    nominations.flatMap(({ constituencyId }) =>
+      resolve(constituencyId, (id) => dataRoot.getConstituency(id), 'a constituency')
+    )
+  );
+
+  return { elections, constituencies, unresolved };
 }

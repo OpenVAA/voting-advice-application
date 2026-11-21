@@ -1,46 +1,54 @@
-import type { WritableHandle } from '../../utils/reactiveHandle.type';
-import type { TrackingEvent } from './trackingEvent.type';
+import type { TrackingEventData, TrackingEventName } from './trackingEvent.type';
 
 /**
  * A service provider for tracking functions.
  *
- * This is the ONE tracking-service type: the producer (`trackingService.svelte.ts`) implements it directly and `appContext` forwards it. There is no second, rune-shaped layer — the one this type used to be paired with existed only to re-declare the handle-shaped members while the `appContext` seam still converted them to stores, and that seam is gone.
+ * This is the ONE tracking-service type: the producer (`trackingService.svelte.ts`) implements it directly and `appContext` forwards it.
  *
- * CONSUMER-FACING SURFACE — deliberately narrower than the producer. The producer owns two further handle members (the persistent analytics session id and the tracking-enabled gate) that are read only producer-to-producer: the producer stamps the session id onto every event it sends, and `appContext` passes the same handle into the survey-link producer. Both are therefore ABSENT from this type and forwarded onto NO context — see the selective forward in `appContext.svelte.ts`, which names them and says why they are withheld.
+ * CONSUMER-FACING SURFACE — the producer is wider than this type, and `appContext` forwards part of it; see the forwarding block in `appContext.svelte.ts`.
+ *
+ * Every event goes into one buffer, and `submitAllEvents` sends the view's pageview and the buffered events the send policy allows as one batch to the relay.
  */
 export type TrackingService = {
   /**
-   * Call at the start of a page view to create an event that will be automatically submitted when the user leaves the page or hides or closes the window.
-   * @param url - The url of the page
-   * @param from - Optional route from which the page was loaded
+   * Call at the start of a page view. The view's pageview is sent at the first flush after this call and never again. A route that is not on the pageview list, or no route at all, starts no view.
+   * @param routeId - The route id of the page, e.g. `page.route.id`, or `null` when there is none
+   * @param params - The route parameters of the page; only those the pageview list allows for the route are kept
    */
-  startPageview: (url: string, from?: string | null) => void;
+  startPageview: (routeId: string | null, params: Readonly<Record<string, string | undefined>> | null) => void;
   /**
-   * Start an analytics event into which you want to add data to later, and which will be automatically submitted as part of the `pageview` event when the user leaves the page or hides or closes the window.
-   * @param name - Event name
-   * @param data - Initial event data
-   * @returns The event object that can be used to add data to.
+   * Buffer an analytics event, to be sent with the next flush. Nothing is sent by this call.
+   * @param name - Event name, one of the vocabulary
+   * @param data - The event's attributes. Required when the event has a required attribute, optional when it has none.
    */
-  startEvent: (name: TrackingEvent['name'], data?: TrackingEvent['data']) => TrackingEvent;
+  track: <TName extends TrackingEventName>(name: TName, ...data: TrackingDataArgument<TName>) => void;
   /**
-   * Track an analytics event and send it immediately. For most purposes, it's better to use the `startEvent` function instead, which will collect the events by page and only submit them when the page is unloaded.
-   * NB. All event data is routed via `track` when submitted.
-   * @param name - Event name
-   * @param data - Optional event data
-   */
-  track: (name: TrackingEvent['name'], data?: TrackingEvent['data']) => void;
-  /**
-   * Submit all unsubmitted compound events started with `startEvent` and the `pageview` event.
+   * Flush: send the current view's pageview, when it has not been sent, and the buffered events the send policy allows, in one request to the relay. The buffer is empty afterwards; events the send policy did not allow are discarded.
    */
   submitAllEvents: () => void;
   /**
-   * Reset all unsubmitted events, including the `pageview` event.
+   * Clear the event buffer. The current view and its pageview are kept.
    */
   resetAllEvents: () => void;
   /**
-   * A writable rune handle containing the function that will send the events. In order for tracking to do anything, this value must be set via `.set(...)` — it is set from the root layout, which is why it stays consumer-facing while the other two handle members do not.
+   * Report a change of the page's visibility, so that the view's duration counts only the time the page was visible.
+   * @param visible - Whether the page is visible now
    */
-  sendTrackingEvent: WritableHandle<TrackingHandler | null | undefined>;
+  setPageVisible: (visible: boolean) => void;
 };
 
-export type TrackingHandler = (event: TrackingEvent<Record<string, JSONData>>) => void;
+/**
+ * The keys of `TData` that are required, or `never` when every key is optional or there is none.
+ */
+type RequiredKeys<TData> = {
+  [TKey in keyof TData]-?: Record<never, never> extends Pick<TData, TKey> ? never : TKey;
+}[keyof TData];
+
+/**
+ * The data argument of a tracking call for the event `TName`: required when the event has at least one required attribute, optional when it has none.
+ */
+export type TrackingDataArgument<TName extends TrackingEventName> = [RequiredKeys<TrackingEventData<TName>>] extends [
+  never
+]
+  ? [data?: TrackingEventData<TName>]
+  : [data: TrackingEventData<TName>];

@@ -14,12 +14,17 @@ Internal to the `input` package — not exported from its barrel. See `./README.
 - Values are opaque strings: no numeric coercion, no dedup, no sorting, no case
   folding, no Unicode normalization.
 
+- When `multilingual`, each field and its language label carry `lang` set to their locale. Every field names `describedBy` in its `aria-describedby`, and is marked `aria-invalid` while `invalid`.
+
 ### Properties
 See `MultipleTextPart.type.ts`.
 
 ### Callbacks
 - `onChange`: triggered on every edit / add / remove / reorder with the filtered,
   order-preserving value array.
+
+### Bindable functions
+- `focus`: Moves focus to the first row's first field.
 -->
 
 <script lang="ts">
@@ -38,7 +43,8 @@ See `MultipleTextPart.type.ts`.
     disabled,
     minItems,
     maxItems,
-    mainInputs,
+    describedBy,
+    invalid,
     onChange
   }: MultipleTextPartProps = $props();
 
@@ -159,6 +165,20 @@ See `MultipleTextPart.type.ts`.
   }
 
   ////////////////////////////////////////////////////////////////////
+  // Keyboard navigation
+  ////////////////////////////////////////////////////////////////////
+
+  /** The rendered fields, by row and then by locale position. `$state`, because `bind:this` writes its members. */
+  const fields: Array<HTMLElement> = $state([]);
+
+  /**
+   * Move focus to the first row's first field. Does nothing when no field is rendered.
+   */
+  export function focus(): void {
+    fields[0]?.focus();
+  }
+
+  ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
 
@@ -180,18 +200,21 @@ See `MultipleTextPart.type.ts`.
               <!-- svelte-ignore a11y_label_has_associated_control -->
               <label
                 id="{id}-label-{index}-{locale}"
+                lang={locale}
                 class="{inputLabelClass} transition-opacity"
                 class:opacity-0={!isTranslationsVisible}>{t(assertTranslationKey(`lang.${locale}`))}</label>
             {/if}
-            <!-- bind: keep — $state target for bind:this; mainInputs is $state([]) in the owning Input. -->
             <input
               type="text"
               data-testid="multiple-text-row"
               id={multilingual ? `${id}-${index}-${locale}` : `${id}-${index}`}
+              lang={multilingual ? locale : undefined}
               aria-labelledby={multilingual ? `${id}-label ${id}-label-${index}-${locale}` : `${id}-label`}
+              aria-describedby={describedBy}
+              aria-invalid={invalid ? 'true' : undefined}
               disabled={isDisabled}
               class={rowInputClass}
-              bind:this={mainInputs[index * fieldLocales.length + localeIndex]}
+              bind:this={fields[index * fieldLocales.length + localeIndex]}
               value={fieldValue(index, locale)}
               oninput={(e) => handleInput(index, locale, e)} />
             {#if localeIndex === 0}

@@ -9,9 +9,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$lib/contexts/app', () => ({
   getAppContext: () => ({
-    appType: { current: 'candidate' },
+    appType: { current: 'contestant' },
     getRoute: { current: () => '/results/candidate/c1' },
-    startEvent: () => undefined,
+    track: () => undefined,
     t: (key: string) => key,
     appSettings: { results: { cardContents: {} } },
     dataRoot: {}
