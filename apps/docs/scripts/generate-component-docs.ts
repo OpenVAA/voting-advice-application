@@ -7,11 +7,16 @@ import { glob } from 'glob';
 import * as path from 'path';
 import { COMPONENT_DIRS, COPY_TARGETS, GENERATED_OUTPUT, GITHUB_BASE, REPO_ROOT } from './docs-scripts.config';
 import { isMainModule } from './utils/cli';
+import { mapOutsideFences } from './utils/markdown';
 
+/**
+ * A directory of Svelte components to document, as `COMPONENT_DIRS` lists it.
+ */
 export interface ComponentDir {
   dir: string;
   name: string;
   importPrefix: string;
+  /** Where the directory's pages are written under the generated components route, and so where the table of contents links them. */
   categorySubdir: string;
 }
 
@@ -205,18 +210,7 @@ function repoRelative(filePath: string): string {
  * Add one `#` to every ATX heading outside fenced code blocks, so an embedded README's H1 becomes an H2
  */
 function demoteHeadings(markdown: string): string {
-  let inFence = false;
-  return markdown
-    .split('\n')
-    .map((line) => {
-      if (/^\s*(```|~~~)/.test(line)) {
-        inFence = !inFence;
-        return line;
-      }
-      if (!inFence && /^#{1,5}\s/.test(line)) return `#${line}`;
-      return line;
-    })
-    .join('\n');
+  return mapOutsideFences(markdown, (line) => (/^#{1,5}\s/.test(line) ? `#${line}` : line));
 }
 
 /**
