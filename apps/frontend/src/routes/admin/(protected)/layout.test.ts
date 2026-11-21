@@ -6,7 +6,7 @@
  * 1. **No session in the page data** redirects to the login page with `loginFailed`, before anything is read.
  * 2. **A read in the browser that answers nothing, with a session in the page data,** asks the writer whether the load's client still holds a session. When it holds none, the session ended elsewhere and the load redirects to the login page with `loginFailed`. When one is left, or the client cannot tell, it is an error in the reader's language: no redirect and no sign-out. The gate sends a live session straight back from the login page, so a redirect there would never end.
  * 3. **An admitted user** gets the user data and the gate the server load decided: during server rendering the server load's user data, with nothing read; in the browser the user data read with the tab's own client.
- * 4. **A user the server load did not admit** is signed out, with nothing read, and redirected to the login page with `userNotAuthorized` when the sign-out works. When it fails, the failure is logged. In the browser the writer is then asked whether a session is left: none redirects to the login page with `userNotAuthorized`, and one left, or no answer, throws a 403 in the reader's language, with no redirect, for the same reason as in 2. On the server it is not asked and the load throws the 403: the client there writes no cookies, so after its own failed sign-out it answers no session while the browser still holds one.
+ * 4. **A user the server load did not admit** is signed out, with nothing read, and redirected to the login page with `userNotAuthorized` when the sign-out works. When it fails, the failure is logged. In the browser the writer is then asked whether a session is left: none redirects to the login page with `userNotAuthorized`, and one left, or no answer, throws a 503 in the reader's language, with no redirect, for the same reason as in 2. On the server it is not asked and the load throws the 503: the client there writes no cookies, so after its own failed sign-out it answers no session while the browser still holds one.
  * 5. **The load reads no `url`, `route` or `params`.** The event's getters for them throw, in every case, and one case reaches the end of the load to show it.
  * 6. **The Contestant App's drafts.** In the browser, a sign-out of a user who is no administrator that has ended the session removes them before the redirect: one that worked, and one that failed with no session left. One that failed with a session left removes none, and on the server nothing is removed. A load that finds no session removes none.
  * 7. **The announcements to the other tabs.** In the browser, the sign-out of a user who is no administrator is made between a `start` and an `end` announcement.
@@ -200,7 +200,7 @@ describe("the Admin App's protected load", () => {
     expect(getUserData).not.toHaveBeenCalled();
   });
 
-  it('on the server, logs a sign-out that fails and throws a 403 with the text of error.403, with no redirect, and does not ask whether a session is left', async () => {
+  it('on the server, logs a sign-out that fails and throws a 503 with the text of error.default, with no redirect, and does not ask whether a session is left', async () => {
     const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
     createDataWriter.mockReturnValue({ isSessionGone, logout });
     logout.mockRejectedValue(new Error('The logout endpoint answered 502.'));
@@ -208,7 +208,7 @@ describe("the Admin App's protected load", () => {
 
     const failed = await httpErrorFrom(makeEvent(SESSION, NOT_ADMITTED));
 
-    expect(failed).toEqual({ status: 403, body: { message: 'error.403' } });
+    expect(failed).toEqual({ status: 503, body: { message: 'error.default' } });
     expect(isSessionGone).not.toHaveBeenCalled();
     expect(error).toHaveBeenCalledTimes(1);
     expect(String(error.mock.calls[0][0])).toContain('The logout endpoint answered 502.');
@@ -234,7 +234,7 @@ describe("the Admin App's protected load", () => {
     expect(getUserData).not.toHaveBeenCalled();
   });
 
-  it('in the browser, logs a sign-out that fails and throws a 403 with the text of error.403, with no redirect, when a session is left', async () => {
+  it('in the browser, logs a sign-out that fails and throws a 503 with the text of error.default, with no redirect, when a session is left', async () => {
     environment.browser = true;
     const error = vi.spyOn(log, 'error').mockImplementation(() => undefined);
     createDataWriter.mockReturnValue({ isSessionGone, logout });
@@ -243,7 +243,7 @@ describe("the Admin App's protected load", () => {
 
     const failed = await httpErrorFrom(makeEvent(SESSION, NOT_ADMITTED));
 
-    expect(failed).toEqual({ status: 403, body: { message: 'error.403' } });
+    expect(failed).toEqual({ status: 503, body: { message: 'error.default' } });
     expect(isSessionGone).toHaveBeenCalledTimes(1);
     expect(error).toHaveBeenCalledTimes(1);
     expect(getUserData).not.toHaveBeenCalled();
@@ -298,7 +298,7 @@ describe("the Admin App's protected load and the Contestant App's drafts", () =>
 
     const failed = await httpErrorFrom(makeEvent(SESSION, NOT_ADMITTED));
 
-    expect(failed.status).toBe(403);
+    expect(failed.status).toBe(503);
     expect(discardContestantDrafts).not.toHaveBeenCalled();
     expect(getUserData).not.toHaveBeenCalled();
   });
@@ -322,7 +322,7 @@ describe("the Admin App's protected load and the Contestant App's drafts", () =>
 
     const failed = await httpErrorFrom(makeEvent(SESSION, NOT_ADMITTED));
 
-    expect(failed.status).toBe(403);
+    expect(failed.status).toBe(503);
     expect(discardContestantDrafts).not.toHaveBeenCalled();
     expect(getUserData).not.toHaveBeenCalled();
   });

@@ -73,7 +73,7 @@ export async function load({ data, fetch, parent }) {
     if (browser) announceLogout('end');
     // Asked in the browser alone. There the writer's sign-out calls the logout endpoint first, whose server client clears the cookies when the auth service's answer is what failed, and the tab's client reads them gone. The universal client on the server writes no cookies, so after its own failed sign-out it answers no session while the browser still holds one, and a redirect would come straight back.
     const sessionEnded = signedOut || (browser && (await dataWriter.isSessionGone()));
-    if (!sessionEnded) error(403, { message: t('error.403') });
+    if (!sessionEnded) error(503, { message: t('error.default') });
     // Removed here rather than by a subscriber: this load can run before the Admin App's layout has mounted, on a link from a page with no subscriber, and the client reports no sign-out that failed. The server cannot reach the browser's storage.
     if (browser) discardContestantDrafts();
     redirect(
