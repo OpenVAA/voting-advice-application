@@ -103,7 +103,7 @@ describe('the hosted-settings parity guard still has teeth', () => {
     expect(result.stdout).toContain('auth/site_url');
   });
 
-  it('reproduces its embedded cases in self-test mode', () => {
+  it('reproduces its fixture cases in self-test mode', () => {
     expect(runGuard(['--self-test']).status).toBe(0);
   });
 

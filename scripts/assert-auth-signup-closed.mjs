@@ -16,11 +16,11 @@
  *
  * Together the first and the third make `auth.users.email_confirmed_at` mean one of two things and nothing else: a mail sent to the address was opened, or a service-side call vouched for the address.
  *
- * A key counts only inside its own table. `enable_signup` and `enable_confirmations` also exist under `[auth.sms]`, and neither of those satisfies or violates a requirement here; nor does `minimum_password_length`, `otp_length` or `otp_expiry` written in any table but its own. A key that is absent, commented out or written twice fails, as does any value other than the bare literal required.
+ * A key counts only inside its own table. `enable_signup` and `enable_confirmations` also exist under `[auth.sms]`, and neither of those satisfies or violates a requirement here; nor does `minimum_password_length`, `otp_length` or `otp_expiry` written in any table but its own. A key that is absent, commented out, written twice or in a form the reader cannot read exactly fails, as does any value other than the one required: a quoted `"false"` is not the boolean `false`.
  *
  * What this guard cannot see: it reads the file, and the auth container reads the file only when the stack starts. The running local service is observed by the E2E project `auth-service-contract`. A hosted project's copies of these settings live in its dashboard and no file in this repository sets them.
  *
- * It is a line-oriented read (Node built-ins only, no TOML parser): a table starts at its `[name]` header and ends at the next header, and a key is a `name = value` line with an optional trailing comment. The configuration file holds no multi-line value, which is what makes that reading exact.
+ * It reads the file through `scripts/lib/config-toml.mjs`, the line reader the hosted-settings parity guard also uses (Node built-ins only, no TOML parser): a table starts at its `[name]` header and ends at the next header, and a key is a `name = value` line with an optional trailing comment. The configuration file holds no multi-line value, which is what makes that reading exact.
  *
  * Usage:
  *   node scripts/assert-auth-signup-closed.mjs               # gate: exit 1 naming every key that does not hold
@@ -35,92 +35,66 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readConfig } from './lib/config-toml.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SELF = 'scripts/assert-auth-signup-closed.mjs';
 const CONFIG = 'apps/supabase/supabase/config.toml';
 
-/** The requirements. `why` is printed with a finding, so a failing run says what the value protects. */
+/** The requirements, each value as the reader parses it. `why` is printed with a finding, so a failing run says what the value protects. */
 const REQUIRED = [
   {
     table: 'auth',
     key: 'enable_signup',
-    value: 'false',
+    value: false,
     why: 'public sign-up must be closed: an invitation is claimed by a confirmed address, and users are created by the service role only'
   },
   {
     table: 'auth',
     key: 'minimum_password_length',
-    value: '8',
+    value: 8,
     why: "a direct call to the auth service must not set a password the Contestant App's screens would refuse"
   },
   {
     table: 'auth.email',
     key: 'enable_confirmations',
-    value: 'true',
+    value: true,
     why: 'an address counts as confirmed only after a mailed link is opened or the service role vouches for it'
   },
   {
     table: 'auth.email',
     key: 'enable_signup',
-    value: 'true',
+    value: true,
     why: 'this key switches the email provider itself, and password sign-in and password recovery depend on it'
   },
   {
     table: 'auth.email',
     key: 'otp_length',
-    value: '10',
+    value: 10,
     why: 'every mailed link also mints a one-time code for its address, which the auth service accepts in its place; ten digits keep that code out of reach of guessing'
   },
   {
     table: 'auth.email',
     key: 'otp_expiry',
-    value: '3600',
+    value: 3600,
     why: 'a mailed sign-in or recovery link is a bearer credential, and this bounds how long one can be used'
   },
   {
     table: 'auth.hook.send_email',
     key: 'enabled',
-    value: 'true',
+    value: true,
     why: "the auth service must send no mail of its own: the application's mails are the account-access function's, behind its checks and throttle"
   },
   {
     table: 'auth.hook.send_email',
     key: 'uri',
-    value: '"pg-functions://postgres/public/send_email_hook"',
+    value: 'pg-functions://postgres/public/send_email_hook',
     why: 'the mail hook must be the database function that sends nothing'
   }
 ];
 
-const TABLE_HEADER = /^\s*\[\[?\s*([^\]]+?)\s*\]\]?\s*(?:#.*)?$/;
-
-/**
- * Every occurrence of `key` inside `table`: the values of the live assignments, and whether a commented-out assignment is there.
- *
- * @param text - The configuration text.
- * @param table - The dotted table name, without brackets.
- * @param key - The bare key name.
- * @returns The live values in file order, and whether the table holds a commented-out assignment of the key.
- */
-function readKey(text, table, key) {
-  const live = new RegExp(`^\\s*${key}\\s*=\\s*(.*?)\\s*(?:#.*)?$`);
-  const commented = new RegExp(`^\\s*#+\\s*${key}\\s*=`);
-  const values = [];
-  let commentedOut = false;
-  let current = '';
-  for (const line of text.split('\n')) {
-    const header = TABLE_HEADER.exec(line);
-    if (header) {
-      current = header[1];
-      continue;
-    }
-    if (current !== table) continue;
-    const assignment = live.exec(line);
-    if (assignment) values.push(assignment[1]);
-    else if (commented.test(line)) commentedOut = true;
-  }
-  return { values, commentedOut };
-}
+/** The tables the requirements are in: the only ones read. */
+const TABLES = new Set(REQUIRED.map((r) => r.table));
 
 /**
  * The findings for one configuration text, one per requirement that does not hold.
@@ -129,15 +103,17 @@ function readKey(text, table, key) {
  * @returns One finding per failed requirement: the table, the key, what was found and what is required.
  */
 function check(text) {
+  const { keys, problems, live, commentedOut } = readConfig(text, { inTables: (table) => TABLES.has(table) });
   const findings = [];
   for (const { table, key, value, why } of REQUIRED) {
-    const { values, commentedOut } = readKey(text, table, key);
+    const id = `${table}/${key}`;
+    const problem = problems.find((p) => p.id === id);
     let found;
-    if (values.length === 0) found = commentedOut ? 'commented out' : 'absent';
-    else if (values.length > 1) found = `written ${values.length} times (${values.join(', ')})`;
-    else if (values[0] !== value) found = values[0] === '' ? 'empty' : values[0];
+    if (problem) found = `unreadable: ${problem.what}`;
+    else if (!live.has(id)) found = commentedOut.has(id) ? 'commented out' : 'absent';
+    else if (keys.get(id) !== value) found = JSON.stringify(keys.get(id));
     else continue;
-    findings.push({ table, key, found, required: value, why });
+    findings.push({ table, key, found, required: JSON.stringify(value), why });
   }
   return findings;
 }
@@ -288,6 +264,19 @@ const CASES = [
     name: '[auth.email] enable_confirmations commented out',
     text: CORRECT.replace('enable_confirmations = true', '# enable_confirmations = true'),
     expected: ['auth.email/enable_confirmations']
+  },
+  {
+    name: '[auth.email] otp_length written twice',
+    text: CORRECT.replace('otp_length = 10\n', 'otp_length = 10\notp_length = 10\n'),
+    expected: ['auth.email/otp_length']
+  },
+  {
+    name: '[auth] enable_signup as the string "false"',
+    text: CORRECT.replace(
+      'enable_signup = false\nminimum_password_length',
+      'enable_signup = "false"\nminimum_password_length'
+    ),
+    expected: ['auth/enable_signup']
   },
   {
     name: '[auth] enable_signup commented out',
