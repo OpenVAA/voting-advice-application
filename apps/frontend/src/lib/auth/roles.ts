@@ -63,12 +63,13 @@ export function readSessionGrants(session: { access_token: string }): Array<Gran
  *
  * This is an app-entry gate, not the authorisation boundary: row-level security decides what an admin may read or write. Widening the set grants no data access, and narrowing it hides the app from someone the database would still serve.
  *
- * An `admin` grant at global, account or project scope carries permissions. An `admin` grant at entity scope carries none, so it is not listed and opens nothing.
+ * An `admin` grant at global, account or project scope carries permissions, and so does an `editor` grant at project scope: the database gives a project editor the project's edit capabilities, `project.edit_questions` among them, so a project editor is an administrator of that project. An `admin` grant at entity scope carries none, so it is not listed and opens nothing.
  */
 export const ADMIN_GRANTS = [
   { scope: 'global', role: 'admin' },
   { scope: 'account', role: 'admin' },
-  { scope: 'project', role: 'admin' }
+  { scope: 'project', role: 'admin' },
+  { scope: 'project', role: 'editor' }
 ] as const satisfies ReadonlyArray<GrantShape>;
 
 /**

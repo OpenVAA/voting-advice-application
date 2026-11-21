@@ -24,7 +24,9 @@ describe('isAdminOnly', () => {
     ['a project admin grant', [PROJECT_ADMIN]],
     ['an account admin grant', [ACCOUNT_ADMIN]],
     ['a global admin grant', [GLOBAL_ADMIN]],
-    ['an admin grant and a grant that opens neither app', [PROJECT_ADMIN, PROJECT_EDITOR]]
+    ['a project editor grant', [PROJECT_EDITOR]],
+    ['an admin grant and a project editor grant', [PROJECT_ADMIN, PROJECT_EDITOR]],
+    ['an admin grant and a grant that opens neither app', [PROJECT_ADMIN, ENTITY_ADMIN]]
   ])('is true for %s', (_kind, grants) => {
     expect(isAdminOnly(grants)).toBe(true);
   });
@@ -32,8 +34,8 @@ describe('isAdminOnly', () => {
   it.each([
     ['an admin grant and a candidate editor grant', [PROJECT_ADMIN, CANDIDATE_EDITOR]],
     ['an admin grant and an organization editor grant', [GLOBAL_ADMIN, ORGANIZATION_EDITOR]],
+    ['a project editor grant and a candidate editor grant', [PROJECT_EDITOR, CANDIDATE_EDITOR]],
     ['an editor grant alone', [CANDIDATE_EDITOR]],
-    ['a project editor grant alone', [PROJECT_EDITOR]],
     ['an entity-scope admin grant, which opens nothing', [ENTITY_ADMIN]],
     ['no grant', []]
   ])('is false for %s', (_kind, grants) => {
@@ -45,7 +47,7 @@ describe('isContestantOnly', () => {
   it.each([
     ['a candidate editor grant', [CANDIDATE_EDITOR]],
     ['an organization editor grant', [ORGANIZATION_EDITOR]],
-    ['an editor grant and a grant that opens neither app', [CANDIDATE_EDITOR, PROJECT_EDITOR]]
+    ['an editor grant and a grant that opens neither app', [CANDIDATE_EDITOR, ENTITY_ADMIN]]
   ])('is true for %s', (_kind, grants) => {
     expect(isContestantOnly(grants)).toBe(true);
   });
@@ -55,6 +57,7 @@ describe('isContestantOnly', () => {
     ['a global admin grant and an organization editor grant', [GLOBAL_ADMIN, ORGANIZATION_EDITOR]],
     ['an admin grant alone', [ACCOUNT_ADMIN]],
     ['a project editor grant alone', [PROJECT_EDITOR]],
+    ['a project editor grant and a candidate editor grant', [PROJECT_EDITOR, CANDIDATE_EDITOR]],
     ['an entity-scope admin grant, which opens nothing', [ENTITY_ADMIN]],
     ['no grant', []]
   ])('is false for %s', (_kind, grants) => {
@@ -65,6 +68,7 @@ describe('isContestantOnly', () => {
     for (const grants of [
       [PROJECT_ADMIN],
       [GLOBAL_ADMIN, PROJECT_EDITOR],
+      [PROJECT_EDITOR],
       [CANDIDATE_EDITOR],
       [PROJECT_ADMIN, CANDIDATE_EDITOR],
       []
