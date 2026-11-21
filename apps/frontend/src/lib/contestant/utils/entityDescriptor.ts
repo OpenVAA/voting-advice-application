@@ -34,8 +34,6 @@ export type EntityDescriptor = {
   identityFields: ReadonlyArray<IdentityFieldDescriptor>;
   /** The key of the help line under the image field, where the type has one. */
   imageInfo?: TranslationKey;
-  /** The key of the label of the button that removes the image: a candidate's portrait or an organization's logo. */
-  imageRemoveLabel: TranslationKey;
   /** Whether the colour field is offered, and the keys of its label and help line when it is. */
   colorField: { offered: false } | { offered: true; label: TranslationKey; info: TranslationKey };
   /** The name the home page greets the user by, read from the entity's data as the store holds it. An entity may have none yet. */
@@ -73,7 +71,6 @@ export const ENTITY_DESCRIPTORS = {
         autocomplete: 'family-name'
       }
     ],
-    imageRemoveLabel: 'contestantApp.basicInfo.removeImage',
     colorField: { offered: false },
     greetingName: (entity) => entity.firstName,
     nominationParentLabel: 'common.electionList',
@@ -98,7 +95,6 @@ export const ENTITY_DESCRIPTORS = {
         info: 'contestantApp.basicInfo.shortNameInfo'
       }
     ],
-    imageRemoveLabel: 'contestantApp.basicInfo.removeLogo',
     imageInfo: 'contestantApp.basicInfo.logoInfo',
     colorField: { offered: true, label: 'common.color', info: 'contestantApp.basicInfo.colorInfo' },
     greetingName: (entity) => entity.name,

@@ -677,7 +677,7 @@ describe('profile page — removing the image', () => {
     const target = render({ selectedEntity: CANDIDATE, current: candidateWithImage() });
 
     const remove = removeOf(target);
-    expect(remove.getAttribute('aria-label')).toBe('contestantApp.basicInfo.removeImage');
+    expect(remove.getAttribute('aria-label')).toBe('contestantApp.basicInfo.removeImage.candidate');
     expect(remove.disabled).toBe(false);
     remove.click();
     await settle();
@@ -712,7 +712,7 @@ describe('profile page — removing the image', () => {
     });
 
     const remove = removeOf(target);
-    expect(remove.getAttribute('aria-label')).toBe('contestantApp.basicInfo.removeLogo');
+    expect(remove.getAttribute('aria-label')).toBe('contestantApp.basicInfo.removeImage.organization');
     remove.click();
     await settle();
 

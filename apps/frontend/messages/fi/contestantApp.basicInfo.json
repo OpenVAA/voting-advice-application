@@ -13,8 +13,10 @@
       "organization": "Täytä puolueesi perustiedot ja lataa halutessasi logo."
     },
     "logoInfo": "Neliön muotoinen kuva toimii parhaiten: logo näytetään pienessä neliössä, ja sen ulkopuolelle jäävä osa rajataan pois.",
-    "removeImage": "Poista omakuva",
-    "removeLogo": "Poista logo",
+    "removeImage": {
+      "candidate": "Poista omakuva",
+      "organization": "Poista logo"
+    },
     "requiredInfo": "Sinun pitää täyttää tällä ikonilla merkityt kentät, jotta profiilisi näytetään vaalikoneessa. Voit kuitenkin tallentaa tähänastiset vastauksesi ja jatkaa täyttämistä myöhemmin.",
     "shortNameInfo": "Nimen lyhyt muoto, esimerkiksi kirjainlyhenne. Se näytetään siellä, missä tilaa on vähän, esimerkiksi puolueesi ehdokkaiden yhteydessä. Vapaaehtoinen.",
     "title": "Perustiedot"

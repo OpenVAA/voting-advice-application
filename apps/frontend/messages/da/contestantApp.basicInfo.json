@@ -13,8 +13,10 @@
       "organization": "Udfyld dit partis grundlæggende oplysninger, og upload et logo, hvis du ønsker det."
     },
     "logoInfo": "Et kvadratisk billede fungerer bedst: logoet vises i et lille kvadrat, og alt uden for det beskæres.",
-    "removeImage": "Fjern portræt",
-    "removeLogo": "Fjern logo",
+    "removeImage": {
+      "candidate": "Fjern portræt",
+      "organization": "Fjern logo"
+    },
     "requiredInfo": "Du skal udfylde felterne markeret med dette ikon, for at din profil kan blive vist i valgtesten. Du kan dog gemme dine svar og fortsætte senere.",
     "shortNameInfo": "En kort form af navnet, f.eks. et akronym. Den vises, hvor der er lidt plads, f.eks. ved siden af partiets kandidater. Valgfrit.",
     "title": "Grundlæggende oplysninger"

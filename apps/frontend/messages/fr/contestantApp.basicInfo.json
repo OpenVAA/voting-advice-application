@@ -13,8 +13,10 @@
       "organization": "Renseignez les informations de base de votre parti et, si vous le souhaitez, téléversez un logo."
     },
     "logoInfo": "Une image carrée convient le mieux : le logo est affiché dans un petit carré, et tout ce qui dépasse est rogné.",
-    "removeImage": "Supprimer le portrait",
-    "removeLogo": "Supprimer le logo",
+    "removeImage": {
+      "candidate": "Supprimer le portrait",
+      "organization": "Supprimer le logo"
+    },
     "requiredInfo": "Vous devez remplir les champs marqués de cette icône pour que votre profil soit affiché dans la Boussole électorale. Cependant, vous pouvez enregistrer vos réponses jusqu’ici et continuer plus tard.",
     "shortNameInfo": "Une forme courte du nom, par exemple un sigle. Elle est affichée là où la place manque, par exemple à côté des candidat·es du parti. Facultatif.",
     "title": "Informations de base"

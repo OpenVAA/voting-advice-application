@@ -13,8 +13,10 @@
       "organization": "Täida oma erakonna põhiandmed ja soovi korral laadi üles logo."
     },
     "logoInfo": "Kõige paremini sobib ruudukujuline pilt: logo kuvatakse väikeses ruudus ja sellest välja jääv osa lõigatakse ära.",
-    "removeImage": "Eemalda portree",
-    "removeLogo": "Eemalda logo",
+    "removeImage": {
+      "candidate": "Eemalda portree",
+      "organization": "Eemalda logo"
+    },
     "requiredInfo": "Selleks et sinu profiili valimisnõustajas kuvataks, pead täitma selle ikooniga märgitud väljad. Siiski saad oma senised vastused salvestada ja jätkata hiljem.",
     "shortNameInfo": "Nime lühivorm, näiteks akronüüm. Seda kuvatakse seal, kus ruumi on vähe, näiteks erakonna kandidaatide juures. Valikuline.",
     "title": "Põhiandmed"

@@ -13,8 +13,10 @@
       "organization": "Fëllt d’Basisinformatioune vun Ärer Partei aus an, wann Dir wëllt, lued e Logo erop."
     },
     "logoInfo": "E quadratescht Bild passt am beschten: de Logo gëtt an engem klenge Quadrat ugewisen, an alles, wat doriwwer erausgeet, gëtt ofgeschnidden.",
-    "removeImage": "Portrait ewechhuelen",
-    "removeLogo": "Logo ewechhuelen",
+    "removeImage": {
+      "candidate": "Portrait ewechhuelen",
+      "organization": "Logo ewechhuelen"
+    },
     "requiredInfo": "Dir musst d’Felder mat dësem Symbol ausfëllen, fir datt Äre Profil am Wal-Kompass ugewise gëtt. Dir kënnt Är Äntwerten awer späicheren an spéider weiderféieren.",
     "shortNameInfo": "Eng kuerz Form vum Numm, z. B. en Akronym. Si gëtt do ugewisen, wou wéineg Plaz ass, z. B. nieft de Kandidat*inne vun der Partei. Optional.",
     "title": "Basisinformatiounen"

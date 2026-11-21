@@ -13,8 +13,10 @@
       "organization": "Fill in your party’s basic details and, if you wish, upload a logo."
     },
     "logoInfo": "A square image works best: the logo is shown in a small square, and anything outside it is cropped.",
-    "removeImage": "Remove portrait",
-    "removeLogo": "Remove logo",
+    "removeImage": {
+      "candidate": "Remove portrait",
+      "organization": "Remove logo"
+    },
     "requiredInfo": "You must fill in the fields marked with this icon for your profile to be shown in the Election Compass. However, you can save your answers so far and continue filling them in later.",
     "shortNameInfo": "A short form of the name, such as an acronym. It is shown where there is little room, for example beside your candidates. Optional.",
     "title": "Basic Information"
