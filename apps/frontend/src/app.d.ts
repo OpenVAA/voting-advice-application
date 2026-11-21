@@ -2,7 +2,7 @@ import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 import type { AnalyticsProjection } from '$lib/analytics/modes';
 import type { SupabaseDatabase } from '$lib/api/adapters/supabase/supabaseAdapter.type';
 import type { DPReturnType } from '$lib/api/base/dataProvider.type';
-import type { BasicUserData, ContestantUserData, UserEntity } from '$lib/api/base/dataWriter.type';
+import type { BasicUserData, EntityUserData, UserEntity } from '$lib/api/base/dataWriter.type';
 
 // See https://kit.svelte.dev/docs/types#app for information about these interfaces and what to do when importing types
 declare global {
@@ -34,7 +34,7 @@ declare global {
       session?: { userId: string; expiresAt: number | null } | null;
 
       // Contestant App
-      contestantUserData?: ContestantUserData<true>;
+      contestantUserData?: EntityUserData<true>;
       /** The signed-in user, from the load of the Contestant App's protected tree. */
       user?: BasicUserData;
       /** The entities the signed-in user edits, of the types the project serves, from the same load. */
