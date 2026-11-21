@@ -13,7 +13,7 @@ Creating an invitation sends nothing. A link is mailed when somebody asks for on
 
 ## Supabase Auth sends no mail
 
-The auth service hands every mail it would send to a hook instead of sending it. `[auth.hook.send_email]` in `config.toml` names `public.send_email_hook` ([`301-auth-functions.sql`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/schema/301-auth-functions.sql)), a function that takes the mail and sends none. Only `supabase_auth_admin` may execute it, because the event it receives holds an address and a token. The application's two mails are sent by `account-access` alone, behind the database's checks, its limits and its own texts.
+The auth service hands every mail it would send to a hook instead of sending it. `[auth.hook.send_email]` in `config.toml` names `public.send_email_hook` ([`301-auth-functions.sql`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/schema/301-auth-functions.sql)), a function that takes the mail and sends none. Only `supabase_auth_admin` may execute it, because the event it receives holds an address and a token. The application's three mails, the sign-in, recovery and address-confirmation links, are sent by `account-access` alone, behind the database's checks, its limits and its own texts.
 
 - **What the hook stops.** The auth service's own one-time-code, recovery, invitation and change-of-address mails. Nothing in the application asks the auth service itself to mail a one-time code, a recovery link, an invitation, a reauthentication or a change of address, and a test that needs a mail gets it through the Edge Function.
 - **What it does not change.** What the auth service's endpoints answer; see [Known residuals](/developers-guide/backend/authentication#known-residuals).
@@ -26,8 +26,8 @@ The auth service hands every mail it would send to a hook instead of sending it.
 [`account-access`](/developers-guide/backend/edge-functions#account-access) mails one message, the sign-in link, when its `request-link` operation finds an address the database lets it mail.
 
 - **Text.** The subject and body are fixed in the function, in five parts (the subject, the sentence before the link, the link, the sentences that say the link works once, that only the newest link works and where to ask for a new one, and the sentence for a recipient who did not ask), in seven locales (`da`, `en`, `et`, `fi`, `fr`, `lb` and `sv`), in [`mailTemplates.ts`](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/supabase/supabase/functions/account-access/mailTemplates.ts). The request's `locale` picks one, and any other value gives `en`. The caller supplies no text, subject or sender.
-- **Link.** The message holds one link, `<SITE_URL>/<locale>/auth/confirm?token_hash=…&type=magiclink`, which opens the confirm page. Its origin is the function's `SITE_URL` and never a header of the request. A later link for the same address stops an earlier unopened one from working.
-- **Limit.** The database allows one mail per address and project in 60 seconds, and twenty per address a day in all projects together, a sign-in mail and a recovery mail counted together.
+- **Link.** The message holds one link, `<SITE_URL>/<locale>/auth/confirm?token_hash=…&type=magiclink`, which opens the confirm page; the token is verified only when Continue is pressed there. The type is `magiclink` for a first-time and for a returning user alike. Its origin is the function's `SITE_URL` and never a header of the request. A later link for the same address stops an earlier unopened one from working.
+- **Limit.** A sign-in mail and a recovery mail take the same slots of the address; see [Limits](/developers-guide/contestant-app/invitation#limits).
 
 ## The recovery link
 

@@ -60,9 +60,9 @@ A malformed body gets HTTP 400 with `{ "error": "bad-request" }` (for `request-r
 `request-link` answers before it does any work, so its status, body and timing are the same for an invited address, an uninvited one and a repeated request. After the answer:
 
 1. It asks the auth service two questions about the deployment, and issues no link unless both answers are yes (see [The two deployment checks](#the-two-deployment-checks)).
-2. It asks `invitation_link_request` whom a mail may go to. The database returns an address only for an open invitation of the project or for the claimant of a used code, at most once per address and project in 60 seconds and twenty times per address a day. Without an address the function stops.
+2. It asks `invitation_link_request` whom a mail may go to. The database returns an address for an open invitation of the project whose registration mode is allowed, for the claimant of a used code, and for a confirmed address whose user holds a grant that reaches the project (a project grant, an entity grant on one of its entities, any global grant, or an account grant on the project's account), each only while the address's two mail slots are free; see [Limits](/developers-guide/contestant-app/invitation#limits). Without an address the function stops.
 3. For an address that has no account it creates the user without a password. It then mints a one-time `magiclink` token for the address.
-4. It mails the link, `<SITE_URL>/<locale>/auth/confirm?token_hash=…&type=magiclink`, as a fixed text in one of seven locales: `da`, `en`, `et`, `fi`, `fr`, `lb` and `sv`. Any other `locale`, or none, gives `en`. The caller supplies no text, subject, sender or origin.
+4. It mails the sign-in link; see [Email](/developers-guide/backend/email#the-sign-in-link) for its text, its locales and its link.
 
 When the address's slot was taken and no mail went out, the function gives the slot back with `invitation_link_release`.
 
