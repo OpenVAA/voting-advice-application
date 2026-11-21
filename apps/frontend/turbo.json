@@ -4,7 +4,8 @@
   "tasks": {
     "build": {
       "inputs": ["$TURBO_DEFAULT$", "data/**", "!src/lib/paraglide/**"],
-      "outputs": ["build/**", "src/lib/paraglide/**"]
+      "outputs": ["build/**", "src/lib/paraglide/**"],
+      "env": ["BUILD_SHA"]
     }
   }
 }

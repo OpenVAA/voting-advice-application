@@ -397,25 +397,6 @@
 
   /* Override DaisyUI components here */
 
-  /* Reset font sizes to base */
-  .btn,
-  .input,
-  .textarea,
-  .select {
-    @apply text-md;
-  }
-
-  /**
-   * To prevent iOS Safari auto-zoom
-   */
-  @supports (-webkit-touch-callout: none) {
-    .input,
-    .textarea,
-    .select {
-      @apply text-[max(16px,_0.9375rem)];
-    }
-  }
-
   /* Style buttons */
   .btn {
     @apply px-10 font-normal;
@@ -455,6 +436,13 @@
   /* Define custom named styles here */
 
   /**
+   * A minimum width of the small container, or of the whole width where that is narrower: a block of short items is kept from shrinking to their width, and still never forces the page wider than its viewport.
+   */
+  .soft-min-w-sm {
+    min-width: min(100%, var(--container-sm));
+  }
+
+  /**
    * Make an element full width with a page's main content canceling out paddings.
    * Be sure to update this if the main content padding changes.
    * TODO: Create dedicated Tailwind spacing terms for content padding.
@@ -464,11 +452,30 @@
   }
 
   /**
+   * Buttons and form controls set their text at the body's size. daisyUI 5 sizes `.btn`, `.input`, `.textarea` and `.select` in its nested `@layer utilities { @layer daisyui.l1.l2.l3 }`, and its size variants (`.btn-sm`, `.input-sm`, `.select-sm`) lower that size further, so a rule in `@layer components` never wins; this un-sublayered rule in the same `utilities` layer wins by cascade order. `:where()` gives it no specificity, so a text size utility named on the element still wins.
+   */
+  :where(.btn, .input, .textarea, .select) {
+    @apply text-md;
+  }
+
+  /**
+   * iOS Safari zooms the page when a field whose text is smaller than 16px takes focus, so on iOS the form controls' text is at least 16px.
+   */
+  @supports (-webkit-touch-callout: none) {
+    :where(.input, .textarea, .select) {
+      @apply text-[max(16px,_0.9375rem)];
+    }
+  }
+
+  /**
    * WCAG 2.1 AA fix — daisyUI 5's `.label` mutes its text to `color-mix(in oklab, currentcolor 60%, transparent)` (packages/daisyui/components/label.css). On a base-100 background that renders base-content (#333) at 60% ≈ #858585 = 3.69:1 — below the 4.5:1 AA threshold for normal-size text. This bites primary selectable labels that carry real content (e.g. the election/constituency option `<label class="label">` in ElectionSelector.svelte), which the a11y axe gate flags.
    *
    * Cancel the mute by inheriting the surrounding text colour at FULL strength (so a label still respects an intentional `text-*`/inherited colour — we drop only daisyUI's opacity reduction, not the colour itself). `.label` lives in daisyUI's nested `@layer utilities { @layer daisyui.l1.l2.l3 }`, so this un-sublayered rule in the same `utilities` layer wins by cascade order.
+   *
+   * WCAG 2.1 AA fix — daisyUI's `.label` also keeps its text on one line (`white-space: nowrap`). A label's text is a translation, a question's name or a party's name, as long as its author made it, and at phone width a label that cannot wrap runs out of its box and widens the page sideways (SC 1.4.10, Reflow). Every label therefore wraps between words.
    */
   .label {
     color: inherit;
+    white-space: normal;
   }
 }
