@@ -350,7 +350,7 @@ describe('asking again', () => {
     expect(one(target, FRAME).getAttribute('data-resend')).toBe('waiting');
     const resend = one(target, RESEND);
     expect(resend.getAttribute('aria-disabled')).toBe('true');
-    expect(resend.getAttribute('aria-describedby')).toBe(one(target, COUNTDOWN).id);
+    expect(resend.hasAttribute('aria-describedby'), 'the count is in the name alone').toBe(false);
     expect(resend.contains(one(target, COUNTDOWN)), 'the count is inside Send again').toBe(true);
     expect(one(target, COUNTDOWN).textContent).toContain('contestantApp.emailSent.resendIn');
     expect(one(target, COUNTDOWN).textContent).toContain(`"seconds":${RESEND_WAIT_SECONDS}`);

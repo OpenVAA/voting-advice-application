@@ -20,7 +20,7 @@ See `+page.ts` for possible redirects.
   import { ConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { isVoterAppPath, mostSpecificConstituency, parseParams, usesSingleConstituencyGroup } from '$lib/routes';
+  import { isVoterAppPath, parseParams, usesSingleConstituencyGroup } from '$lib/routes';
   import { filterPersistent } from '$lib/routes/filterPersistent';
   import type { Id } from '@openvaa/core';
 
@@ -49,11 +49,11 @@ See `+page.ts` for possible redirects.
 
   let elections = $derived(useSingleGroup ? voterCtx.dataRoot.elections : voterCtx.selectedElections);
 
-  // Pre-fill `selected` from the voter context's current constituency choices (e.g., on back-navigation from /questions). Several of them may be applicable to one election: two elections may share a constituency group for which a different member was selected for each, and a constituency may be selected together with its parent. `mostSpecificConstituency` picks one of them per election and does not throw for such a selection.
+  // Pre-fill `selected` from the voter context's current constituency choices (e.g., on back-navigation from /questions). Several of them may be applicable to one election: two elections may share a constituency group for which a different member was selected for each, and a constituency may be selected together with its parent. `Election.getMostSpecificConstituency` picks one of them per election and does not throw for such a selection.
   $effect(() => {
     if (!voterCtx.selectedConstituencies.length) return;
     for (const election of elections) {
-      const best = mostSpecificConstituency({ election, constituencies: voterCtx.selectedConstituencies });
+      const best = election.getMostSpecificConstituency(voterCtx.selectedConstituencies);
       if (best) selected[election.id] = best.id;
     }
   });
