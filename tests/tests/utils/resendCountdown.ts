@@ -3,7 +3,7 @@
  */
 
 import { expect } from '@playwright/test';
-import { messageOf, messagesOf } from './messages';
+import { messageOf } from './messages';
 import { escapeRegExp } from '../../../apps/frontend/src/lib/utils/regexp';
 import type { Locator } from '@playwright/test';
 
