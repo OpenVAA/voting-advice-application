@@ -8,8 +8,8 @@ description: >-
   dependencies), peer-verifies every finding, and posts ONE thematic PR review with tick-box fix options that
   explains the change to a non-author. Use for "review PR 897", "brief me on this PR", "prep the human
   review", "what does this PR actually change", as the last step of /openvaa-pr, and for each slice of a
-  ship-review-stack stack. "openvaa-review fix <PR#>" (or --fix) applies a posted review's ticked options in
-  parallel waves, re-evaluates, runs the gates and targeted E2E, and pushes; on a stack slice it fixes the
+  ship-review-stack stack. "openvaa-review fix <PR#>" (or --fix) applies a posted review's ticked options and
+  every other open review comment on the PR in parallel waves, re-evaluates and fixes what that finds, runs the gates and targeted E2E, and pushes; on a stack slice it fixes the
   source branch and re-cuts the slices. "openvaa-review --plan [branch] [guidance]" reviews unexecuted GSD
   plans through the same lenses before execution. "openvaa-review learn" promotes recurring findings into
   .agents/code-review-checklist.md and the project skills. --local keeps a review off GitHub as a committed
@@ -43,7 +43,7 @@ The reader is the **non-author reviewer**. Every lens section therefore opens by
 | `/openvaa-review <PR#> --dry-run` | Same, but writes `comment.md` to the run dir and prints its path; nothing is posted |
 | `/openvaa-review <PR#> --verbose` | Keeps every lens's **Affected** list in the comment (combines with `--dry-run`). Without it only Common patterns and Conciseness show theirs |
 | `/openvaa-review` (no number) | Uses the current branch's PR. If there is none, reviews `$BASE..HEAD` in dry-run, asking for the base when it is not obvious |
-| `/openvaa-review fix <PR#>`, `<PR#> --fix`, `--fix [<PR#>]` | Applies the review's decisions. See § Fix mode. `--fix` anywhere selects fix mode, never a review |
+| `/openvaa-review fix <PR#>`, `<PR#> --fix`, `--fix [<PR#>]` | Applies the review's decisions and fixes every other open review comment on the PR. See § Fix mode. `--fix` anywhere selects fix mode, never a review |
 | `/openvaa-review --plan [<branch or PR#>] [guidance]` | Reviews unexecuted plans on a branch. See § Plan mode |
 | `/openvaa-review fix --plan <branch or PR#>` | Applies a plan review's decisions to the plan documents |
 | any of the above with `--local` | Saves the review as a committed file instead of posting it. See § Local reviews |
@@ -389,7 +389,7 @@ Report the comment URL or the committed path, which plans were reviewed and why 
 
 ## Fix mode
 
-`/openvaa-review fix <PR#>` (or `--fix`) carries out the decisions the reviewer recorded in the posted review: the ticks, and every word they added. It edits the PR's own branch (or, for a stack slice, the stack's source branch), so it is the author's command, not the reviewer's.
+`/openvaa-review fix <PR#>` (or `--fix`) carries out the decisions the reviewer recorded in the posted review (the ticks, and every word they added) and fixes every other review comment still open on the PR. It edits the PR's own branch (or, for a stack slice, the stack's source branch), so it is the author's command, not the reviewer's.
 
 ### 1. Read the decisions
 
@@ -425,9 +425,28 @@ Each finding resolves to one of:
 - **A constraint** ("separate commit", "keep the old key until the seed templates move") travels with the fix: pass it to the agent as part of the decision.
 - **A contradiction, a question or a reopened finding** turns it into `discuss`, even if an option is ticked.
 - **An `edited_options` entry on an unticked option, with no tick anywhere,** means the reviewer rewrote an option and forgot to tick it: treat it as `discuss`.
-- **An unlinked comment** that clearly refers to a finding is attached to it. One that does not is shown to the user in step 2.
+- **An unlinked comment** that clearly refers to a finding is attached to it. One that does not becomes a review comment to fix, below.
 
 Record the outcome in `decisions.json` (`decision`, `choice`, and the `notes` the agent must honour) before planning the waves.
+
+**Every other open review comment is fixed too.** Fix mode carries out the whole review of the PR, not only the review comment's findings. `unlinked_comments` covers only comments posted after the review, so collect the open ones directly, whenever they were posted:
+
+```bash
+gh api --paginate repos/$REPO/pulls/$N/comments > $RUN/review-comments.json
+gh api --paginate repos/$REPO/pulls/$N/reviews > $RUN/reviews.json
+gh api --paginate repos/$REPO/issues/$N/comments > $RUN/issue-comments.json
+```
+
+From these, every comment that asks for a change to the PR and is still open is one **review comment** to fix:
+
+- **an open review thread**, outdated or not (an outdated comment has a null `line` and keeps its `original_line`), read whole: a root comment plus every comment whose `in_reply_to_id` is its `id`. The REST routes do not say whether a thread is resolved, so judge it from the replies: a thread whose last reply settles it ("done", "never mind", the author's answer accepted) is not open, and one with no reply is;
+- **a review body or an issue comment** from a person or a review bot that asks for a change and that nothing later on the PR answers.
+
+These are not review comments: a comment carrying one of this skill's markers (`openvaa-review:v1`, `-cont`, `openvaa-plan-review:v1`, `openvaa-review-fixes:v1`), a bot status comment with nothing to change in it (changeset-bot, a CI summary, a review bot's overview that reports no issue), a question already answered, and a comment that names a finding id, which belongs to that finding.
+
+Add each to `decisions.json` as a finding of its own: `id` `RC-<n>`, `source` (`thread` | `review` | `comment`), its `url`, `thread_id` (the root comment's `id`) for a thread, `path` and `line`, the comment text as `detail`, `decision: "fix"`, and as `choice` the concrete change that does what it asks, written the way a fix option is. A comment that overlaps a review finding is attached to that finding as a constraint rather than duplicated. A comment that is ambiguous, that two fixes could satisfy in incompatible ways, or that contradicts a reviewer's decision on a finding becomes `discuss` and goes to the user in step 2. Review comments then take part in steps 3–7 exactly like findings, and the re-evaluation checks each is fully done.
+
+After the push in step 9, reply in each fixed thread with the commit that fixed it (`gh api repos/$REPO/pulls/$N/comments/<thread_id>/replies -f body=…`), and list the fixed review bodies and issue comments in the fixes comment. Do not resolve threads: resolving is the reviewer's call.
 
 ### 2. Settle the discussions first, before touching any code
 
@@ -535,13 +554,23 @@ Each surviving finding carries an `origin`:
 
 | `origin` | Means | Done with it |
 | --- | --- | --- |
-| `unresolved` | An applied finding whose chosen option is not fully in the code | Finished in a remedial wave under its original id, again as a fixup |
-| `fix` | A problem the fix commits introduced | Fixed in a remedial wave when blocking or should-fix; a `consider` is only reported |
-| `pr` | A problem in PR code the fixes did not touch, missed by the first review | Never fixed: no reviewer decided on it. Listed in the PR comment for the reviewer |
+| `unresolved` | An applied finding whose chosen option is not fully in the code | Fixed in a remedial wave under its original id |
+| `fix` | A problem the fix commits introduced | Fixed in a remedial wave |
+| `pr` | A problem in PR code the fixes did not touch, missed by the first review | Fixed in a remedial wave, and named in the fixes comment as fixed without a reviewer's decision |
 
-A remedial wave runs exactly like step 6, with the finding's `suggestion` as its `apply`. When a reviewer could reasonably prefer one of its `alternatives`, ask the user before running it. After the remedial wave, re-run only the lenses whose files it touched, once.
+**Every surviving finding is fixed, whatever its origin and severity.** Surviving means the verifier returned `CONFIRMED` or `DOWNGRADED`; a `REFUTED` finding is dropped, and a duplicate is fixed once, under the finding the verifier keeps. Nothing a re-evaluation confirms is left as "reported only".
 
-Whatever still stands after that is not fixed again. A blocking one stops the push in step 9 and goes to the user; anything else is reported. Write `$RE/outcome.json` as `[{ "id", "lens", "origin", "severity", "title", "status": "fixed | reported | blocking", "commit" }]`.
+A remedial wave runs exactly like step 6, with the finding's `suggestion` (or the verifier's `revised_suggestion`) as its `apply`, committed as fixups. When a reviewer could reasonably prefer one of its `alternatives`, ask the user before running it; that is the only reason to stop.
+
+Then loop until a re-check comes back clean:
+
+1. Re-run the lenses whose files the remedial wave touched, over the remedial diff only (`git diff <commit before the wave> <commit after it>`), with § Re-evaluation preamble.
+2. Verify their findings with a verifier, as in step 5. A re-check finding is never fixed unverified.
+3. Fix every surviving one in the next remedial wave, and go back to 1.
+
+The loop ends when a re-check has no surviving finding. A round can only look at the previous round's diff, so each round is smaller than the one before. If a third remedial round still produces surviving findings, stop and show them to the user: findings that keep coming back mean the fixes are fighting each other, and that is a decision, not another wave.
+
+Write `$RE/outcome.json` as `[{ "id", "lens", "origin", "severity", "title", "round", "status": "fixed | blocking", "commit" }]`. A finding is `blocking` only when the user stopped it or the loop cap was reached; a blocking one stops the push in step 9.
 
 ### 8. Squash the fixups, then gate the whole codebase
 
@@ -638,10 +667,10 @@ A PR above a re-cut slice gets a one-line note that its base moved; its review c
 **After the push,** post a short comment on each PR whose content changed, without asking. Open it with `<!-- openvaa-review-fixes:v1 -->`: `parse_decisions.py` skips that marker, where any other comment naming a finding id would come back as a reviewer's mention on the next fix run. It is a comment of its own, never an edit of the review, whose ticks are the reviewer's record. It covers:
 
 - the new tip;
-- what was applied, with the commit each finding was folded into;
+- what was applied, with the commit each finding was folded into, and each other review comment fixed (`RC-<n>`), linked to its thread or comment;
 - what was declined and by whom, and what is blocked;
 - the conflicts from step 3 and how each was settled;
-- the re-evaluation findings (fixed, and the `pr`-origin ones left for the reviewer);
+- the re-evaluation findings, every round, each with the commit it was fixed in, marking the `pr`-origin ones as fixed without a reviewer's decision;
 - the test failures fixed, and which predated the fixes;
 - files outside the PR that lint or format touched;
 - which gates and E2E projects ran, with their run directories.
