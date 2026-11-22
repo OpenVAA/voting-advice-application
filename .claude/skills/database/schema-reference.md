@@ -339,24 +339,30 @@ email address or a code. It is not a content table: no `name`, no `external_id`,
 - value: text NOT NULL
 - RLS enabled; REVOKE ALL from anon, authenticated, public; GRANT SELECT to service_role
 
-**deployment_settings** (107-feedback.sql)
+**deployment_settings** (109-deployment-settings.sql)
 
 - Schema `private` (not exposed via PostgREST); a single row
 - singleton: boolean PK DEFAULT true CHECK (singleton)
-- behind_cloudflare: boolean NOT NULL DEFAULT false -- `check_feedback_rate_limit` trusts `cf-connecting-ip` only when true; a missing row reads as false. Operator statement: `UPDATE private.deployment_settings SET behind_cloudflare = true;` (only when every request reaches the API through Cloudflare; hosted Supabase does). seed.sql sets it true for the local stack
+- behind_cloudflare: boolean NOT NULL DEFAULT false -- `check_feedback_rate_limit` trusts `cf-connecting-ip`, and `access_caller_take` the address passed to it, only when true; a missing row reads as false. Operator statement: `UPDATE private.deployment_settings SET behind_cloudflare = true;` (only when every request reaches the API through Cloudflare; hosted Supabase does). seed.sql sets it true for the local stack
+- access_caller_max: integer NOT NULL DEFAULT 30 CHECK (access_caller_max > 0) -- the takes of `access_caller_take` one caller is admitted per project per ten minutes; the bootstrap script writes it from `BOOTSTRAP_ACCESS_CALLER_MAX` when that is set
 - RLS enabled; REVOKE ALL from public, anon, authenticated, service_role; only the owner reads it
 
 **access_throttle** (506-invitation-rpcs.sql)
 
 - Schema `private`
-- key: text PK -- one of six forms: `link:<project id>:<sha256 hex of the address>` (sign-in and
+- key: text PK -- one of seven forms: `link:<project id>:<sha256 hex of the address>` (sign-in and
   recovery mails to one address in one project, one a minute), `link-address:<sha256 hex of the
   address>` (the same mails to one address in every project, twenty a day), `code-bind:<invitation
   id>` (the addresses one open code row is bound to, five a day), `code:<project id>:<code hash>`
   (claimant look-ups of one used code by the code sign-in), `confirm:<user id>` (one account's address-confirmation requests, whatever project
-  they name) and `confirm-address:<sha256 hex of the address>` (address-confirmation mails to one
-  address, whatever project). No key holds an address in clear (every address enters through
-  `private.email_hash`), and none is derived from a request header
+  they name), `confirm-address:<sha256 hex of the address>` (address-confirmation mails to one
+  address, whatever project) and `caller:<project id>:<address, or the /64 of an IPv6 address>`
+  (the anonymous account-access operations from one caller in one project, `deployment_settings.access_caller_max`
+  per ten minutes, taken by `access_caller_take` from the address the Edge Function passes). No key holds an email address in
+  clear (every email address enters through `private.email_hash`). Only a `caller:` key holds a network
+  address, and only while its window runs, because each take deletes the `caller:` rows whose window
+  has ended; it is the one key derived from a request header, `cf-connecting-ip`, trusted only when
+  `deployment_settings.behind_cloudflare` is true
 - count: integer NOT NULL DEFAULT 1 -- takes in the current window
 - window_start: timestamptz NOT NULL DEFAULT now()
 - RLS enabled with no policy; REVOKE ALL from public, anon, authenticated, service_role. Only the
@@ -513,6 +519,7 @@ Derived from `pg_proc` on the applied database on 2026-10-07, and every row read
 | identity_account_find(p_match_value text, p_placeholder_email text) -> jsonb | 506 | SECURITY DEFINER, STABLE | service_role only | `{id, email, raw_app_meta_data}` of the `auth.users` row whose `identity_match_value` equals the match value, else of the row whose lower-cased address equals the placeholder lower-cased, the oldest where several match; SQL null for none. Writes nothing. Asked by `identity-callback` before the invite and after a failed one |
 | email_invitation_hold(p_project_id uuid, p_email text) -> text | 506 | SECURITY DEFINER, STABLE | service_role only | Which hold an open invitation (`private.invitation_is_open`) of the project has on the address, trimmed and lower-cased, as its `email` or `pending_email`: `allowed` when one such row is honoured (`private.invitation_mode_allowed`), `held` when such rows exist and none is, `none` otherwise and for a null or blank argument. Called by `account-access`'s `confirm-address`, which answers `invited` for `allowed` and `in-use` for `held` |
 | invitation_code_claimant_email(p_project_id uuid, p_code text) -> text | 506 | SECURITY DEFINER | service_role only | The claimant's address for a used code, or NULL; NULL from the eleventh answer inside fifteen minutes |
+| access_caller_take(p_project_id uuid, p_address text) -> integer | 506 | SECURITY DEFINER | service_role only | 0 when admitted or not trusted; else seconds until the caller's window ends. `deployment_settings.access_caller_max` (30 by default) takes per caller per project per ten minutes under `caller:<project id>:<IPv4 host, IPv4 host of an IPv4-mapped address, or IPv6 /64>`; an untrusted, absent or unparseable address and an unknown project write no row; after its own take, each take deletes the other `caller:` rows whose window has ended, skipping locked rows |
 | invitation_link_witness_open() -> uuid | test fixture | SECURITY DEFINER | service_role only | Opens a witness record; deletes records opened more than a day ago |
 | invitation_link_witness(p_id uuid, p_outcome text DEFAULT NULL) -> text | test fixture | SECURITY DEFINER | service_role only | Reads a record's outcome (`sent`, `not-sent`, NULL while open); with `p_outcome` first completes an open record by UPDATE |
 | private.invitation_mode_allowed(p_invitation public.invitations) -> boolean | 506 | invoker, STABLE | no API role | The registration-mode condition: true for a project-scope row; false for every entity-scope row while `private.project_contestant_app_closed` holds; otherwise true for a faction or an alliance row, else `private.registration_mode_allowed` for the row's project, target type and mode. Asked by `invitation_code_status`, `invitation_link_request`, `recovery_link_request` (through `email_holds_allowed_invitation`), `email_invitation_hold` and `claim_invitations` of open rows |

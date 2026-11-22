@@ -33,7 +33,7 @@ each. A count is a snapshot: re-run its command before relying on it.
 - Bulk import/delete RPCs with external_id-based idempotent upsert
 - 64 pgTAP files: 63 declare plans summing to 2940, and `00-helpers.test.sql` runs its smoke tests
   under `no_plan()` (62,480 lines in all)
-- Schema files: `apps/supabase/supabase/schema/` (29 SQL files, `000-enums.sql` through
+- Schema files: `apps/supabase/supabase/schema/` (30 SQL files, `000-enums.sql` through
   `900-test-helpers.sql`, numbered by **concern**: `0xx` types and functions, `1xx` content tables,
   `200` indexes, `3xx` auth and RLS, `400` storage, `5xx` RPCs, `900` test helpers)
 
@@ -298,11 +298,11 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
      six that `anon` can execute (`get_public_app_settings`, `project_open_for_voters`,
      `storage_path_can`, `storage_path_is_public`, `user_can`, `user_has_account_grant`); for
      `authenticated`, eleven: the same six plus `claim_invitations`, `get_entity_basic_data`,
-     `get_entity_nominations`, `get_nomination_parent_options` and `get_user_project_grants`; and fifteen that `service_role` can
+     `get_entity_nominations`, `get_nomination_parent_options` and `get_user_project_grants`; and sixteen that `service_role` can
      execute and neither API role can (`delete_storage_object`, `email_confirmation_release`,
      `email_confirmation_request`, `email_invitation_hold`, `identity_account_find`,
-     `identity_entity_find_or_create`, `identity_provider_entity_types`, the six `invitation_*` helpers,
-     `recovery_link_request`, `resolve_email_variables`). Two of the six `invitation_*` helpers,
+     `identity_entity_find_or_create`, `identity_provider_entity_types`, the seven `invitation_*` helpers,
+     `recovery_link_request`, `resolve_email_variables`). Two of the seven `invitation_*` helpers,
      `invitation_link_witness_open` and `invitation_link_witness`, are not in `schema/` or the migration:
      `apps/supabase/supabase/tests/fixtures/invitation-link-witness.psql` installs them, with their table
      `private.invitation_link_witness`, into a test database only (`00z-invitation-link-witness.test.sql`
@@ -717,8 +717,16 @@ Full inventory: `.claude/skills/database/rls-policy-map.md`, derived from the ap
       used code per 15 minutes, which only the code sign-in takes. With an open code the row is bound
       and its cooldown spent before the address's slots are asked, so what the code holder can observe
       does not depend on whether the typed address is invited or holds a grant. An unknown code is defended by its 60 bits alone; nothing counts
-      those look-ups. The one key on a caller is `confirm:<user id>`, below. No key holds an address in
-      clear: every address enters a key through `private.email_hash` (sha256 hex of the address trimmed
+      those look-ups. The keys on a caller are `confirm:<user id>`, below, and
+      `caller:<project id>:<address, the IPv4 address of an IPv4-mapped one, or the /64 of another IPv6
+      address>`, which `access_caller_take`
+      takes for the address the Edge Function read from `cf-connecting-ip`: `deployment_settings.access_caller_max`
+      (30 by default) anonymous account-access operations per caller per project per ten minutes, trusted only when `deployment_settings.behind_cloudflare`
+      is true, no row for an untrusted, absent or unparseable address or an unknown project, and each
+      take, after its own slot, deletes the other `caller:` rows whose window has ended, skipping rows
+      another transaction has locked (`FOR UPDATE SKIP LOCKED`), so two takes never wait on each other.
+      Service role only; `59-access-caller-limit.test.sql` pins it. No key holds an email address in
+      clear: every email address enters a key through `private.email_hash` (sha256 hex of the address trimmed
       and lower-cased), and the `link:` key is stated once by `private.email_link_slot_key`. Deleting an
       invitation deletes its `link:`, `code-bind:` and `code:` keys (trigger `cleanup_access_throttle`,
       function `public.cleanup_access_throttle_on_delete`); deleting an entity deletes its entity-scope
