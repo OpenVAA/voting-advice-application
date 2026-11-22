@@ -37,7 +37,9 @@ const ALLOWED_HEADERS: ReadonlyArray<string> = [
   'x-forwarded-port',
   'x-forwarded-host',
   'forwarded',
-  'via'
+  'via',
+  'cloudfront-viewer-address',
+  'x-amz-cf-id'
 ];
 
 /** Every allow-listed header, as a proxy would send them. */
@@ -48,14 +50,17 @@ const FORWARDING_HEADERS: Readonly<Record<string, string>> = {
   'x-forwarded-port': '8080',
   'x-forwarded-host': 'spoofed.example',
   forwarded: 'for=198.51.100.4;proto=http',
-  via: '1.1 proxy.example'
+  via: '1.1 proxy.example',
+  'cloudfront-viewer-address': '198.51.100.4:443',
+  'x-amz-cf-id': 'cloudfront-request-id'
 };
 
 /** Headers the response must never report, each with a value that would be a leak if it appeared anywhere in the body. */
 const CREDENTIAL_HEADERS: Readonly<Record<string, string>> = {
   cookie: 'session=cookie-secret',
   authorization: 'Bearer authorization-secret',
-  'x-api-key': 'api-key-secret'
+  'x-api-key': 'api-key-secret',
+  'x-origin-verify': 'origin-verify-secret'
 };
 
 /** The message {@link failingClientAddress} throws with. */
@@ -163,7 +168,7 @@ describe('GET /api/diagnostics', () => {
     expect(body.origin).toBe(REQUEST_ORIGIN);
   });
 
-  it('reports the allow-listed headers and no other, never `cookie` or `authorization`', async () => {
+  it('reports the allow-listed headers and no other, never `cookie`, `authorization` or `x-origin-verify`', async () => {
     env[SWITCH] = 'true';
     const event = eventWith({ headers: { ...FORWARDING_HEADERS, ...CREDENTIAL_HEADERS } });
     // The request must carry the credentials, or their absence from the body would prove nothing.

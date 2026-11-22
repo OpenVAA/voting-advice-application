@@ -17,6 +17,7 @@ import {
   resolveAppGate
 } from '$lib/routes';
 import { analyticsConfigProblems } from '$lib/server/analytics/env';
+import { createInFlightCounter, registerShutdownLog } from '$lib/server/shutdown/shutdownLog';
 import { missingRequiredEnv } from '$lib/server/startup/requiredEnv';
 import { createSafeGetSession } from '$lib/supabase/safeGetSession';
 import { createSupabaseServerClient } from '$lib/supabase/server';
@@ -51,10 +52,27 @@ for (const problem of analyticsConfigProblems) {
 // `.trim().toLowerCase()` is the adapter's whole normalisation, so this equals the id every query is scoped by. The adapter's resolver is not called because it throws on an unusable value, which would turn every page render into a 500; such a value reaches the document as the empty string, which reads as a mismatch.
 const SERVED_PROJECT_ID = constants.PUBLIC_PROJECT_ID.trim().toLowerCase();
 
+/** The requests this server is handling, read by the line it writes as it exits. */
+const inFlight = createInFlightCounter();
+
+/**
+ * In-flight request counter.
+ * Counts the request from before `resolve` until it returns, so the line written at shutdown can name the requests in flight when the stop signal arrived. A streamed body can still be sending after `resolve` returns, so the count is approximate.
+ * Runs first so it counts every request, including those a later handler redirects.
+ */
+const inFlightHandle: Handle = async ({ event, resolve }) => {
+  inFlight.enter();
+  try {
+    return await resolve(event);
+  } finally {
+    inFlight.leave();
+  }
+};
+
 /**
  * Supabase session handler.
  * Creates a per-request server client and attaches it, with `safeGetSession`, to `event.locals`. `safeGetSession` verifies each access token once per request, so the gate below and the route loaders can all call it. Its memo is dropped once the response is resolved, so a caller that holds `locals` longer verifies afresh.
- * Runs first so every later handler can use `event.locals.supabase`.
+ * Runs before the other application handlers so every later handler can use `event.locals.supabase`.
  */
 const supabaseHandle: Handle = async ({ event, resolve }) => {
   const supabase = createSupabaseServerClient(event);
@@ -128,6 +146,7 @@ const appGateHandle: Handle = async ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(
+  inFlightHandle,
   supabaseHandle,
   logoutDeadlineHandle((event) => event.locals.supabase.auth.signOut({ scope: 'local' })),
   paraglideHandle,
@@ -148,10 +167,13 @@ export const handleError: HandleServerError = async ({ error, status }) => {
  * Start-up check of a production server.
  * Runs once, before the server answers its first request and after both dynamic environments are populated. It does nothing in development and during the build.
  * Refuses to start when a required variable is unset or invalid: it throws one error that names every such variable and prints no value.
+ * A server that passes the check attaches the listeners that write one line as it exits; one that refuses attaches nothing.
  */
 export const init: ServerInit = () => {
   if (dev || building) return;
 
   const missing = missingRequiredEnv({ ...privateEnv, ...publicEnv });
   if (missing.length > 0) throw new Error(`Required environment variables are unset or invalid: ${missing.join(', ')}`);
+
+  registerShutdownLog(inFlight);
 };
