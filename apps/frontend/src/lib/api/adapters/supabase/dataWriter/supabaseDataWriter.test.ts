@@ -1,6 +1,7 @@
 import { configureLogger } from '@openvaa/app-shared';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AnswersLockedError } from '$lib/api/base/answersLockedError';
+import { TooManyRequestsError } from '$lib/api/base/tooManyRequestsError';
 import { UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
 import { ROUTE } from '$lib/routes';
 import { SupabaseDataWriter } from './supabaseDataWriter';
@@ -2033,6 +2034,48 @@ describe('SupabaseDataWriter', () => {
 
         await expect(writer.checkInvitationCode({ code: 'ABCD-EFGH-JKLM' })).rejects.toThrow(
           'account-access check-code: Failed to send a request'
+        );
+      });
+
+      it.each<[string | null, number]>([
+        ['42', 42],
+        [' 7 ', 7],
+        ['0', 1],
+        [null, 60],
+        ['soon', 60],
+        ['Wed, 21 Oct 2026 07:28:00 GMT', 60]
+      ])('throws a TooManyRequestsError for a 429 with Retry-After %j, waiting %i s', async (retryAfter, seconds) => {
+        const headers = retryAfter === null ? undefined : { 'Retry-After': retryAfter };
+        mockSupabase.functions.invoke.mockResolvedValue({
+          data: null,
+          error: {
+            name: 'FunctionsHttpError',
+            message: 'Edge Function returned a non-2xx status code',
+            context: new Response(JSON.stringify({ error: 'too-many-requests' }), { status: 429, headers })
+          }
+        });
+
+        const rejection = await writer.checkInvitationCode({ code: 'ABCD-EFGH-JKLM' }).catch((error: unknown) => error);
+
+        expect(rejection).toBeInstanceOf(TooManyRequestsError);
+        expect((rejection as TooManyRequestsError).retryAfterSeconds).toBe(seconds);
+      });
+
+      it('throws a plain error naming the operation for any other error status', async () => {
+        mockSupabase.functions.invoke.mockResolvedValue({
+          data: null,
+          error: {
+            name: 'FunctionsHttpError',
+            message: 'Edge Function returned a non-2xx status code',
+            context: new Response('{}', { status: 500, headers: { 'Retry-After': '42' } })
+          }
+        });
+
+        const rejection = await writer.checkInvitationCode({ code: 'ABCD-EFGH-JKLM' }).catch((error: unknown) => error);
+
+        expect(rejection).not.toBeInstanceOf(TooManyRequestsError);
+        expect((rejection as Error).message).toBe(
+          'account-access check-code: Edge Function returned a non-2xx status code'
         );
       });
 

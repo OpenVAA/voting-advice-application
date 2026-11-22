@@ -1,4 +1,4 @@
-import type { EntryHeldRequest, EntryOrigin } from '$lib/auth/entryFlow';
+import type { EntryHeldRequest, EntryLinkRefusal, EntryOrigin } from '$lib/auth/entryFlow';
 
 export type EmailSentScreenProps = {
   /**
@@ -10,9 +10,9 @@ export type EmailSentScreenProps = {
    */
   request: EntryHeldRequest | undefined;
   /**
-   * The app's own way to repeat the held request, as its context's entry flow holds it.
+   * The app's own way to repeat the held request, as its context's entry flow holds it. It resolves to the wait when the request was refused over the per-caller limit.
    */
-  resendEntryLink: () => Promise<void>;
+  resendEntryLink: () => Promise<EntryLinkRefusal | undefined>;
   /**
    * The address of the screen an address was typed on, by the origin of the request made there. An origin with no entry has no such screen, and the link back to it is not rendered.
    */

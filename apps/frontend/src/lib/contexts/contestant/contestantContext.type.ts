@@ -10,7 +10,7 @@ import type {
   SetEntityNominationsResult,
   UserEntity
 } from '$lib/api/base/dataWriter.type';
-import type { EntryFlow, EntryHeldCode, EntryLinkRequest } from '$lib/auth/entryFlow';
+import type { EntryFlow, EntryHeldCode, EntryLinkRefusal, EntryLinkRequest } from '$lib/auth/entryFlow';
 import type { TaskState } from '$lib/contestant/tasks';
 import type { ContestantLoginError } from '$lib/contestant/utils/loginError';
 import type { AppContext } from '../app';
@@ -176,16 +176,16 @@ export type ContestantContext = AppContext &
     /**
      * Ask for a link to be mailed, and hold the request so that it can be repeated. The origin decides which request is made: a password-recovery link for the forgot-password page, a sign-in link for every other origin. A stable function, safe to destructure.
      *
-     * The returned promise tells its caller nothing of the outcome: it resolves alike when the request succeeded, when it failed, and when it had not answered within the settle bound, and nothing of an answer is kept. A screen awaits it and moves on.
+     * The returned promise tells its caller nothing of an answer about the address: it resolves alike when the request succeeded, when it failed, and when it had not answered within the settle bound, and nothing of an answer is kept. The one outcome it passes on is a refusal over the per-caller limit, which the function makes before it reads the address: the promise then resolves to the wait, and the request is not held. A screen shows that wait and stays; otherwise it moves on.
      * @param request - Where the request is made from, and the address, the registration code or both that it is made with.
-     * @returns A `Promise` that resolves to nothing once the request has settled or the bound has passed, and never rejects.
+     * @returns A `Promise` that resolves to the wait of a refusal over the per-caller limit, or to nothing once the request has settled or the bound has passed, and never rejects.
      */
-    sendEntryLink: (request: EntryLinkRequest) => Promise<void>;
+    sendEntryLink: (request: EntryLinkRequest) => Promise<EntryLinkRefusal | undefined>;
     /**
-     * Repeat the held link request and hold it again with the time it settled. Does nothing when no request is held. A stable function, safe to destructure.
+     * Repeat the held link request and hold it again with the time it settled. Does nothing when no request is held. A refusal over the per-caller limit keeps the held request as it was. A stable function, safe to destructure.
      * @returns A `Promise` that resolves as that of `sendEntryLink` does, and never rejects.
      */
-    resendEntryLink: () => Promise<void>;
+    resendEntryLink: () => Promise<EntryLinkRefusal | undefined>;
     /**
      * Forget everything the entry flow holds. For a screen that ends the flow by signing the user in. A stable function, safe to destructure.
      */

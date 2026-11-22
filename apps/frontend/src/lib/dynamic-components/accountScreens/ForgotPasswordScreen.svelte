@@ -3,6 +3,7 @@
 
 - A press of the main button with an address that cannot be used sends nothing: the field says what to enter and takes focus.
 - With a usable address the screen asks for a password-recovery link with the trimmed address, and opens the app's "email sent" page when the request has settled, whatever it settled as. Nothing about the address is looked up, and nothing of the request's answer is read: the screen shows the same to every visitor, whether or not the address has an account.
+- The one exception is a request the function refused because the caller has made more requests than its limit admits: the screen then stays, and the field shows a sentence naming the wait, in whole minutes rounded up, and takes focus. The refusal comes before the address is read, so it says nothing about the address.
 - The form is declared as a post although no server action answers it, so that a submit the screen's script did not catch could not write an address into the address bar. The main button needs the script, so it is natively disabled until the screen has mounted.
 - The page's `email` search parameter fills the field once, when the screen is created, as the login screens' links pass the address typed there. Nothing is asked for until the main button is pressed.
 
@@ -28,7 +29,7 @@
 
 <script lang="ts">
   import { log } from '@openvaa/app-shared';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import { MainContent } from '$layouts/main';
@@ -66,7 +67,15 @@
       return;
     }
     requesting = true;
-    await sendEntryLink({ origin: 'forgotPassword', email: address });
+    const retryAfterSeconds = (await sendEntryLink({ origin: 'forgotPassword', email: address }))?.retryAfterSeconds;
+    if (retryAfterSeconds !== undefined) {
+      requesting = false;
+      emailError = t('common.account.tooManyAttempts', { minutes: Math.ceil(retryAfterSeconds / 60) });
+      // The main button was natively disabled during the request, so focus is placed once the field is editable again.
+      await tick();
+      emailField?.focus();
+      return;
+    }
     try {
       await goto(emailSentHref);
     } catch (error) {

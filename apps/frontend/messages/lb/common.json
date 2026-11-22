@@ -42,7 +42,17 @@
         "title": "Wielt e Passwuert",
         "why": "Äre Kont huet nach kee Passwuert. Wielt eent, fir datt Dir Iech mat Ärer E-Mail-Adress an Ärem Passwuert umelle kënnt."
       },
-      "signedInAs": "Ageloggt als"
+      "signedInAs": "Ageloggt als",
+      "tooManyAttempts": [
+        {
+          "declarations": ["input minutes"],
+          "selectors": ["minutes"],
+          "match": {
+            "minutes=1": "Et goufe ze vill Versich vun Ärem Netzwierk aus gemaach. Waart w.e.g. eng Minutt a probéiert dann nach eng Kéier.",
+            "minutes=*": "Et goufe ze vill Versich vun Ärem Netzwierk aus gemaach. Waart w.e.g. {minutes} Minutten a probéiert dann nach eng Kéier."
+          }
+        }
+      ]
     },
     "alliance": {
       "plural": "Allianzen",

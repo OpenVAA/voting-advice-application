@@ -42,7 +42,17 @@
         "title": "Choose a password",
         "why": "Your account has no password yet. Choose one so that you can sign in with your email address and password."
       },
-      "signedInAs": "Signed in as"
+      "signedInAs": "Signed in as",
+      "tooManyAttempts": [
+        {
+          "declarations": ["input minutes"],
+          "selectors": ["minutes"],
+          "match": {
+            "minutes=1": "Too many attempts were made from your network. Try again in a minute.",
+            "minutes=*": "Too many attempts were made from your network. Try again in {minutes} minutes."
+          }
+        }
+      ]
     },
     "alliance": {
       "plural": "alliances",

@@ -1,6 +1,6 @@
 import type { createAdminWriter } from '$lib/api/adminWriter';
 import type { BasicUserData, DataWriter } from '$lib/api/base/dataWriter.type';
-import type { EntryFlow, EntryLinkRequest } from '$lib/auth/entryFlow';
+import type { EntryFlow, EntryLinkRefusal, EntryLinkRequest } from '$lib/auth/entryFlow';
 import type { AppContext } from '../app';
 import type { AuthContext } from '../auth';
 import type { JobStates } from './jobStates.type';
@@ -35,13 +35,13 @@ export type AdminContext = AppContext &
      */
     readonly entryFlow: EntryFlow | undefined;
     /**
-     * Ask for a mailed link. A request from the forgot-password page with an address asks for a recovery link made for the Admin App, in the context's locale; any other request asks nothing. It resolves alike for a request that succeeded, failed or never answered, once it has settled or its bound has passed, and then holds the request.
+     * Ask for a mailed link. A request from the forgot-password page with an address asks for a recovery link made for the Admin App, in the context's locale; any other request asks nothing. It resolves alike for a request that succeeded, failed or never answered, once it has settled or its bound has passed, and then holds the request: nothing of an answer about the address is passed on. A refusal over the per-caller limit, which the function makes before it reads the address, resolves to the wait instead, and the request is not held.
      */
-    sendEntryLink: (request: EntryLinkRequest) => Promise<void>;
+    sendEntryLink: (request: EntryLinkRequest) => Promise<EntryLinkRefusal | undefined>;
     /**
-     * Repeat exactly the held request, if there is one.
+     * Repeat exactly the held request, if there is one. It resolves as `sendEntryLink` does; a refusal over the per-caller limit keeps the held request as it was.
      */
-    resendEntryLink: () => Promise<void>;
+    resendEntryLink: () => Promise<EntryLinkRefusal | undefined>;
     /**
      * Let the entry flow go.
      */

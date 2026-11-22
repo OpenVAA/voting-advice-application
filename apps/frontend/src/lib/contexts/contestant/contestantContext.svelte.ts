@@ -29,7 +29,7 @@ import type {
   SetEntityNominationsResult,
   UserEntity
 } from '$lib/api/base/dataWriter.type';
-import type { EntryHeldCode, EntryLinkRequest } from '$lib/auth/entryFlow';
+import type { EntryHeldCode, EntryLinkRefusal, EntryLinkRequest } from '$lib/auth/entryFlow';
 import type { ContestantLoginError } from '$lib/contestant/utils/loginError';
 import type { NameFieldValues } from '$lib/contestant/utils/nameRule';
 import type { AppContext } from '../app';
@@ -78,7 +78,7 @@ type QuestionBlocksShape = {
  * `taskState` is one `$derived.by` that reads its inputs in its own scope and hands their values to the pure `taskStateOf`. Whether the entity has a nomination comes from the page data, so it is right on the server and on the first frame; the counts come from the store and the question lists, and count only while the store holds the entity the route names.
  *
  * ── The entry flow ───────────────────────────────────────────────────────────
- * `entryFlow` is what the screens that lead to a mailed link keep between them: a registration code with the status its check answered, and the one link request the "email sent" screen can repeat. It is held by the private `EntryFlowHolder` `#entryFlow` of this instance, built with `#requestLink`, and nothing else. The server builds one context for each render, so a field of the instance is one visitor's alone, where a binding of the module would be every visitor's. It is written whole by `holdEntryCode`, `sendEntryLink` (which `resendEntryLink` calls) and `clearEntryFlow`, which forward to the holder, cleared by `#reset` on logout, and gone when the tab reloads. `sendEntryLink` is the one way a screen asks for a link: it resolves alike for a request that succeeded, failed or never answered, and holds nothing of an answer, so no screen can show what the server did with an address. `entryFlow` is a reactive accessor replaced whole on every write: read `ctx.entryFlow`, never destructure. The four functions and the writer forward beside them are stable.
+ * `entryFlow` is what the screens that lead to a mailed link keep between them: a registration code with the status its check answered, and the one link request the "email sent" screen can repeat. It is held by the private `EntryFlowHolder` `#entryFlow` of this instance, built with `#requestLink`, and nothing else. The server builds one context for each render, so a field of the instance is one visitor's alone, where a binding of the module would be every visitor's. It is written whole by `holdEntryCode`, `sendEntryLink` (which `resendEntryLink` calls) and `clearEntryFlow`, which forward to the holder, cleared by `#reset` on logout, and gone when the tab reloads. `sendEntryLink` is the one way a screen asks for a link: it resolves alike for a request that succeeded, failed or never answered, and holds nothing of an answer, so no screen can show what the server did with an address. It passes on only a refusal over the per-caller limit, as its wait, which the server makes before it reads the address. `entryFlow` is a reactive accessor replaced whole on every write: read `ctx.entryFlow`, never destructure. The four functions and the writer forward beside them are stable.
  *
  * ── Field-init order ─────────────────────────────────────────────────────────
  * The stable refs / persisted handles / `$state` / `$derived` fields + the `#userData` composite are field initializers (run in declaration order BEFORE the constructor body). `#userData` is declared AFTER `#answersLocked` + `#locale` because its getter-thunks read them, and `#loadedEntityType` AFTER `#userData` because it reads the store. `#taskState` is declared below the unanswered lists and the name flag it reads. The 3 `$effect` blocks, the two member forwards and two `onMount`s are installed in the CONSTRUCTOR — legal because contestantContext is constructed during component init, an effect context. One `onMount` subscribes to the sign-outs the tab's client reports and the other listens for the Log out announcements of the other tabs; each stops when the layout that built the context is destroyed.
@@ -438,11 +438,11 @@ export class ContestantContextProvider implements ContestantContext {
   // Holds the checked code for the screen that uses it next. A request held before belongs to an earlier pass through the flow and goes.
   holdEntryCode = (code: EntryHeldCode): void => this.#entryFlow.holdCode(code);
 
-  // The one way a screen asks for a mailed link: the holder decides `askedAgain` before the request, awaits it through the bounded wait and holds it with the time of that moment.
-  sendEntryLink = (request: EntryLinkRequest): Promise<void> => this.#entryFlow.send(request);
+  // The one way a screen asks for a mailed link: the holder decides `askedAgain` before the request, awaits it through the bounded wait and holds it with the time of that moment, or resolves to the wait of a refusal over the per-caller limit.
+  sendEntryLink = (request: EntryLinkRequest): Promise<EntryLinkRefusal | undefined> => this.#entryFlow.send(request);
 
   // Repeats exactly the held request, through the call its origin decides, and holds it again with a new settlement time.
-  resendEntryLink = (): Promise<void> => this.#entryFlow.resend();
+  resendEntryLink = (): Promise<EntryLinkRefusal | undefined> => this.#entryFlow.resend();
 
   clearEntryFlow = (): void => this.#entryFlow.clear();
 

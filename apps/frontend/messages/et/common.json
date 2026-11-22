@@ -42,7 +42,17 @@
         "title": "Vali parool",
         "why": "Sinu kontol pole veel parooli. Vali parool, et saaksid sisse logida oma e-posti aadressi ja parooliga."
       },
-      "signedInAs": "Sisse logitud kasutajana"
+      "signedInAs": "Sisse logitud kasutajana",
+      "tooManyAttempts": [
+        {
+          "declarations": ["input minutes"],
+          "selectors": ["minutes"],
+          "match": {
+            "minutes=1": "Sinu võrgust on tehtud liiga palju katseid. Proovi uuesti minuti pärast.",
+            "minutes=*": "Sinu võrgust on tehtud liiga palju katseid. Proovi uuesti {minutes} minuti pärast."
+          }
+        }
+      ]
     },
     "alliance": {
       "plural": "valimisliidud",

@@ -42,7 +42,17 @@
         "title": "Välj ett lösenord",
         "why": "Ditt konto har inget lösenord ännu. Välj ett så att du kan logga in med din e-postadress och ditt lösenord."
       },
-      "signedInAs": "Inloggad som"
+      "signedInAs": "Inloggad som",
+      "tooManyAttempts": [
+        {
+          "declarations": ["input minutes"],
+          "selectors": ["minutes"],
+          "match": {
+            "minutes=1": "För många försök har gjorts från ditt nätverk. Försök igen om en minut.",
+            "minutes=*": "För många försök har gjorts från ditt nätverk. Försök igen om {minutes} minuter."
+          }
+        }
+      ]
     },
     "alliance": {
       "plural": "valallianser",

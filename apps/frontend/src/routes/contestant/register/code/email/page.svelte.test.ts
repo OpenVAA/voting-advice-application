@@ -414,6 +414,23 @@ describe('Continue', () => {
     expect(goto).toHaveBeenCalledWith(EMAIL_SENT_ROUTE);
   });
 
+  it('stays when the request is refused over the per-caller limit, naming the wait at the address field, which takes focus', async () => {
+    sendEntryLink.mockResolvedValue({ retryAfterSeconds: 600 });
+    const translate = vi.spyOn(context, 't');
+    const target = render();
+    type(target, EMAIL, ADDRESS);
+    type(target, CONFIRMATION, ADDRESS);
+    press(target, SUBMIT);
+    await settle();
+    expect(goto).not.toHaveBeenCalled();
+    const error = one(target, EMAIL_ERROR);
+    expect(error.textContent).toContain('common.account.tooManyAttempts');
+    expect(translate).toHaveBeenCalledWith('common.account.tooManyAttempts', { minutes: 10 });
+    expect(error.getAttribute('data-reason')).toBe('too-many-attempts');
+    expect(document.activeElement).toBe(one(target, EMAIL));
+    expect(one<HTMLInputElement>(target, EMAIL).value).toBe(ADDRESS);
+  });
+
   it('opens the "email sent" screen whatever the request resolved to', async () => {
     sendEntryLink.mockResolvedValue({ type: 'failure' });
     const target = render();

@@ -16,6 +16,7 @@ import type { EntityGrantTarget } from '../../utils/supabaseAdminClient';
  * - The registration screen lists the email and the code mode, which the dataset's `contestantApp.servedEntityTypes` allows candidates and organizations, with none chosen. The email mode is chosen with the keyboard, and Continue makes the one link request.
  * - A signed-in user who opens the login screen, the sign-in screen, the registration screen or the "email sent" screen by its address ends on their home.
  * - On the registration screen, Continue with no mode chosen, with an empty address and with an unusable address makes no request, says what is missing where it is missing, and puts focus there.
+ * - A link request the function refuses over its per-caller limit keeps the visitor on the registration screen, whose email field names the wait in minutes and has focus. The refusal is answered in the browser, so nothing is mailed.
  * - The screen that says an email was sent is the same for an invited address, for an address nobody invited and for an address asked again inside the minute from another tab: the same states, text, count and controls. Only the first is mailed and has an account, which is read once each request's work is over.
  * - The sign-in screen refuses an address nobody holds, a wrong password and an account that has no password with one status and one sentence, on a screen that is otherwise the same, and keeps the address typed.
  * - The sign-in screen's Forgot password link carries the typed address to the forgot-password page too, and following it asks for nothing.
@@ -433,6 +434,24 @@ test.describe('what the registration screen does not send', () => {
     });
 
     // The visitor is still on the registration screen, with the email mode chosen.
+    await contestantRegisterPage.expectShown();
+    await contestantRegisterPage.expectSelectedMode('email');
+  });
+
+  test('limit: a link request refused over the per-caller limit names the wait at the field and stays on the screen', async ({
+    page,
+    invitationFlow,
+    contestantRegisterPage
+  }) => {
+    await contestantRegisterPage.open();
+    await contestantRegisterPage.chooseMode('email');
+    await contestantRegisterPage.typeEmail(invitationFlow.freshAddress());
+
+    await invitationFlow.refusePageLinkRequest(page, 150, async () => {
+      await contestantRegisterPage.pressContinue();
+      await contestantRegisterPage.expectEmailWait(3);
+    });
+
     await contestantRegisterPage.expectShown();
     await contestantRegisterPage.expectSelectedMode('email');
   });

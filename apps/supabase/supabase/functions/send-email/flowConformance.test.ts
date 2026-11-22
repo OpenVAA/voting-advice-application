@@ -108,12 +108,10 @@ describe('send-email flow conformance', () => {
   });
 
   it('refuses on the answer of the gate, with a 403 it RETURNS, before the service-role client exists', () => {
-    // Guards an IGNORED answer (162-REVIEW WR-09): before 162-18, a refusal condition replaced with a constant false left this whole file green, because nothing asserted the gate's result reached the refusal.
-    //
-    // AND A DISCARDED ONE (162-REVIEW CR-01). Until this assertion the refusal was pinned as five independent `indexOf` hits asserted to occur IN ORDER, which says nothing about the branch terminating the request: deleting the one word `return` in front of `new Response` -- the 403 constructed, thrown away, execution falling straight through to the service-role client below -- left all 16 tests here green while an unauthorised caller reached the service-role client and bulk-sent. The refusal is therefore matched as ONE CONTIGUOUS BLOCK whose `new Response` is `return`ed, and the service-role client is required to come after the block ENDS rather than after it begins.
-    const refusal = INDEX_SOURCE.match(/if \(!mayBulkSend\) \{\s*return new Response\(([\s\S]*?)\);\s*\}/);
+    // The gate's answer must end the request: the refusal is matched as one contiguous block whose answer is `return`ed, so a refusal that is built but not returned, or a condition replaced by a constant, reddens this test. The service-role client must come after the block ends.
+    const refusal = INDEX_SOURCE.match(/if \(!mayBulkSend\) \{\s*return jsonAnswer\(([\s\S]*?)\);\s*\}/);
     expect(refusal).not.toBeNull();
-    expect(refusal![1]).toContain('status: 403');
+    expect(refusal![1]).toMatch(/, 403$/);
     expect(refusal![1]).toContain('Forbidden: caller may not send bulk email for this project');
     const gateAt = INDEX_SOURCE.indexOf('const mayBulkSend = await callerMayOnProject(callerClient');
     expect(gateAt).toBeGreaterThan(-1);
@@ -126,7 +124,7 @@ describe('send-email flow conformance', () => {
     // Guards a REQUEST-CHOSEN project (162-REVIEW WR-02): a caller who passes the gate for one project could otherwise resolve another project's recipients through the service-role client.
     const gateRefusalAt = INDEX_SOURCE.indexOf('Forbidden: caller may not send bulk email for this project');
     const configuredAt = INDEX_SOURCE.indexOf("requireEnv('PUBLIC_PROJECT_ID'", gateRefusalAt);
-    const mismatchAt = INDEX_SOURCE.indexOf("JSON.stringify({ error: 'Invalid project_id' })", configuredAt);
+    const mismatchAt = INDEX_SOURCE.indexOf("jsonAnswer({ error: 'Invalid project_id' }, 400)", configuredAt);
     const resolveAt = INDEX_SOURCE.indexOf("rpc('resolve_email_variables'", mismatchAt);
     expect(gateRefusalAt).toBeGreaterThan(-1);
     expect(configuredAt).toBeGreaterThan(gateRefusalAt);
@@ -148,7 +146,7 @@ describe('send-email flow conformance', () => {
     expect(INDEX_SOURCE).toContain('html: rendered.html');
     expect(INDEX_SOURCE).toContain('renderTemplateHtml(template.body, vars)');
     expect(INDEX_SOURCE).toContain('const senderAddress = configuredSender(smtp);');
-    expect(INDEX_SOURCE).toContain("JSON.stringify({ error: 'Invalid from' })");
+    expect(INDEX_SOURCE).toContain("jsonAnswer({ error: 'Invalid from' }, 400)");
     // THE SENDER ACTUALLY USED, POSITIVELY (162-REVIEW WR-06). The negative half of this test used to be `not.toMatch(/from\s*\|\|\s*requireEnv/)` alone -- ONE historical spelling of the defect WR-02 fixed. `from ?? senderAddress`, `from || senderAddress` and `from: body.from` at the `transport.sendMail` call all passed it, and nothing asserted the property that actually holds: the envelope sender is the configured one at the one line that decides it.
     expect(CODE_ONLY).toMatch(/await transport\.sendMail\(\{\s*from: senderAddress,/);
     // Exactly one `from:` in executable code, so a second send site -- or a caller-chosen sender added beside this one -- reddens rather than hiding behind the assertion above.

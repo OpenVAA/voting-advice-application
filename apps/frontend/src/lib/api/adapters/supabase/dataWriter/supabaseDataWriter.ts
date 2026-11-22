@@ -1,6 +1,7 @@
 import { getLocalized, log, SERVED_ENTITY_TYPES } from '@openvaa/app-shared';
 import { PROPERTY_MAP } from '@openvaa/supabase-types';
 import { AnswersLockedError } from '$lib/api/base/answersLockedError';
+import { parseRetryAfter, TooManyRequestsError } from '$lib/api/base/tooManyRequestsError';
 import { UniversalDataWriter, UNVERIFIED_ANSWERS } from '$lib/api/base/universalDataWriter';
 // Imported from the module rather than the `$lib/auth` barrel on purpose: the barrel also re-exports `getUserData`, which reaches `$lib/api/dataWriter` and back to this file.
 import { ADMIN_GRANTS, CONTESTANT_GRANTS, hasAnyGrant, parseGrantClaims, readGrants } from '$lib/auth/roles';
@@ -283,7 +284,8 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
    * @param operation - The operation to call.
    * @param fields - The operation's own fields.
    * @returns The function's answer, not yet validated.
-   * @throws Error naming the operation when the function cannot be reached or answers with an error status.
+   * @throws TooManyRequestsError when the function refuses the caller with HTTP 429.
+   * @throws Error naming the operation when the function cannot be reached or answers with any other error status.
    */
   async #accountAccess(
     operation: 'check-code' | 'request-link' | 'code-sign-in' | 'request-recovery' | 'confirm-address',
@@ -292,7 +294,12 @@ export class SupabaseDataWriter extends supabaseAdapterMixin(UniversalDataWriter
     const { data, error } = await this.supabase.functions.invoke('account-access', {
       body: { ...fields, operation, project_id: this.projectId }
     });
-    if (error) throw new Error(`account-access ${operation}: ${error.message}`);
+    if (error) {
+      const context = (error as { context?: unknown }).context;
+      if (context instanceof Response && context.status === 429)
+        throw new TooManyRequestsError(parseRetryAfter(context.headers.get('Retry-After')));
+      throw new Error(`account-access ${operation}: ${error.message}`);
+    }
     return data;
   }
 

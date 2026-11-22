@@ -5,6 +5,7 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { TooManyRequestsError } from '$lib/api/base/tooManyRequestsError';
 import { LINK_REQUEST_SETTLE_BOUND_MS, RESEND_WAIT_SECONDS } from './entryFlow';
 import { EntryFlowHolder } from './entryFlowHolder.svelte';
 import type { EntryLinkRequest } from './entryFlow';
@@ -65,6 +66,37 @@ describe('EntryFlowHolder', () => {
     await expect(holder.send({ origin: 'signIn', email: ADDRESS })).resolves.toBeUndefined();
 
     expect(holder.flow?.request).toMatchObject({ origin: 'signIn', email: ADDRESS, wording: 'signIn' });
+  });
+
+  it('resolves to the wait of a refusal over the per-caller limit, and holds nothing of the refused request', async () => {
+    const { holder } = holderWith(async () => {
+      throw new TooManyRequestsError(90);
+    });
+    holder.holdCode({ code: CODE, status: 'valid' });
+    const before = holder.flow;
+
+    await expect(holder.send({ origin: 'registerEmail', email: ADDRESS, code: CODE })).resolves.toStrictEqual({
+      retryAfterSeconds: 90
+    });
+
+    expect(holder.flow).toBe(before);
+  });
+
+  it('resolves a repeat refused over the per-caller limit to its wait, and keeps the held request as it was', async () => {
+    let refuse = false;
+    const { holder, requests } = holderWith(async () => {
+      if (refuse) throw new TooManyRequestsError(30);
+      return { accepted: true };
+    });
+    await holder.send({ origin: 'signIn', email: ADDRESS });
+    const before = holder.flow;
+    refuse = true;
+    vi.setSystemTime(START + 1_000);
+
+    await expect(holder.resend()).resolves.toStrictEqual({ retryAfterSeconds: 30 });
+
+    expect(requests).toHaveLength(2);
+    expect(holder.flow).toBe(before);
   });
 
   it('treats a request that never answers as settled once the bound has passed', async () => {

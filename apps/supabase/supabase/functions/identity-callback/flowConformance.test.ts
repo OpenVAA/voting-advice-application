@@ -8,6 +8,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { BASE_CORS_HEADERS } from '../_shared/cors.ts';
 import { SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
 
 const RAW_INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
@@ -170,9 +171,11 @@ describe('identity-callback flow conformance', () => {
     });
 
     it('is not offered the credential header by the CORS answer', () => {
-      const corsAt = firstAt('const corsHeaders = {');
-      const corsBlock = CODE.slice(corsAt, CODE.indexOf('};', corsAt));
+      const corsAt = firstAt('const corsHeaders = Object.freeze({');
+      const corsBlock = CODE.slice(corsAt, CODE.indexOf('});', corsAt));
+      expect(corsBlock).toContain('...BASE_CORS_HEADERS');
       expect(corsBlock).not.toContain(SERVER_CREDENTIAL_HEADER);
+      expect(Object.values(BASE_CORS_HEADERS).join(', ')).not.toContain(SERVER_CREDENTIAL_HEADER);
     });
 
     it("is the frontend's callback, which sends the credential under the header the function reads", () => {
@@ -389,16 +392,15 @@ describe('identity-callback flow conformance', () => {
 
   describe('the answers', () => {
     it('builds every answer body with resultBody, in one place', () => {
-      expect(occurrences('new Response(')).toBe(
-        occurrences("new Response('ok'") + occurrences('new Response(JSON.stringify(resultBody(')
-      );
-      expect(occurrences('JSON.stringify(')).toBe(occurrences('JSON.stringify(resultBody('));
+      expect(occurrences('new Response(')).toBe(occurrences("new Response('ok'"));
+      expect(occurrences('jsonAnswer(')).toBe(occurrences('jsonAnswer(resultBody('));
+      expect(occurrences('JSON.stringify(')).toBe(0);
 
       const respondAt = firstAt('function respond(');
       const respondEnd = CODE.indexOf('\n}\n', respondAt);
       const respondBody = CODE.slice(respondAt, respondEnd);
       expect(respondBody).toContain('resultBody(result, token)');
-      expect(respondBody).toContain('new Response(JSON.stringify(');
+      expect(respondBody).toContain('jsonAnswer(resultBody(result, token), resultStatus(result), corsHeaders)');
       expect(respondBody).toContain('resultStatus(result)');
     });
 

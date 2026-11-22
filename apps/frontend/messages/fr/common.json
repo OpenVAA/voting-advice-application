@@ -42,7 +42,17 @@
         "title": "Choisissez un mot de passe",
         "why": "Votre compte n’a pas encore de mot de passe. Choisissez-en un afin de pouvoir vous connecter avec votre adresse e-mail et votre mot de passe."
       },
-      "signedInAs": "Connecté·e en tant que"
+      "signedInAs": "Connecté·e en tant que",
+      "tooManyAttempts": [
+        {
+          "declarations": ["input minutes"],
+          "selectors": ["minutes"],
+          "match": {
+            "minutes=1": "Trop de tentatives ont été faites depuis votre réseau. Réessayez dans une minute.",
+            "minutes=*": "Trop de tentatives ont été faites depuis votre réseau. Réessayez dans {minutes} minutes."
+          }
+        }
+      ]
     },
     "alliance": {
       "plural": "alliances",

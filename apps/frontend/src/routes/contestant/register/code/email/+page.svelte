@@ -7,6 +7,7 @@ Takes the email address that a holder of a registration code nobody has claimed 
 - The page shows its screen only while the entry flow holds a registration code that was checked and found valid. Otherwise, as after a reload or a visit by address, it renders nothing and leads to the registration page in place of this history entry.
 - The address is entered twice. A press of Continue with two fields that do not hold one usable address sends nothing: each field says what is wrong with it, and the first such field takes focus.
 - With two matching addresses the page asks for a link with the trimmed address and the held code, and opens the "email sent" screen when the request has settled, whatever it settled as. Nothing of the request's answer is read.
+- The one exception is a request the function refused because the caller has made more requests than its limit admits: the page then stays, and the address field shows a sentence naming the wait, in whole minutes rounded up, and takes focus. The refusal comes before the address is read, so it says nothing about the address.
 - The code is read from the entry flow and passed to that request. It is in no field, attribute or text of the page, and in no address.
 - The form is declared as a post although no server action answers it, so that a submit the page's script did not catch could not write an address into the address bar. Continue needs the page's script, so it is natively disabled until the page has mounted.
 
@@ -17,7 +18,7 @@ Takes the email address that a holder of a registration code nobody has claimed 
 -->
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { goto } from '$app/navigation';
   import { getContestantAppName } from '$contestant/utils/contestantAppName';
   import { MainContent } from '$layouts/main';
@@ -71,7 +72,18 @@ Takes the email address that a holder of a registration code nobody has claimed 
     event.preventDefault();
     if (requesting || !validCode || !entry?.validate()) return;
     requesting = true;
-    await sendEntryLink({ origin: 'registerEmail', email: email.trim(), code: validCode });
+    const retryAfterSeconds = (await sendEntryLink({ origin: 'registerEmail', email: email.trim(), code: validCode }))
+      ?.retryAfterSeconds;
+    if (retryAfterSeconds !== undefined) {
+      requesting = false;
+      // The main button was natively disabled during the request, so focus is placed once the field is editable again.
+      await tick();
+      entry?.showEmailError(
+        t('common.account.tooManyAttempts', { minutes: Math.ceil(retryAfterSeconds / 60) }),
+        'too-many-attempts'
+      );
+      return;
+    }
     await goto(getRoute.current('ContestantAppEmailSent'));
     requesting = false;
   }

@@ -11,7 +11,7 @@
  *   - Rows and grants: `readDedicatedRow`, `promisedGrant`, `projectGrant`, `editorGrantOn`.
  *   - Seeding: `seedEmailInvitation`, `seedCodeInvitation`, `seedUsedCode`, `unknownCode`, `seedProjectInvitation`, `inviteAndAskForLink`, `invitationsFor`, `expectSeedingAloneCreatedNothing`.
  *   - The function, as an anonymous visitor calls it: `checkCode`, `askForLink`, `askForRecovery`, `askForLinkNamingUnopenedWitness`, `codeSignIn`, `answerCount`, `operationsWhoseAnswerHolds`, `expectHeadersLeaveThisProcess`.
- *   - A request a page makes, or does not make: `witnessPageRequest`, `expectNoPageRequest`.
+ *   - A request a page makes, or does not make: `witnessPageRequest`, `refusePageLinkRequest`, `expectNoPageRequest`.
  *   - The mail: `mailSubjects`, `expectMailCount`, `receiveSignInLink`, `signInLinkToOpen`, `recoveryLinkToOpen`, `expectNothingSent`, `expectNoMailAfter`.
  *   - The session: `signInWithLink`, `signInWithPassword`, `claim`, `accountState`, `claimNamingAnAddress`, `refresh`, `grantsClaimOf`, `grantsClaimOfToken`, `setFreshPassword`.
  *   - The service role's view: `grantRowsOf`, `invitationsAddressedTo`, `withdrawInvitationsOf`, `hasAccount`, `createUserWithPassword`, `releaseLinkSlot`.
@@ -122,6 +122,18 @@ const DEDICATED_TARGETS: ReadonlyArray<DedicatedTarget> = Object.freeze(['candid
 
 /** Every request to the `account-access` Edge Function, whatever host serves it. */
 const ACCOUNT_ACCESS_ROUTE = '**/functions/v1/account-access';
+
+/** The answer the function gives a caller over its per-caller limit, less its `Retry-After`: the body and the CORS headers it sends with every answer. */
+const TOO_MANY_REQUESTS_ANSWER = Object.freeze({
+  status: 429,
+  contentType: 'application/json',
+  body: JSON.stringify({ error: 'too-many-requests' }),
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Expose-Headers': 'Retry-After'
+  }
+});
 
 /** The operations of the function that are answered before their work is done, and so take a completion witness. */
 const WITNESSED_OPERATIONS: ReadonlyArray<string> = Object.freeze(['request-link', 'request-recovery']);
@@ -527,6 +539,36 @@ export function createInvitationFlow(
       expect(unwitnessed, 'further link requests of the page, which carried no witness').toBe(0);
 
       return admin.awaitLinkWitness(witness);
+    },
+
+    /**
+     * Run an action in which the function refuses the page's one link request over its per-caller limit, and assert that the page made exactly one.
+     *
+     * The request is answered in the browser as the function answers a caller over the limit, with 429, the `Retry-After` given and the function's CORS headers, and reaches no server, so nothing is mailed and no slot of the real limit is taken. Every other request of the page to the function is passed on as it is.
+     *
+     * The action ends with the assertion of what the page shows for the refusal, so the request has been made by the time that assertion holds.
+     *
+     * @param page - The page that makes the request.
+     * @param retryAfterSeconds - The seconds the refusal names.
+     * @param action - What makes the page ask, ending in an assertion of what the page then shows.
+     */
+    async refusePageLinkRequest(page: Page, retryAfterSeconds: number, action: () => Promise<void>): Promise<void> {
+      let refused = 0;
+      const refuse = async (route: Route): Promise<void> => {
+        const request = route.request();
+        const body = request.method() === 'POST' ? jsonObjectOf(request.postData()) : undefined;
+        if (!body || !WITNESSED_OPERATIONS.includes(String(body.operation))) return route.fallback();
+        refused += 1;
+        return route.fulfill({
+          ...TOO_MANY_REQUESTS_ANSWER,
+          headers: { ...TOO_MANY_REQUESTS_ANSWER.headers, 'Retry-After': String(retryAfterSeconds) }
+        });
+      };
+
+      const endRefusing = await routeUntilEnded(page, ACCOUNT_ACCESS_ROUTE, refuse);
+      await action();
+      endRefusing();
+      expect(refused, 'link requests of the page that were refused').toBe(1);
     },
 
     /**

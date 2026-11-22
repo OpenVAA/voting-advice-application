@@ -7,8 +7,8 @@ Lists the ways the project lets a visitor register, and leads each where it must
 - The modes listed are the ones the application settings offer, in a fixed order: the identity provider, the email address and the registration code. With several, each is a radio whose panel opens when it is chosen, and nothing is chosen on arrival. With exactly one, its panel is shown directly. The page is never rendered with none: its server load leads to the login page then.
 - An address whose `mode` parameter names a listed mode, as the identity provider's error screen's Try again does, opens that mode's panel when the page mounts. The parameter is read in the page, never in a load; a mode that is not listed chooses nothing.
 - The identity provider's panel is a form whose one fact is the entity type registered, among the types the provider's mode is allowed for. With one type, a sentence names it and nothing is asked. With two, a sentence says both can be registered and a group of bordered radios asks which, with nothing chosen on arrival: Continue with none chosen sends nothing, says to choose one and moves focus to the first type. The type chosen is kept while the page is shown, when another mode is chosen and the provider's is chosen back. A line says where Continue leads. Continue posts the type to the authorize endpoint, under the page's locale, which the provider is asked to show its screens in, and, on its answer, the browser leaves for the provider; the type travels in the request's body and in an httpOnly cookie the endpoint sets, never in an address. Continue stays in its loading form until the page is left. A refusal of the type leads to the identity provider's error screen with `mode_not_allowed`, and any other failure with `registration_failed`; the page shows no provider error of its own. A page restored from the browser's page cache, by Back from the provider, ends the loading form.
-- The email panel takes an address. Continue asks for a sign-in link to it and opens the "email sent" screen when the request has settled, whatever it settled as. Nothing of the request's answer is read.
-- The code panel takes a registration code. Continue checks it: a code nobody has claimed leads to the screen that asks for an address, and a claimed code to the screen that signs its holder in. The code is held in the entry flow for that screen, and is in no address. Every other answer of the check, and a check that failed, is shown as one sentence at the field, with the code left as it was typed, so that the page says nothing of why a code was not confirmed.
+- The email panel takes an address. Continue asks for a sign-in link to it and opens the "email sent" screen when the request has settled, whatever it settled as. Nothing of the request's answer is read, but for a request the function refused because the caller has made more requests than its limit admits: the page then stays, and the field shows the sentence the code panel shows for that refusal and takes focus. The code check and the link request share that limit.
+- The code panel takes a registration code. Continue checks it: a code nobody has claimed leads to the screen that asks for an address, and a claimed code to the screen that signs its holder in. The code is held in the entry flow for that screen, and is in no address. A check the function refused because the caller has made more attempts than its limit admits is shown at the field as a sentence naming the wait, in whole minutes rounded up; the refusal comes before the code is looked at, so it says nothing about the code. Every other answer of the check, and every other failed check, is shown as one sentence at the field, with the code left as it was typed, so that the page says nothing of why a code was not confirmed.
 - Continue is always available. A press with no mode chosen sends nothing, says to choose one and moves focus to the first radio. A press with the open panel's field empty or unusable sends nothing, says what to enter at the field and moves focus there.
 - Each panel is a form of its own, and the radios are in no form, so the open form holds at most one field. Each form is declared as a post although no server action answers it, so that a submit the page's script did not catch could not write an address or a code into the address bar. Continue needs the page's script, so it is natively disabled until the page has mounted.
 - What was typed in a panel is kept while the page is shown, when another mode is chosen and the first is chosen back.
@@ -32,6 +32,7 @@ Lists the ways the project lets a visitor register, and leads each where it must
   import { OIDC_ERROR } from '$contestant/utils/oidcError';
   import { identityProviderEntityTypes, listedRegistrationModes } from '$contestant/utils/registrationOffer';
   import { MainContent } from '$layouts/main';
+  import { TooManyRequestsError } from '$lib/api/base/tooManyRequestsError';
   import { Button } from '$lib/components/button';
   import { EmailField } from '$lib/components/emailField';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -155,8 +156,8 @@ Lists the ways the project lets a visitor register, and leads each where it must
   let code = $state('');
   let emailError = $state<string>();
   let codeError = $state<string>();
-  /** Why the code field is in error: nothing was typed, or the code typed was not confirmed. */
-  let codeErrorReason = $state<'required' | 'unconfirmed'>();
+  /** Why the code field is in error: nothing was typed, the code typed was not confirmed, or the caller has made more attempts than the limit admits. */
+  let codeErrorReason = $state<'required' | 'unconfirmed' | 'tooManyAttempts'>();
 
   let mounted = $state(false);
   /** Whether a link request is in flight. */
@@ -246,7 +247,15 @@ Lists the ways the project lets a visitor register, and leads each where it must
       return;
     }
     requesting = true;
-    await sendEntryLink({ origin: 'register', email: address });
+    const retryAfterSeconds = (await sendEntryLink({ origin: 'register', email: address }))?.retryAfterSeconds;
+    if (retryAfterSeconds !== undefined) {
+      requesting = false;
+      emailError = t('common.account.tooManyAttempts', { minutes: Math.ceil(retryAfterSeconds / 60) });
+      // The main button was natively disabled during the request, so focus is placed once the field is editable again.
+      await tick();
+      emailField?.focus();
+      return;
+    }
     await goto(getRoute.current('ContestantAppEmailSent'));
     requesting = false;
   }
@@ -262,8 +271,12 @@ Lists the ways the project lets a visitor register, and leads each where it must
       return;
     }
     checking = true;
-    // A check that failed is read as a code that was not confirmed.
-    const status = await checkInvitationCode({ code: typed }).catch(() => undefined);
+    // A refusal over the attempt limit says nothing about the code, so it is named with the wait; every other failed check is read as a code that was not confirmed.
+    let retryAfterSeconds: number | undefined;
+    const status = await checkInvitationCode({ code: typed }).catch((error: unknown) => {
+      if (error instanceof TooManyRequestsError) retryAfterSeconds = error.retryAfterSeconds;
+      return undefined;
+    });
     if (status === 'valid' || status === 'used') {
       // The code is held before the navigation: the screen it leads to renders only over a held code.
       holdEntryCode({ code: typed, status });
@@ -274,8 +287,13 @@ Lists the ways the project lets a visitor register, and leads each where it must
       return;
     }
     checking = false;
-    codeErrorReason = 'unconfirmed';
-    codeError = t('contestantApp.register.codeUnconfirmed');
+    if (retryAfterSeconds === undefined) {
+      codeErrorReason = 'unconfirmed';
+      codeError = t('contestantApp.register.codeUnconfirmed');
+    } else {
+      codeErrorReason = 'tooManyAttempts';
+      codeError = t('common.account.tooManyAttempts', { minutes: Math.ceil(retryAfterSeconds / 60) });
+    }
     // The main button was natively disabled during the check, so focus is placed once the field is editable again.
     await tick();
     codeField?.focus();

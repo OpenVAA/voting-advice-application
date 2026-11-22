@@ -4,6 +4,7 @@
 -- No UPDATE policy -- feedback is immutable after insert.
 -- RLS policies are in 302-rls.sql.
 -- Rate limiting trigger prevents spam (5 requests per 5 minutes per IP).
+-- The rate limit reads `private.deployment_settings` and keys a trusted `cf-connecting-ip` by `private.client_address_bucket`, both in 109-deployment-settings.sql.
 --
 -- `project_id` is nullable and its foreign key is ON DELETE SET NULL, so feedback outlives the project it is about. The two go together: SET NULL into a NOT NULL column would make the project delete fail.
 --
@@ -25,39 +26,9 @@ CREATE TABLE IF NOT EXISTS private.feedback_rate_limits (
 );
 
 --------------------------------------------------------------------------------
--- Per-deployment settings that migrations cannot know
---
--- A single row: the `singleton` key admits only `true`. `behind_cloudflare` states that every request reaches the API through Cloudflare, which sets `cf-connecting-ip` itself to the connecting client. Its only reader is `check_feedback_rate_limit`, which trusts `cf-connecting-ip` only when it is true.
---
--- The migration ships it false. Hosted Supabase is behind Cloudflare, so a hosted deployment needs it true. A self-hosted gateway qualifies only when its origin accepts connections from Cloudflare alone; otherwise a client can send its own `cf-connecting-ip`. A deployment's value is written by the bootstrap script `infra/scripts/bootstrap.sql`, and the local stack's by seed.sql.
---
--- Only the owner reads or writes it: the SECURITY DEFINER trigger reads it, seed.sql writes the local stack's row, and the bootstrap script writes a deployment's. RLS is enabled with no policy and every API role's privileges are revoked.
---------------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS private.deployment_settings (
-  -- The primary key, which only `true` passes, so the table holds at most one row.
-  singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
-  -- True when every request reaches the API through Cloudflare.
-  behind_cloudflare boolean NOT NULL DEFAULT false
-);
-
-INSERT INTO
-  private.deployment_settings
-DEFAULT VALUES
-ON CONFLICT DO NOTHING;
-
-ALTER TABLE private.deployment_settings ENABLE ROW LEVEL SECURITY;
-
-REVOKE ALL ON TABLE private.deployment_settings
-FROM
-  PUBLIC,
-  anon,
-  authenticated,
-  service_role;
-
---------------------------------------------------------------------------------
 -- The client address the feedback rate limit is keyed on
 --
--- With `p_trust_cf_connecting_ip` true, the key is `cf-connecting-ip` when it parses as an address, otherwise the last `x-forwarded-for` entry when that parses, otherwise `unknown`. With it false, `cf-connecting-ip` is not read and the key is the last `x-forwarded-for` entry or `unknown`. The value is normalised with `host()`. The flag has no default, so every caller decides.
+-- With `p_trust_cf_connecting_ip` true, the key is the bucket `private.client_address_bucket` gives `cf-connecting-ip` when it parses as an address, otherwise the last `x-forwarded-for` entry when that parses, otherwise `unknown`. With it false, `cf-connecting-ip` is not read and the key is the last `x-forwarded-for` entry or `unknown`. An `x-forwarded-for` entry is normalised with `host()`. The flag has no default, so every caller decides.
 --
 -- `check_feedback_rate_limit` passes `private.deployment_settings.behind_cloudflare`. Behind Cloudflare, `cf-connecting-ip` is the connecting client and a client cannot choose it. Without Cloudflare in front, as on the local CLI stack or most self-hosted gateways, Kong forwards a client-sent `cf-connecting-ip` unchanged, so an untrusted deployment keys on the gateway-appended hop instead.
 --
@@ -76,14 +47,9 @@ BEGIN
   END IF;
 
   IF p_trust_cf_connecting_ip THEN
-    p_candidate := NULLIF(btrim(p_headers ->> 'cf-connecting-ip'), '');
+    p_candidate := private.client_address_bucket(p_headers ->> 'cf-connecting-ip');
     IF p_candidate IS NOT NULL THEN
-      BEGIN
-        RETURN host(p_candidate::inet);
-      EXCEPTION
-        WHEN invalid_text_representation THEN
-          NULL;
-      END;
+      RETURN p_candidate;
     END IF;
   END IF;
 
