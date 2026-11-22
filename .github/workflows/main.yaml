@@ -180,11 +180,16 @@ jobs:
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
 
+      # adapter-node never calls process.exit, so the server exits after its drain only while nothing
+      # keeps the event loop alive. The check starts the build above and needs no other service.
+      - name: "Check that the built server exits by itself after its drain"
+        run: yarn check:shutdown-exit
+
   docker-image-build:
     # Builds the `production` target of `apps/frontend/Dockerfile` from the repo root. That is the
-    # image `docker-compose.dev.yml` deploys (`target: production`) and the one `render.example.yaml`
-    # deploys (no target, so the final stage, which is `production`), both with the repo root as the
-    # build context.
+    # image `docker-compose.dev.yml` runs (`target: production`) and the one the AWS deploy pipeline
+    # deploys (`infra/scripts/build-push-image.sh` builds `--target production`), both with the repo
+    # root as the build context.
     #
     # It runs on every change, with no paths-filter and no `if:`. The image copies `apps/`,
     # `packages/`, `scripts/` and the root manifests, and runs the root lifecycle scripts during its
@@ -617,6 +622,11 @@ jobs:
       - name: "Build all packages"
         run: yarn build
 
+      # The edge runtime reads this file when the stack starts and does not inherit the root env;
+      # the tracked template holds the local stack's values.
+      - name: "Configure the Edge Functions' environment"
+        run: cp apps/supabase/supabase/functions/.env.example apps/supabase/supabase/functions/.env
+
       - name: "Start Supabase"
         working-directory: apps/supabase
         run: supabase start
@@ -637,6 +647,11 @@ jobs:
       # package watcher would add CPU load and a second process whose failure kills the dev server.
       - name: "Run E2E tests"
         run: tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/ci --no-db-reset --no-watch
+
+      # The functions log variable names, never values, and this stack's keys are the local defaults.
+      - name: "Print the edge runtime's log"
+        if: failure()
+        run: docker logs --timestamps supabase_edge_runtime_openvaa-local
 
       # The consent-free spec needs the dev server in consent-free mode, and one run serves one mode,
       # so no full-suite run collects it: the wrapper runs it alone, with the dev server started from
@@ -811,35 +826,45 @@ jobs:
       - name: "Assert the guard's own comparator self-test passes"
         run: node scripts/assert-node-engine.mjs --self-test
 
-  # Formats and validates every Terraform root under infra/, then checks that the Supabase module
-  # encodes the hosted settings with their types intact.
+  # Formats and validates every Terraform root under infra/, runs the tests of every module, which
+  # check that the Supabase module encodes the hosted settings with their types intact, and plans the
+  # example roots and the bootstrap root against mock providers.
   #
   # It holds no credentials on purpose: `init -backend=false` reads no state, and `validate` calls no
   # cloud API. A job that planned would need a role, and this one runs the configuration a pull
   # request brings, so it gets no secret, no identity-token permission and no credential action. It
-  # writes no plan file and uploads nothing.
+  # writes no plan file and uploads nothing. Its GITHUB_TOKEN may only read the repository contents,
+  # whatever the repository's default grant, and checkout does not keep that token in .git/config,
+  # so the script and provider binaries the later steps run cannot read it.
   #
   # Both actions are pinned by commit SHA, with the tag in a trailing comment, because a tag can be
   # moved to other code. `terraform_wrapper: false` keeps the wrapper from hiding exit statuses.
   #
-  # `-lockfile=readonly` fails `init` when a tracked lock file lacks the hashes of this runner's
-  # platform, instead of rewriting the lock file in the runner. The module tracks no lock file, so its
-  # test step initialises without the flag.
+  # The validation, the module tests, the plans of the example roots and the test of the bootstrap
+  # root are `infra/scripts/terraform-checks.sh`; this job is the only one that runs them.
+  # `-lockfile=readonly` fails `init` when a tracked lock file lacks the
+  # hashes of this runner's platform, instead of rewriting the lock file in the runner; a module
+  # initialises with it only when it tracks a lock file, which the script lists.
   #
-  # `terraform test` plans the module against a mocked provider, so it needs no credentials either.
+  # `terraform test` plans each module, each example root and the bootstrap root against mocked
+  # providers, so it needs no credentials either.
   #
-  # The roots are found by glob, so a root added later is validated without an edit here. The loop
-  # then fails if any root named below was not among those validated, so an empty or short glob
-  # cannot pass. It names roots rather than counting them, because roots come and go.
+  # The roots are found by glob, so a root added later is validated without an edit here. The script
+  # then fails if any root it names was not among those validated, so an empty or short glob cannot
+  # pass. It names roots rather than counting them, because roots come and go.
   #
   # The validation and type-check steps run even when an earlier step failed, so a formatting
   # failure does not hide a validation failure.
   infra-validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: "Checkout source code"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: "Setup Terraform 1.16.5"
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
@@ -852,39 +877,20 @@ jobs:
 
       - name: "Validate every Terraform root"
         if: ${{ !cancelled() }}
-        run: |
-          set -euo pipefail
-          validated=()
-          for root in infra/bootstrap infra/envs/*/*/; do
-            root="${root%/}"
-            echo "::group::$root"
-            terraform -chdir="$root" init -backend=false -input=false -lockfile=readonly
-            terraform -chdir="$root" validate -no-color
-            echo "::endgroup::"
-            validated+=("$root")
-          done
-          for required in \
-            infra/bootstrap \
-            infra/envs/staging/dns-mail \
-            infra/envs/staging/supabase \
-            infra/envs/staging/aws \
-            infra/envs/example/dns-mail \
-            infra/envs/example/supabase \
-            infra/envs/example/aws; do
-            found=0
-            for root in "${validated[@]}"; do
-              if [ "$root" = "$required" ]; then found=1; fi
-            done
-            if [ "$found" -ne 1 ]; then
-              echo "::error::$required was not among the roots validated (${validated[*]}). A required root is missing or the glob no longer reaches it."
-              exit 1
-            fi
-          done
-          echo "validated ${#validated[@]} roots: ${validated[*]}"
+        run: infra/scripts/terraform-checks.sh validate
 
-      - name: "Check the settings types of the Supabase module"
+      - name: "Test every Terraform module that has tests"
         if: ${{ !cancelled() }}
-        run: |
-          set -euo pipefail
-          terraform -chdir=infra/modules/supabase init -backend=false -input=false
-          terraform -chdir=infra/modules/supabase test -no-color
+        run: infra/scripts/terraform-checks.sh test-modules
+
+      # Each example root is planned by its own test file against mock providers, so the plan reaches every resource
+      # without a credential or a backend.
+      - name: "Plan the example roots with mock providers"
+        if: ${{ !cancelled() }}
+        run: infra/scripts/terraform-checks.sh plan-examples
+
+      # The bootstrap root's test plans it with a second deployment beside staging, so names that collide or a renamed
+      # staging resource fail here.
+      - name: "Test the bootstrap root with a mock provider"
+        if: ${{ !cancelled() }}
+        run: infra/scripts/terraform-checks.sh test-bootstrap

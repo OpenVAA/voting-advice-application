@@ -37,10 +37,21 @@ updates:
       interval: "monthly"
     target-branch: "main"
     open-pull-requests-limit: 1
+    # The Supabase provider is pinned exactly and raised by hand together with a new reading of its source (infra/envs/staging/supabase/README.md § Traps)
+    ignore:
+      - dependency-name: "supabase/supabase"
 
   # Maintain the image digest pins of the local proxy stack
   - package-ecosystem: "docker-compose"
     directory: "/infra/local"
+    schedule:
+      interval: "monthly"
+    target-branch: "main"
+    open-pull-requests-limit: 1
+
+  # Maintain the base image digest pin of the frontend image
+  - package-ecosystem: "docker"
+    directory: "/apps/frontend"
     schedule:
       interval: "monthly"
     target-branch: "main"

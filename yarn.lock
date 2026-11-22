@@ -6982,6 +6982,7 @@ __metadata:
     eslint-plugin-simple-import-sort: "catalog:"
     glob: "npm:^13.0.6"
     husky: "npm:^9.1.7"
+    js-yaml: "catalog:"
     lint-staged: "npm:^17.6.0"
     prettier: "catalog:"
     tsup: "catalog:"
