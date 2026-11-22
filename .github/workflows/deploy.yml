@@ -1,0 +1,699 @@
+name: "Deploy staging"
+
+# Deploys one commit to staging. A run, in order:
+#   1. job checks, with no credential: Terraform formatting, the validation of the staging AWS root and the unit
+#      tests of the infrastructure scripts;
+#   2. job deploy, in the `staging` environment, which waits for its reviewer: builds and pushes the commit's image
+#      and takes its digest; plans the staging AWS root with that digest into a saved plan and prints it; pushes the
+#      migrations to the Supabase project; checks its deployment settings, failing unless the project trusts
+#      cf-connecting-ip; deploys its functions; applies the saved plan; waits until the service's primary deployment, on
+#      the task definition just applied, has completed its rollout; runs the deployed smoke entry against
+#      https://staging.openvaa.org; and reads /api/health again to confirm the commit is still the one served. A
+#      failed step stops every later one but the cleanup and the alert. When a step fails or the run is cancelled,
+#      the last step mails the operator through the deployment topic, naming the stage.
+#
+# A push to `deploy/staging` and a push to a `deploy-evidence/*` branch both deploy and apply. The environment's
+# branch policy matches one path segment only, so an evidence branch name holds no further `/`: a nested name would
+# start this workflow and then be refused at the gate. `deploy-evidence/destroy-staging` belongs to the destroy
+# workflow and does not start this one. A dispatch must pick the `deploy/staging` ref, because the environment admits
+# no other branch for it.
+#
+# A step reads a command's status as `cmd || name=$?`, after `name=0`, because a `run:` step that names no `shell:`
+# runs under `bash -e`: that shell ends the step at a failing command that is not in an `||` list, so a status read
+# on the next line would never run, while every command whose status the step does not read still ends the step.
+#
+# The repository's default token may write, so the top-level permissions are empty and every job names its own.
+
+on:
+  push:
+    branches:
+      - "deploy/staging"
+      - "deploy-evidence/**"
+      - "!deploy-evidence/destroy-staging"
+  workflow_dispatch:
+
+# One group with the destroy workflow. A run waiting for the group is replaced by a newer one; a running one, which
+# includes one whose deploy job waits for approval, is never cancelled, because a cancelled apply can leave the state
+# lock held.
+concurrency:
+  group: staging-aws
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Setup Terraform 1.16.5"
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: "Check Terraform formatting"
+        run: terraform fmt -check -recursive -diff infra
+
+      - name: "Validate the staging AWS root"
+        run: |
+          set -euo pipefail
+          terraform -chdir=infra/envs/staging/aws init -backend=false -input=false -lockfile=readonly
+          terraform -chdir=infra/envs/staging/aws validate -no-color
+
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a Node below
+      # engines.node.
+      - name: "Setup Node.js 24.21.0"
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.21.0
+
+      - name: "Setup Yarn 4.18"
+        uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # v2.0.0
+        with:
+          version: 4.18
+
+      - name: "Unit tests of the infrastructure scripts"
+        run: yarn test:unit:infra
+
+  # Every hosted write of a deploy happens in this one job. The `staging` environment holds its reviewer, its branch
+  # policy and its secrets, which are released only on approval.
+  deploy:
+    needs: checks
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: staging
+      url: https://staging.openvaa.org
+
+    steps:
+      - name: "Checkout source code"
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Assume the deploy role"
+        id: credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: deploy-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      # The build script refuses a working tree that is not the pushed commit, untracked files included, so it runs
+      # before `yarn install` writes anything into the checkout. Status 3 means the registry already holds this
+      # commit's image, which is deployed as it is.
+      - name: "Build and push the image"
+        id: build
+        run: |
+          set -uo pipefail
+          url=$(sed -n 's/^registry_url *= *"\(.*\)"$/\1/p' infra/envs/staging/aws/terraform.tfvars)
+          if [ -z "$url" ]; then
+            echo "::error::infra/envs/staging/aws/terraform.tfvars has no registry_url."
+            exit 1
+          fi
+          build_exit=0
+          infra/scripts/build-push-image.sh --repository-url "$url" > "$RUNNER_TEMP/build-push.txt" || build_exit=$?
+          cat "$RUNNER_TEMP/build-push.txt"
+          echo "build_exit=$build_exit"
+          if [ "$build_exit" -ne 0 ] && [ "$build_exit" -ne 3 ]; then
+            echo "::error::build-push-image.sh exited $build_exit."
+            exit 1
+          fi
+          digest=$(sed -n 's/.*image_digest=\(sha256:[0-9a-f]\{64\}\).*/\1/p' "$RUNNER_TEMP/build-push.txt")
+          if [ -z "$digest" ]; then
+            echo "::error::build-push-image.sh printed no image_digest= line."
+            exit 1
+          fi
+          echo "digest=$digest"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      # The role's credentials stay in the job's environment only for the steps that call AWS. No package install, no
+      # Supabase CLI call and no browser install runs with them: they are dropped after the build, after the plan and
+      # after the stable check, and the role is assumed again before the plan, the apply and the alert.
+      - name: "Drop the build credentials"
+        id: drop-build-credentials
+        run: |
+          {
+            echo "AWS_ACCESS_KEY_ID="
+            echo "AWS_SECRET_ACCESS_KEY="
+            echo "AWS_SESSION_TOKEN="
+          } >> "$GITHUB_ENV"
+
+      # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a Node below
+      # engines.node.
+      - name: "Setup Node.js 24.21.0"
+        id: node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.21.0
+
+      - name: "Setup Yarn 4.18"
+        id: yarn
+        uses: threeal/setup-yarn-action@ec8c075e62bc497968de40011c2b766f5e8f1ac5 # v2.0.0
+        with:
+          version: 4.18
+
+      # The drift check after the push reads the migration history with psql.
+      - name: "Install psql"
+        id: psql
+        run: |
+          set -uo pipefail
+          update_exit=0
+          sudo apt-get update || update_exit=$?
+          if [ "$update_exit" -ne 0 ]; then
+            echo "::error::apt-get update exited $update_exit."
+            exit 1
+          fi
+          install_exit=0
+          sudo apt-get install -y --no-install-recommends postgresql-client || install_exit=$?
+          if [ "$install_exit" -ne 0 ]; then
+            echo "::error::apt-get install postgresql-client exited $install_exit."
+            exit 1
+          fi
+          echo "psql_version=$(psql --version)"
+
+      - name: "Setup Terraform 1.16.5"
+        id: terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: "Assume the deploy role for the plan"
+        id: plan-credentials
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: deploy-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      - name: "Initialise the staging AWS root"
+        id: init
+        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+
+      - name: "Plan the staging AWS root with the built digest"
+        id: plan
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+        run: |
+          set -uo pipefail
+          plan_exit=0
+          terraform -chdir=infra/envs/staging/aws plan -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan" || plan_exit=$?
+          echo "plan_exit=$plan_exit"
+          if [ "$plan_exit" -ne 0 ]; then
+            echo "::error::terraform plan exited $plan_exit."
+            exit 1
+          fi
+
+      - name: "Show the plan"
+        id: show
+        run: |
+          set -uo pipefail
+          show_exit=0
+          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt" || show_exit=$?
+          if [ "$show_exit" -ne 0 ]; then
+            echo "::error::terraform show exited $show_exit."
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/tfplan.txt"
+          {
+            echo "### Plan of infra/envs/staging/aws"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/tfplan.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Drop the plan credentials"
+        id: drop-plan-credentials
+        run: |
+          {
+            echo "AWS_ACCESS_KEY_ID="
+            echo "AWS_SECRET_ACCESS_KEY="
+            echo "AWS_SESSION_TOKEN="
+          } >> "$GITHUB_ENV"
+
+      # The CLI is linked in a work directory of its own under $RUNNER_TEMP, whose supabase/ holds symbolic links to the
+      # repository's config.toml, migrations and functions. apps/supabase is never linked: a link writes the project's
+      # service versions into supabase/.temp of the directory it links.
+      - name: "Link a work directory to the Supabase project"
+        id: link
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -uo pipefail
+          ref=$(sed -n 's/^project_ref *= *"\(.*\)"$/\1/p' infra/envs/staging/supabase/terraform.tfvars)
+          if ! [[ "$ref" =~ ^[a-z]{20}$ ]]; then
+            echo "::error::project_ref of infra/envs/staging/supabase/terraform.tfvars is not 20 lower-case letters."
+            exit 1
+          fi
+          workdir="$RUNNER_TEMP/supabase-linked/$ref"
+          mkdir -p "$workdir/supabase"
+          for p in config.toml migrations functions; do
+            ln -sfn "$GITHUB_WORKSPACE/apps/supabase/supabase/$p" "$workdir/supabase/$p"
+          done
+          links=$(find "$workdir/supabase" -maxdepth 1 -type l | wc -l)
+          echo "links=$((links))"
+          if [ "$((links))" -ne 3 ]; then
+            echo "::error::The work directory holds $((links)) links, not 3."
+            exit 1
+          fi
+          link_exit=0
+          node_modules/.bin/supabase link --project-ref "$ref" --workdir "$workdir" --agent no --output-format text \
+            > "$RUNNER_TEMP/supabase-link.log" 2>&1 || link_exit=$?
+          echo "link_exit=$link_exit"
+          if [ "$link_exit" -ne 0 ]; then
+            cat "$RUNNER_TEMP/supabase-link.log"
+            echo "::error::supabase link exited $link_exit."
+            exit 1
+          fi
+          linked_ref=$(cat "$workdir/supabase/.temp/project-ref")
+          echo "linked_ref=$linked_ref"
+          if [ "$linked_ref" != "$ref" ]; then
+            echo "::error::The link wrote '$linked_ref', not $ref."
+            exit 1
+          fi
+          if [ -e apps/supabase/supabase/.temp/project-ref ]; then
+            echo "shared_dir_linked=yes"
+            echo "::error::apps/supabase/supabase/.temp/project-ref exists; the shared work directory is linked."
+            exit 1
+          fi
+          echo "shared_dir_linked=no"
+          {
+            echo "ref=$ref"
+            echo "workdir=$workdir"
+          } >> "$GITHUB_OUTPUT"
+
+      # The environment's approval stands in for the typed ref: push-migrations.sh accepts --confirmed-ref only in a
+      # job that sets OPENVAA_DEPLOY_ENVIRONMENT to staging, on a deploy ref, and only when it equals --ref. Those
+      # checks guard against a mistake; the push is held to this job by SUPABASE_DB_PASSWORD, a secret of the
+      # environment. The database is reached through the session pooler on port 5432, whose user name carries the ref;
+      # the transaction pooler is never used. PGSSLMODE=require makes psql refuse a connection without TLS; it does not
+      # verify the server's certificate.
+      - name: "Push the migrations"
+        id: migrations
+        env:
+          REF: ${{ steps.link.outputs.ref }}
+          WORKDIR: ${{ steps.link.outputs.workdir }}
+          OPENVAA_DEPLOY_ENVIRONMENT: ${{ vars.DEPLOY_ENVIRONMENT }}
+          PGHOST: ${{ vars.SUPABASE_POOLER_HOST }}
+          PGPORT: "5432"
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "10"
+          PGSSLMODE: require
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -uo pipefail
+          if [ -z "$PGHOST" ]; then
+            echo "::error::The environment variable SUPABASE_POOLER_HOST is not set."
+            exit 1
+          fi
+          export PGUSER="postgres.$REF"
+          unset PGHOSTADDR PGSERVICE
+          push_exit=0
+          infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF" \
+            --log-dir "$RUNNER_TEMP/push-migrations" || push_exit=$?
+          echo "push_exit=$push_exit"
+          if [ "$push_exit" -ne 0 ]; then
+            echo "::error::push-migrations.sh exited $push_exit."
+            exit "$push_exit"
+          fi
+
+      # The per-caller limit of account-access and the feedback limit trust cf-connecting-ip only when
+      # private.deployment_settings.behind_cloudflare is true, which the operator's bootstrap writes and no migration
+      # can. This step reads it after the push, so it sees the state the functions and the rollout will see, and stops
+      # the run before both unless it is true. It writes nothing. Status 3 with an error beginning
+      # `check-deployment-settings:` is a finding; status 3 with any other error means the check could not run. The
+      # step holds the database password as PGPASSWORD alone, and PGSSLMODE=require makes psql refuse a connection
+      # without TLS; it does not verify the server's certificate. The step is cut off after two minutes, so a session
+      # holding a lock on the table cannot keep the run waiting until the job's timeout.
+      - name: "Check the deployment settings"
+        id: settings
+        env:
+          REF: ${{ steps.link.outputs.ref }}
+          PGHOST: ${{ vars.SUPABASE_POOLER_HOST }}
+          PGPORT: "5432"
+          PGDATABASE: postgres
+          PGCONNECT_TIMEOUT: "10"
+          PGSSLMODE: require
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        timeout-minutes: 2
+        run: |
+          set -uo pipefail
+          if [ -z "$PGHOST" ]; then
+            echo "::error::The environment variable SUPABASE_POOLER_HOST is not set."
+            exit 1
+          fi
+          export PGUSER="postgres.$REF"
+          unset PGHOSTADDR PGSERVICE
+          settings_exit=0
+          psql -X -f infra/scripts/check-deployment-settings.sql || settings_exit=$?
+          echo "settings_exit=$settings_exit"
+          if [ "$settings_exit" -ne 0 ]; then
+            echo "::error::check-deployment-settings.sql exited $settings_exit."
+            exit 1
+          fi
+
+      # The functions are deployed from the linked work directory, so the CLI reads each one's verify_jwt from
+      # config.toml. The read-back fails unless the project serves three ACTIVE functions, each with verify_jwt as
+      # config.toml says, true for a function it names no block for, and their slugs are the function directories of
+      # the commit. The token reaches curl on standard input, and the list call is cut off after 20 seconds.
+      - name: "Deploy the functions"
+        id: functions
+        env:
+          REF: ${{ steps.link.outputs.ref }}
+          WORKDIR: ${{ steps.link.outputs.workdir }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -uo pipefail
+          deploy_exit=0
+          node_modules/.bin/supabase functions deploy --project-ref "$REF" --workdir "$WORKDIR" --agent no --output-format text \
+            > "$RUNNER_TEMP/functions-deploy.log" 2>&1 || deploy_exit=$?
+          echo "functions_deploy_exit=$deploy_exit"
+          if [ "$deploy_exit" -ne 0 ]; then
+            cat "$RUNNER_TEMP/functions-deploy.log"
+            echo "::error::supabase functions deploy exited $deploy_exit."
+            exit 1
+          fi
+          curl_exit=0
+          curl -sS --max-time 20 -K - -o "$RUNNER_TEMP/functions.json" -w '%{http_code}' \
+            "https://api.supabase.com/v1/projects/$REF/functions" > "$RUNNER_TEMP/functions-http.txt" \
+            <<< "header = \"Authorization: Bearer $SUPABASE_ACCESS_TOKEN\"" || curl_exit=$?
+          http=$(cat "$RUNNER_TEMP/functions-http.txt")
+          echo "functions_list_http=$http"
+          if [ "$curl_exit" -ne 0 ] || [ "$http" != 200 ]; then
+            echo "::error::The function list could not be read: curl exited $curl_exit with HTTP status $http."
+            exit 1
+          fi
+          jq_exit=0
+          jq -r 'sort_by(.slug)[] | "\(.slug) \(.status) \(.verify_jwt)"' "$RUNNER_TEMP/functions.json" \
+            > "$RUNNER_TEMP/functions.txt" || jq_exit=$?
+          if [ "$jq_exit" -ne 0 ]; then
+            echo "::error::The function list is not the expected JSON."
+            exit 1
+          fi
+          expected_verify_jwt() {
+            awk -v header="[functions.$1]" '
+              $0 == header { inside = 1; next }
+              /^\[/ { inside = 0 }
+              inside && /^verify_jwt *= */ { sub(/^verify_jwt *= */, ""); print; exit }
+            ' apps/supabase/supabase/config.toml
+          }
+          count=0
+          mismatched=0
+          while read -r slug status verify_jwt; do
+            expected=$(expected_verify_jwt "$slug")
+            expected="${expected:-true}"
+            echo "function=$slug status=$status verify_jwt=$verify_jwt expected_verify_jwt=$expected"
+            count=$((count + 1))
+            if [ "$status" != ACTIVE ] || [ "$verify_jwt" != "$expected" ]; then
+              mismatched=$((mismatched + 1))
+            fi
+          done < "$RUNNER_TEMP/functions.txt"
+          if [ "$count" -ne 3 ] || [ "$mismatched" -ne 0 ]; then
+            echo "::error::The project serves $count functions, $mismatched of them not ACTIVE or with another verify_jwt than config.toml; expected 3, all ACTIVE and matching."
+            exit 1
+          fi
+          expected_slugs=$(find apps/supabase/supabase/functions -mindepth 1 -maxdepth 1 -type d ! -name '_*' -exec basename {} \; | sort)
+          served_slugs=$(awk '{ print $1 }' "$RUNNER_TEMP/functions.txt" | sort)
+          echo "functions_expected=${expected_slugs//$'\n'/ }"
+          echo "functions_served=${served_slugs//$'\n'/ }"
+          if [ -z "$expected_slugs" ] || [ "$served_slugs" != "$expected_slugs" ]; then
+            echo "::error::The project serves other functions than the directories of apps/supabase/supabase/functions."
+            exit 1
+          fi
+
+      # A role session lasts one hour, and the steps before this one can take a good part of it. The apply must not
+      # outlive its credentials, so they are assumed again right before it.
+      - name: "Assume the deploy role again for the apply"
+        id: reassume
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: deploy-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      - name: "Apply the saved plan"
+        id: apply
+        run: |
+          set -uo pipefail
+          apply_exit=0
+          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/tfplan" || apply_exit=$?
+          echo "apply_exit=$apply_exit"
+          if [ "$apply_exit" -ne 0 ]; then
+            echo "::error::terraform apply exited $apply_exit."
+            exit 1
+          fi
+
+      # The apply waits for a steady state, and ECS marks the deployment's rollout COMPLETED some seconds after it. So
+      # this step reads the service up to `polls` times, `interval` seconds apart, and passes once the primary
+      # deployment runs the task definition the apply wrote, has completed its rollout and runs at least the floor of
+      # tasks. It fails at once when the primary deployment runs another task definition, when its rollout is FAILED or
+      # in any other state, or when a completed rollout runs fewer tasks than the floor, and at the last read when the
+      # rollout is still IN_PROGRESS. The limit outlasts the circuit breaker's three failed tasks for one desired task,
+      # and stays within half the job's timeout and the hour of the credentials assumed before the apply.
+      - name: "Check the rollout is stable"
+        id: stable
+        run: |
+          set -uo pipefail
+          polls=60
+          interval=15
+          floor=$(sed -n 's/^task_floor *= *\([0-9][0-9]*\)$/\1/p' infra/envs/staging/aws/terraform.tfvars)
+          if [ -z "$floor" ]; then
+            echo "::error::infra/envs/staging/aws/terraform.tfvars has no task_floor."
+            exit 1
+          fi
+          applied_exit=0
+          applied=$(terraform -chdir=infra/envs/staging/aws output -raw task_definition_arn) || applied_exit=$?
+          cluster_exit=0
+          cluster=$(terraform -chdir=infra/envs/staging/aws output -raw cluster_name) || cluster_exit=$?
+          service_exit=0
+          service=$(terraform -chdir=infra/envs/staging/aws output -raw service_name) || service_exit=$?
+          if [ "$applied_exit" -ne 0 ] || [ "$cluster_exit" -ne 0 ] || [ "$service_exit" -ne 0 ]; then
+            echo "::error::The outputs task_definition_arn, cluster_name and service_name could not all be read."
+            exit 1
+          fi
+          primary='[.services[0].deployments[] | select(.status == "PRIMARY")][0]'
+          poll=1
+          while [ "$poll" -le "$polls" ]; do
+            echo "stable_poll=$poll"
+            describe_exit=0
+            aws ecs describe-services --cluster "$cluster" --services "$service" --output json > "$RUNNER_TEMP/service.json" || describe_exit=$?
+            echo "stable_describe_exit=$describe_exit"
+            if [ "$describe_exit" -ne 0 ]; then
+              echo "::error::aws ecs describe-services exited $describe_exit."
+              exit 1
+            fi
+            primary_task_definition=$(jq -r "$primary.taskDefinition // \"\"" "$RUNNER_TEMP/service.json")
+            rollout_state=$(jq -r "$primary.rolloutState // \"\"" "$RUNNER_TEMP/service.json")
+            running=$(jq -r "$primary.runningCount // 0" "$RUNNER_TEMP/service.json")
+            desired=$(jq -r '.services[0].desiredCount // 0' "$RUNNER_TEMP/service.json")
+            if [ -n "$primary_task_definition" ] && [ "$primary_task_definition" = "$applied" ]; then
+              matches=yes
+            else
+              matches=no
+            fi
+            echo "stable_task_definition_matches=$matches"
+            echo "stable_rollout_state=$rollout_state"
+            echo "stable_running=$running"
+            echo "stable_desired=$desired"
+            if [ "$matches" = yes ] && [ "$rollout_state" = IN_PROGRESS ]; then
+              if [ "$poll" -lt "$polls" ]; then
+                sleep "$interval"
+              fi
+              poll=$((poll + 1))
+              continue
+            fi
+            if [ "$matches" != yes ] || [ "$rollout_state" != COMPLETED ] || ! [ "$running" -ge "$floor" ] 2> /dev/null; then
+              echo "::error::The primary deployment does not run the applied task definition with a completed rollout and at least $floor running tasks."
+              exit 1
+            fi
+            exit 0
+          done
+          echo "::error::The primary deployment's rollout is still IN_PROGRESS after $polls reads, $interval s apart."
+          exit 1
+
+      - name: "Drop the rollout credentials"
+        id: drop-rollout-credentials
+        run: |
+          {
+            echo "AWS_ACCESS_KEY_ID="
+            echo "AWS_SECRET_ACCESS_KEY="
+            echo "AWS_SESSION_TOKEN="
+          } >> "$GITHUB_ENV"
+
+      - name: "Install Playwright's Chromium"
+        id: playwright
+        run: yarn playwright install --with-deps chromium
+
+      # No report and no output directory of this step is ever uploaded: a run that signs the contestant in can hold
+      # the values it typed in what it writes, on a green run as on a red one. The output stays in $RUNNER_TEMP and is
+      # removed below. The AWS credentials are taken out of the smoke run's environment, which needs none.
+      - name: "Run the deployed smoke entry"
+        id: smoke
+        env:
+          SMOKE_EXPECTED_SHA: ${{ github.sha }}
+          SMOKE_CONTESTANT_EMAIL: ${{ secrets.SMOKE_CONTESTANT_EMAIL }}
+          SMOKE_CONTESTANT_PASSWORD: ${{ secrets.SMOKE_CONTESTANT_PASSWORD }}
+          SMOKE_ACCESS_CALLER_MAX: ${{ vars.SMOKE_ACCESS_CALLER_MAX }}
+        run: |
+          set -uo pipefail
+          smoke_exit=0
+          env -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN \
+            yarn test:e2e:deployed --output "$RUNNER_TEMP/smoke-output" || smoke_exit=$?
+          echo "smoke_exit=$smoke_exit"
+          if [ "$smoke_exit" -ne 0 ]; then
+            echo "::error::yarn test:e2e:deployed exited $smoke_exit."
+            exit 1
+          fi
+
+      # The smoke gate read the served build before the specs ran. Reading it again closes the window in which
+      # another apply could have landed while they ran.
+      - name: "Read the served build again"
+        id: served-build
+        run: |
+          set -uo pipefail
+          curl_exit=0
+          curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" https://staging.openvaa.org/api/health || curl_exit=$?
+          if [ "$curl_exit" -ne 0 ]; then
+            echo "served_build_after_smoke="
+            echo "::error::Reading /api/health exited $curl_exit."
+            exit 1
+          fi
+          served=$(jq -r '.build // ""' "$RUNNER_TEMP/health.json")
+          echo "served_build_after_smoke=$served"
+          if [ "$served" != "$GITHUB_SHA" ]; then
+            echo "::error::/api/health serves build '$served', not $GITHUB_SHA."
+            exit 1
+          fi
+
+      # The push's log directory holds the CLI's unredacted debug output, which names the database's address.
+      - name: "Remove the plan, the smoke output and the step files"
+        id: cleanup
+        if: always()
+        run: >-
+          rm -rf
+          "$RUNNER_TEMP/tfplan" "$RUNNER_TEMP/tfplan.txt" "$RUNNER_TEMP/smoke-output"
+          "$RUNNER_TEMP/build-push.txt" "$RUNNER_TEMP/service.json" "$RUNNER_TEMP/health.json"
+          "$RUNNER_TEMP/supabase-linked" "$RUNNER_TEMP/supabase-link.log" "$RUNNER_TEMP/push-migrations"
+          "$RUNNER_TEMP/functions-deploy.log" "$RUNNER_TEMP/functions.json" "$RUNNER_TEMP/functions-http.txt"
+          "$RUNNER_TEMP/functions.txt"
+
+      - name: "Assume the deploy role again for the alert"
+        if: failure() || cancelled()
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-north-1
+          role-session-name: deploy-alert-${{ github.run_id }}
+          allowed-account-ids: "471112560111"
+
+      # The message names the stage, the commit, the trigger and the run, and nothing else: no secret, no address and
+      # no tool output. Every step before this one is named with the stage it belongs to, so a failed step is reported
+      # by what it follows: a step after the migrations push never reads as a stage before it.
+      - name: "Alert the operator"
+        id: alert
+        if: failure() || cancelled()
+        env:
+          JOB_STATUS: ${{ job.status }}
+          CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          DROP_BUILD_CREDENTIALS_OUTCOME: ${{ steps.drop-build-credentials.outcome }}
+          NODE_OUTCOME: ${{ steps.node.outcome }}
+          YARN_OUTCOME: ${{ steps.yarn.outcome }}
+          PSQL_OUTCOME: ${{ steps.psql.outcome }}
+          TERRAFORM_OUTCOME: ${{ steps.terraform.outcome }}
+          PLAN_CREDENTIALS_OUTCOME: ${{ steps.plan-credentials.outcome }}
+          INIT_OUTCOME: ${{ steps.init.outcome }}
+          PLAN_OUTCOME: ${{ steps.plan.outcome }}
+          SHOW_OUTCOME: ${{ steps.show.outcome }}
+          DROP_PLAN_CREDENTIALS_OUTCOME: ${{ steps.drop-plan-credentials.outcome }}
+          LINK_OUTCOME: ${{ steps.link.outcome }}
+          MIGRATIONS_OUTCOME: ${{ steps.migrations.outcome }}
+          SETTINGS_OUTCOME: ${{ steps.settings.outcome }}
+          FUNCTIONS_OUTCOME: ${{ steps.functions.outcome }}
+          REASSUME_OUTCOME: ${{ steps.reassume.outcome }}
+          APPLY_OUTCOME: ${{ steps.apply.outcome }}
+          STABLE_OUTCOME: ${{ steps.stable.outcome }}
+          DROP_ROLLOUT_CREDENTIALS_OUTCOME: ${{ steps.drop-rollout-credentials.outcome }}
+          PLAYWRIGHT_OUTCOME: ${{ steps.playwright.outcome }}
+          SMOKE_OUTCOME: ${{ steps.smoke.outcome }}
+          SERVED_BUILD_OUTCOME: ${{ steps.served-build.outcome }}
+          CLEANUP_OUTCOME: ${{ steps.cleanup.outcome }}
+        run: |
+          set -uo pipefail
+          stage=""
+          for pair in \
+            "setup:$CHECKOUT_OUTCOME" \
+            "setup:$CREDENTIALS_OUTCOME" \
+            "build:$BUILD_OUTCOME" \
+            "plan:$DROP_BUILD_CREDENTIALS_OUTCOME" \
+            "plan:$NODE_OUTCOME" \
+            "plan:$YARN_OUTCOME" \
+            "plan:$PSQL_OUTCOME" \
+            "plan:$TERRAFORM_OUTCOME" \
+            "plan:$PLAN_CREDENTIALS_OUTCOME" \
+            "plan:$INIT_OUTCOME" \
+            "plan:$PLAN_OUTCOME" \
+            "plan:$SHOW_OUTCOME" \
+            "migrations:$DROP_PLAN_CREDENTIALS_OUTCOME" \
+            "migrations:$LINK_OUTCOME" \
+            "migrations:$MIGRATIONS_OUTCOME" \
+            "settings:$SETTINGS_OUTCOME" \
+            "functions:$FUNCTIONS_OUTCOME" \
+            "rollout:$REASSUME_OUTCOME" \
+            "rollout:$APPLY_OUTCOME" \
+            "stable:$STABLE_OUTCOME" \
+            "smoke:$DROP_ROLLOUT_CREDENTIALS_OUTCOME" \
+            "smoke:$PLAYWRIGHT_OUTCOME" \
+            "smoke:$SMOKE_OUTCOME" \
+            "smoke:$SERVED_BUILD_OUTCOME" \
+            "cleanup:$CLEANUP_OUTCOME"; do
+            if [ "${pair#*:}" = failure ]; then
+              stage="${pair%%:*}"
+              break
+            fi
+          done
+          if [ -z "$stage" ]; then
+            if [ "$JOB_STATUS" = failure ]; then stage=unknown; else stage=cancelled; fi
+          fi
+          echo "alert_stage=$stage"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          message=$(printf 'The staging deploy failed at %s.\n\nCommit: %s\nTrigger: %s of %s\nRun: %s\n' \
+            "$stage" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$GITHUB_REF_NAME" "$run_url")
+          publish_exit=0
+          aws sns publish \
+            --topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments \
+            --subject "openvaa staging deploy failed at $stage" \
+            --message "$message" \
+            --query MessageId --output text > "$RUNNER_TEMP/alert.txt" 2> "$RUNNER_TEMP/alert.err" || publish_exit=$?
+          message_id=$(cat "$RUNNER_TEMP/alert.txt")
+          error_code=$(sed -n 's/.*An error occurred (\([A-Za-z.]*\)).*/\1/p' "$RUNNER_TEMP/alert.err")
+          rm -f "$RUNNER_TEMP/alert.txt" "$RUNNER_TEMP/alert.err"
+          echo "alert_message_id=$message_id"
+          if [ "$publish_exit" -ne 0 ]; then
+            echo "alert_error=$error_code"
+            echo "::error::aws sns publish exited $publish_exit."
+            exit 1
+          fi
