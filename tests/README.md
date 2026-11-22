@@ -184,6 +184,207 @@ yarn test:unit                    # every workspace's unit tests, then these
 
 ---
 
+## Deployed smoke run
+
+`yarn test:e2e:deployed` drives an application that is already deployed, by default `https://staging.openvaa.org`, instead of a dev server of this checkout. It is a second Playwright entry, [`tests/playwright.deployed.config.ts`](./playwright.deployed.config.ts), with its own global setup, [`tests/deployed-global-setup.ts`](./deployed-global-setup.ts). It has one project, `deployed-smoke`, on Desktop Chrome, whose specs are `tests/tests/deployed/*.smoke.ts`; there is no setup or teardown project, one worker runs the specs in order, and `retries: 0` holds on CI too. The run is read-mostly: it seeds nothing, clears nothing and holds no service-role client. Its one write is made by the hosted `account-access` function itself, which keeps one `caller:` row of the calling address in `private.invitation_throttle` for the 10-minute window of `caller-limit.smoke.ts`. There are three specs:
+
+- `caller-limit.smoke.ts` calls `check-code` with fresh codes no invitation holds until the function refuses it, at most twice the limit plus one times (61 for the default of 30, the limit read from `SMOKE_ACCESS_CALLER_MAX`), which allows for one reset of the 10-minute window during the run, and passes only on a 429 with the body `{ "error": "too-many-requests" }` and a `Retry-After` of 1 to 600 seconds. It sends no client-address header, so the address limited is the caller's own.
+- `voter.smoke.ts` answers the questions of the hosted `smoke` dataset anonymously, in the browser, and reaches the candidate results. When the project's `analytics.trackEvents` shows the usage-data consent prompt, the spec declines it.
+- `contestant.smoke.ts` signs one contestant in with a password, sees a home on which every task is complete and signs out, editing nothing.
+
+**The side effect on the caller's address.** For up to 10 minutes after a run of the whole entry, `check-code`, `request-link` and `request-recovery` refuse the calling address on the staging project, so a sign-in-link mail asked for from that address in that window is refused. A workstation run that must leave its address unlimited runs `voter.smoke.ts` alone, as step 4 below describes.
+
+The entry is separate from the local suite and is no way around its gate. It imports nothing from `tests/playwright.config.ts`, `tests/global-setup.ts` or `tests/tests/support/preflight.ts`, and the local suite, its [preflight](#preflight--every-run-proves-it-is-driving-this-checkout) and its `.spec.ts` projects are unchanged by it: `yarn test:e2e` and `tests/scripts/e2e-run.sh` still run every local spec behind the preflight. The deployed entry runs the `.smoke.ts` files and nothing else. When the configuration loads, `assertSmokeProjects` in [`tests/tests/utils/deployedTarget.ts`](./tests/utils/deployedTarget.ts) refuses, as `DEPLOYED SMOKE CONFIG REFUSED: <reason>`, a configuration with a second project, a dependency, a teardown, or a project name or `testMatch` that mentions setup or teardown.
+
+### Inputs
+
+The entry loads no `.env` file. It reads only the variables below from the process environment, so a value in the root `.env` does not reach it and a value exported in the shell does.
+
+| Variable                                              | Required                | Default                       | What it is                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------------------------------------------- | ----------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SMOKE_EXPECTED_SHA`                                  | yes, with no default    | —                             | The full 40-hex commit id the target must serve as `build` on `/api/health`. From a workstation it is the commit the last deploy built, the tip of `deploy/staging` on origin.                                                                                                                                                                                                                                                                                 |
+| `SMOKE_BASE_URL`                                      | no                      | `https://staging.openvaa.org` | The target. The gate requires `https`, or `http` on `localhost`, `127.0.0.1` or `[::1]`, no user info, and answers to `/api/health` and `/` from the target's own origin; beyond that a target is accepted by the project it serves, which the gate checks. The contestant spec sends its credentials to one origin alone, `public_origin` of `infra/envs/staging/supabase/terraform.tfvars`, and fails before any page action on any other.                   |
+| `SMOKE_CONTESTANT_EMAIL`, `SMOKE_CONTESTANT_PASSWORD` | for the contestant spec | —                             | The smoke contestant's sign-in. Without them the contestant test fails by name, `SMOKE INPUT MISSING: SMOKE_CONTESTANT_EMAIL, SMOKE_CONTESTANT_PASSWORD (read from the environment only, never printed)`, before any page action. The voter test needs neither.                                                                                                                                                                                                |
+| `SMOKE_ACCESS_CALLER_MAX`                             | no                      | `30`                          | The per-caller limit of `account-access` the caller-limit spec expects, the value of `private.deployment_settings.access_caller_max`, which the run cannot read over the public API. A deployment that sets `BOOTSTRAP_ACCESS_CALLER_MAX` sets this to the same value. Anything but a whole number of at least 1 fails that test by name, `SMOKE INPUT INVALID: SMOKE_ACCESS_CALLER_MAX must be a whole number of at least 1, got "<value>"`, before any call. |
+| `PLAYWRIGHT_JSON_OUTPUT_FILE`                         | no                      | none, and then no JSON report | Adds the JSON reporter, writing to that file.                                                                                                                                                                                                                                                                                                                                                                                                                  |
+
+`--output <dir>` moves the per-test output from its default, `tests/playwright-deployed-results`, which is ignored by git; the run below puts everything into its run directory instead. The entry writes no HTML report (see [the contestant's account](#the-contestants-account) for why), so `PLAYWRIGHT_HTML_OUTPUT_DIR` has no effect, and no `--reporter` other than `list` or `json` is passed to a run with the contestant's inputs.
+
+**The refusals.** Global setup runs the deployed-target gate before any spec, and the gate fails the run when:
+
+- `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_SECRET_KEY`, `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`, `TF_VAR_database_password` or `PGPASSWORD` is set to anything but blank. A smoke run holds no privileged key, no Management API token and no database password; the failure names each variable that is set and withholds its value. The check keeps its name, `service-role-key-absent`.
+- The base URL is not an absolute URL, carries user info, or is neither `https` nor `http` on a loopback host, or `/api/health` or `/` is answered, after redirects, from another origin than the base URL's. A base URL that does not parse or carries user info is not requested.
+- The build `/api/health` serves is not `SMOKE_EXPECTED_SHA`, or that input is unset or not a full 40-hex id.
+- The `PUBLIC_SUPABASE_URL` in the served page's environment is not exactly `https://<project_ref>.supabase.co`.
+- The `data-project-id` attribute of the served page is not `public_project_id`. An absent attribute and an unsubstituted placeholder fail as well.
+
+`project_ref` and `public_project_id` are read at run time from `infra/envs/staging/supabase/terraform.tfvars`, and from no input. So is `public_origin`, the only origin the contestant spec types its credentials into: it refuses any other base URL, a local build or dev server included, as `SMOKE TARGET REFUSED: the contestant's credentials are sent only to <public_origin>, public_origin of infra/envs/staging/supabase/terraform.tfvars; the base URL's origin is <origin>`. The voter spec carries no secret and runs against any target the gate accepts. No variable, flag or base URL can widen what counts as the dedicated project: a base URL that reaches another deployment, the production project or a local stack is refused by what that target serves. The SHA alone is an input, because it changes with every deploy, and it is compared exactly.
+
+### Running it from a workstation
+
+Every step runs in the same shell, at the root of this checkout, with Node 24 on `PATH`. Each status is read on the line after its command, never through a pipe.
+
+1. The deployed commit, and this checkout's `apps/` and `packages/` against it. The specs take test ids and message catalogues from this checkout, so a checkout whose application tree differs from the image drives the deployed application with another UI's expectations.
+
+   ```bash
+   cd "$(git rev-parse --show-toplevel)"
+   TIP_FILE=$(mktemp)
+   git ls-remote --exit-code origin \
+     refs/heads/deploy/staging > "$TIP_FILE"
+   echo "ls_remote_exit=$?"
+   DEPLOYED_SHA=$(cut -f1 "$TIP_FILE")
+   rm -f "$TIP_FILE"
+   git diff --quiet "$DEPLOYED_SHA" -- apps packages
+   echo "tree_diff_exit=$?"
+   ```
+
+   It must print `ls_remote_exit=0` and `tree_diff_exit=0`. An `ls_remote_exit=2` means origin has no `deploy/staging` branch, so the pipeline has deployed nothing yet. A `tree_diff_exit=1` means the trees differ: check out a commit whose `apps/` and `packages/` equal the deployed ones. A `128` means the commit is not in the local clone, and `git fetch` brings it.
+
+   The tip is the commit the last deploy built; after a deploy from a `deploy-evidence/*` branch, read that branch's tip in its place. When the last run went red before its apply, the served build is an older one, and the gate's `sha` row names it.
+
+2. The expected SHA, with every variable the gate refuses unset:
+
+   ```bash
+   unset SUPABASE_SERVICE_ROLE_KEY SUPABASE_SECRET_KEY \
+     SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD \
+     TF_VAR_database_password PGPASSWORD
+   export SMOKE_EXPECTED_SHA="$DEPLOYED_SHA"
+   ```
+
+   It prints nothing.
+
+3. The contestant's credentials, read from the keychain item `openvaa-staging-smoke-contestant` into the environment: the password with `-w`, and the address from the item's `acct` attribute. Neither is printed, because `-w` hands the password to the variable and, without `-w` or `-g`, `security` prints no password and `sed` keeps only the address. Skip this step for a voter-only run.
+
+   ```bash
+   SMOKE_CONTESTANT_PASSWORD=$(security \
+     find-generic-password \
+     -s openvaa-staging-smoke-contestant -w)
+   SMOKE_CONTESTANT_EMAIL=$(security \
+     find-generic-password \
+     -s openvaa-staging-smoke-contestant \
+     | sed -n 's/^ *"acct"<blob>="\(.*\)"$/\1/p')
+   export SMOKE_CONTESTANT_EMAIL \
+     SMOKE_CONTESTANT_PASSWORD
+   test -n "$SMOKE_CONTESTANT_EMAIL" \
+     && test -n "$SMOKE_CONTESTANT_PASSWORD" \
+     && echo "contestant_inputs=set"
+   ```
+
+   It must print `contestant_inputs=set`; macOS may first ask to allow access to the item. If the item is missing, the account has not been created yet (see [the contestant's account](#the-contestants-account)).
+
+4. A run directory, and the run:
+
+   ```bash
+   RUN=tests/e2e-runs/deployed-$(date -u +%Y%m%dT%H%M%SZ)
+   mkdir -p "$RUN"
+   PLAYWRIGHT_JSON_OUTPUT_FILE="$RUN/results.json" \
+     yarn test:e2e:deployed --output "$RUN/results" \
+     > "$RUN/smoke.log" 2>&1
+   echo "smoke_exit=$?"
+   ```
+
+   It must print `smoke_exit=0`, and `$RUN/smoke.log` then holds the gate's lines followed by `3 passed`:
+
+   ```
+   DEPLOYED SMOKE GATE https://staging.openvaa.org
+   PASS service-role-key-absent
+   PASS origin
+   PASS sha
+   PASS ref
+   PASS project-id
+   DEPLOYED SMOKE GATE OK build=<sha> ref=<ref> project=<id>
+   ```
+
+   For a voter-only run, put `tests/tests/deployed/voter.smoke.ts` after `yarn test:e2e:deployed`; the log then ends with `1 passed`. `smoke_exit=1` means the gate or a test failed: read the log as [the next part](#reading-the-gate) describes.
+
+5. The verdict, read from the run's own report:
+
+   ```bash
+   node tests/scripts/e2e-spec-verdict.mjs "$RUN" \
+     --passed caller-limit.smoke.ts \
+     --passed voter.smoke.ts \
+     --passed contestant.smoke.ts --no-flaky
+   echo "verdict_exit=$?"
+   ```
+
+   It must print `VERDICT OK: 3 tests -- passed 3, failed 0, flaky 0, skipped 0, did not run 0` and `verdict_exit=0`. For a voter-only run, leave out `--passed caller-limit.smoke.ts` and `--passed contestant.smoke.ts`; the line then counts 1 test.
+
+6. The credentials, out of the shell again:
+
+   ```bash
+   unset SMOKE_CONTESTANT_EMAIL \
+     SMOKE_CONTESTANT_PASSWORD
+   ```
+
+   It prints nothing.
+
+The entry is called directly, with no wrapper, so nothing adds a host-sleep heartbeat: a suspended host gives no exit 8 and no `VOID-host-suspend.txt` here. A red run whose failures are timeouts is checked against `pmset -g log` for a `Sleep` or `DarkWake` entry inside the run's window, which is `stats.startTime` plus `stats.duration` in `$RUN/results.json` (in UTC; `pmset` prints local time):
+
+```bash
+pmset -g log | grep -E ' (Sleep|DarkWake) ' | tail -20
+```
+
+If a sleep fell inside the window, the run is evidence in neither direction, as [a void run](#void-runs--a-suspended-host-ends-the-run-by-name) is: keep its directory and make the run again under a new one. If none did, the red run is a failure and is diagnosed like any other.
+
+List the entry's tests without a target:
+
+```bash
+yarn test:e2e:deployed --list --reporter=list
+```
+
+The last line must be `Total: 3 tests in 3 files`. `--list` stops before global setup, so the gate does not run and no input is needed. `--reporter=list` replaces the configured reporters, so the listing writes no report, even with `PLAYWRIGHT_JSON_OUTPUT_FILE` exported, and the count is its last line.
+
+### Reading the gate
+
+The log begins with `DEPLOYED SMOKE GATE <base URL>`, with any user info in the base URL withheld and a base URL that does not parse not printed, and then one line per check, always in this order: `service-role-key-absent`, `origin`, `sha`, `ref`, `project-id`. Each line is `PASS <check>` or `FAIL <check>: observed <what the target served>, expected <what it must be>`. All five checks are evaluated on every run, so a single run names every disagreement. A refused connection or a request that times out after 30 s becomes a `FAIL` line for each check that needed it. Only the origin check reaches into the others: a document answered from another origin fails every check that read it, and a base URL that is not requested fails every check that needed it, each with the reason in parentheses.
+
+When all five pass, the gate prints `DEPLOYED SMOKE GATE OK build=<sha> ref=<project_ref> project=<public_project_id>` and the specs run. When any fails, global setup throws this message, the run exits 1 and no spec runs:
+
+```
+DEPLOYED SMOKE GATE FAILED — <n> of 5 checks failed
+  FAIL <check>: observed …, expected …
+See tests/README.md § Deployed smoke run.
+```
+
+`results.json` then holds no test, so the verdict of step 5 fails as well.
+
+| Check                     | `observed` on a failure                                                                                                                                                                                                      | Usual cause                                                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `service-role-key-absent` | `<variable> is set (value withheld)`                                                                                                                                                                                         | The shell exported a key, a token or a database password, for instance by sourcing the root `.env` or after a Terraform sitting. Unset it (step 2) and run again. |
+| `origin`                  | The base URL's origin with `(not https, and not http on a loopback host)`, `(not an absolute URL: <value>)`, `(the base URL carries user info, value withheld)`, or the origin followed by `; <path> answered from <origin>` | A typo in `SMOKE_BASE_URL`, a plain-http address, or a host that redirects to another deployment or proxies it.                                                   |
+| `sha`                     | The served build, or a reason in parentheses: `(status <n>)`, `(request to /api/health failed: …)`, `(no build field)`, `(body is not JSON)`                                                                                 | A deploy that has not finished, or another build. `expected (SMOKE_EXPECTED_SHA is not a full 40-hex commit id)` means the input is unset or short.               |
+| `ref`                     | The served `PUBLIC_SUPABASE_URL` with `(not https://<ref>.supabase.co)`, or a reason in parentheses, such as `(no env block in the served document)`                                                                         | The target is backed by another Supabase project, or by a local stack.                                                                                            |
+| `project-id`              | The served id, `(attribute absent)` or `(unsubstituted %projectId% placeholder)`                                                                                                                                             | The target serves another project.                                                                                                                                |
+
+### The contestant's account
+
+The account is created once, out of band, on the hosted project, never by dev-seed and never by this entry. Step 22 of [`infra/envs/staging/supabase/README.md`](../infra/envs/staging/supabase/README.md), under "The smoke contestant", creates the auth user through the Auth Admin API, writes its editor grant and terms-of-use acceptance with `infra/scripts/grant-smoke-contestant.sql`, and stores the address as the account and the password as the password of the keychain item `openvaa-staging-smoke-contestant`. "Removing the contestant", in the same step, deletes the user, its rows and the item. Neither value is committed or printed by any step.
+
+Playwright writes the values a test types into more than one artifact, so the entry takes four measures:
+
+- The contestant spec turns tracing, screenshots and video off for its file (`test.use({ trace: 'off', screenshot: 'off', video: 'off' })`), so the typed values reach no trace and no image.
+- The deployed configuration has no HTML reporter. That reporter titles each fill step with the value typed into the field, so its report holds the address and the password on a green run as on a red one.
+- The configuration sets `PLAYWRIGHT_NO_COPY_PROMPT=1`, which turns off the accessibility snapshot of the open page that Playwright writes into the test's `error-context.md` when a failed test closes its browser context. Such a snapshot holds the value of every input, the password field's included.
+- A failed assertion still writes its own snapshot of the page into `error-context.md`. The spec therefore waits for the sign-in to lead away from the sign-in screen and, when it has not, empties the form's two fields before its first assertion, so a refused sign-in is reported without either value.
+
+These cover a refused sign-in, an action that never completes and a test that times out on the sign-in screen, each measured with made-up values. They do not cover every way a run can fail, so the per-test output directory of any run that holds the contestant's inputs (`--output`, `$RUN/results` above) is treated as secret, on a green run as on a red one: it is never published, uploaded or attached anywhere, and neither is a run directory that holds it. Quote only the run's status, gate and verdict lines.
+
+### What keeps it read-mostly
+
+- **The ESLint block** at the end of [`tests/eslint.config.mjs`](./eslint.config.mjs) covers the smoke specs, `tests/tests/utils/deployedTarget.ts`, `tests/tests/utils/callerLimitProbe.ts` and `tests/deployed-global-setup.ts`. It refuses a value import of a module that creates a service-role client, of the `@openvaa/dev-seed` barrel, of a Supabase client package and of `dotenv`; a type import is allowed.
+- **`tests/tests/utils/deployedSmokeGuards.test.ts`** covers what lint cannot see. The deployed configuration is outside lint (the `playwright*` ignore), so the test checks its text and its shape: it collects only `tests/tests/deployed/*.smoke.ts` and no project sets its own `testDir` or `testMatch`, one project, no setup, teardown, dependency, web server or retry, no reporter but `list` and `json`, and `PLAYWRIGHT_NO_COPY_PROMPT=1` set when it loads. It also pins the specs' own measures: the voter spec declines the consent prompt through a handler of its own, installed before it navigates, while no module of its value-import closure installs one on the path it runs (the walk fixture's consent grant is installed only by `walkUntilQuestionsIntro`, which the spec never calls), and the caller-limit spec keeps the configuration's tracing, since its calls carry only the public anon key the served page holds, and sends its calls through the probe of `callerLimitProbe.ts`. The lint rule sees direct imports only, so the test also walks the entry's whole value-import closure for a forbidden module, and it scans `.github/` and the entry for the remote-seed switch (`DEV_SEED_ALLOW_REMOTE`, `allow-remote`, `allowRemote`).
+- **`tests/tests/utils/deployedTarget.test.ts`** holds the gate's refusal matrix: foreign, production and local Supabase addresses, base URLs that do not parse, are not https off a loopback host or are answered from another origin, served documents without an environment block, and environments in which every variable names another project, none of which widens the ref, and the base URLs the contestant spec refuses to send its credentials to.
+
+All three run in `yarn test:unit`, through its last link, `yarn test:unit:tests`.
+
+### In the pipeline
+
+The `smoke` step of the deploy workflow, `.github/workflows/deploy.yml`, runs `yarn test:e2e:deployed` after the apply and the stable check, with the commit it built as `SMOKE_EXPECTED_SHA`, the contestant's two inputs from the `staging` environment's secrets and `SMOKE_ACCESS_CALLER_MAX` from that environment's variable of the same name, empty and so the default when the variable is not set. [`infra/README.md`](../infra/README.md#the-deploy-pipeline) gives the whole run. The step's environment must hold no service-role key, access token or database password: a step that inherits any variable of [the refusals](#inputs) fails `service-role-key-absent` before any spec runs. The step also takes the job's AWS credentials out of the run's environment, which needs none. The contestant spec refuses every base URL but `public_origin`, `https://staging.openvaa.org`, so the step leaves `SMOKE_BASE_URL` unset. On CI (`CI` or `GITHUB_ACTIONS` set) a `test.only` left in a smoke spec fails the run.
+
+The step writes its per-test output under the runner's temporary directory, `--output "$RUNNER_TEMP/smoke-output"`, and a later step of the job removes that directory whatever the outcome. Nothing of the step is uploaded, neither an HTML report nor its output directory, as [the contestant's account](#the-contestants-account) explains. A step that follows reads `/api/health` again and fails unless it still serves the built commit, so a deploy landing while the specs ran cannot leave a `PASS sha` line speaking for a build the specs never drove.
+
+---
+
 ## Concurrency model
 
 - `workers: 6` locally, `4` under GitHub Actions (the wrapper unsets `CI`, so `GITHUB_ACTIONS` selects it; the runner has 4 vCPUs), `3` with `E2E_SLOW_HOST=1` and `1` with `CI` set. The worker pool is **global** across all projects.

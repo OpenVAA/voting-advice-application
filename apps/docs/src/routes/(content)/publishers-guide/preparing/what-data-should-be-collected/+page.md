@@ -7,3 +7,5 @@ Data collection is enabled in two places. The analytics provider is part of the 
 When detailed events are collected, voters are by default shown a banner asking for permission when they start the VAA, and their detailed events are collected only if they grant it. A deployment can also be configured to collect without asking; whether that is permitted is for you, as the publisher, to determine.
 
 The events go through the application's own address, so the voter's browser loads no third-party analytics script, and nothing is stored on the voter's device for analytics except their consent choice. Some content blockers block this address as well, so the counts are a lower bound; this is not worked around.
+
+Before you turn analytics on, work through [the deployer's checklist](/developers-guide/configuration/analytics#the-deployers-checklist) with whoever runs your deployment. It lists, item by item, what the application collects and stores by default and where each choice is made, and leaves each determination, consent among them, to you.
