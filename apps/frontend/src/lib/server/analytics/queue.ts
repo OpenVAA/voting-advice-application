@@ -3,12 +3,16 @@
  *
  * The relay puts events in and returns at once; the queue hands them to the provider later, on its own timer, so no request ever waits for a provider. The queue has a cap: while a provider is slow or down, events beyond the cap are dropped and only their number is reported, so a flood cannot grow the server's memory without bound.
  *
+ * A timer tick is skipped while the timer's previous flush is still running, so a provider that hangs holds at most one taken batch besides the queue: the events held never exceed twice the cap.
+ *
  * ## Shutdown
  *
  * `registerShutdownFlush` flushes the queue once when the process emits `sveltekit:shutdown`. adapter-node emits that event before the process exits; the Vite dev server does not, so in development whatever is still queued when the server stops is lost.
  */
 import { log } from '@openvaa/app-shared';
+import { SHUTDOWN_EVENT } from '$lib/server/shutdown/shutdownLog';
 import type { AnalyticsEvent } from '$lib/analytics/analyticsEvent.type';
+import type { SignalTarget } from '$lib/server/shutdown/shutdownLog';
 import type { AnalyticsProvider } from './providers';
 
 /** The most events the queue holds when not given a cap. */
@@ -16,12 +20,6 @@ const DEFAULT_MAX_SIZE = 1000;
 
 /** The most events handed to the provider in one call when not given a batch size. */
 const DEFAULT_BATCH_SIZE = 100;
-
-/** How often the queue flushes on its own when not given an interval, in milliseconds. */
-const DEFAULT_FLUSH_INTERVAL_MS = 2000;
-
-/** The name of the event adapter-node emits on the process before it exits. */
-const SHUTDOWN_EVENT = 'sveltekit:shutdown';
 
 /** A bounded queue of events waiting for the provider. */
 export type EventQueue = {
@@ -40,30 +38,27 @@ export type EventQueue = {
   stop(): void;
 };
 
-/** Something a shutdown listener can be attached to once, by default the process. */
-export type ShutdownTarget = { once(event: string, listener: () => void): unknown };
-
 /**
  * Create a queue in front of a provider, with its own flush timer. Each call makes a new queue that shares nothing with any other.
  *
- * The timer does not keep the process alive.
+ * The timer does not keep the process alive. A tick is skipped while the timer's previous flush is still running, which bounds the events held to the cap plus one taken batch; a `flush` called directly, as at shutdown, runs regardless.
  *
  * @param options.provider - Where the queued events go.
  * @param options.maxSize - The most events held at once; default 1000.
  * @param options.batchSize - The most events per `capture` call; default 100.
- * @param options.flushIntervalMs - How often the queue flushes on its own; default 2000.
+ * @param options.flushIntervalMs - How often the queue flushes on its own, in milliseconds.
  * @returns The queue.
  */
 export function createQueue({
   provider,
   maxSize = DEFAULT_MAX_SIZE,
   batchSize = DEFAULT_BATCH_SIZE,
-  flushIntervalMs = DEFAULT_FLUSH_INTERVAL_MS
+  flushIntervalMs
 }: {
   provider: AnalyticsProvider;
   maxSize?: number;
   batchSize?: number;
-  flushIntervalMs?: number;
+  flushIntervalMs: number;
 }): EventQueue {
   const pending = new Array<AnalyticsEvent>();
   const sliceSize = Math.max(1, Math.floor(batchSize));
@@ -93,7 +88,13 @@ export function createQueue({
     }
   }
 
-  const timer = setInterval(() => void flush(), flushIntervalMs);
+  let inFlight: Promise<void> | undefined;
+  const timer = setInterval(() => {
+    if (inFlight) return;
+    inFlight = flush().finally(() => {
+      inFlight = undefined;
+    });
+  }, flushIntervalMs);
   timer.unref();
 
   return {
@@ -110,7 +111,7 @@ export function createQueue({
  * @param queue - The queue to flush.
  * @param target - What emits the event; the process by default.
  */
-export function registerShutdownFlush(queue: EventQueue, target: ShutdownTarget = process): void {
+export function registerShutdownFlush(queue: EventQueue, target: Pick<SignalTarget, 'once'> = process): void {
   target.once(SHUTDOWN_EVENT, () => {
     queue.stop();
     void queue.flush();

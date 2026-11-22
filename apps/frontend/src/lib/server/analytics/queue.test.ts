@@ -1,5 +1,5 @@
 /**
- * The bounded event queue: its cap, its flush in slices, its timer and its one flush at shutdown, driven with a recording stand-in provider.
+ * The bounded event queue: its cap, its flush in slices, its timer, which skips a tick while its flush is in flight, and its one flush at shutdown, driven with recording and hanging stand-in providers.
  *
  * @vitest-environment node
  */
@@ -26,6 +26,34 @@ function recordingProvider(capture: AnalyticsProvider['capture'] = () => Promise
         return capture(events);
       })
     }
+  };
+}
+
+/**
+ * A stand-in provider whose `capture` calls resolve only when the test releases them, oldest first.
+ */
+function hangingProvider(): {
+  provider: AnalyticsProvider;
+  batches: Array<Array<AnalyticsEvent>>;
+  release(): void;
+  held(): number;
+} {
+  const batches: Array<Array<AnalyticsEvent>> = [];
+  const waiting: Array<{ size: number; resolve: () => void }> = [];
+  return {
+    batches,
+    provider: {
+      name: 'log',
+      capture: vi.fn(
+        (events: ReadonlyArray<AnalyticsEvent>) =>
+          new Promise<void>((resolve) => {
+            batches.push([...events]);
+            waiting.push({ size: events.length, resolve });
+          })
+      )
+    },
+    release: () => waiting.shift()?.resolve(),
+    held: () => waiting.reduce((sum, call) => sum + call.size, 0)
   };
 }
 
@@ -62,7 +90,7 @@ afterEach(() => {
 
 describe('createQueue', () => {
   it('holds what it is given and returns how many it took', () => {
-    const queue = createQueue({ provider: recordingProvider().provider });
+    const queue = createQueue({ provider: recordingProvider().provider, flushIntervalMs: 2_000 });
     expect(queue.enqueue(events(3))).toBe(3);
     expect(queue.size()).toBe(3);
     queue.stop();
@@ -70,7 +98,7 @@ describe('createQueue', () => {
 
   it('keeps what fits under the cap, drops the rest and reports only the count at the next flush', async () => {
     const { provider, batches } = recordingProvider();
-    const queue = createQueue({ provider, maxSize: 5 });
+    const queue = createQueue({ provider, maxSize: 5, flushIntervalMs: 2_000 });
     expect(queue.enqueue(events(4))).toBe(4);
     expect(queue.enqueue(events(4, 4))).toBe(1);
     expect(queue.size()).toBe(5);
@@ -90,7 +118,7 @@ describe('createQueue', () => {
 
   it('hands the events on in order, in slices of at most the batch size, and empties itself', async () => {
     const { provider, batches } = recordingProvider();
-    const queue = createQueue({ provider, batchSize: 2 });
+    const queue = createQueue({ provider, batchSize: 2, flushIntervalMs: 2_000 });
     queue.enqueue(events(5));
     await queue.flush();
     expect(indices(batches)).toEqual([[0, 1], [2, 3], [4]]);
@@ -100,7 +128,7 @@ describe('createQueue', () => {
 
   it('calls nothing when it is empty', async () => {
     const { provider } = recordingProvider();
-    const queue = createQueue({ provider });
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
     await queue.flush();
     expect(provider.capture).not.toHaveBeenCalled();
     queue.stop();
@@ -108,7 +136,7 @@ describe('createQueue', () => {
 
   it('resolves and is empty when the provider rejects, and still sends the later slices', async () => {
     const { provider, batches } = recordingProvider(() => Promise.reject(new Error('provider down')));
-    const queue = createQueue({ provider, batchSize: 2 });
+    const queue = createQueue({ provider, batchSize: 2, flushIntervalMs: 2_000 });
     queue.enqueue(events(3));
     await expect(queue.flush()).resolves.toBeUndefined();
     expect(queue.size()).toBe(0);
@@ -118,7 +146,7 @@ describe('createQueue', () => {
 
   it('returns from enqueue before the provider is called', () => {
     const { provider } = recordingProvider();
-    const queue = createQueue({ provider });
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
     queue.enqueue(events(2));
     expect(provider.capture).not.toHaveBeenCalled();
     queue.stop();
@@ -137,6 +165,41 @@ describe('createQueue', () => {
     queue.stop();
   });
 
+  it('skips a tick while its flush is in flight, so a hanging provider sees one capture per hang', async () => {
+    vi.useFakeTimers();
+    const { provider, batches, release } = hangingProvider();
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
+    for (let i = 0; i < 10; i++) {
+      queue.enqueue(events(1, i));
+      await vi.advanceTimersByTimeAsync(1_000);
+    }
+    expect(provider.capture).toHaveBeenCalledTimes(1);
+    expect(indices(batches)).toEqual([[0, 1]]);
+    expect(queue.size()).toBe(8);
+
+    release();
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(provider.capture).toHaveBeenCalledTimes(2);
+    expect(indices(batches)[1]).toEqual([2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(queue.size()).toBe(0);
+    queue.stop();
+  });
+
+  it('holds at most the cap in the queue plus one taken batch while the provider hangs', async () => {
+    vi.useFakeTimers();
+    const { provider, held } = hangingProvider();
+    const queue = createQueue({ provider, maxSize: 5, flushIntervalMs: 2_000 });
+    let most = 0;
+    for (let i = 0; i < 40; i++) {
+      queue.enqueue(events(3, 3 * i));
+      await vi.advanceTimersByTimeAsync(500);
+      most = Math.max(most, queue.size() + held());
+    }
+    expect(most).toBeLessThanOrEqual(10);
+    expect(provider.capture).toHaveBeenCalledTimes(1);
+    queue.stop();
+  });
+
   it('stops flushing on its own once stopped', async () => {
     vi.useFakeTimers();
     const { provider } = recordingProvider();
@@ -149,8 +212,8 @@ describe('createQueue', () => {
   });
 
   it('keeps no state shared between queues', () => {
-    const first = createQueue({ provider: recordingProvider().provider });
-    const second = createQueue({ provider: recordingProvider().provider });
+    const first = createQueue({ provider: recordingProvider().provider, flushIntervalMs: 2_000 });
+    const second = createQueue({ provider: recordingProvider().provider, flushIntervalMs: 2_000 });
     first.enqueue(events(3));
     expect(second.size()).toBe(0);
     first.stop();
@@ -161,7 +224,7 @@ describe('createQueue', () => {
 describe('registerShutdownFlush', () => {
   it('flushes once when the shutdown event is emitted, and does nothing on a second emission', async () => {
     const { provider, batches } = recordingProvider();
-    const queue = createQueue({ provider });
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
     const emitter = new EventEmitter();
     registerShutdownFlush(queue, emitter);
     queue.enqueue(events(3));
@@ -177,9 +240,30 @@ describe('registerShutdownFlush', () => {
     expect(provider.capture).toHaveBeenCalledTimes(1);
   });
 
+  it('still flushes at shutdown while a timer flush hangs', async () => {
+    vi.useFakeTimers();
+    const { provider, batches } = hangingProvider();
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
+    const emitter = new EventEmitter();
+    registerShutdownFlush(queue, emitter);
+    queue.enqueue(events(2));
+    await vi.advanceTimersByTimeAsync(2_000);
+    expect(provider.capture).toHaveBeenCalledTimes(1);
+
+    queue.enqueue(events(3, 2));
+    emitter.emit('sveltekit:shutdown');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(provider.capture).toHaveBeenCalledTimes(2);
+    expect(indices(batches)).toEqual([
+      [0, 1],
+      [2, 3, 4]
+    ]);
+    expect(queue.size()).toBe(0);
+  });
+
   it('listens on the process when no target is given', async () => {
     const { provider } = recordingProvider();
-    const queue = createQueue({ provider });
+    const queue = createQueue({ provider, flushIntervalMs: 2_000 });
     const before = process.listenerCount('sveltekit:shutdown');
     registerShutdownFlush(queue);
     expect(process.listenerCount('sveltekit:shutdown')).toBe(before + 1);
