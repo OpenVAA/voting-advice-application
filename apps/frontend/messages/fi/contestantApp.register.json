@@ -53,6 +53,16 @@
       "ingress": "Näyttää siltä, että olet jo rekisteröitynyt. Kirjoita salasanasi kirjautuaksesi.",
       "title": "Kirjaudu salasanallasi"
     },
-    "title": "Rekisteröidy"
+    "title": "Rekisteröidy",
+    "tooManyAttempts": [
+      {
+        "declarations": ["input minutes"],
+        "selectors": ["minutes"],
+        "match": {
+          "minutes=1": "Verkostasi on tehty liian monta yritystä. Yritä uudelleen minuutin kuluttua.",
+          "minutes=*": "Verkostasi on tehty liian monta yritystä. Yritä uudelleen {minutes} minuutin kuluttua."
+        }
+      }
+    ]
   }
 }

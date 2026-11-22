@@ -9,6 +9,8 @@
  * - `code-sign-in` with `code` and `password`: answers `{ result: 'signed-in', access_token, refresh_token }` or `{ result: 'invalid-credentials' }`.
  * - `confirm-address` with `email`, optionally `locale`, and the caller's own access token in `Authorization`: answers `{ result: 'sent' }`, `{ result: 'in-use' }`, `{ result: 'invited' }` or `{ result: 'refused' }`, or 401 `{ error: 'unauthenticated' }` without a token the auth service accepts. It does its work before it answers. For an account whose app metadata names an identity provider and whose address is still the placeholder, it takes the account's and the address's slot, asks the auth service for the two links of a change of address, verifies the current address's link itself and mails the typed address's link. The typed address becomes the account's only when that link is opened and is never written to the account; the one admin update that carries an address puts the account's own placeholder back when verifying the current address's link completed the change alone, which the auth service does only with its secure change of address off.
  *
+ * Before any work of the three operations a browser calls anonymously, `check-code`, `request-link` and `request-recovery`, the caller's address from `cf-connecting-ip` takes a slot of the per-caller limit, one bucket per caller per project across the three. A caller over the limit is answered HTTP 429 `{ error: 'too-many-requests' }` with `Retry-After`, the same for each of them, and a take that fails is answered 500 `{ error: 'internal' }`. The database trusts the address only on a deployment behind Cloudflare and otherwise admits every call. `code-sign-in` and `confirm-address` take no caller slot: the frontend server calls `code-sign-in`, so the address would be the server's, and `confirm-address` is answered only to a signed-in account.
+ *
  * A `witness` names a completion record the service role opened, which the request's background work completes; it is a test instrument and is kept only on a request whose bearer is the service role's key. The record and its functions exist only in a database the test setup installed them in; where they are absent the request has no witness, and nothing is logged.
  *
  * No answer depends on whether an address, a code or an account exists, except the three words of the code check and the `in-use` and `invited` answers of `confirm-address`, which a signed-in caller gets about the address they typed for their own account, behind the account's and the address's slot. The function serves the deployment's one project, PUBLIC_PROJECT_ID, as send-email does: every link it mails lands on the one frontend SITE_URL names, which serves that project alone, so a request whose `project_id` names another project is refused with the bad-request answer before any operation is read. A request names no page, path or URL: every mailed link is built from SITE_URL, the locale and the token, and, for a recovery request that names an app from the closed set, the path the function takes for that app from its own constant map.
@@ -38,12 +40,15 @@ import {
   admitWitness,
   BAD_REQUEST_BODY,
   codeStatusBody,
+  CORS_HEADERS,
   INTERNAL_ERROR_BODY,
   INVALID_CREDENTIALS_BODY,
   METHOD_NOT_ALLOWED_BODY,
   parseAccountAccessRequest,
-  signedInBody
+  signedInBody,
+  TOO_MANY_REQUESTS_BODY
 } from './contract.ts';
+import { callerAddress, retryAfterSeconds, takesCallerSlot } from './callerLimit.ts';
 import {
   createExpiringPositive,
   isSignUpClosed,
@@ -78,11 +83,6 @@ import type { LinkIssueDeps, LogDetail, OutgoingMail } from './linkIssue.ts';
 /** The background-task hook of the edge runtime: the promise is kept alive after the response has been returned. */
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 
-const corsHeaders = Object.freeze({
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-});
-
 const LOG_PREFIX = 'account-access:';
 
 /** The key the sign-up answer is remembered under. There is one auth service per deployment, so one key. */
@@ -101,7 +101,7 @@ const redirectAdmittedMemory = createExpiringPositive(REDIRECT_CHECK_TTL_MS, () 
 /** The handler of every request: the method, the body, the operation, and the answer of that operation. */
 async function handleRequest(req: Request): Promise<Response> {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 200, headers: corsHeaders });
+    return new Response('ok', { status: 200, headers: CORS_HEADERS });
   }
   if (req.method !== 'POST') return answer(METHOD_NOT_ALLOWED_BODY, 405);
 
@@ -124,6 +124,20 @@ async function handleRequest(req: Request): Promise<Response> {
   const authorization = req.headers.get('Authorization');
   // A completion witness is a test instrument, kept only on a request made with the service role's key.
   const request = admitWitness(parsed, authorization, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
+
+  // The take comes before the work of every operation it limits, so that a refused caller causes no work and every one of them answers alike.
+  if (takesCallerSlot(request.operation)) {
+    const { data: retryAfter, error } = await createAdminClient().rpc('access_caller_take', {
+      p_project_id: request.projectId,
+      p_address: callerAddress(req.headers)
+    });
+    if (error) {
+      log('the caller limit could not be read', describeFailure(error));
+      return answer(INTERNAL_ERROR_BODY, 500);
+    }
+    const seconds = retryAfterSeconds(retryAfter);
+    if (seconds !== null) return tooManyRequests(seconds);
+  }
 
   if (request.operation === 'request-link') {
     // The answer is built before any work and returned without waiting for any of it, so neither its body nor its timing says anything about the address or the code.
@@ -163,11 +177,16 @@ function servesProject(request: AccountAccessRequest): boolean {
 }
 
 /** A JSON answer with the CORS headers. */
-function answer(body: unknown, status: number): Response {
+function answer(body: unknown, status: number, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    headers: { ...CORS_HEADERS, 'Content-Type': 'application/json', ...extraHeaders }
   });
+}
+
+/** The answer to a caller over the per-caller limit, with the seconds until its window ends. */
+function tooManyRequests(seconds: number): Response {
+  return answer(TOO_MANY_REQUESTS_BODY, 429, { 'Retry-After': String(seconds) });
 }
 
 /** The whole work of a link request. The handler does not wait for it, and it never rejects: a deployment whose configuration is incomplete logs that and issues nothing. */

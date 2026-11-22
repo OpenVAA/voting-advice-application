@@ -39,6 +39,7 @@
 import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2.117.2';
 import * as jose from 'npm:jose@6.2.12';
 import { actionLinkToken } from '../_shared/actionLink.ts';
+import { BASE_CORS_HEADERS } from '../_shared/cors.ts';
 import { requireEnv } from '../_shared/envConfig.ts';
 import { placeholderEmailFor } from '../_shared/placeholderEmail.ts';
 import { identityAppMetadata } from './appMetadata.ts';
@@ -59,11 +60,10 @@ import { presentsServerCredential, SERVER_CREDENTIAL_HEADER } from './serverCred
 import { signInExistingAccount } from './signIn.ts';
 import { requireVerifyClaimBinding } from './verifyConfig.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const corsHeaders = Object.freeze({
+  ...BASE_CORS_HEADERS,
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
-};
+} as const);
 
 /** The error codes that mean the deployment is not configured, answered as `configuration` rather than as an outage. */
 const CONFIGURATION_FAILURE_CODES: ReadonlyArray<string> = [

@@ -53,6 +53,16 @@
       "ingress": "Det ser ud til, at du allerede har registreret dig. Indtast din adgangskode for at logge ind.",
       "title": "Log ind med din adgangskode"
     },
-    "title": "Registrering"
+    "title": "Registrering",
+    "tooManyAttempts": [
+      {
+        "declarations": ["input minutes"],
+        "selectors": ["minutes"],
+        "match": {
+          "minutes=1": "Der er foretaget for mange forsøg fra dit netværk. Prøv igen om et minut.",
+          "minutes=*": "Der er foretaget for mange forsøg fra dit netværk. Prøv igen om {minutes} minutter."
+        }
+      }
+    ]
   }
 }

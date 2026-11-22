@@ -53,6 +53,16 @@
       "ingress": "Et gesäit esou aus, wéi wann Dir scho registréiert wiert. Gitt Äert Passwuert an, fir Iech unzemellen.",
       "title": "Mellt Iech mat Ärem Passwuert un"
     },
-    "title": "Aschreiwung"
+    "title": "Aschreiwung",
+    "tooManyAttempts": [
+      {
+        "declarations": ["input minutes"],
+        "selectors": ["minutes"],
+        "match": {
+          "minutes=1": "Et goufe ze vill Versich vun Ärem Netzwierk aus gemaach. Waart w.e.g. eng Minutt a probéiert dann nach eng Kéier.",
+          "minutes=*": "Et goufe ze vill Versich vun Ärem Netzwierk aus gemaach. Waart w.e.g. {minutes} Minutten a probéiert dann nach eng Kéier."
+        }
+      }
+    ]
   }
 }

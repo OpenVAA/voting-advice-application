@@ -851,9 +851,10 @@ EXECUTE ON ALL FUNCTIONS IN SCHEMA private TO anon,
 authenticated,
 service_role;
 
--- The grant above also reaches `private.feedback_client_ip` (107-feedback.sql). No policy calls it; only the SECURITY DEFINER trigger `check_feedback_rate_limit` does, so the API roles get no EXECUTE on it.
+-- The grant above also reaches `private.feedback_client_ip` and `private.client_address_bucket` (107-feedback.sql). No policy calls either; only the SECURITY DEFINER trigger `check_feedback_rate_limit` and, for the second, the SECURITY DEFINER function `access_caller_take` do, so the API roles get no EXECUTE on them.
 REVOKE
-EXECUTE ON FUNCTION private.feedback_client_ip (json, boolean)
+EXECUTE ON FUNCTION private.feedback_client_ip (json, boolean),
+private.client_address_bucket (text)
 FROM
   anon,
   authenticated,

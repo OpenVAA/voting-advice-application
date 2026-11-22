@@ -18,9 +18,11 @@
 -- - invitation_code_claimant_email() - the claimant's address of a used code, under an attempt limit
 -- - identity_account_find() - the account an identity provider's identity resolves to, by its match value or its placeholder address
 -- - identity_entity_find_or_create() - the entity an identity provider's user registered in a project, found or created
+-- - access_caller_take() - count one anonymous account-access operation against the limit of the address it came from
+-- - invitation_caller_take() - the former name of access_caller_take, kept until every deployment runs the functions that call the new name
 -- - claim_invitations() - turn the caller's open invitations into grants
 --
--- The four `invitation_*` functions, recovery_link_request, the two `email_confirmation_*` functions, email_invitation_hold and the two `identity_*` functions are the service role's: an Edge Function calls them with values a visitor typed or an identity provider asserted, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
+-- The five `invitation_*` functions, access_caller_take, recovery_link_request, the two `email_confirmation_*` functions, email_invitation_hold and the two `identity_*` functions are the service role's: an Edge Function calls them with values a visitor typed or an identity provider asserted, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
 --
 -- Depends on:
 -- - 102-entities.sql (the four entity tables)
@@ -612,15 +614,16 @@ service_role;
 --------------------------------------------------------------------------------
 -- access_throttle: the windowed counters of the invitation, recovery and address-confirmation helpers
 --
--- One row per key, in one of six forms:
+-- One row per key, in one of seven forms:
 -- - `link:<project id>:<sha256 hex of the address>` counts the sign-in and recovery mails to one address in one project, one a minute.
 -- - `link-address:<sha256 hex of the address>` counts the sign-in and recovery mails to one address in every project together, twenty a day.
 -- - `code-bind:<invitation id>` counts the addresses one open code row is bound to, five a day.
 -- - `code:<project id>:<code hash>` counts claimant look-ups of one used code, which are password attempts.
 -- - `confirm:<user id>` counts one signed-in account's address-confirmation requests, whatever project they name.
 -- - `confirm-address:<sha256 hex of the address>` counts the address-confirmation mails to one address, whatever project their requests name.
+-- - `caller:<project id>:<address, or the /64 of an IPv6 address>` counts the anonymous account-access operations from one caller in one project, `private.deployment_settings.access_caller_max` per ten minutes, taken by `access_caller_take` from the address the Edge Function passes.
 --
--- No key holds an address in clear: every address is hashed by private.email_hash. A `link:` or `link-address:` key is taken only for an address a mail would go to, a `code-bind:` key only for an open code row, which also bounds how many addresses a code holder can make a mail go to, a `code:` key only for a code that names a claimed row, and a `confirm:` key only for an account the service role read from a signed-in caller's own token that registered in the project the request names, whose count also bounds the `confirm-address:` keys that account's requests can take; so a caller cannot fill the table with keys of its own making, and no key is derived from a request header.
+-- Only a `caller:` key holds an address in clear, and only while its window runs: each take of `access_caller_take` deletes the `caller:` rows whose window has ended. Every other address is hashed by private.email_hash. A `link:` or `link-address:` key is taken only for an address a mail would go to, a `code-bind:` key only for an open code row, which also bounds how many addresses a code holder can make a mail go to, a `code:` key only for a code that names a claimed row, and a `confirm:` key only for an account the service role read from a signed-in caller's own token that registered in the project the request names, whose count also bounds the `confirm-address:` keys that account's requests can take; so a caller cannot fill the table with keys of its own making. A `caller:` key is the one key derived from a request header: it is taken only from an address Cloudflare names, which a caller cannot choose, and only for a project that exists.
 --
 -- Only the SECURITY DEFINER functions of this file read or write it: row-level security is enabled with no policy and every API role's privileges are revoked.
 --------------------------------------------------------------------------------
@@ -723,6 +726,100 @@ FROM
   PUBLIC,
   anon,
   authenticated;
+
+--------------------------------------------------------------------------------
+-- access_caller_take: count one anonymous account-access operation against the caller's limit in a project
+--
+-- Returns 0 when the take is admitted, and otherwise the whole seconds until the caller's window ends, at least 1: `private.deployment_settings.access_caller_max` takes per caller per project per ten minutes. A refused take is counted, as every take of access_throttle_take is.
+--
+-- The caller is p_address, the address the Edge Function read from `cf-connecting-ip`, keyed as `caller:<project id>:<caller>`, where the caller is the bucket private.client_address_bucket gives it (107-feedback.sql): the host of an IPv4 address, the IPv4 host of an IPv4-mapped IPv6 address and the /64 of any other IPv6 address. The address is trusted only when `private.deployment_settings.behind_cloudflare` is true, because only behind Cloudflare is `cf-connecting-ip` the connecting client rather than a value the client chose. An untrusted, absent, blank or unparseable address, and an id that names no project, are admitted with no row written: such takes would otherwise all share one bucket, so one caller could spend everyone's slots, or fill the table with keys of its own making.
+--
+-- After its own take, each take deletes the other `caller:` rows whose window has ended, so an address is held in clear only while its window runs. The take holds its key's advisory lock until the transaction ends, so the cleanup must wait for nothing: it leaves out its own key and skips a row another transaction has locked rather than wait for it. A row skipped is deleted by a later take.
+--
+-- SECURITY DEFINER because the throttle table and the deployment settings are the owner's alone. It checks nothing about its caller, so only the service role may execute it.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.access_caller_take (p_project_id uuid, p_address text) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+DECLARE
+  v_window constant interval := interval '10 minutes';
+  v_trusted boolean;
+  v_max integer;
+  v_caller text;
+  v_key text;
+  v_admitted boolean;
+  v_start timestamptz;
+BEGIN
+  SELECT s.behind_cloudflare, s.access_caller_max INTO v_trusted, v_max FROM private.deployment_settings s;
+
+  -- A missing settings row reads as false, so the address is then not trusted.
+  IF NOT COALESCE(v_trusted, false) THEN
+    RETURN 0;
+  END IF;
+
+  v_caller := private.client_address_bucket(p_address);
+  IF v_caller IS NULL THEN
+    RETURN 0;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM public.projects p WHERE p.id = p_project_id) THEN
+    RETURN 0;
+  END IF;
+
+  v_key := 'caller:' || p_project_id::text || ':' || v_caller;
+  v_admitted := private.access_throttle_take(v_key, v_max, v_window);
+
+  DELETE FROM private.access_throttle t
+  WHERE t.key IN (
+    SELECT x.key
+    FROM private.access_throttle x
+    WHERE x.key LIKE 'caller:%'
+      AND x.key <> v_key
+      AND x.window_start + v_window <= now()
+    FOR UPDATE SKIP LOCKED
+  );
+
+  IF v_admitted THEN
+    RETURN 0;
+  END IF;
+
+  SELECT t.window_start INTO v_start FROM private.access_throttle t WHERE t.key = v_key;
+  RETURN GREATEST(1, ceil(extract(epoch FROM (v_start + v_window - now())))::integer);
+END;
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.access_caller_take (uuid, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.access_caller_take (uuid, text) TO service_role;
+
+--------------------------------------------------------------------------------
+-- invitation_caller_take: the former name of access_caller_take, kept for the account-access function a deployment still runs
+--
+-- Returns what public.access_caller_take returns for the same arguments, and takes the same slot. A deployment pushes its migrations before it deploys its Edge Functions, so between the two steps, and after a rollback to earlier functions, the deployed account-access still calls this name. A later migration drops it once every deployment runs the functions that call access_caller_take.
+--
+-- SECURITY DEFINER because access_caller_take is the service role's alone. It checks nothing about its caller, so only the service role may execute it.
+--------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.invitation_caller_take (p_project_id uuid, p_address text) RETURNS integer LANGUAGE sql SECURITY DEFINER
+SET
+  search_path = '' AS $$
+  SELECT public.access_caller_take(p_project_id, p_address);
+$$;
+
+REVOKE
+EXECUTE ON FUNCTION public.invitation_caller_take (uuid, text)
+FROM
+  PUBLIC,
+  anon,
+  authenticated;
+
+GRANT
+EXECUTE ON FUNCTION public.invitation_caller_take (uuid, text) TO service_role;
 
 --------------------------------------------------------------------------------
 -- cleanup_access_throttle_on_delete: a deleted invitation leaves no throttle key

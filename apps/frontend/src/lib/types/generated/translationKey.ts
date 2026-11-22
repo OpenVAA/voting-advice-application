@@ -557,6 +557,7 @@ export type TranslationKey =
   | 'contestantApp.register.signIn.ingress'
   | 'contestantApp.register.signIn.title'
   | 'contestantApp.register.title'
+  | 'contestantApp.register.tooManyAttempts'
   | 'contestantApp.settings.emailDescription'
   | 'contestantApp.settings.emailPendingInfo'
   | 'contestantApp.settings.error.changePassword'

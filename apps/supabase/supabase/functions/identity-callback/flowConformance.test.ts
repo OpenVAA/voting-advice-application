@@ -8,6 +8,7 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { BASE_CORS_HEADERS } from '../_shared/cors.ts';
 import { SERVER_CREDENTIAL_HEADER } from './serverCredential.ts';
 
 const RAW_INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
@@ -170,9 +171,11 @@ describe('identity-callback flow conformance', () => {
     });
 
     it('is not offered the credential header by the CORS answer', () => {
-      const corsAt = firstAt('const corsHeaders = {');
-      const corsBlock = CODE.slice(corsAt, CODE.indexOf('};', corsAt));
+      const corsAt = firstAt('const corsHeaders = Object.freeze({');
+      const corsBlock = CODE.slice(corsAt, CODE.indexOf('});', corsAt));
+      expect(corsBlock).toContain('...BASE_CORS_HEADERS');
       expect(corsBlock).not.toContain(SERVER_CREDENTIAL_HEADER);
+      expect(Object.values(BASE_CORS_HEADERS).join(', ')).not.toContain(SERVER_CREDENTIAL_HEADER);
     });
 
     it("is the frontend's callback, which sends the credential under the header the function reads", () => {

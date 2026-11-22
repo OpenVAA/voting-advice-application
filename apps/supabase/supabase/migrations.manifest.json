@@ -12,6 +12,14 @@
     {
       "file": "00002_refusal_codes.sql",
       "sha256": "1b0b1e61b8eb572c8d726eb491e83bc274247f751436706c375584797e11c92b"
+    },
+    {
+      "file": "00003_invitation_caller_limit.sql",
+      "sha256": "b37b915860b07d9799f440db590ec351d17ba17b3d19f3366643653431c8c55f"
+    },
+    {
+      "file": "00004_access_caller_limit.sql",
+      "sha256": "fa80123e9c714e2464e6ff23e5d6fb44ecb796a58a44643d83831d837ce67384"
     }
   ]
 }

@@ -53,6 +53,16 @@
       "ingress": "Det verkar som att du redan har registrerat dig. Ange ditt lösenord för att logga in.",
       "title": "Logga in med ditt lösenord"
     },
-    "title": "Registrering"
+    "title": "Registrering",
+    "tooManyAttempts": [
+      {
+        "declarations": ["input minutes"],
+        "selectors": ["minutes"],
+        "match": {
+          "minutes=1": "För många försök har gjorts från ditt nätverk. Försök igen om en minut.",
+          "minutes=*": "För många försök har gjorts från ditt nätverk. Försök igen om {minutes} minuter."
+        }
+      }
+    ]
   }
 }

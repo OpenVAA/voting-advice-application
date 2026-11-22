@@ -9,6 +9,7 @@
  */
 
 import { constantTimeEqual } from '../_shared/constantTimeEqual.ts';
+import { BASE_CORS_HEADERS } from '../_shared/cors.ts';
 import { isPlainObject, isUuid } from '../_shared/guards.ts';
 
 /** The three words a code check can answer. */
@@ -128,6 +129,15 @@ export const ADDRESS_REFUSED_BODY = Object.freeze({ result: 'refused' } as const
 
 /** The answer to an address confirmation without the access token of a signed-in account. */
 export const UNAUTHENTICATED_BODY = Object.freeze({ error: 'unauthenticated' } as const);
+
+/** The answer, for each operation the per-caller limit takes a slot for alike, when the caller has made more requests than the limit admits. It goes out with HTTP 429 and a `Retry-After` before any work of the operation. */
+export const TOO_MANY_REQUESTS_BODY = Object.freeze({ error: 'too-many-requests' } as const);
+
+/** The CORS headers of every answer. `Retry-After` is exposed because it is not a CORS-safelisted response header, and every caller of the three limited operations is a cross-origin browser. */
+export const CORS_HEADERS = Object.freeze({
+  ...BASE_CORS_HEADERS,
+  'Access-Control-Expose-Headers': 'Retry-After'
+} as const);
 
 /**
  * The status and body of an address confirmation's outcome.

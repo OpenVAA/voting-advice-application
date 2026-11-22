@@ -1,16 +1,12 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
 import nodemailer from 'npm:nodemailer@10.0.11';
+import { BASE_CORS_HEADERS } from '../_shared/cors.ts';
 import { isDeploymentProject } from '../_shared/deploymentProject.ts';
 import { requireEnv } from '../_shared/envConfig.ts';
 import { configuredSender, smtpTransportConfig } from '../_shared/mailTransport.ts';
 import { callerMayOnProject } from './callerAuthority.ts';
 import { renderTemplate, renderTemplateHtml } from './templateVars.ts';
 import type { SmtpEnv } from '../_shared/mailTransport.ts';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
-};
 
 interface SendEmailRequest {
   templates: Record<string, { subject: string; body: string }>;
@@ -34,13 +30,13 @@ interface RecipientResult {
 async function handleRequest(req: Request): Promise<Response> {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { status: 200, headers: corsHeaders });
+    return new Response('ok', { status: 200, headers: BASE_CORS_HEADERS });
   }
 
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
 
@@ -54,7 +50,7 @@ async function handleRequest(req: Request): Promise<Response> {
     } catch {
       return new Response(JSON.stringify({ error: 'Invalid or missing request body' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -64,7 +60,7 @@ async function handleRequest(req: Request): Promise<Response> {
     if (!templates || typeof templates !== 'object' || Object.keys(templates).length === 0) {
       return new Response(JSON.stringify({ error: 'templates must be a non-empty object with locale keys' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -74,7 +70,7 @@ async function handleRequest(req: Request): Promise<Response> {
           JSON.stringify({
             error: `Template for locale "${locale}" must have "subject" and "body" strings`
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
         );
       }
     }
@@ -83,7 +79,7 @@ async function handleRequest(req: Request): Promise<Response> {
     if (!Array.isArray(recipient_user_ids) || recipient_user_ids.length === 0) {
       return new Response(JSON.stringify({ error: 'recipient_user_ids must be a non-empty array' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -94,7 +90,7 @@ async function handleRequest(req: Request): Promise<Response> {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -111,7 +107,7 @@ async function handleRequest(req: Request): Promise<Response> {
     if (userError || !callerUser) {
       return new Response(JSON.stringify({ error: 'Invalid or expired authentication token' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -125,7 +121,7 @@ async function handleRequest(req: Request): Promise<Response> {
     if (!mayBulkSend) {
       return new Response(JSON.stringify({ error: 'Forbidden: caller may not send bulk email for this project' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -142,7 +138,7 @@ async function handleRequest(req: Request): Promise<Response> {
     if (!isDeploymentProject(project_id, configuredProjectId)) {
       return new Response(JSON.stringify({ error: 'Invalid project_id' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -152,7 +148,7 @@ async function handleRequest(req: Request): Promise<Response> {
       if (typeof from !== 'string' || from.trim().toLowerCase() !== sender.trim().toLowerCase()) {
         return new Response(JSON.stringify({ error: 'Invalid from' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
         });
       }
     }
@@ -168,14 +164,14 @@ async function handleRequest(req: Request): Promise<Response> {
     if (rpcError) {
       return new Response(
         JSON.stringify({ error: 'Failed to resolve template variables', details: rpcError.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
     }
 
     if (!recipients || recipients.length === 0) {
       return new Response(JSON.stringify({ error: 'No valid recipients found for the provided user IDs' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
       });
     }
 
@@ -228,7 +224,7 @@ async function handleRequest(req: Request): Promise<Response> {
           dry_run: true,
           results: dryResults
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -284,7 +280,7 @@ async function handleRequest(req: Request): Promise<Response> {
           dry_run: false,
           results
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -296,14 +292,14 @@ async function handleRequest(req: Request): Promise<Response> {
         dry_run: false,
         results
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
     // The real error goes to the log and a FIXED LITERAL goes to the caller, with nothing interpolated. This arm now receives the three `requireEnv` throws above, whose messages name environment variables; echoing `err.message` here -- which is what this arm did until Phase 155 -- would have turned an unconfigured deployment into a configuration-disclosure primitive for anyone who can reach this endpoint. The property that matters is the absence of a template, so the same guarantee holds for throws added later.
     console.error('send-email error:', err);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...BASE_CORS_HEADERS, 'Content-Type': 'application/json' }
     });
   }
 }

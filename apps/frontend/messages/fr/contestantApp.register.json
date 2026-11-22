@@ -53,6 +53,16 @@
       "ingress": "Il semble que vous soyez déjà inscrit·e. Saisissez votre mot de passe pour vous connecter.",
       "title": "Connectez-vous avec votre mot de passe"
     },
-    "title": "Inscription"
+    "title": "Inscription",
+    "tooManyAttempts": [
+      {
+        "declarations": ["input minutes"],
+        "selectors": ["minutes"],
+        "match": {
+          "minutes=1": "Trop de tentatives ont été faites depuis votre réseau. Réessayez dans une minute.",
+          "minutes=*": "Trop de tentatives ont été faites depuis votre réseau. Réessayez dans {minutes} minutes."
+        }
+      }
+    ]
   }
 }

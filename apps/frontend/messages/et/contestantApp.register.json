@@ -53,6 +53,16 @@
       "ingress": "Näib, et oled juba registreerunud. Sisselogimiseks sisesta oma parool.",
       "title": "Logi sisse oma parooliga"
     },
-    "title": "Registreerumine"
+    "title": "Registreerumine",
+    "tooManyAttempts": [
+      {
+        "declarations": ["input minutes"],
+        "selectors": ["minutes"],
+        "match": {
+          "minutes=1": "Sinu võrgust on tehtud liiga palju katseid. Proovi uuesti minuti pärast.",
+          "minutes=*": "Sinu võrgust on tehtud liiga palju katseid. Proovi uuesti {minutes} minuti pärast."
+        }
+      }
+    ]
   }
 }

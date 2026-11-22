@@ -1182,6 +1182,7 @@ export type Database = {
     };
     Functions: {
       _bulk_upsert_record: { Args: { p_item: Json; p_project_id: string; p_table_name: string }; Returns: boolean };
+      access_caller_take: { Args: { p_address: string; p_project_id: string }; Returns: number };
       bulk_delete: { Args: { p_data: Json }; Returns: Json };
       bulk_import: { Args: { p_data: Json }; Returns: Json };
       claim_invitations: { Args: { p_project_id: string }; Returns: Json };
@@ -1304,6 +1305,7 @@ export type Database = {
         Returns: Json;
       };
       identity_provider_entity_types: { Args: { p_project_id: string }; Returns: string[] };
+      invitation_caller_take: { Args: { p_address: string; p_project_id: string }; Returns: number };
       invitation_code_claimant_email: { Args: { p_code: string; p_project_id: string }; Returns: string };
       invitation_code_status: { Args: { p_code: string; p_project_id: string }; Returns: string };
       invitation_link_release: { Args: { p_code?: string; p_email: string; p_project_id: string }; Returns: undefined };

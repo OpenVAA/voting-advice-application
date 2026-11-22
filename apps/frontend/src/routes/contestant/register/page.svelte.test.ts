@@ -10,7 +10,7 @@
  * 3. **One mode** — its panel directly, with no group.
  * 4. **The forms** — a form of its own for each panel that has a field, declared as a post, holding one field; the radios in none; Continue tied to the open form.
  * 5. **The email mode** — nothing sent for an empty or unusable address; otherwise one link request and the "email sent" screen.
- * 6. **The code mode** — nothing sent for an empty code; a valid and a used code held and led on; every other answer, and a failed check, shown as one sentence.
+ * 6. **The code mode** — nothing sent for an empty code; a valid and a used code held and led on; a check refused over the attempt limit shown as a sentence naming the wait in minutes; every other answer, and every other failed check, shown as one sentence.
  * 7. **The provider's mode** — a form naming the one type it registers; Continue posts that type to the authorize endpoint and leaves for the provider, keeps its loading form until the page is left, leads a refusal and any other failure to the error screen, and ends the loading form when the page is shown again from the page cache.
  * 8. **The provider's types** — the types the matrix allows the provider's mode, read through the same function as the listed modes: one is named and sent without a question; two are asked as a group of bordered radios with nothing chosen on arrival, Continue with none chosen says so and sends nothing, and the chosen type is sent and kept while the page is shown.
  * 9. **Before the script has loaded** — the main button natively disabled.
@@ -23,6 +23,7 @@ import { log } from '@openvaa/app-shared';
 import { flushSync, mount, unmount } from 'svelte';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { page } from '$app/state';
+import { TooManyRequestsError } from '$lib/api/base/tooManyRequestsError';
 import { fakeContestantContext } from '$lib/contexts/contestant/contestantContext.testUtils.svelte';
 import { buildRoute } from '$lib/routes';
 import type { RegistrationMode } from '@openvaa/app-shared';
@@ -725,6 +726,38 @@ describe('the code mode', () => {
     expect(holdEntryCode).not.toHaveBeenCalled();
     expect(goto).not.toHaveBeenCalled();
   });
+
+  it.each<[number, number]>([
+    [1, 1],
+    [60, 1],
+    [61, 2],
+    [600, 10]
+  ])(
+    'names a wait of %i s as %i minutes when the check is refused over the attempt limit, keeps the code and focuses the field',
+    async (seconds, minutes) => {
+      checkInvitationCode.mockRejectedValue(new TooManyRequestsError(seconds));
+      const translate = vi.spyOn(context, 't');
+      try {
+        const target = render(['code']);
+        type(target, CODE, TYPED_CODE);
+
+        submit(target);
+        await settle();
+
+        const input = one<HTMLInputElement>(target, CODE);
+        const error = one(target, CODE_ERROR);
+        expect(error.textContent).toContain('contestantApp.register.tooManyAttempts');
+        expect(error.getAttribute('data-reason')).toBe('tooManyAttempts');
+        expect(translate).toHaveBeenCalledWith('contestantApp.register.tooManyAttempts', { minutes });
+        expect(input.value).toBe(TYPED_CODE);
+        expect(document.activeElement).toBe(input);
+        expect(holdEntryCode).not.toHaveBeenCalled();
+        expect(goto).not.toHaveBeenCalled();
+      } finally {
+        translate.mockRestore();
+      }
+    }
+  );
 
   it('shows the same sentence when the same unconfirmed code is checked again', async () => {
     const target = render(['code']);

@@ -224,6 +224,102 @@ describe('account-access flow conformance', () => {
     });
   });
 
+  describe('the per-caller limit', () => {
+    /** The block of the handler that takes the caller's slot, from its condition to its closing brace. */
+    function takeBlock(): string {
+      const start = CODE.indexOf('if (takesCallerSlot(request.operation)) {');
+      expect(start, 'the block of the caller take was not found in the handler').toBeGreaterThan(-1);
+      const end = CODE.indexOf('\n  }\n', start);
+      expect(end).toBeGreaterThan(start);
+      return CODE.slice(start, end);
+    }
+
+    /** The arguments of every log call of the handler, with their string literals removed. */
+    const logArguments = Array.from(CODE.matchAll(/(?<![\w.])log\((.*)\);$/gm)).map((match) =>
+      match[1].replace(/'[^']*'/g, '')
+    );
+
+    it('is taken once, in the handler, after the request is parsed and before the first operation branch', () => {
+      expect(count(CODE, "'access_caller_take'")).toBe(1);
+      const take = CODE.indexOf("'access_caller_take'");
+      expect(take).toBeGreaterThan(CODE.indexOf('async function handleRequest('));
+      expect(take).toBeGreaterThan(CODE.indexOf('parseAccountAccessRequest(body)'));
+      expect(take).toBeGreaterThan(CODE.indexOf('admitWitness(parsed,'));
+      expect(take).toBeLessThan(CODE.indexOf('request.operation ==='));
+      const between = CODE.slice(
+        CODE.indexOf('admitWitness(parsed,'),
+        CODE.indexOf('if (takesCallerSlot(request.operation)) {')
+      );
+      expect(between).not.toContain('return ');
+    });
+
+    it('is taken for the operations takesCallerSlot names, each branch coming after it, and asked in no branch of code-sign-in or confirm-address', () => {
+      const block = takeBlock();
+      expect(block).toContain("createAdminClient().rpc('access_caller_take', {");
+      expect(CODE).toContain("import { callerAddress, retryAfterSeconds, takesCallerSlot } from './callerLimit.ts';");
+      expect(count(CODE, 'takesCallerSlot(')).toBe(1);
+      expect(CODE).not.toContain('request.operation !== ');
+      const blockStart = CODE.indexOf(block);
+      for (const operation of ['request-link', 'request-recovery', 'confirm-address']) {
+        expect(CODE.indexOf(`if (request.operation === '${operation}') {`), operation).toBeGreaterThan(blockStart);
+      }
+      expect(CODE.indexOf("if (request.operation === 'code-sign-in') return codeSignIn(request);")).toBeGreaterThan(
+        blockStart
+      );
+      expect(CODE.indexOf('return await checkCode(request);')).toBeGreaterThan(blockStart);
+      expect(branchOf('confirm-address')).not.toContain('access_caller_take');
+      expect(functionBody('codeSignIn')).not.toContain('access_caller_take');
+    });
+
+    it('passes the request’s project and the address callerAddress reads, and stores the address nowhere', () => {
+      const block = takeBlock();
+      expect(block).toContain('p_project_id: request.projectId,');
+      expect(block).toContain('p_address: callerAddress(req.headers)');
+      expect(count(CODE, 'callerAddress(')).toBe(1);
+      expect(count(CODE, 'p_address')).toBe(1);
+      expect(CODE).not.toMatch(/=\s*callerAddress\(/);
+      expect(CODE).not.toContain('cf-connecting-ip');
+      expect(CODE).not.toContain('CALLER_ADDRESS_HEADER');
+    });
+
+    it('fails closed: a failed take is logged and answered 500 internal, never admitted', () => {
+      expect(takeBlock()).toMatch(
+        /if \(error\) \{\s*log\('the caller limit could not be read', describeFailure\(error\)\);\s*return answer\(INTERNAL_ERROR_BODY, 500\);\s*\}/
+      );
+    });
+
+    it('answers a refused caller with 429, its Retry-After and the one body, whatever the operation', () => {
+      const block = takeBlock();
+      expect(block).toContain('const seconds = retryAfterSeconds(retryAfter);');
+      expect(block).toContain('if (seconds !== null) return tooManyRequests(seconds);');
+      expect(count(block, 'return ')).toBe(2);
+      expect(count(CODE, 'tooManyRequests(')).toBe(2);
+      expect(count(CODE, 'TOO_MANY_REQUESTS_BODY')).toBe(2);
+      expect(functionBody('tooManyRequests')).toContain(
+        "return answer(TOO_MANY_REQUESTS_BODY, 429, { 'Retry-After': String(seconds) });"
+      );
+      expect(functionBody('answer')).toContain(
+        "headers: { ...CORS_HEADERS, 'Content-Type': 'application/json', ...extraHeaders }"
+      );
+    });
+
+    it('sends every answer, the 429 and the preflight among them, with the CORS headers that expose Retry-After', () => {
+      expect(CODE).not.toContain("'Access-Control-");
+      expect(count(CODE, 'new Response(')).toBe(2);
+      expect(functionBody('answer')).toContain('...CORS_HEADERS');
+      expect(CODE).toContain("return new Response('ok', { status: 200, headers: CORS_HEADERS });");
+    });
+
+    it('writes no log line that holds the caller’s address or the request’s headers', () => {
+      expect(logArguments.length).toBeGreaterThan(3);
+      for (const args of logArguments) {
+        expect(args, `a log call with the arguments ${args}`).not.toMatch(
+          /\b(req|headers|callerAddress|retryAfter|seconds)\b/
+        );
+      }
+    });
+  });
+
   describe('the project', () => {
     it('reads nothing from its environment but the deployment’s project, the site, the mail transport and the platform’s three', () => {
       const literalReads = Array.from(CODE.matchAll(/Deno\.env\.get\(\s*'([A-Z0-9_]+)'\s*\)/g)).map(
