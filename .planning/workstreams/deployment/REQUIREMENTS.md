@@ -21,126 +21,140 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 
 ### INFRA — AWS infrastructure
 
-- [ ] **INFRA-01**: A deployer can push the production image to a registry whose tags are immutable and name the
+- [x] **INFRA-01**: A deployer can push the production image to a registry whose tags are immutable and name the
       commit that built them.
-- [ ] **INFRA-02**: The frontend runs as an ECS Fargate service behind an HTTPS application load balancer,
+- [x] **INFRA-02**: The frontend runs as an ECS Fargate service behind an HTTPS application load balancer,
       written as explicit Terraform resources, in two availability zones. The task floor is a variable: 1 for
       staging, 2 for the production-shaped settings (D1).
-- [ ] **INFRA-03**: The service is reached at a custom domain with a DNS-validated certificate, and HTTP is
+- [x] **INFRA-03**: The service is reached at a custom domain with a DNS-validated certificate, and HTTP is
       redirected to HTTPS.
-- [ ] **INFRA-04**: A health endpoint answers without calling Supabase, and the load balancer's health check
+- [x] **INFRA-04**: A health endpoint answers without calling Supabase, and the load balancer's health check
       uses it with a start-up grace period.
-- [ ] **INFRA-05**: Runtime configuration reaches the task as environment, with secrets from a secret store. It
+- [x] **INFRA-05**: Runtime configuration reaches the task as environment, with secrets from a secret store. It
       includes `PUBLIC_PROJECT_ID`. The service-role key never reaches the frontend task. A start with a required
       variable unset fails and names the variable.
-- [ ] **INFRA-06**: The Node server is configured for its proxy (public origin, protocol and host headers,
+- [x] **INFRA-06**: The Node server is configured for its proxy (public origin, protocol and host headers,
       client-address header and depth), so that form posts succeed behind the load balancer and a spoofed
       forwarded address is not taken as the client's.
-- [ ] **INFRA-07**: The service scales between a floor and a ceiling, and a scheduled action can raise the floor
+- [x] **INFRA-07**: The service scales between a floor and a ceiling, and a scheduled action can raise the floor
       before a known peak.
-- [ ] **INFRA-08**: Container output is collected to a durable log store with a set retention period.
-- [ ] **INFRA-09**: A rollout is health-gated and rolls back by itself on failure, and a stopping task drains
+- [x] **INFRA-08**: Container output is collected to a durable log store with a set retention period.
+- [x] **INFRA-09**: A rollout is health-gated and rolls back by itself on failure, and a stopping task drains
       its requests. `SIGTERM` is shown to reach the Node process.
-- [ ] **INFRA-10**: State is remote and locked; each environment has its own variables and outputs; the AWS stack
+- [x] **INFRA-10**: State is remote and locked; each environment has its own variables and outputs; the AWS stack
       can be destroyed cleanly.
-- [ ] **INFRA-11**: Roles are least-privilege and only the load balancer reaches the tasks. Tasks run in public
+- [x] **INFRA-11**: Roles are least-privilege and only the load balancer reaches the tasks. Tasks run in public
       subnets with no NAT gateway (D2).
-- [ ] **INFRA-12**: The stack is in `eu-north-1` by default, and the Supabase project's region is stated beside
+- [x] **INFRA-12**: The stack is in `eu-north-1` by default, and the Supabase project's region is stated beside
       it.
-- [ ] **INFRA-13**: Every resource carries cost tags, and a monthly estimate measured on the applied stack is
+- [x] **INFRA-13**: Every resource carries cost tags, and a monthly estimate measured on the applied stack is
       documented.
-- [ ] **INFRA-14**: A CDN serves the immutable build assets, and rendered HTML is never cached at the edge.
+- [x] **INFRA-14**: A CDN serves the immutable build assets, and rendered HTML is never cached at the edge.
       [A2, added]
-- [ ] **INFRA-15**: A budget alarm notifies the operator when the account's spend passes a set threshold. [A2]
-- [ ] **INFRA-16**: The operator is notified when a deployment fails or rolls back and when a build fails. Each
+- [x] **INFRA-15**: A budget alarm notifies the operator when the account's spend passes a set threshold. [A2]
+      [complete 2026-10-25 on the operator's ruling accept-console-alert of 2026-10-23 (plan 183-20): the
+      actual alert was seen as triggered in the AWS Budgets console; no mail was received, so delivery to
+      the operator's mailbox is not observed (WINDOWS 289)]
+- [x] **INFRA-16**: The operator is notified when a deployment fails or rolls back and when a build fails. Each
       alert is seen firing once. [A2, added]
-- [ ] **INFRA-17**: IAM permissions are granted through customer-managed policies where an AWS-managed policy
+- [x] **INFRA-17**: IAM permissions are granted through customer-managed policies where an AWS-managed policy
       does not fit; no permission depends on an inline user policy. [F1]
-- [ ] **INFRA-18**: A Route 53 hosted zone serves `staging.openvaa.org`, and the records the operator must
+- [x] **INFRA-18**: A Route 53 hosted zone serves `staging.openvaa.org`, and the records the operator must
       change at the current DNS host are documented. [F1]
-- [ ] **INFRA-19**: An `example` environment that a forker copies is validated and planned in CI and is never
+- [x] **INFRA-19**: An `example` environment that a forker copies is validated and planned in CI and is never
       applied. It carries the production-shaped settings as variables. [A1]
 
 ### SUPA — Supabase project provisioning
 
-- [ ] **SUPA-01**: One command applies the schema migrations to the linked project and can be repeated safely.
-- [ ] **SUPA-02**: Hosted auth settings are applied from the repository by Terraform as the only writer:
+- [x] **SUPA-01**: One command applies the schema migrations to the linked project and can be repeated safely.
+- [x] **SUPA-02**: Hosted auth settings are applied from the repository by Terraform as the only writer:
       access-token hook on, site URL, the two redirect entries, public sign-up off, email confirmation on, SMTP.
       `supabase config push` is not used (C4).
-- [ ] **SUPA-03**: Hosted API settings are applied from the repository, with maximum rows equal to
+- [x] **SUPA-03**: Hosted API settings are applied from the repository, with maximum rows equal to
       `dataAdapter.pageSize`.
-- [ ] **SUPA-04**: The two storage buckets are created reproducibly by the migration.
-- [ ] **SUPA-05**: The three Edge Functions are deployed and their secrets set from the operator's environment.
+- [x] **SUPA-04**: The two storage buckets are created reproducibly by the migration.
+- [x] **SUPA-05**: The three Edge Functions are deployed and their secrets set from the operator's environment.
       `identity-callback`'s JWT setting is declared in `config.toml`.
-- [ ] **SUPA-06**: An idempotent bootstrap creates the rows a project needs (one account, one project, the
+- [x] **SUPA-06**: An idempotent bootstrap creates the rows a project needs (one account, one project, the
       `storage_config` row, `behind_cloudflare`) and commits no secret. `seed.sql` never reaches a hosted
       database, and a check after deploy fails if a seed user or a local URL is present.
-- [ ] **SUPA-07**: A conformance probe reads what the hosted project serves and fails by name. Each of its checks
+- [x] **SUPA-07**: A conformance probe reads what the hosted project serves and fails by name. Each of its checks
       is seen failing once against a deliberately broken throwaway project.
-- [ ] **SUPA-08**: The access token, database password and service-role key exist only in the pipeline's
+- [x] **SUPA-08**: The access token, database password and service-role key exist only in the pipeline's
       environment and in Terraform state. The state bucket is encrypted, versioned and closed to the public, and
       no plan is uploaded as an artifact (C7).
-- [ ] **SUPA-09**: Tests run against a dedicated hosted project and never against a production one.
+- [x] **SUPA-09**: Tests run against a dedicated hosted project and never against a production one.
 - [x] **SUPA-10**: The schema is deployable after its first push: the single migration is frozen as a named
       baseline at a cutover commit agreed with the v2.16 session, later changes are append-only numbered
       migrations, the parity guard enforces both, and a drift check after deploy reads its exit status directly.
       [C1]
-- [ ] **SUPA-11**: A guard in `lint:check` fails when the security-relevant keys of the local `config.toml` and
+- [x] **SUPA-11**: A guard in `lint:check` fails when the security-relevant keys of the local `config.toml` and
       the hosted settings in the HCL disagree. [A2]
-- [ ] **SUPA-12**: The hosted project is created by the operator, imported into a long-lived Supabase Terraform
+- [x] **SUPA-12**: The hosted project is created by the operator, imported into a long-lived Supabase Terraform
       root with `prevent_destroy`, and kept in a state file separate from the AWS root. A teardown of the AWS
       root leaves the database untouched. [C2, C3]
-- [ ] **SUPA-13**: The key model a new project issues is measured and recorded. The deployment stays on legacy
+- [x] **SUPA-13**: The key model a new project issues is measured and recorded. The deployment stays on legacy
       keys if they work; the migration to publishable keys is filed to run right after both streams merge. [C5]
-- [ ] **SUPA-14**: Mail is sent through SES from a verified domain identity with DKIM, SPF and DMARC. The port
+- [x] **SUPA-14**: Mail is sent through SES from a verified domain identity with DKIM, SPF and DMARC. The port
       that works from a hosted Edge Function is measured and used. [C6]
 
 ### PIPE — Deploy pipeline
 
-- [ ] **PIPE-01**: GitHub Actions reaches AWS without stored keys, through OIDC, with a read-only plan role and a
+- [x] **PIPE-01**: GitHub Actions reaches AWS without stored keys, through OIDC, with a read-only plan role and a
       deploy role bound to this repository and one GitHub Environment. A token with the wrong subject is seen
       refused.
-- [ ] **PIPE-02**: On a pull request the Terraform is formatted, validated and planned, and the plan can be read
+- [x] **PIPE-02**: On a pull request the Terraform is formatted, validated and planned, and the plan can be read
       in the run.
-- [ ] **PIPE-03**: A pull request from a fork gets no cloud credentials, and its credentialed jobs skip visibly.
-- [ ] **PIPE-04**: An apply runs only behind a GitHub Environment gate, and applies are serialised and never
+- [x] **PIPE-03**: A pull request from a fork gets no cloud credentials, and its credentialed jobs skip visibly.
+- [x] **PIPE-04**: An apply runs only behind a GitHub Environment gate, and applies are serialised and never
       cancelled mid-run.
-- [ ] **PIPE-05**: The image is built once, pushed, and deployed by digest.
-- [ ] **PIPE-06**: A deploy runs in a fixed order: migrations, functions, frontend rollout, wait until stable.
-- [ ] **PIPE-07**: A smoke run against the deployed URL fails the pipeline when it fails. It proves the build
+- [x] **PIPE-05**: The image is built once, pushed, and deployed by digest.
+- [x] **PIPE-06**: A deploy runs in a fixed order: migrations, functions, frontend rollout, wait until stable.
+- [x] **PIPE-07**: A smoke run against the deployed URL fails the pipeline when it fails. It proves the build
       SHA and the project id, renders a voter page from hosted data, goes from questions to results, and signs
       one contestant in. It is read-mostly: no setup or teardown project, and `DEV_SEED_ALLOW_REMOTE` appears in
       no workflow (E1). The local gate suite and its preflight are unchanged.
-- [ ] **PIPE-08**: A guarded destroy path removes the AWS stack and cannot reach the Supabase root.
-- [ ] **PIPE-09**: One green run and one red run of the pipeline are observed and recorded, the red one from a
+- [x] **PIPE-08**: A guarded destroy path removes the AWS stack and cannot reach the Supabase root.
+- [x] **PIPE-09**: One green run and one red run of the pipeline are observed and recorded, the red one from a
       deliberately broken build.
-- [ ] **PIPE-10**: A push to a named per-environment branch deploys that environment; a manual dispatch and a
+- [x] **PIPE-10**: A push to a named per-environment branch deploys that environment; a manual dispatch and a
       `deploy-evidence/**` push also apply. A push to `main` does not deploy. [E3, F1]
+- [x] **PIPE-11**: The deployed voter smoke, and so the pipeline's smoke stage, passes with
+      `analytics.trackEvents` on and with it off; when the consent prompt is shown it is declined through its own
+      control. [189.1]
 
 ### OBS — Hosted-behaviour observations
 
 Each is run on a real project, recorded with its date, and acted on.
 
-- [ ] **OBS-01**: The served auth settings and the dashboard's names for the two switches are recorded.
-- [ ] **OBS-02**: The redirect allowlist's behaviour is recorded: the single-segment pattern, the site URL's
+- [x] **OBS-01**: The served auth settings and the dashboard's names for the two switches are recorded.
+- [x] **OBS-02**: The redirect allowlist's behaviour is recorded: the single-segment pattern, the site URL's
       host on other ports, and what `/auth/v1/verify` returns when admitted and when refused.
-- [ ] **OBS-03**: Whether the hosted gateway accepts a call with the anon key and no user token is recorded, and
+- [x] **OBS-03**: Whether the hosted gateway accepts a call with the anon key and no user token is recorded, and
       `account-access` works or is changed.
-- [ ] **OBS-04**: The forwarded headers that reach an Edge Function, a PostgREST trigger and the frontend
+- [x] **OBS-04**: The forwarded headers that reach an Edge Function, a PostgREST trigger and the frontend
       container are recorded.
-- [ ] **OBS-05**: Both refusing branches of `account-access`, and the release of a slot after a failed send, are
+- [x] **OBS-05**: Both refusing branches of `account-access`, and the release of a slot after a failed send, are
       seen on a served function.
-- [ ] **OBS-06**: One invitation mail through real SMTP arrives with the correct origin and signs in. A manual
+- [x] **OBS-06**: One invitation mail through real SMTP arrives with the correct origin and signs in. A manual
       observation, not a pipeline gate (E2).
-- [ ] **OBS-07**: A read of more than 1000 rows is not truncated, and `anon` runs with an 8 s statement timeout.
-- [ ] **OBS-08**: A frontend started from the template's variables alone reads from Supabase.
-- [ ] **OBS-09**: The per-caller limit on the anonymous invitation operations is decided after OBS-04: built in
+- [x] **OBS-07**: A read of more than 1000 rows is not truncated, and `anon` runs with an 8 s statement timeout.
+- [x] **OBS-08**: A frontend started from the template's variables alone reads from Supabase.
+- [x] **OBS-09**: The per-caller limit on the anonymous invitation operations is decided after OBS-04: built in
       this milestone if the measurement supports a design, otherwise deferred with the measurement and a date
       (A3).
-- [ ] **OBS-10**: The feedback rate limit buckets by client on the hosted project with `behind_cloudflare` set
+- [x] **OBS-10**: The feedback rate limit buckets by client on the hosted project with `behind_cloudflare` set
       as deployed.
-- [ ] **OBS-11**: A load check of the voter journey and the relay against the deployed stack yields a recorded
+- [x] **OBS-11**: A load check of the voter journey and the relay against the deployed stack yields a recorded
       capacity figure. [A2]
+- [x] **OBS-12**: The deploy pipeline refuses to roll out when the hosted project's
+      `private.deployment_settings.behind_cloudflare` is not `true`: a read-only check runs after the migration
+      push and before the functions and the apply, holds the database password only in its step's `env`
+      (SUPA-08), and is seen failing once on a database where the setting is false. [189.1]
+- [x] **OBS-13**: The deployed smoke asserts that the per-caller limit is in force on staging: within 31
+      `check-code` calls with fresh unknown codes, a 429 with `{ "error": "too-many-requests" }` and an integer
+      `Retry-After` from 1 to 600; it sends no client-address header of its own, and is seen failing when every
+      call is admitted. [189.1]
 
 ### RELAY — Analytics relay
 
@@ -149,7 +163,7 @@ Each is run on a real project, recorded with its date, and acted on.
       survives page unload.
 - [x] **RELAY-03**: The server forwards through a provider interface chosen by configuration, with `none` as the
       default.
-- [ ] **RELAY-04**: A PostHog provider captures server-side to the EU host (configurable), with no person
+- [x] **RELAY-04**: A PostHog provider captures server-side to the EU host (configurable), with no person
       profile and no client address, in batches, flushed at shutdown, failing open.
 - [x] **RELAY-05**: No analytics identifier is written to the device or read from it. The `sessionStorage`
       session id leaves the tracking path. The stored consent choice is the only analytics-related state on the
@@ -159,7 +173,7 @@ Each is run on a real project, recorded with its date, and acted on.
 - [x] **RELAY-07**: The visitor's address and user agent stop at the relay.
 - [x] **RELAY-08**: The relay accepts only a closed vocabulary of discrete events, bounds their size, and drops
       query strings from URLs (B6).
-- [ ] **RELAY-09**: The endpoint resists abuse: same-origin requests only, a body-size cap, a bounded queue that
+- [x] **RELAY-09**: The endpoint resists abuse: same-origin requests only, a body-size cap, a bounded queue that
       drops when full, and no caller-chosen destination. A WAF rate rule exists as a Terraform variable, off by
       default (B8).
 - [x] **RELAY-10**: The provider, its key and its host are server-side deployment configuration; whether events
@@ -191,28 +205,32 @@ Each is run on a real project, recorded with its date, and acted on.
 
 ### DOCS — Documentation
 
-- [ ] **DOCS-01**: The deployment guide is rewritten around the Terraform and Supabase-as-code path, and states
+- [x] **DOCS-01**: The deployment guide is rewritten around the Terraform and Supabase-as-code path, and states
       that the HCL is kept OpenTofu-compatible (A6).
-- [ ] **DOCS-02**: A settings reference lists each hosted setting, where the repository sets it, and how to
+- [x] **DOCS-02**: A settings reference lists each hosted setting, where the repository sets it, and how to
       verify it.
-- [ ] **DOCS-03**: Every "unverified" statement about a hosted project is replaced by a dated observation or
+- [x] **DOCS-03**: Every "unverified" statement about a hosted project is replaced by a dated observation or
       removed.
-- [ ] **DOCS-04**: The environment-variable reference covers the proxy variables, the analytics variables and
+- [x] **DOCS-04**: The environment-variable reference covers the proxy variables, the analytics variables and
       `PUBLIC_PROJECT_ID`.
-- [ ] **DOCS-05**: The analytics documentation gives the event catalogue, how to add a provider, the privacy
+- [x] **DOCS-05**: The analytics documentation gives the event catalogue, how to add a provider, the privacy
       mechanism, and a checklist the deployer completes for their own jurisdiction. It says the consent
       determination is the deployer's and nowhere says that no consent is required (B7).
-- [ ] **DOCS-06**: An operations runbook covers election-day scaling, rollback, teardown and restore, secret
+- [x] **DOCS-06**: An operations runbook covers election-day scaling, rollback, teardown and restore, secret
       rotation, SES, and the limit that Admin job progress is unreliable above one task (D1).
-- [ ] **DOCS-07**: `render.example.yaml` is fixed and documented as an untested alternative, and the orphan
-      compose file is retired if nothing references it (A5).
-- [ ] **DOCS-08**: Each of the seven absorbed todos has a closure record.
+- [x] **DOCS-07**: The Render deployment example and its mentions are removed, and the orphan compose file
+      is retired if nothing references it (amended by the operator's 2026-11-20 fill, 189-CONTEXT F-01;
+      supersedes ruling A5).
+- [x] **DOCS-08**: Each of the seven absorbed todos has a closure record.
 
 ## Future Requirements
 
 Recorded, not in this roadmap.
 
 - **FUT-01**: The Admin job store moves to the database, so that job progress holds above one task (D1).
+  Note, 2026-11-20: ruling D1's "staging runs one task" is superseded by phase 185's scaling. Staging runs up
+  to two tasks (`task_floor = 1`, `task_ceiling = 2`), so the limit applies to staging too; it is documented
+  on the operations page (`developers-guide/deployment/operations`, § "Admin jobs and more than one task").
 - **FUT-02**: The deployment moves to Supabase publishable keys. Queued for right after v2.16 and v2.17 merge
   (C5; todo filed).
 - **FUT-03**: Answer events gain differential privacy, or masking of timestamp and insert order, so that they
@@ -256,69 +274,72 @@ closes; those are not listed against the earlier phase here.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 185 | Pending |
-| INFRA-02 | Phase 185 | Pending |
-| INFRA-03 | Phase 185 | Pending |
-| INFRA-04 | Phase 185 | Pending |
-| INFRA-05 | Phase 185 | Pending |
-| INFRA-06 | Phase 185 | Pending |
-| INFRA-07 | Phase 185 | Pending |
-| INFRA-08 | Phase 185 | Pending |
-| INFRA-09 | Phase 185 | Pending |
-| INFRA-10 | Phase 185 | Pending |
-| INFRA-11 | Phase 185 | Pending |
-| INFRA-12 | Phase 185 | Pending |
-| INFRA-13 | Phase 185 | Pending |
-| INFRA-14 | Phase 185 | Pending |
-| INFRA-15 | Phase 183 | Pending |
-| INFRA-16 | Phase 187 | Pending |
-| INFRA-17 | Phase 183 | Pending |
-| INFRA-18 | Phase 183 | Pending |
-| INFRA-19 | Phase 187 | Pending |
-| SUPA-01 | Phase 184 | Pending |
-| SUPA-02 | Phase 184 | Pending |
-| SUPA-03 | Phase 184 | Pending |
-| SUPA-04 | Phase 184 | Pending |
-| SUPA-05 | Phase 184 | Pending |
-| SUPA-06 | Phase 184 | Pending |
-| SUPA-07 | Phase 184 | Pending |
-| SUPA-08 | Phase 187 | Pending |
-| SUPA-09 | Phase 186 | Pending |
+| INFRA-01 | Phase 185 | Complete |
+| INFRA-02 | Phase 185 | Complete |
+| INFRA-03 | Phase 185 | Complete |
+| INFRA-04 | Phase 185 | Complete |
+| INFRA-05 | Phase 185 | Complete |
+| INFRA-06 | Phase 185 | Complete |
+| INFRA-07 | Phase 185 | Complete |
+| INFRA-08 | Phase 185 | Complete |
+| INFRA-09 | Phase 185 | Complete |
+| INFRA-10 | Phase 185 | Complete |
+| INFRA-11 | Phase 185 | Complete |
+| INFRA-12 | Phase 185 | Complete |
+| INFRA-13 | Phase 185 | Complete (measured 36.96 USD/month, 44.26 with untagged IPv4, read 2026-11-18 over a two-day window under the operator's short-window ruling; 185-22-cost.md; todo completed/2026-11-14-measure-the-staging-aws-stack-monthly-cost.md) |
+| INFRA-14 | Phase 185 | Complete |
+| INFRA-15 | Phase 183 | Complete |
+| INFRA-16 | Phase 187 | Complete |
+| INFRA-17 | Phase 183 | Complete |
+| INFRA-18 | Phase 183 | Complete |
+| INFRA-19 | Phase 187 | Complete |
+| SUPA-01 | Phase 184 | Complete |
+| SUPA-02 | Phase 184 | Complete |
+| SUPA-03 | Phase 184 | Complete |
+| SUPA-04 | Phase 184 | Complete |
+| SUPA-05 | Phase 184 | Complete |
+| SUPA-06 | Phase 184 | Complete |
+| SUPA-07 | Phase 184 | Complete |
+| SUPA-08 | Phase 187 | Complete |
+| SUPA-09 | Phase 186 | Complete |
 | SUPA-10 | Phase 181 | Complete |
-| SUPA-11 | Phase 183 | Pending |
-| SUPA-12 | Phase 185 | Pending |
-| SUPA-13 | Phase 184 | Pending |
-| SUPA-14 | Phase 184 | Pending |
-| PIPE-01 | Phase 187 | Pending |
-| PIPE-02 | Phase 187 | Pending |
-| PIPE-03 | Phase 187 | Pending |
-| PIPE-04 | Phase 187 | Pending |
-| PIPE-05 | Phase 187 | Pending |
-| PIPE-06 | Phase 187 | Pending |
-| PIPE-07 | Phase 187 | Pending |
-| PIPE-08 | Phase 187 | Pending |
-| PIPE-09 | Phase 187 | Pending |
-| PIPE-10 | Phase 187 | Pending |
-| OBS-01 | Phase 184 | Pending |
-| OBS-02 | Phase 184 | Pending |
-| OBS-03 | Phase 184 | Pending |
-| OBS-04 | Phase 185 | Pending |
-| OBS-05 | Phase 184 | Pending |
-| OBS-06 | Phase 185 | Pending |
-| OBS-07 | Phase 184 | Pending |
-| OBS-08 | Phase 185 | Pending |
-| OBS-09 | Phase 188 | Pending |
-| OBS-10 | Phase 185 | Pending |
-| OBS-11 | Phase 188 | Pending |
+| SUPA-11 | Phase 183 | Complete |
+| SUPA-12 | Phase 185 | Complete |
+| SUPA-13 | Phase 184 | Complete |
+| SUPA-14 | Phase 184 | Complete |
+| PIPE-01 | Phase 187 | Complete |
+| PIPE-02 | Phase 187 | Complete |
+| PIPE-03 | Phase 187 | Complete |
+| PIPE-04 | Phase 187 | Complete |
+| PIPE-05 | Phase 187 | Complete |
+| PIPE-06 | Phase 187 | Complete |
+| PIPE-07 | Phase 187 | Complete |
+| PIPE-08 | Phase 187 | Complete |
+| PIPE-09 | Phase 187 | Complete |
+| PIPE-10 | Phase 187 | Complete |
+| PIPE-11 | Phase 189.1 | Complete |
+| OBS-01 | Phase 184 | Complete |
+| OBS-02 | Phase 184 | Complete |
+| OBS-03 | Phase 184 | Complete |
+| OBS-04 | Phase 185 | Complete |
+| OBS-05 | Phase 184 | Complete |
+| OBS-06 | Phase 185 | Complete |
+| OBS-07 | Phase 184 | Complete |
+| OBS-08 | Phase 185 | Complete |
+| OBS-09 | Phase 188 | Complete |
+| OBS-10 | Phase 185 | Complete |
+| OBS-11 | Phase 188 | Complete |
+| OBS-12 | Phase 189.1 | Complete |
+| OBS-13 | Phase 189.1 | Complete |
 | RELAY-01 | Phase 182 | Complete |
 | RELAY-02 | Phase 182 | Complete |
 | RELAY-03 | Phase 182 | Complete |
-| RELAY-04 | Phase 188 | Pending |
+| RELAY-04 | Phase 188 | Complete |
 | RELAY-05 | Phase 182 | Complete |
 | RELAY-06 | Phase 182 | Complete |
 | RELAY-07 | Phase 182 | Complete |
 | RELAY-08 | Phase 182 | Complete |
-| RELAY-09 | Phase 188 | Pending |
+| RELAY-09 | Phase 188 | Complete |
 | RELAY-10 | Phase 182 | Complete |
 | RELAY-11 | Phase 182 | Complete |
 | RELAY-12 | Phase 182 | Complete |
@@ -331,23 +352,26 @@ closes; those are not listed against the earlier phase here.
 | RELAY-19 | Phase 182 | Complete |
 | RELAY-20 | Phase 182 | Complete |
 | RELAY-21 | Phase 182 | Complete |
-| DOCS-01 | Phase 189 | Pending |
-| DOCS-02 | Phase 189 | Pending |
-| DOCS-03 | Phase 189 | Pending |
-| DOCS-04 | Phase 189 | Pending |
-| DOCS-05 | Phase 189 | Pending |
-| DOCS-06 | Phase 189 | Pending |
-| DOCS-07 | Phase 189 | Pending |
-| DOCS-08 | Phase 189 | Pending |
+| DOCS-01 | Phase 189 | Complete |
+| DOCS-02 | Phase 189 | Complete |
+| DOCS-03 | Phase 189 | Complete |
+| DOCS-04 | Phase 189 | Complete |
+| DOCS-05 | Phase 189 | Complete |
+| DOCS-06 | Phase 189 | Complete |
+| DOCS-07 | Phase 189 | Complete |
+| DOCS-08 | Phase 189 | Complete |
 
 **Coverage:**
-- v1 requirements: 83 total (INFRA 19, SUPA 14, PIPE 10, OBS 11, RELAY 21, DOCS 8)
-- Mapped to phases: 83
+- v1 requirements: 86 total (INFRA 19, SUPA 14, PIPE 11, OBS 13, RELAY 21, DOCS 8)
+- Mapped to phases: 86
 - Unmapped: 0
-- Per phase: 181: 1, 182: 19, 183: 4, 184: 14, 185: 19, 186: 1, 187: 13, 188: 4, 189: 8
+- Per phase: 181: 1, 182: 19, 183: 4, 184: 14, 185: 19, 186: 1, 187: 13, 188: 4, 189: 8, 189.1: 3
 
 Count corrected on 2026-10-11: this line said 81 when the requirements were defined. The six group counts sum to
 83, and a count of the ids in this file gives 83.
+
+Added on 2026-11-21: phase 189.1 adds OBS-12, OBS-13 and PIPE-11, from the tech debt recorded in
+`v2.17-MILESTONE-AUDIT.md`, which brings the count to 86.
 
 ---
 *Requirements defined: 2026-10-11*

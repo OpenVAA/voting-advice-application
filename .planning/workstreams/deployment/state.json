@@ -16,43 +16,43 @@
     {
       "number": "183",
       "name": "Terraform Foundation and Supabase as Code",
-      "status": "in_progress"
+      "status": "complete"
     },
     {
       "number": "184",
       "name": "Hosted Supabase Measurement and Conformance Probe",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "185",
       "name": "AWS Frontend Stack, First Apply by Hand",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "186",
       "name": "Deployed Smoke Entry",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "187",
       "name": "Deploy Pipeline",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "188",
       "name": "Relay on the Deployed Stack, and the Per-Caller Limit",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "number": "189",
       "name": "Documentation and Closure",
-      "status": "pending"
+      "status": "complete"
     }
   ],
   "next": {
-    "command": "/gsd-progress --next",
-    "label": "Advance to the next step",
-    "reason": "Phase 4 of 10 · 20% · executing"
+    "command": "/gsd-new-milestone",
+    "label": "Start a new milestone",
+    "reason": "All phases complete — start a new milestone"
   },
-  "updated_at": "2026-10-21T08:18:29.394Z"
+  "updated_at": "2026-11-21T13:26:13.391Z"
 }
