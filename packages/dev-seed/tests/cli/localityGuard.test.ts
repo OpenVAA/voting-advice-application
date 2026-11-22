@@ -25,6 +25,7 @@ const DUMMY_KEY = 'not-a-real-key';
 // Non-local by the allowlist, yet nothing can answer on it, so the refusal and its opt-out need no network.
 const UNREACHABLE_NON_LOCAL = 'http://0.0.0.0:9';
 const UNREACHABLE_LOCAL = 'http://127.0.0.1:9';
+const PROBE_PROJECT_ID = '11111111-2222-3333-4444-555555555555';
 
 // The teardown CLI's first request past the guard is a read, and supabase-js retries a read whose fetch rejects three times with 1 s, 2 s and 4 s back-off, so reaching "Cannot reach Supabase" takes about 7 s, longer than the default test timeout.
 const PAST_TEARDOWN_GUARD = { timeout: 30000 };
@@ -109,7 +110,7 @@ describe('seed CLI locality guard', () => {
   }
 
   it('refuses a remote host by name without leaking the key', () => {
-    const run = seed('https://guard-probe.invalid');
+    const run = seed('https://guard-probe.invalid', ['--project-id', PROBE_PROJECT_ID]);
     expect(run.status).toBe(1);
     expect(run.stderr).toContain(REFUSAL_MARKER);
     expect(run.stderr).toContain('guard-probe.invalid');
@@ -117,20 +118,41 @@ describe('seed CLI locality guard', () => {
   });
 
   it('refuses a non-local host with no opt-out', () => {
-    const run = seed(UNREACHABLE_NON_LOCAL);
+    const run = seed(UNREACHABLE_NON_LOCAL, ['--project-id', PROBE_PROJECT_ID]);
     expect(run.status).toBe(1);
     expect(run.stderr).toContain(REFUSAL_MARKER);
   });
 
-  it('gets past the guard with --allow-remote', () => {
-    const run = seed(UNREACHABLE_NON_LOCAL, ['--allow-remote']);
+  it('gets past the guard with --allow-remote and --project-id', () => {
+    const run = seed(UNREACHABLE_NON_LOCAL, ['--allow-remote', '--project-id', PROBE_PROJECT_ID]);
     expect(run.status).toBe(1);
     expect(run.stderr).toContain(`Cannot reach Supabase at ${UNREACHABLE_NON_LOCAL}`);
     expect(run.stderr).not.toContain(REFUSAL_MARKER);
   });
 
-  it('gets past the guard with DEV_SEED_ALLOW_REMOTE=1', () => {
+  it('refuses --allow-remote without --project-id before connecting', () => {
+    const run = seed(UNREACHABLE_NON_LOCAL, ['--allow-remote']);
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain('a non-local Supabase host requires --project-id');
+    expect(run.stderr).not.toContain('Cannot reach Supabase');
+  });
+
+  it('refuses DEV_SEED_ALLOW_REMOTE=1 without --project-id before connecting', () => {
     const run = seed(UNREACHABLE_NON_LOCAL, [], '1');
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain('a non-local Supabase host requires --project-id');
+    expect(run.stderr).not.toContain('Cannot reach Supabase');
+  });
+
+  it('refuses a --project-id that is not UUID-shaped', () => {
+    const run = seed(UNREACHABLE_NON_LOCAL, ['--allow-remote', '--project-id', 'staging']);
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain("--project-id must be a UUID (got 'staging')");
+    expect(run.stderr).not.toContain('Cannot reach Supabase');
+  });
+
+  it('gets past the guard with DEV_SEED_ALLOW_REMOTE=1 and --project-id', () => {
+    const run = seed(UNREACHABLE_NON_LOCAL, ['--project-id', PROBE_PROJECT_ID], '1');
     expect(run.status).toBe(1);
     expect(run.stderr).toContain(`Cannot reach Supabase at ${UNREACHABLE_NON_LOCAL}`);
     expect(run.stderr).not.toContain(REFUSAL_MARKER);
@@ -151,6 +173,12 @@ describe('seed USAGE documents the locality guard', () => {
 
   it('names DEV_SEED_ALLOW_REMOTE', () => {
     expect(USAGE).toContain('DEV_SEED_ALLOW_REMOTE');
+  });
+
+  it('documents --project-id and that a non-local host requires it', () => {
+    expect(USAGE).toContain('--project-id <uuid>');
+    expect(USAGE).toContain('Required for a non-local host');
+    expect(USAGE).toMatch(/like --allow-remote, and also requires\s+--project-id/);
   });
 });
 
@@ -199,7 +227,7 @@ describe('the CLIs read the Supabase URL and key after loading the repo-root .en
 
   it('seed refuses a non-local SUPABASE_URL that only the .env sets', () => {
     // A control: the seed CLI's Writer reads the environment when it is constructed, after the `.env` load.
-    const run = runWithRootEnv(SEED_CLI, ['--template', 'e2e/base'], {
+    const run = runWithRootEnv(SEED_CLI, ['--template', 'e2e/base', '--project-id', PROBE_PROJECT_ID], {
       SUPABASE_URL: REMOTE_URL,
       SUPABASE_SERVICE_ROLE_KEY: DUMMY_KEY
     });
@@ -207,5 +235,12 @@ describe('the CLIs read the Supabase URL and key after loading the repo-root .en
     expect(run.stderr).toContain(REFUSAL_MARKER);
     expect(run.stderr).toContain(REMOTE_HOST);
     expect(run.stdout + run.stderr).not.toContain(DUMMY_KEY);
+  });
+
+  it('seed reports a missing SUPABASE_URL rather than --project-id', () => {
+    const run = runWithRootEnv(SEED_CLI, ['--template', 'e2e/base'], { SUPABASE_SERVICE_ROLE_KEY: DUMMY_KEY });
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain('SUPABASE_URL env var is required');
+    expect(run.stderr).not.toContain('requires --project-id');
   });
 });

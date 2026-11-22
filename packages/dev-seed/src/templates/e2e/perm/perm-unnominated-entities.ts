@@ -16,7 +16,8 @@
  * Prefix discipline: `externalIdPrefix: 'e2e-perm-unnominated-entities-'`. Row external_ids are bare; nested references are prefixed. The ids are semantic slugs with hyphens, which no generator emits: a generated id is a type code, an underscore and a zero-padded number.
  */
 
-import { EDITOR_CONTESTANT_APP_SETTINGS, LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
+import { EDITOR_CONTESTANT_APP_SETTINGS } from './editorSettings';
+import { LIKERT_5_EN, MINIMAL_BASE_APP_SETTINGS } from './shared';
 import type { Template } from '../../../template/types';
 
 const P = 'e2e-perm-unnominated-entities-';

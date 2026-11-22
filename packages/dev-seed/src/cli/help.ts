@@ -21,10 +21,16 @@ Options:
                                     under it later, pass the SAME value to
                                     seed:teardown, whose flag is --prefix
                                     (--external-id-prefix is accepted too).
+      --project-id <uuid>           Seed into this project instead of the
+                                    template's projectId (default
+                                    00000000-0000-0000-0000-000000000001).
+                                    Required for a non-local host: pass the
+                                    deployment's public_project_id.
       --allow-remote                Permit a non-local Supabase host for this
-                                    invocation. Without it the service-role
-                                    client only accepts localhost, 127.0.0.0/8,
-                                    [::1], host.docker.internal, kong and
+                                    invocation; requires --project-id. Without
+                                    it the service-role client only accepts
+                                    localhost, 127.0.0.0/8, [::1],
+                                    host.docker.internal, kong and
                                     supabase_kong_<project>.
   -h, --help                        Show this help and exit.
 
@@ -35,6 +41,9 @@ Built-in templates:
   perm-*               Settings/topology-permutation fixtures
                        (see packages/dev-seed/src/templates/index.ts).
   show-feedback-survey Results feedback + survey popup permutation.
+  smoke                1001 candidates + 1001 nominations in one project, no auth
+                       user; for a hosted project (--allow-remote --project-id),
+                       prefix smoke_.
 
 Custom templates:
   See packages/dev-seed/README.md for a worked authoring example
@@ -46,7 +55,8 @@ Environment:
   SUPABASE_SERVICE_ROLE_KEY         Service-role key for bypassing RLS
                                     (from \`yarn db:status\`, never committed).
   DEV_SEED_ALLOW_REMOTE             Set to 1 (or true) to permit a non-local host,
-                                    like --allow-remote. Set it per invocation,
+                                    like --allow-remote, and also requires
+                                    --project-id. Set it per invocation,
                                     never in the repo-root \`.env\`.
   The repo-root \`.env\` file is auto-loaded at startup, so variables defined there
   (PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) take effect without \`export\`.

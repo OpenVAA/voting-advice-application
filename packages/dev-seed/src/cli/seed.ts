@@ -6,8 +6,8 @@
  *   1. parseArgs — node:util built-in (keygen.ts precedent, NOT commander/yargs).
  *   2. --help short-circuit => print USAGE => exit 0.
  *   3. resolveTemplate(--template) => validated Template.
- *   4. Apply --seed / --external-id-prefix overrides to the template.
- *   5. new Writer — throws with messages on missing env, and refuses a non-local SUPABASE_URL unless `--allow-remote` or `DEV_SEED_ALLOW_REMOTE=1` opts out; CLI catches.
+ *   4. Apply --seed / --external-id-prefix / --project-id overrides to the template. A non-local SUPABASE_URL requires `--project-id`, whichever opt-out is used, so a remote seed always names its project.
+ *   5. new Writer({ projectId: template.projectId }) — throws with messages on missing env, and refuses a non-local SUPABASE_URL unless `--allow-remote` or `DEV_SEED_ALLOW_REMOTE=1` opts out; CLI catches.
  *   6. runPipeline(template) — the generator orchestrator.
  *   7. fanOutLocales(rows, template, seed) — no-op if the flag is off.
  *   8. writer.write(rows, prefix, { openForVoters, templateName }). The third argument carries what the writer cannot read from rows: the template's `openForVoters`, which the writer's last pass applies to the project when the template declares it, and `templateName` (the `--template` argument), which a refusal of the template's settings names. Optionally returns `{ portraits }`. This CLI tolerates both a `void` return and the `{ portraits: number }` shape, so the writer's signature can move without re-touching it.
@@ -16,6 +16,7 @@
  *
  * error handling:
  *   - Missing env => Writer constructor throws with exact message; CLI prints + exit(1).
+ *   - Non-local SUPABASE_URL without --project-id => CLI prints + exit(1) before connecting, whichever opt-out is set.
  *   - Non-local SUPABASE_URL without an opt-out => the admin client refuses it before connecting; CLI prints + exit(1).
  *   - Template not found => resolveTemplate throws with built-in list + path suggestion; CLI prints + exit(1).
  *   - Template validation failed => field-path message from validateTemplate; CLI prints + exit(1).
@@ -28,7 +29,9 @@ import { USAGE } from './help';
 import { resolveTemplate } from './resolve-template';
 import { formatSummary } from './summary';
 import { fanOutLocales } from '../locales';
+import { isLocalSupabaseUrl } from '../localSupabaseUrl';
 import { runPipeline } from '../pipeline';
+import { UUID_SHAPE } from '../template/schema';
 import { Writer } from '../writer';
 import type { Template } from '../template/types';
 import type { Overrides } from '../types';
@@ -50,6 +53,7 @@ const { values } = parseArgs({
     template: { type: 'string', short: 't' },
     seed: { type: 'string' },
     'external-id-prefix': { type: 'string' },
+    'project-id': { type: 'string' },
     'allow-remote': { type: 'boolean' },
     help: { type: 'boolean', short: 'h' }
   },
@@ -63,6 +67,14 @@ if (values.help) {
 }
 
 const templateArg = values.template ?? 'default';
+
+const supabaseUrl = process.env.SUPABASE_URL;
+if (supabaseUrl && !isLocalSupabaseUrl(supabaseUrl) && values['project-id'] === undefined) {
+  process.stderr.write(
+    "Error: a non-local Supabase host requires --project-id <uuid>: name the deployment's public_project_id.\n"
+  );
+  process.exit(1);
+}
 
 try {
   // Lazy-load the built-in template map + per-template overrides map; `loadBuiltIns` tolerates an absent module via its catch.
@@ -85,10 +97,19 @@ try {
     (template as Template & { externalIdPrefix?: string }).externalIdPrefix = values['external-id-prefix'];
   }
 
+  // Apply --project-id override. The template schema's UUID-shape check is not re-run after resolveTemplate, so the flag is checked here.
+  if (values['project-id'] !== undefined) {
+    if (!UUID_SHAPE.test(values['project-id'])) {
+      process.stderr.write(`Error: --project-id must be a UUID (got '${values['project-id']}').\n`);
+      process.exit(1);
+    }
+    template.projectId = values['project-id'];
+  }
+
   const seed = (template as Template & { seed?: number }).seed ?? 42;
 
   // Writer constructor reads env + throws messages if missing or non-local.
-  const writer = new Writer({ allowRemote: values['allow-remote'] === true });
+  const writer = new Writer({ allowRemote: values['allow-remote'] === true, projectId: template.projectId });
 
   // Look up per-template overrides — built-in templates may ship paired Overrides (e.g. the `default` template's non-uniform candidate distribution). Custom filesystem templates can express the same by shipping a sibling `Overrides` export; see the authoring guide in the package README. Custom templates otherwise resolve to `{}` (no overrides).
   const overrides: Overrides = builtIns.overrides[templateArg] ?? {};
