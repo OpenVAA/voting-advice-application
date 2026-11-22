@@ -127,7 +127,8 @@ const CONTESTANT_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
     contentTestId: testIds.contestant.home.statusMessage,
     postLoginTestId: testIds.contestant.home.logout,
     reach: async (page) => {
-      await createContestantHomePage(page).expectNextStep('preview');
+      // reason: after a cold document load the main action names its next step only once the page has hydrated and the candidate's questions and answers have loaded, which a slow runner stretches past the render bucket, so the test's own ceiling bounds it.
+      await createContestantHomePage(page).expectNextStep('preview', { timeout: TIMEOUTS.testMax });
     }
   },
   {

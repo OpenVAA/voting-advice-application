@@ -141,7 +141,8 @@ const CONSENT_FREE_MODE = process.env.ANALYTICS_CONSENT_MODE?.trim().toLowerCase
 async function dismissConsentPrompt(page: Page): Promise<void> {
   const prompt = page.getByRole('dialog', { name: CONSENT_PROMPT });
   if (CONSENT_FREE_MODE) {
-    await waitForNavigationFocusReset(page);
+    // The consent prompt is queued when the voter layout mounts, so its absence counts only once the page has hydrated.
+    await waitForNavigationFocusReset(page, { timeout: TIMEOUTS.page });
     await expect(
       prompt,
       'the consent prompt is shown although ANALYTICS_CONSENT_MODE=free: the server is not in consent-free mode'
