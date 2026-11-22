@@ -45,6 +45,7 @@ tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/<name> --no-db-reset
 # provider's test environment, which only the wrapper prepares, the `bank-auth` and
 # `contestant-identity-provider` projects fail.
 yarn test:e2e                 # Run Playwright E2E tests; EXCLUDES the @probe specs
+yarn test:e2e:deployed        # Read-mostly smoke of a deployed URL; needs SMOKE_EXPECTED_SHA. See tests/README.md § Deployed smoke run
 ```
 
 #### E2E Hard Rule (cardinal failure)
@@ -334,7 +335,7 @@ Both invariants were diagnosed in this codebase (spikes 031–034) and landed in
 
 ## Deployment
 
-Frontend ships as a Docker container; the backend is Supabase Cloud, so no backend service is needed on Render. `render.example.yaml` is the reference deployment: the frontend service with its `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` environment variables, and the domain. `docker-compose.dev.yml` is for production build testing only, not development. `infra/` holds the Terraform of a deployment's AWS account, staging zone and mail, and Supabase project; `infra/README.md` is its map and each root has a runbook. Hosted API and auth settings have one writer, the settings resource of `infra/modules/supabase`, built from `hosted-settings.json`; never set them in the dashboard or with `supabase config push`.
+The frontend ships as a Docker container to AWS: an ECS service behind CloudFront, written in Terraform under `infra/` and deployed by the gated pipeline on a push to `deploy/staging` (`.github/workflows/deploy.yml`). The backend is Supabase Cloud, its hosted API and auth settings written by one writer only, the Terraform module under `infra/modules/supabase`, from its `hosted-settings.json`; never set them in the dashboard or with `supabase config push`. The deployment guide, `apps/docs/src/routes/(content)/developers-guide/deployment/+page.md`, is the entry point, and `infra/README.md` describes the roots and the pipeline. `docker-compose.dev.yml` is for production build testing only, not development.
 
 ## Troubleshooting
 

@@ -68,11 +68,14 @@ Three warnings first, because they act before any advice is read:
 The four conflicts:
 
 1. **Migration workflow.** Upstream generates a migration with `supabase db pull` or creates one
-   with `supabase migration new`. Here neither command is used: the schema workflow is the one the
-   database skill describes under "The schema is declarative: you edit one copy, the other is
-   generated" (edit the schema source, regenerate the single migration file). Either upstream
-   command writes a second migration file, which `yarn assert:migrations-frozen` rejects. The
-   database skill wins.
+   with `supabase migration new`. Here neither is the workflow: the database skill's rule is "The
+   migrations are frozen: a schema change is appended, never edited in". A schema change is one
+   commit of three parts, the `apps/supabase/supabase/schema/` edit, the next numbered migration (the next five-digit
+   version, an underscore and a name) and its line in `migrations.manifest.json`, and a file
+   `supabase migration new` names with a timestamp is renamed to the next number. Both upstream
+   commands conflict with it: each writes a timestamp-named file with no manifest line, which
+   `yarn assert:migrations-frozen` rejects, and `supabase db pull` derives the migration from
+   a database's state rather than from the `apps/supabase/supabase/schema/` edit it must match. The database skill wins.
 2. **EXECUTE on the private helpers.** Upstream revokes EXECUTE on its `private` helper functions
    from PUBLIC, anon, authenticated and service_role and then calls them from policies. Here "private
    is not an exposed schema; anon/authenticated keep USAGE + EXECUTE so policies (which run as the
