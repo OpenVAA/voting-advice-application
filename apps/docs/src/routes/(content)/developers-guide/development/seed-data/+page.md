@@ -45,15 +45,16 @@ yarn db:seed --template e2e/base
 
 The `seed` command takes these options:
 
-| Option                            | Meaning                                                                                                                                          |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-t`, `--template <name-or-path>` | a built-in template name, or a path ending in `.ts`, `.js` or `.json` to a custom template; default `default`                                    |
-| `--seed <integer>`                | overrides the template's random seed                                                                                                             |
-| `--external-id-prefix <str>`      | overrides the prefix of the generated records' `external_id`s                                                                                    |
-| `--allow-remote`                  | permits a Supabase URL that is not local; without it the command refuses any host but `localhost`, `127.0.0.0/8` and the local stack's own names |
-| `-h`, `--help`                    | prints the usage, including the built-in templates                                                                                               |
+| Option                            | Meaning                                                                                                                                                                   |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-t`, `--template <name-or-path>` | a built-in template name, or a path ending in `.ts`, `.js` or `.json` to a custom template; default `default`                                                             |
+| `--seed <integer>`                | overrides the template's random seed                                                                                                                                      |
+| `--external-id-prefix <str>`      | overrides the prefix of the generated records' `external_id`s                                                                                                             |
+| `--project-id <uuid>`             | seeds into this project instead of the template's; required for a Supabase URL that is not local                                                                          |
+| `--allow-remote`                  | permits a Supabase URL that is not local; without it the command refuses any host but `localhost`, `127.0.0.0/8` and the local stack's own names; requires `--project-id` |
+| `-h`, `--help`                    | prints the usage, including the built-in templates                                                                                                                        |
 
-The command loads the repo-root `.env` itself. It needs `SUPABASE_URL`, or `PUBLIC_SUPABASE_URL` when that is unset, and `SUPABASE_SERVICE_ROLE_KEY`, and it writes with a service-role client through the [`bulk_import`](/developers-guide/backend/data-import-and-deletion) database function into the default project.
+The command loads the repo-root `.env` itself. It needs `SUPABASE_URL`, or `PUBLIC_SUPABASE_URL` when that is unset, and `SUPABASE_SERVICE_ROLE_KEY`, and it writes with a service-role client through the [`bulk_import`](/developers-guide/backend/data-import-and-deletion) database function into the template's project, or the one `--project-id` names.
 
 ### Built-in templates
 
@@ -61,6 +62,7 @@ The built-in templates are the keys of `BUILT_IN_TEMPLATES` in [`packages/dev-se
 
 - **`default`**: a demo election for people working on the app: constituencies, organizations, candidates with portraits, and questions with answers clustered by organization, translated into every supported locale. Its records' `external_id`s start with `seed_`.
 - **`e2e/base`**: the dataset the Playwright specs depend on, in one locale.
+- **`smoke`**: 1001 candidates with one nomination each, no auth user, prefix `smoke_`, for seeding a hosted project once with `--allow-remote --project-id` set to the deployment's `public_project_id` ([the package README's `smoke` section](https://github.com/OpenVAA/voting-advice-application/blob/main/packages/dev-seed/README.md#smoke)).
 - **`perm-*`** and **`show-feedback-survey`**: small datasets for individual E2E specs, each covering one permutation of the app settings or of the election and constituency layout (for example `perm-1e1cg1co`, `perm-access-disable` and `perm-closed-project`).
 
 ### Custom templates
