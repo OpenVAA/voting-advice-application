@@ -20,7 +20,7 @@ Step 1  first apply of the zone, the identity and the SMTP user
    |
 Step 2  read four outputs by name and the identity, with its DKIM signing zone
    |
-Step 3  plan again, which must show no change; the account's two assert modes; the state object
+Step 3  plan again, which must show no change; the account's two inline-policy checks; the state object
    |
 Step 4  only if the signing zone differed: plan and apply the three corrected DKIM records
    |
@@ -38,8 +38,9 @@ Step 9  your own mailbox, verified by hand for the sandbox
 Steps 1 to 3 are one sitting. Step 5 needs the four name servers that Step 2 printed. Steps 7 to 9 are
 one sitting that may begin hours after Step 5, once the delegation resolves in public DNS.
 
-No step of this runbook sends a test mail from a workstation. The first mail through SES is sent by
-the hosted function, in a later stage of the deployment work.
+No step of this runbook sends a test mail from a workstation. The mail through SES is sent by the hosted
+function `account-access`: the first one it sent, on 2026-11-11, and the headers it arrived with are in
+the [Observations of the Supabase runbook](../supabase/README.md#observations).
 
 ## What you paste back
 
@@ -81,7 +82,7 @@ new terminal. Each step lists the ones it needs.
 cd infra/envs/staging/dns-mail
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-dns-mail.XXXXXX")
 ```
 
 `LC_ALL=C` keeps every number and sort order independent of your workstation's locale. Give a time in
@@ -89,9 +90,15 @@ UTC, in the form `date -u +%Y-%m-%dT%H:%MZ` prints.
 
 ## Step 1: First apply
 
-The apply creates the hosted zone, the SES identity with its DKIM, MAIL FROM and DMARC records, the
-account's suppression list setting for the region, and the SMTP user with its access key and its
-customer-managed send policy. Run Steps 1 to 3 in one terminal, signed in with the applying identity.
+← guide: [Deployment § The zone and mail root](https://openvaa.org/developers-guide/deployment#the-zone-and-mail-root)
+
+The apply creates the hosted zone, the SES identity with its DKIM, MAIL FROM and DMARC records, and
+the SMTP user with its access key and its customer-managed send policy. The account's suppression list
+setting for the region is created only when `manage_account_suppression` is true. Staging sets it to
+false in `terraform.tfvars`, because other identities in the region already share that setting, so the
+plan holds no `aws_sesv2_account_suppression_attributes` resource and the setting stays with its
+existing owner; Step 8 reads it back. Run Steps 1 to 3 in one terminal, signed in with the applying
+identity.
 
 1. The lines that begin the sitting, from the repository root:
 
@@ -99,7 +106,7 @@ customer-managed send policy. Run Steps 1 to 3 in one terminal, signed in with t
    cd infra/envs/staging/dns-mail
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-dns-mail.XXXXXX")
    ```
 
 2. It must print `s2_account=471112560111`. Any other account means stop: the shell is signed in
@@ -180,23 +187,24 @@ Step 3.
    terraform plan -input=false -no-color -detailed-exitcode > "$L/s8.log" 2>&1; echo "s8_second_plan_exit=$?"
    ```
 
-9. The account, now that the SMTP user exists. Both assert modes of `check-inline-policies.sh` must print 0:
-   no IAM user in the account carries an inline policy, and everything under the path `/openvaa/` has
-   customer-managed policies only. The last two lines read the SMTP user's own policies: no inline
-   policy, and the send policy attached.
+9. The account, now that the SMTP user exists. Each mode of the inline-policy check reads the
+   caller first and exits 1 without judging anything when the caller is not in `471112560111`. Both
+   must print 0: no IAM user in the account carries an inline policy, and no role or user under the
+   path `/openvaa/` carries one. Neither mode judges attached policies. The last two lines read the
+   SMTP user's own policies: no inline policy, and the send policy attached.
 
    ```bash
    ../../../scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s9a.log" 2>&1; echo "s9_assert_users_exit=$?"
-   ../../../scripts/check-inline-policies.sh --assert-managed-only /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_managed_exit=$?"
+   ../../../scripts/check-inline-policies.sh --assert-no-inline-under /openvaa/ > "$L/s9b.log" 2>&1; echo "s9_assert_no_inline_exit=$?"
    echo "s9_smtp_inline_count=$(aws iam list-user-policies --user-name openvaa-staging-ses-smtp --query 'length(PolicyNames)' --output text)"
    echo "s9_smtp_attached=$(aws iam list-attached-user-policies --user-name openvaa-staging-ses-smtp --query 'AttachedPolicies[].PolicyName' --output text)"
    ```
 
-   If an assert mode printed 1, add its lines; the script prints names and counts only:
+   If a mode of the check printed 1, add its lines; the check prints names and counts only:
 
    ```bash
-   sed 's/^/s9_inv=/' "$L/s9a.log"
-   sed 's/^/s9_inv=/' "$L/s9b.log"
+   sed 's/^/s9_check=/' "$L/s9a.log"
+   sed 's/^/s9_check=/' "$L/s9b.log"
    ```
 
 10. The encryption of this root's state object in the bucket:
@@ -228,7 +236,7 @@ The lines that begin the sitting, from the repository root, signed in:
 cd infra/envs/staging/dns-mail
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-dns-mail.XXXXXX")
 ```
 
 Plan, and print the summary line and the resource headings:
@@ -257,6 +265,8 @@ test -n "$L" && rm -rf "$L" && echo "s0_logs_removed=yes"
 Return: the `s0_` lines, and nothing from a log.
 
 ## Step 5: The delegation at the parent zone's DNS host
+
+← guide: [Deployment § The zone and mail root](https://openvaa.org/developers-guide/deployment#the-zone-and-mail-root)
 
 The parent zone `openvaa.org` is served by Cloudflare. This step adds four NS records there, by hand,
 so that the name `staging.openvaa.org` is answered by the zone of this root. Before it, the four
@@ -302,16 +312,19 @@ dig +short NS staging.openvaa.org @1.1.1.1
 dig +short SOA staging.openvaa.org @1.1.1.1
 ```
 
-What each should show is in "Not yet observed" below until it has been seen: the referral of the
-second command names the four name servers of `DELEGATION.md` in its authority section, and the third
-command prints the same four. Observed on 2026-10-11: the parent zone's SOA carried a negative-cache
-time of 1800 seconds, so a public resolver that cached the earlier `NXDOMAIN` for the staging name may
-keep it for up to 30 minutes after the records are saved.
+The first command prints the parent zone's name servers. The referral of the second names the four
+name servers of `DELEGATION.md` in its authority section, the third prints the same four, and the
+fourth prints the zone's SOA, answered from Route 53; so they read on 2026-10-22 (Observations, the
+row for Step 6). Observed on 2026-10-11: the parent zone's SOA carried a negative-cache time of 1800
+seconds, so a public resolver that cached the earlier `NXDOMAIN` for the staging name may keep it for
+up to 30 minutes after the records are saved.
 
 Return: nothing is required. If the third command still prints nothing an hour after Step 5, say so on
 the line `answer_public_ns=empty`.
 
 ## Step 7: The wait for the identity to verify
+
+← guide: [Deployment § The zone and mail root](https://openvaa.org/developers-guide/deployment#the-zone-and-mail-root)
 
 Steps 7 to 9 are one sitting, which begins once Step 6 shows the delegation in public DNS. It may need a
 wait of hours; there is nothing to do in between. If you come back in a new terminal, run the sitting
@@ -322,8 +335,15 @@ The lines that begin the sitting, signed in:
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-dns-mail.XXXXXX")
 ```
+
+0. It must print `s0_account=471112560111`. Any other account means stop: the shell is signed in
+   elsewhere.
+
+   ```bash
+   echo "s0_account=$(aws sts get-caller-identity --query Account --output text)"
+   ```
 
 1. The identity's three statuses:
 
@@ -339,13 +359,37 @@ L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
 
 ## Step 8: The production-access request
 
+← guide: [Deployment § The zone and mail root](https://openvaa.org/developers-guide/deployment#the-zone-and-mail-root)
+
+← guide: [Operations § SES: sandbox and production access](https://openvaa.org/developers-guide/deployment/operations#ses-sandbox-and-production-access)
+
 AWS documents that an account in the SES sandbox sends only to verified addresses and domains or to
 the mailbox simulator, at most 200 messages in 24 hours and at most one message a second, that the
 sandbox is per region, and that verifying the domain before requesting production access is a best
-practice. The sandbox is accepted for staging, so nothing waits for the grant.
+practice. Production access is set per account and region, so an account that already sends from
+another identity in this region may have it already. The sandbox is accepted for staging, so nothing
+waits for the grant.
 
-2. File the request, with the complete command. The CLI asks nothing, so the description is given as
-   an argument. Type your own address in place of `<your-address>`.
+2. First read four fields of the account, before anything is filed. The raw answer of `get-account`
+   holds the account's contact addresses, so it goes to the log and only four fields are printed.
+
+   ```bash
+   aws sesv2 get-account --region eu-north-1 --output json > "$L/s2a.json" 2> "$L/s2a.err"; echo "s2a_account_exit=$?"
+   jq -r '"s2a_production=\(.ProductionAccessEnabled)", "s2a_sending=\(.SendingEnabled)", "s2a_max24h=\(.SendQuota.Max24HourSend)", "s2a_suppression=\(.SuppressionAttributes.SuppressedReasons // [] | sort | join(","))"' "$L/s2a.json"
+   ```
+
+   The request below tells AWS that bounces and complaints go to the account suppression list. This
+   root does not own that setting, so `s2a_suppression` must read `BOUNCE,COMPLAINT` before a request
+   is filed. If it reads anything else, file no request and paste the lines up to it: whoever owns the
+   account-level setting decides it first, or the description is changed to match.
+
+   If it prints `s2a_production=true`, the account already has production access in this region. File
+   no request, skip the rest of this step and Step 9, write `answer_skip_steps_2_3=yes` and go on with
+   item 4. A new request would overwrite the account's contact details, and a verified mailbox is
+   needed only in the sandbox.
+
+   Otherwise file the request, with the complete command. The CLI asks nothing, so the description is
+   given as an argument. Type your own address in place of `<your-address>`.
 
    ```bash
    aws sesv2 put-account-details --region eu-north-1 --production-access-enabled --mail-type TRANSACTIONAL --website-url https://openvaa.org --use-case-description 'Sign-in links for invited people and password recovery for a voting advice application. About 100 mails a day, with a peak of 2000 a day. Bounces and complaints go to the account suppression list.' --additional-contact-email-addresses <your-address> --contact-language EN > "$L/s2.log" 2>&1; echo "s2_request_exit=$?"
@@ -365,6 +409,11 @@ practice. The sandbox is accepted for staging, so nothing waits for the grant.
 
 ## Step 9: Your own mailbox, for the sandbox
 
+← guide: [Operations § SES: sandbox and production access](https://openvaa.org/developers-guide/deployment/operations#ses-sandbox-and-production-access)
+
+Only for an account that is still in the sandbox in this region; skip it when item 2 printed
+`s2a_production=true`.
+
 3. Verify your own mailbox by hand, with the CLI, so that no personal address enters Terraform or this
    repository. Type your own address in place of `<your-address>`.
 
@@ -382,31 +431,29 @@ practice. The sandbox is accepted for staging, so nothing waits for the grant.
 
 Do not read the root's SMTP credential outputs and do not send a test mail from your workstation.
 
-Return, for Steps 7 to 9: the `s1_` lines once all three are right; the `s2_` lines and
-`answer_request_filed_utc=`; `s3_mailbox_exit=`, `answer_mailbox_verified=done` and
-`s4_logs_removed=yes`. Do not paste your address.
-
-## Not yet observed
-
-Nobody has applied this root yet. Each statement below is something this runbook relies on and that
-has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
-it.
-
-| Statement                                                                                                                                   | Checked by                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| The DKIM signing zone of this identity, as `SigningHostedZone` reports it, equals the default `dkim.amazonses.com` in the variable file     | Step 2, item 7                                                               |
-| A second plan right after the first apply shows no change                                                                                   | Step 3, item 8                                                               |
-| The SMTP user carries no inline policy and only the customer-managed send policy, and both assert modes of `check-inline-policies.sh` pass  | Step 3, item 9                                                               |
-| The Cloudflare dashboard accepts four NS records named `staging` beside the zone's other records                                            | Step 5, item 3                                                               |
-| The referral from the parent zone's name servers names the four name servers of this zone, and a public resolver answers with the same four | Step 6                                                                       |
-| The identity reaches verified for sending, with DKIM `SUCCESS` and the MAIL FROM domain `SUCCESS`                                           | Step 7, item 1                                                               |
-| The production-access request is accepted as filed, and how Support answers it                                                              | Step 8, item 2, and the mail Support sends afterwards                        |
-| `create-email-identity` for a single address sends a verification mail with a link to that address                                          | Step 9, item 3                                                               |
-| SES accepts an SMTP send under the scoped send policy, which allows one From address on this identity only                                  | A later stage of the deployment work, with the first mail the function sends |
-| A received mail passes DKIM, SPF and DMARC, aligned with the From domain                                                                    | A later stage of the deployment work, from the headers of a received mail    |
-| The DMARC record of the staging name takes the place of the organisation's policy for mail from that name                                   | A later stage of the deployment work, from the headers of a received mail    |
+Return, for Steps 7 to 9: `s0_account=`; the `s1_` lines once all three are right; the `s2a_` lines;
+then either `answer_skip_steps_2_3=yes`, or the `s2_` lines, `answer_request_filed_utc=`,
+`s3_mailbox_exit=` and `answer_mailbox_verified=done`; and `s4_logs_removed=yes`. Do not paste your
+address.
 
 ## Observations
 
-| Date (UTC) | Observation |
-| ---------- | ----------- |
+← guide: [Deployment § The zone and mail root](https://openvaa.org/developers-guide/deployment#the-zone-and-mail-root)
+
+← guide: [Operations § SES: sandbox and production access](https://openvaa.org/developers-guide/deployment/operations#ses-sandbox-and-production-access)
+
+| Date (UTC) | Observation                                                                                                                                                                                                                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-22 | Steps 1 to 3: the root was applied, adding the 14 resources the plan announced. The hosted zone `staging.openvaa.org` exists with four Route 53 name servers, written into `DELEGATION.md`, and this root's state object is encrypted (AES256).                                                 |
+| 2026-10-22 | Step 2, item 7: the DKIM signing zone that `SigningHostedZone` reports for this identity is `dkim.amazonses.com`, the default in the variable file, so no correction and no Step 4 were needed. The three DKIM tokens from Terraform equal the three SES reports.                               |
+| 2026-10-22 | Step 3, item 8: a second plan right after the first apply exited 0 with `-detailed-exitcode`, so it showed no change.                                                                                                                                                                           |
+| 2026-10-22 | Step 3, item 9: both assert modes of the inventory script exited 0 with the SMTP user in place. The SMTP user carries no inline policy and has one attached policy, the customer-managed send policy.                                                                                           |
+| 2026-10-22 | Before Step 5: the parent zone's name server answered `NXDOMAIN` for `staging.openvaa.org` with no referral, and a public resolver returned no NS records for it.                                                                                                                               |
+| 2026-10-22 | Step 5: the Cloudflare dashboard accepted four NS records named `staging` beside the zone's other records, and no record at or under `staging` was there before. The entries and their times are in `DELEGATION.md`.                                                                            |
+| 2026-10-22 | Step 6: both name servers of the parent zone return a referral naming exactly the four name servers of this zone, and a public resolver answers NS and SOA from Route 53.                                                                                                                       |
+| 2026-10-22 | Step 7, item 1: the identity reads verified for sending, with DKIM `SUCCESS` and the MAIL FROM domain `SUCCESS`. A public resolver returns the three DKIM CNAMEs, each ending in `dkim.amazonses.com`, the MX and SPF records of the MAIL FROM domain and the DMARC record with `p=quarantine`. |
+| 2026-10-22 | Step 8, item 2: before anything was filed, the account read showed production access already enabled in `eu-north-1`, with sending enabled and a 24-hour quota of 50000. No production-access request was filed and no mailbox was verified for the sandbox.                                    |
+| 2026-11-11 | SES accepted an SMTP send under the scoped send policy: a sign-in mail the hosted `account-access` sent from `noreply@staging.openvaa.org` through SES on port `2587` arrived. It is recorded in the 2026-11-11 [Observations](../supabase/README.md#observations) of the Supabase runbook.     |
+| 2026-11-11 | It passed DKIM, SPF and DMARC, aligned with the From domain: `dkim=pass` for `staging.openvaa.org`, `spf=pass` for `mail.staging.openvaa.org` and `dmarc=pass` under `p=QUARANTINE`, as the 2026-11-11 [Observations](../supabase/README.md#observations) of the Supabase runbook record.       |
+| 2026-11-20 | At a read-only sitting, `dig +short TXT` reduced to the `p=` tag read `p=none` for `_dmarc.openvaa.org` and `p=quarantine` for `_dmarc.staging.openvaa.org`: the parent domain's DMARC policy differed from this zone's. Only the two tags were recorded.                                       |
+| 2026-11-20 | The staging name's DMARC record takes the place of the parent domain's policy for mail from that name: the mail of 2026-11-11 passed DMARC under `p=QUARANTINE`, this zone's own policy, while the parent domain's record reads `p=none`; both are in the rows above.                           |

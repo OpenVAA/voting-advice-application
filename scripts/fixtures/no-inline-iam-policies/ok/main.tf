@@ -87,3 +87,17 @@ resource "aws_iam_role_policies_exclusive" "app" {
   role_name    = aws_iam_role.app.name
   policy_names = []
 }
+
+# A local module under the root: its own files are read with the rest.
+module "child" {
+  source = "./child"
+
+  name = "fixture-child"
+}
+
+# A Cloud Control role with no embedded policy: its permissions come from managed policies.
+resource "awscc_iam_role" "managed" {
+  role_name                   = "fixture-cc-managed"
+  assume_role_policy_document = data.aws_iam_policy_document.trust.json
+  managed_policy_arns         = [aws_iam_policy.read.arn]
+}

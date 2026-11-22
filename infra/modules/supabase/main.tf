@@ -4,7 +4,7 @@ terraform {
   required_providers {
     supabase = {
       source  = "supabase/supabase"
-      version = "~> 1.11"
+      version = "= 1.11.0"
     }
   }
 }
@@ -34,11 +34,16 @@ resource "supabase_settings" "this" {
   auth        = jsonencode(local.auth)
 }
 
-# The SMTP password alone, in a settings resource of its own. The provider does not mark `auth` sensitive, so a sensitive value inside the main resource's JSON would hide its whole diff; kept apart, the main diff stays readable and the password is masked. Two settings resources for one project are expected to pick only their own keys each; that is tracked in the "Not yet observed" table of infra/envs/staging/supabase/README.md.
-# While `smtp` is null the count is zero and nothing about SMTP is sent.
+# The SMTP user name and password, in a settings resource of its own. The provider does not mark `auth` sensitive, so a sensitive value inside the main resource's JSON would hide its whole diff; kept apart, the main diff stays readable and both values are masked. Each of the two settings resources of the project writes only its own keys. Both update the same auth configuration, so this one is applied after the main one and never in parallel with it, and the project accepts the first SMTP enablement with the user name and the password arriving from this one.
+#
+# The resource exists only while the auth service's own SMTP settings are sent, that is while `smtp` is set and the send-email hook is off (`local.auth_smtp_sent` in settings.tf). Otherwise the count is zero and no SMTP credential reaches the auth settings; a destroy of this resource changes nothing on the project, so a value sent earlier stays there unused.
 resource "supabase_settings" "smtp_secret" {
-  count = var.smtp == null ? 0 : 1
+  count      = local.auth_smtp_sent ? 1 : 0
+  depends_on = [supabase_settings.this]
 
   project_ref = supabase_project.this.id
-  auth        = jsonencode({ smtp_pass = var.smtp_password })
+  auth = jsonencode({
+    smtp_user = var.smtp_user
+    smtp_pass = var.smtp_password
+  })
 }

@@ -20,7 +20,7 @@ issuer = "env(IDENTITY_PROVIDER_ISSUER)" # {{issuer}}
   jwks = "{\"keys\":[{\"kid\":\"{{kid:1}}\",\"n\":\"{{modulus:1}}\"}]}"
 # @as docker-compose.dev.yml
       - IDENTITY_PROVIDER_ISSUER={{issuer}}
-# @as render.example.yaml
+# @as infra/modules/frontend-service/task-environment.json
       value: {{issuer}}/.well-known/openid-configuration/jwks
 #
 # NEGATIVE: no line below may be reported.

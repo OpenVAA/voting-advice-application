@@ -3,8 +3,9 @@
 
 provider "registry.terraform.io/supabase/supabase" {
   version     = "1.11.0"
-  constraints = "~> 1.11"
+  constraints = "1.11.0"
   hashes = [
+    "h1:CJzPqGBmaFDS1gTr1TS3IaRe9WEupi9CciEuUXGWGj8=",
     "h1:GvDcWIiIyDBy1Pk9AzPU1aSYL+D2BmZ2Wo2uIDl65tU=",
     "h1:IkC3UFXO7ZKHTqxD/bRC1G2spk9STS9aMySovlnsgWk=",
     "h1:mDVpJYRuusLfhe7Dvi07z8VHKjx8twb6UaPU+G0TnNY=",

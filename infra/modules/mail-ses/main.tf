@@ -9,6 +9,9 @@ terraform {
   }
 }
 
+# The identity and the derived SMTP password take the provider's region; the feedback host and the SMTP endpoint take var.aws_region. The precondition on the MAIL FROM record fails the plan when the two differ.
+data "aws_region" "current" {}
+
 locals {
   mail_from_domain = "${var.mail_from_label}.${var.domain}"
   record_ttl       = 300
@@ -23,7 +26,7 @@ resource "aws_sesv2_email_identity" "this" {
   }
 }
 
-# Easy DKIM issues three tokens. They are unknown until the identity exists, so the records are counted rather than keyed by token. The target zone is a variable because AWS states that it varies; whether the default is the zone SES assigns to this identity is tracked in the "Not yet observed" table of infra/envs/staging/dns-mail/README.md.
+# Easy DKIM issues three tokens. They are unknown until the identity exists, so the records are counted rather than keyed by token. The target zone is a variable because AWS states that it varies; the default is the zone SES assigns to this identity.
 resource "aws_route53_record" "dkim" {
   count = 3
 
@@ -48,6 +51,13 @@ resource "aws_route53_record" "mail_from_mx" {
   type    = "MX"
   ttl     = local.record_ttl
   records = ["10 feedback-smtp.${var.aws_region}.amazonses.com"]
+
+  lifecycle {
+    precondition {
+      condition     = var.aws_region == data.aws_region.current.region
+      error_message = "aws_region must equal the provider's region, where the identity is created and the SMTP password is valid."
+    }
+  }
 }
 
 resource "aws_route53_record" "mail_from_spf" {
@@ -58,7 +68,7 @@ resource "aws_route53_record" "mail_from_spf" {
   records = ["v=spf1 include:amazonses.com ~all"]
 }
 
-# The record takes the place of any policy the parent domain publishes for this subdomain. SPF is left in relaxed alignment, the default, which is what the SES MAIL FROM subdomain needs. That mail from this identity passes DMARC alignment is expected and tracked in the "Not yet observed" table of infra/envs/staging/dns-mail/README.md.
+# The record takes the place of any policy the parent domain publishes for this subdomain. SPF is left in relaxed alignment, the default, which is what the SES MAIL FROM subdomain needs. Mail from this identity passes DMARC, aligned with the From domain.
 resource "aws_route53_record" "dmarc" {
   zone_id = var.zone_id
   name    = "_dmarc.${var.domain}"

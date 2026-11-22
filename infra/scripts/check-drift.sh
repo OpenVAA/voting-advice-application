@@ -19,17 +19,17 @@
 #   - Role settings: ALTER ROLE ... SET.
 # A table privilege and a policy whose USING expression was changed are reported. The four above are compared between migrations/ and schema/ by apps/supabase/scripts/check-schema-equivalence.sh, in two built databases. On a deployed database only a probe that queries the catalog sees them, and this script is not that probe. The history part compares versions only: a migration whose file was edited after it was applied keeps its version, and the edit is found only as far as it changed something the diff sees.
 #
-# This check has no automated run: no CI job calls it, so it runs only when an operator runs it.
+# deploy.yml runs this check through infra/scripts/push-migrations.sh, against the linked project, after each migration push; an operator can also run it by hand.
 #
 # Usage:
 #   ```sh
 #   set -a; eval "$(apps/supabase/scripts/isolated-instance.sh env --name probe)"; set +a
 #   infra/scripts/check-drift.sh --workdir "$ISO_WORKDIR" --manifest "$ISO_WORKDIR/migrations.manifest.json"
-#   infra/scripts/check-drift.sh --target linked --out tmp/drift
+#   infra/scripts/check-drift.sh --target linked --workdir <linked work directory> --out tmp/drift
 #   ```
 #
 #   --manifest <path>      OPTIONAL. The migration manifest. Default: apps/supabase/supabase/migrations.manifest.json.
-#   --workdir <dir>        OPTIONAL. The Supabase work directory: the directory that holds supabase/config.toml and supabase/migrations. Default: apps/supabase.
+#   --workdir <dir>        OPTIONAL. The Supabase work directory: the directory that holds supabase/config.toml and supabase/migrations. Default: apps/supabase, which `--target linked` refuses.
 #   --target local|linked  OPTIONAL. Which database the diff compares, passed to the CLI as --local or --linked. Default: local.
 #   --out <dir>            OPTIONAL. Where history.manifest.txt, history.database.txt, schema.diff.sql and schema.diff.log are kept. Created when missing. Default: a temporary directory that is removed when the script exits.
 #   -h, --help             Print this header and exit 0.
@@ -44,7 +44,7 @@
 #   1. `yarn install` has run: the CLI is node_modules/.bin/supabase of the repository root, and `node` is on PATH.
 #   2. `psql` and `pgrep` are on PATH.
 #   3. Docker is running. The diff starts a shadow database in it, published on the shadow_port of the work directory's config.toml and labelled with that file's project id, and removes it before it returns. With the default work directory those are the port and the project id of this checkout's local stack. On an interrupt the script stops the CLI and waits until the shadow database is gone. A script killed outright (SIGKILL) leaves it running, and the next diff fails until that container is removed.
-#   4. The PG* variables (PGHOST, PGPORT, PGUSER, PGDATABASE, and PGPASSWORD or a password file) name the database the target names. For `--target local` the script refuses to run unless PGHOST is a loopback address and PGPORT is the [db] port of the work directory's config.toml, so that the two parts cannot judge two different databases. For `--target linked` it cannot tell, and the caller answers for it.
+#   4. The PG* variables (PGHOST, PGPORT, PGUSER, PGDATABASE, and PGPASSWORD or a password file) name the database the target names. For `--target local` the script refuses to run unless PGHOST is a loopback address and PGPORT is the [db] port of the work directory's config.toml, so that the two parts cannot judge two different databases. For `--target linked` the script refuses to run unless the work directory is not apps/supabase (the shared local stack's work directory, never linked, because a link there changes the images that stack starts), supabase/.temp/project-ref in it holds a project ref of 20 lower-case letters, PGHOST names that project, either directly as db.<ref>.supabase.co or as a session pooler host <name>.pooler.supabase.com with PGUSER ending in .<ref>, PGPORT is not 6543 (the transaction pooler, which loses the session's settings between transactions), and neither PGHOSTADDR nor PGSERVICE is set (either can send psql to another address than PGHOST). All but the ref's form are the project-identity rule of scripts/lib/hosted-target.sh, which the push applies too. These refusals come before the tool and Docker checks, so a wrong target is refused on any host.
 #   5. For `--target linked`: the work directory is linked to the project and the CLI can sign in to its database.
 #
 # Exit codes -- the caller must be able to branch on the status alone:
@@ -66,6 +66,8 @@ SCRIPT_NAME="check-drift.sh"
 . "$REPO_ROOT/scripts/lib/cli.sh"
 # shellcheck source=../../scripts/lib/redact.sh
 . "$REPO_ROOT/scripts/lib/redact.sh"
+# shellcheck source=../../scripts/lib/hosted-target.sh
+. "$REPO_ROOT/scripts/lib/hosted-target.sh"
 CLI="$REPO_ROOT/node_modules/.bin/supabase"
 
 DEFAULT_MANIFEST="apps/supabase/supabase/migrations.manifest.json"
@@ -84,10 +86,6 @@ OUT_DIR=""
 TEMP_OUT=""
 CLI_PID=""
 
-note() {
-  echo "check-drift.sh: $1" >&2
-}
-
 say() {
   echo "check-drift.sh: $1"
 }
@@ -99,15 +97,6 @@ on_exit() {
     rm -rf -- "$TEMP_OUT" || true
   fi
   exit "$status"
-}
-
-# Prints the id of every process below $1.
-descendants() {
-  local child
-  for child in $(pgrep -P "$1" 2>/dev/null || true); do
-    echo "$child"
-    descendants "$child"
-  done
 }
 
 # The CLI is a wrapper around a binary, and only the binary removes the shadow database. A signal sent to the wrapper alone ends both and leaves the shadow database running, so SIGTERM goes to every process below the wrapper as well, and the wrapper is waited for. SIGTERM is sent whatever the signal was: the binary does not clean up on SIGHUP.
@@ -176,6 +165,17 @@ fi
 CONFIG="$WORKDIR/supabase/config.toml"
 if [ ! -f "$CONFIG" ] || [ ! -d "$WORKDIR/supabase/migrations" ]; then
   fatal "the work directory holds no supabase/config.toml or no supabase/migrations: $WORKDIR" 2
+fi
+if [ "$TARGET" = "linked" ]; then
+  REF_FILE="$WORKDIR/supabase/.temp/project-ref"
+  LINKED_REF=""
+  if [ -f "$REF_FILE" ]; then
+    IFS= read -r LINKED_REF <"$REF_FILE" || true
+    if ! [[ "$LINKED_REF" =~ ^[a-z]{20}$ ]]; then
+      fatal "$REF_FILE does not hold a project ref of 20 lower-case letters: '$LINKED_REF'" 2
+    fi
+  fi
+  assert_linked_project_target "$WORKDIR" "$LINKED_REF"
 fi
 if [ ! -x "$CLI" ]; then
   fatal "the Supabase CLI is not at $CLI; run yarn install" 2

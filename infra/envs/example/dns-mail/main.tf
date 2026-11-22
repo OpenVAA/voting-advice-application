@@ -10,6 +10,7 @@ terraform {
   }
 
   # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this root can never be paired with another root's state key. The key sits under hand/: this root is applied by hand, never by the pipeline, and its state holds the SMTP secret in clear text.
+  # A copy under infra/envs/<key>/ sets this key to hand/<key>/dns-mail/terraform.tfstate, with its own deployment key in place of example.
   backend "s3" {
     bucket       = "REPLACE-ME-tfstate"
     key          = "hand/example/dns-mail/terraform.tfstate"
