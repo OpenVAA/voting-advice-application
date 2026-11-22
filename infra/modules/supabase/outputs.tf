@@ -12,3 +12,8 @@ output "managed_api_keys" {
   description = "Names of the API settings this module sends, sorted. Key names only, no values."
   value       = sort(keys(local.api))
 }
+
+output "managed_function_secret_names" {
+  description = "Names of the Edge Function secrets this module sets, sorted. Names only, no values."
+  value       = sort(local.function_secret_names)
+}

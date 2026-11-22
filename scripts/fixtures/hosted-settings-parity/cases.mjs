@@ -122,6 +122,12 @@ allow_dynamic_registration = false
 
 [edge_runtime]
 enabled = true
+
+[functions.identity-callback]
+verify_jwt = false
+
+[functions.account-access]
+verify_jwt = false
 `;
 
 const CORRECT_SETTINGS = {
@@ -223,7 +229,10 @@ resource "supabase_settings" "smtp_secret" {
   count = var.smtp == null ? 0 : 1
 
   project_ref = supabase_project.this.id
-  auth        = jsonencode({ smtp_pass = var.smtp_password })
+  auth = jsonencode({
+    smtp_user = var.smtp_user
+    smtp_pass = var.smtp_password
+  })
 }
 `;
 
@@ -247,7 +256,6 @@ locals {
   auth_smtp = var.smtp == null ? null : {
     smtp_host        = var.smtp.host
     smtp_port        = var.smtp.port
-    smtp_user        = var.smtp.user
     smtp_admin_email = var.smtp.admin_email
     smtp_sender_name = var.smtp.sender_name
   }
@@ -284,11 +292,16 @@ variable "smtp" {
   type = object({
     host        = string
     port        = string
-    user        = string
     admin_email = string
     sender_name = string
   })
   default = null
+}
+
+variable "smtp_user" {
+  type      = string
+  sensitive = true
+  default   = null
 }
 
 variable "smtp_password" {
@@ -313,7 +326,45 @@ const CORRECT_PACKAGE_JSON = `{
 }
 `;
 
-/** The inputs the self-test edits: two roots, one setting both hook switches and one leaving them at their defaults. */
+/** A root's call of the module that passes the origin and both hook switches through from its variables. */
+const ROOT_MAIN_TF = `provider "supabase" {}
+
+module "supabase" {
+  source = "../../../modules/supabase"
+
+  public_origin            = var.public_origin
+  enable_access_token_hook = var.enable_access_token_hook
+  enable_send_email_hook   = var.enable_send_email_hook
+}
+`;
+
+/** The root variables of that call, the hook switches with no default. */
+const ROOT_VARIABLES_TF = `variable "public_origin" {
+  type = string
+}
+
+variable "enable_access_token_hook" {
+  type     = bool
+  nullable = false
+}
+
+variable "enable_send_email_hook" {
+  type     = bool
+  nullable = false
+}
+`;
+
+/** A root's call of the module that leaves both hook switches to the module's defaults. */
+const ROOT_MAIN_TF_MODULE_DEFAULTS = `module "supabase" {
+  source        = "../../../modules/supabase"
+  public_origin = var.public_origin
+}
+`;
+
+/**
+ * The inputs the self-test edits: two roots, one passing both hook switches through from its terraform.tfvars and one
+ * leaving them to the module's defaults.
+ */
 export function correctInputs() {
   return {
     config: { file: 'config.toml', text: CORRECT_CONFIG },
@@ -338,16 +389,30 @@ export function correctInputs() {
     roots: [
       {
         name: 'staging',
-        file: 'envs/staging/supabase/terraform.tfvars',
-        text:
-          'public_origin            = "https://staging.example.org"\n' +
-          'enable_access_token_hook = true\n' +
-          'enable_send_email_hook   = true\n'
+        dir: 'envs/staging/supabase',
+        tfvars: {
+          file: 'envs/staging/supabase/terraform.tfvars',
+          text:
+            'public_origin            = "https://staging.example.org"\n' +
+            'enable_access_token_hook = true\n' +
+            'enable_send_email_hook   = true\n'
+        },
+        tf: [
+          { file: 'envs/staging/supabase/main.tf', text: ROOT_MAIN_TF },
+          { file: 'envs/staging/supabase/variables.tf', text: ROOT_VARIABLES_TF }
+        ]
       },
       {
         name: 'example',
-        file: 'envs/example/supabase/terraform.tfvars',
-        text: '# A forker\'s root.\npublic_origin = "https://vaa.example.org"\n'
+        dir: 'envs/example/supabase',
+        tfvars: {
+          file: 'envs/example/supabase/terraform.tfvars',
+          text: '# A forker\'s root.\npublic_origin = "https://vaa.example.org"\n'
+        },
+        tf: [
+          { file: 'envs/example/supabase/main.tf', text: ROOT_MAIN_TF_MODULE_DEFAULTS },
+          { file: 'envs/example/supabase/variables.tf', text: 'variable "public_origin" {\n  type = string\n}\n' }
+        ]
       }
     ]
   };
@@ -368,10 +433,18 @@ function editConfig(from, to) {
   };
 }
 
-/** Replaces text of one root's variable file. */
+/** Replaces text of one root's `terraform.tfvars`. */
 function editRoot(index, from, to) {
   return (inputs) => {
-    inputs.roots[index].text = inputs.roots[index].text.replace(from, to);
+    inputs.roots[index].tfvars.text = inputs.roots[index].tfvars.text.replace(from, to);
+  };
+}
+
+/** Replaces text of one `.tf` file of a root, by its file name. */
+function editRootTf(index, name, from, to) {
+  return (inputs) => {
+    const file = inputs.roots[index].tf.find((f) => f.file.endsWith(`/${name}`));
+    file.text = file.text.replace(from, to);
   };
 }
 
@@ -495,10 +568,23 @@ export const CASES = [
   {
     name: 'no origin at all',
     edit: (i) => {
-      i.roots[0].text = i.roots[0].text.replace(/^public_origin.*\n/m, '');
-      i.roots[1].text = i.roots[1].text.replace(/^public_origin.*\n/m, '');
+      i.roots[0].tfvars.text = i.roots[0].tfvars.text.replace(/^public_origin.*\n/m, '');
+      i.roots[1].tfvars.text = i.roots[1].tfvars.text.replace(/^public_origin.*\n/m, '');
     },
-    expected: ['auth/site_url']
+    expected: ['auth/site_url', 'auth/site_url', 'auth/site_url'],
+    files: ['envs', 'envs/example/supabase/terraform.tfvars', 'envs/staging/supabase/terraform.tfvars']
+  },
+  {
+    name: 'one root whose terraform.tfvars assigns no public_origin, next to one that does',
+    edit: editRoot(1, /^public_origin.*\n/m, ''),
+    expected: ['auth/site_url'],
+    files: ['envs/example/supabase/terraform.tfvars']
+  },
+  {
+    name: 'a Supabase root with no terraform.tfvars, next to one that has it',
+    edit: (i) => (i.roots[1].tfvars = { file: 'envs/example/supabase/terraform.tfvars', text: '', missing: true }),
+    expected: ['root/terraform.tfvars'],
+    files: ['envs/example/supabase/terraform.tfvars']
   },
   { name: 'no Supabase root at all', edit: (i) => (i.roots = []), expected: ['auth/site_url'] },
   {
@@ -562,6 +648,116 @@ export const CASES = [
     edit: (i) => (i.variables.text = i.variables.text.replace('variable "enable_send_email_hook"', 'variable "other"')),
     expected: ['auth.hook.send_email/enabled']
   },
+  // The value a root's call of the module sends, resolved the way Terraform resolves it.
+  {
+    name: 'a root that leaves the send-email hook out of terraform.tfvars, with a root default of false',
+    edit: (i) => {
+      editRoot(0, 'enable_send_email_hook   = true\n', '')(i);
+      editRootTf(
+        0,
+        'variables.tf',
+        'variable "enable_send_email_hook" {\n  type     = bool\n',
+        'variable "enable_send_email_hook" {\n  type     = bool\n  default  = false\n'
+      )(i);
+    },
+    expected: ['auth.hook.send_email/enabled'],
+    files: ['envs/staging/supabase/variables.tf']
+  },
+  {
+    name: 'a root that leaves the send-email hook out of terraform.tfvars, with a root default of true (passes)',
+    edit: (i) => {
+      editRoot(0, 'enable_send_email_hook   = true\n', '')(i);
+      editRootTf(
+        0,
+        'variables.tf',
+        'variable "enable_send_email_hook" {\n  type     = bool\n',
+        'variable "enable_send_email_hook" {\n  type     = bool\n  default  = true\n'
+      )(i);
+    },
+    expected: []
+  },
+  {
+    name: 'a root that leaves the access-token hook out of terraform.tfvars, with no root default',
+    edit: editRoot(0, 'enable_access_token_hook = true\n', ''),
+    expected: ['auth.hook.custom_access_token/enabled'],
+    files: ['envs/staging/supabase/terraform.tfvars']
+  },
+  {
+    name: 'a module call passing the send-email hook a literal false',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'enable_send_email_hook   = var.enable_send_email_hook',
+      'enable_send_email_hook   = false'
+    ),
+    expected: ['auth.hook.send_email/enabled'],
+    files: ['envs/staging/supabase/main.tf']
+  },
+  {
+    name: 'a module call passing a literal false with the stated comment (passes, named in the census)',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'enable_access_token_hook = var.enable_access_token_hook',
+      'enable_access_token_hook = false # hook off until the function is deployed to this project'
+    ),
+    expected: [],
+    hookOff: { enable_access_token_hook: ['staging'] }
+  },
+  {
+    name: 'a module call passing a literal true over a terraform.tfvars false (passes: the call decides)',
+    edit: (i) => {
+      editRoot(0, 'enable_send_email_hook   = true', 'enable_send_email_hook   = false')(i);
+      editRootTf(
+        0,
+        'main.tf',
+        'enable_send_email_hook   = var.enable_send_email_hook',
+        'enable_send_email_hook   = true'
+      )(i);
+    },
+    expected: []
+  },
+  {
+    name: 'a module call passing a hook switch an expression the guard cannot read',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'enable_access_token_hook = var.enable_access_token_hook',
+      'enable_access_token_hook = local.hooks_on'
+    ),
+    expected: ['auth.hook.custom_access_token/enabled']
+  },
+  {
+    name: 'a module call passing a hook switch from a variable the root does not declare',
+    edit: editRootTf(0, 'variables.tf', 'variable "enable_access_token_hook"', 'variable "other"'),
+    expected: ['auth.hook.custom_access_token/enabled']
+  },
+  {
+    name: 'a module call passing a literal loopback origin',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'public_origin            = var.public_origin',
+      'public_origin            = "https://127.0.0.1"'
+    ),
+    expected: ['auth/site_url'],
+    files: ['envs/staging/supabase/main.tf']
+  },
+  {
+    name: 'a module call passing the origin an expression the guard cannot read',
+    edit: editRootTf(
+      0,
+      'main.tf',
+      'public_origin            = var.public_origin',
+      'public_origin            = local.origin'
+    ),
+    expected: ['auth/site_url']
+  },
+  {
+    name: 'a root whose module block calls another module',
+    edit: editRootTf(0, 'main.tf', '"../../../modules/supabase"', '"../../../modules/other"'),
+    expected: ['root/module-call']
+  },
   {
     name: 'an unclassified key added under [auth]',
     edit: editConfig('enable_manual_linking = false\n', 'enable_manual_linking = false\nsecurity_captcha = false\n'),
@@ -576,6 +772,21 @@ export const CASES = [
     expected: ['auth.hook.mfa_verification_attempt/enabled']
   },
   {
+    name: 'a quoted table header after a table outside the family',
+    edit: (i) => (i.config.text += '\n[auth.external."github"]\nenabled = true\n'),
+    expected: ['auth.external.github/enabled']
+  },
+  {
+    name: 'a table header with spaces around its dots after a table outside the family',
+    edit: (i) => (i.config.text += '\n[auth . external . google]\nenabled = true\n'),
+    expected: ['auth.external.google/enabled']
+  },
+  {
+    name: 'a table header the line read cannot read, after a table outside the family',
+    edit: (i) => (i.config.text += '\n[auth.external."git hub"]\nenabled = true\n'),
+    expected: ['config/table-header', 'unreadable-table-header/enabled']
+  },
+  {
     name: 'a classified key removed',
     edit: editConfig('enable_manual_linking = false\n', ''),
     expected: ['auth/enable_manual_linking']
@@ -584,6 +795,19 @@ export const CASES = [
     name: 'a classified key commented out',
     edit: editConfig('jwt_expiry = 3600', '# jwt_expiry = 3600'),
     expected: ['auth/jwt_expiry']
+  },
+  {
+    name: 'an unclassified [functions.*] table added',
+    edit: editConfig(
+      '[functions.identity-callback]',
+      '[functions.new-function]\nverify_jwt = false\n\n[functions.identity-callback]'
+    ),
+    expected: ['functions.new-function/verify_jwt']
+  },
+  {
+    name: 'a classified [functions.*] table removed',
+    edit: editConfig('[functions.identity-callback]\nverify_jwt = false\n', ''),
+    expected: ['functions.identity-callback/verify_jwt']
   },
   {
     name: 'a quoted value containing #',
@@ -649,12 +873,61 @@ export const CASES = [
       '  api = local.hosted.api',
       '  api = merge(local.hosted.api, { "max_rows" = 1000 })'
     ),
-    expected: ['owned/max_rows']
+    expected: ['owned/max_rows', 'module/local.api', 'module/merge']
   },
   {
     name: 'a known key the JSON does not hold, sent from the HCL',
     edit: editModule('settings.tf', '  api = local.hosted.api', '  api = merge(local.hosted.api, { db_pool = 10 })'),
-    expected: ['owned/db_pool']
+    expected: ['owned/db_pool', 'module/local.api', 'module/merge']
+  },
+  // What local.auth and local.api are built from.
+  {
+    name: 'a map(any) variable merged last into local.auth',
+    edit: (i) => {
+      editModule('settings.tf', '    local.auth_smtp,\n  )', '    local.auth_smtp,\n    var.extra_auth,\n  )')(i);
+      editModule(
+        'variables.tf',
+        'variable "smtp" {',
+        'variable "extra_auth" {\n  type    = map(any)\n  default = {}\n}\n\nvariable "smtp" {'
+      )(i);
+    },
+    expected: ['module/local.auth', 'module/variable-type']
+  },
+  {
+    name: 'a second JSON file merged last into local.auth',
+    edit: editModule(
+      'settings.tf',
+      '    local.auth_smtp,\n  )',
+      '    local.auth_smtp,\n    jsondecode(file("${path.module}/extra.json")),\n  )'
+    ),
+    expected: ['module/local.auth']
+  },
+  {
+    name: 'the maps of local.auth in another order',
+    edit: editModule(
+      'settings.tf',
+      '    local.hosted.auth,\n    local.auth_hook,\n',
+      '    local.auth_hook,\n    local.hosted.auth,\n'
+    ),
+    expected: ['module/local.auth']
+  },
+  {
+    name: 'a map merged into one of the maps local.auth merges',
+    edit: editModule(
+      'settings.tf',
+      '= { for k, v in local.hosted.auth_hook : k => v if var.enable_access_token_hook }',
+      '= merge(var.extra_hook, { for k, v in local.hosted.auth_hook : k => v if var.enable_access_token_hook })'
+    ),
+    expected: ['module/merge']
+  },
+  {
+    name: 'local.auth defined twice',
+    edit: editModule(
+      'settings.tf',
+      '  api = local.hosted.api',
+      '  api = local.hosted.api\n}\n\nlocals {\n  auth = local.hosted.auth'
+    ),
+    expected: ['module/local.auth', 'module/merge']
   },
   {
     name: 'an HCL-owned key misspelled',
@@ -715,6 +988,51 @@ export const CASES = [
     edit: addWriter('infra/scripts/apply.sh', `#!/usr/bin/env bash\n${pushLine(' \\\n  ')}\n`),
     expected: ['writer/config-push'],
     files: ['infra/scripts/apply.sh']
+  },
+  {
+    name: 'the push command run through npx with a version pin',
+    edit: addWriter('infra/scripts/apply.sh', `npx ${PUSH_WORDS[0]}@latest ${PUSH_WORDS[1]} ${PUSH_WORDS[2]}\n`),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command run through bunx with an exact version',
+    edit: addWriter('infra/scripts/apply.sh', `bunx ${PUSH_WORDS[0]}@2.40.0 ${PUSH_WORDS[1]} ${PUSH_WORDS[2]}\n`),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command with a global flag before its middle word',
+    edit: addWriter('scripts/settings.sh', `${PUSH_WORDS[0]} --debug ${PUSH_WORDS[1]} ${PUSH_WORDS[2]}\n`),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command with a flag and its value before its middle word',
+    edit: addWriter(
+      'scripts/settings.sh',
+      `${PUSH_WORDS[0]} --workdir apps/supabase ${PUSH_WORDS[1]} --debug ${PUSH_WORDS[2]}\n`
+    ),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command as the words of an exec-form array',
+    edit: addWriter('scripts/settings.mjs', `spawnSync('npx', ["${PUSH_WORDS.join('", "')}"]);\n`),
+    expected: ['writer/config-push']
+  },
+  {
+    name: 'the push command in a script under apps/supabase/',
+    edit: addWriter('apps/supabase/scripts/sync.sh', `${pushLine()}\n`),
+    expected: ['writer/config-push'],
+    files: ['apps/supabase/scripts/sync.sh']
+  },
+  {
+    name: 'the push command in a script under tests/scripts/',
+    edit: addWriter('tests/scripts/reset.sh', `${pushLine()}\n`),
+    expected: ['writer/config-push'],
+    files: ['tests/scripts/reset.sh']
+  },
+  {
+    name: 'another command of the CLI that pushes the database, not the settings (passes)',
+    edit: addWriter('apps/supabase/scripts/migrate.sh', `npx ${PUSH_WORDS[0]}@latest db ${PUSH_WORDS[2]} --local\n`),
+    expected: []
   },
   {
     name: "the guard's own source and fixture directory holding the push command (excluded by path)",

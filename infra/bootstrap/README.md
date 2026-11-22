@@ -1,10 +1,11 @@
 # Bootstrap root: runbook
 
 This root holds what every other root rests on: the bucket all Terraform state lives in, the image
-registry, the monthly cost budget, and the GitHub OIDC provider with the plan role and the deploy role
-that workflows assume. It is applied by hand, by an operator signed in with administrator rights,
-and never by a workflow. Its first apply runs with local state, because the bucket its backend names
-does not exist yet; the state is then migrated into that bucket.
+registry, the monthly cost budget, the GitHub OIDC provider with the plan role and the deploy role
+that workflows assume, and the execution role of the frontend's ECS task. It is applied by hand, by an
+operator signed in with administrator rights, and never by a workflow. Its first apply runs with local
+state, because the bucket its backend names does not exist yet; the state is then migrated into that
+bucket.
 
 The overview of every root, the order of first applies and the rules that hold for every apply are in
 [`../README.md`](../README.md).
@@ -26,9 +27,17 @@ Step 5  policy simulator: the plan role's deny, the pipeline allow, every call t
 Step 6  the state lock, seen with two terminals; the spend the budget computed
    |
 Step 7  the budget alert: a test amount that can fire, the wait for the mail, the raise to 100 USD
+
+Step 8  the frontend execution role: one additive apply, once the frontend's parameters exist
+
+Step 9  the deploy role's permissions, the id conditions and the plan role's lock: plan, simulator,
+        CloudTrail cross-check, then one apply and its read-back
+
+Step 10 the two GitHub Environments the deploy role trusts, created with `gh api` and read back
 ```
 
-Steps 3 to 6 are one sitting. Step 7 can take a day or more and runs alongside the other roots.
+Steps 3 to 6 are one sitting. Step 7 can take a day or more and runs alongside the other roots. Steps
+8, 9 and 10 are one sitting each.
 
 ## What you paste back
 
@@ -45,6 +54,12 @@ nothing from the terminal's scroll-back.
 - When a status line is not 0, paste the lines up to it and stop.
 - If whoever asked you to run a step gave you an attempt id, the first line of your reply is
   `answer_attempt=<that id>`.
+- Step 9 departs from the item numbering: its item 1 prints lines beginning `s9_`, and items 2 to 6
+  print `s9a_` (the plan's counts and addresses), `s9b_` (the simulator's decisions), `s9c_` (the
+  CloudTrail cross-check), `s9d_` (the apply) and `s9e_` (the read-back), and item 7 prints
+  `s9_logs_removed=`. Its address lines name resources, and its condition lines name the trusts'
+  claims, which are public; neither holds a secret.
+- Step 10's lines begin `s10_`, and those about one GitHub Environment `s10_env_<name>_`.
 
 `$L` and any saved plan file (`tfplan`) hold secrets in clear text: resource ids, attribute values,
 and whatever the state or the API returned. Never share, attach or paste either. The last item of
@@ -72,7 +87,7 @@ new terminal. Each step lists the ones it needs.
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
 ```
 
 `LC_ALL=C` keeps every number and sort order independent of your workstation's locale. Give a time in
@@ -101,6 +116,7 @@ is, run `aws iam list-users --query 'Users[].UserName'` on your own machine and 
    echo "s2_curl=$(curl --version | head -1 | cut -d' ' -f1-2)"
    echo "s2_shasum=$(shasum --version | head -1)"
    echo "s2_git=$(git --version)"
+   echo "s2_gh=$(gh --version | head -1)"
    ```
 
 3. Sign in with that identity, run the lines that begin a sitting, then print the account and the kind
@@ -111,7 +127,7 @@ is, run `aws iam list-users --query 'Users[].UserName'` on your own machine and 
    ```bash
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
    echo "s3_account=$(aws sts get-caller-identity --query Account --output text)"
    aws sts get-caller-identity --query Arn --output text | sed -E 's#^arn:aws:(sts|iam)::[0-9]+:##; s#^(assumed-role/[^/]+)/.*#\1#; s#^user/.*#user#; s#^#s3_principal=#'
    echo "s3_user_mfa_devices=$(aws iam list-mfa-devices --query 'length(MFADevices)' --output text)"
@@ -146,7 +162,8 @@ is, run `aws iam list-users --query 'Users[].UserName'` on your own machine and 
    ```
 
 5. From the repository root, the inline-policy check, which exits 1 when any IAM user carries an
-   inline policy:
+   inline policy. It reads the caller first and exits 1 without reading any list when the caller is
+   not in `471112560111` (`OPENVAA_ACCOUNT_ID`), so a status of 0 is about that account:
 
    ```bash
    infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s5.log" 2>&1; echo "s5_assert_users_exit=$?"
@@ -192,7 +209,7 @@ After a conversion or a deletion, run the check again in a new sitting:
 ```bash
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
 infra/scripts/check-inline-policies.sh --assert-no-inline-user-policies > "$L/s5b.log" 2>&1; echo "s5b_assert_users_exit=$?"
 sed 's/^/s5b_inv=/' "$L/s5b.log"
 test -n "$L" && rm -rf "$L" && echo "s5b_logs_removed=yes"
@@ -202,6 +219,8 @@ Return: one `answer_` line per user naming your choice and the label the check p
 and the three `s5b_` lines.
 
 ## Step 2: First apply with local state
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
 
 The apply creates the state bucket, the OIDC provider, the two roles and their four policies, the
 registry and the budget. The bucket has a global name and is protected from destruction, and later
@@ -220,7 +239,7 @@ by hand. Run it in one terminal, signed in with the identity of Step 1.
    ```bash
    export LC_ALL=C
    export AWS_PAGER=""
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
    export TF_VAR_alert_email='<your-address>'
    ```
 
@@ -286,7 +305,8 @@ by hand. Run it in one terminal, signed in with the identity of Step 1.
     for o in state_bucket_name registry_url plan_role_arn deploy_role_arn budget_name; do echo "s10_$o=$(terraform output -raw "$o")"; done
     ```
 
-11. Last item, also when you stop early or a command failed:
+11. Last item, also when you stop early or a command failed. Paste the lines of items 3 to 10 first:
+    this item removes the logs they came from, and a line not yet copied cannot be printed again.
 
     ```bash
     rm -f tfplan
@@ -302,6 +322,8 @@ Return: the `s3_`, `s5_`, `s6_`, `s7_`, `s9_`, `s10_` and `s11_` lines, and `ans
 
 ## Step 3: Migrate the state and plan again
 
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
+
 Steps 3 to 6 run in one sitting. The local state files of Step 2 are in `infra/bootstrap` and do not
 depend on the terminal. Begin with these lines, from the repository root, signed in; leave the export
 of the address out if you track it.
@@ -310,7 +332,7 @@ of the address out if you track it.
 cd infra/bootstrap
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
 export TF_VAR_alert_email='<your-address>'
 B=openvaa-tfstate-471112560111
 ```
@@ -386,7 +408,8 @@ Step 6.
    ```
 
 7. The registry, the OIDC providers, the inline and attached policies of both roles, and the
-   inline-policy check over everything under the path `/openvaa/`:
+   inline-policy check that no role or user under the path `/openvaa/` carries an inline policy.
+   The check does not judge attached policies, which the two `_attached` lines read:
 
    ```bash
    echo "s7_registry=$(aws ecr describe-repositories --region eu-north-1 --repository-names openvaa-frontend --query 'repositories[0].[repositoryName,imageTagMutability]' --output text | tr '\t' ',')"
@@ -395,13 +418,16 @@ Step 6.
    echo "s7_deploy_inline_count=$(aws iam list-role-policies --role-name openvaa-staging-deploy --query 'length(PolicyNames)' --output text)"
    echo "s7_plan_attached=$(aws iam list-attached-role-policies --role-name openvaa-plan --query 'sort(AttachedPolicies[].PolicyName)' --output text | tr '\t' ',')"
    echo "s7_deploy_attached=$(aws iam list-attached-role-policies --role-name openvaa-staging-deploy --query 'sort(AttachedPolicies[].PolicyName)' --output text | tr '\t' ',')"
-   ../scripts/check-inline-policies.sh --assert-managed-only /openvaa/ > "$L/s7.log" 2>&1; echo "s7_assert_managed_exit=$?"
+   ../scripts/check-inline-policies.sh --assert-no-inline-under /openvaa/ > "$L/s7.log" 2>&1; echo "s7_assert_no_inline_exit=$?"
    ```
 
    Expected: `s7_registry=openvaa-frontend,IMMUTABLE`, one provider for
    `token.actions.githubusercontent.com`, both inline counts 0,
    `s7_plan_attached=ReadOnlyAccess,openvaa-plan-deny,openvaa-plan-lock`,
-   `s7_deploy_attached=openvaa-ecr-push,openvaa-tfstate-staging-aws` and `s7_assert_managed_exit=0`.
+   `s7_deploy_attached=openvaa-ecr-push,openvaa-tfstate-staging-aws` and `s7_assert_no_inline_exit=0`.
+
+   After Step 9 the attached lines read `s7_plan_attached=ReadOnlyAccess,openvaa-plan-deny` and
+   `s7_deploy_attached=` the eleven policies item 6 of Step 9 lists.
 
 ## Step 5: The policy simulator
 
@@ -416,24 +442,19 @@ Step 6.
    Q='EvaluationResults[].[EvalActionName,EvalResourceName,EvalDecision]'
    ```
 
-   (a) The plan role, reads of state:
+   (a) The plan role, reads of state, one call per resource. Given two resources in one call, the
+   simulator returns one result per action and not one per resource.
 
    ```bash
-   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate" "arn:aws:s3:::$B/$K" --query "$Q" --output text | sed 's/^/s8a_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate" --query "$Q" --output text | sed 's/^/s8a_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/$K" --query "$Q" --output text | sed 's/^/s8a_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/env:/x/hand/staging/supabase/terraform.tfstate" --query "$Q" --output text | sed 's/^/s8a_decision=/'
    ```
 
-   (b) The plan role, secret reads:
+   (b) The plan role, secret reads and data reads:
 
    ```bash
-   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names secretsmanager:GetSecretValue kms:Decrypt --query "$Q" --output text | sed 's/^/s8b_decision=/'
-   ```
-
-   (b2) The plan role, data reads outside the pipeline state: an object in another bucket and the
-   events of a log group:
-
-   ```bash
-   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names s3:GetObject s3:GetObjectVersion --resource-arns "arn:aws:s3:::openvaa-example-bucket/any-object" --query "$Q" --output text | sed 's/^/s8b2a_decision=/'
-   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names logs:GetLogEvents logs:FilterLogEvents logs:StartQuery logs:GetQueryResults --query "$Q" --output text | sed 's/^/s8b2b_decision=/'
+   aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" --action-names secretsmanager:GetSecretValue kms:Decrypt dynamodb:GetItem logs:GetLogEvents --query "$Q" --output text | sed 's/^/s8b_decision=/'
    ```
 
    (c) The plan role, the lock object, which the backend reads, writes and deletes:
@@ -474,12 +495,14 @@ Step 6.
    aws iam simulate-principal-policy --policy-source-arn "$DEPLOY_ROLE" --action-names s3:GetObject --resource-arns "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate" --query "$Q" --output text | sed 's/^/s8h_decision=/'
    ```
 
-   Expected for the plan role: `explicitDeny` for the object under `hand/` and `allowed` for the
-   object under `pipeline/` in (a), `explicitDeny` twice in (b), `explicitDeny` twice in
-   `s8b2a_decision` and four times in `s8b2b_decision`, `allowed` three times in (c), and
+   Expected for the plan role: `explicitDeny` for the object under `hand/`, `allowed` for the
+   object under `pipeline/` and `explicitDeny` for the workspace object under `env:/` in (a), `explicitDeny` four times in (b), `allowed` three times in (c), and
    `allowed` in both lines of (d). Expected for the deploy role: `allowed` twice in (e), `allowed`
    three times in (f), `allowed` in `s8g1_decision` and `implicitDeny` in `s8g2_decision`, and
    `implicitDeny` in (h).
+
+   After Step 9 the plan role holds no lock write: (c) reads `allowed` for `s3:GetObject`, which
+   the read-only policy grants, and `implicitDeny` for `s3:PutObject` and `s3:DeleteObject`.
 
    If the CLI rejects the `--context-entries` form, no line is printed for (d) or (g). Say so with
    `answer_context_entries=rejected`, and do not paste the error text, which names your session.
@@ -507,7 +530,7 @@ Step 6.
    export AWS_PAGER=""
    export TF_VAR_alert_email='<your-address>'
    B=openvaa-tfstate-471112560111
-   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
    ```
 
    Then, in terminal 2, a plan that must fail on the lock, and a read of the lock object:
@@ -565,7 +588,7 @@ once. Leave the export of the address out if you track it.
 cd infra/bootstrap
 export LC_ALL=C
 export AWS_PAGER=""
-L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-infra.XXXXXX")
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
 export TF_VAR_alert_email='<your-address>'
 ```
 
@@ -651,6 +674,9 @@ export TF_VAR_alert_email='<your-address>'
 
    Expected: `s5_budget=100.0,USD,COST,MONTHLY` or the same with another number of zeros, and two
    notification lines, `ACTUAL` at 80 and `FORECASTED` at 100, both `GREATER_THAN` and `PERCENTAGE`.
+   On 2026-10-25 the last field of both notification lines read `None` instead of `PERCENTAGE`,
+   while the configuration sets `PERCENTAGE` and the plan of item 6 showed no change. Read `None`
+   there as the same result, provided item 6 exits 0.
 
 6. Only for the outcome `fired`: a plan with no `-var` must show no change.
 
@@ -671,36 +697,683 @@ it stays at the test amount, so that the alert can still fire. Keep giving
 shows the limit changing to 100, because the tracked `terraform.tfvars` says 100 while the account
 holds the test amount. For `no-alert-can-fire` there is nothing else to do until spend appears; then
 run this step again. For `no-mail`, check the address you exported, your spam folder, and whether the
-spend is of a kind the budget counts; then run this step again.
+spend is of a kind the budget counts; then run this step again. The AWS Budgets console shows whether
+the alert has been triggered, which tells a mail that was not sent from one that was not delivered. On
+2026-10-23 the console showed the actual alert as triggered while no mail arrived, because the
+address had not been confirmed: check that the address you give can receive mail.
 
 Return: `answer_outcome=fired`, `answer_outcome=no-alert-can-fire` or `answer_outcome=no-mail`; the
 `s1_` lines; `answer_test_amount=`, and `s2_test_apply_exit=` if you re-applied; for `fired`, the three
 `answer_mail_` lines, the `s4_` lines with `answer_lock_branch=`, the `s5_` lines and
 `s6_second_plan_exit=`; and in every outcome `s7_logs_removed=yes`. Do not paste your address.
 
-## Not yet observed
+## Step 8: The frontend execution role
 
-Nobody has applied this root yet. Each statement below is something this runbook relies on and that
-has not been seen. It moves to "Observations", with its date, once the step named beside it has shown
-it.
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
 
-| Statement                                                                                                                        | Checked by                                                                |
-| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| An untracked `backend_override.tf` holding a local backend overrides the S3 block of `backend.tf`                                | Step 2, item 6                                                            |
-| Terraform holds the state lock while an apply waits at its approval prompt                                                       | Step 6, item 9; if not seen there, Step 7, item 4                         |
-| The plan role's deny shows as an explicit deny in the policy simulator                                                           | Step 5, item 8                                                            |
-| The policy simulator accepts the `--context-entries` form for a list prefix                                                      | Step 5, item 8                                                            |
-| The actual alert of the budget reaches the operator's mailbox, and how long it takes after the spend passes the threshold        | Step 7, item 3                                                            |
-| A forecast alert fires (AWS documents that it needs about five weeks of usage data, so it is not expected in the first month)    | A later stage of the deployment work                                      |
-| AWS accepts a budget limit below 1 USD as a test amount                                                                          | Step 7, item 2                                                            |
-| The spend of a quiet account, such as the hosted zone's monthly charge, shows in the budget's computed spend within a day or two | Step 6, item 10, and Step 7, item 1                                       |
-| An account holds one OIDC provider per URL, so a second create for GitHub's URL fails                                            | Step 1, item 4, shows whether one exists; if it does, the root imports it |
-| The AWS-managed read-only policy lets a plan of the pipeline root read all it must                                               | A later stage of the deployment work                                      |
-| A refused list call for the prefix `env:/` does not stop a plan or an apply of the pipeline root                                 | A later stage of the deployment work                                      |
-| A workflow can assume the plan role and the deploy role, and a token with a wrong subject is refused                             | A later stage of the deployment work                                      |
-| A second push of one image tag to the registry is refused                                                                        | A later stage of the deployment work                                      |
+← guide: [Deployment § The two parameters](https://openvaa.org/developers-guide/deployment#the-two-parameters)
+
+This step adds the execution role of the frontend's ECS task to this root: the identity the ECS agent
+uses to pull the image, write the container's logs and read the task's parameters. It comes from the
+`frontend_task_role` module and creates five resources: the role, the resource that keeps it free of
+an inline policy, the policy that reads the parameters, and the two attachments. The role reads the
+parameters under `/openvaa/<frontend_environment>/frontend/` only, and decrypts them with the SSM key
+only through SSM. The apply only adds; nothing this root already holds changes.
+
+**Precondition: the frontend's parameters exist.** Create them first, from the staging AWS root's
+runbook (`infra/envs/staging/aws/README.md`), its parameter step. The policy names the AWS-managed
+key `alias/aws/ssm`, which AWS creates only when a SecureString parameter first uses it; before then
+the plan of item 2 fails on reading that key.
+
+Run the step in one sitting. Every named line it prints begins `s8_`. Begin with these lines, from the
+repository root, signed in. Leave the export of the address out if your shell profile already exports
+`TF_VAR_alert_email`, or if you track the address.
+
+```bash
+cd infra/bootstrap
+export LC_ALL=C
+export AWS_PAGER=""
+L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
+export TF_VAR_alert_email='<your-address>'
+printenv TF_VAR_alert_email > /dev/null; echo "s8_alert_set_exit=$?"
+```
+
+`s8_alert_set_exit` must read 0. The check is `printenv`, not `test -n`: a variable set in the shell
+but not exported passes `test -n`, yet Terraform does not see it and the plan fails with
+`No value for required variable` for `alert_email`. If it reads 1, export the variable and run the
+check again.
+
+1. Initialise, which installs the new module. The lock file is read, never changed:
+
+   ```bash
+   terraform init -input=false -no-color -lockfile=readonly > "$L/s8-init.log" 2>&1; echo "s8_init_exit=$?"
+   ```
+
+2. Plan, print the plan's summary line, and print every planned address with its action. The
+   addresses are read from the saved plan as JSON, so no attribute value is printed. Status 2 means
+   changes, which is expected here; 0 means no change and 1 an error.
+
+   ```bash
+   terraform plan -input=false -no-color -out=tfplan -detailed-exitcode > "$L/s8-plan.log" 2>&1; echo "s8_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s8-plan.log" | sed 's/^/s8_plan_line=/'
+   terraform show -json tfplan > "$L/s8-plan.json" 2> "$L/s8-show.err"; echo "s8_show_exit=$?"
+   jq -r '.resource_changes[] | select(.change.actions != ["no-op"]) | "s8_planned=\(.change.actions | join("-")) \(.address)"' "$L/s8-plan.json"
+   ```
+
+3. Read the lines of item 2 against the stop rule.
+
+   > **Apply only when `s8_plan_exit=2`, `s8_plan_line` reads
+   > `Plan: 5 to add, 0 to change, 0 to destroy.`, and there are five `s8_planned=` lines, each
+   > `s8_planned=create module.frontend_task_role.<resource>`.** Any other line means the plan touches
+   > something this step does not add: a role, a policy, the bucket or the budget. Then do not apply.
+   > Remove the saved plan with `rm -f tfplan`, run item 7, paste the lines and stop.
+
+4. Apply the saved plan:
+
+   ```bash
+   terraform apply -input=false -no-color tfplan > "$L/s8-apply.log" 2>&1; echo "s8_apply_exit=$?"
+   grep -m1 -E '^Apply complete!' "$L/s8-apply.log" | sed 's/^/s8_apply_line=/'
+   ```
+
+5. Plan again. It must exit 0, which means no change:
+
+   ```bash
+   terraform plan -input=false -no-color -detailed-exitcode > "$L/s8-second.log" 2>&1; echo "s8_second_plan_exit=$?"
+   ```
+
+6. The role's ARN, which the staging AWS root takes as `execution_role_arn`. It is not a secret:
+
+   ```bash
+   echo "s8_role_arn=$(terraform output -raw frontend_execution_role_arn)"
+   ```
+
+7. Last item, also when you stop early or a command failed. Paste the lines of items 1 to 6 first:
+   this item removes the logs they came from.
+
+   ```bash
+   rm -f tfplan
+   test -n "$L" && rm -rf "$L" && echo "s8_logs_removed=yes"
+   ```
+
+Return: every `s8_` line, in order. Do not paste your address.
+
+## Step 9: The deploy role's permissions, the id conditions and the plan role's lock
+
+This step applies four changes to the `github_oidc` module in one apply:
+
+- the deploy role's nine `openvaa-deploy-*` policies, which let a pipeline plan, apply and destroy
+  the staging AWS root, and `ecr:DescribeImages` in the image push policy;
+- the numeric id conditions `repository_id` and `repository_owner_id` on both trusts;
+- the subject of the `staging-destroy` environment in the deploy trust;
+- the removal of the plan role's lock policy, `openvaa-plan-lock`, so that the plan role is
+  read-only and plans without the lock.
+
+The policies are proved before they exist. The simulator evaluates their rendered text, read from
+the saved plan. CloudTrail then lists the calls Terraform made when it destroyed and re-applied
+that root on 2026-11-14, and every one of those calls must be one the rendered policies allow.
+Only then is the saved plan applied. The apply changes IAM only, and another hand apply of this root
+undoes it.
+
+Run the step in one sitting. Item 1 prints lines beginning `s9_`, and items 2 to 6 print lines
+beginning `s9a_` to `s9e_`, one letter per item. The blocks run in zsh as well as in bash. A
+variable directly before a colon is written in braces, as in `${A}:role`, because zsh reads `$A:r`
+as `$A` with its `:r` modifier and drops the colon and the letter after it. Sign in first with
+`aws sso login --profile openvaa-admin`. In item 1, leave the export of the address out if your
+shell profile already exports `TF_VAR_alert_email`, or if you track the address.
+
+1. The opening lines, the account check and the alert address:
+
+   ```bash
+   cd "$(git rev-parse --show-toplevel)"
+   unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+   export LC_ALL=C AWS_PAGER="" AWS_PROFILE=openvaa-admin \
+     AWS_REGION=eu-north-1 \
+     TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
+   ACCOUNT=$(aws sts get-caller-identity --query Account \
+     --output text 2> "$L/account.err")
+   echo "s9_account_read_exit=$?"
+   test "$ACCOUNT" = 471112560111; echo "s9_account_match_exit=$?"
+   cd infra/bootstrap
+   B=openvaa-tfstate-471112560111
+   export TF_VAR_alert_email='<your-address>'
+   printenv TF_VAR_alert_email > /dev/null; echo "s9_alert_set_exit=$?"
+   ```
+
+   All three lines must read 0. A read that is not 0 is an expired session: sign in again and run
+   this item again. A match that is not 0 is another account: stop. The alert check is `printenv`
+   for the reason given in Step 8.
+
+2. Initialise, plan into a saved file, and read the plan's changes from its JSON. The addresses are
+   read from the JSON, so no attribute value is printed. The plan exits 2, which means changes.
+
+   ```bash
+   terraform init -input=false -no-color -lockfile=readonly \
+     > "$L/s9a-init.log" 2>&1; echo "s9a_init_exit=$?"
+   terraform plan -input=false -no-color -out=tfplan \
+     -detailed-exitcode > "$L/s9a-plan.log" 2>&1
+   echo "s9a_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s9a-plan.log" \
+     | sed 's/^/s9a_plan_line=/'
+   P="$L/s9a-plan.json"
+   terraform show -json tfplan > "$P" 2> "$L/s9a-show.err"
+   echo "s9a_show_exit=$?"
+   ```
+
+   Then the counts by action, the address lists, and a comparison with the expected set. A change
+   that replaces a resource has two actions and is counted by `s9a_replace`:
+
+   ```bash
+   count() {
+     jq --arg a "$1" '[.resource_changes[]
+       | select(.mode == "managed" and .change.actions == [$a])]
+       | length' "$P"
+   }
+   addresses() {
+     jq -r --arg a "$1" --arg n "$2" '.resource_changes[]
+       | select(.mode == "managed" and .change.actions == [$a])
+       | "s9a_\($n)_address=\(.address)"' "$P"
+   }
+   echo "s9a_add=$(count create)"
+   echo "s9a_change=$(count update)"
+   echo "s9a_destroy=$(count delete)"
+   n=$(jq '[.resource_changes[]
+     | select((.change.actions | length) > 1)] | length' "$P")
+   echo "s9a_replace=$n"
+   addresses create add
+   addresses update change
+   addresses delete destroy
+   G=module.github_oidc
+   {
+     for c in alert dns ecs edge load_balancing network \
+       observability pass_role scaling; do
+       echo "create $G.aws_iam_policy.deploy_$c"
+       echo "create $G.aws_iam_role_policy_attachment.deploy_$c"
+     done
+     for a in aws_iam_role.plan aws_iam_role.deploy \
+       aws_iam_policy.ecr_push; do
+       echo "update $G.$a"
+     done
+     echo "delete $G.aws_iam_policy.plan_lock"
+     echo "delete $G.aws_iam_role_policy_attachment.plan_lock"
+   } | sort > "$L/s9a-expected.txt"
+   jq -r '.resource_changes[]
+     | select(.mode == "managed" and .change.actions != ["no-op"])
+     | "\(.change.actions | join("-")) \(.address)"' "$P" \
+     | sort > "$L/s9a-actual.txt"
+   cmp -s "$L/s9a-expected.txt" "$L/s9a-actual.txt"
+   echo "s9a_addresses_match_exit=$?"
+   ```
+
+   > **Go on only when `s9a_plan_exit=2`, `s9a_plan_line` reads
+   > `Plan: 18 to add, 3 to change, 2 to destroy.`, `s9a_add=18`, `s9a_change=3`, `s9a_destroy=2`,
+   > `s9a_replace=0` and `s9a_addresses_match_exit=0`.** The 18 added are the nine
+   > `aws_iam_policy.deploy_*` and their nine `aws_iam_role_policy_attachment.deploy_*`, the 3
+   > changed in place are `aws_iam_role.plan` and `aws_iam_role.deploy` (their trusts) and
+   > `aws_iam_policy.ecr_push`, and the 2 destroyed are `aws_iam_policy.plan_lock` and its
+   > attachment, every one under `module.github_oidc`. Any other plan touches something this step
+   > does not change: the bucket, the registry, the budget or the execution role. Then do not apply:
+   > run item 7, paste the lines and stop.
+
+3. The simulator, on the policies the deploy role will hold, before any of them exists. The eleven
+   documents are read from the plan's `after` values: the nine new ones, the image push policy as it
+   will be, and the unchanged state policy. Each case passes all eleven, so a refused case is
+   refused by the whole set and not by one policy alone. The context entries stand in for the tags
+   and the record names that the conditions test.
+
+   ```bash
+   jq --arg g "$G" '[.resource_changes[]
+     | select(.mode == "managed" and .module_address == $g
+         and .type == "aws_iam_policy" and .change.after != null
+         and (.name | test("^(deploy_.+|tfstate_pipeline|ecr_push)$")))
+     | .change.after.policy]' "$P" > "$L/s9b-policies.json"
+   n=$(jq '[.[] | strings] | length' "$L/s9b-policies.json")
+   echo "s9b_policies=$n"
+   Q='EvaluationResults[].[EvalActionName,EvalResourceName,EvalDecision]'
+   kv() {
+     jq -n --arg k "$1" --arg t "$2" --arg v "$3" \
+       '{ContextKeyName: $k, ContextKeyType: $t, ContextKeyValues: [$v]}'
+   }
+   sim() {
+     label=$1 action=$2 resource=$3
+     shift 3
+     printf '%s\n' "$@" | jq -s . > "$L/s9b-$label-context.json"
+     jq -n --slurpfile p "$L/s9b-policies.json" \
+       --slurpfile c "$L/s9b-$label-context.json" \
+       --arg a "$action" --arg r "$resource" \
+       '{PolicyInputList: $p[0], ActionNames: [$a],
+         ResourceArns: [$r], ContextEntries: $c[0]}' \
+       > "$L/s9b-$label-input.json"
+     aws iam simulate-custom-policy \
+       --cli-input-json "file://$L/s9b-$label-input.json" \
+       --query "$Q" --output text > "$L/s9b-$label.out" 2> "$L/s9b-$label.err"
+     echo "s9b_${label}_exit=$?"
+     tr '\t' ' ' < "$L/s9b-$label.out" | sed -e 's|:hostedzone/|:hostedzone |' -e 's/^/s9b_decision=/'
+   }
+   ```
+
+   Then the cases, an allowed and a refused one for each concern, and the same pair for a subnet
+   created in a VPC. EC2 evaluates the VPC of that create with the VPC's own tags and without the
+   request's tags, so the allowed subnet case passes the VPC's tags alone, and the refused one passes
+   the request's tags on a VPC that carries none. The edge cases show that a tag call reaches only a
+   distribution or certificate that already carries the root's tags: the foreign cases pass the
+   request's tags on a resource that carries none, which is how the role would otherwise take over a
+   resource of another owner. The simulator evaluates only the entries it is given, so the context
+   EC2, CloudFront and ACM really build is first seen by the pipeline's deploy from nothing after the
+   destroy:
+
+   ```bash
+   A=471112560111
+   R=eu-north-1:$A
+   TAG_P=$(kv aws:RequestTag/Project string openvaa)
+   TAG_R=$(kv aws:RequestTag/Root string aws)
+   ZONE=arn:aws:route53:::hostedzone/Z02494181MAM7OCUAIPKC
+   TYPES=route53:ChangeResourceRecordSetsRecordTypes
+   NAMES=route53:ChangeResourceRecordSetsNormalizedRecordNames
+   EXEC=arn:aws:iam::${A}:role/openvaa/openvaa-staging-frontend-execution
+   TOPIC=arn:aws:sns:${R}:openvaa-staging-frontend-deployments
+   sim vpc_tagged ec2:CreateVpc \
+     "arn:aws:ec2:${R}:vpc/vpc-00000000000000000" "$TAG_P" "$TAG_R"
+   sim vpc_untagged ec2:CreateVpc \
+     "arn:aws:ec2:${R}:vpc/vpc-00000000000000000"
+   OWN_P=$(kv aws:ResourceTag/Project string openvaa)
+   OWN_R=$(kv aws:ResourceTag/Root string aws)
+   sim subnet_in_tagged_vpc ec2:CreateSubnet \
+     "arn:aws:ec2:${R}:vpc/vpc-00000000000000000" "$OWN_P" "$OWN_R"
+   sim subnet_in_foreign_vpc ec2:CreateSubnet \
+     "arn:aws:ec2:${R}:vpc/vpc-00000000000000000" "$TAG_P" "$TAG_R"
+   sim dns_a route53:ChangeResourceRecordSets "$ZONE" \
+     "$(kv "$TYPES" stringList A)" \
+     "$(kv "$NAMES" stringList staging.openvaa.org)"
+   sim dns_mx route53:ChangeResourceRecordSets "$ZONE" \
+     "$(kv "$TYPES" stringList MX)" \
+     "$(kv "$NAMES" stringList staging.openvaa.org)"
+   sim pass_ecs iam:PassRole "$EXEC" \
+     "$(kv iam:PassedToService string ecs-tasks.amazonaws.com)"
+   sim pass_lambda iam:PassRole "$EXEC" \
+     "$(kv iam:PassedToService string lambda.amazonaws.com)"
+   CF=arn:aws:cloudfront::${A}:distribution
+   CERT=arn:aws:acm:us-east-1:${A}:certificate/00000000-0000-0000-0000-000000000000
+   sim create_distribution cloudfront:CreateDistribution "*" "$TAG_P" "$TAG_R"
+   sim tag_owned_distribution cloudfront:TagResource "$CF/EOWNED0000000" \
+     "$OWN_P" "$OWN_R" "$TAG_P" "$TAG_R"
+   sim tag_foreign_distribution cloudfront:TagResource \
+     "$CF/EFOREIGN000000" "$TAG_P" "$TAG_R"
+   sim tag_foreign_certificate acm:AddTagsToCertificate "$CERT" \
+     "$TAG_P" "$TAG_R"
+   DOMAINS=acm:DomainNames
+   IN_US=$(kv aws:RequestedRegion string us-east-1)
+   sim cert_viewer acm:RequestCertificate "*" "$TAG_P" "$TAG_R" "$IN_US" \
+     "$(kv "$DOMAINS" stringList staging.openvaa.org)"
+   sim cert_other_name acm:RequestCertificate "*" "$TAG_P" "$TAG_R" \
+     "$IN_US" "$(kv "$DOMAINS" stringList other.openvaa.org)"
+   sim publish_topic sns:Publish "$TOPIC"
+   sim publish_other sns:Publish "arn:aws:sns:${R}:openvaa-other"
+   sim hand_state s3:GetObject \
+     "arn:aws:s3:::$B/hand/staging/supabase/terraform.tfstate"
+   ```
+
+   > **Go on only when `s9b_policies=11`, every `s9b_<case>_exit` reads 0, there are seventeen
+   > `s9b_decision=` lines, and they read:** `allowed` for `ec2:CreateVpc` with the tags,
+   > `ec2:CreateSubnet` in the tagged VPC, `cloudfront:CreateDistribution` with the tags,
+   > `cloudfront:TagResource` on the owned distribution, `acm:RequestCertificate` of
+   > `staging.openvaa.org`, `ChangeResourceRecordSets` of the A record, `iam:PassRole` to ECS tasks
+   > and `sns:Publish` on the deployment topic; `implicitDeny` for `ec2:CreateVpc` without the tags,
+   > `ec2:CreateSubnet` in the untagged VPC, `cloudfront:TagResource` on the foreign distribution,
+   > `acm:AddTagsToCertificate` on the foreign certificate, `acm:RequestCertificate` of another name,
+   > the MX record, `iam:PassRole` to Lambda, `sns:Publish` on another topic and `s3:GetObject` of
+   > the Supabase root's state under `hand/`. **A refused case that reads `allowed` means stop**: a policy is
+   > wider than its scope, and it is corrected in the module before anything is applied. An allowed
+   > case that reads a deny stops the step too, because the pipeline's apply would fail on it. In
+   > either case run item 7, paste the lines and stop. If a call fails, do not paste its error text,
+   > which names your session.
+
+4. The CloudTrail cross-check. Event history holds 90 days of management events per region. The
+   staging AWS root was destroyed on 2026-11-14 from 09:49Z to about 09:54Z, after its destroy plan,
+   and re-applied from 18:08Z to 18:12Z, followed by a second plan. Its viewer certificate and
+   distribution are called through `us-east-1`, everything else through `eu-north-1`. The destroy
+   window opens at 09:47Z: the read-only plan of the `dns-mail` root ran at 09:46Z, and its calls are
+   not the AWS root's. It closes at 09:55Z for the same reason: that root was read again from
+   09:55:11Z, its SMTP user, its send policy and its SES identity.
+
+   ```bash
+   for r in eu-north-1 us-east-1; do
+     for w in 09:47:00Z,09:55:00Z 18:00:00Z,18:20:00Z; do
+       s=${w%,*} e=${w#*,}
+       f="$L/s9c-trail-$r-${s%%:*}"
+       aws cloudtrail lookup-events --region "$r" \
+         --start-time "2026-11-14T$s" --end-time "2026-11-14T$e" \
+         --output json > "$f.json" 2> "$f.err"
+       echo "s9c_lookup=$r $s exit=$?"
+     done
+   done
+   ```
+
+   Each event is kept when its `userAgent` names Terraform, and turned into an IAM action:
+   `<service>:<eventName>`, the service from `eventSource` before `.amazonaws.com` (CloudWatch's
+   `monitoring` is the prefix `cloudwatch`), with a trailing API date such as `2020_05_31` removed
+   from the name. Application Auto Scaling logs its calls under `autoscaling.amazonaws.com`, the
+   event source of EC2 Auto Scaling, while its IAM prefix is `application-autoscaling`, so its event
+   names, listed in `$aas`, take that prefix. Each distinct action is then compared with every action
+   the eleven rendered policies allow, case-insensitively, a trailing `*` matching as a prefix. Two
+   calls need no IAM permission and are left out: `sts:GetCallerIdentity`, and
+   `sso:GetRoleCredentials`, by which a Terraform signed in with an SSO profile fetches its
+   credentials with the portal's access token. The pipeline assumes its role through OIDC and never
+   makes the second.
+
+   ```bash
+   jq -s '
+     ["RegisterScalableTarget", "DeregisterScalableTarget",
+       "DescribeScalableTargets", "DescribeScalingPolicies",
+       "DescribeScalingActivities", "DescribeScheduledActions",
+       "PutScalingPolicy", "DeleteScalingPolicy", "PutScheduledAction",
+       "DeleteScheduledAction", "TagResource", "UntagResource",
+       "ListTagsForResource"] as $aas
+     | [.[].Events[].CloudTrailEvent | fromjson
+     | select((.userAgent // "") | test("Terraform"))
+     | (.eventName | sub("[0-9]{4}_[0-9]{2}_[0-9]{2}$"; "")) as $n
+     | (.eventSource | sub("\\.amazonaws\\.com$"; "")
+         | if . == "monitoring" then "cloudwatch"
+           elif . == "autoscaling" and any($aas[]; . == $n)
+           then "application-autoscaling"
+           else . end)
+       + ":" + $n]' \
+     "$L"/s9c-trail-*.json > "$L/s9c-calls.json"
+   echo "s9c_events=$(jq length "$L/s9c-calls.json")"
+   echo "s9c_actions=$(jq 'unique | length' "$L/s9c-calls.json")"
+   jq '[.[] | fromjson | .Statement[] | select(.Effect == "Allow")
+     | .Action | if type == "string" then [.] else . end | .[]
+     | ascii_downcase] | unique' "$L/s9b-policies.json" \
+     > "$L/s9c-allowed.json"
+   jq -r --slurpfile a "$L/s9c-allowed.json" '
+     unique | .[]
+     | select(ascii_downcase
+         | . != "sts:getcalleridentity" and . != "sso:getrolecredentials")
+     | . as $c | ($c | ascii_downcase) as $l
+     | select(any($a[0][]; . as $p
+         | if ($p | endswith("*")) then ($l | startswith($p[:-1]))
+           else $l == $p end) | not)
+     | "s9c_uncovered=\($c)"' "$L/s9c-calls.json" \
+     > "$L/s9c-uncovered.txt"
+   echo "s9c_compare_exit=$?"
+   cat "$L/s9c-uncovered.txt"
+   echo "s9c_uncovered_count=$(wc -l < "$L/s9c-uncovered.txt" | tr -d ' ')"
+   ```
+
+   > **Go on only when all four `s9c_lookup=` lines read `exit=0`, `s9c_events` is above 0,
+   > `s9c_compare_exit=0`, no `s9c_uncovered=` line is printed and `s9c_uncovered_count=0`.**
+   > Each `s9c_uncovered=` line names a call Terraform made on that root that no deploy policy
+   > allows: the pipeline's first apply or destroy would fail on it, so the module needs the action
+   > before this apply. Then run item 7, paste the lines and stop. `s9c_events=0` means the check
+   > proved nothing (the history has expired, or no event names Terraform), and is a stop as well.
+   > The check compares actions, not resources or conditions: the scopes are item 3's to prove.
+   > Event history holds no S3 object calls, so the backend's calls on the state are Step 5's.
+
+   A hand run of another root inside a window is Terraform too, and its calls show up as uncovered.
+   They are not explained away: an uncovered line stops the step, whichever root made it. A window
+   that holds another root's run is the window's fault; it is narrowed here, and item 4 run again.
+
+5. Apply the saved plan, then plan again. The second plan must exit 0, which means no change:
+
+   ```bash
+   terraform apply -input=false -no-color tfplan \
+     > "$L/s9d-apply.log" 2>&1; echo "s9d_apply_exit=$?"
+   grep -m1 -E '^Apply complete!' "$L/s9d-apply.log" \
+     | sed 's/^/s9d_apply_line=/'
+   rm -f tfplan
+   terraform plan -input=false -no-color -detailed-exitcode \
+     > "$L/s9d-second.log" 2>&1; echo "s9d_second_plan_exit=$?"
+   ```
+
+   Expected: `s9d_apply_exit=0`,
+   `s9d_apply_line=Apply complete! Resources: 18 added, 3 changed, 2 destroyed.` and
+   `s9d_second_plan_exit=0`.
+
+6. The read-back: the policies attached to both roles, both trusts' conditions, the state bucket,
+   the simulator on the plan role's object and log reads, and the inline-policy check's two asserts.
+
+   ```bash
+   for role in plan:openvaa-plan deploy:openvaa-staging-deploy; do
+     who=${role%%:*}
+     aws iam list-attached-role-policies --role-name "${role#*:}" \
+       --query 'sort(AttachedPolicies[].PolicyName)' --output text \
+       > "$L/s9e-$who-policies.txt" 2> "$L/s9e-$who-policies.err"
+     echo "s9e_${who}_policies_exit=$?"
+     tr '\t' '\n' < "$L/s9e-$who-policies.txt" \
+       | sed "s/^/s9e_${who}_policy=/"
+     aws iam get-role --role-name "${role#*:}" \
+       --query Role.AssumeRolePolicyDocument --output json \
+       > "$L/s9e-$who-trust.json" 2> "$L/s9e-$who-trust.err"
+     echo "s9e_${who}_trust_exit=$?"
+     jq -r --arg n "$who" '.Statement[].Condition | to_entries[]
+       | .key as $t | .value | to_entries[]
+       | (.key | sub("^token\\.actions\\.githubusercontent\\.com:"; ""))
+         as $k
+       | (.value | if type == "string" then [.] else . end)[]
+       | "s9e_\($n)_condition=\($t) \($k) \(.)"' "$L/s9e-$who-trust.json"
+   done
+   aws s3api get-bucket-encryption --bucket "$B" --output json \
+     > "$L/s9e-encryption.json" 2> "$L/s9e-encryption.err"
+   echo "s9e_bucket_encryption_exit=$?"
+   aws s3api get-bucket-versioning --bucket "$B" --output json \
+     > "$L/s9e-versioning.json" 2> "$L/s9e-versioning.err"
+   echo "s9e_bucket_versioning_exit=$?"
+   aws s3api get-public-access-block --bucket "$B" --output json \
+     > "$L/s9e-blocks.json" 2> "$L/s9e-blocks.err"
+   echo "s9e_bucket_blocks_exit=$?"
+   n=$(jq -r '.ServerSideEncryptionConfiguration.Rules[0]
+     | .ApplyServerSideEncryptionByDefault.SSEAlgorithm' \
+     "$L/s9e-encryption.json")
+   echo "s9e_bucket_encryption=$n"
+   echo "s9e_bucket_versioning=$(jq -r .Status "$L/s9e-versioning.json")"
+   n=$(jq '[.PublicAccessBlockConfiguration[] | select(. == true)]
+     | length' "$L/s9e-blocks.json")
+   echo "s9e_bucket_public_blocks=$n"
+   PLAN_ROLE=$(aws iam get-role --role-name openvaa-plan --query Role.Arn \
+     --output text 2> "$L/s9e-plan-arn.err")
+   echo "s9e_plan_arn_exit=$?"
+   plan_sim() {
+     label=$1 resource=$2
+     shift 2
+     aws iam simulate-principal-policy --policy-source-arn "$PLAN_ROLE" \
+       --action-names "$@" --resource-arns "$resource" \
+       --query 'EvaluationResults[].[EvalActionName,EvalDecision]' \
+       --output text > "$L/s9e-$label.out" 2> "$L/s9e-$label.err"
+     echo "s9e_plan_${label}_exit=$?"
+     tr '\t' ' ' < "$L/s9e-$label.out" | sed "s/^/s9e_plan_${label}_decision=/"
+   }
+   plan_sim object "arn:aws:s3:::$B/other/object" \
+     s3:GetObject s3:GetObjectVersion
+   plan_sim object "arn:aws:s3:::openvaa-other-bucket/object" \
+     s3:GetObject s3:GetObjectVersion
+   plan_sim pipeline_state "arn:aws:s3:::$B/pipeline/staging/aws/terraform.tfstate" \
+     s3:GetObject
+   plan_sim log "*" logs:GetLogEvents
+   ../scripts/check-inline-policies.sh --assert-no-inline-user-policies \
+     > "$L/s9e-users.log" 2>&1; echo "s9e_assert_users_exit=$?"
+   ../scripts/check-inline-policies.sh --assert-no-inline-under /openvaa/ \
+     > "$L/s9e-under.log" 2>&1; echo "s9e_assert_no_inline_exit=$?"
+   ```
+
+   Expected:
+   - every `_exit` line 0;
+   - two `s9e_plan_policy=` lines, `ReadOnlyAccess` and `openvaa-plan-deny`;
+   - eleven `s9e_deploy_policy=` lines: `openvaa-deploy-alert`, `openvaa-deploy-dns`,
+     `openvaa-deploy-ecs`, `openvaa-deploy-edge`, `openvaa-deploy-load-balancing`,
+     `openvaa-deploy-network`, `openvaa-deploy-observability`, `openvaa-deploy-pass-role`,
+     `openvaa-deploy-scaling`, `openvaa-ecr-push` and `openvaa-tfstate-staging-aws`;
+   - `s9e_deploy_condition=` lines, each `StringEquals`, for `aud sts.amazonaws.com`, for
+     `sub repo:OpenVAA/voting-advice-application:environment:staging` and
+     `sub repo:OpenVAA/voting-advice-application:environment:staging-destroy`, for
+     `repository_id 546467466` and for `repository_owner_id 115159211`;
+   - `s9e_plan_condition=` lines for `aud`, `sub repo:OpenVAA/voting-advice-application:pull_request`
+     and the same two ids;
+   - `s9e_bucket_encryption=AES256`, `s9e_bucket_versioning=Enabled` and
+     `s9e_bucket_public_blocks=4`;
+   - four `s9e_plan_object_decision=` lines, `s3:GetObject explicitDeny` and
+     `s3:GetObjectVersion explicitDeny` for an object of the state bucket outside `pipeline/` and
+     again for an object of another bucket: the plan role reads no S3 object but the pipeline's;
+     `s9e_plan_pipeline_state_decision=s3:GetObject allowed`, the state the pull-request plan reads;
+     and `s9e_plan_log_decision=logs:GetLogEvents explicitDeny`. The object deny is the statement
+     `DenyObjectReadsOutsidePipeline` of `openvaa-plan-deny`. An account whose Step 9 was applied
+     before that statement existed reads `allowed` on both object lines until a hand plan and apply
+     of this root have updated `openvaa-plan-deny` in place, an update of one policy and nothing
+     else;
+   - `s9e_assert_users_exit=0` and `s9e_assert_no_inline_exit=0`.
+
+7. Last item, also when you stop early or a command failed. Paste the lines of items 1 to 6 first:
+   this item removes the logs they came from.
+
+   ```bash
+   rm -f tfplan
+   test -n "$L" && rm -rf "$L" && echo "s9_logs_removed=yes"
+   ```
+
+Return: every `s9_` and `s9a_` to `s9e_` line, in order, and `answer_step9=applied` or
+`answer_step9=stopped-at-<item>`. Do not paste your address.
+
+## Step 10: The GitHub Environments
+
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
+The deploy role trusts every job that names `staging` or `staging-destroy`, the subjects of
+`deploy_subjects`. GitHub creates an environment that a job names and that does not exist yet, with
+no protection rule at all, so both are created here before any push carries a workflow naming them.
+Each gets the operator as its required reviewer, self-review allowed, no administrator bypass, and a
+custom deployment branch policy that admits `deploy/staging` and `deploy-evidence/*` only, which
+keeps `main` and every other branch out. The secrets and variables of `staging` are set afterwards,
+as [`../README.md` § The environments and their settings](../README.md#the-environments-and-their-settings)
+lists them.
+
+The step changes repository settings only, through the GitHub CLI signed in as a repository
+administrator. It is safe to run again: the environment call creates or updates, and a branch
+policy is created only when it is missing. No line prints a login or a token; the reviewer is
+printed by type, and compared with the signed-in user by numeric id.
+
+1. The opening lines, the GitHub sign-in and the reviewer's id:
+
+   ```bash
+   cd "$(git rev-parse --show-toplevel)"
+   export LC_ALL=C
+   L=$(umask 077; mktemp -d "${TMPDIR:-/tmp}/openvaa-bootstrap.XXXXXX")
+   REPO=OpenVAA/voting-advice-application
+   gh auth status > "$L/s10-auth.log" 2>&1; echo "s10_auth_exit=$?"
+   ME=$(gh api user --jq .id 2> "$L/s10-user.err"); echo "s10_user_read_exit=$?"
+   gh api "repos/$REPO" --jq .permissions.admin \
+     > "$L/s10-admin.txt" 2> "$L/s10-admin.err"
+   echo "s10_repo_read_exit=$?"
+   echo "s10_repo_admin=$(cat "$L/s10-admin.txt")"
+   ```
+
+   All three `_exit` lines must read 0 and `s10_repo_admin=true`. Otherwise sign in again with
+   `gh auth login`, as an administrator of the repository, and run this item again.
+
+2. Create or update both environments, then add each branch policy that is missing:
+
+   ```bash
+   jq -n --argjson id "$ME" '{wait_timer: 0, prevent_self_review: false,
+     can_admins_bypass: false, reviewers: [{type: "User", id: $id}],
+     deployment_branch_policy: {protected_branches: false,
+       custom_branch_policies: true}}' > "$L/s10-environment.json"
+   for E in staging staging-destroy; do
+     gh api --method PUT "repos/$REPO/environments/$E" \
+       --input "$L/s10-environment.json" \
+       > "$L/s10-$E-put.json" 2> "$L/s10-$E-put.err"
+     echo "s10_env_${E}_put_exit=$?"
+     gh api "repos/$REPO/environments/$E/deployment-branch-policies" \
+       --jq '.branch_policies[].name' \
+       > "$L/s10-$E-names.txt" 2> "$L/s10-$E-names.err"
+     echo "s10_env_${E}_names_exit=$?"
+     for b in deploy/staging 'deploy-evidence/*'; do
+       grep -qxF "$b" "$L/s10-$E-names.txt" && continue
+       gh api --method POST \
+         "repos/$REPO/environments/$E/deployment-branch-policies" \
+         -f name="$b" -f type=branch \
+         > /dev/null 2>> "$L/s10-$E-post.err"
+       echo "s10_env_${E}_policy_created=$b exit=$?"
+     done
+   done
+   ```
+
+   Every `_exit` line must read 0, and every `s10_env_<name>_policy_created=` line must end in
+   `exit=0`. A second run prints no `_policy_created=` line.
+
+3. The read-back, of each environment and its branch policies:
+
+   ```bash
+   for E in staging staging-destroy; do
+     gh api "repos/$REPO/environments/$E" \
+       > "$L/s10-$E.json" 2> "$L/s10-$E.err"
+     echo "s10_env_${E}_read_exit=$?"
+     jq -r --arg e "$E" --argjson me "$ME" '
+       ([.protection_rules[]? | select(.type == "required_reviewers")][0]
+         // {}) as $r
+       | "s10_env_\($e)_reviewers=\([$r.reviewers[]?.type] | join(","))",
+         "s10_env_\($e)_reviewer_is_you=\([$r.reviewers[]?.reviewer.id] == [$me])",
+         "s10_env_\($e)_prevent_self_review=\($r.prevent_self_review)",
+         "s10_env_\($e)_admins_bypass=\(.can_admins_bypass)",
+         "s10_env_\($e)_custom_branch_policies=\(.deployment_branch_policy.custom_branch_policies)",
+         "s10_env_\($e)_protected_branches=\(.deployment_branch_policy.protected_branches)"' \
+       "$L/s10-$E.json"
+     gh api "repos/$REPO/environments/$E/deployment-branch-policies" \
+       > "$L/s10-$E-policies.json" 2> "$L/s10-$E-policies.err"
+     echo "s10_env_${E}_policies_read_exit=$?"
+     jq -r --arg e "$E" '
+       "s10_env_\($e)_branch_policy=\([.branch_policies[].name] | sort | reverse | join(","))",
+       "s10_env_\($e)_branch_policy_types=\([.branch_policies[].type] | unique | join(","))"' \
+       "$L/s10-$E-policies.json"
+   done
+   ```
+
+   Expected, for `staging` and for `staging-destroy` alike: both `_read_exit` lines 0,
+   `_reviewers=User`, `_reviewer_is_you=true`, `_prevent_self_review=false`,
+   `_admins_bypass=false`, `_custom_branch_policies=true`, `_protected_branches=false`,
+   `_branch_policy=deploy/staging,deploy-evidence/*` and `_branch_policy_types=branch`.
+
+   > **A branch policy other than those two, `main` above all, means stop.** The deploy role would
+   > trust a job on that branch. Delete it under the repository's Settings, Environments, then run
+   > item 3 again.
+
+4. Last item, also when you stop early:
+
+   ```bash
+   test -n "$L" && rm -rf "$L" && echo "s10_logs_removed=yes"
+   ```
+
+Return: every `s10_` line, in order, and `answer_step10=applied` or
+`answer_step10=stopped-at-<item>`.
 
 ## Observations
 
-| Date (UTC) | Observation |
-| ---------- | ----------- |
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
+
+| Date (UTC) | Observation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-21 | Step 1 inventory run: 2 IAM users found; 1 carried an inline policy (yes), was converted to a managed policy, and the assert mode then exited 0. No GitHub OIDC provider, no hosted zone, no state bucket and no same-named budget, repository or IAM entity were present.                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 2026-10-21 | Step 2: with Terraform 1.16.5, an untracked `backend_override.tf` holding a local backend overrode the S3 block of `backend.tf`, and the first apply ran on local state and created 23 resources.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2026-10-21 | Step 3: the state was migrated into the bucket and its object was read back encrypted (AES256) and versioned, with 23 managed resources, before the local files were removed; the second plan exited 0 with no changes.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 2026-10-21 | Step 4: the bucket read back encrypted, versioned, with all four public-access blocks, not public and with a TLS-only statement; the registry has immutable tags; both roles have managed policies only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 2026-10-21 | Step 5: the simulator accepted the `--context-entries` form; it showed an explicit deny for the plan role on a `hand/` state object and on secret reads, and allowed every call the S3 backend makes except the deploy role's list for `env:/`, an implicit deny as expected.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-10-21 | Step 5: given two resources in one call, the simulator returns one result per action rather than one per resource, so item 8(a) makes one call per resource.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2026-10-21 | Step 6: Terraform held the state lock while an apply waited at its approval prompt: a second plan failed on the lock, and the lock object was present, then gone once the prompt was answered `no`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 2026-10-21 | Step 6: the budget read back at the 1 USD test amount, with a computed spend of 6.475 USD.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 2026-10-22 | Step 7, item 1: the budget read back at 1 USD with a computed spend of 6.828 USD, past the 0.80 USD threshold of its actual alert, so no lower test amount was needed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2026-10-23 | Step 7, item 3: the AWS Budgets console showed the actual alert of the 1 USD budget as triggered. No mail reached the operator within two days; the operator gave the reason as an address that had not been confirmed. Delivery to the mailbox was not seen.                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 2026-10-25 | Step 7, items 4 to 6: the budget was replaced at 100 USD with no `-var` (one resource replaced). It read back as a monthly cost budget of 100 USD with the actual alert above 80 and the forecast alert above 100, and a second plan with no `-var` showed no change.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2026-11-12 | Step 8: the plan exited 2 with `Plan: 5 to add, 0 to change, 0 to destroy.` and five `create` lines, each under `module.frontend_task_role` (the role, its parameters policy, the exclusive inline-policy resource and the two attachments). It was applied (exit 0, five added), and a second plan exited 0 with no change. The role's ARN equals the staging AWS root's `execution_role_arn`.                                                                                                                                                                                                                                                                                   |
+| 2026-11-12 | Step 8: the plan fails with `No value for required variable` for `alert_email` when `TF_VAR_alert_email` is set in the shell but not exported (`printenv` exit 1). After the export (`printenv` exit 0) it ran; the step's opening lines now check with `printenv`, which a set but unexported variable fails, rather than `test -n`, which it passes.                                                                                                                                                                                                                                                                                                                            |
+| 2026-11-12 | The policy simulator, run from the staging AWS root's read-back of the role, allows the execution role `ssm:GetParameters` under `/openvaa/staging/frontend/` and gives `implicitDeny` under `/openvaa/staging/other/`; the role has no inline policy, and both inventory asserts exit 0.                                                                                                                                                                                                                                                                                                                                                                                         |
+| 2026-11-12 | A second push of one image tag to the registry is refused: a different image pushed under the existing tag `712947a1bd44a735f66ee8f51610f4748d76cd30` failed, exit 1, with `tag invalid: The image tag '…' already exists in the 'openvaa-frontend' repository and cannot be overwritten because the tag is immutable.`, and the tag kept its digest (staging AWS runbook, Step 4, items 8 and 9).                                                                                                                                                                                                                                                                                |
+| 2026-11-16 | Step 9, item 2: a first plan, run with an alert address other than the one the budget holds, read `s9a_change=4`, the fourth change being `module.budget.aws_budgets_budget.monthly`, and `s9a_addresses_match_exit=1`; it was not applied. Rerun with the budget's address, the plan exited 2 with `Plan: 18 to add, 3 to change, 2 to destroy.`, no replacement and the address set as expected (`s9a_addresses_match_exit=0`): the nine `deploy_*` policies and their attachments added, both roles and `ecr_push` changed in place, `plan_lock` and its attachment destroyed.                                                                                                 |
+| 2026-11-16 | Step 9, item 3: the simulator read the eleven documents from the saved plan and gave seventeen decisions, each as the step expects: allowed for the tagged VPC, the subnet in the tagged VPC, the A record, `iam:PassRole` to ECS tasks, the tagged distribution create and the tag call on the owned distribution, the certificate of `staging.openvaa.org` and the deployment topic; `implicitDeny` for the untagged VPC, the subnet in the foreign VPC, the MX record, `iam:PassRole` to Lambda, the tag calls on the foreign distribution and certificate, the certificate of another name, another topic and the Supabase root's state under `hand/`.                        |
+| 2026-11-16 | Step 9, item 3, in zsh: the cases `pass_ecs`, `pass_lambda` and `tag_foreign_certificate` first exited 254 with `InvalidInput` (`ResourceNames are not in a valid ARN format`). zsh read `$A:role` and `$A:certificate` as `$A` with its `:r` and `:c` modifiers, so both ARNs lost the colon and the letter after it. Rerun with `${A}`, the three exited 0 with the expected decisions; the step now braces every variable before a colon.                                                                                                                                                                                                                                      |
+| 2026-11-16 | Step 9, item 4: the four lookups exited 0 and kept 626 Terraform events, 119 distinct actions, and printed `s9c_uncovered_count=16`, none a call of the AWS root. Seven were Application Auto Scaling calls logged under `autoscaling.amazonaws.com` and granted as `application-autoscaling` in `openvaa-deploy-scaling`; eight were the `dns-mail` root's reads of its SMTP user, its send policy and its SES identity at 09:55Z on 2026-11-14; one was `sso:GetRoleCredentials`, the admin session fetching its credentials. The operator applied on that reading of the trail; the step now maps the first group, leaves out the third and tells how to recognise the second. |
+| 2026-11-16 | Step 9, item 5: the saved plan applied (`Resources: 18 added, 3 changed, 2 destroyed.`), and a second plan exited 0 with no change.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 2026-11-16 | Step 9, item 6: the plan role holds `ReadOnlyAccess` and `openvaa-plan-deny`, the deploy role the eleven policies of the step, both trusts `StringEquals` conditions on `aud`, the subject (`pull_request` for the plan role, the `staging` and `staging-destroy` environments for the deploy role), `repository_id` and `repository_owner_id`; the state bucket read back `AES256`, versioned and with all four public-access blocks, and both inventory asserts exited 0. Assuming the roles and AWS's evaluation of the two id claims are not yet observed.                                                                                                                    |
+| 2026-11-17 | Deploy workflow run 44042442257, on `deploy-evidence/187-red`, after the `staging` review was approved: `aws-actions/configure-aws-credentials` assumed `openvaa-staging-deploy` with the token of `environment:staging`, the trust's `StringEquals` conditions on `repository_id` and `repository_owner_id` being set, twice (the deploy step and the alert step). A `StringEquals` on a claim the token did not carry, or with another value, would have refused the call, so AWS reads both id claims and this repository's values satisfy them.                                                                                                                               |
+| 2026-11-17 | Infrastructure plan run 44042442267, on the same push: the `wrong-subject` job ended `failure` before either STS call. Its step runs under the runner's default `bash -e`, and `IFS=. read -r _ payload _ < "$token_file"` returns 1 at the end of a token file with no trailing newline, which ended the step at once, with no line printed (reproduced locally). A branch subject's refusal by either role is not yet observed.                                                                                                                                                                                                                                                 |
+| 2026-11-17 | Infrastructure plan run 44088753527, on `deploy-evidence/187-red-2`: the `wrong-subject` job concluded `success`. It asked STS for `openvaa-staging-deploy` and `openvaa-plan` with a token of the subject `repo:OpenVAA/voting-advice-application:ref:refs/heads/deploy-evidence/187-red-2`, which neither trust admits, and both refused it: `deploy_role_assume_status=254` with `deploy_role_error=AccessDenied`, and `plan_role_assume_status=254` with `plan_role_error=AccessDenied`. A token with a wrong subject is refused by both roles.                                                                                                                               |
+| 2026-11-17 | Infrastructure plan run 44104573552, on a same-repository pull request from `pr-evidence/187-head`: the `plan` job assumed `openvaa-plan`, which holds `ReadOnlyAccess` and `openvaa-plan-deny`, and planned the staging AWS root without the lock. Every step succeeded; the plan refreshed the root's resources and ended `plan_exit=2` with `Plan: 1 to add, 1 to change, 1 to destroy.`, no refused call in the log. So the AWS-managed read-only policy lets a plan of the pipeline root read all it must.                                                                                                                                                                   |
+| 2026-11-17 | The same run 44104573552: its `Assume the read-only plan role` step printed `Assuming role with OIDC` and `Authenticated as assumedRoleId …:pr-plan-44104573552`, the session name the workflow gives the plan role on a pull request. So a workflow can assume the plan role.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2026-11-18 | The deploy role's policies held every call a pipeline plan, apply, destroy and create of the AWS root made, with the policies of Step 9: the deploy workflow's run 44270824581 (plan and apply of the task definition's replacement and the rollout), the destroy workflow's run 44285713407, attempt 2 (a plan and an apply destroying all 40 resources), and attempt 2 of the deploy workflow's run 44276384977 (a plan and an apply creating all 40 again from an empty state, `Apply complete! Resources: 40 added, 0 changed, 0 destroyed.`). Each assumed `openvaa-staging-deploy`, each job concluded `success`, and no log holds a refused call.                          |
+| 2026-11-18 | Attempt 2 of the deploy workflow's run 44276384977, the first pipeline deploy from nothing after the real destroy: the deploy role created the CloudFront distribution and both ACM certificates carrying the root's tags (`Project=openvaa`, `Root=aws`, `Environment=staging`, `ManagedBy=terraform`), with their tags, and the apply succeeded. So a distribution and a certificate created with the root's tags pass the edge tag calls' `aws:ResourceTag` test.                                                                                                                                                                                                              |

@@ -77,7 +77,7 @@ apps/supabase/supabase/snippets/
 # `apps/supabase/supabase/schema/` stay in scope and are prettier-clean.
 apps/supabase/supabase/migrations/
 # --- psql scripts ---
-# These two files are run with `psql -f` and use its meta-commands (`\set`, `\getenv`, `\if`,
+# These files are run with `psql -f` and use its meta-commands (`\set`, `\getenv`, `\if`,
 # `\bind`), which are not SQL. prettier-plugin-sql cannot parse them: it stops at the first
 # `\set` with a parse error, and a prettier error exits 2, reddens `format:check` and cannot be
 # repaired by `yarn format`. Each file is named, not the directory, so that plain SQL added
@@ -85,3 +85,6 @@ apps/supabase/supabase/migrations/
 infra/scripts/bootstrap.sql
 infra/scripts/check-seed.sql
 apps/supabase/supabase/tests/database/00z-invitation-link-witness.test.sql
+infra/scripts/check-deployment-settings.sql
+infra/scripts/grant-project-admin.sql
+infra/scripts/grant-smoke-contestant.sql

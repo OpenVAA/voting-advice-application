@@ -2,7 +2,7 @@
 --
 -- A migration is the same text for every deployment, and two of these rows hold a deployment's own address and key. This script writes them in one transaction:
 --   - the account `00000000-0000-0000-0000-000000000001`, the project named by PUBLIC_PROJECT_ID and that project's settings row. A row that already exists is left exactly as it is, so a second run never undoes what an administrator has changed since, `open_for_voters` included.
---   - the two rows of public.storage_config and the row of private.deployment_settings. These are overwritten on every run, so a rotated key or a corrected address is applied by running the script again.
+--   - the two rows of public.storage_config and the row of private.deployment_settings. These are overwritten on every run, so a rotated key or a corrected address is applied by running the script again. The one exception is `access_caller_max`, which a run writes only when BOOTSTRAP_ACCESS_CALLER_MAX is set, and otherwise leaves at its current value, 30 on a new database.
 --
 -- It does not create the first administrator. That is a separate, one-off step.
 --
@@ -28,11 +28,13 @@
 --     BOOTSTRAP_OPEN_FOR_VOTERS:   false
 --     BOOTSTRAP_CANDIDATE_REGISTRATION_MODES:  none
 --                                  A comma-separated list of the modes by which a candidate may claim an invitation: any of `identity_provider`, `email` and `code`. With none, no candidate invitation can be claimed until an administrator allows a mode. It is written into the settings row, as `contestantApp.servedEntityTypes.candidate.registrationModes`, only when that row is created.
+--     BOOTSTRAP_ACCESS_CALLER_MAX:  the current value of `access_caller_max`
+--                                  The anonymous account-access requests (`check-code`, `request-link` and `request-recovery` together) one caller is admitted per project per ten minutes, a whole number from 1 to 999999999. A larger number suits a deployment where many contestants register from one network at once.
 --
 -- Exit status, which is psql's own:
 --   0:  every row is in place
 --   2:  the connection was refused or lost
---   3:  a required variable is not set or BOOTSTRAP_CANDIDATE_REGISTRATION_MODES names an unknown mode, each named on standard error, or another value is malformed. Nothing has been written.
+--   3:  a required variable is not set, BOOTSTRAP_CANDIDATE_REGISTRATION_MODES names an unknown mode or BOOTSTRAP_ACCESS_CALLER_MAX is not a whole number from 1 to 999999999, each named on standard error, or another value is malformed. Nothing has been written.
 --
 -- The script holds no secret and prints no value it was given, except that psql quotes a malformed project id or boolean in its error. The key travels as a bound parameter and is in no statement's text. A server that is set to log the parameters of statements that succeed, or of slow ones, logs it all the same; those settings are the server's and this script cannot change them.
 \set ON_ERROR_STOP on
@@ -106,6 +108,13 @@ SET log_parameter_max_length_on_error = 0;
   \set candidate_registration_modes ''
 \endif
 
+\unset access_caller_max
+\getenv access_caller_max BOOTSTRAP_ACCESS_CALLER_MAX
+\if :{?access_caller_max}
+\else
+  \set access_caller_max ''
+\endif
+
 -- Two statements that write nothing: they say which required values are not set or malformed and give each optional value its default. The key is tested by itself, as a bound parameter, so that it is in no statement's text.
 SELECT
   btrim(:'project_id') = '' AS project_id_missing,
@@ -118,7 +127,8 @@ SELECT
   EXISTS (
     SELECT 1 FROM unnest(string_to_array(:'candidate_registration_modes', ',')) m
     WHERE btrim(m) NOT IN ('', 'identity_provider', 'email', 'code')
-  ) AS candidate_registration_modes_malformed
+  ) AS candidate_registration_modes_malformed,
+  btrim(:'access_caller_max') !~ '^([1-9][0-9]{0,8})?$' AS access_caller_max_malformed
 \gset
 
 SELECT btrim($1) = '' AS service_role_key_missing \bind :service_role_key \gset
@@ -141,6 +151,10 @@ SELECT btrim($1) = '' AS service_role_key_missing \bind :service_role_key \gset
 \endif
 \if :candidate_registration_modes_malformed
   \warn 'bootstrap: BOOTSTRAP_CANDIDATE_REGISTRATION_MODES names a mode other than identity_provider, email and code'
+  \set missing true
+\endif
+\if :access_caller_max_malformed
+  \warn 'bootstrap: BOOTSTRAP_ACCESS_CALLER_MAX is not a whole number from 1 to 999999999'
   \set missing true
 \endif
 \if :{?missing}
@@ -200,5 +214,9 @@ ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value \bind :service_role_key \
 INSERT INTO private.deployment_settings (singleton, behind_cloudflare)
 VALUES (true, :'behind_cloudflare'::boolean)
 ON CONFLICT (singleton) DO UPDATE SET behind_cloudflare = EXCLUDED.behind_cloudflare;
+
+UPDATE private.deployment_settings
+SET access_caller_max = btrim(:'access_caller_max')::integer
+WHERE btrim(:'access_caller_max') <> '';
 
 COMMIT;

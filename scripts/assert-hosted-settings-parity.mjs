@@ -6,11 +6,13 @@
  * What it requires: the security-relevant API and auth settings of a hosted Supabase project, as the Terraform module
  * sends them, are the settings the local stack runs the test suite with, or stricter where stricter is safe. The local
  * side is `apps/supabase/supabase/config.toml`. The hosted side is `infra/modules/supabase/hosted-settings.json`, which
- * the module encodes, plus the origin and the two hook switches that each Supabase root sets in its tracked
- * `infra/envs/<env>/supabase/terraform.tfvars`. The frontend's page size, `dataAdapter.pageSize` in
+ * the module encodes, plus the origin and the two hook switches that each Supabase root passes to the module, read from
+ * its `.tf` files and its tracked `terraform.tfvars`. A Supabase root is a directory `infra/envs/<env>/<root>` that is
+ * named `supabase` or whose `.tf` files call the module. The frontend's page size, `dataAdapter.pageSize` in
  * `packages/app-shared/src/settings/staticSettings.ts`, is a third channel for one key.
  *
- * Every live key of the tables `[api]`, `[api.tls]`, `[auth]` and every `[auth.*]` is in exactly one of four classes:
+ * Every live key of the tables `[api]`, `[api.tls]`, `[auth]`, every `[auth.*]` and every `[functions.*]` is in exactly
+ * one of four classes:
  *
  *   must agree              The hosted value equals the local one (some keys are inverted, or a list against a
  *                           comma-separated string). `max_rows` must also equal `pageSize`: three ways.
@@ -26,13 +28,20 @@
  * stale in either direction. A hosted key that no row reads fails for the same reason.
  *
  * Two rules keep the comparison from passing on nothing. The origin rule fails when no Supabase root yields a
- * `public_origin`: a check that examined nothing does not report success. And the module sends each hook's keys only
- * while that hook's switch is true: the access-token hook's keys while a root's `enable_access_token_hook` is true, the
- * send-email hook's keys while its `enable_send_email_hook` is true, each switch on its own. So a tracked variable file
- * can switch a compared key off. A root that sets a switch to `false` fails unless the assignment carries a trailing
- * comment beginning `hook off until` and giving the reason; such a root passes and is named in the census for that
- * hook. No assignment means the module's default, which must be `true`. A later variable that can switch a compared
- * key off must be given the same rule here: add it to the list of hook switches.
+ * `public_origin`: a check that examined nothing does not report success. So does each root on its own: a Supabase
+ * root with no `terraform.tfvars`, or whose `terraform.tfvars` assigns no `public_origin` it passes on, fails, so that
+ * one good root cannot hide a skipped one. And the module sends each hook's keys only while that hook's switch is
+ * true: the access-token hook's keys while a root's `enable_access_token_hook` is true, the send-email hook's keys
+ * while its `enable_send_email_hook` is true, each switch on its own. So a root can switch a compared key off. The
+ * value each switch takes is read from the root's call of the module the way Terraform resolves it: the call's
+ * argument when it is a literal `true` or `false`; when it is `var.<switch>`, the root's `terraform.tfvars`
+ * assignment, and without one the root variable's default; when the call omits the argument, the module variable's
+ * default. Any other argument cannot be read and fails. A `false` written as the call's argument or in
+ * `terraform.tfvars` fails unless it carries a trailing comment beginning `hook off until` and giving the reason; such
+ * a root passes and is named in the census for that hook. A default of `false`, in the root or in the module, fails
+ * with no exception, and so does a value that no tracked file holds. The origin is read from the same call:
+ * `var.public_origin` is the root's `terraform.tfvars` assignment, and a plain string is the origin itself. A later
+ * variable that can switch a compared key off must be given the same rule here: add it to the list of hook switches.
  *
  * While the send-email hook is on, the hosted auth service sends no mail of its own: the hook's function takes every
  * mail and sends none, and the application's own function sends the mails. The hosted SMTP settings and mail rate
@@ -55,13 +64,22 @@
  *                           address, the redirect allow list, the seven rate limits and the six SMTP keys) is written in
  *                           the module's code, is absent from the JSON and is a known key; no other known key is written
  *                           there. A misspelled HCL key is then seen as the correct one going missing.
+ *   nothing else merged     `local.auth` is exactly `merge(local.hosted.auth, local.auth_hook,
+ *                           local.auth_send_email_hook, local.auth_rate_limits, local.auth_origin, local.auth_smtp)`, in
+ *                           that order, and `local.api` is exactly `local.hosted.api`, each defined once. No other
+ *                           `merge` is called, and no variable has a type that holds `map` or `any`: each of these could
+ *                           bring in a key no word of the code names, and so set a compared key with the comparison
+ *                           still green.
  *   the project protected   `main.tf` holds a `supabase_project` resource, and every such block, read by counting
  *                           braces, holds a `lifecycle` block with `prevent_destroy = true` and an `ignore_changes` list
  *                           naming `database_password`.
  *   one writer              The CLI's command that pushes the local configuration to a hosted project appears in no
- *                           tracked file under `.github/workflows/`, `infra/` or `scripts/`, and in no tracked
- *                           `package.json`. This guard's source and its fixture directory are excluded by path; the
- *                           source builds the command from its words, so it does not hold the command whole.
+ *                           tracked file under `.github/workflows/`, `infra/`, `scripts/`, `apps/supabase/` or
+ *                           `tests/scripts/`, and in no tracked `package.json`. It is matched however it is spelled:
+ *                           with a version pin such as `@latest` on the CLI's name, with flags before or after its
+ *                           middle word, split across a line continuation, or as the words of an array. This guard's
+ *                           source and its fixture directory are excluded by path; the source builds the command from
+ *                           its words, so it does not hold the command whole.
  *
  * The module's code is its `.tf` text with comments removed and strings kept, so a key named in a comment counts as
  * neither present nor misplaced, and a key quoted as a map key counts as written.
@@ -71,13 +89,17 @@
  * declared files; an applied project is observed by other means.
  *
  * How it reads (Node built-ins only, no TOML or HCL parser): `config.toml` by lines, through
- * `scripts/lib/config-toml.mjs`. A value is read only when its form can be read exactly: a bare boolean, an integer, a double-quoted string without
- * `#` or `\`, or a one-line array that `JSON.parse` accepts. Any other form, and a key written twice in one table, is a
- * finding. The hosted settings are parsed as JSON. `pageSize` is a line read inside the `dataAdapter` block, and each
- * variable file and the module's `variables.tf` are line reads. The module's `.tf` files are read as text through
- * `scripts/lib/hcl-text.mjs`: comments are removed outside double-quoted strings, and blocks are found by counting
- * braces outside strings; heredoc strings are not recognised. The files scanned for a second writer are those `git ls-files` lists, so an untracked
- * file is never a finding. A channel that cannot be read withholds the verdict.
+ * `scripts/lib/config-toml.mjs`. A table header is first written in its plain form, spaces around its dots and the
+ * quotes around a quoted bare key removed; a header that still cannot be read is a finding wherever it stands, and the
+ * keys under it count as unclassified. A value is read only when its form can be read exactly: a bare boolean, an
+ * integer, a double-quoted string without `#` or `\`, or a one-line array that `JSON.parse` accepts. Any other form,
+ * and a key written twice in one table, is a finding. The hosted settings are parsed as JSON. `pageSize` is a line
+ * read inside the `dataAdapter` block, through `scripts/lib/static-settings.mjs`, and each `terraform.tfvars` and every variable default are line reads. The `.tf`
+ * files of the module and of each root are read as text through `scripts/lib/hcl-text.mjs`: comments are removed
+ * outside double-quoted strings, blocks are found by counting braces outside strings, and a module call's arguments are
+ * the lines written directly in its block; heredoc strings are not recognised. The files scanned for a second writer
+ * are those `git ls-files` lists, so an untracked file is never a finding. A channel that cannot be read withholds the
+ * verdict.
  *
  * Usage:
  *   node scripts/assert-hosted-settings-parity.mjs                      # gate over the repository's files
@@ -100,8 +122,9 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CASES, correctInputs } from './fixtures/hosted-settings-parity/cases.mjs';
-import { readConfig } from './lib/config-toml.mjs';
+import { plainHeaders, readConfig, UNREADABLE_TABLE } from './lib/config-toml.mjs';
 import { asWord, blocks, hclCode, lineAt } from './lib/hcl-text.mjs';
+import { readPageSize } from './lib/static-settings.mjs';
 import { trackedFiles } from './lib/text-guard.mjs';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -144,6 +167,10 @@ const stricter = (table, key, hostedKey, compare, why) => ({
   why
 });
 const none = (table, keys, why) => keys.map((key) => ({ table, key, cls: 'none', why }));
+
+/** Why a function's gateway setting is not compared: the CLI deploys it from config.toml itself. */
+const DEPLOYED_FROM_THIS_FILE =
+  "the CLI's function deploy reads this setting from this file, so the deployed value cannot drift from it; the conformance probe compares the value the project serves";
 
 const ROWS = [
   // must agree
@@ -404,9 +431,16 @@ const ROWS = [
   ...none('auth.third_party.clerk', ['enabled'], 'third-party auth is a separate API and a separate resource'),
   ...none(
     'auth.oauth_server',
-    ['enabled', 'authorization_url_path', 'allow_dynamic_registration'],
-    'whether the hosted API accepts these keys has not yet been observed'
-  )
+    ['enabled', 'allow_dynamic_registration'],
+    'the hosted API refused an auth update holding these two keys without authorization_url_path on 2026-10-22, so the module does not send them'
+  ),
+  ...none(
+    'auth.oauth_server',
+    ['authorization_url_path'],
+    'the hosted settings of a new project do not hold this key, and whether the hosted API accepts it has not been observed'
+  ),
+  ...none('functions.identity-callback', ['verify_jwt'], DEPLOYED_FROM_THIS_FILE),
+  ...none('functions.account-access', ['verify_jwt'], DEPLOYED_FROM_THIS_FILE)
 ];
 
 /** Local redirect entries that have no hosted counterpart, each with the reason. */
@@ -513,12 +547,36 @@ const HCL_OWNED_KEYS = [
   'smtp_pass'
 ];
 
+/** The maps `local.auth` merges, in order: the JSON's auth group, the two hook groups, then the four the HCL builds. */
+const AUTH_MERGE = [
+  'local.hosted.auth',
+  'local.auth_hook',
+  'local.auth_send_email_hook',
+  'local.auth_rate_limits',
+  'local.auth_origin',
+  'local.auth_smtp'
+];
+
+/** What `local.api` is: the JSON's api group and nothing else. */
+const API_VALUE = 'local.hosted.api';
+
 /** The words of the CLI's command that would be a second writer of hosted settings; never held whole in this file. */
 const PUSH_WORDS = ['supabase', 'config', 'push'];
-const PUSH_COMMAND = new RegExp(`\\b${PUSH_WORDS.join('[\\s\\\\]+')}\\b`, 'g');
+/** What may stand between two words: blanks, line continuations, and the quotes, commas and brackets of an array. */
+const PUSH_GAP = '[\\s\\\\"\',\\[\\]]+';
+/** A flag between two words, such as a global `--debug` or `--workdir <dir>`, with its value if it takes one. */
+const PUSH_FLAG = `--?[A-Za-z][\\w-]*(?:=[^\\s"',\\]]*|${PUSH_GAP}(?!-)[^\\s"',\\]]+)?`;
+/**
+ * The command, however it is spelled: the CLI name with an optional `@<version>` (as `npx` and `bunx` run it), then the
+ * two words, with any number of flags in either gap.
+ */
+const PUSH_COMMAND = new RegExp(
+  `\\b${PUSH_WORDS[0]}(?:@[^\\s"',\\]]+)?(?:${PUSH_GAP}${PUSH_FLAG})*${PUSH_GAP}${PUSH_WORDS[1]}(?:${PUSH_GAP}${PUSH_FLAG})*${PUSH_GAP}${PUSH_WORDS[2]}\\b`,
+  'g'
+);
 
 /** The tracked files scanned for a second writer, and the paths of this guard excluded from the scan. */
-const WRITER_DIRS = ['.github/workflows/', 'infra/', 'scripts/'];
+const WRITER_DIRS = ['.github/workflows/', 'infra/', 'scripts/', 'apps/supabase/', 'tests/scripts/'];
 const WRITER_SELF_PATHS = [SELF, 'scripts/fixtures/hosted-settings-parity/'];
 const writerInScope = (file) =>
   (WRITER_DIRS.some((d) => file.startsWith(d)) || file === 'package.json' || file.endsWith('/package.json')) &&
@@ -568,7 +626,11 @@ function gate(paths) {
   process.exitCode = result.findings.length === 0 ? 0 : 1;
 }
 
-/** The variable file of each Supabase root under `envsDir`, one directory per root, in name order. */
+/**
+ * The Supabase roots under the environments directory, in name order: every directory `<env>/<root>` that is named
+ * `supabase` or whose `.tf` files call the Supabase module. A root without a `terraform.tfvars` is kept, marked
+ * missing, so that the check reports it rather than skipping it.
+ */
 function readRoots(envsDir) {
   let entries;
   try {
@@ -576,18 +638,47 @@ function readRoots(envsDir) {
   } catch (error) {
     return { roots: [], error: `could not be read as a directory (${error.code ?? error.message})` };
   }
+  function byName(a, b) {
+    return a.name.localeCompare(b.name);
+  }
   const roots = [];
-  for (const entry of entries.filter((e) => e.isDirectory()).sort((a, b) => a.name.localeCompare(b.name))) {
-    const file = path.join(envsDir, entry.name, 'supabase', 'terraform.tfvars');
-    let exists = false;
+  for (const env of entries.filter((e) => e.isDirectory()).sort(byName)) {
+    let children;
     try {
-      exists = statSync(file).isFile();
-    } catch {
-      exists = false;
+      children = readdirSync(path.join(envsDir, env.name), { withFileTypes: true });
+    } catch (error) {
+      return { roots, error: `${env.name} could not be read as a directory (${error.code ?? error.message})` };
     }
-    if (exists) roots.push({ name: entry.name, ...readChannel(file) });
+    for (const child of children.filter((e) => e.isDirectory() && e.name !== '.terraform').sort(byName)) {
+      const dir = path.join(envsDir, env.name, child.name);
+      const tf = readTfFiles(dir);
+      const callsModule = supabaseCalls(tf.filter((f) => typeof f.text === 'string')).length > 0;
+      if (child.name !== 'supabase' && !callsModule) continue;
+      const file = path.join(dir, 'terraform.tfvars');
+      let exists = false;
+      try {
+        exists = statSync(file).isFile();
+      } catch {
+        exists = false;
+      }
+      roots.push({
+        name: child.name === 'supabase' ? env.name : `${env.name}/${child.name}`,
+        dir: display(dir),
+        tfvars: exists ? readChannel(file) : { file: display(file), text: '', missing: true },
+        tf
+      });
+    }
   }
   return { roots, error: null };
+}
+
+/** The `.tf` files of one directory, one level deep, sorted by name. */
+function readTfFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith('.tf'))
+    .map((e) => e.name)
+    .sort()
+    .map((name) => readChannel(path.join(dir, name)));
 }
 
 /** The tracked files in the scope of the second-writer scan. A file listed but absent from the tree holds nothing. */
@@ -621,9 +712,8 @@ function readChannel(absolute) {
 
 /** The module's `.tf` files, one level deep, by name. */
 function readModule(moduleDir) {
-  let entries;
   try {
-    entries = readdirSync(moduleDir, { withFileTypes: true });
+    return { dir: display(moduleDir), files: readTfFiles(moduleDir), error: null };
   } catch (error) {
     return {
       dir: display(moduleDir),
@@ -631,12 +721,6 @@ function readModule(moduleDir) {
       error: `could not be read as a directory (${error.code ?? error.message})`
     };
   }
-  const files = entries
-    .filter((e) => e.isFile() && e.name.endsWith('.tf'))
-    .map((e) => e.name)
-    .sort()
-    .map((name) => readChannel(path.join(moduleDir, name)));
-  return { dir: display(moduleDir), files, error: null };
 }
 
 /** A path as printed: relative to the repository when inside it, absolute otherwise. */
@@ -651,7 +735,8 @@ function display(absolute) {
  * The findings for one set of inputs.
  *
  * @param inputs - `config`, `settings`, `staticSettings` and `variables` as `{ file, text }`, `envsDir` as a display
- *   name, `roots` as `[{ name, file, text }]`, one per Supabase root's variable file, `module` as
+ *   name, `roots` as `[{ name, dir, tfvars: { file, text }, tf: [{ file, text }] }]`, one per Supabase root with its
+ *   variable file and its `.tf` files, `module` as
  *   `{ dir, files: [{ file, text }], error }`, the module's `.tf` files, and `writers` as `[{ file, text }]`, the files
  *   scanned for a second writer (any outside the scope are skipped).
  * @returns `channelErrors` (when not empty, no comparison was made), `findings` as `{ file, id, what }`, and `census`.
@@ -662,7 +747,9 @@ function check(inputs) {
     if (typeof inputs[channel].text !== 'string')
       channelErrors.push({ file: inputs[channel].file, what: inputs[channel].error ?? 'could not be read' });
   for (const root of inputs.roots)
-    if (typeof root.text !== 'string') channelErrors.push({ file: root.file, what: root.error ?? 'could not be read' });
+    for (const channel of root.tfvars.missing ? root.tf : [root.tfvars, ...root.tf])
+      if (typeof channel.text !== 'string')
+        channelErrors.push({ file: channel.file, what: channel.error ?? 'could not be read' });
   if (inputs.rootsError) channelErrors.push({ file: inputs.envsDir, what: inputs.rootsError });
   if (inputs.module.error) channelErrors.push({ file: inputs.module.dir, what: inputs.module.error });
   else if (inputs.module.files.length === 0) channelErrors.push({ file: inputs.module.dir, what: 'holds no .tf file' });
@@ -691,7 +778,7 @@ function check(inputs) {
   const SETTINGS = inputs.settings.file;
 
   // The local keys: every live key classified, every classified key live.
-  const { keys, problems, live } = readConfig(inputs.config.text, { inTables: inFamily });
+  const { keys, problems, live } = readFamilyConfig(inputs.config.text);
   for (const p of problems) report(CONFIG, p.id, p.what);
   const rowsById = new Map(ROWS.map((r) => [`${r.table}/${r.key}`, r]));
   const counts = { agree: 0, stricter: 0, design: 0, none: 0, unclassified: 0 };
@@ -735,36 +822,53 @@ function check(inputs) {
   const pageSize = readPageSize(inputs.staticSettings.text);
   if (!pageSize.ok) report(inputs.staticSettings.file, 'api/max_rows', pageSize.what);
 
-  // The roots: origins and the hook switches.
+  // The roots: the origin and the hook switches of each call of the module, each read the way Terraform resolves it.
   const origins = [];
   const hookOff = Object.fromEntries(HOOK_SWITCHES.map((h) => [h.variable, []]));
-  const hookDefaults = Object.fromEntries(
-    HOOK_SWITCHES.map((h) => [h.variable, readHookDefault(inputs.variables.text, h.variable)])
-  );
   for (const root of inputs.roots) {
-    const vars = readRootVariables(root.text);
-    for (const p of vars.problems) report(root.file, p.id, p.what);
-    if (vars.origin !== null) origins.push({ root: root.name, file: root.file, origin: vars.origin });
-    for (const { variable, id } of HOOK_SWITCHES) {
-      const hook = vars.hooks[variable];
-      const hookDefault = hookDefaults[variable];
-      if (hook === null) {
-        if (!hookDefault.ok)
-          report(inputs.variables.file, id, `${root.name} leaves ${variable} at its default, and ${hookDefault.what}`);
-        else if (!hookDefault.value)
-          report(
-            inputs.variables.file,
-            id,
-            `${root.name} leaves ${variable} at its default, which is false; the default must be true so the compared hook keys are sent`
-          );
-      } else if (!hook.value) {
-        if (HOOK_OFF_REASON.test(hook.comment)) hookOff[variable].push(root.name);
-        else
-          report(
-            root.file,
-            id,
-            `${variable} = false switches the compared hook keys off for this root; it needs a trailing comment '# hook off until <reason>'`
-          );
+    if (root.tfvars.missing) {
+      report(
+        root.tfvars.file,
+        'root/terraform.tfvars',
+        `${root.name} is a Supabase root with no terraform.tfvars, so the origin and the hook switches it sends are in no tracked file and none of them is checked`
+      );
+      continue;
+    }
+    const vars = readRootVariables(root.tfvars.text);
+    for (const p of vars.problems) report(root.tfvars.file, p.id, p.what);
+    const calls = supabaseCalls(root.tf);
+    if (calls.length === 0) {
+      report(
+        root.dir,
+        'root/module-call',
+        `${root.name} holds no module block whose source ends in modules/supabase, so what the root sends cannot be traced`
+      );
+      continue;
+    }
+    for (const call of calls) {
+      const where = calls.length === 1 ? root.name : `${root.name} (module.${call.label})`;
+      const origin = resolveOrigin({ call, where, root, tfvarsOrigin: vars.origin });
+      if (origin.finding) report(origin.finding.file, 'auth/site_url', origin.finding.what);
+      else origins.push({ root: where, ...origin.origin });
+      for (const { variable, id } of HOOK_SWITCHES) {
+        const value = resolveSwitch({
+          variable,
+          call,
+          where,
+          root,
+          tfvarsHook: vars.hooks[variable],
+          moduleVariables: inputs.variables
+        });
+        if (value.finding) report(value.finding.file, id, value.finding.what);
+        else if (value.off) {
+          if (HOOK_OFF_REASON.test(value.off.comment)) hookOff[variable].push(where);
+          else
+            report(
+              value.off.file,
+              id,
+              `${variable} = false switches the compared hook keys off for ${where}; it needs a trailing comment '# hook off until <reason>'`
+            );
+        }
       }
     }
   }
@@ -830,59 +934,61 @@ function check(inputs) {
 
 // ── Reading ──
 
-/** Whether a table belongs to the families this guard classifies. */
+/** Whether a table belongs to the families this guard classifies. `UNREADABLE_TABLE`, the table the keys after a header the line read cannot read are attributed to, counts as in the family. */
 function inFamily(table) {
-  return table === 'api' || table === 'api.tls' || table === 'auth' || table.startsWith('auth.');
+  return (
+    table === UNREADABLE_TABLE ||
+    table === 'api' ||
+    table === 'api.tls' ||
+    table === 'auth' ||
+    table.startsWith('auth.') ||
+    table.startsWith('functions.')
+  );
 }
 
 /**
- * `dataAdapter.pageSize` from the static settings, by a line read inside the `dataAdapter` block.
+ * Every live key of the classified table families, read by `readConfig` after each table header is written in its
+ * plain form. A header that still cannot be read is a finding wherever it stands, and the keys under it are attributed
+ * to a table that is in the family, so that each fails as unclassified.
  *
- * @returns `{ ok: true, value }`, or `{ ok: false, what }`.
+ * @param text - The configuration text.
+ * @returns `keys`, `problems` and `live`, as `readConfig` returns them.
  */
-function readPageSize(text) {
-  const lines = text.split('\n');
-  const start = lines.findIndex((l) => /^\s*dataAdapter\s*:\s*\{/.test(l));
-  if (start === -1) return { ok: false, what: 'no `dataAdapter: {` block was found' };
-  let depth = 0;
-  const values = [];
-  let unreadable = null;
-  for (let i = start; i < lines.length; i += 1) {
-    const code = lines[i].replace(/\/\/.*$/, '');
-    if (i > start && depth === 1 && /^\s*pageSize\s*:/.test(code)) {
-      const m = /^\s*pageSize\s*:\s*(\d+)\s*,?\s*$/.exec(code);
-      if (m) values.push(Number(m[1]));
-      else unreadable = lines[i].trim();
+function readFamilyConfig(text) {
+  const plain = plainHeaders(text);
+  const headerProblems = plain.unreadable.map(({ line, index }) => ({
+    id: 'config/table-header',
+    what: `line ${index + 1}: the table header '${line.trim()}' cannot be read, so the keys under it cannot be classified`
+  }));
+  const { keys, problems, live } = readConfig(plain.text, { inTables: inFamily });
+  return { keys, problems: [...headerProblems, ...problems], live };
+}
+
+/**
+ * The default of one boolean variable, read from the first of `files` that declares it.
+ *
+ * @param files - `[{ file, text }]`, the `.tf` files of a module or a root.
+ * @returns `{ declared: false }`; or `{ declared: true, file, ok: true, value }`, where `value` is `true`, `false` or
+ *   `null` for no default; or `{ declared: true, file, ok: false, what }`.
+ */
+function readBoolDefault(files, variable) {
+  for (const { file, text } of files) {
+    const lines = text.split('\n');
+    const start = lines.findIndex((l) => new RegExp(`^\\s*variable\\s+"?${variable}"?\\s*\\{`).test(l));
+    if (start === -1) continue;
+    const values = [];
+    for (let i = start + 1; i < lines.length && !/^\}/.test(lines[i]); i += 1) {
+      const m = /^\s*default\s*=\s*(\S+)\s*(?:#.*)?$/.exec(lines[i]);
+      if (m) values.push(m[1]);
     }
-    depth += (code.match(/\{/g) ?? []).length - (code.match(/\}/g) ?? []).length;
-    if (depth <= 0) break;
+    if (values.length === 0) return { declared: true, file, ok: true, value: null };
+    if (values.length > 1)
+      return { declared: true, file, ok: false, what: `the variable ${variable} has ${values.length} default lines` };
+    if (values[0] !== 'true' && values[0] !== 'false')
+      return { declared: true, file, ok: false, what: `the default ${values[0]} of ${variable} is not a bare boolean` };
+    return { declared: true, file, ok: true, value: values[0] === 'true' };
   }
-  if (unreadable !== null)
-    return { ok: false, what: `the line '${unreadable}' is not a pageSize the line read can read` };
-  if (values.length === 0) return { ok: false, what: 'the `dataAdapter` block holds no pageSize' };
-  if (values.length > 1) return { ok: false, what: `the \`dataAdapter\` block holds pageSize ${values.length} times` };
-  return { ok: true, value: values[0] };
-}
-
-/**
- * The default of one hook switch in the module's `variables.tf`.
- *
- * @returns `{ ok: true, value }`, or `{ ok: false, what }`.
- */
-function readHookDefault(text, variable) {
-  const lines = text.split('\n');
-  const start = lines.findIndex((l) => new RegExp(`^\\s*variable\\s+"${variable}"\\s*\\{`).test(l));
-  if (start === -1) return { ok: false, what: `the module declares no variable ${variable}` };
-  const values = [];
-  for (let i = start + 1; i < lines.length && !/^\}/.test(lines[i]); i += 1) {
-    const m = /^\s*default\s*=\s*(\S+)\s*(?:#.*)?$/.exec(lines[i]);
-    if (m) values.push(m[1]);
-  }
-  if (values.length !== 1)
-    return { ok: false, what: `the variable ${variable} has ${values.length} default line(s), not one` };
-  if (values[0] !== 'true' && values[0] !== 'false')
-    return { ok: false, what: `the default ${values[0]} is not a bare boolean` };
-  return { ok: true, value: values[0] === 'true' };
+  return { declared: false };
 }
 
 /**
@@ -920,6 +1026,260 @@ function readRootVariables(text) {
     hooks[variable] = list.length === 1 ? list[0] : null;
   }
   return { origin: origins.length === 1 ? origins[0] : null, hooks, problems };
+}
+
+/**
+ * As `blocks`, with each block's header match and the offset of its opening brace.
+ *
+ * @param code - Code from `hclCode`.
+ * @param header - The source of a regular expression that ends with the opening brace.
+ * @returns `[{ match, open, body }]`, one per matching header, in order; `body` is null when its braces do not close.
+ */
+function blocksAt(code, header) {
+  const re = new RegExp(header, 'g');
+  return blocks(code, header).map((body) => {
+    const match = re.exec(code);
+    return { match, open: match.index + match[0].length - 1, body };
+  });
+}
+
+/**
+ * The arguments written directly in a block, not in a block or a value nested inside it: one per line whose depth at
+ * its start is the block's own, as `{ name, value, line }`. A value that spans lines is read up to the end of its first
+ * line.
+ *
+ * @param body - A block from `blocksAt`, starting at its opening brace.
+ * @param firstLine - The line number of the opening brace.
+ */
+function topLevelArguments(body, firstLine) {
+  const found = [];
+  let depth = 1;
+  let inString = false;
+  let line = firstLine;
+  let lineDepth = 1;
+  let lineStart = 1;
+  let text = '';
+  function flush() {
+    const m = lineDepth === 1 ? /^\s*([A-Za-z0-9_-]+)\s*=\s*(.*?)\s*$/.exec(text) : null;
+    if (m)
+      found.push({
+        name: m[1],
+        value: m[2],
+        line,
+        expression: fullExpression(body, lineStart + text.indexOf('=') + 1)
+      });
+  }
+  for (let i = 1; i < body.length; i += 1) {
+    const c = body[i];
+    if (c === '\n') {
+      flush();
+      line += 1;
+      lineDepth = depth;
+      lineStart = i + 1;
+      inString = false;
+      text = '';
+      continue;
+    }
+    if (inString) {
+      if (c === '\\') {
+        text += c + (body[i + 1] ?? '');
+        i += 1;
+        continue;
+      }
+      if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if ('{[('.includes(c)) depth += 1;
+    else if ('}])'.includes(c)) {
+      depth -= 1;
+      if (depth === 0) break;
+    }
+    text += c;
+  }
+  flush();
+  return found;
+}
+
+/**
+ * The whole expression that starts at `start`, across lines: up to the first line end, or the block's closing brace,
+ * at which every bracket opened since `start` is closed again.
+ */
+function fullExpression(body, start) {
+  let depth = 0;
+  let inString = false;
+  let i = start;
+  for (; i < body.length; i += 1) {
+    const c = body[i];
+    if (inString) {
+      if (c === '\\') i += 1;
+      else if (c === '"' || c === '\n') inString = false;
+    } else if (c === '"') inString = true;
+    else if ('{[('.includes(c)) depth += 1;
+    else if ('}])'.includes(c)) {
+      if (depth === 0) break;
+      depth -= 1;
+    } else if (c === '\n' && depth === 0) break;
+  }
+  return body.slice(start, i).trim();
+}
+
+/** The arguments of a call written as its whole text, `name(a, b, ...)`, split at its top-level commas; null otherwise. */
+function callArguments(expression, name) {
+  const m = new RegExp(`^${name}\\s*\\(([\\s\\S]*)\\)$`).exec(expression);
+  if (!m) return null;
+  const args = [];
+  let depth = 0;
+  let inString = false;
+  let from = 0;
+  const inner = m[1];
+  for (let i = 0; i < inner.length; i += 1) {
+    const c = inner[i];
+    if (inString) {
+      if (c === '\\') i += 1;
+      else if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if ('{[('.includes(c)) depth += 1;
+    else if ('}])'.includes(c)) depth -= 1;
+    else if (c === ',' && depth === 0) {
+      args.push(inner.slice(from, i).trim());
+      from = i + 1;
+    }
+  }
+  args.push(inner.slice(from).trim());
+  return args.filter((a) => a !== '');
+}
+
+/** A module source that names the Supabase module. */
+const SUPABASE_MODULE_SOURCE = /(?:^|\/)modules\/supabase\/?$/;
+
+/**
+ * The calls of the Supabase module in one root's `.tf` files: every `module` block whose `source` ends in
+ * `modules/supabase`, with its arguments. Each argument carries the trailing comment of its line in the file as
+ * written, since the code it is read from has its comments removed.
+ *
+ * @param tfFiles - `[{ file, text }]`.
+ * @returns `[{ file, label, args: [{ name, value, line, comment }] }]`.
+ */
+function supabaseCalls(tfFiles) {
+  const calls = [];
+  for (const { file, text } of tfFiles) {
+    const raw = text.split('\n');
+    const code = hclCode(text);
+    for (const { match, open, body } of blocksAt(code, '(?<![A-Za-z0-9_.])module\\s+"?([A-Za-z0-9_-]+)"?\\s*\\{')) {
+      if (body === null) continue;
+      const args = topLevelArguments(body, lineAt(code, open)).map((a) => {
+        const after = raw[a.line - 1].slice(raw[a.line - 1].indexOf('=') + 1);
+        return { ...a, comment: /(?:#|\/\/)\s*(.*?)\s*$/.exec(after)?.[1] ?? '' };
+      });
+      const source = /^"([^"]*)"$/.exec(args.find((a) => a.name === 'source')?.value ?? '')?.[1];
+      if (source !== undefined && SUPABASE_MODULE_SOURCE.test(source)) calls.push({ file, label: match[1], args });
+    }
+  }
+  return calls;
+}
+
+/**
+ * The value one hook switch takes in one call of the module, resolved the way Terraform resolves it: the argument of the
+ * module call; when that is `var.<switch>`, the root's `terraform.tfvars` assignment and then the root variable's
+ * default; when the call omits it, the module variable's default.
+ *
+ * @returns `{ on: true }`; `{ off: { file, comment } }`, a `false` held to the hook-off rule; or `{ finding: { file,
+ *   what } }`, a value that is false with no way to exempt it, or that cannot be traced to a tracked file.
+ */
+function resolveSwitch({ variable, call, where, root, tfvarsHook, moduleVariables }) {
+  const args = call.args.filter((a) => a.name === variable);
+  if (args.length > 1)
+    return { finding: { file: call.file, what: `${where} passes ${variable} ${args.length} times to the module` } };
+  if (args.length === 0) {
+    const d = readBoolDefault([moduleVariables], variable);
+    if (!d.declared)
+      return {
+        finding: {
+          file: moduleVariables.file,
+          what: `${where} leaves ${variable} to the module, which declares no such variable`
+        }
+      };
+    if (!d.ok)
+      return { finding: { file: d.file, what: `${where} leaves ${variable} to the module's default, and ${d.what}` } };
+    if (d.value === null)
+      return {
+        finding: {
+          file: d.file,
+          what: `${where} omits ${variable} from its module call, and the module declares no default for it`
+        }
+      };
+    if (!d.value)
+      return {
+        finding: {
+          file: d.file,
+          what: `${where} leaves ${variable} at the module's default, which is false; the default must be true so the compared hook keys are sent`
+        }
+      };
+    return { on: true };
+  }
+  const [arg] = args;
+  if (arg.value === 'true') return { on: true };
+  if (arg.value === 'false') return { off: { file: call.file, comment: arg.comment } };
+  if (arg.value !== `var.${variable}`)
+    return {
+      finding: {
+        file: call.file,
+        what: `${where} passes ${variable} = ${arg.value} to the module; only var.${variable}, true or false can be read, so the value the hook takes cannot be traced`
+      }
+    };
+  const d = readBoolDefault(root.tf, variable);
+  if (!d.declared)
+    return { finding: { file: call.file, what: `${where} passes var.${variable}, which the root does not declare` } };
+  if (tfvarsHook !== null)
+    return tfvarsHook.value ? { on: true } : { off: { file: root.tfvars.file, comment: tfvarsHook.comment } };
+  if (!d.ok)
+    return { finding: { file: d.file, what: `${where} leaves ${variable} out of terraform.tfvars, and ${d.what}` } };
+  if (d.value === null)
+    return {
+      finding: {
+        file: root.tfvars.file,
+        what: `${where} leaves ${variable} out of terraform.tfvars and its variable has no default, so the value the hook takes is in no tracked file`
+      }
+    };
+  if (!d.value)
+    return {
+      finding: {
+        file: d.file,
+        what: `${where} leaves ${variable} out of terraform.tfvars, and the root's default is false; a root switches a hook off only by an assignment in terraform.tfvars that carries the stated comment`
+      }
+    };
+  return { on: true };
+}
+
+/**
+ * The public origin one call of the module sends: the root's `terraform.tfvars` assignment when the call passes
+ * `var.public_origin`, the string itself when it passes a string literal.
+ *
+ * @returns `{ origin: { file, origin } }`, or `{ finding: { file, what } }`.
+ */
+function resolveOrigin({ call, where, root, tfvarsOrigin }) {
+  const args = call.args.filter((a) => a.name === 'public_origin');
+  if (args.length !== 1)
+    return {
+      finding: { file: call.file, what: `${where} passes public_origin ${args.length} times to the module, not once` }
+    };
+  const [arg] = args;
+  if (arg.value === 'var.public_origin') {
+    if (tfvarsOrigin !== null) return { origin: { file: root.tfvars.file, origin: tfvarsOrigin } };
+    return {
+      finding: {
+        file: root.tfvars.file,
+        what: `${where} passes var.public_origin, and its terraform.tfvars assigns none, so the origin it sends is not checked`
+      }
+    };
+  }
+  const literal = /^"([^"\\$%]*)"$/.exec(arg.value);
+  if (literal) return { origin: { file: call.file, origin: literal[1] } };
+  return {
+    finding: {
+      file: call.file,
+      what: `${where} passes public_origin = ${arg.value} to the module; only var.public_origin or a plain string can be read, so the origin cannot be checked`
+    }
+  };
 }
 
 // ── Comparing ──
@@ -1097,6 +1457,53 @@ function checkModule(module, settings, settingsFile, report) {
         `no supabase_settings resource takes ${attribute} = jsonencode(local.${attribute}), so the settings built from the JSON are not what is sent`
       );
 
+  // What local.auth and local.api are built from: nothing but the expected maps.
+  const localArguments = files.flatMap((f) =>
+    blocksAt(f.code, '(?<![A-Za-z0-9_])locals\\s*\\{')
+      .filter((b) => b.body !== null)
+      .flatMap((b) => topLevelArguments(b.body, lineAt(f.code, b.open)).map((a) => ({ file: f.file, ...a })))
+  );
+  function oneLine(expression) {
+    return expression.replace(/\s+/g, ' ');
+  }
+  const authDefinitions = localArguments.filter((a) => a.name === 'auth');
+  const authIsMerge = authDefinitions.length === 1 && callArguments(authDefinitions[0].expression, 'merge') !== null;
+  if (authDefinitions.length !== 1)
+    report(DIR, 'module/local.auth', `local.auth is defined ${authDefinitions.length} times, not once`);
+  else if ((callArguments(authDefinitions[0].expression, 'merge') ?? []).join(', ') !== AUTH_MERGE.join(', '))
+    report(
+      authDefinitions[0].file,
+      'module/local.auth',
+      `local.auth is ${oneLine(authDefinitions[0].expression)}, not merge(${AUTH_MERGE.join(', ')}) in that order; any other map merged into it could set a compared key, and the comparison would stay green`
+    );
+  const apiDefinitions = localArguments.filter((a) => a.name === 'api');
+  if (apiDefinitions.length !== 1)
+    report(DIR, 'module/local.api', `local.api is defined ${apiDefinitions.length} times, not once`);
+  else if (apiDefinitions[0].expression !== API_VALUE)
+    report(
+      apiDefinitions[0].file,
+      'module/local.api',
+      `local.api is ${oneLine(apiDefinitions[0].expression)}, not ${API_VALUE}; anything else could set a compared key, and the comparison would stay green`
+    );
+  const merges = (all.match(/(?<![A-Za-z0-9_])merge\s*\(/g) ?? []).length - (authIsMerge ? 1 : 0);
+  if (merges > 0)
+    report(
+      firstFileWith(/(?<![A-Za-z0-9_])merge\s*\(/),
+      'module/merge',
+      `the module's code calls merge ${merges} time(s) besides local.auth; a merged map can carry any key into the settings that are sent`
+    );
+  for (const { file, code } of files)
+    for (const { body, open } of blocksAt(code, '(?<![A-Za-z0-9_])variable\\s+"?([A-Za-z0-9_-]+)"?\\s*\\{')) {
+      if (body === null) continue;
+      const type = topLevelArguments(body, lineAt(code, open)).find((a) => a.name === 'type');
+      if (type !== undefined && /(?<![A-Za-z0-9_])(?:any|map)(?![A-Za-z0-9_])/.test(type.expression))
+        report(
+          file,
+          'module/variable-type',
+          `line ${type.line}: a variable of type ${oneLine(type.expression)} has keys its type does not fix, so it can carry any key into the settings that are sent`
+        );
+    }
+
   // Known keys: each key of a settings group known to the settings attribute it is sent through.
   const jsonOwned = new Set();
   for (const [group, value] of Object.entries(settings)) {
@@ -1225,7 +1632,7 @@ function censusLine(census) {
   const classes = Object.entries(CLASS_NAMES).map(([cls, name]) => `${name} ${counts[cls]}`);
   if (counts.unclassified > 0) classes.push(`unclassified ${counts.unclassified}`);
   return (
-    `census: ${census.live} live key(s) of [api], [api.tls], [auth] and [auth.*]: ${classes.join(', ')}; ` +
+    `census: ${census.live} live key(s) of [api], [api.tls], [auth], [auth.*] and [functions.*]: ${classes.join(', ')}; ` +
     `${census.origins} origin(s) checked across ${census.roots} Supabase root(s); ` +
     HOOK_SWITCHES.map(({ variable, label }) => {
       const roots = census.hookOff[variable];

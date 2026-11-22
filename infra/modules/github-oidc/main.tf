@@ -1,4 +1,6 @@
-# The GitHub OIDC provider of one AWS account, the plan role and one environment's deploy role. AWS allows one provider per issuer URL in an account, so the module is called once per account.
+# The GitHub OIDC provider of one AWS account, the plan role and one environment's deploy role. AWS allows one provider per issuer URL in an account, so the module is called once per account, and one account hosts one deployment environment: a second environment, such as production beside staging, gets an account of its own.
+#
+# var.environment names that deployment environment, from which the deploy role, its state policy and the frontend resources and log group its policies are scoped to take their names. The GitHub Environments whose jobs may assume the deploy role are a separate list, the subjects in var.deploy_subjects, and need not share that name.
 
 terraform {
   required_version = "~> 1.16"

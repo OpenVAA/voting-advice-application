@@ -1,5 +1,5 @@
 /**
- * The account-side inline-policy check's own self-test, run from the unit gate.
+ * The inline-policy check's own self-test, run from the unit gate.
  *
  * `infra/scripts/check-inline-policies.sh` is run by an operator with credentials, and the lines it prints are pasted into a public record. Its `--self-test` mode needs no credentials: it feeds canned lines to the judge and canned values to the redaction, so a change to either is caught here rather than on an operator's machine.
  *

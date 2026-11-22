@@ -185,7 +185,8 @@ const TEST_RUNNER = /(^|[\s&|;])vitest(\s|$)/;
  * `test:unit` script; Check 3 then holds the two together.
  */
 const NON_WORKSPACE_SUITES = [
-  { config: 'tests/vitest.config.ts', script: 'test:unit:tests', include: 'tests/tests/utils/' }
+  { config: 'tests/vitest.config.ts', script: 'test:unit:tests', include: 'tests/tests/utils/' },
+  { config: 'infra/vitest.config.ts', script: 'test:unit:infra', include: 'infra/scripts/' }
 ];
 
 /**

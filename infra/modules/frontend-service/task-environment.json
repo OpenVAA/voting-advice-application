@@ -1,0 +1,190 @@
+{
+  "variables": [
+    {
+      "name": "PUBLIC_SUPABASE_URL",
+      "source": "value",
+      "required": true,
+      "description": "The origin of the Supabase API the application queries, the project's API URL as the Supabase dashboard shows it."
+    },
+    {
+      "name": "PUBLIC_SUPABASE_ANON_KEY",
+      "source": "parameter",
+      "required": true,
+      "description": "The Supabase project's anon key. It is public by design and reaches every browser, but it is kept in the parameter store because it is a signed token, which secret scanners and the repository's reply screen refuse to see in a tracked file."
+    },
+    {
+      "name": "PUBLIC_PROJECT_ID",
+      "source": "value",
+      "required": true,
+      "description": "The id of the project every query the application issues is scoped to; there is no fallback, so it must name a project that exists in the database."
+    },
+    {
+      "name": "ORIGIN",
+      "source": "value",
+      "required": true,
+      "description": "The public origin of the deployment as a browser sees it, scheme and host with no trailing slash; without it the server takes each request's origin from headers the client sets."
+    },
+    {
+      "name": "ADDRESS_HEADER",
+      "source": "value",
+      "required": false,
+      "description": "The request header in which the nearest trusted proxy sets the client address, usually x-forwarded-for behind a load balancer."
+    },
+    {
+      "name": "XFF_DEPTH",
+      "source": "value",
+      "required": false,
+      "description": "The number of trusted proxies in front of the server, counted from the right of the address header; set it to the number of proxies the deployment actually has."
+    },
+    {
+      "name": "KEEP_ALIVE_TIMEOUT",
+      "source": "value",
+      "required": false,
+      "description": "Seconds the server keeps an idle connection open; set it above the load balancer's idle timeout so the load balancer, not the server, closes idle connections."
+    },
+    {
+      "name": "HEADERS_TIMEOUT",
+      "source": "value",
+      "required": false,
+      "description": "Seconds the server waits for a request's headers; set it above KEEP_ALIVE_TIMEOUT so a reused connection is never cut while its next request is arriving."
+    },
+    {
+      "name": "SHUTDOWN_TIMEOUT",
+      "source": "value",
+      "required": false,
+      "description": "Seconds the server waits for requests in flight after a stop signal before it exits; set it below the container's stop timeout so the process exits by itself rather than being killed."
+    },
+    {
+      "name": "PUBLIC_LOG_LEVEL",
+      "source": "value",
+      "required": false,
+      "description": "The minimum level the structured logger emits, one of debug, info, warn or error; unset falls back to warn."
+    },
+    {
+      "name": "ANALYTICS_PROVIDER",
+      "source": "value",
+      "required": false,
+      "description": "Where analytics events go, one of none, log or posthog; unset means none, and posthog without a key is refused at start."
+    },
+    {
+      "name": "ANALYTICS_CONSENT_MODE",
+      "source": "value",
+      "required": false,
+      "description": "Whether events wait for the voter's consent, gated (the default) or free; whether consent is needed is for the deployer to determine."
+    },
+    {
+      "name": "ANALYTICS_VISIT_ID_MODE",
+      "source": "value",
+      "required": false,
+      "description": "How a visit is identified across events, memory (the default) or none."
+    },
+    {
+      "name": "ANALYTICS_POSTHOG_HOST",
+      "source": "value",
+      "required": false,
+      "description": "The PostHog host events are forwarded to, an https origin; unset means the PostHog EU cloud."
+    },
+    {
+      "name": "ANALYTICS_FLUSH_INTERVAL_MS",
+      "source": "value",
+      "required": false,
+      "description": "How often the server hands queued analytics events to the provider, in milliseconds, an integer from 500 to 600000; unset means 2000. An invalid value refuses start and names the variable. A long interval is for observing the shutdown flush and the full queue only."
+    },
+    {
+      "name": "ANALYTICS_POSTHOG_KEY",
+      "source": "parameter",
+      "required": false,
+      "description": "The PostHog project key events are forwarded with; it is a secret and is read only when ANALYTICS_PROVIDER is posthog."
+    },
+    {
+      "name": "DEPLOYMENT_DIAGNOSTICS",
+      "source": "value",
+      "required": false,
+      "description": "Set to true to switch on /api/diagnostics, which reports the resolved origin, client address and forwarding headers; set it only while a proxy setup is being checked, and false otherwise."
+    },
+    {
+      "name": "PUBLIC_IDENTITY_PROVIDER_TYPE",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The identity provider bank authentication uses, signicat-ftn or idura-ftn. The module sets it from the root's identity_provider_type, so environment_values does not."
+    },
+    {
+      "name": "PUBLIC_IDENTITY_PROVIDER_CLIENT_ID",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The client id of the application at the identity provider; identity-callback checks the same value, its IDENTITY_PROVIDER_CLIENT_ID secret, as the token's audience."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_JWKS_URI",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The URL of the identity provider's signing key set, the jwks_uri of its live openid-configuration, verbatim; identity-callback reads the same value."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_ISSUER",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The issuer of the identity provider's tokens, the issuer of its live openid-configuration, verbatim; identity-callback reads the same value."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_DECRYPTION_JWKS",
+      "source": "parameter",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The private key set, a JSON array, that decrypts the identity provider's encrypted ID tokens; a secret, and identity-callback reads the same value."
+    },
+    {
+      "name": "IDENTITY_CALLBACK_SERVER_SECRET",
+      "source": "parameter",
+      "required": false,
+      "identity_providers": ["signicat-ftn", "idura-ftn"],
+      "description": "The secret the server sends to identity-callback, which refuses every request without it; a secret that must equal the function's IDENTITY_CALLBACK_SERVER_SECRET."
+    },
+    {
+      "name": "PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn"],
+      "description": "Signicat's authorization endpoint, from its openid-configuration, to which the browser is sent to sign in."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_TOKEN_ENDPOINT",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["signicat-ftn"],
+      "description": "Signicat's token endpoint, from its openid-configuration, at which the server exchanges the authorization code."
+    },
+    {
+      "name": "IDENTITY_PROVIDER_CLIENT_SECRET",
+      "source": "parameter",
+      "required": false,
+      "identity_providers": ["signicat-ftn"],
+      "description": "The client secret of the application at Signicat, with which the server exchanges the authorization code; a secret."
+    },
+    {
+      "name": "IDURA_DOMAIN",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["idura-ftn"],
+      "description": "The domain of the Idura broker, such as example.idura.broker."
+    },
+    {
+      "name": "IDURA_SIGNING_KEY_KID",
+      "source": "value",
+      "required": false,
+      "identity_providers": ["idura-ftn"],
+      "description": "The key id, in IDURA_SIGNING_JWKS, of the key the server signs its Idura requests with."
+    },
+    {
+      "name": "IDURA_SIGNING_JWKS",
+      "source": "parameter",
+      "required": false,
+      "identity_providers": ["idura-ftn"],
+      "description": "The private key set, a JSON array, with which the server signs its requests to Idura and authenticates as the client; a secret."
+    }
+  ]
+}

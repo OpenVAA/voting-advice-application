@@ -2,11 +2,28 @@
 #
 # cli.sh -- The command-line helpers that shell scripts of this repository share. Sourced, never run.
 #
-# The sourcing script sets SCRIPT_NAME, the name its messages carry, and REPO_ROOT before it sources this file. Its header, from the second line to `set -euo pipefail`, is its usage text.
+# The sourcing script sets SCRIPT_NAME, the name its messages carry, before it sources this file, and REPO_ROOT when it calls resolve_path. Its header, from the second line to `set -euo pipefail`, is its usage text.
+#
+# A script that sets USAGE_LINE, its synopsis without the script name, has a one-line usage instead: a usage error prints the message and `usage: <SCRIPT_NAME> <USAGE_LINE>`, and `--help` prints the header through print_header.
 
 # Prints the sourcing script's header. Delimiting the header block rather than hardcoding a line range keeps the exit-code table from being truncated when the header grows.
 usage() {
   sed -n '2,/^set -euo pipefail/p' "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}" | sed '$d'
+}
+
+# Prints the one-line usage to standard error.
+usage_line() {
+  echo "usage: $SCRIPT_NAME $USAGE_LINE" >&2
+}
+
+# Prints the sourcing script's header, from the second line to the first line that is not a comment, without the comment marks.
+print_header() {
+  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}"
+}
+
+# $1 = message. Prints a progress or error note to standard error.
+note() {
+  echo "$SCRIPT_NAME: $1" >&2
 }
 
 # $1 = message, $2 = exit code.
@@ -15,8 +32,13 @@ fatal() {
   exit "$2"
 }
 
-# $1 = message. Prints the usage and exits 2.
+# $1 = message. Prints the usage and exits 2: the one-line usage after the message when USAGE_LINE is set, else the header before a FATAL line.
 usage_error() {
+  if [ -n "${USAGE_LINE:-}" ]; then
+    echo "$SCRIPT_NAME: $1" >&2
+    usage_line
+    exit 2
+  fi
   usage >&2
   fatal "$1" 2
 }
@@ -61,4 +83,13 @@ port_has_listener() {
   (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null && return 0
   (exec 3<>"/dev/tcp/::1/$1") 2>/dev/null && return 0
   return 1
+}
+
+# Prints the id of every process below $1.
+descendants() {
+  local child
+  for child in $(pgrep -P "$1" 2>/dev/null || true); do
+    echo "$child"
+    descendants "$child"
+  done
 }

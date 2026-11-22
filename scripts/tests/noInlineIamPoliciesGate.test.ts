@@ -9,10 +9,11 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -32,8 +33,19 @@ const FINDING_NAMES = [
   'aws_ssoadmin_permission_set_inline_policy',
   'aws_iam_policy_attachment',
   'aws_iam_*_policies_exclusive not empty',
-  'path matches .tf.json file'
+  'module source outside the root',
+  'awscc_iam_*_policy',
+  'awscc_iam_* policies',
+  'cloudformation stack',
+  'path matches .tf.json file',
+  'path matches symbolic link'
 ];
+
+/** The directories the tests below build, removed after the run. */
+const TEMP_DIRS: Array<string> = [];
+afterAll(() => {
+  for (const dir of TEMP_DIRS) rmSync(dir, { recursive: true, force: true });
+});
 
 const ROOT_PACKAGE_JSON = JSON.parse(readFileSync(resolve(REPO_ROOT, 'package.json'), 'utf8')) as {
   scripts: Record<string, string>;
@@ -83,6 +95,19 @@ describe('the no-inline-IAM-policies guard still has teeth', () => {
     const result = runGuard(['--root', FIXTURE_OK]);
     expect(result.status).toBe(0);
     expect(result.stdout).toBe('');
+  });
+
+  it('reports a symbolic link to an inline policy outside the root, which Terraform would follow', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'no-inline-iam-policies-'));
+    TEMP_DIRS.push(dir);
+    mkdirSync(join(dir, 'root'));
+    mkdirSync(join(dir, 'outside'));
+    writeFileSync(join(dir, 'root/main.tf'), 'resource "aws_iam_user" "u" {\n  name = "u"\n}\n');
+    writeFileSync(join(dir, 'outside/iam.tf'), 'resource "aws_iam_role_policy" "p" {\n  role = "r"\n}\n');
+    symlinkSync('../outside/iam.tf', join(dir, 'root/linked.tf'));
+    const result = runGuard(['--root', join(dir, 'root')]);
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('linked.tf: path matches symbolic link');
   });
 
   it('reproduces its committed findings in self-test mode', () => {
