@@ -1,4 +1,4 @@
-FROM node:24-alpine AS base
+FROM node:24.21.0-alpine@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS base
 
 WORKDIR /opt
 
@@ -27,7 +27,7 @@ WORKDIR /opt
 # Build all shared modules
 RUN yarn build
 
-FROM base AS frontend
+FROM base AS production
 
 WORKDIR /opt
 
@@ -35,23 +35,12 @@ WORKDIR /opt
 COPY --from=shared /opt/packages packages
 COPY --from=shared /opt/apps/frontend apps/frontend
 
-FROM frontend AS development
-
-WORKDIR /opt
-
-EXPOSE 5173
-CMD yarn workspace @openvaa/frontend dev --host
-
-FROM frontend AS production
-
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
 # The commit the image is built from. The build takes it as its version name; left empty, the name is time-based.
 ARG BUILD_SHA=""
 ENV BUILD_SHA=${BUILD_SHA}
-
-WORKDIR /opt
 
 RUN yarn workspace @openvaa/frontend build
 
