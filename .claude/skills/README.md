@@ -162,6 +162,8 @@ bash .claude/scripts/audit-skill-routing.sh ; echo "exit=$?"
 | `database` | **OK** — 3 destinations at depth 1, none an index | **VIOLATION** — same stem | `bash .claude/scripts/audit-skill-routing.sh database` |
 | `filters` | **OK** — 1 destination at depth 1, not an index | **VIOLATION** — same stem | `bash .claude/scripts/audit-skill-routing.sh filters` |
 | `matching` | **OK** — 2 destinations at depth 1, neither an index | **VIOLATION** — same stem | `bash .claude/scripts/audit-skill-routing.sh matching` |
+| `openvaa-pr` | **OK** — 1 destination at depth 1, not an index (measured 2026-11-19) | **OK** — opens `take an ordinary openvaa feature` | `bash .claude/scripts/audit-skill-routing.sh openvaa-pr` |
+| `openvaa-review` | **OK** — 6 destinations at depth 1, none an index (measured 2026-11-19) | **OK** — opens `human-review brief for an` | `bash .claude/scripts/audit-skill-routing.sh openvaa-review` |
 | `ship-review-stack` | **OK** — 0 corpus destinations; the body carries its own instructions | **OK** — opens `procedure for taking a large` | `bash .claude/scripts/audit-skill-routing.sh ship-review-stack` |
 | `spike-findings-voting-advice-application-gsd` | **VIOLATION** — 2 index sections in the body, plus 4 depth-2 chains through 3 of its reference files | **OK** — opens `implementation blueprint from spike experiments` | `bash .claude/scripts/audit-skill-routing.sh spike-findings-voting-advice-application-gsd` |
 | `CLAUDE.md § Skill Routing` (not a directory, but a routing layer) | **OK, by a stated waiver** — its one file destination is this record; see the marker above | n/a — it has no `description` | `bash .claude/scripts/audit-skill-routing.sh CLAUDE.md` |
