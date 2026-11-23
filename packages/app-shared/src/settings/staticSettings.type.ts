@@ -33,7 +33,7 @@ export type StaticSettings = {
    */
   readonly dataAdapter: LocalDataAdapter | SupabaseDataAdapter;
   /**
-   * The main DaisyUI colors used by the application. These have to be defined separately for both the light (default) and dark themes. Only some of the named colors are used in the application: e.g., 'warning' is also used for 'error'.
+   * The main DaisyUI colors used by the application, written into the frontend's DaisyUI light and dark themes at build time. These have to be defined separately for both the light (default) and dark themes. Only some of the named colors are used in the application: e.g., 'warning' is also used for 'error'. Every color is a six-digit hex value, e.g. `#2546a8`.
    */
   readonly colors: {
     readonly light: {
@@ -46,6 +46,18 @@ export type StaticSettings = {
       readonly 'base-300': string;
       readonly warning: string;
       readonly 'line-color': string;
+      /** The text colour on `primary`, also set as `success-content`. Omitting it keeps the built-in value. */
+      readonly 'primary-content'?: string;
+      /** The text colour on `secondary`. Omitting it keeps the built-in value. */
+      readonly 'secondary-content'?: string;
+      /** The text colour on `accent`, also set as `info-content`. Omitting it keeps the built-in value. */
+      readonly 'accent-content'?: string;
+      /** The text colour on `neutral`. Omitting it keeps the built-in value. */
+      readonly 'neutral-content'?: string;
+      /** The text colour on the `base-*` colours. Omitting it keeps the built-in value. */
+      readonly 'base-content'?: string;
+      /** The text colour on `warning`, also set as `error-content`. Omitting it keeps the built-in value. */
+      readonly 'warning-content'?: string;
     };
     readonly dark: {
       readonly primary: string;
@@ -57,6 +69,18 @@ export type StaticSettings = {
       readonly 'base-300': string;
       readonly warning: string;
       readonly 'line-color': string;
+      /** The text colour on `primary`, also set as `success-content`. Omitting it keeps the built-in value. */
+      readonly 'primary-content'?: string;
+      /** The text colour on `secondary`. Omitting it keeps the built-in value. */
+      readonly 'secondary-content'?: string;
+      /** The text colour on `accent`, also set as `info-content`. Omitting it keeps the built-in value. */
+      readonly 'accent-content'?: string;
+      /** The text colour on `neutral`. Omitting it keeps the built-in value. */
+      readonly 'neutral-content'?: string;
+      /** The text colour on the `base-*` colours. Omitting it keeps the built-in value. */
+      readonly 'base-content'?: string;
+      /** The text colour on `warning`, also set as `error-content`. Omitting it keeps the built-in value. */
+      readonly 'warning-content'?: string;
     };
   };
   /**
@@ -64,11 +88,11 @@ export type StaticSettings = {
    */
   readonly font: {
     /**
-     * The name of the font. Be sure to escape any spaces or enclose the name in quotes. You must also supply the url property.
+     * A plain font family name (letters, digits, spaces, `_`, `-`), unquoted, which the frontend quotes itself. You must also supply the url property.
      */
     readonly name: string;
     /**
-     * The download url of the font. This will be added to the <link> tag in the <head> section of the HTML.
+     * The download url of the font, a same-origin path or an `https:` URL. This will be added to the <link> tag in the <head> section of the HTML.
      */
     readonly url: string;
     /**
@@ -93,6 +117,19 @@ export type StaticSettings = {
      */
     readonly isDefault?: boolean;
   }>;
+  /**
+   * The static fallback logo, used when the backend supplies no `publisherLogo`.
+   */
+  readonly logo?: {
+    /**
+     * A same-origin path (e.g. a file under `instance/static/`) or an `https:` URL.
+     */
+    readonly url: string;
+    /**
+     * The version of the logo for a dark background, in the same form as `url`.
+     */
+    readonly urlDark?: string;
+  };
 };
 
 /**

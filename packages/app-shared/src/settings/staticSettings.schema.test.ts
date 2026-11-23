@@ -5,9 +5,9 @@
  */
 
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { mergeSettings } from '../utils/mergeSettings';
-import { StaticSettingsSchema } from './staticSettings.schema';
 import { staticSettings } from './staticSettings';
+import { StaticSettingsSchema } from './staticSettings.schema';
+import { mergeSettings } from '../utils/mergeSettings';
 import type { z } from 'zod';
 import type { StaticSettings } from './staticSettings.type';
 
