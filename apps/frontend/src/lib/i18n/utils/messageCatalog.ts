@@ -122,10 +122,20 @@ export function readLocaleCatalog({
   for (const pattern of pathPatterns) {
     const file = path.resolve(frontendDir, pattern.split('{locale}').join(locale));
     if (!fs.existsSync(file)) throw new Error(`The message catalogue file ${file} does not exist.`);
-    const content: Record<string, unknown> = JSON.parse(fs.readFileSync(file, 'utf8'));
-    for (const [namespace, tree] of Object.entries(content)) collectMessageNodes(tree, namespace, catalog);
+    Object.assign(catalog, flattenMessageNodes(JSON.parse(fs.readFileSync(file, 'utf8'))));
   }
   return catalog;
+}
+
+/**
+ * Flattens a whole message file, whose top-level keys are namespaces, into its messages.
+ * @param content - The parsed file.
+ * @returns A map from each full translation key to its message node; a variant message is one entry.
+ */
+export function flattenMessageNodes(content: Record<string, unknown>): Record<string, unknown> {
+  const messages: Record<string, unknown> = {};
+  for (const [namespace, tree] of Object.entries(content)) collectMessageNodes(tree, namespace, messages);
+  return messages;
 }
 
 /**

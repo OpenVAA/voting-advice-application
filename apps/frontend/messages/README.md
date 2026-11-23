@@ -28,7 +28,9 @@ A locale directory must be complete even if no current deployment offers it.
    rendered in the page.
 2. **Every file listed in `../project.inlang/settings.json` → `plugin.inlang.messageFormat.pathPattern`
    exists in every locale directory, and nothing else does.** A file here that the pattern does not
-   list is never compiled; a pattern entry with no file is a build error.
+   list is never compiled. The message-format plugin silently ignores a pattern entry whose file is
+   missing, so the compiler does not catch one: `../src/lib/i18n/tests/translations.test.ts` checks
+   that the listed files and the files present agree.
 3. **A `{name}` placeholder refers to a DECLARED INPUT, and the declared names are part of the
    message's signature.** They are the same in every locale because the calling code passes those
    names — they are not words to be translated. Translate the surrounding sentence and leave
@@ -48,6 +50,16 @@ A locale directory must be complete even if no current deployment offers it.
    category `zero` or `one`: no configured locale ever yields `zero`, and French `one` covers 0 too.
    Every variant message with a number ends in a `*` catch-all, listed last, which takes every value
    and category no other variant names.
+
+## Instance overrides
+
+A deployment overrides messages without editing these catalogues, in `instance/messages/<locale>.json`
+at the repository root: one file per locale, holding only the keys it changes, nested as here
+(`{ "common": { "closeDialog": "…" } }` is the key `common.closeDialog`). The build validates every
+file before compiling and fails naming the file and the key when the locale is not one of
+`project.inlang` `locales`, a key is not in the base catalogue, or a message's `{placeholder}` set or
+HTML tag set differs from the base message's. Runtime `translationOverrides` from the backend still
+win over both. See [`instance/README.md`](../../../instance/README.md).
 
 ## Messages that name the identity provider
 

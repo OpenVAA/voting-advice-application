@@ -62,7 +62,9 @@ function writeInstanceFile(filename: string, content: unknown): void {
   fs.writeFileSync(path.join(instanceDir, filename), typeof content === 'string' ? content : JSON.stringify(content));
 }
 
-const generatedSettingsPath = () => path.join(frontendDir, '.instance', 'project.inlang', 'settings.json');
+function generatedSettingsPath(): string {
+  return path.join(frontendDir, '.instance', 'project.inlang', 'settings.json');
+}
 
 describe('instanceMessagesProject without instance messages', () => {
   test('no instance/messages directory returns the base project and writes nothing', () => {
