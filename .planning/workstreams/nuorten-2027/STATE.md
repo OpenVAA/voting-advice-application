@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 current_phase: 191
 current_plan: 6
-status: verifying
-stopped_at: Completed 191-06-PLAN.md
+status: complete
+stopped_at: Phase 191 verified (passed)
 last_updated: "2026-11-23T18:42:05.372Z"
 last_activity: 2026-11-23
 progress:
@@ -20,21 +20,21 @@ progress:
 
 ## Current Position
 
-Phase: 191 (Instance overlay (upstream)) — EXECUTING
+Phase: 191 (Instance overlay (upstream)) — COMPLETE (verified 2026-11-23)
 Plan: 6 of 6
-**Status:** Phase complete — ready for verification
+**Status:** Phase 191 complete and verified; next is Phase 192 in OpenVAA/deploy-nuortenvaalikone
 **Current Phase:** 191
 **Last Activity:** 2026-11-23
-**Last Activity Description:** Completed 191-02 (app.css theme transform and static logo tier)
+**Last Activity Description:** Phase 191 verification passed (3/3 success criteria)
 
 ## Progress
 
-**Phases Complete:** 0
-**Current Plan:** 5
+**Phases Complete:** 1
+**Current Plan:** 6 of 6
 
 ## Session Continuity
 
-**Stopped At:** Completed 191-06-PLAN.md
+**Stopped At:** Phase 191 verified (passed)
 **Resume File:** None
 
 ## Accumulated Context
