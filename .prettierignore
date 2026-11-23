@@ -20,6 +20,8 @@ yarn.lock
 # Ignores for apps/frontend
 apps/frontend/.svelte-kit
 apps/frontend/package
+# Generated instance overlay output (gitignored)
+apps/frontend/.instance/
 # Generated Paraglide message files (auto-generated on build)
 apps/frontend/src/lib/paraglide/
 # Generated Inlang project files (auto-generated, gitignored)

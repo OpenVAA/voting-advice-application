@@ -3,6 +3,8 @@ node_modules
 /build
 /.svelte-kit
 /.vite
+# Generated instance overlay output (merged static assets, generated inlang project)
+/.instance
 /package
 .env
 .env.*

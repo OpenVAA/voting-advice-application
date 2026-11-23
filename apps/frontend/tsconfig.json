@@ -15,6 +15,8 @@
     "vite.restartOnRootEnv.test.ts",
     "vite.instanceTheme.ts",
     "vite.instanceTheme.test.ts",
+    "instanceAssets.js",
+    "instanceAssets.test.ts",
     "paraglide.options.ts",
     "scripts/compile-paraglide.ts",
     "../../scripts/lib/docTokens.mjs"

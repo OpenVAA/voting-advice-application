@@ -46,7 +46,7 @@ describe('instanceAssetsDir', () => {
 
   /** Every regular file under `dir`, as sorted relative paths. */
   function listFiles(dir: string): Array<string> {
-    return (readdirSync(dir, { recursive: true, withFileTypes: true }) as Array<import('node:fs').Dirent>)
+    return readdirSync(dir, { recursive: true, withFileTypes: true })
       .filter((entry) => entry.isFile())
       .map((entry) => relative(dir, join(entry.parentPath, entry.name)))
       .sort();
