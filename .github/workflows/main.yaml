@@ -184,8 +184,8 @@ jobs:
     # root as the build context.
     #
     # It runs on every change, with no paths-filter and no `if:`. The image copies `apps/`,
-    # `packages/`, `scripts/` and the root manifests, and runs the root lifecycle scripts during its
-    # install. A root lifecycle script that needs a file outside those directories breaks only the
+    # `packages/`, `scripts/`, `instance/` and the root manifests, and runs the root lifecycle
+    # scripts during its install. A root lifecycle script that needs a file outside those directories breaks only the
     # image install, which no other job exercises.
     #
     # It builds and never pushes: no registry login, no secrets, no third-party build action.

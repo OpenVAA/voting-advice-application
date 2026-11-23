@@ -3,7 +3,13 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "inputs": ["$TURBO_DEFAULT$", "data/**", "!src/lib/paraglide/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "data/**",
+        "!src/lib/paraglide/**",
+        "$TURBO_ROOT$/instance/static/**",
+        "$TURBO_ROOT$/instance/messages/**"
+      ],
       "outputs": ["build/**", "src/lib/paraglide/**"],
       "env": ["BUILD_SHA"]
     }

@@ -18,6 +18,8 @@ COPY apps apps
 COPY packages packages
 # Root lifecycle scripts (the preinstall Node engine guard) run from scripts/ during install
 COPY scripts scripts
+# The deployment's instance overlay: settings, static assets and messages the build reads. Always present, because instance/README.md is tracked
+COPY instance instance
 RUN yarn install --immutable
 
 FROM base AS shared
