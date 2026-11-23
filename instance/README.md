@@ -110,7 +110,9 @@ checks the format of a colour, not its contrast.
   directory and the generated message project are built when the Vite configuration loads.
 - **Building.** `yarn build` rebuilds `@openvaa/app-shared` and the frontend when an overlay file
   changes; Turborepo hashes `instance/staticSettings.json`, `instance/static/**` and
-  `instance/messages/**`.
+  `instance/messages/**`. A cache hit writes its outputs over `apps/frontend/build/` without
+  removing files that are no longer outputs, so after deleting an overlay file remove
+  `apps/frontend/build/` before you inspect it.
 - **The image.** The production image copies `instance/`. A deployment pipeline that builds from
   `git archive` of a commit sends only tracked files, so commit every overlay file.
 - **Generated files.** The build writes the merged static directory and the generated message

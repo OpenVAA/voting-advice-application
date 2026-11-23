@@ -14,7 +14,9 @@ The display name of each locale, such as "suomi" for `fi`, comes from the `lang`
 1. Add the locale code to `locales` in `apps/frontend/project.inlang/settings.json`.
 2. Create `apps/frontend/messages/<locale>/` with every file that `plugin.inlang.messageFormat.pathPattern` in the same settings file lists, each with the same keys as the base locale.
 3. Add the locale's display name to `lang.json` in every locale directory.
-4. Add the locale to `supportedLocales` in `StaticSettings` if the deployment should offer it.
+4. Add the locale to `supportedLocales` in `StaticSettings` if the deployment should offer it. A deployment can set `supportedLocales` in `instance/staticSettings.json` instead, without editing `staticSettings.ts`; the array there replaces the shipped one whole. The build fails when an offered locale has no compiled catalogue.
 5. Run `yarn workspace @openvaa/frontend test:unit`. The translation tests check the set of locale directories and the files and keys in each, so update the expected list of locales in `src/lib/i18n/tests/translations.test.ts` as well.
+
+A deployment changes the wording of single messages for its own instance with `instance/messages/<locale>.json`, without editing the catalogues; see [Static settings](/developers-guide/configuration/static-settings#instance-overlay).
 
 The rules translators follow are in the [`messages` README](https://github.com/OpenVAA/voting-advice-application/blob/main/apps/frontend/messages/README.md). See also [Translations and overrides](/developers-guide/localization/translations-and-overrides).

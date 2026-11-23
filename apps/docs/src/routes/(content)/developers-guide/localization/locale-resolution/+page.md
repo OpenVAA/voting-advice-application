@@ -37,6 +37,14 @@ Build in-app links from route keys with `buildRoute` or `getRoute`. See [Routing
 
 The language menu, `LanguageSelection` in `$lib/dynamic-components/navigation/languages`, lists the offered locales when there is more than one. Each item links to the current path localized with `localizeHref`, and the link has `data-sveltekit-reload`, so switching the locale reloads the page. The `locale` in the contexts therefore stays the same for the life of a page.
 
+## Where a message's text comes from
+
+For the resolved locale, the text of a message comes from the first of these that has it:
+
+1. The backend's `translationOverrides` in the app customization, applied at runtime. See [Translations and overrides](/developers-guide/localization/translations-and-overrides).
+2. `instance/messages/<locale>.json`, a deployment's overrides, compiled in at build time. See [Instance overlay](/developers-guide/configuration/static-settings#instance-overlay).
+3. The frontend catalogue, `apps/frontend/messages/<locale>/`.
+
 ## Matching locales in data
 
 When `translate` from `$lib/i18n` picks a translation from a multi-locale value, it falls back to a soft match with `matchLocale` from `$lib/i18n/utils` if the value has no exact match for the locale. See [Multi-locale data](/developers-guide/localization/storing-multi-locale-data).
