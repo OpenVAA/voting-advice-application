@@ -561,6 +561,7 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 - Phase 181.1 scope-added: Scope added: vendor Supabase agent skills (supabase, supabase-postgres-best-practices from github.com/supabase/agent-skills v0.1.9) into .claude/skills/, pinned and reviewed, reconciled with the project's database skill
 - Phase 181.1 decided 2026-10-18: nothing from Supabase Select 2026 is adopted in v2.17, and pg-delta, the native per-worktree stack and config as code go to todos; the Supabase agent skills are installed per user and are not vendored, an operator ruling (181.1 D-09) that supersedes the "vendor … into .claude/skills/" wording of the scope-added line above; see 181.1-CONTEXT.md
 - Phase 189.1 inserted after Phase 189: Address tech debt: invitation-limit guard and trackEvents smoke (URGENT)
+- Phase 190 added: Multi-deployment bootstrap — `infra/bootstrap` takes a map of deployments so `OpenVAA/deploy-nuorten-vaalikone-2027` can deploy into the same AWS account (exploration 2026-11-23)
 
 ## Deferred Items
 
