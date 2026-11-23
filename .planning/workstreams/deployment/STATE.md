@@ -6,10 +6,10 @@ current_phase: "189.1"
 current_plan: 10
 status: completed
 stopped_at: Phase 189.1 complete — all phases complete
-last_updated: "2026-11-22T10:21:53.369Z"
-last_activity: 2026-11-22
+last_updated: "2026-11-23T17:44:44.855Z"
+last_activity: 2026-11-23
 last_activity_desc: Phase 189.1 complete
-state_head: 018341305141a79a9e3f6c32117873e502a0292f
+state_head: 86022676a2d0f8ce915758b612141051c5704fad
 progress:
   total_phases: 11
   completed_phases: 10
@@ -35,7 +35,7 @@ Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is 
 Phase: 189.1
 Plan: Not started
 Status: All phases complete
-Last activity: 2026-11-22 — Phase 189.1 complete
+Last activity: 2026-11-23 - Completed quick task 261123-qht: make "contact support" a link in the locked-name message
 
 Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
@@ -554,6 +554,12 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 - [Phase 187] The full `main.yaml` CI last ran on `ci-evidence/187-final-4`; plans 187-29 to 187-31 changed workflows and scripts after it, covered only by the workflows' own `checks` jobs.
 - [Phase 187] `infra/envs/staging/aws/README.md` § Observations has one split table row (a `|` inside a code span; `deferred-items.md`), left open on purpose.
 - Before 188-10: code-sign-in reaches account-access from the frontend server, so its per-caller bucket is likely the server's address (188 deferred-items.md 2); operator to choose exclude / forward under a server secret / keep and measure
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 261123-qht | make "contact support" a link in the locked-name message | 2026-11-23 | 86022676a | [261123-qht-make-contact-support-a-link-in-the-locke](./quick/261123-qht-make-contact-support-a-link-in-the-locke/) |
 
 ### Roadmap Evolution
 
