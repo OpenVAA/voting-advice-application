@@ -101,3 +101,52 @@ describe('svelte.config.js — kit.version.name', () => {
     expect(built.kit?.version?.name).toBeUndefined();
   });
 });
+
+/**
+ * Guard on `kit.files.assets`, the directory SvelteKit serves, lists and copies static files from.
+ *
+ * An instance's `instance/static/` files replace the frontend's own by path through a merged copy, which the config selects only when `instanceAssetsDir` returns one. With no instance assets the config must not set `kit.files` at all, so the default `static` directory is used exactly as before.
+ *
+ * The config calls the helper when its module is evaluated, so the mocked cases mock the helper, reset the module registry and import the config again.
+ */
+describe('svelte.config.js — kit.files.assets', () => {
+  /** Import the config afresh with `instanceAssetsDir` returning `value`, and record the options it was called with. */
+  async function configWithAssetsDir(value: string): Promise<{ built: typeof config; calls: Array<unknown> }> {
+    const calls: Array<unknown> = [];
+    vi.doMock('./instanceAssets.js', () => ({
+      instanceAssetsDir: (options: unknown) => {
+        calls.push(options);
+        return value;
+      }
+    }));
+    vi.resetModules();
+    return { built: (await import('./svelte.config.js')).default, calls };
+  }
+
+  afterEach(() => {
+    vi.doUnmock('./instanceAssets.js');
+    vi.resetModules();
+  });
+
+  it('is not set in a checkout without instance assets', () => {
+    expect(config.kit?.files).toBeUndefined();
+  });
+
+  it('is the merged dir when instanceAssetsDir returns one', async () => {
+    const merged = '/abs/apps/frontend/.instance/static';
+    const { built } = await configWithAssetsDir(merged);
+    expect(built.kit?.files?.assets).toBe(merged);
+  });
+
+  it('leaves kit.files unset when instanceAssetsDir returns static', async () => {
+    const { built } = await configWithAssetsDir('static');
+    expect(built.kit?.files).toBeUndefined();
+  });
+
+  it('asks instanceAssetsDir with the repo root and the frontend directory', async () => {
+    const { calls } = await configWithAssetsDir('static');
+    const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+    const frontendDir = fileURLToPath(new URL('./', import.meta.url));
+    expect(calls).toEqual([{ repoRoot, frontendDir }]);
+  });
+});
