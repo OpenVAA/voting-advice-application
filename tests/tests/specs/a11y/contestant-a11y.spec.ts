@@ -159,11 +159,21 @@ const CONTESTANT_AXE_ROUTES: ReadonlyArray<ContestantAxeRoute> = [
   {
     // Anchor on a profile info item — one per editable info question, several in the base dataset — rather than on the profile heading, which renders from a static i18n title before any of the candidate's own data mounts.
     // Marker: the identity section, which the protected profile alone renders.
+    // State: the base candidate is confirmed, so its name is locked and the sentence saying so carries the link to the support email the scan reads.
     name: 'cand-profile',
     fixture: 'raw',
     routeId: 'ContestantAppProfile',
     contentTestId: testIds.contestant.profile.infoItem,
-    postLoginTestId: testIds.contestant.profile.identity
+    postLoginTestId: testIds.contestant.profile.identity,
+    reach: async (page) => {
+      const identity = page.getByTestId(testIds.contestant.profile.identity);
+      await expect(identity).toHaveAttribute('data-name-state', 'locked-confirmed', { timeout: TIMEOUTS.slowPage });
+      const supportLink = identity
+        .getByTestId(testIds.contestant.profile.nameNote)
+        .getByRole('link', { name: 'contact support', exact: true });
+      await expect(supportLink).toHaveCount(1);
+      await expect(supportLink).toHaveAttribute('href', /^mailto:/);
+    }
   },
   {
     // Anchor on a question CARD, and expand every category expander first.
