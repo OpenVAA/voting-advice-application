@@ -371,15 +371,24 @@ s['plugin.inlang.messageFormat'].pathPattern = [
 | A4 | Tailwind's `@reference "./app.css"` consumers do not need the substituted values (they emit no theme CSS) | Pattern 6 | Some component CSS keeps base literals; verify by grepping the built CSS for the overlay colour |
 | A5 | Downstream wants the instance theme only in the frontend; docs picking up overlay colours from app-shared dist is acceptable | Arch map | Cosmetic |
 
-## Open Questions (each with a recommended default)
+## Open Questions (RESOLVED)
+
+All seven were resolved in planning (auto mode) by adopting the recommended default.
 
 1. **Logo seam: static fallback or DB only?** Recommend adding optional `staticSettings.logo` (Pattern 5) so "logo" in SC-2 is met by files. The other way is to upload it in Phase 194 into `public-assets` and `app_settings.customization.publisherLogo`.
+   RESOLVED: optional static fallback `staticSettings.logo`; precedence `publisherLogo` > `staticSettings.logo` > OpenVAA logo (Plans 01, 02).
 2. **Content colours** (`primary-content` etc.) are not in `StaticSettings`. A light instance primary would keep white text and could fail WCAG AA. Recommend adding optional `*-content` keys to both themes now, at no cost when absent (identity transform). Otherwise Phase 194 would need another upstream PR.
+   RESOLVED: optional `*-content` keys added to both themes now; absent in the shipped literal, so the transform stays the identity (Plans 01, 02).
 3. **May the overlay set `dataAdapter`?** Recommend no, rejected by the schema (Pitfall 4).
+   RESOLVED: no; `resolveStaticSettings` rejects a `dataAdapter` key in the overlay (Plan 01).
 4. **Overlay `dynamicSettings` defaults too?** Recommend no. Dynamic settings belong to the DB rows of Phase 194.
+   RESOLVED: no `dynamicSettings` overlay; dynamic settings stay in the database rows of Phase 194 (documented in `instance/README.md`, Plan 05).
 5. **Edge Function mail texts** cannot be overlaid (they are hard-coded in `mailTemplates.ts`, and an Edge Function cannot import catalogues). Recommend recording this as a known non-overlayable surface in `instance/README.md`. If Nuorten needs custom mail copy, that is a later upstream seam.
+   RESOLVED: not overlayable; recorded as a known non-overlayable surface in `instance/README.md` (Plan 05).
 6. **The messages README says "a pattern entry with no file is a build error"**, but the plugin README and this session's measurement say missing files are ignored. Recommend correcting `apps/frontend/messages/README.md` rule 2 while touching it, and checking the base pattern with a test instead.
+   RESOLVED: `apps/frontend/messages/README.md` rule 2 corrected; file completeness stays enforced by `translations.test.ts` (Plan 04).
 7. **Overlay messages file granularity:** one file per locale (`instance/messages/fi.json`, nested keys) is recommended over mirroring the 48 namespace files. It is simpler for downstream, and last-wins works at the flattened-key level.
+   RESOLVED: one file per locale, `instance/messages/<locale>.json` with nested keys (Plan 04).
 
 ## Environment Availability
 

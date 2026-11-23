@@ -28,7 +28,7 @@ created: 2026-11-23
 ## Sampling Rate
 
 - **After every task commit:** affected workspace `test:unit` + `typecheck`
-- **After every plan:** red→green runs for new tests; one targeted `tests/scripts/e2e-run.sh --project <p>` run per affected project (`visual-regression`, `voter-dark-mode`, `perm-localisation-positive`, `a11y-smoke`, `voter-journey` for frontend-wide changes); record test-count deltas
+- **After every plan:** red→green runs for new tests; after the plan's last code commit, one targeted `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/191-<plan>-<project> --no-db-reset --no-watch --project <p>` run per affected project, sequentially. Plan 01 (dist byte-identical) runs `voter-journey`; Plans 02, 03 and 04 (frontend-wide changes) each run all five: `visual-regression`, `voter-dark-mode`, `perm-localisation-positive`, `a11y-smoke`, `voter-journey`; Plan 05 changes nothing the suite serves; Plan 06 runs the full suite. Plans 01–04 record per-project test counts, deltas and title pins (sorted titles from `npx playwright test -c tests/playwright.config.ts --list --project <p>`) against the last full run, falling back to absolute counts and the listing when no prior full-run record exists
 - **Phase gate (final plan):** full E2E run + build-identity comparison against `8f2bb68a7` + `yarn lint:check` + `yarn format:check`
 - **Max feedback latency:** 120 seconds (unit)
 
