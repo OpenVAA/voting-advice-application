@@ -44,9 +44,9 @@ describe('resolveStaticSettings', () => {
   });
 
   it('rejects a data adapter in the overlay', () => {
-    expect(() =>
-      resolveStaticSettings({ base: staticSettings, overlay: { dataAdapter: { pageSize: 1000 } } })
-    ).toThrow(/dataAdapter.*not instance-overlayable/);
+    expect(() => resolveStaticSettings({ base: staticSettings, overlay: { dataAdapter: { pageSize: 1000 } } })).toThrow(
+      /dataAdapter.*not instance-overlayable/
+    );
   });
 
   it('names the source and the unknown key when the merged settings are invalid', () => {

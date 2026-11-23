@@ -7,7 +7,7 @@
     "build": "tsup && tsc --emitDeclarationOnly --outDir dist",
     "lint": "eslint src/",
     "test:unit": "vitest run",
-    "typecheck": "tsc --noEmit --composite false"
+    "typecheck": "tsc --noEmit --composite false && tsc -p tsconfig.config.json"
   },
   "type": "module",
   "module": "./dist/index.js",
