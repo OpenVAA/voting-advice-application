@@ -29,11 +29,11 @@ A separate deployment of OpenVAA for the 2027 Nuorten vaalikone, at `https://nuo
 2. Static assets and translation overrides in the instance directory take precedence over the frontend's own.
 3. With no instance directory, the built output is the same as today's, and the existing unit and E2E suites pass unchanged.
 
-**Plans:** 1/6 plans executed
+**Plans:** 2/6 plans executed
 
 Plans:
 - [x] 191-01-PLAN.md — app-shared: strict StaticSettings schema, resolveStaticSettings, tsup onLoad overlay plugin, turbo inputs
-- [ ] 191-02-PLAN.md — frontend theme seam (app.css transform from staticSettings) and AppLogo static fallback
+- [x] 191-02-PLAN.md — frontend theme seam (app.css transform from staticSettings) and AppLogo static fallback
 - [ ] 191-03-PLAN.md — instance/static over apps/frontend/static through a merged kit.files.assets
 - [ ] 191-04-PLAN.md — instance/messages/<locale>.json overrides through a generated inlang project, with validation
 - [ ] 191-05-PLAN.md — turbo/Docker seams, instance/README.md, docs, fixture-instance and Docker proofs
