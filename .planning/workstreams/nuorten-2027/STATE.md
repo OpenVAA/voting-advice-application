@@ -5,14 +5,14 @@ milestone_name: milestone
 current_phase: 191
 current_plan: 5
 status: executing
-stopped_at: Completed 191-04-PLAN.md
-last_updated: "2026-11-23T17:04:39.971Z"
+stopped_at: Completed 191-05-PLAN.md
+last_updated: "2026-11-23T17:37:31.766Z"
 last_activity: 2026-11-23
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -21,7 +21,7 @@ progress:
 ## Current Position
 
 Phase: 191 (Instance overlay (upstream)) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 **Status:** Ready to execute
 **Current Phase:** 191
 **Last Activity:** 2026-11-23
@@ -34,7 +34,7 @@ Plan: 5 of 6
 
 ## Session Continuity
 
-**Stopped At:** Completed 191-04-PLAN.md
+**Stopped At:** Completed 191-05-PLAN.md
 **Resume File:** None
 
 ## Accumulated Context
@@ -53,6 +53,8 @@ Plan: 5 of 6
 - 191-02: visual-regression is judged by its CI-literal run in the pinned Playwright container; host runs cannot reproduce its baselines, with or without the plan.
 - 191-03: instance/static is laid over apps/frontend/static through a fingerprinted merged copy at apps/frontend/.instance/static, selected as kit.files.assets only when instance/static holds a regular file; symlinks refused before any write.
 - 191-04: instance/messages/<locale>.json files are validated against the base en catalogue (key exists, placeholder set, HTML tag set, compiled-locale file name, no symlinks) and laid over it through a generated apps/frontend/.instance/project.inlang that lists them last; paraglide.options.ts also fails when staticSettings.supportedLocales offers a locale with no compiled catalogue.
+- [Phase 191]: 191-05: a turbo cache hit leaves stale files in apps/frontend/build; remove build/ after deleting an overlay file (documented in instance/README.md)
+- [Phase 191]: 191-05: the frontend build hashes instance/static/** and instance/messages/**; the image copies instance/ in the base stage
 
 ### Performance Metrics
 
@@ -62,3 +64,4 @@ Plan: 5 of 6
 | 191-02 | ~38 min | 2 | 6 |
 | 191-03 | ~31 min | 2 | 7 |
 | 191-04 | ~35 min | 2 | 7 |
+| Phase 191 P05 | 95min | 3 tasks | 13 files |
