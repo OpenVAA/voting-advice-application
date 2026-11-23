@@ -163,7 +163,7 @@ IDENTITY_CALLBACK_SERVER_SECRET=<the same value as in the root .env>
 
 ## Step 4 — Register in the Idura dashboard
 
-Per `docs/key-generation.md` Step 4 (Idura): **Application → OpenID Connect →
+Per `docs/key-generation.md` Step 3 (Idura): **Application → OpenID Connect →
 Client JWKS**, register **both** public keys (signing + encryption) as a single
 JWKS.
 
