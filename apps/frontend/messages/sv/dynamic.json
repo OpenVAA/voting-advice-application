@@ -12,8 +12,8 @@
         },
         "name": {
           "locked": {
-            "candidate": "Ditt namn har angetts av administratören eller hämtats från din identifiering, och du kan inte ändra det här. Om det är fel, kontakta supporten.",
-            "organization": "Ditt partis namn och förkortning har bekräftats av administratören, och du kan inte ändra dem här. Om de är fel, kontakta supporten."
+            "candidate": "Ditt namn har angetts av administratören eller hämtats från din identifiering, och du kan inte ändra det här. Om det är fel, {contactSupportLink}.",
+            "organization": "Ditt partis namn och förkortning har bekräftats av administratören, och du kan inte ändra dem här. Om de är fel, {contactSupportLink}."
           },
           "editable": {
             "candidate": "Du kan ändra ditt namn tills en administratör har bekräftat din profil.",
