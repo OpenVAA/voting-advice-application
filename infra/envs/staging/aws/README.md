@@ -196,7 +196,10 @@ root, in `environment_values` of `terraform.tfvars`. A `parameter` is a SecureSt
 execution role reads from `/openvaa/staging/frontend/<name>`, created by the operator in Step 2.
 The entries of bank authentication, those with an `identity_providers` list, reach the task only
 from a root that sets `identity_provider_type`; this root sets none, so its task receives none of
-them and needs none of their parameters.
+them and needs none of their parameters. To turn bank authentication on, follow [Deployment § Identity provider
+settings](https://openvaa.org/developers-guide/deployment#identity-provider-settings): it says
+which values go into `terraform.tfvars`, which into parameters and which into the Supabase root's
+shell, so that no secret reaches a tracked file.
 
 ## Flow overview
 

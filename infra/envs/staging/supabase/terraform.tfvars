@@ -25,3 +25,11 @@ smtp = {
 
 # The id of the project the bootstrap creates by default, the same on the throwaway and the persistent project. It is sent to the Edge Functions as PUBLIC_PROJECT_ID.
 public_project_id = "00000000-0000-0000-0000-000000000001"
+
+# Bank authentication through Idura's test environment, the same values as the AWS root's. The decryption keys and the callback secret are TF_VAR_identity_provider_decryption_jwks and TF_VAR_identity_callback_server_secret from the operator's shell, never here.
+identity_provider = {
+  type      = "idura-ftn"
+  client_id = "urn:my:application:identifier:498295"
+  jwks_uri  = "https://openvaa.test.idura.broker/.well-known/jwks"
+  issuer    = "https://openvaa.test.idura.broker"
+}

@@ -20,6 +20,9 @@ log_retention_days = 90
 # SHUTDOWN_TIMEOUT 25, plus the 10-second analytics forward, plus 5: enough for the shutdown flush of one slice of the queue to reach a responsive PostHog. The flush sends its slices one after another, so a full queue against an unresponsive PostHog can still be cut off at the kill.
 stop_timeout_seconds = 40
 
+# Bank authentication through Idura's test environment. The three secrets it adds, IDENTITY_PROVIDER_DECRYPTION_JWKS, IDENTITY_CALLBACK_SERVER_SECRET and IDURA_SIGNING_JWKS, are parameters under parameter_path, never here. The Supabase root sets identity_provider with the same type, client id, jwks_uri and issuer.
+identity_provider_type = "idura-ftn"
+
 # One line per entry of task-environment.json whose source is "value".
 environment_values = {
   PUBLIC_SUPABASE_URL = "https://cofbsatfrdysyphajsky.supabase.co"
@@ -38,4 +41,11 @@ environment_values = {
   ANALYTICS_POSTHOG_HOST      = "https://eu.i.posthog.com"
   ANALYTICS_FLUSH_INTERVAL_MS = "2000"
   DEPLOYMENT_DIAGNOSTICS      = "false"
+  # The two URLs verbatim from https://openvaa.test.idura.broker/.well-known/openid-configuration.
+  PUBLIC_IDENTITY_PROVIDER_CLIENT_ID = "urn:my:application:identifier:498295"
+  IDENTITY_PROVIDER_JWKS_URI         = "https://openvaa.test.idura.broker/.well-known/jwks"
+  IDENTITY_PROVIDER_ISSUER           = "https://openvaa.test.idura.broker"
+  IDURA_DOMAIN                       = "openvaa.test.idura.broker"
+  # The kid of this deployment's own signing key, the one in IDURA_SIGNING_JWKS, whose public half is registered in the Idura dashboard. Not a kid of Idura's own keys at IDENTITY_PROVIDER_JWKS_URI.
+  IDURA_SIGNING_KEY_KID = "openvaa-signing-1"
 }

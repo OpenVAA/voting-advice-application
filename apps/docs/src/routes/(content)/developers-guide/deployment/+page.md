@@ -191,14 +191,71 @@ curl -s "https://<your-domain>/api/health"
 
 The task receives exactly the variables of `task-environment.json`, the identity-provider entries only when bank authentication is on. `SUPABASE_SERVICE_ROLE_KEY` is never one of them: it bypasses row-level security, and it belongs to the bootstrap run and the Supabase project alone; `taskEnvironment.test.ts` refuses any name that contains `SERVICE_ROLE`.
 
-Bank authentication is off on the AWS path until a deployment turns it on; staging does not. With it off, the task receives none of the identity-provider entries of `task-environment.json` and the Supabase module sends no identity-provider secret, so `identity-callback` refuses every call. To turn it on, for Signicat or Idura ([Bank authentication](/developers-guide/contestant-app/bank-authentication) describes the flow and [Identity provider](/developers-guide/configuration/environmental-variables#identity-provider) the variables):
+### Identity provider settings
 
-1. Register `https://<your-domain>/api/oidc/callback`, the deployment's `ORIGIN` followed by `/api/oidc/callback`, as the redirect URI of the client at the provider.
-2. Generate the callback secret once, for example with `openssl rand -hex 32`. The frontend server sends it to `identity-callback`, which refuses every call without it, so both sides must hold the same value. No root reads the other's: store it as the parameter below and pass the same value to the Supabase root.
-3. Create the secret parameters under the AWS root's `parameter_path`, as for the anon key: `IDENTITY_PROVIDER_DECRYPTION_JWKS` and `IDENTITY_CALLBACK_SERVER_SECRET`, and `IDENTITY_PROVIDER_CLIENT_SECRET` for Signicat or `IDURA_SIGNING_JWKS` for Idura. A standard parameter holds at most 4 KB; a larger key set needs the advanced tier.
-4. In the AWS root's `terraform.tfvars`, set `identity_provider_type` to `signicat-ftn` or `idura-ftn` and add the provider's values to `environment_values`: `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_JWKS_URI` and `IDENTITY_PROVIDER_ISSUER`, and `PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT` and `IDENTITY_PROVIDER_TOKEN_ENDPOINT` for Signicat or `IDURA_DOMAIN` and `IDURA_SIGNING_KEY_KID` for Idura. The module sets `PUBLIC_IDENTITY_PROVIDER_TYPE` from `identity_provider_type`, and refuses a plan that lacks one of these values or sets one the type does not select. The example root's `terraform.tfvars` carries them as comments.
-5. In the Supabase root's `terraform.tfvars`, set `identity_provider` to the same type, client id, `jwks_uri` and issuer, and export `TF_VAR_identity_provider_decryption_jwks` and `TF_VAR_identity_callback_server_secret` with the same values as the two parameters. The module then sends the six secrets `identity-callback` reads, and refuses a plan with `identity_provider` set and either secret missing.
-6. Apply the Supabase root, then the AWS root. A candidate can sign in this way only where the project's candidate registration modes include `identity_provider`, which `BOOTSTRAP_CANDIDATE_REGISTRATION_MODES` sets on the bootstrap's first run.
+Bank authentication is off on the AWS path until a deployment turns it on; staging does not. With it off, the task receives none of the identity-provider entries of `task-environment.json` and the Supabase module sends no identity-provider secret, so `identity-callback` refuses every call. Switching on `identity_provider` among the candidate registration modes in the app settings does not turn it on: the Contestant App then offers the option, and every attempt ends at "Identification did not succeed" while the frontend logs `Identity provider is not configured`. [Bank authentication](/developers-guide/contestant-app/bank-authentication) describes the flow and [Identity provider](/developers-guide/configuration/environmental-variables#identity-provider) the variables.
+
+**Where each value goes.** No secret is written to a tracked file. The values the provider publishes go into the two roots' `terraform.tfvars`; the secrets go into the parameter store for the frontend task and into the shell's environment for the Supabase root, whose state, which then holds them, lives in the encrypted state bucket.
+
+| Value | Secret | Frontend task (AWS root) | `identity-callback` (Supabase root) |
+| --- | --- | --- | --- |
+| Provider type, client id, `jwks_uri`, issuer | no | `identity_provider_type` and `environment_values` in `terraform.tfvars` | `identity_provider` in `terraform.tfvars` |
+| Signicat's authorization and token endpoints, or Idura's domain and signing key id | no | `environment_values` in `terraform.tfvars` | not used |
+| `IDENTITY_PROVIDER_DECRYPTION_JWKS`, the private encryption keys | yes | a parameter under `parameter_path` | `TF_VAR_identity_provider_decryption_jwks` |
+| `IDENTITY_CALLBACK_SERVER_SECRET` | yes | a parameter under `parameter_path` | `TF_VAR_identity_callback_server_secret`, the same value |
+| `IDURA_SIGNING_JWKS` (Idura) or `IDENTITY_PROVIDER_CLIENT_SECRET` (Signicat) | yes | a parameter under `parameter_path` | not used |
+| The public JWKs | no | not used | not used: they are registered at the provider |
+
+**The two key sets.** Idura needs two key pairs of your own and Signicat one. The signing pair lets the provider verify that a request came from your client: the frontend server signs with the private half, `IDURA_SIGNING_JWKS`, and the provider verifies with the public half. The encryption pair lets the provider encrypt the ID token so that only you can read it: the provider encrypts with the public half, and the frontend server and `identity-callback` both decrypt with the private half, `IDENTITY_PROVIDER_DECRYPTION_JWKS`. Signicat proves the client with a client secret instead of a signature, so it has no signing pair. [`docs/key-generation.md`](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/key-generation.md) generates both and gives the details.
+
+To turn it on, for Signicat or Idura:
+
+1. Generate the key pairs with `keygen` ([`docs/key-generation.md`](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/key-generation.md), Step 1), and save each output to a file outside the checkout or to your password manager. Each run prints two blocks: the private JWK, already wrapped in `[...]`, which becomes the variable's value, and the public JWK, under `# Public JWK — register in the provider dashboard`.
+2. At the provider, register `https://<your-domain>/api/oidc/callback`, the deployment's `ORIGIN` followed by `/api/oidc/callback`, as the client's redirect URI, and register the public JWKs: for Idura both, as one `{ "keys": [...] }` document under Application > OpenID Connect > Client JWKS; for Signicat the encryption key, under the client's Public Keys ([`docs/key-generation.md`](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/key-generation.md), Step 3). The public JWKs go nowhere else.
+3. Generate the callback secret once and create the secret parameters under the AWS root's `parameter_path`. The frontend server sends the callback secret to `identity-callback`, which refuses every call without it, so both sides must hold the same value, and no root reads the other's. A standard parameter holds at most 4 KB; a larger key set needs `--tier Advanced`. For Idura, with the private JWK arrays in `idura-decryption-jwks.json` and `idura-signing-jwks.json`:
+
+   ```bash
+   P=/openvaa/<your-environment>/frontend
+   CALLBACK_SECRET=$(openssl rand -hex 32)
+   put() {
+     aws ssm put-parameter --name "$P/$1" \
+       --type SecureString --value "file://$2" \
+       --tags Key=Project,Value=openvaa Key=Environment,Value=<your-environment> \
+       > /dev/null; echo "$1 put_exit=$?"
+   }
+   put IDENTITY_PROVIDER_DECRYPTION_JWKS ~/secrets/idura-decryption-jwks.json
+   put IDURA_SIGNING_JWKS ~/secrets/idura-signing-jwks.json
+   printf '%s' "$CALLBACK_SECRET" | aws ssm put-parameter \
+     --name "$P/IDENTITY_CALLBACK_SERVER_SECRET" \
+     --type SecureString --value file:///dev/stdin \
+     --tags Key=Project,Value=openvaa Key=Environment,Value=<your-environment> \
+     > /dev/null; echo "IDENTITY_CALLBACK_SERVER_SECRET put_exit=$?"
+   ```
+
+   For Signicat, put `IDENTITY_PROVIDER_CLIENT_SECRET` from the provider in place of `IDURA_SIGNING_JWKS`. A parameter that already exists is refused with `ParameterAlreadyExists` and keeps its value.
+
+4. In the AWS root's `terraform.tfvars`, set `identity_provider_type` to `signicat-ftn` or `idura-ftn` and add the provider's values to `environment_values`: `PUBLIC_IDENTITY_PROVIDER_CLIENT_ID`, `IDENTITY_PROVIDER_JWKS_URI` and `IDENTITY_PROVIDER_ISSUER`, and `PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT` and `IDENTITY_PROVIDER_TOKEN_ENDPOINT` for Signicat or `IDURA_DOMAIN` and `IDURA_SIGNING_KEY_KID` for Idura. These values are public: the client id appears in every authorization URL, and the rest in the provider's `openid-configuration`. The module sets `PUBLIC_IDENTITY_PROVIDER_TYPE` from `identity_provider_type`, and refuses a plan that lacks one of these values or sets one the type does not select. The example root's `terraform.tfvars` carries them as comments.
+5. In the Supabase root's `terraform.tfvars`, set `identity_provider` to the same type, client id, `jwks_uri` and issuer. In the shell that plans and applies it, export the two secrets. Both are read back from the parameters of step 3, so the two roots get the same values and the shell of step 3 need not still be open:
+
+   ```bash
+   P=/openvaa/<your-environment>/frontend
+   get() {
+     aws ssm get-parameter --name "$P/$1" --with-decryption \
+       --query Parameter.Value --output text
+   }
+   TF_VAR_identity_provider_decryption_jwks=$(get IDENTITY_PROVIDER_DECRYPTION_JWKS)
+   TF_VAR_identity_callback_server_secret=$(get IDENTITY_CALLBACK_SERVER_SECRET)
+   export TF_VAR_identity_provider_decryption_jwks TF_VAR_identity_callback_server_secret
+   test -n "$TF_VAR_identity_provider_decryption_jwks" \
+     && test -n "$TF_VAR_identity_callback_server_secret" \
+     && echo "identity_secrets_read=yes"
+   ```
+
+   It prints `identity_secrets_read=yes` and no secret. Step 3's `CALLBACK_SECRET` is then no longer needed: `unset CALLBACK_SECRET` in that shell.
+
+   The module then sends the six secrets `identity-callback` reads, and refuses a plan with `identity_provider` set and either secret missing.
+
+6. Apply the Supabase root, then the AWS root. A candidate can sign in this way only where the project's candidate registration modes include `identity_provider`, which `BOOTSTRAP_CANDIDATE_REGISTRATION_MODES` sets on the bootstrap's first run, or the app settings switch on afterwards.
 
 This path has not been run against a live provider on AWS: after the apply, sign in through it once before relying on it.
 
