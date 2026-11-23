@@ -6,6 +6,8 @@
 #
 # Usage (from the repo root, with a clean working tree and the stack up via openvaa-stack-up):
 #   bash .planning/workstreams/nuorten-2027/phases/191-instance-overlay-upstream/191-05-instance-smoke.sh [--no-docker]
+# DOCKER_BUILD_EXTRA holds extra `docker build` flags, e.g. `--network host` on a host whose
+# containers reach the network only through the host.
 set -euo pipefail
 
 NO_DOCKER=0
@@ -33,6 +35,7 @@ ASSETS=apps/frontend/build/client/_app/immutable/assets
 FIXTURE_PATHS=(instance/staticSettings.json instance/static instance/messages)
 IMG_OVERLAY=openvaa-frontend:instance-smoke
 IMG_BASE=openvaa-frontend:no-instance
+read -r -a DOCKER_EXTRA <<<"${DOCKER_BUILD_EXTRA:-}"
 
 FAILED=0
 SERVER_PID=""
@@ -190,7 +193,7 @@ write_valid_messages
 # --- 5. Docker with the overlay -------------------------------------------------------------------
 if [ "$NO_DOCKER" = 0 ]; then
   log "== production image with the overlay"
-  if docker build --progress=plain --file apps/frontend/Dockerfile --target production --tag "$IMG_OVERLAY" . >"$WORK/docker-overlay.log" 2>&1; then
+  if docker build ${DOCKER_EXTRA[@]+"${DOCKER_EXTRA[@]}"} --progress=plain --file apps/frontend/Dockerfile --target production --tag "$IMG_OVERLAY" . >"$WORK/docker-overlay.log" 2>&1; then
     pass "docker build of the production image with the overlay exits 0"
     check "image SSR view: staticSettings.admin.email and font.url are overlaid" \
       docker run --rm -w /opt/apps/frontend "$IMG_OVERLAY" node -e "$(settings_check_js "$SMOKE_EMAIL" /fonts/smoke.css)"
@@ -217,7 +220,7 @@ check "SSR view: the base admin email is back" \
 # --- 7. Docker without the overlay ----------------------------------------------------------------
 if [ "$NO_DOCKER" = 0 ]; then
   log "== production image without the overlay"
-  if docker build --progress=plain --file apps/frontend/Dockerfile --target production --tag "$IMG_BASE" . >"$WORK/docker-base.log" 2>&1; then
+  if docker build ${DOCKER_EXTRA[@]+"${DOCKER_EXTRA[@]}"} --progress=plain --file apps/frontend/Dockerfile --target production --tag "$IMG_BASE" . >"$WORK/docker-base.log" 2>&1; then
     pass "docker build of the production image without the overlay exits 0"
     check "image SSR view: the base admin email" \
       docker run --rm -w /opt/apps/frontend "$IMG_BASE" node -e "$(settings_check_js first.last@openvaa.org /fonts/inter.css)"
