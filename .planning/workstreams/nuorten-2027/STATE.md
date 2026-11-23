@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 191
-current_plan: 2
+current_plan: 4
 status: executing
-stopped_at: Completed 191-02-PLAN.md
-last_updated: "2026-11-23T15:58:26.593Z"
+stopped_at: Completed 191-03-PLAN.md
+last_updated: "2026-11-23T16:31:05.121Z"
 last_activity: 2026-11-23
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 6
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -21,7 +21,7 @@ progress:
 ## Current Position
 
 Phase: 191 (Instance overlay (upstream)) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 **Status:** Ready to execute
 **Current Phase:** 191
 **Last Activity:** 2026-11-23
@@ -51,6 +51,7 @@ Plan: 3 of 6
 - 191-02: the app.css theme transform checks every mapped declaration for exactly-one occurrence, set or not, so app.css drift fails the build even without an overlay.
 - 191-02: AppLogo's static tier (no publisherLogo url, a staticSettings.logo url) alone falls back to t('dynamic.appName') for alt; the publisher tier keeps its empty alt.
 - 191-02: visual-regression is judged by its CI-literal run in the pinned Playwright container; host runs cannot reproduce its baselines, with or without the plan.
+- 191-03: instance/static is laid over apps/frontend/static through a fingerprinted merged copy at apps/frontend/.instance/static, selected as kit.files.assets only when instance/static holds a regular file; symlinks refused before any write.
 
 ### Performance Metrics
 
@@ -58,3 +59,4 @@ Plan: 3 of 6
 | ---- | -------- | ----- | ----- |
 | 191-01 | ~15 min | 2 | 10 |
 | 191-02 | ~38 min | 2 | 6 |
+| 191-03 | ~31 min | 2 | 7 |
