@@ -1,9 +1,11 @@
 import { fileURLToPath } from 'node:url';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
+import { staticSettings } from '@openvaa/app-shared';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, loadEnv } from 'vite';
 import { PARAGLIDE_OPTIONS } from './paraglide.options';
+import { instanceTheme } from './vite.instanceTheme';
 import { resolveProjectIdEnv } from './vite.projectIdEnv';
 import { restartOnRootEnv } from './vite.restartOnRootEnv';
 
@@ -19,6 +21,8 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      // Must precede Tailwind so the DaisyUI themes compile from the settings' colours and font.
+      instanceTheme({ appCssPath: fileURLToPath(new URL('./src/app.css', import.meta.url)), settings: staticSettings }),
       tailwindcss(),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       paraglideVitePlugin(PARAGLIDE_OPTIONS) as any,

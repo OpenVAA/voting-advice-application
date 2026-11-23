@@ -13,6 +13,8 @@
     "vite.projectIdEnv.test.ts",
     "vite.restartOnRootEnv.ts",
     "vite.restartOnRootEnv.test.ts",
+    "vite.instanceTheme.ts",
+    "vite.instanceTheme.test.ts",
     "paraglide.options.ts",
     "scripts/compile-paraglide.ts",
     "../../scripts/lib/docTokens.mjs"

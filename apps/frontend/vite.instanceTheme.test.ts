@@ -56,7 +56,10 @@ describe('applyThemeToAppCss', () => {
   });
 
   it('sets a light primary on --color-primary and --color-success of the light theme only', () => {
-    const out = applyThemeToAppCss({ css: appCss, settings: withOverride({ colors: { light: { primary: '#123456' } } }) });
+    const out = applyThemeToAppCss({
+      css: appCss,
+      settings: withOverride({ colors: { light: { primary: '#123456' } } })
+    });
     expect(changedLines(appCss, out)).toEqual(['  --color-primary: #123456;', '  --color-success: #123456;']);
     expect(themeBlock(out, 'light')).toContain('--color-primary: #123456;');
     expect(themeBlock(out, 'dark')).toBe(themeBlock(appCss, 'dark'));
@@ -93,7 +96,10 @@ describe('applyThemeToAppCss', () => {
       css: appCss,
       settings: withOverride({ colors: { light: { 'warning-content': '#000000' } } })
     });
-    expect(changedLines(appCss, out)).toEqual(['  --color-warning-content: #000000;', '  --color-error-content: #000000;']);
+    expect(changedLines(appCss, out)).toEqual([
+      '  --color-warning-content: #000000;',
+      '  --color-error-content: #000000;'
+    ]);
     expect(themeBlock(out, 'dark')).toBe(themeBlock(appCss, 'dark'));
     expect(themeBlock(appCss, 'light')).toContain('--color-warning-content: #ffffff;');
   });
@@ -124,7 +130,10 @@ describe('applyThemeToAppCss', () => {
   });
 
   it('throws naming the declaration and theme when a mapped declaration is duplicated', () => {
-    const drifted = appCss.replace('  --color-accent: #11a8a0;\n', '  --color-accent: #11a8a0;\n  --color-accent: #11a8a0;\n');
+    const drifted = appCss.replace(
+      '  --color-accent: #11a8a0;\n',
+      '  --color-accent: #11a8a0;\n  --color-accent: #11a8a0;\n'
+    );
     expect(drifted).not.toBe(appCss);
     expect(() => applyThemeToAppCss({ css: drifted, settings: staticSettings })).toThrow(/--color-accent.*dark/);
   });
