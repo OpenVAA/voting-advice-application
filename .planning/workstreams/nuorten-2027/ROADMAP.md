@@ -1,6 +1,6 @@
 # Roadmap: Nuorten vaalikone 2027 deployment
 
-A separate deployment of OpenVAA for the 2027 Nuorten vaalikone, at `https://nuortenvaalikone.openvaa.org`, from the private repository `OpenVAA/deploy-nuorten-vaalikone-2027`, in OpenVAA's AWS account `471112560111` with a Supabase project of its own.
+A separate deployment of OpenVAA for the 2027 Nuorten vaalikone, at `https://nuortenvaalikone.openvaa.org`, from the private repository `OpenVAA/deploy-nuortenvaalikone`, in OpenVAA's AWS account `471112560111` with a Supabase project of its own.
 
 ## Decisions (exploration, 2026-11-23)
 
@@ -42,7 +42,7 @@ Plans:
 ### Phase 192: Downstream repository and sync
 
 **Goal:** pulling upstream changes into the downstream repository is one command and cannot silently edit an upstream file.
-**Depends on:** the operator creating `OpenVAA/deploy-nuorten-vaalikone-2027`. The sync script and the guard can be written and tested here before then, against a local bare repository.
+**Depends on:** `OpenVAA/deploy-nuortenvaalikone`, created and seeded on 2026-11-23 with the upstream base `feat/deployment-terraform-supabase` (46554181e) as `main`. The sync script and the guard can be written and tested here before then, against a local bare repository.
 **Success criteria:**
 1. The repository holds the upstream base and the downstream commits, with `upstream` configured.
 2. `scripts/sync-upstream.sh` (downstream) does the `rebase --onto` mode and the merge mode, and refuses to run on a dirty tree.
