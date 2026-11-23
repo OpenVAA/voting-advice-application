@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 191
-current_plan: 5
-status: executing
-stopped_at: Completed 191-05-PLAN.md
-last_updated: "2026-11-23T17:37:31.766Z"
+current_plan: 6
+status: verifying
+stopped_at: Completed 191-06-PLAN.md
+last_updated: "2026-11-23T18:42:05.372Z"
 last_activity: 2026-11-23
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 6
-  completed_plans: 5
-  percent: 0
+  completed_plans: 6
+  percent: 20
 ---
 
 # Project State
@@ -22,7 +22,7 @@ progress:
 
 Phase: 191 (Instance overlay (upstream)) — EXECUTING
 Plan: 6 of 6
-**Status:** Ready to execute
+**Status:** Phase complete — ready for verification
 **Current Phase:** 191
 **Last Activity:** 2026-11-23
 **Last Activity Description:** Completed 191-02 (app.css theme transform and static logo tier)
@@ -34,7 +34,7 @@ Plan: 6 of 6
 
 ## Session Continuity
 
-**Stopped At:** Completed 191-05-PLAN.md
+**Stopped At:** Completed 191-06-PLAN.md
 **Resume File:** None
 
 ## Accumulated Context
@@ -55,6 +55,8 @@ Plan: 6 of 6
 - 191-04: instance/messages/<locale>.json files are validated against the base en catalogue (key exists, placeholder set, HTML tag set, compiled-locale file name, no symlinks) and laid over it through a generated apps/frontend/.instance/project.inlang that lists them last; paraglide.options.ts also fails when staticSettings.supportedLocales offers a locale with no compiled catalogue.
 - [Phase 191]: 191-05: a turbo cache hit leaves stale files in apps/frontend/build; remove build/ after deleting an overlay file (documented in instance/README.md)
 - [Phase 191]: 191-05: the frontend build hashes instance/static/** and instance/messages/**; the image copies instance/ in the base stage
+- [Phase 191]: Phase 191 gate: full-run reference is the 8f2bb68a7 --list (744 listed, 742 gated); the d5216b03 record is on a diverged history
+- [Phase 191]: Phase 191 gate: three host-only unit/lint failures (tcpForward blackhole, Deno CA vars stripped by turbo strict env, workflow-errexit x6) predate the phase and are deferred
 
 ### Performance Metrics
 
@@ -65,3 +67,4 @@ Plan: 6 of 6
 | 191-03 | ~31 min | 2 | 7 |
 | 191-04 | ~35 min | 2 | 7 |
 | Phase 191 P05 | 95min | 3 tasks | 13 files |
+| Phase 191 P06 | ~100min | 2 tasks | 3 files |

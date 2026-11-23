@@ -12,7 +12,7 @@ A separate deployment of OpenVAA for the 2027 Nuorten vaalikone, at `https://nuo
 
 ## Phases
 
-- [ ] **Phase 191: Instance overlay (upstream)** - An instance layer deep-merged over `staticSettings` at build time, with static assets (logo, favicon, fonts) and translation overrides, so a downstream repository customises by adding files under one directory. With no instance present, the build is unchanged.
+- [x] **Phase 191: Instance overlay (upstream)** - An instance layer deep-merged over `staticSettings` at build time, with static assets (logo, favicon, fonts) and translation overrides, so a downstream repository customises by adding files under one directory. With no instance present, the build is unchanged. (completed 2026-11-23)
 - [ ] **Phase 192: Downstream repository and sync** - The private repository exists with its base and `upstream` remote, a sync script for both sync modes, and a CI guard that fails when the downstream diff touches a path outside the allowlist.
 - [ ] **Phase 193: Instance infrastructure** - The bootstrap entry upstream, and downstream roots `infra/envs/nuorten-2027/{dns-mail,supabase,aws}` copied from `infra/envs/example`: the delegated zone, the mail identity, the new Supabase project imported with its hosted settings, and the AWS stack applied by hand once.
 - [ ] **Phase 194: Instance configuration** - The overlay's settings, branding, locales and copy for Nuorten vaalikone 2027, and the project's dynamic settings and bootstrap rows.
@@ -29,7 +29,7 @@ A separate deployment of OpenVAA for the 2027 Nuorten vaalikone, at `https://nuo
 2. Static assets and translation overrides in the instance directory take precedence over the frontend's own.
 3. With no instance directory, the built output is the same as today's, and the existing unit and E2E suites pass unchanged.
 
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [x] 191-01-PLAN.md — app-shared: strict StaticSettings schema, resolveStaticSettings, tsup onLoad overlay plugin, turbo inputs
@@ -37,7 +37,7 @@ Plans:
 - [x] 191-03-PLAN.md — instance/static over apps/frontend/static through a merged kit.files.assets
 - [x] 191-04-PLAN.md — instance/messages/<locale>.json overrides through a generated inlang project, with validation
 - [x] 191-05-PLAN.md — turbo/Docker seams, instance/README.md, docs, fixture-instance and Docker proofs
-- [ ] 191-06-PLAN.md — phase gate: build identity vs 8f2bb68a7, unit/lint/format, full E2E run
+- [x] 191-06-PLAN.md — phase gate: build identity vs 8f2bb68a7, unit/lint/format, full E2E run
 
 ### Phase 192: Downstream repository and sync
 
