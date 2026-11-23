@@ -1023,3 +1023,21 @@ Plans:
 
 **Wave 15** *(blocked on Wave 14 completion)*
 - [ ] 189.1.2-16-PLAN.md — requirement trace, residue, closing gates, the todo closed, and the phase's own full E2E run (wave 15)
+### Phase 190: Multi-deployment bootstrap
+
+**Goal:** `infra/bootstrap` takes a map of deployments, so a second OpenVAA instance can deploy from its own repository into the same AWS account (`471112560111`) without colliding with staging. The first consumer is the private downstream repository `OpenVAA/deploy-nuorten-vaalikone-2027` (Nuorten vaalikone 2027, `nuortenvaalikone.openvaa.org`, its own Supabase project).
+**Requirements**: TBD
+**Depends on:** Phase 189 (the deployment stack on `main`; the phase may be planned before then, and is executed after)
+
+**Shape:**
+
+- Shared, once per account: the GitHub OIDC provider (IAM allows one per issuer URL), the state bucket, the image registry (per-deployment repository or tag prefix, to be decided in discussion) and the budget.
+- Per deployment entry: the repository's numeric id and owner id, the plan and deploy subjects, the deploy environment, the pipeline state key `pipeline/<env>/aws/terraform.tfstate`, the hosted zone and domain, and that deployment's plan, deploy and frontend execution roles, the last scoped to `/openvaa/<env>/frontend/`.
+- Staging moves into the map by `moved` blocks; a plan against the live account shows no destroy and no replace.
+- `infra/envs/example` and `infra/README.md` document adding a deployment from a downstream repository: a new entry in the bootstrap map upstream, the env roots copied from `example` downstream.
+
+**Context (exploration, 2026-11-23):** same AWS account, confirmed by the operator; the downstream repository is a private non-fork mirror with an `upstream` remote and diverges only by added files; it follows the deployment stack by `git rebase --onto` while the stack is restacked, and by merge from `main` once the stack lands. This is upstream PR 1 of 2; the second, an instance overlay over `staticSettings`, static assets and translations, is not yet on the roadmap. Not urgent: planned ahead so testing can start as soon as the infrastructure is on `main`.
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 190 to break down)

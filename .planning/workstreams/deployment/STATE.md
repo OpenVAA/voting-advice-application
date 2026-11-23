@@ -2,21 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: 189.1.1
-current_phase_name: "Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit"
-current_plan: 22
+current_phase: "189.1"
+current_plan: 10
 status: completed
-stopped_at: Phase 189.1.1 complete — verification passed 5/5, UAT 2/2, security threats_open 0, R-1 observed in deploy run 45960590610
-last_updated: "2026-11-27T08:30:00.000Z"
-last_activity: 2026-11-27
-last_activity_desc: Phase 189.1.1 complete
-state_head: 6233f62295999476d0c7d29231d1f325fa0d9138
+stopped_at: Phase 189.1 complete — all phases complete
+last_updated: "2026-11-22T10:21:53.369Z"
+last_activity: 2026-11-22
+last_activity_desc: Phase 189.1 complete
+state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
-  total_phases: 13
-  completed_phases: 11
-  total_plans: 259
-  completed_plans: 240
-  percent: 77
+  total_phases: 11
+  completed_phases: 10
+  total_plans: 218
+  completed_plans: 218
+  percent: 91
 ---
 
 # Project State
@@ -27,23 +26,23 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 189.1.1 — Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit
+**Current focus:** Phase 189.1 — Address tech debt: invitation-limit guard and trackEvents smoke
 
 ## Current Position
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189.1.1 (Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit) — EXECUTING
-Plan: 22 of 22
-Status: Phase complete — verified
-Last activity: 2026-11-27 — Phase 189.1.1 complete: R-1 observed in deploy run 45960590610 (push_connection=pooler, drift_status=0); closing gates green on 65fa340ad
+Phase: 189.1
+Plan: Not started
+Status: All phases complete
+Last activity: 2026-11-22 — Phase 189.1 complete
 
-Progress: [██████████████████░░] 168/188 plans ([████████░░] 77%); 7 of 9 roadmap phases complete, 181.1 inserted besides
+Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 22
+**Current Plan:** 10
 
 From 184 on, the numeric order is the dependency order.
 
@@ -229,28 +228,6 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1 P08 | 10.5h (checkpoint wait) | 3 tasks | 3 files |
 | Phase 189.1 P09 | 15 min | 3 tasks | 4 files |
 | Phase 189.1 P10 | 30 min | 3 tasks | 2 files |
-| Phase 189.1.1 P01 | 4 min | 3 tasks | 3 files |
-| Phase 189.1.1 P02 | 10min | 3 tasks | 5 files |
-| Phase 189.1.1 P04 | 61 min | 2 tasks | 12 files |
-| Phase 189.1.1 P05 | 8 min | 3 tasks | 2 files |
-| Phase 189.1.1 P06 | 21min | 3 tasks | 8 files |
-| Phase 189.1.1 P08 | 52min | 3 tasks | 13 files |
-| Phase 189.1.1 P09 | 18min | 3 tasks | 9 files |
-| Phase 189.1.1 P10 | 15min | 3 tasks | 7 files |
-| Phase 189.1.1 P03 | 25min | 3 tasks | 3 files |
-| Phase 189.1.1 P07 | 5min | 2 tasks | 3 files |
-| Phase 189.1.1 P11 | 52min | 3 tasks | 1 files |
-| Phase 189.1.1 P12 | 50min | 3 tasks | 5 files |
-| Phase 189.1.1 P13 | 4h 40min | 3 tasks | 10 files |
-| Phase 189.1.1 P14 | 10min | 2 tasks | 3 files |
-| Phase 189.1.1 P15 | 36min | 3 tasks | 6 files |
-| Phase 189.1.1 P16 | 22 min | 3 tasks | 7 files |
-| Phase 189.1.1 P17 | 45 min | 3 tasks | 4 files |
-| Phase 189.1.1 P18 | 5min | 3 tasks | 8 files |
-| Phase 189.1.1 P19 | 40min | 4 tasks | 3 files |
-| Phase 189.1.1 P22 | 2h20m | 3 tasks | 13 files |
-| Phase 189.1.1 P21 | 35min | 2 tasks | 2 files |
-| Phase 189.1.1 P20 | 29min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -526,46 +503,6 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1]: 189.1-09: the off run's after-flip check is carried by the before-run read (trackEvents false read immediately before the run), since statement (a)'s updated_at was not pasted and is overwritten
 - [Phase 189.1]: 189.1-10: Task 2 gate lines committed after the full E2E run so the run sits on GATES_HEAD (189-20 precedent)
 - [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
-- [Phase 189.1.1]: Phase-start E2E listing is 742 tests in 129 projects, +13 against the 729 of the last full run; the final plan adds +13 to the phase's own summed deltas (D-06)
-- [Phase 189.1.1]: Svelte 5 event wrappers skip a handler once event.cancelBubble is set, so unguarded nested ModalContainers closed the OUTER on one Escape (inner left open); the topmost-only guard in handleEscape fixes it in either listener order (189.1.1-02)
-- [Phase 189.1.1]: 189.1.1-04: the stop-timeout precondition reads SHUTDOWN_TIMEOUT through a local that honours omit_environment (30, adapter-node's default, when the task does not receive it), since local.environment_values keeps a value omit_environment drops
-- [Phase 189.1.1]: 189.1.1-04: Terraform on this workstation is an x86_64 build under Rosetta; every Terraform run needs GODEBUG=asyncpreemptoff=1 or the x86 AWS provider hangs or times out starting; and validate is run in a clean copy of the tracked tree because local .terraform state caches the S3 backend
-- [Phase 189.1.1]: 189.1.1-05: the reviewer brief describes the consent prompt as the modal of the release under review; plan 06 builds it, so section 6 holds once 06 lands
-- [Phase 189.1.1]: 189.1.1-05: Q6 asks both ways, because a closed project's public pages already follow the stored trackEvents (get_public_app_settings)
-- [Phase 189.1.1]: 189.1.1-06: the voter consent prompt is a Modal opened on mount; every close without a choice records setDataConsent('denied'); the buffered-before-grant spec grants on /privacy on the same document as the menu opening, since a flush under denied discards the buffer
-- [Phase 189.1.1]: 189.1.1-08: every bare .checkbox gets a 2px border in --input-color or base-content from one :where(.checkbox) rule in the un-sublayered @layer utilities block; --input-color stays unset so the check mark survives
-- [Phase 189.1.1]: 189.1.1-08: non-text contrast (SC 1.4.11) is asserted by a computed-style border measurement (tests/tests/utils/nonTextContrast.ts), since axe-core has no 1.4.11 rule
-- [Phase 189.1.1]: 189.1.1-09: the wrapper's absence is pinned by one hasnt_function check in pgTAP 59; the 07, 39c censuses count without it (sixteen, eight, twelve)
-- [Phase 189.1.1]: 189.1.1-09: WRAPPER_REFERENCES is five files: the manifest names migration 00005_drop_invitation_caller_take.sql
-- [Phase 189.1.1]: 189.1.1-10: the shutdown check's stub sends access-control-allow-origin: * and holds only the first request after the in-flight leg arms it; SvelteKit's server fetch refuses a cross-origin answer without the header, and holding every request kept GET / past SHUTDOWN_TIMEOUT
-- [Phase 189.1.1]: 189.1.1-10: the in-flight shutdown leg warms the server with one unsignalled GET / so the measured request is not the cold first render
-- [Phase 189.1.1]: 189.1.1-03: the staging dashboard's prod-ca-2021.crt matched the root the session pooler serves (SHA-256 80:70:25:AD:...:CA:FA, DER equal; CA_MATCH=yes) and is committed byte for byte as infra/certs/supabase-root-2021-ca.crt; credential-free legs TLS_RIGHT_CA=handshake-ok, TLS_WRONG_CA=refused, TLS_WRONG_HOST=refused
-- [Phase 189.1.1]: 189.1.1-03: CHANNEL_BINDING_OFFERED=no (libpq refused at the pooler's mechanism list, no password sent), so plan 07 adds no PGCHANNELBINDING
-- [Phase 189.1.1]: 189.1.1-03: staging's hosted history read read-only over verify-full holds 24 versions (00001-00024) against HEAD's four, confirming Blocker B-1 and plan 12's rebuild
-- [Phase 189.1.1]: 189.1.1-07: deploy.yml's migrations and settings steps connect with PGSSLMODE=verify-full and PGSSLROOTCERT at the committed Supabase root; no PGCHANNELBINDING (plan 03 measured none offered); deploy-workflow.test.ts pins both env blocks, checks the root exists, and is red on each way back (mode to require, root dropped, root missing, per step), shown also by applying each mutation to the real workflow
-- [Phase 189.1.1]: 189.1.1-11: run 45479328374 of main.yaml on ci-evidence/189.1.1-final (cf6326b08) read job by job, all 13 jobs success except dependency-audit, accepted per the 2026-11-15 todo (15 rows, each a todo row; the two dompurify rows gone); e2e-tests 745 passed on 4 workers; D-14i observed
-- [Phase 189.1.1]: Plan 12: the staging rebuild restored analytics.trackEvents and no other hand-set app setting (D-16); the candidate registration mode identity_provider, set by hand before the reset, is left for the operator to restore
-- [Phase 189.1.1]: Plan 12: a failed sitting step was fixed at top level (bootstrap.sql, ed35c98ec) and the sitting resumed with --from 9 instead of being returned as a blocker; the reset ran once
-- [Phase 189.1.1]: Plan 12: SUPA-15 and PIPE-12 are not marked complete; plans 189.1.1-13 and 189.1.1-15 still declare them
-- [Phase 189.1.1]: 189.1.1-13: staging serves 30316b108 (the second deploy commit, recorded as RUN2_DEPLOY_COMMIT and DEPLOYED_COMMIT in evidence 13), not the evidence's DEPLOY_COMMIT be6fc2dd6; migration 00005 was applied by run 45586463676, red at the smoke, and the green run is attempt 2 of run 45601966922, so the plan's third truth is met across two runs
-- [Phase 189.1.1]: 189.1.1-13: three deviations stand on operator rulings relayed by the orchestrator on 2026-11-25: the re-run of the failed checks job of run 45601966922 (a runner network fault in the ungated job), push_connection=unknown in place of pooler (detection deferred, research assumption A5 unsettled), and a deployed tree that differs from the CI-observed one in eight paths
-- [Phase 189.1.1]: 189.1.1-13: the deployed smoke must reach no @openvaa/* package by value, because the deploy job builds no workspace package; deployedSmokeGuards.test.ts refuses one (c2dfaebf8)
-- [Phase 189.1.1]: 189.1.1-14: on staging build 30316b108 with trackEvents true the voter consent prompt reads A11Y_FINDING=none at 1280x720, at 390x844 and in the dark scheme (one dialog:modal, no control under it takes focus, Escape closes it with denied stored); the todo 2026-11-21-voter-consent-prompt-covers-an-answer-control is closed
-- [Phase 189.1.1]: 189.1.1-14: the served build was compared with DEPLOYED_COMMIT of evidence 13, not DEPLOY_COMMIT, as the orchestrator recorded; RELAY-22 is left for plan 189.1.1-15 to mark
-- [Phase 189.1.1]: 189.1.1-16: ModalContainer.handleEscape cancels the default action of an Escape it takes (e.preventDefault()), so an Escape in the consent prompt's information dialog closes that dialog alone and records no consent choice
-- [Phase 189.1.1]: 189.1.1-16: modal unit tests press Escape through dialogPlatform.testUtils.ts pressEscape(), which sends cancel and close to the topmost open dialog when the keydown's default is not cancelled; a new modal test uses it instead of its own polyfill
-- [Phase 189.1.1]: Plan 17: on a cold drawer entry the results drawer is the topmost modal dialog (three measured readings agree); DrawerHost.handleEscape now cancels the Escape default as ModalContainer does, and a browser test pins that one Escape closes the drawer alone with no consent choice stored — The tree already behaved correctly only through listener order (both modals listen on document and Svelte 5 skips a later same-node handler once propagation is stopped), so the browser test was shown red under the named mutation; no topmost check was needed (DRAWER_GUARD=not-needed)
-- [Phase 189.1.1]: 189.1.1-18: IN-03 closed by retitling the deployed voter smoke to 'reaches the results', not by a raw candidate-section read (D-14h)
-- [Phase 189.1.1]: 189.1.1-18: IN-06 (no job timeouts in main.yaml) deferred to todo 2026-11-25-ci-job-timeouts.md for all thirteen jobs; editing main.yaml now would undo D-14i
-- [Phase 189.1.1]: 189.1.1-18: IN-07 (no [db] tag on the 00005 migration commit) deferred to the review restack; rewriting history now would change the SHAs the phase's evidence records
-- [Phase 189.1.1]: 189.1.1-19: the nested-Escape fix counts as observed on staging — the committed script read OPEN_AFTER_ONE_ESCAPE 0 to 1 and CONSENT_AFTER_ONE_ESCAPE denied to none across run 45676071401 (81b80140f), trackEvents true
-- [Phase 189.1.1]: 189.1.1-22: the shared sign-in helper's URL wait has SIGN_IN_REDIRECT_TIMEOUT = 3 x TIMEOUTS.slowPage (post, root, entity home), budget-only fix
-- [Phase 189.1.1]: 189.1.1-22: a URL wait is swept when its action can start a navigation it does not wait for; budget N x TIMEOUTS.slowPage per server answer, N read from the route files
-- [Phase 189.1.1]: 189.1.1-22: the identity provider entries are client-nav (fetch then a full load), N=5; voter (located) navigations are no-server
-- [Phase 189.1.1]: 189.1.1-21: the entity pages' four URL waits wait through one expectPath with TIMEOUTS.slowPage; the switching test's red reproduced by a 7000 ms hold on the questions overview's data request and green on the fix under the same hold
-- [Phase 189.1.1]: 189.1.1-21: Task 2 closed from plan 22's targeted run (48 of contestant-entity-selection passed on a tree holding the fix); the red first targeted run kept on record, UNPLANNED_RED_1_FIXED_BY=189.1.1-22; PLAN_E2E_DELTA=0
-- [Phase 189.1.1]: 189.1.1-20: the tree since the deploy is budget-only on the deployed smoke's paths (two closure files changed in wait budgets alone; the image copies no tests/), so plan 19's deploy observation stands and no redeploy is owed
-- [Phase 189.1.1]: 189.1.1-20: the phase's full E2E run is green on 46386184165f (747 passed = 745 + 2, per project and per title); the red first run stays on record under RED_RUN_1_, fixed by plans 21 and 22
 
 ### Pending Todos
 
@@ -592,7 +529,7 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 ### Blockers/Concerns
 
 - Phase 181: the baseline freeze waits for a cutover commit agreed with the v2.16 session (SUPA-10, C1). The rest of the phase does not wait.
-- Phase 182: the legal position needs a qualified reviewer. The reviewer brief is ready at `.planning/workstreams/deployment/relay-legal-reviewer-brief.md`. It covers what the relay collects, where it goes, how it is anonymised, the consent flow and retention, and it puts the six readings of the operator's notes of 2026-10-11 (still unconfirmed by the operator) to the reviewer as questions Q1 to Q6, with Q7 to Q9 added. The production launch waits for the review. Staging keeps `trackEvents` on.
+- Phase 182: the legal position needs a qualified reviewer. Six readings of the operator's notes of 2026-10-11 are written into the context files and listed in `v2.17-181-183-DISCUSSION-POINTS.md`; the operator has not yet confirmed them.
 - Phase 181: the freeze also waits for one schema change of phase 182 (ruling 182-12).
 - Phase 181 is planned (19 plans, 11 waves; four check rounds, no open blocker). Waves 1 to 7 need no operator. Plan 181-16 needs a root `.env` in this worktree and a window on the shared local Supabase stack; it stops the stack and resets the database from this worktree, so the v2.16 session must reset from its own worktree afterwards. Plan 181-17, the freeze, waits for v2.16's phase 177.1, the merge of the two branches' schema, and plan 182-02.
 - The operator has not yet answered `v2.17-181-183-RESEARCH-FOLLOWUPS.md`; the plans rest on each recommended option and name the follow-up id where an overrule changes them.
@@ -618,20 +555,13 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 - [Phase 187] `infra/envs/staging/aws/README.md` § Observations has one split table row (a `|` inside a code span; `deferred-items.md`), left open on purpose.
 - Before 188-10: code-sign-in reaches account-access from the frontend server, so its per-caller bucket is likely the server's address (188 deferred-items.md 2); operator to choose exclude / forward under a server secret / keep and measure
 
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 261123-qht | make "contact support" a link in the locked-name message | 2026-11-23 | 86022676a | [261123-qht-make-contact-support-a-link-in-the-locke](./quick/261123-qht-make-contact-support-a-link-in-the-locke/) |
-
 ### Roadmap Evolution
 
 - Phase 181.1 inserted after Phase 181: Declarative schema on pg-delta (supabase db schema declarative sync), agent-ready local stack ([experimental] stack = true) and Supabase config as code; source: https://supabase.com/blog/select-2026-build-anything. Must be settled before the 181-17 freeze: DML in schema/ (400-storage bucket insert, 107-feedback, 506-invitation-rpcs), timestamped vs five-digit migration names and the manifest/parity guard, and D-15 (Terraform supabase_settings sole writer; config push used nowhere) in phase 183 (URGENT)
 - Phase 181.1 scope-added: Scope added: vendor Supabase agent skills (supabase, supabase-postgres-best-practices from github.com/supabase/agent-skills v0.1.9) into .claude/skills/, pinned and reviewed, reconciled with the project's database skill
 - Phase 181.1 decided 2026-10-18: nothing from Supabase Select 2026 is adopted in v2.17, and pg-delta, the native per-worktree stack and config as code go to todos; the Supabase agent skills are installed per user and are not vendored, an operator ruling (181.1 D-09) that supersedes the "vendor … into .claude/skills/" wording of the scope-added line above; see 181.1-CONTEXT.md
 - Phase 189.1 inserted after Phase 189: Address tech debt: invitation-limit guard and trackEvents smoke (URGENT)
-- Phase 189.1.1 inserted after Phase 189.1: Address tech debt: the consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; UAT todos (3); 20 items from the 2026-11-21 audit (URGENT)
-- Phase 189.1.2 inserted after Phase 189.1.1: Move the deployment to Supabase publishable and secret keys before the legacy keys retire (FUT-02), pulled forward by the operator 2026-11-25 (URGENT)
+- Phase 190 added: Multi-deployment bootstrap — `infra/bootstrap` takes a map of deployments so `OpenVAA/deploy-nuorten-vaalikone-2027` can deploy into the same AWS account (exploration 2026-11-23)
 
 ## Deferred Items
 
@@ -641,6 +571,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-26T18:18:36.480Z
-**Stopped At:** Phase 189.1.1 complete
+Last session: 2026-11-22T10:11:00.072Z
+**Stopped At:** Phase 189.1 complete — all phases complete
 **Resume File:** None
