@@ -5,13 +5,14 @@
  *
  * The `docker-image-build` job in `.github/workflows/main.yaml` builds the `production` target of `apps/frontend/Dockerfile` from the repo root.
  * That target is the image `docker-compose.dev.yml` runs and the image the AWS deploy pipeline builds and deploys.
- * The image copies `apps/`, `packages/`, `scripts/` and the root manifests and runs the root lifecycle scripts during `yarn install`, so a root lifecycle script that needs a file outside those directories breaks the image install and nothing else. No other job builds the image, so without this one that breakage reaches a deployment first.
+ * The image copies `apps/`, `packages/`, `scripts/`, `instance/` and the root manifests and runs the root lifecycle scripts during `yarn install`, so a root lifecycle script that needs a file outside those directories breaks the image install and nothing else. No other job builds the image, so without this one that breakage reaches a deployment first.
  *
  * ## Why each property is asserted
  *
  * - **No `paths-filter` and no `if:`.** The breakage above needs no Dockerfile change: a new root script or a moved file is enough. A filter on `apps/frontend/Dockerfile` would skip the job in exactly that case, and an unasserted absence is one PR away from being narrowed back.
  * - **No push, no registry login, no secrets, no third-party action.** The job only proves the image builds. Publishing is a deployment decision, and a job that pushes needs credentials the pull-request context must not carry.
  * - **The Dockerfile still declares `AS production`.** A renamed stage makes `docker build --target production` fail with an error that names no invariant; this assertion names it.
+ * - **The base stage copies `instance/` before the install.** A deployment's instance overlay is read by `yarn build` and by the production stage's frontend build, both of which descend from the base stage; a copy after the install, or none, builds an image without the overlay and fails nowhere. The tracked `instance/README.md` keeps the directory present, so the copy never fails on an upstream checkout.
  *
  * ## Why it lives in packages/dev-seed
  *
@@ -123,5 +124,18 @@ describe('the docker-image-build job builds the production image and publishes n
 
   it('builds a stage the Dockerfile still declares', () => {
     expect(DOCKERFILE).toMatch(/^FROM\s+\S+\s+AS\s+production\s*$/m);
+  });
+});
+
+describe('the image carries the instance overlay', () => {
+  const lines = DOCKERFILE.split('\n');
+
+  it('copies the instance overlay before the install and build', () => {
+    const copy = lines.findIndex((line) => /^COPY instance instance$/.test(line));
+    const install = lines.findIndex((line) => /^RUN yarn install --immutable$/.test(line));
+    expect(copy).toBeGreaterThan(-1);
+    expect(install).toBeGreaterThan(-1);
+    expect(copy).toBeLessThan(install);
+    expect(lines.filter((line) => /^COPY instance instance$/.test(line))).toHaveLength(1);
   });
 });

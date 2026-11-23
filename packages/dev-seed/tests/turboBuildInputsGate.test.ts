@@ -1,9 +1,11 @@
 /**
- * The Turborepo cache key of the two Vite apps' `build` tasks, asserted through a turbo dry run.
+ * The Turborepo cache key of the two Vite apps' `build` tasks and of `@openvaa/app-shared#build`, asserted through a turbo dry run.
  *
  * A cache hit replays `build/` instead of running `vite build`, so the hash must cover every file the build reads: a replayed build must never be older than the messages, static assets and Svelte/Vite/Tailwind/inlang configuration it was built from. The frontend build also writes its generated Paraglide runtime into `src/lib/paraglide/`; hashing that directory would make every build invalidate its own cache entry, while leaving it out of the outputs would make a cache hit skip it, and `typecheck`, `lint:check` and `svelte-check` type-check against it.
  *
- * `apps/frontend/turbo.json` and `apps/docs/turbo.json` hold the configuration; this spec checks its effect on the resolved task graph rather than the config text, so a change to the root `turbo.json` that alters the merge is caught too.
+ * A deployment's instance overlay lives outside every package, under the repository's `instance/` directory, so it is part of a cache key only where a `$TURBO_ROOT$` input names it: `@openvaa/app-shared#build` reads `instance/staticSettings.json` and keeps its default inputs through `$TURBO_EXTENDS$`, and `@openvaa/frontend#build` reads `instance/static/` and `instance/messages/`. The frontend reads the merged settings through app-shared's dist, which its `^build` dependency already covers, and no other file under `instance/` is a build input.
+ *
+ * `apps/frontend/turbo.json`, `apps/docs/turbo.json` and `packages/app-shared/turbo.json` hold the configuration; this spec checks its effect on the resolved task graph rather than the config text, so a change to the root `turbo.json` that alters the merge is caught too.
  *
  * `yarn test:unit` is `turbo run test:unit`, so a repo-meta spec needs a package to run in; it sits beside the other repo-root gate specs in this package. Both CI jobs that run it create the generated Paraglide directory first, which is what lets the "no generated input" test bite.
  */
@@ -43,7 +45,10 @@ const ROOT_BUILD_DEPENDS_ON = (
   }
 ).tasks.build.dependsOn;
 
-/** Run the repo-pinned turbo's build dry run for both apps, with every remote-cache credential stripped from the child's env. */
+/** The instance directory as a key of a frontend or app-shared task's hashed-file map, which is relative to the package directory. */
+const INSTANCE_PREFIX = '../../instance/';
+
+/** Run the repo-pinned turbo's build dry run for both apps (which includes their `@openvaa/app-shared#build` dependency), with every remote-cache credential stripped from the child's env. */
 function readBuildDryRun(): Array<DryRunTask> {
   if (!existsSync(TURBO_BIN)) {
     throw new Error(`${TURBO_BIN} is missing, so the build dry run cannot be obtained. Run \`yarn install\`.`);
@@ -131,5 +136,52 @@ describe('the Vite apps build cache key covers what the build reads, and only th
     expect(task('@openvaa/frontend#build').outputs).toEqual(
       expect.arrayContaining(['build/**', `${GENERATED_PARAGLIDE}**`])
     );
+  });
+});
+
+describe('the instance overlay is part of the build cache key', () => {
+  let tasks: Array<DryRunTask>;
+
+  beforeAll(() => {
+    tasks = readBuildDryRun();
+  }, 60_000);
+
+  function task(taskId: string): DryRunTask {
+    const found = tasks.find((candidate) => candidate.taskId === taskId);
+    if (!found) throw new Error(`The build dry run has no task \`${taskId}\`.`);
+    return found;
+  }
+
+  const endingWith = (inputs: Array<string>, suffix: string): Array<string> =>
+    inputs.filter((input) => input.endsWith(suffix));
+
+  it('@openvaa/app-shared#build reads instance/staticSettings.json', () => {
+    expect(
+      endingWith(task('@openvaa/app-shared#build').resolvedTaskDefinition.inputs, 'instance/staticSettings.json')
+    ).toHaveLength(1);
+  });
+
+  it('@openvaa/app-shared#build keeps its default inputs beside the instance input', () => {
+    expect(task('@openvaa/app-shared#build').resolvedTaskDefinition.inputs).toContain('src/**');
+  });
+
+  it('@openvaa/frontend#build reads instance/static and instance/messages', () => {
+    const inputs = task('@openvaa/frontend#build').resolvedTaskDefinition.inputs;
+    expect(endingWith(inputs, 'instance/static/**')).toHaveLength(1);
+    expect(endingWith(inputs, 'instance/messages/**')).toHaveLength(1);
+  });
+
+  it('@openvaa/frontend#build still excludes the generated Paraglide directory', () => {
+    expect(task('@openvaa/frontend#build').resolvedTaskDefinition.inputs).toContain(`!${GENERATED_PARAGLIDE}**`);
+  });
+
+  it('@openvaa/frontend#build hashes nothing under instance/ outside static/ and messages/', () => {
+    const outside = Object.keys(task('@openvaa/frontend#build').inputs).filter(
+      (path) =>
+        path.startsWith(INSTANCE_PREFIX) &&
+        !path.startsWith(`${INSTANCE_PREFIX}static/`) &&
+        !path.startsWith(`${INSTANCE_PREFIX}messages/`)
+    );
+    expect(outside).toEqual([]);
   });
 });
