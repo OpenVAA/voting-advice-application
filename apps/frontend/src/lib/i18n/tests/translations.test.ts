@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { describe, expect, test } from 'vitest';
 import { t } from '$lib/i18n/wrapper';
+import { collectStrings, flattenMessageKeys, getHtmlTags, getPlaceholders } from '../utils/messageCatalog';
 
 /**
  * Structure tests for the Paraglide message catalog in `apps/frontend/messages/`.
@@ -23,19 +24,6 @@ const translationLocales = fs
 const baseLocale: string = inlangSettings.baseLocale;
 const otherLocales = translationLocales.filter((l) => l !== baseLocale);
 const baseLocaleFilenames = fs.readdirSync(path.join(messagesDir, baseLocale)).sort();
-
-/**
- * Flattens a message tree into dot-separated key paths. Inlang variant arrays and bare variant objects (carrying `declarations`, `selectors` or `match`) are single leaves, as in the `TranslationKey` generator.
- */
-function flattenMessageKeys(tree: unknown, prefix: string): Array<string> {
-  const isBranch =
-    typeof tree === 'object' &&
-    tree !== null &&
-    !Array.isArray(tree) &&
-    !('declarations' in tree || 'selectors' in tree || 'match' in tree);
-  if (!isBranch) return [prefix];
-  return Object.entries(tree).flatMap(([key, value]) => flattenMessageKeys(value, `${prefix}.${key}`));
-}
 
 /**
  * The full translation keys of one message file. The file's single top-level key is its namespace, the filename without `.json`, and every key starts with it.
@@ -125,16 +113,6 @@ function getAllStrings(locale: string, filename: string): Map<string, string> {
   const found: Array<[string, string]> = [];
   collectStrings(JSON.parse(fs.readFileSync(path.join(messagesDir, locale, filename), 'utf8')), '', found);
   return new Map(found);
-}
-
-/** The distinct `{placeholder}` names a string uses, sorted. */
-function getPlaceholders(value: string): Array<string> {
-  return [...new Set([...value.matchAll(/\{([^{}]*)\}/g)].map((match) => match[1]))].sort();
-}
-
-/** The distinct HTML tag names a string opens or closes, lower-cased and sorted. */
-function getHtmlTags(value: string): Array<string> {
-  return [...new Set([...value.matchAll(/<\/?([a-zA-Z][\w-]*)/g)].map((match) => match[1].toLowerCase()))].sort();
 }
 
 /**
@@ -691,43 +669,6 @@ const SAME_AS_BASE_LOCALE: ReadonlyArray<SameAsBaseLocale> = [
   },
   { locale: 'sv', file: 'feedback.json', key: 'feedback.title', value: 'Feedback', reason: 'the same word in Swedish' }
 ];
-
-/** Whether a node is a variant message, by its shape: an object, not an array, holding `match` together with `declarations` or `selectors`. */
-function isVariantMessage(node: unknown): node is { match?: Record<string, unknown> } {
-  return (
-    typeof node === 'object' &&
-    node !== null &&
-    !Array.isArray(node) &&
-    'match' in node &&
-    ('declarations' in node || 'selectors' in node)
-  );
-}
-
-/** Collect the texts of a variant's `match`, each keyed by the variant's key and its match key. */
-function collectVariantTexts(
-  variant: { match?: Record<string, unknown> },
-  key: string,
-  out: Array<[string, string]>
-): void {
-  for (const [matchKey, text] of Object.entries(variant.match ?? {})) collectStrings(text, `${key}/${matchKey}`, out);
-}
-
-/** Collect every string of a node, keyed as `getComparedStrings` describes. */
-function collectStrings(node: unknown, key: string, out: Array<[string, string]>): void {
-  if (typeof node === 'string') {
-    out.push([key, node]);
-  } else if (Array.isArray(node)) {
-    node.forEach((item, index) =>
-      isVariantMessage(item)
-        ? collectVariantTexts(item, `${key}#${index}`, out)
-        : collectStrings(item, `${key}#${index}`, out)
-    );
-  } else if (isVariantMessage(node)) {
-    collectVariantTexts(node, `${key}#0`, out);
-  } else if (typeof node === 'object' && node !== null) {
-    for (const [child, value] of Object.entries(node)) collectStrings(value, key ? `${key}.${child}` : child, out);
-  }
-}
 
 const comparedStringsCache = new Map<string, Map<string, string>>();
 
