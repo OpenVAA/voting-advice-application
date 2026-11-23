@@ -1,9 +1,12 @@
 import path from 'path';
 import { fileURLToPath } from 'node:url';
 import adapter from '@sveltejs/adapter-node';
+import { instanceAssetsDir } from './instanceAssets.js';
 
 // The repo-root `.env` lives two levels above `apps/frontend`. `apps/frontend/package.json` declares `type: module`, so `__dirname` is unavailable here — derive the repo root from `import.meta.url`, the same idiom `vite.config.ts` already uses.
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+const frontendDir = fileURLToPath(new URL('./', import.meta.url));
+const assetsDir = instanceAssetsDir({ repoRoot, frontendDir });
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -22,6 +25,10 @@ const config = {
     env: {
       dir: repoRoot
     },
+    // An instance's `instance/static/` files replace the frontend's own by path. SvelteKit serves, lists and copies a single assets directory, so the replacement goes through a merged copy that `instanceAssetsDir` builds.
+    //
+    // With no instance assets the key is not set, and the default `static` directory is used unchanged.
+    ...(assetsDir === 'static' ? {} : { files: { assets: assetsDir } }),
     alias: {
       $types: path.resolve('./src/lib/types'),
       $contestant: path.resolve('./src/lib/contestant'),
