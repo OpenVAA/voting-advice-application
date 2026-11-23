@@ -1,6 +1,6 @@
-import path from 'path';
 import { fileURLToPath } from 'node:url';
 import adapter from '@sveltejs/adapter-node';
+import path from 'path';
 import { instanceAssetsDir } from './instanceAssets.js';
 
 // The repo-root `.env` lives two levels above `apps/frontend`. `apps/frontend/package.json` declares `type: module`, so `__dirname` is unavailable here — derive the repo root from `import.meta.url`, the same idiom `vite.config.ts` already uses.
