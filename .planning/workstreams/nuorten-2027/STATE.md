@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 191
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 191-03-PLAN.md
-last_updated: "2026-11-23T16:31:05.121Z"
+stopped_at: Completed 191-04-PLAN.md
+last_updated: "2026-11-23T17:04:39.971Z"
 last_activity: 2026-11-23
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -21,7 +21,7 @@ progress:
 ## Current Position
 
 Phase: 191 (Instance overlay (upstream)) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 **Status:** Ready to execute
 **Current Phase:** 191
 **Last Activity:** 2026-11-23
@@ -30,11 +30,11 @@ Plan: 4 of 6
 ## Progress
 
 **Phases Complete:** 0
-**Current Plan:** 3
+**Current Plan:** 5
 
 ## Session Continuity
 
-**Stopped At:** Completed 191-02-PLAN.md
+**Stopped At:** Completed 191-04-PLAN.md
 **Resume File:** None
 
 ## Accumulated Context
@@ -52,6 +52,7 @@ Plan: 4 of 6
 - 191-02: AppLogo's static tier (no publisherLogo url, a staticSettings.logo url) alone falls back to t('dynamic.appName') for alt; the publisher tier keeps its empty alt.
 - 191-02: visual-regression is judged by its CI-literal run in the pinned Playwright container; host runs cannot reproduce its baselines, with or without the plan.
 - 191-03: instance/static is laid over apps/frontend/static through a fingerprinted merged copy at apps/frontend/.instance/static, selected as kit.files.assets only when instance/static holds a regular file; symlinks refused before any write.
+- 191-04: instance/messages/<locale>.json files are validated against the base en catalogue (key exists, placeholder set, HTML tag set, compiled-locale file name, no symlinks) and laid over it through a generated apps/frontend/.instance/project.inlang that lists them last; paraglide.options.ts also fails when staticSettings.supportedLocales offers a locale with no compiled catalogue.
 
 ### Performance Metrics
 
@@ -60,3 +61,4 @@ Plan: 4 of 6
 | 191-01 | ~15 min | 2 | 10 |
 | 191-02 | ~38 min | 2 | 6 |
 | 191-03 | ~31 min | 2 | 7 |
+| 191-04 | ~35 min | 2 | 7 |
