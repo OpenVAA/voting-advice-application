@@ -60,7 +60,7 @@ stop_server() {
 }
 
 remove_fixture() {
-  rm -rf "${FIXTURE_PATHS[@]}" apps/frontend/.instance
+  rm -rf "${FIXTURE_PATHS[@]}" apps/frontend/.instance apps/frontend/build
   FIXTURE_PRESENT=0
 }
 
@@ -89,6 +89,9 @@ settings_check_js() {
 
 # --- Baseline -------------------------------------------------------------------------------------
 log "== baseline build"
+# A turbo cache replay writes the outputs over build/ without removing files that are no longer
+# outputs, so every build here that is compared starts from an absent build/.
+rm -rf apps/frontend/build
 yarn build --filter=@openvaa/frontend >"$WORK/baseline-build.log" 2>&1
 css_listing >"$WORK/baseline-css.txt"
 log "baseline CSS assets: $(wc -l <"$WORK/baseline-css.txt")"
@@ -139,7 +142,7 @@ check "the build holds the overlaid logo url" grep -rlq '/images/instance-logo.s
 
 # --- 3. Served and linked -------------------------------------------------------------------------
 log "== served build"
-PORT=$PORT node --env-file=.env apps/frontend/build/index.js >"$WORK/server.log" 2>&1 &
+PORT=$PORT ORIGIN="http://127.0.0.1:$PORT" node --env-file=.env apps/frontend/build/index.js >"$WORK/server.log" 2>&1 &
 SERVER_PID=$!
 up=0
 for _ in $(seq 1 60); do
@@ -171,6 +174,8 @@ else
   fail "an unknown settings key fails the app-shared build with Unrecognized key" "exit $status; see $WORK/negative-settings.log"
 fi
 write_valid_settings
+# The failed build emptied app-shared's dist, which the message compile imports.
+yarn build --filter=@openvaa/app-shared >"$WORK/restore-app-shared.log" 2>&1
 
 echo '{ "common": { "publishedBy": "Published by {someoneElse}" } }' >instance/messages/en.json
 status=0
