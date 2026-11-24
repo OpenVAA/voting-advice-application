@@ -5,7 +5,7 @@
  *
  * The job's actions are pinned by commit SHA because a tag can be moved to other code. Its validation and module tests are `infra/scripts/terraform-checks.sh`, which names the roots it must have validated, so an empty or short glob fails instead of passing on nothing; this spec holds the job to calling that script and reads the names from it. The script's own behaviour is tested beside it, in `infra/scripts/terraform-checks.test.ts`.
  *
- * The state keys are read from the backend blocks on disk, in whichever `.tf` file of a root they sit, and every root must yield one, so a root whose backend the reader missed fails by name instead of dropping out. Two roots sharing a key would overwrite each other's state, and a key outside the `hand/` and `pipeline/` prefixes would fall outside the deny statements that keep the pipeline away from the hand-applied state. The bootstrap root builds the deploy role's state access from its `pipeline_state_key` variable, and the pipeline root writes to its backend key; a difference would otherwise show only as a refused request in a workflow.
+ * The state keys are read from the backend blocks on disk, in whichever `.tf` file of a root they sit, and every root must yield one, so a root whose backend the reader missed fails by name instead of dropping out. Two roots sharing a key would overwrite each other's state, and a key outside the `hand/` and `pipeline/` prefixes would fall outside the deny statements that keep the pipeline away from the hand-applied state. The bootstrap root builds each deployment's state access from the key `pipeline/<deployment>/aws/terraform.tfstate`, and that deployment's pipeline root writes to its backend key; a difference would otherwise show only as a refused request in a workflow.
  */
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -413,10 +413,22 @@ describe('the state keys of the Terraform roots stay apart', () => {
     }
   });
 
-  it('keeps pipeline_state_key of the bootstrap root equal to the backend key of the staging pipeline root', () => {
-    const tfvars = readFileSync(resolve(REPO_ROOT, 'infra/bootstrap/terraform.tfvars'), 'utf8');
-    const declared = /^\s*pipeline_state_key\s*=\s*"([^"]*)"/m.exec(tfvars)?.[1];
-    expect(declared, 'pipeline_state_key is missing from infra/bootstrap/terraform.tfvars').toBeTruthy();
-    expect(backendKeys().find(({ root }) => root === 'infra/envs/staging/aws')?.key).toBe(declared);
+  it("keeps the bootstrap root's pipeline state key of every deployment equal to the backend key of its pipeline root", () => {
+    const main = readFileSync(resolve(REPO_ROOT, 'infra/bootstrap/main.tf'), 'utf8');
+    expect(main, 'infra/bootstrap/main.tf derives no pipeline state key from the deployment key').toMatch(
+      /^\s*pipeline_state_keys\s*=\s*\{\s*for k in keys\(var\.deployments\)\s*:\s*k\s*=>\s*"pipeline\/\$\{k\}\/aws\/terraform\.tfstate"\s*\}$/m
+    );
+    const map = JSON.parse(
+      readFileSync(resolve(REPO_ROOT, 'infra/bootstrap/deployments.auto.tfvars.json'), 'utf8')
+    ) as {
+      deployments: Record<string, unknown>;
+    };
+    const keys = Object.keys(map.deployments);
+    expect(keys).toContain('staging');
+    for (const key of keys) {
+      expect(backendKeys().find(({ root }) => root === `infra/envs/${key}/aws`)?.key, key).toBe(
+        `pipeline/${key}/aws/terraform.tfstate`
+      );
+    }
   });
 });

@@ -27,6 +27,8 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '../..');
 const WORKFLOW_DIR = join(REPO_ROOT, '.github', 'workflows');
 const BOOTSTRAP_TFVARS = join(REPO_ROOT, 'infra', 'bootstrap', 'terraform.tfvars');
+const BOOTSTRAP_MAP = join(REPO_ROOT, 'infra', 'bootstrap', 'deployments.auto.tfvars.json');
+const REPOSITORY_ID = '546467466';
 const LOCK_FILE = '.terraform.lock.hcl';
 
 /** The one root a workflow may apply or destroy. */
@@ -207,13 +209,26 @@ function bootstrapValue(text: string, name: string): string {
   return value;
 }
 
-/** The deploy role ARN the bootstrap root's tfvars imply. */
-function expectedDeployRoleArn(tfvarsText: string): string {
+/** The key of the one entry of the deployment map whose `github_repository_id` is this repository's. */
+function ownedDeploymentKey(mapText: string): string {
+  const deployments = (JSON.parse(mapText) as { deployments?: Record<string, { github_repository_id?: unknown }> })
+    .deployments;
+  const owned = Object.entries(deployments ?? {})
+    .filter(([, entry]) => entry.github_repository_id === REPOSITORY_ID)
+    .map(([key]) => key);
+  if (owned.length !== 1) {
+    throw new Error(`infra/bootstrap/deployments.auto.tfvars.json has ${owned.length} entries for ${REPOSITORY_ID}`);
+  }
+  return owned[0];
+}
+
+/** The deploy role ARN the bootstrap root's account values and its deployment map imply. */
+function expectedDeployRoleArn(tfvarsText: string, mapText: string): string {
   const account = bootstrapValue(tfvarsText, 'aws_account_id');
   const path = bootstrapValue(tfvarsText, 'iam_path');
   const prefix = bootstrapValue(tfvarsText, 'name_prefix');
-  const environment = bootstrapValue(tfvarsText, 'deploy_environment');
-  return `arn:aws:iam::${account}:role${path}${prefix}-${environment}-deploy`;
+  const key = ownedDeploymentKey(mapText);
+  return `arn:aws:iam::${account}:role${path}${prefix}-${key}-deploy`;
 }
 
 /** The violations of deploy-role-arn in one workflow: no literal role ARN, or one other than `expected`. */
@@ -390,7 +405,8 @@ function lockPlatformViolations(locks: Array<RootLock>): Array<string> {
 
 const FILES = workflowFiles();
 const TFVARS_TEXT = readFileSync(BOOTSTRAP_TFVARS, 'utf8');
-const DEPLOY_ROLE_ARN = expectedDeployRoleArn(TFVARS_TEXT);
+const MAP_TEXT = readFileSync(BOOTSTRAP_MAP, 'utf8');
+const DEPLOY_ROLE_ARN = expectedDeployRoleArn(TFVARS_TEXT, MAP_TEXT);
 
 describe('apply-root: no workflow applies or destroys anything but the staging AWS root', () => {
   it('reads every workflow file, the pipeline three among them', () => {
@@ -519,7 +535,7 @@ describe('shared-concurrency: deploy.yml and destroy.yml share staging-aws and n
 });
 
 describe('deploy-role-arn: the literal deploy role ARN is the one the bootstrap root creates', () => {
-  it('derives the ARN from aws_account_id, iam_path, name_prefix and deploy_environment', () => {
+  it("derives the ARN from aws_account_id, iam_path, name_prefix and the key of this repository's deployment", () => {
     expect(DEPLOY_ROLE_ARN).toBe('arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy');
   });
 
@@ -546,10 +562,11 @@ describe('deploy-role-arn: the literal deploy role ARN is the one the bootstrap 
     expect(deployRoleArnViolations(file, DEPLOY_ROLE_ARN)).toHaveLength(1);
   });
 
-  it('reports a red tfvars whose deploy_environment changed, against the unchanged workflows', () => {
-    const changed = expectedDeployRoleArn(
-      TFVARS_TEXT.replace('deploy_environment = "staging"', 'deploy_environment = "prod"')
-    );
+  it('reports a red map whose staging key is renamed, against the unchanged workflows', () => {
+    const { deployments } = JSON.parse(MAP_TEXT) as { deployments: Record<string, unknown> };
+    const { staging, ...others } = deployments;
+    const changed = expectedDeployRoleArn(TFVARS_TEXT, JSON.stringify({ deployments: { ...others, prod: staging } }));
+    expect(changed).toBe('arn:aws:iam::471112560111:role/openvaa/openvaa-prod-deploy');
     expect(deployRoleArnViolations(workflowFile(FILES, 'infra-plan.yml'), changed)).toHaveLength(1);
   });
 });
