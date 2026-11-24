@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 190-03-PLAN.md
-last_updated: "2026-11-24T15:25:00.000Z"
+stopped_at: Completed 190-04-PLAN.md
+last_updated: "2026-11-24T15:40:00.000Z"
 last_activity: 2026-11-24
-last_activity_desc: 190-03 complete (push-migrations --deployment, smoke gate keyed by SMOKE_DEPLOYMENT)
+last_activity_desc: 190-04 complete (pure staging move over the deployment map; MOVE_COMMIT ce17178c6)
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 232
-  completed_plans: 221
+  completed_plans: 222
   percent: 91
 ---
 
@@ -33,9 +33,9 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 190 (Multi-deployment bootstrap) — EXECUTING
-Plan: 3 of 14 (190-01 to 190-03 complete)
+Plan: 4 of 14 (190-01 to 190-04 complete)
 Status: In progress (branch planning/deployment-190, on 46554181e)
-Last activity: 2026-11-24 — 190-03 complete: push-migrations.sh --deployment <key>, deployed smoke gate keyed by SMOKE_DEPLOYMENT (default staging); infra 620 passed / 6 baseline failed, tests 171 deployedTarget+guards
+Last activity: 2026-11-24 — 190-04 complete: infra/bootstrap for_each over var.deployments, github-oidc-provider module, four moved blocks, staging names pinned; MOVE_COMMIT=ce17178c6945c6514b3a2c5cfde49b322fb0265f, move proof vs 46554181e moved 37 / delete 0 / replace 0 / create 0, map control vs MOVE_COMMIT moved 0, both pass; infra 630 passed / 6 baseline failed
 
 Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
@@ -231,6 +231,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 190 P01 | 20 min | 3 tasks | 3 files |
 | Phase 190 P02 | 15 min | 2 tasks | 4 files |
 | Phase 190 P03 | 10 min | 2 tasks | 7 files |
+| Phase 190 P04 | 15 min | 3 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -514,6 +515,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 190]: 190-03: push-migrations.sh --confirmed-ref requires --deployment <key> (key ^[a-z][a-z0-9-]*$, <=15 chars, infra/envs/<key>/supabase/terraform.tfvars present, its project_ref = --ref, OPENVAA_DEPLOY_ENVIRONMENT = key, GITHUB_REF = refs/heads/deploy/<key> or deploy-evidence/?*); the typed form validates a given key only. deploy.yml must pass --deployment (190-07): until then the confirmed form refuses with exit 2
 - [Phase 190]: 190-03: deployedTarget.ts exports DEFAULT_SMOKE_DEPLOYMENT='staging', readSmokeDeployment, dedicatedSupabaseTfvars, smokeBaseUrl; requireCredentialOrigin takes the key as a required third argument, runDeployedGate an optional deployment defaulting to readSmokeDeployment(env)
 - [Phase 190]: 190-03: infra unit count after 190-03: 620 passed / 6 failed (the six baseline failures); yarn lint:check red only on 11 comment-hygiene lines in resolve-deployment.sh (190-02), tests:unit:tests one host-only tcpForward timing failure; both in the phase's deferred-items.md
+- [Phase 190]: 190-04: MOVE_COMMIT=ce17178c6945c6514b3a2c5cfde49b322fb0265f (the tree 190-11 plans and applies first); move proof vs 46554181e: moved 37 (= 37 counted keyed addresses), delete 0, replace 0, create 0, update 18 (mock JSON), guard pass; map control vs MOVE_COMMIT: base_map present, moved 0, guard pass
+- [Phase 190]: 190-04: github-oidc takes oidc_provider_arn and iam_name_prefix (plan role, ecr-push, plan-deny, nine deploy-* policies); deploy role and tfstate policy stay on name_prefix-environment; the account's provider is infra/modules/github-oidc-provider; bootstrap derives registry <prefix>-<key>-frontend, IAM prefix <prefix>-<key>, pipeline/<key>/aws/terraform.tfstate unless the entry overrides
+- [Phase 190]: 190-04: check-bootstrap-moves.sh fixed (set -f had kept its *.tf glob literal, so a map-declaring tree was taken for one without); infraValidateJobGate now checks infra/envs/<key>/aws backend keys against the derived pipeline key; infra unit count 630 passed / 6 failed
 - [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
 
 ### Pending Todos
@@ -583,6 +587,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T15:25:00.000Z
-**Stopped At:** Completed 190-03-PLAN.md
+Last session: 2026-11-24T15:40:00.000Z
+**Stopped At:** Completed 190-04-PLAN.md
 **Resume File:** None

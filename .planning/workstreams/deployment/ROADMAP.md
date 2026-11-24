@@ -1049,7 +1049,7 @@ Plans:
 - [x] 190-03-PLAN.md — `push-migrations.sh --deployment` and the smoke gate keyed by `SMOKE_DEPLOYMENT`.
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 190-04-PLAN.md — The pure move: `for_each` over the map, the provider module, the moved blocks, staging's names unchanged, proven offline (MOVE_COMMIT).
+- [x] 190-04-PLAN.md — The pure move: `for_each` over the map, the provider module, the moved blocks, staging's names unchanged, proven offline (MOVE_COMMIT).
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 190-05-PLAN.md — The bootstrap root test (two entries apart, staging pinned, validations refusing) and its CI check.
