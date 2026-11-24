@@ -521,6 +521,12 @@ describe('the Supabase-root step of destroy.yml under bash -e', () => {
     "echo 'An error occurred (403) when calling the HeadObject operation: Forbidden' >&2",
     'exit 254'
   ].join('\n');
+  const env = {
+    ...standInEnv(step, script),
+    SUPABASE_ROOT: RESOLVED_STAND_INS.supabase_root,
+    STATE_BUCKET: RESOLVED_STAND_INS.state_bucket,
+    SUPABASE_STATE_KEY: RESOLVED_STAND_INS.supabase_state_key
+  };
 
   it('passes on the two expected refusals', () => {
     const run = runUnderRunnerShell(script, {
@@ -528,7 +534,7 @@ describe('the Supabase-root step of destroy.yml under bash -e', () => {
         terraform: "echo 'Error refreshing state: AccessDenied: Access Denied, status code: 403'\nexit 1",
         aws: refusingAws
       },
-      env: standInEnv(step, script)
+      env
     });
     for (const line of ['supabase_root_init_status=1', 'supabase_state_head_status=254', 'supabase_root_refused=yes']) {
       expect(lines(run.stdout)).toContain(line);
@@ -539,7 +545,7 @@ describe('the Supabase-root step of destroy.yml under bash -e', () => {
   it('fails when the init of the Supabase root succeeds', () => {
     const run = runUnderRunnerShell(script, {
       stubs: { terraform: 'exit 0', aws: refusingAws },
-      env: standInEnv(step, script)
+      env
     });
     expect(lines(run.stdout)).toContain('supabase_root_refused=no');
     expect(run.status).toBe(1);

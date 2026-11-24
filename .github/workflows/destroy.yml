@@ -1,25 +1,28 @@
-name: "Destroy staging AWS"
+name: "Destroy AWS stack"
 
-# Destroys the staging AWS stack: every resource of the staging AWS root, all of them under module.frontend. The DNS
-# and mail root and the Supabase root are not touched, and the persistent Supabase project, which holds the only copy
-# of its data, is out of this workflow's reach. Two things keep it there: the `staging-destroy` environment holds no
-# secret and no variable, so no Supabase token exists in either job, and the deploy role cannot read the hand-applied
-# state under `hand/`, which the plan job shows before it plans anything, by an init of the Supabase root and a read of
-# its state key that must both be refused.
+# Destroys the AWS stack of one deployment, the one the resolve job picks from the deployment map under
+# infra/bootstrap: every resource of its AWS root, all of them under module.frontend. Upstream, staging is the one
+# entry. The DNS and mail root and the Supabase root are not touched, and the deployment's persistent Supabase
+# project, which holds the only copy of its data, is out of this workflow's reach. Two things keep it there: the
+# deployment's destroy environment holds no secret and no variable, so no Supabase token exists in either job, and
+# the deploy role cannot read the hand-applied state under `hand/`, which the plan job shows before it plans anything,
+# by an init of the Supabase root and a read of its state key that must both be refused.
 #
 # A run, in order:
-#   1. job plan-destroy, which waits for its own approval of `staging-destroy`: shows the Supabase root out of reach,
-#      lists the AWS root's state, plans `-destroy` of that root into a saved plan, checks the plan with
+#   1. job resolve, with no credential: picks the deployment, its destroy environment, role, roots, state keys, its
+#      destroy branch and its confirm text;
+#   2. job plan-destroy, which waits for its own approval of the destroy environment: shows the Supabase root out of
+#      reach, lists the AWS root's state, plans `-destroy` of that root into a saved plan, checks the plan with
 #      infra/scripts/check-destroy-plan.sh and only then prints it;
-#   2. job apply-destroy, which needs the first and waits for a second approval: plans again into its own saved plan,
+#   3. job apply-destroy, which needs the second and waits for a second approval: plans again into its own saved plan,
 #      so that no plan crosses jobs, checks and prints it the same way, applies it and fails unless the state is then
 #      empty.
 # An evidence run is approved at plan-destroy and rejected at apply-destroy, so it destroys nothing. A real destroy is
 # approved at both.
 #
-# A push to the one branch `deploy-evidence/destroy-staging` starts it; the deploy workflow excludes that branch. A
-# dispatch must pick the `deploy/staging` ref, because the environment admits no other branch for it, and must type
-# `destroy staging aws` into `confirm`; any other text skips both jobs.
+# A push of the deployment's branch `deploy-evidence/destroy-<key>` starts it; the deploy workflow excludes those
+# branches. A dispatch must pick that deployment's `deploy/<key>` ref, because its destroy environment admits no
+# other branch for it, and must type `destroy <key> aws` into `confirm`; any other text skips both jobs.
 #
 # A cancelled or timed-out apply can leave the state lock held; `terraform force-unlock` from the operator's shell
 # releases it.
@@ -37,7 +40,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Type destroy staging aws to destroy the staging AWS stack"
+        description: "Type destroy <deployment> aws, with the deployment this ref deploys, to destroy its AWS stack"
         required: true
         type: string
 
@@ -142,6 +145,8 @@ jobs:
         id: supabase-root-refused
         env:
           SUPABASE_ROOT: ${{ needs.resolve.outputs.supabase_root }}
+          STATE_BUCKET: ${{ needs.resolve.outputs.state_bucket }}
+          SUPABASE_STATE_KEY: ${{ needs.resolve.outputs.supabase_state_key }}
         run: |
           set -uo pipefail
           init_status=0
@@ -153,7 +158,7 @@ jobs:
             init_refused=yes
           fi
           head_status=0
-          aws s3api head-object --bucket openvaa-tfstate-471112560111 --key hand/staging/supabase/terraform.tfstate > /dev/null \
+          aws s3api head-object --bucket "$STATE_BUCKET" --key "$SUPABASE_STATE_KEY" > /dev/null \
             2> "$RUNNER_TEMP/supabase-head.err" || head_status=$?
           echo "supabase_state_head_status=$head_status"
           head_refused=no
@@ -169,13 +174,13 @@ jobs:
           echo "::error::The deploy role was not refused both reads of the Supabase root's state (init $init_status, refused=$init_refused; head-object $head_status, refused=$head_refused)."
           exit 1
 
-      - name: "Initialise the staging AWS root"
+      - name: "Initialise the AWS root"
         id: init
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
 
-      - name: "List the state of the staging AWS root"
+      - name: "List the state of the AWS root"
         id: state
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
@@ -193,7 +198,7 @@ jobs:
       # variables' checks and reach no resource. No running service is read for the digest, so a destroy that stopped
       # after the service was deleted can be run again. The plan's output goes to a file, so that nothing of the plan is
       # printed before the guard.
-      - name: "Plan the destroy of the staging AWS root"
+      - name: "Plan the destroy of the AWS root"
         id: plan
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
@@ -229,13 +234,15 @@ jobs:
 
       - name: "Check the plan destroys the stack and nothing else"
         id: guard
+        env:
+          DEPLOYMENT_KEY: ${{ needs.resolve.outputs.key }}
         run: |
           set -uo pipefail
           guard_exit=0
           infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt" || guard_exit=$?
           echo "guard_exit=$guard_exit"
           if [ "$guard_exit" -ne 0 ]; then
-            echo "::error::check-destroy-plan.sh exited $guard_exit; the plan is not the destroy of the staging AWS stack."
+            echo "::error::check-destroy-plan.sh exited $guard_exit; the plan is not the destroy of the $DEPLOYMENT_KEY AWS stack."
             exit 1
           fi
 
@@ -303,13 +310,13 @@ jobs:
           role-session-name: destroy-apply-${{ github.run_id }}
           allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
 
-      - name: "Initialise the staging AWS root"
+      - name: "Initialise the AWS root"
         id: init
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
 
-      - name: "List the state of the staging AWS root"
+      - name: "List the state of the AWS root"
         id: state
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
@@ -327,7 +334,7 @@ jobs:
       # variables' checks and reach no resource. No running service is read for the digest, so a destroy that stopped
       # after the service was deleted can be run again. The plan's output goes to a file, so that nothing of the plan is
       # printed before the guard.
-      - name: "Plan the destroy of the staging AWS root"
+      - name: "Plan the destroy of the AWS root"
         id: plan
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
@@ -363,13 +370,15 @@ jobs:
 
       - name: "Check the plan destroys the stack and nothing else"
         id: guard
+        env:
+          DEPLOYMENT_KEY: ${{ needs.resolve.outputs.key }}
         run: |
           set -uo pipefail
           guard_exit=0
           infra/scripts/check-destroy-plan.sh --plan-json "$RUNNER_TEMP/destroy.json" --state-list "$RUNNER_TEMP/state.txt" || guard_exit=$?
           echo "guard_exit=$guard_exit"
           if [ "$guard_exit" -ne 0 ]; then
-            echo "::error::check-destroy-plan.sh exited $guard_exit; the plan is not the destroy of the staging AWS stack."
+            echo "::error::check-destroy-plan.sh exited $guard_exit; the plan is not the destroy of the $DEPLOYMENT_KEY AWS stack."
             exit 1
           fi
 
@@ -408,7 +417,7 @@ jobs:
             exit 1
           fi
 
-      - name: "Show the state of the staging AWS root is empty"
+      - name: "Show the state of the AWS root is empty"
         id: state-after
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
@@ -428,7 +437,7 @@ jobs:
             exit 1
           fi
           if [ "$count" -ne 0 ]; then
-            echo "::error::The state of the staging AWS root still holds $count addresses."
+            echo "::error::The state of $AWS_ROOT still holds $count addresses."
             exit 1
           fi
 

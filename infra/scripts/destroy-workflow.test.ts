@@ -1,9 +1,10 @@
 /**
- * Guards on `.github/workflows/destroy.yml`, the guarded destroy of the staging AWS stack.
+ * Guards on `.github/workflows/destroy.yml`, the guarded destroy of the AWS stack of the deployment the resolve job picks.
  *
- * The workflow removes every resource of the staging AWS root, in two jobs that each wait for an approval of the `staging-destroy` environment, and its log is public. Its triggers, its environments, the one root it may plan, the order of its steps and the absence of any secret are therefore checked here rather than by its first run. The shared rules of `workflowGuards.ts` are shown red in `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
+ * The workflow removes every resource of a deployment's AWS root, in two jobs that each wait for an approval of that deployment's destroy environment, and its log is public. Its triggers, its environments, the one root it may plan, the order of its steps and the absence of any secret are therefore checked here rather than by its first run. The shared rules of `workflowGuards.ts` are shown red in `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
  */
 
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -150,6 +151,37 @@ function mutate(source: string, pattern: string | RegExp, replacement: string): 
   return mutated;
 }
 
+/** The text of a workflow with its comment lines removed. */
+function uncommentedText(source: string): string {
+  return source
+    .split('\n')
+    .filter((line) => !/^\s*#/.test(line))
+    .join('\n');
+}
+
+/** The Supabase state key the resolver derives for a deployment key. */
+function supabaseStateKey(key: string): string {
+  return `hand/${key}/supabase/terraform.tfstate`;
+}
+
+/** The keys of the deployment map that have a Supabase root under infra/envs. */
+function supabaseRootKeys(): Array<string> {
+  const map = JSON.parse(
+    readFileSync(join(REPO_ROOT, 'infra', 'bootstrap', 'deployments.auto.tfvars.json'), 'utf8')
+  ) as { deployments: Record<string, unknown> };
+  return Object.keys(map.deployments).filter((key) => existsSync(join(REPO_ROOT, 'infra', 'envs', key, 'supabase')));
+}
+
+/** The `key` of the `backend "s3"` block of a Terraform text, or undefined when it declares none. */
+function declaredBackendKeyOf(source: string): string | undefined {
+  return /backend "s3" \{[^}]*?^\s*key\s*=\s*"([^"]*)"/m.exec(source)?.[1];
+}
+
+/** The backend key a root's main.tf declares. */
+function declaredBackendKey(mainTf: string): string | undefined {
+  return declaredBackendKeyOf(readFileSync(mainTf, 'utf8'));
+}
+
 describe('destroy.yml and the shared rules', () => {
   it('finds no violation of the shared rules', () => {
     expect(sharedViolations(doc, text)).toEqual([]);
@@ -182,10 +214,13 @@ describe('the triggers and the concurrency of destroy.yml', () => {
     expect(on.push).toEqual({ branches: ['deploy-evidence/destroy-*'] });
   });
 
-  it('asks a dispatch for the required string confirm', () => {
+  it('asks a dispatch for the required string confirm, described for any deployment', () => {
     const dispatch = on.workflow_dispatch as Record<string, unknown>;
     const inputs = dispatch.inputs as Record<string, Record<string, unknown>>;
     expect(Object.keys(inputs)).toEqual(['confirm']);
+    expect(inputs.confirm.description).toBe(
+      'Type destroy <deployment> aws, with the deployment this ref deploys, to destroy its AWS stack'
+    );
     expect(inputs.confirm.required).toBe(true);
     expect(inputs.confirm.type).toBe('string');
     expect('default' in inputs.confirm).toBe(false);
@@ -309,13 +344,16 @@ describe('the Supabase root is shown out of reach in plan-destroy', () => {
     expect([...script.matchAll(/terraform -chdir=(\S+) (\S+)/g)].map(([, root, command]) => [root, command])).toEqual([
       [SUPABASE_ROOT, 'init']
     ]);
-    expect(envOf(refusal)).toEqual({ SUPABASE_ROOT: RESOLVED_SUPABASE_ROOT });
+    expect(envOf(refusal)).toEqual({
+      SUPABASE_ROOT: RESOLVED_SUPABASE_ROOT,
+      STATE_BUCKET: '${{ needs.resolve.outputs.state_bucket }}',
+      SUPABASE_STATE_KEY: '${{ needs.resolve.outputs.supabase_state_key }}'
+    });
   });
 
-  it('heads the Supabase state key in the state bucket, with the output discarded', () => {
-    expect(script).toContain(
-      'aws s3api head-object --bucket openvaa-tfstate-471112560111 --key hand/staging/supabase/terraform.tfstate > /dev/null'
-    );
+  it('heads the resolved Supabase state key in the resolved state bucket, with the output discarded', () => {
+    expect(script).toContain('aws s3api head-object --bucket "$STATE_BUCKET" --key "$SUPABASE_STATE_KEY" > /dev/null');
+    expect(script).not.toMatch(/hand\/|openvaa-tfstate-/);
   });
 
   it('fails unless both reads were refused', () => {
@@ -326,8 +364,23 @@ describe('the Supabase root is shown out of reach in plan-destroy', () => {
     expect(script).toMatch(/supabase_root_refused=no"\necho "::error::[^\n]*"\nexit 1\n$/);
   });
 
-  it('names the backend key the Supabase root itself declares', () => {
-    expect(script).toContain('hand/staging/supabase/terraform.tfstate');
+  it('finds the Supabase root of every deployment that has one, staging among them', () => {
+    expect(supabaseRootKeys()).toContain('staging');
+  });
+
+  it.each(supabaseRootKeys())(
+    "derives for %s the backend key that deployment's Supabase root itself declares",
+    (key) => {
+      expect(declaredBackendKey(join(REPO_ROOT, 'infra', 'envs', key, 'supabase', 'main.tf'))).toBe(
+        supabaseStateKey(key)
+      );
+    }
+  );
+
+  it('is red against a root that declares another key', () => {
+    expect(declaredBackendKeyOf('  backend "s3" {\n    key = "hand/other/supabase/terraform.tfstate"\n  }\n')).not.toBe(
+      supabaseStateKey('staging')
+    );
   });
 
   it('is absent from apply-destroy', () => {
@@ -345,13 +398,37 @@ describe('the roots destroy.yml reaches', () => {
     }
   });
 
-  it('names no root of infra/envs outside a comment, and the Supabase root in the one refusal step only', () => {
-    const uncommented = text
-      .split('\n')
-      .filter((line) => !/^\s*#/.test(line))
-      .join('\n');
-    expect(uncommented).not.toMatch(/infra\/envs\//);
+  it('names no infra/envs/ path at all outside a comment, and the Supabase root in the one refusal step only', () => {
+    expect(uncommentedText(text)).not.toMatch(/infra\/envs\//);
     expect(text.split(RESOLVED_SUPABASE_ROOT)).toHaveLength(2);
+  });
+});
+
+describe('the deployment destroy.yml names', () => {
+  it('names staging in comments only', () => {
+    expect(uncommentedText(text)).not.toMatch(/staging/);
+  });
+
+  it.each([
+    [
+      'a literal Supabase state key',
+      (source: string) => mutate(source, '--key "$SUPABASE_STATE_KEY"', '--key hand/staging/supabase/terraform.tfstate')
+    ],
+    [
+      'a step named for staging',
+      (source: string) => mutate(source, '"Initialise the AWS root"', '"Initialise the staging AWS root"')
+    ],
+    [
+      'a literal confirm text',
+      (source: string) =>
+        mutate(source, 'description: "Type destroy <deployment> aws,', 'description: "Type destroy staging aws,')
+    ],
+    [
+      'the workflow named for staging',
+      (source: string) => mutate(source, /^name: "Destroy AWS stack"$/m, 'name: "Destroy staging AWS"')
+    ]
+  ])('is red with %s', (_label, mutation) => {
+    expect(uncommentedText(mutation(text))).toMatch(/staging/);
   });
 });
 
