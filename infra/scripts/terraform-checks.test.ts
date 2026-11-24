@@ -36,7 +36,7 @@ type Tree = { roots: Array<string>; testedRoots: Array<string>; modules: Record<
 
 const FULL_TREE: Tree = {
   roots: [...REQUIRED_ROOTS, 'infra/envs/scratch/supabase'],
-  testedRoots: EXAMPLE_ROOTS,
+  testedRoots: [...EXAMPLE_ROOTS, 'infra/bootstrap'],
   modules: { 'infra/modules/supabase': true, 'infra/modules/frontend-service': true, 'infra/modules/budget': false }
 };
 
@@ -175,6 +175,31 @@ describe('terraform-checks.sh plan-examples', () => {
       expect(result.stdout).toContain(`::error::${missing} was not among the example roots planned`);
     });
   }
+});
+
+describe('terraform-checks.sh test-bootstrap', () => {
+  it('runs the tests of the bootstrap root, against the lock file', () => {
+    const result = run(['test-bootstrap']);
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.calls).toEqual([
+      '-chdir=infra/bootstrap init -backend=false -input=false -lockfile=readonly',
+      '-chdir=infra/bootstrap test -verbose -no-color'
+    ]);
+    expect(result.stdout).toContain('tested 1 bootstrap roots: infra/bootstrap');
+  });
+
+  it('fails naming infra/bootstrap when it has no tests directory', () => {
+    const result = run(['test-bootstrap'], { ...FULL_TREE, testedRoots: EXAMPLE_ROOTS });
+    expect(result.status).toBe(1);
+    expect(result.stdout).toContain('::error::infra/bootstrap was not among the bootstrap roots tested');
+    expect(result.calls).toEqual([]);
+  });
+
+  it('stops with the status of a bootstrap test that failed', () => {
+    const result = run(['test-bootstrap'], FULL_TREE, '-chdir=infra/bootstrap test -verbose -no-color');
+    expect(result.status).toBe(7);
+    expect(result.stdout).not.toContain('tested ');
+  });
 });
 
 describe('terraform-checks.sh usage', () => {

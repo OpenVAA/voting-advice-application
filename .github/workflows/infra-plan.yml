@@ -1,7 +1,8 @@
 name: "Infrastructure plan"
 
 # Checks the Terraform under `infra/` for a pull request: formatting, the validation of every root, the tests of every
-# module and the plans of the three example roots against mock providers, none of which needs a credential.
+# module and the plans of the three example roots and of the bootstrap root against mock providers, none of which needs
+# a credential.
 #
 # A push to a `deploy-evidence/**` branch also runs this workflow. For a push GitHub takes the workflow file from the
 # pushed commit, so the run can be observed before the file is on the default branch.
@@ -63,6 +64,12 @@ jobs:
       - name: "Plan the example roots with mock providers"
         if: ${{ !cancelled() }}
         run: infra/scripts/terraform-checks.sh plan-examples
+
+      # The bootstrap root's test plans it with a second deployment beside staging, so names that collide or a renamed
+      # staging resource fail here.
+      - name: "Test the bootstrap root with a mock provider"
+        if: ${{ !cancelled() }}
+        run: infra/scripts/terraform-checks.sh test-bootstrap
 
   # A fork's pull request gets no token and no secret, so this job's `if` skips it and it shows as skipped.
   plan:

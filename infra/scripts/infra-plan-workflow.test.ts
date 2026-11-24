@@ -191,7 +191,7 @@ describe('infra-plan.yml', () => {
     expect(job('checks').permissions).toEqual({ contents: 'read' });
   });
 
-  it('formats, then validates every root, tests every module and plans the example roots through the shared script', () => {
+  it('formats, then validates every root, tests every module and plans the example roots and the bootstrap root through the shared script', () => {
     // The roots each check must reach are named in terraform-checks.sh alone, and tested in terraform-checks.test.ts.
     const steps = jobSteps(job('checks'));
     const runs = steps.flatMap((step) => (typeof step.run === 'string' ? [step.run.trim()] : []));
@@ -199,7 +199,8 @@ describe('infra-plan.yml', () => {
       'terraform fmt -check -recursive -diff infra',
       'infra/scripts/terraform-checks.sh validate',
       'infra/scripts/terraform-checks.sh test-modules',
-      'infra/scripts/terraform-checks.sh plan-examples'
+      'infra/scripts/terraform-checks.sh plan-examples',
+      'infra/scripts/terraform-checks.sh test-bootstrap'
     ]);
     for (const step of steps.filter((candidate) => String(candidate.run).includes('terraform-checks.sh')))
       expect(step.if, String(step.name)).toBe('${{ !cancelled() }}');
