@@ -11,6 +11,7 @@ terraform {
   }
 
   # Replace the bucket with your own state bucket. The name here is never read, because validation initialises with -backend=false. The S3 backend reads AWS credentials from the operator's shell by itself, so this root declares no AWS provider.
+  # A copy under infra/envs/<key>/ sets this key to hand/<key>/supabase/terraform.tfstate, with its own deployment key in place of example.
   backend "s3" {
     bucket       = "REPLACE-ME-tfstate"
     key          = "hand/example/supabase/terraform.tfstate"

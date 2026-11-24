@@ -14,6 +14,7 @@ terraform {
   }
 
   # Literal on purpose: no variable, no partial configuration and no -backend-config, so that this root can never be paired with another root's state key.
+  # A copy under infra/envs/<key>/ sets this key to pipeline/<key>/aws/terraform.tfstate, with its own deployment key in place of example.
   backend "s3" {
     bucket       = "REPLACE-ME-tfstate"
     key          = "pipeline/example/aws/terraform.tfstate"
