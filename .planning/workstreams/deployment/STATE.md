@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
-current_plan: 6
+current_plan: 7
 status: executing
-stopped_at: Completed 189.1.1-06-PLAN.md
-last_updated: "2026-11-24T14:02:36.162Z"
+stopped_at: Completed 189.1.1-08-PLAN.md
+last_updated: "2026-11-24T14:59:31.153Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 0c761393642d3b3c4257c3fd17dab83cc993e462
+state_head: db8f560ad3c5552e4d8c5f7f3a509200d43e1c5b
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 233
-  completed_plans: 223
+  completed_plans: 224
   percent: 83
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — EXECUTING
-Plan: 6 of 15
+Plan: 7 of 15
 Status: Ready to execute
 Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 6
+**Current Plan:** 7
 
 From 184 on, the numeric order is the dependency order.
 
@@ -234,6 +234,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P04 | 61 min | 2 tasks | 12 files |
 | Phase 189.1.1 P05 | 8 min | 3 tasks | 2 files |
 | Phase 189.1.1 P06 | 21min | 3 tasks | 8 files |
+| Phase 189.1.1 P08 | 52min | 3 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -516,6 +517,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-05: the reviewer brief describes the consent prompt as the modal of the release under review; plan 06 builds it, so section 6 holds once 06 lands
 - [Phase 189.1.1]: 189.1.1-05: Q6 asks both ways, because a closed project's public pages already follow the stored trackEvents (get_public_app_settings)
 - [Phase 189.1.1]: 189.1.1-06: the voter consent prompt is a Modal opened on mount; every close without a choice records setDataConsent('denied'); the buffered-before-grant spec grants on /privacy on the same document as the menu opening, since a flush under denied discards the buffer
+- [Phase 189.1.1]: 189.1.1-08: every bare .checkbox gets a 2px border in --input-color or base-content from one :where(.checkbox) rule in the un-sublayered @layer utilities block; --input-color stays unset so the check mark survives
+- [Phase 189.1.1]: 189.1.1-08: non-text contrast (SC 1.4.11) is asserted by a computed-style border measurement (tests/tests/utils/nonTextContrast.ts), since axe-core has no 1.4.11 rule
 
 ### Pending Todos
 
@@ -590,6 +593,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T14:02:35.164Z
-**Stopped At:** Completed 189.1.1-06-PLAN.md
+Last session: 2026-11-24T14:59:30.155Z
+**Stopped At:** Completed 189.1.1-08-PLAN.md
 **Resume File:** None
