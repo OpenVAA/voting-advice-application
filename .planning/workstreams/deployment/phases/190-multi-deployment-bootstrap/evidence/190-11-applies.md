@@ -110,4 +110,9 @@ The update list equals EXPECTED_UPDATES (190-06).
 
 ### Staging deploy after apply 2
 
-Re-run (attempt 2) of https://github.com/OpenVAA/voting-advice-application/actions/runs/44939177207 (deploy/staging at 2ddc331d1, main's unchanged workflow), approved by the operator: pending.
+Re-run (attempt 2) of https://github.com/OpenVAA/voting-advice-application/actions/runs/44939177207 (deploy/staging at 2ddc331d1, main's unchanged workflow), approved by the operator:
+
+```
+answer_deploy_staging=https://github.com/OpenVAA/voting-advice-application/actions/runs/44939177207 success
+answer_step12=applied
+```
