@@ -425,8 +425,8 @@ SELECT
         AND NOT has_function_privilege('anon', p.oid, 'EXECUTE')
         AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE')
     ),
-    'access_caller_take,delete_storage_object,email_confirmation_release,email_confirmation_request,email_invitation_hold,identity_account_find,identity_entity_find_or_create,identity_provider_entity_types,invitation_caller_take,invitation_code_claimant_email,invitation_code_status,invitation_link_release,invitation_link_request,invitation_link_witness,invitation_link_witness_open,recovery_link_request,resolve_email_variables',
-    'census: the SECURITY DEFINER functions in public that service_role can execute and neither anon nor authenticated can are exactly the seventeen listed: the two witness functions among them, which the test setup installs'
+    'access_caller_take,delete_storage_object,email_confirmation_release,email_confirmation_request,email_invitation_hold,identity_account_find,identity_entity_find_or_create,identity_provider_entity_types,invitation_code_claimant_email,invitation_code_status,invitation_link_release,invitation_link_request,invitation_link_witness,invitation_link_witness_open,recovery_link_request,resolve_email_variables',
+    'census: the SECURITY DEFINER functions in public that service_role can execute and neither anon nor authenticated can are exactly the sixteen listed: the two witness functions among them, which the test setup installs'
   );
 
 -- =====================================================================

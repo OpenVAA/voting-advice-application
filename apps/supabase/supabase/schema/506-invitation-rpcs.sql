@@ -19,10 +19,9 @@
 -- - identity_account_find() - the account an identity provider's identity resolves to, by its match value or its placeholder address
 -- - identity_entity_find_or_create() - the entity an identity provider's user registered in a project, found or created
 -- - access_caller_take() - count one anonymous account-access operation against the limit of the address it came from
--- - invitation_caller_take() - the former name of access_caller_take, kept until every deployment runs the functions that call the new name
 -- - claim_invitations() - turn the caller's open invitations into grants
 --
--- The five `invitation_*` functions, access_caller_take, recovery_link_request, the two `email_confirmation_*` functions, email_invitation_hold and the two `identity_*` functions are the service role's: an Edge Function calls them with values a visitor typed or an identity provider asserted, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
+-- The four `invitation_*` functions, access_caller_take, recovery_link_request, the two `email_confirmation_*` functions, email_invitation_hold and the two `identity_*` functions are the service role's: an Edge Function calls them with values a visitor typed or an identity provider asserted, and no API role can execute them. claim_invitations is the signed-in user's and nobody else's.
 --
 -- Depends on:
 -- - 102-entities.sql (the four entity tables)
@@ -797,29 +796,6 @@ FROM
 
 GRANT
 EXECUTE ON FUNCTION public.access_caller_take (uuid, text) TO service_role;
-
---------------------------------------------------------------------------------
--- invitation_caller_take: the former name of access_caller_take, kept for the account-access function a deployment still runs
---
--- Returns what public.access_caller_take returns for the same arguments, and takes the same slot. A deployment pushes its migrations before it deploys its Edge Functions, so between the two steps, and after a rollback to earlier functions, the deployed account-access still calls this name. A later migration drops it once every deployment runs the functions that call access_caller_take.
---
--- SECURITY DEFINER because access_caller_take is the service role's alone. It checks nothing about its caller, so only the service role may execute it.
---------------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.invitation_caller_take (p_project_id uuid, p_address text) RETURNS integer LANGUAGE sql SECURITY DEFINER
-SET
-  search_path = '' AS $$
-  SELECT public.access_caller_take(p_project_id, p_address);
-$$;
-
-REVOKE
-EXECUTE ON FUNCTION public.invitation_caller_take (uuid, text)
-FROM
-  PUBLIC,
-  anon,
-  authenticated;
-
-GRANT
-EXECUTE ON FUNCTION public.invitation_caller_take (uuid, text) TO service_role;
 
 --------------------------------------------------------------------------------
 -- cleanup_access_throttle_on_delete: a deleted invitation leaves no throttle key

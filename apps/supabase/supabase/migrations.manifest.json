@@ -20,6 +20,10 @@
     {
       "file": "00004_access_caller_limit.sql",
       "sha256": "fa80123e9c714e2464e6ff23e5d6fb44ecb796a58a44643d83831d837ce67384"
+    },
+    {
+      "file": "00005_drop_invitation_caller_take.sql",
+      "sha256": "0598f3bccac3e89c52e529d49208b5392cf9ead05aeac2165cc1652ab5cd57ec"
     }
   ]
 }

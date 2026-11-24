@@ -1,6 +1,6 @@
 -- 59-access-caller-limit.test.sql: the per-caller limit on the anonymous account-access operations
 --
--- `access_caller_take (p_project_id, p_address)` takes one slot of a caller in a project through `private.access_throttle_take` and answers 0 when the take is admitted, or the whole seconds until the caller's window ends when it is refused: `private.deployment_settings.access_caller_max` takes per caller per project per ten minutes, thirty by default. The caller is the address the Edge Function read from `cf-connecting-ip`, bucketed by `private.client_address_bucket`: an IPv4 address keyed by its host, an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`) by its IPv4 host and any other IPv6 address by its /64, under the key `caller:<project id>:<caller>`. The feedback limit keys a trusted `cf-connecting-ip` by the same bucket. `invitation_caller_take`, its former name, answers as it does from the same slots and is the service role's alone.
+-- `access_caller_take (p_project_id, p_address)` takes one slot of a caller in a project through `private.access_throttle_take` and answers 0 when the take is admitted, or the whole seconds until the caller's window ends when it is refused: `private.deployment_settings.access_caller_max` takes per caller per project per ten minutes, thirty by default. The caller is the address the Edge Function read from `cf-connecting-ip`, bucketed by `private.client_address_bucket`: an IPv4 address keyed by its host, an IPv4-mapped IPv6 address (`::ffff:a.b.c.d`) by its IPv4 host and any other IPv6 address by its /64, under the key `caller:<project id>:<caller>`. The feedback limit keys a trusted `cf-connecting-ip` by the same bucket. No function holds its former name, `invitation_caller_take`.
 --
 -- The address is trusted only when `private.deployment_settings.behind_cloudflare` is true and the address is present and parses. Otherwise, and for an id that names no project, the function answers 0 and writes no row, so an absent or unparseable address never shares one bucket. Each take takes its own slot first and then deletes the other `caller:` rows whose window has ended, and no other row; the cleanup skips a row another transaction has locked, so it waits for nothing while the take holds its key's advisory lock.
 --
@@ -9,7 +9,7 @@
 -- Depends on:
 -- - 00-helpers.test.sql (create_test_data, test_id, test_user_id, set_test_user, reset_role)
 -- - 107-feedback.sql (private.deployment_settings, private.client_address_bucket, private.feedback_client_ip)
--- - 506-invitation-rpcs.sql (the function, its former name and the throttle table)
+-- - 506-invitation-rpcs.sql (the function and the throttle table)
 BEGIN;
 
 SET
@@ -20,7 +20,7 @@ SET
 DROP TABLE IF EXISTS __tcache__;
 
 SELECT
-  plan (48);
+  plan (45);
 
 SELECT
   create_test_data ();
@@ -768,72 +768,14 @@ SELECT
   );
 
 -- =====================================================================
--- 12. invitation_caller_take, the former name, takes the same slot
+-- 12. invitation_caller_take, the former name, does not exist
 -- =====================================================================
 SELECT
-  reset_role ();
-
-DELETE FROM private.access_throttle
-WHERE
-  key LIKE 'caller:%';
-
-UPDATE private.deployment_settings
-SET
-  behind_cloudflare = true,
-  access_caller_max = 1;
-
-SELECT
-  is (
-    public.invitation_caller_take (test_id ('project_a'), '198.51.100.7'),
-    0,
-    'ACL: invitation_caller_take admits the first take of an address'
-  );
-
-SELECT
-  ok (
-    s.r BETWEEN 1 AND 600,
-    'ACL: access_caller_take refuses the next take of that address, so invitation_caller_take took its slot'
-  )
-FROM
-  (
-    SELECT
-      public.access_caller_take (test_id ('project_a'), '198.51.100.7') AS r
-  ) s;
-
-SELECT
-  ok (
-    NOT has_function_privilege(
-      'anon',
-      'public.invitation_caller_take(uuid, text)',
-      'EXECUTE'
-    )
-    AND NOT has_function_privilege(
-      'authenticated',
-      'public.invitation_caller_take(uuid, text)',
-      'EXECUTE'
-    )
-    AND has_function_privilege(
-      'service_role',
-      'public.invitation_caller_take(uuid, text)',
-      'EXECUTE'
-    ),
-    'ACL: only service_role can execute invitation_caller_take'
-  );
-
-SELECT
-  is (
-    (
-      SELECT
-        p.prosecdef::text || ' ' || p.proconfig::text || ' ' || p.prorettype::regtype::text
-      FROM
-        pg_proc p
-        JOIN pg_namespace n ON n.oid = p.pronamespace
-      WHERE
-        n.nspname = 'public'
-        AND p.proname = 'invitation_caller_take'
-    ),
-    'true {"search_path=\"\""} integer',
-    'ACL: invitation_caller_take is SECURITY DEFINER with an empty pinned search_path and returns integer'
+  hasnt_function (
+    'public',
+    'invitation_caller_take',
+    ARRAY['uuid', 'text'],
+    'ACL: public.invitation_caller_take(uuid, text) does not exist'
   );
 
 SELECT
