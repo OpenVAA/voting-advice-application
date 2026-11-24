@@ -34,10 +34,16 @@ Step 9  the deploy role's permissions, the id conditions and the plan role's loc
         CloudTrail cross-check, then one apply and its read-back
 
 Step 10 the two GitHub Environments the deploy role trusts, created with `gh api` and read back
+
+Step 11 the deployment map: the plan guard, and the move onto the map's keys, which plans as no change
+
+Step 12 the Environment tag in the deploy scopes: the tag inventory, then an apply of policy updates only
+
+Step 13 adding a deployment: a token's subject, the entry, a plan that creates under the new key only
 ```
 
 Steps 3 to 6 are one sitting. Step 7 can take a day or more and runs alongside the other roots. Steps
-8, 9 and 10 are one sitting each.
+8 to 13 are one sitting each, and Step 12 follows Step 11.
 
 ## What you paste back
 
@@ -60,6 +66,8 @@ nothing from the terminal's scroll-back.
   `s9_logs_removed=`. Its address lines name resources, and its condition lines name the trusts'
   claims, which are public; neither holds a secret.
 - Step 10's lines begin `s10_`, and those about one GitHub Environment `s10_env_<name>_`.
+- Steps 11 and 12 print lines beginning `s11_` and `s12_`, and the plan guard's own lines, which
+  begin `bootstrap_plan_` and hold counts only.
 
 `$L` and any saved plan file (`tfplan`) hold secrets in clear text: resource ids, attribute values,
 and whatever the state or the API returned. Never share, attach or paste either. The last item of
@@ -299,7 +307,8 @@ by hand. Run it in one terminal, signed in with the identity of Step 1.
    grep -m1 -E '^Apply complete!' "$L/s9.log" | sed 's/^/s9_apply_line=/'
    ```
 
-10. Five outputs, each by name. None is a secret.
+10. Five outputs, each by name. None is a secret. The root gives `registry_url`, `plan_role_arn` and
+    `deploy_role_arn` per deployment, in its `deployments` output, as Step 11 shows.
 
     ```bash
     for o in state_bucket_name registry_url plan_role_arn deploy_role_arn budget_name; do echo "s10_$o=$(terraform output -raw "$o")"; done
@@ -433,7 +442,8 @@ Step 6.
 
 8. The simulator evaluates each role's policies for each call the S3 backend makes, and for the reads
    the plan role must never make. Set the four variables, then run each command; each prints one
-   named line per decision.
+   named line per decision. The two role ARNs are attributes of the `deployments` output, under the
+   deployment's key, as Step 11 shows.
 
    ```bash
    PLAN_ROLE=$(terraform output -raw plan_role_arn)
@@ -718,7 +728,9 @@ uses to pull the image, write the container's logs and read the task's parameter
 `frontend_task_role` module and creates five resources: the role, the resource that keeps it free of
 an inline policy, the policy that reads the parameters, and the two attachments. The role reads the
 parameters under `/openvaa/<frontend_environment>/frontend/` only, and decrypts them with the SSM key
-only through SSM. The apply only adds; nothing this root already holds changes.
+only through SSM. The apply only adds; nothing this root already holds changes. The parameter path's
+segment is the deployment's key in the map, and the role's ARN is the `frontend_execution_role_arn`
+of the `deployments` output, as Step 11 shows.
 
 **Precondition: the frontend's parameters exist.** Create them first, from the staging AWS root's
 runbook (`infra/envs/staging/aws/README.md`), its parameter step. The policy names the AWS-managed
@@ -1237,9 +1249,9 @@ Return: every `s9_` and `s9a_` to `s9e_` line, in order, and `answer_step9=appli
 ← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
 
 The deploy role trusts every job that names `staging` or `staging-destroy`, the subjects of
-`deploy_subjects`. GitHub creates an environment that a job names and that does not exist yet, with
-no protection rule at all, so both are created here before any push carries a workflow naming them.
-Each gets the operator as its required reviewer, self-review allowed, no administrator bypass, and a
+`deploy_subjects`, an attribute of the deployment's entry in the map of Step 11. GitHub creates an
+environment that a job names and that does not exist yet, with no protection rule at all, so both
+are created here before any push carries a workflow naming them. Each gets the operator as its required reviewer, self-review allowed, no administrator bypass, and a
 custom deployment branch policy that admits `deploy/staging` and `deploy-evidence/*` only, which
 keeps `main` and every other branch out. The secrets and variables of `staging` are set afterwards,
 as [`../README.md` § The environments and their settings](../README.md#the-environments-and-their-settings)
@@ -1342,6 +1354,233 @@ printed by type, and compared with the signed-in user by numeric id.
 
 Return: every `s10_` line, in order, and `answer_step10=applied` or
 `answer_step10=stopped-at-<item>`.
+
+## Step 11: The deployment map
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
+
+The root creates one set of per-deployment resources for each entry of its deployment map: the plan
+role and the deploy role with their policies, the image registry, and the frontend task's execution
+role. The map is the variable `deployments`, set by
+[`deployments.auto.tfvars.json`](deployments.auto.tfvars.json); the variable's description in
+[`variables.tf`](variables.tf) says what each attribute of an entry holds. The repository and owner
+ids, the plan and deploy subjects, the deploy branches, the hosted zone and the domain of a
+deployment, its GitHub Environment and the name of its registry are attributes of its entry, and the
+key of the entry names its pipeline state key `pipeline/<key>/aws/terraform.tfstate`, its parameter
+path `/openvaa/<key>/` and its `Environment` tag. The account-wide values, the alert address, the
+budget and the name prefix, stay in [`terraform.tfvars`](terraform.tfvars). The OIDC provider is the
+account's one, in the module `github_oidc_provider`.
+
+The outputs are per deployment too. `terraform output -json deployments` prints, under each key, the
+plan and deploy roles' ARNs and names, the registry's URL and ARN, and the execution role's ARN, which
+the deployment's AWS root takes as `execution_role_arn`:
+
+```bash
+terraform output -json deployments | jq -r '.staging.deploy_role_arn'
+```
+
+**Every plan of this root passes the plan guard before it is applied.** The guard reads the saved
+plan as JSON and prints eight `bootstrap_plan_` lines and nothing of the plan:
+
+```bash
+terraform show -json "$L/<name>.tfplan" > "$L/<name>.json"
+bash ../scripts/check-bootstrap-plan.sh --plan-json "$L/<name>.json"; echo "guard_exit=$?"
+```
+
+It fails on any delete or replace, on a moved address that is not a no-op or an in-place update, and
+on a create outside the keys it is told to expect. Give it `--pure-move` for a plan that only moves
+addresses, which then also fails on any update or create, and `--new-key <key>` for a plan that adds
+the entry `<key>`, under which it may create. Read its status directly, never through a pipe, and
+apply only the saved plan file it read.
+
+**The move onto the map.** An account whose state holds the per-deployment modules at their single
+addresses moves them onto the map's keys once, with the `moved` blocks of [`moves.tf`](moves.tf). The
+move creates, changes and destroys nothing. Run it in one sitting, with the opening lines of Step 9's
+item 1; its named lines begin `s11_`. `BASE` is the commit before the map, `MOVE` the commit that
+brings it, and both are checked out in worktrees outside your working copy.
+
+1. The precondition: a plan of the tree before the map reads no change, so the state matches the tree the
+   offline check of the move starts from.
+
+   ```bash
+   REPO=$(git rev-parse --show-toplevel)
+   W=$(mktemp -d "${TMPDIR:-/tmp}/openvaa-move.XXXXXX")
+   git worktree add --detach "$W/base" "$BASE" > "$L/s11-wt.log" 2>&1; echo "s11_base_worktree_exit=$?"
+   terraform -chdir="$W/base/infra/bootstrap" init -input=false -no-color -lockfile=readonly \
+     > "$L/s11-base-init.log" 2>&1; echo "s11_base_init_exit=$?"
+   terraform -chdir="$W/base/infra/bootstrap" plan -input=false -no-color -lock=false \
+     -detailed-exitcode > "$L/s11-base-plan.log" 2>&1; echo "s11_base_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s11-base-plan.log" | sed 's/^/s11_base_plan_line=/'
+   ```
+
+   Go on only on `s11_base_plan_exit=0` with `No changes.`. Any other line means the live state is not
+   the tree the offline check of the move started from: stop.
+
+2. Initialise the map's tree, which installs the module `github_oidc_provider`, plan it into a saved
+   file and run the guard with `--pure-move`:
+
+   ```bash
+   git worktree add --detach "$W/move" "$MOVE" >> "$L/s11-wt.log" 2>&1; echo "s11_move_worktree_exit=$?"
+   cd "$W/move/infra/bootstrap"
+   terraform init -input=false -no-color -lockfile=readonly \
+     > "$L/s11-init.log" 2>&1; echo "s11_init_exit=$?"
+   terraform plan -input=false -no-color -out="$L/move.tfplan" \
+     > "$L/s11-plan.log" 2>&1; echo "s11_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s11-plan.log" | sed 's/^/s11_plan_line=/'
+   terraform show -json "$L/move.tfplan" > "$L/move.json" 2> "$L/s11-show.err"; echo "s11_show_exit=$?"
+   bash ../scripts/check-bootstrap-plan.sh --plan-json "$L/move.json" --pure-move
+   echo "s11_guard_exit=$?"
+   ```
+
+   > **Apply only on `s11_guard_exit=0`, `bootstrap_plan_guard=pass`, `bootstrap_plan_moved=` equal
+   > to the count `check-bootstrap-moves.sh --base` prints offline for `BASE`, and
+   > `s11_plan_line=Plan: 0 to add, 0 to change, 0 to destroy.`**
+   > An update in the plan, the budget's above all, is often an alert address other than the one the
+   > budget holds; export the right one and plan again. Anything else: run item 4 and stop.
+
+3. Apply the saved plan, then plan again, which must exit 0:
+
+   ```bash
+   terraform apply -input=false -no-color "$L/move.tfplan" > "$L/s11-apply.log" 2>&1; echo "s11_apply_exit=$?"
+   grep -m1 -E '^Apply complete!' "$L/s11-apply.log" | sed 's/^/s11_apply_line=/'
+   terraform plan -input=false -no-color -lock=false -detailed-exitcode \
+     > "$L/s11-second.log" 2>&1; echo "s11_second_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s11-second.log" | sed 's/^/s11_second_plan_line=/'
+   ```
+
+4. Last item, also when you stop early. Paste the lines of items 1 to 3 first:
+
+   ```bash
+   cd "$REPO"
+   git worktree remove --force "$W/base"; git worktree remove --force "$W/move"
+   rm -rf "$W"
+   test -n "$L" && rm -rf "$L" && echo "s11_logs_removed=yes"
+   ```
+
+Return: every `s11_` and `bootstrap_plan_` line, in order, and `answer_step11=applied` or
+`answer_step11=stopped-at-<item>`. Do not paste your address.
+
+## Step 12: The Environment tag in the deploy scopes
+
+← guide: [Deployment § The deploy pipeline](https://openvaa.org/developers-guide/deployment#the-deploy-pipeline)
+
+The deploy role's tag-scoped statements test `Environment=<key>` beside `Project` and `Root`, so one
+deployment's role creates and changes only resources carrying its own key, and the plan role reads no
+S3 object but its own deployment's pipeline state. An AWS root resource without the tag is refused to
+its deploy role once these policies are live, so the tags are read first. The apply updates policies
+in place and creates nothing. Run it in one sitting, with the opening lines of Step 9's item 1; its
+named lines begin `s12_`. `TIGHTEN` is the commit to apply, checked out in a worktree as in Step 11.
+
+1. The inventory: every resource tagged `Root=aws`, counted by its `Environment` value, in
+   `eu-north-1` and in `us-east-1`, where the CloudFront distribution and its certificate live:
+
+   ```bash
+   for R in eu-north-1 us-east-1; do
+     aws resourcegroupstaggingapi get-resources --region "$R" \
+       --tag-filters Key=Root,Values=aws \
+       --query 'ResourceTagMappingList[].[ResourceARN, Tags[?Key==`Environment`].Value | [0]]' \
+       --output text > "$L/s12-$R.txt" 2> "$L/s12-$R.err"
+     echo "s12_${R}_read_exit=$?"
+     cut -f2 "$L/s12-$R.txt" | sort | uniq -c | awk -v r="$R" '{print "s12_" r "_environment=" $2 " count=" $1}'
+   done
+   ```
+
+   Every `s12_<region>_environment=` line must name a key of the map. A line with `None`, or with a
+   value that is no key, is a resource its deploy role is refused after the apply: tag it through its
+   AWS root first, then run this item again.
+
+2. Plan the tree into a saved file, run the guard without `--pure-move`, and list the updates:
+
+   ```bash
+   REPO=$(git rev-parse --show-toplevel)
+   W=$(mktemp -d "${TMPDIR:-/tmp}/openvaa-tighten.XXXXXX")
+   git worktree add --detach "$W/tighten" "$TIGHTEN" > "$L/s12-wt.log" 2>&1; echo "s12_worktree_exit=$?"
+   cd "$W/tighten/infra/bootstrap"
+   terraform init -input=false -no-color -lockfile=readonly \
+     > "$L/s12-init.log" 2>&1; echo "s12_init_exit=$?"
+   terraform plan -input=false -no-color -out="$L/tighten.tfplan" \
+     > "$L/s12-plan.log" 2>&1; echo "s12_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s12-plan.log" | sed 's/^/s12_plan_line=/'
+   terraform show -json "$L/tighten.tfplan" > "$L/tighten.json" 2> "$L/s12-show.err"; echo "s12_show_exit=$?"
+   bash ../scripts/check-bootstrap-plan.sh --plan-json "$L/tighten.json"
+   echo "s12_guard_exit=$?"
+   jq -r '.resource_changes[] | select(.change.actions == ["update"]) | "s12_update=\(.address)"' \
+     "$L/tighten.json" | sort
+   ```
+
+   > **Apply only on `s12_guard_exit=0`, `bootstrap_plan_create=0`, `bootstrap_plan_replace=0`, and
+   > `s12_update=` lines that are exactly the policies the change rewrites**, with a plan line
+   > `Plan: 0 to add, <n> to change, 0 to destroy.` where n is their number. Anything else: run item 5
+   > and stop.
+
+3. Apply the saved plan, then plan again, which must exit 0:
+
+   ```bash
+   terraform apply -input=false -no-color "$L/tighten.tfplan" > "$L/s12-apply.log" 2>&1; echo "s12_apply_exit=$?"
+   grep -m1 -E '^Apply complete!' "$L/s12-apply.log" | sed 's/^/s12_apply_line=/'
+   terraform plan -input=false -no-color -lock=false -detailed-exitcode \
+     > "$L/s12-second.log" 2>&1; echo "s12_second_plan_exit=$?"
+   grep -m1 -E '^(Plan:|No changes)' "$L/s12-second.log" | sed 's/^/s12_second_plan_line=/'
+   ```
+
+4. The observation: the next deploy of each deployment, through its deploy workflow and its
+   reviewer, concludes `success`, so its deploy role still reaches every resource of its AWS root.
+   Give each run as `answer_deploy_<key>=<run URL> <conclusion>`.
+
+5. Last item, also when you stop early. Paste the lines of items 1 to 3 first:
+
+   ```bash
+   cd "$REPO"
+   git worktree remove --force "$W/tighten"; rm -rf "$W"
+   test -n "$L" && rm -rf "$L" && echo "s12_logs_removed=yes"
+   ```
+
+Return: every `s12_` and `bootstrap_plan_` line, in order, the `answer_deploy_` lines, and
+`answer_step12=applied` or `answer_step12=stopped-at-<item>`. Do not paste your address.
+
+## Step 13: Adding a deployment
+
+← guide: [Deployment § The account-level root](https://openvaa.org/developers-guide/deployment#the-account-level-root)
+
+A deployment is added as one entry of the map, in a pull request to the upstream repository, and one
+hand apply of this root that creates resources under the new key only.
+
+1. Fix the entry's subjects from a token. The trusts compare `sub` exactly, so copy it from a token
+   minted in the repository that deploys the new entry, by a job shaped as its deploy job will be: one
+   that names its GitHub Environment gives `...:environment:<name>`, one with no environment
+   `...:ref:refs/heads/<branch>`. A job with `permissions: id-token: write` prints the claims the
+   entry needs and nothing secret:
+
+   ```bash
+   curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+     "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" \
+     | jq -r '.value | split(".")[1] | gsub("-";"+") | gsub("_";"/") | @base64d | fromjson
+       | "sub=\(.sub)", "repository_id=\(.repository_id)", "repository_owner_id=\(.repository_owner_id)"'
+   ```
+
+2. Add the entry to [`deployments.auto.tfvars.json`](deployments.auto.tfvars.json) in a pull request
+   to the upstream repository: the two ids and the subjects from item 1, the deploy branches, the
+   hosted zone and the domain, and the environment names when its jobs name them. The root's
+   validations refuse a malformed entry at plan time, and its tests run in the pull request's checks.
+
+3. Once it is merged, plan the merged tree as in Step 11, item 2, with the guard given the new key:
+
+   ```bash
+   bash ../scripts/check-bootstrap-plan.sh --plan-json "$L/add.json" --new-key <key>
+   ```
+
+   > **Apply only on `bootstrap_plan_guard=pass` with `bootstrap_plan_delete=0`,
+   > `bootstrap_plan_replace=0`, `bootstrap_plan_update=0` and `bootstrap_plan_unexpected_create=0`:**
+   > every create is under `["<key>"]`, and no other deployment's resource changes.
+
+4. Apply the saved plan, plan again, which must exit 0, and remove the plan and `$L` as in Step 11.
+5. Read the new deployment's values for its env roots and its repository's settings:
+
+   ```bash
+   terraform output -json deployments | jq '.["<key>"]'
+   ```
+
+   None of them is a secret.
 
 ## Observations
 
