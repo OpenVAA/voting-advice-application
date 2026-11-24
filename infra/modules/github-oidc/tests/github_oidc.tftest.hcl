@@ -27,6 +27,8 @@ variables {
   frontend_execution_role_arn = "arn:aws:iam::000000000000:role/openvaa/openvaa-staging-frontend-execution"
   hosted_zone_id              = "Z00000000000000000001"
   domain                      = "staging.openvaa.org"
+  github_repository_id        = "546467466"
+  github_repository_owner_id  = "115159211"
 }
 
 run "alert_policy" {
@@ -219,7 +221,7 @@ run "no_state_or_secret_reads" {
 run "creates_carry_request_tags" {
   command = plan
 
-  # The calls that create a resource the root tags. A statement holding any of them must require the root's Project and Root tags on the request, except the one that grants them on the parent VPC or security group, which network_parent_scope checks.
+  # The calls that create a resource the root tags. A statement holding any of them must require the root's Project, Root and Environment tags on the request, except the one that grants them on the parent VPC or security group, which network_parent_scope checks.
   variables {
     tagged_creates = [
       "ec2:CreateVpc",
@@ -248,9 +250,10 @@ run "creates_carry_request_tags" {
       ]) :
       contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:RequestTag/Project"]]), [])]), "openvaa")
       && contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:RequestTag/Root"]]), [])]), "aws")
+      && contains(flatten([for op, kv in s.Condition : try(flatten([kv["aws:RequestTag/Environment"]]), [])]), "staging")
       if length(setintersection(toset(flatten([s.Action])), toset(var.tagged_creates))) > 0 && s.Sid != "CreateInTaggedParent"
     ])
-    error_message = "Every statement that creates a tagged network, load-balancing, edge or certificate resource must require the request tags Project=openvaa and Root=aws."
+    error_message = "Every statement that creates a tagged network, load-balancing, edge or certificate resource must require the request tags Project=openvaa, Root=aws and Environment=staging."
   }
 
   assert {
@@ -262,6 +265,45 @@ run "creates_carry_request_tags" {
       ] : [for s in jsondecode(p).Statement : flatten([s.Action])]
     ])))) == 0
     error_message = "Every tagged create the root makes must be granted, or the check above examines nothing."
+  }
+}
+
+run "changes_carry_resource_environment" {
+  command = plan
+
+  # A second deployment in the account carries the same Project and Root tags, so every statement scoped by the root's resource tags must also require the deployment's own Environment tag.
+  assert {
+    condition = alltrue([
+      for s in flatten([
+        for p in [
+          aws_iam_policy.deploy_network.policy,
+          aws_iam_policy.deploy_load_balancing.policy,
+          aws_iam_policy.deploy_ecs.policy,
+          aws_iam_policy.deploy_pass_role.policy,
+          aws_iam_policy.deploy_edge.policy,
+          aws_iam_policy.deploy_dns.policy,
+          aws_iam_policy.deploy_observability.policy,
+          aws_iam_policy.deploy_scaling.policy,
+          aws_iam_policy.deploy_alert.policy,
+        ] : jsondecode(p).Statement
+      ]) :
+      flatten([for op, kv in s.Condition : try(flatten([kv["aws:ResourceTag/Environment"]]), [])]) == ["staging"]
+      if length(flatten([for op, kv in try(s.Condition, {}) : try(flatten([kv["aws:ResourceTag/Project"]]), [])])) > 0
+    ])
+    error_message = "Every deploy statement scoped by the resource tag Project must also require the resource tag Environment=staging."
+  }
+
+  assert {
+    condition = length([
+      for s in flatten([
+        for p in [
+          aws_iam_policy.deploy_network.policy,
+          aws_iam_policy.deploy_edge.policy,
+        ] : jsondecode(p).Statement
+      ]) : s
+      if length(flatten([for op, kv in try(s.Condition, {}) : try(flatten([kv["aws:ResourceTag/Project"]]), [])])) > 0
+    ]) == 5
+    error_message = "The network and edge policies must hold five statements scoped by resource tags, or the check above examines nothing."
   }
 }
 
@@ -379,15 +421,10 @@ run "plan_deny_object_reads" {
       for s in jsondecode(aws_iam_policy.plan_deny.policy).Statement : s
       if s.Effect == "Deny"
       && toset(flatten([s.Action])) == toset(["s3:GetObject", "s3:GetObjectVersion"])
-      && flatten([try(s.NotResource, [])]) == ["arn:aws:s3:::openvaa-tfstate-000000000000/pipeline/*"]
+      && flatten([try(s.NotResource, [])]) == ["arn:aws:s3:::openvaa-tfstate-000000000000/pipeline/staging/aws/terraform.tfstate"]
       && try(s.Resource, null) == null
     ]) == 1
-    error_message = "The plan deny must refuse s3:GetObject and s3:GetObjectVersion on every object outside the state bucket's pipeline/ prefix."
-  }
-
-  assert {
-    condition     = startswith(var.pipeline_state_key, "pipeline/")
-    error_message = "The pipeline state key must lie under pipeline/, the one prefix the plan role may read."
+    error_message = "The plan deny must refuse s3:GetObject and s3:GetObjectVersion on every object but the deployment's own pipeline state."
   }
 
   assert {
@@ -412,6 +449,40 @@ run "plan_deny_object_reads" {
     ]) == 1
     error_message = "The plan deny must still refuse the hand-applied and workspace state keys by name."
   }
+}
+
+run "trust_requires_ids" {
+  command = plan
+
+  assert {
+    condition = alltrue([
+      for doc in [aws_iam_role.plan.assume_role_policy, aws_iam_role.deploy.assume_role_policy] :
+      flatten([jsondecode(doc).Statement[0].Condition.StringEquals["token.actions.githubusercontent.com:repository_id"]]) == ["546467466"]
+      && flatten([jsondecode(doc).Statement[0].Condition.StringEquals["token.actions.githubusercontent.com:repository_owner_id"]]) == ["115159211"]
+      && length(jsondecode(doc).Statement) == 1
+    ])
+    error_message = "Both trusts must require the repository's and the owner's numeric ids."
+  }
+}
+
+run "trust_refuses_null_repository_id" {
+  command = plan
+
+  variables {
+    github_repository_id = null
+  }
+
+  expect_failures = [var.github_repository_id]
+}
+
+run "trust_refuses_null_owner_id" {
+  command = plan
+
+  variables {
+    github_repository_owner_id = null
+  }
+
+  expect_failures = [var.github_repository_owner_id]
 }
 
 run "staging_names_unchanged" {
