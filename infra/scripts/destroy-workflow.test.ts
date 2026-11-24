@@ -17,9 +17,38 @@ const DEPLOY_WORKFLOW = join(REPO_ROOT, '.github', 'workflows', 'deploy.yml');
 
 const { doc, text } = loadWorkflow(WORKFLOW);
 
-const AWS_ROOT = 'infra/envs/staging/aws';
-const SUPABASE_ROOT = 'infra/envs/staging/supabase';
-const DEPLOY_ROLE_ARN = 'arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy';
+/** The `-chdir` word of every Terraform command of the AWS root, bound to the resolve job's `aws_root` output. */
+const AWS_ROOT = '"$AWS_ROOT"';
+/** The `-chdir` word of the one refused init of the Supabase root, bound to the resolve job's `supabase_root` output. */
+const SUPABASE_ROOT = '"$SUPABASE_ROOT"';
+const RESOLVED_AWS_ROOT = '${{ needs.resolve.outputs.aws_root }}';
+const RESOLVED_SUPABASE_ROOT = '${{ needs.resolve.outputs.supabase_root }}';
+const DEPLOY_ROLE_ARN = '${{ needs.resolve.outputs.deploy_role_arn }}';
+const DESTROY_ENVIRONMENT = '${{ needs.resolve.outputs.destroy_environment }}';
+/** The condition both destroy jobs run under: a push of the resolved destroy branch, or a dispatch with the resolved confirmation. */
+const JOB_CONDITION =
+  "(github.event_name == 'push' && github.ref == format('refs/heads/{0}', needs.resolve.outputs.destroy_branch)) || (github.event_name == 'workflow_dispatch' && inputs.confirm == needs.resolve.outputs.destroy_confirm)";
+/** The outputs of the resolve job, in the order the resolver prints them. */
+const RESOLVE_OUTPUTS = [
+  'key',
+  'environment',
+  'destroy_environment',
+  'domain',
+  'aws_account_id',
+  'aws_region',
+  'state_bucket',
+  'aws_root',
+  'supabase_root',
+  'state_key',
+  'supabase_state_key',
+  'deploy_role_arn',
+  'plan_role_arn',
+  'topic_arn',
+  'cluster_name',
+  'service_name',
+  'destroy_branch',
+  'destroy_confirm'
+];
 const PLAN_FILE = '"$RUNNER_TEMP/destroy.tfplan"';
 /** The digest a destroy plan passes: a destroy replaces nothing, so the value only satisfies the variable's form. */
 const PLACEHOLDER_DIGEST = `sha256:${'0'.repeat(64)}`;
@@ -85,16 +114,26 @@ function rootViolations(source: WorkflowDocument): Array<string> {
     for (const step of jobSteps(job)) {
       const script = runOf(step);
       const where = `job ${jobId} step ${String(step.id ?? step.name)}`;
+      const env = envOf(step);
       if (step.id === 'supabase-root-refused') {
         const commands = [...script.matchAll(/terraform -chdir=(\S+) (\S+)/g)];
         if (commands.length !== 1 || commands[0][1] !== SUPABASE_ROOT || commands[0][2] !== 'init') {
           violations.push(`${where} runs ${commands.map(([command]) => command).join(', ') || 'nothing'}`);
         }
+        if (env.SUPABASE_ROOT !== RESOLVED_SUPABASE_ROOT) {
+          violations.push(`${where} binds SUPABASE_ROOT to ${JSON.stringify(env.SUPABASE_ROOT)}`);
+        }
         continue;
       }
-      if (JSON.stringify(step).includes(SUPABASE_ROOT)) violations.push(`${where} names ${SUPABASE_ROOT}`);
-      for (const [, root] of script.matchAll(/terraform -chdir=(\S+)/g)) {
+      if (JSON.stringify(step).includes('SUPABASE_ROOT') || JSON.stringify(step).includes('supabase_root')) {
+        violations.push(`${where} names the Supabase root`);
+      }
+      const roots = [...script.matchAll(/terraform -chdir=(\S+)/g)].map(([, root]) => root);
+      for (const root of roots) {
         if (root !== AWS_ROOT) violations.push(`${where} reaches ${root}`);
+      }
+      if (roots.length > 0 && env.AWS_ROOT !== RESOLVED_AWS_ROOT) {
+        violations.push(`${where} binds AWS_ROOT to ${JSON.stringify(env.AWS_ROOT)}`);
       }
       if (/^\s*terraform (?!-chdir=)/m.test(script)) {
         violations.push(`${where} runs Terraform without -chdir`);
@@ -138,9 +177,9 @@ describe('destroy.yml and the shared rules', () => {
 describe('the triggers and the concurrency of destroy.yml', () => {
   const on = doc.on as Record<string, unknown>;
 
-  it('runs on a push to deploy-evidence/destroy-staging only and on a dispatch', () => {
+  it('runs on a push to a deploy-evidence/destroy-* branch only and on a dispatch', () => {
     expect(Object.keys(on).sort()).toEqual(['push', 'workflow_dispatch']);
-    expect(on.push).toEqual({ branches: ['deploy-evidence/destroy-staging'] });
+    expect(on.push).toEqual({ branches: ['deploy-evidence/destroy-*'] });
   });
 
   it('asks a dispatch for the required string confirm', () => {
@@ -157,41 +196,77 @@ describe('the triggers and the concurrency of destroy.yml', () => {
     expect('pull_request_target' in on).toBe(false);
   });
 
-  it('shares the staging-aws group with the deploy workflow and never cancels a running destroy', () => {
-    expect(doc.concurrency).toEqual({ group: 'staging-aws', 'cancel-in-progress': false });
+  it('shares the aws-pipeline group with the deploy workflow and never cancels a running destroy', () => {
+    expect(doc.concurrency).toEqual({ group: 'aws-pipeline', 'cancel-in-progress': false });
     expect(loadWorkflow(DEPLOY_WORKFLOW).doc.concurrency).toEqual(doc.concurrency);
   });
 
-  it('owns the one branch the deploy workflow excludes', () => {
+  it('owns the branches the deploy workflow excludes', () => {
     const deployOn = loadWorkflow(DEPLOY_WORKFLOW).doc.on as Record<string, unknown>;
-    expect((deployOn.push as Record<string, unknown>).branches).toContain('!deploy-evidence/destroy-staging');
+    expect((deployOn.push as Record<string, unknown>).branches).toContain('!deploy-evidence/destroy-*');
+  });
+});
+
+describe('the resolve job of destroy.yml', () => {
+  const resolveJob = jobOf(doc, 'resolve');
+  const steps = jobSteps(resolveJob);
+  const step = stepWithId(steps, 'resolve');
+
+  it('is the first job, with exactly contents: read, no environment and no id-token', () => {
+    expect(workflowJobs(doc)[0][0]).toBe('resolve');
+    expect(resolveJob.permissions).toEqual({ contents: 'read' });
+    expect('environment' in resolveJob).toBe(false);
+    expect('needs' in resolveJob).toBe(false);
+    expect('if' in resolveJob).toBe(false);
+    expect(resolveJob['runs-on']).toBe('ubuntu-24.04');
+    expect(resolveJob['timeout-minutes']).toBe(5);
+  });
+
+  it('checks out without persisted credentials and runs the resolver in destroy mode with the repository id, the ref and the event', () => {
+    expect(steps).toHaveLength(2);
+    expect(String(steps[0].uses)).toMatch(/^actions\/checkout@[0-9a-f]{40}$/);
+    expect(steps[0].with).toEqual({ 'persist-credentials': false });
+    expect(envOf(step)).toEqual({
+      REPOSITORY_ID: '${{ github.repository_id }}',
+      REF_NAME: '${{ github.ref_name }}',
+      EVENT_NAME: '${{ github.event_name }}'
+    });
+    expect(runOf(step).replace(/\\\n\s*/g, '')).toContain(
+      'infra/scripts/resolve-deployment.sh --mode destroy --repository-id "$REPOSITORY_ID" --ref "$REF_NAME" --event "$EVENT_NAME" --github-output "$GITHUB_OUTPUT" || resolve_exit=$?'
+    );
+  });
+
+  it('maps every output of the resolver to a job output', () => {
+    expect(resolveJob.outputs).toEqual(
+      Object.fromEntries(RESOLVE_OUTPUTS.map((name) => [name, `\${{ steps.resolve.outputs.${name} }}`]))
+    );
   });
 });
 
 describe('the jobs of destroy.yml', () => {
-  it('has exactly the jobs plan-destroy and apply-destroy, and the apply needs the plan', () => {
-    expect(workflowJobs(doc).map(([id]) => id)).toEqual(['plan-destroy', 'apply-destroy']);
-    expect(jobOf(doc, 'apply-destroy').needs).toBe('plan-destroy');
-    expect('needs' in jobOf(doc, 'plan-destroy')).toBe(false);
+  it('has exactly the jobs resolve, plan-destroy and apply-destroy; the plan needs resolve and the apply both', () => {
+    expect(workflowJobs(doc).map(([id]) => id)).toEqual(['resolve', 'plan-destroy', 'apply-destroy']);
+    expect(jobOf(doc, 'plan-destroy').needs).toBe('resolve');
+    expect(jobOf(doc, 'apply-destroy').needs).toEqual(['resolve', 'plan-destroy']);
   });
 
   it.each(['plan-destroy', 'apply-destroy'])(
-    'runs %s in the staging-destroy environment with its own approval',
+    'runs %s in the resolved destroy environment with its own approval',
     (id) => {
       const job = jobOf(doc, id);
-      expect(job.environment).toBe('staging-destroy');
+      expect(job.environment).toBe(DESTROY_ENVIRONMENT);
       expect(job.permissions).toEqual({ contents: 'read', 'id-token': 'write' });
       expect(job['runs-on']).toBe('ubuntu-24.04');
       expect('env' in job).toBe(false);
     }
   );
 
-  it.each(['plan-destroy', 'apply-destroy'])('admits to %s a push or the typed confirmation only', (id) => {
-    const condition = String(jobOf(doc, id).if);
-    expect(condition).toContain("github.event_name == 'push'");
-    expect(condition).toContain("github.ref == 'refs/heads/deploy-evidence/destroy-staging'");
-    expect(condition).toContain("github.event_name == 'workflow_dispatch' && inputs.confirm == 'destroy staging aws'");
-  });
+  it.each(['plan-destroy', 'apply-destroy'])(
+    'admits to %s a push of the resolved destroy branch or the resolved typed confirmation only',
+    (id) => {
+      expect(jobOf(doc, id).if).toBe(JOB_CONDITION);
+    }
+  );
 
   it('gives the plan job 30 minutes and the apply job 45', () => {
     expect(jobOf(doc, 'plan-destroy')['timeout-minutes']).toBe(30);
@@ -205,16 +280,16 @@ describe('the jobs of destroy.yml', () => {
   it.each([
     ['plan-destroy', 'destroy-plan-${{ github.run_id }}'],
     ['apply-destroy', 'destroy-apply-${{ github.run_id }}']
-  ])('assumes the deploy role by its literal ARN in %s, once, in the staging account only', (id, session) => {
+  ])('assumes the resolved deploy role in %s, once, in the resolved account and region only', (id, session) => {
     const assumes = stepsOf(doc, id).filter(
       (step) => typeof step.uses === 'string' && step.uses.startsWith('aws-actions/configure-aws-credentials@')
     );
     expect(assumes).toHaveLength(1);
     expect(assumes[0].with).toEqual({
       'role-to-assume': DEPLOY_ROLE_ARN,
-      'aws-region': 'eu-north-1',
+      'aws-region': '${{ needs.resolve.outputs.aws_region }}',
       'role-session-name': session,
-      'allowed-account-ids': '471112560111'
+      'allowed-account-ids': '${{ needs.resolve.outputs.aws_account_id }}'
     });
   });
 });
@@ -234,6 +309,7 @@ describe('the Supabase root is shown out of reach in plan-destroy', () => {
     expect([...script.matchAll(/terraform -chdir=(\S+) (\S+)/g)].map(([, root, command]) => [root, command])).toEqual([
       [SUPABASE_ROOT, 'init']
     ]);
+    expect(envOf(refusal)).toEqual({ SUPABASE_ROOT: RESOLVED_SUPABASE_ROOT });
   });
 
   it('heads the Supabase state key in the state bucket, with the output discarded', () => {
@@ -260,7 +336,7 @@ describe('the Supabase root is shown out of reach in plan-destroy', () => {
 });
 
 describe('the roots destroy.yml reaches', () => {
-  it('runs Terraform in the staging AWS root only, but for the one refused init', () => {
+  it('runs Terraform in the resolved AWS root only, but for the one refused init', () => {
     expect(rootViolations(doc)).toEqual([]);
     for (const id of ['plan-destroy', 'apply-destroy']) {
       const roots = chdirRoots(stepsOf(doc, id).filter((step) => step.id !== 'supabase-root-refused'));
@@ -269,10 +345,13 @@ describe('the roots destroy.yml reaches', () => {
     }
   });
 
-  it('names no other root of infra/envs anywhere in its text', () => {
-    const named = new Set([...text.matchAll(/infra\/envs\/[\w./-]+/g)].map(([path]) => path.replace(/\/$/, '')));
-    expect(named).toEqual(new Set([AWS_ROOT, SUPABASE_ROOT]));
-    expect(text.split(SUPABASE_ROOT)).toHaveLength(2);
+  it('names no root of infra/envs outside a comment, and the Supabase root in the one refusal step only', () => {
+    const uncommented = text
+      .split('\n')
+      .filter((line) => !/^\s*#/.test(line))
+      .join('\n');
+    expect(uncommented).not.toMatch(/infra\/envs\//);
+    expect(text.split(RESOLVED_SUPABASE_ROOT)).toHaveLength(2);
   });
 });
 
@@ -306,6 +385,7 @@ describe.each([
       `terraform -chdir=${AWS_ROOT} plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out=${PLAN_FILE}`
     );
     expect(envOf(plan)).toEqual({
+      AWS_ROOT: RESOLVED_AWS_ROOT,
       DIGEST: PLACEHOLDER_DIGEST,
       TF_VAR_alert_email: 'destroy-plan@example.invalid'
     });
@@ -393,6 +473,56 @@ describe('the destroy-specific guards are red on a faulty copy', () => {
     expect(rootViolations(parseWorkflow(mutated)).length).toBeGreaterThan(0);
   });
 
+  it('sees a literal root in a plan', () => {
+    const mutated = mutate(
+      text,
+      `terraform -chdir=${AWS_ROOT} plan -destroy`,
+      'terraform -chdir=infra/envs/example/aws plan -destroy'
+    );
+    expect(rootViolations(parseWorkflow(mutated)).length).toBeGreaterThan(0);
+  });
+
+  it('sees AWS_ROOT bound to the Supabase root output in a step', () => {
+    const mutated = mutate(
+      text,
+      /(id: apply\n {8}env:\n {10})AWS_ROOT: [^\n]*/,
+      '$1AWS_ROOT: ${{ needs.resolve.outputs.supabase_root }}'
+    );
+    expect(rootViolations(parseWorkflow(mutated)).length).toBeGreaterThan(0);
+  });
+
+  it('sees SUPABASE_ROOT bound to anything but the resolved Supabase root in the refusal', () => {
+    const mutated = mutate(
+      text,
+      `SUPABASE_ROOT: ${RESOLVED_SUPABASE_ROOT}`,
+      'SUPABASE_ROOT: infra/envs/example/supabase'
+    );
+    expect(rootViolations(parseWorkflow(mutated)).length).toBeGreaterThan(0);
+  });
+
+  it('sees a job condition with a literal destroy branch', () => {
+    const mutated = mutate(
+      text,
+      "format('refs/heads/{0}', needs.resolve.outputs.destroy_branch)",
+      "'refs/heads/deploy-evidence/destroy-staging'"
+    );
+    expect(jobOf(parseWorkflow(mutated), 'plan-destroy').if).not.toBe(JOB_CONDITION);
+  });
+
+  it('sees the apply job without the resolve job in its needs', () => {
+    const mutated = mutate(text, 'needs: [resolve, plan-destroy]', 'needs: plan-destroy');
+    expect(jobOf(parseWorkflow(mutated), 'apply-destroy').needs).not.toEqual(['resolve', 'plan-destroy']);
+  });
+
+  it('sees the resolve job given id-token: write', () => {
+    const mutated = mutate(
+      text,
+      /( {2}resolve:\n[\s\S]*? {4}permissions:\n {6}contents: read\n)/,
+      '$1      id-token: write\n'
+    );
+    expect(jobOf(parseWorkflow(mutated), 'resolve').permissions).not.toEqual({ contents: 'read' });
+  });
+
   it('sees a second command of the Supabase root in the refusal step', () => {
     const mutated = mutate(
       text,
@@ -412,8 +542,12 @@ describe('the destroy-specific guards are red on a faulty copy', () => {
   });
 
   it('sees the apply job in another environment', () => {
-    const mutated = mutate(text, /(apply-destroy:[\s\S]*?)environment: staging-destroy/, '$1environment: staging');
-    expect(jobOf(parseWorkflow(mutated), 'apply-destroy').environment).toBe('staging');
+    const mutated = mutate(
+      text,
+      /(apply-destroy:[\s\S]*?)environment: \$\{\{ needs\.resolve\.outputs\.destroy_environment \}\}/,
+      '$1environment: ${{ needs.resolve.outputs.environment }}'
+    );
+    expect(jobOf(parseWorkflow(mutated), 'apply-destroy').environment).not.toBe(DESTROY_ENVIRONMENT);
   });
 
   it('sees a pull-request trigger', () => {

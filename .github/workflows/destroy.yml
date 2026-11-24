@@ -33,7 +33,7 @@ name: "Destroy staging AWS"
 on:
   push:
     branches:
-      - "deploy-evidence/destroy-staging"
+      - "deploy-evidence/destroy-*"
   workflow_dispatch:
     inputs:
       confirm:
@@ -41,23 +41,76 @@ on:
         required: true
         type: string
 
-# One group with the deploy workflow. A running destroy is never cancelled, because a cancelled apply can leave the
+# One constant group with the deploy workflow, for every deployment of the repository, so no deploy and no destroy
+# write AWS state at the same time. A running destroy is never cancelled, because a cancelled apply can leave the
 # state lock held.
 concurrency:
-  group: staging-aws
+  group: aws-pipeline
   cancel-in-progress: false
 
 permissions: {}
 
 jobs:
+  # Picks the deployment this run destroys from the deployment map under infra/bootstrap, by the repository's id,
+  # the ref and the event, with no credential. A push of a destroy branch no entry of this repository owns, or a
+  # dispatch from a ref no entry deploys from, ends the run here, before any job names an environment or assumes a
+  # role; both later jobs need this one and read its outputs.
+  resolve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      key: ${{ steps.resolve.outputs.key }}
+      environment: ${{ steps.resolve.outputs.environment }}
+      destroy_environment: ${{ steps.resolve.outputs.destroy_environment }}
+      domain: ${{ steps.resolve.outputs.domain }}
+      aws_account_id: ${{ steps.resolve.outputs.aws_account_id }}
+      aws_region: ${{ steps.resolve.outputs.aws_region }}
+      state_bucket: ${{ steps.resolve.outputs.state_bucket }}
+      aws_root: ${{ steps.resolve.outputs.aws_root }}
+      supabase_root: ${{ steps.resolve.outputs.supabase_root }}
+      state_key: ${{ steps.resolve.outputs.state_key }}
+      supabase_state_key: ${{ steps.resolve.outputs.supabase_state_key }}
+      deploy_role_arn: ${{ steps.resolve.outputs.deploy_role_arn }}
+      plan_role_arn: ${{ steps.resolve.outputs.plan_role_arn }}
+      topic_arn: ${{ steps.resolve.outputs.topic_arn }}
+      cluster_name: ${{ steps.resolve.outputs.cluster_name }}
+      service_name: ${{ steps.resolve.outputs.service_name }}
+      destroy_branch: ${{ steps.resolve.outputs.destroy_branch }}
+      destroy_confirm: ${{ steps.resolve.outputs.destroy_confirm }}
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Resolve the deployment"
+        id: resolve
+        env:
+          REPOSITORY_ID: ${{ github.repository_id }}
+          REF_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -uo pipefail
+          resolve_exit=0
+          infra/scripts/resolve-deployment.sh --mode destroy --repository-id "$REPOSITORY_ID" --ref "$REF_NAME" \
+            --event "$EVENT_NAME" --github-output "$GITHUB_OUTPUT" || resolve_exit=$?
+          if [ "$resolve_exit" -ne 0 ]; then
+            echo "::error::resolve-deployment.sh exited $resolve_exit; no deployment of this repository is destroyed from $REF_NAME on $EVENT_NAME."
+            exit 1
+          fi
+
   plan-destroy:
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/deploy-evidence/destroy-staging') || (github.event_name == 'workflow_dispatch' && inputs.confirm == 'destroy staging aws')
+    needs: resolve
+    if: (github.event_name == 'push' && github.ref == format('refs/heads/{0}', needs.resolve.outputs.destroy_branch)) || (github.event_name == 'workflow_dispatch' && inputs.confirm == needs.resolve.outputs.destroy_confirm)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
       id-token: write
-    environment: staging-destroy
+    environment: ${{ needs.resolve.outputs.destroy_environment }}
 
     steps:
       - name: "Checkout source code"
@@ -73,24 +126,26 @@ jobs:
           terraform_version: 1.16.5
           terraform_wrapper: false
 
-      # The environment holds no setting, so the role is named by its ARN.
+      # The role comes from the resolve job, so the environment holds no setting.
       - name: "Assume the deploy role"
         id: credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
-          aws-region: eu-north-1
+          role-to-assume: ${{ needs.resolve.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.resolve.outputs.aws_region }}
           role-session-name: destroy-plan-${{ github.run_id }}
-          allowed-account-ids: "471112560111"
+          allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
 
       # An init refreshes the state right after it configures the backend and before it installs a provider, so a
       # refused read of the state fails the init with "Error refreshing state". The step fails if either read succeeds.
       - name: "Show the Supabase root's state is out of reach"
         id: supabase-root-refused
+        env:
+          SUPABASE_ROOT: ${{ needs.resolve.outputs.supabase_root }}
         run: |
           set -uo pipefail
           init_status=0
-          terraform -chdir=infra/envs/staging/supabase init -input=false -no-color > "$RUNNER_TEMP/supabase-init.log" 2>&1 || init_status=$?
+          terraform -chdir="$SUPABASE_ROOT" init -input=false -no-color > "$RUNNER_TEMP/supabase-init.log" 2>&1 || init_status=$?
           echo "supabase_root_init_status=$init_status"
           init_refused=no
           if grep -q 'Error refreshing state' "$RUNNER_TEMP/supabase-init.log" \
@@ -116,14 +171,18 @@ jobs:
 
       - name: "Initialise the staging AWS root"
         id: init
-        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
 
       - name: "List the state of the staging AWS root"
         id: state
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           state_exit=0
-          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state.txt" || state_exit=$?
+          terraform -chdir="$AWS_ROOT" state list > "$RUNNER_TEMP/state.txt" || state_exit=$?
           echo "state_list_exit=$state_exit"
           if [ "$state_exit" -ne 0 ]; then
             echo "::error::terraform state list exited $state_exit."
@@ -137,12 +196,13 @@ jobs:
       - name: "Plan the destroy of the staging AWS root"
         id: plan
         env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
           DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
           TF_VAR_alert_email: destroy-plan@example.invalid
         run: |
           set -uo pipefail
           plan_exit=0
-          terraform -chdir=infra/envs/staging/aws plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/destroy.tfplan" \
+          terraform -chdir="$AWS_ROOT" plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/destroy.tfplan" \
             > "$RUNNER_TEMP/destroy-plan.log" 2>&1 || plan_exit=$?
           echo "plan_exit=$plan_exit"
           if [ "$plan_exit" -ne 0 ]; then
@@ -154,11 +214,13 @@ jobs:
       # The JSON form holds sensitive values in the clear, so it is written only under $RUNNER_TEMP and never printed.
       - name: "Export the saved plan for the guard"
         id: export
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           umask 077
           export_exit=0
-          terraform -chdir=infra/envs/staging/aws show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json" || export_exit=$?
+          terraform -chdir="$AWS_ROOT" show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json" || export_exit=$?
           echo "export_exit=$export_exit"
           if [ "$export_exit" -ne 0 ]; then
             echo "::error::terraform show -json exited $export_exit."
@@ -179,17 +241,19 @@ jobs:
 
       - name: "Show the plan"
         id: show
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           show_exit=0
-          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt" || show_exit=$?
+          terraform -chdir="$AWS_ROOT" show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt" || show_exit=$?
           if [ "$show_exit" -ne 0 ]; then
             echo "::error::terraform show exited $show_exit."
             exit 1
           fi
           cat "$RUNNER_TEMP/destroy-plan.txt"
           {
-            echo "### Destroy plan of infra/envs/staging/aws"
+            echo "### Destroy plan of $AWS_ROOT"
             echo
             echo '```'
             cat "$RUNNER_TEMP/destroy-plan.txt"
@@ -206,14 +270,14 @@ jobs:
 
   # Plans again rather than taking the first job's plan, so no plan file crosses jobs. Its guard checks this plan.
   apply-destroy:
-    needs: plan-destroy
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/deploy-evidence/destroy-staging') || (github.event_name == 'workflow_dispatch' && inputs.confirm == 'destroy staging aws')
+    needs: [resolve, plan-destroy]
+    if: (github.event_name == 'push' && github.ref == format('refs/heads/{0}', needs.resolve.outputs.destroy_branch)) || (github.event_name == 'workflow_dispatch' && inputs.confirm == needs.resolve.outputs.destroy_confirm)
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
       contents: read
       id-token: write
-    environment: staging-destroy
+    environment: ${{ needs.resolve.outputs.destroy_environment }}
 
     steps:
       - name: "Checkout source code"
@@ -229,26 +293,30 @@ jobs:
           terraform_version: 1.16.5
           terraform_wrapper: false
 
-      # The environment holds no setting, so the role is named by its ARN.
+      # The role comes from the resolve job, so the environment holds no setting.
       - name: "Assume the deploy role"
         id: credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
-          aws-region: eu-north-1
+          role-to-assume: ${{ needs.resolve.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.resolve.outputs.aws_region }}
           role-session-name: destroy-apply-${{ github.run_id }}
-          allowed-account-ids: "471112560111"
+          allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
 
       - name: "Initialise the staging AWS root"
         id: init
-        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
 
       - name: "List the state of the staging AWS root"
         id: state
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           state_exit=0
-          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state.txt" || state_exit=$?
+          terraform -chdir="$AWS_ROOT" state list > "$RUNNER_TEMP/state.txt" || state_exit=$?
           echo "state_list_exit=$state_exit"
           if [ "$state_exit" -ne 0 ]; then
             echo "::error::terraform state list exited $state_exit."
@@ -262,12 +330,13 @@ jobs:
       - name: "Plan the destroy of the staging AWS root"
         id: plan
         env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
           DIGEST: sha256:0000000000000000000000000000000000000000000000000000000000000000
           TF_VAR_alert_email: destroy-plan@example.invalid
         run: |
           set -uo pipefail
           plan_exit=0
-          terraform -chdir=infra/envs/staging/aws plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/destroy.tfplan" \
+          terraform -chdir="$AWS_ROOT" plan -destroy -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/destroy.tfplan" \
             > "$RUNNER_TEMP/destroy-plan.log" 2>&1 || plan_exit=$?
           echo "plan_exit=$plan_exit"
           if [ "$plan_exit" -ne 0 ]; then
@@ -279,11 +348,13 @@ jobs:
       # The JSON form holds sensitive values in the clear, so it is written only under $RUNNER_TEMP and never printed.
       - name: "Export the saved plan for the guard"
         id: export
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           umask 077
           export_exit=0
-          terraform -chdir=infra/envs/staging/aws show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json" || export_exit=$?
+          terraform -chdir="$AWS_ROOT" show -json "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy.json" || export_exit=$?
           echo "export_exit=$export_exit"
           if [ "$export_exit" -ne 0 ]; then
             echo "::error::terraform show -json exited $export_exit."
@@ -304,17 +375,19 @@ jobs:
 
       - name: "Show the plan"
         id: show
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           show_exit=0
-          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt" || show_exit=$?
+          terraform -chdir="$AWS_ROOT" show -no-color "$RUNNER_TEMP/destroy.tfplan" > "$RUNNER_TEMP/destroy-plan.txt" || show_exit=$?
           if [ "$show_exit" -ne 0 ]; then
             echo "::error::terraform show exited $show_exit."
             exit 1
           fi
           cat "$RUNNER_TEMP/destroy-plan.txt"
           {
-            echo "### Destroy plan of infra/envs/staging/aws"
+            echo "### Destroy plan of $AWS_ROOT"
             echo
             echo '```'
             cat "$RUNNER_TEMP/destroy-plan.txt"
@@ -323,10 +396,12 @@ jobs:
 
       - name: "Apply the saved destroy plan"
         id: apply
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           apply_exit=0
-          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/destroy.tfplan" || apply_exit=$?
+          terraform -chdir="$AWS_ROOT" apply -input=false -no-color "$RUNNER_TEMP/destroy.tfplan" || apply_exit=$?
           echo "apply_exit=$apply_exit"
           if [ "$apply_exit" -ne 0 ]; then
             echo "::error::terraform apply exited $apply_exit."
@@ -335,10 +410,12 @@ jobs:
 
       - name: "Show the state of the staging AWS root is empty"
         id: state-after
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           state_exit=0
-          terraform -chdir=infra/envs/staging/aws state list > "$RUNNER_TEMP/state-after.txt" || state_exit=$?
+          terraform -chdir="$AWS_ROOT" state list > "$RUNNER_TEMP/state-after.txt" || state_exit=$?
           if [ "$state_exit" -ne 0 ]; then
             echo "::error::terraform state list exited $state_exit."
             exit 1
