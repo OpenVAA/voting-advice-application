@@ -6,16 +6,16 @@ current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
 current_plan: 7
 status: executing
-stopped_at: Completed 189.1.1-08-PLAN.md
-last_updated: "2026-11-24T14:59:31.153Z"
+stopped_at: Completed 189.1.1-09-PLAN.md
+last_updated: "2026-11-24T15:19:12.554Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: db8f560ad3c5552e4d8c5f7f3a509200d43e1c5b
+state_head: 2e6b384552381e786a7527323420e1555677f5fb
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 233
-  completed_plans: 224
+  completed_plans: 225
   percent: 83
 ---
 
@@ -235,6 +235,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P05 | 8 min | 3 tasks | 2 files |
 | Phase 189.1.1 P06 | 21min | 3 tasks | 8 files |
 | Phase 189.1.1 P08 | 52min | 3 tasks | 13 files |
+| Phase 189.1.1 P09 | 18min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -519,6 +520,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-06: the voter consent prompt is a Modal opened on mount; every close without a choice records setDataConsent('denied'); the buffered-before-grant spec grants on /privacy on the same document as the menu opening, since a flush under denied discards the buffer
 - [Phase 189.1.1]: 189.1.1-08: every bare .checkbox gets a 2px border in --input-color or base-content from one :where(.checkbox) rule in the un-sublayered @layer utilities block; --input-color stays unset so the check mark survives
 - [Phase 189.1.1]: 189.1.1-08: non-text contrast (SC 1.4.11) is asserted by a computed-style border measurement (tests/tests/utils/nonTextContrast.ts), since axe-core has no 1.4.11 rule
+- [Phase 189.1.1]: 189.1.1-09: the wrapper's absence is pinned by one hasnt_function check in pgTAP 59; the 07, 39c censuses count without it (sixteen, eight, twelve)
+- [Phase 189.1.1]: 189.1.1-09: WRAPPER_REFERENCES is five files: the manifest names migration 00005_drop_invitation_caller_take.sql
 
 ### Pending Todos
 
@@ -593,6 +596,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T14:59:30.155Z
-**Stopped At:** Completed 189.1.1-08-PLAN.md
+Last session: 2026-11-24T15:19:11.516Z
+**Stopped At:** Completed 189.1.1-09-PLAN.md
 **Resume File:** None
