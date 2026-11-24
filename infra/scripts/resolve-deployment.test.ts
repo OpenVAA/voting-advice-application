@@ -104,17 +104,17 @@ function lines(stdout: string): Record<string, string> {
   );
 }
 
-const deploy = (id: string, ref: string): Array<string> => ['--mode', 'deploy', '--repository-id', id, '--ref', ref];
-const destroy = (id: string, ref: string, event: string): Array<string> => [
-  '--mode',
-  'destroy',
-  '--repository-id',
-  id,
-  '--ref',
-  ref,
-  '--event',
-  event
-];
+function deploy(id: string, ref: string): Array<string> {
+  return ['--mode', 'deploy', '--repository-id', id, '--ref', ref];
+}
+
+function destroy(id: string, ref: string, event: string): Array<string> {
+  return ['--mode', 'destroy', '--repository-id', id, '--ref', ref, '--event', event];
+}
+
+function plan(id: string): Array<string> {
+  return ['--mode', 'plan', '--repository-id', id];
+}
 
 const STAGING_LINES = [
   'key=staging',
@@ -333,8 +333,6 @@ describe('resolve-deployment.sh in destroy mode', () => {
 });
 
 describe('resolve-deployment.sh in plan mode', () => {
-  const plan = (id: string): Array<string> => ['--mode', 'plan', '--repository-id', id];
-
   it('lists the owned entries whose AWS root exists, sorted by key', () => {
     const map = {
       deployments: {
