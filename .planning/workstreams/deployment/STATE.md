@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 190-04-PLAN.md
-last_updated: "2026-11-24T15:40:00.000Z"
+stopped_at: Completed 190-05-PLAN.md
+last_updated: "2026-11-24T16:00:00.000Z"
 last_activity: 2026-11-24
-last_activity_desc: 190-04 complete (pure staging move over the deployment map; MOVE_COMMIT ce17178c6)
+last_activity_desc: 190-05 complete (bootstrap root test and test-bootstrap CI check)
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 232
-  completed_plans: 222
+  completed_plans: 223
   percent: 91
 ---
 
@@ -33,9 +33,9 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 190 (Multi-deployment bootstrap) — EXECUTING
-Plan: 4 of 14 (190-01 to 190-04 complete)
+Plan: 5 of 14 (190-01 to 190-05 complete)
 Status: In progress (branch planning/deployment-190, on 46554181e)
-Last activity: 2026-11-24 — 190-04 complete: infra/bootstrap for_each over var.deployments, github-oidc-provider module, four moved blocks, staging names pinned; MOVE_COMMIT=ce17178c6945c6514b3a2c5cfde49b322fb0265f, move proof vs 46554181e moved 37 / delete 0 / replace 0 / create 0, map control vs MOVE_COMMIT moved 0, both pass; infra 630 passed / 6 baseline failed
+Last activity: 2026-11-24 — 190-05 complete: infra/bootstrap/tests/deployments.tftest.hcl (staging names pinned, nuorten-2027 stand-in apart, 7 validation refusals; 9 runs pass, mock provider) and terraform-checks.sh test-bootstrap in infra-plan.yml's checks job; infra 633 passed / 6 baseline failed
 
 Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
@@ -518,6 +518,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 190]: 190-04: MOVE_COMMIT=ce17178c6945c6514b3a2c5cfde49b322fb0265f (the tree 190-11 plans and applies first); move proof vs 46554181e: moved 37 (= 37 counted keyed addresses), delete 0, replace 0, create 0, update 18 (mock JSON), guard pass; map control vs MOVE_COMMIT: base_map present, moved 0, guard pass
 - [Phase 190]: 190-04: github-oidc takes oidc_provider_arn and iam_name_prefix (plan role, ecr-push, plan-deny, nine deploy-* policies); deploy role and tfstate policy stay on name_prefix-environment; the account's provider is infra/modules/github-oidc-provider; bootstrap derives registry <prefix>-<key>-frontend, IAM prefix <prefix>-<key>, pipeline/<key>/aws/terraform.tfstate unless the entry overrides
 - [Phase 190]: 190-04: check-bootstrap-moves.sh fixed (set -f had kept its *.tf glob literal, so a map-declaring tree was taken for one without); infraValidateJobGate now checks infra/envs/<key>/aws backend keys against the derived pipeline key; infra unit count 630 passed / 6 failed
+- [Phase 190]: 190-05: bootstrap root test pins staging's names and plans a nuorten-2027 stand-in with names of its own (its state policy is openvaa-tfstate-nuorten-2027-aws, the other eleven carry openvaa-nuorten-2027-); seven refusals each confirmed to trip only their own validation
+- [Phase 190]: 190-05: terraform-checks.sh test-bootstrap checks infra/bootstrap/tests with -d (a glob-free loop word survives nullglob); infra-plan.yml checks job runs it under !cancelled(); infra unit count 633 passed / 6 failed
 - [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
 
 ### Pending Todos
@@ -587,6 +589,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T15:40:00.000Z
-**Stopped At:** Completed 190-04-PLAN.md
+Last session: 2026-11-24T16:00:00.000Z
+**Stopped At:** Completed 190-05-PLAN.md
 **Resume File:** None

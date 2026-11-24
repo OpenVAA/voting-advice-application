@@ -1052,7 +1052,7 @@ Plans:
 - [x] 190-04-PLAN.md — The pure move: `for_each` over the map, the provider module, the moved blocks, staging's names unchanged, proven offline (MOVE_COMMIT).
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 190-05-PLAN.md — The bootstrap root test (two entries apart, staging pinned, validations refusing) and its CI check.
+- [x] 190-05-PLAN.md — The bootstrap root test (two entries apart, staging pinned, validations refusing) and its CI check.
 - [ ] 190-06-PLAN.md — The tightening: `Environment` in the deploy scopes, the plan deny on its own key, required ids, tag denies where AWS allows (TIGHTEN_COMMIT).
 
 **Wave 4** *(blocked on Wave 3 completion)*
