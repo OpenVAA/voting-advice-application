@@ -108,9 +108,9 @@ variable "relay_rate_limit" {
 }
 
 variable "stop_timeout_seconds" {
-  description = "Seconds between the stop signal and the kill of the container. The bound it must meet, relative to SHUTDOWN_TIMEOUT, is stated on the frontend-service module's variable of the same name."
+  description = "Seconds between the stop signal and the kill of the container. The frontend-service module refuses a value below SHUTDOWN_TIMEOUT plus 15 seconds."
   type        = number
-  default     = 30
+  default     = 45
 }
 
 variable "scheduled_floor_changes" {

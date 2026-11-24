@@ -73,6 +73,12 @@ resource "aws_ecs_task_definition" "app" {
       condition     = length(local.unknown_omitted) == 0
       error_message = "Every name in omit_environment must be an entry of task-environment.json. Not an entry: ${join(", ", local.unknown_omitted)}."
     }
+
+    # The stop timeout covers the server's drain and then its shutdown flush: the analytics forward timeout of 10 seconds and a margin of 5.
+    precondition {
+      condition     = can(tonumber(local.shutdown_timeout)) && var.stop_timeout_seconds >= try(tonumber(local.shutdown_timeout), 0) + 15
+      error_message = can(tonumber(local.shutdown_timeout)) ? "stop_timeout_seconds must be at least SHUTDOWN_TIMEOUT plus 15 seconds, the analytics forward timeout of 10 and a margin of 5, so that the server finishes its drain and its shutdown flush before the kill. stop_timeout_seconds is ${var.stop_timeout_seconds}; SHUTDOWN_TIMEOUT is ${local.shutdown_timeout}, so the stop timeout must be at least ${try(tonumber(local.shutdown_timeout), 0) + 15}." : "SHUTDOWN_TIMEOUT must be a number of seconds, so that stop_timeout_seconds can be checked against it. It is \"${local.shutdown_timeout}\"."
+    }
   }
 }
 

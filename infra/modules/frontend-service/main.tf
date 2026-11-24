@@ -36,6 +36,9 @@ locals {
   root_values        = merge(var.environment_values, var.environment_overrides)
   environment_values = merge(local.root_values, local.derived_values)
 
+  # The SHUTDOWN_TIMEOUT the server runs with: adapter-node's default of 30 when the task does not receive one.
+  shutdown_timeout = contains(var.omit_environment, "SHUTDOWN_TIMEOUT") ? "30" : lookup(local.environment_values, "SHUTDOWN_TIMEOUT", "30")
+
   # The entries the task receives: every active entry except those named in omit_environment.
   kept = [for v in local.active : v if !contains(var.omit_environment, v.name)]
 

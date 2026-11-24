@@ -509,6 +509,52 @@ run "stop_timeout_refuses_above_fargate" {
   expect_failures = [var.stop_timeout_seconds]
 }
 
+run "stop_timeout_refuses_less_than_shutdown_timeout_plus_15" {
+  command = plan
+
+  variables {
+    stop_timeout_seconds = 39
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "stop_timeout_accepts_shutdown_timeout_plus_15" {
+  command = plan
+
+  variables {
+    stop_timeout_seconds = 40
+  }
+
+  assert {
+    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout == 40
+    error_message = "A stop timeout of SHUTDOWN_TIMEOUT plus 15 seconds must reach the container."
+  }
+}
+
+run "stop_timeout_reads_30_for_an_omitted_shutdown_timeout" {
+  command = plan
+
+  variables {
+    omit_environment     = ["SHUTDOWN_TIMEOUT"]
+    stop_timeout_seconds = 44
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
+run "stop_timeout_refuses_a_non_numeric_shutdown_timeout" {
+  command = plan
+
+  variables {
+    environment_overrides = {
+      SHUTDOWN_TIMEOUT = "soon"
+    }
+  }
+
+  expect_failures = [aws_ecs_task_definition.app]
+}
+
 run "task_floor_refuses_zero" {
   command = plan
 
@@ -687,8 +733,8 @@ run "service" {
   }
 
   assert {
-    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout == 30
-    error_message = "The container must have 30 seconds between the stop signal and the kill."
+    condition     = jsondecode(aws_ecs_task_definition.app.container_definitions)[0].stopTimeout == 45
+    error_message = "The container must have the default of 45 seconds between the stop signal and the kill."
   }
 
   assert {

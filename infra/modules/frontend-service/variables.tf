@@ -143,9 +143,9 @@ variable "deregistration_delay_seconds" {
 }
 
 variable "stop_timeout_seconds" {
-  description = "Seconds between the stop signal and the kill of the container. It must exceed the server's SHUTDOWN_TIMEOUT by at least the analytics forward timeout of 10 seconds plus a margin of 5, so that the shutdown flush of a queue of up to one slice reaches a responsive PostHog before the kill. The flush sends its slices one after another, so a full queue against an unresponsive PostHog can still be cut off."
+  description = "Seconds between the stop signal and the kill of the container. The task definition's precondition enforces its bound: at least the task's SHUTDOWN_TIMEOUT, 30 when the task receives none, plus 15 seconds, the analytics forward timeout of 10 and a margin of 5."
   type        = number
-  default     = 30
+  default     = 45
 
   validation {
     condition     = var.stop_timeout_seconds >= 2 && var.stop_timeout_seconds <= 120
