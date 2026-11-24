@@ -98,6 +98,74 @@ The relay answers the browser as soon as the data is queued, and forwards it eve
 - **The consent choice** stays in the browser's local storage until the browser or the visitor clears it.
 - **The visit id** is never stored; it is gone when the page is reloaded or closed.
 
+## 8. Questions for you
+
+On 11 October 2026 the operator wrote short notes on how the analytics should work. The team read those notes in six ways and built the application on those readings. They are working assumptions, not settled law. Questions 1 to 6 restate each reading as a question. Questions 7 to 9 are ones the readings raise. Each question is followed by what the application does today.
+
+### Q1. A pageview sent before consent
+
+A small script in the page measures how long the page is visible and sends the pageview, with that duration, when the visitor moves on, hides the tab or leaves. This happens from the first page, before the visitor has made any choice. Is this "storing information, or gaining access to information already stored, in the terminal equipment" of the visitor under Article 5(3) of the ePrivacy Directive, or under its national transposition (in Finland, the Act on Electronic Communications Services)? If it is, does any exemption apply, or does it need consent?
+
+Today: the pageview is sent before any choice. Nothing is stored on the device for it, and whether it is sent depends on nothing stored there, only on whether the browser sends Global Privacy Control. The application as a whole does read its own local storage, for the voter's saved answers and the consent choice.
+
+### Q2. What keeps a pageview non-identifying
+
+The pageview carries the kind of page and the details of it the application lists in advance; it never carries a candidate, party or nomination, and drops any detail not on the list. Is that list enough to keep a pageview from being personal data, given that it also says which statement was on the screen and for how long, in which language, and when?
+
+Today: the list is fixed in the application. A statement's page sends which statement it was, never the answer; a candidate's or party's page sends only whether it was a candidate or a party.
+
+### Q3. A pageview whatever the tracking setting says
+
+May the pageview be sent whatever the tracking setting says, so that only choosing no analytics provider, or a browser's Global Privacy Control, stops it?
+
+Today: yes. With the tracking setting off, no prompt is shown and only pageviews are sent.
+
+### Q4. Consent by accepting the terms, in the candidate and party app
+
+A candidate or party accepts the terms of use, and a separate box under the terms lets them opt out of usage data. Is accepting the terms without ticking that box valid consent to the collection of their usage data? Does the opt-out box, rather than a box to opt in, affect the answer?
+
+Today: accepting the terms with the box not ticked is stored as consent; ticking it is stored as a refusal. The choice can be changed later on the privacy page.
+
+### Q5. The admin app following a choice made elsewhere
+
+The admin app has no prompt and no terms page. Its events are sent if the same browser holds an agreement made in the voter app. Is it acceptable that an admin user's events follow a choice made in another app of the same browser, possibly by another person using that browser?
+
+Today: the admin app reads the voter app's stored choice. Without an agreement there, only the pageview is sent.
+
+### Q6. Projects not yet open to voters
+
+An election project is usually closed to voters while candidates and parties register. Should the tracking setting apply on the public pages of such a project, such as the sign-in and registration pages of the candidate and party app, or should those pages treat tracking as off?
+
+Today: the setting is read as stored, so those pages follow the same rules as an open project's. In the default mode only the pageview is sent there, unless the browser already holds a choice made in the candidate and party app.
+
+### Q7. Answers to political statements, linked within one visit
+
+After consent, a voter's answers to political statements, the results they viewed and the candidates or parties they opened are sent with one visit id, so the answers of one visit can be read together. There is no network address, no device identifier and no person profile. Are these linked answers personal data? Are they special-category data, as data revealing political opinions under Article 9 of the General Data Protection Regulation? If they are, is the prompt's consent explicit enough, and does the survey link, which carries the visit id so survey answers can be joined to the visit, change the answer?
+
+Does the consent text describe this accurately? The prompt itself reads, in English: "Could we collect your data completely anonymously for research purposes and to improve the application? We do not use cookies, and the data cannot be connected to you."
+
+Its button for more information opens this text, quoted exactly: "We would like to collected usage data anonymously for research purposes and to improve the application. The data to collect includes your answers to the questions, the time spent answering the questions and in other sections and the results viewed, but the data cannot be connected to you."
+
+For your attention, without a proposed change: the second text reads "to collected", which is a typo. Both texts say the data "cannot be connected to you", while the events of one visit are joined to each other by the visit id. The privacy page's longer text says that the events of one visit are joined by an identifier held only in the page's memory. The same texts exist in the application's other languages.
+
+### Q8. Every dismissal is a refusal
+
+Closing the prompt in any way without a choice, by Escape, the close button, a click outside it or a device's close gesture, is stored as a refusal. The refusal is kept until the voter changes it on the privacy page, and the prompt is not shown again. Is it appropriate to treat every dismissal as a refusal? Is a refusal that lasts until the voter changes it, with no new prompt, appropriate?
+
+Today: as described. The voter can agree later on the privacy page.
+
+### Q9. PostHog as a processor
+
+PostHog receives the usage data in its EU cloud. What do PostHog's terms as a data processor, with hosting in the EU, require of the operator? Is anything further needed, for example for PostHog's own access from outside the EU, for AWS as the host of the application server, or for CloudFront locations outside the EU? Should the operator set a retention period in PostHog, since the application sets none?
+
+Today: the application sends to PostHog's EU address. Reading and accepting PostHog's terms, and any agreement with AWS, is the operator's to do; the application signs nothing.
+
+## 9. What the repository does not decide
+
+Whether a deployment may collect usage data, and whether it must ask for consent first, is for each deployer of OpenVAA to determine for their own jurisdiction. On staging, and at the production launch, that deployer is the operator who asked for this review. The software offers switches for these choices, described in section 6, and its documentation lists them for the deployer to settle. It makes no determination itself.
+
+No statement in this brief means that no consent is required, for the pageview or for anything else. Where the brief says what the application does today, it describes the software, not what the law allows. That is the question we ask you to answer.
+
 ## Sources
 
 Every statement above was checked against the files of the OpenVAA repository named here, as they stood on the date of this brief.
@@ -106,4 +174,6 @@ Every statement above was checked against the files of the OpenVAA repository na
 - **Section 4:** the staging deployment's settings, `infra/envs/staging/aws/terraform.tfvars` (the Stockholm region, the PostHog EU address, the gated consent mode, the 90 days); the content delivery settings, `infra/modules/frontend-service/variables.tf` and `infra/modules/frontend-service/edge.tf`.
 - **Section 6:** when the pageview, the events and the prompt are allowed, `apps/frontend/src/lib/contexts/app/tracking/sendPolicy.ts`; what a choice stores and the discarding of earlier events, `apps/frontend/src/lib/contexts/app/appContext.svelte.ts`; the prompt, `apps/frontend/src/lib/dynamic-components/dataConsent/popup/DataConsentPopup.svelte`, its buttons, `apps/frontend/src/lib/dynamic-components/dataConsent/DataConsent.svelte`, and the modal window it uses, `apps/frontend/src/lib/components/modal/ModalContainer.svelte`; the candidate and party app's opt-out box, `apps/frontend/src/lib/contestant/gates/TermsOfUseGate.svelte`; the privacy pages, `apps/frontend/src/routes/(voters)/privacy/+page.svelte` and `apps/frontend/src/routes/contestant/privacy/+page.svelte`; the privacy texts, `apps/frontend/messages/en/privacy.json`.
 - **Section 7:** the analytics guide for developers (its retention item), the staging deployment's settings, and the browser store of the choice in `apps/frontend/src/lib/contexts/app/appContext.svelte.ts`.
+- **Section 8:** the operator's notes of 11 October 2026 and the six readings of them, kept in the project's planning record; for what the application does today, the files of sections 3 to 6, and for Q6 the public read of a closed project's settings, `apps/supabase/supabase/schema/106-app-settings.sql`; the consent texts quoted under Q7, `apps/frontend/messages/en/dynamic.json` (the prompt) and `apps/frontend/messages/en/common.json` (the text behind the button for more information); the survey link, `apps/frontend/messages/en/privacy.json`.
+- **Section 9:** the deployer's checklist in the analytics guide for developers.
 - **Section 3, outside the analytics:** the analytics guide for developers (its two items on the addresses the feedback limit and the sign-in service keep); the privacy page's text on local storage, `apps/frontend/messages/en/privacy.json`.
