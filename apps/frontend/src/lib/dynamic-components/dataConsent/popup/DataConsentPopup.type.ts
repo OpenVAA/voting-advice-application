@@ -1,3 +1,3 @@
-import type { AlertProps } from '$lib/components/alert';
+import type { ModalProps } from '$lib/components/modal';
 
-export type DataConsentPopupProps = Partial<AlertProps>;
+export type DataConsentPopupProps = Partial<ModalProps>;

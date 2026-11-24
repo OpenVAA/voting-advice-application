@@ -341,3 +341,67 @@ test.describe('voter-prefs-tracking (EFLOW-08)', () => {
     await expect(grantedAfterReload).toBeDisabled({ timeout: TIMEOUTS.slowPage });
   });
 });
+
+/** Assert that the stored user preferences hold `consent` as the voter app's consent choice. */
+async function expectStoredConsent(page: Page, consent: string): Promise<void> {
+  await expect
+    .poll(async () => (await readPersistedPrefs(page))?.dataCollection?.consent, {
+      message: `the stored consent choice is not ${consent}`,
+      timeout: TIMEOUTS.slowPage
+    })
+    .toBe(consent);
+}
+
+test.describe('the consent prompt over a question', () => {
+  test('the consent prompt is a modal: the answer choices under it cannot be reached, and Escape declines', async ({
+    page
+  }) => {
+    const prompt = page.getByRole('dialog', { name: CONSENT_PROMPT });
+    // reason: `:modal` is the one selector that tells a dialog opened with showModal(), whose page is inert, from any other dialog; no role or test id carries that, and it reads no translated string.
+    // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
+    const modalDialogs = page.locator('dialog:modal');
+
+    // The prompt opens on the front page as the one modal dialog, and Escape declines it, so the walk can reach a question.
+    await openVoterHome(page);
+    await expect(prompt).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await expect(modalDialogs, 'the consent prompt is not shown as a modal dialog (dialog:modal)').toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(prompt).toBeHidden({ timeout: TIMEOUTS.slowPage });
+    await expectStoredConsent(page, 'denied');
+    await startToFirstQuestion(page);
+
+    // With no stored choice, the voter layout queues the prompt again as it mounts, now over the question.
+    await page.evaluate((key) => window.localStorage.removeItem(key), PREFS_KEY);
+    await page.reload();
+    await expect(prompt).toBeVisible({ timeout: TIMEOUTS.slowPage });
+    await expect(modalDialogs, 'the consent prompt over the question is not a modal dialog (dialog:modal)').toHaveCount(
+      1
+    );
+
+    // The last answer choice, which the prompt covers, can be neither focused nor clicked.
+    const choice = page.getByTestId(testIds.voter.questions.answerOption).last();
+    // reason: the choice's label has no role and no test id of its own; it is the parent of the choice's input, reached by the parent axis, which reads no translated string.
+    // eslint-disable-next-line playwright/no-restricted-locators, playwright/no-raw-locators
+    const choiceLabel = choice.locator('xpath=..');
+    await choice.focus();
+    await expect(choice, 'the answer choice under the prompt took focus').not.toBeFocused();
+    const box = await choiceLabel.boundingBox();
+    expect(box, "the answer choice's label has no box").not.toBeNull();
+    const hitDialog = await page.evaluate(
+      ({ x, y }) => document.elementFromPoint(x, y)?.closest('dialog')?.getAttribute('aria-label') ?? null,
+      { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 }
+    );
+    expect(hitDialog, "a pointer at the answer choice's label does not land in the prompt").toMatch(CONSENT_PROMPT);
+    await expect(
+      choice.click({ trial: true, timeout: 2000 }),
+      'the answer choice under the prompt took a click'
+    ).rejects.toThrow();
+
+    // Escape declines, and the page under the prompt is reachable again.
+    await page.keyboard.press('Escape');
+    await expect(prompt).toBeHidden({ timeout: TIMEOUTS.slowPage });
+    await expectStoredConsent(page, 'denied');
+    await choice.focus();
+    await expect(choice, 'the answer choice cannot take focus after the prompt closed').toBeFocused();
+  });
+});

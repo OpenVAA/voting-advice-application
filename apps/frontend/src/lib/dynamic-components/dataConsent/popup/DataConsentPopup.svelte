@@ -1,9 +1,19 @@
 <!--
-@component Show a popup with a data consent form, if data consent has not been given yet.
+@component A modal dialog that asks the voter for data consent. It opens as it mounts, and the page under it is inert while it is open.
+
+Choosing in its consent control records that choice and closes the dialog. Closing it without a choice, by Escape, its close button, a click on the backdrop or a close the platform makes, is a decline: it is recorded exactly as the decline button records it.
+
+### Dynamic component
+
+Accesses `AppContext` for the translations and `setDataConsent`.
 
 ### Properties
 
-- Any valid properties of an `<Alert>` component.
+- Any valid properties of a `<Modal>` component.
+
+### Callbacks
+
+- `onClose`: Callback for when the dialog closes, after a decline without a choice has been recorded.
 
 ### Usage
 
@@ -13,25 +23,39 @@
 -->
 
 <script lang="ts">
-  import { Alert } from '$lib/components/alert';
-  import { getComponentContext } from '$lib/contexts/component';
+  import { onMount } from 'svelte';
+  import { Modal } from '$lib/components/modal';
+  import { getAppContext } from '$lib/contexts/app';
   import { DataConsent, DataConsentInfoButton } from '../';
   import type { DataConsentPopupProps } from './DataConsentPopup.type';
 
-  let { ...restProps }: DataConsentPopupProps = $props();
+  let { onClose, ...restProps }: DataConsentPopupProps = $props();
 
-  const { t } = getComponentContext();
+  const { setDataConsent, t } = getAppContext();
 
-  let alertRef: Alert;
+  let modalRef: Modal;
+  let chosen = false;
+
+  onMount(() => modalRef?.openModal());
+
+  function handleChoice(): void {
+    chosen = true;
+    modalRef?.closeModal();
+  }
+
+  function handleClose(): void {
+    if (!chosen) setDataConsent('denied');
+    onClose?.();
+  }
 </script>
 
-<!-- bind: keep — alertRef is plain let Alert; single ref read in onChange callback -->
-<Alert bind:this={alertRef} title={t('common.privacy.dataCollection.title')} icon="privacy" {...restProps}>
+<!-- bind: keep — modalRef is plain let Modal; single ref read in onMount and the choice handler -->
+<Modal bind:this={modalRef} title={t('common.privacy.dataCollection.title')} {...restProps} onClose={handleClose}>
   <div class="gap-md grid grid-flow-row">
     <p class="my-0">{t('dynamic.privacy.dataConsentIntro.popup')}</p>
     <DataConsentInfoButton class="!inline" />
   </div>
   {#snippet actions()}
-    <DataConsent onChange={() => alertRef?.closeAlert()} description="none" />
+    <DataConsent onChange={handleChoice} description="none" />
   {/snippet}
-</Alert>
+</Modal>
