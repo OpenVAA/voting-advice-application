@@ -903,7 +903,7 @@ Plans:
   2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
   3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
   4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
-**Plans:** 9/15 plans executed
+**Plans:** 10/15 plans executed
 
 Plans:
 **Wave 1**
@@ -917,7 +917,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 - [x] 189.1.1-06-PLAN.md — consent prompt as a modal, every dismissal declines; unit pins and E2E (wave 3)
-- [ ] 189.1.1-07-PLAN.md — verify-full on the migrations and settings steps, guard and mutations (wave 3)
+- [x] 189.1.1-07-PLAN.md — verify-full on the migrations and settings steps, guard and mutations (wave 3)
 
 **Wave 4** *(blocked on Wave 3 completion)*
 - [x] 189.1.1-08-PLAN.md — dark-mode checkbox contrast and start-aligned inputs; two UAT todos closed (wave 4)
