@@ -8,14 +8,11 @@ export { extractServedProjectId } from '../support/servedProject';
 /**
  * The deployed-target gate: the identity checks a smoke run against a deployed application must pass before any spec runs.
  *
- * The module is pure. It reads no process environment of its own and has no top-level side effect: the caller passes the environment, the target address and the repository root in. The expected Supabase ref and project id, and the one origin the contestant's credentials may be sent to, are read only from the committed tfvars of the dedicated project, so no input can name another target.
+ * The module is pure. It reads no process environment of its own and has no top-level side effect: the caller passes the environment, the target address and the repository root in. The deployment is chosen by its key, `SMOKE_DEPLOYMENT`, which defaults to `staging`. The expected Supabase ref and project id, the one origin the contestant's credentials may be sent to, and the target when `SMOKE_BASE_URL` is unset, are read only from the committed Supabase tfvars of that deployment, so no input can name a target its tfvars does not.
  */
 
-/** Path, relative to the repository root, of the committed tfvars that names the dedicated Supabase project. */
-export const DEDICATED_SUPABASE_TFVARS = 'infra/envs/staging/supabase/terraform.tfvars';
-
-/** The deployed application a smoke run targets when no other address is given. */
-export const DEFAULT_SMOKE_BASE_URL = 'https://staging.openvaa.org';
+/** The deployment a smoke run targets when `SMOKE_DEPLOYMENT` is unset or blank. */
+export const DEFAULT_SMOKE_DEPLOYMENT = 'staging';
 
 /** The name of the one Playwright project the deployed smoke configuration may hold. */
 export const SMOKE_PROJECT_NAME = 'deployed-smoke';
@@ -59,6 +56,50 @@ export type DedicatedTarget = {
 /** A fetched document: its status, its body and the URL that answered after any redirect, or the reason the request failed. */
 export type FetchedDocument = { status: number; body: string; url: string } | { error: string };
 
+/**
+ * Reads the key of the deployment a smoke run targets, `SMOKE_DEPLOYMENT`.
+ *
+ * @param env - The environment to read.
+ * @returns The trimmed key, or {@link DEFAULT_SMOKE_DEPLOYMENT} when the variable is unset or blank.
+ * @throws `SMOKE INPUT INVALID: SMOKE_DEPLOYMENT must be a deployment key …` unless the value is a lower-case letter followed by lower-case letters, digits and hyphens, at most 15 characters in all.
+ */
+export function readSmokeDeployment(env: GateEnv): string {
+  const value = (env.SMOKE_DEPLOYMENT ?? '').trim();
+  if (value === '') return DEFAULT_SMOKE_DEPLOYMENT;
+  if (!DEPLOYMENT_KEY_PATTERN.test(value) || value.length > DEPLOYMENT_KEY_MAX_LENGTH) {
+    throw new Error(
+      `SMOKE INPUT INVALID: SMOKE_DEPLOYMENT must be a deployment key of lower-case letters, digits and hyphens, at most ${DEPLOYMENT_KEY_MAX_LENGTH} characters, got ${JSON.stringify(value)}`
+    );
+  }
+  return value;
+}
+
+/**
+ * Names the committed tfvars of a deployment's Supabase project.
+ *
+ * @param key - The deployment key, as {@link readSmokeDeployment} returns it.
+ * @returns The path relative to the repository root, `infra/envs/<key>/supabase/terraform.tfvars`.
+ */
+export function dedicatedSupabaseTfvars(key: string): string {
+  return `infra/envs/${key}/supabase/terraform.tfvars`;
+}
+
+/**
+ * The address a smoke run targets.
+ *
+ * @param env - The environment to read: `SMOKE_BASE_URL` and `SMOKE_DEPLOYMENT`.
+ * @param repoRoot - The repository root, under which the deployment's tfvars is read.
+ * @returns `SMOKE_BASE_URL` when it is set and not blank, otherwise `public_origin` of the Supabase tfvars of the deployment `SMOKE_DEPLOYMENT` names.
+ * @throws When the deployment key is invalid, or when its tfvars is missing or names no https `public_origin`.
+ */
+export function smokeBaseUrl(env: GateEnv, repoRoot: string): string {
+  const deployment = readSmokeDeployment(env);
+  const baseURL = env.SMOKE_BASE_URL ?? '';
+  if (baseURL.trim() !== '') return baseURL;
+  const tfvarsPath = dedicatedSupabaseTfvars(deployment);
+  return readPublicOrigin(readDeploymentTfvars(repoRoot, tfvarsPath), tfvarsPath);
+}
+
 /** The outcome of one gate run. */
 export type GateResult = {
   /** Every check, in {@link GATE_CHECK_ORDER}. */
@@ -74,26 +115,29 @@ export type GateResult = {
 /**
  * Runs the gate against a deployed target.
  *
- * It reads the dedicated identity from {@link DEDICATED_SUPABASE_TFVARS} under `repoRoot`, requests `/api/health` and `/` of `baseURL` and evaluates every check. A refused connection or a timed-out request becomes a FAIL line for each check that needed it. A base URL that does not parse, or that carries user info, is not requested at all, and every check that needed it fails. It writes nothing and requests no other path.
+ * It reads the dedicated identity from the Supabase tfvars of `deployment` under `repoRoot`, requests `/api/health` and `/` of `baseURL` and evaluates every check. A refused connection or a timed-out request becomes a FAIL line for each check that needed it. A base URL that does not parse, or that carries user info, is not requested at all, and every check that needed it fails. It writes nothing and requests no other path.
  *
- * @param options - `env`, the environment to read; `baseURL`, the target; `repoRoot`, the repository root; `fetchImpl`, the fetch to use; `timeoutMs`, the timeout of each request.
+ * @param options - `env`, the environment to read; `baseURL`, the target; `repoRoot`, the repository root; `deployment`, the deployment key, by default the one `SMOKE_DEPLOYMENT` of `env` names; `fetchImpl`, the fetch to use; `timeoutMs`, the timeout of each request.
  * @returns The checks, their lines, the number of failures and the dedicated identity.
- * @throws When the tfvars cannot be read or does not name a valid identity.
+ * @throws When the deployment key is invalid, or when its tfvars cannot be read or does not name a valid identity.
  */
 export async function runDeployedGate({
   env,
   baseURL,
   repoRoot,
+  deployment = readSmokeDeployment(env),
   fetchImpl = globalThis.fetch,
   timeoutMs = 30_000
 }: {
   env: GateEnv;
   baseURL: string;
   repoRoot: string;
+  deployment?: string;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
 }): Promise<GateResult> {
-  const dedicated = readDedicatedTarget(fs.readFileSync(path.join(repoRoot, DEDICATED_SUPABASE_TFVARS), 'utf8'));
+  const tfvarsPath = dedicatedSupabaseTfvars(deployment);
+  const dedicated = readDedicatedTarget(readDeploymentTfvars(repoRoot, tfvarsPath), tfvarsPath);
   const { url } = readTarget(baseURL);
   const [health, page]: Array<FetchedDocument> =
     url === null
@@ -236,39 +280,39 @@ function projectIdCheck(page: FetchedDocument, dedicated: DedicatedTarget): Gate
 }
 
 /**
- * Reads the dedicated project's identity from the text of {@link DEDICATED_SUPABASE_TFVARS}.
+ * Reads the dedicated project's identity from the text of a deployment's Supabase tfvars.
  *
  * A key counts only on a line whose first non-blank characters are the key, followed by `=` and a double-quoted value; a commented-out line does not count.
  *
  * @param tfvarsText - The text of the tfvars file.
+ * @param tfvarsPath - The file's path relative to the repository root, named in every error.
  * @returns The project ref and the public project id.
  * @throws When either key is missing or repeated, when `project_ref` is not 20 lower-case letters, or when `public_project_id` is not a canonical lower-case uuid.
  */
-export function readDedicatedTarget(tfvarsText: string): DedicatedTarget {
-  const projectRef = readTfvarsValue(tfvarsText, 'project_ref');
-  const publicProjectId = readTfvarsValue(tfvarsText, 'public_project_id');
+export function readDedicatedTarget(tfvarsText: string, tfvarsPath: string): DedicatedTarget {
+  const projectRef = readTfvarsValue(tfvarsText, 'project_ref', tfvarsPath);
+  const publicProjectId = readTfvarsValue(tfvarsText, 'public_project_id', tfvarsPath);
   if (!PROJECT_REF_PATTERN.test(projectRef)) {
-    throw new Error(`project_ref in ${DEDICATED_SUPABASE_TFVARS} is not 20 lower-case letters: ${projectRef}`);
+    throw new Error(`project_ref in ${tfvarsPath} is not 20 lower-case letters: ${projectRef}`);
   }
   if (!CANONICAL_UUID_PATTERN.test(publicProjectId)) {
-    throw new Error(
-      `public_project_id in ${DEDICATED_SUPABASE_TFVARS} is not a canonical lower-case uuid: ${publicProjectId}`
-    );
+    throw new Error(`public_project_id in ${tfvarsPath} is not a canonical lower-case uuid: ${publicProjectId}`);
   }
   return { projectRef, publicProjectId };
 }
 
 /**
- * Reads the origin the dedicated deployment is served at from the text of {@link DEDICATED_SUPABASE_TFVARS}.
+ * Reads the origin a deployment is served at from the text of its Supabase tfvars.
  *
  * @param tfvarsText - The text of the tfvars file.
+ * @param tfvarsPath - The file's path relative to the repository root, named in every error.
  * @returns `public_origin`, an https origin.
  * @throws When the key is missing or repeated, or when its value is not `https://` followed by a host and an optional port alone.
  */
-export function readPublicOrigin(tfvarsText: string): string {
-  const publicOrigin = readTfvarsValue(tfvarsText, 'public_origin');
+export function readPublicOrigin(tfvarsText: string, tfvarsPath: string): string {
+  const publicOrigin = readTfvarsValue(tfvarsText, 'public_origin', tfvarsPath);
   if (!PUBLIC_ORIGIN_PATTERN.test(publicOrigin)) {
-    throw new Error(`public_origin in ${DEDICATED_SUPABASE_TFVARS} is not an https origin: ${publicOrigin}`);
+    throw new Error(`public_origin in ${tfvarsPath} is not an https origin: ${publicOrigin}`);
   }
   return new URL(publicOrigin).origin;
 }
@@ -361,15 +405,17 @@ export function gateTargetLine(baseURL: string): string {
  * The gate accepts any https target that serves the dedicated identity, which a proxy in front of that deployment can do too. The contestant spec therefore calls this before any page action.
  *
  * @param baseURL - The target the spec drives.
- * @param repoRoot - The repository root, under which {@link DEDICATED_SUPABASE_TFVARS} is read.
- * @throws `SMOKE TARGET REFUSED: …`, naming `public_origin` and the base URL's origin without its user info, unless the two origins are equal.
+ * @param repoRoot - The repository root, under which the deployment's Supabase tfvars is read.
+ * @param deployment - The deployment key, as {@link readSmokeDeployment} returns it.
+ * @throws `SMOKE TARGET REFUSED: …`, naming `public_origin`, its tfvars and the base URL's origin without its user info, unless the two origins are equal; or when the tfvars is missing or names no https `public_origin`.
  */
-export function requireCredentialOrigin(baseURL: string | undefined, repoRoot: string): void {
-  const publicOrigin = readPublicOrigin(fs.readFileSync(path.join(repoRoot, DEDICATED_SUPABASE_TFVARS), 'utf8'));
+export function requireCredentialOrigin(baseURL: string | undefined, repoRoot: string, deployment: string): void {
+  const tfvarsPath = dedicatedSupabaseTfvars(deployment);
+  const publicOrigin = readPublicOrigin(readDeploymentTfvars(repoRoot, tfvarsPath), tfvarsPath);
   const origin = baseURL === undefined ? '(none)' : (parseURL(baseURL)?.origin ?? '(not an absolute URL)');
   if (origin !== publicOrigin) {
     throw new Error(
-      `SMOKE TARGET REFUSED: the contestant's credentials are sent only to ${publicOrigin}, public_origin of ${DEDICATED_SUPABASE_TFVARS}; the base URL's origin is ${origin}`
+      `SMOKE TARGET REFUSED: the contestant's credentials are sent only to ${publicOrigin}, public_origin of ${tfvarsPath}; the base URL's origin is ${origin}`
     );
   }
 }
@@ -454,15 +500,24 @@ function escapeRegExp(value: string): string {
 }
 
 /** The single double-quoted value of `key` in the tfvars text, or a thrown Error naming the key and the file. */
-function readTfvarsValue(tfvarsText: string, key: string): string {
+function readTfvarsValue(tfvarsText: string, key: string, tfvarsPath: string): string {
   const pattern = new RegExp(`^[ \\t]*${escapeRegExp(key)}[ \\t]*=[ \\t]*"([^"]*)"`, 'gm');
   const values = [...tfvarsText.matchAll(pattern)].map((match) => match[1]);
   if (values.length !== 1) {
-    throw new Error(
-      `${key} must occur exactly once in ${DEDICATED_SUPABASE_TFVARS}, found ${values.length} occurrence(s)`
-    );
+    throw new Error(`${key} must occur exactly once in ${tfvarsPath}, found ${values.length} occurrence(s)`);
   }
   return values[0];
+}
+
+/** The text of a deployment's tfvars under `repoRoot`, or a thrown Error naming its path. */
+function readDeploymentTfvars(repoRoot: string, tfvarsPath: string): string {
+  try {
+    return fs.readFileSync(path.join(repoRoot, tfvarsPath), 'utf8');
+  } catch (error) {
+    throw new Error(`the deployment's Supabase tfvars ${tfvarsPath} cannot be read: ${describeRequestError(error)}`, {
+      cause: error
+    });
+  }
 }
 
 /** The parsed URL, or `null` when the value is not an absolute URL. */
@@ -524,6 +579,8 @@ async function fetchDocument(fetchImpl: typeof fetch, url: URL, timeoutMs: numbe
 }
 
 const SHA_PATTERN = /^[0-9a-f]{40}$/;
+const DEPLOYMENT_KEY_PATTERN = /^[a-z][a-z0-9-]*$/;
+const DEPLOYMENT_KEY_MAX_LENGTH = 15;
 const PROJECT_REF_PATTERN = /^[a-z]{20}$/;
 const CANONICAL_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const DNS_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
