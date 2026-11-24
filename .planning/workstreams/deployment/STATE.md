@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 190-02-PLAN.md
-last_updated: "2026-11-24T15:20:00.000Z"
+stopped_at: Completed 190-03-PLAN.md
+last_updated: "2026-11-24T15:25:00.000Z"
 last_activity: 2026-11-24
-last_activity_desc: 190-02 complete (deployment map and resolver)
+last_activity_desc: 190-03 complete (push-migrations --deployment, smoke gate keyed by SMOKE_DEPLOYMENT)
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 232
-  completed_plans: 220
+  completed_plans: 221
   percent: 91
 ---
 
@@ -33,9 +33,9 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 190 (Multi-deployment bootstrap) — EXECUTING
-Plan: 2 of 14 (190-01, 190-02 complete)
+Plan: 3 of 14 (190-01 to 190-03 complete)
 Status: In progress (branch planning/deployment-190, on 46554181e)
-Last activity: 2026-11-24 — 190-02 complete: deployments.auto.tfvars.json (staging), resolve-deployment.sh (51 tests); infra 608 passed / 6 baseline failed
+Last activity: 2026-11-24 — 190-03 complete: push-migrations.sh --deployment <key>, deployed smoke gate keyed by SMOKE_DEPLOYMENT (default staging); infra 620 passed / 6 baseline failed, tests 171 deployedTarget+guards
 
 Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
@@ -230,6 +230,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1 P10 | 30 min | 3 tasks | 2 files |
 | Phase 190 P01 | 20 min | 3 tasks | 3 files |
 | Phase 190 P02 | 15 min | 2 tasks | 4 files |
+| Phase 190 P03 | 10 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -510,6 +511,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 190]: 190-02: .gitignore tracks infra/bootstrap/deployments.auto.tfvars.json by one negation after *.auto.tfvars.json; every other auto-loaded variable file stays ignored
 - [Phase 190]: 190-02: resolve-deployment.sh destroy mode: a push matches only deploy-evidence/destroy-<owned key>, a dispatch matches as deploy mode; plan mode refuses --ref/--event; refusals go to stdout as one failed=<reason> line, ambiguity names the keys on stderr
 - [Phase 190]: 190-02: infra unit count after 190-02: 608 passed / 6 failed (the six baseline failures)
+- [Phase 190]: 190-03: push-migrations.sh --confirmed-ref requires --deployment <key> (key ^[a-z][a-z0-9-]*$, <=15 chars, infra/envs/<key>/supabase/terraform.tfvars present, its project_ref = --ref, OPENVAA_DEPLOY_ENVIRONMENT = key, GITHUB_REF = refs/heads/deploy/<key> or deploy-evidence/?*); the typed form validates a given key only. deploy.yml must pass --deployment (190-07): until then the confirmed form refuses with exit 2
+- [Phase 190]: 190-03: deployedTarget.ts exports DEFAULT_SMOKE_DEPLOYMENT='staging', readSmokeDeployment, dedicatedSupabaseTfvars, smokeBaseUrl; requireCredentialOrigin takes the key as a required third argument, runDeployedGate an optional deployment defaulting to readSmokeDeployment(env)
+- [Phase 190]: 190-03: infra unit count after 190-03: 620 passed / 6 failed (the six baseline failures); yarn lint:check red only on 11 comment-hygiene lines in resolve-deployment.sh (190-02), tests:unit:tests one host-only tcpForward timing failure; both in the phase's deferred-items.md
 - [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
 
 ### Pending Todos
@@ -579,6 +583,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T15:20:00.000Z
-**Stopped At:** Completed 190-02-PLAN.md
+Last session: 2026-11-24T15:25:00.000Z
+**Stopped At:** Completed 190-03-PLAN.md
 **Resume File:** None
