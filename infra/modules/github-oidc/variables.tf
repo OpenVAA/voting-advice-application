@@ -59,24 +59,22 @@ variable "deploy_subjects" {
 }
 
 variable "github_repository_id" {
-  description = "Numeric id of the GitHub repository. When set, both trust policies also require an exact match on the token's repository_id claim, which survives a rename."
+  description = "Numeric id of the GitHub repository. Required: both trust policies match the token's repository_id claim exactly, which survives a rename."
   type        = string
-  default     = null
 
   validation {
-    condition     = var.github_repository_id == null || can(regex("^[0-9]+$", var.github_repository_id))
-    error_message = "github_repository_id must be null or the repository's numeric id, digits only."
+    condition     = can(regex("^[0-9]+$", var.github_repository_id))
+    error_message = "github_repository_id must be the repository's numeric id, digits only."
   }
 }
 
 variable "github_repository_owner_id" {
-  description = "Numeric id of the GitHub repository's owner. When set, both trust policies also require an exact match on the token's repository_owner_id claim."
+  description = "Numeric id of the GitHub repository's owner. Required: both trust policies match the token's repository_owner_id claim exactly."
   type        = string
-  default     = null
 
   validation {
-    condition     = var.github_repository_owner_id == null || can(regex("^[0-9]+$", var.github_repository_owner_id))
-    error_message = "github_repository_owner_id must be null or the owner's numeric id, digits only."
+    condition     = can(regex("^[0-9]+$", var.github_repository_owner_id))
+    error_message = "github_repository_owner_id must be the owner's numeric id, digits only."
   }
 }
 

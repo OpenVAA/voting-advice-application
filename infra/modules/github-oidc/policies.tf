@@ -1,5 +1,5 @@
 # One customer-managed policy per concern, all under var.iam_path, each attached to one role by its own role attachment. The plan role is read-only: it holds the AWS-managed read-only policy and an explicit deny, and no write of any kind, the state lock included, so a plan runs without the lock. Two consequences for the roots these roles work on:
-# - The plan role is denied Secrets Manager reads, KMS decryption, every S3 object outside the state bucket's pipeline/ prefix, log event reads, DynamoDB item reads and a few other data reads (the plan_deny document lists them), so the root it plans must hold no secret value that a refresh has to read, and must read no S3 object outside pipeline/, log event or table item; such a root refers to a secret by its ARN. Every other read of the AWS-managed read-only policy stays allowed, data reads included: SSM String parameters, Lambda function and ECS task definition environments, and CloudFormation templates.
+# - The plan role is denied Secrets Manager reads, KMS decryption, every S3 object but its own deployment's pipeline state, log event reads, DynamoDB item reads and a few other data reads (the plan_deny document lists them), so the root it plans must hold no secret value that a refresh has to read, and must read no other S3 object, log event or table item; such a root refers to a secret by its ARN. Every other read of the AWS-managed read-only policy stays allowed, data reads included: SSM String parameters, Lambda function and ECS task definition environments, and CloudFormation templates.
 # - The deploy role gains further permissions only through this module, which is applied by hand, so the pipeline can never widen its own access.
 
 locals {
@@ -101,12 +101,12 @@ data "aws_iam_policy_document" "plan_deny" {
     resources = ["*"]
   }
 
-  # The AWS-managed read-only policy reads the objects of every bucket. A plan reads only the pipeline root's state, so no object outside the state bucket's pipeline/ prefix is readable.
+  # The AWS-managed read-only policy reads the objects of every bucket. A plan reads only its own deployment's pipeline state, so no other object is readable, another deployment's pipeline state included.
   statement {
     sid           = "DenyObjectReadsOutsidePipeline"
     effect        = "Deny"
     actions       = ["s3:GetObject", "s3:GetObjectVersion"]
-    not_resources = ["${var.state_bucket_arn}/pipeline/*"]
+    not_resources = [local.pipeline_state_arn]
   }
 
   # Reads of stored data that no refresh of a resource or data source makes: table items, log events, stream records and queue messages.

@@ -14,7 +14,7 @@ terraform {
 }
 
 # A trust policy is a role's resource policy, so it is outside the repository's rule against an inline policy. Every condition is an exact match on the subjects the caller gives, in either of GitHub's two subject forms. A name-based subject stops matching after a rename or transfer of the repository.
-# Setting github_repository_id and github_repository_owner_id adds conditions on the numeric ids, which survive a rename.
+# Both trusts also require the token's numeric repository and owner ids, which survive a rename.
 data "aws_iam_policy_document" "plan_trust" {
   statement {
     effect  = "Allow"
@@ -37,22 +37,16 @@ data "aws_iam_policy_document" "plan_trust" {
       values   = var.plan_subjects
     }
 
-    dynamic "condition" {
-      for_each = var.github_repository_id == null ? [] : [var.github_repository_id]
-      content {
-        test     = "StringEquals"
-        variable = "token.actions.githubusercontent.com:repository_id"
-        values   = [condition.value]
-      }
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:repository_id"
+      values   = [var.github_repository_id]
     }
 
-    dynamic "condition" {
-      for_each = var.github_repository_owner_id == null ? [] : [var.github_repository_owner_id]
-      content {
-        test     = "StringEquals"
-        variable = "token.actions.githubusercontent.com:repository_owner_id"
-        values   = [condition.value]
-      }
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:repository_owner_id"
+      values   = [var.github_repository_owner_id]
     }
   }
 }
@@ -79,22 +73,16 @@ data "aws_iam_policy_document" "deploy_trust" {
       values   = var.deploy_subjects
     }
 
-    dynamic "condition" {
-      for_each = var.github_repository_id == null ? [] : [var.github_repository_id]
-      content {
-        test     = "StringEquals"
-        variable = "token.actions.githubusercontent.com:repository_id"
-        values   = [condition.value]
-      }
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:repository_id"
+      values   = [var.github_repository_id]
     }
 
-    dynamic "condition" {
-      for_each = var.github_repository_owner_id == null ? [] : [var.github_repository_owner_id]
-      content {
-        test     = "StringEquals"
-        variable = "token.actions.githubusercontent.com:repository_owner_id"
-        values   = [condition.value]
-      }
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:repository_owner_id"
+      values   = [var.github_repository_owner_id]
     }
   }
 }

@@ -7,10 +7,11 @@ locals {
   # The prefix of every regional ARN below.
   regional = "${var.aws_region}:${var.aws_account_id}"
 
-  # The tags the root's providers set on every resource they create.
+  # The three tags the AWS root's providers set on every resource they create: Project, Root and the deployment's Environment, which keeps one deployment's role off another deployment's resources in the same account.
   root_tags = {
-    Project = "openvaa"
-    Root    = "aws"
+    Project     = "openvaa"
+    Root        = "aws"
+    Environment = var.environment
   }
 
   # The network resource types the root creates, by type.
