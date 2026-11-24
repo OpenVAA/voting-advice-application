@@ -6,16 +6,16 @@ current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
 current_plan: 7
 status: executing
-stopped_at: Completed 189.1.1-09-PLAN.md
-last_updated: "2026-11-24T15:19:12.554Z"
+stopped_at: Completed 189.1.1-10-PLAN.md
+last_updated: "2026-11-24T15:36:38.003Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 2e6b384552381e786a7527323420e1555677f5fb
+state_head: 961441dbb0fae2d864bed6a3fe3a58e948efc733
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 233
-  completed_plans: 225
+  completed_plans: 226
   percent: 83
 ---
 
@@ -236,6 +236,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P06 | 21min | 3 tasks | 8 files |
 | Phase 189.1.1 P08 | 52min | 3 tasks | 13 files |
 | Phase 189.1.1 P09 | 18min | 3 tasks | 9 files |
+| Phase 189.1.1 P10 | 15min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -522,6 +523,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-08: non-text contrast (SC 1.4.11) is asserted by a computed-style border measurement (tests/tests/utils/nonTextContrast.ts), since axe-core has no 1.4.11 rule
 - [Phase 189.1.1]: 189.1.1-09: the wrapper's absence is pinned by one hasnt_function check in pgTAP 59; the 07, 39c censuses count without it (sixteen, eight, twelve)
 - [Phase 189.1.1]: 189.1.1-09: WRAPPER_REFERENCES is five files: the manifest names migration 00005_drop_invitation_caller_take.sql
+- [Phase 189.1.1]: 189.1.1-10: the shutdown check's stub sends access-control-allow-origin: * and holds only the first request after the in-flight leg arms it; SvelteKit's server fetch refuses a cross-origin answer without the header, and holding every request kept GET / past SHUTDOWN_TIMEOUT
+- [Phase 189.1.1]: 189.1.1-10: the in-flight shutdown leg warms the server with one unsignalled GET / so the measured request is not the cold first render
 
 ### Pending Todos
 
@@ -596,6 +599,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T15:19:11.516Z
-**Stopped At:** Completed 189.1.1-09-PLAN.md
+Last session: 2026-11-24T15:36:36.756Z
+**Stopped At:** Completed 189.1.1-10-PLAN.md
 **Resume File:** None
