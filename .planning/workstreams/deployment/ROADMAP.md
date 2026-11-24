@@ -1060,7 +1060,7 @@ Plans:
 - [ ] 190-11-PLAN.md — The runbook steps, then the operator's apply 1 (move) and apply 2 (tightening), each through the guard.
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 190-08-PLAN.md — deploy.yml and destroy.yml stage values from the resolve outputs; no staging literal left.
+- [x] 190-08-PLAN.md — deploy.yml and destroy.yml stage values from the resolve outputs; no staging literal left.
 
 **Wave 6** *(blocked on Wave 5 completion)*
 - [ ] 190-09-PLAN.md — infra-plan.yml over the owned deployments, its push trigger excluding destroy branches; no literal role ARN in any workflow.
