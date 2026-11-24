@@ -3,17 +3,18 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
+current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
 current_plan: 10
 status: Phase 189.1.1 inserted, not planned yet
 stopped_at: Phase 189.1 complete — all phases complete
-last_updated: "2026-11-24T06:57:43.913Z"
+last_updated: "2026-11-24T11:32:46.889Z"
 last_activity: 2026-11-23
 last_activity_desc: Phase 189.1 complete
-state_head: 87da21e701621f60c2cf3de4036f2c664a9b92e2
+state_head: 63d3cd7d2e7f1addb8a910e5b614a50111a36de5
 progress:
   total_phases: 12
   completed_phases: 10
-  total_plans: 218
+  total_plans: 233
   completed_plans: 218
   percent: 83
 ---
@@ -32,7 +33,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189.1.1
+Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — READY TO EXECUTE
 Plan: Not started
 Status: Phase 189.1.1 inserted, not planned yet
 Last activity: 2026-11-23 - Completed quick task 261123-qht: make "contact support" a link in the locked-name message

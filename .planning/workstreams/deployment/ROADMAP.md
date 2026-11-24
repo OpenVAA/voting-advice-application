@@ -903,18 +903,39 @@ Plans:
 **Plans:** 15 plans
 
 Plans:
+**Wave 1**
 - [ ] 189.1.1-01-PLAN.md — six requirement ids, coverage counts, install state and the phase-start E2E baseline (wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 189.1.1-02-PLAN.md — ModalContainer Escape closes the topmost modal only; voter smoke on the results fixture (wave 2)
 - [ ] 189.1.1-03-PLAN.md — Supabase root CA from the dashboard, pinned; TLS red/green legs; channel binding and hosted history read (wave 2, operator sitting)
 - [ ] 189.1.1-04-PLAN.md — stop-timeout precondition; Supabase provider locks agree with the pins (wave 2)
 - [ ] 189.1.1-05-PLAN.md — relay legal reviewer brief; 189.1 VALIDATION reconciled (wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 189.1.1-06-PLAN.md — consent prompt as a modal, every dismissal declines; unit pins and E2E (wave 3)
 - [ ] 189.1.1-07-PLAN.md — verify-full on the migrations and settings steps, guard and mutations (wave 3)
+
+**Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 189.1.1-08-PLAN.md — dark-mode checkbox contrast and start-aligned inputs; two UAT todos closed (wave 4)
+
+**Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 189.1.1-09-PLAN.md — migration 00005 drops invitation_caller_take (wave 5)
+
+**Wave 6** *(blocked on Wave 5 completion)*
 - [ ] 189.1.1-10-PLAN.md — exit-after-drain check in CI; settings check names a missing table (wave 6)
+
+**Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 189.1.1-11-PLAN.md — one observed full main.yaml run through ci-evidence/** (wave 7, operator approval)
+
+**Wave 8** *(blocked on Wave 7 completion)*
 - [ ] 189.1.1-12-PLAN.md — staging database rebuilt to 00004 per D-16 (wave 8, operator decision and sitting)
+
+**Wave 9** *(blocked on Wave 8 completion)*
 - [ ] 189.1.1-13-PLAN.md — observed deploy: 00005 and the renamed functions over verify-full, modal prompt smoke (wave 9, operator approval)
+
+**Wave 10** *(blocked on Wave 9 completion)*
 - [ ] 189.1.1-14-PLAN.md — staging re-measure of the consent prompt; consent todo closed (wave 10)
+
+**Wave 11** *(blocked on Wave 10 completion)*
 - [ ] 189.1.1-15-PLAN.md — requirement trace, closing gates, the phase's full E2E run (wave 11)
