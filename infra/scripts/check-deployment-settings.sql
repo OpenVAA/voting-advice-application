@@ -1,6 +1,6 @@
 -- Deployment settings check: does this database trust cf-connecting-ip?
 --
--- It reads the one row of private.deployment_settings. Unless its `behind_cloudflare` is true, public.access_caller_take admits every call, so the per-caller limit of account-access does nothing, and the feedback trigger check_feedback_rate_limit keys its limit on the last `x-forwarded-for` hop, which on hosted Supabase can be a platform address that many callers share. This check fails when the row is absent or the setting is not true, and names the remedy.
+-- It reads the one row of private.deployment_settings. Unless its `behind_cloudflare` is true, public.access_caller_take admits every call, so the per-caller limit of account-access does nothing, and the feedback trigger check_feedback_rate_limit keys its limit on the last `x-forwarded-for` hop, which on hosted Supabase can be a platform address that many callers share. This check fails when the table or its row is absent or the setting is not true, and names the remedy.
 --
 -- It reads and never writes, and it prints no connection value.
 --
@@ -21,6 +21,10 @@ DECLARE
   rows_found bigint;
   trusted boolean;
 BEGIN
+  IF to_regclass('private.deployment_settings') IS NULL THEN
+    RAISE EXCEPTION 'check-deployment-settings: private.deployment_settings does not exist; apply the migrations, then run infra/scripts/bootstrap.sql with BOOTSTRAP_BEHIND_CLOUDFLARE=true';
+  END IF;
+
   SELECT count(*), bool_and(behind_cloudflare)
   INTO rows_found, trusted
   FROM private.deployment_settings;
