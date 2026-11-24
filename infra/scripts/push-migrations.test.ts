@@ -32,6 +32,8 @@ const CLI_LIB = join(HERE, '../../scripts/lib/cli.sh');
 const PROJECT_REF = 'abcdefghijklmnopqrst';
 const POOLER_HOST = 'aws-0-test.pooler.supabase.com';
 const STAND_IN_PASSWORD = 'stand-in-password';
+/** The project ref of a second deployment, `other`, in the throwaway root. */
+const OTHER_PROJECT_REF = 'qrstuvwxyzabcdefghij';
 
 const STUB_CLI = `#!/usr/bin/env bash
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -67,7 +69,16 @@ afterEach(() => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
-function makeRoot(): string {
+/** Writes a deployment's Supabase tfvars under a throwaway root, holding only the line the script reads. */
+function writeDeploymentTfvars(root: string, key: string, projectRef: string): void {
+  mkdirSync(join(root, 'infra/envs', key, 'supabase'), { recursive: true });
+  writeFileSync(
+    join(root, 'infra/envs', key, 'supabase/terraform.tfvars'),
+    `public_origin = "https://${key}.example.org"\n\nproject_ref     = "${projectRef}"\nregion          = "eu-north-1"\n`
+  );
+}
+
+function makeRoot(linkedRef: string = PROJECT_REF): string {
   const root = mkdtempSync(join(tmpdir(), 'push-migrations-test-'));
   roots.push(root);
   mkdirSync(join(root, 'infra/scripts'), { recursive: true });
@@ -82,13 +93,19 @@ function makeRoot(): string {
   chmodSync(join(root, 'node_modules/.bin/supabase'), 0o755);
   mkdirSync(join(root, 'work/supabase/migrations'), { recursive: true });
   mkdirSync(join(root, 'work/supabase/.temp'), { recursive: true });
-  writeFileSync(join(root, 'work/supabase/.temp/project-ref'), `${PROJECT_REF}\n`);
+  writeFileSync(join(root, 'work/supabase/.temp/project-ref'), `${linkedRef}\n`);
+  writeDeploymentTfvars(root, 'staging', PROJECT_REF);
+  writeDeploymentTfvars(root, 'other', OTHER_PROJECT_REF);
   writeFileSync(join(root, 'cli.log'), '');
   return root;
 }
 
-function run(args: Array<string>, caseEnv: Record<string, string> = {}): Promise<RunResult> {
-  const root = makeRoot();
+function run(
+  args: Array<string>,
+  caseEnv: Record<string, string> = {},
+  linkedRef: string = PROJECT_REF
+): Promise<RunResult> {
+  const root = makeRoot(linkedRef);
   return new Promise((resolvePromise, reject) => {
     const child = spawn(
       'bash',
@@ -128,7 +145,31 @@ const PIPELINE_ENV = {
   OPENVAA_DEPLOY_ENVIRONMENT: 'staging',
   GITHUB_REF: 'refs/heads/deploy/staging'
 };
-const CONFIRMED = ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref', PROJECT_REF];
+const CONFIRMED = [
+  '--ref',
+  PROJECT_REF,
+  '--workdir',
+  'work',
+  '--confirmed-ref',
+  PROJECT_REF,
+  '--deployment',
+  'staging'
+];
+const OTHER_PIPELINE_ENV = {
+  GITHUB_ACTIONS: 'true',
+  OPENVAA_DEPLOY_ENVIRONMENT: 'other',
+  GITHUB_REF: 'refs/heads/deploy/other'
+};
+const OTHER_CONFIRMED = [
+  '--ref',
+  OTHER_PROJECT_REF,
+  '--workdir',
+  'work',
+  '--confirmed-ref',
+  OTHER_PROJECT_REF,
+  '--deployment',
+  'other'
+];
 
 /** `text` with every regular-expression metacharacter escaped. */
 function escapeRegExp(text: string): string {
@@ -188,7 +229,7 @@ describe('push-migrations.sh --confirmed-ref', () => {
 
   it('refuses a confirmed ref that differs from --ref before the CLI runs', async () => {
     const { status, stderr, cliLog } = await run(
-      ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref', 'abcdefghijklmnopqrsu'],
+      ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref', 'abcdefghijklmnopqrsu', '--deployment', 'staging'],
       PIPELINE_ENV
     );
     expect(stderr).toMatch(/FATAL -- --confirmed-ref .* is not --ref/);
@@ -250,13 +291,102 @@ describe('push-migrations.sh --confirmed-ref', () => {
 
   it('exits 2 when --confirmed-ref has no value', async () => {
     const { status, stderr, cliLog } = await run(
-      ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref'],
+      ['--ref', PROJECT_REF, '--workdir', 'work', '--deployment', 'staging', '--confirmed-ref'],
       PIPELINE_ENV
     );
     expect(stderr).toContain('--confirmed-ref requires a value');
     expect(cliLog).toBe('');
     expect(status).toBe(2);
   }, 60_000);
+});
+
+describe('push-migrations.sh --deployment', () => {
+  it('pushes without a terminal for a second deployment whose tfvars, environment and branch agree', async () => {
+    const { status, stdout, cliLog } = await run(OTHER_CONFIRMED, OTHER_PIPELINE_ENV, OTHER_PROJECT_REF);
+    expect(stdout.split('\n')).toContain('push_confirmation=environment');
+    expect(cliLog).toMatch(/^db push --linked --yes /m);
+    expect(status).toBe(0);
+  }, 60_000);
+
+  it('refuses the confirmed form without --deployment before the CLI runs', async () => {
+    const { status, stderr, cliLog } = await run(
+      ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref', PROJECT_REF],
+      PIPELINE_ENV
+    );
+    expect(stderr).toContain('--confirmed-ref requires --deployment');
+    expect(cliLog).toBe('');
+    expect(status).toBe(2);
+  }, 60_000);
+
+  it.each([
+    ['Bad_Key', 'lower-case letters'],
+    ['abcdefghijklmnop', 'at most 15 characters'],
+    ['missing', 'infra/envs/missing/supabase/terraform.tfvars']
+  ])(
+    'refuses --deployment %j in the confirmed form before the CLI runs',
+    async (key, fragment) => {
+      const { status, stderr, cliLog } = await run(
+        ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref', PROJECT_REF, '--deployment', key],
+        { ...PIPELINE_ENV, OPENVAA_DEPLOY_ENVIRONMENT: key }
+      );
+      expect(stderr).toContain(fragment);
+      expect(cliLog).toBe('');
+      expect(status).toBe(2);
+    },
+    60_000
+  );
+
+  it.each([['Bad_Key'], ['abcdefghijklmnop'], ['missing']])(
+    'refuses --deployment %j in the typed form too, so a typo is never ignored',
+    async (key) => {
+      const { status, stderr, cliLog } = await run(['--ref', PROJECT_REF, '--workdir', 'work', '--deployment', key]);
+      expect(stderr).toMatch(/FATAL -- .*--deployment/);
+      expect(cliLog).toBe('');
+      expect(status).toBe(2);
+    },
+    60_000
+  );
+
+  it('refuses a job whose environment is not the deployment before the CLI runs', async () => {
+    const { status, stderr, cliLog } = await run(
+      OTHER_CONFIRMED,
+      { ...OTHER_PIPELINE_ENV, OPENVAA_DEPLOY_ENVIRONMENT: 'staging' },
+      OTHER_PROJECT_REF
+    );
+    expect(stderr).toMatch(/FATAL -- .*OPENVAA_DEPLOY_ENVIRONMENT is 'staging'/);
+    expect(cliLog).toBe('');
+    expect(status).toBe(2);
+  }, 60_000);
+
+  it("refuses another deployment's deploy branch before the CLI runs", async () => {
+    const { status, stderr, cliLog } = await run(
+      OTHER_CONFIRMED,
+      { ...OTHER_PIPELINE_ENV, GITHUB_REF: 'refs/heads/deploy/staging' },
+      OTHER_PROJECT_REF
+    );
+    expect(stderr).toMatch(/FATAL -- .*refs\/heads\/deploy\/other.*GITHUB_REF is 'refs\/heads\/deploy\/staging'/);
+    expect(cliLog).toBe('');
+    expect(status).toBe(2);
+  }, 60_000);
+
+  it("refuses a --ref that is not the deployment's project_ref before the CLI runs", async () => {
+    const { status, stderr, cliLog } = await run(
+      ['--ref', PROJECT_REF, '--workdir', 'work', '--confirmed-ref', PROJECT_REF, '--deployment', 'other'],
+      OTHER_PIPELINE_ENV
+    );
+    expect(stderr).toContain(OTHER_PROJECT_REF);
+    expect(stderr).toContain('project_ref');
+    expect(cliLog).toBe('');
+    expect(status).toBe(2);
+  }, 60_000);
+
+  it('names --deployment in its help, and names no single environment as the only one', () => {
+    const result = spawnSync('bash', [SCRIPT, '--help'], { encoding: 'utf8' });
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/^#\s*--deployment <key>/m);
+    expect(result.stdout).not.toContain('OPENVAA_DEPLOY_ENVIRONMENT=staging');
+    expect(result.stdout).not.toContain('refs/heads/deploy/staging');
+  });
 });
 
 /**
