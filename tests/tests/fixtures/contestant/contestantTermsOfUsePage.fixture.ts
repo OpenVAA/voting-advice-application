@@ -6,6 +6,7 @@
  * Surface:
  *  - accept()                — toggle the terms-checkbox (no submit click).
  *  - getSubmit(): Locator    — return the terms-of-use-submit Locator.
+ *  - getCheckbox(): Locator  — return the terms-checkbox Locator, for a measurement of the box itself.
  *  - acceptAndAdvance()      — composed: accept() + getSubmit().click().
  *  - open()                  — navigate to the app root and wait until the view has hydrated.
  *  - expectShown()           — the view is shown, wherever the user is.
@@ -22,6 +23,7 @@
  *  - tickTrackingOptOut()                 — check the box.
  *  - toggleTrackingOptOutByKeyboard()     — reach the box with Tab from the terms-checkbox and press Space.
  *  - isTrackingOptOutTicked(): boolean    — whether the box is ticked.
+ *  - getTrackingOptOut(): Locator         — return the box's Locator, for a measurement of the box itself.
  *  - expectTrackingOptOutInsideViewport() — the whole box lies inside the viewport.
  *  - expectUsageDataInTerms()             — open the terms text and assert the heading of its usage-data section.
  *
@@ -58,6 +60,13 @@ export function createContestantTermsOfUsePage(page: Page) {
      */
     getSubmit(): Locator {
       return page.getByTestId(testIds.contestant.terms.submit);
+    },
+
+    /**
+     * Return the terms-checkbox Locator, for a measurement of the box itself, such as its border contrast.
+     */
+    getCheckbox(): Locator {
+      return page.getByTestId(testIds.contestant.terms.checkbox);
     },
 
     /**
@@ -171,6 +180,13 @@ export function createContestantTermsOfUsePage(page: Page) {
      */
     async isTrackingOptOutTicked(): Promise<boolean> {
       return page.getByTestId(testIds.contestant.terms.trackingOptOut).isChecked();
+    },
+
+    /**
+     * Return the opt-out box's Locator, for a measurement of the box itself, such as its border contrast.
+     */
+    getTrackingOptOut(): Locator {
+      return page.getByTestId(testIds.contestant.terms.trackingOptOut);
     },
 
     /**

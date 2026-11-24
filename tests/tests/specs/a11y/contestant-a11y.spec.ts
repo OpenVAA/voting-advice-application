@@ -95,6 +95,7 @@ import { createContestantPasswordResetPage } from '../../fixtures/contestant/con
 import { createContestantPasswordSetter } from '../../fixtures/contestant/contestantPasswordSetter.fixture';
 import { createContestantQuestionsOverviewPage } from '../../fixtures/contestant/contestantQuestionsOverviewPage.fixture';
 import { createContestantSetPasswordGate } from '../../fixtures/contestant/contestantSetPasswordGate.fixture';
+import { createContestantTermsOfUsePage } from '../../fixtures/contestant/contestantTermsOfUsePage.fixture';
 import { createInvitationFlow } from '../../fixtures/shared/invitationFlow.fixture';
 import { createNavMenu } from '../../fixtures/shared/navMenu.fixture';
 import { TIMEOUTS } from '../../helpers';
@@ -102,6 +103,7 @@ import { declareScans } from '../../utils/contestantAxeScan';
 import { contestantHomeUrlRe, contestantUrlRe } from '../../utils/contestantEntityUrl';
 import { declareEntryScans } from '../../utils/entryAxeScan';
 import { CONTESTANT_A11Y_SCAN_ADDRESS_PREFIX } from '../../utils/invitationConstants';
+import { measureBorderContrastInSchemes, NON_TEXT_CONTRAST_MINIMUM } from '../../utils/nonTextContrast';
 import { SupabaseAdminClient } from '../../utils/supabaseAdminClient';
 import {
   MULTI_ENTITY_STORAGE_STATE,
@@ -470,6 +472,25 @@ test.describe(() => {
   for (const entry of TERMS_PENDING_AXE_ROUTES) {
     declareScans(entry);
   }
+
+  // axe has no rule for non-text contrast (SC 1.4.11), so a box whose border cannot be seen passes the scans above; its border is measured instead.
+  test('the unchecked terms checkbox has a border of at least 3:1 contrast in the light and the dark theme', async ({
+    page
+  }, testInfo) => {
+    const termsPage = createContestantTermsOfUsePage(page);
+    const ratios = await measureBorderContrastInSchemes(page, async () => {
+      await termsPage.open();
+      await expect(termsPage.getCheckbox()).not.toBeChecked();
+      return termsPage.getCheckbox();
+    });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      testInfo.annotations.push({ type: 'border-contrast', description: `${scheme}=${ratio.toFixed(2)}` });
+    for (const [scheme, ratio] of Object.entries(ratios))
+      expect(
+        ratio,
+        `the border contrast of the unchecked terms checkbox in the ${scheme} theme`
+      ).toBeGreaterThanOrEqual(NON_TEXT_CONTRAST_MINIMUM);
+  });
 });
 
 // The session is scoped here for the same reason: the selection screen and the switch item exist only for a user who edits several entities, and the project's user edits one. The scans read this session and leave it as it is: every reader of the run loads the same file.
