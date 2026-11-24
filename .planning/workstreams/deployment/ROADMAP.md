@@ -82,6 +82,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 - [x] **Phase 188: Relay on the Deployed Stack, and the Per-Caller Limit** - Events from staging arrive in PostHog EU as anonymous events, the stack's capacity is measured, and the per-caller limit is built or deferred on the evidence (RELAY-04, RELAY-09, OBS-09, OBS-11) (completed 2026-11-20)
 - [x] **Phase 189: Documentation and Closure** - The documentation follows the Terraform path, every statement about a hosted project is a dated observation, and the absorbed todos are closed on the record (DOCS-01 to DOCS-08) (completed 2026-11-21)
 - [x] **Phase 189.1: Address tech debt: invitation-limit guard and trackEvents smoke** (completed 2026-11-22)
+- [ ] **Phase 189.1.1: Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit**
 
 ## Phase Details
 
@@ -888,3 +889,18 @@ Plans:
 - [x] 189.1-08-PLAN.md
 - [x] 189.1-09-PLAN.md
 - [x] 189.1-10-PLAN.md
+
+### Phase 189.1.1: Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit (INSERTED)
+
+**Goal:** Close the actionable tech debt of the 2026-11-23 re-audit (`v2.17-MILESTONE-AUDIT.md`) and 189.1's UAT todos: the voter consent prompt becomes a modal that no longer covers an answer choice (Escape declines), the `migrations` and `settings` deploy steps connect with `verify-full` against the Supabase CA, a reviewer brief for the relay's legal position is written, and the small audit items of 189.1.1-CONTEXT.md D-14 are fixed.
+**Requirements**: TBD
+**Depends on:** Phase 189.1
+**Success Criteria** (what must be TRUE):
+  1. With the consent prompt shown, the page under it is inert (`dialog:modal`), no answer choice can be focused or clicked, Escape closes it as a decline with nothing beyond the pageview sent, and a navigation with it open runs no named View Transition; the staging re-measurement reads `A11Y_FINDING=none`.
+  2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
+  3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
+  4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 189.1.1 to break down)

@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: "189.1"
+current_phase: 189.1.1
 current_plan: 10
-status: completed
+status: Phase 189.1.1 inserted, not planned yet
 stopped_at: Phase 189.1 complete — all phases complete
-last_updated: "2026-11-23T17:44:44.855Z"
+last_updated: "2026-11-24T06:57:43.913Z"
 last_activity: 2026-11-23
 last_activity_desc: Phase 189.1 complete
-state_head: 86022676a2d0f8ce915758b612141051c5704fad
+state_head: 87da21e701621f60c2cf3de4036f2c664a9b92e2
 progress:
-  total_phases: 11
+  total_phases: 12
   completed_phases: 10
   total_plans: 218
   completed_plans: 218
-  percent: 91
+  percent: 83
 ---
 
 # Project State
@@ -32,12 +32,12 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189.1
+Phase: 189.1.1
 Plan: Not started
-Status: All phases complete
+Status: Phase 189.1.1 inserted, not planned yet
 Last activity: 2026-11-23 - Completed quick task 261123-qht: make "contact support" a link in the locked-name message
 
-Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
+Progress: [██████████████████░░] 168/188 plans ([████████░░] 83%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
@@ -567,6 +567,7 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 - Phase 181.1 scope-added: Scope added: vendor Supabase agent skills (supabase, supabase-postgres-best-practices from github.com/supabase/agent-skills v0.1.9) into .claude/skills/, pinned and reviewed, reconciled with the project's database skill
 - Phase 181.1 decided 2026-10-18: nothing from Supabase Select 2026 is adopted in v2.17, and pg-delta, the native per-worktree stack and config as code go to todos; the Supabase agent skills are installed per user and are not vendored, an operator ruling (181.1 D-09) that supersedes the "vendor … into .claude/skills/" wording of the scope-added line above; see 181.1-CONTEXT.md
 - Phase 189.1 inserted after Phase 189: Address tech debt: invitation-limit guard and trackEvents smoke (URGENT)
+- Phase 189.1.1 inserted after Phase 189.1: Address tech debt: the consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; UAT todos (3); 20 items from the 2026-11-21 audit (URGENT)
 
 ## Deferred Items
 
