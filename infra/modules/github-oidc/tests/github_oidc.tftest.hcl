@@ -14,6 +14,8 @@ provider "aws" {
 
 variables {
   name_prefix                 = "openvaa"
+  iam_name_prefix             = "openvaa"
+  oidc_provider_arn           = "arn:aws:iam::000000000000:oidc-provider/token.actions.githubusercontent.com"
   environment                 = "staging"
   plan_subjects               = ["repo:OpenVAA/voting-advice-application:pull_request"]
   deploy_subjects             = ["repo:OpenVAA/voting-advice-application:environment:staging"]
@@ -409,5 +411,65 @@ run "plan_deny_object_reads" {
       ]
     ]) == 1
     error_message = "The plan deny must still refuse the hand-applied and workspace state keys by name."
+  }
+}
+
+run "staging_names_unchanged" {
+  command = plan
+
+  assert {
+    condition     = aws_iam_role.plan.name == "openvaa-plan" && aws_iam_role.deploy.name == "openvaa-staging-deploy"
+    error_message = "The roles must be named openvaa-plan and openvaa-staging-deploy for staging."
+  }
+
+  assert {
+    condition = output.policy_names == {
+      tfstate_pipeline      = "openvaa-tfstate-staging-aws"
+      ecr_push              = "openvaa-ecr-push"
+      plan_deny             = "openvaa-plan-deny"
+      deploy_alert          = "openvaa-deploy-alert"
+      deploy_network        = "openvaa-deploy-network"
+      deploy_load_balancing = "openvaa-deploy-load-balancing"
+      deploy_ecs            = "openvaa-deploy-ecs"
+      deploy_pass_role      = "openvaa-deploy-pass-role"
+      deploy_edge           = "openvaa-deploy-edge"
+      deploy_dns            = "openvaa-deploy-dns"
+      deploy_observability  = "openvaa-deploy-observability"
+      deploy_scaling        = "openvaa-deploy-scaling"
+    }
+    error_message = "Every policy must keep staging's name."
+  }
+
+  assert {
+    condition     = aws_iam_policy.deploy_dns.description == "Change the frontend's A, AAAA and CNAME records in the staging zone, and no other record."
+    error_message = "The DNS policy must keep staging's description."
+  }
+}
+
+run "second_prefix_names" {
+  command = plan
+
+  variables {
+    environment                 = "nuorten-2027"
+    iam_name_prefix             = "openvaa-nuorten-2027"
+    pipeline_state_key          = "pipeline/nuorten-2027/aws/terraform.tfstate"
+    frontend_execution_role_arn = "arn:aws:iam::000000000000:role/openvaa/openvaa-nuorten-2027-frontend-execution"
+  }
+
+  assert {
+    condition     = aws_iam_role.plan.name == "openvaa-nuorten-2027-plan"
+    error_message = "The plan role must take the deployment's IAM prefix."
+  }
+
+  assert {
+    condition = alltrue([
+      for k, n in output.policy_names : startswith(n, "openvaa-nuorten-2027-deploy-") if startswith(k, "deploy_")
+    ])
+    error_message = "Every deploy policy must take the deployment's IAM prefix."
+  }
+
+  assert {
+    condition     = strcontains(aws_iam_policy.deploy_dns.description, "in the nuorten-2027 zone")
+    error_message = "The DNS policy's description must name the deployment's zone."
   }
 }

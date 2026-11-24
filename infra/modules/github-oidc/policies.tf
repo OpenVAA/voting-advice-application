@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "ecr_push" {
 }
 
 resource "aws_iam_policy" "ecr_push" {
-  name        = "${var.name_prefix}-ecr-push"
+  name        = "${var.iam_name_prefix}-ecr-push"
   path        = var.iam_path
   description = "Push images to the one image repository."
   policy      = data.aws_iam_policy_document.ecr_push.json
@@ -135,7 +135,7 @@ data "aws_iam_policy_document" "plan_deny" {
 }
 
 resource "aws_iam_policy" "plan_deny" {
-  name        = "${var.name_prefix}-plan-deny"
+  name        = "${var.iam_name_prefix}-plan-deny"
   path        = var.iam_path
   description = "Explicit deny for the plan role: the state of hand-applied roots, Secrets Manager reads, KMS decryption, and DynamoDB, log, stream and queue data reads."
   policy      = data.aws_iam_policy_document.plan_deny.json

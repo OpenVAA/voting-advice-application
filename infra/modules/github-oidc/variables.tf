@@ -1,6 +1,26 @@
 variable "name_prefix" {
-  description = "Prefix of every role and policy name the module creates."
+  description = "Prefix of the deploy role's name, of its state policy's name, and of the frontend resource names the deploy policies are scoped to."
   type        = string
+}
+
+variable "iam_name_prefix" {
+  description = "Prefix of the plan role's name and of the names of the push, plan-deny and deploy-concern policies. Each deployment in one account needs its own, so that no two deployments' names collide."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]*$", var.iam_name_prefix))
+    error_message = "iam_name_prefix must start with a lower-case letter and hold only lower-case letters, digits and hyphens."
+  }
+}
+
+variable "oidc_provider_arn" {
+  description = "ARN of the account's GitHub OIDC provider, the output of the account's github-oidc-provider call. Both trust policies name it as their federated principal."
+  type        = string
+
+  validation {
+    condition     = can(regex("^arn:aws:iam::[0-9]{12}:oidc-provider/token\\.actions\\.githubusercontent\\.com$", var.oidc_provider_arn))
+    error_message = "oidc_provider_arn must be the ARN of the GitHub OIDC provider of an AWS account, arn:aws:iam::<account>:oidc-provider/token.actions.githubusercontent.com."
+  }
 }
 
 variable "iam_path" {

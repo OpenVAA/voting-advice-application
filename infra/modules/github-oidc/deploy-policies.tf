@@ -1,4 +1,4 @@
-# The deploy role's permissions for the one root the pipeline applies: one customer-managed policy per concern, under var.iam_path, each attached to the deploy role by its own role attachment. The resource names are derived from name_prefix and environment exactly as the frontend-service module derives them, so every scope below names that module's resources and nothing else.
+# The deploy role's permissions for the one root the pipeline applies: one customer-managed policy per concern, under var.iam_path, each attached to the deploy role by its own role attachment. The resource names are derived from name_prefix and environment exactly as the frontend-service module derives them, so every scope below names that module's resources and nothing else. The policies' own names take iam_name_prefix.
 
 locals {
   frontend_name     = "${var.name_prefix}-${var.environment}"
@@ -57,7 +57,7 @@ data "aws_iam_policy_document" "deploy_alert" {
 }
 
 resource "aws_iam_policy" "deploy_alert" {
-  name        = "${var.name_prefix}-deploy-alert"
+  name        = "${var.iam_name_prefix}-deploy-alert"
   path        = var.iam_path
   description = "Publish the pipeline's failure alert to the deployment topic."
   policy      = data.aws_iam_policy_document.deploy_alert.json
@@ -215,7 +215,7 @@ data "aws_iam_policy_document" "deploy_network" {
 }
 
 resource "aws_iam_policy" "deploy_network" {
-  name        = "${var.name_prefix}-deploy-network"
+  name        = "${var.iam_name_prefix}-deploy-network"
   path        = var.iam_path
   description = "Create, change and delete the pipeline root's tagged VPC, subnets, routes, gateway and security groups."
   policy      = data.aws_iam_policy_document.deploy_network.json
@@ -287,7 +287,7 @@ data "aws_iam_policy_document" "deploy_load_balancing" {
 }
 
 resource "aws_iam_policy" "deploy_load_balancing" {
-  name        = "${var.name_prefix}-deploy-load-balancing"
+  name        = "${var.iam_name_prefix}-deploy-load-balancing"
   path        = var.iam_path
   description = "Create, change and delete the pipeline root's load balancer, target group, listeners and listener rules."
   policy      = data.aws_iam_policy_document.deploy_load_balancing.json
@@ -337,7 +337,7 @@ data "aws_iam_policy_document" "deploy_ecs" {
 }
 
 resource "aws_iam_policy" "deploy_ecs" {
-  name        = "${var.name_prefix}-deploy-ecs"
+  name        = "${var.iam_name_prefix}-deploy-ecs"
   path        = var.iam_path
   description = "Register the frontend's task definitions and create, change and delete its ECS cluster and service."
   policy      = data.aws_iam_policy_document.deploy_ecs.json
@@ -365,7 +365,7 @@ data "aws_iam_policy_document" "deploy_pass_role" {
 }
 
 resource "aws_iam_policy" "deploy_pass_role" {
-  name        = "${var.name_prefix}-deploy-pass-role"
+  name        = "${var.iam_name_prefix}-deploy-pass-role"
   path        = var.iam_path
   description = "Pass the frontend's execution role to ECS tasks, and no other role to any service."
   policy      = data.aws_iam_policy_document.deploy_pass_role.json
@@ -495,7 +495,7 @@ data "aws_iam_policy_document" "deploy_edge" {
 }
 
 resource "aws_iam_policy" "deploy_edge" {
-  name        = "${var.name_prefix}-deploy-edge"
+  name        = "${var.iam_name_prefix}-deploy-edge"
   path        = var.iam_path
   description = "Create, change and delete the pipeline root's tagged CloudFront distribution and certificates."
   policy      = data.aws_iam_policy_document.deploy_edge.json
@@ -543,9 +543,9 @@ data "aws_iam_policy_document" "deploy_dns" {
 }
 
 resource "aws_iam_policy" "deploy_dns" {
-  name        = "${var.name_prefix}-deploy-dns"
+  name        = "${var.iam_name_prefix}-deploy-dns"
   path        = var.iam_path
-  description = "Change the frontend's A, AAAA and CNAME records in the staging zone, and no other record."
+  description = "Change the frontend's A, AAAA and CNAME records in the ${var.environment} zone, and no other record."
   policy      = data.aws_iam_policy_document.deploy_dns.json
 }
 
@@ -617,7 +617,7 @@ data "aws_iam_policy_document" "deploy_observability" {
 }
 
 resource "aws_iam_policy" "deploy_observability" {
-  name        = "${var.name_prefix}-deploy-observability"
+  name        = "${var.iam_name_prefix}-deploy-observability"
   path        = var.iam_path
   description = "Create, change and delete the frontend's log group, deployment topic and failed-rollout rule, without reading log events."
   policy      = data.aws_iam_policy_document.deploy_observability.json
@@ -686,7 +686,7 @@ data "aws_iam_policy_document" "deploy_scaling" {
 }
 
 resource "aws_iam_policy" "deploy_scaling" {
-  name        = "${var.name_prefix}-deploy-scaling"
+  name        = "${var.iam_name_prefix}-deploy-scaling"
   path        = var.iam_path
   description = "Register the frontend service's scalable target, its scaling policy and scheduled actions, and the alarms of target tracking."
   policy      = data.aws_iam_policy_document.deploy_scaling.json
