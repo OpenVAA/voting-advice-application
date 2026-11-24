@@ -1066,7 +1066,7 @@ Plans:
 - [x] 190-09-PLAN.md — infra-plan.yml over the owned deployments, its push trigger excluding destroy branches; no literal role ARN in any workflow.
 
 **Wave 7** *(blocked on Wave 6 completion)*
-- [ ] 190-10-PLAN.md — README, example roots and guide for two deployments in one account; rootCopies over every env root.
+- [x] 190-10-PLAN.md — README, example roots and guide for two deployments in one account; rootCopies over every env root.
 - [ ] 190-12-PLAN.md — The downstream OIDC token probe (subjects, empty environment, arm runner) and the deployed smoke against staging.
 
 **Wave 8** *(blocked on Wave 7 completion; needs the operator)*
