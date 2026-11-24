@@ -1,0 +1,146 @@
+{
+  "common": {
+    "account": {
+      "emailRequired": "Saisissez votre adresse e-mail.",
+      "emailSent": {
+        "askedAgain": "Si vous avez demandé un autre e-mail il y a moins d’une minute, celui-ci n’a peut-être pas été envoyé. Attendez de pouvoir renvoyer, puis appuyez sur Renvoyer.",
+        "changeAddress": "Utiliser une autre adresse e-mail",
+        "heroEmoji": "✉️",
+        "intro": {
+          "code": "Nous avons envoyé un e-mail à l’adresse avec laquelle vous vous êtes inscrit·e. Cliquez sur le lien que contient cet e-mail pour vous connecter.",
+          "recovery": "Nous avons envoyé un e-mail à l’adresse que vous avez indiquée. Cliquez sur le lien que contient cet e-mail pour vous connecter et définir un nouveau mot de passe.",
+          "recoveryTo": "Nous avons envoyé un e-mail à <strong>{email}</strong>. Cliquez sur le lien que contient cet e-mail pour vous connecter et définir un nouveau mot de passe.",
+          "signIn": "Nous avons envoyé un e-mail à l’adresse que vous avez indiquée. Cliquez sur le lien que contient cet e-mail pour vous connecter.",
+          "signInTo": "Nous avons envoyé un e-mail à <strong>{email}</strong>. Cliquez sur le lien que contient cet e-mail pour vous connecter."
+        },
+        "newest": "Si vous avez demandé plusieurs e-mails, seul le lien du plus récent fonctionne.",
+        "notFound": {
+          "withAddress": "Si vous ne trouvez pas l’e-mail, vérifiez votre dossier de courrier indésirable et que vous avez saisi correctement votre adresse e-mail.",
+          "withoutAddress": "Si vous ne trouvez pas l’e-mail, vérifiez votre dossier de courrier indésirable."
+        },
+        "resend": "Renvoyer",
+        "resendIn": "(dans {seconds} s)",
+        "resendReady": "Vous pouvez maintenant demander un nouvel e-mail.",
+        "resendRequested": "Un nouvel e-mail a été demandé.",
+        "support": "Si vous avez des difficultés à recevoir l’e-mail, {contactSupportLink}.",
+        "title": "Consultez vos e-mails"
+      },
+      "forgotPassword": "Mot de passe oublié ?",
+      "noPasswordYet": "Je n’ai pas encore défini de mot de passe",
+      "resetPassword": {
+        "createNewPassword": "Définir un nouveau mot de passe",
+        "ingress": "Pour réinitialiser votre mot de passe, veuillez saisir votre adresse e-mail ci-dessous :",
+        "sendLink": "Envoyer le lien de réinitialisation",
+        "title": "Mot de passe oublié ?"
+      },
+      "setPassword": {
+        "error": "Nous n’avons pas pu enregistrer ce mot de passe. Choisissez-en un autre et réessayez. Si le problème persiste, veuillez contacter l’assistance.",
+        "ingress": "Définissez un mot de passe sécurisé conformément aux exigences ci-dessous :",
+        "passwordNotValid": "Le mot de passe ne répond pas aux exigences ci-dessus.",
+        "passwordsDontMatch": "Les mots de passe ne correspondent pas",
+        "setPassword": "Définir le mot de passe",
+        "title": "Choisissez un mot de passe",
+        "why": "Votre compte n’a pas encore de mot de passe. Choisissez-en un afin de pouvoir vous connecter avec votre adresse e-mail et votre mot de passe."
+      },
+      "signedInAs": "Connecté·e en tant que"
+    },
+    "alliance": {
+      "plural": "alliances",
+      "singular": "alliance"
+    },
+    "answer": {
+      "no": "Non",
+      "yes": "Oui"
+    },
+    "back": "Retour",
+    "cancel": "Annuler",
+    "candidate": {
+      "plural": "candidat·es",
+      "singular": "candidat·e"
+    },
+    "clear": "Effacer",
+    "close": "Fermer",
+    "closeDialog": "Fermer la boîte de dialogue",
+    "closeMenu": "Fermer le menu",
+    "color": "Couleur",
+    "confirmed": "Confirmé",
+    "constituency": "Circonscription",
+    "continue": "Continuer",
+    "election": "Élection",
+    "electionList": "Liste",
+    "electionSymbol": {
+      "alliance": "Symbole électoral",
+      "candidate": "Numéro du·de la candidat·e",
+      "faction": "Symbole électoral",
+      "organization": "Symbole électoral"
+    },
+    "email": "E-mail",
+    "emailConfirmation": "Confirmer l’e-mail",
+    "emailPlaceholder": "E-mail",
+    "entityImage": {
+      "candidate": "Portrait",
+      "organization": "Logo"
+    },
+    "expandOrCollapse": "Développer ou réduire cette section",
+    "faction": {
+      "plural": "factions",
+      "singular": "faction"
+    },
+    "firstName": "Prénom",
+    "home": "Accueil",
+    "info": "Info",
+    "language": {
+      "select": "Sélectionner la langue"
+    },
+    "lastName": "Nom",
+    "loading": "Chargement…",
+    "locked": "Verrouillé",
+    "loggedOutAutomatically": "Vous avez été déconnecté·e automatiquement, car une déconnexion que vous aviez lancée n’a pas été annulée à temps.",
+    "loggedOutElsewhere": "Vous avez été déconnecté·e dans un autre onglet ou une autre fenêtre.",
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "logoutFailed": "Nous n’avons pas pu confirmer votre déconnexion. Vous êtes peut-être encore connecté·e, veuillez donc réessayer.",
+    "logoutUnsavedChanges": "Vous avez des modifications non enregistrées. Elles seront perdues si vous vous déconnectez.",
+    "madeWithPrefix": "Créé avec",
+    "madeWithSuffix": "",
+    "missingAnswer": "—",
+    "multipleAnswerSeparator": " • ",
+    "name": "Nom",
+    "nomination": "Nomination",
+    "openCloseMenu": "Ouvrir/fermer le menu",
+    "openMenu": "Ouvrir le menu",
+    "openVAA": "OpenVAA",
+    "or": "Ou",
+    "organization": {
+      "plural": "partis",
+      "singular": "parti"
+    },
+    "password": "Mot de passe",
+    "passwordConfirmation": "Confirmer le mot de passe",
+    "primaryActions": "Actions principales",
+    "privacy": {
+      "dataCollection": {
+        "content": "Nous souhaiterions collecter des données d’utilisation de façon anonyme à des fins de recherche et pour améliorer l’application. Les données collectées incluent vos réponses aux questions, le temps passé à y répondre et dans d’autres sections ainsi que les résultats consultés, sans possibilité de vous relier à ces données.",
+        "title": "Collecte de données d’utilisation"
+      }
+    },
+    "progress": "Progression",
+    "publishedBy": "Publié par {publisher}",
+    "question": "Question",
+    "readMore": "En savoir plus",
+    "required": "Obligatoire",
+    "resetAnswers": "Effacer vos réponses",
+    "return": "Retour",
+    "returnHome": "Retour à l’accueil",
+    "saveAndContinue": "Enregistrer et continuer",
+    "saveAndReturn": "Enregistrer et revenir",
+    "saving": "Enregistrement…",
+    "shortName": "Abréviation",
+    "showFullImage": "Afficher l’image complète",
+    "skipToMain": "Aller au contenu principal",
+    "success": "Action réussie !",
+    "thanksNo": "Non merci",
+    "unaffiliated": "Sans étiquette",
+    "website": "Site web"
+  }
+}

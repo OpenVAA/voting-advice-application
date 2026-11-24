@@ -37,7 +37,7 @@ import type {
 export type RootFormatters = {
   allianceName: Formatter<Alliance>;
   allianceShortName: Formatter<Alliance>;
-  candidateName: Formatter<Candidate>;
+  candidateName: Formatter<Pick<Candidate, 'firstName' | 'lastName'>>;
   candidateShortName: Formatter<Candidate>;
   factionName: Formatter<Faction>;
   booleanAnswer: AnswerFormatter<typeof QUESTION_TYPE.Boolean>;
@@ -85,8 +85,7 @@ export type RootCollections = {
 export type FullVaaData<
   TEntities extends EntityVariantTree | Array<AnyEntityVariantData> = EntityVariantTree | Array<AnyEntityVariantData>,
   TNominations extends NominationVariantTree | Array<AnyNominationVariantPublicData> =
-    | NominationVariantTree
-    | Array<AnyNominationVariantPublicData>
+    NominationVariantTree | Array<AnyNominationVariantPublicData>
 > = {
   elections: Array<ElectionData>;
   constituencies: {

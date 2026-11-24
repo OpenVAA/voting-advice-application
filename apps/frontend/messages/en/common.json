@@ -1,0 +1,146 @@
+{
+  "common": {
+    "account": {
+      "emailRequired": "Enter your email address.",
+      "emailSent": {
+        "askedAgain": "If you asked for another email less than a minute ago, this one may not have been sent. Wait until you can send again, then press Send again.",
+        "changeAddress": "Use another email address",
+        "heroEmoji": "✉️",
+        "intro": {
+          "code": "We’ve sent an email to the address you registered with. Click on the link in it to sign in.",
+          "recovery": "We’ve sent an email to the address you provided. Click on the link in it to sign in and set a new password.",
+          "recoveryTo": "We’ve sent an email to <strong>{email}</strong>. Click on the link in it to sign in and set a new password.",
+          "signIn": "We’ve sent an email to the address you provided. Click on the link in it to sign in.",
+          "signInTo": "We’ve sent an email to <strong>{email}</strong>. Click on the link in it to sign in."
+        },
+        "newest": "If you have asked for more than one email, only the link in the newest one works.",
+        "notFound": {
+          "withAddress": "If you can’t find the email, check your spam folder and that you typed your email address correctly.",
+          "withoutAddress": "If you can’t find the email, check your spam folder."
+        },
+        "resend": "Send again",
+        "resendIn": "(in {seconds}s)",
+        "resendReady": "You can now ask for a new email.",
+        "resendRequested": "A new email has been requested.",
+        "support": "If you have problems receiving the email, {contactSupportLink}.",
+        "title": "Check your email"
+      },
+      "forgotPassword": "Forgot Password?",
+      "noPasswordYet": "I have not set a password yet",
+      "resetPassword": {
+        "createNewPassword": "Set a new password",
+        "ingress": "To reset your password, please enter your email address below:",
+        "sendLink": "Send reset link",
+        "title": "Forgot Password?"
+      },
+      "setPassword": {
+        "error": "We couldn’t save that password. Choose a different one and try again. If the problem persists, please contact support.",
+        "ingress": "Set a secure password according to the requirements below:",
+        "passwordNotValid": "The password does not meet the requirements above.",
+        "passwordsDontMatch": "Passwords don't match",
+        "setPassword": "Set password",
+        "title": "Choose a password",
+        "why": "Your account has no password yet. Choose one so that you can sign in with your email address and password."
+      },
+      "signedInAs": "Signed in as"
+    },
+    "alliance": {
+      "plural": "alliances",
+      "singular": "alliance"
+    },
+    "answer": {
+      "no": "No",
+      "yes": "Yes"
+    },
+    "back": "Back",
+    "cancel": "Cancel",
+    "candidate": {
+      "plural": "candidates",
+      "singular": "candidate"
+    },
+    "clear": "Clear",
+    "close": "Close",
+    "closeDialog": "Close dialog",
+    "closeMenu": "Close menu",
+    "color": "Colour",
+    "confirmed": "Confirmed",
+    "constituency": "Constituency",
+    "continue": "Continue",
+    "election": "Election",
+    "electionList": "List",
+    "electionSymbol": {
+      "alliance": "Election Symbol",
+      "candidate": "Election Number",
+      "faction": "Election Symbol",
+      "organization": "Election Symbol"
+    },
+    "email": "Email",
+    "emailConfirmation": "Confirm email",
+    "emailPlaceholder": "Email",
+    "entityImage": {
+      "candidate": "Portrait",
+      "organization": "Logo"
+    },
+    "expandOrCollapse": "Expand or collapse this section",
+    "faction": {
+      "plural": "factions",
+      "singular": "faction"
+    },
+    "firstName": "First Name",
+    "home": "home",
+    "info": "Info",
+    "language": {
+      "select": "Select Language"
+    },
+    "lastName": "Surname",
+    "loading": "Loading…",
+    "locked": "Locked",
+    "loggedOutAutomatically": "You have been logged out automatically, because a logout you started was not cancelled in time.",
+    "loggedOutElsewhere": "You have been logged out in another tab or window.",
+    "login": "Sign in",
+    "logout": "Log Out",
+    "logoutFailed": "We could not confirm that you were logged out. You may still be logged in, so please try again.",
+    "logoutUnsavedChanges": "You have unsaved changes. They will be lost if you log out.",
+    "madeWithPrefix": "Made with",
+    "madeWithSuffix": "",
+    "missingAnswer": "—",
+    "multipleAnswerSeparator": " • ",
+    "name": "Name",
+    "nomination": "Nomination",
+    "openCloseMenu": "Toggle menu",
+    "openMenu": "Open menu",
+    "openVAA": "OpenVAA",
+    "or": "Or",
+    "organization": {
+      "plural": "parties",
+      "singular": "party"
+    },
+    "password": "Password",
+    "passwordConfirmation": "Confirm password",
+    "primaryActions": "Primary actions",
+    "privacy": {
+      "dataCollection": {
+        "content": "We would like to collected usage data anonymously for research purposes and to improve the application. The data to collect includes your answers to the questions, the time spent answering the questions and in other sections and the results viewed, but the data cannot be connected to you.",
+        "title": "Collecting Usage Data"
+      }
+    },
+    "progress": "Progress",
+    "publishedBy": "Published by {publisher}",
+    "question": "Question",
+    "readMore": "Read More",
+    "required": "Required",
+    "resetAnswers": "Clear your answers",
+    "return": "Return",
+    "returnHome": "Return Home",
+    "saveAndContinue": "Save and Continue",
+    "saveAndReturn": "Save and Return",
+    "saving": "Saving…",
+    "shortName": "Abbreviation",
+    "showFullImage": "Show full image",
+    "skipToMain": "Skip to main content",
+    "success": "Action succesful!",
+    "thanksNo": "No Thanks",
+    "unaffiliated": "Unaffiliated",
+    "website": "Website"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "entityDetails": {
+    "links": "Lingid",
+    "tabs": {
+      "children": "Liikmed",
+      "info": "Põhiandmed",
+      "opinions": "Arvamused"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "contestantApp.settings": {
+    "emailDescription": "Nous utilisons cet e-mail pour vous contacter et pour la réinitialisation du mot de passe. Il ne sera pas affiché sur votre profil public.",
+    "emailPendingInfo": "Cette adresse n’a pas encore été confirmée. Tant que vous n’avez pas ouvert le lien que nous y avons envoyé, connectez-vous avec un Bank ID.",
+    "error": {
+      "changePassword": "Échec du changement de mot de passe. Veuillez réessayer ou contacter l’assistance si le problème persiste."
+    },
+    "ingress": "Ces paramètres affectent uniquement la façon dont vous utilisez cette application. Les informations saisies ici ne seront pas rendues publiques.",
+    "password": {
+      "update": "Mettre à jour le mot de passe",
+      "updated": "Le mot de passe a été mis à jour !"
+    },
+    "saveEmail": "Enregistrer l’adresse e-mail",
+    "title": "Paramètres"
+  }
+}

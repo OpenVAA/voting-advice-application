@@ -1,0 +1,847 @@
+/**
+ * Guards on `.github/workflows/deploy.yml`, the gated staging deploy.
+ *
+ * The workflow applies to the staging account and pushes migrations to the persistent Supabase project, and its log is public, so its triggers, its gate, the order of its stages, where each secret reaches and its alert are checked here rather than by its first run. The shared rules of `workflowGuards.ts` are shown red in `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
+ */
+
+import { existsSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { jobSteps, loadWorkflow, parseWorkflow, sharedViolations, workflowJobs } from './workflowGuards';
+import type { WorkflowDocument, WorkflowJob, WorkflowStep } from './workflowGuards';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(HERE, '../..');
+const WORKFLOW = join(REPO_ROOT, '.github', 'workflows', 'deploy.yml');
+
+const { doc, text } = loadWorkflow(WORKFLOW);
+
+/** The ids of the gated job's stage steps, in the order they must run. */
+const STAGE_ORDER = [
+  'build',
+  'plan',
+  'migrations',
+  'settings',
+  'functions',
+  'apply',
+  'stable',
+  'smoke',
+  'served-build',
+  'alert'
+];
+
+/** The Supabase root the database steps verify the server against, relative to the repository root; pinned by `supabase-ca.test.ts`. */
+const ROOT_CA_PATH = 'infra/certs/supabase-root-2021-ca.crt';
+
+/** The prefix of `PGSSLROOTCERT` in the database steps, so the root is found by an absolute path whatever the step's directory. */
+const WORKSPACE_PREFIX = '${{ github.workspace }}/';
+
+/** The ids of the steps that connect to the database through the session pooler. */
+const DATABASE_STEPS = ['migrations', 'settings'];
+
+/** The exact environment of the settings check: the session pooler connection verifying the server against the committed root, and the database password alone. */
+const SETTINGS_ENV = {
+  REF: '${{ steps.link.outputs.ref }}',
+  PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
+  PGPORT: '5432',
+  PGDATABASE: 'postgres',
+  PGCONNECT_TIMEOUT: '10',
+  PGSSLMODE: 'verify-full',
+  PGSSLROOTCERT: `${WORKSPACE_PREFIX}${ROOT_CA_PATH}`,
+  PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}'
+};
+
+/** The exact environment of the migrations push: the settings check's connection, plus the link outputs, the deploy environment and the CLI's two secrets. */
+const MIGRATIONS_ENV = {
+  REF: '${{ steps.link.outputs.ref }}',
+  WORKDIR: '${{ steps.link.outputs.workdir }}',
+  OPENVAA_DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
+  PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
+  PGPORT: '5432',
+  PGDATABASE: 'postgres',
+  PGCONNECT_TIMEOUT: '10',
+  PGSSLMODE: 'verify-full',
+  PGSSLROOTCERT: `${WORKSPACE_PREFIX}${ROOT_CA_PATH}`,
+  PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
+  SUPABASE_DB_PASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
+  SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
+};
+
+/** The job `id` of a workflow; fails the test when it is absent. */
+function jobOf(source: WorkflowDocument, id: string): WorkflowJob {
+  const found = workflowJobs(source).find(([jobId]) => jobId === id);
+  if (!found) throw new Error(`deploy.yml has no job ${id}`);
+  return found[1];
+}
+
+/** The steps of a job of a workflow. */
+function stepsOf(source: WorkflowDocument, id: string): Array<WorkflowStep> {
+  return jobSteps(jobOf(source, id));
+}
+
+/** The step with `id` in a list of steps; fails the test when it is absent. */
+function stepWithId(steps: Array<WorkflowStep>, id: string): WorkflowStep {
+  const step = steps.find((candidate) => candidate.id === id);
+  if (!step) throw new Error(`the deploy job has no step with id ${id}`);
+  return step;
+}
+
+/** The index of the first step that uses an action, or -1. */
+function indexOfUses(steps: Array<WorkflowStep>, action: string): number {
+  return steps.findIndex((step) => typeof step.uses === 'string' && step.uses.startsWith(`${action}@`));
+}
+
+/** The `run:` script of a step, or an empty string. */
+function runOf(step: WorkflowStep): string {
+  return typeof step.run === 'string' ? step.run : '';
+}
+
+/** The `env` mapping of a step, or an empty one. */
+function envOf(step: WorkflowStep): Record<string, unknown> {
+  return typeof step.env === 'object' && step.env !== null && !Array.isArray(step.env)
+    ? (step.env as Record<string, unknown>)
+    : {};
+}
+
+/** Whether the step `id` of the deploy job of a workflow text has exactly the environment `expected`. */
+function stepEnvHolds(source: string, id: string, expected: Record<string, string>): boolean {
+  const env = envOf(stepWithId(stepsOf(parseWorkflow(source), 'deploy'), id));
+  const keys = Object.keys(expected);
+  return Object.keys(env).length === keys.length && keys.every((key) => env[key] === expected[key]);
+}
+
+/** Whether the settings step of a workflow text has exactly the environment `SETTINGS_ENV`. */
+function settingsEnvHolds(source: string): boolean {
+  return stepEnvHolds(source, 'settings', SETTINGS_ENV);
+}
+
+/** Whether the migrations step of a workflow text has exactly the environment `MIGRATIONS_ENV`. */
+function migrationsEnvHolds(source: string): boolean {
+  return stepEnvHolds(source, 'migrations', MIGRATIONS_ENV);
+}
+
+/**
+ * Whether the database steps of a workflow text name one root that exists: each step's `PGSSLROOTCERT` is `WORKSPACE_PREFIX` followed by a path, the path is the same in every step, and a file is at that path under the repository root.
+ */
+function rootCaPathHolds(source: string): boolean {
+  const steps = stepsOf(parseWorkflow(source), 'deploy');
+  const paths = DATABASE_STEPS.map((id) => {
+    const value = envOf(stepWithId(steps, id)).PGSSLROOTCERT;
+    return typeof value === 'string' && value.startsWith(WORKSPACE_PREFIX) ? value.slice(WORKSPACE_PREFIX.length) : '';
+  });
+  return paths.every((path) => path !== '' && path === paths[0]) && existsSync(join(REPO_ROOT, paths[0]));
+}
+
+/** The minutes after which the runner cuts off the settings check, well above a connection timeout and one read. */
+const SETTINGS_TIMEOUT_MINUTES = 2;
+
+/** Whether the settings step of a workflow text is cut off after `SETTINGS_TIMEOUT_MINUTES`. */
+function settingsTimeoutHolds(source: string): boolean {
+  const settings = stepWithId(stepsOf(parseWorkflow(source), 'deploy'), 'settings');
+  return settings['timeout-minutes'] === SETTINGS_TIMEOUT_MINUTES;
+}
+
+/** The block of the settings check's script that ends the run with status 1 on any status of psql but 0. */
+const SETTINGS_FAILS_RUN = /^if \[ "\$settings_exit" -ne 0 \]; then\n\s+echo "::error::[^\n]*"\n\s+exit 1\n\s*fi$/m;
+
+/**
+ * Whether the settings step of a workflow text fails the run on a finding: its script holds the block `SETTINGS_FAILS_RUN`, and the step has neither `continue-on-error` nor an `if:` that could skip it.
+ */
+function settingsFailsRun(source: string): boolean {
+  const settings = stepWithId(stepsOf(parseWorkflow(source), 'deploy'), 'settings');
+  return SETTINGS_FAILS_RUN.test(runOf(settings)) && !('continue-on-error' in settings) && !('if' in settings);
+}
+
+/** The positions of the stage step ids in a list of steps, in the order they appear. */
+function stageIdsInOrder(steps: Array<WorkflowStep>, stages: Array<string>): Array<string> {
+  return steps.flatMap((step) => (typeof step.id === 'string' && stages.includes(step.id) ? [step.id] : []));
+}
+
+/** The alert step's variable holding the outcome of the step `id`. */
+function outcomeVariable(id: string): string {
+  return `${id.toUpperCase().replaceAll('-', '_')}_OUTCOME`;
+}
+
+/** `source` with the first match of `pattern` replaced; fails when nothing matched, so a mutation is never a no-op. */
+function mutate(source: string, pattern: string | RegExp, replacement: string): string {
+  const mutated = source.replace(pattern, replacement);
+  if (mutated === source) throw new Error(`the mutation found nothing to replace: ${String(pattern)}`);
+  return mutated;
+}
+
+/** The bodies of the `while` and `for` loops of a script, each from its `; do` line to its matching `done`. */
+function loopBodies(script: string): Array<string> {
+  const bodies: Array<string> = [];
+  const open: Array<Array<string>> = [];
+  for (const line of script.split('\n')) {
+    for (const body of open) body.push(line);
+    if (/^\s*(while|for)\b.*; do\s*$/.test(line)) open.push([line]);
+    else if (/^\s*done\b/.test(line) && open.length > 0) bodies.push((open.pop() as Array<string>).join('\n'));
+  }
+  return bodies;
+}
+
+/** The number of a script's line of exactly `name=<digits>`, after indentation, or undefined when it has none. */
+function literalNumber(script: string, name: string): number | undefined {
+  const match = new RegExp(`^[ \\t]*${name}=([0-9]+)$`, 'm').exec(script);
+  return match ? Number(match[1]) : undefined;
+}
+
+/**
+ * The violations of the rule `rollout-poll` by the script of the stable step.
+ *
+ * The step reads the rollout in a loop, sleeping `interval` seconds between reads, for at most `polls` reads, both set on lines of their own. The limit `polls × interval` is at least 600 s, longer than ECS's circuit breaker takes to fail a rollout of one desired task, and at most half the job's `timeout-minutes`, so that the rest of the job keeps the other half.
+ *
+ * @param script - The stable step's script.
+ * @param timeoutMinutes - The deploy job's `timeout-minutes`.
+ * @returns One message per violation, each beginning `rollout-poll: `; empty when the step holds the rule.
+ */
+function rolloutPollViolations(script: string, timeoutMinutes: number): Array<string> {
+  const violations: Array<string> = [];
+  const polls = literalNumber(script, 'polls');
+  const interval = literalNumber(script, 'interval');
+  if (polls === undefined) violations.push('rollout-poll: no line polls=<digits>');
+  else if (polls < 2) violations.push(`rollout-poll: polls=${polls} reads the rollout once`);
+  if (interval === undefined) violations.push('rollout-poll: no line interval=<digits>');
+  else if (interval < 1) violations.push(`rollout-poll: interval=${interval} reads back to back`);
+  if (polls !== undefined && interval !== undefined) {
+    const limit = polls * interval;
+    if (limit < 600) violations.push(`rollout-poll: the limit of ${limit} s is below 600 s`);
+    if (limit > timeoutMinutes * 30)
+      violations.push(`rollout-poll: the limit of ${limit} s is above half the job's ${timeoutMinutes} minutes`);
+  }
+  const reading = loopBodies(script).filter((body) => body.includes('aws ecs describe-services'));
+  if (reading.length === 0) violations.push('rollout-poll: no aws ecs describe-services inside a while or for loop');
+  else if (!reading.some((body) => body.includes('sleep "$interval"')))
+    violations.push('rollout-poll: no sleep "$interval" inside the loop that reads the service');
+  return violations;
+}
+
+describe('deploy.yml and the shared rules', () => {
+  it('finds no violation of the shared rules', () => {
+    expect(sharedViolations(doc, text)).toEqual([]);
+  });
+});
+
+describe('the triggers and the concurrency of deploy.yml', () => {
+  const on = doc.on as Record<string, unknown>;
+
+  it('runs on a push to deploy/staging and to deploy-evidence branches but the destroy branch, and on a dispatch', () => {
+    expect((on.push as Record<string, unknown>).branches).toEqual([
+      'deploy/staging',
+      'deploy-evidence/**',
+      '!deploy-evidence/destroy-staging'
+    ]);
+    expect('workflow_dispatch' in on).toBe(true);
+    expect(Object.keys(on).sort()).toEqual(['push', 'workflow_dispatch']);
+  });
+
+  it('has no pull-request trigger, no main trigger and no branches-ignore', () => {
+    expect('pull_request' in on).toBe(false);
+    expect('pull_request_target' in on).toBe(false);
+    expect('branches-ignore' in (on.push as Record<string, unknown>)).toBe(false);
+    expect((on.push as Record<string, unknown>).branches).not.toContain('main');
+  });
+
+  it('shares the staging-aws group with the destroy workflow and never cancels a running deploy', () => {
+    expect(doc.concurrency).toEqual({ group: 'staging-aws', 'cancel-in-progress': false });
+  });
+});
+
+describe('the checks job of deploy.yml', () => {
+  const checks = jobOf(doc, 'checks');
+  const scripts = jobSteps(checks).map(runOf).join('\n');
+
+  it('holds no credential', () => {
+    expect(checks.permissions).toEqual({ contents: 'read' });
+    expect('environment' in checks).toBe(false);
+  });
+
+  it('formats, validates the staging AWS root and runs the unit tests of the infrastructure scripts', () => {
+    expect(scripts).toContain('terraform fmt -check -recursive');
+    expect(scripts).toContain(
+      'terraform -chdir=infra/envs/staging/aws init -backend=false -input=false -lockfile=readonly'
+    );
+    expect(scripts).toContain('terraform -chdir=infra/envs/staging/aws validate');
+    expect(scripts).toContain('yarn test:unit:infra');
+  });
+});
+
+describe('the gate of the deploy job', () => {
+  const deploy = jobOf(doc, 'deploy');
+
+  it('needs the checks job and runs in the staging environment', () => {
+    expect(deploy.needs).toBe('checks');
+    expect(deploy.environment).toEqual({ name: 'staging', url: 'https://staging.openvaa.org' });
+  });
+
+  it('runs on the arm runner with a timeout above the longest observed apply', () => {
+    expect(deploy['runs-on']).toBe('ubuntu-24.04-arm');
+    expect(deploy['timeout-minutes']).toBeGreaterThanOrEqual(50);
+  });
+
+  it('holds exactly contents: read and id-token: write', () => {
+    expect(deploy.permissions).toEqual({ contents: 'read', 'id-token': 'write' });
+  });
+
+  it('is the only job with id-token: write', () => {
+    const granted = workflowJobs(doc).filter(
+      ([, job]) => (job.permissions as Record<string, unknown> | undefined)?.['id-token'] === 'write'
+    );
+    expect(granted.map(([id]) => id)).toEqual(['deploy']);
+  });
+
+  it('assumes the deploy role from the environment variable, in the staging account only', () => {
+    const assumes = jobSteps(deploy).filter(
+      (step) => typeof step.uses === 'string' && step.uses.startsWith('aws-actions/configure-aws-credentials@')
+    );
+    expect(assumes.length).toBeGreaterThanOrEqual(3);
+    for (const step of assumes) {
+      expect(step.with).toMatchObject({
+        'role-to-assume': '${{ vars.AWS_DEPLOY_ROLE_ARN }}',
+        'aws-region': 'eu-north-1',
+        'allowed-account-ids': '471112560111'
+      });
+    }
+  });
+});
+
+describe('the stages of the deploy job', () => {
+  const steps = stepsOf(doc, 'deploy');
+
+  it('runs the stage steps in their fixed order, with the alert last', () => {
+    expect(stageIdsInOrder(steps, STAGE_ORDER)).toEqual(STAGE_ORDER);
+    expect(steps[steps.length - 1].id).toBe('alert');
+  });
+
+  it('builds before setup-yarn installs anything into the checkout, and accepts status 0 and 3', () => {
+    const build = steps.indexOf(stepWithId(steps, 'build'));
+    expect(build).toBeGreaterThanOrEqual(0);
+    expect(build).toBeLessThan(indexOfUses(steps, 'threeal/setup-yarn-action'));
+    const script = runOf(stepWithId(steps, 'build'));
+    expect(script).toContain('infra/scripts/build-push-image.sh --repository-url "$url"');
+    expect(script).toContain('build_exit=$?');
+    expect(script).toContain('[ "$build_exit" -ne 0 ] && [ "$build_exit" -ne 3 ]');
+  });
+
+  it('plans with the built digest into a file under $RUNNER_TEMP and applies that file', () => {
+    const plan = stepWithId(steps, 'plan');
+    expect(runOf(plan)).toContain('-var "image_digest=$DIGEST"');
+    expect(runOf(plan)).toContain('-out="$RUNNER_TEMP/tfplan"');
+    expect(envOf(plan)).toEqual({
+      DIGEST: '${{ steps.build.outputs.digest }}',
+      TF_VAR_alert_email: '${{ secrets.ALERT_EMAIL }}'
+    });
+    expect(runOf(stepWithId(steps, 'apply'))).toContain(
+      'terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/tfplan"'
+    );
+  });
+
+  it('prints the saved plan with show -no-color to the log and the step summary, and no JSON plan', () => {
+    const show = steps.find((step) => runOf(step).includes('show -no-color "$RUNNER_TEMP/tfplan"'));
+    expect(show).toBeDefined();
+    expect(runOf(show as WorkflowStep)).toContain('>> "$GITHUB_STEP_SUMMARY"');
+    expect(steps.indexOf(show as WorkflowStep)).toBeGreaterThan(steps.indexOf(stepWithId(steps, 'plan')));
+    expect(text).not.toMatch(/show\s+-json/);
+  });
+
+  it('runs Terraform in the staging AWS root only', () => {
+    const roots = [...text.matchAll(/terraform -chdir=(\S+)/g)].map(([, root]) => root);
+    expect(roots.length).toBeGreaterThan(0);
+    expect(new Set(roots)).toEqual(new Set(['infra/envs/staging/aws']));
+  });
+
+  it('assumes the credentials again right before the apply', () => {
+    const apply = steps.indexOf(stepWithId(steps, 'apply'));
+    const before = steps[apply - 1];
+    expect(String(before.uses)).toMatch(/^aws-actions\/configure-aws-credentials@/);
+  });
+
+  it('checks that the primary deployment runs the applied task definition, completed, at the floor', () => {
+    const script = runOf(stepWithId(steps, 'stable'));
+    expect(script).toContain('output -raw task_definition_arn');
+    expect(script).toContain('task_floor');
+    expect(script).toContain('select(.status == "PRIMARY")');
+    expect(script).toContain('[ "$rollout_state" != COMPLETED ]');
+    expect(script).toContain('[ "$running" -ge "$floor" ]');
+  });
+
+  it("reads the rollout in a loop with a sleep, its limit between 600 s and half the job's timeout", () => {
+    const timeout = Number(jobOf(doc, 'deploy')['timeout-minutes']);
+    expect(rolloutPollViolations(runOf(stepWithId(steps, 'stable')), timeout)).toEqual([]);
+  });
+
+  it('runs the deployed smoke entry with the commit, the contestant secrets and the caller limit and nothing privileged', () => {
+    const smoke = stepWithId(steps, 'smoke');
+    const env = envOf(smoke);
+    expect(env).toEqual({
+      SMOKE_EXPECTED_SHA: '${{ github.sha }}',
+      SMOKE_CONTESTANT_EMAIL: '${{ secrets.SMOKE_CONTESTANT_EMAIL }}',
+      SMOKE_CONTESTANT_PASSWORD: '${{ secrets.SMOKE_CONTESTANT_PASSWORD }}',
+      SMOKE_ACCESS_CALLER_MAX: '${{ vars.SMOKE_ACCESS_CALLER_MAX }}'
+    });
+    expect(Object.keys(env).filter((key) => key.startsWith('SUPABASE_') || key.startsWith('PG'))).toEqual([]);
+    const script = runOf(smoke);
+    expect(script).toContain('yarn test:e2e:deployed --output "$RUNNER_TEMP/smoke-output"');
+    expect(script).toContain('smoke_exit=$?');
+    expect(script).not.toMatch(/--reporter|PLAYWRIGHT_HTML/);
+  });
+
+  it('has no switch, input or variable that skips the contestant spec', () => {
+    expect(text).not.toMatch(/--grep\b|--project(?![-\w])|SMOKE_SKIP|skip-contestant|SKIP_CONTESTANT/i);
+    expect('inputs' in ((doc.on as Record<string, unknown>).workflow_dispatch ?? {})).toBe(false);
+  });
+
+  it('fails after the smoke run when /api/health no longer serves the commit', () => {
+    const script = runOf(stepWithId(steps, 'served-build'));
+    expect(script).toContain(
+      'curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" https://staging.openvaa.org/api/health'
+    );
+    expect(script).toContain('[ "$served" != "$GITHUB_SHA" ]');
+  });
+
+  it('removes the plan and the smoke output in a step that always runs, before the alert', () => {
+    const cleanup = steps.find((step) => runOf(step).includes('rm -rf'));
+    expect(cleanup?.if).toBe('always()');
+    const script = runOf(cleanup as WorkflowStep);
+    expect(script).toContain('"$RUNNER_TEMP/tfplan"');
+    expect(script).toContain('"$RUNNER_TEMP/smoke-output"');
+    expect(steps.indexOf(cleanup as WorkflowStep)).toBeLessThan(steps.indexOf(stepWithId(steps, 'alert')));
+  });
+
+  it('writes nothing to $GITHUB_ENV but the emptied credentials', () => {
+    const writers = steps.filter((step) => runOf(step).includes('GITHUB_ENV'));
+    expect(writers.map((step) => step.id)).toEqual([
+      'drop-build-credentials',
+      'drop-plan-credentials',
+      'drop-rollout-credentials'
+    ]);
+    for (const step of writers) {
+      expect(runOf(step).trim()).toBe(
+        '{\n  echo "AWS_ACCESS_KEY_ID="\n  echo "AWS_SECRET_ACCESS_KEY="\n  echo "AWS_SESSION_TOKEN="\n} >> "$GITHUB_ENV"'
+      );
+      expect('env' in step).toBe(false);
+    }
+  });
+});
+
+describe('the migrations and the functions of the deploy job', () => {
+  const steps = stepsOf(doc, 'deploy');
+  const link = stepWithId(steps, 'link');
+  const migrations = stepWithId(steps, 'migrations');
+  const functions = stepWithId(steps, 'functions');
+
+  it('installs postgresql-client with apt before the migrations', () => {
+    const install = steps.findIndex((step) =>
+      runOf(step).includes('sudo apt-get install -y --no-install-recommends postgresql-client')
+    );
+    expect(install).toBeGreaterThanOrEqual(0);
+    expect(install).toBeLessThan(steps.indexOf(migrations));
+  });
+
+  it('links a work directory under $RUNNER_TEMP to the project ref of the Supabase root', () => {
+    const script = runOf(link);
+    expect(script).toContain('infra/envs/staging/supabase/terraform.tfvars');
+    expect(script).toContain('^[a-z]{20}$');
+    expect(script).toContain('workdir="$RUNNER_TEMP/supabase-linked/$ref"');
+    expect(script).toContain('for p in config.toml migrations functions; do');
+    expect(script).toContain('node_modules/.bin/supabase link --project-ref "$ref" --workdir "$workdir"');
+    expect(script).toContain('apps/supabase/supabase/.temp/project-ref');
+    expect(steps.indexOf(link)).toBeLessThan(steps.indexOf(migrations));
+  });
+
+  it('never links apps/supabase, never passes it as a work directory and never calls supabase db push', () => {
+    expect(text).not.toMatch(/--workdir\s+"?(\$GITHUB_WORKSPACE\/)?apps\/supabase/);
+    expect(text).not.toMatch(/supabase\s+db\s+push/);
+  });
+
+  it('pushes the migrations through push-migrations.sh with the confirmed ref, over the session pooler verifying the server', () => {
+    const script = runOf(migrations);
+    expect(script).toContain(
+      'infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF"'
+    );
+    expect(script).toContain('--log-dir "$RUNNER_TEMP/push-migrations"');
+    expect(script).toContain('export PGUSER="postgres.$REF"');
+    expect(script).toContain('push_exit=$?');
+    expect(envOf(migrations)).toEqual(MIGRATIONS_ENV);
+    expect(migrationsEnvHolds(text)).toBe(true);
+    expect(text).not.toContain('6543');
+  });
+
+  it('verifies the server in both database steps against one committed root, with verify-full as the only TLS mode', () => {
+    expect(rootCaPathHolds(text)).toBe(true);
+    expect(text.match(/^ *PGSSLMODE: .*$/gm)?.map((line) => line.trim())).toEqual([
+      'PGSSLMODE: verify-full',
+      'PGSSLMODE: verify-full'
+    ]);
+    expect(text).not.toMatch(/\bsslmode=|\bsslrootcert=|PGCHANNELBINDING/);
+  });
+
+  it('checks the deployment settings with psql over the session pooler verifying the server within two minutes, after the migrations and before the functions', () => {
+    const settings = stepWithId(steps, 'settings');
+    expect(existsSync(join(REPO_ROOT, 'infra', 'scripts', 'check-deployment-settings.sql'))).toBe(true);
+    expect(steps.indexOf(settings)).toBe(steps.indexOf(migrations) + 1);
+    expect(steps.indexOf(settings)).toBeLessThan(steps.indexOf(functions));
+    expect(settingsEnvHolds(text)).toBe(true);
+    expect(settingsTimeoutHolds(text)).toBe(true);
+    const script = runOf(settings);
+    for (const line of [
+      'export PGUSER="postgres.$REF"',
+      'unset PGHOSTADDR PGSERVICE',
+      'settings_exit=0',
+      'psql -X -f infra/scripts/check-deployment-settings.sql || settings_exit=$?'
+    ]) {
+      expect(script).toContain(line);
+    }
+    expect(settingsFailsRun(text)).toBe(true);
+  });
+
+  it('deploys the functions from the linked work directory and reads back three ACTIVE with verify_jwt as configured', () => {
+    const script = runOf(functions);
+    expect(script).toContain('node_modules/.bin/supabase functions deploy --project-ref "$REF" --workdir "$WORKDIR"');
+    expect(script).toContain('curl -sS --max-time 20 -K - ');
+    expect(script).toContain('https://api.supabase.com/v1/projects/$REF/functions');
+    expect(script).toContain('<<< "header = \\"Authorization: Bearer $SUPABASE_ACCESS_TOKEN\\""');
+    expect(script).toContain('[ "$http" != 200 ]');
+    expect(script).toContain('[functions.$1]');
+    expect(script).toContain('expected="${expected:-true}"');
+    expect(script).toContain(
+      'echo "function=$slug status=$status verify_jwt=$verify_jwt expected_verify_jwt=$expected"'
+    );
+    expect(script).toContain('[ "$count" -ne 3 ] || [ "$mismatched" -ne 0 ]');
+    expect(script).toContain(
+      "find apps/supabase/supabase/functions -mindepth 1 -maxdepth 1 -type d ! -name '_*' -exec basename {} \\; | sort"
+    );
+    expect(script).toContain('[ "$served_slugs" != "$expected_slugs" ]');
+    expect(script).toContain('[ "$status" != ACTIVE ]');
+    expect(envOf(functions)).toEqual({
+      REF: '${{ steps.link.outputs.ref }}',
+      WORKDIR: '${{ steps.link.outputs.workdir }}',
+      SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
+    });
+  });
+
+  it('gives the Supabase and database secrets to the link, migrations, settings and functions steps only, through env', () => {
+    const holders = steps.flatMap((step) =>
+      Object.values(envOf(step)).some((value) =>
+        /secrets\.(SUPABASE_ACCESS_TOKEN|SUPABASE_DB_PASSWORD)\b/.test(String(value))
+      )
+        ? [String(step.id)]
+        : []
+    );
+    expect(holders).toEqual(['link', 'migrations', 'settings', 'functions']);
+    const mentions = text
+      .split('\n')
+      .filter((line) => /secrets\.(SUPABASE_ACCESS_TOKEN|SUPABASE_DB_PASSWORD)\b/.test(line));
+    expect(mentions.every((line) => /^ {10}[A-Z_]+: \$\{\{ secrets\./.test(line))).toBe(true);
+    expect(mentions).toHaveLength(7);
+    expect('env' in jobOf(doc, 'deploy')).toBe(false);
+    expect('env' in doc).toBe(false);
+  });
+
+  it('removes the work directory and the push logs in the cleanup step', () => {
+    const cleanup = steps.find((step) => runOf(step).includes('rm -rf'));
+    const script = runOf(cleanup as WorkflowStep);
+    expect(script).toContain('"$RUNNER_TEMP/supabase-linked"');
+    expect(script).toContain('"$RUNNER_TEMP/push-migrations"');
+  });
+});
+
+/** The names of the credentials the assume action exports into the job's environment. */
+const CREDENTIAL_NAMES = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN'];
+
+/** Whether a step assumes the deploy role with the credentials action. */
+function assumesRole(step: WorkflowStep): boolean {
+  return typeof step.uses === 'string' && step.uses.startsWith('aws-actions/configure-aws-credentials@');
+}
+
+/** Whether a step empties the three credentials in the job's environment. */
+function dropsCredentials(step: WorkflowStep): boolean {
+  const script = runOf(step);
+  return script.includes('>> "$GITHUB_ENV"') && CREDENTIAL_NAMES.every((name) => script.includes(`echo "${name}="`));
+}
+
+/** The ids of the steps of a job that run with the role's credentials in their environment. */
+function idsHoldingCredentials(steps: Array<WorkflowStep>): Set<string> {
+  const holding = new Set<string>();
+  let held = false;
+  for (const step of steps) {
+    if (held && typeof step.id === 'string') holding.add(step.id);
+    if (assumesRole(step)) held = true;
+    if (dropsCredentials(step)) held = false;
+  }
+  return holding;
+}
+
+describe('the credentials of the deploy job', () => {
+  /** The steps that run code the job did not write: tool, package and browser installs and the Supabase CLI. */
+  const WITHOUT = [
+    'node',
+    'yarn',
+    'psql',
+    'terraform',
+    'link',
+    'migrations',
+    'settings',
+    'functions',
+    'playwright',
+    'smoke'
+  ];
+  /** The steps that call AWS. */
+  const WITH = ['build', 'init', 'plan', 'apply', 'stable', 'alert'];
+
+  it('holds the role only in the steps that call AWS', () => {
+    const holding = idsHoldingCredentials(stepsOf(doc, 'deploy'));
+    for (const id of WITHOUT) expect(holding.has(id), `step ${id} runs with the role's credentials`).toBe(false);
+    for (const id of WITH) expect(holding.has(id), `step ${id} runs without the role's credentials`).toBe(true);
+  });
+
+  it('is red when the credentials are not dropped after the build', () => {
+    const steps = stepsOf(doc, 'deploy').filter((step) => step.id !== 'drop-build-credentials');
+    expect(idsHoldingCredentials(steps).has('yarn')).toBe(true);
+  });
+});
+
+describe('the alert of the deploy job', () => {
+  const steps = stepsOf(doc, 'deploy');
+  const alert = stepWithId(steps, 'alert');
+  const script = runOf(alert);
+
+  it('runs on a failure or a cancel, after assuming the deploy role again under the same condition', () => {
+    expect(alert.if).toBe('failure() || cancelled()');
+    const before = steps[steps.indexOf(alert) - 1];
+    expect(String(before.uses)).toMatch(/^aws-actions\/configure-aws-credentials@/);
+    expect(before.if).toBe('failure() || cancelled()');
+  });
+
+  it('derives the stage from the outcomes of the stage steps', () => {
+    const env = envOf(alert);
+    expect(env.JOB_STATUS).toBe('${{ job.status }}');
+    for (const id of STAGE_ORDER.filter((stage) => stage !== 'alert')) {
+      expect(Object.values(env)).toContain(`\${{ steps.${id}.outcome }}`);
+    }
+    expect(script).toContain('"rollout:$APPLY_OUTCOME"');
+    expect(script).toContain('"smoke:$SERVED_BUILD_OUTCOME"');
+    expect(script).toContain('stage=unknown');
+    expect(script).toContain('stage=cancelled');
+  });
+
+  /** The stage the alert names for a failure of the step `id`, or undefined when it names none. */
+  function stageOf(id: string): string | undefined {
+    return new RegExp(`"([a-z]+):\\$${outcomeVariable(id)}"`).exec(script)?.[1];
+  }
+
+  it('names a stage for every step before it, so that no failed step falls through to another stage', () => {
+    const env = envOf(alert);
+    const before = steps.slice(0, steps.indexOf(alert) - 1);
+    for (const [index, step] of before.entries()) {
+      expect(typeof step.id, `step ${index + 1} (${String(step.name)}) has no id`).toBe('string');
+      const id = String(step.id);
+      expect(env[outcomeVariable(id)], `the alert reads no outcome of step ${id}`).toBe(`\${{ steps.${id}.outcome }}`);
+      expect(stageOf(id), `the alert maps no stage to step ${id}`).toBeDefined();
+    }
+  });
+
+  it('names the stage of each step by what it follows, not by the first stage', () => {
+    expect(stageOf('checkout')).toBe('setup');
+    expect(stageOf('credentials')).toBe('setup');
+    expect(stageOf('init')).toBe('plan');
+    expect(stageOf('show')).toBe('plan');
+    expect(stageOf('psql')).toBe('plan');
+    expect(stageOf('drop-plan-credentials')).toBe('migrations');
+    expect(stageOf('settings')).toBe('settings');
+    expect(stageOf('reassume')).toBe('rollout');
+    expect(stageOf('playwright')).toBe('smoke');
+  });
+
+  it('publishes one message naming the stage, the commit, the trigger and the run to the deployment topic', () => {
+    expect(script.match(/^\s*aws sns publish /gm)).toHaveLength(1);
+    expect(script).toContain('--topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments');
+    expect(script).toContain('--subject "openvaa staging deploy failed at $stage"');
+    for (const name of [
+      '$GITHUB_SHA',
+      '$GITHUB_EVENT_NAME',
+      '$GITHUB_REF_NAME',
+      '$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID'
+    ]) {
+      expect(script).toContain(name);
+    }
+  });
+
+  it('holds no secret in its environment', () => {
+    expect(Object.values(envOf(alert)).filter((value) => String(value).includes('secrets.'))).toEqual([]);
+  });
+});
+
+describe('the deploy-specific guards are red on a faulty copy', () => {
+  /** The settings check's `::error::` line and the `exit 1` after it; group 1 is the error line, group 2 the indentation of `exit 1`. */
+  const SETTINGS_EXIT_LINE = /(echo "::error::check-deployment-settings\.sql exited \$settings_exit\."\n)( *)exit 1\n/;
+
+  /** Whether the stage order of a workflow text is the fixed one. */
+  function orderHolds(source: string): boolean {
+    const steps = stepsOf(parseWorkflow(source), 'deploy');
+    return JSON.stringify(stageIdsInOrder(steps, STAGE_ORDER)) === JSON.stringify(STAGE_ORDER);
+  }
+
+  it('sees the apply moved before the plan', () => {
+    const swapped = mutate(mutate(text, 'id: plan\n', 'id: apply-swap\n'), 'id: apply\n', 'id: plan\n').replace(
+      'id: apply-swap\n',
+      'id: apply\n'
+    );
+    expect(orderHolds(text)).toBe(true);
+    expect(orderHolds(swapped)).toBe(false);
+  });
+
+  it('sees the settings check removed', () => {
+    const removed = mutate(text, 'id: settings\n', 'id: settings-removed\n');
+    expect(orderHolds(text)).toBe(true);
+    expect(orderHolds(removed)).toBe(false);
+  });
+
+  it('sees the settings check moved after the apply', () => {
+    const swapped = mutate(
+      mutate(mutate(text, 'id: settings\n', 'id: settings-swap\n'), 'id: apply\n', 'id: settings\n'),
+      'id: settings-swap\n',
+      'id: apply\n'
+    );
+    expect(orderHolds(text)).toBe(true);
+    expect(orderHolds(swapped)).toBe(false);
+  });
+
+  it.each([
+    ['its exit 1 dropped', (source: string) => mutate(source, SETTINGS_EXIT_LINE, '$1')],
+    ['its exit 1 turned into exit 0', (source: string) => mutate(source, SETTINGS_EXIT_LINE, '$1$2exit 0\n')],
+    [
+      'its failure block removed',
+      (source: string) => mutate(source, /^ *if \[ "\$settings_exit" -ne 0 \]; then\n.*\n.*\n *fi\n/m, '')
+    ],
+    [
+      'continue-on-error added to it',
+      (source: string) => mutate(source, 'id: settings\n', 'id: settings\n        continue-on-error: true\n')
+    ],
+    [
+      'an if: added to it',
+      (source: string) =>
+        mutate(source, 'id: settings\n', "id: settings\n        if: ${{ vars.SKIP_SETTINGS != 'true' }}\n")
+    ]
+  ])('sees the settings check unable to fail the run, with %s', (_label, mutation) => {
+    expect(settingsFailsRun(text)).toBe(true);
+    expect(settingsFailsRun(mutation(text))).toBe(false);
+  });
+
+  it('sees the TLS requirement dropped from the settings check', () => {
+    const mutated = mutate(text, /(id: settings\n[\s\S]*?) {10}PGSSLMODE: verify-full\n/, '$1');
+    expect(settingsEnvHolds(text)).toBe(true);
+    expect(settingsEnvHolds(mutated)).toBe(false);
+  });
+
+  /** The line of the step `id`'s environment that begins `key: `, as a pattern whose group 1 is everything before it. */
+  function envLineOf(id: string, key: string): RegExp {
+    return new RegExp(`(id: ${id}\\n[\\s\\S]*?) {10}${key}: [^\\n]*\\n`);
+  }
+
+  /** `source` with the line `key: ` of the step `id`'s environment set to `line`, or dropped when `line` is empty; fails when the line is absent or unchanged. */
+  function mutateEnvLine(source: string, id: string, key: string, line: string): string {
+    const match = envLineOf(id, key).exec(source);
+    if (!match) throw new Error(`the mutation found no ${key} line in the step ${id}`);
+    const replaced = line === '' ? match[1] : `${match[1]}          ${key}: ${line}\n`;
+    const mutated = source.slice(0, match.index) + replaced + source.slice(match.index + match[0].length);
+    if (mutated === source) throw new Error(`the mutation left the ${key} line of the step ${id} unchanged`);
+    return mutated;
+  }
+
+  const ENV_HOLDS: Record<string, (source: string) => boolean> = {
+    migrations: migrationsEnvHolds,
+    settings: settingsEnvHolds
+  };
+
+  it.each(
+    DATABASE_STEPS.flatMap(
+      (id) =>
+        [
+          [id, 'its TLS mode turned back to require', 'PGSSLMODE', 'require', [ENV_HOLDS[id]]],
+          [id, 'its PGSSLROOTCERT dropped', 'PGSSLROOTCERT', '', [ENV_HOLDS[id], rootCaPathHolds]],
+          [
+            id,
+            'its root pointed at a file that does not exist',
+            'PGSSLROOTCERT',
+            `${WORKSPACE_PREFIX}infra/certs/missing.crt`,
+            [ENV_HOLDS[id], rootCaPathHolds]
+          ]
+        ] as Array<[string, string, string, string, Array<(source: string) => boolean>]>
+    )
+  )('sees the %s step no longer verify the server, with %s', (id, _label, key, line, guards) => {
+    const mutated = mutateEnvLine(text, id, key, line);
+    for (const guard of guards) {
+      expect(guard(text)).toBe(true);
+      expect(guard(mutated)).toBe(false);
+    }
+  });
+
+  it('sees both database steps pointed at one root that does not exist', () => {
+    const missing = `${WORKSPACE_PREFIX}infra/certs/missing.crt`;
+    const mutated = DATABASE_STEPS.reduce((source, id) => mutateEnvLine(source, id, 'PGSSLROOTCERT', missing), text);
+    expect(existsSync(join(REPO_ROOT, 'infra', 'certs', 'missing.crt'))).toBe(false);
+    expect(rootCaPathHolds(text)).toBe(true);
+    expect(rootCaPathHolds(mutated)).toBe(false);
+  });
+
+  it('sees the time limit dropped from the settings check', () => {
+    const mutated = mutate(text, /(id: settings\n[\s\S]*?) {8}timeout-minutes: 2\n/, '$1');
+    expect(settingsTimeoutHolds(text)).toBe(true);
+    expect(settingsTimeoutHolds(mutated)).toBe(false);
+  });
+
+  it('sees the access token given to the settings check', () => {
+    const mutated = mutate(
+      text,
+      'id: settings\n        env:\n',
+      'id: settings\n        env:\n          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}\n'
+    );
+    expect(settingsEnvHolds(text)).toBe(true);
+    expect(settingsEnvHolds(mutated)).toBe(false);
+  });
+
+  it('sees a secret added to the smoke step', () => {
+    const mutated = mutate(
+      text,
+      '          SMOKE_EXPECTED_SHA: ${{ github.sha }}\n',
+      '          SMOKE_EXPECTED_SHA: ${{ github.sha }}\n          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}\n'
+    );
+    const env = envOf(stepWithId(stepsOf(parseWorkflow(mutated), 'deploy'), 'smoke'));
+    expect(Object.keys(env).filter((key) => key.startsWith('SUPABASE_') || key.startsWith('PG'))).toEqual([
+      'PGPASSWORD'
+    ]);
+  });
+
+  /** The `rollout-poll` violations of the stable step of a workflow text. */
+  function rolloutPoll(source: string): Array<string> {
+    const parsed = parseWorkflow(source);
+    const script = runOf(stepWithId(stepsOf(parsed, 'deploy'), 'stable'));
+    return rolloutPollViolations(script, Number(jobOf(parsed, 'deploy')['timeout-minutes']));
+  }
+
+  it('sees the stable step read the rollout once', () => {
+    expect(rolloutPoll(mutate(text, /^( *)polls=60$/m, '$1polls=1'))).toContain(
+      'rollout-poll: polls=1 reads the rollout once'
+    );
+  });
+
+  it('sees the stable step read the rollout back to back, with no sleep', () => {
+    expect(rolloutPoll(mutate(text, /^ *sleep "\$interval"\n/m, ''))).toContain(
+      'rollout-poll: no sleep "$interval" inside the loop that reads the service'
+    );
+  });
+
+  it("sees a limit above half the job's timeout", () => {
+    expect(rolloutPoll(mutate(text, /^( *)polls=60$/m, '$1polls=200'))).toContain(
+      "rollout-poll: the limit of 3000 s is above half the job's 60 minutes"
+    );
+  });
+
+  it('sees a pull-request trigger', () => {
+    const mutated = mutate(text, /^ {2}workflow_dispatch:$/m, '  workflow_dispatch:\n  pull_request:');
+    expect('pull_request' in (parseWorkflow(mutated).on as Record<string, unknown>)).toBe(true);
+  });
+});

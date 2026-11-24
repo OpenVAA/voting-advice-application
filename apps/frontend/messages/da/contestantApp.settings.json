@@ -1,0 +1,16 @@
+{
+  "contestantApp.settings": {
+    "emailDescription": "Vi bruger denne e-mail til at kontakte dig og til nulstilling af adgangskode. Den vises ikke på din offentlige profil.",
+    "emailPendingInfo": "Denne adresse er ikke bekræftet endnu. Indtil du åbner linket, vi sendte til den, skal du logge ind med BankID.",
+    "error": {
+      "changePassword": "Ændring af adgangskode mislykkedes. Prøv igen, eller kontakt support hvis problemet fortsætter."
+    },
+    "ingress": "Disse indstillinger påvirker kun, hvordan du bruger denne app. Oplysninger du angiver her, vises ikke offentligt.",
+    "password": {
+      "update": "Opdater adgangskode",
+      "updated": "Adgangskoden er opdateret!"
+    },
+    "saveEmail": "Gem e-mailadresse",
+    "title": "Indstillinger"
+  }
+}

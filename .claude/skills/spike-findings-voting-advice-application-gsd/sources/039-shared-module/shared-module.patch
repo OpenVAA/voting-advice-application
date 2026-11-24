@@ -1,0 +1,643 @@
+diff --git a/apps/supabase/supabase/functions/invite-candidate/callerAuthority.test.ts b/apps/supabase/supabase/functions/_shared/callerAuthority.test.ts
+similarity index 100%
+rename from apps/supabase/supabase/functions/invite-candidate/callerAuthority.test.ts
+rename to apps/supabase/supabase/functions/_shared/callerAuthority.test.ts
+diff --git a/apps/supabase/supabase/functions/invite-candidate/callerAuthority.ts b/apps/supabase/supabase/functions/_shared/callerAuthority.ts
+similarity index 100%
+rename from apps/supabase/supabase/functions/invite-candidate/callerAuthority.ts
+rename to apps/supabase/supabase/functions/_shared/callerAuthority.ts
+diff --git a/apps/supabase/supabase/functions/identity-callback/entityGrant.test.ts b/apps/supabase/supabase/functions/_shared/entityGrant.test.ts
+similarity index 100%
+rename from apps/supabase/supabase/functions/identity-callback/entityGrant.test.ts
+rename to apps/supabase/supabase/functions/_shared/entityGrant.test.ts
+diff --git a/apps/supabase/supabase/functions/identity-callback/entityGrant.ts b/apps/supabase/supabase/functions/_shared/entityGrant.ts
+similarity index 100%
+rename from apps/supabase/supabase/functions/identity-callback/entityGrant.ts
+rename to apps/supabase/supabase/functions/_shared/entityGrant.ts
+diff --git a/apps/supabase/supabase/functions/invite-candidate/envConfig.test.ts b/apps/supabase/supabase/functions/_shared/envConfig.test.ts
+similarity index 100%
+rename from apps/supabase/supabase/functions/invite-candidate/envConfig.test.ts
+rename to apps/supabase/supabase/functions/_shared/envConfig.test.ts
+diff --git a/apps/supabase/supabase/functions/account-access/envConfig.ts b/apps/supabase/supabase/functions/_shared/envConfig.ts
+similarity index 100%
+rename from apps/supabase/supabase/functions/account-access/envConfig.ts
+rename to apps/supabase/supabase/functions/_shared/envConfig.ts
+diff --git a/apps/supabase/supabase/functions/invite-candidate/jwtSegment.test.ts b/apps/supabase/supabase/functions/_shared/jwtSegment.test.ts
+similarity index 100%
+rename from apps/supabase/supabase/functions/invite-candidate/jwtSegment.test.ts
+rename to apps/supabase/supabase/functions/_shared/jwtSegment.test.ts
+diff --git a/apps/supabase/supabase/functions/invite-candidate/jwtSegment.ts b/apps/supabase/supabase/functions/_shared/jwtSegment.ts
+similarity index 100%
+rename from apps/supabase/supabase/functions/invite-candidate/jwtSegment.ts
+rename to apps/supabase/supabase/functions/_shared/jwtSegment.ts
+diff --git a/apps/supabase/supabase/functions/account-access/index.ts b/apps/supabase/supabase/functions/account-access/index.ts
+index 10277f602..872c811b1 100644
+--- a/apps/supabase/supabase/functions/account-access/index.ts
++++ b/apps/supabase/supabase/functions/account-access/index.ts
+@@ -34,7 +34,7 @@ import {
+   REDIRECT_CHECK_TTL_MS,
+   SIGN_UP_CHECK_TTL_MS
+ } from './deploymentChecks.ts';
+-import { requireEnv } from './envConfig.ts';
++import { requireEnv } from '../_shared/envConfig.ts';
+ import { describeFailure, issueSignInLink } from './linkIssue.ts';
+ import { isRedirectAdmitted } from './signInLink.ts';
+ import type { CheckCodeRequest, CodeSignInRequest, RequestLinkRequest } from './contract.ts';
+diff --git a/apps/supabase/supabase/functions/identity-callback/envConfig.ts b/apps/supabase/supabase/functions/identity-callback/envConfig.ts
+deleted file mode 100644
+index 82956bfea..000000000
+--- a/apps/supabase/supabase/functions/identity-callback/envConfig.ts
++++ /dev/null
+@@ -1,33 +0,0 @@
+-/**
+- * Required-environment-variable resolution for Edge Functions.
+- *
+- * Pure functions extracted from the invite-candidate Edge Function for testability. This module has NO Deno imports (no Deno.env, no Deno.serve, no URL imports from deno.land) so it can be imported by both the Edge Function and vitest.
+- *
+- * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/identity-callback/`, `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/send-email/` -- this file is one of the three -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. The set is named in full, including the directory you are reading this in, rather than as "the other directories": the copies are byte-identical, so a sentence naming relative siblings would be correct from one vantage point and wrong from the other two, and correcting it per file would break the identity the guard enforces. The copies are held identical by `scripts/assert-edge-env-defaults.mjs`; introducing a shared directory instead is a separate decision with its own deployment validation, so a reader who finds three identical files is looking at a choice rather than at an oversight.
+- *
+- * WHY THIS REPLACES A DEFAULT RATHER THAN SUPPLYING A BETTER ONE. A `Deno.env.get('X') || fallback` chain converts a misconfiguration into a wrong result: the worst of the seven sites in this repository fell back from `SITE_URL` to the Supabase API host, so an unset variable addressed candidate invite links at the API origin instead of the site origin -- a link the recipient cannot use, produced by a deployment that reported no error at all. There is no fallback value that is correct here, so the only honest behaviour is to refuse to run.
+- */
+-
+-/**
+- * Return the value of a required environment variable, or throw naming it.
+- *
+- * WHY TWO PARAMETERS, when one would look tidier: passing the NAME alongside the VALUE is what lets the message name the variable while keeping this module free of any Deno global, which is the only reason vitest can reach it at all. A one-parameter helper that read the environment itself would be untestable here, and a one-parameter helper that took only the value would lose the variable name from the error -- which is the entire point of the requirement this implements.
+- *
+- * An absent value and an empty string are both treated as unconfigured, because `X=` in a `.env` file is an operator who has not chosen a value. Every other string is returned unchanged, including `'0'` and `'false'`: the set of missing values is exactly two and is closed on purpose, so a legitimate falsy-reading value is never swallowed.
+- *
+- * @param name - The environment variable's name, used only to build the message
+- * @param value - The value read at the call site, normally `Deno.env.get(name)`
+- * @returns The value, unchanged, when it is a non-empty string
+- * @throws {Error & { code: string; variable: string }} `ERR_ENV_UNCONFIGURED`
+- */
+-export function requireEnv(name: string, value: string | undefined): string {
+-  if (value === undefined || value === '') {
+-    // The message names the variable and nothing else -- no value, no host, no URL.
+-    throw Object.assign(new Error(`Missing required environment variable: ${name}.`), {
+-      code: 'ERR_ENV_UNCONFIGURED',
+-      variable: name
+-    });
+-  }
+-
+-  return value;
+-}
+diff --git a/apps/supabase/supabase/functions/identity-callback/flowConformance.test.ts b/apps/supabase/supabase/functions/identity-callback/flowConformance.test.ts
+index ec3b94cec..0bd13d602 100644
+--- a/apps/supabase/supabase/functions/identity-callback/flowConformance.test.ts
++++ b/apps/supabase/supabase/functions/identity-callback/flowConformance.test.ts
+@@ -10,10 +10,10 @@
+ 
+ import { readFileSync } from 'node:fs';
+ import { describe, expect, it } from 'vitest';
+-import { writeEntityGrant } from './entityGrant.ts';
++import { writeEntityGrant } from '../_shared/entityGrant.ts';
+ 
+ const INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
+-const GRANT_MODULE_SOURCE = readFileSync(new URL('./entityGrant.ts', import.meta.url), 'utf8');
++const GRANT_MODULE_SOURCE = readFileSync(new URL('../_shared/entityGrant.ts', import.meta.url), 'utf8');
+ const ENUM_SOURCE = readFileSync(new URL('../../schema/000-enums.sql', import.meta.url), 'utf8');
+ 
+ /** The 23 permission verbs, derived from the declarative enum declaration at run time. */
+diff --git a/apps/supabase/supabase/functions/identity-callback/index.ts b/apps/supabase/supabase/functions/identity-callback/index.ts
+index 9c33f48e4..3d94703fb 100644
+--- a/apps/supabase/supabase/functions/identity-callback/index.ts
++++ b/apps/supabase/supabase/functions/identity-callback/index.ts
+@@ -27,9 +27,9 @@
+ import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
+ import * as jose from 'npm:jose@6.2.12';
+ import { createCandidate, deleteCandidate, findExistingCandidate } from './candidateRecord.ts';
+-import { writeEntityGrant } from './entityGrant.ts';
++import { writeEntityGrant } from '../_shared/entityGrant.ts';
+ import { extractIdentityClaims, resolveProviderConfig } from './claimConfig.ts';
+-import { requireEnv } from './envConfig.ts';
++import { requireEnv } from '../_shared/envConfig.ts';
+ import { requireVerifyClaimBinding } from './verifyConfig.ts';
+ 
+ const corsHeaders = {
+diff --git a/apps/supabase/supabase/functions/invite-candidate/entityGrant.test.ts b/apps/supabase/supabase/functions/invite-candidate/entityGrant.test.ts
+deleted file mode 100644
+index 2de875ffb..000000000
+--- a/apps/supabase/supabase/functions/invite-candidate/entityGrant.test.ts
++++ /dev/null
+@@ -1,147 +0,0 @@
+-/**
+- * Entity grant write tests.
+- *
+- * The grant row is the whole of a newly minted identity's authority: the access-token hook projects `public.grants` and nothing else, so an identity whose grant write failed can do nothing at all and the failure surfaces later as an unexplained wall of denials. These cases state the three properties that follow -- the row written, the table written to, and that a failure ABORTS rather than being logged -- and they state them as OBSERVED BEHAVIOUR of an importable module. `index.ts` resolves remote Deno specifiers and cannot be imported by vitest, so an insert written inline there could only be asserted against source text.
+- *
+- * ALL FOUR ENTITY TYPES ARE EXERCISED, although only candidates have a caller: organizations, factions and alliances have no creation path that writes a grant. Three of the module's four branches are therefore exercised by this file and by nothing else until a second call site exists.
+- *
+- * The client is a hand-built fake rather than a mocking library: it records the table it was asked for and the row it was handed, and answers `insert()` with a value each case controls.
+- */
+-
+-import { describe, expect, it } from 'vitest';
+-import { writeEntityGrant } from './entityGrant';
+-import type { EntityGrantType, GrantWriteClient } from './entityGrant';
+-
+-const USER_ID = '11111111-1111-1111-1111-111111111111';
+-const ENTITY_ID = '22222222-2222-2222-2222-222222222222';
+-
+-/** What one drive of the fake client observed: the tables asked for and the rows handed to `insert`. */
+-interface Recording {
+-  tables: Array<string>;
+-  rows: Array<Record<string, unknown>>;
+-}
+-
+-/**
+- * A recording client whose `insert()` resolves to `result`.
+- * @param result - What `insert()` resolves to; `{ error: null }` for a write that succeeded.
+- * @returns The client to pass to the write, and the recording it fills in.
+- */
+-function recordingClient(result: { error: { message: string; code?: string } | null }): {
+-  client: GrantWriteClient;
+-  recorded: Recording;
+-} {
+-  const recorded: Recording = { tables: [], rows: [] };
+-
+-  const client = {
+-    from(table: string) {
+-      recorded.tables.push(table);
+-      return {
+-        insert(row: Record<string, unknown>) {
+-          recorded.rows.push(row);
+-          return Promise.resolve(result);
+-        }
+-      };
+-    }
+-  };
+-
+-  return { client: client as unknown as GrantWriteClient, recorded };
+-}
+-
+-describe('writeEntityGrant', () => {
+-  // The parameterisation, exercised rather than declared. Each row asserts the WHOLE written shape, so a discriminator taken from the wrong side of a mapping -- a grant that is well-formed, passes every database constraint and points at the wrong entity class -- reddens here.
+-  it.each<EntityGrantType>(['candidate', 'organization', 'faction', 'alliance'])(
+-    'writes one entity/editor grant carrying target_type %s',
+-    async (entityType) => {
+-      const { client, recorded } = recordingClient({ error: null });
+-
+-      await writeEntityGrant(client, { userId: USER_ID, entityType, entityId: ENTITY_ID });
+-
+-      expect(recorded.rows).toEqual([
+-        {
+-          user_id: USER_ID,
+-          scope: 'entity',
+-          target_type: entityType,
+-          target_id: ENTITY_ID,
+-          role: 'editor'
+-        }
+-      ]);
+-    }
+-  );
+-
+-  it('writes to the grants table and to no other table', async () => {
+-    const { client, recorded } = recordingClient({ error: null });
+-
+-    await writeEntityGrant(client, { userId: USER_ID, entityType: 'candidate', entityId: ENTITY_ID });
+-
+-    expect(recorded.tables).toEqual(['grants']);
+-  });
+-
+-  // THE ABORT, observed rather than inferred from source text. A path that logged this failure and returned success would leave a candidate who received an invite holding no grant, and so no access at all.
+-  it('throws when the insert reports an error, carrying the client-reported text', async () => {
+-    const { client } = recordingClient({ error: { message: 'duplicate key value violates unique constraint' } });
+-
+-    await expect(
+-      writeEntityGrant(client, { userId: USER_ID, entityType: 'candidate', entityId: ENTITY_ID })
+-    ).rejects.toThrow('duplicate key value violates unique constraint');
+-  });
+-
+-  // IDEMPOTENT: the grant already existing is the state the caller wanted, so a unique violation naming the grants table's own key is success. That is what lets a caller write the grant without first asking whether it exists.
+-  it('treats a unique violation on the grant key (the grant already exists) as success', async () => {
+-    const { client, recorded } = recordingClient({
+-      error: {
+-        message: 'duplicate key value violates unique constraint "grants_user_scope_target_role_key"',
+-        code: '23505'
+-      }
+-    });
+-
+-    await expect(
+-      writeEntityGrant(client, { userId: USER_ID, entityType: 'candidate', entityId: ENTITY_ID })
+-    ).resolves.toBeUndefined();
+-    expect(recorded.rows).toHaveLength(1);
+-  });
+-
+-  // A unique violation on any key other than the grant's own is a refusal: another identity already holds the one editor grant that key admits, so reading it as success would report an identity that was never granted anything.
+-  it('throws when a unique violation names a key other than the grant key', async () => {
+-    const { client } = recordingClient({
+-      error: {
+-        message: 'duplicate key value violates unique constraint "idx_grants_one_candidate_editor"',
+-        code: '23505'
+-      }
+-    });
+-
+-    await expect(
+-      writeEntityGrant(client, { userId: USER_ID, entityType: 'candidate', entityId: ENTITY_ID })
+-    ).rejects.toMatchObject({ code: 'ERR_GRANT_WRITE_FAILED' });
+-  });
+-
+-  it('still throws for any other coded failure, such as a foreign-key violation', async () => {
+-    const { client } = recordingClient({ error: { message: 'violates foreign key constraint', code: '23503' } });
+-
+-    await expect(
+-      writeEntityGrant(client, { userId: USER_ID, entityType: 'candidate', entityId: ENTITY_ID })
+-    ).rejects.toMatchObject({ code: 'ERR_GRANT_WRITE_FAILED' });
+-  });
+-
+-  it('marks that throw with a named code, so a caller can distinguish it from any other failure', async () => {
+-    const { client } = recordingClient({ error: { message: 'connection reset' } });
+-
+-    await expect(
+-      writeEntityGrant(client, { userId: USER_ID, entityType: 'candidate', entityId: ENTITY_ID })
+-    ).rejects.toMatchObject({ code: 'ERR_GRANT_WRITE_FAILED' });
+-  });
+-
+-  // A discriminator outside the declared vocabulary must not reach the table. The column is enum-typed, so the database would reject it too -- but it would reject it as an opaque insert failure on a path whose whole job is to report why an identity has no authority.
+-  it('throws on an entity type outside the declared four, rather than writing a row with an unknown discriminator', async () => {
+-    const { client, recorded } = recordingClient({ error: null });
+-
+-    await expect(
+-      writeEntityGrant(client, {
+-        userId: USER_ID,
+-        entityType: 'party' as EntityGrantType,
+-        entityId: ENTITY_ID
+-      })
+-    ).rejects.toMatchObject({ code: 'ERR_ENTITY_GRANT_TYPE_UNKNOWN' });
+-    expect(recorded.rows).toEqual([]);
+-    expect(recorded.tables).toEqual([]);
+-  });
+-});
+diff --git a/apps/supabase/supabase/functions/invite-candidate/entityGrant.ts b/apps/supabase/supabase/functions/invite-candidate/entityGrant.ts
+deleted file mode 100644
+index 7c197e713..000000000
+--- a/apps/supabase/supabase/functions/invite-candidate/entityGrant.ts
++++ /dev/null
+@@ -1,87 +0,0 @@
+-/**
+- * The entity grant write, for the Edge Functions that mint an identity.
+- *
+- * Kept apart from the Edge Function entry points so it can be tested, in the shape of `identity-callback/candidateRecord.ts`. This module reaches the Deno runtime global nowhere and imports from a remote origin nowhere -- no environment read, no server registration, no URL import -- so it can be imported by both the Edge Function and vitest. The client is a parameter for that reason: the caller reads the environment and builds the service-role client, and this module holds only the row shape and the failure behaviour, which are the halves worth asserting.
+- *
+- * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/identity-callback/` -- this file is one of the two -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. `jwtSegment.ts` exists as two copies for the same reason, so a reader who finds two identical files is looking at a choice rather than at an oversight.
+- *
+- * ENTITY-TYPE PARAMETERISED. All four entity types are accepted, and this module's own test exercises all four. The caller names the type at its call site, the one place that knows which entity was just created; the authorisation check and the insert take it as a parameter, so no entity-type literal appears in this file.
+- *
+- * WHY THE VOCABULARY IS ONE STRING RATHER THAN AN ARRAY OF LITERALS. The closed set of entity types has to be spelled somewhere for the runtime check below to exist at all, and spelling it as four quoted literals would put the candidate literal in this file -- the one place the whole point of the parameterisation is that it does not appear. A single whitespace-separated declaration names the vocabulary once, as a vocabulary, without any one member standing alone as a literal this module could accidentally come to depend on.
+- *
+- * WHY A FAILED WRITE IS A THROW. Under the grant model an identity holding no grant row can do nothing at all: the access-token hook projects `public.grants` and the claim it builds for a grant-less user is an empty array, which answers false for all 23 permissions. A caller that logged the failure and continued would report a successful invite or a successful registration to a principal who has just been locked out of the application, and the failure would surface later as an unexplained wall of denials rather than as an error anyone can attribute.
+- */
+-
+-/**
+- * The entity types a grant's discriminator may name, as the database's `entity_type` enum declares them.
+- *
+- * Declared as one whitespace-separated string for the reason in this module's header. It is the runtime half of the type below; the type is the compile-time half, and neither alone would catch a caller reached through an `unknown`.
+- */
+-const ENTITY_GRANT_VOCABULARY = 'candidate organization faction alliance';
+-
+-/** PostgreSQL's SQLSTATE for a unique violation, which PostgREST passes through as the error `code`. */
+-const UNIQUE_VIOLATION = '23505';
+-
+-/** The grants table's own unique key: a violation of it means this exact grant already exists. */
+-const IDEMPOTENT_GRANT_KEY = 'grants_user_scope_target_role_key';
+-
+-/** The same vocabulary as a list, for the runtime membership check. */
+-const ENTITY_GRANT_TYPES: Array<string> = ENTITY_GRANT_VOCABULARY.split(' ');
+-
+-/**
+- * One of the four entity types a grant may point at.
+- *
+- * Derived from the vocabulary declared above rather than restated as a second union, so the runtime check and the compile-time type are the SAME declaration and cannot drift apart. The conditional type is a split on the separator, which is all it is.
+- */
+-type SplitOnSpace<TSource extends string> = TSource extends `${infer THead} ${infer TRest}`
+-  ? THead | SplitOnSpace<TRest>
+-  : TSource;
+-
+-export type EntityGrantType = SplitOnSpace<typeof ENTITY_GRANT_VOCABULARY>;
+-
+-/**
+- * The narrow slice of the Supabase client this module uses.
+- *
+- * Declared locally rather than imported so the module needs no import at all, which is what keeps it free of the remote specifier the Edge Function entry points hold.
+- */
+-export interface GrantWriteClient {
+-  from(table: string): {
+-    insert(row: Record<string, unknown>): Promise<{ error: { message: string; code?: string } | null }>;
+-  };
+-}
+-
+-/**
+- * Write the entity grant that makes a newly minted identity able to act on its own entity.
+- *
+- * One row, one table. The role is the entity level of the two the vocabulary declares, and the scope is the entity scope: that pair is the whole of what the user-type-to-grant mapping gives every entity user, and what distinguishes one entity user from another is the discriminator and the target, both of which are parameters.
+- * @param client - A Supabase client; normally the service-role admin client, which bypasses row-level security.
+- * @param grant.userId - The auth user the grant is held by.
+- * @param grant.entityType - Which entity table the target lives in.
+- * @param grant.entityId - The entity row the grant reaches.
+- * @throws {Error & { code: string }} `ERR_ENTITY_GRANT_TYPE_UNKNOWN` when the entity type is outside the declared four, rather than writing a row carrying an unknown discriminator; `ERR_GRANT_WRITE_FAILED` when the insert itself failed for any reason other than the grant already existing. The second message carries the client-reported text only.
+- */
+-export async function writeEntityGrant(
+-  client: GrantWriteClient,
+-  { userId, entityType, entityId }: { userId: string; entityType: EntityGrantType; entityId: string }
+-): Promise<void> {
+-  if (!ENTITY_GRANT_TYPES.includes(entityType)) {
+-    throw Object.assign(new Error(`Unknown entity type for grant: ${entityType}`), {
+-      code: 'ERR_ENTITY_GRANT_TYPE_UNKNOWN'
+-    });
+-  }
+-
+-  const { error } = await client.from('grants').insert({
+-    user_id: userId,
+-    scope: 'entity',
+-    target_type: entityType,
+-    target_id: entityId,
+-    role: 'editor'
+-  });
+-
+-  // IDEMPOTENT on the grant's own key only. A violation of `IDEMPOTENT_GRANT_KEY` means this exact grant already exists, which is the state the caller asked for, so it is success. A unique violation on any other key is a refusal -- another identity already holds an editor grant that the schema admits only once -- and must not read as success, or the caller would report an identity that holds no grant.
+-  if (error && !(error.code === UNIQUE_VIOLATION && error.message.includes(IDEMPOTENT_GRANT_KEY))) {
+-    throw Object.assign(new Error(`Grant write failed: ${error.message}`), {
+-      code: 'ERR_GRANT_WRITE_FAILED'
+-    });
+-  }
+-}
+diff --git a/apps/supabase/supabase/functions/invite-candidate/envConfig.ts b/apps/supabase/supabase/functions/invite-candidate/envConfig.ts
+deleted file mode 100644
+index 82956bfea..000000000
+--- a/apps/supabase/supabase/functions/invite-candidate/envConfig.ts
++++ /dev/null
+@@ -1,33 +0,0 @@
+-/**
+- * Required-environment-variable resolution for Edge Functions.
+- *
+- * Pure functions extracted from the invite-candidate Edge Function for testability. This module has NO Deno imports (no Deno.env, no Deno.serve, no URL imports from deno.land) so it can be imported by both the Edge Function and vitest.
+- *
+- * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/identity-callback/`, `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/send-email/` -- this file is one of the three -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. The set is named in full, including the directory you are reading this in, rather than as "the other directories": the copies are byte-identical, so a sentence naming relative siblings would be correct from one vantage point and wrong from the other two, and correcting it per file would break the identity the guard enforces. The copies are held identical by `scripts/assert-edge-env-defaults.mjs`; introducing a shared directory instead is a separate decision with its own deployment validation, so a reader who finds three identical files is looking at a choice rather than at an oversight.
+- *
+- * WHY THIS REPLACES A DEFAULT RATHER THAN SUPPLYING A BETTER ONE. A `Deno.env.get('X') || fallback` chain converts a misconfiguration into a wrong result: the worst of the seven sites in this repository fell back from `SITE_URL` to the Supabase API host, so an unset variable addressed candidate invite links at the API origin instead of the site origin -- a link the recipient cannot use, produced by a deployment that reported no error at all. There is no fallback value that is correct here, so the only honest behaviour is to refuse to run.
+- */
+-
+-/**
+- * Return the value of a required environment variable, or throw naming it.
+- *
+- * WHY TWO PARAMETERS, when one would look tidier: passing the NAME alongside the VALUE is what lets the message name the variable while keeping this module free of any Deno global, which is the only reason vitest can reach it at all. A one-parameter helper that read the environment itself would be untestable here, and a one-parameter helper that took only the value would lose the variable name from the error -- which is the entire point of the requirement this implements.
+- *
+- * An absent value and an empty string are both treated as unconfigured, because `X=` in a `.env` file is an operator who has not chosen a value. Every other string is returned unchanged, including `'0'` and `'false'`: the set of missing values is exactly two and is closed on purpose, so a legitimate falsy-reading value is never swallowed.
+- *
+- * @param name - The environment variable's name, used only to build the message
+- * @param value - The value read at the call site, normally `Deno.env.get(name)`
+- * @returns The value, unchanged, when it is a non-empty string
+- * @throws {Error & { code: string; variable: string }} `ERR_ENV_UNCONFIGURED`
+- */
+-export function requireEnv(name: string, value: string | undefined): string {
+-  if (value === undefined || value === '') {
+-    // The message names the variable and nothing else -- no value, no host, no URL.
+-    throw Object.assign(new Error(`Missing required environment variable: ${name}.`), {
+-      code: 'ERR_ENV_UNCONFIGURED',
+-      variable: name
+-    });
+-  }
+-
+-  return value;
+-}
+diff --git a/apps/supabase/supabase/functions/invite-candidate/flowConformance.test.ts b/apps/supabase/supabase/functions/invite-candidate/flowConformance.test.ts
+index e0317a498..fd83f816b 100644
+--- a/apps/supabase/supabase/functions/invite-candidate/flowConformance.test.ts
++++ b/apps/supabase/supabase/functions/invite-candidate/flowConformance.test.ts
+@@ -16,12 +16,12 @@
+ 
+ import { readFileSync } from 'node:fs';
+ import { beforeAll, describe, expect, it } from 'vitest';
+-import { callerMayOnProject } from './callerAuthority.ts';
+-import { writeEntityGrant } from './entityGrant.ts';
+-import type { RpcClient } from './callerAuthority.ts';
++import { callerMayOnProject } from '../_shared/callerAuthority.ts';
++import { writeEntityGrant } from '../_shared/entityGrant.ts';
++import type { RpcClient } from '../_shared/callerAuthority.ts';
+ 
+ const INDEX_SOURCE = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
+-const GRANT_MODULE_SOURCE = readFileSync(new URL('./entityGrant.ts', import.meta.url), 'utf8');
++const GRANT_MODULE_SOURCE = readFileSync(new URL('../_shared/entityGrant.ts', import.meta.url), 'utf8');
+ const ENUM_SOURCE = readFileSync(new URL('../../schema/000-enums.sql', import.meta.url), 'utf8');
+ const AUTH_FUNCTIONS_SOURCE = readFileSync(new URL('../../schema/301-auth-functions.sql', import.meta.url), 'utf8');
+ 
+@@ -170,7 +170,7 @@ describe('invite-candidate flow conformance', () => {
+ 
+   it('takes its gate from the shared callerAuthority module and declares none of its own', () => {
+     // Guards a LOCAL SHADOW of the helper: a same-named function declared in index.ts would satisfy every call-shape assertion here while answering whatever it likes.
+-    expect(INDEX_SOURCE).toContain("import { callerMayOnProject } from './callerAuthority.ts';");
++    expect(INDEX_SOURCE).toContain("import { callerMayOnProject } from '../_shared/callerAuthority.ts';");
+     expect(INDEX_SOURCE).not.toMatch(/\bfunction\s*\*?\s*callerMayOnProject\b/);
+     expect(INDEX_SOURCE).not.toMatch(/\b(?:const|let|var)\s+callerMayOnProject\b/);
+   });
+diff --git a/apps/supabase/supabase/functions/invite-candidate/index.ts b/apps/supabase/supabase/functions/invite-candidate/index.ts
+index 1ce375999..ce2a06bae 100644
+--- a/apps/supabase/supabase/functions/invite-candidate/index.ts
++++ b/apps/supabase/supabase/functions/invite-candidate/index.ts
+@@ -1,7 +1,7 @@
+ import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
+-import { callerMayOnProject } from './callerAuthority.ts';
+-import { writeEntityGrant } from './entityGrant.ts';
+-import { requireEnv } from './envConfig.ts';
++import { callerMayOnProject } from '../_shared/callerAuthority.ts';
++import { writeEntityGrant } from '../_shared/entityGrant.ts';
++import { requireEnv } from '../_shared/envConfig.ts';
+ 
+ const corsHeaders = {
+   'Access-Control-Allow-Origin': '*',
+diff --git a/apps/supabase/supabase/functions/send-email/callerAuthority.ts b/apps/supabase/supabase/functions/send-email/callerAuthority.ts
+deleted file mode 100644
+index b6e1a1ceb..000000000
+--- a/apps/supabase/supabase/functions/send-email/callerAuthority.ts
++++ /dev/null
+@@ -1,75 +0,0 @@
+-/**
+- * The Edge Functions' authority gate: ask the DATABASE whether the caller may do a thing, never re-derive the answer here.
+- *
+- * `public.user_can(scope, target_id, permission, target_type)` is the single place the role x permission matrix is encoded, and no second copy of it may exist. The two gates this replaced -- one in `invite-candidate`, one in `send-email` -- each hand-coded a subset of the matrix from the raw JWT `grants` claim, and they had already diverged from the matrix and from each other: both admitted an account admin of ANY account, because resolving which account owns the project is a reach rule only the database holds, and one refused a ProjectEditor that the matrix grants `project.edit_entities`.
+- *
+- * The call goes through the CALLER'S OWN client, so `user_can` reads the caller's own `grants` claim from their token -- the same claim every RLS policy reads. A service-role client must never be passed here: its token carries no grants claim, and the answer would describe the service role rather than the caller.
+- *
+- * Fails CLOSED: an RPC error, a non-boolean answer, or an absent/blank target id is a denial.
+- *
+- * ⚠ BYTE-IDENTICAL COPIES live in `invite-candidate/` and `send-email/`, because Supabase deploys each top-level function directory as its own unit and this repository has no shared module directory for Edge Functions (the `envConfig.ts` precedent). `scripts/assert-edge-env-defaults.mjs` (a `yarn lint:check` link) fails when the two copies differ. Edit both or neither.
+- *
+- * Reaches no remote origin, so vitest can import it -- unlike `index.ts`, whose `npm:` specifiers only Deno resolves.
+- */
+-
+-/** The slice of a supabase-js client this module uses: an awaitable `rpc` call. */
+-export interface RpcClient {
+-  rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
+-}
+-
+-/** The members of `public.entity_type`. */
+-export type EntityType = 'candidate' | 'organization' | 'faction' | 'alliance';
+-
+-const ENTITY_TYPES: ReadonlyArray<string> = ['candidate', 'organization', 'faction', 'alliance'];
+-
+-/**
+- * Does the caller hold `permission` on project `projectId`, per `public.user_can`?
+- *
+- * @param callerClient - A client carrying the CALLER'S bearer token, never a service-role client.
+- * @param projectId - The project the request acts on. Blank or absent denies without a round trip.
+- * @param permission - A member of `public.grant_permission`, for example `project.edit_entities`.
+- */
+-export async function callerMayOnProject(
+-  callerClient: RpcClient,
+-  projectId: unknown,
+-  permission: string
+-): Promise<boolean> {
+-  if (typeof projectId !== 'string' || projectId.trim() === '') return false;
+-  return askUserCan(callerClient, { p_scope: 'project', p_target_id: projectId.trim(), p_permission: permission });
+-}
+-
+-/**
+- * Does the caller hold `permission` on the entity of type `entityType` with id `entityId`, per `public.user_can`?
+- *
+- * Ask every entity-scope question through this helper. `user_can`'s `p_target_type` is optional so that project-scope callers can pass three arguments, which lets an entity-scope call without a type compile; the database then denies it, and nothing says why. Here the type is a required parameter.
+- *
+- * @param callerClient - A client carrying the CALLER'S bearer token, never a service-role client.
+- * @param entityType - The entity's table type. A value outside `public.entity_type` denies without a round trip.
+- * @param entityId - The entity's id. Blank or absent denies without a round trip.
+- * @param permission - A member of `public.grant_permission`, for example `entity.edit_answers`.
+- */
+-export async function callerMayOnEntity(
+-  callerClient: RpcClient,
+-  entityType: EntityType,
+-  entityId: unknown,
+-  permission: string
+-): Promise<boolean> {
+-  if (!ENTITY_TYPES.includes(entityType)) return false;
+-  if (typeof entityId !== 'string' || entityId.trim() === '') return false;
+-  return askUserCan(callerClient, {
+-    p_scope: 'entity',
+-    p_target_id: entityId.trim(),
+-    p_permission: permission,
+-    p_target_type: entityType
+-  });
+-}
+-
+-/** Puts one question to `public.user_can`; anything but a literal `true` is a denial. */
+-async function askUserCan(callerClient: RpcClient, args: Record<string, unknown>): Promise<boolean> {
+-  try {
+-    const { data, error } = await callerClient.rpc('user_can', args);
+-    return !error && data === true;
+-  } catch {
+-    return false;
+-  }
+-}
+diff --git a/apps/supabase/supabase/functions/send-email/envConfig.ts b/apps/supabase/supabase/functions/send-email/envConfig.ts
+deleted file mode 100644
+index 82956bfea..000000000
+--- a/apps/supabase/supabase/functions/send-email/envConfig.ts
++++ /dev/null
+@@ -1,33 +0,0 @@
+-/**
+- * Required-environment-variable resolution for Edge Functions.
+- *
+- * Pure functions extracted from the invite-candidate Edge Function for testability. This module has NO Deno imports (no Deno.env, no Deno.serve, no URL imports from deno.land) so it can be imported by both the Edge Function and vitest.
+- *
+- * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/identity-callback/`, `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/send-email/` -- this file is one of the three -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. The set is named in full, including the directory you are reading this in, rather than as "the other directories": the copies are byte-identical, so a sentence naming relative siblings would be correct from one vantage point and wrong from the other two, and correcting it per file would break the identity the guard enforces. The copies are held identical by `scripts/assert-edge-env-defaults.mjs`; introducing a shared directory instead is a separate decision with its own deployment validation, so a reader who finds three identical files is looking at a choice rather than at an oversight.
+- *
+- * WHY THIS REPLACES A DEFAULT RATHER THAN SUPPLYING A BETTER ONE. A `Deno.env.get('X') || fallback` chain converts a misconfiguration into a wrong result: the worst of the seven sites in this repository fell back from `SITE_URL` to the Supabase API host, so an unset variable addressed candidate invite links at the API origin instead of the site origin -- a link the recipient cannot use, produced by a deployment that reported no error at all. There is no fallback value that is correct here, so the only honest behaviour is to refuse to run.
+- */
+-
+-/**
+- * Return the value of a required environment variable, or throw naming it.
+- *
+- * WHY TWO PARAMETERS, when one would look tidier: passing the NAME alongside the VALUE is what lets the message name the variable while keeping this module free of any Deno global, which is the only reason vitest can reach it at all. A one-parameter helper that read the environment itself would be untestable here, and a one-parameter helper that took only the value would lose the variable name from the error -- which is the entire point of the requirement this implements.
+- *
+- * An absent value and an empty string are both treated as unconfigured, because `X=` in a `.env` file is an operator who has not chosen a value. Every other string is returned unchanged, including `'0'` and `'false'`: the set of missing values is exactly two and is closed on purpose, so a legitimate falsy-reading value is never swallowed.
+- *
+- * @param name - The environment variable's name, used only to build the message
+- * @param value - The value read at the call site, normally `Deno.env.get(name)`
+- * @returns The value, unchanged, when it is a non-empty string
+- * @throws {Error & { code: string; variable: string }} `ERR_ENV_UNCONFIGURED`
+- */
+-export function requireEnv(name: string, value: string | undefined): string {
+-  if (value === undefined || value === '') {
+-    // The message names the variable and nothing else -- no value, no host, no URL.
+-    throw Object.assign(new Error(`Missing required environment variable: ${name}.`), {
+-      code: 'ERR_ENV_UNCONFIGURED',
+-      variable: name
+-    });
+-  }
+-
+-  return value;
+-}
+diff --git a/apps/supabase/supabase/functions/send-email/flowConformance.test.ts b/apps/supabase/supabase/functions/send-email/flowConformance.test.ts
+index 056bf0c2f..f088bb691 100644
+--- a/apps/supabase/supabase/functions/send-email/flowConformance.test.ts
++++ b/apps/supabase/supabase/functions/send-email/flowConformance.test.ts
+@@ -102,7 +102,7 @@ describe('send-email flow conformance', () => {
+ 
+   it('takes its gate from the shared callerAuthority module and declares none of its own', () => {
+     // Guards a LOCAL SHADOW of the helper (162-REVIEW WR-09): a same-named function declared in index.ts would satisfy every call-shape assertion here while answering whatever it likes.
+-    expect(INDEX_SOURCE).toContain("import { callerMayOnProject } from './callerAuthority.ts';");
++    expect(INDEX_SOURCE).toContain("import { callerMayOnProject } from '../_shared/callerAuthority.ts';");
+     expect(INDEX_SOURCE).not.toMatch(/\bfunction\s*\*?\s*callerMayOnProject\b/);
+     expect(INDEX_SOURCE).not.toMatch(/\b(?:const|let|var)\s+callerMayOnProject\b/);
+   });
+diff --git a/apps/supabase/supabase/functions/send-email/index.ts b/apps/supabase/supabase/functions/send-email/index.ts
+index 82b6b3e06..c5f0710af 100644
+--- a/apps/supabase/supabase/functions/send-email/index.ts
++++ b/apps/supabase/supabase/functions/send-email/index.ts
+@@ -1,8 +1,8 @@
+ import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
+ import nodemailer from 'npm:nodemailer@10.0.11';
+-import { callerMayOnProject } from './callerAuthority.ts';
++import { callerMayOnProject } from '../_shared/callerAuthority.ts';
+ import { renderTemplate, renderTemplateHtml } from './templateVars.ts';
+-import { requireEnv } from './envConfig.ts';
++import { requireEnv } from '../_shared/envConfig.ts';
+ 
+ const corsHeaders = {
+   'Access-Control-Allow-Origin': '*',
+diff --git a/apps/supabase/supabase/functions/send-email/jwtSegment.test.ts b/apps/supabase/supabase/functions/send-email/jwtSegment.test.ts
+index 89bf4a9b5..f0ecf2303 100644
+--- a/apps/supabase/supabase/functions/send-email/jwtSegment.test.ts
++++ b/apps/supabase/supabase/functions/send-email/jwtSegment.test.ts
+@@ -11,7 +11,7 @@
+  */
+ 
+ import { describe, it, expect } from 'vitest';
+-import { decodeJwtSegment } from './jwtSegment';
++import { decodeJwtSegment } from '../_shared/jwtSegment';
+ 
+ /**
+  * A payload shaped like the one `send-email` actually reads, plus a run of tildes.
+diff --git a/apps/supabase/supabase/functions/send-email/jwtSegment.ts b/apps/supabase/supabase/functions/send-email/jwtSegment.ts
+deleted file mode 100644
+index dad1bf03f..000000000
+--- a/apps/supabase/supabase/functions/send-email/jwtSegment.ts
++++ /dev/null
+@@ -1,29 +0,0 @@
+-/**
+- * Base64url decoding for JWT segments.
+- *
+- * Pure functions extracted from the invite-candidate Edge Function for testability. This module has NO Deno imports (no Deno.env, no Deno.serve, no URL imports from deno.land) so it can be imported by both the Edge Function and vitest.
+- *
+- * DUPLICATED ON PURPOSE. Byte-identical copies of this file live in `apps/supabase/supabase/functions/invite-candidate/` and `apps/supabase/supabase/functions/send-email/` -- this file is one of the two -- because Supabase treats each top-level function directory as its own deployment unit and this repository has no shared-module directory for Edge Functions. The set is named in full, including the directory you are reading this in, rather than as "the other directory": the copies are byte-identical, so a sentence naming a relative sibling would be correct from one vantage point and wrong from the other, and correcting it per file would break the identity the guard enforces. The copies are held identical by `scripts/assert-edge-env-defaults.mjs`; introducing a shared directory instead is a separate decision with its own deployment validation, so a reader who finds two identical files is looking at a choice rather than at an oversight.
+- *
+- * TWO MEASURED CORRECTIONS, recorded because both contradict the wording this fix was requested with and a future reader would otherwise re-derive them wrongly. First, it is the ALPHABET that breaks, not the padding: `atob` implements WHATWG forgiving-base64, which accepts unpadded input at every length class a real JWT segment can produce -- base64url of n bytes is never one more than a multiple of four -- and rejects only that impossible class, so a fixture built on stripped padding demonstrates nothing. What it does reject is `-` and `_`, the two characters base64url substitutes for `+` and `/`. Second, the defect is latent rather than a live outage: zero of 2205 realistic Supabase access-token payloads produced a segment containing either character, so the honest framing is a correctness defect on an authorisation path with a real trigger, not an ongoing failure.
+- *
+- * The `TextDecoder` step is a second fix in the same expression: `atob` returns a binary string of one code unit per byte, which renders any multi-byte claim value as latin1 mojibake after `JSON.parse` -- a silent corruption rather than a throw.
+- */
+-
+-/**
+- * Decode one base64url JWT segment to a UTF-8 string.
+- *
+- * RFC 7515 section 2 has required base64url for JOSE segments since 2015. The translate step is genuinely needed rather than merely tidy: Deno has no `Buffer`, so `Buffer.from(segment, 'base64url')` is unavailable inside an Edge Function.
+- *
+- * @param segment - One dot-separated JWT segment, unpadded as JOSE requires
+- * @returns The segment's bytes decoded as UTF-8
+- * @throws {Error} When the segment is valid base64url in neither alphabet
+- */
+-export function decodeJwtSegment(segment: string): string {
+-  const base64 = segment.replace(/-/g, '+').replace(/_/g, '/');
+-  // The outer `% 4` is what keeps an already-aligned segment untouched; a bare `4 - length % 4` would append four `=` to it.
+-  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+-  const binary = atob(padded);
+-  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+-  return new TextDecoder().decode(bytes);
+-}

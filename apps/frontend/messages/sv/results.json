@@ -1,0 +1,111 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Inga allianser",
+            "numShown=1": "1 allians",
+            "numShown=*": "{numShown} allianser"
+          }
+        }
+      ],
+      "summary": {
+        "template": "{candidates} fördelade på {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates"],
+            "selectors": ["numCandidates"],
+            "match": {
+              "numCandidates=0": "Inga kandidater",
+              "numCandidates=1": "1 kandidat",
+              "numCandidates=*": "{numCandidates} kandidater"
+            }
+          }
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties"],
+            "selectors": ["numParties"],
+            "match": {
+              "numParties=0": "inga partier",
+              "numParties=1": "1 parti",
+              "numParties=*": "{numParties} partier"
+            }
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Inga kandidater",
+            "numShown=1": "1 kandidat",
+            "numShown=*": "{numShown} kandidater"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Inga fraktioner",
+            "numShown=1": "1 fraktion",
+            "numShown=*": "{numShown} fraktioner"
+          }
+        }
+      ]
+    },
+    "inConstituency": "i valkretsen",
+    "ingress": {
+      "answerMinQuestions": "Om du vill för att hitta de kandidaterna och partierna som håller med dig mest, {questionsLink} först.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=1": "svara minst en fråga",
+            "numQuestions=*": "svara minst {numQuestions} frågor"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "Det finns inga kandidater eller partier i din valkrets som har svarat på valkompassen",
+        "content": "Du kan granska frågorna om du vill, men inga resultat kan visas."
+      },
+      "someNominations": {
+        "title": "Vissa kandidater eller partier har inte svarat på valkompassen",
+        "content": "Det finns inga svar från kandidater eller partier för alla val i din valkrets. Resultaten kommer endast att visa de val där svar finns tillgängliga."
+      },
+      "noNominationsForElection": "inte tillgängligt"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Inga partier",
+            "numShown=1": "1 parti",
+            "numShown=*": "{numShown} partier"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Välj val först",
+    "title": {
+      "browse": "Bläddra bland kandidater och partier",
+      "results": "Resultat"
+    }
+  }
+}

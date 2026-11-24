@@ -1,0 +1,19 @@
+# The exact findings `node scripts/assert-no-candidate-app-names.mjs --self-test` must report against
+# `assert-no-candidate-app-names.input.ts`, in line order, one `path:line: pattern-name` per line. A line
+# that matches two patterns is listed twice. Every code line of the fixture's POSITIVE blocks is here at
+# least once; no line of its NEGATIVE block is here, so a guard that reported an entity-typed form, an
+# exempt name or a form outside a path scope would differ from this file.
+scripts/fixtures/assert-no-candidate-app-names.input.ts:12: CandidateApp
+scripts/fixtures/assert-no-candidate-app-names.input.ts:13: candidateApp
+scripts/fixtures/assert-no-candidate-app-names.input.ts:14: CandidateContext
+scripts/fixtures/assert-no-candidate-app-names.input.ts:15: candidateContext
+scripts/fixtures/assert-no-candidate-app-names.input.ts:16: appType 'candidate'
+scripts/fixtures/assert-no-candidate-app-names.input.ts:17: appType 'candidate'
+scripts/fixtures/assert-no-candidate-app-names.input.ts:18: AppType union 'candidate'
+scripts/fixtures/assert-no-candidate-app-names.input.ts:21: api/candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:22: routes/candidate
+scripts/fixtures/assert-no-candidate-app-names.input.ts:25: candidate app (phrase)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:26: candidate app (phrase)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:27: candidate app (phrase)
+scripts/fixtures/assert-no-candidate-app-names.input.ts:30: candidateApp
+scripts/fixtures/assert-no-candidate-app-names.input.ts:31: candidate app (phrase)

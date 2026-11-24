@@ -1,0 +1,62 @@
+{
+  "privacy": {
+    "analytics": {
+      "content": {
+        "free": "Dës Applikatioun sammelt Notzungsdaten, ouni Iech extra ze froen. Si ëmfaassen Är Äntwerten op d’Froen, d’Zäit, déi Dir an der Applikatioun verbréngt, an d’Resultater, déi Dir kuckt. All Evenement, dat eng Äntwert oder eng Preferenz verréit, huet keen Identifiant, deen et mat engem aneren Evenement deelt, an och d’Säitenopruffer hunn keen. Wéi all anert Evenement hält et awer d’Zäit fest, wou et geschitt ass. D’Donnéeë ginn iwwer de Server vun dësem Site selwer geschéckt, deen weder Är Netzwierkadress nach d’Identifikatioun vun Ärem Browser weidergëtt. Doriwwer gëtt näischt op Ärem Apparat gespäichert.",
+        "gated": "Notzungsdaten gi just gesammelt, wann Dir domat averstanen sidd. Si ëmfaassen Är Äntwerten op d’Froen, d’Zäit, déi Dir an der Applikatioun verbréngt, an d’Resultater, déi Dir kuckt. D’Evenementer vun engem Besuch ginn héchstens duerch en Identifiant verbonnen, deen nëmmen am Späicher vun der Säit gehale gëtt a verschwënnt, wann d’Säit nei geluede oder zougemaach gëtt. D’Donnéeë ginn iwwer de Server vun dësem Site selwer geschéckt, deen weder Är Netzwierkadress nach d’Identifikatioun vun Ärem Browser weidergëtt. Doriwwer gëtt näischt op Ärem Apparat gespäichert ausser Ärer Wiel. Eng Wiel, déi an dësem Browser gemaach gëtt, gëllt fir deen Deel vun der Applikatioun, an deem se gemaach gouf: d’Applikatioun fir Kandidaten a Parteien huet hir eege Wiel, an d’Wieler-Applikatioun an d’Administratiouns-Applikatioun deelen eng aner. Dir kënnt se allebéid op der Dateschutz-Säit änneren."
+      },
+      "gpc": "Wann Äre Browser d’Signal Global Privacy Control schéckt, gëtt näischt gesammelt, och net d’Zielung vun de Säitenopruffer, an Dir gitt net gefrot. Et gëtt näischt gespäichert, fir sech un d’Signal ze erënneren.",
+      "pageviews": "D’Säitenopruffer ginn och gezielt, wann keng aner Notzungsdate gesammelt ginn: wéi eng Zort Säit opgemaach gouf, a wéi enger Sprooch a wéi laang. Dës Donnéeë weisen awer zum Beispill net, wéi enger Partei oder wéi engem Kandidat seng Informatioune gekuckt goufen. Dës Zielung huet keen Identifiant.",
+      "survey": "Wann Dir d’Benotzer-Ëmfro opmaacht, gëtt den Identifiant vum Besuch un de Link vun der Ëmfro ugehaang, sou datt Är Äntwerten an der Ëmfro mat den Notzungsdate vun dësem Besuch verbonne kënne ginn.",
+      "title": "Analysen"
+    },
+    "cookies": {
+      "content": "D’Applikatioun benotzt keng Cookien, fir Är Donnéeën ze späicheren. Är Äntwerten a Preferenze ginn am Browser lokal gespäichert, fir Är Benotzungserfarung ze verbesseren, an dës gespäichert Kopie bleift op Ärem Apparat. Wann Notzungsdaten gesammelt ginn, kënnen Är Äntwerten och als Deel dovun geschéckt ginn, wéi an der Rubrik Analysen beschriwwen.",
+      "title": "Cookien"
+    },
+    "dataCollection": {
+      "info": "Notzungsdaten ginn iwwer de Server vun dësem Site selwer un den Analyse-Service geschéckt, deen de Verëffentlecher benotzt. Dofir gi keng Cookien benotzt."
+    },
+    "dataConsentInfoButton": "Méi Informatioun iwwer d’Sammele vun Notzungsdaten",
+    "dataConsentIntro": {
+      "denied": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Dir hutt d’Sammele vun Donnéeën den {formattedConsentDate} refuséiert. Dir kënnt Är Preferenz hei ënnen änneren."
+          }
+        }
+      ],
+      "granted": [
+        {
+          "declarations": [
+            "input consentDate",
+            "local formattedConsentDate = consentDate: datetime year=numeric month=2-digit day=numeric"
+          ],
+          "match": {
+            "formattedConsentDate=*": "Dir hutt d’Sammele vun Donnéeën den {formattedConsentDate} zougestëmmt. Dir kënnt Är Preferenz hei ënnen änneren."
+          }
+        }
+      ],
+      "indetermined": "Dir kënnt d’Sammele vun Donnéeën zoustëmmen oder ofleen, andeems Dir eng vun den Optiounen hei ënnen auswielt."
+    },
+    "dataConsentLabel": {
+      "denied": "Ech wëll meng Donnéeën net deelen",
+      "granted": "Jo, ech sinn averstanen meng Donnéeën ze deelen"
+    },
+    "title": "Dateschutz",
+    "trackingOptOut": {
+      "label": "Keng Notzungsdaten iwwer meng Notzung vun der Applikatioun sammelen"
+    },
+    "usageData": {
+      "content": {
+        "free": "D’Notzung vun der Applikatioun gëtt an der Wieler-Applikatioun, an der Kandidat*innen- a Parteien-Applikatioun an an der Administratiouns-Applikatioun op déiselwecht Manéier gemooss. Notzungsdaten iwwer Är Notzung vun der Kandidat*innen- a Parteien-Applikatioun ginn ouni separat Wiel gesammelt. Säitenopruffer ginn ouni Identifiant gezielt, wéi et op der Dateschutz-Säit beschriwwen ass.",
+        "gated": "D’Notzung vun der Applikatioun gëtt an der Wieler-Applikatioun, an der Kandidat*innen- a Parteien-Applikatioun an an der Administratiouns-Applikatioun op déiselwecht Manéier gemooss. Wann Dir d’Notzungsbedingungen akzeptéiert, erlaabt Dir, datt Notzungsdaten iwwer Är Notzung vun der Kandidat*innen- a Parteien-Applikatioun gesammelt ginn, ausser Dir kräizt d’Këscht ënner de Bedingungen un. Säitenopruffer ginn ouni Identifiant gezielt, wéi et op der Dateschutz-Säit beschriwwen ass. Är Wiel gëllt nëmme fir d’Applikatioun fir Kandidaten a Parteien, déi an dësem Browser opgemaach gëtt, an Dir kënnt se méi spéit op der Dateschutz-Säit änneren."
+      },
+      "title": "Notzungsdaten"
+    }
+  }
+}

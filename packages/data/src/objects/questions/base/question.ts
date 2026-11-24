@@ -2,6 +2,7 @@ import { haveSameId } from '@openvaa/core';
 import {
   DataTypeError,
   intersectFilters,
+  isEmptyAnswer,
   isMissingValue,
   MISSING_VALUE,
   QuestionAndCategoryBase
@@ -31,10 +32,10 @@ import type {
  * Simple, non-enumerated questions inherit directly from this class, but enumerated questions inherit from `ChoiceQuestion` via either of its two subclasses `SingleChoiceQuestion` or `MultipleChoiceQuestion`.
  */
 export abstract class Question<
-    // We need to inelegantly provide `TType` twice because inferring it from `TData` leads to typing issues
-    TType extends QuestionType,
-    TData extends QuestionData<TType> = QuestionData<TType>
-  >
+  // We need to inelegantly provide `TType` twice because inferring it from `TData` leads to typing issues
+  TType extends QuestionType,
+  TData extends QuestionData<TType> = QuestionData<TType>
+>
   extends QuestionAndCategoryBase<TData>
   implements DataAccessor<QuestionData<TType>>, MatchableQuestion
 {
@@ -77,6 +78,13 @@ export abstract class Question<
     return 1;
   }
 
+  /**
+   * An optional flag indicating whether the question is required. Note that it is up to the consumer to enforce this, it has no effect within the data layer.
+   */
+  get required(): boolean {
+    return this.data.required ?? false;
+  }
+
   //////////////////////////////////////////////////////////////////////////////
   // Answer value handling
   //////////////////////////////////////////////////////////////////////////////
@@ -91,6 +99,16 @@ export abstract class Question<
     // AssertValue ensures that the answer value is of the correct type for the question
     const value = this.ensureValue(answer.value);
     return isMissingValue(value) ? undefined : { ...answer, value };
+  }
+
+  /**
+   * Whether an `Answer` answers this question: `ensureAnswer` accepts it and its value is not empty (see `isEmptyAnswer`). An answer whose value is not valid for the question's type is no answer. This is the one rule both apps read: the Voter App hides an entity by it and the Contestant App counts the questions an entity has left by it.
+   * @param answer - The `Answer` to check.
+   * @returns `true` when the answer answers the question.
+   */
+  isAnswered(answer?: Answer<unknown> | null): boolean {
+    const ensured = this.ensureAnswer(answer);
+    return ensured !== undefined && !isEmptyAnswer(ensured);
   }
 
   /**

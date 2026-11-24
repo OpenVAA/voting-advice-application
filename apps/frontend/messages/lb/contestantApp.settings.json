@@ -1,0 +1,16 @@
+{
+  "contestantApp.settings": {
+    "emailDescription": "Dës E-Mail gëtt benotzt, fir Iech ze kontaktéieren an Äert Passwuert zréckzesetzen. Se gëtt net an Ärem ëffentleche Profil gewisen.",
+    "emailPendingInfo": "Dës Adress ass nach net bestätegt. Bis Dir de Link opgemaach hutt, deen mir dohi geschéckt hunn, mellt Iech mat engem Bank ID un.",
+    "error": {
+      "changePassword": "Passwuert konnt net geännert ginn. Probéiert wgl. nach eng Kéier, oder kontaktéiert de Support, wann de Problem bestoe bleift."
+    },
+    "ingress": "Dës Astellungen beaflossen nëmmen, wéi Dir d’Applikatioun benotzt. D’Informatiounen, déi Dir hei agitt, ginn net ëffentlech gewisen.",
+    "password": {
+      "update": "Passwuert aktualiséieren",
+      "updated": "Passwuert gouf aktualiséiert!"
+    },
+    "saveEmail": "E-Mail-Adress späicheren",
+    "title": "Astellungen"
+  }
+}

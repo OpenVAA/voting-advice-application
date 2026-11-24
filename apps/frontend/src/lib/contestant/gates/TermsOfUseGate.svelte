@@ -1,0 +1,108 @@
+<!--
+@component Show the terms of use to a signed-in user who has not accepted them for this project, with a button for accepting and continuing and another for logging out. Accepting records the acceptance and reruns the page's loads, so the page the user asked for replaces this view. A failed acceptance is reported and the form stays.
+
+When events could be sent in gated mode (`shouldShowContestantOptOut`), a box for opting out of the collection of usage data is shown under the terms. It starts ticked when this browser already holds a refusal made in the Contestant App. A recorded acceptance then writes the box's choice to the Contestant App's own consent choice (`contestantDataConsent`), `denied` when ticked and `granted` when not; the voter app's choice is never touched. When the box is not shown, nothing is written.
+
+Its Log out is the shared `LogoutButton`.
+
+### Dynamic component
+
+Accesses `ContestantContext`: `acceptTermsOfUse`, `logout`, `setDataConsent` and `analyticsPolicy`.
+
+### Properties
+
+None.
+
+### Usage
+
+```tsx
+<TermsOfUseGate />
+```
+-->
+
+<script lang="ts">
+  import { log } from '@openvaa/app-shared';
+  import { tick } from 'svelte';
+  import { invalidateAll } from '$app/navigation';
+  import { TermsOfUseForm, TrackingOptOut } from '$contestant/components/termsOfUse';
+  import { MainContent } from '$layouts/main';
+  import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { shouldShowContestantOptOut } from '$lib/contexts/app/tracking/sendPolicy';
+  import { getContestantContext } from '$lib/contexts/contestant/contestantContext.svelte';
+  import { LogoutButton } from '$lib/dynamic-components/logoutButton';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const ctx = getContestantContext();
+  const { t, logout, acceptTermsOfUse, setDataConsent } = ctx;
+
+  ////////////////////////////////////////////////////////////////////
+  // Accept the terms of use or log out
+  ////////////////////////////////////////////////////////////////////
+
+  let status = $state<ActionStatus>('idle');
+  let termsAccepted = $state(false);
+  // analyticsPolicy is a reactive handle: read via ctx.analyticsPolicy.current, never destructure.
+  const showOptOut = $derived(shouldShowContestantOptOut(ctx.analyticsPolicy.current));
+  // A refusal the Contestant App already stored in this browser starts the box ticked, so accepting the terms never turns it into a grant. On a Contestant route the send policy reads the Contestant App's own choice.
+  let optOut = $state(ctx.analyticsPolicy.current.consent === 'denied');
+
+  async function handleSubmit() {
+    if (!termsAccepted) return;
+    // Continue is natively disabled while the acceptance runs, and a browser may drop the focus of a button that becomes disabled.
+    const focused = document.activeElement;
+    status = 'loading';
+    try {
+      const result = await acceptTermsOfUse();
+      if (result?.type !== 'success') throw new Error('The terms-of-use acceptance was not recorded.');
+      if (showOptOut) setDataConsent(optOut ? 'denied' : 'granted');
+    } catch (error) {
+      log.error('Failed to record the terms-of-use acceptance', { err: error });
+      status = 'error';
+      await tick();
+      if (focused instanceof HTMLElement && document.activeElement === document.body) focused.focus();
+      return;
+    }
+    // Awaited so that Continue keeps its loading state until the page has its new data. Only the rerun load, reading the stored acceptance, removes this view. The acceptance is stored by now, so a failed rerun is not a failed save: it is logged, and Continue reruns the load again, since accepting again is harmless.
+    try {
+      await invalidateAll();
+    } catch (error) {
+      log.error('Failed to rerun the loads after the terms-of-use acceptance was recorded', { err: error });
+    }
+    status = 'idle';
+  }
+</script>
+
+<MainContent title={t('dynamic.contestantAppPrivacy.consent.title')}>
+  {#snippet hero()}
+    <figure role="presentation">
+      <HeroEmoji emoji={t('dynamic.contestantAppPrivacy.consent.heroEmoji')} />
+    </figure>
+  {/snippet}
+  <TermsOfUseForm bind:termsAccepted />
+  {#if showOptOut}
+    <TrackingOptOut bind:optOut />
+  {/if}
+  {#if status === 'error'}
+    <ErrorMessage
+      inline
+      role="alert"
+      class="my-md"
+      message={t('contestantApp.error.saveFailed')}
+      data-testid="tou-save-error" />
+  {/if}
+  {#snippet primaryActions()}
+    <Button
+      text={t('common.continue')}
+      variant="main"
+      disabled={!termsAccepted}
+      loading={status === 'loading'}
+      onclick={handleSubmit}
+      data-testid="terms-of-use-submit" />
+    <LogoutButton {logout} icon={undefined} />
+  {/snippet}
+</MainContent>

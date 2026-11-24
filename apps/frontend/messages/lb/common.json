@@ -1,0 +1,146 @@
+{
+  "common": {
+    "account": {
+      "emailRequired": "Gitt Är E-Mail-Adress an.",
+      "emailSent": {
+        "askedAgain": "Wann Dir viru manner wéi enger Minutt eng aner E-Mail ugefrot hutt, gouf dës vläicht net geschéckt. Waart, bis Dir nach eng Kéier schécke kënnt, an dréckt dann op Nach eng Kéier schécken.",
+        "changeAddress": "Eng aner E-Mail-Adress benotzen",
+        "heroEmoji": "✉️",
+        "intro": {
+          "code": "Mir hunn eng E-Mail un d’Adress geschéckt, mat där Dir Iech registréiert hutt. Klickt op de Link an der E-Mail, fir Iech unzemellen.",
+          "recovery": "Mir hunn eng E-Mail un d’Adress geschéckt, déi Dir uginn hutt. Klickt op de Link an der E-Mail, fir Iech unzemellen an en neit Passwuert festzeleeën.",
+          "recoveryTo": "Mir hunn eng E-Mail un <strong>{email}</strong> geschéckt. Klickt op de Link an der E-Mail, fir Iech unzemellen an en neit Passwuert festzeleeën.",
+          "signIn": "Mir hunn eng E-Mail un d’Adress geschéckt, déi Dir uginn hutt. Klickt op de Link an der E-Mail, fir Iech unzemellen.",
+          "signInTo": "Mir hunn eng E-Mail un <strong>{email}</strong> geschéckt. Klickt op de Link an der E-Mail, fir Iech unzemellen."
+        },
+        "newest": "Wann Dir méi wéi eng E-Mail ugefrot hutt, funktionéiert nëmmen de Link an der neister.",
+        "notFound": {
+          "withAddress": "Wann Dir d’E-Mail net fannt, kuckt an Ärem Spam-Dossier no an iwwerpréift, ob Dir Är E-Mail-Adress richteg aginn hutt.",
+          "withoutAddress": "Wann Dir d’E-Mail net fannt, kuckt an Ärem Spam-Dossier no."
+        },
+        "resend": "Nach eng Kéier schécken",
+        "resendIn": "(an {seconds} s)",
+        "resendReady": "Dir kënnt elo eng nei E-Mail ufroen.",
+        "resendRequested": "Eng nei E-Mail gouf ugefrot.",
+        "support": "Wann Dir Problemer hutt, d’E-Mail ze kréien, {contactSupportLink}.",
+        "title": "Kontrolléiert Är E-Mailen"
+      },
+      "forgotPassword": "Passwuert vergiess?",
+      "noPasswordYet": "Ech hunn nach kee Passwuert gesat",
+      "resetPassword": {
+        "createNewPassword": "Neit Passwuert festleeën",
+        "ingress": "Fir Äert Passwuert zréckzesetzen, gitt wgl. Är E-Mail hei ënnen an:",
+        "sendLink": "Link fir zréckzesetzen schécken",
+        "title": "Passwuert vergiess?"
+      },
+      "setPassword": {
+        "error": "Mir konnten dëst Passwuert net späicheren. Wielt en anert a probéiert nach eng Kéier. Wann de Problem bestoe bleift, kontaktéiert wgl. de Support.",
+        "ingress": "Setzt e séchert Passwuert no de Reegelen hei drënner:",
+        "passwordNotValid": "D’Passwuert erfëllt d’Reegelen hei uewen net.",
+        "passwordsDontMatch": "D’Passwierder stëmmen net iwwereneen",
+        "setPassword": "Passwuert setzen",
+        "title": "Wielt e Passwuert",
+        "why": "Äre Kont huet nach kee Passwuert. Wielt eent, fir datt Dir Iech mat Ärer E-Mail-Adress an Ärem Passwuert umelle kënnt."
+      },
+      "signedInAs": "Ageloggt als"
+    },
+    "alliance": {
+      "plural": "Allianzen",
+      "singular": "Allianz"
+    },
+    "answer": {
+      "no": "Nee",
+      "yes": "Jo"
+    },
+    "back": "Zréck",
+    "cancel": "Ofbriechen",
+    "candidate": {
+      "plural": "Kandidat*inne",
+      "singular": "Kandidat*in"
+    },
+    "clear": "Läschen",
+    "close": "Zoumaachen",
+    "closeDialog": "Dialog zoumaachen",
+    "closeMenu": "Menü zoumaachen",
+    "color": "Faarf",
+    "confirmed": "Confirméiert",
+    "constituency": "Walbezierk",
+    "continue": "Weider",
+    "election": "Wahl",
+    "electionList": "Lëscht",
+    "electionSymbol": {
+      "alliance": "Wahlsymbol",
+      "candidate": "Walnummer",
+      "faction": "Wahlsymbol",
+      "organization": "Wahlsymbol"
+    },
+    "email": "E-Mail",
+    "emailConfirmation": "E-Mail bestätegen",
+    "emailPlaceholder": "E-Mail",
+    "entityImage": {
+      "candidate": "Portrait",
+      "organization": "Logo"
+    },
+    "expandOrCollapse": "Dës Sektioun op- oder zouklappen",
+    "faction": {
+      "plural": "Fraktiounen",
+      "singular": "Fraktioun"
+    },
+    "firstName": "Virnumm",
+    "home": "Start",
+    "info": "Info",
+    "language": {
+      "select": "Sprooch auswielen"
+    },
+    "lastName": "Familljennumm",
+    "loading": "Lueden…",
+    "locked": "Gesperrt",
+    "loggedOutAutomatically": "Dir gouft automatesch ausgeloggt, well en Ausloggen, deen Dir ugefaangen hutt, net rechtzäiteg ofgebrach gouf.",
+    "loggedOutElsewhere": "Dir gouft an engem aneren Tab oder an enger anerer Fënster ausgeloggt.",
+    "login": "Umellen",
+    "logout": "Ausloggen",
+    "logoutFailed": "Mir konnten net confirméieren, datt Dir ausgeloggt sidd. Dir sidd eventuell nach ëmmer ageloggt, probéiert dofir nach eng Kéier.",
+    "logoutUnsavedChanges": "Dir hutt ongespäichert Ännerungen. Si gi verluer, wann Dir Iech auslogged.",
+    "madeWithPrefix": "Gemaach mat",
+    "madeWithSuffix": "",
+    "missingAnswer": "—",
+    "multipleAnswerSeparator": " • ",
+    "name": "Numm",
+    "nomination": "Nominatioun",
+    "openCloseMenu": "Menü op/zoumaachen",
+    "openMenu": "Menü opmaachen",
+    "openVAA": "OpenVAA",
+    "or": "Oder",
+    "organization": {
+      "plural": "Parteien",
+      "singular": "Partei"
+    },
+    "password": "Passwuert",
+    "passwordConfirmation": "Passwuert bestätegen",
+    "primaryActions": "Primäraktiounen",
+    "privacy": {
+      "dataCollection": {
+        "content": "Mir wéilte Benotzungsdaten anonym sammelen – fir Fuerschungszwecker an zur Verbesserung vun der Applikatioun. D’Donnéeën enthalen Är Äntwerten op d’Froen, d’Zäit, déi Dir beim Beäntwerten a soss anere Sektiounen verbruecht hutt, an déi gekuckte Resultater; d’Donnéeë kënne net mat Iech verbonnen ginn.",
+        "title": "Benotzungsdaten sammelen"
+      }
+    },
+    "progress": "Fortschrëtt",
+    "publishedBy": "Verëffentlecht vum {publisher}",
+    "question": "Fro",
+    "readMore": "Méi gewuer ginn",
+    "required": "Obligatoresch",
+    "resetAnswers": "Är Äntwerten läschen",
+    "return": "Zréck",
+    "returnHome": "Zréck op d’Startsäit",
+    "saveAndContinue": "Späicheren a weidergoen",
+    "saveAndReturn": "Späicheren a zréckgoen",
+    "saving": "Späicheren…",
+    "shortName": "Ofkierzung",
+    "showFullImage": "Ganze Bild weisen",
+    "skipToMain": "Zum Haaptinhalt sprangen",
+    "success": "Aktioun erfollegräich!",
+    "thanksNo": "Nee merci",
+    "unaffiliated": "Onofhängeg",
+    "website": "Websäit"
+  }
+}

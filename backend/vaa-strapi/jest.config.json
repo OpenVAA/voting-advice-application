@@ -1,4 +1,0 @@
-{
-  "verbose": true,
-  "testPathIgnorePatterns": ["/node_modules/", ".tmp", ".cache", "dist"]
-}

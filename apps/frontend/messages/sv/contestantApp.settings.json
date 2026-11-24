@@ -1,0 +1,16 @@
+{
+  "contestantApp.settings": {
+    "emailDescription": "Vi använder denna e-post för att kontakta dig och för återställning av lösenord. Den kommer inte att visas i din offentliga profil.",
+    "emailPendingInfo": "Den här adressen har inte bekräftats ännu. Tills du öppnar länken vi skickade till den loggar du in med bank-id.",
+    "error": {
+      "changePassword": "Lösenordsändringen misslyckades. Försök igen, eller kontakta supporten om problemet kvarstår."
+    },
+    "ingress": "Dessa inställningar påverkar endast hur du använder denna applikation. Ingen information du anger här kommer att visas för allmänheten.",
+    "password": {
+      "update": "Uppdatera lösenord",
+      "updated": "Lösenordet har uppdaterats!"
+    },
+    "saveEmail": "Spara e-postadress",
+    "title": "Inställningar"
+  }
+}

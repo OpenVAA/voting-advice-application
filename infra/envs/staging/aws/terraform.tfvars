@@ -1,0 +1,51 @@
+# Tracked on purpose: the public record of this root's inputs. Nothing secret belongs here.
+#
+# The two values the task reads from the parameter store, the Supabase anon key and the PostHog key, are named in the module's task-environment.json and created by the operator under parameter_path, never here. environment_overrides, omit_environment and debug_ingress_cidrs are given on the command line for one observation and never in this file. alert_email is given as TF_VAR_alert_email from the operator's shell. The image's digest is given per plan as -var image_digest= and is never written here.
+aws_account_id = "471112560111"
+aws_region     = "eu-north-1"
+environment    = "staging"
+
+name_prefix        = "openvaa"
+domain             = "staging.openvaa.org"
+registry_url       = "471112560111.dkr.ecr.eu-north-1.amazonaws.com/openvaa-frontend"
+execution_role_arn = "arn:aws:iam::471112560111:role/openvaa/openvaa-staging-frontend-execution"
+parameter_path     = "/openvaa/staging/frontend"
+
+task_cpu           = 512
+task_memory        = 1024
+task_floor         = 1
+task_ceiling       = 2
+log_retention_days = 90
+
+# SHUTDOWN_TIMEOUT 25, plus the 10-second analytics forward, plus 5: enough for the shutdown flush of one slice of the queue to reach a responsive PostHog. The flush sends its slices one after another, so a full queue against an unresponsive PostHog can still be cut off at the kill.
+stop_timeout_seconds = 40
+
+# Bank authentication through Idura's test environment. The three secrets it adds, IDENTITY_PROVIDER_DECRYPTION_JWKS, IDENTITY_CALLBACK_SERVER_SECRET and IDURA_SIGNING_JWKS, are parameters under parameter_path, never here. The Supabase root sets identity_provider with the same type, client id, jwks_uri and issuer.
+identity_provider_type = "idura-ftn"
+
+# One line per entry of task-environment.json whose source is "value".
+environment_values = {
+  PUBLIC_SUPABASE_URL = "https://cofbsatfrdysyphajsky.supabase.co"
+  PUBLIC_PROJECT_ID   = "00000000-0000-0000-0000-000000000001"
+  ORIGIN              = "https://staging.openvaa.org"
+  ADDRESS_HEADER      = "x-forwarded-for"
+  # Two proxies stand in front of the server, CloudFront and then the load balancer, and each appends the address it received the request from. The forwarding headers recorded on the running deployment are what confirm this number.
+  XFF_DEPTH                   = "2"
+  KEEP_ALIVE_TIMEOUT          = "65"
+  HEADERS_TIMEOUT             = "66"
+  SHUTDOWN_TIMEOUT            = "25"
+  PUBLIC_LOG_LEVEL            = "warn"
+  ANALYTICS_PROVIDER          = "posthog"
+  ANALYTICS_CONSENT_MODE      = "gated"
+  ANALYTICS_VISIT_ID_MODE     = "memory"
+  ANALYTICS_POSTHOG_HOST      = "https://eu.i.posthog.com"
+  ANALYTICS_FLUSH_INTERVAL_MS = "2000"
+  DEPLOYMENT_DIAGNOSTICS      = "false"
+  # The two URLs verbatim from https://openvaa.test.idura.broker/.well-known/openid-configuration.
+  PUBLIC_IDENTITY_PROVIDER_CLIENT_ID = "urn:my:application:identifier:498295"
+  IDENTITY_PROVIDER_JWKS_URI         = "https://openvaa.test.idura.broker/.well-known/jwks"
+  IDENTITY_PROVIDER_ISSUER           = "https://openvaa.test.idura.broker"
+  IDURA_DOMAIN                       = "openvaa.test.idura.broker"
+  # The kid of this deployment's own signing key, the one in IDURA_SIGNING_JWKS, whose public half is registered in the Idura dashboard. Not a kid of Idura's own keys at IDENTITY_PROVIDER_JWKS_URI.
+  IDURA_SIGNING_KEY_KID = "openvaa-signing-1"
+}

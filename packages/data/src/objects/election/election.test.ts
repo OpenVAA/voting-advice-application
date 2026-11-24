@@ -1,6 +1,5 @@
-import { describe } from 'node:test';
-import { expect, test } from 'vitest';
-import { QUESTION_CATEGORY_TYPE } from '../../internal';
+import { describe, expect, test } from 'vitest';
+import { DataRoot, QUESTION_CATEGORY_TYPE } from '../../internal';
 import { getTestData, getTestDataRoot, NOMINATION_COUNTS, NOMINATION_COUNTS_ROUND_2 } from '../../testUtils';
 import type { Constituency } from '../../internal';
 
@@ -26,7 +25,7 @@ test('Should have constituencyGroups', () => {
   root.elections!.forEach((obj) => {
     const objData = data.elections.find((d) => d.id === obj.id);
     expect(objData).toBeDefined();
-    expect(obj.constituencyGroups.map((g) => g.id)).toEqual(expect.arrayContaining(groupIds[obj.id]));
+    expect(obj.constituencyGroups.map((g) => g.id)).toEqual(groupIds[obj.id]);
   });
 });
 
@@ -91,6 +90,28 @@ test('Should have correct number of nominations for the second round of election
   }
 });
 
+test('Should default nominationShape to organization_list_and_independents when the data states none', () => {
+  const election = getTestDataRoot().elections![0];
+  expect(election.data.nominationShape).toBeUndefined();
+  expect(election.nominationShape).toBe('organization_list_and_independents');
+  election.data.nominationShape = null;
+  expect(election.nominationShape).toBe('organization_list_and_independents');
+});
+
+test('Should return the nominationShape the data states', () => {
+  const election = getTestDataRoot().elections![0];
+  const shapes = [
+    'organization_only',
+    'candidate_only',
+    'organization_list',
+    'organization_list_and_independents'
+  ] as const;
+  for (const shape of shapes) {
+    election.data.nominationShape = shape;
+    expect(election.nominationShape).toBe(shape);
+  }
+});
+
 describe('getApplicableConstituency', () => {
   const election = root.elections![0];
   const constituencies = election.constituencyGroups[0].constituencies;
@@ -107,6 +128,176 @@ describe('getApplicableConstituency', () => {
   });
 });
 
+describe('getApplicableConstituencies', () => {
+  const election = root.elections![0];
+  const constituencies = election.constituencyGroups[0].constituencies;
+  test('Should return every applicable constituency in the order given', () => {
+    const notThere = { id: 'NOT_THERE' } as Constituency;
+    expect(election.getApplicableConstituencies([constituencies[1], notThere, constituencies[0]])).toEqual([
+      constituencies[1],
+      constituencies[0]
+    ]);
+  });
+  test('Should return an empty array if no constituency is applicable', () => {
+    expect(election.getApplicableConstituencies([{ id: 'NOT_THERE' } as Constituency])).toEqual([]);
+    expect(election.getApplicableConstituencies([])).toEqual([]);
+  });
+  test('Should match constituencies of every group of the election', () => {
+    const fromSecondGroup = election.constituencyGroups[1].constituencies[0];
+    expect(election.getApplicableConstituencies([constituencies[0], fromSecondGroup])).toEqual([
+      constituencies[0],
+      fromSecondGroup
+    ]);
+  });
+});
+
+/**
+ * A root whose `mixed` election has a group of regions and a group of municipalities, each municipality the child of a region, and whose `paired` election has the regions and an unrelated group of districts of the same size.
+ */
+function hierarchicalRoot(): DataRoot {
+  const root = new DataRoot();
+  root.provideElectionData([
+    { id: 'mixed', name: 'Mixed', constituencyGroupIds: ['regions', 'municipalities'] },
+    { id: 'paired', name: 'Paired', constituencyGroupIds: ['regions', 'districts'] },
+    { id: 'regional', name: 'Regional', constituencyGroupIds: ['regions'] }
+  ]);
+  root.provideConstituencyData({
+    groups: [
+      { id: 'regions', constituencyIds: ['region-1', 'region-2'] },
+      { id: 'municipalities', constituencyIds: ['municipality-1a', 'municipality-1b', 'municipality-2a'] },
+      { id: 'districts', constituencyIds: ['district-x', 'district-y'] }
+    ],
+    constituencies: [
+      { id: 'region-1', name: 'Region 1' },
+      { id: 'region-2', name: 'Region 2' },
+      { id: 'municipality-1a', name: 'Municipality 1a', parentId: 'region-1' },
+      { id: 'municipality-1b', name: 'Municipality 1b', parentId: 'region-1' },
+      { id: 'municipality-2a', name: 'Municipality 2a', parentId: 'region-2' },
+      { id: 'district-x', name: 'District X' },
+      { id: 'district-y', name: 'District Y' }
+    ]
+  });
+  return root;
+}
+
+describe('getMostSpecificConstituency', () => {
+  const root = hierarchicalRoot();
+  function constituenciesOf(...ids: Array<string>): Array<Constituency> {
+    return ids.map((id) => root.getConstituency(id));
+  }
+
+  test.each([
+    ['first', ['region-1', 'municipality-1a']],
+    ['last', ['municipality-1a', 'region-1']]
+  ])('Should return the municipality given together with its parent region, the region given %s', (_, ids) => {
+    const constituencies = constituenciesOf(...ids);
+    expect(() => root.getElection('mixed').getApplicableConstituency(constituencies)).toThrow();
+    expect(root.getElection('mixed').getMostSpecificConstituency(constituencies)?.id).toBe('municipality-1a');
+  });
+
+  test('Should return the one applicable constituency', () => {
+    expect(
+      root.getElection('regional').getMostSpecificConstituency(constituenciesOf('municipality-1a', 'region-2'))?.id
+    ).toBe('region-2');
+  });
+
+  test('Should return the constituency of the smallest group among constituencies not related by parentage', () => {
+    expect(
+      root.getElection('mixed').getMostSpecificConstituency(constituenciesOf('municipality-2a', 'region-1'))?.id
+    ).toBe('region-1');
+  });
+
+  test.each([
+    [['district-x', 'region-1'], 'district-x'],
+    [['region-1', 'district-x'], 'region-1'],
+    [['region-2', 'region-1'], 'region-2']
+  ])('Should return the first of %j, whose groups are of one size', (ids, expected) => {
+    expect(root.getElection('paired').getMostSpecificConstituency(constituenciesOf(...ids))?.id).toBe(expected);
+  });
+
+  test('Should return undefined if no constituency is applicable', () => {
+    expect(
+      root.getElection('regional').getMostSpecificConstituency(constituenciesOf('municipality-1a', 'district-x'))
+    ).toBeUndefined();
+    expect(root.getElection('regional').getMostSpecificConstituency([])).toBeUndefined();
+  });
+});
+
+describe('isHeldIn', () => {
+  const root = hierarchicalRoot();
+  function constituenciesOf(...ids: Array<string>): Array<Constituency> {
+    return ids.map((id) => root.getConstituency(id));
+  }
+
+  test("Should be true when one of the constituencies is in one of the election's groups", () => {
+    expect(root.getElection('mixed').isHeldIn(constituenciesOf('district-x', 'municipality-1a'))).toBe(true);
+    expect(root.getElection('paired').isHeldIn(constituenciesOf('district-y'))).toBe(true);
+  });
+
+  test("Should be false when none of the constituencies is in the election's groups", () => {
+    expect(root.getElection('regional').isHeldIn(constituenciesOf('municipality-1a', 'district-x'))).toBe(false);
+    expect(root.getElection('regional').isHeldIn([])).toBe(false);
+  });
+});
+
+/**
+ * A root whose constituencies form one line, a village in a municipality in a region, and whose `tangled` group holds both the region and the municipality.
+ */
+function lineageRoot(): DataRoot {
+  const root = new DataRoot();
+  root.provideElectionData([
+    { id: 'regional', name: 'Regional', constituencyGroupIds: ['regions'] },
+    { id: 'tangled', name: 'Tangled', constituencyGroupIds: ['tangled'] },
+    { id: 'tangledThenRegional', name: 'Tangled then regional', constituencyGroupIds: ['tangled', 'regions'] },
+    { id: 'villages', name: 'Villages', constituencyGroupIds: ['districts', 'villages'] }
+  ]);
+  root.provideConstituencyData({
+    groups: [
+      { id: 'regions', constituencyIds: ['region-1'] },
+      { id: 'tangled', constituencyIds: ['region-1', 'municipality-1'] },
+      { id: 'districts', constituencyIds: ['district-x'] },
+      { id: 'villages', constituencyIds: ['village-1'] }
+    ],
+    constituencies: [
+      { id: 'region-1', name: 'Region 1' },
+      { id: 'municipality-1', name: 'Municipality 1', parentId: 'region-1' },
+      { id: 'village-1', name: 'Village 1', parentId: 'municipality-1' },
+      { id: 'district-x', name: 'District X' }
+    ]
+  });
+  return root;
+}
+
+describe('getImpliedConstituency', () => {
+  const root = lineageRoot();
+
+  test("Should return the constituency itself when one of the election's groups holds it", () => {
+    const village = root.getConstituency('village-1');
+    expect(root.getElection('villages').getImpliedConstituency(village)).toBe(village);
+  });
+
+  test('Should return the ancestor a group holds, grandparents included', () => {
+    expect(root.getElection('regional').getImpliedConstituency(root.getConstituency('village-1'))?.id).toBe('region-1');
+  });
+
+  test('Should look in every group of the election, not only the first', () => {
+    expect(root.getElection('villages').getImpliedConstituency(root.getConstituency('municipality-1'))).toBeUndefined();
+    expect(root.getElection('tangledThenRegional').getImpliedConstituency(root.getConstituency('village-1'))?.id).toBe(
+      'region-1'
+    );
+  });
+
+  test('Should count a group holding several of the lineage as implying none, and not throw', () => {
+    const village = root.getConstituency('village-1');
+    expect(() => root.getConstituencyGroup('tangled').getImpliedConstituency(village)).toThrow();
+    expect(root.getElection('tangled').getImpliedConstituency(village)).toBeUndefined();
+  });
+
+  test('Should return undefined when no group implies a constituency', () => {
+    expect(root.getElection('regional').getImpliedConstituency(root.getConstituency('district-x'))).toBeUndefined();
+  });
+});
+
 describe('GetQuestions', () => {
   const election = root.getElection('election-1');
   const constituency = root.getConstituency('constituency-1-1');
@@ -118,6 +309,6 @@ describe('GetQuestions', () => {
     // Opinion questions are from 8 to 13, but 8 and 10 are for election-2 only.
     // Question-10 has a constituency filter 'constituency-1-1' but it should not be included because of the election filter
     const ids = [9, 11, 12, 13].map((i) => `question-${i}`);
-    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+    expect(questions?.map((q) => q.id)).toEqual(ids);
   });
 });

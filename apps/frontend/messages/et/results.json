@@ -1,0 +1,111 @@
+{
+  "results": {
+    "alliance": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Valimisliite ei ole",
+            "numShown=1": "1 valimisliit",
+            "numShown=*": "{numShown} valimisliitu"
+          }
+        }
+      ],
+      "summary": {
+        "template": "{candidates} kokku {parties}",
+        "candidates": [
+          {
+            "declarations": ["input numCandidates"],
+            "selectors": ["numCandidates"],
+            "match": {
+              "numCandidates=0": "Ühtegi kandidaati",
+              "numCandidates=1": "1 kandidaat",
+              "numCandidates=*": "{numCandidates} kandidaati"
+            }
+          }
+        ],
+        "parties": [
+          {
+            "declarations": ["input numParties"],
+            "selectors": ["numParties"],
+            "match": {
+              "numParties=0": "ühestki erakonnast",
+              "numParties=1": "1 erakonnast",
+              "numParties=*": "{numParties} erakonnast"
+            }
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Kandidaate ei ole",
+            "numShown=1": "1 kandidaat",
+            "numShown=*": "{numShown} kandidaati"
+          }
+        }
+      ]
+    },
+    "faction": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Rühmitusi ei ole",
+            "numShown=1": "1 rühmitus",
+            "numShown=*": "{numShown} rühmitust"
+          }
+        }
+      ]
+    },
+    "inConstituency": "valimisringkonnas",
+    "ingress": {
+      "answerMinQuestions": "Kui soovid leida sinuga kõige enam nõustuvaid kandidaadid ja erakonnad, {questionsLink} kõigepealt.",
+      "questionsLinkText": [
+        {
+          "declarations": ["input numQuestions"],
+          "selectors": ["numQuestions"],
+          "match": {
+            "numQuestions=1": "vasta vähemalt ühele küsimusele",
+            "numQuestions=*": "vasta vähemalt {numQuestions} küsimusele"
+          }
+        }
+      ]
+    },
+    "missingNominations": {
+      "noNominations": {
+        "title": "Sinu valimisringkonnas pole valimiskompassile vastanud kandidaate ega erakondi",
+        "content": "Soovi korral võid küsimustega tutvuda, kuid tulemusi ei saa kuvada."
+      },
+      "someNominations": {
+        "title": "Mõned valimiste kandidaadid või erakonnad pole valimiskompassile vastanud",
+        "content": "Sinu valimisringkonnas pole kõigi valimiste kohta kandidaatide või erakondade vastuseid. Tulemustes kuvatakse ainult need valimised, mille kohta vastused on olemas."
+      },
+      "noNominationsForElection": "pole saadaval"
+    },
+    "organization": {
+      "numShown": [
+        {
+          "declarations": ["input numShown"],
+          "selectors": ["numShown"],
+          "match": {
+            "numShown=0": "Erakondi ei ole",
+            "numShown=1": "1 erakond",
+            "numShown=*": "{numShown} erakonda"
+          }
+        }
+      ]
+    },
+    "selectElectionFirst": "Vali kõigepealt valimised",
+    "title": {
+      "browse": "Sirvi kandidaate ja erakondi",
+      "results": "Sinu tulemused"
+    }
+  }
+}

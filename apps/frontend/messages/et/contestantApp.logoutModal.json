@@ -1,0 +1,29 @@
+{
+  "contestantApp.logoutModal": {
+    "continue": "Jätka andmete sisestamist",
+    "ingress": "Kas oled kindel, et soovid välja logida? Sind logitakse automaatselt välja {timeLeft} sekundi pärast.",
+    "itemsLeft": [
+      {
+        "declarations": ["input infoQuestionsLeft", "input opinionQuestionsLeft"],
+        "selectors": ["infoQuestionsLeft", "opinionQuestionsLeft"],
+        "match": {
+          "infoQuestionsLeft=1, opinionQuestionsLeft=1": "Täita on veel üks põhiandme ja üks arvamus.",
+          "infoQuestionsLeft=1, opinionQuestionsLeft=*": "Täita on veel üks põhiandme ja {opinionQuestionsLeft} arvamust.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=1": "Täita on veel {infoQuestionsLeft} põhiandmet ja üks arvamus.",
+          "infoQuestionsLeft=*, opinionQuestionsLeft=*": "Täita on veel {infoQuestionsLeft} põhiandmet ja {opinionQuestionsLeft} arvamust."
+        }
+      }
+    ],
+    "questionsLeft": [
+      {
+        "declarations": ["input opinionQuestionsLeft"],
+        "selectors": ["opinionQuestionsLeft"],
+        "match": {
+          "opinionQuestionsLeft=1": "Täita on veel üks arvamus.",
+          "opinionQuestionsLeft=*": "Täita on veel {opinionQuestionsLeft} arvamust."
+        }
+      }
+    ],
+    "title": "Osa sinu andmetest on veel puudu"
+  }
+}

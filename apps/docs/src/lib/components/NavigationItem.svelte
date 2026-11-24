@@ -1,0 +1,44 @@
+<script lang="ts">
+  import Self from './NavigationItem.svelte';
+  import { hasChildren, isActive, isCurrentLeaf } from '../utils/navigation';
+  import type { NavigationItem as NavigationItemType, NavigationSection } from '$lib/navigation.type';
+
+  interface Props {
+    item: NavigationItemType | NavigationSection;
+    url: URL;
+    onLinkClick?: () => unknown;
+  }
+
+  const { item, url, onLinkClick = () => void 0 }: Props = $props();
+
+  const itemActive = $derived(
+    hasChildren(item)
+      ? isActive(item.route, url) || item.children.some((child) => isActive(child.route, url))
+      : isCurrentLeaf(item, url)
+  );
+</script>
+
+{#if hasChildren(item)}
+  <li>
+    <details open={itemActive}>
+      <summary class="cursor-pointer">
+        {item.title}
+      </summary>
+      <ul>
+        {#each item.children as child}
+          <Self item={child} {url} {onLinkClick} />
+        {/each}
+      </ul>
+    </details>
+  </li>
+{:else}
+  <li>
+    <a
+      href={item.route}
+      class={[itemActive && 'menu-active bg-base-300 text-neutral', item.isSecondary && 'secondary']}
+      aria-current={itemActive ? 'page' : undefined}
+      onclick={onLinkClick}>
+      {item.title}
+    </a>
+  </li>
+{/if}

@@ -1,8 +1,7 @@
 /**
  * English language constants for question info generation prompts
  *
- * This file contains instruction strings and examples used by the prompts
- * in generateTerms.yaml, generateInfoSections.yaml, and generateBoth.yaml
+ * This file contains instruction strings and examples used by the prompts in generateTerms.yaml, generateInfoSections.yaml, and generateBoth.yaml
  */
 
 /**

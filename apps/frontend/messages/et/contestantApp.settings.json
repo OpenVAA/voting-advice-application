@@ -1,0 +1,16 @@
+{
+  "contestantApp.settings": {
+    "emailDescription": "Kasutame seda e-posti sinuga ühenduse võtmiseks ja parooli lähtestamiseks. Seda ei kuvata sinu avalikus profiilis.",
+    "emailPendingInfo": "Seda aadressi ei ole veel kinnitatud. Kuni sa pole avanud linki, mille sellele saatsime, logi sisse pangatunnustega.",
+    "error": {
+      "changePassword": "Parooli vahetamine ebaõnnestus. Proovi uuesti või võta ühendust toega, kui probleem püsib."
+    },
+    "ingress": "Need seaded mõjutavad ainult seda, kuidas sa seda rakendust kasutad. Siia sisestatud teavet ei kuvata avalikult.",
+    "password": {
+      "update": "Uuenda parooli",
+      "updated": "Parool on uuendatud!"
+    },
+    "saveEmail": "Salvesta e-posti aadress",
+    "title": "Seaded"
+  }
+}

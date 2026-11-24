@@ -1,0 +1,146 @@
+{
+  "common": {
+    "account": {
+      "emailRequired": "Indtast din e-mailadresse.",
+      "emailSent": {
+        "askedAgain": "Hvis du bad om en anden e-mail for mindre end et minut siden, er denne måske ikke blevet sendt. Vent, til du kan sende igen, og tryk derefter på Send igen.",
+        "changeAddress": "Brug en anden e-mailadresse",
+        "heroEmoji": "✉️",
+        "intro": {
+          "code": "Vi har sendt en e-mail til den adresse, du registrerede dig med. Klik på linket i e-mailen for at logge ind.",
+          "recovery": "Vi har sendt en e-mail til den adresse, du angav. Klik på linket i e-mailen for at logge ind og vælge en ny adgangskode.",
+          "recoveryTo": "Vi har sendt en e-mail til <strong>{email}</strong>. Klik på linket i e-mailen for at logge ind og vælge en ny adgangskode.",
+          "signIn": "Vi har sendt en e-mail til den adresse, du angav. Klik på linket i e-mailen for at logge ind.",
+          "signInTo": "Vi har sendt en e-mail til <strong>{email}</strong>. Klik på linket i e-mailen for at logge ind."
+        },
+        "newest": "Hvis du har bedt om mere end én e-mail, virker kun linket i den nyeste.",
+        "notFound": {
+          "withAddress": "Hvis du ikke kan finde e-mailen, så tjek din spammappe, og at du har skrevet din e-mailadresse korrekt.",
+          "withoutAddress": "Hvis du ikke kan finde e-mailen, så tjek din spammappe."
+        },
+        "resend": "Send igen",
+        "resendIn": "(om {seconds} s)",
+        "resendReady": "Du kan nu bede om en ny e-mail.",
+        "resendRequested": "Der er bedt om en ny e-mail.",
+        "support": "Hvis du har problemer med at modtage e-mailen, {contactSupportLink}.",
+        "title": "Tjek din e-mail"
+      },
+      "forgotPassword": "Glemt adgangskode?",
+      "noPasswordYet": "Jeg har ikke valgt en adgangskode endnu",
+      "resetPassword": {
+        "createNewPassword": "Vælg en ny adgangskode",
+        "ingress": "For at nulstille din adgangskode skal du indtaste din e-mailadresse nedenfor:",
+        "sendLink": "Send nulstillingslink",
+        "title": "Glemt adgangskode?"
+      },
+      "setPassword": {
+        "error": "Vi kunne ikke gemme den adgangskode. Vælg en anden, og prøv igen. Kontakt support, hvis problemet fortsætter.",
+        "ingress": "Vælg en sikker adgangskode i henhold til kravene nedenfor:",
+        "passwordNotValid": "Adgangskoden opfylder ikke kravene ovenfor.",
+        "passwordsDontMatch": "Adgangskoderne matcher ikke",
+        "setPassword": "Vælg adgangskode",
+        "title": "Vælg en adgangskode",
+        "why": "Din konto har endnu ingen adgangskode. Vælg en, så du kan logge ind med din e-mailadresse og adgangskode."
+      },
+      "signedInAs": "Logget ind som"
+    },
+    "alliance": {
+      "plural": "alliancer",
+      "singular": "alliance"
+    },
+    "answer": {
+      "no": "Nej",
+      "yes": "Ja"
+    },
+    "back": "Tilbage",
+    "cancel": "Annuller",
+    "candidate": {
+      "plural": "kandidater",
+      "singular": "kandidat"
+    },
+    "clear": "Ryd",
+    "close": "Luk",
+    "closeDialog": "Luk dialog",
+    "closeMenu": "Luk menu",
+    "color": "Farve",
+    "confirmed": "Bekræftet",
+    "constituency": "Valgkreds",
+    "continue": "Fortsæt",
+    "election": "Valg",
+    "electionList": "Liste",
+    "electionSymbol": {
+      "alliance": "Valgsymbol",
+      "candidate": "Valgnummer",
+      "faction": "Valgsymbol",
+      "organization": "Valgsymbol"
+    },
+    "email": "E-mail",
+    "emailConfirmation": "Bekræft e-mail",
+    "emailPlaceholder": "E-mail",
+    "entityImage": {
+      "candidate": "Portræt",
+      "organization": "Logo"
+    },
+    "expandOrCollapse": "Udvid eller skjul denne sektion",
+    "faction": {
+      "plural": "fraktioner",
+      "singular": "fraktion"
+    },
+    "firstName": "Fornavn",
+    "home": "forside",
+    "info": "Info",
+    "language": {
+      "select": "Vælg sprog"
+    },
+    "lastName": "Efternavn",
+    "loading": "Indlæser…",
+    "locked": "Låst",
+    "loggedOutAutomatically": "Du er blevet logget ud automatisk, fordi en udlogning, du startede, ikke blev annulleret i tide.",
+    "loggedOutElsewhere": "Du er blevet logget ud i en anden fane eller et andet vindue.",
+    "login": "Log ind",
+    "logout": "Log ud",
+    "logoutFailed": "Vi kunne ikke bekræfte, at du er logget ud. Du er muligvis stadig logget ind, så prøv igen.",
+    "logoutUnsavedChanges": "Du har ændringer, der ikke er gemt. De går tabt, hvis du logger ud.",
+    "madeWithPrefix": "Lavet med",
+    "madeWithSuffix": "",
+    "missingAnswer": "—",
+    "multipleAnswerSeparator": " • ",
+    "name": "Navn",
+    "nomination": "Opstilling",
+    "openCloseMenu": "Skift menu",
+    "openMenu": "Åbn menu",
+    "openVAA": "Åbn Valgtest",
+    "or": "Eller",
+    "organization": {
+      "plural": "partier",
+      "singular": "parti"
+    },
+    "password": "Adgangskode",
+    "passwordConfirmation": "Bekræft adgangskode",
+    "primaryActions": "Primære handlinger",
+    "privacy": {
+      "dataCollection": {
+        "content": "Vi vil gerne indsamle brugsdata anonymt til forskningsformål og for at forbedre applikationen. De indsamlede data inkluderer dine svar, den tid du bruger i applikationen, og hvilke resultater du ser. Dataene kan ikke knyttes til dig.",
+        "title": "Indsamling af brugsdata"
+      }
+    },
+    "progress": "Fremgang",
+    "publishedBy": "Udgivet af {publisher}",
+    "question": "Spørgsmål",
+    "readMore": "Læs mere",
+    "required": "Påkrævet",
+    "resetAnswers": "Ryd dine svar",
+    "return": "Tilbage",
+    "returnHome": "Tilbage til forsiden",
+    "saveAndContinue": "Gem og fortsæt",
+    "saveAndReturn": "Gem og vend tilbage",
+    "saving": "Gemmer…",
+    "shortName": "Forkortelse",
+    "showFullImage": "Vis fuldt billede",
+    "skipToMain": "Spring til hovedindhold",
+    "success": "Handling gennemført!",
+    "thanksNo": "Nej tak",
+    "unaffiliated": "Uden tilhørsforhold",
+    "website": "Websted"
+  }
+}
