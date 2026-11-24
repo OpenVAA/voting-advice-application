@@ -77,4 +77,37 @@ answer_step11=applied
 
 ## Apply 2 (TIGHTEN_COMMIT 7d4ab1242)
 
-Pending.
+```
+s12_eu-north-1_read_exit=0
+s12_eu-north-1_environment=staging count=45
+s12_us-east-1_read_exit=0
+s12_us-east-1_environment=staging count=2
+s12_worktree_exit=0
+s12_init_exit=0
+s12_plan_exit=0
+s12_plan_line=Plan: 0 to add, 4 to change, 0 to destroy.
+s12_show_exit=0
+bootstrap_plan_delete=0
+bootstrap_plan_replace=0
+bootstrap_plan_moved=0
+bootstrap_plan_failed_move=0
+bootstrap_plan_update=4
+bootstrap_plan_create=0
+bootstrap_plan_unexpected_create=0
+bootstrap_plan_guard=pass
+s12_guard_exit=0
+s12_update=module.github_oidc["staging"].aws_iam_policy.deploy_edge
+s12_update=module.github_oidc["staging"].aws_iam_policy.deploy_load_balancing
+s12_update=module.github_oidc["staging"].aws_iam_policy.deploy_network
+s12_update=module.github_oidc["staging"].aws_iam_policy.plan_deny
+s12_apply_exit=0
+s12_apply_line=Apply complete! Resources: 0 added, 4 changed, 0 destroyed.
+s12_second_plan_exit=0
+s12_second_plan_line=No changes. Your infrastructure matches the configuration.
+```
+
+The update list equals EXPECTED_UPDATES (190-06).
+
+### Staging deploy after apply 2
+
+Re-run (attempt 2) of https://github.com/OpenVAA/voting-advice-application/actions/runs/44939177207 (deploy/staging at 2ddc331d1, main's unchanged workflow), approved by the operator: pending.
