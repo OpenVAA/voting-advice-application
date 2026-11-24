@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
-current_plan: 4
+current_plan: 5
 status: executing
-stopped_at: Completed 189.1.1-04-PLAN.md
-last_updated: "2026-11-24T13:02:42.043Z"
+stopped_at: Completed 189.1.1-05-PLAN.md
+last_updated: "2026-11-24T13:12:54.690Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 5c5c4e43ccbc5d3c174a4cf5c5bdcda0ffd269ef
+state_head: 1323736553d4e2c238328817000fd73a74c5e931
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 233
-  completed_plans: 221
+  completed_plans: 222
   percent: 83
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — EXECUTING
-Plan: 4 of 15
+Plan: 5 of 15
 Status: Ready to execute
 Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 4
+**Current Plan:** 5
 
 From 184 on, the numeric order is the dependency order.
 
@@ -232,6 +232,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P01 | 4 min | 3 tasks | 3 files |
 | Phase 189.1.1 P02 | 10min | 3 tasks | 5 files |
 | Phase 189.1.1 P04 | 61 min | 2 tasks | 12 files |
+| Phase 189.1.1 P05 | 8 min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -511,6 +512,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: Svelte 5 event wrappers skip a handler once event.cancelBubble is set, so unguarded nested ModalContainers closed the OUTER on one Escape (inner left open); the topmost-only guard in handleEscape fixes it in either listener order (189.1.1-02)
 - [Phase 189.1.1]: 189.1.1-04: the stop-timeout precondition reads SHUTDOWN_TIMEOUT through a local that honours omit_environment (30, adapter-node's default, when the task does not receive it), since local.environment_values keeps a value omit_environment drops
 - [Phase 189.1.1]: 189.1.1-04: Terraform on this workstation is an x86_64 build under Rosetta; every Terraform run needs GODEBUG=asyncpreemptoff=1 or the x86 AWS provider hangs or times out starting; and validate is run in a clean copy of the tracked tree because local .terraform state caches the S3 backend
+- [Phase 189.1.1]: 189.1.1-05: the reviewer brief describes the consent prompt as the modal of the release under review; plan 06 builds it, so section 6 holds once 06 lands
+- [Phase 189.1.1]: 189.1.1-05: Q6 asks both ways, because a closed project's public pages already follow the stored trackEvents (get_public_app_settings)
 
 ### Pending Todos
 
@@ -537,7 +540,7 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 ### Blockers/Concerns
 
 - Phase 181: the baseline freeze waits for a cutover commit agreed with the v2.16 session (SUPA-10, C1). The rest of the phase does not wait.
-- Phase 182: the legal position needs a qualified reviewer. Six readings of the operator's notes of 2026-10-11 are written into the context files and listed in `v2.17-181-183-DISCUSSION-POINTS.md`; the operator has not yet confirmed them.
+- Phase 182: the legal position needs a qualified reviewer. The reviewer brief is ready at `.planning/workstreams/deployment/relay-legal-reviewer-brief.md`. It covers what the relay collects, where it goes, how it is anonymised, the consent flow and retention, and it puts the six readings of the operator's notes of 2026-10-11 (still unconfirmed by the operator) to the reviewer as questions Q1 to Q6, with Q7 to Q9 added. The production launch waits for the review. Staging keeps `trackEvents` on.
 - Phase 181: the freeze also waits for one schema change of phase 182 (ruling 182-12).
 - Phase 181 is planned (19 plans, 11 waves; four check rounds, no open blocker). Waves 1 to 7 need no operator. Plan 181-16 needs a root `.env` in this worktree and a window on the shared local Supabase stack; it stops the stack and resets the database from this worktree, so the v2.16 session must reset from its own worktree afterwards. Plan 181-17, the freeze, waits for v2.16's phase 177.1, the merge of the two branches' schema, and plan 182-02.
 - The operator has not yet answered `v2.17-181-183-RESEARCH-FOLLOWUPS.md`; the plans rest on each recommended option and name the follow-up id where an overrule changes them.
@@ -585,6 +588,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T13:02:41.029Z
-**Stopped At:** Completed 189.1.1-04-PLAN.md
+Last session: 2026-11-24T13:12:53.705Z
+**Stopped At:** Completed 189.1.1-05-PLAN.md
 **Resume File:** None
