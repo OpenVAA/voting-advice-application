@@ -197,14 +197,14 @@ Bank authentication is off on the AWS path until a deployment turns it on; stagi
 
 **Where each value goes.** No secret is written to a tracked file. The values the provider publishes go into the two roots' `terraform.tfvars`; the secrets go into the parameter store for the frontend task and into the shell's environment for the Supabase root, whose state, which then holds them, lives in the encrypted state bucket.
 
-| Value | Secret | Frontend task (AWS root) | `identity-callback` (Supabase root) |
-| --- | --- | --- | --- |
-| Provider type, client id, `jwks_uri`, issuer | no | `identity_provider_type` and `environment_values` in `terraform.tfvars` | `identity_provider` in `terraform.tfvars` |
-| Signicat's authorization and token endpoints, or Idura's domain and signing key id | no | `environment_values` in `terraform.tfvars` | not used |
-| `IDENTITY_PROVIDER_DECRYPTION_JWKS`, the private encryption keys | yes | a parameter under `parameter_path` | `TF_VAR_identity_provider_decryption_jwks` |
-| `IDENTITY_CALLBACK_SERVER_SECRET` | yes | a parameter under `parameter_path` | `TF_VAR_identity_callback_server_secret`, the same value |
-| `IDURA_SIGNING_JWKS` (Idura) or `IDENTITY_PROVIDER_CLIENT_SECRET` (Signicat) | yes | a parameter under `parameter_path` | not used |
-| The public JWKs | no | not used | not used: they are registered at the provider |
+| Value                                                                              | Secret | Frontend task (AWS root)                                                | `identity-callback` (Supabase root)                      |
+| ---------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------- | -------------------------------------------------------- |
+| Provider type, client id, `jwks_uri`, issuer                                       | no     | `identity_provider_type` and `environment_values` in `terraform.tfvars` | `identity_provider` in `terraform.tfvars`                |
+| Signicat's authorization and token endpoints, or Idura's domain and signing key id | no     | `environment_values` in `terraform.tfvars`                              | not used                                                 |
+| `IDENTITY_PROVIDER_DECRYPTION_JWKS`, the private encryption keys                   | yes    | a parameter under `parameter_path`                                      | `TF_VAR_identity_provider_decryption_jwks`               |
+| `IDENTITY_CALLBACK_SERVER_SECRET`                                                  | yes    | a parameter under `parameter_path`                                      | `TF_VAR_identity_callback_server_secret`, the same value |
+| `IDURA_SIGNING_JWKS` (Idura) or `IDENTITY_PROVIDER_CLIENT_SECRET` (Signicat)       | yes    | a parameter under `parameter_path`                                      | not used                                                 |
+| The public JWKs                                                                    | no     | not used                                                                | not used: they are registered at the provider            |
 
 **The two key sets.** Idura needs two key pairs of your own and Signicat one. The signing pair lets the provider verify that a request came from your client: the frontend server signs with the private half, `IDURA_SIGNING_JWKS`, and the provider verifies with the public half. The encryption pair lets the provider encrypt the ID token so that only you can read it: the provider encrypts with the public half, and the frontend server and `identity-callback` both decrypt with the private half, `IDENTITY_PROVIDER_DECRYPTION_JWKS`. Signicat proves the client with a client secret instead of a signature, so it has no signing pair. [`docs/key-generation.md`](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/key-generation.md) generates both and gives the details.
 
