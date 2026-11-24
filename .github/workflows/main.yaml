@@ -177,6 +177,11 @@ jobs:
       - name: "Build frontend"
         run: yarn workspace @openvaa/frontend build
 
+      # adapter-node never calls process.exit, so the server exits after its drain only while nothing
+      # keeps the event loop alive. The check starts the build above and needs no other service.
+      - name: "Check that the built server exits by itself after its drain"
+        run: yarn check:shutdown-exit
+
   docker-image-build:
     # Builds the `production` target of `apps/frontend/Dockerfile` from the repo root. That is the
     # image `docker-compose.dev.yml` runs (`target: production`) and the one the AWS deploy pipeline
