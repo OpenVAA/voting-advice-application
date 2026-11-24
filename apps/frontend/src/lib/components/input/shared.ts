@@ -21,10 +21,10 @@ export const inputLabelClass = 'label-sm label pointer-events-none min-w-[4rem] 
 export const inputAndIconContainerClass = 'flex flex-1 justify-end items-center pr-8';
 /** The `input` element itself. It keeps a minimum width beside a long label and any button that follows it. */
 export const inputClass =
-  'input input-sm input-ghost grow justify-end px-0 text-end w-full min-w-xxl disabled:border-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
+  'input input-sm input-ghost grow px-0 text-start w-full min-w-xxl disabled:border-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
 /** The `select` element itself. It keeps a minimum width beside a long label. */
 export const selectClass =
-  'select select-sm grow text-end w-full min-w-xxl !bg-transparent disabled:border-none disabled:bg-[var(--inputBgColor)]';
+  'select select-sm grow text-start w-full min-w-xxl !bg-transparent disabled:border-none disabled:bg-[var(--inputBgColor)]';
 /** The `textarea` element itself. */
 export const textareaClass =
   'textarea bg-[var(--inputBgColor)] resize-none px-md py-sm !outline-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
