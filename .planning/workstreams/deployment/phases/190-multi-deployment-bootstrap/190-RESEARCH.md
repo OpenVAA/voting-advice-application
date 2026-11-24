@@ -459,12 +459,16 @@ For staging these reproduce today's literals exactly (`openvaa-staging-deploy`, 
 | A6 | Tag-conditioned `Deny` works for the CloudFront/ELB read actions in question | D6 | The plan-role isolation remains an accepted risk |
 | A7 | Required reviewers are unavailable for private repos below Enterprise | D7 | The downstream gate design |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Which GitHub plan is the OpenVAA org on, and what does an `environment:` job in the private downstream produce?** Known: branch protection 403 there. Unclear: environments, the token `sub`. Recommendation: an operator probe before Phase 195; Phase 190 keeps subjects and branches as data.
+   RESOLVED: CONTEXT D7, the org is on GitHub Free, so the private downstream has no GitHub Environments and uses ref-based subjects. Plan 190-12's token probe records the exact `sub` and shows whether an empty environment name runs as none.
 2. **Base commit for the move proof.** Use the tree whose bootstrap is live. Precondition: the operator's plan of the unchanged tree reads `No changes` before the refactor plan, so base = live.
+   RESOLVED: the base is 46554181e. Plan 190-11 Task 2 first requires the operator's live plan of that tree to read `No changes.`
 3. **Should the move-proof harness run in CI permanently?** It needs the base tree (`git archive` and full history) and a provider download. Recommendation: a script run in the phase's verification and the operator step; permanent CI coverage is the two-entry isolation test, not the move.
+   RESOLVED: CONTEXT § Deferred Ideas puts permanent CI for the harness out of scope. The harness runs in phase verification (plans 190-04, 190-06, 190-13), and the two-entry isolation test runs in CI (plan 190-05).
 4. **The environment value `DEPLOY_ENVIRONMENT`.** Keep it and compare it with the resolved key (fail closed), or drop it? Recommendation: keep and compare.
+   RESOLVED: CONTEXT D5 keeps `DEPLOY_ENVIRONMENT`, and the deploy job fails when it differs from the resolved key (plan 190-07, settings check).
 
 ## Environment Availability
 

@@ -51,7 +51,7 @@ Filled in by the planner; task ids follow `190-NN-TT`. Requirement ids INFRA-21 
 | 190-03-02 | 03 | 1 | PIPE-13 | T-190-12, T-190-13 | Smoke gate keyed by SMOKE_DEPLOYMENT, default staging, target bound to public_origin | vitest | `yarn test:unit:tests deployedTarget deployedSmokeGuards` | ✅ | ⬜ pending |
 | 190-04-01 | 04 | 2 | INFRA-21 | T-190-14, T-190-18 | One provider module; per-deployment IAM prefix; staging names pinned | terraform test | `terraform -chdir=infra/modules/github-oidc test` | ✅ | ⬜ pending |
 | 190-04-02 | 04 | 2 | INFRA-21 | T-190-16, T-190-17 | Root over the map validates; four moved blocks | terraform validate | `terraform -chdir=infra/bootstrap validate` | ✅ | ⬜ pending |
-| 190-04-03 | 04 | 2 | INFRA-22 | T-190-14, T-190-15 | Schema-subset and staging pins; move proof: no delete, replace or create | vitest + harness | `yarn test:unit:infra bootstrap-tfvars workflows && bash infra/scripts/check-bootstrap-moves.sh --base 46554181e` | ✅ | ⬜ pending |
+| 190-04-03 | 04 | 2 | INFRA-22 | T-190-14, T-190-15 | Schema-subset and staging pins; move proof: no delete, replace or create; map-bearing control against MOVE_COMMIT | vitest + harness | `yarn test:unit:infra bootstrap-tfvars workflows && bash infra/scripts/check-bootstrap-moves.sh --base 46554181e` | ✅ | ⬜ pending |
 | 190-05-01 | 05 | 3 | INFRA-21 | T-190-19 | Two entries plan apart; every map validation refuses | terraform test | `terraform -chdir=infra/bootstrap test` | ❌ W0 | ⬜ pending |
 | 190-05-02 | 05 | 3 | INFRA-21 | T-190-20, T-190-21 | CI runs the bootstrap test credential-free; empty glob fails | script + vitest | `infra/scripts/terraform-checks.sh test-bootstrap && yarn test:unit:infra terraform-checks infra-plan-workflow` | ✅ | ⬜ pending |
 | 190-06-01 | 06 | 3 | INFRA-23 | T-190-22, T-190-23, T-190-25 | Environment tag in deploy scopes; plan deny own key; ids required | terraform test | `terraform -chdir=infra/modules/github-oidc test` | ✅ | ⬜ pending |
@@ -64,16 +64,19 @@ Filled in by the planner; task ids follow `190-NN-TT`. Requirement ids INFRA-21 
 | 190-11-03 | 11 | 4 | INFRA-23 | T-190-46 | Tag inventory clean; live tightening update-only; staging deploy green | manual (operator) | guard over the live plan; deploy run URL (evidence/190-11-applies.md) | ✅ | ⬜ pending |
 | 190-08-01 | 08 | 5 | PIPE-13 | T-190-34, T-190-35, T-190-38 | deploy.yml stage values from resolve; no staging literal | vitest + actionlint | `yarn test:unit:infra deploy-workflow workflows && yarn lint:workflows` | ✅ | ⬜ pending |
 | 190-08-02 | 08 | 5 | PIPE-13 | T-190-36, T-190-37 | destroy.yml confirm text and Supabase key from resolve | vitest + actionlint | `yarn test:unit:infra destroy-workflow workflows && yarn lint:workflows` | ✅ | ⬜ pending |
-| 190-09-01 | 09 | 6 | PIPE-13 | T-190-39, T-190-40 | PR plan matrix over owned deployments with per-deployment plan role | vitest + actionlint | `yarn test:unit:infra infra-plan-workflow && yarn lint:workflows` | ✅ | ⬜ pending |
+| 190-09-01 | 09 | 6 | PIPE-13 | T-190-39, T-190-40, T-190-41a | PR plan matrix over owned deployments with per-deployment plan role; push trigger excludes deploy-evidence/destroy-* (wrong-subject never runs on a trusted ref) | vitest + actionlint | `yarn test:unit:infra infra-plan-workflow && yarn lint:workflows` | ✅ | ⬜ pending |
 | 190-09-02 | 09 | 6 | PIPE-13 | T-190-41 | No literal role ARN in any workflow | vitest | `yarn test:unit:infra workflows infra-plan-workflow deploy-workflow destroy-workflow` | ✅ | ⬜ pending |
 | 190-10-01 | 10 | 7 | INFRA-24, INFRA-23 | T-190-42, T-190-43, T-190-44 | Docs describe two deployments and the downstream path; accepted risks complete | doc + grep | `yarn format:check` | ✅ | ⬜ pending |
 | 190-10-02 | 10 | 7 | PIPE-14 | T-190-43 | Every env root compared to staging's wiring | vitest | `yarn test:unit:infra rootCopies` | ✅ | ⬜ pending |
 | 190-12-01 | 12 | 7 | PIPE-13 | T-190-49 | Probe masks the token and prints claims only | actionlint + grep | grep checks on evidence/190-12-probe-workflow.yml | ✅ | ⬜ pending |
 | 190-12-02 | 12 | 7 | PIPE-13 | T-190-49, T-190-50, T-190-51 | Downstream subjects observed; empty environment runs as none; arm runner observed | manual (operator) | evidence/190-12-observations.md verdict lines | ✅ | ⬜ pending |
 | 190-12-03 | 12 | 7 | PIPE-13 | T-190-52 | Deployed smoke green with SMOKE_DEPLOYMENT unset and staging | manual (operator) | `yarn test:e2e:deployed` (tests/README.md § Deployed smoke run) | ✅ | ⬜ pending |
-| 190-13-01 | 13 | 8 | all six | T-190-54 | Every gate green on GATES_HEAD; requirements traced | full suite | the Full suite command above, plus the move proof | ✅ | ⬜ pending |
-| 190-13-02 | 13 | 8 | all six | T-190-53 | Full E2E green, title set equal to 191-06-full, summed delta 0 | e2e | `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/190-13-full --no-db-reset --no-watch` | ✅ | ⬜ pending |
-| 190-13-03 | 13 | 8 | — | — | Validation contract signed | doc | `grep nyquist_compliant 190-VALIDATION.md` | ✅ | ⬜ pending |
+| 190-14-01 | 14 | 8 | PIPE-13 | T-190-57 | Evidence commit free of .planning/, equal to HEAD; local resolution recorded | git + script | `git ls-tree -r --name-only <EVIDENCE_COMMIT> \| grep -c '^.planning/'` prints 0 | n/a | ⬜ pending |
+| 190-14-02 | 14 | 8 | PIPE-13 | T-190-58 | Rewritten deploy.yml green on staging; infra-plan resolve and wrong-subject green | manual (operator) | DEPLOY_RUN, INFRA_PLAN_RUN in evidence/190-14-pipeline.md | n/a | ⬜ pending |
+| 190-14-03 | 14 | 8 | PIPE-13 | T-190-56, T-190-59 | Destroy resolves staging, plan-destroy green, apply-destroy rejected; wrong-confirm dispatch skips both | manual (operator) | DESTROY_RUN, DISPATCH_RUN in evidence/190-14-pipeline.md | n/a | ⬜ pending |
+| 190-13-01 | 13 | 9 | all six | T-190-54 | Every gate green on GATES_HEAD; requirements traced | full suite | the Full suite command above, plus the move proof | ✅ | ⬜ pending |
+| 190-13-02 | 13 | 9 | all six | T-190-53 | Full E2E green, title set equal to 191-06-full, summed delta 0 | e2e | `tests/scripts/e2e-run.sh --run-dir tests/e2e-runs/190-13-full --no-db-reset --no-watch` | ✅ | ⬜ pending |
+| 190-13-03 | 13 | 9 | — | — | Validation contract signed | doc | `grep nyquist_compliant 190-VALIDATION.md` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -97,6 +100,7 @@ Filled in by the planner; task ids follow `190-NN-TT`. Requirement ids INFRA-21 
 | Live move plan: 0 add, 0 change, 0 destroy, N moved | INFRA-22 | Needs AWS credentials for account 471112560111 | Operator runs the runbook's plan of `infra/bootstrap`, pipes `terraform show -json` through `check-bootstrap-plan.sh` |
 | Downstream OIDC subject form on GitHub Free (no environments) | PIPE-13 | Needs a token minted in the private downstream | Operator runs a probe job in `OpenVAA/deploy-nuortenvaalikone` that prints its token's `sub`; the entry's subjects are edited to match |
 | Applies 1 (move) and 2 (policy tightening) | INFRA-22, INFRA-23 | Live account | Operator applies through the guard, in that order |
+| Rewritten workflows on GitHub against staging | PIPE-13 | Needs pushes, gate approvals and a gate rejection | Plan 190-14: deploy-evidence deploy, destroy approved at plan-destroy and rejected at apply-destroy, wrong-confirm dispatch |
 | Empty environment name runs as no environment; arm runner on the private downstream | PIPE-13 | Needs runs in the downstream | Same probe as the subject probe (plan 190-12 Task 2) |
 | Deployed smoke with SMOKE_DEPLOYMENT unset and `staging` | PIPE-13 | Needs the staging smoke inputs | tests/README.md § Deployed smoke run, twice (plan 190-12 Task 3) |
 

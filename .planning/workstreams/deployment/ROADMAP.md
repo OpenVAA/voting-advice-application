@@ -1039,7 +1039,7 @@ Plans:
 - `infra/envs/example` and `infra/README.md` document adding a deployment from a downstream repository: a new entry in the bootstrap map upstream, the env roots copied from `example` downstream.
 
 **Context (exploration, 2026-11-23):** same AWS account, confirmed by the operator; the downstream repository is a private non-fork mirror with an `upstream` remote and diverges only by added files; it follows the deployment stack by `git rebase --onto` while the stack is restacked, and by merge from `main` once the stack lands. This is upstream PR 1 of 2; the second, an instance overlay over `staticSettings`, static assets and translations, is not yet on the roadmap. Not urgent: planned ahead so testing can start as soon as the infrastructure is on `main`.
-**Plans:** 13 plans in 8 waves. Plans 11 and 12 hold operator checkpoints (the two live bootstrap applies through the plan guard, in the order of decision D8; the downstream token probe and the workstation smoke run). Plan 13 makes the phase's one full E2E run.
+**Plans:** 14 plans in 9 waves. Plans 11, 12 and 14 hold operator checkpoints: the two live bootstrap applies through the plan guard, in the order of decision D8; the downstream token probe and the workstation smoke run; and the rewritten workflows run on staging from an evidence branch. Plan 13 makes the phase's one full E2E run.
 
 Plans:
 
@@ -1063,11 +1063,14 @@ Plans:
 - [ ] 190-08-PLAN.md — deploy.yml and destroy.yml stage values from the resolve outputs; no staging literal left.
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 190-09-PLAN.md — infra-plan.yml over the owned deployments; no literal role ARN in any workflow.
+- [ ] 190-09-PLAN.md — infra-plan.yml over the owned deployments, its push trigger excluding destroy branches; no literal role ARN in any workflow.
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 190-10-PLAN.md — README, example roots and guide for two deployments in one account; rootCopies over every env root.
 - [ ] 190-12-PLAN.md — The downstream OIDC token probe (subjects, empty environment, arm runner) and the deployed smoke against staging.
 
-**Wave 8** *(blocked on Wave 7 completion)*
+**Wave 8** *(blocked on Wave 7 completion; needs the operator)*
+- [ ] 190-14-PLAN.md — The rewritten workflows on staging: an evidence deploy and the infra-plan proof, a destroy rejected at apply-destroy, a dispatch with a wrong confirm.
+
+**Wave 9** *(blocked on Wave 8 completion)*
 - [ ] 190-13-PLAN.md — Every gate on one commit, the full E2E run judged against `tests/e2e-runs/191-06-full`, the requirement trace, VALIDATION signed.
