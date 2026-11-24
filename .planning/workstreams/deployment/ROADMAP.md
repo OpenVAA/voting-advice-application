@@ -903,7 +903,7 @@ Plans:
   2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
   3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
   4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
-**Plans:** 7/15 plans executed
+**Plans:** 8/15 plans executed
 
 Plans:
 **Wave 1**
@@ -926,7 +926,7 @@ Plans:
 - [x] 189.1.1-09-PLAN.md — migration 00005 drops invitation_caller_take (wave 5)
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 189.1.1-10-PLAN.md — exit-after-drain check in CI; settings check names a missing table (wave 6)
+- [x] 189.1.1-10-PLAN.md — exit-after-drain check in CI; settings check names a missing table (wave 6)
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 189.1.1-11-PLAN.md — one observed full main.yaml run through ci-evidence/** (wave 7, operator approval)
