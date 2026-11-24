@@ -3,12 +3,12 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
-current_plan: 6
+current_plan: 11
 status: executing
-stopped_at: Completed 190-06-PLAN.md
-last_updated: "2026-11-24T16:10:00.000Z"
+stopped_at: 190-11 Task 2 checkpoint (operator apply 1, the pure move)
+last_updated: "2026-11-24T17:00:00.000Z"
 last_activity: 2026-11-24
-last_activity_desc: 190-06 complete (in-place tightening, TIGHTEN_COMMIT 7d4ab1242)
+last_activity_desc: 190-11 Task 1 done (runbook Steps 11-13, b512010e8); waits at Task 2, operator apply 1
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
@@ -33,9 +33,9 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 190 (Multi-deployment bootstrap) — EXECUTING
-Plan: 6 of 14 (190-01 to 190-06 complete)
+Plan: 11 of 14 (190-01 to 190-06 complete; 190-11 waits at Task 2, the operator's apply 1 of MOVE_COMMIT, then Task 3, apply 2 of TIGHTEN_COMMIT)
 Status: In progress (branch planning/deployment-190, on 46554181e)
-Last activity: 2026-11-24 — 190-06 complete: Environment in github-oidc root_tags, plan deny narrowed to the own pipeline state key, trust ids required; TIGHTEN_COMMIT=7d4ab1242affa84edd6865440f0a8db5275b8ade proven update-only vs MOVE_COMMIT (delete 0, replace 0, create 0, guard pass); 4 expected policy updates; SAR unreachable, cross-deployment reads accepted risks; infra 633 passed / 6 baseline failed
+Last activity: 2026-11-24 — 190-11 Task 1 committed (b512010e8: infra/bootstrap/README.md Steps 11 to 13, the map, the pure move, the Environment-tag tightening, adding a deployment). Checkpoint at Task 2: operator apply 1 (pure move, MOVE_COMMIT ce17178c6) through check-bootstrap-plan.sh --pure-move; Task 3 (apply 2, TIGHTEN_COMMIT 7d4ab1242) follows. No 190-11 SUMMARY yet. Before: 190-06 complete (TIGHTEN_COMMIT update-only vs MOVE_COMMIT, 4 expected policy updates)
 
 Progress: [██████████████████░░] 169/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
