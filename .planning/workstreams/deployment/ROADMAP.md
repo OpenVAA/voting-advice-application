@@ -846,6 +846,7 @@ Every requirement of `REQUIREMENTS.md` is mapped to exactly one phase. The file 
 | 189 | DOCS-01 to DOCS-08 | 8 |
 | 189.1 | OBS-12, OBS-13, PIPE-11 | 3 |
 | 189.1.1 | RELAY-22, RELAY-23, PIPE-12, DOCS-09, INFRA-20, SUPA-15 | 6 |
+| 190 | INFRA-21 to INFRA-24, PIPE-13, PIPE-14 | 6 |
 | Total | | 92 |
 
 Phase 189.1 adds three ids, OBS-12, OBS-13 and PIPE-11, from the tech debt of `v2.17-MILESTONE-AUDIT.md`, which brings the file to 86.
@@ -1025,8 +1026,8 @@ Plans:
 - [ ] 189.1.2-16-PLAN.md — requirement trace, residue, closing gates, the todo closed, and the phase's own full E2E run (wave 15)
 ### Phase 190: Multi-deployment bootstrap
 
-**Goal:** `infra/bootstrap` takes a map of deployments, so a second OpenVAA instance can deploy from its own repository into the same AWS account (`471112560111`) without colliding with staging. The first consumer is the private downstream repository `OpenVAA/deploy-nuorten-vaalikone-2027` (Nuorten vaalikone 2027, `nuortenvaalikone.openvaa.org`, its own Supabase project).
-**Requirements**: TBD
+**Goal:** `infra/bootstrap` takes a map of deployments, so a second OpenVAA instance can deploy from its own repository into the same AWS account (`471112560111`) without colliding with staging. The first consumer is the private downstream repository `OpenVAA/deploy-nuortenvaalikone` (Nuorten vaalikone 2027, `nuortenvaalikone.openvaa.org`, its own Supabase project).
+**Requirements**: INFRA-21, INFRA-22, INFRA-23, INFRA-24, PIPE-13, PIPE-14
 **Depends on:** Phase 189 (the deployment stack on `main`; the phase may be planned before then, and is executed after)
 
 **Shape:**
@@ -1038,7 +1039,35 @@ Plans:
 - `infra/envs/example` and `infra/README.md` document adding a deployment from a downstream repository: a new entry in the bootstrap map upstream, the env roots copied from `example` downstream.
 
 **Context (exploration, 2026-11-23):** same AWS account, confirmed by the operator; the downstream repository is a private non-fork mirror with an `upstream` remote and diverges only by added files; it follows the deployment stack by `git rebase --onto` while the stack is restacked, and by merge from `main` once the stack lands. This is upstream PR 1 of 2; the second, an instance overlay over `staticSettings`, static assets and translations, is not yet on the roadmap. Not urgent: planned ahead so testing can start as soon as the infrastructure is on `main`.
-**Plans:** 0 plans
+**Plans:** 13 plans in 8 waves. Plans 11 and 12 hold operator checkpoints (the two live bootstrap applies through the plan guard, in the order of decision D8; the downstream token probe and the workstation smoke run). Plan 13 makes the phase's one full E2E run.
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 190 to break down)
+
+**Wave 1**
+- [ ] 190-01-PLAN.md — Terraform 1.16.5 untracked, the unit baseline, the bootstrap plan guard and the offline move-proof harness.
+- [ ] 190-02-PLAN.md — The deployment map with staging's entry, and the workflows' resolver.
+- [ ] 190-03-PLAN.md — `push-migrations.sh --deployment` and the smoke gate keyed by `SMOKE_DEPLOYMENT`.
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 190-04-PLAN.md — The pure move: `for_each` over the map, the provider module, the moved blocks, staging's names unchanged, proven offline (MOVE_COMMIT).
+
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 190-05-PLAN.md — The bootstrap root test (two entries apart, staging pinned, validations refusing) and its CI check.
+- [ ] 190-06-PLAN.md — The tightening: `Environment` in the deploy scopes, the plan deny on its own key, required ids, tag denies where AWS allows (TIGHTEN_COMMIT).
+
+**Wave 4** *(blocked on Wave 3 completion)*
+- [ ] 190-07-PLAN.md — deploy.yml and destroy.yml routed through the resolve job; the cross-workflow rules over resolved values.
+- [ ] 190-11-PLAN.md — The runbook steps, then the operator's apply 1 (move) and apply 2 (tightening), each through the guard.
+
+**Wave 5** *(blocked on Wave 4 completion)*
+- [ ] 190-08-PLAN.md — deploy.yml and destroy.yml stage values from the resolve outputs; no staging literal left.
+
+**Wave 6** *(blocked on Wave 5 completion)*
+- [ ] 190-09-PLAN.md — infra-plan.yml over the owned deployments; no literal role ARN in any workflow.
+
+**Wave 7** *(blocked on Wave 6 completion)*
+- [ ] 190-10-PLAN.md — README, example roots and guide for two deployments in one account; rootCopies over every env root.
+- [ ] 190-12-PLAN.md — The downstream OIDC token probe (subjects, empty environment, arm runner) and the deployed smoke against staging.
+
+**Wave 8** *(blocked on Wave 7 completion)*
+- [ ] 190-13-PLAN.md — Every gate on one commit, the full E2E run judged against `tests/e2e-runs/191-06-full`, the requirement trace, VALIDATION signed.

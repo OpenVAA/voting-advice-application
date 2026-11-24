@@ -66,6 +66,21 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
 - [x] **INFRA-20**: Terraform refuses a frontend task whose stop timeout is shorter than its `SHUTDOWN_TIMEOUT`
       plus 15 seconds, and a check run in CI shows that the built server exits by itself after its drain once
       signalled, while a server held alive by a timer is seen not to (D-14e, D-14f). [189.1.1]
+- [ ] **INFRA-21**: `infra/bootstrap` takes a map of deployments, keyed by deployment name and committed as
+      `infra/bootstrap/deployments.auto.tfvars.json`. Each entry gets its own plan role, deploy role, deploy
+      policies, frontend execution role and image repository, named apart from every other entry's, while the
+      GitHub OIDC provider, the state bucket and the budget stay once per account. Staging keeps every name it
+      has. [190]
+- [ ] **INFRA-22**: Staging moves into the map with no destroy and no replace. An offline plan of the new tree
+      against the base tree's state shows it, and so does the operator's live plan, which reads 0 to add, 0 to
+      change and 0 to destroy through the plan guard before it is applied. [190]
+- [ ] **INFRA-23**: No deployment's roles can change another deployment's network, CDN, certificates, DNS
+      records, image repository or pipeline state, and no plan role can read another deployment's pipeline
+      state. Whatever IAM cannot scope between two deployments in one account is listed as an accepted risk.
+      [190]
+- [ ] **INFRA-24**: `infra/README.md`, `infra/envs/example`, the bootstrap runbook and the deployment guide
+      describe how to add a deployment from a downstream repository: one map entry upstream, and the env roots
+      copied from `example` downstream. [190]
 
 ### SUPA — Supabase project provisioning
 
@@ -134,6 +149,12 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       pinned by its fingerprint; a wrong CA or host name is seen refused, the guard test fails on a fallback to
       `require` or a dropped root path, SCRAM channel binding is required when the pooler is measured to offer
       it and its absence is recorded otherwise, and an observed deploy is green with it (D-08..D-12). [189.1.1]
+- [ ] **PIPE-13**: The deploy, destroy and infra-plan workflows, the migration push and the deployed smoke run
+      read the deployment from the bootstrap map by repository id and ref, so a downstream repository runs them
+      unedited. A run that matches no entry, or more than one, fails before it names an environment or assumes a
+      role. An entry with no GitHub Environment runs its jobs with none. [190]
+- [ ] **PIPE-14**: Every env root under `infra/envs/<name>/` is validated and held to staging's wiring, so a
+      downstream's roots are checked without any upstream edit. [190]
 
 ### OBS — Hosted-behaviour observations
 
@@ -317,6 +338,10 @@ closes; those are not listed against the earlier phase here.
 | INFRA-18 | Phase 183 | Complete |
 | INFRA-19 | Phase 187 | Complete |
 | INFRA-20 | Phase 189.1.1 | Complete |
+| INFRA-21 | Phase 190 | Pending |
+| INFRA-22 | Phase 190 | Pending |
+| INFRA-23 | Phase 190 | Pending |
+| INFRA-24 | Phase 190 | Pending |
 | SUPA-01 | Phase 184 | Complete |
 | SUPA-02 | Phase 184 | Complete |
 | SUPA-03 | Phase 184 | Complete |
@@ -344,6 +369,8 @@ closes; those are not listed against the earlier phase here.
 | PIPE-10 | Phase 187 | Complete |
 | PIPE-11 | Phase 189.1 | Complete |
 | PIPE-12 | Phase 189.1.1 | Complete |
+| PIPE-13 | Phase 190 | Pending |
+| PIPE-14 | Phase 190 | Pending |
 | OBS-01 | Phase 184 | Complete |
 | OBS-02 | Phase 184 | Complete |
 | OBS-03 | Phase 184 | Complete |
@@ -395,6 +422,10 @@ closes; those are not listed against the earlier phase here.
 - Mapped to phases: 92
 - Unmapped: 0
 - Per phase: 181: 1, 182: 19, 183: 4, 184: 14, 185: 19, 186: 1, 187: 13, 188: 4, 189: 8, 189.1: 3, 189.1.1: 6
+- v1 requirements: 92 total (INFRA 23, SUPA 14, PIPE 13, OBS 13, RELAY 21, DOCS 8)
+- Mapped to phases: 92
+- Unmapped: 0
+- Per phase: 181: 1, 182: 19, 183: 4, 184: 14, 185: 19, 186: 1, 187: 13, 188: 4, 189: 8, 189.1: 3, 190: 6
 
 Count corrected on 2026-10-11: this line said 81 when the requirements were defined. The six group counts sum to
 83, and a count of the ids in this file gives 83.
@@ -404,6 +435,8 @@ Added on 2026-11-21: phase 189.1 adds OBS-12, OBS-13 and PIPE-11, from the tech 
 
 Added on 2026-11-24: phase 189.1.1 adds INFRA-20, SUPA-15, PIPE-12, RELAY-22, RELAY-23 and DOCS-09, from the
 2026-11-23 re-audit of `v2.17-MILESTONE-AUDIT.md` and the UAT todos of 189.1, which brings the count to 92.
+Added on 2026-11-24: phase 190 adds INFRA-21 to INFRA-24, PIPE-13 and PIPE-14, the multi-deployment bootstrap,
+which brings the count to 92.
 
 ---
 *Requirements defined: 2026-10-11*
