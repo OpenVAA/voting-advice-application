@@ -119,7 +119,8 @@ extract_base() {
 copy_tree() {
   local excludes=(--exclude=.terraform --exclude='*.tfstate' --exclude='*.tfstate.*' --exclude=.terraform.tfstate.lock.info)
   if [ -f "$REPO/infra/bootstrap/deployments.auto.tfvars.json" ] \
-    && ! grep -Eq '^[[:space:]]*variable[[:space:]]+"deployments"' "$REPO"/infra/bootstrap/*.tf; then
+    && ! find "$REPO/infra/bootstrap" -maxdepth 1 -name '*.tf' -type f \
+      -exec grep -Eq '^[[:space:]]*variable[[:space:]]+"deployments"' {} + 2> /dev/null; then
     excludes+=(--exclude=infra/bootstrap/deployments.auto.tfvars.json)
     echo "bootstrap_moves_note=undeclared_map_file_skipped"
   fi
