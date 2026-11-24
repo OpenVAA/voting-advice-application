@@ -11,10 +11,11 @@
  * Three legs, each on a fresh server listening on 127.0.0.1 with a free port and `SHUTDOWN_TIMEOUT=3`:
  *
  *   idle      SIGTERM with nothing in flight; the process must exit 0 within 2 s.
- *   in-flight `GET /` is started and SIGTERM follows 300 ms later. The request must receive a complete response (any
- *             status, never a reset) that took at least the stub's delay, and the process must then exit 0 within
- *             `SHUTDOWN_TIMEOUT` plus 2 s. A response faster than the delay means the request was not in flight at the
- *             signal, and the leg could not run.
+ *   in-flight one unsignalled `GET /` warms the server, so the measured request is not also its first render. A
+ *             second `GET /` is started and SIGTERM follows 300 ms later. The request must receive a complete
+ *             response (any status, never a reset) that took at least the stub's delay, and the process must then
+ *             exit 0 within `SHUTDOWN_TIMEOUT` plus 2 s. A response faster than the delay means the request was not
+ *             in flight at the signal, and the leg could not run.
  *   control   the server starts with a module that keeps an interval alive, loaded through `NODE_OPTIONS=--import`. It
  *             must still be running `SHUTDOWN_TIMEOUT` plus 2 s after SIGTERM, which shows that the check sees a held
  *             loop. It is then killed.
@@ -289,6 +290,9 @@ async function idleLeg({ stubUrl, keepAliveUrl }) {
 async function inFlightLeg({ stubUrl, keepAliveUrl, stubRequests, holdNextStubRequest }) {
   const { child, port } = await startServer({ stubUrl, keepAliveUrl: KEEPALIVE_ALL ? keepAliveUrl : undefined });
   const boundMs = SHUTDOWN_TIMEOUT_SECONDS * 1000 + MARGIN_MS;
+  await get(`http://${LOOPBACK}:${port}/`, boundMs).catch((error) => {
+    throw new CouldNotRun(`the warm-up request failed: ${/** @type {Error} */ (error).message}`);
+  });
   const requestsBefore = stubRequests();
   holdNextStubRequest();
   const response = get(`http://${LOOPBACK}:${port}/`, boundMs + SIGNAL_AFTER_MS).then(
