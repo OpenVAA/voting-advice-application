@@ -182,7 +182,10 @@ describe('check-bootstrap-plan.sh', () => {
 
   it('accepts several --new-key flags', () => {
     const { status, stdout } = guard(
-      [change(OTHER_REPOSITORY, ['create']), change('module.registry["third"].aws_ecr_repository.frontend', ['create'])],
+      [
+        change(OTHER_REPOSITORY, ['create']),
+        change('module.registry["third"].aws_ecr_repository.frontend', ['create'])
+      ],
       ['--new-key', 'other', '--new-key', 'third']
     );
     expect(lines(stdout)).toMatchObject({ bootstrap_plan_unexpected_create: '0', bootstrap_plan_guard: 'pass' });
@@ -232,7 +235,10 @@ describe('check-bootstrap-plan.sh', () => {
     ['a forget', ['forget']],
     ['a read', ['read']]
   ])('counts a moved address planned as %s as a failed move', (_name, actions) => {
-    const { status, stdout } = guard([change(ROLE, actions, { previous_address: ROLE_BEFORE })], ['--new-key', 'staging']);
+    const { status, stdout } = guard(
+      [change(ROLE, actions, { previous_address: ROLE_BEFORE })],
+      ['--new-key', 'staging']
+    );
     expect(lines(stdout)).toMatchObject({
       bootstrap_plan_moved: '1',
       bootstrap_plan_failed_move: '1',
