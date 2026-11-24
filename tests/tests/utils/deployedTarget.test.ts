@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   assertSmokeProjects,
-  DEDICATED_SUPABASE_TFVARS,
-  DEFAULT_SMOKE_BASE_URL,
+  dedicatedSupabaseTfvars,
+  DEFAULT_SMOKE_DEPLOYMENT,
   evaluateGate,
   extractServedEnv,
   GATE_CHECK_ORDER,
@@ -15,10 +15,12 @@ import {
   readDedicatedTarget,
   readPublicOrigin,
   readSmokeAccessCallerMax,
+  readSmokeDeployment,
   requireCredentialOrigin,
   requireSmokeInputs,
   runDeployedGate,
-  servedSupabaseRef
+  servedSupabaseRef,
+  smokeBaseUrl
 } from './deployedTarget';
 import type { IncomingMessage, Server, ServerResponse } from 'http';
 import type { AddressInfo } from 'net';
@@ -31,10 +33,17 @@ import type { DedicatedTarget, FetchedDocument, GateCheckName, GateEnv, GateResu
  */
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+/** The tfvars of the default deployment, staging, relative to the repository root. */
+const STAGING_TFVARS = 'infra/envs/staging/supabase/terraform.tfvars';
+/** The public_origin of the staging tfvars. */
+const STAGING_ORIGIN = 'https://staging.openvaa.org';
 const DEDICATED: DedicatedTarget = readDedicatedTarget(
-  fs.readFileSync(path.join(REPO_ROOT, DEDICATED_SUPABASE_TFVARS), 'utf8')
+  fs.readFileSync(path.join(REPO_ROOT, STAGING_TFVARS), 'utf8'),
+  STAGING_TFVARS
 );
 const DEDICATED_URL = `https://${DEDICATED.projectRef}.supabase.co`;
+/** A tfvars path no deployment has, so an error naming it can only have come from the argument. */
+const OTHER_TFVARS = 'infra/envs/other/supabase/terraform.tfvars';
 const SHA = '712947a1bd44a735f66ee8f51610f4748d76cd30';
 const OTHER_SHA = 'ffffffffffffffffffffffffffffffffffffffff';
 const MADE_UP_KEY_VALUE = 'made-up-service-role-value';
@@ -460,8 +469,8 @@ describe('every check is evaluated', () => {
   it('evaluates a failed page request without a thrown error', () => {
     const checks = evaluateGate({
       env: { SMOKE_EXPECTED_SHA: SHA },
-      baseURL: DEFAULT_SMOKE_BASE_URL,
-      health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${DEFAULT_SMOKE_BASE_URL}/api/health` },
+      baseURL: STAGING_ORIGIN,
+      health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${STAGING_ORIGIN}/api/health` },
       page: { error: 'refused' },
       dedicated: DEDICATED
     });
@@ -507,8 +516,8 @@ describe('the origin check', () => {
   }
 
   it.each([
-    ['the dedicated https origin', DEFAULT_SMOKE_BASE_URL],
-    ['an https origin with a path', `${DEFAULT_SMOKE_BASE_URL}/en`],
+    ['the dedicated https origin', STAGING_ORIGIN],
+    ['an https origin with a path', `${STAGING_ORIGIN}/en`],
     ['http on 127.0.0.1', 'http://127.0.0.1:3186'],
     ['http on localhost', 'http://localhost:5173'],
     ['http on the IPv6 loopback', 'http://[::1]:3186']
@@ -529,21 +538,21 @@ describe('the origin check', () => {
 
   it('accepts a redirect that stays on the origin', () => {
     const documents = {
-      health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${DEFAULT_SMOKE_BASE_URL}/api/health` },
-      page: { status: 200, body: servedPage(), url: `${DEFAULT_SMOKE_BASE_URL}/en` }
+      health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${STAGING_ORIGIN}/api/health` },
+      page: { status: 200, body: servedPage(), url: `${STAGING_ORIGIN}/en` }
     };
-    expect(evaluate(DEFAULT_SMOKE_BASE_URL, documents).every((check) => check.pass)).toBe(true);
+    expect(evaluate(STAGING_ORIGIN, documents).every((check) => check.pass)).toBe(true);
   });
 
   it('fails every check that read a document answered from another origin', () => {
     const elsewhere = 'https://elsewhere.example';
     const documents = {
       health: { status: 200, body: JSON.stringify({ build: SHA }), url: `${elsewhere}/api/health` },
-      page: { status: 200, body: servedPage(), url: `${DEFAULT_SMOKE_BASE_URL}/` }
+      page: { status: 200, body: servedPage(), url: `${STAGING_ORIGIN}/` }
     };
-    const checks = evaluate(DEFAULT_SMOKE_BASE_URL, documents);
+    const checks = evaluate(STAGING_ORIGIN, documents);
     expect(checks.filter((check) => !check.pass).map((check) => check.name)).toEqual(['origin', 'sha']);
-    expect(observedOf(checks, 'origin')).toBe(`${DEFAULT_SMOKE_BASE_URL}; /api/health answered from ${elsewhere}`);
+    expect(observedOf(checks, 'origin')).toBe(`${STAGING_ORIGIN}; /api/health answered from ${elsewhere}`);
     expect(observedOf(checks, 'sha')).toBe(
       `(request to /api/health failed: answered from another origin, ${elsewhere})`
     );
@@ -608,7 +617,7 @@ describe('a base URL the gate cannot request', () => {
 
 describe('gateTargetLine', () => {
   it('names a base URL without user info as given', () => {
-    expect(gateTargetLine(DEFAULT_SMOKE_BASE_URL)).toBe('DEPLOYED SMOKE GATE https://staging.openvaa.org');
+    expect(gateTargetLine(STAGING_ORIGIN)).toBe('DEPLOYED SMOKE GATE https://staging.openvaa.org');
   });
 
   it.each([
@@ -632,8 +641,8 @@ describe('gateTargetLine', () => {
 
 describe('readPublicOrigin', () => {
   it('reads the origin of the committed tfvars', () => {
-    expect(readPublicOrigin(fs.readFileSync(path.join(REPO_ROOT, DEDICATED_SUPABASE_TFVARS), 'utf8'))).toBe(
-      DEFAULT_SMOKE_BASE_URL
+    expect(readPublicOrigin(fs.readFileSync(path.join(REPO_ROOT, STAGING_TFVARS), 'utf8'), STAGING_TFVARS)).toBe(
+      STAGING_ORIGIN
     );
   });
 
@@ -644,16 +653,16 @@ describe('readPublicOrigin', () => {
     ['a path', 'public_origin = "https://staging.openvaa.org/en"'],
     ['a repeated key', 'public_origin = "https://a.example"\npublic_origin = "https://b.example"']
   ])('throws on %s', (_label, text) => {
-    expect(() => readPublicOrigin(text)).toThrow(DEDICATED_SUPABASE_TFVARS);
+    expect(() => readPublicOrigin(text, OTHER_TFVARS)).toThrow(OTHER_TFVARS);
   });
 });
 
 describe('requireCredentialOrigin', () => {
   it.each([
-    ['the dedicated origin', DEFAULT_SMOKE_BASE_URL],
-    ['the dedicated origin with a trailing slash', `${DEFAULT_SMOKE_BASE_URL}/`]
+    ['the dedicated origin', STAGING_ORIGIN],
+    ['the dedicated origin with a trailing slash', `${STAGING_ORIGIN}/`]
   ])('accepts %s', (_label, baseURL) => {
-    expect(() => requireCredentialOrigin(baseURL, REPO_ROOT)).not.toThrow();
+    expect(() => requireCredentialOrigin(baseURL, REPO_ROOT, 'staging')).not.toThrow();
   });
 
   it.each([
@@ -670,8 +679,14 @@ describe('requireCredentialOrigin', () => {
     ['no base URL', undefined, '(none)'],
     ['a value that is not a URL', 'staging.openvaa.org', '(not an absolute URL)']
   ])('refuses %s before any page action', (_label, baseURL, origin) => {
-    expect(() => requireCredentialOrigin(baseURL, REPO_ROOT)).toThrow(
-      `SMOKE TARGET REFUSED: the contestant's credentials are sent only to ${DEFAULT_SMOKE_BASE_URL}, public_origin of ${DEDICATED_SUPABASE_TFVARS}; the base URL's origin is ${origin}`
+    expect(() => requireCredentialOrigin(baseURL, REPO_ROOT, 'staging')).toThrow(
+      `SMOKE TARGET REFUSED: the contestant's credentials are sent only to ${STAGING_ORIGIN}, public_origin of ${STAGING_TFVARS}; the base URL's origin is ${origin}`
+    );
+  });
+
+  it('names the missing tfvars of an unknown deployment', () => {
+    expect(() => requireCredentialOrigin(STAGING_ORIGIN, REPO_ROOT, 'nosuchkey')).toThrow(
+      'infra/envs/nosuchkey/supabase/terraform.tfvars'
     );
   });
 });
@@ -689,14 +704,14 @@ describe('readDedicatedTarget refusals', () => {
     ['a non-canonical id', [ref, 'public_project_id = "00000000000000000000000000000001"']],
     ['an upper-case id', [ref, 'public_project_id = "0000000A-0000-0000-0000-000000000001"']]
   ])('throws on %s', (_label, lines) => {
-    expect(() => readDedicatedTarget(lines.join('\n'))).toThrow(DEDICATED_SUPABASE_TFVARS);
+    expect(() => readDedicatedTarget(lines.join('\n'), OTHER_TFVARS)).toThrow(OTHER_TFVARS);
   });
 
   it('ignores a commented-out line', () => {
     const text = ['# project_ref = "aaaaaaaaaaaaaaaaaaaa"', '// project_ref = "bbbbbbbbbbbbbbbbbbbb"', ref, id].join(
       '\n'
     );
-    expect(readDedicatedTarget(text)).toEqual(DEDICATED);
+    expect(readDedicatedTarget(text, STAGING_TFVARS)).toEqual(DEDICATED);
   });
 });
 
@@ -780,5 +795,65 @@ describe('readSmokeAccessCallerMax', () => {
     expect(() => readSmokeAccessCallerMax({ SMOKE_ACCESS_CALLER_MAX: value })).toThrow(
       `SMOKE INPUT INVALID: SMOKE_ACCESS_CALLER_MAX must be a whole number of at least 1, got ${JSON.stringify(value)}`
     );
+  });
+});
+
+describe('readSmokeDeployment', () => {
+  it.each([
+    ['unset', {}],
+    ['blank', { SMOKE_DEPLOYMENT: '  ' }],
+    ['padded', { SMOKE_DEPLOYMENT: ' staging ' }]
+  ])('reads staging when it is %s', (_label, env) => {
+    expect(readSmokeDeployment(env)).toBe('staging');
+    expect(DEFAULT_SMOKE_DEPLOYMENT).toBe('staging');
+  });
+
+  it.each(['other', 'nuorten-2027', 'abcdefghijklmno'])('reads %j', (value) => {
+    expect(readSmokeDeployment({ SMOKE_DEPLOYMENT: value })).toBe(value);
+  });
+
+  it.each(['Bad_Key', 'abcdefghijklmnop', '1staging', '../staging', 'staging/x', 'stag.ing', '-staging'])(
+    'refuses %j',
+    (value) => {
+      expect(() => readSmokeDeployment({ SMOKE_DEPLOYMENT: value })).toThrow(
+        `SMOKE INPUT INVALID: SMOKE_DEPLOYMENT must be a deployment key of lower-case letters, digits and hyphens, at most 15 characters, got ${JSON.stringify(value)}`
+      );
+    }
+  );
+});
+
+describe('dedicatedSupabaseTfvars', () => {
+  it("names a deployment's Supabase tfvars relative to the repository root", () => {
+    expect(dedicatedSupabaseTfvars('staging')).toBe(STAGING_TFVARS);
+    expect(dedicatedSupabaseTfvars('other')).toBe(OTHER_TFVARS);
+  });
+});
+
+describe('smokeBaseUrl', () => {
+  it('targets the public_origin of the default deployment when nothing is set', () => {
+    expect(smokeBaseUrl({}, REPO_ROOT)).toBe(STAGING_ORIGIN);
+    expect(smokeBaseUrl({ SMOKE_DEPLOYMENT: 'staging', SMOKE_BASE_URL: '' }, REPO_ROOT)).toBe(STAGING_ORIGIN);
+  });
+
+  it('takes SMOKE_BASE_URL when it is set', () => {
+    expect(smokeBaseUrl({ SMOKE_BASE_URL: 'http://127.0.0.1:3186' }, REPO_ROOT)).toBe('http://127.0.0.1:3186');
+  });
+
+  it('names the missing tfvars of an unknown deployment', () => {
+    expect(() => smokeBaseUrl({ SMOKE_DEPLOYMENT: 'nosuchkey' }, REPO_ROOT)).toThrow(
+      'infra/envs/nosuchkey/supabase/terraform.tfvars'
+    );
+  });
+
+  it('refuses a malformed deployment key before reading a file', () => {
+    expect(() => smokeBaseUrl({ SMOKE_DEPLOYMENT: '../staging' }, REPO_ROOT)).toThrow('SMOKE INPUT INVALID');
+  });
+});
+
+describe('runDeployedGate with SMOKE_DEPLOYMENT', () => {
+  it('refuses an unknown deployment before any request, naming its tfvars', async () => {
+    await expect(
+      runDeployedGate({ env: { SMOKE_DEPLOYMENT: 'nosuchkey' }, baseURL: STAGING_ORIGIN, repoRoot: REPO_ROOT })
+    ).rejects.toThrow('infra/envs/nosuchkey/supabase/terraform.tfvars');
   });
 });
