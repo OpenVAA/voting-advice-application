@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
-current_plan: 11
+current_plan: 14
 status: executing
-stopped_at: 190-12 Task 2 checkpoint (operator downstream token probe); 190-11 Task 2 checkpoint (operator apply 1, the pure move)
-last_updated: "2026-11-24T18:00:00.000Z"
+stopped_at: 190-14 Task 2 checkpoint (operator pushes EVIDENCE_COMMIT fd57d4339 to deploy-evidence/190-final, approves the staging deploy; then 190-12 Task 3 smoke runs, then 190-14 Task 3 destroy path)
+last_updated: "2026-11-24T21:10:00.000Z"
 last_activity: 2026-11-24
-last_activity_desc: 190-12 Task 1 committed (acf6da25f, the downstream OIDC probe workflow text); 190-12 waits at Task 2, the operator token probe, then Task 3, the two staging smoke runs (moved after 190-14's evidence deploy by operator ruling); 190-11 still waits at Task 2, operator apply 1
+last_activity_desc: 190-11 complete (both bootstrap applies through the guard, staging deploy green; INFRA-21 to INFRA-24 complete); 190-14 Task 1 committed (EVIDENCE_COMMIT fd57d43396b4f3da85897d9196102f6aa2eb2561, tree d93523b909cd); 190-14 waits at Task 2, 190-12 at Task 3 (smoke runs right after 190-14's evidence deploy)
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 232
-  completed_plans: 228
+  completed_plans: 229
   percent: 92
 ---
 
@@ -33,16 +33,16 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 190 (Multi-deployment bootstrap) — EXECUTING
-Plan: 11 of 14 (190-01 to 190-10 complete; 190-11 waits at Task 2, the operator's apply 1 of MOVE_COMMIT, then Task 3, apply 2 of TIGHTEN_COMMIT; 190-12 waits at Task 2, the operator's downstream token probe, then Task 3, the two staging smoke runs (moved after 190-14's evidence deploy by operator ruling))
+Plan: 14 of 14 (190-01 to 190-11 complete; 190-14 waits at Task 2, the operator's push of EVIDENCE_COMMIT to deploy-evidence/190-final and the staging deploy approval, then the two smoke runs of 190-12 Task 3, then 190-14 Task 3, the destroy path rejected at apply-destroy and a wrong-confirm dispatch; 190-12's token probe is recorded (evidence/190-12-observations.md, EMPTY_ENVIRONMENT=runs-without), its Task 3 waits for 190-14's evidence deploy; 190-13 follows 190-14)
 Status: In progress (branch planning/deployment-190, on 46554181e)
-Last activity: 2026-11-24 — 190-12 Task 1 committed (acf6da25f: evidence/190-12-probe-workflow.yml, the OIDC subject probe for the downstream, to be copied to .github/workflows/downstream-oidc-probe.yml on a throwaway deploy/nuorten-2027 branch; jobs shape, probe-empty-environment, probe-no-environment, probe-arm; actionlint 1.7.12 clean). Checkpoint at Task 2: operator token probe in OpenVAA/deploy-nuortenvaalikone; Task 3 (two voter-only smoke runs against staging, SMOKE_DEPLOYMENT unset and =staging) follows. No 190-12 SUMMARY yet. Before: 190-10 complete (6be80d2cd, bb05f417f: infra/README.md § Roots, § The deploy pipeline and § Accepted risks for several deployments in one account, a new § Adding a deployment, the guide subsection Adding a deployment from a downstream repository, per-key backend-key comments in the example roots; rootCopies.test.ts discovers every infra/envs/<env>/<family> with readdirSync; infra 724/6, the six baseline host-only errexit failures). Before: 190-09 complete (f9d089c9c, 1e92e2b13: infra-plan.yml starts with a credential-free resolve job in plan mode; the plan and wrong-subject jobs are fail-fast: false matrices over its deployments list, each with its derived plan role, deploy role, cluster, service and AWS root; the push trigger excludes deploy-evidence/destroy-*; no workflow holds a literal role ARN and none reads vars.AWS_PLAN_ROLE_ARN; arm-lock expands the matrix-bound $AWS_ROOT; infra 715/6, the six baseline host-only errexit failures). Before: 190-08 complete (54f880e3e, be66b7f5c: deploy.yml passes --deployment and SMOKE_DEPLOYMENT, re-reads https://$DOMAIN/api/health, alerts to the resolved topic naming the key, refuses a Supabase root whose public_origin is not https://<domain>; destroy.yml heads the resolved Supabase state key; neither names staging outside comments; infra 695/6, the six baseline host-only errexit failures). Before: 190-07 complete (867dd0b2f, 7cc3afaec, 20f1ab5ea: a credential-free resolve job first in deploy.yml and destroy.yml; environments, role, account, region and roots from its outputs; aws-pipeline concurrency; deploy settings check; cross-workflow rules over resolved values; infra 676/6, the six baseline host-only errexit failures). Before: 190-11 Task 1 committed (b512010e8: infra/bootstrap/README.md Steps 11 to 13, the map, the pure move, the Environment-tag tightening, adding a deployment). Checkpoint at Task 2: operator apply 1 (pure move, MOVE_COMMIT ce17178c6) through check-bootstrap-plan.sh --pure-move; Task 3 (apply 2, TIGHTEN_COMMIT 7d4ab1242) follows. No 190-11 SUMMARY yet. Before: 190-06 complete (TIGHTEN_COMMIT update-only vs MOVE_COMMIT, 4 expected policy updates)
+Last activity: 2026-11-24 — 190-14 Task 1 committed: EVIDENCE_COMMIT=fd57d43396b4f3da85897d9196102f6aa2eb2561 (tree d93523b909cd1330604e8a17f6b360c51ac0e436, parent origin/main 340a20070, source b647e0d72, fixed identity and dates so the operator can rebuild it byte for byte; local ref refs/evidence/190/final; not pushed). No .planning/ path, equal to HEAD outside .planning/; resolver from its tree: deploy/destroy push/destroy dispatch all key=staging, plan mode staging alone, destroy branch refused in deploy mode. Before: 190-11 complete (b647e0d72: SUMMARY; apply 1 moved 37, 0 add/change/destroy; a catch-up apply of 46554181e's plan_deny first, DenyObjectReadsOutsidePipeline never applied live; apply 2 the four EXPECTED_UPDATES; staging deploy run 44939177207 success; 161766684: the runbook names the platform build of Terraform 1.16.5). Before: 190-12 Task 1 committed (acf6da25f: evidence/190-12-probe-workflow.yml, the OIDC subject probe for the downstream, to be copied to .github/workflows/downstream-oidc-probe.yml on a throwaway deploy/nuorten-2027 branch; jobs shape, probe-empty-environment, probe-no-environment, probe-arm; actionlint 1.7.12 clean). Checkpoint at Task 2: operator token probe in OpenVAA/deploy-nuortenvaalikone; Task 3 (two voter-only smoke runs against staging, SMOKE_DEPLOYMENT unset and =staging) follows. No 190-12 SUMMARY yet. Before: 190-10 complete (6be80d2cd, bb05f417f: infra/README.md § Roots, § The deploy pipeline and § Accepted risks for several deployments in one account, a new § Adding a deployment, the guide subsection Adding a deployment from a downstream repository, per-key backend-key comments in the example roots; rootCopies.test.ts discovers every infra/envs/<env>/<family> with readdirSync; infra 724/6, the six baseline host-only errexit failures). Before: 190-09 complete (f9d089c9c, 1e92e2b13: infra-plan.yml starts with a credential-free resolve job in plan mode; the plan and wrong-subject jobs are fail-fast: false matrices over its deployments list, each with its derived plan role, deploy role, cluster, service and AWS root; the push trigger excludes deploy-evidence/destroy-*; no workflow holds a literal role ARN and none reads vars.AWS_PLAN_ROLE_ARN; arm-lock expands the matrix-bound $AWS_ROOT; infra 715/6, the six baseline host-only errexit failures). Before: 190-08 complete (54f880e3e, be66b7f5c: deploy.yml passes --deployment and SMOKE_DEPLOYMENT, re-reads https://$DOMAIN/api/health, alerts to the resolved topic naming the key, refuses a Supabase root whose public_origin is not https://<domain>; destroy.yml heads the resolved Supabase state key; neither names staging outside comments; infra 695/6, the six baseline host-only errexit failures). Before: 190-07 complete (867dd0b2f, 7cc3afaec, 20f1ab5ea: a credential-free resolve job first in deploy.yml and destroy.yml; environments, role, account, region and roots from its outputs; aws-pipeline concurrency; deploy settings check; cross-workflow rules over resolved values; infra 676/6, the six baseline host-only errexit failures). Before: 190-11 Task 1 committed (b512010e8: infra/bootstrap/README.md Steps 11 to 13, the map, the pure move, the Environment-tag tightening, adding a deployment). Checkpoint at Task 2: operator apply 1 (pure move, MOVE_COMMIT ce17178c6) through check-bootstrap-plan.sh --pure-move; Task 3 (apply 2, TIGHTEN_COMMIT 7d4ab1242) follows. No 190-11 SUMMARY yet. Before: 190-06 complete (TIGHTEN_COMMIT update-only vs MOVE_COMMIT, 4 expected policy updates)
 
-Progress: [██████████████████░░] 171/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
+Progress: [██████████████████░░] 172/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 11
+**Current Plan:** 14
 
 From 184 on, the numeric order is the dependency order.
 
@@ -233,6 +233,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 190 P03 | 10 min | 2 tasks | 7 files |
 | Phase 190 P04 | 15 min | 3 tasks | 17 files |
 | Phase 190 P08 | 10 min | 2 tasks | 5 files |
+| Phase 190 P11 | about 4 h 45 min (operator applies) | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -531,6 +532,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 190]: 190-05: bootstrap root test pins staging's names and plans a nuorten-2027 stand-in with names of its own (its state policy is openvaa-tfstate-nuorten-2027-aws, the other eleven carry openvaa-nuorten-2027-); seven refusals each confirmed to trip only their own validation
 - [Phase 190]: 190-05: terraform-checks.sh test-bootstrap checks infra/bootstrap/tests with -d (a glob-free loop word survives nullglob); infra-plan.yml checks job runs it under !cancelled(); infra unit count 633 passed / 6 failed
 - [Phase 190]: 190-12 Task 3 (the two workstation smoke runs) moves to after plan 190-14's evidence deploy, operator ruling 2026-11-24: staging serves 2ddc331d1, whose apps/ and packages/ differ from this branch in 616 files, so a run before that deploy could fail on a UI mismatch rather than the gate. The token probe (Task 2) runs now; 190-12 completes after 190-14 Task 2.
+- [Phase 190]: 190-11: a catch-up apply of 46554181e preceded the move (its plan_deny statement DenyObjectReadsOutsidePipeline was never applied live; state last written 2026-11-16, statement first in be6e289c8 on 2026-11-22); apply 1 of MOVE_COMMIT moved 37 with 0 add/change/destroy; apply 2 of TIGHTEN_COMMIT updated exactly the four EXPECTED_UPDATES; staging deploy run 44939177207 success; the operator uses Terraform 1.16.5 darwin_arm64 (1.17.2 darwin_amd64 timed out starting the provider), and the runbook now names the platform build
+- [Phase 190]: 190-14: EVIDENCE_COMMIT=fd57d43396b4f3da85897d9196102f6aa2eb2561, tree d93523b909cd1330604e8a17f6b360c51ac0e436, parent 340a200708c28fb7ed078d452138712f3400c789, built from b647e0d72 with author/committer Claude <noreply@anthropic.com> at 1795554000 +0000 and --no-gpg-sign so the operator rebuilds the same id; the executor pushes nothing
 - [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
 
 ### Pending Todos
@@ -600,6 +603,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T17:10:00.000Z
-**Stopped At:** Completed 190-10-PLAN.md; 190-11 waits at Task 2 (operator apply 1)
+Last session: 2026-11-24T21:10:00.000Z
+**Stopped At:** Completed 190-11-PLAN.md; 190-14 waits at Task 2 (operator push of EVIDENCE_COMMIT and the staging deploy), then 190-12 Task 3, then 190-14 Task 3
 **Resume File:** None
