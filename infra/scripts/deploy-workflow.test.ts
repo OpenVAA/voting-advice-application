@@ -52,6 +52,22 @@ const SETTINGS_ENV = {
   PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}'
 };
 
+/** The exact environment of the migrations push: the settings check's connection, plus the link outputs, the deploy environment and the CLI's two secrets. */
+const MIGRATIONS_ENV = {
+  REF: '${{ steps.link.outputs.ref }}',
+  WORKDIR: '${{ steps.link.outputs.workdir }}',
+  OPENVAA_DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
+  PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
+  PGPORT: '5432',
+  PGDATABASE: 'postgres',
+  PGCONNECT_TIMEOUT: '10',
+  PGSSLMODE: 'verify-full',
+  PGSSLROOTCERT: `${WORKSPACE_PREFIX}${ROOT_CA_PATH}`,
+  PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
+  SUPABASE_DB_PASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
+  SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
+};
+
 /** The job `id` of a workflow; fails the test when it is absent. */
 function jobOf(source: WorkflowDocument, id: string): WorkflowJob {
   const found = workflowJobs(source).find(([jobId]) => jobId === id);
@@ -88,12 +104,21 @@ function envOf(step: WorkflowStep): Record<string, unknown> {
     : {};
 }
 
+/** Whether the step `id` of the deploy job of a workflow text has exactly the environment `expected`. */
+function stepEnvHolds(source: string, id: string, expected: Record<string, string>): boolean {
+  const env = envOf(stepWithId(stepsOf(parseWorkflow(source), 'deploy'), id));
+  const keys = Object.keys(expected);
+  return Object.keys(env).length === keys.length && keys.every((key) => env[key] === expected[key]);
+}
+
 /** Whether the settings step of a workflow text has exactly the environment `SETTINGS_ENV`. */
 function settingsEnvHolds(source: string): boolean {
-  const settings = stepWithId(stepsOf(parseWorkflow(source), 'deploy'), 'settings');
-  const env = envOf(settings);
-  const keys = Object.keys(SETTINGS_ENV) as Array<keyof typeof SETTINGS_ENV>;
-  return Object.keys(env).length === keys.length && keys.every((key) => env[key] === SETTINGS_ENV[key]);
+  return stepEnvHolds(source, 'settings', SETTINGS_ENV);
+}
+
+/** Whether the migrations step of a workflow text has exactly the environment `MIGRATIONS_ENV`. */
+function migrationsEnvHolds(source: string): boolean {
+  return stepEnvHolds(source, 'migrations', MIGRATIONS_ENV);
 }
 
 /**
@@ -439,20 +464,8 @@ describe('the migrations and the functions of the deploy job', () => {
     expect(script).toContain('--log-dir "$RUNNER_TEMP/push-migrations"');
     expect(script).toContain('export PGUSER="postgres.$REF"');
     expect(script).toContain('push_exit=$?');
-    expect(envOf(migrations)).toEqual({
-      REF: '${{ steps.link.outputs.ref }}',
-      WORKDIR: '${{ steps.link.outputs.workdir }}',
-      OPENVAA_DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
-      PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
-      PGPORT: '5432',
-      PGDATABASE: 'postgres',
-      PGCONNECT_TIMEOUT: '10',
-      PGSSLMODE: 'verify-full',
-      PGSSLROOTCERT: `${WORKSPACE_PREFIX}${ROOT_CA_PATH}`,
-      PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
-      SUPABASE_DB_PASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
-      SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
-    });
+    expect(envOf(migrations)).toEqual(MIGRATIONS_ENV);
+    expect(migrationsEnvHolds(text)).toBe(true);
     expect(text).not.toContain('6543');
   });
 
@@ -721,6 +734,57 @@ describe('the deploy-specific guards are red on a faulty copy', () => {
     const mutated = mutate(text, /(id: settings\n[\s\S]*?) {10}PGSSLMODE: verify-full\n/, '$1');
     expect(settingsEnvHolds(text)).toBe(true);
     expect(settingsEnvHolds(mutated)).toBe(false);
+  });
+
+  /** The line of the step `id`'s environment that begins `key: `, as a pattern whose group 1 is everything before it. */
+  function envLineOf(id: string, key: string): RegExp {
+    return new RegExp(`(id: ${id}\\n[\\s\\S]*?) {10}${key}: [^\\n]*\\n`);
+  }
+
+  /** `source` with the line `key: ` of the step `id`'s environment set to `line`, or dropped when `line` is empty; fails when the line is absent or unchanged. */
+  function mutateEnvLine(source: string, id: string, key: string, line: string): string {
+    const match = envLineOf(id, key).exec(source);
+    if (!match) throw new Error(`the mutation found no ${key} line in the step ${id}`);
+    const replaced = line === '' ? match[1] : `${match[1]}          ${key}: ${line}\n`;
+    const mutated = source.slice(0, match.index) + replaced + source.slice(match.index + match[0].length);
+    if (mutated === source) throw new Error(`the mutation left the ${key} line of the step ${id} unchanged`);
+    return mutated;
+  }
+
+  const ENV_HOLDS: Record<string, (source: string) => boolean> = {
+    migrations: migrationsEnvHolds,
+    settings: settingsEnvHolds
+  };
+
+  it.each(
+    DATABASE_STEPS.flatMap(
+      (id) =>
+        [
+          [id, 'its TLS mode turned back to require', 'PGSSLMODE', 'require', [ENV_HOLDS[id]]],
+          [id, 'its PGSSLROOTCERT dropped', 'PGSSLROOTCERT', '', [ENV_HOLDS[id], rootCaPathHolds]],
+          [
+            id,
+            'its root pointed at a file that does not exist',
+            'PGSSLROOTCERT',
+            `${WORKSPACE_PREFIX}infra/certs/missing.crt`,
+            [ENV_HOLDS[id], rootCaPathHolds]
+          ]
+        ] as Array<[string, string, string, string, Array<(source: string) => boolean>]>
+    )
+  )('sees the %s step no longer verify the server, with %s', (id, _label, key, line, guards) => {
+    const mutated = mutateEnvLine(text, id, key, line);
+    for (const guard of guards) {
+      expect(guard(text)).toBe(true);
+      expect(guard(mutated)).toBe(false);
+    }
+  });
+
+  it('sees both database steps pointed at one root that does not exist', () => {
+    const missing = `${WORKSPACE_PREFIX}infra/certs/missing.crt`;
+    const mutated = DATABASE_STEPS.reduce((source, id) => mutateEnvLine(source, id, 'PGSSLROOTCERT', missing), text);
+    expect(existsSync(join(REPO_ROOT, 'infra', 'certs', 'missing.crt'))).toBe(false);
+    expect(rootCaPathHolds(text)).toBe(true);
+    expect(rootCaPathHolds(mutated)).toBe(false);
   });
 
   it('sees the time limit dropped from the settings check', () => {

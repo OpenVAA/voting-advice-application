@@ -226,15 +226,18 @@ waits for its reviewer. Once approved, in this order:
    `$RUNNER_TEMP` and printed with `terraform show -no-color` to the log and the step summary.
 3. **Migrations.** A temporary work directory is linked to the Supabase project, and
    `infra/scripts/push-migrations.sh --confirmed-ref` pushes the pending migrations through the
-   session pooler and checks for drift afterwards. The script accepts the flag only in an Actions
-   job with `DEPLOY_ENVIRONMENT=staging` on a `deploy/staging` or `deploy-evidence/*` ref, which
-   guards against a mistake and proves no environment: a repository variable of the same name, or
-   any shell that sets those variables, passes it. The boundary is `SUPABASE_DB_PASSWORD`, an
+   session pooler over TLS with `PGSSLMODE=verify-full` against the Supabase root committed under
+   `infra/certs`, which refuses a server that root did not sign or whose certificate does not name
+   the pooler host, and checks for drift afterwards. The session pooler offers no SCRAM channel
+   binding, so none is required. The script accepts the flag only in an Actions job with
+   `DEPLOY_ENVIRONMENT=staging` on a `deploy/staging` or `deploy-evidence/*` ref, which guards
+   against a mistake and proves no environment: a repository variable of the same name, or any
+   shell that sets those variables, passes it. The boundary is `SUPABASE_DB_PASSWORD`, an
    environment secret of `staging` alone.
 4. **Settings check.** `infra/scripts/check-deployment-settings.sql` is run with psql as
-   `postgres.<ref>` through the session pooler over TLS (`PGSSLMODE=require`, which does not
-   verify the server's certificate), with the database password in `PGPASSWORD` alone,
-   and fails the run before the functions and the apply unless
+   `postgres.<ref>` through the session pooler over the same verified connection
+   (`PGSSLMODE=verify-full` against the committed root), with the database password in
+   `PGPASSWORD` alone, and fails the run before the functions and the apply unless
    `private.deployment_settings.behind_cloudflare` is `true`: the per-caller limit of
    `account-access` and the feedback limit trust `cf-connecting-ip` only then. The setting is
    written by the operator's bootstrap
