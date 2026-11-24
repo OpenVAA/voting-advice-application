@@ -900,7 +900,21 @@ Plans:
   2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
   3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
   4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
-**Plans:** 0 plans
+**Plans:** 15 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 189.1.1 to break down)
+- [ ] 189.1.1-01-PLAN.md — six requirement ids, coverage counts, install state and the phase-start E2E baseline (wave 1)
+- [ ] 189.1.1-02-PLAN.md — ModalContainer Escape closes the topmost modal only; voter smoke on the results fixture (wave 2)
+- [ ] 189.1.1-03-PLAN.md — Supabase root CA from the dashboard, pinned; TLS red/green legs; channel binding and hosted history read (wave 2, operator sitting)
+- [ ] 189.1.1-04-PLAN.md — stop-timeout precondition; Supabase provider locks agree with the pins (wave 2)
+- [ ] 189.1.1-05-PLAN.md — relay legal reviewer brief; 189.1 VALIDATION reconciled (wave 2)
+- [ ] 189.1.1-06-PLAN.md — consent prompt as a modal, every dismissal declines; unit pins and E2E (wave 3)
+- [ ] 189.1.1-07-PLAN.md — verify-full on the migrations and settings steps, guard and mutations (wave 3)
+- [ ] 189.1.1-08-PLAN.md — dark-mode checkbox contrast and start-aligned inputs; two UAT todos closed (wave 4)
+- [ ] 189.1.1-09-PLAN.md — migration 00005 drops invitation_caller_take (wave 5)
+- [ ] 189.1.1-10-PLAN.md — exit-after-drain check in CI; settings check names a missing table (wave 6)
+- [ ] 189.1.1-11-PLAN.md — one observed full main.yaml run through ci-evidence/** (wave 7, operator approval)
+- [ ] 189.1.1-12-PLAN.md — staging database rebuilt to 00004 per D-16 (wave 8, operator decision and sitting)
+- [ ] 189.1.1-13-PLAN.md — observed deploy: 00005 and the renamed functions over verify-full, modal prompt smoke (wave 9, operator approval)
+- [ ] 189.1.1-14-PLAN.md — staging re-measure of the consent prompt; consent todo closed (wave 10)
+- [ ] 189.1.1-15-PLAN.md — requirement trace, closing gates, the phase's full E2E run (wave 11)
