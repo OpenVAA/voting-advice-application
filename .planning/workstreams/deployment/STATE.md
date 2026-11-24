@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 189.1.1-02-PLAN.md
-last_updated: "2026-11-24T11:57:57.810Z"
+stopped_at: Completed 189.1.1-04-PLAN.md
+last_updated: "2026-11-24T13:02:42.043Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: e011434a77211affa638ec2c9c2076021b2463ff
+state_head: 5c5c4e43ccbc5d3c174a4cf5c5bdcda0ffd269ef
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 233
-  completed_plans: 220
+  completed_plans: 221
   percent: 83
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — EXECUTING
-Plan: 3 of 15
+Plan: 4 of 15
 Status: Ready to execute
 Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 3
+**Current Plan:** 4
 
 From 184 on, the numeric order is the dependency order.
 
@@ -231,6 +231,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1 P10 | 30 min | 3 tasks | 2 files |
 | Phase 189.1.1 P01 | 4 min | 3 tasks | 3 files |
 | Phase 189.1.1 P02 | 10min | 3 tasks | 5 files |
+| Phase 189.1.1 P04 | 61 min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -508,6 +509,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
 - [Phase 189.1.1]: Phase-start E2E listing is 742 tests in 129 projects, +13 against the 729 of the last full run; the final plan adds +13 to the phase's own summed deltas (D-06)
 - [Phase 189.1.1]: Svelte 5 event wrappers skip a handler once event.cancelBubble is set, so unguarded nested ModalContainers closed the OUTER on one Escape (inner left open); the topmost-only guard in handleEscape fixes it in either listener order (189.1.1-02)
+- [Phase 189.1.1]: 189.1.1-04: the stop-timeout precondition reads SHUTDOWN_TIMEOUT through a local that honours omit_environment (30, adapter-node's default, when the task does not receive it), since local.environment_values keeps a value omit_environment drops
+- [Phase 189.1.1]: 189.1.1-04: Terraform on this workstation is an x86_64 build under Rosetta; every Terraform run needs GODEBUG=asyncpreemptoff=1 or the x86 AWS provider hangs or times out starting; and validate is run in a clean copy of the tracked tree because local .terraform state caches the S3 backend
 
 ### Pending Todos
 
@@ -582,6 +585,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T11:57:56.874Z
-**Stopped At:** Completed 189.1.1-02-PLAN.md
+Last session: 2026-11-24T13:02:41.029Z
+**Stopped At:** Completed 189.1.1-04-PLAN.md
 **Resume File:** None
