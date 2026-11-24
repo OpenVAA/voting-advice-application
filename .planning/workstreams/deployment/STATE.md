@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Completed 190-05-PLAN.md
-last_updated: "2026-11-24T16:00:00.000Z"
+stopped_at: Completed 190-06-PLAN.md
+last_updated: "2026-11-24T16:10:00.000Z"
 last_activity: 2026-11-24
-last_activity_desc: 190-05 complete (bootstrap root test and test-bootstrap CI check)
+last_activity_desc: 190-06 complete (in-place tightening, TIGHTEN_COMMIT 7d4ab1242)
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 232
-  completed_plans: 223
+  completed_plans: 224
   percent: 91
 ---
 
@@ -33,11 +33,11 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 190 (Multi-deployment bootstrap) — EXECUTING
-Plan: 5 of 14 (190-01 to 190-05 complete)
+Plan: 6 of 14 (190-01 to 190-06 complete)
 Status: In progress (branch planning/deployment-190, on 46554181e)
-Last activity: 2026-11-24 — 190-05 complete: infra/bootstrap/tests/deployments.tftest.hcl (staging names pinned, nuorten-2027 stand-in apart, 7 validation refusals; 9 runs pass, mock provider) and terraform-checks.sh test-bootstrap in infra-plan.yml's checks job; infra 633 passed / 6 baseline failed
+Last activity: 2026-11-24 — 190-06 complete: Environment in github-oidc root_tags, plan deny narrowed to the own pipeline state key, trust ids required; TIGHTEN_COMMIT=7d4ab1242affa84edd6865440f0a8db5275b8ade proven update-only vs MOVE_COMMIT (delete 0, replace 0, create 0, guard pass); 4 expected policy updates; SAR unreachable, cross-deployment reads accepted risks; infra 633 passed / 6 baseline failed
 
-Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
+Progress: [██████████████████░░] 169/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
@@ -505,6 +505,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1]: 189.1-08 operator ruling: the consent prompt's focus-entirely-obscured overlap becomes a pending frontend todo (answer_wcag=todo), with the fix answer_wcag_fix=modal: the prompt as a modal through ModalContainer, Escape declines, shouldAnimate covers a prompt open at load
 - [Phase 189.1]: 189.1-08 operator ruling: staging ends with analytics.trackEvents true (answer_final_state=keep-on); plan 189.1-09 sets it false for its one off run and back to true at the same sitting
 - [Phase 189.1]: 189.1-09: the off run's after-flip check is carried by the before-run read (trackEvents false read immediately before the run), since statement (a)'s updated_at was not pasted and is overwritten
+- [Phase 190]: 190-06: TIGHTEN_COMMIT=7d4ab1242affa84edd6865440f0a8db5275b8ade (the tree of 190-11's second apply); update-only proof vs MOVE_COMMIT: delete 0, replace 0, create 0, moved 0, update 18 (mock JSON), guard pass
+- [Phase 190]: 190-06: EXPECTED_UPDATES = module.github_oidc["staging"].aws_iam_policy.{deploy_edge,deploy_load_balancing,deploy_network,plan_deny} (policy document only; trust JSON and every name/path/description unchanged, by real-provider render diff)
+- [Phase 190]: 190-06: no tag-conditioned cross-deployment read Deny: docs.aws.amazon.com refused by the egress proxy, so the thirteen CloudFront/ELB/SSM/ECS reads are accepted risks for infra/README.md (190-10); operator confirms Environment=staging on every Root=aws resource before apply 2
 - [Phase 189.1]: 189.1-10: Task 2 gate lines committed after the full E2E run so the run sits on GATES_HEAD (189-20 precedent)
 - [Phase 190]: 190-01: BASELINE_INFRA=524 passed / 6 failed (all six host-only, in workflow-errexit.test.ts); no later plan of the phase may add a failure to it
 - [Phase 190]: 190-01: Terraform 1.16.5 lives untracked at $HOME/.cache/openvaa-terraform/1.16.5 (SHA256SUMS OK); the move harness's run module source ../../../base/infra/bootstrap resolves from the root module directory, and the test_plan run name is the field @testrun
@@ -589,6 +592,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T16:00:00.000Z
-**Stopped At:** Completed 190-05-PLAN.md
+Last session: 2026-11-24T16:10:00.000Z
+**Stopped At:** Completed 190-06-PLAN.md
 **Resume File:** None
