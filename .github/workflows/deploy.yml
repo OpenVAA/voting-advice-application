@@ -27,22 +27,73 @@ name: "Deploy staging"
 on:
   push:
     branches:
-      - "deploy/staging"
+      - "deploy/*"
       - "deploy-evidence/**"
-      - "!deploy-evidence/destroy-staging"
+      - "!deploy-evidence/destroy-*"
   workflow_dispatch:
 
-# One group with the destroy workflow. A run waiting for the group is replaced by a newer one; a running one, which
+# One constant group with the destroy workflow, for every deployment of the repository, so no deploy and no destroy
+# write AWS state at the same time. A run waiting for the group is replaced by a newer one; a running one, which
 # includes one whose deploy job waits for approval, is never cancelled, because a cancelled apply can leave the state
 # lock held.
 concurrency:
-  group: staging-aws
+  group: aws-pipeline
   cancel-in-progress: false
 
 permissions: {}
 
 jobs:
+  # Picks the deployment this run acts on from infra/bootstrap/deployments.auto.tfvars.json, by the repository's id
+  # and the pushed ref, with no credential. A ref that no entry of this repository deploys from ends the run here,
+  # before any job names an environment or assumes a role; every later job needs this one and reads its outputs.
+  resolve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      key: ${{ steps.resolve.outputs.key }}
+      environment: ${{ steps.resolve.outputs.environment }}
+      destroy_environment: ${{ steps.resolve.outputs.destroy_environment }}
+      domain: ${{ steps.resolve.outputs.domain }}
+      aws_account_id: ${{ steps.resolve.outputs.aws_account_id }}
+      aws_region: ${{ steps.resolve.outputs.aws_region }}
+      state_bucket: ${{ steps.resolve.outputs.state_bucket }}
+      aws_root: ${{ steps.resolve.outputs.aws_root }}
+      supabase_root: ${{ steps.resolve.outputs.supabase_root }}
+      state_key: ${{ steps.resolve.outputs.state_key }}
+      supabase_state_key: ${{ steps.resolve.outputs.supabase_state_key }}
+      deploy_role_arn: ${{ steps.resolve.outputs.deploy_role_arn }}
+      plan_role_arn: ${{ steps.resolve.outputs.plan_role_arn }}
+      topic_arn: ${{ steps.resolve.outputs.topic_arn }}
+      cluster_name: ${{ steps.resolve.outputs.cluster_name }}
+      service_name: ${{ steps.resolve.outputs.service_name }}
+      destroy_branch: ${{ steps.resolve.outputs.destroy_branch }}
+      destroy_confirm: ${{ steps.resolve.outputs.destroy_confirm }}
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Resolve the deployment"
+        id: resolve
+        env:
+          REPOSITORY_ID: ${{ github.repository_id }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -uo pipefail
+          resolve_exit=0
+          infra/scripts/resolve-deployment.sh --mode deploy --repository-id "$REPOSITORY_ID" --ref "$REF_NAME" \
+            --github-output "$GITHUB_OUTPUT" || resolve_exit=$?
+          if [ "$resolve_exit" -ne 0 ]; then
+            echo "::error::resolve-deployment.sh exited $resolve_exit; no deployment of this repository deploys from $REF_NAME."
+            exit 1
+          fi
+
   checks:
+    needs: resolve
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -64,10 +115,12 @@ jobs:
         run: terraform fmt -check -recursive -diff infra
 
       - name: "Validate the staging AWS root"
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -euo pipefail
-          terraform -chdir=infra/envs/staging/aws init -backend=false -input=false -lockfile=readonly
-          terraform -chdir=infra/envs/staging/aws validate -no-color
+          terraform -chdir="$AWS_ROOT" init -backend=false -input=false -lockfile=readonly
+          terraform -chdir="$AWS_ROOT" validate -no-color
 
       # Node comes first: setup-yarn-action runs `yarn install`, whose preinstall guard rejects a Node below
       # engines.node.
@@ -87,15 +140,15 @@ jobs:
   # Every hosted write of a deploy happens in this one job. The `staging` environment holds its reviewer, its branch
   # policy and its secrets, which are released only on approval.
   deploy:
-    needs: checks
+    needs: [resolve, checks]
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 60
     permissions:
       contents: read
       id-token: write
     environment:
-      name: staging
-      url: https://staging.openvaa.org
+      name: ${{ needs.resolve.outputs.environment }}
+      url: https://${{ needs.resolve.outputs.domain }}
 
     steps:
       - name: "Checkout source code"
@@ -104,25 +157,53 @@ jobs:
         with:
           persist-credentials: false
 
+      # The environment's settings must name the deployment the resolve job picked, so a misconfigured environment
+      # fails here, before the first call to AWS. The role itself is the resolved one; a configured role ARN that
+      # differs from it is refused rather than ignored.
+      - name: "Check the settings name the resolved deployment"
+        id: resolved-settings
+        env:
+          KEY: ${{ needs.resolve.outputs.key }}
+          RESOLVED_ROLE_ARN: ${{ needs.resolve.outputs.deploy_role_arn }}
+          DEPLOY_ENVIRONMENT: ${{ vars.DEPLOY_ENVIRONMENT }}
+          CONFIGURED_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          set -uo pipefail
+          echo "deployment=$KEY"
+          if [ -z "$DEPLOY_ENVIRONMENT" ]; then
+            echo "::error::The variable DEPLOY_ENVIRONMENT is not set; it must be $KEY."
+            exit 1
+          fi
+          if [ "$DEPLOY_ENVIRONMENT" != "$KEY" ]; then
+            echo "::error::The variable DEPLOY_ENVIRONMENT is $DEPLOY_ENVIRONMENT, not the resolved deployment $KEY."
+            exit 1
+          fi
+          if [ -n "$CONFIGURED_ROLE_ARN" ] && [ "$CONFIGURED_ROLE_ARN" != "$RESOLVED_ROLE_ARN" ]; then
+            echo "::error::The variable AWS_DEPLOY_ROLE_ARN is $CONFIGURED_ROLE_ARN, not the resolved deploy role $RESOLVED_ROLE_ARN."
+            exit 1
+          fi
+
       - name: "Assume the deploy role"
         id: credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: eu-north-1
+          role-to-assume: ${{ needs.resolve.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.resolve.outputs.aws_region }}
           role-session-name: deploy-${{ github.run_id }}
-          allowed-account-ids: "471112560111"
+          allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
 
       # The build script refuses a working tree that is not the pushed commit, untracked files included, so it runs
       # before `yarn install` writes anything into the checkout. Status 3 means the registry already holds this
       # commit's image, which is deployed as it is.
       - name: "Build and push the image"
         id: build
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
-          url=$(sed -n 's/^registry_url *= *"\(.*\)"$/\1/p' infra/envs/staging/aws/terraform.tfvars)
+          url=$(sed -n 's/^registry_url *= *"\(.*\)"$/\1/p' "$AWS_ROOT/terraform.tfvars")
           if [ -z "$url" ]; then
-            echo "::error::infra/envs/staging/aws/terraform.tfvars has no registry_url."
+            echo "::error::$AWS_ROOT/terraform.tfvars has no registry_url."
             exit 1
           fi
           build_exit=0
@@ -197,24 +278,27 @@ jobs:
         id: plan-credentials
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: eu-north-1
+          role-to-assume: ${{ needs.resolve.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.resolve.outputs.aws_region }}
           role-session-name: deploy-${{ github.run_id }}
-          allowed-account-ids: "471112560111"
+          allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
 
       - name: "Initialise the staging AWS root"
         id: init
-        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
+        run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
 
       - name: "Plan the staging AWS root with the built digest"
         id: plan
         env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
           DIGEST: ${{ steps.build.outputs.digest }}
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
         run: |
           set -uo pipefail
           plan_exit=0
-          terraform -chdir=infra/envs/staging/aws plan -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan" || plan_exit=$?
+          terraform -chdir="$AWS_ROOT" plan -input=false -no-color -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan" || plan_exit=$?
           echo "plan_exit=$plan_exit"
           if [ "$plan_exit" -ne 0 ]; then
             echo "::error::terraform plan exited $plan_exit."
@@ -223,17 +307,19 @@ jobs:
 
       - name: "Show the plan"
         id: show
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           show_exit=0
-          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt" || show_exit=$?
+          terraform -chdir="$AWS_ROOT" show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt" || show_exit=$?
           if [ "$show_exit" -ne 0 ]; then
             echo "::error::terraform show exited $show_exit."
             exit 1
           fi
           cat "$RUNNER_TEMP/tfplan.txt"
           {
-            echo "### Plan of infra/envs/staging/aws"
+            echo "### Plan of $AWS_ROOT"
             echo
             echo '```'
             cat "$RUNNER_TEMP/tfplan.txt"
@@ -255,13 +341,14 @@ jobs:
       - name: "Link a work directory to the Supabase project"
         id: link
         env:
+          SUPABASE_ROOT: ${{ needs.resolve.outputs.supabase_root }}
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           set -uo pipefail
-          ref=$(sed -n 's/^project_ref *= *"\(.*\)"$/\1/p' infra/envs/staging/supabase/terraform.tfvars)
+          ref=$(sed -n 's/^project_ref *= *"\(.*\)"$/\1/p' "$SUPABASE_ROOT/terraform.tfvars")
           if ! [[ "$ref" =~ ^[a-z]{20}$ ]]; then
-            echo "::error::project_ref of infra/envs/staging/supabase/terraform.tfvars is not 20 lower-case letters."
+            echo "::error::project_ref of $SUPABASE_ROOT/terraform.tfvars is not 20 lower-case letters."
             exit 1
           fi
           workdir="$RUNNER_TEMP/supabase-linked/$ref"
@@ -455,17 +542,19 @@ jobs:
         id: reassume
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: eu-north-1
+          role-to-assume: ${{ needs.resolve.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.resolve.outputs.aws_region }}
           role-session-name: deploy-${{ github.run_id }}
-          allowed-account-ids: "471112560111"
+          allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
 
       - name: "Apply the saved plan"
         id: apply
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           apply_exit=0
-          terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/tfplan" || apply_exit=$?
+          terraform -chdir="$AWS_ROOT" apply -input=false -no-color "$RUNNER_TEMP/tfplan" || apply_exit=$?
           echo "apply_exit=$apply_exit"
           if [ "$apply_exit" -ne 0 ]; then
             echo "::error::terraform apply exited $apply_exit."
@@ -481,21 +570,23 @@ jobs:
       # and stays within half the job's timeout and the hour of the credentials assumed before the apply.
       - name: "Check the rollout is stable"
         id: stable
+        env:
+          AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
           set -uo pipefail
           polls=60
           interval=15
-          floor=$(sed -n 's/^task_floor *= *\([0-9][0-9]*\)$/\1/p' infra/envs/staging/aws/terraform.tfvars)
+          floor=$(sed -n 's/^task_floor *= *\([0-9][0-9]*\)$/\1/p' "$AWS_ROOT/terraform.tfvars")
           if [ -z "$floor" ]; then
-            echo "::error::infra/envs/staging/aws/terraform.tfvars has no task_floor."
+            echo "::error::$AWS_ROOT/terraform.tfvars has no task_floor."
             exit 1
           fi
           applied_exit=0
-          applied=$(terraform -chdir=infra/envs/staging/aws output -raw task_definition_arn) || applied_exit=$?
+          applied=$(terraform -chdir="$AWS_ROOT" output -raw task_definition_arn) || applied_exit=$?
           cluster_exit=0
-          cluster=$(terraform -chdir=infra/envs/staging/aws output -raw cluster_name) || cluster_exit=$?
+          cluster=$(terraform -chdir="$AWS_ROOT" output -raw cluster_name) || cluster_exit=$?
           service_exit=0
-          service=$(terraform -chdir=infra/envs/staging/aws output -raw service_name) || service_exit=$?
+          service=$(terraform -chdir="$AWS_ROOT" output -raw service_name) || service_exit=$?
           if [ "$applied_exit" -ne 0 ] || [ "$cluster_exit" -ne 0 ] || [ "$service_exit" -ne 0 ]; then
             echo "::error::The outputs task_definition_arn, cluster_name and service_name could not all be read."
             exit 1
@@ -610,10 +701,10 @@ jobs:
         if: failure() || cancelled()
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: eu-north-1
+          role-to-assume: ${{ needs.resolve.outputs.deploy_role_arn }}
+          aws-region: ${{ needs.resolve.outputs.aws_region }}
           role-session-name: deploy-alert-${{ github.run_id }}
-          allowed-account-ids: "471112560111"
+          allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
 
       # The message names the stage, the commit, the trigger and the run, and nothing else: no secret, no address and
       # no tool output. Every step before this one is named with the stage it belongs to, so a failed step is reported
@@ -624,6 +715,7 @@ jobs:
         env:
           JOB_STATUS: ${{ job.status }}
           CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
+          RESOLVED_SETTINGS_OUTCOME: ${{ steps.resolved-settings.outcome }}
           CREDENTIALS_OUTCOME: ${{ steps.credentials.outcome }}
           BUILD_OUTCOME: ${{ steps.build.outcome }}
           DROP_BUILD_CREDENTIALS_OUTCOME: ${{ steps.drop-build-credentials.outcome }}
@@ -653,6 +745,7 @@ jobs:
           stage=""
           for pair in \
             "setup:$CHECKOUT_OUTCOME" \
+            "setup:$RESOLVED_SETTINGS_OUTCOME" \
             "setup:$CREDENTIALS_OUTCOME" \
             "build:$BUILD_OUTCOME" \
             "plan:$DROP_BUILD_CREDENTIALS_OUTCOME" \

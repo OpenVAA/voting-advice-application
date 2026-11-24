@@ -17,6 +17,30 @@ const WORKFLOW = join(REPO_ROOT, '.github', 'workflows', 'deploy.yml');
 
 const { doc, text } = loadWorkflow(WORKFLOW);
 
+/** The resolve job's output naming the AWS root of the resolved deployment. */
+const RESOLVED_AWS_ROOT = '${{ needs.resolve.outputs.aws_root }}';
+/** The outputs of the resolve job, in the order the resolver prints them. */
+const RESOLVE_OUTPUTS = [
+  'key',
+  'environment',
+  'destroy_environment',
+  'domain',
+  'aws_account_id',
+  'aws_region',
+  'state_bucket',
+  'aws_root',
+  'supabase_root',
+  'state_key',
+  'supabase_state_key',
+  'deploy_role_arn',
+  'plan_role_arn',
+  'topic_arn',
+  'cluster_name',
+  'service_name',
+  'destroy_branch',
+  'destroy_confirm'
+];
+
 /** The ids of the gated job's stage steps, in the order they must run. */
 const STAGE_ORDER = [
   'build',
@@ -227,11 +251,11 @@ describe('deploy.yml and the shared rules', () => {
 describe('the triggers and the concurrency of deploy.yml', () => {
   const on = doc.on as Record<string, unknown>;
 
-  it('runs on a push to deploy/staging and to deploy-evidence branches but the destroy branch, and on a dispatch', () => {
+  it('runs on a push to any deploy branch and to deploy-evidence branches but the destroy branches, and on a dispatch', () => {
     expect((on.push as Record<string, unknown>).branches).toEqual([
-      'deploy/staging',
+      'deploy/*',
       'deploy-evidence/**',
-      '!deploy-evidence/destroy-staging'
+      '!deploy-evidence/destroy-*'
     ]);
     expect('workflow_dispatch' in on).toBe(true);
     expect(Object.keys(on).sort()).toEqual(['push', 'workflow_dispatch']);
@@ -244,8 +268,51 @@ describe('the triggers and the concurrency of deploy.yml', () => {
     expect((on.push as Record<string, unknown>).branches).not.toContain('main');
   });
 
-  it('shares the staging-aws group with the destroy workflow and never cancels a running deploy', () => {
-    expect(doc.concurrency).toEqual({ group: 'staging-aws', 'cancel-in-progress': false });
+  it('shares the aws-pipeline group with the destroy workflow and never cancels a running deploy', () => {
+    expect(doc.concurrency).toEqual({ group: 'aws-pipeline', 'cancel-in-progress': false });
+  });
+});
+
+describe('the resolve job of deploy.yml', () => {
+  const resolveJob = jobOf(doc, 'resolve');
+  const steps = jobSteps(resolveJob);
+  const step = stepWithId(steps, 'resolve');
+
+  it('is the first job, with exactly contents: read, no environment and no id-token', () => {
+    expect(workflowJobs(doc)[0][0]).toBe('resolve');
+    expect(resolveJob.permissions).toEqual({ contents: 'read' });
+    expect('environment' in resolveJob).toBe(false);
+    expect('needs' in resolveJob).toBe(false);
+    expect(resolveJob['runs-on']).toBe('ubuntu-24.04');
+    expect(resolveJob['timeout-minutes']).toBe(5);
+  });
+
+  it('checks out without persisted credentials and runs the resolver in deploy mode with the repository id and the ref', () => {
+    expect(steps).toHaveLength(2);
+    expect(String(steps[0].uses)).toMatch(/^actions\/checkout@[0-9a-f]{40}$/);
+    expect(steps[0].with).toEqual({ 'persist-credentials': false });
+    expect(envOf(step)).toEqual({
+      REPOSITORY_ID: '${{ github.repository_id }}',
+      REF_NAME: '${{ github.ref_name }}'
+    });
+    expect(runOf(step).replace(/\\\n\s*/g, '')).toContain(
+      'infra/scripts/resolve-deployment.sh --mode deploy --repository-id "$REPOSITORY_ID" --ref "$REF_NAME" --github-output "$GITHUB_OUTPUT" || resolve_exit=$?'
+    );
+  });
+
+  it('maps every output of the resolver to a job output', () => {
+    expect(resolveJob.outputs).toEqual(
+      Object.fromEntries(RESOLVE_OUTPUTS.map((name) => [name, `\${{ steps.resolve.outputs.${name} }}`]))
+    );
+  });
+
+  it('is red when it is given id-token: write', () => {
+    const mutated = mutate(
+      text,
+      /( {2}resolve:\n[\s\S]*? {4}permissions:\n {6}contents: read\n)/,
+      '$1      id-token: write\n'
+    );
+    expect(jobOf(parseWorkflow(mutated), 'resolve').permissions).not.toEqual({ contents: 'read' });
   });
 });
 
@@ -258,22 +325,29 @@ describe('the checks job of deploy.yml', () => {
     expect('environment' in checks).toBe(false);
   });
 
-  it('formats, validates the staging AWS root and runs the unit tests of the infrastructure scripts', () => {
+  it('needs the resolve job', () => {
+    expect(checks.needs).toBe('resolve');
+  });
+
+  it('formats, validates the resolved AWS root and runs the unit tests of the infrastructure scripts', () => {
     expect(scripts).toContain('terraform fmt -check -recursive');
-    expect(scripts).toContain(
-      'terraform -chdir=infra/envs/staging/aws init -backend=false -input=false -lockfile=readonly'
-    );
-    expect(scripts).toContain('terraform -chdir=infra/envs/staging/aws validate');
+    expect(scripts).toContain('terraform -chdir="$AWS_ROOT" init -backend=false -input=false -lockfile=readonly');
+    expect(scripts).toContain('terraform -chdir="$AWS_ROOT" validate');
     expect(scripts).toContain('yarn test:unit:infra');
+    const validate = jobSteps(checks).find((step) => runOf(step).includes('validate'));
+    expect(envOf(validate as WorkflowStep)).toEqual({ AWS_ROOT: RESOLVED_AWS_ROOT });
   });
 });
 
 describe('the gate of the deploy job', () => {
   const deploy = jobOf(doc, 'deploy');
 
-  it('needs the checks job and runs in the staging environment', () => {
-    expect(deploy.needs).toBe('checks');
-    expect(deploy.environment).toEqual({ name: 'staging', url: 'https://staging.openvaa.org' });
+  it('needs the resolve and checks jobs and runs in the resolved environment, at the resolved domain', () => {
+    expect(deploy.needs).toEqual(['resolve', 'checks']);
+    expect(deploy.environment).toEqual({
+      name: '${{ needs.resolve.outputs.environment }}',
+      url: 'https://${{ needs.resolve.outputs.domain }}'
+    });
   });
 
   it('runs on the arm runner with a timeout above the longest observed apply', () => {
@@ -292,18 +366,107 @@ describe('the gate of the deploy job', () => {
     expect(granted.map(([id]) => id)).toEqual(['deploy']);
   });
 
-  it('assumes the deploy role from the environment variable, in the staging account only', () => {
+  it('assumes the resolved deploy role, in the resolved account and region only', () => {
     const assumes = jobSteps(deploy).filter(
       (step) => typeof step.uses === 'string' && step.uses.startsWith('aws-actions/configure-aws-credentials@')
     );
     expect(assumes.length).toBeGreaterThanOrEqual(3);
     for (const step of assumes) {
       expect(step.with).toMatchObject({
-        'role-to-assume': '${{ vars.AWS_DEPLOY_ROLE_ARN }}',
-        'aws-region': 'eu-north-1',
-        'allowed-account-ids': '471112560111'
+        'role-to-assume': '${{ needs.resolve.outputs.deploy_role_arn }}',
+        'aws-region': '${{ needs.resolve.outputs.aws_region }}',
+        'allowed-account-ids': '${{ needs.resolve.outputs.aws_account_id }}'
       });
     }
+  });
+});
+
+/** The settings check's step id. */
+const RESOLVED_SETTINGS = 'resolved-settings';
+
+/** The exact environment of the settings check: the resolved key and role, and the environment's two settings. */
+const RESOLVED_SETTINGS_ENV = {
+  KEY: '${{ needs.resolve.outputs.key }}',
+  RESOLVED_ROLE_ARN: '${{ needs.resolve.outputs.deploy_role_arn }}',
+  DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
+  CONFIGURED_ROLE_ARN: '${{ vars.AWS_DEPLOY_ROLE_ARN }}'
+};
+
+/**
+ * The violations of the rule `resolved-settings` in a workflow text: the deploy job checks, before its first assume of a role, that DEPLOY_ENVIRONMENT is set and equals the resolved key and that a configured role ARN equals the resolved one, ending the step with status 1 on each.
+ */
+function resolvedSettingsViolations(source: string): Array<string> {
+  const steps = stepsOf(parseWorkflow(source), 'deploy');
+  const index = steps.findIndex((step) => step.id === RESOLVED_SETTINGS);
+  if (index < 0) return ['resolved-settings: the deploy job has no settings check'];
+  const violations: Array<string> = [];
+  const firstAssume = steps.findIndex(assumesRole);
+  if (firstAssume < 0 || index > firstAssume)
+    violations.push('resolved-settings: the check runs after a role is assumed');
+  const step = steps[index];
+  if (JSON.stringify(envOf(step)) !== JSON.stringify(RESOLVED_SETTINGS_ENV)) {
+    violations.push(`resolved-settings: the check has the env ${JSON.stringify(envOf(step))}`);
+  }
+  if ('if' in step || 'continue-on-error' in step) violations.push('resolved-settings: the check can be skipped');
+  const script = runOf(step);
+  for (const [label, test] of [
+    [
+      'an unset DEPLOY_ENVIRONMENT',
+      /^if \[ -z "\$DEPLOY_ENVIRONMENT" \]; then\n\s+echo "::error::[^\n]*"\n\s+exit 1\n\s*fi$/m
+    ],
+    [
+      'a DEPLOY_ENVIRONMENT other than the key',
+      /^if \[ "\$DEPLOY_ENVIRONMENT" != "\$KEY" \]; then\n\s+echo "::error::[^\n]*"\n\s+exit 1\n\s*fi$/m
+    ],
+    [
+      'a configured role other than the resolved one',
+      /^if \[ -n "\$CONFIGURED_ROLE_ARN" \] && \[ "\$CONFIGURED_ROLE_ARN" != "\$RESOLVED_ROLE_ARN" \]; then\n\s+echo "::error::[^\n]*"\n\s+exit 1\n\s*fi$/m
+    ]
+  ] as const) {
+    if (!test.test(script)) violations.push(`resolved-settings: the check does not fail on ${label}`);
+  }
+  return violations;
+}
+
+describe('the settings check of the deploy job', () => {
+  it('runs before the first assume of the deploy role and fails on a missing or other environment or role', () => {
+    expect(resolvedSettingsViolations(text)).toEqual([]);
+  });
+
+  it('is the only step that reads the configured role ARN', () => {
+    expect(text.split('vars.AWS_DEPLOY_ROLE_ARN')).toHaveLength(2);
+  });
+
+  it.each([
+    ['removed', (source: string) => mutate(source, `id: ${RESOLVED_SETTINGS}\n`, 'id: settings-gone\n')],
+    [
+      'moved after the first assume',
+      (source: string) =>
+        mutate(
+          source,
+          /( {6}# The environment's settings[\s\S]*?)( {6}- name: "Assume the deploy role"\n[\s\S]*?allowed-account-ids: [^\n]*\n\n)/,
+          '$2$1'
+        )
+    ],
+    [
+      'without the key comparison',
+      (source: string) => mutate(source, /^ *if \[ "\$DEPLOY_ENVIRONMENT" != "\$KEY" \]; then\n.*\n.*\n *fi\n/m, '')
+    ],
+    [
+      'without the role comparison',
+      (source: string) => mutate(source, /^ *if \[ -n "\$CONFIGURED_ROLE_ARN" \].*\n.*\n.*\n *fi\n/m, '')
+    ],
+    [
+      'with an exit 0 for an unset environment',
+      (source: string) => mutate(source, /(it must be \$KEY\."\n *)exit 1/, '$1exit 0')
+    ],
+    [
+      'given continue-on-error',
+      (source: string) =>
+        mutate(source, `id: ${RESOLVED_SETTINGS}\n`, `id: ${RESOLVED_SETTINGS}\n        continue-on-error: true\n`)
+    ]
+  ])('is red when the check is %s', (_label, mutation) => {
+    expect(resolvedSettingsViolations(mutation(text)).length).toBeGreaterThan(0);
   });
 });
 
@@ -330,11 +493,12 @@ describe('the stages of the deploy job', () => {
     expect(runOf(plan)).toContain('-var "image_digest=$DIGEST"');
     expect(runOf(plan)).toContain('-out="$RUNNER_TEMP/tfplan"');
     expect(envOf(plan)).toEqual({
+      AWS_ROOT: RESOLVED_AWS_ROOT,
       DIGEST: '${{ steps.build.outputs.digest }}',
       TF_VAR_alert_email: '${{ secrets.ALERT_EMAIL }}'
     });
     expect(runOf(stepWithId(steps, 'apply'))).toContain(
-      'terraform -chdir=infra/envs/staging/aws apply -input=false -no-color "$RUNNER_TEMP/tfplan"'
+      'terraform -chdir="$AWS_ROOT" apply -input=false -no-color "$RUNNER_TEMP/tfplan"'
     );
   });
 
@@ -346,10 +510,33 @@ describe('the stages of the deploy job', () => {
     expect(text).not.toMatch(/show\s+-json/);
   });
 
-  it('runs Terraform in the staging AWS root only', () => {
+  it('runs Terraform in the resolved AWS root only, bound in the env of every step that names it', () => {
     const roots = [...text.matchAll(/terraform -chdir=(\S+)/g)].map(([, root]) => root);
     expect(roots.length).toBeGreaterThan(0);
-    expect(new Set(roots)).toEqual(new Set(['infra/envs/staging/aws']));
+    expect(new Set(roots)).toEqual(new Set(['"$AWS_ROOT"']));
+    const naming = workflowJobs(doc).flatMap(([, job]) =>
+      jobSteps(job).filter((step) => runOf(step).includes('$AWS_ROOT'))
+    );
+    expect(naming.length).toBeGreaterThan(0);
+    for (const step of naming) expect(envOf(step).AWS_ROOT, String(step.name)).toBe(RESOLVED_AWS_ROOT);
+  });
+
+  it('reads the tfvars of the resolved roots only, and names no root of infra/envs outside a comment', () => {
+    const uncommented = text
+      .split('\n')
+      .filter((line) => !/^\s*#/.test(line))
+      .join('\n');
+    expect(uncommented).not.toMatch(/infra\/envs\//);
+    expect(runOf(stepWithId(steps, 'build'))).toContain('"$AWS_ROOT/terraform.tfvars"');
+    expect(runOf(stepWithId(steps, 'stable'))).toContain('"$AWS_ROOT/terraform.tfvars"');
+    expect(runOf(stepWithId(steps, 'link'))).toContain('"$SUPABASE_ROOT/terraform.tfvars"');
+    expect(envOf(stepWithId(steps, 'link')).SUPABASE_ROOT).toBe('${{ needs.resolve.outputs.supabase_root }}');
+  });
+
+  it('is red when a step names the AWS root without binding it', () => {
+    const mutated = mutate(text, /(id: apply\n {8}env:\n) {10}AWS_ROOT: [^\n]*\n/, '$1          OTHER: x\n');
+    const apply = stepWithId(stepsOf(parseWorkflow(mutated), 'deploy'), 'apply');
+    expect(envOf(apply).AWS_ROOT).toBeUndefined();
   });
 
   it('assumes the credentials again right before the apply', () => {
@@ -442,7 +629,7 @@ describe('the migrations and the functions of the deploy job', () => {
 
   it('links a work directory under $RUNNER_TEMP to the project ref of the Supabase root', () => {
     const script = runOf(link);
-    expect(script).toContain('infra/envs/staging/supabase/terraform.tfvars');
+    expect(script).toContain('"$SUPABASE_ROOT/terraform.tfvars"');
     expect(script).toContain('^[a-z]{20}$');
     expect(script).toContain('workdir="$RUNNER_TEMP/supabase-linked/$ref"');
     expect(script).toContain('for p in config.toml migrations functions; do');
@@ -645,6 +832,7 @@ describe('the alert of the deploy job', () => {
 
   it('names the stage of each step by what it follows, not by the first stage', () => {
     expect(stageOf('checkout')).toBe('setup');
+    expect(stageOf('resolved-settings')).toBe('setup');
     expect(stageOf('credentials')).toBe('setup');
     expect(stageOf('init')).toBe('plan');
     expect(stageOf('show')).toBe('plan');

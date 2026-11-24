@@ -154,14 +154,67 @@ const HARNESS_VARIABLES = new Set([
   'GITHUB_STEP_SUMMARY'
 ]);
 
+/** The deployment whose resolver outputs stand in for the resolve job's: the one `deploy/<key>` deploys. */
+const STAND_IN_DEPLOYMENT = 'staging';
+
+/** The resolver's outputs for `STAND_IN_DEPLOYMENT`, by name, from a run of the resolver on this repository's files. */
+const RESOLVED_STAND_INS: Record<string, string> = resolvedStandIns();
+
+function resolvedStandIns(): Record<string, string> {
+  const map = JSON.parse(
+    readFileSync(join(REPO_ROOT, 'infra', 'bootstrap', 'deployments.auto.tfvars.json'), 'utf8')
+  ) as {
+    deployments: Record<string, { github_repository_id: string }>;
+  };
+  const repositoryId = map.deployments[STAND_IN_DEPLOYMENT].github_repository_id;
+  const result = spawnSync(
+    BASH,
+    [
+      join(REPO_ROOT, 'infra', 'scripts', 'resolve-deployment.sh'),
+      '--mode',
+      'deploy',
+      '--repository-id',
+      repositoryId,
+      '--ref',
+      `deploy/${STAND_IN_DEPLOYMENT}`
+    ],
+    { encoding: 'utf8', env: { PATH: process.env.PATH ?? '' } }
+  );
+  if (result.status !== 0)
+    throw new Error(`resolve-deployment.sh exited ${result.status}: ${result.stdout}${result.stderr}`);
+  return Object.fromEntries(
+    result.stdout
+      .split('\n')
+      .filter((line) => line.includes('='))
+      .map((line) => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)])
+  );
+}
+
+/** A step `env:` value read from the resolve job, `${{ needs.resolve.outputs.<name> }}`; group 1 is the name. */
+const RESOLVED_OUTPUT = /^\$\{\{ needs\.resolve\.outputs\.([a-z_]+) \}\}$/;
+
 /**
- * A stand-in value for every key of a step's `env:`, and for every upper-case variable its script reads as `$NAME` or `${NAME}` that the harness does not set, because the scripts run with `-u`.
+ * A stand-in value for every key of a step's `env:`, and for every upper-case variable its script reads as `$NAME` or `${NAME}` that the harness does not set, because the scripts run with `-u`. A key bound to a resolve job output gets that output's value for `STAND_IN_DEPLOYMENT`, so a step that reads a file of its resolved root reads the repository's own.
  */
 function standInEnv(step: WorkflowStep, script: string): Record<string, string> {
-  const names = new Set(isRecord(step.env) ? Object.keys(step.env) : []);
+  const env = isRecord(step.env) ? step.env : {};
+  const names = new Set(Object.keys(env));
   for (const [, name] of script.matchAll(/\$\{?([A-Z_][A-Z0-9_]*)/g)) names.add(name);
-  return Object.fromEntries([...names].filter((name) => !HARNESS_VARIABLES.has(name)).map((name) => [name, 'standin']));
+  return Object.fromEntries(
+    [...names]
+      .filter((name) => !HARNESS_VARIABLES.has(name))
+      .map((name) => {
+        const output = RESOLVED_OUTPUT.exec(String(env[name] ?? ''))?.[1];
+        return [name, output !== undefined && output in RESOLVED_STAND_INS ? RESOLVED_STAND_INS[output] : 'standin'];
+      })
+  );
 }
+
+/** The AWS root a case names in `AWS_ROOT`, a directory of the case's working directory only. */
+const HARNESS_AWS_ROOT = 'harness/envs/case/aws';
+
+/** The tfvars a case copies into `HARNESS_AWS_ROOT`: those of the stand-in deployment's AWS root. */
+const STAND_IN_TFVARS = `${RESOLVED_STAND_INS.aws_root}/terraform.tfvars`;
 
 /** The three pipeline workflows. */
 const PIPELINE_WORKFLOWS = ['deploy.yml', 'destroy.yml', 'infra-plan.yml'] as const;
@@ -200,9 +253,10 @@ const SWEEP_STUBS = [
 ] as const;
 
 /**
- * The working directory of a sweep case: a failing stub at every `infra/scripts/<name>.sh` and `node_modules/.bin/<name>` the script names, and a copy of every other file of this repository under `infra/` or `apps/` it names.
+ * The working directory of a sweep case: a failing stub at every `infra/scripts/<name>.sh` and `node_modules/.bin/<name>` the script names, and a copy of every other file of this repository under `infra/` or `apps/` it names, a path written with a variable of `env` read with that variable's value.
  */
-function sweepFiles(script: string): Record<string, WorkspaceFile> {
+function sweepFiles(rawScript: string, env: Record<string, string>): Record<string, WorkspaceFile> {
+  const script = rawScript.replace(/\$\{?([A-Z_][A-Z0-9_]*)\}?/g, (written, name: string) => env[name] ?? written);
   const files: Record<string, WorkspaceFile> = {};
   for (const [path] of script.matchAll(/(?:infra\/scripts\/[A-Za-z0-9_-]+\.sh|node_modules\/\.bin\/[A-Za-z0-9_-]+)/g)) {
     files[path] = { content: failingStub(path), executable: true };
@@ -389,10 +443,11 @@ describe('every status-reading step of the pipeline workflows under bash -e', ()
 
   for (const { file, jobId, name, step, script } of population) {
     it(`${file} ${jobId} ${name}`, () => {
+      const env = standInEnv(step, script);
       const run = runUnderRunnerShell(script, {
         stubs: Object.fromEntries(SWEEP_STUBS.map((stub) => [stub, failingStub(stub)])),
-        files: sweepFiles(script),
-        env: standInEnv(step, script)
+        files: sweepFiles(script, env),
+        env
       });
       expect(lines(run.stdout).filter((line) => line.startsWith('::error::'))).not.toEqual([]);
       expect(run.status).not.toBe(0);
@@ -402,18 +457,26 @@ describe('every status-reading step of the pipeline workflows under bash -e', ()
 
 describe('the build step of deploy.yml under bash -e', () => {
   const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Build and push the image');
-  const tfvars = 'infra/envs/staging/aws/terraform.tfvars';
   const digest = `sha256:${'0123456789abcdef'.repeat(4)}`;
 
   function runWithBuildScript(body: string): RunnerShellResult {
     return runUnderRunnerShell(script, {
       files: {
-        [tfvars]: { content: readFileSync(join(REPO_ROOT, tfvars), 'utf8') },
+        [`${HARNESS_AWS_ROOT}/terraform.tfvars`]: { content: readFileSync(join(REPO_ROOT, STAND_IN_TFVARS), 'utf8') },
         'infra/scripts/build-push-image.sh': { content: body, executable: true }
       },
-      env: standInEnv(step, script)
+      env: { ...standInEnv(step, script), AWS_ROOT: HARNESS_AWS_ROOT }
     });
   }
+
+  it('stops before the build when the root AWS_ROOT names holds no tfvars', () => {
+    const run = runUnderRunnerShell(script, {
+      files: { 'infra/scripts/build-push-image.sh': { content: 'exit 0', executable: true } },
+      env: { ...standInEnv(step, script), AWS_ROOT: HARNESS_AWS_ROOT }
+    });
+    expect(run.status).not.toBe(0);
+    expect(run.stdout).not.toContain('build_exit=');
+  });
 
   it('prints failed=build and its own error line and exits 1 when the build fails', () => {
     const run = runWithBuildScript('echo failed=build\nexit 1');
@@ -532,13 +595,13 @@ describe('a command whose status a step does not read still ends the step under 
 
   describe('the plan print of deploy.yml, when the printed plan cannot be read', () => {
     const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Show the plan');
-    const heading = '### Plan of infra/envs/staging/aws';
+    const heading = `### Plan of ${HARNESS_AWS_ROOT}`;
     const options = {
       stubs: {
         terraform: "echo 'Plan: 0 to add, 1 to change, 0 to destroy.'\nexit 0",
         cat: selectiveStub('cat', 'tfplan.txt')
       },
-      env: standInEnv(step, script)
+      env: { ...standInEnv(step, script), AWS_ROOT: HARNESS_AWS_ROOT }
     };
 
     it('stops at the failed print and writes no plan to the step summary', () => {
@@ -557,7 +620,6 @@ describe('a command whose status a step does not read still ends the step under 
 
 describe('the stable step of deploy.yml under bash -e', () => {
   const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Check the rollout is stable');
-  const tfvars = 'infra/envs/staging/aws/terraform.tfvars';
   const applied = 'arn:aws:ecs:eu-north-1:000000000000:task-definition/harness-frontend:2';
   const other = 'arn:aws:ecs:eu-north-1:000000000000:task-definition/harness-frontend:1';
   const stubs = {
@@ -598,11 +660,11 @@ describe('the stable step of deploy.yml under bash -e', () => {
     return runUnderRunnerShell(script, {
       stubs,
       files: {
-        [tfvars]: { content: readFileSync(join(REPO_ROOT, tfvars), 'utf8') },
+        [`${HARNESS_AWS_ROOT}/terraform.tfvars`]: { content: readFileSync(join(REPO_ROOT, STAND_IN_TFVARS), 'utf8') },
         ...Object.fromEntries(answers.map((content, index) => [`describe/${index + 1}.json`, { content }])),
         'describe/last.json': { content: answers[answers.length - 1] }
       },
-      env: standInEnv(step, script)
+      env: { ...standInEnv(step, script), AWS_ROOT: HARNESS_AWS_ROOT }
     });
   }
 
