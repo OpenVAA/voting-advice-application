@@ -6,10 +6,10 @@
  * - **apply-root** — every Terraform `apply`, `destroy` or `plan -destroy` in any workflow names `-chdir="$AWS_ROOT"`, in a step whose `env.AWS_ROOT` is the resolve job's `aws_root` output. That output is the AWS root of the one deployment the run resolved from the deployment map; the example roots are a forker's template and the other roots are applied by hand, so a workflow that applied one of them would reach state no reviewer of the pipeline approved.
  * - **no-main-push** — no push branch pattern of `deploy.yml` or `destroy.yml` can match `main`. A merge to the default branch must deploy and destroy nothing.
  * - **shared-concurrency** — `deploy.yml` and `destroy.yml` share the one constant group `aws-pipeline` and never cancel a running job, so no deploy and destroy of the repository write AWS state at the same time and no apply is cut short holding its lock.
- * - **deploy-role-arn** — `deploy.yml` and `destroy.yml` write no literal IAM role ARN, and every role they assume is the resolve job's `deploy_role_arn` output. The deploy role ARN written literally in `infra-plan.yml` is the one the bootstrap root's tfvars and map create: the wrong-subject job proves a refusal against that ARN, and a refusal by a role that does not exist would prove nothing.
+ * - **deploy-role-arn** — no workflow file holds a literal IAM role ARN. Every role `deploy.yml` and `destroy.yml` assume is the resolve job's `deploy_role_arn` output, and every role `infra-plan.yml` assumes is the `plan_role_arn` of its matrix entry, so each role comes from the deployment map through the resolver, whose derivation `resolve-deployment.test.ts` pins against the real map. A role read from a repository variable could name a role of another deployment, or one that does not exist.
  * - **environments** — the deploy job of `deploy.yml` names the resolve job's `environment` output, in the object form with a `url`, and the jobs of `destroy.yml` name its `destroy_environment` output; `infra-plan.yml` names none and no job of the three names a literal environment, since an environment's name is the subject the deploy role trusts.
  * - **needs-resolve** — `deploy.yml` and `destroy.yml` each have a job `resolve`, and every other job of theirs lists it in `needs`, so a run whose ref matches no deployment of the map ends at that job, before any job names an environment or assumes a role.
- * - **arm-lock** — every root a job on an ARM runner initialises has a lock whose every provider carries one `h1:` hash per platform of `LOCK_PLATFORMS`. `init -lockfile=readonly` on that runner installs packages whose `h1:` hashes it cannot record, and the plan then refuses them. A hash does not name its platform, so the rule counts them. A root written `"$AWS_ROOT"` in a step that binds `AWS_ROOT` to the resolve job's `aws_root` output stands for the AWS root of every deployment of the map that has one. A job that initialises Terraform on a runner, or in a root, that the rule cannot read is a violation.
+ * - **arm-lock** — every root a job on an ARM runner initialises has a lock whose every provider carries one `h1:` hash per platform of `LOCK_PLATFORMS`. `init -lockfile=readonly` on that runner installs packages whose `h1:` hashes it cannot record, and the plan then refuses them. A hash does not name its platform, so the rule counts them. A root written `"$AWS_ROOT"` in a step that binds `AWS_ROOT` to the resolve job's `aws_root` output, or to `matrix.deployment.aws_root` in a job whose matrix is the resolve job's `deployments` list, stands for the AWS root of every deployment of the map that has one. A job that initialises Terraform on a runner, or in a root, that the rule cannot read is a violation.
  * - **lock-platforms** — every root lock under `infra/` carries one `h1:` hash per platform of `LOCK_PLATFORMS` for each provider, and locks that select the same provider version carry the same hashes, so a lock written for other platforms differs from its siblings. The module directories are left out: the one tracked module lock, `infra/modules/supabase`'s, is read only by that module's test init.
  *
  * A `run:` script is read together with every `infra/scripts/*.sh` of the repository it names, so a Terraform command moved from a step into such a script stays under these rules.
@@ -27,17 +27,30 @@ import type { WorkflowDocument } from './workflowGuards';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '../..');
 const WORKFLOW_DIR = join(REPO_ROOT, '.github', 'workflows');
-const BOOTSTRAP_TFVARS = join(REPO_ROOT, 'infra', 'bootstrap', 'terraform.tfvars');
 const BOOTSTRAP_MAP = join(REPO_ROOT, 'infra', 'bootstrap', 'deployments.auto.tfvars.json');
 const REPOSITORY_ID = '546467466';
 const LOCK_FILE = '.terraform.lock.hcl';
 
 /** The resolve job's output naming the AWS root of the resolved deployment. */
 const RESOLVED_AWS_ROOT = '${{ needs.resolve.outputs.aws_root }}';
+/** A matrix entry's AWS root, in a job that runs once per deployment the resolve job lists. */
+const MATRIX_AWS_ROOT = '${{ matrix.deployment.aws_root }}';
+/** The matrix of a job that runs once per deployment the resolve job lists. */
+const OWNED_DEPLOYMENTS = '${{ fromJSON(needs.resolve.outputs.deployments) }}';
 /** The one `-chdir` word a mutating Terraform command may carry. */
 const APPLY_CHDIR = '-chdir="$AWS_ROOT"';
 /** The resolve job's output naming the deploy role of the resolved deployment. */
 const RESOLVED_DEPLOY_ROLE_ARN = '${{ needs.resolve.outputs.deploy_role_arn }}';
+/** A matrix entry's plan role, the only role `infra-plan.yml` assumes. */
+const MATRIX_PLAN_ROLE_ARN = '${{ matrix.deployment.plan_role_arn }}';
+/** The role every `role-to-assume` of each pipeline workflow names. */
+const EXPECTED_ROLES: Record<string, string> = {
+  'deploy.yml': RESOLVED_DEPLOY_ROLE_ARN,
+  'destroy.yml': RESOLVED_DEPLOY_ROLE_ARN,
+  'infra-plan.yml': MATRIX_PLAN_ROLE_ARN
+};
+/** A role ARN of the form the bootstrap root creates, for red copies. */
+const SOME_ROLE_ARN = 'arn:aws:iam::111111111111:role/openvaa/openvaa-example-deploy';
 /** The id of the credential-free first job of the deploy and destroy workflows. */
 const RESOLVE_JOB = 'resolve';
 /** The workflows that write AWS state, each routed through the resolve job. */
@@ -219,17 +232,6 @@ function concurrencyViolations(file: WorkflowFile): Array<string> {
   return violations;
 }
 
-/** The value of a top-level string assignment of the bootstrap tfvars, comment lines ignored. */
-function bootstrapValue(text: string, name: string): string {
-  const uncommented = text
-    .split('\n')
-    .filter((line) => !/^\s*#/.test(line))
-    .join('\n');
-  const value = new RegExp(`^${name}\\s*=\\s*"([^"]*)"\\s*$`, 'm').exec(uncommented)?.[1];
-  if (value === undefined) throw new Error(`infra/bootstrap/terraform.tfvars assigns no ${name}`);
-  return value;
-}
-
 /** The key of the one entry of the deployment map whose `github_repository_id` is this repository's. */
 function ownedDeploymentKey(mapText: string): string {
   const deployments = (JSON.parse(mapText) as { deployments?: Record<string, { github_repository_id?: unknown }> })
@@ -243,22 +245,6 @@ function ownedDeploymentKey(mapText: string): string {
   return owned[0];
 }
 
-/** The deploy role ARN the bootstrap root's account values and its deployment map imply. */
-function expectedDeployRoleArn(tfvarsText: string, mapText: string): string {
-  const account = bootstrapValue(tfvarsText, 'aws_account_id');
-  const path = bootstrapValue(tfvarsText, 'iam_path');
-  const prefix = bootstrapValue(tfvarsText, 'name_prefix');
-  const key = ownedDeploymentKey(mapText);
-  return `arn:aws:iam::${account}:role${path}${prefix}-${key}-deploy`;
-}
-
-/** The violations of deploy-role-arn in `infra-plan.yml`: no literal role ARN, or one other than `expected`. */
-function deployRoleArnViolations(file: WorkflowFile, expected: string): Array<string> {
-  const arns = [...file.text.matchAll(ROLE_ARN)].map(([arn]) => arn);
-  if (arns.length === 0) return [`deploy-role-arn: ${file.name} writes no role ARN`];
-  return arns.filter((arn) => arn !== expected).map((arn) => `deploy-role-arn: ${file.name} writes ${arn}`);
-}
-
 /** Every `role-to-assume` of a workflow, by the job that assumes it. */
 function assumedRoles(file: WorkflowFile): Array<{ jobId: string; role: unknown }> {
   return workflowJobs(parseWorkflow(file.text)).flatMap(([jobId, job]) =>
@@ -268,15 +254,19 @@ function assumedRoles(file: WorkflowFile): Array<{ jobId: string; role: unknown 
   );
 }
 
-/** The violations of deploy-role-arn in a writing workflow: a literal role ARN, or a role not from the resolve job. */
-function resolvedRoleViolations(file: WorkflowFile): Array<string> {
-  const literal = [...file.text.matchAll(ROLE_ARN)].map(([arn]) => `deploy-role-arn: ${file.name} writes ${arn}`);
-  const roles = assumedRoles(file);
-  if (roles.length === 0) return [...literal, `deploy-role-arn: ${file.name} assumes no role`];
-  const unresolved = roles
-    .filter(({ role }) => role !== RESOLVED_DEPLOY_ROLE_ARN)
-    .map(({ jobId, role }) => `deploy-role-arn: ${file.name} job ${jobId} assumes ${JSON.stringify(role)}`);
-  return [...literal, ...unresolved];
+/** The violations of deploy-role-arn across `files`: a literal role ARN anywhere, or a pipeline role other than its expected one. */
+function roleArnViolations(files: Array<WorkflowFile>): Array<string> {
+  return files.flatMap((file) => {
+    const literal = [...file.text.matchAll(ROLE_ARN)].map(([arn]) => `deploy-role-arn: ${file.name} writes ${arn}`);
+    const expected = EXPECTED_ROLES[file.name];
+    if (expected === undefined) return literal;
+    const roles = assumedRoles(file);
+    if (roles.length === 0) return [...literal, `deploy-role-arn: ${file.name} assumes no role`];
+    const unexpected = roles
+      .filter(({ role }) => role !== expected)
+      .map(({ jobId, role }) => `deploy-role-arn: ${file.name} job ${jobId} assumes ${JSON.stringify(role)}`);
+    return [...literal, ...unexpected];
+  });
 }
 
 /** The ids a job's `needs` lists, a single string read as a list of one. */
@@ -362,8 +352,22 @@ function mapAwsRoots(mapText: string): Array<string> {
     .filter((root) => existsSync(join(REPO_ROOT, root)));
 }
 
+/** Whether a job runs once per deployment the resolve job lists: its matrix's one dimension is that list. */
+function runsPerOwnedDeployment(job: Record<string, unknown>): boolean {
+  const { strategy } = job;
+  if (!isRecord(strategy) || !isRecord(strategy.matrix)) return false;
+  const keys = Object.keys(strategy.matrix);
+  return keys.length === 1 && strategy.matrix.deployment === OWNED_DEPLOYMENTS;
+}
+
+/** Whether a step of `job` binds `AWS_ROOT` to a value that stands for every AWS root of the map. */
+function bindsMapAwsRoot(job: Record<string, unknown>, step: Record<string, unknown>): boolean {
+  const bound = stepEnv(step).AWS_ROOT;
+  return bound === RESOLVED_AWS_ROOT || (bound === MATRIX_AWS_ROOT && runsPerOwnedDeployment(job));
+}
+
 /**
- * Every `terraform init` of a `run:` step of every job of every workflow, the scripts it calls included. The root is the value of its `-chdir=` word with the quotes removed; else the step's `working-directory`; else the job's, then the workflow's, `defaults.run.working-directory`; else undefined. A `-chdir="$AWS_ROOT"` in a step whose `env.AWS_ROOT` is the resolve job's `aws_root` output yields one init for each root of `mapAwsRoots`; an `$AWS_ROOT` bound to anything else stays as it is written.
+ * Every `terraform init` of a `run:` step of every job of every workflow, the scripts it calls included. The root is the value of its `-chdir=` word with the quotes removed; else the step's `working-directory`; else the job's, then the workflow's, `defaults.run.working-directory`; else undefined. A `-chdir="$AWS_ROOT"` in a step that binds `AWS_ROOT` to the resolve job's `aws_root` output, or to `matrix.deployment.aws_root` in a job whose matrix is the resolve job's `deployments` list, yields one init for each root of `mapAwsRoots`; an `$AWS_ROOT` bound to anything else stays as it is written.
  */
 function terraformInits(files: Array<WorkflowFile>, mapText: string): Array<TerraformInit> {
   return files.flatMap(({ name, text }) => {
@@ -372,7 +376,7 @@ function terraformInits(files: Array<WorkflowFile>, mapText: string): Array<Terr
       jobSteps(job).flatMap((step) => {
         if (typeof step.run !== 'string') return [];
         const stepDirectory = typeof step['working-directory'] === 'string' ? step['working-directory'] : undefined;
-        const resolved = stepEnv(step).AWS_ROOT === RESOLVED_AWS_ROOT;
+        const resolved = bindsMapAwsRoot(job, step);
         return terraformCommands(withCalledScripts(step.run))
           .filter((words) => terraformSubcommand(words) === 'init')
           .flatMap((words) => {
@@ -489,9 +493,7 @@ function lockPlatformViolations(locks: Array<RootLock>): Array<string> {
 }
 
 const FILES = workflowFiles();
-const TFVARS_TEXT = readFileSync(BOOTSTRAP_TFVARS, 'utf8');
 const MAP_TEXT = readFileSync(BOOTSTRAP_MAP, 'utf8');
-const DEPLOY_ROLE_ARN = expectedDeployRoleArn(TFVARS_TEXT, MAP_TEXT);
 /** The AWS root of this repository's own deployment. */
 const OWNED_AWS_ROOT = `infra/envs/${ownedDeploymentKey(MAP_TEXT)}/aws`;
 
@@ -647,71 +649,67 @@ describe('shared-concurrency: deploy.yml and destroy.yml share aws-pipeline and 
   });
 });
 
-describe("deploy-role-arn: the writing workflows assume the resolved role, and the literal one is the bootstrap root's", () => {
-  it("derives the ARN from aws_account_id, iam_path, name_prefix and the key of this repository's deployment", () => {
-    expect(DEPLOY_ROLE_ARN).toBe('arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy');
+describe('deploy-role-arn: no workflow names a role literally, and every pipeline role comes from the resolver', () => {
+  it('finds no violation in the real files', () => {
+    expect(roleArnViolations(FILES)).toEqual([]);
   });
 
-  it('finds no violation in infra-plan.yml', () => {
-    expect(deployRoleArnViolations(workflowFile(FILES, 'infra-plan.yml'), DEPLOY_ROLE_ARN)).toEqual([]);
-  });
-
-  it.each(WRITING_WORKFLOWS)('finds no violation in %s, which assumes a role', (name) => {
+  it.each(Object.keys(EXPECTED_ROLES))('finds %s assuming a role, so the rule is not vacuous', (name) => {
     expect(assumedRoles(workflowFile(FILES, name)).length).toBeGreaterThan(0);
-    expect(resolvedRoleViolations(workflowFile(FILES, name))).toEqual([]);
   });
 
   it.each([
     {
       fault: 'destroy.yml assumes the role by a literal ARN',
       name: 'destroy.yml',
-      replacement: `role-to-assume: ${DEPLOY_ROLE_ARN}`
+      pattern: `role-to-assume: ${RESOLVED_DEPLOY_ROLE_ARN}`,
+      replacement: `role-to-assume: ${SOME_ROLE_ARN}`
     },
     {
       fault: 'deploy.yml assumes the role named by the environment variable',
       name: 'deploy.yml',
+      pattern: `role-to-assume: ${RESOLVED_DEPLOY_ROLE_ARN}`,
       replacement: 'role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}'
     },
     {
       fault: 'deploy.yml assumes the plan role output',
       name: 'deploy.yml',
+      pattern: `role-to-assume: ${RESOLVED_DEPLOY_ROLE_ARN}`,
       replacement: 'role-to-assume: ${{ needs.resolve.outputs.plan_role_arn }}'
+    },
+    {
+      fault: 'infra-plan.yml assumes the plan role named by a repository variable',
+      name: 'infra-plan.yml',
+      pattern: `role-to-assume: ${MATRIX_PLAN_ROLE_ARN}`,
+      replacement: 'role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}'
+    },
+    {
+      fault: "infra-plan.yml assumes the matrix entry's deploy role",
+      name: 'infra-plan.yml',
+      pattern: `role-to-assume: ${MATRIX_PLAN_ROLE_ARN}`,
+      replacement: 'role-to-assume: ${{ matrix.deployment.deploy_role_arn }}'
+    },
+    {
+      fault: "infra-plan.yml's wrong-subject job names a literal deploy role ARN",
+      name: 'infra-plan.yml',
+      pattern: 'DEPLOY_ROLE_ARN: ${{ matrix.deployment.deploy_role_arn }}',
+      replacement: `DEPLOY_ROLE_ARN: ${SOME_ROLE_ARN}`
+    },
+    {
+      fault: 'deploy.yml writes a literal ARN in a comment',
+      name: 'deploy.yml',
+      pattern: 'permissions: {}\n',
+      replacement: `# ${SOME_ROLE_ARN}\npermissions: {}\n`
     }
-  ])('reports a red copy in which $fault', ({ name, replacement }) => {
-    const [file] = withMutation(FILES, name, `role-to-assume: ${RESOLVED_DEPLOY_ROLE_ARN}`, replacement).filter(
-      (f) => f.name === name
-    );
-    const violations = resolvedRoleViolations(file);
+  ])('reports a red copy in which $fault', ({ name, pattern, replacement }) => {
+    const violations = roleArnViolations(withMutation(FILES, name, pattern, replacement));
     expect(violations.length).toBeGreaterThan(0);
     expect(violations.every((violation) => violation.startsWith(`deploy-role-arn: ${name} `))).toBe(true);
   });
 
-  it('reports a red copy of deploy.yml that writes a literal ARN in a comment', () => {
-    const [file] = withMutation(
-      FILES,
-      'deploy.yml',
-      'permissions: {}\n',
-      `# ${DEPLOY_ROLE_ARN}\npermissions: {}\n`
-    ).filter((f) => f.name === 'deploy.yml');
-    expect(resolvedRoleViolations(file)).toEqual([`deploy-role-arn: deploy.yml writes ${DEPLOY_ROLE_ARN}`]);
-  });
-
-  it('reports a red copy of infra-plan.yml whose refusal names a role in another account', () => {
-    const [file] = withMutation(
-      FILES,
-      'infra-plan.yml',
-      'arn:aws:iam::471112560111:',
-      'arn:aws:iam::111111111111:'
-    ).filter((f) => f.name === 'infra-plan.yml');
-    expect(deployRoleArnViolations(file, DEPLOY_ROLE_ARN)).toHaveLength(1);
-  });
-
-  it('reports a red map whose staging key is renamed, against the unchanged workflows', () => {
-    const { deployments } = JSON.parse(MAP_TEXT) as { deployments: Record<string, unknown> };
-    const { staging, ...others } = deployments;
-    const changed = expectedDeployRoleArn(TFVARS_TEXT, JSON.stringify({ deployments: { ...others, prod: staging } }));
-    expect(changed).toBe('arn:aws:iam::471112560111:role/openvaa/openvaa-prod-deploy');
-    expect(deployRoleArnViolations(workflowFile(FILES, 'infra-plan.yml'), changed)).toHaveLength(1);
+  it('reports a literal ARN in a workflow outside the pipeline', () => {
+    const extra = { name: 'other.yml', text: `env:\n  ROLE: ${SOME_ROLE_ARN}\n` };
+    expect(roleArnViolations([...FILES, extra])).toEqual([`deploy-role-arn: other.yml writes ${SOME_ROLE_ARN}`]);
   });
 });
 
@@ -724,8 +722,8 @@ describe('environments: the resolved environment in deploy.yml, the resolved des
     {
       fault: 'the pull-request plan job names staging',
       name: 'infra-plan.yml',
-      pattern: '  plan:\n    if:',
-      replacement: '  plan:\n    environment: staging\n    if:'
+      pattern: '  plan:\n    needs: resolve\n',
+      replacement: '  plan:\n    needs: resolve\n    environment: staging\n'
     },
     {
       fault: 'the destroy apply job names a literal staging-destroy',
@@ -842,7 +840,12 @@ describe('arm-lock: every root a job on an ARM runner initialises has an h1 hash
   });
 
   it('reports a red copy of infra-plan.yml whose checks job runs on ubuntu-24.04-arm, naming a root it cannot read', () => {
-    const files = withMutation(FILES, 'infra-plan.yml', 'runs-on: ubuntu-24.04\n', 'runs-on: ubuntu-24.04-arm\n');
+    const files = withMutation(
+      FILES,
+      'infra-plan.yml',
+      '  checks:\n    runs-on: ubuntu-24.04\n',
+      '  checks:\n    runs-on: ubuntu-24.04-arm\n'
+    );
     const violations = armLockViolations(files, readRepoLock, MAP_TEXT).filter((v) =>
       v.startsWith('arm-lock: infra-plan.yml ')
     );
@@ -859,6 +862,57 @@ describe('arm-lock: every root a job on an ARM runner initialises has an h1 hash
       'arm-lock: deploy.yml job deploy runs on a runner the rule cannot read: "${{ vars.DEPLOY_RUNNER }}"'
     ]);
   });
+
+  it('reads "$AWS_ROOT" bound to the matrix entry\'s root, in a job over the resolve job\'s list, as every AWS root of the map', () => {
+    const { deployments } = JSON.parse(MAP_TEXT) as { deployments: Record<string, unknown> };
+    const wider = JSON.stringify({ deployments: { ...deployments, example: {} } });
+    const roots = (mapText: string): Set<string | undefined> =>
+      new Set(
+        terraformInits(FILES, mapText)
+          .filter(({ name, jobId }) => name === 'infra-plan.yml' && jobId === 'plan')
+          .map(({ root }) => root)
+      );
+    expect(roots(MAP_TEXT)).toEqual(new Set([OWNED_AWS_ROOT]));
+    expect(roots(wider)).toEqual(new Set(['infra/envs/example/aws', OWNED_AWS_ROOT]));
+  });
+
+  it("finds no violation in a red copy of infra-plan.yml whose plan job runs on ubuntu-24.04-arm, the map's locks being complete", () => {
+    const files = withMutation(
+      FILES,
+      'infra-plan.yml',
+      /( {2}plan:\n(?: {4}.*\n)*? {4})runs-on: ubuntu-24\.04\n/,
+      '$1runs-on: ubuntu-24.04-arm\n'
+    );
+    expect(armLockViolations(files, readRepoLock, MAP_TEXT)).toEqual([]);
+  });
+
+  it.each([
+    {
+      fault: 'the matrix is a literal list',
+      pattern: /( {2}plan:\n[\s\S]*? {8}deployment: )\$\{\{ fromJSON\(needs\.resolve\.outputs\.deployments\) \}\}/,
+      replacement: '$1[{ aws_root: somewhere }]'
+    },
+    {
+      fault: 'the job has no matrix',
+      pattern:
+        /( {2}plan:\n[\s\S]*?) {4}strategy:\n {6}fail-fast: false\n {6}matrix:\n {8}deployment: \$\{\{ fromJSON\(needs\.resolve\.outputs\.deployments\) \}\}\n/,
+      replacement: '$1'
+    }
+  ])(
+    "reports a red copy of infra-plan.yml's plan job on ubuntu-24.04-arm in which $fault, naming a root it cannot read",
+    ({ pattern, replacement }) => {
+      const arm = withMutation(
+        FILES,
+        'infra-plan.yml',
+        /( {2}plan:\n(?: {4}.*\n)*? {4})runs-on: ubuntu-24\.04\n/,
+        '$1runs-on: ubuntu-24.04-arm\n'
+      );
+      const files = withMutation(arm, 'infra-plan.yml', pattern, replacement);
+      expect(armLockViolations(files, readRepoLock, MAP_TEXT)).toEqual([
+        'arm-lock: infra-plan.yml job plan initialises a root the rule cannot read: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly'
+      ]);
+    }
+  );
 
   it('finds no violation in the "$root" inits of infra-plan.yml on ubuntu-24.04, as in the real file', () => {
     expect(armLockViolations([workflowFile(FILES, 'infra-plan.yml')], readRepoLock, MAP_TEXT)).toEqual([]);
