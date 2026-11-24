@@ -126,6 +126,8 @@ tfplan.*
 # non-secret inputs and holds no secret. Only local and secret variable files are ignored.
 *.auto.tfvars
 *.auto.tfvars.json
+# The deployment map is public, reviewed data that the bootstrap root auto-loads.
+!infra/bootstrap/deployments.auto.tfvars.json
 *.local.tfvars
 *.secret.tfvars
 # Local overrides, including the backend override used for the first apply of the bootstrap
