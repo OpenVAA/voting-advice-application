@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
-current_plan: 11
+current_plan: 12
 status: executing
-stopped_at: Completed 189.1.1-07-PLAN.md
-last_updated: "2026-11-24T20:11:34.312Z"
+stopped_at: Completed 189.1.1-11-PLAN.md
+last_updated: "2026-11-24T21:06:03.996Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: a3448b13ee3cba160835140123830eddda25c6c9
+state_head: 803180d8f2968f1a486fbf496c7d31c05fd271c9
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 233
-  completed_plans: 228
+  completed_plans: 229
   percent: 83
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — EXECUTING
-Plan: 11 of 15
+Plan: 12 of 15
 Status: Ready to execute
 Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 7
+**Current Plan:** 12
 
 From 184 on, the numeric order is the dependency order.
 
@@ -239,6 +239,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P10 | 15min | 3 tasks | 7 files |
 | Phase 189.1.1 P03 | 25min | 3 tasks | 3 files |
 | Phase 189.1.1 P07 | 5min | 2 tasks | 3 files |
+| Phase 189.1.1 P11 | 52min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -531,6 +532,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-03: CHANNEL_BINDING_OFFERED=no (libpq refused at the pooler's mechanism list, no password sent), so plan 07 adds no PGCHANNELBINDING
 - [Phase 189.1.1]: 189.1.1-03: staging's hosted history read read-only over verify-full holds 24 versions (00001-00024) against HEAD's four, confirming Blocker B-1 and plan 12's rebuild
 - [Phase 189.1.1]: 189.1.1-07: deploy.yml's migrations and settings steps connect with PGSSLMODE=verify-full and PGSSLROOTCERT at the committed Supabase root; no PGCHANNELBINDING (plan 03 measured none offered); deploy-workflow.test.ts pins both env blocks, checks the root exists, and is red on each way back (mode to require, root dropped, root missing, per step), shown also by applying each mutation to the real workflow
+- [Phase 189.1.1]: 189.1.1-11: run 45479328374 of main.yaml on ci-evidence/189.1.1-final (cf6326b08) read job by job, all 13 jobs success except dependency-audit, accepted per the 2026-11-15 todo (15 rows, each a todo row; the two dompurify rows gone); e2e-tests 745 passed on 4 workers; D-14i observed
 
 ### Pending Todos
 
@@ -605,6 +607,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T20:11:33.149Z
-**Stopped At:** Completed 189.1.1-07-PLAN.md
+Last session: 2026-11-24T21:06:02.899Z
+**Stopped At:** Completed 189.1.1-11-PLAN.md
 **Resume File:** None
