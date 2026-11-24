@@ -1,0 +1,18 @@
+{
+  "deployments": {
+    "production": {
+      "github_repository_id": "7654321",
+      "github_repository_owner_id": "1234567",
+      "plan_subjects": ["repo:EXAMPLE-ORG@1234567/EXAMPLE-REPO@7654321:pull_request"],
+      "deploy_subjects": [
+        "repo:EXAMPLE-ORG@1234567/EXAMPLE-REPO@7654321:environment:production",
+        "repo:EXAMPLE-ORG@1234567/EXAMPLE-REPO@7654321:environment:production-destroy"
+      ],
+      "deploy_branches": ["deploy/production"],
+      "hosted_zone_id": "Z00000000000000000000",
+      "domain": "vaa.example.org",
+      "environment": "production",
+      "destroy_environment": "production-destroy"
+    }
+  }
+}

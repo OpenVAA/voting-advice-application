@@ -5,39 +5,9 @@ output "state_bucket_name" {
   value       = module.state_bucket.bucket_name
 }
 
-output "registry_url" {
-  description = "URL of the image repository, used as the image name when pushing and pulling."
-  value       = module.registry.repository_url
-}
-
-output "registry_arn" {
-  description = "ARN of the image repository."
-  value       = module.registry.repository_arn
-}
-
 output "oidc_provider_arn" {
-  description = "ARN of the GitHub OIDC provider."
-  value       = module.github_oidc.oidc_provider_arn
-}
-
-output "plan_role_arn" {
-  description = "ARN of the read-only plan role."
-  value       = module.github_oidc.plan_role_arn
-}
-
-output "plan_role_name" {
-  description = "Name of the read-only plan role."
-  value       = module.github_oidc.plan_role_name
-}
-
-output "deploy_role_arn" {
-  description = "ARN of the deploy role."
-  value       = module.github_oidc.deploy_role_arn
-}
-
-output "deploy_role_name" {
-  description = "Name of the deploy role."
-  value       = module.github_oidc.deploy_role_name
+  description = "ARN of the account's GitHub OIDC provider."
+  value       = module.github_oidc_provider.oidc_provider_arn
 }
 
 output "budget_name" {
@@ -45,7 +15,17 @@ output "budget_name" {
   value       = module.budget.budget_name
 }
 
-output "frontend_execution_role_arn" {
-  description = "ARN of the frontend task's execution role, the value the staging AWS root takes as execution_role_arn. Not a secret."
-  value       = module.frontend_task_role.execution_role_arn
+output "deployments" {
+  description = "Per deployment, keyed as var.deployments: the plan and deploy roles' ARNs and names, the image repository's URL (the image name when pushing and pulling) and ARN, and the ARN of the frontend task's execution role, the value the deployment's AWS root takes as execution_role_arn."
+  value = {
+    for k in keys(var.deployments) : k => {
+      plan_role_arn               = module.github_oidc[k].plan_role_arn
+      plan_role_name              = module.github_oidc[k].plan_role_name
+      deploy_role_arn             = module.github_oidc[k].deploy_role_arn
+      deploy_role_name            = module.github_oidc[k].deploy_role_name
+      registry_url                = module.registry[k].repository_url
+      registry_arn                = module.registry[k].repository_arn
+      frontend_execution_role_arn = module.frontend_task_role[k].execution_role_arn
+    }
+  }
 }
