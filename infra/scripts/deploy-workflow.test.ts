@@ -31,14 +31,24 @@ const STAGE_ORDER = [
   'alert'
 ];
 
-/** The exact environment of the settings check: the session pooler connection over TLS and the database password alone. */
+/** The Supabase root the database steps verify the server against, relative to the repository root; pinned by `supabase-ca.test.ts`. */
+const ROOT_CA_PATH = 'infra/certs/supabase-root-2021-ca.crt';
+
+/** The prefix of `PGSSLROOTCERT` in the database steps, so the root is found by an absolute path whatever the step's directory. */
+const WORKSPACE_PREFIX = '${{ github.workspace }}/';
+
+/** The ids of the steps that connect to the database through the session pooler. */
+const DATABASE_STEPS = ['migrations', 'settings'];
+
+/** The exact environment of the settings check: the session pooler connection verifying the server against the committed root, and the database password alone. */
 const SETTINGS_ENV = {
   REF: '${{ steps.link.outputs.ref }}',
   PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
   PGPORT: '5432',
   PGDATABASE: 'postgres',
   PGCONNECT_TIMEOUT: '10',
-  PGSSLMODE: 'require',
+  PGSSLMODE: 'verify-full',
+  PGSSLROOTCERT: `${WORKSPACE_PREFIX}${ROOT_CA_PATH}`,
   PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}'
 };
 
@@ -84,6 +94,18 @@ function settingsEnvHolds(source: string): boolean {
   const env = envOf(settings);
   const keys = Object.keys(SETTINGS_ENV) as Array<keyof typeof SETTINGS_ENV>;
   return Object.keys(env).length === keys.length && keys.every((key) => env[key] === SETTINGS_ENV[key]);
+}
+
+/**
+ * Whether the database steps of a workflow text name one root that exists: each step's `PGSSLROOTCERT` is `WORKSPACE_PREFIX` followed by a path, the path is the same in every step, and a file is at that path under the repository root.
+ */
+function rootCaPathHolds(source: string): boolean {
+  const steps = stepsOf(parseWorkflow(source), 'deploy');
+  const paths = DATABASE_STEPS.map((id) => {
+    const value = envOf(stepWithId(steps, id)).PGSSLROOTCERT;
+    return typeof value === 'string' && value.startsWith(WORKSPACE_PREFIX) ? value.slice(WORKSPACE_PREFIX.length) : '';
+  });
+  return paths.every((path) => path !== '' && path === paths[0]) && existsSync(join(REPO_ROOT, paths[0]));
 }
 
 /** The minutes after which the runner cuts off the settings check, well above a connection timeout and one read. */
@@ -409,7 +431,7 @@ describe('the migrations and the functions of the deploy job', () => {
     expect(text).not.toMatch(/supabase\s+db\s+push/);
   });
 
-  it('pushes the migrations through push-migrations.sh with the confirmed ref, over the session pooler with TLS', () => {
+  it('pushes the migrations through push-migrations.sh with the confirmed ref, over the session pooler verifying the server', () => {
     const script = runOf(migrations);
     expect(script).toContain(
       'infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF"'
@@ -425,7 +447,8 @@ describe('the migrations and the functions of the deploy job', () => {
       PGPORT: '5432',
       PGDATABASE: 'postgres',
       PGCONNECT_TIMEOUT: '10',
-      PGSSLMODE: 'require',
+      PGSSLMODE: 'verify-full',
+      PGSSLROOTCERT: `${WORKSPACE_PREFIX}${ROOT_CA_PATH}`,
       PGPASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
       SUPABASE_DB_PASSWORD: '${{ secrets.SUPABASE_DB_PASSWORD }}',
       SUPABASE_ACCESS_TOKEN: '${{ secrets.SUPABASE_ACCESS_TOKEN }}'
@@ -433,7 +456,16 @@ describe('the migrations and the functions of the deploy job', () => {
     expect(text).not.toContain('6543');
   });
 
-  it('checks the deployment settings with psql over the session pooler with TLS within two minutes, after the migrations and before the functions', () => {
+  it('verifies the server in both database steps against one committed root, with verify-full as the only TLS mode', () => {
+    expect(rootCaPathHolds(text)).toBe(true);
+    expect(text.match(/^ *PGSSLMODE: .*$/gm)?.map((line) => line.trim())).toEqual([
+      'PGSSLMODE: verify-full',
+      'PGSSLMODE: verify-full'
+    ]);
+    expect(text).not.toMatch(/\bsslmode=|\bsslrootcert=|PGCHANNELBINDING/);
+  });
+
+  it('checks the deployment settings with psql over the session pooler verifying the server within two minutes, after the migrations and before the functions', () => {
     const settings = stepWithId(steps, 'settings');
     expect(existsSync(join(REPO_ROOT, 'infra', 'scripts', 'check-deployment-settings.sql'))).toBe(true);
     expect(steps.indexOf(settings)).toBe(steps.indexOf(migrations) + 1);
@@ -686,7 +718,7 @@ describe('the deploy-specific guards are red on a faulty copy', () => {
   });
 
   it('sees the TLS requirement dropped from the settings check', () => {
-    const mutated = mutate(text, /(id: settings\n[\s\S]*?) {10}PGSSLMODE: require\n/, '$1');
+    const mutated = mutate(text, /(id: settings\n[\s\S]*?) {10}PGSSLMODE: verify-full\n/, '$1');
     expect(settingsEnvHolds(text)).toBe(true);
     expect(settingsEnvHolds(mutated)).toBe(false);
   });
