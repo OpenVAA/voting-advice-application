@@ -2,18 +2,18 @@
 gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
-current_phase: "189.1"
-current_plan: 10
-status: completed
-stopped_at: Phase 189.1 complete — all phases complete
-last_updated: "2026-11-22T10:21:53.369Z"
-last_activity: 2026-11-22
-last_activity_desc: Phase 189.1 complete
+current_phase: "190"
+current_plan: 0
+status: planned
+stopped_at: Phase 190 planned — 14 plans in 9 waves, plan check passed
+last_updated: "2026-11-24T16:00:00.000Z"
+last_activity: 2026-11-24
+last_activity_desc: Phase 190 planned
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
   completed_phases: 10
-  total_plans: 218
+  total_plans: 232
   completed_plans: 218
   percent: 91
 ---
@@ -26,16 +26,16 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 189.1 — Address tech debt: invitation-limit guard and trackEvents smoke
+**Current focus:** Phase 190 — Multi-deployment bootstrap
 
 ## Current Position
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189.1
-Plan: Not started
-Status: All phases complete
-Last activity: 2026-11-22 — Phase 189.1 complete
+Phase: 190 (Multi-deployment bootstrap) — PLANNED
+Plan: 0 of 14
+Status: Ready to execute (branch planning/deployment-190, on 46554181e)
+Last activity: 2026-11-24 — Phase 190 planned; decisions in 190-CONTEXT.md (GitHub Free: no environments downstream)
 
 Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
