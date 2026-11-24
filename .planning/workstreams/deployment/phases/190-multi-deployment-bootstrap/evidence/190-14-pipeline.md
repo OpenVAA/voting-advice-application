@@ -1,0 +1,130 @@
+# 190-14 pipeline evidence
+
+## Evidence commit (Task 1, 2026-11-24)
+
+Built on the executor's host with a temporary index and pushed by no one. Inputs:
+
+```
+SOURCE_HEAD=b647e0d723009d94ad4c3af33bf28c57e3efe8f9
+PARENT=340a200708c28fb7ed078d452138712f3400c789
+EVIDENCE_TREE=d93523b909cd1330604e8a17f6b360c51ac0e436
+EVIDENCE_COMMIT=fd57d43396b4f3da85897d9196102f6aa2eb2561
+```
+
+`SOURCE_HEAD` is `planning/deployment-190` at the time of the build (190-11's completion commit). `PARENT` is `origin/main` as fetched at that time. Every later commit of the planning branch touches only `.planning/`, so its tree outside `.planning/` is still `EVIDENCE_TREE`.
+
+Recipe: `GIT_INDEX_FILE=<scratch>/ev.index`, `git read-tree $SOURCE_HEAD`, `git rm -r --cached -q .planning`, `git write-tree`. The commit is made with `git commit-tree --no-gpg-sign $EVIDENCE_TREE -p $PARENT -F -` and the fixed identity and dates `GIT_AUTHOR_NAME=Claude`, `GIT_AUTHOR_EMAIL=noreply@anthropic.com`, `GIT_AUTHOR_DATE='1795554000 +0000'`, and the same three values for the committer. Its message is fed on stdin as `printf '%s\n\n%s\n%s\n' 'evidence: phase 190 final tree' 'Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>' 'Claude-Session: https://claude.ai/code/session_01SWZj9GAvsemehyWy7pQZwd'`. With every input fixed, anyone who reruns the recipe gets the same commit id. The local ref is `refs/evidence/190/final`.
+
+```
+$ git cat-file -p fd57d43396b4f3da85897d9196102f6aa2eb2561
+tree d93523b909cd1330604e8a17f6b360c51ac0e436
+parent 340a200708c28fb7ed078d452138712f3400c789
+author Claude <noreply@anthropic.com> 1795554000 +0000
+committer Claude <noreply@anthropic.com> 1795554000 +0000
+
+evidence: phase 190 final tree
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01SWZj9GAvsemehyWy7pQZwd
+```
+
+Checks:
+
+```
+evidence_planning_paths=0          git ls-tree -r --name-only $EVIDENCE_COMMIT | grep -c '^.planning/'
+evidence_tree_equal_exit=0         git diff --quiet HEAD $EVIDENCE_COMMIT -- . ':!.planning'
+```
+
+## Local resolution from the evidence tree (Task 1)
+
+Run in a detached worktree of `EVIDENCE_COMMIT`:
+
+```
+### resolve-deployment.sh --mode deploy --repository-id 546467466 --ref deploy-evidence/190-final
+exit=0
+key=staging
+environment=staging
+destroy_environment=staging-destroy
+domain=staging.openvaa.org
+aws_account_id=471112560111
+aws_region=eu-north-1
+state_bucket=openvaa-tfstate-471112560111
+aws_root=infra/envs/staging/aws
+supabase_root=infra/envs/staging/supabase
+state_key=pipeline/staging/aws/terraform.tfstate
+supabase_state_key=hand/staging/supabase/terraform.tfstate
+deploy_role_arn=arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
+plan_role_arn=arn:aws:iam::471112560111:role/openvaa/openvaa-plan
+topic_arn=arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments
+cluster_name=openvaa-staging
+service_name=openvaa-staging-frontend
+destroy_branch=deploy-evidence/destroy-staging
+destroy_confirm=destroy staging aws
+### resolve-deployment.sh --mode destroy --repository-id 546467466 --event push --ref deploy-evidence/destroy-staging
+exit=0
+key=staging
+environment=staging
+destroy_environment=staging-destroy
+domain=staging.openvaa.org
+aws_account_id=471112560111
+aws_region=eu-north-1
+state_bucket=openvaa-tfstate-471112560111
+aws_root=infra/envs/staging/aws
+supabase_root=infra/envs/staging/supabase
+state_key=pipeline/staging/aws/terraform.tfstate
+supabase_state_key=hand/staging/supabase/terraform.tfstate
+deploy_role_arn=arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
+plan_role_arn=arn:aws:iam::471112560111:role/openvaa/openvaa-plan
+topic_arn=arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments
+cluster_name=openvaa-staging
+service_name=openvaa-staging-frontend
+destroy_branch=deploy-evidence/destroy-staging
+destroy_confirm=destroy staging aws
+### resolve-deployment.sh --mode destroy --repository-id 546467466 --event workflow_dispatch --ref deploy-evidence/190-final
+exit=0
+key=staging
+environment=staging
+destroy_environment=staging-destroy
+domain=staging.openvaa.org
+aws_account_id=471112560111
+aws_region=eu-north-1
+state_bucket=openvaa-tfstate-471112560111
+aws_root=infra/envs/staging/aws
+supabase_root=infra/envs/staging/supabase
+state_key=pipeline/staging/aws/terraform.tfstate
+supabase_state_key=hand/staging/supabase/terraform.tfstate
+deploy_role_arn=arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
+plan_role_arn=arn:aws:iam::471112560111:role/openvaa/openvaa-plan
+topic_arn=arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments
+cluster_name=openvaa-staging
+service_name=openvaa-staging-frontend
+destroy_branch=deploy-evidence/destroy-staging
+destroy_confirm=destroy staging aws
+### resolve-deployment.sh --mode plan --repository-id 546467466
+exit=0
+deployments=[{"key":"staging","aws_root":"infra/envs/staging/aws","plan_role_arn":"arn:aws:iam::471112560111:role/openvaa/openvaa-plan","deploy_role_arn":"arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy","cluster_name":"openvaa-staging","service_name":"openvaa-staging-frontend"}]
+### resolve-deployment.sh --mode deploy --repository-id 546467466 --ref deploy-evidence/destroy-staging
+exit=1
+failed=no_branch_match
+```
+
+The last line is a control: a destroy branch never resolves in deploy mode. `deploy.yml`'s push trigger also excludes `deploy-evidence/destroy-*`.
+
+## Operator push commands
+
+Run from a clone that holds `EVIDENCE_COMMIT`, either built there by the recipe above or fetched:
+
+```
+git push origin fd57d43396b4f3da85897d9196102f6aa2eb2561:refs/heads/deploy-evidence/190-final
+git push origin fd57d43396b4f3da85897d9196102f6aa2eb2561:refs/heads/deploy-evidence/destroy-staging
+```
+
+The second push is made only after the deploy of the first one is green and the two staging smoke runs of 190-12 Task 3 are recorded.
+
+## Deploy
+
+(Task 2, operator: pending)
+
+## Destroy
+
+(Task 3, operator: pending)
