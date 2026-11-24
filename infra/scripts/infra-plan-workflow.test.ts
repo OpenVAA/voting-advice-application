@@ -48,6 +48,28 @@ function mutate(source: string, pattern: string | RegExp, replacement: string): 
   return mutated;
 }
 
+/** The matrix of a job that runs once per deployment the resolve job lists. */
+const OWNED_MATRIX = {
+  'fail-fast': false,
+  matrix: { deployment: '${{ fromJSON(needs.resolve.outputs.deployments) }}' }
+};
+
+/** The text of `source` with every comment line, and every comment after a value, removed. */
+function uncommented(source: string): string {
+  return source
+    .split('\n')
+    .filter((line) => !/^\s*#/.test(line))
+    .map((line) => line.replace(/\s+#\s.*$/, ''))
+    .join('\n');
+}
+
+/** The lines outside comments of `source` that name staging. */
+function stagingLines(source: string): Array<string> {
+  return uncommented(source)
+    .split('\n')
+    .filter((line) => line.includes('staging'));
+}
+
 /** The first step of the `checks` job, as it opens in the text; a step inserted before it lands in that job. */
 const FIRST_CHECKS_STEP = '      - name: "Checkout source code"\n';
 
@@ -184,7 +206,48 @@ describe('infra-plan.yml', () => {
       types: ['opened', 'synchronize', 'reopened', 'ready_for_review'],
       paths: ['infra/**', '.github/workflows/infra-plan.yml']
     });
-    expect(on.push).toEqual({ branches: ['deploy-evidence/**'] });
+  });
+
+  /** The push trigger's branch filter of a workflow text. */
+  function pushBranches(source: string): unknown {
+    return (parseWorkflow(source).on as Record<string, Record<string, unknown>>).push;
+  }
+
+  it('is not started by a push of a destroy branch, which only the destroy workflow takes', () => {
+    expect(pushBranches(text)).toEqual({ branches: ['deploy-evidence/**', '!deploy-evidence/destroy-*'] });
+  });
+
+  it('is red on the push trigger when the destroy-branch exclusion is removed', () => {
+    const mutated = mutate(text, /^ {6}- "!deploy-evidence\/destroy-\*"\n/m, '');
+    expect(pushBranches(mutated)).not.toEqual({ branches: ['deploy-evidence/**', '!deploy-evidence/destroy-*'] });
+  });
+
+  it('names staging nowhere outside comments', () => {
+    expect(stagingLines(text)).toEqual([]);
+  });
+
+  it.each([
+    {
+      fault: 'the wrong-subject job names a literal deploy role ARN',
+      pattern: 'DEPLOY_ROLE_ARN: ${{ matrix.deployment.deploy_role_arn }}',
+      replacement: 'DEPLOY_ROLE_ARN: arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy'
+    },
+    {
+      fault: 'the plan initialises a literal root',
+      pattern: 'run: terraform -chdir="$AWS_ROOT" init',
+      replacement: 'run: terraform -chdir=infra/envs/staging/aws init'
+    }
+  ])('is red on the staging check when $fault', ({ pattern, replacement }) => {
+    expect(stagingLines(mutate(text, pattern, replacement))).toHaveLength(1);
+  });
+
+  it('keeps a comment that names staging out of the staging check', () => {
+    expect(stagingLines(`${text}# staging\n`)).toEqual([]);
+  });
+
+  it('reads no repository variable as a role', () => {
+    expect(text).not.toContain('vars.AWS_PLAN_ROLE_ARN');
+    expect(text).not.toContain('vars.AWS_DEPLOY_ROLE_ARN');
   });
 
   it('grants the checks job no id-token', () => {
@@ -211,6 +274,33 @@ describe('infra-plan.yml', () => {
   });
 });
 
+describe('the resolve job of infra-plan.yml', () => {
+  const resolveJob = job('resolve');
+  const steps = jobSteps(resolveJob);
+
+  it('comes first, reads the repository only, names no environment and needs no job', () => {
+    expect(workflowJobs(doc)[0][0]).toBe('resolve');
+    expect(resolveJob.permissions).toEqual({ contents: 'read' });
+    expect('environment' in resolveJob).toBe(false);
+    expect('needs' in resolveJob).toBe(false);
+    expect('if' in resolveJob).toBe(false);
+    expect(resolveJob['runs-on']).toBe('ubuntu-24.04');
+  });
+
+  it('checks out without persisted credentials and runs the resolver in plan mode with the repository id', () => {
+    expect(steps[0].with).toEqual({ 'persist-credentials': false });
+    const step = steps.find((candidate) => candidate.id === 'resolve');
+    expect(step?.env).toEqual({ REPOSITORY_ID: '${{ github.repository_id }}' });
+    expect(String(step?.run).replace(/\\\n\s*/g, '')).toContain(
+      'infra/scripts/resolve-deployment.sh --mode plan --repository-id "$REPOSITORY_ID" --github-output "$GITHUB_OUTPUT" || resolve_exit=$?'
+    );
+  });
+
+  it('outputs the list of owned deployments', () => {
+    expect(resolveJob.outputs).toEqual({ deployments: '${{ steps.resolve.outputs.deployments }}' });
+  });
+});
+
 describe('the plan job of infra-plan.yml', () => {
   const plan = job('plan');
   const steps = jobSteps(plan);
@@ -231,12 +321,17 @@ describe('the plan job of infra-plan.yml', () => {
     expect(plan.permissions).toEqual({ contents: 'read', 'id-token': 'write' });
   });
 
-  it('assumes the plan role from the repository variable, in the staging account only', () => {
+  it('needs the resolve job and runs once for each owned deployment, none cancelling another', () => {
+    expect(plan.needs).toBe('resolve');
+    expect(plan.strategy).toEqual(OWNED_MATRIX);
+  });
+
+  it("assumes each deployment's own plan role, in the account only", () => {
     const assume = steps.find(
       (step) => typeof step.uses === 'string' && step.uses.startsWith('aws-actions/configure-aws-credentials@')
     );
     expect(assume?.with).toMatchObject({
-      'role-to-assume': '${{ vars.AWS_PLAN_ROLE_ARN }}',
+      'role-to-assume': '${{ matrix.deployment.plan_role_arn }}',
       'aws-region': 'eu-north-1',
       'role-session-name': 'pr-plan-${{ github.run_id }}',
       'allowed-account-ids': '471112560111'
@@ -246,29 +341,51 @@ describe('the plan job of infra-plan.yml', () => {
   it('passes the running digest to a lock-free plan whose file stays in $RUNNER_TEMP', () => {
     const digest = steps.find((step) => step.id === 'digest');
     expect(String(digest?.run)).toContain(
-      'infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend'
+      'infra/scripts/running-image-digest.sh --cluster "$CLUSTER" --service "$SERVICE"'
     );
+    expect(digest?.env).toEqual({
+      CLUSTER: '${{ matrix.deployment.cluster_name }}',
+      SERVICE: '${{ matrix.deployment.service_name }}'
+    });
     expect(String(digest?.run)).toContain('>> "$GITHUB_OUTPUT"');
 
-    const planStep = stepRunning('terraform -chdir=infra/envs/staging/aws plan ');
+    const planStep = stepRunning('terraform -chdir="$AWS_ROOT" plan ');
     const script = String(planStep.run);
-    expect(script).toContain('-chdir=infra/envs/staging/aws');
     expect(script).toContain('-lock=false');
     expect(script).toContain('-var "image_digest=$DIGEST"');
     expect(script).toContain('-out="$RUNNER_TEMP/tfplan"');
     expect(planStep.env).toEqual({
+      AWS_ROOT: '${{ matrix.deployment.aws_root }}',
       DIGEST: '${{ steps.digest.outputs.digest }}',
       TF_VAR_alert_email: '${{ secrets.ALERT_EMAIL }}'
     });
   });
 
-  it('prints the plan with terraform show -no-color to the log and the step summary', () => {
+  it("initialises, plans and shows the deployment's own AWS root", () => {
+    const terraformSteps = steps.filter(
+      (step) => typeof step.run === 'string' && step.run.includes('terraform -chdir=')
+    );
+    expect(terraformSteps.map((step) => step.name)).toEqual([
+      'Initialise the AWS root',
+      'Plan the AWS root',
+      'Show the plan'
+    ]);
+    for (const step of terraformSteps) {
+      expect((step.env as Record<string, unknown>).AWS_ROOT, String(step.name)).toBe(
+        '${{ matrix.deployment.aws_root }}'
+      );
+      expect(String(step.run).match(/terraform -chdir=\S+/g), String(step.name)).toEqual([
+        'terraform -chdir="$AWS_ROOT"'
+      ]);
+    }
+  });
+
+  it('prints the plan with terraform show -no-color to the log and the step summary, headed by its root', () => {
     const show = stepRunning('show -no-color');
     expect(String(show.run)).toContain('cat "$RUNNER_TEMP/tfplan.txt"');
     expect(String(show.run)).toContain('>> "$GITHUB_STEP_SUMMARY"');
-    expect(steps.indexOf(show)).toBeGreaterThan(
-      steps.indexOf(stepRunning('terraform -chdir=infra/envs/staging/aws plan '))
-    );
+    expect(String(show.run)).toContain('echo "### Plan of $AWS_ROOT"');
+    expect(steps.indexOf(show)).toBeGreaterThan(steps.indexOf(stepRunning('terraform -chdir="$AWS_ROOT" plan ')));
   });
 
   it('removes the plan file in a final step that always runs', () => {
@@ -293,11 +410,16 @@ describe('the wrong-subject job of infra-plan.yml', () => {
     expect(wrongSubject.permissions).toEqual({ 'id-token': 'write' });
   });
 
-  it('names the deploy role and reads the plan role from the repository variable through env', () => {
+  it('needs the resolve job and runs once for each owned deployment, none cancelling another', () => {
+    expect(wrongSubject.needs).toBe('resolve');
+    expect(wrongSubject.strategy).toEqual(OWNED_MATRIX);
+  });
+
+  it("reads each deployment's derived deploy role and plan role through env", () => {
     expect(steps).toHaveLength(1);
     expect(steps[0].env).toEqual({
-      DEPLOY_ROLE_ARN: 'arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy',
-      PLAN_ROLE_ARN: '${{ vars.AWS_PLAN_ROLE_ARN }}'
+      DEPLOY_ROLE_ARN: '${{ matrix.deployment.deploy_role_arn }}',
+      PLAN_ROLE_ARN: '${{ matrix.deployment.plan_role_arn }}'
     });
   });
 

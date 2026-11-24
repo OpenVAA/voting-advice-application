@@ -402,7 +402,7 @@ describe('the wrong-subject step of infra-plan.yml under bash -e', () => {
     'exit 254'
   ].join('\n');
   const env = {
-    DEPLOY_ROLE_ARN: 'arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy',
+    DEPLOY_ROLE_ARN: 'arn:aws:iam::000000000000:role/harness-deploy',
     PLAN_ROLE_ARN: 'arn:aws:iam::000000000000:role/harness-plan',
     ACTIONS_ID_TOKEN_REQUEST_URL: 'https://token.invalid/?a=b',
     ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'harness'
@@ -496,16 +496,22 @@ describe('the build step of deploy.yml under bash -e', () => {
 });
 
 describe('the plan step of infra-plan.yml under bash -e', () => {
-  const { step, script } = pipelineStep('infra-plan.yml', 'plan', 'Plan the staging AWS root');
+  const { step, script } = pipelineStep('infra-plan.yml', 'plan', 'Plan the AWS root');
 
   it('accepts plan status 2, a plan with changes', () => {
-    const run = runUnderRunnerShell(script, { stubs: { terraform: 'exit 2' }, env: standInEnv(step, script) });
+    const run = runUnderRunnerShell(script, {
+      stubs: { terraform: 'exit 2' },
+      env: { ...standInEnv(step, script), AWS_ROOT: HARNESS_AWS_ROOT }
+    });
     expect(lines(run.stdout)).toContain('plan_exit=2');
     expect(run.status).toBe(0);
   });
 
   it('fails with its own error line on plan status 1', () => {
-    const run = runUnderRunnerShell(script, { stubs: { terraform: 'exit 1' }, env: standInEnv(step, script) });
+    const run = runUnderRunnerShell(script, {
+      stubs: { terraform: 'exit 1' },
+      env: { ...standInEnv(step, script), AWS_ROOT: HARNESS_AWS_ROOT }
+    });
     expect(lines(run.stdout)).toContain('::error::terraform plan exited 1.');
     expect(run.status).toBe(1);
   });

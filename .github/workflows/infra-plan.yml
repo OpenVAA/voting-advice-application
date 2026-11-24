@@ -4,8 +4,13 @@ name: "Infrastructure plan"
 # module and the plans of the three example roots and of the bootstrap root against mock providers, none of which needs
 # a credential.
 #
+# A same-repository pull request also plans every deployment of infra/bootstrap/deployments.auto.tfvars.json that this
+# repository owns, each with its own read-only plan role, cluster, service and AWS root. The resolve job builds that
+# list with no credential, and the plan and wrong-subject jobs run once for each entry of it.
+#
 # A push to a `deploy-evidence/**` branch also runs this workflow. For a push GitHub takes the workflow file from the
-# pushed commit, so the run can be observed before the file is on the default branch.
+# pushed commit, so the run can be observed before the file is on the default branch. A push of a
+# `deploy-evidence/destroy-*` branch does not start it: those branches belong to the destroy workflow.
 #
 # A step reads a command's status as `cmd || name=$?`, after `name=0`, because a `run:` step that names no `shell:`
 # runs under `bash -e`: that shell ends the step at a failing command that is not in an `||` list, so a status read
@@ -26,10 +31,41 @@ on:
   push:
     branches:
       - "deploy-evidence/**"
+      - "!deploy-evidence/destroy-*"
 
 permissions: {}
 
 jobs:
+  # Lists the deployments this repository owns from infra/bootstrap/deployments.auto.tfvars.json, by the repository's
+  # id, with no credential. The plan and wrong-subject jobs each run once per entry of the list.
+  resolve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      deployments: ${{ steps.resolve.outputs.deployments }}
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: "Resolve the owned deployments"
+        id: resolve
+        env:
+          REPOSITORY_ID: ${{ github.repository_id }}
+        run: |
+          set -uo pipefail
+          resolve_exit=0
+          infra/scripts/resolve-deployment.sh --mode plan --repository-id "$REPOSITORY_ID" \
+            --github-output "$GITHUB_OUTPUT" || resolve_exit=$?
+          if [ "$resolve_exit" -ne 0 ]; then
+            echo "::error::resolve-deployment.sh exited $resolve_exit; this repository owns no deployment with an AWS root."
+            exit 1
+          fi
+
   checks:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -73,12 +109,17 @@ jobs:
 
   # A fork's pull request gets no token and no secret, so this job's `if` skips it and it shows as skipped.
   plan:
+    needs: resolve
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read
       id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        deployment: ${{ fromJSON(needs.resolve.outputs.deployments) }}
 
     steps:
       - name: "Checkout source code"
@@ -95,7 +136,7 @@ jobs:
       - name: "Assume the read-only plan role"
         uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
-          role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          role-to-assume: ${{ matrix.deployment.plan_role_arn }}
           aws-region: eu-north-1
           role-session-name: pr-plan-${{ github.run_id }}
           allowed-account-ids: "471112560111"
@@ -103,10 +144,13 @@ jobs:
       # The plan passes the digest the service runs now, so its diff shows the infrastructure change alone.
       - name: "Read the digest the service runs"
         id: digest
+        env:
+          CLUSTER: ${{ matrix.deployment.cluster_name }}
+          SERVICE: ${{ matrix.deployment.service_name }}
         run: |
           set -uo pipefail
           status=0
-          infra/scripts/running-image-digest.sh --cluster openvaa-staging --service openvaa-staging-frontend > "$RUNNER_TEMP/running-digest.txt" || status=$?
+          infra/scripts/running-image-digest.sh --cluster "$CLUSTER" --service "$SERVICE" > "$RUNNER_TEMP/running-digest.txt" || status=$?
           cat "$RUNNER_TEMP/running-digest.txt"
           if [ "$status" -ne 0 ]; then
             echo "::error::running-image-digest.sh exited $status, so the plan has no digest to pass."
@@ -119,19 +163,22 @@ jobs:
           fi
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
-      - name: "Initialise the staging AWS root"
-        run: terraform -chdir=infra/envs/staging/aws init -input=false -no-color -lockfile=readonly
+      - name: "Initialise the AWS root"
+        env:
+          AWS_ROOT: ${{ matrix.deployment.aws_root }}
+        run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
 
       # The plan is read-only and takes no lock. It can therefore show a diff against a state an apply is writing at
       # the same time; the next push to the pull request plans again.
-      - name: "Plan the staging AWS root"
+      - name: "Plan the AWS root"
         env:
+          AWS_ROOT: ${{ matrix.deployment.aws_root }}
           DIGEST: ${{ steps.digest.outputs.digest }}
           TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
         run: |
           set -uo pipefail
           plan_exit=0
-          terraform -chdir=infra/envs/staging/aws plan -lock=false -input=false -no-color -detailed-exitcode -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan" || plan_exit=$?
+          terraform -chdir="$AWS_ROOT" plan -lock=false -input=false -no-color -detailed-exitcode -var "image_digest=$DIGEST" -out="$RUNNER_TEMP/tfplan" || plan_exit=$?
           echo "plan_exit=$plan_exit"
           if [ "$plan_exit" -ne 0 ] && [ "$plan_exit" -ne 2 ]; then
             echo "::error::terraform plan exited $plan_exit."
@@ -139,17 +186,19 @@ jobs:
           fi
 
       - name: "Show the plan"
+        env:
+          AWS_ROOT: ${{ matrix.deployment.aws_root }}
         run: |
           set -uo pipefail
           show_exit=0
-          terraform -chdir=infra/envs/staging/aws show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt" || show_exit=$?
+          terraform -chdir="$AWS_ROOT" show -no-color "$RUNNER_TEMP/tfplan" > "$RUNNER_TEMP/tfplan.txt" || show_exit=$?
           if [ "$show_exit" -ne 0 ]; then
             echo "::error::terraform show exited $show_exit."
             exit 1
           fi
           cat "$RUNNER_TEMP/tfplan.txt"
           {
-            echo "### Plan of infra/envs/staging/aws"
+            echo "### Plan of $AWS_ROOT"
             echo
             echo '```'
             cat "$RUNNER_TEMP/tfplan.txt"
@@ -160,20 +209,27 @@ jobs:
         if: always()
         run: rm -f "$RUNNER_TEMP/tfplan" "$RUNNER_TEMP/tfplan.txt" "$RUNNER_TEMP/running-digest.txt"
 
-  # Names no environment, so its token's subject is the pushed branch's ref, which neither role's trust admits. The
-  # job passes only when STS refuses that subject for both roles.
+  # Runs once for each deployment this repository owns. It names no environment, so its token's subject is the pushed
+  # `deploy-evidence/` ref. No deployment's trust lists such a ref: the `deploy-evidence/destroy-*` branches, which a
+  # deployment without environments does trust, do not start this workflow. The job passes only when STS refuses that
+  # subject for both the deployment's deploy role and its plan role.
   wrong-subject:
+    needs: resolve
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        deployment: ${{ fromJSON(needs.resolve.outputs.deployments) }}
 
     steps:
       - name: "Ask STS for the deploy role and the plan role with the branch subject"
         env:
-          DEPLOY_ROLE_ARN: arn:aws:iam::471112560111:role/openvaa/openvaa-staging-deploy
-          PLAN_ROLE_ARN: ${{ vars.AWS_PLAN_ROLE_ARN }}
+          DEPLOY_ROLE_ARN: ${{ matrix.deployment.deploy_role_arn }}
+          PLAN_ROLE_ARN: ${{ matrix.deployment.plan_role_arn }}
         run: |
           set -uo pipefail
           umask 077
@@ -182,10 +238,6 @@ jobs:
           claims_file="$RUNNER_TEMP/oidc-claims.json"
           cleanup() { rm -f "$response" "$token_file" "$claims_file"; }
           trap cleanup EXIT
-          if [ -z "$PLAN_ROLE_ARN" ]; then
-            echo "::error::The repository variable AWS_PLAN_ROLE_ARN is not set."
-            exit 1
-          fi
           curl_status=0
           curl -sS --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" -o "$response" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" || curl_status=$?
           if [ "$curl_status" -ne 0 ]; then
