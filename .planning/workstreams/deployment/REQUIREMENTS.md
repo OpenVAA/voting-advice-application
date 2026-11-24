@@ -67,18 +67,19 @@ is verified on the stack, phase 188). Phases 181 and 182 need neither.
       plus 15 seconds, and a check run in CI shows that the built server exits by itself after its drain once
       signalled, while a server held alive by a timer is seen not to (D-14e, D-14f). [189.1.1]
 - [ ] **INFRA-21**: `infra/bootstrap` takes a map of deployments, keyed by deployment name and committed as
+- [x] **INFRA-21**: `infra/bootstrap` takes a map of deployments, keyed by deployment name and committed as
       `infra/bootstrap/deployments.auto.tfvars.json`. Each entry gets its own plan role, deploy role, deploy
       policies, frontend execution role and image repository, named apart from every other entry's, while the
       GitHub OIDC provider, the state bucket and the budget stay once per account. Staging keeps every name it
       has. [190]
-- [ ] **INFRA-22**: Staging moves into the map with no destroy and no replace. An offline plan of the new tree
+- [x] **INFRA-22**: Staging moves into the map with no destroy and no replace. An offline plan of the new tree
       against the base tree's state shows it, and so does the operator's live plan, which reads 0 to add, 0 to
       change and 0 to destroy through the plan guard before it is applied. [190]
-- [ ] **INFRA-23**: No deployment's roles can change another deployment's network, CDN, certificates, DNS
+- [x] **INFRA-23**: No deployment's roles can change another deployment's network, CDN, certificates, DNS
       records, image repository or pipeline state, and no plan role can read another deployment's pipeline
       state. Whatever IAM cannot scope between two deployments in one account is listed as an accepted risk.
       [190]
-- [ ] **INFRA-24**: `infra/README.md`, `infra/envs/example`, the bootstrap runbook and the deployment guide
+- [x] **INFRA-24**: `infra/README.md`, `infra/envs/example`, the bootstrap runbook and the deployment guide
       describe how to add a deployment from a downstream repository: one map entry upstream, and the env roots
       copied from `example` downstream. [190]
 
@@ -342,6 +343,10 @@ closes; those are not listed against the earlier phase here.
 | INFRA-22 | Phase 190 | Pending |
 | INFRA-23 | Phase 190 | Pending |
 | INFRA-24 | Phase 190 | Pending |
+| INFRA-21 | Phase 190 | Complete |
+| INFRA-22 | Phase 190 | Complete |
+| INFRA-23 | Phase 190 | Complete |
+| INFRA-24 | Phase 190 | Complete |
 | SUPA-01 | Phase 184 | Complete |
 | SUPA-02 | Phase 184 | Complete |
 | SUPA-03 | Phase 184 | Complete |
