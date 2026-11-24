@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
-current_plan: 5
+current_plan: 6
 status: executing
-stopped_at: Completed 189.1.1-05-PLAN.md
-last_updated: "2026-11-24T13:12:54.690Z"
+stopped_at: Completed 189.1.1-06-PLAN.md
+last_updated: "2026-11-24T14:02:36.162Z"
 last_activity: 2026-11-24
 last_activity_desc: Phase 189.1.1 execution started
-state_head: 1323736553d4e2c238328817000fd73a74c5e931
+state_head: 0c761393642d3b3c4257c3fd17dab83cc993e462
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 233
-  completed_plans: 222
+  completed_plans: 223
   percent: 83
 ---
 
@@ -34,7 +34,7 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — EXECUTING
-Plan: 5 of 15
+Plan: 6 of 15
 Status: Ready to execute
 Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
@@ -43,7 +43,7 @@ Progress: [██████████████████░░] 168/188
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 5
+**Current Plan:** 6
 
 From 184 on, the numeric order is the dependency order.
 
@@ -233,6 +233,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1.1 P02 | 10min | 3 tasks | 5 files |
 | Phase 189.1.1 P04 | 61 min | 2 tasks | 12 files |
 | Phase 189.1.1 P05 | 8 min | 3 tasks | 2 files |
+| Phase 189.1.1 P06 | 21min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -514,6 +515,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1.1]: 189.1.1-04: Terraform on this workstation is an x86_64 build under Rosetta; every Terraform run needs GODEBUG=asyncpreemptoff=1 or the x86 AWS provider hangs or times out starting; and validate is run in a clean copy of the tracked tree because local .terraform state caches the S3 backend
 - [Phase 189.1.1]: 189.1.1-05: the reviewer brief describes the consent prompt as the modal of the release under review; plan 06 builds it, so section 6 holds once 06 lands
 - [Phase 189.1.1]: 189.1.1-05: Q6 asks both ways, because a closed project's public pages already follow the stored trackEvents (get_public_app_settings)
+- [Phase 189.1.1]: 189.1.1-06: the voter consent prompt is a Modal opened on mount; every close without a choice records setDataConsent('denied'); the buffered-before-grant spec grants on /privacy on the same document as the menu opening, since a flush under denied discards the buffer
 
 ### Pending Todos
 
@@ -588,6 +590,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T13:12:53.705Z
-**Stopped At:** Completed 189.1.1-05-PLAN.md
+Last session: 2026-11-24T14:02:35.164Z
+**Stopped At:** Completed 189.1.1-06-PLAN.md
 **Resume File:** None
