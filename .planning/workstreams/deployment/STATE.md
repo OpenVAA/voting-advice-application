@@ -4,18 +4,18 @@ milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: 189.1.1
 current_phase_name: "Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items"
-current_plan: 10
-status: Phase 189.1.1 inserted, not planned yet
-stopped_at: Phase 189.1 complete — all phases complete
-last_updated: "2026-11-24T11:32:46.889Z"
-last_activity: 2026-11-23
-last_activity_desc: Phase 189.1 complete
-state_head: 63d3cd7d2e7f1addb8a910e5b614a50111a36de5
+current_plan: 2
+status: executing
+stopped_at: Completed 189.1.1-01-PLAN.md
+last_updated: "2026-11-24T11:39:25.257Z"
+last_activity: 2026-11-24
+last_activity_desc: Phase 189.1.1 execution started
+state_head: 0000dc16bf6d60e0f403be0290799b2e2e042145
 progress:
   total_phases: 12
   completed_phases: 10
   total_plans: 233
-  completed_plans: 218
+  completed_plans: 219
   percent: 83
 ---
 
@@ -27,23 +27,23 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 **Core value:** A reliable, well-tested VAA framework that developers can confidently extend, customize, and deploy for real elections.
 **Milestone value:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one.
-**Current focus:** Phase 189.1 — Address tech debt: invitation-limit guard and trackEvents smoke
+**Current focus:** Phase 189.1.1 — Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items
 
 ## Current Position
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — READY TO EXECUTE
-Plan: Not started
-Status: Phase 189.1.1 inserted, not planned yet
-Last activity: 2026-11-23 - Completed quick task 261123-qht: make "contact support" a link in the locked-name message
+Phase: 189.1.1 (Address tech debt: consent prompt, verify-full, legal brief, UAT todos, audit items) — EXECUTING
+Plan: 2 of 15
+Status: Ready to execute
+Last activity: 2026-11-24 — Phase 189.1.1 execution started
 
 Progress: [██████████████████░░] 168/188 plans ([████████░░] 83%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
 **Phases Complete:** 7 of 9 (181 to 187), and the inserted 181.1
-**Current Plan:** 10
+**Current Plan:** 2
 
 From 184 on, the numeric order is the dependency order.
 
@@ -229,6 +229,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1 P08 | 10.5h (checkpoint wait) | 3 tasks | 3 files |
 | Phase 189.1 P09 | 15 min | 3 tasks | 4 files |
 | Phase 189.1 P10 | 30 min | 3 tasks | 2 files |
+| Phase 189.1.1 P01 | 4 min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -504,6 +505,7 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1]: 189.1-09: the off run's after-flip check is carried by the before-run read (trackEvents false read immediately before the run), since statement (a)'s updated_at was not pasted and is overwritten
 - [Phase 189.1]: 189.1-10: Task 2 gate lines committed after the full E2E run so the run sits on GATES_HEAD (189-20 precedent)
 - [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
+- [Phase 189.1.1]: Phase-start E2E listing is 742 tests in 129 projects, +13 against the 729 of the last full run; the final plan adds +13 to the phase's own summed deltas (D-06)
 
 ### Pending Todos
 
@@ -578,6 +580,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-22T10:11:00.072Z
-**Stopped At:** Phase 189.1 complete — all phases complete
+Last session: 2026-11-24T11:39:24.251Z
+**Stopped At:** Completed 189.1.1-01-PLAN.md
 **Resume File:** None
