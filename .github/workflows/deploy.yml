@@ -1,22 +1,26 @@
-name: "Deploy staging"
+name: "Deploy"
 
-# Deploys one commit to staging. A run, in order:
-#   1. job checks, with no credential: Terraform formatting, the validation of the staging AWS root and the unit
+# Deploys one commit to one deployment: the one the resolve job picks from infra/bootstrap/deployments.auto.tfvars.json
+# by this repository's id and the pushed ref. Upstream, a push to `deploy/staging` deploys staging. A run, in order:
+#   1. job resolve, with no credential: picks the deployment, its environment, roles, roots and domain, and ends the
+#      run when no deployment of this repository deploys from the ref;
+#   2. job checks, with no credential: Terraform formatting, the validation of the deployment's AWS root and the unit
 #      tests of the infrastructure scripts;
-#   2. job deploy, in the `staging` environment, which waits for its reviewer: builds and pushes the commit's image
-#      and takes its digest; plans the staging AWS root with that digest into a saved plan and prints it; pushes the
-#      migrations to the Supabase project; checks its deployment settings, failing unless the project trusts
-#      cf-connecting-ip; deploys its functions; applies the saved plan; waits until the service's primary deployment, on
-#      the task definition just applied, has completed its rollout; runs the deployed smoke entry against
-#      https://staging.openvaa.org; and reads /api/health again to confirm the commit is still the one served. A
-#      failed step stops every later one but the cleanup and the alert. When a step fails or the run is cancelled,
-#      the last step mails the operator through the deployment topic, naming the stage.
+#   3. job deploy, in the deployment's environment, which waits for its reviewer when it has one: checks that its
+#      settings name the deployment; builds and pushes the commit's image and takes its digest; plans the AWS root
+#      with that digest into a saved plan and prints it; pushes the migrations to the deployment's Supabase project;
+#      checks its deployment settings, failing unless the project trusts cf-connecting-ip; deploys its functions;
+#      applies the saved plan; waits until the service's primary deployment, on the task definition just applied, has
+#      completed its rollout; runs the deployed smoke entry against the deployment's domain; and reads /api/health
+#      again to confirm the commit is still the one served. A failed step stops every later one but the cleanup and
+#      the alert. When a step fails or the run is cancelled, the last step mails the operator through the
+#      deployment's topic, naming the deployment and the stage.
 #
-# A push to `deploy/staging` and a push to a `deploy-evidence/*` branch both deploy and apply. The environment's
-# branch policy matches one path segment only, so an evidence branch name holds no further `/`: a nested name would
-# start this workflow and then be refused at the gate. `deploy-evidence/destroy-staging` belongs to the destroy
-# workflow and does not start this one. A dispatch must pick the `deploy/staging` ref, because the environment admits
-# no other branch for it.
+# A push to a deployment's `deploy/<key>` branch and a push to a `deploy-evidence/*` branch both deploy and apply, when
+# the deployment lists the branch. The environment's branch policy matches one path segment only, so an evidence
+# branch name holds no further `/`: a nested name would start this workflow and then be refused at the gate.
+# `deploy-evidence/destroy-<key>` belongs to the destroy workflow and does not start this one. A dispatch must pick
+# the deployment's `deploy/<key>` ref, because its environment admits no other branch for it.
 #
 # A step reads a command's status as `cmd || name=$?`, after `name=0`, because a `run:` step that names no `shell:`
 # runs under `bash -e`: that shell ends the step at a failing command that is not in an `||` list, so a status read
@@ -114,7 +118,7 @@ jobs:
       - name: "Check Terraform formatting"
         run: terraform fmt -check -recursive -diff infra
 
-      - name: "Validate the staging AWS root"
+      - name: "Validate the AWS root"
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: |
@@ -137,7 +141,7 @@ jobs:
       - name: "Unit tests of the infrastructure scripts"
         run: yarn test:unit:infra
 
-  # Every hosted write of a deploy happens in this one job. The `staging` environment holds its reviewer, its branch
+  # Every hosted write of a deploy happens in this one job. The deployment's environment holds its reviewer, its branch
   # policy and its secrets, which are released only on approval.
   deploy:
     needs: [resolve, checks]
@@ -159,7 +163,8 @@ jobs:
 
       # The environment's settings must name the deployment the resolve job picked, so a misconfigured environment
       # fails here, before the first call to AWS. The role itself is the resolved one; a configured role ARN that
-      # differs from it is refused rather than ignored.
+      # differs from it is refused rather than ignored. The Supabase root's public_origin must be the deployment's
+      # domain, so the smoke run's target and the address read again after it are one origin.
       - name: "Check the settings name the resolved deployment"
         id: resolved-settings
         env:
@@ -167,6 +172,8 @@ jobs:
           RESOLVED_ROLE_ARN: ${{ needs.resolve.outputs.deploy_role_arn }}
           DEPLOY_ENVIRONMENT: ${{ vars.DEPLOY_ENVIRONMENT }}
           CONFIGURED_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          SUPABASE_ROOT: ${{ needs.resolve.outputs.supabase_root }}
+          DOMAIN: ${{ needs.resolve.outputs.domain }}
         run: |
           set -uo pipefail
           echo "deployment=$KEY"
@@ -180,6 +187,12 @@ jobs:
           fi
           if [ -n "$CONFIGURED_ROLE_ARN" ] && [ "$CONFIGURED_ROLE_ARN" != "$RESOLVED_ROLE_ARN" ]; then
             echo "::error::The variable AWS_DEPLOY_ROLE_ARN is $CONFIGURED_ROLE_ARN, not the resolved deploy role $RESOLVED_ROLE_ARN."
+            exit 1
+          fi
+          origin=$(sed -n 's/^public_origin *= *"\(.*\)"$/\1/p' "$SUPABASE_ROOT/terraform.tfvars")
+          echo "public_origin=$origin"
+          if [ "$origin" != "https://$DOMAIN" ]; then
+            echo "::error::public_origin of $SUPABASE_ROOT/terraform.tfvars is '$origin', not https://$DOMAIN."
             exit 1
           fi
 
@@ -283,13 +296,13 @@ jobs:
           role-session-name: deploy-${{ github.run_id }}
           allowed-account-ids: ${{ needs.resolve.outputs.aws_account_id }}
 
-      - name: "Initialise the staging AWS root"
+      - name: "Initialise the AWS root"
         id: init
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
         run: terraform -chdir="$AWS_ROOT" init -input=false -no-color -lockfile=readonly
 
-      - name: "Plan the staging AWS root with the built digest"
+      - name: "Plan the AWS root with the built digest"
         id: plan
         env:
           AWS_ROOT: ${{ needs.resolve.outputs.aws_root }}
@@ -388,10 +401,12 @@ jobs:
             echo "workdir=$workdir"
           } >> "$GITHUB_OUTPUT"
 
-      # The environment's approval stands in for the typed ref: push-migrations.sh accepts --confirmed-ref only in a
-      # job that sets OPENVAA_DEPLOY_ENVIRONMENT to staging, on a deploy ref, and only when it equals --ref. Those
-      # checks guard against a mistake; the push is held to this job by SUPABASE_DB_PASSWORD, a secret of the
-      # environment. The database is reached through the session pooler on port 5432, whose user name carries the ref;
+      # push-migrations.sh accepts --confirmed-ref for the resolved deployment only: in a job that sets
+      # OPENVAA_DEPLOY_ENVIRONMENT to its key, on its deploy ref or an evidence ref, and only when --ref is the
+      # project_ref of that deployment's Supabase tfvars. For a deployment with a GitHub Environment its approval stands
+      # in for the typed ref; for one without, the trigger branch is the only gate. Those checks guard against a
+      # mistake; the push is held to this job by SUPABASE_DB_PASSWORD, a secret of the environment or the repository.
+      # The database is reached through the session pooler on port 5432, whose user name carries the ref;
       # the transaction pooler is never used. PGSSLMODE=verify-full verifies the server against the Supabase root
       # committed under infra/certs and pinned by supabase-ca.test.ts, refusing a server that root did not sign or whose
       # certificate does not name the pooler host. psql in this step and the Supabase CLI both verify it: the script
@@ -402,6 +417,7 @@ jobs:
         env:
           REF: ${{ steps.link.outputs.ref }}
           WORKDIR: ${{ steps.link.outputs.workdir }}
+          DEPLOYMENT_KEY: ${{ needs.resolve.outputs.key }}
           OPENVAA_DEPLOY_ENVIRONMENT: ${{ vars.DEPLOY_ENVIRONMENT }}
           PGHOST: ${{ vars.SUPABASE_POOLER_HOST }}
           PGPORT: "5432"
@@ -422,7 +438,7 @@ jobs:
           unset PGHOSTADDR PGSERVICE
           push_exit=0
           infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF" \
-            --log-dir "$RUNNER_TEMP/push-migrations" || push_exit=$?
+            --deployment "$DEPLOYMENT_KEY" --log-dir "$RUNNER_TEMP/push-migrations" || push_exit=$?
           echo "push_exit=$push_exit"
           if [ "$push_exit" -ne 0 ]; then
             echo "::error::push-migrations.sh exited $push_exit."
@@ -650,6 +666,7 @@ jobs:
       - name: "Run the deployed smoke entry"
         id: smoke
         env:
+          SMOKE_DEPLOYMENT: ${{ needs.resolve.outputs.key }}
           SMOKE_EXPECTED_SHA: ${{ github.sha }}
           SMOKE_CONTESTANT_EMAIL: ${{ secrets.SMOKE_CONTESTANT_EMAIL }}
           SMOKE_CONTESTANT_PASSWORD: ${{ secrets.SMOKE_CONTESTANT_PASSWORD }}
@@ -669,10 +686,12 @@ jobs:
       # another apply could have landed while they ran.
       - name: "Read the served build again"
         id: served-build
+        env:
+          DOMAIN: ${{ needs.resolve.outputs.domain }}
         run: |
           set -uo pipefail
           curl_exit=0
-          curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" https://staging.openvaa.org/api/health || curl_exit=$?
+          curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" "https://$DOMAIN/api/health" || curl_exit=$?
           if [ "$curl_exit" -ne 0 ]; then
             echo "served_build_after_smoke="
             echo "::error::Reading /api/health exited $curl_exit."
@@ -713,6 +732,8 @@ jobs:
         id: alert
         if: failure() || cancelled()
         env:
+          TOPIC_ARN: ${{ needs.resolve.outputs.topic_arn }}
+          DEPLOYMENT_KEY: ${{ needs.resolve.outputs.key }}
           JOB_STATUS: ${{ job.status }}
           CHECKOUT_OUTCOME: ${{ steps.checkout.outcome }}
           RESOLVED_SETTINGS_OUTCOME: ${{ steps.resolved-settings.outcome }}
@@ -780,12 +801,12 @@ jobs:
           fi
           echo "alert_stage=$stage"
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          message=$(printf 'The staging deploy failed at %s.\n\nCommit: %s\nTrigger: %s of %s\nRun: %s\n' \
-            "$stage" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$GITHUB_REF_NAME" "$run_url")
+          message=$(printf 'The %s deploy failed at %s.\n\nCommit: %s\nTrigger: %s of %s\nRun: %s\n' \
+            "$DEPLOYMENT_KEY" "$stage" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$GITHUB_REF_NAME" "$run_url")
           publish_exit=0
           aws sns publish \
-            --topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments \
-            --subject "openvaa staging deploy failed at $stage" \
+            --topic-arn "$TOPIC_ARN" \
+            --subject "openvaa $DEPLOYMENT_KEY deploy failed at $stage" \
             --message "$message" \
             --query MessageId --output text > "$RUNNER_TEMP/alert.txt" 2> "$RUNNER_TEMP/alert.err" || publish_exit=$?
           message_id=$(cat "$RUNNER_TEMP/alert.txt")

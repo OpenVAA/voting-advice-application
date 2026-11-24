@@ -618,6 +618,57 @@ describe('a command whose status a step does not read still ends the step under 
   });
 });
 
+describe('the alert step of deploy.yml under bash -e', () => {
+  const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Alert the operator');
+  const topic = RESOLVED_STAND_INS.topic_arn;
+
+  /** A run with the build failed, `TOPIC_ARN` and `DEPLOYMENT_KEY` set, and the arguments `aws` saw, one per line. */
+  function runAlert(deploymentKey: string): { run: RunnerShellResult; awsArguments: Array<string> } {
+    const record = mkdtempSync(join(tmpdir(), 'workflow-errexit-alert-'));
+    try {
+      const argumentsFile = join(record, 'aws-arguments');
+      const run = runUnderRunnerShell(script, {
+        stubs: {
+          aws: `printf '%s\\n' "$@" > '${argumentsFile}'\necho harness-message-id`,
+          rm: 'exit 0'
+        },
+        env: {
+          ...standInEnv(step, script),
+          TOPIC_ARN: topic,
+          DEPLOYMENT_KEY: deploymentKey,
+          BUILD_OUTCOME: 'failure',
+          JOB_STATUS: 'failure'
+        }
+      });
+      return { run, awsArguments: lines(readFileSync(argumentsFile, 'utf8')) };
+    } finally {
+      rmSync(record, { recursive: true, force: true });
+    }
+  }
+
+  /** The argument after `flag` in the arguments `aws` saw. */
+  function argumentAfter(awsArguments: Array<string>, flag: string): string | undefined {
+    const index = awsArguments.indexOf(flag);
+    return index < 0 ? undefined : awsArguments[index + 1];
+  }
+
+  it('publishes the staging subject and text, byte for byte, to the resolved topic for DEPLOYMENT_KEY=staging', () => {
+    const { run, awsArguments } = runAlert('staging');
+    expect(run.status).toBe(0);
+    expect(lines(run.stdout)).toContain('alert_stage=build');
+    expect(lines(run.stdout)).toContain('alert_message_id=harness-message-id');
+    expect(argumentAfter(awsArguments, '--topic-arn')).toBe(topic);
+    expect(argumentAfter(awsArguments, '--subject')).toBe('openvaa staging deploy failed at build');
+    expect(argumentAfter(awsArguments, '--message')).toBe('The staging deploy failed at build.');
+  });
+
+  it('names another deployment by its key', () => {
+    const { awsArguments } = runAlert('other');
+    expect(argumentAfter(awsArguments, '--subject')).toBe('openvaa other deploy failed at build');
+    expect(argumentAfter(awsArguments, '--message')).toBe('The other deploy failed at build.');
+  });
+});
+
 describe('the stable step of deploy.yml under bash -e', () => {
   const { step, script } = pipelineStep('deploy.yml', 'deploy', 'Check the rollout is stable');
   const applied = 'arn:aws:ecs:eu-north-1:000000000000:task-definition/harness-frontend:2';

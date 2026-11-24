@@ -1,7 +1,7 @@
 /**
- * Guards on `.github/workflows/deploy.yml`, the gated staging deploy.
+ * Guards on `.github/workflows/deploy.yml`, the gated deploy of the deployment the resolve job picks.
  *
- * The workflow applies to the staging account and pushes migrations to the persistent Supabase project, and its log is public, so its triggers, its gate, the order of its stages, where each secret reaches and its alert are checked here rather than by its first run. The shared rules of `workflowGuards.ts` are shown red in `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
+ * The workflow applies to a deployment's AWS account and pushes migrations to its persistent Supabase project, and its log is public, so its triggers, its gate, the order of its stages, where each secret reaches and its alert are checked here rather than by its first run. The shared rules of `workflowGuards.ts` are shown red in `infra-plan-workflow.test.ts`; the rules particular to this file are shown red below on mutated copies of its text.
  */
 
 import { existsSync } from 'node:fs';
@@ -80,6 +80,7 @@ const SETTINGS_ENV = {
 const MIGRATIONS_ENV = {
   REF: '${{ steps.link.outputs.ref }}',
   WORKDIR: '${{ steps.link.outputs.workdir }}',
+  DEPLOYMENT_KEY: '${{ needs.resolve.outputs.key }}',
   OPENVAA_DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
   PGHOST: '${{ vars.SUPABASE_POOLER_HOST }}',
   PGPORT: '5432',
@@ -389,11 +390,13 @@ const RESOLVED_SETTINGS_ENV = {
   KEY: '${{ needs.resolve.outputs.key }}',
   RESOLVED_ROLE_ARN: '${{ needs.resolve.outputs.deploy_role_arn }}',
   DEPLOY_ENVIRONMENT: '${{ vars.DEPLOY_ENVIRONMENT }}',
-  CONFIGURED_ROLE_ARN: '${{ vars.AWS_DEPLOY_ROLE_ARN }}'
+  CONFIGURED_ROLE_ARN: '${{ vars.AWS_DEPLOY_ROLE_ARN }}',
+  SUPABASE_ROOT: '${{ needs.resolve.outputs.supabase_root }}',
+  DOMAIN: '${{ needs.resolve.outputs.domain }}'
 };
 
 /**
- * The violations of the rule `resolved-settings` in a workflow text: the deploy job checks, before its first assume of a role, that DEPLOY_ENVIRONMENT is set and equals the resolved key and that a configured role ARN equals the resolved one, ending the step with status 1 on each.
+ * The violations of the rule `resolved-settings` in a workflow text: the deploy job checks, before its first assume of a role, that DEPLOY_ENVIRONMENT is set and equals the resolved key, that a configured role ARN equals the resolved one and that the resolved Supabase root's public_origin is https://<domain>, ending the step with status 1 on each.
  */
 function resolvedSettingsViolations(source: string): Array<string> {
   const steps = stepsOf(parseWorkflow(source), 'deploy');
@@ -421,6 +424,10 @@ function resolvedSettingsViolations(source: string): Array<string> {
     [
       'a configured role other than the resolved one',
       /^if \[ -n "\$CONFIGURED_ROLE_ARN" \] && \[ "\$CONFIGURED_ROLE_ARN" != "\$RESOLVED_ROLE_ARN" \]; then\n\s+echo "::error::[^\n]*"\n\s+exit 1\n\s*fi$/m
+    ],
+    [
+      'a public_origin other than https://<domain>',
+      /^origin=\$\(sed -n 's\/\^public_origin [^\n]*' "\$SUPABASE_ROOT\/terraform\.tfvars"\)\n[\s\S]*?^\s*if \[ "\$origin" != "https:\/\/\$DOMAIN" \]; then\n\s+echo "::error::[^\n]*"\n\s+exit 1\n\s*fi$/m
     ]
   ] as const) {
     if (!test.test(script)) violations.push(`resolved-settings: the check does not fail on ${label}`);
@@ -455,6 +462,14 @@ describe('the settings check of the deploy job', () => {
     [
       'without the role comparison',
       (source: string) => mutate(source, /^ *if \[ -n "\$CONFIGURED_ROLE_ARN" \].*\n.*\n.*\n *fi\n/m, '')
+    ],
+    [
+      'without the public_origin comparison',
+      (source: string) => mutate(source, /^ *if \[ "\$origin" != "https:\/\/\$DOMAIN" \]; then\n.*\n.*\n *fi\n/m, '')
+    ],
+    [
+      'comparing public_origin with a literal origin',
+      (source: string) => mutate(source, '"https://$DOMAIN" ]; then', '"https://staging.openvaa.org" ]; then')
     ],
     [
       'with an exit 0 for an unset environment',
@@ -559,10 +574,11 @@ describe('the stages of the deploy job', () => {
     expect(rolloutPollViolations(runOf(stepWithId(steps, 'stable')), timeout)).toEqual([]);
   });
 
-  it('runs the deployed smoke entry with the commit, the contestant secrets and the caller limit and nothing privileged', () => {
+  it('runs the deployed smoke entry for the resolved deployment with the commit, the contestant secrets and the caller limit and nothing privileged', () => {
     const smoke = stepWithId(steps, 'smoke');
     const env = envOf(smoke);
     expect(env).toEqual({
+      SMOKE_DEPLOYMENT: '${{ needs.resolve.outputs.key }}',
       SMOKE_EXPECTED_SHA: '${{ github.sha }}',
       SMOKE_CONTESTANT_EMAIL: '${{ secrets.SMOKE_CONTESTANT_EMAIL }}',
       SMOKE_CONTESTANT_PASSWORD: '${{ secrets.SMOKE_CONTESTANT_PASSWORD }}',
@@ -580,11 +596,11 @@ describe('the stages of the deploy job', () => {
     expect('inputs' in ((doc.on as Record<string, unknown>).workflow_dispatch ?? {})).toBe(false);
   });
 
-  it('fails after the smoke run when /api/health no longer serves the commit', () => {
-    const script = runOf(stepWithId(steps, 'served-build'));
-    expect(script).toContain(
-      'curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" https://staging.openvaa.org/api/health'
-    );
+  it("fails after the smoke run when the resolved domain's /api/health no longer serves the commit", () => {
+    const served = stepWithId(steps, 'served-build');
+    expect(envOf(served)).toEqual({ DOMAIN: '${{ needs.resolve.outputs.domain }}' });
+    const script = runOf(served);
+    expect(script).toContain('curl -fsS --max-time 20 -o "$RUNNER_TEMP/health.json" "https://$DOMAIN/api/health"');
     expect(script).toContain('[ "$served" != "$GITHUB_SHA" ]');
   });
 
@@ -645,10 +661,9 @@ describe('the migrations and the functions of the deploy job', () => {
 
   it('pushes the migrations through push-migrations.sh with the confirmed ref, over the session pooler verifying the server', () => {
     const script = runOf(migrations);
-    expect(script).toContain(
-      'infra/scripts/push-migrations.sh --ref "$REF" --workdir "$WORKDIR" --confirmed-ref "$REF"'
+    expect(script).toMatch(
+      /^ *infra\/scripts\/push-migrations\.sh --ref "\$REF" --workdir "\$WORKDIR" --confirmed-ref "\$REF" \\\n +--deployment "\$DEPLOYMENT_KEY" --log-dir "\$RUNNER_TEMP\/push-migrations" \|\| push_exit=\$\?$/m
     );
-    expect(script).toContain('--log-dir "$RUNNER_TEMP/push-migrations"');
     expect(script).toContain('export PGUSER="postgres.$REF"');
     expect(script).toContain('push_exit=$?');
     expect(envOf(migrations)).toEqual(MIGRATIONS_ENV);
@@ -790,6 +805,29 @@ describe('the credentials of the deploy job', () => {
   });
 });
 
+/**
+ * The violations of the rule `alert-target` in a workflow text: the alert publishes once, to the resolved topic, with a subject and a message that name the resolved key and no literal deployment.
+ */
+function alertViolations(source: string): Array<string> {
+  const alert = stepWithId(stepsOf(parseWorkflow(source), 'deploy'), 'alert');
+  const env = envOf(alert);
+  const script = runOf(alert);
+  const violations: Array<string> = [];
+  if (env.TOPIC_ARN !== '${{ needs.resolve.outputs.topic_arn }}')
+    violations.push('alert-target: TOPIC_ARN is not the resolved topic');
+  if (env.DEPLOYMENT_KEY !== '${{ needs.resolve.outputs.key }}')
+    violations.push('alert-target: DEPLOYMENT_KEY is not the resolved key');
+  if (script.match(/^\s*aws sns publish /gm)?.length !== 1) violations.push('alert-target: not one aws sns publish');
+  if (!script.includes('--topic-arn "$TOPIC_ARN"')) violations.push('alert-target: the topic is not $TOPIC_ARN');
+  if (!script.includes('--subject "openvaa $DEPLOYMENT_KEY deploy failed at $stage"'))
+    violations.push('alert-target: the subject does not name $DEPLOYMENT_KEY and the stage');
+  if (!/printf 'The %s deploy failed at %s\.\\n[^']*' \\\n\s+"\$DEPLOYMENT_KEY" "\$stage" /.test(script))
+    violations.push('alert-target: the message does not name $DEPLOYMENT_KEY and the stage');
+  if (/staging|arn:aws:sns:/.test(script))
+    violations.push('alert-target: the script names a literal deployment or topic');
+  return violations;
+}
+
 describe('the alert of the deploy job', () => {
   const steps = stepsOf(doc, 'deploy');
   const alert = stepWithId(steps, 'alert');
@@ -843,10 +881,8 @@ describe('the alert of the deploy job', () => {
     expect(stageOf('playwright')).toBe('smoke');
   });
 
-  it('publishes one message naming the stage, the commit, the trigger and the run to the deployment topic', () => {
-    expect(script.match(/^\s*aws sns publish /gm)).toHaveLength(1);
-    expect(script).toContain('--topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments');
-    expect(script).toContain('--subject "openvaa staging deploy failed at $stage"');
+  it("publishes one message naming the deployment, the stage, the commit, the trigger and the run to the deployment's topic", () => {
+    expect(alertViolations(text)).toEqual([]);
     for (const name of [
       '$GITHUB_SHA',
       '$GITHUB_EVENT_NAME',
@@ -859,6 +895,65 @@ describe('the alert of the deploy job', () => {
 
   it('holds no secret in its environment', () => {
     expect(Object.values(envOf(alert)).filter((value) => String(value).includes('secrets.'))).toEqual([]);
+  });
+
+  it.each([
+    [
+      'a literal topic',
+      (source: string) =>
+        mutate(
+          source,
+          '--topic-arn "$TOPIC_ARN"',
+          '--topic-arn arn:aws:sns:eu-north-1:471112560111:openvaa-staging-frontend-deployments'
+        )
+    ],
+    [
+      'a literal staging in the subject',
+      (source: string) =>
+        mutate(source, '--subject "openvaa $DEPLOYMENT_KEY deploy', '--subject "openvaa staging deploy')
+    ],
+    [
+      'a literal staging in the message',
+      (source: string) => mutate(source, "'The %s deploy failed", "'The staging deploy failed")
+    ],
+    [
+      'the topic read from another output',
+      (source: string) =>
+        mutate(source, 'TOPIC_ARN: ${{ needs.resolve.outputs.topic_arn }}', 'TOPIC_ARN: ${{ vars.TOPIC_ARN }}')
+    ]
+  ])('is red with %s', (_label, mutation) => {
+    expect(alertViolations(mutation(text)).length).toBeGreaterThan(0);
+  });
+});
+
+/** The text of a workflow with its comment lines removed. */
+function uncommentedText(source: string): string {
+  return source
+    .split('\n')
+    .filter((line) => !/^\s*#/.test(line))
+    .join('\n');
+}
+
+describe('the deployment deploy.yml names', () => {
+  it('names staging in comments only', () => {
+    expect(uncommentedText(text)).not.toMatch(/staging/);
+  });
+
+  it.each([
+    [
+      'a step named for staging',
+      (source: string) => mutate(source, '"Initialise the AWS root"', '"Initialise the staging AWS root"')
+    ],
+    [
+      'a literal URL',
+      (source: string) => mutate(source, '"https://$DOMAIN/api/health"', 'https://staging.openvaa.org/api/health')
+    ],
+    [
+      'the workflow named for staging',
+      (source: string) => mutate(source, /^name: "Deploy"$/m, 'name: "Deploy staging"')
+    ]
+  ])('is red with %s', (_label, mutation) => {
+    expect(uncommentedText(mutation(text))).toMatch(/staging/);
   });
 });
 
