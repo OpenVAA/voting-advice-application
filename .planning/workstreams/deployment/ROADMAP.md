@@ -1063,7 +1063,7 @@ Plans:
 - [x] 190-08-PLAN.md — deploy.yml and destroy.yml stage values from the resolve outputs; no staging literal left.
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 190-09-PLAN.md — infra-plan.yml over the owned deployments, its push trigger excluding destroy branches; no literal role ARN in any workflow.
+- [x] 190-09-PLAN.md — infra-plan.yml over the owned deployments, its push trigger excluding destroy branches; no literal role ARN in any workflow.
 
 **Wave 7** *(blocked on Wave 6 completion)*
 - [ ] 190-10-PLAN.md — README, example roots and guide for two deployments in one account; rootCopies over every env root.

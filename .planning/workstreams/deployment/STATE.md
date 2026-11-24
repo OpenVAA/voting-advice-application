@@ -6,16 +6,16 @@ current_phase: "190"
 current_plan: 11
 status: executing
 stopped_at: 190-11 Task 2 checkpoint (operator apply 1, the pure move)
-last_updated: "2026-11-24T16:26:00.000Z"
+last_updated: "2026-11-24T17:10:00.000Z"
 last_activity: 2026-11-24
-last_activity_desc: 190-08 complete (deploy.yml and destroy.yml stage values from the resolve outputs); 190-11 still waits at Task 2, operator apply 1
+last_activity_desc: 190-09 complete (infra-plan.yml over the owned deployments; no literal role ARN in any workflow); 190-11 still waits at Task 2, operator apply 1
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 232
-  completed_plans: 226
-  percent: 91
+  completed_plans: 227
+  percent: 92
 ---
 
 # Project State
@@ -33,11 +33,11 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
 Phase: 190 (Multi-deployment bootstrap) — EXECUTING
-Plan: 11 of 14 (190-01 to 190-08 complete; 190-11 waits at Task 2, the operator's apply 1 of MOVE_COMMIT, then Task 3, apply 2 of TIGHTEN_COMMIT)
+Plan: 11 of 14 (190-01 to 190-09 complete; 190-11 waits at Task 2, the operator's apply 1 of MOVE_COMMIT, then Task 3, apply 2 of TIGHTEN_COMMIT)
 Status: In progress (branch planning/deployment-190, on 46554181e)
-Last activity: 2026-11-24 — 190-08 complete (54f880e3e, be66b7f5c: deploy.yml passes --deployment and SMOKE_DEPLOYMENT, re-reads https://$DOMAIN/api/health, alerts to the resolved topic naming the key, refuses a Supabase root whose public_origin is not https://<domain>; destroy.yml heads the resolved Supabase state key; neither names staging outside comments; infra 695/6, the six baseline host-only errexit failures). Before: 190-07 complete (867dd0b2f, 7cc3afaec, 20f1ab5ea: a credential-free resolve job first in deploy.yml and destroy.yml; environments, role, account, region and roots from its outputs; aws-pipeline concurrency; deploy settings check; cross-workflow rules over resolved values; infra 676/6, the six baseline host-only errexit failures). Before: 190-11 Task 1 committed (b512010e8: infra/bootstrap/README.md Steps 11 to 13, the map, the pure move, the Environment-tag tightening, adding a deployment). Checkpoint at Task 2: operator apply 1 (pure move, MOVE_COMMIT ce17178c6) through check-bootstrap-plan.sh --pure-move; Task 3 (apply 2, TIGHTEN_COMMIT 7d4ab1242) follows. No 190-11 SUMMARY yet. Before: 190-06 complete (TIGHTEN_COMMIT update-only vs MOVE_COMMIT, 4 expected policy updates)
+Last activity: 2026-11-24 — 190-09 complete (f9d089c9c, 1e92e2b13: infra-plan.yml starts with a credential-free resolve job in plan mode; the plan and wrong-subject jobs are fail-fast: false matrices over its deployments list, each with its derived plan role, deploy role, cluster, service and AWS root; the push trigger excludes deploy-evidence/destroy-*; no workflow holds a literal role ARN and none reads vars.AWS_PLAN_ROLE_ARN; arm-lock expands the matrix-bound $AWS_ROOT; infra 715/6, the six baseline host-only errexit failures). Before: 190-08 complete (54f880e3e, be66b7f5c: deploy.yml passes --deployment and SMOKE_DEPLOYMENT, re-reads https://$DOMAIN/api/health, alerts to the resolved topic naming the key, refuses a Supabase root whose public_origin is not https://<domain>; destroy.yml heads the resolved Supabase state key; neither names staging outside comments; infra 695/6, the six baseline host-only errexit failures). Before: 190-07 complete (867dd0b2f, 7cc3afaec, 20f1ab5ea: a credential-free resolve job first in deploy.yml and destroy.yml; environments, role, account, region and roots from its outputs; aws-pipeline concurrency; deploy settings check; cross-workflow rules over resolved values; infra 676/6, the six baseline host-only errexit failures). Before: 190-11 Task 1 committed (b512010e8: infra/bootstrap/README.md Steps 11 to 13, the map, the pure move, the Environment-tag tightening, adding a deployment). Checkpoint at Task 2: operator apply 1 (pure move, MOVE_COMMIT ce17178c6) through check-bootstrap-plan.sh --pure-move; Task 3 (apply 2, TIGHTEN_COMMIT 7d4ab1242) follows. No 190-11 SUMMARY yet. Before: 190-06 complete (TIGHTEN_COMMIT update-only vs MOVE_COMMIT, 4 expected policy updates)
 
-Progress: [██████████████████░░] 170/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
+Progress: [██████████████████░░] 171/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
 ## Progress
 
@@ -507,6 +507,8 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1]: 189.1-08 operator ruling: staging ends with analytics.trackEvents true (answer_final_state=keep-on); plan 189.1-09 sets it false for its one off run and back to true at the same sitting
 - [Phase 189.1]: 189.1-09: the off run's after-flip check is carried by the before-run read (trackEvents false read immediately before the run), since statement (a)'s updated_at was not pasted and is overwritten
 - [Phase 190]: 190-07: deploy.yml and destroy.yml start with job `resolve` (contents: read, no id-token, no environment) running resolve-deployment.sh; every other job needs it; environment, role-to-assume, account, region, AWS_ROOT and SUPABASE_ROOT come from needs.resolve.outputs.*; concurrency group aws-pipeline for both; deploy step `resolved-settings` before the first assume refuses an unset or other DEPLOY_ENVIRONMENT or a differing AWS_DEPLOY_ROLE_ARN
+- [Phase 190]: 190-09: infra-plan.yml: job resolve (--mode plan, contents: read) first; plan and wrong-subject need it and run as matrices over fromJSON(needs.resolve.outputs.deployments) with matrix.deployment.{plan_role_arn,deploy_role_arn,cluster_name,service_name,aws_root}; the plan job's aws-region and allowed-account-ids stay literal (plan mode emits no account or region); push trigger excludes deploy-evidence/destroy-*
+- [Phase 190]: 190-09: workflows.test.ts deploy-role-arn final form: no literal IAM role ARN in any workflow file; deploy.yml/destroy.yml assume needs.resolve.outputs.deploy_role_arn, infra-plan.yml matrix.deployment.plan_role_arn. Staging's derived plan role is arn:aws:iam::471112560111:role/openvaa/openvaa-plan (replaces vars.AWS_PLAN_ROLE_ARN)
 - [Phase 190]: 190-08: deploy.yml takes DEPLOYMENT_KEY, SMOKE_DEPLOYMENT, DOMAIN and TOPIC_ARN from resolve; the settings check (resolved-settings) also refuses a public_origin of the resolved Supabase root other than https://<domain>; destroy.yml heads STATE_BUCKET/SUPABASE_STATE_KEY, and hand/<key>/supabase/terraform.tfstate is held to every Supabase root's declared backend key; workflow names `Deploy` and `Destroy AWS stack`; step names say "the AWS root"
 - [Phase 190]: 190-07: workflows.test.ts adds rule needs-resolve; arm-lock expands a resolved "$AWS_ROOT" to every infra/envs/<key>/aws of the map that exists; errexit stand-ins for resolve outputs come from a run of the resolver for deploy/staging. Still for 190-08: --deployment on push-migrations, smoke/URL/alert/confirm/state-key values, step names, headers
 - [Phase 190]: 190-06: TIGHTEN_COMMIT=7d4ab1242affa84edd6865440f0a8db5275b8ade (the tree of 190-11's second apply); update-only proof vs MOVE_COMMIT: delete 0, replace 0, create 0, moved 0, update 18 (mock JSON), guard pass
@@ -596,6 +598,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-24T16:26:00.000Z
-**Stopped At:** Completed 190-08-PLAN.md; 190-11 waits at Task 2 (operator apply 1)
+Last session: 2026-11-24T17:10:00.000Z
+**Stopped At:** Completed 190-09-PLAN.md; 190-11 waits at Task 2 (operator apply 1)
 **Resume File:** None
