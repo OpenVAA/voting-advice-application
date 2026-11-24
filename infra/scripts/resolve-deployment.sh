@@ -12,17 +12,17 @@
 # Branch rule: an item of `deploy_branches` matches a ref equal to it, or, when it ends in `/*`, a ref made of its prefix and one more non-empty path segment holding no `/`, as a GitHub Environment branch policy matches.
 #
 # Derived names, for the key K of the entry, with `name_prefix`, `iam_path`, the account and the region from the tfvars, and P the entry's `iam_name_prefix` (default `<name_prefix>-K`):
-#   aws_root            infra/envs/K/aws
-#   supabase_root       infra/envs/K/supabase
-#   state_key           pipeline/K/aws/terraform.tfstate
-#   supabase_state_key  hand/K/supabase/terraform.tfstate
-#   deploy_role_arn     arn:aws:iam::<account>:role<iam_path><name_prefix>-K-deploy
-#   plan_role_arn       arn:aws:iam::<account>:role<iam_path>P-plan
-#   topic_arn           arn:aws:sns:<region>:<account>:<name_prefix>-K-frontend-deployments
-#   cluster_name        <name_prefix>-K
-#   service_name        <name_prefix>-K-frontend
-#   destroy_branch      deploy-evidence/destroy-K
-#   destroy_confirm     destroy K aws
+#   aws_root            infra/envs/K/aws.
+#   supabase_root       infra/envs/K/supabase.
+#   state_key           pipeline/K/aws/terraform.tfstate.
+#   supabase_state_key  hand/K/supabase/terraform.tfstate.
+#   deploy_role_arn     arn:aws:iam::<account>:role<iam_path><name_prefix>-K-deploy.
+#   plan_role_arn       arn:aws:iam::<account>:role<iam_path>P-plan.
+#   topic_arn           arn:aws:sns:<region>:<account>:<name_prefix>-K-frontend-deployments.
+#   cluster_name        <name_prefix>-K.
+#   service_name        <name_prefix>-K-frontend.
+#   destroy_branch      deploy-evidence/destroy-K.
+#   destroy_confirm     destroy K aws.
 # A key must match ^[a-z][a-z0-9-]*$ and be at most 15 characters long, and a resolved key's AWS and Supabase roots must exist.
 #
 # Usage:
