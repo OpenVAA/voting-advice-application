@@ -1056,7 +1056,7 @@ Plans:
 - [x] 190-06-PLAN.md — The tightening: `Environment` in the deploy scopes, the plan deny on its own key, required ids, tag denies where AWS allows (TIGHTEN_COMMIT).
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 190-07-PLAN.md — deploy.yml and destroy.yml routed through the resolve job; the cross-workflow rules over resolved values.
+- [x] 190-07-PLAN.md — deploy.yml and destroy.yml routed through the resolve job; the cross-workflow rules over resolved values.
 - [ ] 190-11-PLAN.md — The runbook steps, then the operator's apply 1 (move) and apply 2 (tightening), each through the guard.
 
 **Wave 5** *(blocked on Wave 4 completion)*
