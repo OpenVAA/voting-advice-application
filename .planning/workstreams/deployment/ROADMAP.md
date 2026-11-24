@@ -6,7 +6,7 @@ This file is the roadmap of the `deployment` workstream (branch `feat/deployment
 
 **Phases 181 to 189, planned.**
 
-**Milestone goal:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one. The milestone has 86 requirements (INFRA 19, SUPA 14, PIPE 11, OBS 13, RELAY 21, DOCS 8) in 9 phases.
+**Milestone goal:** A deployer can stand up a tested OpenVAA instance on AWS and Supabase Cloud from the repository, and every statement the project makes about a hosted deployment has been observed on one. The milestone has 92 requirements (INFRA 20, SUPA 15, PIPE 12, OBS 13, RELAY 23, DOCS 9) in 9 phases.
 
 **Sources.** `REQUIREMENTS.md` in this directory is the source of truth. It follows the operator's 28 rulings, recorded in `v2.17-DISCUSSION-POINTS.md` under "Rulings as read, 2026-10-11". The phase structure is ruling E4: phases 181 to 189 as `research/SUMMARY.md` proposes. That file's phase sketches were written before the rulings, so where a sketch and a requirement differ, the requirement wins. The largest difference is in phase 182: the sketch removes the consent components, and RELAY-11 keeps them, with consent asked by default.
 
@@ -844,9 +844,12 @@ Every requirement of `REQUIREMENTS.md` is mapped to exactly one phase. The file 
 | 188 | RELAY-04, RELAY-09, OBS-09, OBS-11 | 4 |
 | 189 | DOCS-01 to DOCS-08 | 8 |
 | 189.1 | OBS-12, OBS-13, PIPE-11 | 3 |
-| Total | | 86 |
+| 189.1.1 | RELAY-22, RELAY-23, PIPE-12, DOCS-09, INFRA-20, SUPA-15 | 6 |
+| Total | | 92 |
 
 Phase 189.1 adds three ids, OBS-12, OBS-13 and PIPE-11, from the tech debt of `v2.17-MILESTONE-AUDIT.md`, which brings the file to 86.
+
+Phase 189.1.1 adds six ids, RELAY-22, RELAY-23, PIPE-12, DOCS-09, INFRA-20 and SUPA-15, from the 2026-11-23 re-audit of `v2.17-MILESTONE-AUDIT.md` and 189.1's UAT todos, which brings the file to 92.
 
 Phases 181 and 186 each close one requirement because most of what they build is proven later, on the hosted stack or in the pipeline. Their success criteria and their **Builds toward** lines carry that work.
 
@@ -893,7 +896,7 @@ Plans:
 ### Phase 189.1.1: Address tech debt:  The consent prompt covers an answer choice for real voters on staging; relay legal review; deploy step to verify-full; uat todos (3); 20 items from 2026-11-21 audit (INSERTED)
 
 **Goal:** Close the actionable tech debt of the 2026-11-23 re-audit (`v2.17-MILESTONE-AUDIT.md`) and 189.1's UAT todos: the voter consent prompt becomes a modal that no longer covers an answer choice (Escape declines), the `migrations` and `settings` deploy steps connect with `verify-full` against the Supabase CA, a reviewer brief for the relay's legal position is written, and the small audit items of 189.1.1-CONTEXT.md D-14 are fixed.
-**Requirements**: TBD
+**Requirements**: RELAY-22, RELAY-23, PIPE-12, DOCS-09, INFRA-20, SUPA-15
 **Depends on:** Phase 189.1
 **Success Criteria** (what must be TRUE):
   1. With the consent prompt shown, the page under it is inert (`dialog:modal`), no answer choice can be focused or clicked, Escape closes it as a decline with nothing beyond the pageview sent, and a navigation with it open runs no named View Transition; the staging re-measurement reads `A11Y_FINDING=none`.
