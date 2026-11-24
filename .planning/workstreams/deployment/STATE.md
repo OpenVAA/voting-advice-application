@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v2.17
 milestone_name: Full Deployment — AWS by Terraform, Hosted Supabase & Analytics Relay
 current_phase: "190"
-current_plan: 0
-status: planned
-stopped_at: Phase 190 planned — 14 plans in 9 waves, plan check passed
-last_updated: "2026-11-24T16:00:00.000Z"
+current_plan: 1
+status: executing
+stopped_at: Completed 190-01-PLAN.md
+last_updated: "2026-11-24T15:05:00.000Z"
 last_activity: 2026-11-24
-last_activity_desc: Phase 190 planned
+last_activity_desc: 190-01 complete (bootstrap plan guard and move-proof harness)
 state_head: 018341305141a79a9e3f6c32117873e502a0292f
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 232
-  completed_plans: 218
+  completed_plans: 219
   percent: 91
 ---
 
@@ -32,10 +32,10 @@ See: .planning/PROJECT.md (shared with the v2.16 stream; updated 2026-11-18 afte
 
 Phases 181 to 187 and the inserted 181.1 are complete; phase 188 is next and is planned.
 
-Phase: 190 (Multi-deployment bootstrap) — PLANNED
-Plan: 0 of 14
-Status: Ready to execute (branch planning/deployment-190, on 46554181e)
-Last activity: 2026-11-24 — Phase 190 planned; decisions in 190-CONTEXT.md (GitHub Free: no environments downstream)
+Phase: 190 (Multi-deployment bootstrap) — EXECUTING
+Plan: 1 of 14 (190-01 complete)
+Status: In progress (branch planning/deployment-190, on 46554181e)
+Last activity: 2026-11-24 — 190-01 complete: check-bootstrap-plan.sh, check-bootstrap-moves.sh (control on 46554181e clean), BASELINE_INFRA=524/6
 
 Progress: [██████████████████░░] 168/188 plans ([█████████░] 91%); 7 of 9 roadmap phases complete, 181.1 inserted besides
 
@@ -228,6 +228,7 @@ From 184 on, the numeric order is the dependency order.
 | Phase 189.1 P08 | 10.5h (checkpoint wait) | 3 tasks | 3 files |
 | Phase 189.1 P09 | 15 min | 3 tasks | 4 files |
 | Phase 189.1 P10 | 30 min | 3 tasks | 2 files |
+| Phase 190 P01 | 20 min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -502,6 +503,9 @@ The operator's 28 rulings are in `v2.17-DISCUSSION-POINTS.md` under "Rulings as 
 - [Phase 189.1]: 189.1-08 operator ruling: staging ends with analytics.trackEvents true (answer_final_state=keep-on); plan 189.1-09 sets it false for its one off run and back to true at the same sitting
 - [Phase 189.1]: 189.1-09: the off run's after-flip check is carried by the before-run read (trackEvents false read immediately before the run), since statement (a)'s updated_at was not pasted and is overwritten
 - [Phase 189.1]: 189.1-10: Task 2 gate lines committed after the full E2E run so the run sits on GATES_HEAD (189-20 precedent)
+- [Phase 190]: 190-01: BASELINE_INFRA=524 passed / 6 failed (all six host-only, in workflow-errexit.test.ts); no later plan of the phase may add a failure to it
+- [Phase 190]: 190-01: Terraform 1.16.5 lives untracked at $HOME/.cache/openvaa-terraform/1.16.5 (SHA256SUMS OK); the move harness's run module source ../../../base/infra/bootstrap resolves from the root module directory, and the test_plan run name is the field @testrun
+- [Phase 190]: 190-01: control move proof on 46554181e: delete 0, replace 0, moved 0, update 18 (mock policy JSON), guard pass; a temporary registry rename turned it red with replace 2
 - [Phase 189.1]: 189.1-10: plan 189.1-07's DEPLOY_COMMIT 2ddc331d1 stands; no gap plan followed 189.1-08 (answer_wcag_fix=modal, frontend todo)
 
 ### Pending Todos
@@ -571,6 +575,6 @@ Filed in phase 188 on 2026-11-19, under `.planning/todos/pending/`:
 
 ## Session Continuity
 
-Last session: 2026-11-22T10:11:00.072Z
-**Stopped At:** Phase 189.1 complete — all phases complete
+Last session: 2026-11-24T15:05:00.000Z
+**Stopped At:** Completed 190-01-PLAN.md
 **Resume File:** None
