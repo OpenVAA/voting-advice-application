@@ -1045,7 +1045,7 @@ Plans:
 
 **Wave 1**
 - [x] 190-01-PLAN.md — Terraform 1.16.5 untracked, the unit baseline, the bootstrap plan guard and the offline move-proof harness.
-- [ ] 190-02-PLAN.md — The deployment map with staging's entry, and the workflows' resolver.
+- [x] 190-02-PLAN.md — The deployment map with staging's entry, and the workflows' resolver.
 - [ ] 190-03-PLAN.md — `push-migrations.sh --deployment` and the smoke gate keyed by `SMOKE_DEPLOYMENT`.
 
 **Wave 2** *(blocked on Wave 1 completion)*
