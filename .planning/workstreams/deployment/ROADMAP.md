@@ -903,14 +903,14 @@ Plans:
   2. The `migrations` and `settings` steps connect with `PGSSLMODE=verify-full` and the Supabase root CA, a wrong CA or host is refused, the guard test fails on a fallback to `require`, and an observed staging deploy is green.
   3. A standalone reviewer brief describes what the relay collects, where it goes, anonymisation, consent and retention, and poses the six readings as questions; the legal review stays an external blocker.
   4. The three UAT todos and the D-14 audit items are fixed and their todos closed, one observed full `main.yaml` CI run is green, and the full local E2E suite is green at the phase's end with summed deltas against the last full run (729 passed).
-**Plans:** 1/15 plans executed
+**Plans:** 2/15 plans executed
 
 Plans:
 **Wave 1**
 - [x] 189.1.1-01-PLAN.md — six requirement ids, coverage counts, install state and the phase-start E2E baseline (wave 1)
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 189.1.1-02-PLAN.md — ModalContainer Escape closes the topmost modal only; voter smoke on the results fixture (wave 2)
+- [x] 189.1.1-02-PLAN.md — ModalContainer Escape closes the topmost modal only; voter smoke on the results fixture (wave 2)
 - [ ] 189.1.1-03-PLAN.md — Supabase root CA from the dashboard, pinned; TLS red/green legs; channel binding and hosted history read (wave 2, operator sitting)
 - [ ] 189.1.1-04-PLAN.md — stop-timeout precondition; Supabase provider locks agree with the pins (wave 2)
 - [ ] 189.1.1-05-PLAN.md — relay legal reviewer brief; 189.1 VALIDATION reconciled (wave 2)
