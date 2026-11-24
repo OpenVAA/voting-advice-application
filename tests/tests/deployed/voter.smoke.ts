@@ -12,6 +12,7 @@
 
 import { expect, test } from '@playwright/test';
 import { SMOKE_STATEMENTS } from './smokeContent';
+import { createResultsPage } from '../fixtures/voter/resultsPage.fixture';
 import { answerAndAdvanceToResults } from '../fixtures/voter/voter-journey.fixture';
 import { testIds } from '../utils/testIds';
 import { navigateToFirstQuestion } from '../utils/voterNavigation';
@@ -27,6 +28,7 @@ test('a voter answers the hosted questions and reaches candidate results', async
   await expect(page.getByTestId(testIds.voter.questions.heading)).toContainText(SMOKE_STATEMENTS[0]);
   await answerAndAdvanceToResults(page, 'max');
   await expect(page).toHaveURL(/\/results/);
-  await expect(page.getByTestId(testIds.voter.results.candidateSection)).toBeVisible();
-  await expect(page.getByTestId(testIds.voter.results.card).first()).toBeVisible();
+  const results = createResultsPage(page);
+  await results.expectPageVisible();
+  await expect(results.getEntityCards().first()).toBeVisible();
 });
