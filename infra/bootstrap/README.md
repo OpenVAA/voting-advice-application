@@ -81,8 +81,11 @@ item before you leave the terminal.
   MFA and managed policies only. A "force MFA" policy written inline has to become a customer-managed
   policy first, because no IAM user in the account may carry an inline policy, the applying one
   included.
-- **Terraform 1.16.5**, the version in `infra/.terraform-version`, for example from
-  `brew install hashicorp/tap/terraform`. Step 1 checks it and the other tools.
+- **Terraform 1.16.5**, the version in `infra/.terraform-version`, built for your workstation's own
+  platform (`darwin_arm64` on Apple silicon), for example from `brew install hashicorp/tap/terraform`.
+  Another version is not the one the locks and the offline checks were made with, and an `amd64` build
+  run under Rosetta on Apple silicon can fail to start the AWS provider with
+  `timeout while waiting for plugin to start`. Step 1 checks it and the other tools.
 - **`TF_VAR_alert_email`**, the address the budget alerts go to. Type it in the terminal of each
   sitting, as `export TF_VAR_alert_email='<your-address>'`, and put it in no file. If you choose
   instead to track it, write `alert_email = "<your-address>"` into `terraform.tfvars` and commit that
@@ -1397,7 +1400,9 @@ apply only the saved plan file it read.
 addresses moves them onto the map's keys once, with the `moved` blocks of [`moves.tf`](moves.tf). The
 move creates, changes and destroys nothing. Run it in one sitting, with the opening lines of Step 9's
 item 1; its named lines begin `s11_`. `BASE` is the commit before the map, `MOVE` the commit that
-brings it, and both are checked out in worktrees outside your working copy.
+brings it, and both are checked out in worktrees outside your working copy. Before the first plan,
+`terraform version | head -2` must print `Terraform v1.16.5` and `on <os>_<arch>` naming your
+workstation's own platform; with any other version or architecture, install the pinned build first.
 
 1. The precondition: a plan of the tree before the map reads no change, so the state matches the tree the
    offline check of the move starts from.
