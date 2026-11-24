@@ -1,10 +1,20 @@
 # DataConsentPopup
 
-Show a popup with a data consent form, if data consent has not been given yet.
+A modal dialog that asks the voter for data consent. It opens as it mounts, and the page under it is inert while it is open.
+
+Choosing in its consent control records that choice and closes the dialog. Closing it without a choice, by Escape, its close button, a click on the backdrop or a close the platform makes, is a decline: it is recorded exactly as the decline button records it.
+
+### Dynamic component
+
+Accesses `AppContext` for the translations and `setDataConsent`.
 
 ### Properties
 
-- Any valid properties of an `<Alert>` component.
+- Any valid properties of a `<Modal>` component.
+
+### Callbacks
+
+- `onClose`: Callback for when the dialog closes, after a decline without a choice has been recorded.
 
 ### Usage
 

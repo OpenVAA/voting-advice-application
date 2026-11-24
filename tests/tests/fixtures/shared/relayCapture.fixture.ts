@@ -58,7 +58,7 @@ export function visitIdOf(event: RelayEvent): string | undefined {
   return hasVisitId(event) ? (event as Record<typeof VISIT_ID_KEY, string | undefined>)[VISIT_ID_KEY] : undefined;
 }
 
-/** The accessible name of the voter app's consent prompt (`common.privacy.dataCollection.title`, the title of DataConsentPopup's Alert), which is also the heading of the privacy page's consent control. */
+/** The accessible name of the voter app's consent prompt (`common.privacy.dataCollection.title`, the title of DataConsentPopup's modal dialog), which is also the heading of the privacy page's consent control. */
 export const CONSENT_PROMPT = /collecting usage data/i;
 
 /** The accessible name of the consent control's button that grants consent (DataConsent.svelte). */
